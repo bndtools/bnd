@@ -44,6 +44,7 @@ public class CnfSetupWizard extends Wizard {
         addPage(templatePage);
 
         importPage.setWizard(this);
+        importPage.setOperation(operation);
 
         confirmPage.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
