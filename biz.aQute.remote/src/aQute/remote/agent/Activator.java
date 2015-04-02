@@ -51,6 +51,10 @@ public class Activator extends Thread implements BundleActivator {
 				sa.setLink(link);
 				link.run();
 			}
+			catch (SocketException e) {
+				if (!isInterrupted())
+					e.printStackTrace();
+			}
 			catch (Exception e) {
 				e.printStackTrace();
 			}

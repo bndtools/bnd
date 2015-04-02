@@ -31,7 +31,7 @@ public class RemoteTest extends TestCase {
 			tmp = IO.getFile("generated/tmp");
 			configuration = new HashMap<String,Object>();
 			configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
-			configuration.put(Constants.FRAMEWORK_STORAGE, new File(tmp, "fwstorage"));
+			configuration.put(Constants.FRAMEWORK_STORAGE, new File(tmp, "fwstorage").getAbsolutePath());
 			configuration.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "org.osgi.framework.launch;version=1.2");
 
 			framework = new org.apache.felix.framework.FrameworkFactory().newFramework(configuration);
