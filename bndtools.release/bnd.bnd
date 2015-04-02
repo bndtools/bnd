@@ -23,7 +23,6 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 					/=resources
 
 -buildpath:\
-	ee.j2se;version=${javac.ee},\
 	osgi.core;version=${osgi.core.version},\
 	osgi.cmpn;version=${osgi.cmpn.version},\
 	${bndlib},\

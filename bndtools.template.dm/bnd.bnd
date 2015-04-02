@@ -4,7 +4,6 @@
 -dependson: bndtools.repository.base
 
 -buildpath:\
-	ee.j2se;version=${javac.ee},\
 	osgi.core;version=${osgi.core.version},\
 	bndtools.core;version=snapshot,\
 	bndtools.api;version=snapshot,\

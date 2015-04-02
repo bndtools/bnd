@@ -5,7 +5,6 @@ Bundle-SymbolicName: bndtools.jareditor;singleton:=true
 Include-Resource: resources
 
 -buildpath:  \
-	ee.j2se;version=${javac.ee},\
 	osgi.core;version=${osgi.core.version},\
 	${bndlib},\
 	org.eclipse.jface.text,\

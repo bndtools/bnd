@@ -84,7 +84,6 @@ eclipse.deps: \
 	org.eclipse.core.contenttype
 
 -buildpath: \
-	ee.j2se;version=${javac.ee},\
 	osgi.core;version=${osgi.core.version},\
 	osgi.cmpn;version=${osgi.cmpn.version},\
 	${bndlib},\
