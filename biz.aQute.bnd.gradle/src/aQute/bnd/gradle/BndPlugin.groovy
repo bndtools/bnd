@@ -167,6 +167,9 @@ public class BndPlugin implements Plugin<Project> {
             }
           }
         }
+        doFirst {
+            checkErrors()
+        }
         if (preCompileRefresh) {
           doFirst {
             logger.info 'Refreshing the bnd Project before compilation.'
@@ -181,6 +184,9 @@ public class BndPlugin implements Plugin<Project> {
 
       compileTestJava {
         configure compileOptions
+        doFirst {
+            checkErrors()
+        }
         if (preCompileRefresh) {
           doFirst {
             logger.info 'Refreshing the bnd Project before compilation.'
@@ -275,6 +281,9 @@ public class BndPlugin implements Plugin<Project> {
 
       test {
         enabled !parseBoolean(bnd(Constants.NOJUNIT, 'false')) && !parseBoolean(bnd('no.junit', 'false'))
+        doFirst {
+          checkErrors()
+        }
       }
 
       check {
@@ -423,6 +432,7 @@ public class BndPlugin implements Plugin<Project> {
           }
           println "target:                 ${buildDir}"
           println()
+          checkErrors()
         }
       }
 
@@ -440,6 +450,7 @@ public class BndPlugin implements Plugin<Project> {
             println "${it}: ${bnd(it, '')}"
           }
           println()
+          checkErrors()
         }
       }
 
@@ -475,24 +486,23 @@ public class BndPlugin implements Plugin<Project> {
   private void checkErrors() {
     bndProject.getInfo(bndProject.getWorkspace(), "${bndProject.getWorkspace().getBase().name} :")
     def boolean failed = !bndProject.isOk()
-    def int errorCount = 0
+    def int errorCount = bndProject.getErrors().size()
     bndProject.getWarnings().each {
       project.logger.warn 'Warning: {}', it
     }
     bndProject.getWarnings().clear()
     bndProject.getErrors().each {
       project.logger.error 'Error  : {}', it
-      errorCount++
     }
     bndProject.getErrors().clear()
     if (failed) {
-      def str = 'even though no errors were reported'
+      def str = ' even though no errors were reported'
       if (errorCount == 1) {
-        str = 'one error was reported'
+        str = ', one error was reported'
       } else if (errorCount > 1) {
-        str = "${errorCount} errors were reported"
+        str = ", ${errorCount} errors were reported"
       }
-      throw new GradleException("Project ${bndProject.getName()} is invalid, ${str}")
+      throw new GradleException("Project ${bndProject.getName()} has errors${str}")
     }
   }
 
