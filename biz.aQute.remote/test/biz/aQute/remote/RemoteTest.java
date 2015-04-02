@@ -1,24 +1,20 @@
 package biz.aQute.remote;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
-import junit.framework.TestCase;
+import junit.framework.*;
 
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
+import org.osgi.framework.*;
 import org.osgi.framework.Constants;
-import org.osgi.framework.dto.BundleDTO;
-import org.osgi.framework.launch.Framework;
+import org.osgi.framework.dto.*;
+import org.osgi.framework.launch.*;
 
-import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.*;
 import aQute.bnd.version.Version;
-import aQute.lib.io.IO;
-import aQute.remote.api.Agent;
-import aQute.remote.plugin.LauncherSupervisor;
+import aQute.lib.io.*;
+import aQute.remote.api.*;
+import aQute.remote.plugin.*;
 
 public class RemoteTest extends TestCase {
 	private int random;
@@ -32,9 +28,11 @@ public class RemoteTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		try {
+			tmp = IO.getFile("generated/tmp");
 			configuration = new HashMap<String, Object>();
 			configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN,
 					Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
+			configuration.put(Constants.FRAMEWORK_STORAGE, new File(tmp, "fwstorage"));
 			configuration.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA,
 					"org.osgi.framework.launch;version=1.2");
 
@@ -44,12 +42,11 @@ public class RemoteTest extends TestCase {
 			framework.start();
 			context = framework.getBundleContext();
 			location = "reference:"
-					+ IO.getFile("generated/biz.aQute.remote.agent-0.0.0.jar")
+					+ IO.getFile("generated/biz.aQute.remote.agent-3.0.0.jar")
 							.toURI().toString();
 			agent = context.installBundle(location);
 			agent.start();
 
-			tmp = IO.getFile("generated/tmp");
 			super.setUp();
 		} catch (Exception e) {
 			e.printStackTrace();

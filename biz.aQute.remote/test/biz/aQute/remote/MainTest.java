@@ -62,6 +62,8 @@ public class MainTest extends TestCase {
 		HashMap<String, Object> configuration = new HashMap<String, Object>();
 		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN,
 				Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
+		configuration.put(Constants.FRAMEWORK_STORAGE,
+				"generated/storage");
 		List<String> emptyList = Collections.emptyList();
 		boolean created = supervisor.getAgent().createFramework("test",
 				emptyList, configuration);

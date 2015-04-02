@@ -1,18 +1,12 @@
 package aQute.remote.agent;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.Arrays;
-import java.util.List;
+import java.io.*;
+import java.lang.reflect.*;
+import java.util.*;
 
-import org.apache.felix.service.command.CommandProcessor;
-import org.apache.felix.service.command.CommandSession;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
-import org.osgi.util.tracker.ServiceTracker;
+import org.apache.felix.service.command.*;
+import org.osgi.framework.*;
+import org.osgi.util.tracker.*;
 
 /**
  * Redirects to a Gogo Command Processor
@@ -21,7 +15,7 @@ public class GogoRedirector implements Redirector {
 
 	private AgentServer agentServer;
 	private ServiceTracker<CommandProcessor, CommandProcessor> tracker;
-	private CommandProcessor processor;
+	CommandProcessor											processor;
 	private CommandSession session;
 	private Shell stdin;
 	private RedirectOutput stdout;
@@ -58,14 +52,14 @@ public class GogoRedirector implements Redirector {
 		tracker.open();
 	}
 
-	private void closeSession(CommandProcessor service) {
+	void closeSession(CommandProcessor service) {
 		if (session != null) {
 			session.close();
 			processor = null;
 		}
 	}
 
-	private synchronized void openSession(CommandProcessor replacement) {
+	synchronized void openSession(CommandProcessor replacement) {
 		processor = replacement;
 		List<AgentServer> agents = Arrays.asList(agentServer);
 		stdout = new RedirectOutput(agents, null, false);
@@ -82,7 +76,7 @@ public class GogoRedirector implements Redirector {
 	 * on the framework side and we can't force Gogo to import our classes (nor should we).
 	 */
 	@SuppressWarnings("unchecked")
-	private <T> T proxy(final Class<T> clazz, final Object target) {
+	<T> T proxy(final Class<T> clazz, final Object target) {
 		final Class<?> targetClass = target.getClass();
 		
 		//

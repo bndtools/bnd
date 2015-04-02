@@ -1,23 +1,18 @@
 package biz.aQute.remote;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.io.*;
+import java.net.*;
+import java.util.concurrent.atomic.*;
 
-import aQute.remote.util.Link;
-import junit.framework.TestCase;
+import junit.framework.*;
+import aQute.remote.util.*;
 
 public class LinkTest extends TestCase {
 	private ServerSocket server;
 	private LocalImpl localImpl;
 	private RemoteImpl remoteImpl;
-	private AtomicInteger localClosed = new AtomicInteger();
-	private AtomicInteger remoteClosed = new AtomicInteger();
+	AtomicInteger			localClosed		= new AtomicInteger();
+	AtomicInteger			remoteClosed	= new AtomicInteger();
 	private Socket localSocket;
 	private Socket remoteSocket;
 

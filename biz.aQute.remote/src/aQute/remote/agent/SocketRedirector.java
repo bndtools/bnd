@@ -1,18 +1,14 @@
 package aQute.remote.agent;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.io.*;
+import java.net.*;
 
 public class SocketRedirector implements Redirector {
 	private static final String OSGI_SHELL_TELNET_IP = "osgi.shell.telnet.ip";
 	private Socket socket;
 	private PrintStream in;
 	private Thread out;
-	private boolean quit;
+	boolean						quit;
 
 	public SocketRedirector(final AgentServer agentServer, final int port)
 			throws Exception {
@@ -58,7 +54,7 @@ public class SocketRedirector implements Redirector {
 		this.out.start();
 	}
 
-	private Socket findSocket(AgentServer agent, int port)
+	Socket findSocket(AgentServer agent, int port)
 			throws UnknownHostException {
 		try {
 			String ip = agent.getContext().getProperty(OSGI_SHELL_TELNET_IP);
