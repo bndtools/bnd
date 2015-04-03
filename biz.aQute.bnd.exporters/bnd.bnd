@@ -1,0 +1,5 @@
+Bundle-Version: 0.0.0.${tstamp}
+
+-buildpath: \
+	ee.j2se;version=1.6,\
+	biz.aQute.bndlib;version=latest;packages=*
