@@ -1,7 +1,7 @@
 package aQute.bnd.maven.plugin;
 
 /*
- * Copyright 2001-2005 The Apache Software Foundation.
+ * Copyright (c) Paremus and others (2015). All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,8 +103,8 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			// Include local project packages automatically
 			String includes = builder.getProperty(Constants.INCLUDERESOURCE);
-			StringBuilder newIncludes = new StringBuilder().append('"').append(classesDir.getPath()).append('"');
-			if (includes == null || includes.trim().length() == 0)
+			StringBuilder newIncludes = new StringBuilder().append('"').append(classesDir.getAbsolutePath().replaceAll("\"", "\\\\\"")).append('"');
+			if (includes == null || includes.trim().isEmpty())
 				includes = newIncludes.toString();
 			else
 				includes = newIncludes.append(',').append(includes).toString();
