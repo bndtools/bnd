@@ -8,7 +8,7 @@ import org.osgi.framework.dto.*;
 public interface Agent {
 	public static final int	DEFAULT_PORT	= 29998;
 
-	boolean isEnvoy();
+	boolean isEnvoy();// what does this mean?  or how do you have a 'envoy' agent?
 
 	FrameworkDTO getFramework() throws Exception;
 
@@ -26,7 +26,7 @@ public interface Agent {
 
 	boolean stdin(String s) throws Exception;
 
-	String shell(String cmd) throws Exception;
+	String shell(String cmd) throws Exception; //what does this do?
 
 	Map<String,String> getSystemProperties() throws Exception;
 
