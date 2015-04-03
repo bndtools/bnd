@@ -143,15 +143,14 @@ public class BndMavenPlugin extends AbstractMojo {
 		Log log = getLog();
 
 		List<String> warnings = builder.getWarnings();
-		if (warnings != null) for (String warning : warnings) {
+		for (String warning : warnings) {
 			log.warn(warning);
 		}
 		List<String> errors = builder.getErrors();
-		if (errors != null && !errors.isEmpty()) {
-			for (String error : errors) {
-				log.error(error);
-			}
-
+		for (String error : errors) {
+			log.error(error);
+		}
+		if (!builder.isOk()) {
 			if (errors.size() == 1)
 				throw new MojoExecutionException(errors.get(0));
 			else
