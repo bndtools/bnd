@@ -3,6 +3,11 @@ package aQute.remote.agent;
 import java.io.*;
 import java.util.*;
 
+/**
+ * Handles the redirection of the output. Any text written to this PrintStream
+ * is send to the supervisor. We are a bit careful here that we're breaking
+ * recursive calls that can happen when there is shit happening deep down below.
+ */
 public class RedirectOutput extends PrintStream {
 
 	private final List<AgentServer>		agents;
@@ -10,6 +15,10 @@ public class RedirectOutput extends PrintStream {
 	private boolean						err;
 	private static ThreadLocal<Boolean>	onStack	= new ThreadLocal<Boolean>();
 
+	/**
+	 * If we do not have an original, we create a null stream because the
+	 * PrintStream requires this.
+	 */
 	static class NullOutputStream extends OutputStream {
 		@Override
 		public void write(int arg0) throws IOException {}

@@ -12,6 +12,15 @@ import aQute.lib.collections.*;
 import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
 
+/**
+ * This is a base class that provides the basic functionality of a supervisor.
+ * In general an actual supervisor extends this class to provide the
+ * functionality to use on the client side.
+ * 
+ * @author aqute
+ * @param <Supervisor>
+ * @param <Agent>
+ */
 public class AgentSupervisor<Supervisor, Agent> {
 	private static final Map<File,Info>				fileInfo	= new ConcurrentHashMap<File,AgentSupervisor.Info>();
 	private static final MultiMap<String,String>	shaInfo		= new MultiMap<String,String>();

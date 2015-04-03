@@ -7,11 +7,16 @@ import org.osgi.dto.*;
 import aQute.remote.api.*;
 import aQute.remote.util.*;
 
+/**
+ * This is the supervisor on the bnd launcher side. It provides the SHA
+ * repository for the agent and handles the redirection. It also handles the
+ * events.
+ */
 public class LauncherSupervisor extends AgentSupervisor<Supervisor,Agent> implements Supervisor {
 	private Appendable	stdout;
 	private Appendable	stderr;
 	private Thread		stdin;
-	private int			shell	= -100; // console
+	private int			shell	= -100; // always invalid so we update it
 
 	static class Info extends DTO {
 		public String	sha;

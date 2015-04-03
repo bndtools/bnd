@@ -4,6 +4,9 @@ import java.util.*;
 
 import aQute.bnd.util.dto.*;
 
+/**
+ * Definition of the -runremote header
+ */
 public class RunRemoteDTO extends DTO {
 	Map<String,Object>	__extra;
 	public String		name;

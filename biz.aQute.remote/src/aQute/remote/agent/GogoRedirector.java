@@ -9,20 +9,36 @@ import org.osgi.framework.*;
 import org.osgi.util.tracker.*;
 
 /**
- * Redirects to a Gogo Command Processor
+ * Create a new Gogo Shell Command Session if there is a Gogo Command Processor
+ * service present. If no Command Processor is present we will idle (a service
+ * tracker is used that will handle multiple and switches).
+ * <p>
+ * There is a bit of a class space problem since the agent can be started on the
+ * framework side of the class path. For this reason, we carry a copy of the
+ * Gogo API classes and we will use proxies to use them. This leaves the Gogo
+ * API unconstrained.
  */
 public class GogoRedirector implements Redirector {
 
 	private AgentServer											agentServer;
 	private ServiceTracker<CommandProcessor,CommandProcessor>	tracker;
-	CommandProcessor											processor;
+	private CommandProcessor									processor;
 	private CommandSession										session;
 	private Shell												stdin;
 	private RedirectOutput										stdout;
 
+	/**
+	 * Create a redirector
+	 * 
+	 * @param agentServer
+	 *            the server
+	 * @param context
+	 *            the context, needed to get the
+	 */
 	public GogoRedirector(AgentServer agentServer, BundleContext context) {
 		this.agentServer = agentServer;
 		tracker = new ServiceTracker<CommandProcessor,CommandProcessor>(context, CommandProcessor.class.getName(), null) {
+
 			@Override
 			public CommandProcessor addingService(ServiceReference<CommandProcessor> reference) {
 				CommandProcessor cp = proxy(CommandProcessor.class, super.addingService(reference));

@@ -8,6 +8,7 @@ import org.osgi.framework.*;
 import org.osgi.framework.dto.*;
 
 import aQute.lib.io.*;
+import aQute.remote.api.*;
 import aQute.remote.main.*;
 import aQute.remote.plugin.*;
 
@@ -54,7 +55,7 @@ public class MainTest extends TestCase {
 		//
 
 		LauncherSupervisor supervisor = new LauncherSupervisor();
-		supervisor.connect("localhost", Envoy.DEFAULT_PORT);
+		supervisor.connect("localhost", Agent.DEFAULT_PORT);
 
 		assertEquals("not talking to an envoy", true, supervisor.getAgent().isEnvoy());
 
@@ -74,7 +75,7 @@ public class MainTest extends TestCase {
 		//
 
 		LauncherSupervisor sv2 = new LauncherSupervisor();
-		sv2.connect("localhost", Envoy.DEFAULT_PORT);
+		sv2.connect("localhost", Agent.DEFAULT_PORT);
 
 		assertTrue("no second framework", supervisor.getAgent().ping());
 
