@@ -116,8 +116,12 @@ public class Builder extends Analyzer {
 				Map<String,String> map = OSGiHeader.parseProperties(pom);
 				map.put(Constants.BUNDLE_SCM, getProperty(Constants.BUNDLE_SCM));
 				map.put(Constants.BUNDLE_DEVELOPERS, getProperty(Constants.BUNDLE_DEVELOPERS));
-				PomResource pomResource = new PomResource(map, dot.getManifest());
-				dot.putResource(pomResource.getWhere(), pomResource);
+				PomResource pomXml = new PomResource(map, dot.getManifest());
+				PomPropertiesResource pomProperties = new PomPropertiesResource(pomXml);
+				dot.putResource(pomXml.getWhere(), pomXml);
+				if (!pomProperties.getWhere().equals(pomXml.getWhere())) {
+					dot.putResource(pomProperties.getWhere(), pomProperties);
+				}
 			}
 		}
 

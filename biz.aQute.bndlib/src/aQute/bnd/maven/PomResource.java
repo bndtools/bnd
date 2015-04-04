@@ -81,6 +81,18 @@ public class PomResource extends WriteResource {
 		return where;
 	}
 
+	public String getGroupId() {
+		return groupId;
+	}
+
+	public String getArtifactId() {
+		return artifactId;
+	}
+
+	public String getVersion() {
+		return version;
+	}
+
 	@Override
 	public long lastModified() {
 		return 0;
@@ -102,9 +114,9 @@ public class PomResource extends WriteResource {
 				"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd");
 
 		project.addContent(new Tag("modelVersion").addContent("4.0.0"));
-		project.addContent(new Tag("groupId").addContent(groupId));
-		project.addContent(new Tag("artifactId").addContent(artifactId));
-		project.addContent(new Tag(VERSION).addContent(version));
+		project.addContent(new Tag("groupId").addContent(getGroupId()));
+		project.addContent(new Tag("artifactId").addContent(getArtifactId()));
+		project.addContent(new Tag(VERSION).addContent(getVersion()));
 
 		if (description == null) {
 			description = name;
