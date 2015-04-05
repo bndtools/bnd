@@ -9,6 +9,11 @@ import aQute.bnd.build.*;
 import aQute.bnd.osgi.*;
 import aQute.remote.api.*;
 
+/**
+ * A session is a connection to a remote framework. It is possible to have many
+ * sessions at the same time. This object maintains the state of the connection
+ * and provides means to cancel the connection.
+ */
 public class RunSessionImpl implements RunSession {
 	private LauncherSupervisor			supervisor;
 	private RemoteProjectLauncherPlugin	launcher;

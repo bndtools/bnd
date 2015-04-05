@@ -13,11 +13,24 @@ import aQute.remote.api.*;
 import aQute.remote.api.Event.Type;
 import aQute.remote.util.*;
 
+/**
+ * Implementation of the Agent. This implementation implements the Agent
+ * interfaces and communicates with a Supervisor interfaces.
+ */
 public class AgentServer implements Agent, Closeable, FrameworkListener {
+
+	//
+	// Constant so we do not have to repeat it
+	//
 
 	private static final TypeReference<Map<String,String>>	MAP_STRING_STRING_T	= new TypeReference<Map<String,String>>() {};
 
 	private static final long[]								EMPTY				= new long[0];
+
+	//
+	// Known keys in the framework properties since we cannot
+	// iterate over framework properties
+	//
 
 	@SuppressWarnings("deprecation")
 	static String											keys[]				= {
@@ -32,7 +45,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			Constants.FRAMEWORK_VENDOR, Constants.FRAMEWORK_VERSION, Constants.FRAMEWORK_WINDOWSYSTEM,
 																				};
 
-	Supervisor												remote;
+	private Supervisor										remote;
 	private BundleContext									context;
 	private final ShaCache									cache;
 	private ShaSource										source;
@@ -42,6 +55,17 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	private Redirector										redirector			= new NullRedirector();
 	private Link<Agent,Supervisor>							link;
 
+	/**
+	 * An agent server is based on a context and takes a name and cache
+	 * directory
+	 * 
+	 * @param name
+	 *            the name of the agent's framework
+	 * @param context
+	 *            a bundle context of the framework
+	 * @param cache
+	 *            the directory for caching
+	 */
 	public AgentServer(String name, BundleContext context, File cache) {
 		this.context = context;
 		if (this.context != null)
@@ -50,6 +74,9 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		this.cache = new ShaCache(cache);
 	}
 
+	/**
+	 * Get the framework's DTO
+	 */
 	@Override
 	public FrameworkDTO getFramework() throws Exception {
 		FrameworkDTO fw = new FrameworkDTO();
@@ -60,7 +87,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	}
 
 	@Override
-	public BundleDTO install(String location, String sha) throws FileNotFoundException, BundleException {
+	public BundleDTO install(String location, String sha) throws Exception {
 		InputStream in = cache.getStream(sha, source);
 		if (in == null)
 			return null;
@@ -273,10 +300,10 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			redirector = new NullRedirector();
 		}
 
-		if (port == Redirector.NONE)
+		if (port == Agent.NONE)
 			return true;
 
-		if (port <= Redirector.COMMAND_SESSION) {
+		if (port <= Agent.COMMAND_SESSION) {
 			try {
 				redirector = new GogoRedirector(this, context);
 			}
@@ -286,7 +313,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			return true;
 		}
 
-		if (port == Redirector.CONSOLE) {
+		if (port == Agent.CONSOLE) {
 			redirector = new ConsoleRedirector(this);
 			return true;
 		}

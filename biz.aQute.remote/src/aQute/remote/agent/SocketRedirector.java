@@ -3,19 +3,54 @@ package aQute.remote.agent;
 import java.io.*;
 import java.net.*;
 
+/**
+ * A redirector that will open a connection to a socket, assuming there is a
+ * shell running there.
+ */
 public class SocketRedirector implements Redirector {
+
+	//
+	// The key used by the Apache Felix shell to define the host the server
+	// socket is registered on
+	//
+
 	private static final String	OSGI_SHELL_TELNET_IP	= "osgi.shell.telnet.ip";
+
+	//
+	// Telnet sends some options in the beginning that need to be
+	// skipped. The IAC is the first byte that then is followed
+	// by some commands.
+	//
+
+	private static final int	IAC						= 255;
 	private Socket				socket;
 	private PrintStream			in;
 	private Thread				out;
-	boolean						quit;
+	private boolean				quit;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param agentServer
+	 *            the agent we're working for
+	 * @param port
+	 *            the shell port
+	 */
 	public SocketRedirector(final AgentServer agentServer, final int port) throws Exception {
+
+		//
+		// We need a thread to read any output from the shell processor
+		// which is then forwarded to the supervisor
+		//
 
 		this.out = new Thread() {
 			@Override
 			public void run() {
 				try {
+
+					//
+					// Connect to the server. We keep on trying this.
+					//
 
 					while (!isInterrupted() && !quit) {
 						socket = findSocket(agentServer, port);
@@ -25,14 +60,48 @@ public class SocketRedirector implements Redirector {
 						Thread.sleep(1000);
 					}
 
+					//
+					// Create a printstream on the socket output (the system's
+					// input).
+					//
+
 					SocketRedirector.this.in = new PrintStream(socket.getOutputStream());
+
+					//
+					// Start reading the input
+					//
 					InputStream out = socket.getInputStream();
 
 					byte[] buffer = new byte[1000];
 					while (!isInterrupted() && !quit)
 						try {
 							int size = out.read(buffer);
-							agentServer.getSupervisor().stdout(new String(buffer, 0, size));
+							StringBuilder sb = new StringBuilder();
+							for (int i = 0; i < size; i++) {
+								int b = 0xFF & buffer[i];
+
+								// Since we have a telnet protocol, there
+								// are some special characters we should
+								// ignore. We assume that all parts of the
+								// command are in the same buffer, which is
+								// highly likely since they are usually
+								// tramsmitted in a single go
+
+								if (b == IAC) {
+
+									// Next is the command type
+
+									b = buffer[++i];
+
+									// DO, DONT, WILL, WONT have an extra byte
+									if (b == 251 || b == 252 || b == 253 || b == 254)
+										++i;
+								} else {
+									sb.append((char) b);
+								}
+							}
+							if (sb.length() > 0)
+								agentServer.getSupervisor().stdout(sb.toString());
 						}
 						catch (Exception e) {
 							break;

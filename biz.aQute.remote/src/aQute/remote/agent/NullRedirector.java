@@ -2,6 +2,9 @@ package aQute.remote.agent;
 
 import java.io.*;
 
+/**
+ * This is a null redirector. That is, it just does nothing.
+ */
 public class NullRedirector implements Redirector {
 
 	@Override

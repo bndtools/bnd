@@ -4,6 +4,9 @@ import java.io.*;
 
 import org.apache.felix.service.command.*;
 
+/**
+ * A redirector that redirects the input of a Gogo Command Processor
+ */
 public class Shell extends RedirectInput {
 	CommandSession	session;
 	PrintStream		out;

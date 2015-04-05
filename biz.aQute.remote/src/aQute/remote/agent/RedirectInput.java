@@ -2,22 +2,48 @@ package aQute.remote.agent;
 
 import java.io.*;
 
+/**
+ * An filter stream that takes a string from the supervisor and then provides it
+ * as a read to the user of this Input Stream. It also dispatches the text to an
+ * original stream.It does not use Piped*Stream because they turned hard to
+ * break. This implementation uses a ring buffer.
+ */
 public class RedirectInput extends InputStream {
 
 	private InputStream	org;
 	private byte[]		ring	= new byte[65536];
 	private int			in, out;
 
+	/**
+	 * Create a redirector input stream with an original input stream
+	 * 
+	 * @param in
+	 *            the original
+	 */
 	public RedirectInput(InputStream in) throws IOException {
 		this.org = in;
 	}
 
+	/**
+	 * Create a redirector without an original
+	 */
 	public RedirectInput() {}
 
+	/**
+	 * Get the original inputstream, potentially null
+	 * 
+	 * @return null or the original input stream
+	 */
 	public InputStream getOrg() {
 		return org;
 	}
 
+	/**
+	 * Provide the string that should be treated as input for the running code.
+	 * 
+	 * @param s
+	 *            the string
+	 */
 	public synchronized void add(String s) throws IOException {
 		byte[] bytes = s.getBytes();
 		for (int i = 0; i < bytes.length; i++) {
@@ -25,6 +51,9 @@ public class RedirectInput extends InputStream {
 		}
 	}
 
+	/**
+	 * Write to the ring buffer
+	 */
 	private void write(byte b) {
 		synchronized (ring) {
 			ring[in] = b;
@@ -42,6 +71,10 @@ public class RedirectInput extends InputStream {
 		// ignore
 	}
 
+	/**
+	 * Read a byte from the input buffer. We will be fully interruptible, in the
+	 * case of an interrupt we return -1 (eof)
+	 */
 	@Override
 	public int read() throws IOException {
 		synchronized (ring) {
@@ -59,6 +92,9 @@ public class RedirectInput extends InputStream {
 		}
 	}
 
+	/**
+	 * And the read for a larger buffer
+	 */
 	@Override
 	public int read(byte[] buffer, int offset, int length) throws IOException {
 		int n = 0;
@@ -73,5 +109,10 @@ public class RedirectInput extends InputStream {
 				break;
 		}
 		return n;
+	}
+
+	@Override
+	public int read(byte[] buffer) throws IOException {
+		return read(buffer, 0, buffer.length);
 	}
 }

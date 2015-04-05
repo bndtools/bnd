@@ -11,7 +11,16 @@ import org.osgi.framework.launch.*;
 import aQute.remote.api.*;
 import aQute.remote.util.*;
 
+/**
+ * This class collaborates with the Envoy part of this design. After the envoy
+ * has installed the -runpath it will reflectively call this class to create a
+ * framework and run an {@link AgentServer}.
+ */
 public class AgentDispatcher {
+
+	//
+	// We keep a descriptor for each created framework by its name.
+	//
 	static List<Descriptor>	descriptors	= new CopyOnWriteArrayList<Descriptor>();
 
 	static class Descriptor implements Closeable {
@@ -29,10 +38,14 @@ public class AgentDispatcher {
 				return;
 
 			for (AgentServer as : servers) {
-				as.close();
+				try {
+					as.close();
+				}
+				catch (Exception e) {
+					// ignore
+				}
 			}
 			try {
-				System.out.println("Framework stopping " + name);
 				framework.stop();
 			}
 			catch (BundleException e) {
@@ -42,13 +55,15 @@ public class AgentDispatcher {
 	}
 
 	/**
-	 * Create a new framework. This is reflectively called from the
-	 * EnvoyDispatcher
+	 * Create a new framework. This is reflectively called from the Envoy
 	 */
 	public static Descriptor createFramework(String name, Map<String,Object> configuration, final File storage,
 			final File shacache) throws Exception {
 
-		System.out.println("Create framework for " + name);
+		//
+		// Use the service loader for loading a framework
+		//
+
 		ServiceLoader<FrameworkFactory> sl = ServiceLoader.load(FrameworkFactory.class,
 				AgentServer.class.getClassLoader());
 		FrameworkFactory ff = null;
@@ -60,6 +75,10 @@ public class AgentDispatcher {
 		if (ff == null)
 			throw new IllegalArgumentException("No framework on runpath");
 
+		//
+		// Create the framework
+		//
+
 		@SuppressWarnings({
 				"unchecked", "rawtypes"
 		})
@@ -69,11 +88,18 @@ public class AgentDispatcher {
 
 			@Override
 			public void frameworkEvent(FrameworkEvent event) {
-				System.err.println("FW Event " + event);
+				// System.err.println("FW Event " + event);
 			}
 		});
 
 		framework.start();
+
+		//
+		// create a new descriptor. This is returned
+		// to the envoy side as an Object and we will
+		// get this back later in toAgent. The envoy
+		// maintains a list of name -> framework
+		//
 
 		Descriptor d = new Descriptor();
 		d.framework = framework;
@@ -90,28 +116,38 @@ public class AgentDispatcher {
 	 */
 
 	public static void toAgent(final Descriptor descriptor, DataInputStream in, DataOutputStream out) {
+
+		//
+		// Check if the framework is active
 		if (descriptor.framework.getState() != Bundle.ACTIVE) {
-			System.out.println("The framework is no longer active");
-			return;
+			throw new IllegalStateException("Framework " + descriptor.name + " is not active. (Stopped?)");
 		}
+
+		//
+		// Get the bundle context
+		//
 
 		BundleContext context = descriptor.framework.getBundleContext();
 		AgentServer as = new AgentServer(descriptor.name, context, descriptor.shaCache) {
+			//
+			// Override the close se we can remote it from the list
+			//
 			public void close() throws IOException {
 				descriptor.servers.remove(this);
 				super.close();
 			}
 		};
+
+		//
+		// Link up
+		//
 		Link<Agent,Supervisor> link = new Link<Agent,Supervisor>(Supervisor.class, as, in, out);
 		as.setLink(link);
 		link.open();
-		System.out.println("Create agent for " + descriptor.name + " " + context);
 	}
 
 	/**
 	 * Close
-	 * 
-	 * @throws IOException
 	 */
 
 	public static void close() throws IOException {
