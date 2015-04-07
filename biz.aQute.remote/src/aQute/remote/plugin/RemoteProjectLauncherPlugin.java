@@ -97,14 +97,48 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 	}
 
 	/**
-	 * TODO provide backward compatibility with the older API when IDE did not
-	 * have multiple sessions. This should be straightforward to do since this
-	 * method should not return until the process has exited. So we should be
-	 * able to just launch all the sessions in their own threads and then sync.
+	 * provide backward compatibility with the older API when IDE did not have
+	 * multiple sessions. This should be straightforward to do since this method
+	 * should not return until the process has exited. So we should be able to
+	 * just launch all the sessions in their own threads and then sync.
 	 */
 	@Override
 	public int launch() throws Exception {
-		throw new UnsupportedOperationException("This launcher only understands run sessions");
+		prepare();
+
+		final int[] results = new int[sessions.size()];
+		final Thread[] sessionThreads = new Thread[sessions.size()];
+
+		for (int i = 0; i < sessions.size(); i++) {
+			final int j = i;
+			final RunSessionImpl session = sessions.get(j);
+
+			sessionThreads[j] = new Thread("session launch " + j) {
+				@Override
+				public void run() {
+					try {
+						results[j] = session.launch();
+					}
+					catch (Exception e) {
+						//
+					}
+				}
+			};
+
+			sessionThreads[j].start();
+		}
+
+		for (Thread sessionThread : sessionThreads) {
+			sessionThread.join();
+		}
+
+		for (int result : results) {
+			if (result > 0) {
+				return result;
+			}
+		}
+
+		return 0;
 	}
 
 	/**
