@@ -1,5 +1,6 @@
 package aQute.remote.plugin;
 
+import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -7,6 +8,7 @@ import aQute.bnd.build.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.lib.converter.*;
+import aQute.remote.util.*;
 
 /**
  * This is the plugin. It is found by bnd on the -runpath when it needs to
@@ -86,10 +88,12 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 			Map<String,Object> sessionProperties = new HashMap<String,Object>(properties);
 			sessionProperties.putAll(entry.getValue());
 			sessionProperties.put("session.name", dto.name);
+
+			tryDeployBundleFromRunpath(sessionProperties, "biz.aQute.remote.agent");
+
 			RunSessionImpl session = new RunSessionImpl(this, dto, properties);
 			sessions.add(session);
 		}
-
 	}
 
 	/**
@@ -146,4 +150,38 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 		return sessions;
 	}
 
+	private void tryDeployBundleFromRunpath(Map<String,Object> sessionProperties, String bsn) {
+		final String jmx = (String) sessionProperties.get("jmx");
+
+		JMXBundleDeployer jmxBundleDeployer = null;
+
+		try {
+			if (jmx != null) {
+				int port = Integer.parseInt(jmx);
+				jmxBundleDeployer = new JMXBundleDeployer(port);
+			} else {
+				jmxBundleDeployer = new JMXBundleDeployer();
+			}
+		}
+		catch (Exception e) {
+			// ignore
+		}
+
+		if (jmxBundleDeployer != null) {
+			for (String path : this.getRunpath()) {
+				File file = new File(path);
+				try {
+					if (bsn.equals(new Jar(file).getBsn())) {
+						long bundleId = jmxBundleDeployer.deploy(bsn, file);
+
+						trace("agent installed bundleId ", bundleId);
+						break;
+					}
+				}
+				catch (Exception e) {
+					//
+				}
+			}
+		}
+	}
 }
