@@ -89,7 +89,9 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 			sessionProperties.putAll(entry.getValue());
 			sessionProperties.put("session.name", dto.name);
 
-			tryDeployBundleFromRunpath(sessionProperties, "biz.aQute.remote.agent");
+			if (sessionProperties.containsKey("jmx")) {
+				tryJMXDeploy(sessionProperties, "biz.aQute.remote.agent");
+			}
 
 			RunSessionImpl session = new RunSessionImpl(this, dto, properties);
 			sessions.add(session);
@@ -184,21 +186,27 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 		return sessions;
 	}
 
-	private void tryDeployBundleFromRunpath(Map<String,Object> sessionProperties, String bsn) {
-		final String jmx = (String) sessionProperties.get("jmx");
-
+	private void tryJMXDeploy(Map<String,Object> sessionProperties, String bsn) {
 		JMXBundleDeployer jmxBundleDeployer = null;
+		int port = -1;
 
 		try {
-			if (jmx != null) {
-				int port = Integer.parseInt(jmx);
+			port = Integer.parseInt(sessionProperties.get("jmx").toString());
+		}
+		catch (Exception e) {
+			// not an integer
+		}
+
+		try {
+			if (port > -1) {
 				jmxBundleDeployer = new JMXBundleDeployer(port);
 			} else {
 				jmxBundleDeployer = new JMXBundleDeployer();
 			}
 		}
 		catch (Exception e) {
-			// ignore
+			// ignore if we can't create bundle deployer (no remote osgi.core
+			// jmx avail)
 		}
 
 		if (jmxBundleDeployer != null) {
@@ -208,7 +216,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 					if (bsn.equals(new Jar(file).getBsn())) {
 						long bundleId = jmxBundleDeployer.deploy(bsn, file);
 
-						trace("agent installed bundleId ", bundleId);
+						trace("agent installed with bundleId=", bundleId);
 						break;
 					}
 				}
