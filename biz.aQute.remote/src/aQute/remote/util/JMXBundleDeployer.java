@@ -14,7 +14,6 @@ import org.osgi.framework.dto.*;
 public class JMXBundleDeployer {
 
 	private final static String		OBJECTNAME		= "osgi.core";
-	private static ClassLoader		toolsClassloader	= null;
 
 	private MBeanServerConnection mBeanServerConnection;
 
@@ -161,37 +160,41 @@ public class JMXBundleDeployer {
 	public void uninstall(long id) throws Exception {
 		final ObjectName framework = getFramework(mBeanServerConnection);
 
-		mBeanServerConnection.invoke(framework, "uninstallBundle", new Object[] {
+		Object[] objects = new Object[] {
 			id
-		}, new String[] {
+		};
+
+		String[] params = new String[] {
 			"long"
-		});
+		};
+
+		mBeanServerConnection.invoke(framework, "uninstallBundle", objects, params);
 	}
 
 	@SuppressWarnings("unchecked")
-	private static String getLocalConnectorAddress() {
+	static String getLocalConnectorAddress() {
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		ClassLoader toolsClassloader = null;
 
 		try {
-			ClassLoader tl = getToolsClassLoader(cl);
+			toolsClassloader = getToolsClassLoader(cl);
 
-			if (tl != null) {
-				Thread.currentThread().setContextClassLoader(tl);
+			if (toolsClassloader != null) {
+				Thread.currentThread().setContextClassLoader(toolsClassloader);
 
-				Class< ? > vmClass = tl.loadClass("com.sun.tools.attach.VirtualMachine");
+				Class< ? > vmClass = toolsClassloader.loadClass("com.sun.tools.attach.VirtualMachine");
+
 				Method listMethod = vmClass.getMethod("list");
 				List<Object> vmds = (List<Object>) listMethod.invoke(null);
 
 				for (Object vmd : vmds) {
 					try {
-						Class< ? > vmdClass = tl.loadClass("com.sun.tools.attach.VirtualMachineDescriptor");
+						Class< ? > vmdClass = toolsClassloader
+								.loadClass("com.sun.tools.attach.VirtualMachineDescriptor");
 						Method idMethod = vmdClass.getMethod("id");
 						String id = (String) idMethod.invoke(vmd);
 
 						Method attachMethod = vmClass.getMethod("attach", String.class);
-						// FIXME this can't be called twice, throws native
-						// loadLibrary "attach" has already been loaded by
-						// another classloader
 						Object vm = attachMethod.invoke(null, id);
 
 						try {
@@ -246,40 +249,61 @@ public class JMXBundleDeployer {
 			}
 		}
 		catch (Exception e) {
-			//
+			e.printStackTrace();
 		}
 		finally {
 			Thread.currentThread().setContextClassLoader(cl);
+			// try to get custom classloader to unload native libs
+			try {
+				if (toolsClassloader != null) {
+					Field nl = ClassLoader.class.getDeclaredField("nativeLibraries");
+					nl.setAccessible(true);
+					Vector< ? > nativeLibs = (Vector< ? >) nl.get(toolsClassloader);
+					for (Object nativeLib : nativeLibs) {
+						Field nameField = nativeLib.getClass().getDeclaredField("name");
+						nameField.setAccessible(true);
+						String name = (String) nameField.get(nativeLib);
+
+						if (new File(name).getName().contains("attach")) {
+							Method f = nativeLib.getClass().getDeclaredMethod("finalize");
+							f.setAccessible(true);
+							f.invoke(nativeLib);
+						}
+					}
+				}
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 
 		return null;
 	}
 
 	private static ClassLoader getToolsClassLoader(ClassLoader parent) throws IOException {
-		if (toolsClassloader == null) {
-			File toolsJar = findJdkJar("tools.jar");
+		File toolsJar = findJdkJar("tools.jar");
 
-			if (toolsJar != null && toolsJar.exists()) {
-				URL toolsUrl = null;
+		if (toolsJar != null && toolsJar.exists()) {
+			URL toolsUrl = null;
 
-				try {
-					toolsUrl = toolsJar.toURI().toURL();
-				}
-				catch (MalformedURLException e) {}
-
-				if (toolsClassloader == null) {
-					URL[] urls = new URL[] {
-						toolsUrl
-					};
-					toolsClassloader = new URLClassLoader(urls, parent);
-				}
+			try {
+				toolsUrl = toolsJar.toURI().toURL();
 			}
+			catch (MalformedURLException e) {
+				//
+			}
+
+			URL[] urls = new URL[] {
+				toolsUrl
+			};
+
+			return new URLClassLoader(urls, parent);
 		}
 
-		return toolsClassloader;
+		return null;
 	}
 
-	private static File findJdkJar(String jar) throws IOException {
+	static File findJdkJar(String jar) throws IOException {
 		File retval = null;
 
 		final String jarPath = File.separator + "lib" + File.separator + jar;
