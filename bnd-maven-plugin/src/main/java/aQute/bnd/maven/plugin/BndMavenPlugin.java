@@ -17,6 +17,13 @@ package aQute.bnd.maven.plugin;
  */
 
 import static aQute.lib.io.IO.getFile;
+import aQute.bnd.build.Project;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.FileResource;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
+import aQute.lib.io.IO;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,23 +39,17 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
-
-import aQute.bnd.build.Project;
-import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.FileResource;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Resource;
-import aQute.lib.io.IO;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 @Mojo(name = "bnd-process", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class BndMavenPlugin extends AbstractMojo {
-	
+
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
 	private File targetDir;
 
@@ -57,13 +58,16 @@ public class BndMavenPlugin extends AbstractMojo {
 
 	@Parameter(defaultValue = "${project.build.outputDirectory}", readonly = true)
 	private File classesDir;
-	
+
 	@Parameter(defaultValue = "${project.build.outputDirectory}/META-INF/MANIFEST.MF", readonly = true)
 	private File manifestPath;
-	
+
 	@Parameter(defaultValue = "${project}", required = true, readonly = true)
 	private MavenProject project;
-	
+
+	@Component
+	private BuildContext buildContext;
+
 	public void execute() throws MojoExecutionException {
 		Log log = getLog();
 
@@ -76,7 +80,7 @@ public class BndMavenPlugin extends AbstractMojo {
 				builder.setProperties(bndFile, project.getBasedir());
 			else
 				builder.setBase(project.getBasedir());
-			
+
 			// Reject sub-bundle projects
 			Collection<? extends Builder> subs = builder.getSubBuilders();
 			if (subs.size() != 1)
@@ -87,7 +91,6 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			// Set bnd classpath
 			List<File> classpath = new LinkedList<File>();
-			@SuppressWarnings("unchecked")
 			Set<Artifact> artifacts = project.getArtifacts();
 			for (Artifact artifact : artifacts) {
 				File artifactFile = artifact.getFile();
@@ -96,7 +99,7 @@ public class BndMavenPlugin extends AbstractMojo {
 			}
 			classpath.add(classesDir);
 			builder.setClasspath(classpath.toArray(new File[classpath.size()]));
-			
+
 			// Set bnd sourcepath
 			if (builder.hasSources())
 				builder.setSourcepath(new File[] { sourceDir });
@@ -157,7 +160,7 @@ public class BndMavenPlugin extends AbstractMojo {
 				throw new MojoExecutionException("Errors in bnd processing, see log for details.");
 		}
 	}
-	
+
 	private static void expandJar(Jar jar, File dir) throws Exception {
 		dir = dir.getAbsoluteFile();
 		if (!dir.exists() && !dir.mkdirs()) {
