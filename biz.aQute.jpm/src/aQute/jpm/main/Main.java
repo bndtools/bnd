@@ -520,10 +520,17 @@ public class Main extends ReporterAdapter {
 			if (target == null)
 				return;
 
-			ServiceData data = null; // TODO target.service;
+			ServiceData data = new ServiceData();
+			CommandData cmd = jpm.parseCommandData(target);
+			for (Field f : cmd.getClass().getFields()) {
+				f.set(data, f.get(cmd));
+			}
+
+			data.name = name;
+
 			updateServiceData(data, opts);
 
-			String result = jpm.createService(data);
+			String result = jpm.createService(data, false);
 			if (result != null)
 				error("Create service failed: %s", result);
 			return;
@@ -566,12 +573,14 @@ public class Main extends ReporterAdapter {
 					return;
 				}
 
-				// data.dependencies.clear();
-				// data.dependencies.add(target.file);
-				// data.dependencies.addAll(target.dependencies);
-				// data.coordinates = coordinates;
+				CommandData cmd = jpm.parseCommandData(target);
+				for (Field f : cmd.getClass().getFields()) {
+					f.set(data, f.get(cmd));
+				}
+				data.name = name;
 			}
-			String result = jpm.createService(data);
+
+			String result = jpm.createService(data, true);
 			if (result != null)
 				error("Update service failed: %s", result);
 			else if (s.isRunning())

@@ -459,7 +459,11 @@ public class JustAnotherPackageManager {
 	 * @throws Exception
 	 * @throws IOException
 	 */
-	public String createService(ServiceData data) throws Exception, IOException {
+	public String createService(ServiceData data, boolean force) throws Exception, IOException {
+
+		if (data.main == null) {
+			return "No main is set";
+		}
 
 		File sdir = new File(serviceDir, data.name);
 		if (!sdir.exists() && !sdir.mkdirs()) {
@@ -495,7 +499,7 @@ public class JustAnotherPackageManager {
 
 		platform.chown(data.user, true, new File(data.sdir));
 
-		String s = platform.createService(data, null, false);
+		String s = platform.createService(data, null, force);
 		if (s == null)
 			storeData(new File(data.sdir, "data"), data);
 		return s;
@@ -910,6 +914,20 @@ public class JustAnotherPackageManager {
 			}
 			catch (Exception e) {
 				reporter.trace("hmm, not a valid url %s, will try the server", arg);
+				return null;
+			}
+
+		File f = IO.getFile(arg);
+
+		if (f.isFile())
+			try {
+				ArtifactData data = putAsync(f.toURI());
+				data.local = true;
+				return data;
+			}
+			catch (Exception e) {
+				reporter.trace("hmm, not a valid file %s, will try the server", arg);
+				return null;
 			}
 
 		Coordinate c = new Coordinate(arg);
@@ -1171,7 +1189,7 @@ public class JustAnotherPackageManager {
 		if (memo.current instanceof ServiceData) {
 			Service service = getService((ServiceData) memo.current);
 			service.remove();
-			createService((ServiceData) memo.current);
+			createService((ServiceData) memo.current, true);
 			IO.delete(new File(IO.getFile(serviceDir, memo.current.name), "data"));
 			storeData(new File(IO.getFile(serviceDir, memo.current.name), "data"), memo.current);
 		} else {
