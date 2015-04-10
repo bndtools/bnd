@@ -2489,17 +2489,14 @@ public class Analyzer extends Processor {
 		return new SortedList<Clazz>(matched, Clazz.NAME_COMPARATOR);
 	}
 
-	static String	_packagesHelp	= "${packages}";
+	static String	_packagesHelp	= "${packages;'named'|'annotated'|'any';<pattern>}, Return a list of packages contained in the bundle that match the pattern\n";
 
 	public String _packages(String... args) throws Exception {
-		Collection<PackageRef> matched = getPackages(args);
-		if (matched.isEmpty())
-			return "";
-
-		return join(matched);
+		Collection<PackageRef> matched = getPackages(contained, args);
+		return matched.isEmpty() ? "" : join(matched);
 	}
 
-	public Collection<PackageRef> getPackages(String... args) throws Exception {
+	public Collection<PackageRef> getPackages(Packages scope, String... args) throws Exception {
 		List<PackageRef> pkgs = new LinkedList<PackageRef>();
 
 		Packages.QUERY queryType;
@@ -2517,7 +2514,7 @@ public class Analyzer extends Processor {
 			throw new IllegalArgumentException("${packages} macro: invalid argument count");
 		}
 
-		for (Entry<PackageRef,Attrs> entry : contained.entrySet()) {
+		for (Entry<PackageRef,Attrs> entry : scope.entrySet()) {
 			PackageRef pkg = entry.getKey();
 
 			TypeRef pkgInfoTypeRef = getTypeRefFromFQN(pkg.getFQN() + ".package-info");
