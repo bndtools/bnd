@@ -4,6 +4,9 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.regex.*;
 
+import aQute.lib.converter.*;
+import aQute.lib.hex.*;
+
 public class Data {
 
 	public static String validate(Object o) throws Exception {
@@ -78,7 +81,13 @@ public class Data {
 			for (Field f : fields) {
 				String name = f.getName();
 				name = Character.toUpperCase(name.charAt(0)) + name.substring(1);
-				formatter.format("%-40s %s%n", name, f.get(data));
+				Object object = f.get(data);
+				if (object != null && object.getClass() == byte[].class)
+					object = Hex.toHexString((byte[]) object);
+				else if (object != null && object.getClass().isArray())
+					object = Converter.cnv(List.class, object);
+
+				formatter.format("%-40s %s%n", name, object);
 			}
 		}
 		finally {
