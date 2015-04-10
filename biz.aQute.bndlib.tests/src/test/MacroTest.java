@@ -1067,4 +1067,26 @@ public class MacroTest extends TestCase {
 		System.err.println(b.getProperty("foo"));
 
 	}
+
+	public static void testPackagesMacro() throws Exception {
+		Builder b = new Builder();
+		b.setClasspath(new Jar[] {
+			new Jar(IO.getFile("bin"))
+		});
+		b.setProperty("Private-Package",
+				"test.packageinfo.annotated,test.packageinfo.notannotated,test.packageinfo.nopackageinfo");
+
+		b.setProperty("All-Packages", "${packages}");
+		b.setProperty("Annotated", "${packages;annotated;test.packageinfo.annotated.BlahAnnotation}");
+		b.setProperty("Named", "${packages;named;*.notannotated}");
+		b.build();
+
+		assertEquals(0, b.getErrors().size());
+
+		assertEquals("test.packageinfo.annotated,test.packageinfo.notannotated,test.packageinfo.nopackageinfo",
+				b.getProperty("All-Packages"));
+		assertEquals("test.packageinfo.annotated", b.getProperty("Annotated"));
+		assertEquals("test.packageinfo.notannotated", b.getProperty("Named"));
+	}
+
 }

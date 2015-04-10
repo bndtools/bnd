@@ -9,6 +9,10 @@ public class Packages implements Map<PackageRef,Attrs> {
 	private LinkedHashMap<PackageRef,Attrs>	map;
 	static Map<PackageRef,Attrs>			EMPTY	= Collections.emptyMap();
 
+	public static enum QUERY {
+		ANY, ANNOTATED, NAMED
+	}
+
 	public Packages(Packages other) {
 		if (other.map != null) {
 			map = new LinkedHashMap<Descriptors.PackageRef,Attrs>(other.map);

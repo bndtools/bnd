@@ -2489,6 +2489,69 @@ public class Analyzer extends Processor {
 		return new SortedList<Clazz>(matched, Clazz.NAME_COMPARATOR);
 	}
 
+	static String	_packagesHelp	= "${packages;'named'|'annotated'|'any';<pattern>}, Return a list of packages contained in the bundle that match the pattern\n";
+
+	public String _packages(String... args) throws Exception {
+		Collection<PackageRef> matched = getPackages(contained, args);
+		return matched.isEmpty() ? "" : join(matched);
+	}
+
+	public Collection<PackageRef> getPackages(Packages scope, String... args) throws Exception {
+		List<PackageRef> pkgs = new LinkedList<PackageRef>();
+
+		Packages.QUERY queryType;
+		Instruction instr;
+		if (args.length == 1) {
+			queryType = null;
+			instr = null;
+		} else if (args.length >= 2) {
+			queryType = Packages.QUERY.valueOf(args[1].toUpperCase());
+			if (args.length > 2)
+				instr = new Instruction(args[2]);
+			else
+				instr = null;
+		} else {
+			throw new IllegalArgumentException("${packages} macro: invalid argument count");
+		}
+
+		for (Entry<PackageRef,Attrs> entry : scope.entrySet()) {
+			PackageRef pkg = entry.getKey();
+
+			TypeRef pkgInfoTypeRef = getTypeRefFromFQN(pkg.getFQN() + ".package-info");
+			Clazz pkgInfo = classspace.get(pkgInfoTypeRef);
+
+			boolean accept = false;
+			if (queryType != null) {
+				switch (queryType) {
+					case ANY :
+						accept = true;
+						break;
+
+					case NAMED :
+						if (instr == null)
+							throw new IllegalArgumentException("Not enough arguments in ${packages} macro");
+						if (instr.matches(pkg.getFQN()))
+							accept = !instr.isNegated();
+						else
+							accept = false;
+						break;
+
+					case ANNOTATED :
+						if (instr == null)
+							throw new IllegalArgumentException("Not enough arguments in ${packages} macro");
+						accept = pkgInfo != null && pkgInfo.is(Clazz.QUERY.ANNOTATED, instr, this);
+						break;
+				}
+			} else {
+				accept = true;
+			}
+
+			if (accept)
+				pkgs.add(pkg);
+		}
+		return pkgs;
+	}
+
 	/**
 	 * Get the exporter of a package ...
 	 */
