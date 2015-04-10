@@ -17,9 +17,10 @@ import aQute.libg.cryptography.*;
  * In general an actual supervisor extends this class to provide the
  * functionality to use on the client side.
  * 
- * @author aqute
  * @param <Supervisor>
+ *            The supervisor type
  * @param <Agent>
+ *            The agent type
  */
 public class AgentSupervisor<Supervisor, Agent> {
 	private static final Map<File,Info>				fileInfo	= new ConcurrentHashMap<File,AgentSupervisor.Info>();

@@ -142,7 +142,7 @@ public class Service {
 	}
 
 	public String update(ServiceData data) throws Exception {
-		return jpm.createService(data);
+		return jpm.createService(data, true);
 	}
 
 	public String trace(boolean b) throws Exception {

@@ -21,7 +21,8 @@ public class ServiceMain extends Thread {
 	private boolean			trace	= false;
 
 	public static void main(String args[]) throws Exception, SecurityException, NoSuchMethodException {
-		//System.out.println(args[0]);
+		System.out.println(args.length);
+		System.out.println(args[0]);
 		lock = new File(args[0]).getAbsoluteFile();
 		//lock.deleteOnExit();
 
