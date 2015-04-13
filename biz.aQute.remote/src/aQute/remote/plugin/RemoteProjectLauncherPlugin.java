@@ -89,8 +89,8 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 			sessionProperties.putAll(entry.getValue());
 			sessionProperties.put("session.name", dto.name);
 
-			if (sessionProperties.containsKey("jmx")) {
-				tryJMXDeploy(sessionProperties, "biz.aQute.remote.agent");
+			if (dto.jmx != null) {
+				tryJMXDeploy(dto.jmx, "biz.aQute.remote.agent");
 			}
 
 			RunSessionImpl session = new RunSessionImpl(this, dto, properties);
@@ -186,12 +186,12 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 		return sessions;
 	}
 
-	private void tryJMXDeploy(Map<String,Object> sessionProperties, String bsn) {
+	private void tryJMXDeploy(String jmx, String bsn) {
 		JMXBundleDeployer jmxBundleDeployer = null;
 		int port = -1;
 
 		try {
-			port = Integer.parseInt(sessionProperties.get("jmx").toString());
+			port = Integer.parseInt(jmx);
 		}
 		catch (Exception e) {
 			// not an integer
