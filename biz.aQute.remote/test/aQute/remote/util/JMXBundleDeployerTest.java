@@ -18,7 +18,7 @@ public class JMXBundleDeployerTest extends TestCase {
 		assertEquals(true, toolsJar.exists());
 	}
 
-	public void testGetLocalConnectorAddress() throws Exception {
+	public void testGetLocalConnectorAddressLibraryUnload() throws Exception {
 		Throwable ex = null;
 
 		// calling two times to make sure that we are properly unloading the
@@ -34,4 +34,5 @@ public class JMXBundleDeployerTest extends TestCase {
 
 		assertNull(ex);
 	}
+
 }
