@@ -9,6 +9,7 @@ import javax.management.*;
 import javax.management.openmbean.*;
 import javax.management.remote.*;
 
+import org.osgi.framework.*;
 import org.osgi.framework.dto.*;
 
 /**
@@ -167,6 +168,24 @@ public class JMXBundleDeployer {
 		final BundleDTO dto = new BundleDTO();
 		dto.id = Long.parseLong(cd.get("Identifier").toString());
 		dto.symbolicName = cd.get("SymbolicName").toString();
+
+		String state = cd.get("State").toString();
+
+		if ("UNINSTALLED".equals(state)) {
+			dto.state = Bundle.UNINSTALLED;
+		} else if ("INSTALLED".equals(state)) {
+			dto.state = Bundle.INSTALLED;
+		} else if ("RESOLVED".equals(state)) {
+			dto.state = Bundle.RESOLVED;
+		} else if ("STARTING".equals(state)) {
+			dto.state = Bundle.STARTING;
+		} else if ("STOPPING".equals(state)) {
+			dto.state = Bundle.STOPPING;
+		} else if ("ACTIVE".equals(state)) {
+			dto.state = Bundle.ACTIVE;
+		}
+
+		dto.version = cd.get("Version").toString();
 
 		return dto;
 	}

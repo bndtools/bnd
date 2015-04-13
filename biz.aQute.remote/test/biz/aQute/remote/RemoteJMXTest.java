@@ -67,14 +67,17 @@ public class RemoteJMXTest extends TestCase {
 		assertTrue(bundleId > 0);
 
 		BundleDTO agentBundle = null;
+		long state = -1;
 
 		for (BundleDTO bundle : jmxBundleDeployer.listBundles()) {
 			if (bundle.symbolicName.equals("biz.aQute.remote.agent")) {
 				agentBundle = bundle;
+				state = bundle.state;
 			}
 		}
 
 		assertNotNull(agentBundle);
+		assertEquals(Bundle.ACTIVE, state);
 	}
 
 }
