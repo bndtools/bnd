@@ -11,6 +11,15 @@ import javax.management.remote.*;
 
 import org.osgi.framework.dto.*;
 
+/**
+ * This class will try to connect to a remote OSGi framework using JMX and will
+ * deploy a bundle for you, by deploy, that means install the bundle if it
+ * doesn't existing in the remote runtime or update the bundle if it already
+ * exists. For the actual JMX connection it will use a port if you tell it to,
+ * or if not, it will try to use the JDK's attach API and search for the OSGi
+ * framework JMX beans. For the JDK attach API, beware, assumptions about the
+ * Oracle JDK directory layout have been made.
+ */
 public class JMXBundleDeployer {
 
 	private final static String		OBJECTNAME		= "osgi.core";
@@ -38,6 +47,17 @@ public class JMXBundleDeployer {
 		}
 	}
 
+	/**
+	 * Gets the current list of installed bsns, compares it to the bsn provided.
+	 * If bsn doesn't exist, then install it. If it does exist then update it.
+	 *
+	 * @param bsn
+	 *            Bundle-SymbolicName of bundle you are wanting to deploy
+	 * @param bundle
+	 *            the bundle
+	 * @return the id of the updated or installed bundle
+	 * @throws Exception
+	 */
 	public long deploy(String bsn, File bundle) throws Exception {
 		final ObjectName framework = getFramework(mBeanServerConnection);
 
@@ -100,6 +120,12 @@ public class JMXBundleDeployer {
 		return null;
 	}
 
+
+	/**
+	 * Calls osgi.core bundleState MBean listBundles operation
+	 *
+	 * @return array of bundles in framework
+	 */
 	public BundleDTO[] listBundles() {
 		final List<BundleDTO> retval = new ArrayList<BundleDTO>();
 
@@ -145,6 +171,14 @@ public class JMXBundleDeployer {
 		return dto;
 	}
 
+	/**
+	 * Uninstall a bundle by passing in its Bundle-SymbolicName. If bundle
+	 * doesn't exist, this is a NOP.
+	 *
+	 * @param bsn
+	 *            bundle symbolic name
+	 * @throws Exception
+	 */
 	public void uninstall(String bsn) throws Exception {
 		for (BundleDTO osgiBundle : listBundles()) {
 			if (osgiBundle.symbolicName.equals(bsn)) {
@@ -157,6 +191,14 @@ public class JMXBundleDeployer {
 		throw new IllegalStateException("Unable to uninstall " + bsn);
 	}
 
+	/**
+	 * Calls through directly to the OSGi frameworks MBean uninstallBundle
+	 * operation
+	 *
+	 * @param id
+	 *            id of bundle to uninstall
+	 * @throws Exception
+	 */
 	public void uninstall(long id) throws Exception {
 		final ObjectName framework = getFramework(mBeanServerConnection);
 
@@ -171,6 +213,14 @@ public class JMXBundleDeployer {
 		mBeanServerConnection.invoke(framework, "uninstallBundle", objects, params);
 	}
 
+	/**
+	 * Uses Oracle JDK's Attach API to try to search VMs on this machine looking
+	 * for the osgi.core MBeans. This will stop searching for VMs once the
+	 * MBeans are found. Beware if you have multiple JVMs with osgi.core MBeans
+	 * published.
+	 *
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	static String getLocalConnectorAddress() {
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
