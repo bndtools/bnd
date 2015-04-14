@@ -1774,9 +1774,9 @@ public class Analyzer extends Processor {
 											}
 										}
 										catch (Exception e) {
-											e.printStackTrace();
-											// Ignored here, is picked up in
-											// other places
+											// ignore version parsing errors; they will be resolved later during cleanupVersion
+											if (!e.getMessage().startsWith("Invalid syntax for version"))
+												e.printStackTrace();
 										}
 									}
 								}
