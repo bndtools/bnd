@@ -27,7 +27,8 @@ public class MainTest extends TestCase {
 			public void run() {
 				try {
 					Main.main(new String[] {
-							"-s", "generated/storage", "-c", "generated/cache", "-n", "*", "-et"
+							"-p", Agent.DEFAULT_PORT + 1 + "", "-s", "generated/storage", "-c", "generated/cache",
+							"-n", "*", "-et"
 					});
 				}
 				catch (Exception e) {
@@ -55,7 +56,7 @@ public class MainTest extends TestCase {
 		//
 
 		LauncherSupervisor supervisor = new LauncherSupervisor();
-		supervisor.connect("localhost", Agent.DEFAULT_PORT);
+		supervisor.connect("localhost", Agent.DEFAULT_PORT + 1);
 
 		assertEquals("not talking to an envoy", true, supervisor.getAgent().isEnvoy());
 
@@ -75,7 +76,7 @@ public class MainTest extends TestCase {
 		//
 
 		LauncherSupervisor sv2 = new LauncherSupervisor();
-		sv2.connect("localhost", Agent.DEFAULT_PORT);
+		sv2.connect("localhost", Agent.DEFAULT_PORT + 1);
 
 		assertTrue("no second framework", supervisor.getAgent().ping());
 
