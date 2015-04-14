@@ -1759,17 +1759,23 @@ public class Analyzer extends Processor {
 									// we have the attribute from the classpath
 									// and we have set it.
 									if (key.equals(Constants.VERSION_ATTRIBUTE)) {
-										Version fromExport = new Version(cleanupVersion(exporterAttributes.getVersion()));
-										Version fromSet = new Version(cleanupVersion(attributes.getVersion()));
-										if (!fromExport.equals(fromSet)) {
-											SetLocation location = warning(
-													"Version for package %s is set to different values in the source (%s) and in the manifest (%s). The version in the manifest is not "
-															+ "picked up by an other sibling bundles in this project or projects that directly depend on this project",
-													packageName, attributes.get(key), exporterAttributes.get(key));
-											if (getPropertiesFile() != null)
-												location.file(getPropertiesFile().getAbsolutePath());
-											location.header(EXPORT_PACKAGE);
-											location.context(packageName);
+										try {
+											Version fromExport = new Version(cleanupVersion(exporterAttributes.getVersion()));
+											Version fromSet = new Version(cleanupVersion(attributes.getVersion()));
+											if (!fromExport.equals(fromSet)) {
+												SetLocation location = warning(
+														"Version for package %s is set to different values in the source (%s) and in the manifest (%s). The version in the manifest is not "
+																+ "picked up by an other sibling bundles in this project or projects that directly depend on this project",
+														packageName, attributes.get(key), exporterAttributes.get(key));
+												if (getPropertiesFile() != null)
+													location.file(getPropertiesFile().getAbsolutePath());
+												location.header(EXPORT_PACKAGE);
+												location.context(packageName);
+											}
+										}
+										catch (Exception e) {
+											// Ignored here, is picked up in
+											// other places
 										}
 									}
 								}
