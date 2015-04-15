@@ -155,22 +155,13 @@ public class ResolutionWizard extends Wizard {
         // Map version range string, using "latest" for any workspace resources
         Attrs attribs = new Attrs();
         String versionRangeStr;
-        if (isWorkspace(resource)) {
-            versionRangeStr = VERSION_LATEST;
-        } else {
-            Version version = ResourceUtils.getVersion(idCap);
-            VersionRange versionRange = createVersionRange(version);
-            versionRangeStr = versionRange.toString();
-        }
+        Version version = ResourceUtils.getVersion(idCap);
+        VersionRange versionRange = createVersionRange(version);
+        versionRangeStr = versionRange.toString();
         attribs.put(Constants.VERSION_ATTRIBUTE, versionRangeStr);
 
         return new VersionedClause(identity, attribs);
 
-    }
-
-    private static boolean isWorkspace(Resource resource) {
-        List<Capability> workspaceCaps = resource.getCapabilities(CAPABILITY_WORKSPACE);
-        return workspaceCaps != null && !workspaceCaps.isEmpty();
     }
 
     private static VersionRange createVersionRange(Version version) {
