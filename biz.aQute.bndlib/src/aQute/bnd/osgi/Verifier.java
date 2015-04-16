@@ -84,7 +84,7 @@ public class Verifier extends Processor {
 
 	public final static Pattern	ReservedFileNames				= Pattern
 																		.compile(
-																				"CON(\\..+)?|PRN(\\..+)?|AUX(\\..+)?|CLOCK$|NUL(\\..+)?|COM[1-9](\\..+)?|LPT[1-9](\\..+)?|"
+																				"CON(\\..+)?|PRN(\\..+)?|AUX(\\..+)?|CLOCK\\\\$|NUL(\\..+)?|COM[1-9](\\..+)?|LPT[1-9](\\..+)?|"
 																						+ "\\$Mft|\\$MftMirr|\\$LogFile|\\$Volume|\\$AttrDef|\\$Bitmap|\\$Boot|\\$BadClus|\\$Secure|"
 																						+ "\\$Upcase|\\$Extend|\\$Quota|\\$ObjId|\\$Reparse",
 																				Pattern.CASE_INSENSITIVE);

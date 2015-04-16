@@ -4,10 +4,10 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 
-import junit.framework.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.lib.io.*;
+import junit.framework.*;
 
 @SuppressWarnings("resource")
 public class VerifierTest extends TestCase {
@@ -52,6 +52,8 @@ public class VerifierTest extends TestCase {
 		testFileName("XYZ", "XYZ|${@}", false);
 		testFileName("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", ".{33,}|${@}", false);
 		testFileName("clock$", ".{1,32}|${@}", false);
+		testFileName("clock$", "${@}", false);
+		testFileName("clock", "${@}", true);
 		testFileName("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", null, true);
 	}
 
