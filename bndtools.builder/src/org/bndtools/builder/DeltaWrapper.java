@@ -56,8 +56,10 @@ class DeltaWrapper {
         int kindMask = IResourceDelta.CHANGED | IResourceDelta.ADDED | IResourceDelta.REMOVED;
         if ((kindMask & delta.getKind()) > 0) {
             int flags = delta.getFlags();
-            if (flags > 0 && flags != IResourceDelta.MARKERS)
+            if (flags > 0 && flags != IResourceDelta.MARKERS) {
+                log.basic("Delta affects resource %s with kind=%d and flags=%d", delta.getFullPath(), delta.getKind(), delta.getFlags());
                 return true;
+            }
         }
 
         IResourceDelta[] children = delta.getAffectedChildren();
