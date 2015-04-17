@@ -59,7 +59,7 @@ import bndtools.preferences.CompileErrorAction;
  *  touch bar.bnd -> see if manifest is updated in JAR (Jar viewer does not refresh very well, so reopen)
  *  touch build.bnd -> verify rebuild
  *  touch bnd.bnd in test -> verify rebuild
- * 
+ *
  *  create project test.2, add -buildpath: test
  * </pre>
  */
@@ -68,6 +68,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     public static final String BUILDER_ID = BndtoolsConstants.BUILDER_ID;
     private static final ILogger logger = Logger.getLogger(BndtoolsBuilder.class);
     static final Set<Project> dirty = Collections.newSetFromMap(new ConcurrentHashMap<Project,Boolean>());
+
     static {
         CnfWatcher.install();
     }
@@ -410,10 +411,12 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     }
 
     private void deleteBuildFiles(Project model) throws Exception {
-        File[] buildFiles = model.getBuildFiles();
+        File[] buildFiles = model.getBuildFiles(false);
         if (buildFiles != null)
-            for (File f : buildFiles)
-                IO.delete(f);
+            for (File f : buildFiles) {
+                if (f != null)
+                    IO.delete(f);
+            }
         IO.delete(new File(model.getTarget(), Project.BUILDFILES));
     }
 
