@@ -44,8 +44,28 @@ class DeltaWrapper {
             return true;
         }
 
-        if (delta.findMember(EXT) != null)
+        if (isNonMarkerChange(delta.findMember(EXT)))
             return true;
+
+        return false;
+    }
+
+    boolean isNonMarkerChange(IResourceDelta delta) {
+        if (delta == null)
+            return false;
+        int kindMask = IResourceDelta.CHANGED | IResourceDelta.ADDED | IResourceDelta.REMOVED;
+        if ((kindMask & delta.getKind()) > 0) {
+            int flags = delta.getFlags();
+            if (flags > 0 && flags != IResourceDelta.MARKERS)
+                return true;
+        }
+
+        IResourceDelta[] children = delta.getAffectedChildren();
+        if (children != null)
+            for (IResourceDelta child : children) {
+                if (isNonMarkerChange(child))
+                    return true;
+            }
 
         return false;
     }
