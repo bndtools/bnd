@@ -1760,8 +1760,8 @@ public class Analyzer extends Processor {
 									// and we have set it.
 									if (key.equals(Constants.VERSION_ATTRIBUTE)) {
 										try {
-											Version fromExport = new Version(exporterAttributes.getVersion());
-											Version fromSet = new Version(attributes.getVersion());
+											Version fromExport = new Version(cleanupVersion(exporterAttributes.getVersion()));
+											Version fromSet = new Version(cleanupVersion(attributes.getVersion()));
 											if (!fromExport.equals(fromSet)) {
 												SetLocation location = warning(
 														"Version for package %s is set to different values in the source (%s) and in the manifest (%s). The version in the manifest is not "
@@ -1774,7 +1774,6 @@ public class Analyzer extends Processor {
 											}
 										}
 										catch (Exception e) {
-											e.printStackTrace();
 											// Ignored here, is picked up in
 											// other places
 										}
