@@ -12,7 +12,7 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.util.dto.*;
 import aQute.bnd.version.*;
-import aQute.lib.base64.Base64;
+import aQute.lib.base64.*;
 import aQute.lib.filter.*;
 import aQute.lib.io.*;
 import aQute.libg.cryptography.*;
@@ -84,7 +84,7 @@ public class Verifier extends Processor {
 
 	public final static Pattern	ReservedFileNames				= Pattern
 																		.compile(
-																				"CON(\\..+)?|PRN(\\..+)?|AUX(\\..+)?|CLOCK$|NUL(\\..+)?|COM[1-9](\\..+)?|LPT[1-9](\\..+)?|"
+																				"CON(\\..+)?|PRN(\\..+)?|AUX(\\..+)?|CLOCK\\$|NUL(\\..+)?|COM[1-9](\\..+)?|LPT[1-9](\\..+)?|"
 																						+ "\\$Mft|\\$MftMirr|\\$LogFile|\\$Volume|\\$AttrDef|\\$Bitmap|\\$Boot|\\$BadClus|\\$Secure|"
 																						+ "\\$Upcase|\\$Extend|\\$Quota|\\$ObjId|\\$Reparse",
 																				Pattern.CASE_INSENSITIVE);
