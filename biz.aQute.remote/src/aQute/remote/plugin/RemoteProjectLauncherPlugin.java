@@ -1,5 +1,6 @@
 package aQute.remote.plugin;
 
+import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -7,6 +8,7 @@ import aQute.bnd.build.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.lib.converter.*;
+import aQute.remote.util.*;
 
 /**
  * This is the plugin. It is found by bnd on the -runpath when it needs to
@@ -86,21 +88,59 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 			Map<String,Object> sessionProperties = new HashMap<String,Object>(properties);
 			sessionProperties.putAll(entry.getValue());
 			sessionProperties.put("session.name", dto.name);
+
+			if (dto.jmx != null) {
+				tryJMXDeploy(dto.jmx, "biz.aQute.remote.agent");
+			}
+
 			RunSessionImpl session = new RunSessionImpl(this, dto, properties);
 			sessions.add(session);
 		}
-
 	}
 
 	/**
-	 * TODO provide backward compatibility with the older API when IDE did not
-	 * have multiple sessions. This should be straightforward to do since this
-	 * method should not return until the process has exited. So we should be
-	 * able to just launch all the sessions in their own threads and then sync.
+	 * provide backward compatibility with the older API when IDE did not have
+	 * multiple sessions. This should be straightforward to do since this method
+	 * should not return until the process has exited. So we should be able to
+	 * just launch all the sessions in their own threads and then sync.
 	 */
 	@Override
 	public int launch() throws Exception {
-		throw new UnsupportedOperationException("This launcher only understands run sessions");
+		prepare();
+
+		final int[] results = new int[sessions.size()];
+		final Thread[] sessionThreads = new Thread[sessions.size()];
+
+		for (int i = 0; i < sessions.size(); i++) {
+			final int j = i;
+			final RunSessionImpl session = sessions.get(j);
+
+			sessionThreads[j] = new Thread("session launch " + j) {
+				@Override
+				public void run() {
+					try {
+						results[j] = session.launch();
+					}
+					catch (Exception e) {
+						//
+					}
+				}
+			};
+
+			sessionThreads[j].start();
+		}
+
+		for (Thread sessionThread : sessionThreads) {
+			sessionThread.join();
+		}
+
+		for (int result : results) {
+			if (result > 0) {
+				return result;
+			}
+		}
+
+		return 0;
 	}
 
 	/**
@@ -146,4 +186,44 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 		return sessions;
 	}
 
+	private void tryJMXDeploy(String jmx, String bsn) {
+		JMXBundleDeployer jmxBundleDeployer = null;
+		int port = -1;
+
+		try {
+			port = Integer.parseInt(jmx);
+		}
+		catch (Exception e) {
+			// not an integer
+		}
+
+		try {
+			if (port > -1) {
+				jmxBundleDeployer = new JMXBundleDeployer(port);
+			} else {
+				jmxBundleDeployer = new JMXBundleDeployer();
+			}
+		}
+		catch (Exception e) {
+			// ignore if we can't create bundle deployer (no remote osgi.core
+			// jmx avail)
+		}
+
+		if (jmxBundleDeployer != null) {
+			for (String path : this.getRunpath()) {
+				File file = new File(path);
+				try {
+					if (bsn.equals(new Jar(file).getBsn())) {
+						long bundleId = jmxBundleDeployer.deploy(bsn, file);
+
+						trace("agent installed with bundleId=", bundleId);
+						break;
+					}
+				}
+				catch (Exception e) {
+					//
+				}
+			}
+		}
+	}
 }
