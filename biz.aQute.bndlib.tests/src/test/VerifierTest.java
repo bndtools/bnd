@@ -51,8 +51,9 @@ public class VerifierTest extends TestCase {
 		testFileName("XYZ", null, true);
 		testFileName("XYZ", "XYZ|${@}", false);
 		testFileName("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", ".{33,}|${@}", false);
-		testFileName("clock$", ".{1,32}|${@}", false);
 		testFileName("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", null, true);
+		testFileName("clock$", null, false);
+		testFileName("clock", null, true);
 	}
 
 	private void testFileName(String segment, String pattern, boolean answer) throws Exception {
