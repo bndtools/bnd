@@ -525,8 +525,10 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 }
                 String[] patterns = oldAccessPatterns.split(",");
                 List<IAccessRule> accessRules = new ArrayList<IAccessRule>(patterns.length);
-                for (String pathStr : patterns) {
-                    accessRules.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
+                if (!oldAccessPatterns.isEmpty()) { // if not empty, there are access patterns
+                    for (String pathStr : patterns) {
+                        accessRules.add(JavaCore.newAccessRule(new Path(pathStr), IAccessRule.K_ACCESSIBLE));
+                    }
                 }
                 return accessRules;
             }
