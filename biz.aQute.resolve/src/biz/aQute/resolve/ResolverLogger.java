@@ -1,8 +1,13 @@
 package biz.aQute.resolve;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.RandomAccessFile;
 
-import aQute.lib.io.*;
+import aQute.lib.io.IO;
 
 public class ResolverLogger {
 

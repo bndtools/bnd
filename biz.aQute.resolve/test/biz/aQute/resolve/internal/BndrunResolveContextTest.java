@@ -1,23 +1,35 @@
 package biz.aQute.resolve.internal;
 
-import static test.lib.Utils.*;
+import static test.lib.Utils.createRepo;
+import static test.lib.Utils.findContentURI;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
-import org.osgi.resource.*;
-import org.osgi.service.log.*;
-import org.osgi.service.repository.*;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Namespace;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
+import org.osgi.service.log.LogService;
+import org.osgi.service.repository.Repository;
 
-import test.lib.*;
-import aQute.bnd.build.model.*;
-import aQute.bnd.build.model.clauses.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.resource.*;
-import aQute.bnd.service.resolve.hook.*;
-import aQute.lib.io.*;
+import test.lib.MockRegistry;
+import test.lib.NullLogService;
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.EE;
+import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.service.resolve.hook.ResolverHook;
+import aQute.lib.io.IO;
 
 @SuppressWarnings("restriction")
 public class BndrunResolveContextTest extends TestCase {

@@ -1,27 +1,42 @@
 package biz.aQute.resolve.internal;
 
-import static test.lib.Utils.*;
+import static test.lib.Utils.createRepo;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
-import org.apache.felix.resolver.*;
-import org.osgi.framework.*;
-import org.osgi.framework.namespace.*;
-import org.osgi.resource.*;
+import org.apache.felix.resolver.ResolverImpl;
+import org.osgi.framework.Version;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
-import org.osgi.service.log.*;
-import org.osgi.service.resolver.*;
+import org.osgi.resource.Wire;
+import org.osgi.service.log.LogService;
+import org.osgi.service.resolver.ResolutionException;
+import org.osgi.service.resolver.Resolver;
 
-import test.lib.*;
-import aQute.bnd.build.model.*;
-import aQute.bnd.build.model.clauses.*;
-import aQute.bnd.header.*;
+import test.lib.MockRegistry;
+import test.lib.NullLogService;
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.EE;
+import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.resource.*;
-import aQute.lib.io.*;
-import biz.aQute.resolve.*;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.lib.io.IO;
+import biz.aQute.resolve.BndResolver;
+import biz.aQute.resolve.ResolutionCallback;
+import biz.aQute.resolve.ResolveProcess;
+import biz.aQute.resolve.ResolverLogger;
 
 @SuppressWarnings("restriction")
 public class ResolveTest extends TestCase {

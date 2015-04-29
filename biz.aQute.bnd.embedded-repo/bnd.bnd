@@ -6,11 +6,13 @@
 Bundle-Description: Embedded Repo for bnd workspace.
 -includeresource: \
 	biz.aQute.launcher/biz.aQute.launcher-latest.jar=${repo;biz.aQute.launcher;snapshot}, \
+	biz.aQute.remote.launcher/biz.aQute.remote.launcher-latest.jar=${repo;biz.aQute.remote.launcher;snapshot}, \
 	biz.aQute.junit/biz.aQute.junit-latest.jar=${repo;biz.aQute.junit;snapshot}
 
 -dependson: \
     biz.aQute.junit, \
-    biz.aQute.launcher
+    biz.aQute.launcher, \
+    biz.aQute.remote
 
 -digests: MD5, SHA1
 

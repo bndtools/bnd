@@ -1,30 +1,58 @@
 package biz.aQute.resolve.internal;
 
-import static aQute.bnd.osgi.resource.CapReqBuilder.*;
+import static aQute.bnd.osgi.resource.CapReqBuilder.copy;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.jar.Manifest;
 
-import org.osgi.framework.*;
-import org.osgi.framework.namespace.*;
-import org.osgi.resource.*;
+import org.osgi.framework.Version;
+import org.osgi.framework.namespace.BundleNamespace;
+import org.osgi.framework.namespace.HostNamespace;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Namespace;
+import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
-import org.osgi.service.log.*;
-import org.osgi.service.repository.*;
+import org.osgi.service.log.LogService;
+import org.osgi.service.repository.ContentNamespace;
+import org.osgi.service.repository.Repository;
 
-import aQute.bnd.build.model.*;
-import aQute.bnd.build.model.clauses.*;
-import aQute.bnd.deployer.repository.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.build.Container;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.EE;
+import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.deployer.repository.CapabilityIndex;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.resource.*;
-import aQute.bnd.service.*;
-import aQute.bnd.service.resolve.hook.*;
-import aQute.libg.filters.*;
+import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Verifier;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.Filters;
+import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.service.Registry;
+import aQute.bnd.service.Strategy;
+import aQute.bnd.service.resolve.hook.ResolverHook;
+import aQute.libg.filters.AndFilter;
 import aQute.libg.filters.Filter;
-import biz.aQute.resolve.*;
+import aQute.libg.filters.LiteralFilter;
+import aQute.libg.filters.SimpleFilter;
+import biz.aQute.resolve.GenericResolveContext;
+import biz.aQute.resolve.ResolutionCallback;
 
 /**
  * This class does the resolving for bundles.
@@ -52,23 +80,26 @@ public class BndrunResolveContext extends GenericResolveContext {
 	private Version						frameworkResourceVersion	= null;
 	private FrameworkResourceRepository	frameworkResourceRepo;
 	private final Processor				properties;
+	private Project						project;
 
 	public BndrunResolveContext(BndEditModel runModel, Registry registry, LogService log) {
 		super(log);
 		try {
 			this.registry = registry;
 			this.properties = runModel.getProperties();
+			this.project = runModel.getProject();
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public BndrunResolveContext(Processor runModel, Registry registry, LogService log) {
+	public BndrunResolveContext(Processor runModel, Project project, Registry registry, LogService log) {
 		super(log);
 		try {
 			this.registry = registry;
 			this.properties = runModel;
+			this.project = project;
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
@@ -120,21 +151,51 @@ public class BndrunResolveContext extends GenericResolveContext {
 		//
 		// First gather all the resources on the buildpath
 		//
-
-		Parameters runpath = new Parameters(properties.mergeProperties(path));
-
 		Set<Resource> resources = new LinkedHashSet<Resource>();
 
-		for (Map.Entry<String,Attrs> e : runpath.entrySet()) {
-			String bsn = e.getKey();
-			String version = e.getValue().getVersion();
-			if (!getResources(resources, bsn, version)) {
-				// fallback for non-indexed things
-				// need a more permanent solutions
+		String totalpath = properties.mergeProperties(path);
 
+		if (project != null) {
+			List<Container> containers = Container.flatten(project.getBundles(Strategy.HIGHEST, totalpath, path));
+			for (Container container : containers) {
+				Manifest m = container.getManifest();
+				if (m != null) {
+					Domain domain = Domain.domain(m);
+					Entry<String,Attrs> bsne = domain.getBundleSymbolicName();
+					if (bsne != null && Verifier.isBsn(bsne.getKey())) {
+						String version = domain.getBundleVersion();
+						if (version != null && Verifier.isVersion(version)) {
+							if (!getResources(resources, bsne.getKey(), version)) {
+								// fallback for non-indexed things
+								// need a more permanent solutions
+
+							}
+						}
+					}
+				}
+			}
+		} else {
+
+			//
+			// Fallback so we can test this without a full project setup
+			//
+
+			Parameters p = new Parameters(totalpath);
+			for (Entry<String,Attrs> e : p.entrySet()) {
+				String bsn = e.getKey();
+				String version = e.getValue().getVersion();
+				if (version == null)
+					version = "0";
+
+				if (Verifier.isBsn(bsn) && Verifier.isVersion(version)) {
+					if (!getResources(resources, bsn, version)) {
+						// fallback for non-indexed things
+						// need a more permanent solutions
+
+					}
+				}
 			}
 		}
-
 		//
 		// Now for each resource, get all its capabilities and
 		// add them to the capability index with the system as

@@ -1538,6 +1538,7 @@ public class Project extends Processor {
 						//
 						IO.copy(f, canonical);
 					}
+					getWorkspace().changedFile(canonical);
 				}
 
 				getWorkspace().changedFile(f);

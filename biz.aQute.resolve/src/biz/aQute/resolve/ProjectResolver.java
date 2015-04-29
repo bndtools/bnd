@@ -89,7 +89,7 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 	}
 
 	public Map<Resource,List<Wire>> resolve() throws ResolutionException {
-		resolution = resolve.resolveRequired(project, project, resolver, cbs, log);
+		resolution = resolve.resolveRequired(project, project, project, resolver, cbs, log);
 		return resolution;
 	}
 
@@ -166,7 +166,7 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 	}
 
 	public BndrunResolveContext getContext() {
-		return new BndrunResolveContext(project, project, log);
+		return new BndrunResolveContext(project, project, project, log);
 	}
 
 	public IdentityCapability getResource(String bsn, String version) {
