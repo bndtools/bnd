@@ -11,7 +11,8 @@ Bundle-Description: Embedded Repo for bnd workspace.
 
 -dependson: \
     biz.aQute.junit, \
-    biz.aQute.launcher
+    biz.aQute.launcher, \
+    biz.aQute.remote
 
 -digests: MD5, SHA1
 
