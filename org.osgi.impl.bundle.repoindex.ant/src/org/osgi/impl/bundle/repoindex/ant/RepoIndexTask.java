@@ -5,8 +5,10 @@ import java.util.*;
 
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
+import org.osgi.framework.*;
 import org.osgi.framework.launch.*;
 import org.osgi.service.indexer.*;
+import org.osgi.service.indexer.impl.*;
 import org.osgi.util.tracker.*;
 
 import de.kalpatec.pojosr.framework.*;
@@ -19,6 +21,9 @@ public class RepoIndexTask extends Task {
 	private final Map<String, String> config = new HashMap<String, String>();
 
 	private File repositoryFile = null;
+	private boolean	knownBundles;
+	private boolean	builtInknownBundles	= true;
+	private String	additionalKnownBundles;
 
 	public void setName(String name) {
 		config.put(ResourceIndexer.REPOSITORY_NAME, name);
@@ -48,6 +53,18 @@ public class RepoIndexTask extends Task {
 		fileSets.add(fs);
 	}
 
+	public void setKnownBundles(boolean knownBundles) {
+		this.knownBundles = knownBundles;
+	}
+
+	public void setBuiltInKnownBundles(boolean builtInknownBundles) {
+		this.builtInknownBundles = builtInknownBundles;
+	}
+
+	public void setAdditionalKnownBundles(String additionalKnownBundles) {
+		this.additionalKnownBundles = additionalKnownBundles;
+	}
+
 	@Override
 	public void execute() throws BuildException {
 		printCopyright(System.err);
@@ -65,6 +82,10 @@ public class RepoIndexTask extends Task {
 			Framework framework = new PojoServiceRegistryFactoryImpl().newFramework(pojoSrConfig);
 			framework.init();
 			framework.start();
+
+			if (knownBundles) {
+				registerKnownBundles(framework.getBundleContext());
+			}
 
 			// Look for indexer and run index generation
 			ServiceTracker<ResourceIndexer,ResourceIndexer> tracker = new ServiceTracker<ResourceIndexer,ResourceIndexer>(
@@ -99,6 +120,31 @@ public class RepoIndexTask extends Task {
 				fos = null;
 			}
 		}
+	}
+
+	private void registerKnownBundles(BundleContext bundleContext) {
+		KnownBundleAnalyzer kba = builtInknownBundles ? new KnownBundleAnalyzer()
+				: new KnownBundleAnalyzer(new Properties());
+
+		if (additionalKnownBundles != null) {
+			File extras = new File(additionalKnownBundles);
+			if (extras.exists()) {
+				Properties props = new Properties();
+				try {
+					props.load(new FileReader(extras));
+					kba.setKnownBundlesExtra(props);
+				}
+				catch (IOException e) {
+					throw new BuildException("Unable to load the additional known bundles " + additionalKnownBundles,
+							e);
+				}
+			} else {
+				throw new BuildException(
+						"The additional known bundles file " + additionalKnownBundles + " does not exist.");
+			}
+		}
+
+		bundleContext.registerService(ResourceAnalyzer.class, kba, null);
 	}
 
 	public static void printCopyright(PrintStream out) {
