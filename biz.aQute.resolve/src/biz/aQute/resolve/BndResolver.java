@@ -1,12 +1,16 @@
 package biz.aQute.resolve;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
-import org.apache.felix.resolver.*;
-import org.osgi.resource.*;
-import org.osgi.service.resolver.*;
+import org.apache.felix.resolver.ResolverImpl;
+import org.osgi.resource.Resource;
+import org.osgi.resource.Wire;
+import org.osgi.service.resolver.ResolutionException;
+import org.osgi.service.resolver.ResolveContext;
+import org.osgi.service.resolver.Resolver;
 
-import biz.aQute.resolve.internal.*;
+import biz.aQute.resolve.internal.InternalResolverLogger;
 
 public class BndResolver implements Resolver {
 

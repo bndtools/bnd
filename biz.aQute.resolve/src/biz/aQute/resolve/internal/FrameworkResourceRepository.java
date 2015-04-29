@@ -1,20 +1,33 @@
 package biz.aQute.resolve.internal;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 
-import org.osgi.framework.*;
-import org.osgi.framework.namespace.*;
-import org.osgi.resource.*;
-import org.osgi.service.repository.*;
+import org.osgi.framework.Constants;
+import org.osgi.framework.Version;
+import org.osgi.framework.namespace.BundleNamespace;
+import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
+import org.osgi.framework.namespace.HostNamespace;
+import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
+import org.osgi.service.repository.Repository;
 
-import aQute.bnd.build.model.*;
-import aQute.bnd.build.model.clauses.*;
-import aQute.bnd.deployer.repository.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.resource.*;
-import aQute.lib.utf8properties.*;
+import aQute.bnd.build.model.EE;
+import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.deployer.repository.CapabilityIndex;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.lib.utf8properties.UTF8Properties;
 
 public class FrameworkResourceRepository implements Repository {
 

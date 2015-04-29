@@ -1,13 +1,18 @@
 package test.lib;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import org.osgi.resource.*;
-import org.osgi.service.repository.*;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Resource;
+import org.osgi.service.repository.Repository;
 
-import aQute.bnd.deployer.repository.*;
+import aQute.bnd.deployer.repository.AbstractIndexedRepo;
+import aQute.bnd.deployer.repository.FixedIndexedRepo;
 
 public class Utils {
 

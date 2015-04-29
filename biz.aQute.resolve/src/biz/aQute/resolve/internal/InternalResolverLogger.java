@@ -1,8 +1,8 @@
 package biz.aQute.resolve.internal;
 
-import org.apache.felix.resolver.*;
+import org.apache.felix.resolver.Logger;
 
-import biz.aQute.resolve.*;
+import biz.aQute.resolve.ResolverLogger;
 
 public class InternalResolverLogger extends Logger {
 

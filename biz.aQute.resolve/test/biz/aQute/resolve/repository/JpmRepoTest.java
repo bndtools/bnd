@@ -1,26 +1,34 @@
 package biz.aQute.resolve.repository;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
-import org.apache.felix.resolver.*;
-import org.osgi.framework.*;
-import org.osgi.framework.namespace.*;
-import org.osgi.resource.*;
-import org.osgi.service.log.*;
-import org.osgi.service.repository.*;
-import org.osgi.service.resolver.*;
+import org.apache.felix.resolver.ResolverImpl;
+import org.osgi.framework.Version;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
+import org.osgi.resource.Wire;
+import org.osgi.service.log.LogService;
+import org.osgi.service.repository.Repository;
+import org.osgi.service.resolver.ResolutionException;
+import org.osgi.service.resolver.Resolver;
 
-import test.lib.*;
-import aQute.bnd.build.*;
-import aQute.bnd.build.model.*;
-import aQute.bnd.osgi.resource.*;
-import aQute.bnd.service.repository.*;
-import aQute.lib.io.*;
-import biz.aQute.resolve.*;
-import biz.aQute.resolve.internal.*;
+import test.lib.NullLogService;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.service.repository.InfoRepository;
+import aQute.lib.io.IO;
+import biz.aQute.resolve.ResolveProcess;
+import biz.aQute.resolve.internal.BndrunResolveContext;
 
 @SuppressWarnings("restriction")
 public class JpmRepoTest extends TestCase {

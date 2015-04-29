@@ -1,6 +1,6 @@
 package biz.aQute.resolve;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
 public class ResolverLoggerTest extends TestCase {
 
