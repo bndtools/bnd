@@ -26,6 +26,7 @@ import org.osgi.service.resolver.ResolutionException;
 import org.osgi.service.resolver.ResolveContext;
 import org.osgi.service.resolver.Resolver;
 
+import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Registry;
@@ -42,16 +43,18 @@ public class ResolveProcess {
 	public Map<Resource,List<Wire>> resolveRequired(BndEditModel inputModel, Registry plugins, Resolver resolver,
 			Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
 		try {
-			return resolveRequired(inputModel.getProperties(), plugins, resolver, callbacks, log);
+			return resolveRequired(inputModel.getProperties(), inputModel.getProject(), plugins, resolver, callbacks,
+					log);
 		}
 		catch (Exception e) {
 			throw new ResolutionException(e);
 		}
 	}
 
-	public Map<Resource,List<Wire>> resolveRequired(Processor properties, Registry plugins, Resolver resolver,
+	public Map<Resource,List<Wire>> resolveRequired(Processor properties, Project project, Registry plugins,
+			Resolver resolver,
 			Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
-		BndrunResolveContext rc = new BndrunResolveContext(properties, plugins, log);
+		BndrunResolveContext rc = new BndrunResolveContext(properties, project, plugins, log);
 		rc.addCallbacks(callbacks);
 		// 1. Resolve initial requirements
 		try {
@@ -100,7 +103,7 @@ public class ResolveProcess {
 			}
 
 			// 5. Resolve the rest
-			BndrunResolveContext rc2 = new BndrunResolveContext(properties, plugins, log) {
+			BndrunResolveContext rc2 = new BndrunResolveContext(properties, project, plugins, log) {
 
 				@Override
 				public Collection<Resource> getMandatoryResources() {
@@ -130,7 +133,7 @@ public class ResolveProcess {
 			return result;
 		}
 		catch (ResolutionException re) {
-			throw augment(new BndrunResolveContext(properties, plugins, log), re);
+			throw augment(new BndrunResolveContext(properties, project, plugins, log), re);
 		}
 	}
 

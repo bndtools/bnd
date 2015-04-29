@@ -1,30 +1,53 @@
 package biz.aQute.resolve.internal;
 
-import static aQute.bnd.osgi.resource.CapReqBuilder.*;
+import static aQute.bnd.osgi.resource.CapReqBuilder.copy;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
-import org.osgi.framework.*;
-import org.osgi.framework.namespace.*;
-import org.osgi.resource.*;
+import org.osgi.framework.Version;
+import org.osgi.framework.namespace.BundleNamespace;
+import org.osgi.framework.namespace.HostNamespace;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Namespace;
+import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
-import org.osgi.service.log.*;
-import org.osgi.service.repository.*;
+import org.osgi.service.log.LogService;
+import org.osgi.service.repository.ContentNamespace;
+import org.osgi.service.repository.Repository;
 
-import aQute.bnd.build.model.*;
-import aQute.bnd.build.model.clauses.*;
-import aQute.bnd.deployer.repository.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.EE;
+import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.deployer.repository.CapabilityIndex;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.resource.*;
-import aQute.bnd.service.*;
-import aQute.bnd.service.resolve.hook.*;
-import aQute.libg.filters.*;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.Filters;
+import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.service.Registry;
+import aQute.bnd.service.resolve.hook.ResolverHook;
+import aQute.libg.filters.AndFilter;
 import aQute.libg.filters.Filter;
-import biz.aQute.resolve.*;
+import aQute.libg.filters.LiteralFilter;
+import aQute.libg.filters.SimpleFilter;
+import biz.aQute.resolve.GenericResolveContext;
+import biz.aQute.resolve.ResolutionCallback;
 
 /**
  * This class does the resolving for bundles.
@@ -52,23 +75,26 @@ public class BndrunResolveContext extends GenericResolveContext {
 	private Version						frameworkResourceVersion	= null;
 	private FrameworkResourceRepository	frameworkResourceRepo;
 	private final Processor				properties;
+	private Project						project;
 
 	public BndrunResolveContext(BndEditModel runModel, Registry registry, LogService log) {
 		super(log);
 		try {
 			this.registry = registry;
 			this.properties = runModel.getProperties();
+			this.project = runModel.getProject();
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public BndrunResolveContext(Processor runModel, Registry registry, LogService log) {
+	public BndrunResolveContext(Processor runModel, Project project, Registry registry, LogService log) {
 		super(log);
 		try {
 			this.registry = registry;
 			this.properties = runModel;
+			this.project = project;
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
