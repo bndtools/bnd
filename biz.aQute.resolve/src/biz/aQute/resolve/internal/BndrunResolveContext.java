@@ -154,25 +154,48 @@ public class BndrunResolveContext extends GenericResolveContext {
 		Set<Resource> resources = new LinkedHashSet<Resource>();
 
 		String totalpath = properties.mergeProperties(path);
-		List<Container> containers = Container.flatten(project.getBundles(Strategy.HIGHEST, totalpath, path));
-		for (Container container : containers) {
-			Manifest m = container.getManifest();
-			if (m != null) {
-				Domain domain = Domain.domain(m);
-				Entry<String,Attrs> bsne = domain.getBundleSymbolicName();
-				if (bsne != null && Verifier.isBsn(bsne.getKey())) {
-					String version = domain.getBundleVersion();
-					if (version != null && Verifier.isVersion(version)) {
-						if (!getResources(resources, bsne.getKey(), version)) {
-							// fallback for non-indexed things
-							// need a more permanent solutions
 
+		if (project != null) {
+			List<Container> containers = Container.flatten(project.getBundles(Strategy.HIGHEST, totalpath, path));
+			for (Container container : containers) {
+				Manifest m = container.getManifest();
+				if (m != null) {
+					Domain domain = Domain.domain(m);
+					Entry<String,Attrs> bsne = domain.getBundleSymbolicName();
+					if (bsne != null && Verifier.isBsn(bsne.getKey())) {
+						String version = domain.getBundleVersion();
+						if (version != null && Verifier.isVersion(version)) {
+							if (!getResources(resources, bsne.getKey(), version)) {
+								// fallback for non-indexed things
+								// need a more permanent solutions
+
+							}
 						}
 					}
 				}
 			}
-		}
+		} else {
 
+			//
+			// Fallback so we can test this without a full project setup
+			//
+
+			Parameters p = new Parameters(totalpath);
+			for (Entry<String,Attrs> e : p.entrySet()) {
+				String bsn = e.getKey();
+				String version = e.getValue().getVersion();
+				if (version == null)
+					version = "0";
+
+				if (Verifier.isBsn(bsn) && Verifier.isVersion(version)) {
+					if (!getResources(resources, bsn, version)) {
+						// fallback for non-indexed things
+						// need a more permanent solutions
+
+					}
+				}
+			}
+		}
 		//
 		// Now for each resource, get all its capabilities and
 		// add them to the capability index with the system as
