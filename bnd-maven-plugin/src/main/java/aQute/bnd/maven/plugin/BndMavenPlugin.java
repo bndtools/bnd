@@ -94,21 +94,25 @@ public class BndMavenPlugin extends AbstractMojo {
 				if (artifactFile != null)
 					classpath.add(artifactFile);
 			}
-			classpath.add(classesDir);
+			if (classesDir.isDirectory()) {
+				classpath.add(classesDir);
+			}
 			builder.setClasspath(classpath.toArray(new File[classpath.size()]));
 			
 			// Set bnd sourcepath
-			if (builder.hasSources())
+			if (builder.hasSources() && sourceDir.isDirectory())
 				builder.setSourcepath(new File[] { sourceDir });
 
 			// Include local project packages automatically
-			String includes = builder.getProperty(Constants.INCLUDERESOURCE);
-			StringBuilder newIncludes = new StringBuilder().append('"').append(classesDir.getAbsolutePath().replaceAll("\"", "\\\\\"")).append('"');
-			if (includes == null || includes.trim().isEmpty())
-				includes = newIncludes.toString();
-			else
-				includes = newIncludes.append(',').append(includes).toString();
-			builder.setProperty(Constants.INCLUDERESOURCE, includes);
+			if (classesDir.isDirectory()) {
+				String includes = builder.getProperty(Constants.INCLUDERESOURCE);
+				StringBuilder newIncludes = new StringBuilder().append('"').append(classesDir.getAbsolutePath().replaceAll("\"", "\\\\\"")).append('"');
+				if (includes == null || includes.trim().isEmpty())
+					includes = newIncludes.toString();
+				else
+					includes = newIncludes.append(',').append(includes).toString();
+				builder.setProperty(Constants.INCLUDERESOURCE, includes);
+			}
 
 			// Set Bundle-Version
 			MavenVersion mvnVersion = new MavenVersion(project.getVersion());
