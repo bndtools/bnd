@@ -14,5 +14,6 @@
 	<modules>
 		<module>test-api-bundle</module>
 		<module>test-impl-bundle</module>
+		<module>test-wrapper-bundle</module>
 	</modules>
 </project>
