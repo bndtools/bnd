@@ -8,6 +8,7 @@ import aQute.bnd.build.*;
 import aQute.bnd.header.*;
 import aQute.bnd.osgi.*;
 import aQute.lib.converter.*;
+import aQute.lib.strings.*;
 import aQute.remote.util.*;
 
 /**
@@ -79,7 +80,13 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 		updateFromProject();
 
 		Map<String,Object> properties = new HashMap<String,Object>(getRunProperties());
+
 		calculatedProperties(properties);
+
+		Collection<String> embeddedActivators = getActivators();
+		if (embeddedActivators != null && !embeddedActivators.isEmpty()) {
+			properties.put("biz.aQute.remote.embedded", Strings.join(embeddedActivators));
+		}
 
 		for (Entry<String,Attrs> entry : runremote.entrySet()) {
 			RunRemoteDTO dto = converter.convert(RunRemoteDTO.class, entry.getValue());
