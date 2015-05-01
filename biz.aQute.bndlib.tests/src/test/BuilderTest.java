@@ -1,7 +1,6 @@
 package test;
 
 import java.io.*;
-import java.net.*;
 import java.util.*;
 import java.util.jar.*;
 import java.util.regex.*;
@@ -2320,7 +2319,7 @@ public class BuilderTest extends BndTestCase {
 		base.put(Analyzer.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
 
 		String pwd = System.getProperty("user.dir");
-		base.put("pwd", URI.create(pwd).toString());
+		base.put("pwd", new File(pwd).toURI().toString());
 		base.put("-classpath", "${pwd}/jar/jsp-api.jar,${pwd}/jar/servlet-api.jar");
 
 		Builder analyzer = new Builder();
@@ -2385,7 +2384,7 @@ public class BuilderTest extends BndTestCase {
 		base.put(Analyzer.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
 
 		String pwd = System.getProperty("user.dir");
-		base.put("pwd", URI.create(pwd).toString());
+		base.put("pwd", new File(pwd).toURI().toString());
 		base.put("-classpath", "${pwd}/jar/jsp-api.jar,${pwd}/jar/servlet-api.jar");
 
 		Builder analyzer = new Builder();
