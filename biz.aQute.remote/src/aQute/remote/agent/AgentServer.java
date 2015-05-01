@@ -3,9 +3,11 @@ package aQute.remote.agent;
 import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.*;
 
 import org.osgi.framework.*;
 import org.osgi.framework.dto.*;
+import org.osgi.framework.wiring.*;
 
 import aQute.lib.converter.*;
 import aQute.libg.shacache.*;
@@ -54,6 +56,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	private static Map<String,AgentDispatcher>				instances			= new HashMap<String,AgentDispatcher>();
 	private Redirector										redirector			= new NullRedirector();
 	private Link<Agent,Supervisor>							link;
+	private CountDownLatch									refresh				= new CountDownLatch(0);
 
 	/**
 	 * An agent server is based on a context and takes a name and cache
@@ -147,7 +150,9 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	}
 
 	@Override
-	public String update(Map<String,String> bundles) {
+	public String update(Map<String,String> bundles) throws InterruptedException {
+
+		refresh.await();
 
 		Formatter out = new Formatter();
 		if (bundles == null) {
@@ -269,8 +274,10 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 
 		String result = out.toString();
 		out.close();
-		if (result.length() == 0)
+		if (result.length() == 0) {
+			refresh(true);
 			return null;
+		}
 
 		return result;
 	}
@@ -521,4 +528,25 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	public BundleContext getContext() {
 		return context;
 	}
+
+	public void refresh(boolean async) throws InterruptedException {
+		FrameworkWiring f = context.getBundle(0).adapt(FrameworkWiring.class);
+		if (f != null) {
+			refresh = new CountDownLatch(1);
+			f.refreshBundles(null, new FrameworkListener() {
+
+				@Override
+				public void frameworkEvent(FrameworkEvent event) {
+					System.out.println("refreshed");
+					refresh.countDown();
+				}
+			});
+
+			if (async)
+				return;
+
+			refresh.await();
+		}
+	}
+
 }
