@@ -236,6 +236,10 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
         if (mform == null)
             return;
 
+        if (mform.getForm().isDisposed())
+            // We were called asynchronously after dialog was closed
+            return;
+
         IMessageManager manager = mform.getMessageManager();
         manager.removeMessages();
 
