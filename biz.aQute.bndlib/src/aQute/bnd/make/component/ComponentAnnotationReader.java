@@ -4,14 +4,15 @@ import static aQute.bnd.osgi.Constants.*;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.Map.*;
 import java.util.regex.*;
 
 import aQute.bnd.annotation.component.*;
 import aQute.bnd.component.error.*;
-import aQute.bnd.component.error.DeclarativeServicesAnnotationError.ErrorType;
+import aQute.bnd.component.error.DeclarativeServicesAnnotationError.*;
 import aQute.bnd.osgi.*;
-import aQute.bnd.osgi.Clazz.MethodDef;
-import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.Clazz.*;
+import aQute.bnd.osgi.Descriptors.*;
 import aQute.service.reporter.*;
 
 /**
@@ -19,6 +20,7 @@ import aQute.service.reporter.*;
  *
  */
 public class ComponentAnnotationReader extends ClassDataCollector {
+
 	String						EMPTY[]					= new String[0];
 	private static final String	V1_1					= "1.1.0";																																// "1.1.0"
 	static Pattern				BINDDESCRIPTOR			= Pattern
@@ -44,6 +46,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 
 	Reporter					reporter				= new Processor();
 	MethodDef					method;
+	FieldDef	field;
 	TypeRef						className;
 	Clazz						clazz;
 	TypeRef						interfaces[];
@@ -55,6 +58,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 	Set<String>					descriptors				= new HashSet<String>();
 	List<String>				properties				= new ArrayList<String>();
 	String						version					= null;
+	Map<String,List<DeclarativeServicesAnnotationError>>	mismatchedAnnotations	= new HashMap<String,List<DeclarativeServicesAnnotationError>>();
 
 	// TODO make patterns for descriptors
 
@@ -87,6 +91,30 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 		String fqn = annotation.getName().getFQN();
 
 		if (fqn.equals(Component.class.getName())) {
+			if (!mismatchedAnnotations.isEmpty()) {
+				String componentName = annotation.get(Component.NAME);
+				componentName = (componentName == null) ? className.getFQN() : componentName;
+				for (Entry<String,List<DeclarativeServicesAnnotationError>> e : mismatchedAnnotations.entrySet()) {
+					for (DeclarativeServicesAnnotationError errorDetails : e.getValue()) {
+						if(errorDetails.fieldName != null) {
+							reporter.error(
+									"The DS component %s uses bnd annotations to declare it as a component, but also uses the standard DS annotation: %s on field %s. It is an error to mix these two types of annotations",
+									componentName, e.getKey(), errorDetails.fieldName).details(errorDetails);
+						} else if (errorDetails.methodName != null) {
+							reporter.error(
+									"The DS component %s uses bnd annotations to declare it as a component, but also uses the standard DS annotation: %s on method %s with signature %s. It is an error to mix these two types of annotations",
+									componentName, e.getKey(), errorDetails.methodName, errorDetails.methodSignature)
+									.details(errorDetails);
+						} else {
+							reporter.error(
+									"The DS component %s uses bnd annotations to declare it as a component, but also uses the standard DS annotation: %s. It is an error to mix these two types of annotations",
+									componentName, e.getKey()).details(errorDetails);
+						}
+					}
+				}
+				return;
+			}
+
 			set(COMPONENT_NAME, annotation.get(Component.NAME), "<>");
 			set(COMPONENT_FACTORY, annotation.get(Component.FACTORY), false);
 			setBoolean(COMPONENT_ENABLED, annotation.get(Component.ENABLED), true);
@@ -264,6 +292,29 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 			else if (REFERENCEBINDDESCRIPTOR.matcher(method.getDescriptor().toString()).matches()
 					|| !OLDBINDDESCRIPTOR.matcher(method.getDescriptor().toString()).matches())
 				setVersion(V1_1);
+		} else if (fqn.startsWith("org.osgi.service.component.annotations")) {
+			DeclarativeServicesAnnotationError errorDetails;
+
+			switch (annotation.getElementType()) {
+				case METHOD :
+					errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), method.getName(),
+							method.getDescriptor().toString(), ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_BND);
+					break;
+				case FIELD :
+					errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), field.getName(),
+							ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_BND);
+					break;
+				default :
+					errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), null,
+							ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_BND);
+			}
+
+			List<DeclarativeServicesAnnotationError> errors = mismatchedAnnotations.get(fqn);
+			if (errors == null) {
+				errors = new ArrayList<DeclarativeServicesAnnotationError>();
+				mismatchedAnnotations.put(fqn, errors);
+			}
+			errors.add(errorDetails);
 		}
 	}
 
@@ -356,6 +407,11 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 	public void method(Clazz.MethodDef method) {
 		this.method = method;
 		descriptors.add(method.getName());
+	}
+
+	@Override
+	public void field(FieldDef field) {
+		this.field = field;
 	}
 
 	void set(String name, Collection<String> l) {

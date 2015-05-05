@@ -8,8 +8,6 @@ import javax.xml.namespace.*;
 import javax.xml.parsers.*;
 import javax.xml.xpath.*;
 
-import junit.framework.*;
-
 import org.osgi.framework.*;
 import org.osgi.service.component.*;
 import org.osgi.service.event.*;
@@ -22,6 +20,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.*;
 import aQute.bnd.service.repository.*;
+import junit.framework.*;
 
 @SuppressWarnings({"resource", "unused", "rawtypes"})
 public class BNDAnnotationTest extends TestCase {
@@ -927,6 +926,56 @@ public class BNDAnnotationTest extends TestCase {
 		for (int i = 0; i < nl.getLength(); i++) {
 			print(nl.item(i), indent + "  ");
 		}
+	}
+
+	@Component(name = "mixed-bnd-std")
+	static class MixedBndStd {
+
+		@org.osgi.service.component.annotations.Reference
+		EventAdmin ea;
+
+		@org.osgi.service.component.annotations.Reference
+		protected void setLog(@SuppressWarnings("unused") LogService log) {}
+
+		@org.osgi.service.component.annotations.Activate
+		void start() {}
+
+		@org.osgi.service.component.annotations.Modified
+		void update(Map<String,Object> map) {}
+
+		@org.osgi.service.component.annotations.Deactivate
+		void stop() {}
+	}
+
+	public static void testMixedBndStandard() throws Exception {
+		Builder b = new Builder();
+		b.setClasspath(new File[] {
+				new File("bin")
+		});
+		b.setProperty("Service-Component", "*MixedBndStd");
+		b.setProperty("Private-Package", "test.component");
+		b.build();
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
+		assertEquals(5, b.getErrors().size());
+		List<String> errors = new ArrayList<String>(b.getErrors());
+		Collections.sort(errors);
+		assertEquals(
+				"The DS component mixed-bnd-std uses bnd annotations to declare it as a component, but also uses the standard DS annotation: org.osgi.service.component.annotations.Activate on method start with signature ()V. It is an error to mix these two types of annotations",
+				errors.get(0));
+		assertEquals(
+				"The DS component mixed-bnd-std uses bnd annotations to declare it as a component, but also uses the standard DS annotation: org.osgi.service.component.annotations.Deactivate on method stop with signature ()V. It is an error to mix these two types of annotations",
+				errors.get(1));
+		assertEquals(
+				"The DS component mixed-bnd-std uses bnd annotations to declare it as a component, but also uses the standard DS annotation: org.osgi.service.component.annotations.Modified on method update with signature (Ljava/util/Map;)V. It is an error to mix these two types of annotations",
+				errors.get(2));
+		assertEquals(
+				"The DS component mixed-bnd-std uses bnd annotations to declare it as a component, but also uses the standard DS annotation: org.osgi.service.component.annotations.Reference on field ea. It is an error to mix these two types of annotations",
+				errors.get(3));
+		assertEquals(
+				"The DS component mixed-bnd-std uses bnd annotations to declare it as a component, but also uses the standard DS annotation: org.osgi.service.component.annotations.Reference on method setLog with signature (Lorg/osgi/service/log/LogService;)V. It is an error to mix these two types of annotations",
+				errors.get(4));
+		assertEquals(0, b.getWarnings().size());
 	}
 
 }
