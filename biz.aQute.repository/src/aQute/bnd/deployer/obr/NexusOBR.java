@@ -1,15 +1,30 @@
 package aQute.bnd.deployer.obr;
 
-import java.io.*;
-import java.net.*;
-import java.security.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
-import aQute.bnd.deployer.repository.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.version.*;
-import aQute.lib.base64.*;
-import aQute.lib.io.*;
+import aQute.bnd.deployer.repository.AbstractIndexedRepo;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Verifier;
+import aQute.bnd.version.Version;
+import aQute.lib.base64.Base64;
+import aQute.lib.io.IO;
+import aQute.lib.io.IOConstants;
 
 /**
  * A read-write nexus OBR-based repository.

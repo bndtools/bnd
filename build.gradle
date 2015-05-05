@@ -29,6 +29,10 @@ subprojects {
     plugins.apply 'biz.aQute.bnd'
     group bnd('groupid')
     version bnd('base.version')
+    /* Turn off javadoc 8 overly pedantic lint checking */
+    if (JavaVersion.current().isJava8Compatible()) {
+      javadoc.options.addStringOption('Xdoclint:none', '-quiet') 
+    }
   }
 }
 
