@@ -2,19 +2,19 @@ package aQute.bnd.component;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.Map.*;
 import java.util.regex.*;
 
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.metatype.annotations.*;
 
 import aQute.bnd.annotation.xml.*;
-import aQute.bnd.component.DSAnnotations.Options;
+import aQute.bnd.component.DSAnnotations.*;
 import aQute.bnd.component.error.*;
-import aQute.bnd.component.error.DeclarativeServicesAnnotationError.ErrorType;
+import aQute.bnd.component.error.DeclarativeServicesAnnotationError.*;
 import aQute.bnd.osgi.*;
-import aQute.bnd.osgi.Clazz.FieldDef;
-import aQute.bnd.osgi.Clazz.MethodDef;
-import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.Clazz.*;
+import aQute.bnd.osgi.Descriptors.*;
 import aQute.bnd.version.*;
 import aQute.bnd.xmlattribute.*;
 import aQute.lib.collections.*;
@@ -86,6 +86,8 @@ public class AnnotationReader extends ClassDataCollector {
 	final Map<FieldDef,ReferenceDef>	referencesByMember			= new HashMap<FieldDef,ReferenceDef>();
 
 	final XMLAttributeFinder			finder;
+
+	Map<String,List<DeclarativeServicesAnnotationError>> mismatchedAnnotations = new HashMap<String,List<DeclarativeServicesAnnotationError>>();
 
 	AnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder			finder) {
 		this.analyzer = analyzer;
@@ -198,6 +200,8 @@ public class AnnotationReader extends ClassDataCollector {
 				doReference((Reference) a, annotation);
 			else if (a instanceof Designate)
 				doDesignate((Designate) a);
+			else if (annotation.getName().getFQN().startsWith("aQute.bnd.annotation.component"))
+				handleMixedUsageError(annotation);
 			else {
 				XMLAttribute xmlAttr = finder.getXMLAttribute(annotation, analyzer);
 				if (xmlAttr != null) {
@@ -209,6 +213,32 @@ public class AnnotationReader extends ClassDataCollector {
 			e.printStackTrace();
 			analyzer.error("During generation of a component on class %s, exception %s", clazz, e);
 		}
+	}
+
+	private void handleMixedUsageError(Annotation annotation) throws Exception {
+		DeclarativeServicesAnnotationError errorDetails;
+
+		String fqn = annotation.getName().getFQN();
+
+		switch (annotation.getElementType()) {
+			case METHOD :
+				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
+						member.getDescriptor().toString(), ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
+				break;
+			case FIELD :
+				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
+						ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
+				break;
+			default :
+				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), null,
+						ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
+		}
+		List<DeclarativeServicesAnnotationError> errors = mismatchedAnnotations.get(fqn);
+		if (errors == null) {
+			errors = new ArrayList<DeclarativeServicesAnnotationError>();
+			mismatchedAnnotations.put(fqn, errors);
+		}
+		errors.add(errorDetails);
 	}
 
 	private void doXmlAttribute(Annotation annotation, XMLAttribute xmlAttr) {
@@ -696,6 +726,30 @@ public class AnnotationReader extends ClassDataCollector {
 	 */
 	@SuppressWarnings("deprecation")
 	protected void doComponent(Component comp, Annotation annotation) throws Exception {
+
+		if (!mismatchedAnnotations.isEmpty()) {
+			String componentName = comp.name();
+			componentName = (componentName == null) ? className.getFQN() : componentName;
+			for (Entry<String,List<DeclarativeServicesAnnotationError>> e : mismatchedAnnotations.entrySet()) {
+				for (DeclarativeServicesAnnotationError errorDetails : e.getValue()) {
+					if (errorDetails.fieldName != null) {
+						analyzer.error(
+								"The DS component %s uses standard annotations to declare it as a component, but also uses the bnd DS annotation: %s on field %s. It is an error to mix these two types of annotations",
+								componentName, e.getKey(), errorDetails.fieldName).details(errorDetails);
+					} else if (errorDetails.methodName != null) {
+						analyzer.error(
+								"The DS component %s uses standard annotations to declare it as a component, but also uses the bnd DS annotation: %s on method %s with signature %s. It is an error to mix these two types of annotations",
+								componentName, e.getKey(), errorDetails.methodName, errorDetails.methodSignature)
+								.details(errorDetails);
+					} else {
+						analyzer.error(
+								"The DS component %s uses standard annotations to declare it as a component, but also uses the bnd DS annotation: %s. It is an error to mix these two types of annotations",
+								componentName, e.getKey()).details(errorDetails);
+					}
+				}
+			}
+			return;
+		}
 
 		// Check if we are doing a super class
 		if (component.implementation != null)

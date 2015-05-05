@@ -2732,4 +2732,46 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
+	@Component(name = "mixed-std-bnd")
+	static class MixedStdBnd {
+
+		@aQute.bnd.annotation.component.Reference
+		protected void setLog(@SuppressWarnings("unused") LogService log) {}
+
+		@aQute.bnd.annotation.component.Activate
+		void start() {}
+
+		@aQute.bnd.annotation.component.Modified
+		void update(Map<String,Object> map) {}
+
+		@aQute.bnd.annotation.component.Deactivate
+		void stop() {}
+	}
+
+	public static void testMixedStandardBnd() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$MixedStdBnd");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+		Jar build = b.build();
+		System.err.println(b.getErrors());
+		System.err.println(b.getWarnings());
+		assertEquals(4, b.getErrors().size());
+		List<String> errors = new ArrayList<String>(b.getErrors());
+		Collections.sort(errors);
+		assertEquals(
+				"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Activate on method start with signature ()V. It is an error to mix these two types of annotations",
+				errors.get(0));
+		assertEquals(
+				"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Deactivate on method stop with signature ()V. It is an error to mix these two types of annotations",
+				errors.get(1));
+		assertEquals(
+				"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Modified on method update with signature (Ljava/util/Map;)V. It is an error to mix these two types of annotations",
+				errors.get(2));
+		assertEquals(
+				"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Reference on method setLog with signature (Lorg/osgi/service/log/LogService;)V. It is an error to mix these two types of annotations",
+				errors.get(3));
+		assertEquals(0, b.getWarnings().size());
+	}
+
 }
