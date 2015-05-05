@@ -1,16 +1,21 @@
 package aQute.remote.util;
 
-import java.io.*;
-import java.net.*;
-import java.security.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.Socket;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import aQute.bnd.util.dto.*;
-import aQute.lib.collections.*;
-import aQute.lib.io.*;
-import aQute.libg.cryptography.*;
+import aQute.bnd.util.dto.DTO;
+import aQute.lib.collections.MultiMap;
+import aQute.lib.io.IO;
+import aQute.libg.cryptography.SHA1;
 
 /**
  * This is a base class that provides the basic functionality of a supervisor.
@@ -117,7 +122,7 @@ public class AgentSupervisor<Supervisor, Agent> {
 			if (info.lastModified != file.lastModified()) {
 				String sha = SHA1.digest(file).asHex();
 				if (info.sha != null && !sha.equals(info.sha))
-					shaInfo.remove(info.sha, file.getAbsolutePath());
+					shaInfo.removeValue(info.sha, file.getAbsolutePath());
 				info.sha = sha;
 				info.lastModified = file.lastModified();
 				shaInfo.add(sha, file.getAbsolutePath());
