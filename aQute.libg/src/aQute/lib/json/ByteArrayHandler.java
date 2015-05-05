@@ -1,12 +1,14 @@
 package aQute.lib.json;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.regex.Pattern;
 
-import aQute.lib.base64.*;
-import aQute.lib.hex.*;
+import aQute.lib.base64.Base64;
+import aQute.lib.hex.Hex;
 
 /**
  * Will now use hex for encoding byte arrays

@@ -1,22 +1,33 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
-import java.util.*;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.jar.*;
-import java.util.regex.*;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.header.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.bnd.util.dto.*;
-import aQute.bnd.version.*;
-import aQute.lib.base64.*;
-import aQute.lib.filter.*;
-import aQute.lib.io.*;
-import aQute.libg.cryptography.*;
-import aQute.libg.qtokens.*;
+import aQute.bnd.util.dto.DTO;
+import aQute.bnd.version.VersionRange;
+import aQute.lib.base64.Base64;
+import aQute.lib.filter.Filter;
+import aQute.lib.io.IO;
+import aQute.libg.cryptography.Digester;
+import aQute.libg.cryptography.SHA1;
+import aQute.libg.qtokens.QuotedTokenizer;
 
 //
 // TODO check that component XML that refer to a properties file actually have such a file

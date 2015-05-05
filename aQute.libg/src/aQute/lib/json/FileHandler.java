@@ -1,10 +1,14 @@
 package aQute.lib.json;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.lang.reflect.Type;
+import java.util.Map;
 
-import aQute.lib.base64.*;
+import aQute.lib.base64.Base64;
 
 public class FileHandler extends Handler {
 

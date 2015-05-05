@@ -1,9 +1,9 @@
 package aQute.lib.hex;
 
-import java.util.*;
+import java.util.Arrays;
 
-import junit.framework.*;
-import aQute.lib.base64.*;
+import junit.framework.TestCase;
+import aQute.lib.base64.Base64;
 
 public class HexTest extends TestCase {
 

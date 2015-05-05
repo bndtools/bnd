@@ -1,20 +1,29 @@
 package aQute.bnd.deployer.http;
 
-import java.io.*;
-import java.net.*;
-import java.security.*;
-import java.util.*;
-import java.util.concurrent.atomic.*;
-import java.util.regex.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
 
-import aQute.bnd.deployer.*;
-import aQute.bnd.service.*;
-import aQute.bnd.service.url.*;
-import aQute.lib.base64.*;
-import aQute.lib.io.*;
-import aQute.lib.utf8properties.*;
-import aQute.libg.glob.*;
-import aQute.service.reporter.*;
+import aQute.bnd.deployer.Constants;
+import aQute.bnd.service.Plugin;
+import aQute.bnd.service.url.TaggedData;
+import aQute.bnd.service.url.URLConnector;
+import aQute.lib.base64.Base64;
+import aQute.lib.io.IO;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.glob.Glob;
+import aQute.service.reporter.Reporter;
 
 @aQute.bnd.annotation.plugin.BndPlugin(name="urlconnector", parameters=HttpBasicAuthURLConnector.Config.class)
 public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
