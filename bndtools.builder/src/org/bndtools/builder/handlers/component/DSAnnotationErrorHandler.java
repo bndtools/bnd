@@ -35,10 +35,13 @@ public class DSAnnotationErrorHandler extends AbstractBuildErrorDetailsHandler {
                 md = createMethodMarkerData(javaProject, dsError.className, dsError.methodName, dsError.methodSignature, attribs, false);
             }
 
+            if (dsError.fieldName != null) {
+                md = createFieldMarkerData(javaProject, dsError.className, dsError.fieldName, attribs, false);
+            }
+
             if (md == null) {
                 md = createTypeMarkerData(javaProject, dsError.className, attribs, false);
             }
-
         }
 
         if (md == null) {

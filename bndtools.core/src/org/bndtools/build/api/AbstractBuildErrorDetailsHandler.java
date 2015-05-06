@@ -18,6 +18,7 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -30,6 +31,7 @@ import org.eclipse.jdt.core.dom.SimpleType;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ui.IMarkerResolution;
 
@@ -274,6 +276,59 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
                     } catch (JavaModelException e) {}
                 }
                 return name;
+            }
+        });
+
+        if (!markerAttributes.containsKey(IMarker.CHAR_START))
+            return null;
+
+        return new MarkerData(ast.getJavaElement().getResource(), markerAttributes, hasResolutions);
+    }
+
+    /**
+     * Create a marker on a Java Method
+     *
+     * @param javaProject
+     * @param className
+     *            - the fully qualified class name (e.g java.lang.String)
+     * @param methodName
+     * @param methodSignature
+     *            - signatures are in "internal form" e.g. (Ljava.lang.Integer;[Ljava/lang/String;Z)V
+     * @param markerAttributes
+     *            - attributes that should be included in the marker, typically a message. The start and end points for
+     *            the marker are added by this method.
+     * @param hasResolutions
+     *            - true if the marker will have resolutions
+     * @return Marker Data that can be used to create an {@link IMarker}, or null if no location can be found
+     * @throws JavaModelException
+     */
+    public static final MarkerData createFieldMarkerData(IJavaProject javaProject, final String className, final String fieldName, final Map<String,Object> markerAttributes, boolean hasResolutions) throws JavaModelException {
+
+        final CompilationUnit ast = createAST(javaProject, className);
+
+        if (ast == null)
+            return null;
+
+        ast.accept(new ASTVisitor() {
+            @Override
+            public boolean visit(FieldDeclaration fieldDecl) {
+                if (matches(ast, fieldDecl, fieldName)) {
+                    // Create the marker attribs here
+                    markerAttributes.put(IMarker.CHAR_START, fieldDecl.getStartPosition());
+                    markerAttributes.put(IMarker.CHAR_END, fieldDecl.getStartPosition() + fieldDecl.getLength());
+                }
+
+                return false;
+            }
+
+            private boolean matches(CompilationUnit ast, FieldDeclaration fieldDecl, String fieldName) {
+                List<VariableDeclarationFragment> list = (List<VariableDeclarationFragment>) fieldDecl.getStructuralProperty(FieldDeclaration.FRAGMENTS_PROPERTY);
+                for (VariableDeclarationFragment vdf : list) {
+                    if (fieldName.equals(vdf.getName().toString())) {
+                        return true;
+                    }
+                }
+                return false;
             }
         });
 
