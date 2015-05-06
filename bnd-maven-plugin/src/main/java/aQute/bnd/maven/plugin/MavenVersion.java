@@ -3,8 +3,6 @@ package aQute.bnd.maven.plugin;
 /**
  * Represents a Maven version with the ability to translate to a bnd version,
  * with SNAPSHOT being replaced by bnd's ${tstamp} macro.
- * 
- * @author Neil Bartlett <neil.bartlett@paremus.com>
  */
 public class MavenVersion {
 
