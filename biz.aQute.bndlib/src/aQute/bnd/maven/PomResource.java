@@ -1,15 +1,25 @@
 package aQute.bnd.maven;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.jar.*;
-import java.util.regex.*;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
-import aQute.lib.tag.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.WriteResource;
+import aQute.lib.io.IO;
+import aQute.lib.tag.Tag;
 
 public class PomResource extends WriteResource {
 	private static final String	VERSION		= "version";
@@ -220,7 +230,7 @@ public class PomResource extends WriteResource {
 			}
 		}
 
-		pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+		pw.print("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 		project.print(0, pw);
 		pw.flush();
 	}

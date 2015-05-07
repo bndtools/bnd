@@ -1,26 +1,55 @@
 package aQute.bnd.main;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.jar.*;
+import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
-import javax.xml.transform.*;
-import javax.xml.transform.stream.*;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
-import aQute.bnd.build.*;
-import aQute.bnd.differ.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
+import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.differ.Baseline.Info;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.differ.DiffPluginImpl;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
-import aQute.bnd.service.diff.*;
-import aQute.bnd.version.*;
-import aQute.lib.collections.*;
-import aQute.lib.getopt.*;
-import aQute.lib.tag.*;
+import aQute.bnd.osgi.Instructions;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.diff.Delta;
+import aQute.bnd.service.diff.Diff;
+import aQute.bnd.service.diff.Tree;
+import aQute.bnd.version.Version;
+import aQute.lib.collections.MultiMap;
+import aQute.lib.collections.SortedList;
+import aQute.lib.getopt.Arguments;
+import aQute.lib.getopt.Description;
+import aQute.lib.getopt.Options;
+import aQute.lib.tag.Tag;
 
 /**
  * Implements commands to maintain the Package versions db.
@@ -385,7 +414,7 @@ public class BaselineCommands {
 		try {
 			PrintWriter pw = new PrintWriter(fw);
 			try {
-				pw.println("<?xml version='1.0'?>");
+				pw.print("<?xml version='1.0' encoding='UTF-8'?>\n");
 				top.print(0, pw);
 			}
 			finally {

@@ -1,15 +1,28 @@
 package aQute.bnd.main;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
-import aQute.bnd.build.*;
-import aQute.bnd.differ.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.diff.*;
-import aQute.configurable.*;
-import aQute.lib.getopt.*;
-import aQute.lib.tag.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
+import aQute.bnd.differ.DiffPluginImpl;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Instructions;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.diff.Delta;
+import aQute.bnd.service.diff.Diff;
+import aQute.bnd.service.diff.Differ;
+import aQute.bnd.service.diff.Tree;
+import aQute.configurable.Config;
+import aQute.lib.getopt.Arguments;
+import aQute.lib.getopt.Description;
+import aQute.lib.getopt.Options;
+import aQute.lib.tag.Tag;
 
 public class DiffCommand {
 	bnd	bnd;
@@ -139,7 +152,7 @@ public class DiffCommand {
 				if (all || options.resources())
 					tag.addContent(getTagFrom(diff.get("<resources>"), !options.full()));
 
-				pw.println("<?xml version='1.0'?>");
+				pw.print("<?xml version='1.0' encoding='UTF-8'?>\n");
 				tag.print(0, pw);
 			}
 		}
