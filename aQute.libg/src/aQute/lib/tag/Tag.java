@@ -1,8 +1,14 @@
 package aQute.lib.tag;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The Tag class represents a minimal XML tree. It consist of a named element
@@ -232,7 +238,7 @@ public class Tag {
 						pw.print(escape((String) c));
 				} else if (c instanceof Tag) {
 					if ((last == null) && (indent >= 0)) {
-						pw.println();
+						pw.print('\n');
 					}
 					Tag tag = (Tag) c;
 					tag.print(indent + 2, pw);
@@ -247,7 +253,7 @@ public class Tag {
 		}
 		pw.print('>');
 		if (indent >= 0) {
-			pw.println();
+			pw.print('\n');
 		}
 		return this;
 	}

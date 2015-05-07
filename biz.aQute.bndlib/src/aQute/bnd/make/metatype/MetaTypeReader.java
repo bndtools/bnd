@@ -1,15 +1,28 @@
 package aQute.bnd.make.metatype;
 
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.annotation.metatype.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.annotation.metatype.Configurable;
+import aQute.bnd.annotation.metatype.Meta;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Annotation;
+import aQute.bnd.osgi.ClassDataCollector;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.lib.tag.*;
-import aQute.libg.generics.*;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.WriteResource;
+import aQute.lib.tag.Tag;
+import aQute.libg.generics.Create;
 
 public class MetaTypeReader extends WriteResource {
 	final Analyzer			reporter;
@@ -265,7 +278,7 @@ public class MetaTypeReader extends WriteResource {
 			throw new RuntimeException(e);
 		}
 		PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
-		pw.println("<?xml version='1.0'?>");
+		pw.print("<?xml version='1.0' encoding='UTF-8'?>\n");
 		metadata.print(0, pw);
 		pw.flush();
 	}
