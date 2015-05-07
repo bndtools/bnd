@@ -1,2 +1,7 @@
 -dsannotations: *
 -metatype: *
+Project-Build-SourceEncoding: ${project.build.sourceEncoding}
+Project-GroupId-ArtifactId: ${project.groupId}.${project.artifactId}
+Project-Build-OutputDirectory: ${project.build.outputDirectory}
+Project-NoSuchProperty: ${project.nosuchproperty}
+Project: ${project}
