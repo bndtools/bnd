@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
@@ -43,6 +44,7 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
 
@@ -67,10 +69,15 @@ public class BndMavenPlugin extends AbstractMojo {
 	public void execute() throws MojoExecutionException {
 		Log log = getLog();
 
-		File bndFile = new File(project.getBasedir(), Project.BNDFILE);
+		Properties beanProperties = new BeanProperties();
+		beanProperties.put("project", project);
+		Properties mavenProperties = new Properties(beanProperties);
+		mavenProperties.putAll(project.getProperties());
 
-		Builder builder = new Builder();
+		Builder builder = new Builder(new Processor(mavenProperties, false));
 		builder.setTrace(log.isDebugEnabled());
+		
+		File bndFile = new File(project.getBasedir(), Project.BNDFILE);
 		try {
 			if (bndFile.isFile())
 				builder.setProperties(bndFile, project.getBasedir());
@@ -191,4 +198,39 @@ public class BndMavenPlugin extends AbstractMojo {
 		}
 	}
 
+	private class BeanProperties extends Properties {
+		BeanProperties() {
+			super();
+		}
+		
+		@Override
+		public String getProperty(String key) {
+			final int i = key.indexOf('.');
+			final String name = (i > 0) ? key.substring(0, i) : key;
+			Object value = get(name);
+			if ((value != null) && (i > 0)) {
+				value = getField(value, key.substring(i + 1));
+			}
+			if (value == null) {
+				return null;
+			}
+			return value.toString();
+		}
+		
+		private Object getField(Object target, String key) {
+			final int i = key.indexOf('.');
+			final String fieldName = (i > 0) ? key.substring(0, i) : key;
+			Object value = null;
+			try {
+				final String getterName = "get" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
+				value = target.getClass().getMethod(getterName, null).invoke(target, null);
+			} catch (Exception e) {
+				getLog().debug("Could not find getter method for field: " + fieldName, e);
+			}
+			if ((value != null) && (i > 0)) {
+				value = getField(value, key.substring(i + 1));
+			}
+			return value;
+		}
+	}
 }
