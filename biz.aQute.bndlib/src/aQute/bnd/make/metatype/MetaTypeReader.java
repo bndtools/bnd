@@ -265,7 +265,7 @@ public class MetaTypeReader extends WriteResource {
 			throw new RuntimeException(e);
 		}
 		PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
-		pw.println("<?xml version='1.0'?>");
+		pw.print("<?xml version='1.0'?>" + "\n");
 		metadata.print(0, pw);
 		pw.flush();
 	}
