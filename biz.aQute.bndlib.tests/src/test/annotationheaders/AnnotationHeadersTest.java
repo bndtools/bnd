@@ -117,6 +117,13 @@ public class AnnotationHeadersTest extends TestCase {
 	interface ExtraAttrs {
 		
 	}
+
+	@RequireCapability(ns = "nofilter", filter = "")
+	@interface NoFilterRequirement {}
+
+	@NoFilterRequirement
+	class NoFilterImpl {}
+
 	public void testBasic() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
@@ -141,6 +148,8 @@ public class AnnotationHeadersTest extends TestCase {
 		
 		assertFalse(rc.contains("xx"));
 		
+		assertTrue(rc.contains(",nofilter,"));
+
 		String pc = manifest.getMainAttributes().getValue(Constants.PROVIDE_CAPABILITY);
 		assertNotNull(pc);
 		System.out.println(pc);

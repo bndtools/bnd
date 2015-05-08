@@ -1,6 +1,9 @@
 package aQute.bnd.annotation.headers;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * The Bundle’s Require-Capability header
@@ -39,7 +42,7 @@ public @interface RequireCapability {
 	 * correctly. A filter is optional, if no filter directive is specified the
 	 * Requirement always matches.
 	 */
-	String filter();
+	String filter() default "";
 
 	/**
 	 * A mandatory Requirement forbids the bundle to resolve when the
