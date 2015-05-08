@@ -301,6 +301,9 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		Attrs attrs = getAttributes(a, "ns");
 		directivesAndVersion(attrs, "filter", "effective", "resolution");
 		
+		if ("".equals(attrs.get(Constants.FILTER_DIRECTIVE)))
+			attrs.remove(Constants.FILTER_DIRECTIVE);
+
 		p.put(annotation.ns(), attrs );
 
 		String s = p.toString();
