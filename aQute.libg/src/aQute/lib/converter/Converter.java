@@ -36,8 +36,6 @@ import aQute.lib.base64.Base64;
 /**
  * General Java type converter from an object to any type. Supports number
  * conversion
- * 
- * @author aqute
  */
 @SuppressWarnings({
 		"unchecked", "rawtypes"
