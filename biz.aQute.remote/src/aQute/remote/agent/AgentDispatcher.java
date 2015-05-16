@@ -24,13 +24,14 @@ public class AgentDispatcher {
 	static List<Descriptor>	descriptors	= new CopyOnWriteArrayList<Descriptor>();
 
 	static class Descriptor implements Closeable {
-		AtomicBoolean		closed	= new AtomicBoolean(false);
-		List<AgentServer>	servers	= new CopyOnWriteArrayList<AgentServer>();
-		Framework			framework;
-		Map<String,Object>	configuration;
-		File				storage;
-		File				shaCache;
-		String				name;
+		AtomicBoolean					closed		= new AtomicBoolean(false);
+		List<AgentServer>				servers		= new CopyOnWriteArrayList<AgentServer>();
+		Framework						framework;
+		Map<String,Object>				configuration;
+		File							storage;
+		File							shaCache;
+		String							name;
+		public List<BundleActivator>	activators	= new ArrayList<BundleActivator>();
 
 		@Override
 		public void close() throws IOException {
@@ -45,6 +46,13 @@ public class AgentDispatcher {
 					// ignore
 				}
 			}
+			for (BundleActivator ba : activators)
+				try {
+					ba.stop(framework.getBundleContext());
+				}
+				catch (Exception e) {
+					// ignore
+				}
 			try {
 				framework.stop();
 			}
@@ -63,9 +71,8 @@ public class AgentDispatcher {
 		//
 		// Use the service loader for loading a framework
 		//
-
-		ServiceLoader<FrameworkFactory> sl = ServiceLoader.load(FrameworkFactory.class,
-				AgentServer.class.getClassLoader());
+		ClassLoader loader = AgentServer.class.getClassLoader();
+		ServiceLoader<FrameworkFactory> sl = ServiceLoader.load(FrameworkFactory.class, loader);
 		FrameworkFactory ff = null;
 		for (FrameworkFactory fff : sl) {
 			ff = fff;
@@ -94,6 +101,7 @@ public class AgentDispatcher {
 
 		framework.start();
 
+		Descriptor d = new Descriptor();
 		//
 		// create a new descriptor. This is returned
 		// to the envoy side as an Object and we will
@@ -101,12 +109,35 @@ public class AgentDispatcher {
 		// maintains a list of name -> framework
 		//
 
-		Descriptor d = new Descriptor();
 		d.framework = framework;
 		d.shaCache = shacache;
 		d.storage = storage;
 		d.configuration = configuration;
 		d.name = name;
+
+		String embedded = (String) configuration.get("biz.aQute.remote.embedded");
+
+		if (embedded != null && !(embedded = embedded.trim()).isEmpty()) {
+			String activators[] = embedded.trim().split("\\s*,\\s*");
+			for (String activator : activators)
+				try {
+					Class< ? > activatorClass = loader.loadClass(activator);
+					if (BundleActivator.class.isAssignableFrom(activatorClass)) {
+
+						// TODO check immediate
+
+						BundleActivator ba = (BundleActivator) activatorClass.newInstance();
+						ba.start(framework.getBundleContext());
+						d.activators.add(ba);
+					}
+				}
+				catch (Exception e) {
+					// TODO
+					System.out.println("IGNORED");
+					e.printStackTrace();
+				}
+		}
+
 
 		return d;
 	}
