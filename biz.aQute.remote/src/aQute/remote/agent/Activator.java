@@ -50,6 +50,10 @@ public class Activator extends Thread implements BundleActivator {
 		String host = m.group(1);
 		if (host == null)
 			host = "localhost";
+		else
+			port = m.group(2);
+
+		System.err.println("Host " + host + " " + port);
 
 		//
 		// Get the SHA cache root file, which will be shared by all agents for
