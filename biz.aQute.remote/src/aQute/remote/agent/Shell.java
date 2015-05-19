@@ -49,7 +49,6 @@ public class Shell extends RedirectInput {
 			running = true;
 			try {
 				Object result = session.execute(s);
-				this.out.flush();
 				if (result != null) {
 					out.println(session.format(result, Converter.INSPECT));
 				}
@@ -60,6 +59,7 @@ public class Shell extends RedirectInput {
 			finally {
 				running = false;
 			}
+			this.out.flush();
 			prompt();
 		}
 	}

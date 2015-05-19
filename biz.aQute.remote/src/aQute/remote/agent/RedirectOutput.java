@@ -68,7 +68,8 @@ public class RedirectOutput extends PrintStream {
 	}
 
 	public void flush() {
-		super.flush();
+		final String output = sb.toString();
+		sb = new StringBuilder();
 
 		for (AgentServer agent : agents) {
 			if (agent.quit)
@@ -76,9 +77,9 @@ public class RedirectOutput extends PrintStream {
 
 			try {
 				if (err)
-					agent.getSupervisor().stderr(sb.toString());
+					agent.getSupervisor().stderr(output);
 				else
-					agent.getSupervisor().stdout(sb.toString());
+					agent.getSupervisor().stdout(output);
 			}
 			catch (InterruptedException ie) {
 				return;
@@ -93,7 +94,7 @@ public class RedirectOutput extends PrintStream {
 			}
 		}
 
-		sb = new StringBuilder();
+		super.flush();
 	}
 
 	public void close() {
