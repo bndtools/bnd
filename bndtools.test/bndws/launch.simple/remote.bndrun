@@ -16,5 +16,4 @@ liferay=liferay;shell=11311;jmx=attach
 
 
 -runpath: \
-	../../../../bnd/biz.aQute.remote/generated/biz.aQute.remote.launcher-3.0.0.jar;version=file,\
-	../../../../bnd/biz.aQute.remote/generated/biz.aQute.remote.agent-3.0.0.jar;version=file
+	../../../../bnd/biz.aQute.remote/generated/biz.aQute.remote.launcher-3.0.0.jar;version=file
