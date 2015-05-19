@@ -59,6 +59,7 @@ public class Shell extends RedirectInput {
 			finally {
 				running = false;
 			}
+			this.out.flush();
 			prompt();
 		}
 	}
