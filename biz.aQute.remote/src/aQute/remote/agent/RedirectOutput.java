@@ -12,6 +12,7 @@ public class RedirectOutput extends PrintStream {
 
 	private final List<AgentServer>		agents;
 	private final PrintStream			out;
+	private StringBuilder				sb		= new StringBuilder();
 	private boolean						err;
 	private static ThreadLocal<Boolean>	onStack	= new ThreadLocal<Boolean>();
 
@@ -53,24 +54,7 @@ public class RedirectOutput extends PrintStream {
 		if (onStack.get() == null) {
 			onStack.set(true);
 			try {
-				String s = new String(b, off, len); // default encoding!
-				for (AgentServer agent : agents) {
-					if (agent.quit)
-						continue;
-
-					try {
-						if (err)
-							agent.getSupervisor().stderr(s);
-						else
-							agent.getSupervisor().stdout(s);
-					}
-					catch (InterruptedException ie) {
-						return;
-					}
-					catch (Exception ie) {
-						agent.close();
-					}
-				}
+				sb.append(new String(b, off, len)); // default encoding!
 			}
 			catch (Exception e) {
 				// e.printStackTrace();
@@ -85,6 +69,31 @@ public class RedirectOutput extends PrintStream {
 
 	public void flush() {
 		super.flush();
+
+		for (AgentServer agent : agents) {
+			if (agent.quit)
+				continue;
+
+			try {
+				if (err)
+					agent.getSupervisor().stderr(sb.toString());
+				else
+					agent.getSupervisor().stdout(sb.toString());
+			}
+			catch (InterruptedException ie) {
+				return;
+			}
+			catch (Exception ie) {
+				try {
+					agent.close();
+				}
+				catch (IOException e) {
+					// e.printStackTrace();
+				}
+			}
+		}
+
+		sb = new StringBuilder();
 	}
 
 	public void close() {
