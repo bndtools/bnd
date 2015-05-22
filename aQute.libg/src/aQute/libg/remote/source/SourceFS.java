@@ -1,23 +1,27 @@
 package aQute.libg.remote.source;
 
-import java.io.*;
-import java.security.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.File;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.lib.collections.*;
-import aQute.lib.io.*;
-import aQute.libg.cryptography.*;
-import aQute.libg.remote.*;
+import aQute.lib.collections.MultiMap;
+import aQute.lib.io.IO;
+import aQute.libg.cryptography.SHA1;
+import aQute.libg.remote.Delta;
+import aQute.libg.remote.Sink;
 
 class SourceFS {
-	static Pattern							WINDOWS_PREFIX	= Pattern
-																	.compile("([a-z]):/(.*)", Pattern.CASE_INSENSITIVE);
-	static Pattern							WINDOWS_FILE_P	= Pattern.compile(
-																	"([a-z]:|\\\\)(\\\\[\\w\\d-_+.~@$%&=]+)*",
-																	Pattern.CASE_INSENSITIVE);
-	static Pattern							UNIX_FILE_P		= Pattern.compile("(/[\\w\\d-_+.~@$%&=]+)+",
-																	Pattern.CASE_INSENSITIVE);
+	static Pattern							WINDOWS_PREFIX	= Pattern.compile("(\\p{Alpha}):\\\\(.*)");
+	static Pattern							WINDOWS_FILE_P	= Pattern
+																	.compile("(?:\\p{Alpha}:|\\\\)(\\\\[\\p{Alnum}-_+.~@$%&=]+)*");
+	static Pattern							UNIX_FILE_P		= Pattern.compile("(/[\\p{Alnum}-_+.~@$%&=]+)+");
 	static Pattern							LOCAL_P			= File.separatorChar == '\\' ? WINDOWS_FILE_P : UNIX_FILE_P;
 
 	private MultiMap<String,File>			shas			= new MultiMap<String,File>();
