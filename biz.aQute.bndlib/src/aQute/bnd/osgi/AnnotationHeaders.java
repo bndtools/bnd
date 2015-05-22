@@ -318,7 +318,14 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		p.put(annotation.ns(), attrs );
 
 		String s = p.toString();
-		
+
+		String extra = annotation.extra();
+		if (extra != null) {
+			extra = extra.trim();
+			if (extra.length() > 0)
+				s += ";" + extra;
+		}
+
 		add(Constants.REQUIRE_CAPABILITY, s);
 	}
 

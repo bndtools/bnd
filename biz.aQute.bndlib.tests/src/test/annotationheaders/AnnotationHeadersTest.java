@@ -52,14 +52,19 @@ public class AnnotationHeadersTest extends TestCase {
 			// namespaces must be "osgi.ee", "nsx" and "nsy" ONLY
 			assertNotNull(p.get("nsx"));
 			assertNotNull(p.get("nsy"));
+			assertNotNull(p.get("nsz"));
 			assertNotNull(p.get("osgi.ee"));
-			assertEquals("spurious Require-Capability namespaces", 3, p.size());
+			assertEquals("spurious Require-Capability namespaces", 4, p.size());
 
 			attrs = p.get("nsx");
 			assertEquals(Arrays.asList("abc","def"), attrs.getTyped("foo"));
 
 			attrs = p.get("nsy");
 			assertEquals("hello", attrs.get("value"));
+
+			attrs = p.get("nsz");
+			assertEquals("(nsz=*)", attrs.get("filter:"));
+			assertEquals("world", attrs.get("hello"));
 		}
 		finally {
 			b.close();

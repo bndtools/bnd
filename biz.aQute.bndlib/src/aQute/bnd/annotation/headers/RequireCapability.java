@@ -1,6 +1,9 @@
 package aQute.bnd.annotation.headers;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * The Bundle’s Require-Capability header
@@ -12,7 +15,10 @@ import java.lang.annotation.*;
 		ElementType.ANNOTATION_TYPE, ElementType.TYPE
 })
 public @interface RequireCapability {
+
 	String value() default "";
+
+	String extra() default "";
 
 	/**
 	 * The capability namespace. For example: {@code osgi.contract}.
