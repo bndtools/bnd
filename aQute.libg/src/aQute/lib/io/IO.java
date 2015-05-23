@@ -1,13 +1,40 @@
 package aQute.lib.io;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.nio.*;
-import java.security.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
-import aQute.libg.glob.*;
+import aQute.libg.glob.Glob;
 
 public class IO {
 	static final int			BUFFER_SIZE	= IOConstants.PAGE_SIZE * 16;
@@ -72,7 +99,13 @@ public class IO {
 	}
 
 	public static void copy(byte[] data, File file) throws FileNotFoundException, IOException {
-		copy(data, new FileOutputStream(file));
+		FileOutputStream out = new FileOutputStream(file);
+		try {
+			copy(data, out);
+		}
+		finally {
+			out.close();
+		}
 	}
 
 	public static void copy(byte[] r, OutputStream w) throws IOException {
@@ -183,7 +216,13 @@ public class IO {
 			http.setRequestMethod(method);
 		}
 		c.setDoOutput(true);
-		copy(in, c.getOutputStream());
+		OutputStream os = c.getOutputStream();
+		try {
+			copy(in, os);
+		}
+		finally {
+			os.close();
+		}
 	}
 
 	public static void copy(File a, File b) throws IOException {
@@ -499,29 +538,16 @@ public class IO {
 	}
 
 	public static void store(Object o, File out, String encoding) throws IOException {
-		FileOutputStream fout = new FileOutputStream(out);
-		try {
-			store(o, fout, encoding);
-		}
-		finally {
-			fout.close();
-		}
+		store(o, new FileOutputStream(out), encoding);
 	}
 
-	public static void store(Object o, OutputStream fout) throws UnsupportedEncodingException, IOException {
+	public static void store(Object o, OutputStream fout) throws IOException {
 		store(o, fout, "UTF-8");
 	}
 
-	public static void store(Object o, OutputStream fout, String encoding) throws UnsupportedEncodingException,
-			IOException {
-		String s;
-
-		if (o == null)
-			s = "";
-		else
-			s = o.toString();
-
+	public static void store(Object o, OutputStream fout, String encoding) throws IOException {
 		try {
+			String s = (o == null) ? "" : o.toString();
 			fout.write(s.getBytes(encoding));
 		}
 		finally {
