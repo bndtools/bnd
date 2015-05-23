@@ -1,23 +1,28 @@
 package aQute.bnd.deployer.repository;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
+import junit.framework.TestCase;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
-import aQute.lib.io.*;
+import aQute.lib.io.IO;
 
 public class TestLocalObrGeneration extends TestCase {
 
-	private static LocalIndexedRepo	repo;
-	private static File				outputDir;
-	private static Processor			reporter;
+	private LocalIndexedRepo	repo;
+	private File				outputDir;
+	private Processor			reporter;
 
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
-		outputDir = IO.getFile("generated/testoutput");
+		outputDir = IO.getFile("generated/testoutput/" + getName());
 		IO.delete(outputDir);
 		if (!outputDir.exists() && !outputDir.mkdirs()) {
 			throw new IOException("Could not create directory " + outputDir);
@@ -41,20 +46,21 @@ public class TestLocalObrGeneration extends TestCase {
 		assertEquals(0, reporter.getWarnings().size());
 	}
 
-	public static void testInitiallyEmpty() throws Exception {
+	public void testInitiallyEmpty() throws Exception {
 		List<String> list = repo.list(".*");
 		assertNotNull(list);
 		assertEquals(0, list.size());
 	}
 
-	public static void testDeployBundle() throws Exception {
+	public void testDeployBundle() throws Exception {
 		PutResult r = repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
 		File deployedFile = new File(r.artifact);
 
-		assertEquals(IO.getFile("generated/testoutput/name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
+		assertEquals(
+				IO.getFile(outputDir, "name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
 			.getAbsolutePath(), deployedFile.getAbsolutePath());
 		
-		File indexFile = IO.getFile("generated/testoutput/repository.xml");
+		File indexFile = IO.getFile(outputDir, "repository.xml");
 		assertTrue(indexFile.exists());
 		assertTrue(IO.collect(indexFile).length() > 0);
 

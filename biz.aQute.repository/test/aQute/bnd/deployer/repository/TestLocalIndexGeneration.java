@@ -1,28 +1,37 @@
 package aQute.bnd.deployer.repository;
 
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipException;
 
-import junit.framework.*;
-import test.lib.*;
-import test.repository.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
+import junit.framework.TestCase;
+import test.lib.MockRegistry;
+import test.repository.FailingGeneratingProvider;
+import test.repository.NonGeneratingProvider;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.JarResource;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
-import aQute.lib.io.*;
+import aQute.lib.io.IO;
 
 @SuppressWarnings("resource")
 public class TestLocalIndexGeneration extends TestCase {
 
-	private static Processor				reporter;
-	private static LocalIndexedRepo		repo;
-	private static File					outputDir;
-	private static HashMap<String,String>	config;
+	private Processor				reporter;
+	private LocalIndexedRepo		repo;
+	private File					outputDir;
+	private HashMap<String,String>	config;
 
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
-		outputDir = IO.getFile("generated/testoutput");
+		outputDir = IO.getFile("generated/testoutput/" + getName());
 		IO.delete(outputDir);
 		if (!outputDir.exists() && !outputDir.mkdirs()) {
 			throw new IOException("Could not create directory " + outputDir);
@@ -45,23 +54,24 @@ public class TestLocalIndexGeneration extends TestCase {
 		assertEquals(0, reporter.getWarnings().size());
 	}
 
-	public static void testInitiallyEmpty() throws Exception {
+	public void testInitiallyEmpty() throws Exception {
 		List<String> list = repo.list(".*");
 		assertNotNull(list);
 		assertEquals(0, list.size());
 	}
 
-	public static void testDeployBundle() throws Exception {
+	public void testDeployBundle() throws Exception {
 		PutResult r = repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
 		File deployedFile = new File(r.artifact);
 
-		assertEquals(IO.getFile("generated/testoutput/name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
+		assertEquals(
+				IO.getFile(outputDir, "name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
 			.getAbsolutePath(), deployedFile.getAbsolutePath());
 
-		File indexFile = IO.getFile("generated/testoutput/index.xml.gz");
+		File indexFile = IO.getFile(outputDir, "index.xml.gz");
 		assertTrue(indexFile.exists());
 
-		File indexFileSha = IO.getFile("generated/testoutput/index.xml.gz.sha");
+		File indexFileSha = IO.getFile(outputDir, "index.xml.gz.sha");
 		assertTrue(indexFileSha.exists());
 
 		AbstractIndexedRepo repo2 = createRepoForIndex(indexFile);
@@ -71,13 +81,14 @@ public class TestLocalIndexGeneration extends TestCase {
 		assertEquals(deployedFile.getAbsoluteFile(), files[0]);
 	}
 	
-	public static void testOverwrite() throws Exception {
+	public void testOverwrite() throws Exception {
 		config.put("overwrite", "false");
 		repo.setProperties(config);
 		
 		PutResult r = repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
 		File originalFile = new File(r.artifact);
-		assertEquals(IO.getFile("generated/testoutput/name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
+		assertEquals(
+				IO.getFile(outputDir, "name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
 				.getAbsolutePath(), originalFile.getAbsolutePath());
 		
 		Jar newJar = new Jar(IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar"));
@@ -89,7 +100,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		assertNull(r.artifact);
 	}
 
-	public static void testInvalidContentProvider() throws Exception {
+	public void testInvalidContentProvider() throws Exception {
 		LocalIndexedRepo repo = new LocalIndexedRepo();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("local", outputDir.getAbsolutePath());
@@ -104,7 +115,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		reporter.clear();
 	}
 
-	public static void testNonGeneratingProvider() throws Exception {
+	public void testNonGeneratingProvider() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(new NonGeneratingProvider());
 
@@ -124,7 +135,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		reporter.clear();
 	}
 
-	public static void testFailToGenerate() throws Exception {
+	public void testFailToGenerate() throws Exception {
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(new FailingGeneratingProvider());
 
@@ -144,12 +155,12 @@ public class TestLocalIndexGeneration extends TestCase {
 		reporter.clear();
 	}
 
-	public static void testValidGZipFile() throws Exception {
+	public void testValidGZipFile() throws Exception {
 		PutResult r = repo.put(new BufferedInputStream(new FileInputStream(
 				"testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
 		File deployedFile = new File(r.artifact);
 
-		File indexFile = IO.getFile("generated/testoutput/index.xml.gz");
+		File indexFile = IO.getFile(outputDir, "index.xml.gz");
 		assertTrue(indexFile.exists());
 
 		try {
@@ -162,7 +173,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		}
 	}
 
-	public static void testUncompressedIndexFile() throws Exception {
+	public void testUncompressedIndexFile() throws Exception {
 		repo = new LocalIndexedRepo();
 		config = new HashMap<String,String>();
 		config.put("local", outputDir.getAbsolutePath());
@@ -176,10 +187,10 @@ public class TestLocalIndexGeneration extends TestCase {
 				"testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
 		File deployedFile = new File(r.artifact);
 
-		File compressedIndexFile = IO.getFile("generated/testoutput/index.xml.gz");
+		File compressedIndexFile = IO.getFile(outputDir, "index.xml.gz");
 		assertFalse(compressedIndexFile.exists());
 
-		File prettyIndexFile = IO.getFile("generated/testoutput/index.xml");
+		File prettyIndexFile = IO.getFile(outputDir, "index.xml");
 		assertTrue(prettyIndexFile.exists());
 
 		try {

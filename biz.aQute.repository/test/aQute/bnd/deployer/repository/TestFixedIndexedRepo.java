@@ -1,21 +1,25 @@
 package aQute.bnd.deployer.repository;
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.atomic.*;
+import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
-import aQute.bnd.version.*;
-import aQute.lib.io.*;
+import junit.framework.TestCase;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
 
 public class TestFixedIndexedRepo extends TestCase {
 
-	static File	tmp;
+	private File	tmp;
 
 	public void setUp() {
-		tmp = IO.getFile("tmp");
+		tmp = IO.getFile("generated/tmp/" + getName());
 		IO.delete(tmp);
 		tmp.mkdirs();
 	}
@@ -38,7 +42,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		return count;
 	}
 
-	public static void testIndex1() throws Exception {
+	public void testIndex1() throws Exception {
 		Processor reporter = new Processor();
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> props = new HashMap<String,String>();
@@ -59,7 +63,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		assertEquals(0, reporter.getWarnings().size());
 	}
 
-	public static void testIndex2() throws Exception {
+	public void testIndex2() throws Exception {
 		Processor reporter = new Processor();
 
 		FixedIndexedRepo repo = new FixedIndexedRepo();
@@ -75,7 +79,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		assertEquals(0, reporter.getWarnings().size());
 	}
 
-	public static void testIndex2Compressed() throws Exception {
+	public void testIndex2Compressed() throws Exception {
 		Processor reporter = new Processor();
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> props = new HashMap<String,String>();
@@ -90,7 +94,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		assertEquals(0, reporter.getWarnings().size());
 	}
 
-	public static void testObr() throws Exception {
+	public void testObr() throws Exception {
 		Processor reporter = new Processor();
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 
@@ -113,7 +117,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		assertEquals(0, reporter.getWarnings().size());
 	}
 
-	public static void testAmbiguous() throws Exception {
+	public void testAmbiguous() throws Exception {
 		Processor reporter = new Processor();
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		Map<String,String> config = new HashMap<String,String>();
@@ -129,7 +133,7 @@ public class TestFixedIndexedRepo extends TestCase {
 		assertEquals(0, bsns.size());
 	}
 
-	public static void testExternalEntitiesNotFetched() throws Exception {
+	public void testExternalEntitiesNotFetched() throws Exception {
 		final AtomicInteger accessCount = new AtomicInteger(0);
 
 		FixedIndexedRepo repo;
@@ -180,7 +184,7 @@ public class TestFixedIndexedRepo extends TestCase {
 	 * making it blow up. This checks if we can use spaces in the name.
 	 */
 
-	public static void testSpaceInName() throws Exception {
+	public void testSpaceInName() throws Exception {
 
 		FixedIndexedRepo repo;
 		Map<String,String> config;

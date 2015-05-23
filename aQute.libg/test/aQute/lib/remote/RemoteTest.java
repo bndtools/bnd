@@ -1,12 +1,13 @@
 package aQute.lib.remote;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Formatter;
 
-import junit.framework.*;
-import aQute.lib.io.*;
-import aQute.libg.remote.sink.*;
-import aQute.libg.remote.source.*;
+import junit.framework.TestCase;
+import aQute.lib.io.IO;
+import aQute.libg.remote.sink.RemoteSink;
+import aQute.libg.remote.source.RemoteSource;
 
 public class RemoteTest extends TestCase {
 	File	sinkDir;
@@ -15,8 +16,8 @@ public class RemoteTest extends TestCase {
 	private RemoteSink		sink;
 
 	public void setUp() throws Exception {
-		sinkDir = create("generated/sink", null);
-		sourceDir = create("generated/source", "testresources/remote");
+		sinkDir = create("generated/sink/" + getName(), null);
+		sourceDir = create("generated/source/" + getName(), "testresources/remote");
 		super.setUp();
 		source = new RemoteSource();
 		sink = new RemoteSink(sinkDir, source);

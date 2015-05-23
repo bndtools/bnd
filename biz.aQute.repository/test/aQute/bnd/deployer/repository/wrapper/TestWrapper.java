@@ -1,26 +1,39 @@
 package aQute.bnd.deployer.repository.wrapper;
 
-import java.io.*;
-import java.util.*;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
-import org.osgi.resource.*;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
 
-import aQute.bnd.build.*;
-import aQute.bnd.jpm.*;
-import aQute.bnd.osgi.resource.*;
-import aQute.bnd.service.repository.*;
-import aQute.bnd.version.*;
-import aQute.lib.deployer.*;
-import aQute.lib.io.*;
-import aQute.lib.utf8properties.*;
-import aQute.libg.map.*;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.jpm.Repository;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.service.repository.InfoRepository;
+import aQute.bnd.version.Version;
+import aQute.lib.deployer.InfoFileRepo;
+import aQute.lib.io.IO;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.map.MAP;
 
 public class TestWrapper extends TestCase {
-	File	tmp	= new File("tmp");
+	private File	tmp;
 
 	public void setUp() throws Exception {
+		tmp = IO.getFile("generated/test/" + getName());
 		System.setProperty("jpm4j.in.test", "true");
 		tmp.mkdirs();
 		IO.delete(tmp);

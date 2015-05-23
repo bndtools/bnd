@@ -1,23 +1,25 @@
 package aQute.bnd.deployer.repository;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
-import junit.framework.*;
-import test.lib.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import junit.framework.TestCase;
+import test.lib.NanoHTTPD;
+import aQute.bnd.osgi.Processor;
+import aQute.lib.io.IO;
 
 public class TestLocalIndexedRepo extends TestCase {
 
-	private static File		outputDir;
-	private static NanoHTTPD	httpd;
-	private static int			httpdPort;
+	private File		outputDir;
+	private NanoHTTPD	httpd;
+	private int			httpdPort;
 
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
-		outputDir = new File("generated" + File.separator + "testoutput");
+		outputDir = IO.getFile("generated/testoutput/" + getName());
 		IO.deleteWithException(outputDir);
 		if (!outputDir.exists() && !outputDir.mkdirs()) {
 			throw new IOException("Could not create directory " + outputDir);
@@ -32,7 +34,7 @@ public class TestLocalIndexedRepo extends TestCase {
 		httpd.stop();
 	}
 
-	public static void testLocalIndexLocation() throws Exception {
+	public void testLocalIndexLocation() throws Exception {
 		Processor reporter = new Processor();
 		LocalIndexedRepo repo = new LocalIndexedRepo();
 		Map<String,String> config = new HashMap<String,String>();
@@ -46,7 +48,7 @@ public class TestLocalIndexedRepo extends TestCase {
 		assertEquals(0, reporter.getWarnings().size());
 	}
 
-	public static void testLocalAndRemoteIndexLocations() throws Exception {
+	public void testLocalAndRemoteIndexLocations() throws Exception {
 		Processor reporter = new Processor();
 		LocalIndexedRepo repo = new LocalIndexedRepo();
 		Map<String,String> config = new HashMap<String,String>();
