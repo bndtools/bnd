@@ -21,6 +21,7 @@ Embedded-Activator: 	aQute.remote.agent.Activator
 Private-Package: \
 	aQute.remote.api,\
 	aQute.remote.agent,\
+	org.apache.felix.service.command,\
 	org.osgi.dto,\
 	org.osgi.framework.dto,\
 	aQute.remote.util
@@ -37,12 +38,9 @@ Private-Package: \
 #
  
 Import-Package: \
-	!org.apache.felix.service.command,\
 	org.osgi.framework;version='[1.5,2)',\
 	org.osgi.framework.launch;version='[1.0,2)',\
 	org.osgi.framework.wiring;version='[1.0,2)',\
 	org.osgi.dto;resolution:=optional,\
 	org.osgi.framework.dto;resolution:=optional,\
 	*
-
-DynamicImport-Package: 	org.apache.felix.service.command
