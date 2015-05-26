@@ -1,16 +1,29 @@
 package test.annotationheaders;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.util.Arrays;
 import java.util.Map.Entry;
-import java.util.jar.*;
-import java.util.regex.*;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import junit.framework.*;
-import aQute.bnd.annotation.headers.*;
-import aQute.bnd.annotation.licenses.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.annotation.headers.BundleCategory;
+import aQute.bnd.annotation.headers.BundleContributors;
+import aQute.bnd.annotation.headers.BundleCopyright;
+import aQute.bnd.annotation.headers.BundleDevelopers;
+import aQute.bnd.annotation.headers.BundleDocURL;
+import aQute.bnd.annotation.headers.Category;
+import aQute.bnd.annotation.headers.ProvideCapability;
+import aQute.bnd.annotation.headers.RequireCapability;
+import aQute.bnd.annotation.licenses.ASL_2_0;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import junit.framework.TestCase;
 
 public class AnnotationHeadersTest extends TestCase {
 
@@ -36,10 +49,22 @@ public class AnnotationHeadersTest extends TestCase {
 			assertEquals("abc", attrs.get("foo"));
 			
 			p = new Parameters(m.getMainAttributes().getValue("Require-Capability"));
+			// namespaces must be "osgi.ee", "nsx" and "nsy" ONLY
+			assertNotNull(p.get("nsx"));
+			assertNotNull(p.get("nsy"));
+			assertNotNull(p.get("nsz"));
+			assertNotNull(p.get("osgi.ee"));
+			assertEquals("spurious Require-Capability namespaces", 4, p.size());
+
 			attrs = p.get("nsx");
-			assertNotNull(attrs);
 			assertEquals(Arrays.asList("abc","def"), attrs.getTyped("foo"));
-			
+
+			attrs = p.get("nsy");
+			assertEquals("hello", attrs.get("value"));
+
+			attrs = p.get("nsz");
+			assertEquals("(nsz=*)", attrs.get("filter:"));
+			assertEquals("world", attrs.get("hello"));
 		}
 		finally {
 			b.close();

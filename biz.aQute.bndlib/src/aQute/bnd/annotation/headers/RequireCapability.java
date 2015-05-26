@@ -15,7 +15,10 @@ import java.lang.annotation.Target;
 		ElementType.ANNOTATION_TYPE, ElementType.TYPE
 })
 public @interface RequireCapability {
+
 	String value() default "";
+
+	String extra() default "";
 
 	/**
 	 * The capability namespace. For example: {@code osgi.contract}.

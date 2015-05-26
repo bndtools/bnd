@@ -1,15 +1,29 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
-import java.util.*;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
-import aQute.bnd.annotation.headers.*;
-import aQute.bnd.header.*;
+import aQute.bnd.annotation.headers.BundleCategory;
+import aQute.bnd.annotation.headers.BundleContributors;
+import aQute.bnd.annotation.headers.BundleCopyright;
+import aQute.bnd.annotation.headers.BundleDevelopers;
+import aQute.bnd.annotation.headers.BundleDocURL;
+import aQute.bnd.annotation.headers.BundleLicense;
+import aQute.bnd.annotation.headers.Category;
+import aQute.bnd.annotation.headers.ProvideCapability;
+import aQute.bnd.annotation.headers.RequireCapability;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.bnd.version.*;
-import aQute.lib.collections.*;
-import aQute.lib.strings.*;
+import aQute.bnd.version.Version;
+import aQute.lib.collections.MultiMap;
+import aQute.lib.strings.Strings;
 
 /**
  * This class parses the 'header annotations'. Header annotations are
@@ -307,9 +321,13 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		p.put(annotation.ns(), attrs );
 
 		String s = p.toString();
-		
-		if (annotation.value() != null)
-			s += ";" + annotation.value();
+
+		String extra = annotation.extra();
+		if (extra != null) {
+			extra = extra.trim();
+			if (extra.length() > 0)
+				s += ";" + extra;
+		}
 
 		add(Constants.REQUIRE_CAPABILITY, s);
 	}
