@@ -53,8 +53,9 @@ public class AnnotationHeadersTest extends TestCase {
 			assertNotNull(p.get("nsx"));
 			assertNotNull(p.get("nsy"));
 			assertNotNull(p.get("nsz"));
+			assertNotNull(p.get("param"));
 			assertNotNull(p.get("osgi.ee"));
-			assertEquals("spurious Require-Capability namespaces", 4, p.size());
+			assertEquals("spurious Require-Capability namespaces", 5, p.size());
 
 			attrs = p.get("nsx");
 			assertEquals(Arrays.asList("abc","def"), attrs.getTyped("foo"));
@@ -65,6 +66,9 @@ public class AnnotationHeadersTest extends TestCase {
 			attrs = p.get("nsz");
 			assertEquals("(nsz=*)", attrs.get("filter:"));
 			assertEquals("world", attrs.get("hello"));
+
+			attrs = p.get("param");
+			assertEquals("(&(a=hello)(b=goodbye))", attrs.get("filter:"));
 		}
 		finally {
 			b.close();

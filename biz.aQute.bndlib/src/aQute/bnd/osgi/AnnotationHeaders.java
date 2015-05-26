@@ -5,8 +5,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import aQute.bnd.annotation.headers.BundleCategory;
 import aQute.bnd.annotation.headers.BundleContributors;
@@ -57,6 +60,9 @@ import aQute.lib.strings.Strings;
  * {@link About} provides some more information.
  */
 class AnnotationHeaders extends ClassDataCollector implements Closeable {
+
+	static final Pattern SIMPLE_PARAM_PATTERN = Pattern
+			.compile("\\$\\{(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\}");
 
 	final Analyzer					analyzer;
 	final Set<TypeRef>				interesting	= new HashSet<TypeRef>();
@@ -314,11 +320,12 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		Parameters p = new Parameters();
 		Attrs attrs = getAttributes(a, "ns");
 		directivesAndVersion(attrs, "filter", "effective", "resolution");
-		
+		replaceParameters(attrs);
+
 		if ("".equals(attrs.get(Constants.FILTER_DIRECTIVE)))
 			attrs.remove(Constants.FILTER_DIRECTIVE);
 
-		p.put(annotation.ns(), attrs );
+		p.put(annotation.ns(), attrs);
 
 		String s = p.toString();
 
@@ -330,6 +337,30 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 
 		add(Constants.REQUIRE_CAPABILITY, s);
+	}
+
+	private void replaceParameters(Attrs attrs) throws IllegalArgumentException {
+		for (Entry<String,String> entry : attrs.entrySet()) {
+			boolean modified = false;
+			StringBuffer sb = new StringBuffer();
+
+			Matcher matcher = SIMPLE_PARAM_PATTERN.matcher(entry.getValue());
+			while (matcher.find()) {
+				modified = true;
+				String key = matcher.group(1);
+				String substitution = attrs.get(key);
+
+				if (SIMPLE_PARAM_PATTERN.matcher(substitution).find())
+					throw new IllegalArgumentException("nested substitutions not permitted");
+
+				matcher.appendReplacement(sb, substitution);
+			}
+
+			if (modified) {
+				matcher.appendTail(sb);
+				entry.setValue(sb.toString());
+			}
+		}
 	}
 
 	/*
