@@ -8,6 +8,7 @@ import test.annotationheaders.attrs.AnnotationWithAttrs.E;
 @ExtendedProvide(foo = 3, bar = 3)
 @AnnotationWithValue("hello")
 @RequireCapability(ns = "nsz", filter = "(nsz=*)", extra = "hello=world")
+@ParameterisedAnnotation(param1 = "hello", param2 = "goodbye")
 public class UsingAttrs {
 
 }
