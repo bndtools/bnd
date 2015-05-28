@@ -1,10 +1,13 @@
 package aQute.bnd.xmlattribute;
 
-import java.util.*;
+import java.lang.reflect.Array;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-import aQute.bnd.annotation.xml.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.tag.*;
+import aQute.bnd.annotation.xml.XMLAttribute;
+import aQute.bnd.osgi.Annotation;
+import aQute.lib.tag.Tag;
 
 public class ExtensionDef {
 
@@ -50,7 +53,20 @@ public class ExtensionDef {
 			for (Map.Entry<XMLAttribute,Annotation> entry : attributes.entrySet()) {
 				String prefix = namespaces.getPrefix(entry.getKey().namespace());
 				for (String key : entry.getValue().keySet()) {
-					String value = String.valueOf(entry.getValue().get(key));
+					Object obj = entry.getValue().get(key);
+					String value;
+					if (obj.getClass().isArray()) {
+						StringBuilder sb = new StringBuilder();
+						String sep = "";
+						for (int i = 0; i < Array.getLength(obj); i++) {
+							Object el = Array.get(obj, i);
+							sb.append(sep).append(String.valueOf(el));
+							sep = " ";
+						}
+						value = sb.toString();
+					} else {
+						value = String.valueOf(obj);
+					}
 					tag.addAttribute(prefix + ":" + key, value);
 				}
 			}
