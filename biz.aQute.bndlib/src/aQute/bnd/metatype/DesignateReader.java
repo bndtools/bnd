@@ -1,14 +1,18 @@
 package aQute.bnd.metatype;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
 
-import org.osgi.service.component.annotations.*;
-import org.osgi.service.metatype.annotations.*;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.metatype.annotations.Designate;
 
-import aQute.bnd.annotation.xml.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.annotation.xml.XMLAttribute;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Annotation;
+import aQute.bnd.osgi.ClassDataCollector;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.bnd.xmlattribute.*;
+import aQute.bnd.xmlattribute.XMLAttributeFinder;
 
 public class DesignateReader extends ClassDataCollector {
 	
@@ -57,7 +61,7 @@ public class DesignateReader extends ClassDataCollector {
 			boolean factoryPid = Boolean.TRUE == designate.get("factory");
 			if (def == null)
 
-			return new DesignateDef(id, pid, factoryPid);
+				return new DesignateDef(id, pid, factoryPid, finder);
 			def.ocdRef = id;
 			def.pid = pid;
 			def.factory = factoryPid;
@@ -76,7 +80,7 @@ public class DesignateReader extends ClassDataCollector {
 			else if (a instanceof Component)
 				pids = ((Component)a).configurationPid();
 			else {
-				XMLAttribute xmlAttr = finder.getXMLAttribute(annotation, analyzer);
+				XMLAttribute xmlAttr = finder.getXMLAttribute(annotation);
 				if (xmlAttr != null) {
 					doXmlAttribute(annotation, xmlAttr);
 				}
@@ -90,7 +94,7 @@ public class DesignateReader extends ClassDataCollector {
 
 	private void doXmlAttribute(Annotation annotation, XMLAttribute xmlAttr) {
 		if (def == null)
-			def = new DesignateDef();
+			def = new DesignateDef(finder);
 		def.addExtensionAttribute(xmlAttr, annotation);
 	}
 

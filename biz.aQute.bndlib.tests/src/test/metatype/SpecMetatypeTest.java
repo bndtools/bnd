@@ -1328,24 +1328,28 @@ public class SpecMetatypeTest extends TestCase {
 		xt.assertExactAttribute("true", "metatype:MetaData/OCD/AD[@id='enabled']/@default");
 		xt.assertExactAttribute(Integer.MAX_VALUE + "", "metatype:MetaData/OCD/AD[@id='notSoSimple']/@cardinality");
 
-		xt.assertCount(7, "metatype:MetaData/OCD/@*");
+		xt.assertCount(8, "metatype:MetaData/OCD/@*");
 		xt.assertExactAttribute("ocd", "metatype:MetaData/OCD/@foo:stringAttr");
 		xt.assertExactAttribute("A", "metatype:MetaData/OCD/@foo:fooAttr");
 		xt.assertExactAttribute("foo bar", "metatype:MetaData/OCD/@foo:stringArrayAttr");
 		xt.assertExactAttribute("1 2 3", "metatype:MetaData/OCD/@foo:intArrayAttr");
+		xt.assertExactAttribute("true", "metatype:MetaData/OCD/@foo:booleanAttr");
 
 		xt.assertCount(3, "metatype:MetaData/OCD/AD[@id='simple']/@*");
 
-		xt.assertCount(7, "metatype:MetaData/OCD/AD[@id='notSoSimple']/@*");
+		xt.assertCount(8, "metatype:MetaData/OCD/AD[@id='notSoSimple']/@*");
 		xt.assertExactAttribute("ad", "metatype:MetaData/OCD/AD[@id='notSoSimple']/@foo:stringAttr2");
 		xt.assertExactAttribute("B", "metatype:MetaData/OCD/AD[@id='notSoSimple']/@foo:fooAttr2");
 		xt.assertExactAttribute(String.class.getName(), "metatype:MetaData/OCD/AD[@id='notSoSimple']/@foo:classAttr2");
+		xt.assertExactAttribute("true", "metatype:MetaData/OCD/AD[@id='notSoSimple']/@foo:booleanAttr2");
 
 		xt.assertCount(4, "metatype:MetaData/OCD/AD[@id='stringCollection']/@*");
 
-		xt.assertCount(7, "metatype:MetaData/OCD/AD[@id='enabled']/@*");
+		xt.assertCount(9, "metatype:MetaData/OCD/AD[@id='enabled']/@*");
 		xt.assertExactAttribute("ad2", "metatype:MetaData/OCD/AD[@id='enabled']/@foo:stringAttr2");
 		xt.assertExactAttribute("A", "metatype:MetaData/OCD/AD[@id='enabled']/@foo:fooAttr2");
+		xt.assertExactAttribute(Object.class.getName(), "metatype:MetaData/OCD/AD[@id='enabled']/@foo:classAttr2");
+		xt.assertExactAttribute("true", "metatype:MetaData/OCD/AD[@id='enabled']/@foo:booleanAttr2");
 
 	}
 

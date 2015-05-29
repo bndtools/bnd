@@ -1,24 +1,51 @@
 package test.component;
 
-import java.io.*;
-import java.lang.annotation.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.File;
+import java.io.Serializable;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
-import javax.xml.xpath.*;
+import javax.xml.xpath.XPathExpressionException;
 
-import org.osgi.framework.*;
-import org.osgi.service.component.*;
-import org.osgi.service.component.annotations.*;
-import org.osgi.service.log.*;
-import org.osgi.service.metatype.annotations.*;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.ComponentServiceObjects;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.FieldOption;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
+import org.osgi.service.component.annotations.ServiceScope;
+import org.osgi.service.log.LogService;
+import org.osgi.service.metatype.annotations.Designate;
 
-import aQute.bnd.annotation.xml.*;
-import aQute.bnd.component.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.annotation.xml.XMLAttribute;
+import aQute.bnd.component.AnnotationReader;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.test.*;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.test.BndTestCase;
+import aQute.bnd.test.XmlTester;
 
 /**
  * #118
@@ -2501,7 +2528,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@TestExtensions(stringAttr = "bar", fooAttr = Foo.A)
 	@Component
-	public static class ExtraAttrbutes implements Serializable, Runnable {
+	public static class ExtraAttributes implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
 		@Activate
@@ -2531,16 +2558,16 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 
-	public static void testExtraAttrbutes() throws Exception {
+	public static void testExtraAttributes() throws Exception {
 		Builder b = new Builder();
-		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$ExtraAttrbutes*");
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$ExtraAttributes*");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
 		assertOk(b);
 
-		String name = ExtraAttrbutes.class.getName();
+		String name = ExtraAttributes.class.getName();
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
@@ -2553,14 +2580,16 @@ public class DSAnnotationTest extends BndTestCase {
 		// Default must be the implementation class
 		xt.assertAttribute(name, "scr:component/@name");
 
-		xt.assertCount(6, "scr:component/@*");
+		xt.assertCount(7, "scr:component/@*");
 		xt.assertAttribute("bar", "scr:component/@foo:stringAttr");
 		xt.assertAttribute("A", "scr:component/@foo:fooAttr");
+		xt.assertAttribute("true", "scr:component/@foo:booleanAttr");
 
 		xt.assertCount(3, "scr:component/reference");
-		xt.assertCount(5, "scr:component/reference[1]/@*");
+		xt.assertCount(6, "scr:component/reference[1]/@*");
 		xt.assertAttribute("bax", "scr:component/reference[1]/@foo:stringAttr2");
 		xt.assertAttribute("A", "scr:component/reference[1]/@foo:fooAttr2");
+		xt.assertAttribute("true", "scr:component/reference[1]/@foo:booleanAttr2");
 
 		xt.assertCount(3, "scr:component/reference[2]/@*");
 		xt.assertCount(6, "scr:component/reference[3]/@*");
@@ -2575,7 +2604,7 @@ public class DSAnnotationTest extends BndTestCase {
 		ElementType.TYPE
 	})
 	@interface TestExtensions3 {
-		boolean booleanAttr3() default true;
+		boolean booleanAttr3() default false;
 
 		String stringAttr3();
 
@@ -2585,7 +2614,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@TestExtensions(stringAttr = "bar", fooAttr = Foo.A)
 	@TestExtensions3(stringAttr3 = "bar3", fooAttr3 = Foo.B)
 	@Component
-	public static class PrefixCollisionExtraAttrbutes implements Serializable, Runnable {
+	public static class PrefixCollisionExtraAttributes implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
 		@Activate
@@ -2615,16 +2644,16 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 
-	public static void testPrefixCollisionExtraAttrbutes() throws Exception {
+	public static void testPrefixCollisionExtraAttributes() throws Exception {
 		Builder b = new Builder();
-		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$PrefixCollisionExtraAttrbutes*");
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$PrefixCollisionExtraAttributes*");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
 		assertOk(b);
 
-		String name = PrefixCollisionExtraAttrbutes.class.getName();
+		String name = PrefixCollisionExtraAttributes.class.getName();
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
@@ -2637,16 +2666,19 @@ public class DSAnnotationTest extends BndTestCase {
 		// Default must be the implementation class
 		xt.assertAttribute(name, "scr:component/@name");
 
-		xt.assertCount(8, "scr:component/@*");
+		xt.assertCount(10, "scr:component/@*");
 		xt.assertAttribute("bar", "scr:component/@foo:stringAttr");
 		xt.assertAttribute("A", "scr:component/@foo:fooAttr");
+		xt.assertAttribute("true", "scr:component/@foo:booleanAttr");
 		xt.assertAttribute("bar3", "scr:component/@foo1:stringAttr3");
 		xt.assertAttribute("B", "scr:component/@foo1:fooAttr3");
+		xt.assertAttribute("false", "scr:component/@foo1:booleanAttr3");
 
 		xt.assertCount(3, "scr:component/reference");
-		xt.assertCount(5, "scr:component/reference[1]/@*");
+		xt.assertCount(6, "scr:component/reference[1]/@*");
 		xt.assertAttribute("bax", "scr:component/reference[1]/@foo:stringAttr2");
 		xt.assertAttribute("A", "scr:component/reference[1]/@foo:fooAttr2");
+		xt.assertAttribute("true", "scr:component/reference[1]/@foo:booleanAttr2");
 
 		xt.assertCount(3, "scr:component/reference[2]/@*");
 		xt.assertCount(6, "scr:component/reference[3]/@*");
@@ -2684,7 +2716,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@TestExtensions4(stringAttr4 = "bar", fooAttr4 = Foo.A)
 	@TestExtensions5(stringAttr5 = "bar3", fooAttr5 = Foo.B)
 	@Component
-	public static class DefaultPrefixCollisionExtraAttrbutes implements Serializable, Runnable {
+	public static class DefaultPrefixCollisionExtraAttributes implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
 		@Activate
@@ -2702,16 +2734,16 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 
-	public static void testPrefixCollisionExtraAttrbutesDefaultPrefix() throws Exception {
+	public static void testPrefixCollisionExtraAttributesDefaultPrefix() throws Exception {
 		Builder b = new Builder();
-		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DefaultPrefixCollisionExtraAttrbutes*");
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DefaultPrefixCollisionExtraAttributes*");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
 		assertOk(b);
 
-		String name = DefaultPrefixCollisionExtraAttrbutes.class.getName();
+		String name = DefaultPrefixCollisionExtraAttributes.class.getName();
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
@@ -2724,11 +2756,13 @@ public class DSAnnotationTest extends BndTestCase {
 		// Default must be the implementation class
 		xt.assertAttribute(name, "scr:component/@name");
 
-		xt.assertCount(8, "scr:component/@*");
+		xt.assertCount(10, "scr:component/@*");
 		xt.assertAttribute("bar", "scr:component/@ns:stringAttr4");
 		xt.assertAttribute("A", "scr:component/@ns:fooAttr4");
+		xt.assertAttribute("true", "scr:component/@ns:booleanAttr4");
 		xt.assertAttribute("bar3", "scr:component/@ns1:stringAttr5");
 		xt.assertAttribute("B", "scr:component/@ns1:fooAttr5");
+		xt.assertAttribute("true", "scr:component/@ns1:booleanAttr5");
 
 	}
 

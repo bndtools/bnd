@@ -1,13 +1,28 @@
 package aQute.bnd.component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
-import aQute.bnd.version.*;
-import aQute.bnd.xmlattribute.*;
-import aQute.lib.strings.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Descriptors;
+import aQute.bnd.osgi.Instruction;
+import aQute.bnd.osgi.Instructions;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.AnalyzerPlugin;
+import aQute.bnd.version.Version;
+import aQute.bnd.xmlattribute.XMLAttributeFinder;
+import aQute.lib.strings.Strings;
 
 /**
  * Analyze the class space for any classes that have an OSGi annotation for DS.
@@ -52,7 +67,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 		TreeSet<String> requires = new TreeSet<String>();
 		Version maxVersion = AnnotationReader.V1_0;
 
-		XMLAttributeFinder finder = new XMLAttributeFinder();
+		XMLAttributeFinder finder = new XMLAttributeFinder(analyzer);
 		for (Clazz c : list) {
 			for (Instruction instruction : instructions.keySet()) {
 

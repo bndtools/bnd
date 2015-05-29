@@ -1,13 +1,23 @@
 package aQute.bnd.metatype;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import aQute.bnd.component.TagResource;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.bnd.service.*;
-import aQute.bnd.xmlattribute.*;
+import aQute.bnd.osgi.Instruction;
+import aQute.bnd.osgi.Instructions;
+import aQute.bnd.service.AnalyzerPlugin;
+import aQute.bnd.xmlattribute.XMLAttributeFinder;
 
 /**
  * Analyze the class space for any classes that have an OSGi annotation for DS.
@@ -43,7 +53,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		Instructions instructions = new Instructions(header);
 		Collection<Clazz> list = analyzer.getClassspace().values();
 
-		XMLAttributeFinder finder = new XMLAttributeFinder();
+		XMLAttributeFinder finder = new XMLAttributeFinder(analyzer);
 		for (Clazz c: list) {
 			for (Instruction instruction : instructions.keySet()) {
 

@@ -1,16 +1,24 @@
 package aQute.bnd.component;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
-import org.osgi.service.component.annotations.*;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.component.annotations.ServiceScope;
 
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.bnd.version.*;
-import aQute.bnd.xmlattribute.*;
-import aQute.lib.collections.*;
-import aQute.lib.tag.*;
+import aQute.bnd.version.Version;
+import aQute.bnd.xmlattribute.ExtensionDef;
+import aQute.bnd.xmlattribute.Namespaces;
+import aQute.bnd.xmlattribute.XMLAttributeFinder;
+import aQute.lib.collections.MultiMap;
+import aQute.lib.tag.Tag;
 
 /**
  * This class just holds the information for the component, implementation, and
@@ -41,6 +49,10 @@ class ComponentDef extends ExtensionDef {
 	String							xmlns;
 	String[]						configurationPid;
 	List<Tag>						propertyTags	= new ArrayList<Tag>();
+
+	public ComponentDef(XMLAttributeFinder finder) {
+		super(finder);
+	}
 
 	/**
 	 * Called to prepare. If will look for any errors or inconsistencies in the

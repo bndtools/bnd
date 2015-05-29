@@ -1,10 +1,15 @@
 package aQute.bnd.metatype;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import aQute.bnd.osgi.*;
-import aQute.bnd.xmlattribute.*;
-import aQute.lib.tag.*;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.xmlattribute.ExtensionDef;
+import aQute.bnd.xmlattribute.Namespaces;
+import aQute.bnd.xmlattribute.XMLAttributeFinder;
+import aQute.lib.tag.Tag;
 
 public class OCDDef extends ExtensionDef {
 	
@@ -17,6 +22,10 @@ public class OCDDef extends ExtensionDef {
 	String localization;
 	String description;
 	
+	public OCDDef(XMLAttributeFinder finder) {
+		super(finder);
+	}
+
 	void prepare(Analyzer analyzer) {
 		Set<String> adIds = new HashSet<String>();
 		for (ADDef ad: attributes) {

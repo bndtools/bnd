@@ -11,7 +11,13 @@ import aQute.lib.tag.Tag;
 
 public class ExtensionDef {
 
+	protected final XMLAttributeFinder				finder;
+
 	protected final Map<XMLAttribute,Annotation>	attributes	= new LinkedHashMap<XMLAttribute,Annotation>();
+
+	public ExtensionDef(XMLAttributeFinder finder) {
+		this.finder = finder;
+	}
 
 	public void addExtensionAttribute(XMLAttribute xmlAttr, Annotation a) {
 		attributes.put(xmlAttr, a);
@@ -52,6 +58,8 @@ public class ExtensionDef {
 		if (namespaces != null) {
 			for (Map.Entry<XMLAttribute,Annotation> entry : attributes.entrySet()) {
 				String prefix = namespaces.getPrefix(entry.getKey().namespace());
+				Annotation a = entry.getValue();
+				Map<String,String> props = finder.getDefaults(a);
 				for (String key : entry.getValue().keySet()) {
 					Object obj = entry.getValue().get(key);
 					String value;
@@ -67,10 +75,13 @@ public class ExtensionDef {
 					} else {
 						value = String.valueOf(obj);
 					}
-					tag.addAttribute(prefix + ":" + key, value);
+					props.put(key, value);
 				}
+				for (Map.Entry<String,String> prop : props.entrySet())
+					tag.addAttribute(prefix + ":" + prop.getKey(), prop.getValue());
 			}
 		}
 	}
+
 
 }

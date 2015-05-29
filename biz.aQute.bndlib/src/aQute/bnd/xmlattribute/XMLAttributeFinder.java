@@ -1,21 +1,35 @@
 package aQute.bnd.xmlattribute;
 
-import java.util.*;
+import java.lang.reflect.Array;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-import aQute.bnd.annotation.xml.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.annotation.xml.XMLAttribute;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Annotation;
+import aQute.bnd.osgi.ClassDataCollector;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 
 public class XMLAttributeFinder extends ClassDataCollector {
 
-	Map<TypeRef,XMLAttribute>	annoCache	= new HashMap<TypeRef,XMLAttribute>();
+	private final Analyzer			analyzer;
 
-	public XMLAttribute getXMLAttribute(Annotation a, Analyzer analyzer) throws Exception {
+	Map<TypeRef,XMLAttribute>	annoCache	= new HashMap<TypeRef,XMLAttribute>();
+	Map<TypeRef,Map<String,String>>	defaultsCache	= new HashMap<TypeRef,Map<String,String>>();
+
+	public XMLAttributeFinder(Analyzer analyzer) {
+		this.analyzer = analyzer;
+	}
+
+	public synchronized XMLAttribute getXMLAttribute(Annotation a) throws Exception {
 		TypeRef name = a.getName();
 		if (annoCache.containsKey(name))
 			return annoCache.get(name);
 		Clazz clazz = analyzer.findClass(name);
 		if (clazz != null) {
+			xmlAttr = null;
 			clazz.parseClassFileWithCollector(this);
 			annoCache.put(name, xmlAttr);
 			return xmlAttr;
@@ -30,6 +44,81 @@ public class XMLAttributeFinder extends ClassDataCollector {
 		java.lang.annotation.Annotation a = annotation.getAnnotation();
 		if (a instanceof XMLAttribute)
 			xmlAttr = (XMLAttribute) a;
+	}
+
+	public Map<String,String> getDefaults(Annotation a) {
+		TypeRef name = a.getName();
+		Map<String,String> defaults = defaultsCache.get(name);
+		if (defaults == null)
+			defaults = extractDefaults(name, analyzer);
+		if (defaults == null)
+			return new LinkedHashMap<String,String>();
+		return new LinkedHashMap<String,String>(defaults);
+	}
+
+	private Map<String,String> extractDefaults(TypeRef name, final Analyzer analyzer) {
+		try {
+			Clazz clazz = analyzer.findClass(name);
+			final Map<String,String> props = new LinkedHashMap<String,String>();
+			clazz.parseClassFileWithCollector(new ClassDataCollector() {
+
+				@Override
+				public void annotationDefault(Clazz.MethodDef defined) {
+					Object value = defined.getConstant();
+					// check type, exit with warning if annotation or annotation
+					// array
+					boolean isClass = false;
+					TypeRef type = defined.getType().getClassRef();
+					if (!type.isPrimitive()) {
+						if (Class.class.getName().equals(type.getFQN())) {
+							isClass = true;
+						} else {
+							try {
+								Clazz r = analyzer.findClass(type);
+								if (r.isAnnotation()) {
+									analyzer.warning("Nested annotation type found in field % s, %s",
+											defined.getName(), type.getFQN());
+									return;
+								}
+							}
+							catch (Exception e) {
+								analyzer.error("Exception extracting annotation defaults for type %s", e, type);
+								return;
+							}
+						}
+					}
+					if (value != null) {
+						String name = defined.getName();
+						if (value.getClass().isArray()) {
+							StringBuilder sb = new StringBuilder();
+							String sep = "";
+							// add element individually
+							for (int i = 0; i < Array.getLength(value); i++) {
+								Object element = Array.get(value, i);
+								sb.append(sep).append(convert(element, isClass));
+								sep = " ";
+							}
+							props.put(name, sb.toString());
+						} else {
+							props.put(name, convert(value, isClass));
+						}
+					}
+				}
+
+				private String convert(Object value, boolean isClass) {
+					if (isClass)
+						return ((TypeRef) value).getFQN();
+					return String.valueOf(value);
+				}
+
+			});
+			defaultsCache.put(name, props);
+			return props;
+		}
+		catch (Exception e) {
+			analyzer.error("Exception extracting annotation defaults for type %s", e, name);
+		}
+		return null;
 	}
 
 }
