@@ -1,13 +1,21 @@
 package aQute.remote.plugin;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
-import aQute.bnd.build.*;
-import aQute.bnd.osgi.*;
-import aQute.remote.api.*;
+import aQute.bnd.build.RunSession;
+import aQute.bnd.osgi.Constants;
+import aQute.remote.api.Agent;
 
 /**
  * A session is a connection to a remote framework. It is possible to have many
@@ -140,7 +148,7 @@ public class RunSessionImpl implements RunSession {
 	}
 
 	Map<String,String> getBundles(Collection<String> collection, String header) throws Exception {
-		Map<String,String> newer = new HashMap<String,String>();
+		Map<String,String> newer = new LinkedHashMap<String,String>();
 
 		for (String c : collection) {
 			File f = new File(c);
