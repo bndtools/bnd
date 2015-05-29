@@ -1,22 +1,38 @@
 package test.metatype;
 
-import java.io.*;
-import java.lang.annotation.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
 
-import javax.xml.xpath.*;
+import javax.xml.xpath.XPathExpressionException;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
-import org.osgi.service.component.annotations.*;
-import org.osgi.service.metatype.annotations.*;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.AttributeType;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.osgi.service.metatype.annotations.Option;
 
-import aQute.bnd.annotation.xml.*;
-import aQute.bnd.metatype.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.test.*;
-import aQute.lib.io.*;
+import aQute.bnd.annotation.xml.XMLAttribute;
+import aQute.bnd.metatype.MetatypeVersion;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.test.XmlTester;
+import aQute.lib.io.IO;
 
 @SuppressWarnings({
 		"resource", "restriction"
@@ -1245,6 +1261,10 @@ public class SpecMetatypeTest extends TestCase {
 		String stringAttr();
 
 		Foo fooAttr();
+
+		String[] stringArrayAttr();
+
+		int[] intArrayAttr();
 	}
 
 	@XMLAttribute(namespace = "org.foo.extensions.v1", prefix = "foo", embedIn = "*")
@@ -1262,7 +1282,11 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	@ObjectClassDefinition
-	@OCDTestExtensions(stringAttr = "ocd", fooAttr = Foo.A)
+	@OCDTestExtensions(stringAttr = "ocd", fooAttr = Foo.A, stringArrayAttr = {
+			"foo", "bar"
+	}, intArrayAttr = {
+			1, 2, 3
+	})
 	public static interface TestExtensions {
 		@AttributeDefinition
 		String simple();
@@ -1304,9 +1328,11 @@ public class SpecMetatypeTest extends TestCase {
 		xt.assertExactAttribute("true", "metatype:MetaData/OCD/AD[@id='enabled']/@default");
 		xt.assertExactAttribute(Integer.MAX_VALUE + "", "metatype:MetaData/OCD/AD[@id='notSoSimple']/@cardinality");
 
-		xt.assertCount(5, "metatype:MetaData/OCD/@*");
+		xt.assertCount(7, "metatype:MetaData/OCD/@*");
 		xt.assertExactAttribute("ocd", "metatype:MetaData/OCD/@foo:stringAttr");
 		xt.assertExactAttribute("A", "metatype:MetaData/OCD/@foo:fooAttr");
+		xt.assertExactAttribute("foo bar", "metatype:MetaData/OCD/@foo:stringArrayAttr");
+		xt.assertExactAttribute("1 2 3", "metatype:MetaData/OCD/@foo:intArrayAttr");
 
 		xt.assertCount(3, "metatype:MetaData/OCD/AD[@id='simple']/@*");
 

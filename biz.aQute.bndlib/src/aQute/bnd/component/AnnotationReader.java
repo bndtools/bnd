@@ -114,8 +114,9 @@ public class AnnotationReader extends ClassDataCollector {
 
 				Clazz ec = analyzer.findClass(extendsClass);
 				if (ec == null) {
-					analyzer.error("Missing super class for DS annotations: " + extendsClass + " from "
-							+ clazz.getClassName()).details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null, 
+					analyzer.error("Missing super class for DS annotations: %s from %s", extendsClass,
+							clazz.getClassName()).details(
+							new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
 									ErrorType.UNABLE_TO_LOCATE_SUPER_CLASS));
 				} else {
 					ec.parseClassFileWithCollector(this);
@@ -129,7 +130,8 @@ public class AnnotationReader extends ClassDataCollector {
 						"updated$1");
 
 				if (rdef.policy == ReferencePolicy.DYNAMIC && rdef.unbind == null)
-					analyzer.error("In component %s, reference %s is dynamic but has no unbind method.", component.name, rdef.name)
+					analyzer.error("In component class %s, reference %s is dynamic but has no unbind method.",
+							className.getFQN(), rdef.name)
 					.details(new DeclarativeServicesAnnotationError(className.getFQN(), rdef.bind, rdef.bindDescriptor, 
 							ErrorType.DYNAMIC_REFERENCE_WITHOUT_UNBIND));
 			}

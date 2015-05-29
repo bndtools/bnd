@@ -1136,7 +1136,7 @@ public class Builder extends Analyzer {
 			if (absentIsOk)
 				return;
 
-			error("Can not find JAR file " + source);
+			error("Can not find JAR file '" + source + "'");
 		} else {
 			addAll(jar, sub, instr, destination);
 		}
