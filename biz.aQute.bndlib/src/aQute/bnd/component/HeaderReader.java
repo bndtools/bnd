@@ -18,13 +18,18 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.osgi.service.component.annotations.ServiceScope;
 
-import aQute.bnd.component.error.*;
-import aQute.bnd.component.error.DeclarativeServicesAnnotationError.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.component.error.DeclarativeServicesAnnotationError;
+import aQute.bnd.component.error.DeclarativeServicesAnnotationError.ErrorType;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.ClassDataCollector;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.MethodDef;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.lib.tag.Tag;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.Version;
+import aQute.lib.tag.Tag;
 
 public class HeaderReader extends Processor {
 	final static Pattern		PROPERTY_PATTERN		= Pattern
@@ -48,7 +53,7 @@ public class HeaderReader extends Processor {
     
 	public Tag createComponentTag(String name, String impl, Map<String, String> info)
 	throws Exception {
-		final ComponentDef cd = new ComponentDef();
+		final ComponentDef cd = new ComponentDef(null);
 		cd.name = name;
 		if (info.get(COMPONENT_ENABLED) != null)
 			cd.enabled = Boolean.valueOf(info.get(COMPONENT_ENABLED));
@@ -465,7 +470,7 @@ public class HeaderReader extends Processor {
 			}
 			TypeRef ref = analyzer.getTypeRefFromFQN(interfaceName);
 			analyzer.referTo(ref);
-			ReferenceDef rd = new ReferenceDef();
+			ReferenceDef rd = new ReferenceDef(null);
 			rd.name = referenceName;
 			rd.service = interfaceName;
 

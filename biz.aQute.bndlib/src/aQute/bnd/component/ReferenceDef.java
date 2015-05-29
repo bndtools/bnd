@@ -1,11 +1,18 @@
 package aQute.bnd.component;
 
-import org.osgi.service.component.annotations.*;
+import org.osgi.service.component.annotations.FieldOption;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
+import org.osgi.service.component.annotations.ReferenceScope;
 
-import aQute.bnd.osgi.*;
-import aQute.bnd.version.*;
-import aQute.bnd.xmlattribute.*;
-import aQute.lib.tag.*;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Verifier;
+import aQute.bnd.version.Version;
+import aQute.bnd.xmlattribute.ExtensionDef;
+import aQute.bnd.xmlattribute.Namespaces;
+import aQute.bnd.xmlattribute.XMLAttributeFinder;
+import aQute.lib.tag.Tag;
 
 /**
  * Holds the information in the reference element.
@@ -30,6 +37,10 @@ class ReferenceDef extends ExtensionDef {
 	String					field;
 	FieldOption				fieldOption;
 	FieldCollectionType		fieldCollectionType;
+
+	public ReferenceDef(XMLAttributeFinder finder) {
+		super(finder);
+	}
 
 	/**
 	 * Prepare the reference, will check for any errors.

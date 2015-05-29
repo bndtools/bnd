@@ -1,17 +1,34 @@
 package aQute.bnd.metatype;
 
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.regex.*;
+import java.lang.reflect.Array;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.osgi.service.metatype.annotations.*;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.AttributeType;
+import org.osgi.service.metatype.annotations.Icon;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.osgi.service.metatype.annotations.Option;
 
-import aQute.bnd.annotation.xml.*;
+import aQute.bnd.annotation.xml.XMLAttribute;
 import aQute.bnd.metatype.MetatypeAnnotations.Options;
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Annotation;
+import aQute.bnd.osgi.ClassDataCollector;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.bnd.xmlattribute.*;
+import aQute.bnd.xmlattribute.XMLAttributeFinder;
 
 public class OCDReader extends ClassDataCollector {
 	
@@ -96,7 +113,7 @@ public class OCDReader extends ClassDataCollector {
 
 	@Override
 	public void method(MethodDef defined) {
-		current = new ADDef();
+		current = new ADDef(finder);
 		methods.put(defined, current);
 	}
 
@@ -387,7 +404,7 @@ public class OCDReader extends ClassDataCollector {
 				current.ad = (AttributeDefinition) a;
 				current.a = annotation;
 			} else {
-				XMLAttribute xmlAttr = finder.getXMLAttribute(annotation, analyzer);
+				XMLAttribute xmlAttr = finder.getXMLAttribute(annotation);
 				if (xmlAttr != null) {
 					doXmlAttribute(annotation, xmlAttr);
 				}
@@ -403,7 +420,7 @@ public class OCDReader extends ClassDataCollector {
 		if (current == null) {
 			if (clazz.isInterface()) {
 				if (ocd == null)
-					ocd = new OCDDef();
+					ocd = new OCDDef(finder);
 				ocd.addExtensionAttribute(xmlAttr, annotation);
 			}
 		} else {
@@ -415,7 +432,7 @@ public class OCDReader extends ClassDataCollector {
     	if (topLevel) {
 			if (clazz.isInterface()) {
 				if (ocd == null)
-					ocd = new OCDDef();
+					ocd = new OCDDef(finder);
 				ocd.id = o.id() == null ? name.getFQN() : o.id();
 				ocd.name = o.name() == null ? space(ocd.id) : o.name();
 				ocd.description = o.description() == null ? "" : o.description();
@@ -442,7 +459,7 @@ public class OCDReader extends ClassDataCollector {
 
 	private void designates(String[] pids, boolean factory) {
 		for (String pid: pids) {
-			ocd.designates.add(new DesignateDef(ocd.id, pid, factory));
+			ocd.designates.add(new DesignateDef(ocd.id, pid, factory, finder));
 		}		
 	}
 

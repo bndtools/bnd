@@ -1,35 +1,46 @@
 package aQute.bnd.component;
 
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.Map.*;
-import java.util.regex.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.osgi.service.component.annotations.*;
-import org.osgi.service.metatype.annotations.*;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferenceScope;
+import org.osgi.service.component.annotations.ServiceScope;
+import org.osgi.service.metatype.annotations.Designate;
 
-import aQute.bnd.annotation.xml.*;
-import aQute.bnd.component.DSAnnotations.*;
-import aQute.bnd.component.error.*;
-import aQute.bnd.component.error.DeclarativeServicesAnnotationError.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.osgi.Clazz.*;
-import aQute.bnd.osgi.Descriptors.*;
-import aQute.bnd.version.*;
-import aQute.bnd.xmlattribute.*;
-import aQute.lib.collections.*;
+import aQute.bnd.annotation.xml.XMLAttribute;
+import aQute.bnd.component.DSAnnotations.Options;
+import aQute.bnd.component.error.DeclarativeServicesAnnotationError;
+import aQute.bnd.component.error.DeclarativeServicesAnnotationError.ErrorType;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Annotation;
+import aQute.bnd.osgi.ClassDataCollector;
+import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Clazz.FieldDef;
+import aQute.bnd.osgi.Clazz.MethodDef;
+import aQute.bnd.osgi.Descriptors;
+import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.Verifier;
+import aQute.bnd.version.Version;
+import aQute.bnd.xmlattribute.XMLAttributeFinder;
+import aQute.lib.collections.MultiMap;
 
 /**
- * fixup any unbind methods To declare no unbind method, the value "-" must be
- * used. If not specified, the name of the unbind method is derived from the
- * name of the annotated bind method. If the annotated method name begins with
- * set, that is replaced with unset to derive the unbind method name. If the
- * annotated method name begins with add, that is replaced with remove to derive
- * the unbind method name. Otherwise, un is prefixed to the annotated method
- * name to derive the unbind method name.
- * 
- * @return
- * @throws Exception
+ * Processes spec DS annotations into xml.
  */
 public class AnnotationReader extends ClassDataCollector {
 	final static TypeRef[]		EMPTY					= new TypeRef[0];
@@ -71,7 +82,7 @@ public class AnnotationReader extends ClassDataCollector {
 	static Pattern				DEACTIVATEDESCRIPTORDS13	= Pattern
 																.compile("\\(((L([^;]+);)|(I))*\\)(V|(Ljava/util/Map;))");
 
-	ComponentDef				component				= new ComponentDef();
+	ComponentDef											component;
 
 	Clazz						clazz;
 	TypeRef						interfaces[];
@@ -94,6 +105,7 @@ public class AnnotationReader extends ClassDataCollector {
 		this.clazz = clazz;
 		this.options = options;
 		this.finder = finder;
+		this.component = new ComponentDef(finder);
 	}
 
 	public static ComponentDef getDefinition(Clazz c, Analyzer analyzer, EnumSet<Options> options, XMLAttributeFinder finder) throws Exception {
@@ -205,7 +217,7 @@ public class AnnotationReader extends ClassDataCollector {
 			else if (annotation.getName().getFQN().startsWith("aQute.bnd.annotation.component"))
 				handleMixedUsageError(annotation);
 			else {
-				XMLAttribute xmlAttr = finder.getXMLAttribute(annotation, analyzer);
+				XMLAttribute xmlAttr = finder.getXMLAttribute(annotation);
 				if (xmlAttr != null) {
 					doXmlAttribute(annotation, xmlAttr);
 				}
@@ -249,7 +261,7 @@ public class AnnotationReader extends ClassDataCollector {
 		else {
 			ReferenceDef ref = referencesByMember.get(member);
 			if (ref == null) {
-				ref = new ReferenceDef();
+				ref = new ReferenceDef(finder);
 				referencesByMember.put(member, ref);
 			}
 			ref.addExtensionAttribute(xmlAttr, annotation);
@@ -475,17 +487,20 @@ public class AnnotationReader extends ClassDataCollector {
 	}
 
 	/**
-	 * @param annotation
+	 * @param reference
+	 * @Reference proxy backed by raw.
+	 * @param raw
+	 * @Reference contents
 	 * @throws Exception
 	 */
 	protected void doReference(Reference reference, Annotation raw) throws Exception {
 		ReferenceDef def;
 		if (member == null)
-			def = new ReferenceDef();
+			def = new ReferenceDef(finder);
 		else if (referencesByMember.containsKey(member))
 			def = referencesByMember.get(member);
 		else {
-			def = new ReferenceDef();
+			def = new ReferenceDef(finder);
 			referencesByMember.put(member, def);
 		}
 		def.className = className.getFQN();

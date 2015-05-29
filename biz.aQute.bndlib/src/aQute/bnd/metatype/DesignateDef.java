@@ -1,8 +1,10 @@
 package aQute.bnd.metatype;
 
-import aQute.bnd.osgi.*;
-import aQute.bnd.xmlattribute.*;
-import aQute.lib.tag.*;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.xmlattribute.ExtensionDef;
+import aQute.bnd.xmlattribute.Namespaces;
+import aQute.bnd.xmlattribute.XMLAttributeFinder;
+import aQute.lib.tag.Tag;
 
 class DesignateDef extends ExtensionDef {
 	
@@ -10,11 +12,12 @@ class DesignateDef extends ExtensionDef {
 	String pid;
 	boolean factory;
 	
-	public DesignateDef() {
-		super();
+	public DesignateDef(XMLAttributeFinder finder) {
+		super(finder);
 	}
 
-	public DesignateDef(String ocdRef, String pid, boolean factory) {
+	public DesignateDef(String ocdRef, String pid, boolean factory, XMLAttributeFinder finder) {
+		super(finder);
 		this.ocdRef = ocdRef;
 		this.pid = pid;
 		this.factory = factory;
