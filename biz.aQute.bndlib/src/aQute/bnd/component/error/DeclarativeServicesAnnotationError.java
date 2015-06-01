@@ -1,5 +1,6 @@
 package aQute.bnd.component.error;
 
+
 public class DeclarativeServicesAnnotationError {
 	
 	public static enum ErrorType {
@@ -30,5 +31,4 @@ public class DeclarativeServicesAnnotationError {
 		this.fieldName = fieldName;
 		this.errorType = errorType;
 	}
-	
 }

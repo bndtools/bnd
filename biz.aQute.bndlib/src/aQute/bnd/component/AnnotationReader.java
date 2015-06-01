@@ -144,8 +144,8 @@ public class AnnotationReader extends ClassDataCollector {
 				if (rdef.policy == ReferencePolicy.DYNAMIC && rdef.unbind == null)
 					analyzer.error("In component class %s, reference %s is dynamic but has no unbind method.",
 							className.getFQN(), rdef.name)
-					.details(new DeclarativeServicesAnnotationError(className.getFQN(), rdef.bind, rdef.bindDescriptor, 
-							ErrorType.DYNAMIC_REFERENCE_WITHOUT_UNBIND));
+.details(
+							getDetails(rdef, ErrorType.DYNAMIC_REFERENCE_WITHOUT_UNBIND));
 			}
 		}
 		return component;
@@ -181,7 +181,7 @@ public class AnnotationReader extends ClassDataCollector {
 			for(String descriptor : methods.get(value)) {
 				analyzer.warning(
 					"  descriptor: %s", descriptor).details(
-							new DeclarativeServicesAnnotationError(className.getFQN(), value, descriptor, 
+						getDetails(rdef,
 							ErrorType.UNSET_OR_MODIFY_WITH_WRONG_SIGNATURE));
 			}
 		}
@@ -282,8 +282,7 @@ public class AnnotationReader extends ClassDataCollector {
 				member.getName(), methodDescriptor, ErrorType.ACTIVATE_SIGNATURE_ERROR);
 		if (!(member instanceof MethodDef)) {
 			analyzer.error("Activate annotation on a field", clazz, member.getDescriptor()).details(
-					new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(), methodDescriptor,
-							ErrorType.ACTIVATE_SIGNATURE_ERROR));
+details);
 			return;
 		}
 		boolean hasMapReturnType = false;
@@ -306,9 +305,7 @@ public class AnnotationReader extends ClassDataCollector {
 					processAnnotationArguments(methodDescriptor, details);
 				} else
 					analyzer.error("Activate method for %s descriptor %s is not acceptable.", clazz,
-							member.getDescriptor()).details(
-							new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
-									methodDescriptor, ErrorType.ACTIVATE_SIGNATURE_ERROR));
+							member.getDescriptor()).details(details);
 			}
 		}
 		checkMapReturnType(hasMapReturnType, details);
@@ -324,9 +321,7 @@ public class AnnotationReader extends ClassDataCollector {
 				member.getName(), methodDescriptor, ErrorType.DEACTIVATE_SIGNATURE_ERROR);
 
 		if (!(member instanceof MethodDef)) {
-			analyzer.error("Deactivate annotation on a field", clazz, member.getDescriptor()).details(
-					new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(), methodDescriptor,
-							ErrorType.DEACTIVATE_SIGNATURE_ERROR));
+			analyzer.error("Deactivate annotation on a field", clazz, member.getDescriptor()).details(details);
 			return;
 		}
 		boolean hasMapReturnType = false;
@@ -383,9 +378,7 @@ public class AnnotationReader extends ClassDataCollector {
 			} else
 
 				analyzer.error("Modified method for %s descriptor %s is not acceptable.", clazz, member.getDescriptor())
-						.details(
-								new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
-										methodDescriptor, ErrorType.MODIFIED_SIGNATURE_ERROR));
+						.details(details);
 		}
 		checkMapReturnType(hasMapReturnType, details);
 	}
@@ -535,14 +528,13 @@ public class AnnotationReader extends ClassDataCollector {
 		// Check if we have a target, this must be a filter
 		def.target = reference.target();
 
-		DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
-				member.getName(), def.bindDescriptor, ErrorType.REFERENCE);
+		DeclarativeServicesAnnotationError details = getDetails(def, ErrorType.REFERENCE);
 
 		if (def.target != null) {
 			String error = Verifier.validateFilter(def.target);
 			if (error != null)
 				analyzer.error("Invalid target filter %s for %s: %s", def.target, def.name, error).details(
-						new DeclarativeServicesAnnotationError(className.getFQN(), def.bind, null,
+						getDetails(def,
 								ErrorType.INVALID_TARGET_FILTER));
 		}
 
@@ -563,8 +555,7 @@ public class AnnotationReader extends ClassDataCollector {
 						def.name = m.group(2);
 					else
 						analyzer.error("Invalid name for bind method %s", member.getName()).details(
-								new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
-										def.bindDescriptor, ErrorType.INVALID_REFERENCE_BIND_METHOD_NAME));
+								getDetails(def, ErrorType.INVALID_REFERENCE_BIND_METHOD_NAME));
 				}
 
 				def.service = determineReferenceType(def.bindDescriptor, def, annoService, member.getSignature());
@@ -636,11 +627,18 @@ public class AnnotationReader extends ClassDataCollector {
 			analyzer.error(
 					"In component %s, multiple references with the same name: %s. Previous def: %s, this def: %s",
 					className, component.references.get(def.name), def.service, "").details(
-					new DeclarativeServicesAnnotationError(className.getFQN(), def.bind, def.bindDescriptor,
+					getDetails(def,
 							ErrorType.MULTIPLE_REFERENCES_SAME_NAME));
 		else
 			component.references.put(def.name, def);
 
+	}
+
+	private DeclarativeServicesAnnotationError getDetails(ReferenceDef def, ErrorType type) {
+		if (def == null)
+			return null;
+
+		return new DeclarativeServicesAnnotationError(className.getFQN(), def.bind, def.bindDescriptor, type);
 	}
 
 	private boolean sufficientGenerics(int index, int sigLength, ReferenceDef def, String sig) {
@@ -659,8 +657,7 @@ public class AnnotationReader extends ClassDataCollector {
 		String plainType = null;
 		boolean hasMapReturnType;
 
-		DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
-				def.bind, signature, ErrorType.REFERENCE);
+		DeclarativeServicesAnnotationError details = getDetails(def, ErrorType.REFERENCE);
 
 		// We have to find the type of the current method to
 		// link it to the referenced service.
