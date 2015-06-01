@@ -1,10 +1,12 @@
 package aQute.lib.collections;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Logic {
 
-	@SafeVarargs
+	// @SafeVarargs
 	public static <T> Collection<T> retain(Collection<T> first, Collection<T>... sets) {
 		Set<T> result = new HashSet<T>(first);
 		for (Collection<T> set : sets) {
@@ -13,7 +15,7 @@ public class Logic {
 		return result;
 	}
 
-	@SafeVarargs
+	// @SafeVarargs
 	public static <T> Collection<T> remove(Collection<T> first, Collection<T>... sets) {
 		Set<T> result = new HashSet<T>(first);
 		for (Collection<T> set : sets) {
