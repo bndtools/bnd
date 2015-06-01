@@ -1,7 +1,9 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
--buildpath: 
+-buildpath: \
+	ee.j2se;version=${javac.compliance}
+
 -testpath: \
     com.springsource.junit
 
@@ -14,3 +16,7 @@ Bundle-Description: A library to be statically linked. Contains many small utili
 -baselinerepo: Main
 -baseline: *
 -sources= true
+
+javac.source:           1.6
+javac.target:           1.6
+javac.compliance:       1.6
