@@ -1,14 +1,19 @@
 package test;
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.jar.*;
+import java.io.File;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.jar.Manifest;
 
-import junit.framework.*;
-import aQute.bnd.build.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import junit.framework.TestCase;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.build.ProjectTester;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
+import aQute.lib.io.IO;
 
 public class LauncherTest extends TestCase {
 
@@ -20,6 +25,23 @@ public class LauncherTest extends TestCase {
 			project.close();
 			workspace.close();
 		}
+	}
+
+	/**
+	 * junit 4 "unrooted" tests with parametrized tests #661
+	 * 
+	 * @throws Exception
+	 */
+	public static void testJuni4Tester() throws Exception {
+		Project project = getProject();
+		project.clear();
+		project.build();
+
+		ProjectTester pt = project.getProjectTester();
+		pt.addTest("test.Juni4TestCase");
+
+		assertEquals(0, pt.test());
+		assertTrue(project.check());
 	}
 
 	// public static void testLocalLaunch() throws Exception {

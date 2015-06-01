@@ -1,18 +1,40 @@
 package aQute.junit;
 
-import java.io.*;
-import java.lang.annotation.*;
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.Writer;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.util.Vector;
+import java.util.regex.Pattern;
 
-import junit.framework.*;
+import junit.framework.JUnit4TestAdapter;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestResult;
+import junit.framework.TestSuite;
 
-import org.junit.runner.*;
-import org.junit.runner.manipulation.*;
-import org.osgi.framework.*;
+import org.junit.runner.Description;
+import org.junit.runner.manipulation.NoTestsRemainException;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleEvent;
+import org.osgi.framework.Constants;
+import org.osgi.framework.SynchronousBundleListener;
+import org.osgi.framework.Version;
 
-import aQute.junit.constants.*;
+import aQute.junit.constants.TesterConstants;
 
 public class Activator implements BundleActivator, TesterConstants, Runnable {
 	BundleContext		context;
@@ -415,6 +437,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		}
 
 		trace("using JUnit 4");
+
 		JUnit4TestAdapter adapter = new JUnit4TestAdapter(clazz);
 		if (method != null) {
 			trace("method specified " + clazz + ":" + method);
@@ -516,8 +539,10 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				list.add(test);
 				
 				for ( Test t : ((JUnit4TestAdapter) test).getTests()) {
-					realCount++;
-					list.add(t);
+					if (t instanceof TestSuite) {
+						realCount += flatten(list, (TestSuite) t);
+					} else
+						list.add(t);
 				}
 				continue;
 			}
