@@ -2347,6 +2347,10 @@ public class Analyzer extends Processor {
 	static Pattern	nummeric			= Pattern.compile("\\d*");
 
 	static public String cleanupVersion(String version) {
+
+		if (version == null)
+			return "0";
+
 		Matcher m = Verifier.VERSIONRANGE.matcher(version);
 
 		if (m.matches()) {
