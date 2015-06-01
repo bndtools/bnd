@@ -108,12 +108,13 @@ public interface Agent {
 	 * differences are reflected in the installed bundles. That is, a change in
 	 * the SHA will update, a new entry will install, and a removed entry will
 	 * uninstall. This is the preferred way to keep the remote framework
-	 * synchronized since it is idempotent.
+	 * synchronized since it is idempotent. Bundles are passed as a
+	 * LinkedHashMap to preserve the startup order.
 	 * 
 	 * @param bundles
 	 *            the bundles to update
 	 */
-	String update(Map<String,String> bundles) throws Exception;
+	String update(LinkedHashMap<String,String> bundles) throws Exception;
 
 	/**
 	 * Redirect I/O from port. Port can be {@link #CONSOLE},

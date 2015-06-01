@@ -113,7 +113,7 @@ public class RemoteTest extends TestCase {
 		String sha1 = supervisor.addFile(t1);
 		String sha2 = supervisor.addFile(t2);
 
-		Map<String,String> update = new HashMap<String,String>();
+		LinkedHashMap<String,String> update = new LinkedHashMap<String,String>();
 		update.put(t1.getAbsolutePath(), sha1);
 
 		String errors = supervisor.getAgent().update(update);
@@ -132,7 +132,7 @@ public class RemoteTest extends TestCase {
 		// Now add a new one
 		//
 
-		update = new HashMap<String,String>();
+		update = new LinkedHashMap<String,String>();
 		update.put(t1.getAbsolutePath(), sha1);
 		update.put(t2.getAbsolutePath(), sha2);
 		errors = supervisor.getAgent().update(update);
@@ -146,7 +146,7 @@ public class RemoteTest extends TestCase {
 
 		t1 = create("bsn-1", new Version(2, 0, 0));
 		sha1 = supervisor.addFile(t1);
-		update = new HashMap<String,String>();
+		update = new LinkedHashMap<String,String>();
 		update.put(t1.getAbsolutePath(), sha1);
 		update.put(t2.getAbsolutePath(), sha2);
 		errors = supervisor.getAgent().update(update);
@@ -164,7 +164,7 @@ public class RemoteTest extends TestCase {
 		// Now delete t1
 		//
 
-		update = new HashMap<String,String>();
+		update = new LinkedHashMap<String,String>();
 		update.put(t2.getAbsolutePath(), sha2);
 		errors = supervisor.getAgent().update(update);
 		assertNull(errors);

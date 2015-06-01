@@ -150,19 +150,19 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	}
 
 	@Override
-	public String update(Map<String,String> bundles) throws InterruptedException {
+	public String update(LinkedHashMap<String,String> bundles) throws InterruptedException {
 
 		refresh.await();
 
 		Formatter out = new Formatter();
 		if (bundles == null) {
-			bundles = Collections.emptyMap();
+			bundles = new LinkedHashMap<String,String>();
 		}
 
 		Set<String> toBeDeleted = new HashSet<String>(installed.keySet());
 		toBeDeleted.removeAll(bundles.keySet());
 
-		Set<String> toBeInstalled = new HashSet<String>(bundles.keySet());
+		Set<String> toBeInstalled = new LinkedHashSet<String>(bundles.keySet());
 		toBeInstalled.removeAll(installed.keySet());
 
 		Map<String,String> changed = new HashMap<String,String>(bundles);
