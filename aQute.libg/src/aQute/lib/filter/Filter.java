@@ -1,20 +1,17 @@
-/**
- * Copyright (c) 2000 Gatespace AB. All Rights Reserved.
- *
- * Gatespace grants Open Services Gateway Initiative (OSGi) an irrevocable,
- * perpetual, non-exclusive, worldwide, paid-up right and license to
- * reproduce, display, perform, prepare and have prepared derivative works
- * based upon and distribute and sublicense this material and derivative
- * works thereof as set out in the OSGi MEMBER AGREEMENT as of January 24
- * 2000, for use in accordance with Section 2.2 of the BY-LAWS of the
- * OSGi MEMBER AGREEMENT.
+/*
+ * This used to have a license header that it was licensed by Gatespace in the year 2000. However, this was licensed
+ * to the OSGi Alliance. A member donated this as ASL 2.0 licensed matching this project's default license.
  */
-
 package aQute.lib.filter;
 
-import java.lang.reflect.*;
-import java.math.*;
-import java.util.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Collection;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.Map;
 
 public class Filter {
 	final char			WILDCARD	= 65535;
