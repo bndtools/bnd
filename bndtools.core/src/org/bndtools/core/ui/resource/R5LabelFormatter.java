@@ -1,6 +1,5 @@
 package org.bndtools.core.ui.resource;
 
-import java.io.IOException;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -226,7 +225,7 @@ public class R5LabelFormatter {
                 } else {
                     appendNamespaceWithValue(label, namespace, filter, true);
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 label.append(namespace + ": ", StyledString.QUALIFIER_STYLER);
                 label.append("<parse error>", UIConstants.ERROR_STYLER);
             }

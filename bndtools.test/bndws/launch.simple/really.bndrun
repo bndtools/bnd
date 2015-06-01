@@ -2,11 +2,11 @@
 #
 # targets
 #
-pi = pi2;host=192.168.67.110;jdb=4000;agent=4001;shell=1
+pi = pi2;host=192.168.67.122;jdb=1044;shell=1
 wlp = wlp;jdb=7777;shell=-22
 liferay=liferay;shell=11311;jdb=8000
 
--runremote: ${liferay}
+-runremote: ${pi}
 
 -runfw: org.apache.felix.framework;version='[4,5)'
 -runee: JavaSE-1.7
@@ -26,6 +26,6 @@ liferay=liferay;shell=11311;jdb=8000
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)'
 
 	
--runpath: /Ws/bnd/biz.aQute.remote/generated/biz.aQute.remote.launcher-3.0.0.jar;version=file
+-runpath: /Ws/bnd/biz.aQute.remote/generated/biz.aQute.remote.launcher.jar;version=file
 
 

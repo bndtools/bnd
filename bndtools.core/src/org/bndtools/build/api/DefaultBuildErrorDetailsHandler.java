@@ -70,11 +70,22 @@ public final class DefaultBuildErrorDetailsHandler extends AbstractBuildErrorDet
         }
 
         IResource resource = Central.toResource(file);
+        String extra = "";
+
         if (resource == null)
             resource = AbstractBuildErrorDetailsHandler.getDefaultResource(p);
+        else if (resource.getProject() != p) {
+            //
+            // Make sure we never escape our project
+            //
+            extra = ": see " + resource + "#" + line + 1;
+            resource = p;
+            line = 1;
+            end = start = -1;
+        }
 
         Map<String,Object> attribs = new HashMap<String,Object>();
-        attribs.put(IMarker.MESSAGE, location.message.trim());
+        attribs.put(IMarker.MESSAGE, location.message.trim() + extra);
         attribs.put(IMarker.LINE_NUMBER, line + 1);
         if (end != -1 && start != -1) {
             attribs.put(IMarker.CHAR_START, start);
