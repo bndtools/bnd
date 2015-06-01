@@ -1,21 +1,35 @@
 package aQute.bnd.build;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.*;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.regex.Pattern;
 
-import aQute.bnd.differ.*;
+import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.Info;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.differ.DiffPluginImpl;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.bnd.service.*;
-import aQute.bnd.service.repository.*;
+import aQute.bnd.osgi.Instruction;
+import aQute.bnd.osgi.Instructions;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Verifier;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.repository.InfoRepository;
+import aQute.bnd.service.repository.Phase;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
-import aQute.bnd.version.*;
-import aQute.lib.collections.*;
-import aQute.lib.io.*;
+import aQute.bnd.version.Version;
+import aQute.lib.collections.SortedList;
+import aQute.lib.io.IO;
 
 public class ProjectBuilder extends Builder {
 	private final DiffPluginImpl	differ	= new DiffPluginImpl();
@@ -543,9 +557,11 @@ public class ProjectBuilder extends Builder {
 
 
 	/**
-	 * Called when we start to build a builder
+	 * Called when we start to build a builder. We reset our map of bsn ->
+	 * version.
 	 */
 	protected void startBuild(Builder builder) {
+		project.versionMap.clear();
 	}
 	
 	/**
@@ -556,6 +572,16 @@ public class ProjectBuilder extends Builder {
 		project.exportedPackages.putAll(builder.getExports());
 		project.importedPackages.putAll(builder.getImports());
 		project.containedPackages.putAll(builder.getContained());
+
+		//
+		// For the workspace repo, we maintain a map
+		// of bsn -> version for this project. So here
+		// we update this map. In the startBuild method
+		// we cleared the map
+		//
+
+		Version version = new Version(cleanupVersion(builder.getVersion()));
+		project.versionMap.put(builder.getBsn(), version);
 	}
 
 	/**
