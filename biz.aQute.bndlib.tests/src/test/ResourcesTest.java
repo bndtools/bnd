@@ -1,32 +1,44 @@
 package test;
 
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.util.Map;
+import java.util.Properties;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import junit.framework.TestCase;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.JarResource;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.lib.io.IO;
+import aQute.lib.io.IOConstants;
 
 @SuppressWarnings("resource")
 public class ResourcesTest extends TestCase {
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
+	static final int	BUFFER_SIZE	= IOConstants.PAGE_SIZE * 1;
 
 	/**
 	 * Command facility in Include-Resource
 	 */
-	
+
 	public void testCommand() throws Exception {
-		Builder b = new Builder();
-		b.setProperty("Include-Resource", "xkeystore; requires='testresources/keystore';cmd='echo ${@requires}', ");
-		b.setProperty("-resourceonly", "true");
-		Jar jar = b.build();
-		assertTrue(b.check());
-		Resource r = jar.getResource("xkeystore");
-		assertNotNull(r);
-		String s = IO.collect(r.openInputStream());
-		assertEquals("testresources/keystore\n", s);
+		if (!onWindows()) {
+			Builder b = new Builder();
+			b.setProperty("Include-Resource", "xkeystore; requires='testresources/keystore';cmd='echo ${@requires}', ");
+			b.setProperty("-resourceonly", "true");
+			Jar jar = b.build();
+			assertTrue(b.check());
+			Resource r = jar.getResource("xkeystore");
+			assertNotNull(r);
+			String s = IO.collect(r.openInputStream());
+			assertEquals("testresources/keystore\n", s);
+		}
 	}
+
 	/**
 	 * Test the Include-Resource facility to generate resources on the fly. This
 	 * is a a case where multiple resources and up in a single combined
@@ -34,17 +46,19 @@ public class ResourcesTest extends TestCase {
 	 */
 
 	public static void testOnTheFlyMerge() throws Exception {
-		Builder b = new Builder();
-		b.setIncludeResource("count;for='1,2,3';cmd='echo YES_${@}'");
-		b.setProperty("-resourceonly", "true");
-		Jar jar = b.build();
-		assertTrue(b.check());
-		Resource r = jar.getResource("count");
-		assertNotNull(r);
+		if (!onWindows()) {
+			Builder b = new Builder();
+			b.setIncludeResource("count;for='1,2,3';cmd='echo YES_${@}'");
+			b.setProperty("-resourceonly", "true");
+			Jar jar = b.build();
+			assertTrue(b.check());
+			Resource r = jar.getResource("count");
+			assertNotNull(r);
 
-		String s = IO.collect(r.openInputStream());
-		assertEquals("YES_1\nYES_2\nYES_3\n", s);
-		b.close();
+			String s = IO.collect(r.openInputStream());
+			assertEquals("YES_1\nYES_2\nYES_3\n", s);
+			b.close();
+		}
 	}
 
 	/**
@@ -53,8 +67,7 @@ public class ResourcesTest extends TestCase {
 	 */
 
 	public static void testOnTheFlySingle() throws Exception {
-		// disable this test on windows
-		if (!"/".equals(File.separator))
+		if (onWindows())
 			return;
 
 		Builder b = new Builder();
@@ -74,8 +87,7 @@ public class ResourcesTest extends TestCase {
 	 */
 
 	public static void testOnTheFlySingleError() throws Exception {
-		// disable this test on windows
-		if (!"/".equals(File.separator))
+		if (onWindows())
 			return;
 
 		Builder b = new Builder();
@@ -93,6 +105,8 @@ public class ResourcesTest extends TestCase {
 	 */
 
 	public static void testOnTheFlyMultiple() throws Exception {
+		if (onWindows())
+			return;
 		Builder b = new Builder();
 		b.setIncludeResource("count/${@};for='1,2,3';cmd='echo YES_${@}'");
 		b.setProperty("-resourceonly", "true");
@@ -360,9 +374,9 @@ public class ResourcesTest extends TestCase {
 		b.setProperty("-resourceonly", "true");
 		b.setProperty("Include-Resource", "hello/world/<<EMPTY>>;literal=''");
 		Jar jar = b.build();
-		Map<String, Map<String, Resource>> directories = jar.getDirectories();
+		Map<String,Map<String,Resource>> directories = jar.getDirectories();
 		assertTrue(directories.containsKey("hello/world"));
-//		report(b); //error due to empty literal
+		// report(b); //error due to empty literal
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		jar.write(baos);
 		byte[] contents = baos.toByteArray();
@@ -402,7 +416,8 @@ public class ResourcesTest extends TestCase {
 		while (null != ze) {
 			if (ze.getName().equals("TargetFolder/empty/") && ze.isDirectory())
 				hasDir = true;
-			if (ze.getName().startsWith("TargetFolder/empty/") && ze.getName().length() > "TargetFolder/empty/".length())
+			if (ze.getName().startsWith("TargetFolder/empty/")
+					&& ze.getName().length() > "TargetFolder/empty/".length())
 				hasContent = true;
 			ze = zis.getNextEntry();
 		}
@@ -411,8 +426,7 @@ public class ResourcesTest extends TestCase {
 		IO.delete(tstDir);
 	}
 
-
-static void report(Processor processor) {
+	static void report(Processor processor) {
 		System.err.println();
 		for (int i = 0; i < processor.getErrors().size(); i++)
 			System.err.println(processor.getErrors().get(i));
@@ -421,4 +435,9 @@ static void report(Processor processor) {
 		assertEquals(0, processor.getErrors().size());
 		assertEquals(0, processor.getWarnings().size());
 	}
+
+	private static boolean onWindows() {
+		return File.separatorChar == '\\';
+	}
+
 }
