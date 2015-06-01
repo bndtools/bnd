@@ -2807,5 +2807,4 @@ public class DSAnnotationTest extends BndTestCase {
 				errors.get(3));
 		assertEquals(0, b.getWarnings().size());
 	}
-
 }

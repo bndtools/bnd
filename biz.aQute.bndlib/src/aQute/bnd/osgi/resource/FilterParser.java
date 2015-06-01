@@ -1,14 +1,21 @@
 package aQute.bnd.osgi.resource;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.regex.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
-import org.osgi.resource.*;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
 
-import aQute.bnd.version.*;
-import aQute.lib.strings.*;
+import aQute.bnd.version.Version;
+import aQute.lib.strings.Strings;
 
 public class FilterParser {
 	final Map<String,Expression>	cache	= new HashMap<String,FilterParser.Expression>();
@@ -61,6 +68,11 @@ public class FilterParser {
 										}
 
 										@Override
+										public <T> T visit(ExpressionVisitor<T> visitor) {
+											return visitor.visitTrue();
+										}
+
+										@Override
 										void toString(StringBuilder sb) {
 											sb.append("true");
 										}
@@ -70,6 +82,11 @@ public class FilterParser {
 										@Override
 										public boolean eval(Map<String,Object> map) {
 											return false;
+										}
+
+										@Override
+										public <T> T visit(ExpressionVisitor<T> visitor) {
+											return visitor.visitFalse();
 										}
 
 										@Override
@@ -84,6 +101,8 @@ public class FilterParser {
 
 		public abstract boolean eval(Map<String,Object> map);
 
+		public abstract <T> T visit(ExpressionVisitor<T> visitor);
+		
 		Expression not() {
 			return null;
 		}
@@ -114,6 +133,11 @@ public class FilterParser {
 		@Override
 		protected boolean eval(Object scalar) {
 			return (low == null || low.eval(scalar)) && (high == null || high.eval(scalar));
+		}
+
+		@Override
+		public <T> T visit(ExpressionVisitor<T> visitor) {
+			return visitor.visit(this);
 		}
 
 		static Expression make(String key, SimpleExpression low, SimpleExpression high) {
@@ -211,6 +235,11 @@ public class FilterParser {
 			} else {
 				return eval(target);
 			}
+		}
+
+		@Override
+		public <T> T visit(ExpressionVisitor<T> visitor) {
+			return visitor.visit(this);
 		}
 
 		protected boolean eval(Object scalar) {
@@ -360,6 +389,11 @@ public class FilterParser {
 		}
 
 		@Override
+		public <T> T visit(ExpressionVisitor<T> visitor) {
+			return visitor.visit(this);
+		}
+
+		@Override
 		void toString(StringBuilder sb) {
 			sb.append(packageName);
 			super.toString(sb);
@@ -393,6 +427,11 @@ public class FilterParser {
 				return false;
 
 			return hostName.equals(p) && super.eval(map);
+		}
+
+		@Override
+		public <T> T visit(ExpressionVisitor<T> visitor) {
+			return visitor.visit(this);
 		}
 
 		@Override
@@ -432,6 +471,11 @@ public class FilterParser {
 		}
 
 		@Override
+		public <T> T visit(ExpressionVisitor<T> visitor) {
+			return visitor.visit(this);
+		}
+
+		@Override
 		void toString(StringBuilder sb) {
 			sb.append(bundleName);
 			super.toString(sb);
@@ -462,6 +506,11 @@ public class FilterParser {
 				return false;
 
 			return identity.equals(p);
+		}
+
+		@Override
+		public <T> T visit(ExpressionVisitor<T> visitor) {
+			return visitor.visit(this);
 		}
 
 		@Override
@@ -531,6 +580,11 @@ public class FilterParser {
 					return false;
 			}
 			return true;
+		}
+
+		@Override
+		public <T> T visit(ExpressionVisitor<T> visitor) {
+			return visitor.visit(this);
 		}
 
 		static Expression make(List<Expression> exprs) {
@@ -608,7 +662,7 @@ public class FilterParser {
 
 	}
 
-	static class Or extends SubExpression {
+	public static class Or extends SubExpression {
 		private Or(List<Expression> exprs) {
 			this.expressions = exprs.toArray(new Expression[exprs.size()]);
 		}
@@ -619,6 +673,11 @@ public class FilterParser {
 					return true;
 			}
 			return false;
+		}
+
+		@Override
+		public <T> T visit(ExpressionVisitor<T> visitor) {
+			return visitor.visit(this);
 		}
 
 		static Expression make(List<Expression> exprs) {
@@ -655,6 +714,11 @@ public class FilterParser {
 
 		public boolean eval(Map<String,Object> map) {
 			return !expr.eval(map);
+		}
+
+		@Override
+		public <T> T visit(ExpressionVisitor<T> visitor) {
+			return visitor.visit(this);
 		}
 
 		public static Expression make(Expression expr) {
@@ -700,6 +764,11 @@ public class FilterParser {
 				return false;
 		}
 
+		@Override
+		public <T> T visit(ExpressionVisitor<T> visitor) {
+			return visitor.visit(this);
+		}
+
 	}
 
 	public static class ApproximateExpression extends SimpleExpression {
@@ -712,6 +781,71 @@ public class FilterParser {
 				return ((String) scalar).trim().equalsIgnoreCase(value);
 			} else
 				return false;
+		}
+
+		@Override
+		public <T> T visit(ExpressionVisitor<T> visitor) {
+			return visitor.visit(this);
+		}
+	}
+	
+	public static abstract class ExpressionVisitor<T> {
+		private final T	defaultValue;
+
+		public ExpressionVisitor(T defaultValue) {
+			this.defaultValue = defaultValue;
+		}
+
+		public T visit(RangeExpression expr) {
+			return defaultValue;
+		}
+
+		public T visit(SimpleExpression expr) {
+			return defaultValue;
+		}
+
+		public T visit(PackageExpression expr) {
+			return defaultValue;
+		}
+
+		public T visit(HostExpression expr) {
+			return defaultValue;
+		}
+
+		public T visit(BundleExpression expr) {
+			return defaultValue;
+		}
+
+		public T visit(IdentityExpression expr) {
+			return defaultValue;
+		}
+
+		public T visit(And expr) {
+			return defaultValue;
+		}
+
+		public T visit(Or expr) {
+			return defaultValue;
+		}
+
+		public T visit(Not expr) {
+			return defaultValue;
+		}
+
+		public T visit(PatternExpression expr) {
+			return defaultValue;
+		}
+
+		public T visit(ApproximateExpression expr) {
+			return defaultValue;
+		}
+
+		public T visitTrue() {
+			return defaultValue;
+		}
+
+		public T visitFalse() {
+			return defaultValue;
 		}
 	}
 
@@ -788,31 +922,21 @@ public class FilterParser {
 		}
 	}
 
-	public Expression parse(String s) throws IOException {
+	public Expression parse(String s) {
 		Rover rover = new Rover();
 		rover.s = s;
 		rover.n = 0;
 		return parse(rover);
 	}
 
-	public Expression parse(Requirement req) throws IOException {
+	public Expression parse(Requirement req) {
 		String f = req.getDirectives().get("filter");
 		if (f == null)
-			return new Expression() {
-
-				@Override
-				public boolean eval(Map<String,Object> map) {
-					return false;
-				}
-
-				@Override
-				void toString(StringBuilder sb) {}
-			};
-
+			return Expression.FALSE;
 		return parse(f);
 	}
 
-	public Expression parse(Rover rover) throws IOException {
+	public Expression parse(Rover rover) {
 		String s = rover.findExpr();
 		Expression e = cache.get(s);
 		if (e != null) {
@@ -838,7 +962,7 @@ public class FilterParser {
 		return e;
 	}
 
-	Expression parse0(Rover rover) throws IOException {
+	Expression parse0(Rover rover) {
 		switch (rover.next()) {
 			case '&' :
 				return And.make(parseExprs(rover));
@@ -878,7 +1002,7 @@ public class FilterParser {
 		}
 	}
 
-	private List<Expression> parseExprs(Rover rover) throws IOException {
+	private List<Expression> parseExprs(Rover rover) {
 		ArrayList<Expression> exprs = new ArrayList<Expression>();
 		while (rover.current() == '(') {
 			Expression expr = parse(rover);
