@@ -21,14 +21,14 @@ public class MapHandler extends Handler {
 		}
 		
 		if (rawClass.isInterface()) {
-			if (rawClass.isAssignableFrom(HashMap.class))
-				rawClass = HashMap.class;
+			if (rawClass.isAssignableFrom(LinkedHashMap.class))
+				rawClass = LinkedHashMap.class;
 			else if (rawClass.isAssignableFrom(TreeMap.class))
 				rawClass = TreeMap.class;
 			else if (rawClass.isAssignableFrom(Hashtable.class))
 				rawClass = Hashtable.class;
-			else if (rawClass.isAssignableFrom(LinkedHashMap.class))
-				rawClass = LinkedHashMap.class;
+			else if (rawClass.isAssignableFrom(HashMap.class))
+				rawClass = HashMap.class;
 			else if (rawClass.isAssignableFrom(Dictionary.class))
 				rawClass = Hashtable.class;
 			else
