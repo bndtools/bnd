@@ -26,6 +26,7 @@ import java.lang.annotation.*;
 @Target({
 		ElementType.ANNOTATION_TYPE, ElementType.TYPE
 })
+@Repeatable(ProvideCapabilities.class)
 public @interface ProvideCapability {
 	/**
 	 * Appended at the end of the clause (after a ';'). Can be used to add
