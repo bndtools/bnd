@@ -135,7 +135,7 @@ public class RunSessionImpl implements RunSession {
 		return agent.createFramework(dto.name, runpath.values(), properties);
 	}
 
-	void update(Map<String,String> newer) throws Exception {
+	void update(LinkedHashMap<String,String> newer) throws Exception {
 		supervisor.getAgent().update(newer);
 	}
 
@@ -147,19 +147,20 @@ public class RunSessionImpl implements RunSession {
 		supervisor.close();
 	}
 
-	Map<String,String> getBundles(Collection<String> collection, String header) throws Exception {
-		Map<String,String> newer = new LinkedHashMap<String,String>();
+	LinkedHashMap<String,String> getBundles(Collection<String> collection, String header) throws Exception {
+		LinkedHashMap<String,String> newer = new LinkedHashMap<String,String>();
 
 		for (String c : collection) {
 			File f = new File(c);
 			String sha = supervisor.addFile(f);
 			newer.put(c, sha);
 		}
+
 		return newer;
 	}
 
 	void update(RunRemoteDTO dto) throws Exception {
-		Map<String,String> newer = getBundles(launcher.getRunBundles(), Constants.RUNBUNDLES);
+		LinkedHashMap<String,String> newer = getBundles(launcher.getRunBundles(), Constants.RUNBUNDLES);
 		if (shell != dto.shell) {
 			supervisor.getAgent().redirect(dto.shell);
 			shell = dto.shell;
