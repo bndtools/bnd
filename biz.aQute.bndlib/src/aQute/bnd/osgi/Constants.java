@@ -280,6 +280,7 @@ public interface Constants {
 	String							VISIBILITY_DIRECTIVE						= "visibility:";
 	String							FRAGMENT_ATTACHMENT_DIRECTIVE				= "fragment-attachment:";
 	String							RESOLUTION_DIRECTIVE						= "resolution:";
+	String							CARDINALITY_DIRECTIVE						= "cardinality:";
 	String							PATH_DIRECTIVE								= "path:";
 	String							SIZE_ATTRIBUTE								= "size";
 	String							LINK_ATTRIBUTE								= "link";

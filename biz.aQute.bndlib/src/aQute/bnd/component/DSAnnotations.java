@@ -148,7 +148,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 			a.put(Constants.RESOLUTION_DIRECTIVE, "\"optional\"");
 		}
 		if (multiple) {
-			a.put("cardinality:", "\"multiple\"");
+			a.put(Constants.CARDINALITY_DIRECTIVE, "\"multiple\"");
 		}
 		p.put("osgi.service", a);
 		String s = p.toString();
