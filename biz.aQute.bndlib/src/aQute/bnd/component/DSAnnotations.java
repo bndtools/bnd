@@ -97,9 +97,13 @@ public class DSAnnotations implements AnalyzerPlugin {
 							Arrays.sort(objectClass);
 							addServiceCapability(objectClass, provides);
 						}
+
+						MergedRequirement serviceReqMerge = new MergedRequirement("osgi.service");
 						for (ReferenceDef ref : definition.references.values()) {
-							addServiceRequirement(ref, requires);
+							addServiceRequirement(ref, serviceReqMerge);
 						}
+						requires.addAll(serviceReqMerge.toStringList());
+
 						maxVersion = ComponentDef.max(maxVersion, definition.version);
 					}
 				}
@@ -134,25 +138,15 @@ public class DSAnnotations implements AnalyzerPlugin {
 		}
 	}
 
-	private void addServiceRequirement(ReferenceDef ref, Set<String> requires) {
+	private void addServiceRequirement(ReferenceDef ref, MergedRequirement requires) {
 		String objectClass = ref.service;
 		ReferenceCardinality cardinality = ref.cardinality;
 		boolean optional = cardinality == ReferenceCardinality.OPTIONAL || cardinality == ReferenceCardinality.MULTIPLE;
 		boolean multiple = cardinality == ReferenceCardinality.MULTIPLE
 				|| cardinality == ReferenceCardinality.AT_LEAST_ONE;
-		Parameters p = new Parameters();
-		Attrs a = new Attrs();
-		a.put(Constants.FILTER_DIRECTIVE, "\"(objectClass=" + objectClass + ")\"");
-		a.put(Constants.EFFECTIVE_DIRECTIVE, "\"active\"");
-		if (optional) {
-			a.put(Constants.RESOLUTION_DIRECTIVE, "\"optional\"");
-		}
-		if (multiple) {
-			a.put(Constants.CARDINALITY_DIRECTIVE, "\"multiple\"");
-		}
-		p.put("osgi.service", a);
-		String s = p.toString();
-		requires.add(s);
+
+		String filter = "(objectClass=" + objectClass + ")";
+		requires.put(filter, "active", optional, multiple);
 	}
 
 	private void addExtenderRequirement(Set<String> requires, Version version) {

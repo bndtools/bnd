@@ -2403,7 +2403,6 @@ public class DSAnnotationTest extends BndTestCase {
 			for (Attrs at : attrs) {
 				if (("(objectClass=" + o + ")").equals(at.get("filter:"))) {
 					assertEquals("no effective:=\"active\"", "active", at.get("effective:"));
-					assertEquals(2, at.size());
 					found = true;
 				}
 			}
