@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.osgi.service.component.annotations.ReferenceCardinality;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -96,8 +98,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 							addServiceCapability(objectClass, provides);
 						}
 						for (ReferenceDef ref : definition.references.values()) {
-							String objectClass = ref.service;
-							addServiceRequirement(objectClass, requires);
+							addServiceRequirement(ref, requires);
 						}
 						maxVersion = ComponentDef.max(maxVersion, definition.version);
 					}
@@ -133,11 +134,22 @@ public class DSAnnotations implements AnalyzerPlugin {
 		}
 	}
 
-	private void addServiceRequirement(String objectClass, Set<String> requires) {
+	private void addServiceRequirement(ReferenceDef ref, Set<String> requires) {
+		String objectClass = ref.service;
+		ReferenceCardinality cardinality = ref.cardinality;
+		boolean optional = cardinality == ReferenceCardinality.OPTIONAL || cardinality == ReferenceCardinality.MULTIPLE;
+		boolean multiple = cardinality == ReferenceCardinality.MULTIPLE
+				|| cardinality == ReferenceCardinality.AT_LEAST_ONE;
 		Parameters p = new Parameters();
 		Attrs a = new Attrs();
 		a.put(Constants.FILTER_DIRECTIVE, "\"(objectClass=" + objectClass + ")\"");
 		a.put(Constants.EFFECTIVE_DIRECTIVE, "\"active\"");
+		if (optional) {
+			a.put(Constants.RESOLUTION_DIRECTIVE, "\"optional\"");
+		}
+		if (multiple) {
+			a.put("cardinality:", "\"multiple\"");
+		}
 		p.put("osgi.service", a);
 		String s = p.toString();
 		requires.add(s);
