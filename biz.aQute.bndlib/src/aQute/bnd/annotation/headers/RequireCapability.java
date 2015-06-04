@@ -1,9 +1,6 @@
 package aQute.bnd.annotation.headers;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * <p>
@@ -48,6 +45,7 @@ import java.lang.annotation.Target;
 @Target({
 		ElementType.ANNOTATION_TYPE, ElementType.TYPE
 })
+@Repeatable(RequireCapabilities.class)
 public @interface RequireCapability {
 
 	String value() default "";
