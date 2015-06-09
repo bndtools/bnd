@@ -1,7 +1,8 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
--dependson: biz.aQute.bnd.embedded-repo
+-dependson: biz.aQute.bnd.embedded-repo, \
+  biz.aQute.repository
 
 Private-Package: \
     aQute.bnd.gradle.*
@@ -18,6 +19,7 @@ Bundle-Description: The bnd gradle plugin.
   OSGI-OPT/src=src, \
   resources, \
   @${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
+  @${repo;biz.aQute.repository;latest}!/!META-INF/*, \
   embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}
 
 #
