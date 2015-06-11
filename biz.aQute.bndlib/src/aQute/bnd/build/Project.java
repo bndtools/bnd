@@ -1370,9 +1370,23 @@ public class Project extends Processor {
 			return true;
 		}
 
+		Set<Project> visited = new HashSet<Project>();
+		return isStale(visited);
+	}
+
+	boolean isStale(Set<Project> visited) throws Exception {
 		// When we do not generate anything ...
 		if (isNoBundles())
 			return false;
+
+		if (visited.contains(this)) {
+			msgs.CircularDependencyContext_Message_(this.getName(), visited.toString());
+			return false;
+		}
+
+		visited.add(this);
+
+		long buildTime = 0;
 
 		files = getBuildFiles(false);
 		if (files == null)
@@ -1381,7 +1395,28 @@ public class Project extends Processor {
 		for (File f : files) {
 			if (f.lastModified() < lastModified())
 				return true;
+
+			if (buildTime < f.lastModified())
+				buildTime = f.lastModified();
 		}
+
+		for (Project dependency : getDependson()) {
+			if (dependency == this)
+				continue;
+
+			if (dependency.isStale())
+				return true;
+
+			if (dependency.isNoBundles())
+				continue;
+
+			File[] deps = dependency.getBuildFiles();
+			for (File f : deps) {
+				if (f.lastModified() >= buildTime)
+					return true;
+			}
+		}
+
 		return false;
 	}
 
