@@ -1,10 +1,11 @@
 package test;
 
-import java.io.*;
+import java.io.IOException;
 
-import junit.framework.*;
-import aQute.bnd.osgi.resource.*;
+import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
+import aQute.bnd.osgi.resource.FilterParser.WithRangeExpression;
+import junit.framework.TestCase;
 
 public class FilterParserTest extends TestCase {
 	FilterParser fp = new FilterParser();
@@ -29,6 +30,18 @@ public class FilterParserTest extends TestCase {
 	public void testVoidRange() throws IOException {
 		Expression exp = fp.parse("(&(osgi.wiring.package=package)(version>=0.0.0))");
 		System.out.println(exp);
+	}
+
+	public void testPackageRange() throws Exception {
+		Expression expression = fp.parse("(&(osgi.wiring.package=A)(version>=1.0.0)(!(version>=2.0.0)))");
+		assertTrue(expression instanceof WithRangeExpression);
+		assertEquals("[1.0.0,2.0.0)", ((WithRangeExpression) expression).getRangeExpression().getRangeString());
+	}
+
+	public void testBundleRange() throws Exception {
+		Expression expression = fp.parse("(&(osgi.wiring.bundle=B)(bundle-version>=1.0.0)(!(bundle-version>=2.0.0)))");
+		assertTrue(expression instanceof WithRangeExpression);
+		assertEquals("[1.0.0,2.0.0)", ((WithRangeExpression) expression).getRangeExpression().getRangeString());
 	}
 
 	public void testIdentity() throws IOException {

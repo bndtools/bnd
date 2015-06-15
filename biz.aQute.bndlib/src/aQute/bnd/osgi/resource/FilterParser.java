@@ -609,7 +609,7 @@ public class FilterParser {
 				} else if (e instanceof SimpleExpression) {
 					SimpleExpression se = (SimpleExpression) e;
 
-					if (se.key.equals("version")) {
+					if (se.key.equals("version") || se.key.equals("bundle-version")) {
 						if (se.op == Op.GREATER || se.op == Op.GREATER_OR_EQUAL)
 							lower = se;
 						else if (se.op == Op.LESS || se.op == Op.LESS_OR_EQUAL)
