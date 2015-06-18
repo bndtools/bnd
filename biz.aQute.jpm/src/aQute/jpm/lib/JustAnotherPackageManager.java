@@ -702,7 +702,7 @@ public class JustAnotherPackageManager {
 			try {
 				Service service = getService(sd.name);
 				reporter.trace("Starting " + service);
-				String result = service.start();
+				String result = service.start(true);
 				if (result != null)
 					reporter.error("Started error " + result);
 				else

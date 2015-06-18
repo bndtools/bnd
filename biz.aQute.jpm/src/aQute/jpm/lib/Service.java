@@ -1,14 +1,19 @@
 package aQute.jpm.lib;
 
-import static aQute.lib.io.IO.*;
+import static aQute.lib.io.IO.collect;
 
-import java.io.*;
-import java.net.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 
-import aQute.lib.io.*;
+import aQute.lib.io.IO;
+import aQute.lib.io.IOConstants;
 
 public class Service {
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
+	static final int				BUFFER_SIZE	= IOConstants.PAGE_SIZE * 16;
 
 	final ServiceData				data;
 	final JustAnotherPackageManager	jpm;
@@ -21,13 +26,23 @@ public class Service {
 	}
 
 	public String start() throws Exception {
-		if (lock.exists())
-			return "Already running";
-		
+		return start(false);
+	}
+
+	public String start(boolean force) throws Exception {
+		if (lock.exists()) {
+			if (!force)
+				return "Already running";
+
+			lock.delete();
+			Thread.sleep(2000);
+		}
+
 		if (lock.createNewFile()) {
-			
+
 			jpm.platform.chown(data.user, false, lock);
 			try {
+				Thread.sleep(1000);
 				int result = jpm.platform.launchService(data);
 				if (result != 0)
 					return "Could not launch service " + data.name + " return value " + result;
@@ -37,7 +52,7 @@ public class Service {
 					Thread.sleep(100);
 					if (getPort() != -1)
 						return null;
-					
+
 				}
 				lock.delete();
 				return "Could not establish a link to the service, likely failed to start";
@@ -112,7 +127,7 @@ public class Service {
 			return Integer.parseInt(parts[0]);
 		}
 		catch (Exception e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			return -1;
 		}
 	}
@@ -171,4 +186,5 @@ public class Service {
 		IO.delete(new File(data.work));
 		new File(data.work).mkdir();
 	}
+
 }

@@ -540,14 +540,17 @@ public class Main extends ReporterAdapter {
 		}
 
 		if (opts.create() != null) {
+			trace("create service");
 			if (s != null) {
 				error("Service already exists, cannot be created: %s. Update or remove it first", name);
 				return;
 			}
 
 			ArtifactData target = jpm.getCandidate(opts.create());
-			if (target == null)
+			if (target == null) {
+				error("Cannot find candidate for coordinates", opts.create());
 				return;
+			}
 
 			ServiceData data = new ServiceData();
 			CommandData cmd = jpm.parseCommandData(target);
@@ -555,10 +558,13 @@ public class Main extends ReporterAdapter {
 				f.set(data, f.get(cmd));
 			}
 
+			trace("service data %s", cmd);
+
 			data.name = name;
 
 			updateServiceData(data, opts);
 
+			trace("update service data");
 			String result = jpm.createService(data, false);
 			if (result != null)
 				error("Create service failed: %s", result);
