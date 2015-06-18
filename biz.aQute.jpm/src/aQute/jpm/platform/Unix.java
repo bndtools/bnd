@@ -1,15 +1,24 @@
 package aQute.jpm.platform;
 
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Formatter;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.jpm.lib.*;
-import aQute.lib.getopt.*;
-import aQute.lib.io.*;
-import aQute.lib.strings.*;
-import aQute.libg.command.*;
-import aQute.libg.glob.*;
+import aQute.jpm.lib.CommandData;
+import aQute.jpm.lib.ServiceData;
+import aQute.lib.getopt.Arguments;
+import aQute.lib.getopt.Description;
+import aQute.lib.getopt.Options;
+import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
+import aQute.libg.command.Command;
+import aQute.libg.glob.Glob;
 
 public abstract class Unix extends Platform {
 
@@ -110,7 +119,6 @@ public abstract class Unix extends Platform {
 	String			DAEMON			= "\n### JPM BEGIN ###\n" + "jpm daemon >" + JPM_GLOBAL + "/daemon.log 2>>"
 											+ JPM_GLOBAL + "/daemon.log &\n### JPM END ###\n";
 	static Pattern	DAEMON_PATTERN	= Pattern.compile("\n### JPM BEGIN ###\n.*\n### JPM END ###\n", Pattern.MULTILINE);
-
 	@Override
 	public void installDaemon(boolean user) throws Exception {
 		if (user)
@@ -126,6 +134,8 @@ public abstract class Unix extends Platform {
 		String s = IO.collect(rclocal);
 		if (s.contains(DAEMON))
 			return;
+
+		// TODO handle exit 0 at end of file
 
 		s += DAEMON;
 		IO.store(s, rclocal);
