@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -108,6 +109,11 @@ public class Converter {
 				return sb.toString();
 			}
 			return o.toString();
+		}
+
+		// or make a UUID
+		if (resultType == UUID.class) {
+			return UUID.fromString(o.toString());
 		}
 
 		//
