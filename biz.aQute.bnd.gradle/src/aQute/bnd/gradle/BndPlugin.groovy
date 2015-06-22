@@ -23,6 +23,7 @@ import aQute.bnd.osgi.Constants
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 
@@ -239,6 +240,10 @@ public class BndPlugin implements Plugin<Project> {
             exclude sourceSets.test.java.srcDirs.collect { relativePath(it) }
             exclude sourceSets.test.output.files.collect { relativePath(it) }
             exclude relativePath(buildDir)
+          }
+          /* project dependencies' artifacts should trigger jar task */
+          configurations.compile.dependencies.withType(ProjectDependency.class).each {
+            inputs.files it.dependencyProject.configurations.archives.artifacts.files
           }
           outputs.files configurations.archives.artifacts.files, new File(buildDir, Constants.BUILDFILES)
           doLast {
