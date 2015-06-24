@@ -27,8 +27,7 @@ task('index') {
   dependsOn releaseNeeded
   group 'release'
 
-  /* indexers */
-  def bindexJar = file('bindex/org.osgi.impl.bundle.bindex.jar')
+  /* indexer */
   def repoindexJar = bnd.project.getBundle('org.osgi.impl.bundle.repoindex.cli', 'latest', null, ['strategy':'highest']).getFile()
 
   /* Bundles to index. */
@@ -40,59 +39,35 @@ task('index') {
   inputs.files bundles
 
   /* Index files */
-  def obr_uncompressed = new File(releaserepo, 'repository.xml')
-  def obr_compressed = new File(releaserepo, 'repository.zip')
-  def r5_uncompressed = new File(releaserepo, 'index.xml')
-  def r5_compressed = new File(releaserepo, 'index.xml.gz')
+  def index_uncompressed = new File(releaserepo, 'index.xml')
+  def index_compressed = new File(releaserepo, 'index.xml.gz')
 
-  outputs.files obr_uncompressed, obr_compressed, r5_uncompressed, r5_compressed
+  outputs.files index_uncompressed, index_compressed
 
   doLast {
     def bundlesToIndex = bundles*.absolutePath
-    /* OBR uncompressed. */
-    javaexec {
-      main = '-jar' // first arg must be the jar
-      args bindexJar
-      args '-r', obr_uncompressed
-      args '-d', releaserepo.toURI()
-      args '-n', 'bnd'
-      args bundlesToIndex
-    }.assertNormalExitValue()
-    logger.info "Generated index ${obr_uncompressed}."
-
-    /* OBR compressed. */
-    javaexec {
-      main = '-jar' // first arg must be the jar
-      args bindexJar
-      args '-r', obr_compressed
-      args '-d', releaserepo.toURI()
-      args '-n', 'bnd'
-      args bundlesToIndex
-    }.assertNormalExitValue()
-    logger.info "Generated index ${obr_compressed}."
-
-    /* R5 uncompressed. */
+    /* index uncompressed. */
     javaexec {
       main = '-jar' // first arg must be the jar
       args repoindexJar
       args '--pretty'
-      args '-r', r5_uncompressed
+      args '-r', index_uncompressed
       args '-d', releaserepo
       args '-n', 'bnd'
       args bundlesToIndex
     }.assertNormalExitValue()
-    logger.info "Generated index ${r5_uncompressed}."
+    logger.info 'Generated index {}.', index_uncompressed
 
-    /* R5 compressed. */
+    /* index compressed. */
     javaexec {
       main = '-jar' // first arg must be the jar
       args repoindexJar
-      args '-r', r5_compressed
+      args '-r', index_compressed
       args '-d', releaserepo
       args '-n', 'bnd'
       args bundlesToIndex
     }.assertNormalExitValue()
-    logger.info "Generated index ${r5_compressed}."
+    logger.info 'Generated index {}.', index_compressed
   }
 }
 
