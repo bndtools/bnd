@@ -1,15 +1,26 @@
 package aQute.bnd.maven.support;
 
-import java.io.*;
-import java.net.*;
-import java.security.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 
-import aQute.lib.hex.*;
-import aQute.lib.io.*;
-import aQute.lib.utf8properties.*;
-import aQute.libg.filelock.*;
+import aQute.lib.hex.Hex;
+import aQute.lib.io.IO;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.filelock.DirectoryLock;
 
 /**
  * An entry (a group/artifact) in the maven cache in the .m2/repository
@@ -51,6 +62,10 @@ public class MavenEntry implements Closeable {
 		this.artifactFile = new File(maven.repository, artifactPath);
 		this.propertiesFile = new File(dir, "bnd.properties");
 		this.lock = new DirectoryLock(dir, 5 * 60000); // 5 mins
+	}
+
+	public File getArtifactFile() {
+		return artifactFile;
 	}
 
 	/**

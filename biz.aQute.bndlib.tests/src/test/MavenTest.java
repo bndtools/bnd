@@ -1,27 +1,47 @@
 package test;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import javax.xml.parsers.*;
-import javax.xml.xpath.*;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
-import org.w3c.dom.*;
-import org.xml.sax.*;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
-import aQute.bnd.build.*;
-import aQute.bnd.header.*;
-import aQute.bnd.maven.*;
-import aQute.bnd.maven.support.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.maven.PomParser;
+import aQute.bnd.maven.support.CachedPom;
+import aQute.bnd.maven.support.Maven;
+import aQute.bnd.maven.support.MavenEntry;
+import aQute.bnd.maven.support.MavenRemoteRepository;
+import aQute.bnd.maven.support.Pom;
 import aQute.bnd.maven.support.Pom.Dependency;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
-import aQute.lib.io.*;
-import aQute.libg.map.*;
+import aQute.bnd.maven.support.Pom.Scope;
+import aQute.bnd.maven.support.ProjectPom;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.service.Strategy;
+import aQute.lib.io.IO;
+import aQute.libg.map.MAP;
 
 @SuppressWarnings("resource")
 public class MavenTest extends TestCase {
@@ -37,17 +57,14 @@ public class MavenTest extends TestCase {
 	 * @throws URISyntaxException
 	 */
 	public void testRemote() throws URISyntaxException, Exception {
-		// URI repo = new URI("http://repo1.maven.org/maven2");
-		// MavenEntry entry = maven.getEntry("org.springframework",
-		// "spring-aspects" , "3.0.5.RELEASE");
-		// entry.remove();
-		// CachedPom pom = maven.getPom("org.springframework", "spring-aspects"
-		// , "3.0.5.RELEASE", repo);
-		// Set<Pom> dependencies = pom.getDependencies(Scope.compile, repo);
-		// for ( Pom dep : dependencies ) {
-		// System.err.printf( "%20s %-20s %10s%n", dep.getGroupId(),
-		// dep.getArtifactId(), dep.getVersion());
-		// }
+		URI repo = new URI("http://repo1.maven.org/maven2");
+		MavenEntry entry = maven.getEntry("org.springframework", "spring-aspects", "3.0.5.RELEASE");
+		entry.remove();
+		CachedPom pom = maven.getPom("org.springframework", "spring-aspects", "3.0.5.RELEASE", repo);
+		Set<Pom> dependencies = pom.getDependencies(Scope.compile, repo);
+		for (Pom dep : dependencies) {
+			System.err.printf("%20s %-20s %10s%n", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
+		}
 
 	}
 
