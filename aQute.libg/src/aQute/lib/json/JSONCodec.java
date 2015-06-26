@@ -1,10 +1,26 @@
 package aQute.lib.json;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.regex.*;
+import java.io.EOFException;
+import java.io.File;
+import java.io.OutputStream;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 /**
  * This is a simple JSON Coder and Encoder that uses the Java type system to
@@ -52,6 +68,7 @@ public class JSONCodec {
 	private static DateHandler						sdh					= new DateHandler();
 	private static FileHandler						fh					= new FileHandler();
 	private static ByteArrayHandler					byteh				= new ByteArrayHandler();
+	private static UUIDHandler						uuidh				= new UUIDHandler();
 
 	boolean											ignorenull;
 	Map<Type,Handler>								localHandlers		= new ConcurrentHashMap<Type,Handler>();
@@ -132,6 +149,9 @@ public class JSONCodec {
 
 		if (File.class == type)
 			return fh;
+
+		if (UUID.class == type)
+			return uuidh;
 
 		if (type instanceof GenericArrayType) {
 			Type sub = ((GenericArrayType) type).getGenericComponentType();
