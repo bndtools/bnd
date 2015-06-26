@@ -42,7 +42,7 @@ public class ProjectPaths {
                 "maven", //
                 "src/main/java", //
                 "target/classes", //
-                "src/main/test", //
+                "src/test/java", //
                 "target/test-classes", //
                 "target");
         map.put(projectPaths.getLayout(), projectPaths);
