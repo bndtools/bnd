@@ -1,5 +1,4 @@
-bnd-maven-plugin
-================
+# bnd-maven-plugin
 
 This is a Maven plugin for invoking bnd.
 
@@ -25,15 +24,15 @@ NB: If the bnd.bnd file is absent then the bundle will contain only private
 packages, no Bundle-Activator, no Service-Component header, etc.  Therefore
 although it will be valid, the bundle would not be *useful*.
 
-For further usage information, see the example projects under the included
-`examples` directory.
+For further usage information, see the integration test projects under the included
+`src/test/resources/integration-test/test` directory.
 
 
-IMPORTANT NOTE:
+## IMPORTANT NOTE
 
 The `maven-jar-plugin` will NOT currently use the data from the generated 
-MANIFEST.MF file when using its default configuration. We anticipate a patch 
-to the JAR plugin that will do this (https://issues.apache.org/jira/browse/MJAR-193).
+MANIFEST.MF file when using its default configuration. We anticipate a [patch][1] 
+to the JAR plugin that will do this.
 In the meantime it is necessary to configure the plugin as follows:
 
     <plugin>
@@ -43,3 +42,5 @@ In the meantime it is necessary to configure the plugin as follows:
             <useDefaultManifestFile>true</useDefaultManifestFile>
         </configuration>
     </plugin>
+
+[1]: https://issues.apache.org/jira/browse/MJAR-193
