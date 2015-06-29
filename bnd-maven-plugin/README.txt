@@ -31,16 +31,15 @@ For further usage information, see the example projects under the included
 
 IMPORTANT NOTE:
 
-The `maven-jar-plugin` will NOT currently use the generated MANIFEST.MF. We
-anticipate a patch to the JAR plugin that will do this; in the meantime it is
-necessary to configure the plugin as follows:
+The `maven-jar-plugin` will NOT currently use the data from the generated 
+MANIFEST.MF file when using its default configuration. We anticipate a patch 
+to the JAR plugin that will do this; in the meantime it is necessary to configure 
+the plugin as follows:
 
     <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
-            <archive>
-                <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-            </archive>
+            <useDefaultManifestFile>true</useDefaultManifestFile>
         </configuration>
     </plugin>
