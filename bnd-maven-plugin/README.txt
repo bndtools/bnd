@@ -33,8 +33,8 @@ IMPORTANT NOTE:
 
 The `maven-jar-plugin` will NOT currently use the data from the generated 
 MANIFEST.MF file when using its default configuration. We anticipate a patch 
-to the JAR plugin that will do this; in the meantime it is necessary to configure 
-the plugin as follows:
+to the JAR plugin that will do this (https://issues.apache.org/jira/browse/MJAR-193).
+In the meantime it is necessary to configure the plugin as follows:
 
     <plugin>
         <groupId>org.apache.maven.plugins</groupId>
