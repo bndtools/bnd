@@ -65,6 +65,19 @@ public class R5LabelFormatter {
         return r;
     }
 
+    /*
+     * Most namespaces have a "main" attribute that is the same as the namespace. For example, namespace
+     * osgi.wiring.package has an attribute "osgi.wiring.package" that specifies the package name.
+     *
+     * The main exception to this rule is the osgi.service namespace, which uses "objectClass".
+     */
+    public static String getMainAttributeName(String ns) {
+        if (ServiceNamespace.SERVICE_NAMESPACE.equals(ns))
+            return ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE;
+
+        return ns;
+    }
+
     public static String getNamespaceImagePath(String ns) {
         String r = "icons/bullet_green.png"; // generic green dot
 
@@ -119,7 +132,7 @@ public class R5LabelFormatter {
     public static void appendCapability(StyledString label, Capability cap, boolean shorten) {
         String ns = cap.getNamespace();
 
-        Object nsValue = cap.getAttributes().get(ns);
+        Object nsValue = cap.getAttributes().get(getMainAttributeName(ns));
         String versionAttributeName = getVersionAttributeName(ns);
         if (nsValue != null) {
             appendNamespaceWithValue(label, ns, nsValue.toString(), shorten);
