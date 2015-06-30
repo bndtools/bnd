@@ -12,12 +12,11 @@ package bndtools.views.resolution;
 
 import java.io.File;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -81,14 +80,21 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
+import org.osgi.resource.Resource;
 
 import aQute.bnd.osgi.Clazz;
 import bndtools.Plugin;
+import bndtools.model.repo.RepositoryResourceElement;
 import bndtools.model.resolution.CapReqMapContentProvider;
 import bndtools.model.resolution.CapabilityLabelProvider;
 import bndtools.model.resolution.RequirementWrapper;
 import bndtools.model.resolution.RequirementWrapperLabelProvider;
 import bndtools.tasks.AnalyseBundleResolutionJob;
+import bndtools.tasks.BndBuilderCapReqLoader;
+import bndtools.tasks.BndFileCapReqLoader;
+import bndtools.tasks.CapReqLoader;
+import bndtools.tasks.JarFileCapReqLoader;
+import bndtools.tasks.ResourceCapReqLoader;
 import bndtools.utils.PartAdapter;
 import bndtools.utils.SelectionUtils;
 
@@ -110,7 +116,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
     private boolean inputLocked = false;
     private boolean outOfDate = false;
-    private File[] selectedFiles;
+    private CapReqLoader[] loaders;
     private Job analysisJob;
 
     private final Set<String> filteredCapabilityNamespaces;
@@ -130,11 +136,11 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
                 IEditorInput editorInput = ((IEditorPart) part).getEditorInput();
                 IFile file = ResourceUtil.getFile(editorInput);
                 if (file != null) {
-                    if (file.getName().toLowerCase().endsWith(".bnd") || file.getName().toLowerCase().endsWith(".jar")) {
-                        selectedFiles = new File[] {
-                            file.getLocation().toFile()
+                    CapReqLoader loader = getLoaderForFile(file.getLocation().toFile());
+                    if (loader != null) {
+                        loaders = new CapReqLoader[] {
+                                loader
                         };
-
                         if (getSite().getPage().isPartVisible(ResolutionView.this)) {
                             executeAnalysis();
                         } else {
@@ -145,6 +151,18 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
             }
         }
     };
+
+    private CapReqLoader getLoaderForFile(File file) {
+        CapReqLoader loader;
+        if (file.getName().toLowerCase().endsWith(".bnd")) {
+            loader = new BndFileCapReqLoader(file);
+        } else if (file.getName().toLowerCase().endsWith(".jar")) {
+            loader = new JarFileCapReqLoader(file);
+        } else {
+            loader = null;
+        }
+        return loader;
+    }
 
     @Override
     public void createPartControl(Composite parent) {
@@ -191,12 +209,12 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
         capsViewer.setLabelProvider(new CapabilityLabelProvider(true));
         capsViewer.setContentProvider(new CapReqMapContentProvider());
         capsViewer.setFilters(new ViewerFilter[] {
-            new ViewerFilter() {
-                @Override
-                public boolean select(Viewer viewer, Object parent, Object element) {
-                    return !filteredCapabilityNamespaces.contains(((Capability) element).getNamespace());
+                new ViewerFilter() {
+                    @Override
+                    public boolean select(Viewer viewer, Object parent, Object element) {
+                        return !filteredCapabilityNamespaces.contains(((Capability) element).getNamespace());
+                    }
                 }
-            }
         });
 
         hideSelfImportsFilter = new ViewerFilter() {
@@ -210,15 +228,15 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
             }
         };
         reqsViewer.setFilters(new ViewerFilter[] {
-            hideSelfImportsFilter
+                hideSelfImportsFilter
         });
 
         reqsViewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] {
-            LocalSelectionTransfer.getTransfer()
+                LocalSelectionTransfer.getTransfer()
         }, new LocalTransferDragListener(reqsViewer));
 
         capsViewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] {
-            LocalSelectionTransfer.getTransfer()
+                LocalSelectionTransfer.getTransfer()
         }, new LocalTransferDragListener(capsViewer));
 
         reqsViewer.addOpenListener(new IOpenListener() {
@@ -231,20 +249,24 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
                         Clazz clazz = (Clazz) item;
                         String className = clazz.getFQN();
                         IType type = null;
-                        if (selectedFiles != null) {
+                        if (loaders != null) {
                             IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
-                            for (File selectedFile : selectedFiles) {
-                                IFile[] wsfiles = wsroot.findFilesForLocationURI(selectedFile.toURI());
-                                for (IFile wsfile : wsfiles) {
-                                    IJavaProject javaProject = JavaCore.create(wsfile.getProject());
-                                    try {
-                                        type = javaProject.findType(className);
-                                        if (type != null)
-                                            break;
-                                    } catch (JavaModelException e) {
-                                        ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java class '{0}'.", className), e));
+                            for (CapReqLoader loader : loaders) {
+                                if (loader instanceof BndBuilderCapReqLoader) {
+                                    File loaderFile = ((BndBuilderCapReqLoader) loader).getFile();
+                                    IFile[] wsfiles = wsroot.findFilesForLocationURI(loaderFile.toURI());
+                                    for (IFile wsfile : wsfiles) {
+                                        IJavaProject javaProject = JavaCore.create(wsfile.getProject());
+                                        try {
+                                            type = javaProject.findType(className);
+                                            if (type != null)
+                                                break;
+                                        } catch (JavaModelException e) {
+                                            ErrorDialog.openError(getSite().getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening Java class '{0}'.", className), e));
+                                        }
                                     }
                                 }
+
                             }
                         }
                         try {
@@ -316,23 +338,23 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
         super.dispose();
     }
 
-    public void setInput(File[] sourceFiles, Map<String,List<Capability>> capabilities, Map<String,List<RequirementWrapper>> requirements) {
-        selectedFiles = sourceFiles;
+    public void setInput(CapReqLoader[] sourceLoaders, Map<String,List<Capability>> capabilities, Map<String,List<RequirementWrapper>> requirements) {
+        loaders = sourceLoaders;
         if (reqsTree != null && !reqsTree.isDisposed() && capsTable != null && !capsTable.isDisposed()) {
             reqsViewer.setInput(requirements);
             capsViewer.setInput(capabilities);
 
             String label;
-            if (sourceFiles != null && sourceFiles.length > 0) {
+            if (sourceLoaders != null && sourceLoaders.length > 0) {
                 StringBuilder builder = new StringBuilder();
 
-                if (sourceFiles.length == 1)
-                    builder.append(sourceFiles[0].getName()).append(" - ").append(sourceFiles[0].getParentFile().getAbsolutePath());
+                if (sourceLoaders.length == 1)
+                    builder.append(sourceLoaders[0].getLongLabel());
                 else {
-                    for (int i = 0; i < sourceFiles.length; i++) {
+                    for (int i = 0; i < sourceLoaders.length; i++) {
                         if (i > 0)
                             builder.append(", ");
-                        builder.append(sourceFiles[i].getName());
+                        builder.append(sourceLoaders[i].getShortLabel());
                     }
                 }
                 label = builder.toString();
@@ -348,28 +370,13 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
         if (selection == null || selection.isEmpty())
             return;
 
-        Collection<File> fileList = getFilesFromSelection(selection);
-
-        // Filter out non-bundle files/dirs
-        for (Iterator<File> iter = fileList.iterator(); iter.hasNext();) {
-            File file = iter.next();
-            if (file.isDirectory()) {
-                File manifestFile = new File(file, "META-INF/MANIFEST.MF");
-                if (!manifestFile.isFile())
-                    iter.remove();
-            } else {
-                String fileName = file.getName().toLowerCase();
-                if (!fileName.endsWith(".bnd") && !fileName.endsWith(".jar"))
-                    iter.remove();
-            }
-        }
-
-        if (fileList.isEmpty())
+        List<CapReqLoader> loaderList = getLoadersFromSelection(selection);
+        if (loaderList.isEmpty())
             return;
 
-        File[] files = fileList.toArray(new File[fileList.size()]);
-        if (!Arrays.equals(files, selectedFiles)) {
-            this.selectedFiles = files;
+        CapReqLoader[] loaders = loaderList.toArray(new CapReqLoader[loaderList.size()]);
+        if (!Arrays.equals(this.loaders, loaders)) {
+            this.loaders = loaders;
 
             if (getSite().getPage().isPartVisible(this)) {
                 executeAnalysis();
@@ -379,28 +386,38 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
         }
     }
 
-    private static Collection<File> getFilesFromSelection(ISelection selection) {
-        if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
+    private List<CapReqLoader> getLoadersFromSelection(ISelection selection) {
+        if (selection.isEmpty() || !(selection instanceof IStructuredSelection))
             return Collections.emptyList();
-        }
-
         IStructuredSelection structSel = (IStructuredSelection) selection;
-        Collection<File> result = new ArrayList<File>();
+
+        List<CapReqLoader> result = new LinkedList<CapReqLoader>();
         Iterator< ? > iter = structSel.iterator();
         while (iter.hasNext()) {
+
             Object element = iter.next();
+            CapReqLoader loader = null;
+
             File file = SelectionUtils.adaptObject(element, File.class);
             if (file != null) {
-                result.add(file);
+                loader = getLoaderForFile(file);
             } else {
-                IResource resource = SelectionUtils.adaptObject(element, IResource.class);
-                if (resource != null) {
-                    IPath location = resource.getLocation();
-                    if (location != null)
-                        result.add(location.toFile());
+                IResource eresource = SelectionUtils.adaptObject(element, IResource.class);
+                if (eresource != null) {
+                    IPath location = eresource.getLocation();
+                    if (location != null) {
+                        loader = getLoaderForFile(location.toFile());
+                    }
+                } else if (element instanceof RepositoryResourceElement) {
+                    Resource resource = ((RepositoryResourceElement) element).getResource();
+                    loader = new ResourceCapReqLoader(resource);
                 }
             }
+
+            if (loader != null)
+                result.add(loader);
         }
+
         return result;
     }
 
@@ -414,11 +431,11 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
             if (oldJob != null && oldJob.getState() != Job.NONE)
                 oldJob.cancel();
 
-            if (selectedFiles != null) {
-                final AnalyseBundleResolutionJob tmp = new AnalyseBundleResolutionJob("importExportAnalysis", selectedFiles);
-                tmp.setSystem(true);
+            if (loaders != null) {
+                final AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("importExportAnalysis", loaders);
+                job.setSystem(true);
 
-                tmp.addJobChangeListener(new JobChangeAdapter() {
+                job.addJobChangeListener(new JobChangeAdapter() {
                     @Override
                     public void aboutToRun(IJobChangeEvent event) {
                         if (display != null && !display.isDisposed()) {
@@ -437,20 +454,20 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
                     @Override
                     public void done(IJobChangeEvent event) {
-                        IStatus result = tmp.getResult();
+                        IStatus result = job.getResult();
                         if (result != null && result.isOK()) {
                             if (display != null && !display.isDisposed())
                                 display.asyncExec(new Runnable() {
                                     @Override
                                     public void run() {
-                                        setInput(tmp.getResultFileArray(), tmp.getCapabilities(), tmp.getRequirements());
+                                        setInput(loaders, job.getCapabilities(), job.getRequirements());
                                     }
                                 });
                         }
                     }
                 });
 
-                analysisJob = tmp;
+                analysisJob = job;
                 analysisJob.schedule(500);
             } else {
                 analysisJob = null;
@@ -460,14 +477,17 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
     @Override
     public void resourceChanged(IResourceChangeEvent event) {
-        if (selectedFiles != null) {
+        if (loaders != null) {
             IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
-            for (File file : selectedFiles) {
-                IFile[] wsfiles = wsroot.findFilesForLocationURI(file.toURI());
-                for (IFile wsfile : wsfiles) {
-                    if (event.getDelta().findMember(wsfile.getFullPath()) != null) {
-                        executeAnalysis();
-                        break;
+            for (CapReqLoader loader : loaders) {
+                if (loader instanceof BndBuilderCapReqLoader) {
+                    File file = ((BndBuilderCapReqLoader) loader).getFile();
+                    IFile[] wsfiles = wsroot.findFilesForLocationURI(file.toURI());
+                    for (IFile wsfile : wsfiles) {
+                        if (event.getDelta().findMember(wsfile.getFullPath()) != null) {
+                            executeAnalysis();
+                            break;
+                        }
                     }
                 }
             }

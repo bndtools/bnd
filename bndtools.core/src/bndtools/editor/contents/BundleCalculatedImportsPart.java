@@ -1,6 +1,5 @@
 package bndtools.editor.contents;
 
-import java.io.File;
 import java.text.MessageFormat;
 import java.util.Iterator;
 
@@ -61,6 +60,8 @@ import bndtools.model.resolution.CapReqMapContentProvider;
 import bndtools.model.resolution.RequirementWrapper;
 import bndtools.model.resolution.RequirementWrapperLabelProvider;
 import bndtools.tasks.AnalyseBundleResolutionJob;
+import bndtools.tasks.BndFileCapReqLoader;
+import bndtools.tasks.CapReqLoader;
 
 public class BundleCalculatedImportsPart extends SectionPart implements IResourceChangeListener {
 
@@ -128,7 +129,7 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
             }
         });
         viewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] {
-            LocalSelectionTransfer.getTransfer()
+                LocalSelectionTransfer.getTransfer()
         }, new DragSourceAdapter() {
             @Override
             public void dragSetData(DragSourceEvent event) {
@@ -179,7 +180,7 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
             public void widgetSelected(SelectionEvent e) {
                 boolean showSelfImports = showSelfImportsItem.getSelection();
                 ViewerFilter[] filters = showSelfImports ? new ViewerFilter[] {
-                    nonPkgFilter
+                        nonPkgFilter
                 } : new ViewerFilter[] {
                         nonPkgFilter, hideSelfImportsFilter
                 };
@@ -218,9 +219,10 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
         if (location == null)
             return;
 
-        final AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob(Messages.BundleCalculatedImportsPart_jobAnalyse, new File[] {
-            location.toFile()
-        });
+        CapReqLoader[] loaders = new CapReqLoader[] {
+                new BndFileCapReqLoader(location.toFile())
+        };
+        final AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob(Messages.BundleCalculatedImportsPart_jobAnalyse, loaders);
         final Display display = tree.getDisplay();
         job.addJobChangeListener(new JobChangeAdapter() {
             @Override

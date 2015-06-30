@@ -16,8 +16,7 @@ import bndtools.model.resolution.RequirementWrapper;
 public class AnalyseBundleResolutionJobTest extends TestCase {
 
     public void testEmptyFileList() {
-        File[] files = new File[0];
-        AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve", files);
+        AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve", new CapReqLoader[0]);
 
         IStatus status = job.run(new NullProgressMonitor());
         assertEquals(IStatus.OK, status.getCode());
@@ -32,12 +31,12 @@ public class AnalyseBundleResolutionJobTest extends TestCase {
             new File("test/tests.consumer.jar")
         };
         AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve", files);
-
+    
         IStatus status = job.run(new NullProgressMonitor());
         assertEquals(IStatus.OK, status.getCode());
         assertEquals(0, job.getExportResults().size());
         assertEquals(1, job.getImportResults().size());
-
+    
         ImportPackage apiImport = job.getImportResults().get(0);
         assertEquals("api", apiImport.getName());
         assertFalse(apiImport.isSelfImport());
@@ -45,8 +44,8 @@ public class AnalyseBundleResolutionJobTest extends TestCase {
      */
 
     public void testExportAndSelfImport() {
-        AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve", new File[] {
-            new File("test/tests.provider.jar")
+        AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve", new CapReqLoader[] {
+                new JarFileCapReqLoader(new File("test/tests.provider.jar"))
         });
 
         IStatus status = job.run(new NullProgressMonitor());
@@ -91,10 +90,9 @@ public class AnalyseBundleResolutionJobTest extends TestCase {
     }
 
     public void testProvideCapability() {
-        File[] files = new File[] {
-            new File("test/tests.consumer.jar")
-        };
-        AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve", files);
+        AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve", new CapReqLoader[] {
+                new JarFileCapReqLoader(new File("test/tests.consumer.jar"))
+        });
 
         IStatus status = job.run(new NullProgressMonitor());
         assertEquals(IStatus.OK, status.getCode());
@@ -106,8 +104,8 @@ public class AnalyseBundleResolutionJobTest extends TestCase {
     }
 
     public void testOptionalImport() {
-        AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve", new File[] {
-            new File("test/example2.jar")
+        AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve", new CapReqLoader[] {
+                new JarFileCapReqLoader(new File("test/example2.jar"))
         });
 
         IStatus status = job.run(new NullProgressMonitor());
