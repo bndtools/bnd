@@ -3,6 +3,8 @@ package bndtools.views.repository;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
@@ -22,6 +24,7 @@ import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.Function;
 import org.bndtools.utils.swt.FilterPanelPart;
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
+import org.bndtools.utils.swt.SWTUtil;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
@@ -70,13 +73,13 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.XMLMemento;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.resource.Requirement;
-
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.Actionable;
@@ -107,10 +110,13 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     private final FilterPanelPart filterPart = new FilterPanelPart(Plugin.getDefault().getScheduler());
     private final SearchableRepositoryTreeContentProvider contentProvider = new SearchableRepositoryTreeContentProvider();
     private TreeViewer viewer;
+    private Control filterPanel;
 
     private Action collapseAllAction;
     private Action refreshAction;
     private Action advancedSearchAction;
+
+    private String advancedSearchState;
 
     private ServiceRegistration<RepositoryListenerPlugin> registration;
 
@@ -120,7 +126,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     public void createPartControl(Composite parent) {
         // CREATE CONTROLS
         Composite mainPanel = new Composite(parent, SWT.NONE);
-        Control filterPanel = filterPart.createControl(mainPanel, 5, 5);
+        filterPanel = filterPart.createControl(mainPanel, 5, 5);
         Tree tree = new Tree(mainPanel, SWT.FULL_SELECTION | SWT.MULTI);
         filterPanel.setBackground(tree.getBackground());
 
@@ -422,16 +428,38 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
             public void run() {
                 if (advancedSearchAction.isChecked()) {
                     AdvancedSearchDialog dialog = new AdvancedSearchDialog(getSite().getShell());
+                    if (advancedSearchState != null) {
+                        try {
+                            XMLMemento memento = XMLMemento.createReadRoot(new StringReader(advancedSearchState));
+                            dialog.restoreState(memento);
+                        } catch (Exception e) {
+                            logger.logError("Failed to load dialog state", e);
+                        }
+                    }
+
                     if (Window.OK == dialog.open()) {
                         Requirement req = dialog.getRequirement();
                         contentProvider.setRequirementFilter(req);
+                        SWTUtil.recurseEnable(false, filterPanel);
                         viewer.refresh();
                         viewer.expandToLevel(2);
                     } else {
                         advancedSearchAction.setChecked(false);
                     }
+
+                    try {
+                        XMLMemento memento = XMLMemento.createWriteRoot("search");
+                        dialog.saveState(memento);
+
+                        StringWriter writer = new StringWriter();
+                        memento.save(writer);
+                        advancedSearchState = writer.toString();
+                    } catch (Exception e) {
+                        logger.logError("Failed to save dialog state", e);
+                    }
                 } else {
                     contentProvider.setRequirementFilter(null);
+                    SWTUtil.recurseEnable(true, filterPanel);
                     viewer.refresh();
                 }
             }

@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IMemento;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
@@ -19,57 +20,71 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 
 public class ArbitraryNamespaceSearchPanel extends SearchPanel {
 
-    private Composite grpArbitrarySearch;
-    private Text txtArbitrarySearchNamespace;
-    private Text txtArbitrarySearchFilter;
-    private Label lblArbitrarySearchFilterHint;
+    private String namespace;
+    private String filterStr = "";
+
+    private Control focusControl;
+    private Label lblFilterHint;
 
     @Override
     public Control createControl(Composite parent) {
-
-        ModifyListener validationListener = new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                validate();
-            }
-        };
-
-        grpArbitrarySearch = new Composite(parent, SWT.NONE);
+        Composite container = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout(2, false);
-        grpArbitrarySearch.setLayout(layout);
+        container.setLayout(layout);
 
-        Label lblInstruction = new Label(grpArbitrarySearch, SWT.WRAP | SWT.LEFT);
+        Label lblInstruction = new Label(container, SWT.WRAP | SWT.LEFT);
         lblInstruction.setText("Enter a capability namespace and filter expression in OSGi standard format. Refer to OSGi Core specification, section 3.2.7 \"Filter Syntax\".");
         lblInstruction.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 2, 1));
 
-        new Label(grpArbitrarySearch, SWT.NONE).setText("Namespace:");
-        txtArbitrarySearchNamespace = new Text(grpArbitrarySearch, SWT.BORDER);
-        txtArbitrarySearchNamespace.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        txtArbitrarySearchNamespace.addModifyListener(validationListener);
+        new Label(container, SWT.NONE).setText("Namespace:");
+        final Text txtNamespace = new Text(container, SWT.BORDER);
+        if (namespace != null)
+            txtNamespace.setText(namespace);
+        txtNamespace.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        txtNamespace.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                namespace = txtNamespace.getText().trim();
+                validate();
+            }
+        });
 
-        new Label(grpArbitrarySearch, SWT.NONE).setText("Filter Expression:");
+        new Label(container, SWT.NONE).setText("Filter Expression:");
         @SuppressWarnings("unused")
-        Label lblSpacer2 = new Label(grpArbitrarySearch, SWT.NONE); // spacer
+        Label lblSpacer2 = new Label(container, SWT.NONE); // spacer
 
-        txtArbitrarySearchFilter = new Text(grpArbitrarySearch, SWT.MULTI | SWT.BORDER);
-        txtArbitrarySearchFilter.setMessage("enter OSGi-style filter");
+        final Text txtFilter = new Text(container, SWT.MULTI | SWT.BORDER);
+        txtFilter.setMessage("enter OSGi-style filter");
+        if (filterStr != null)
+            txtFilter.setText(filterStr);
         GridData gdArbitrarySearchFilter = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
         gdArbitrarySearchFilter.heightHint = 50;
-        txtArbitrarySearchFilter.setLayoutData(gdArbitrarySearchFilter);
-        txtArbitrarySearchFilter.addModifyListener(validationListener);
+        txtFilter.setLayoutData(gdArbitrarySearchFilter);
+        txtFilter.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                filterStr = txtFilter.getText().trim();
+                validate();
+            }
+        });
 
-        lblArbitrarySearchFilterHint = new Label(grpArbitrarySearch, SWT.NONE);
-        lblArbitrarySearchFilterHint.setText("Example: (&&(name=value)(version>=1.0))");
-        lblArbitrarySearchFilterHint.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false, 2, 1));
+        lblFilterHint = new Label(container, SWT.NONE);
+        lblFilterHint.setText("Example: (&&(name=value)(version>=1.0))");
+        lblFilterHint.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false, 2, 1));
 
-        return grpArbitrarySearch;
+        validate();
+
+        focusControl = txtNamespace;
+        return container;
     }
 
     private void validate() {
         try {
-            String namespace = txtArbitrarySearchNamespace.getText();
-            if (namespace == null || namespace.length() == 0)
-                throw new IllegalArgumentException("Namespace cannot be empty");
+            if (namespace == null || namespace.length() == 0) {
+                setError(null);
+                setRequirement(null);
+                return;
+            }
 
             for (int i = 0; i < namespace.length(); i++) {
                 char c = namespace.charAt(i);
@@ -81,18 +96,18 @@ public class ArbitraryNamespaceSearchPanel extends SearchPanel {
                 } else if (!Character.isLetterOrDigit(c) && c != '-' && c != '_')
                     throw new IllegalArgumentException(String.format("Invalid character in namespace: '%c'", c));
             }
-
             updateFilterExpressionHint(namespace);
-            String filterStr = txtArbitrarySearchFilter.getText();
-            if (filterStr == null || filterStr.trim().length() == 0)
-                throw new IllegalArgumentException("Filter cannot be empty");
 
-            try {
-                Filter filter = FrameworkUtil.createFilter(filterStr.trim());
-                setRequirement(new CapReqBuilder(namespace).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement());
-            } catch (InvalidSyntaxException e) {
-                throw new IllegalArgumentException("Invalid filter string: " + e.getMessage());
+            CapReqBuilder builder = new CapReqBuilder(namespace);
+            if (filterStr != null && filterStr.trim().length() > 0) {
+                try {
+                    Filter filter = FrameworkUtil.createFilter(filterStr.trim());
+                    builder.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
+                } catch (InvalidSyntaxException e) {
+                    throw new IllegalArgumentException("Invalid filter string: " + e.getMessage());
+                }
             }
+            setRequirement(builder.buildSyntheticRequirement());
             setError(null);
         } catch (Exception e) {
             setError(e.getMessage());
@@ -108,12 +123,24 @@ public class ArbitraryNamespaceSearchPanel extends SearchPanel {
             // double ampersand because it's a mnemonic in SWT... FFS!
             hint = String.format("(&&(%s=value)(version>=1.0))", namespace);
 
-        lblArbitrarySearchFilterHint.setText("Example: " + hint);
+        lblFilterHint.setText("Example: " + hint);
     }
 
     @Override
     public void setFocus() {
-        txtArbitrarySearchNamespace.setFocus();
+        focusControl.setFocus();
+    }
+
+    @Override
+    public void saveState(IMemento memento) {
+        memento.putString("namespace", namespace);
+        memento.putString("filter", filterStr);
+    }
+
+    @Override
+    public void restoreState(IMemento memento) {
+        namespace = memento.getString("namespace");
+        filterStr = memento.getString("filter");
     }
 
 }

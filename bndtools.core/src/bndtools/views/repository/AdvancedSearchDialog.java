@@ -23,13 +23,16 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.ui.IMemento;
+import org.eclipse.ui.IPersistable;
 import org.osgi.resource.Requirement;
 
-public class AdvancedSearchDialog extends TitleAreaDialog {
+public class AdvancedSearchDialog extends TitleAreaDialog implements IPersistable {
 
     private final Map<String,SearchPanel> panelMap = new LinkedHashMap<String,SearchPanel>();
 
     private TabFolder tabFolder;
+    private int activeTabIndex = 0;
     private Requirement requirement = null;
 
     public AdvancedSearchDialog(Shell parentShell) {
@@ -96,12 +99,15 @@ public class AdvancedSearchDialog extends TitleAreaDialog {
             }
         });
 
-        SearchPanel first = (SearchPanel) tabFolder.getItem(0).getData();
-        first.setFocus();
+        tabFolder.setSelection(activeTabIndex);
+        SearchPanel currentPanel = (SearchPanel) tabFolder.getItem(activeTabIndex).getData();
+        currentPanel.setFocus();
+        requirement = currentPanel.getRequirement();
 
         tabFolder.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
+                activeTabIndex = tabFolder.getSelectionIndex();
                 updateFromPanel();
                 getSelectedPanel().setFocus();
             }
@@ -129,11 +135,34 @@ public class AdvancedSearchDialog extends TitleAreaDialog {
 
         Button okButton = getButton(OK);
         okButton.setText("Search");
-        okButton.setEnabled(false);
+        okButton.setEnabled(requirement != null);
     }
 
     public Requirement getRequirement() {
         return requirement;
+    }
+
+    @Override
+    public void saveState(IMemento memento) {
+        memento.putInteger("tabIndex", activeTabIndex);
+
+        for (Entry<String,SearchPanel> panelEntry : panelMap.entrySet()) {
+            IMemento childMemento = memento.createChild("tab", panelEntry.getKey());
+            SearchPanel panel = panelEntry.getValue();
+            panel.saveState(childMemento);
+        }
+    }
+
+    public void restoreState(IMemento memento) {
+        activeTabIndex = memento.getInteger("tabIndex");
+
+        IMemento[] children = memento.getChildren("tab");
+        for (IMemento childMemento : children) {
+            String key = childMemento.getID();
+            SearchPanel panel = panelMap.get(key);
+            if (panel != null)
+                panel.restoreState(childMemento);
+        }
     }
 
 }

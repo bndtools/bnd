@@ -7,9 +7,11 @@ import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IMemento;
+import org.eclipse.ui.IPersistable;
 import org.osgi.resource.Requirement;
 
-public abstract class SearchPanel {
+public abstract class SearchPanel implements IPersistable {
 
     public static final String PROP_VALUE = "requirement";
     public final String PROP_ERROR = "error";
@@ -62,5 +64,7 @@ public abstract class SearchPanel {
     public Image createImage(@SuppressWarnings("unused") Device device) {
         return null;
     }
+
+    public abstract void restoreState(IMemento memento);
 
 }
