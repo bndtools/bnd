@@ -23,6 +23,7 @@ import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
@@ -30,6 +31,8 @@ import aQute.bnd.service.ResolutionPhase;
 import aQute.bnd.service.repository.SearchableRepository;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
+import bndtools.central.Central;
+import bndtools.central.WorkspaceR5Repository;
 
 public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
@@ -231,7 +234,16 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         Object[] result = null;
 
         if (requirementFilter != null) {
-            if (repoPlugin instanceof SearchableRepository) {
+            if (repoPlugin instanceof Repository) {
+                result = searchR5Repository((Repository) repoPlugin);
+            } else if (repoPlugin instanceof WorkspaceRepository) {
+                try {
+                    WorkspaceR5Repository workspaceRepo = Central.getWorkspaceR5Repository();
+                    result = searchR5Repository(workspaceRepo);
+                } catch (Exception e) {
+                    logger.logError("Error querying workspace repository", e);
+                }
+            } else if (repoPlugin instanceof SearchableRepository) {
                 SearchableRepository searchableRepo = (SearchableRepository) repoPlugin;
                 try {
                     Set<ResourceDescriptor> resources = searchableRepo.findResources(requirementFilter, false);
@@ -245,18 +257,6 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
                 } catch (Exception e) {
                     logger.logError(MessageFormat.format("Error querying repository {0}.", repoPlugin.getName()), e);
                 }
-            } else if (repoPlugin instanceof Repository) {
-                Set<RepositoryResourceElement> resultSet = new LinkedHashSet<RepositoryResourceElement>();
-
-                Repository osgiRepo = (Repository) repoPlugin;
-                Map<Requirement,Collection<Capability>> providers = osgiRepo.findProviders(Collections.singleton(requirementFilter));
-
-                for (Entry<Requirement,Collection<Capability>> providersEntry : providers.entrySet()) {
-                    for (Capability providerCap : providersEntry.getValue())
-                        resultSet.add(new RepositoryResourceElement(providerCap.getResource()));
-                }
-
-                result = resultSet.toArray(new Object[resultSet.size()]);
             }
             return result;
         }
@@ -275,6 +275,20 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
                 result[i++] = new RepositoryBundle(repoPlugin, bsn);
             }
         }
+        return result;
+    }
+
+    private Object[] searchR5Repository(Repository osgiRepo) {
+        Object[] result;
+        Set<RepositoryResourceElement> resultSet = new LinkedHashSet<RepositoryResourceElement>();
+        Map<Requirement,Collection<Capability>> providers = osgiRepo.findProviders(Collections.singleton(requirementFilter));
+
+        for (Entry<Requirement,Collection<Capability>> providersEntry : providers.entrySet()) {
+            for (Capability providerCap : providersEntry.getValue())
+                resultSet.add(new RepositoryResourceElement(providerCap.getResource()));
+        }
+
+        result = resultSet.toArray(new Object[resultSet.size()]);
         return result;
     }
 }
