@@ -1,9 +1,12 @@
 package aQute.lib.utf8properties;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Properties;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
 /**
  * Test if we properly can read
@@ -47,4 +50,14 @@ public class UTF8PropertiesTest extends TestCase {
 		p.load( new StringReader("x=abc \\ def\n"));
 		assertEquals("abc  def", p.get("x"));
 	}
+	
+	public void testWriteWithoutComment() throws IOException {
+		UTF8Properties p = new UTF8Properties();
+		p.put("Foo", "Foo");
+		ByteArrayOutputStream bout  = new ByteArrayOutputStream();
+		p.store(bout);
+		String s = new String(bout.toByteArray(), "UTF-8");
+		assertFalse(s.startsWith("#"));
+	}
+	
 }
