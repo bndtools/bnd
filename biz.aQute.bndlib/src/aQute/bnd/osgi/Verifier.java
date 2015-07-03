@@ -803,7 +803,7 @@ public class Verifier extends Processor {
 	}
 
 	private void verifyNamespace(String ns, String type) {
-		if (!isBsn(ns)) {
+		if (!isBsn(Processor.removeDuplicateMarker(ns))) {
 			error("The %s-Capability with namespace %s is not a symbolic name", type, ns);
 		}
 	}
