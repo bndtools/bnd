@@ -703,6 +703,9 @@ public class Verifier extends Processor {
 	private void verifyRequirements() {
 		Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.REQUIRE_CAPABILITY));
 		for (String key : map.keySet()) {
+
+			verifyNamespace(key, "Require");
+
 			Attrs attrs = map.get(key);
 			verify(attrs, "filter:", FILTERPATTERN, false, "Requirement %s filter not correct", key);
 
@@ -762,6 +765,7 @@ public class Verifier extends Processor {
 	private void verifyCapabilities() {
 		Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.PROVIDE_CAPABILITY));
 		for (String key : map.keySet()) {
+			verifyNamespace(key, "Provide");
 			Attrs attrs = map.get(key);
 			verify(attrs, "cardinality:", CARDINALITY_PATTERN, false, "Requirement %s cardinality not correct", key);
 			verify(attrs, "resolution:", RESOLUTION_PATTERN, false, "Requirement %s resolution not correct", key);
@@ -795,6 +799,12 @@ public class Verifier extends Processor {
 				error("cardinality: directive is intended for Requirements, not Capability %s", key);
 			if (attrs.containsKey("resolution:"))
 				error("resolution: directive is intended for Requirements, not Capability %s", key);
+		}
+	}
+
+	private void verifyNamespace(String ns, String type) {
+		if (!isBsn(ns)) {
+			error("The %s-Capability with namespace %s is not a symbolic name", type, ns);
 		}
 	}
 
