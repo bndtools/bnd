@@ -1,17 +1,36 @@
 package test;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.File;
+import java.util.Properties;
+import java.util.jar.Manifest;
 
-import junit.framework.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import junit.framework.TestCase;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.JarResource;
+import aQute.bnd.osgi.Verifier;
+import aQute.lib.io.IO;
 
 @SuppressWarnings("resource")
 public class VerifierTest extends TestCase {
 
+	/**
+	 * Verify that an invalid namespace error is actually an error
+	 */
+	public void verifyNamespace() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("Require-Capability", "+++,bla.bla");
+		b.setProperty("Provide-Capability", "===,bla.bla");
+		b.setIncludeResource("foo;literal='foo'");
+		Jar inner = b.build();
+		assertTrue(b.check("The Require-Capability with namespace \\+\\+\\+ is not a symbolic name",
+				"The Provide-Capability with namespace === is not a symbolic name"));
+	}
 	
 	/**
 	 * Verify that the Meta-Persistence header is correctly verified

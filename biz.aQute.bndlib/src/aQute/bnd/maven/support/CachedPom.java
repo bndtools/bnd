@@ -1,7 +1,7 @@
 package aQute.bnd.maven.support;
 
-import java.io.*;
-import java.net.*;
+import java.io.File;
+import java.net.URI;
 
 public class CachedPom extends Pom {
 	final MavenEntry	maven;
@@ -14,6 +14,10 @@ public class CachedPom extends Pom {
 	@Override
 	public File getArtifact() throws Exception {
 		return maven.getArtifact();
+	}
+
+	public MavenEntry getMavenEntry() {
+		return maven;
 	}
 
 }

@@ -1,11 +1,22 @@
 package aQute.lib.utf8properties;
 
-import java.io.*;
-import java.nio.*;
-import java.nio.charset.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CoderResult;
+import java.util.Properties;
 
-import aQute.lib.io.*;
+import aQute.lib.io.IO;
 
 /**
  * Properties were by default read as ISO-8859-1 characters. However, in the
@@ -63,7 +74,7 @@ public class UTF8Properties extends Properties {
 			super.load(new ByteArrayInputStream(buffer));
 		}
 		finally {
-			//System.out.println("UTF8Props: " + this);
+			// System.out.println("UTF8Props: " + this);
 		}
 	}
 
@@ -74,7 +85,7 @@ public class UTF8Properties extends Properties {
 		CharBuffer cb = CharBuffer.allocate(buffer.length * 4);
 		CoderResult result = decoder.decode(bb, cb, true);
 		if (!result.isError()) {
-			
+
 			String s = new String(cb.array(), 0, cb.position());
 			s = doBackslashEncoding(s);
 
@@ -85,9 +96,9 @@ public class UTF8Properties extends Properties {
 	}
 
 	private String doBackslashEncoding(String s) {
-//		if (s.indexOf('\\') >= 0) {
-//			s = s.replaceAll("\\\\(?!u|\\r|\\n|n|r|t|\\\\)", "\\\\\\\\");
-//		}
+		// if (s.indexOf('\\') >= 0) {
+		// s = s.replaceAll("\\\\(?!u|\\r|\\n|n|r|t|\\\\)", "\\\\\\\\");
+		// }
 		return s;
 	}
 
@@ -101,5 +112,19 @@ public class UTF8Properties extends Properties {
 	public void store(OutputStream out, String msg) throws IOException {
 		OutputStreamWriter osw = new OutputStreamWriter(out, UTF8);
 		super.store(osw, msg);
+	}
+
+	public void store(OutputStream out) throws IOException {
+
+		StringWriter sw = new StringWriter();
+		String[] lines = sw.toString().split("\n\r?");
+
+		for (String line : lines) {
+			if (line.startsWith("#"))
+				continue;
+
+			out.write(line.getBytes(UTF8));
+			out.write("\n".getBytes(UTF8));
+		}
 	}
 }

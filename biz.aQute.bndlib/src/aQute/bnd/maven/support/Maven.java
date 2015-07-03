@@ -47,7 +47,7 @@ public class Maven {
 	 * @throws Exception
 	 */
 	public MavenEntry getEntry(String groupId, String artifactId, String version) throws Exception {
-		String path = path(groupId, artifactId, version);
+		String path = dirpath(groupId, artifactId, version);
 
 		MavenEntry entry;
 		synchronized (entries) {
@@ -61,7 +61,7 @@ public class Maven {
 		return entry;
 	}
 
-	private String path(String groupId, String artifactId, String version) {
+	private String dirpath(String groupId, String artifactId, String version) {
 		return groupId.replace('.', '/') + '/' + artifactId + '/' + version + "/" + artifactId + "-" + version;
 	}
 
