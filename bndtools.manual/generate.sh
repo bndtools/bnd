@@ -19,5 +19,5 @@ done
 rm -r site/_site
 rm -r site/_cache
 cd out/site
-runhaskell site.hs build
+stack runghc -- site.hs build
 cd ../..

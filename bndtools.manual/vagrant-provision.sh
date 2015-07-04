@@ -3,12 +3,18 @@
 # NB: DO NOT RUN this manually -- it is executed by Vagrant to provision the initial software on the box.
 
 # Haskell
-echo INSTALLING GHC 7.6.3-10
+echo INSTALLING ghc-7.8.4 AND cabal-install-1.20
 apt-get -qq update
-apt-get -qq install -y ghc=7.6.3-10
-
-echo INSTALLING CABAL
-apt-get -qq install -y cabal-install
+apt-get -qq install -y software-properties-common
+add-apt-repository -y ppa:hvr/ghc
+apt-get -qq update
+apt-get install -y cabal-install-1.20 ghc-7.8.4
+cat >> ~/.bashrc <<EOF
+export PATH="~/.cabal/bin:/opt/cabal/1.20/bin:/opt/ghc/7.8.4/bin:\$PATH"
+EOF
+export PATH=~/.cabal/bin:/opt/cabal/1.20/bin:/opt/ghc/7.8.4/bin:$PATH
+cabal update
+cabal install alex happy
 
 echo INSTALLING ZLIB
 apt-get -qq install -y zlib1g-dev

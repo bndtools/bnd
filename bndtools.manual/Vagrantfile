@@ -19,7 +19,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # config.vm.provision :docker
 
   # Enable provisioning from the provision.sh script
-  config.vm.provision :shell, path: "vagrant-provision.sh"
+  # config.vm.provision :shell, path: "vagrant-provision.sh"
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
