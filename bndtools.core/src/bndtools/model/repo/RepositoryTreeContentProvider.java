@@ -28,8 +28,6 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
-import aQute.bnd.service.repository.SearchableRepository;
-import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
 import bndtools.central.Central;
 import bndtools.central.WorkspaceR5Repository;
@@ -242,20 +240,6 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
                     result = searchR5Repository(workspaceRepo);
                 } catch (Exception e) {
                     logger.logError("Error querying workspace repository", e);
-                }
-            } else if (repoPlugin instanceof SearchableRepository) {
-                SearchableRepository searchableRepo = (SearchableRepository) repoPlugin;
-                try {
-                    Set<ResourceDescriptor> resources = searchableRepo.findResources(requirementFilter, false);
-                    result = new RepositoryBundle[resources.size()];
-
-                    int i = 0;
-                    for (ResourceDescriptor desc : resources) {
-                        RepositoryBundle wrapper = new RepositoryBundle(repoPlugin, desc.bsn);
-                        result[i++] = wrapper;
-                    }
-                } catch (Exception e) {
-                    logger.logError(MessageFormat.format("Error querying repository {0}.", repoPlugin.getName()), e);
                 }
             }
             return result;
