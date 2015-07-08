@@ -63,7 +63,7 @@ public class ResolutionFailurePanel {
         sectProcessingErrors = toolkit.createSection(composite, Section.TITLE_BAR | Section.EXPANDED);
         sectProcessingErrors.setText("Processing Errors:");
 
-        processingErrorsText = toolkit.createText(sectProcessingErrors, "", SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.READ_ONLY);
+        processingErrorsText = toolkit.createText(sectProcessingErrors, "", SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.READ_ONLY | SWT.V_SCROLL);
         sectProcessingErrors.setClient(processingErrorsText);
 
         ControlDecoration controlDecoration = new ControlDecoration(processingErrorsText, SWT.RIGHT | SWT.TOP);
