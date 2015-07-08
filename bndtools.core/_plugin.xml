@@ -462,7 +462,7 @@
    </extension>
 
    <!-- LAUNCH SHORTCUTS -->
-	   <extension
+   <extension
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
             label="Bnd OSGi Test Launcher (JUnit)"
@@ -922,6 +922,16 @@
          name="Debug Bnd OSGi Run Launcher (JUnit)"
          description="Debug Bnd OSGi Run Launcher (JUnit)"
          categoryId="org.eclipse.debug.ui.category.run"/>
+      <command
+         id="bnd.launch.runShortcut.run"
+         name="Run Bnd Native Launcher"
+         description="Run Bnd Native Launcher"
+         categoryId="org.eclipse.debug.ui.category.run"/>
+      <command
+         id="bnd.launch.runShortcut.debug"
+         name="Debug Bnd Native Launcher"
+         description="Debug Bnd Native Launcher"
+         categoryId="org.eclipse.debug.ui.category.run"/>
    </extension>
 
    <extension point="org.eclipse.ui.bindings">
@@ -944,6 +954,16 @@
          sequence="M3+M2+D K"
          contextId="org.eclipse.ui.globalScope"
          commandId="bndtools.launch.junitShortcut.debug"
+         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+         sequence="M3+M2+X N"
+         contextId="org.eclipse.ui.globalScope"
+         commandId="bnd.launch.runShortcut.run"
+         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+         sequence="M3+M2+D N"
+         contextId="org.eclipse.ui.globalScope"
+         commandId="bnd.launch.runShortcut.debug"
          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
    </extension>
 
