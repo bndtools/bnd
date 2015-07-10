@@ -6,10 +6,12 @@ class GeneratorState {
 
 	private final URL rootUrl;
 	private final String urlTemplate;
+	private URLResolver		resolver;
 
-	public GeneratorState(URL rootUrl, String urlTemplate) {
+	public GeneratorState(URL rootUrl, String urlTemplate, URLResolver resolver) {
 		this.rootUrl = rootUrl;
 		this.urlTemplate = urlTemplate;
+		this.resolver = resolver;
 	}
 
 	public URL getRootUrl() {
@@ -56,4 +58,7 @@ class GeneratorState {
 		return "GeneratorState [rootUrl=" + rootUrl + ", urlTemplate=" + urlTemplate + "]";
 	}
 
+	public URLResolver getResolver() {
+		return resolver;
+	}
 }

@@ -3,6 +3,7 @@ package org.osgi.service.indexer.impl;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -189,6 +190,26 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 
 		GeneratorState state = getStateLocal();
 		if (state != null) {
+
+			//
+			// Check if a resolver was specified
+			// If so, we give that preference over the automatic
+			// and template calculation
+			//
+
+			URLResolver resolver = state.getResolver();
+			if (resolver != null) {
+				try {
+					URI uri = resolver.resolver(path);
+					if (uri != null)
+						return uri.toString();
+				}
+				catch (Exception e) {
+					if (log != null)
+						log.log(LogService.LOG_ERROR, "Resolver failed on " + path + ", falling back to old method");
+				}
+			}
+
 			String rootUrl = state.getRootUrl().toString();
 			if (!rootUrl.endsWith("/"))
 				rootUrl += "/";

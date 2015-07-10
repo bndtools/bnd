@@ -66,6 +66,8 @@ public class RepoIndex implements ResourceIndexer {
 	 */
 	private final List<Pair<ResourceAnalyzer, Filter>> analyzers = new LinkedList<Pair<ResourceAnalyzer, Filter>>();
 
+	private URLResolver									resolver;
+
 	/**
 	 * Construct a default instance that uses a console logger.
 	 */
@@ -249,7 +251,7 @@ public class RepoIndex implements ResourceIndexer {
 					rootURL = new File(System.getProperty("user.dir")).toURI().toURL();
 
 				String urlTemplate = config.get(ResourceIndexer.URL_TEMPLATE);
-				bundleAnalyzer.setStateLocal(new GeneratorState(rootURL, urlTemplate));
+				bundleAnalyzer.setStateLocal(new GeneratorState(rootURL, urlTemplate, resolver));
 			} else {
 				bundleAnalyzer.setStateLocal(null);
 			}
@@ -363,4 +365,13 @@ public class RepoIndex implements ResourceIndexer {
 		}
 		return value;
 	}
+
+	/**
+	 * Set a URL resolver that calculates the reference to the file
+	 */
+
+	public void setURLResolver(URLResolver resolver) {
+		this.resolver = resolver;
+	}
+
 }
