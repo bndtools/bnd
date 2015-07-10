@@ -80,7 +80,7 @@ public class QuotedTokenizer {
 		if (!hadstring)
 			result = result.trim();
 
-		if (result.length() == 0 && index == string.length())
+		if (!hadstring && result.length() == 0 && index == string.length())
 			return null;
 		return result;
 	}
