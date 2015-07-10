@@ -11,7 +11,9 @@ import static org.mockito.Mockito.verify;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -19,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import junit.framework.TestCase;
 
@@ -33,6 +37,66 @@ import org.osgi.service.indexer.ResourceIndexer;
 import org.osgi.service.log.LogService;
 
 public class TestIndexer extends TestCase {
+
+	/**
+	 * Test if the resolver is not affected if we use a dummy resolver
+	 */
+	public void testResolverUnaffected() throws Exception {
+
+		RepoIndex indexer = new RepoIndex();
+		String without = index(indexer);
+
+		indexer = new RepoIndex();
+		indexer.setURLResolver(new URLResolver() {
+
+			@Override
+			public URI resolver(File artifact) throws Exception {
+				return null;
+			}
+		});
+
+		String with = index(indexer);
+
+		assertEquals("Should be the same without a resolver or a resolver that returns null", without, with);
+
+		indexer = new RepoIndex();
+		indexer.setURLResolver(new URLResolver() {
+
+			@Override
+			public URI resolver(File artifact) throws Exception {
+				throw new Exception();
+			}
+		});
+
+		with = index(indexer);
+		assertEquals("Should be the same without a resolver or a resolver that returns null", without, with);
+	}
+
+	/**
+	 * Test if the resolver can change the URLs
+	 * 
+	 */
+	public void testResolverEffect() throws Exception {
+
+		RepoIndex indexer = new RepoIndex();
+		indexer.setURLResolver(new URLResolver() {
+
+			@Override
+			public URI resolver(File artifact) throws Exception {
+				return new URI("xyz://FOOBAR/" + artifact.getName());
+			}
+		});
+
+		String with = index(indexer);
+
+		Pattern p = Pattern.compile("xyz://FOOBAR/(03-export.jar|06-requirebundle.jar)(?:\"|')");
+		Matcher m = p.matcher(with);
+		int n = 0;
+		while (m.find()) {
+			n++;
+		}
+		assertEquals("There are two files indexed", 2, n);
+	}
 
 	public void testFragmentBsnVersion() throws Exception {
 		assertFragmentMatch("testdata/fragment-01.txt", "testdata/01-bsn+version.jar");
@@ -146,6 +210,14 @@ public class TestIndexer extends TestCase {
 	public void testFullIndex() throws Exception {
 		RepoIndex indexer = new RepoIndex();
 
+		String decompressed = index(indexer);
+
+		String unpackedXML = Utils.readStream(new FileInputStream("testdata/unpacked.xml"));
+		String expected = unpackedXML.replaceAll("\\r?\\n|\\t", "");
+		assertEquals(expected, decompressed);
+	}
+
+	private String index(RepoIndex indexer) throws Exception, IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		Set<File> files = new LinkedHashSet<File>();
 		files.add(new File("testdata/03-export.jar"));
@@ -156,9 +228,8 @@ public class TestIndexer extends TestCase {
 		config.put(ResourceIndexer.REPOSITORY_NAME, "full-c+f");
 		indexer.index(files, out, config);
 
-		String unpackedXML = Utils.readStream(new FileInputStream("testdata/unpacked.xml"));
-		String expected = unpackedXML.replaceAll("\\r?\\n|\\t", "");
-		assertEquals(expected, Utils.decompress(out.toByteArray()));
+		String decompressed = Utils.decompress(out.toByteArray());
+		return decompressed;
 	}
 
 	public void testFullIndexPrettyCompressedPermutations() throws Exception {
