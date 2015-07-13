@@ -64,8 +64,14 @@ public class TestQuotedTokenizer extends TestCase {
 		assertEquals("'y", s);
 	}
 	
-	public static void testExplicitEmptyStringTurnedToNull() {
+	public static void testExplicitEmptyString() {
 		QuotedTokenizer qt = new QuotedTokenizer("literal=''", ";=,");
+		qt.nextToken();
+		assertEquals("", qt.nextToken());
+	}
+
+	public static void testImplicitEmptyStringTurnedToNull() {
+		QuotedTokenizer qt = new QuotedTokenizer("literal=", ";=,");
 		qt.nextToken();
 		assertNull(qt.nextToken());
 	}
