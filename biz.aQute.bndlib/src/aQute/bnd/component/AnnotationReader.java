@@ -569,6 +569,8 @@ details);
 				def.field = member.getName();
 				if (def.name == null)
 					def.name = def.field;
+				if (def.policy == null && member.isVolatile())
+					def.policy = ReferencePolicy.DYNAMIC;
 
 				String sig = member.getSignature();
 				if (sig == null)
