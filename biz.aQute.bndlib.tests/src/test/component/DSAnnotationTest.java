@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -2841,6 +2842,48 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("log2", "scr:component/reference[2]/@name");
 		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[2]/@interface");
 		xt.assertNoAttribute("scr:component/reference[2]/@policy");
+
+	}
+
+	@Component
+	static class FinalDynamicCollectionField {
+		@Reference(policy = ReferencePolicy.DYNAMIC)
+		private final List<LogService>	logs1	= new CopyOnWriteArrayList<LogService>();
+
+		@Reference
+		private final List<LogService>	logs2	= new CopyOnWriteArrayList<LogService>();
+
+	}
+
+	public static void testFinalDynamicCollectionField() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*FinalDynamicCollectionField");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+		Attributes a = getAttr(jar);
+		checkRequires(a, true, LogService.class.getName());
+
+		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$FinalDynamicCollectionField.xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+		// Test the defaults
+		xt.assertAttribute("test.component.DSAnnotationTest$FinalDynamicCollectionField",
+				"scr:component/implementation/@class");
+
+		xt.assertAttribute("logs1", "scr:component/reference[1]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[1]/@interface");
+		xt.assertAttribute("dynamic", "scr:component/reference[1]/@policy");
+		xt.assertAttribute("update", "scr:component/reference[1]/@field-option");
+
+		xt.assertAttribute("logs2", "scr:component/reference[2]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[2]/@interface");
+		xt.assertNoAttribute("scr:component/reference[2]/@policy");
+		xt.assertNoAttribute("scr:component/reference[2]/@field-option");
 
 	}
 }
