@@ -1901,6 +1901,10 @@ public class DSAnnotationTest extends BndTestCase {
 		Foo[] myEnumArray() default {Foo.A, Foo.B};
 		float myFloat() default 1.0f;
 		char myChar() default 'a';
+		byte myByte() default 2;
+		short myShort() default 298;
+		double myDouble() default 2.1D;
+		long myLong() default 9876543210L;
 	}
 
 	@Component()
@@ -2006,7 +2010,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
 		xt.assertAttribute("0", "count(scr:component/properties)");
-		xt.assertAttribute("10", "count(scr:component/property)");
+		xt.assertAttribute("14", "count(scr:component/property)");
 
 		xt.assertAttribute("foo", "scr:component/property[@name='myString']/@value");
 		xt.assertAttribute("String", "scr:component/property[@name='myString']/@type");
@@ -2037,6 +2041,18 @@ public class DSAnnotationTest extends BndTestCase {
 		
 		xt.assertAttribute("97", "scr:component/property[@name='myChar']/@value");
 		xt.assertAttribute("Character", "scr:component/property[@name='myChar']/@type");
+
+		xt.assertAttribute("2", "scr:component/property[@name='myByte']/@value");
+		xt.assertAttribute("Byte", "scr:component/property[@name='myByte']/@type");
+
+		xt.assertAttribute("298", "scr:component/property[@name='myShort']/@value");
+		xt.assertAttribute("Short", "scr:component/property[@name='myShort']/@type");
+
+		xt.assertAttribute("9876543210", "scr:component/property[@name='myLong']/@value");
+		xt.assertAttribute("Long", "scr:component/property[@name='myLong']/@type");
+
+		xt.assertAttribute("2.1", "scr:component/property[@name='myDouble']/@value");
+		xt.assertAttribute("Double", "scr:component/property[@name='myDouble']/@type");
 
 	}
 

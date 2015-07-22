@@ -3,6 +3,7 @@ package aQute.bnd.component;
 import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -82,6 +83,20 @@ public class AnnotationReader extends ClassDataCollector {
 																.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(Ljava/lang/Integer;)|(I))*\\)(V|(Ljava/util/Map;))");
 	static Pattern				DEACTIVATEDESCRIPTORDS13	= Pattern
 																.compile("\\(((L([^;]+);)|(I))*\\)(V|(Ljava/util/Map;))");
+
+	final static Map<String,Class< ? >>	wrappers;
+	static {
+		Map<String,Class< ? >> map = new HashMap<String,Class< ? >>();
+		map.put("boolean", Boolean.class);
+		map.put("byte", Byte.class);
+		map.put("short", Short.class);
+		map.put("char", Character.class);
+		map.put("int", Integer.class);
+		map.put("long", Long.class);
+		map.put("float", Float.class);
+		map.put("double", Double.class);
+		wrappers = Collections.unmodifiableMap(map);
+	}
 
 	ComponentDef											component;
 
@@ -415,7 +430,7 @@ details);
 								// check type, exit with warning if annotation
 								// or annotation array
 								boolean isClass = false;
-								boolean isCharacter = false;
+								Class< ? > typeClass = null;
 								TypeRef type = defined.getType().getClassRef();
 								if (!type.isPrimitive()) {
 									if (Class.class.getName().equals(type.getFQN())) {
@@ -435,8 +450,8 @@ details);
 													e, methodDescriptor, type).details(details);
 										}
 									}
-								} else if ("char".equals(type.getFQN())) {
-									isCharacter = true;
+								} else {
+									typeClass = wrappers.get(type.getFQN());
 								}
 								if (value != null) {
 									String name = identifierToPropertyName(defined.getName());
@@ -444,17 +459,18 @@ details);
 										//add element individually
 										for (int i = 0; i< Array.getLength(value); i++) {
 											Object element = Array.get(value, i);
-											valueToProperty(name, element, isClass, isCharacter);
+											valueToProperty(name, element, isClass, typeClass);
 										}
 									} else
-										valueToProperty(name, value, isClass, isCharacter);
+										valueToProperty(name, value, isClass, typeClass);
 								}
 							}
 
-							private void valueToProperty(String name, Object value, boolean isClass, boolean isCharacter) {
+							private void valueToProperty(String name, Object value, boolean isClass, Class< ? > typeClass) {
 								if (isClass)
 									value = ((TypeRef) value).getFQN();
-								Class<?> typeClass = isCharacter? Character.class: value.getClass();
+								if (typeClass == null)
+									typeClass = value.getClass();
 								//enums already come out as the enum name, no processing needed.
 								String type = typeClass.getSimpleName();
 								component.propertyType.put(name, type);
