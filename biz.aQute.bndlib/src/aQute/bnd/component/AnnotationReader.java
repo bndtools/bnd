@@ -15,6 +15,7 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.FieldOption;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferencePolicy;
@@ -569,6 +570,8 @@ details);
 				def.field = member.getName();
 				if (def.name == null)
 					def.name = def.field;
+				if (def.policy == null && member.isVolatile())
+					def.policy = ReferencePolicy.DYNAMIC;
 
 				String sig = member.getSignature();
 				if (sig == null)
@@ -577,12 +580,14 @@ details);
 				String[] sigs = sig.split("[<;>]");
 				int sigLength = sigs.length;
 				int index = 0;
-				FieldCollectionType fieldCollectionType = null;
 				boolean isCollection = false;
 				if ("Ljava/util/Collection".equals(sigs[index]) || "Ljava/util/List".equals(sigs[index])) {
 					index++;
 					isCollection = true;
 				}
+				// Along with determining the FieldCollectionType, the following
+				// code positions index to read the service type.
+				FieldCollectionType fieldCollectionType = null;
 				if (sufficientGenerics(index, sigLength, def, sig)) {
 					if ("Lorg/osgi/framework/ServiceReference".equals(sigs[index])) {
 						if (sufficientGenerics(index++, sigLength, def, sig)) {
@@ -607,8 +612,17 @@ details);
 						fieldCollectionType = FieldCollectionType.service;
 					}
 				}
-				if (isCollection)
+				if (isCollection) {
 					def.fieldCollectionType = fieldCollectionType;
+					if (def.policy == ReferencePolicy.DYNAMIC && member.isFinal()) {
+						if (def.fieldOption == FieldOption.REPLACE)
+							analyzer.error(
+									"In component %s, collection type field: %s is final and dynamic but marked with 'replace' fieldOption. Changing this to 'update'.",
+									className, def.field).details(
+									getDetails(def, ErrorType.DYNAMIC_FINAL_FIELD_WITH_REPLACE));
+						def.fieldOption = FieldOption.UPDATE;
+					}
+				}
 				if (annoService == null && index <= sigs.length) {
 					annoService = sigs[index].substring(1).replace('/', '.');
 

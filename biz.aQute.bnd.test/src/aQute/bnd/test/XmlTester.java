@@ -1,15 +1,22 @@
 package aQute.bnd.test;
 
-import java.io.*;
-import java.util.*;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
 
-import javax.xml.namespace.*;
-import javax.xml.parsers.*;
-import javax.xml.xpath.*;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
-import junit.framework.*;
+import junit.framework.Assert;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 public class XmlTester {
 	final static DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
@@ -81,6 +88,12 @@ public class XmlTester {
 		Assert.assertEquals(value, o.trim().replaceAll("\n", "\\\\n"));
 	}
 	
+	public void assertNoAttribute(String expr) throws XPathExpressionException {
+		System.err.println(expr);
+		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
+		Assert.assertEquals("", o);
+	}
+
 	public void assertNamespace(String namespace) {
 		Element element = document.getDocumentElement();
 		String xmlns = element.getNamespaceURI();
