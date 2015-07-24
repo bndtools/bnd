@@ -58,6 +58,10 @@ Git-SHA:                ${system-allow-fail;git rev-list -1 HEAD}
 # Custom Settings
 #
 
+# Include the gradle.properties to get the value of bnd_repourl which is used
+# in ext/pluginpaths.bnd to download the repository jar.
+-include ${workspace}/gradle.properties
+
 repo:                   ${workspace}/cnf/repo
 releaserepo:            ${workspace}/dist/bundles
 

@@ -132,6 +132,7 @@ public class LauncherTest extends TestCase {
 			IO.copy(IO.getFile("../demo"), IO.getFile(f, "demo"));
 			IO.copy(IO.getFile("../biz.aQute.launcher"), IO.getFile(f, "biz.aQute.launcher"));
 			IO.copy(IO.getFile("../biz.aQute.junit"), IO.getFile(f, "biz.aQute.junit"));
+			IO.copy(IO.getFile("../gradle.properties"), IO.getFile(f, "gradle.properties"));
 
 			Workspace ws = Workspace.getWorkspace(f);
 			Project p = ws.getProject("demo");
@@ -295,40 +296,6 @@ public class LauncherTest extends TestCase {
 		String s = p.getProperty("launch.bundles");
 		assertTrue(s.contains("${JPMREPO}/"));
 		assertEquals("false", p.getProperty("launch.embedded"));
-	}
-
-	/**
-	 * This needs to be adapted because the previous left lots of files after
-	 * testing. This current one does not work since the demo project uses the
-	 * snapshots of the launcher and tester, and when copied they are not there
-	 * in that workspace. So we need another demo project that does not use OSGi
-	 * and has not special deps. Then the following code can be used.
-	 * 
-	 * @throws Exception
-	 */
-	public static void testWorkspaceWithSpace() throws Exception {
-		// // reuse built .class files from the demo project.
-		// String base = new
-		// File("").getAbsoluteFile().getParentFile().getAbsolutePath();
-		// File ws = IO.getFile("tmp/ space ");
-		// try {
-		// IO.delete(ws);
-		// ws.mkdirs();
-		// IO.copy( IO.getFile("../demo"), IO.getFile(ws, "demo"));
-		// IO.getFile(ws, "cnf").mkdirs();
-		// IO.copy( IO.getFile("../cnf"), IO.getFile(ws, "cnf"));
-		// Workspace wp = new Workspace(ws);
-		//
-		// Project p = wp.getProject("demo");
-		// p.clear();
-		// ProjectLauncher l = p.getProjectLauncher();
-		// l.setTrace(true);
-		// l.getRunProperties().put("test.cmd", "exit");
-		// assertEquals(42, l.launch());
-		// }
-		// finally {
-		// IO.delete(ws);
-		// }
 	}
 
 	/**
