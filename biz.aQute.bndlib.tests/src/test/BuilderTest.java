@@ -1,22 +1,92 @@
 package test;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
-import java.util.regex.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.jar.Attributes;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.test.*;
-import aQute.bnd.version.*;
-import aQute.lib.collections.*;
-import aQute.lib.hex.*;
-import aQute.lib.io.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.EmbeddedResource;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Packages;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.osgi.Verifier;
+import aQute.bnd.test.BndTestCase;
+import aQute.bnd.version.Version;
+import aQute.lib.collections.SortedList;
+import aQute.lib.hex.Hex;
+import aQute.lib.io.IO;
 import aQute.service.reporter.Report.Location;
 
 @SuppressWarnings("resource")
 public class BuilderTest extends BndTestCase {
 
+	/**
+	 * #971 bnd does not import exported package used by an imported/exported
+	 * package When building org.osgi.impl.service.async bundle in OSGi build,
+	 * the bundle exports the org.osgi.util.promise and org.osgi.util.function
+	 * packages. org.osgi.util.promise uses org.osgi.util.function. bnd
+	 * correctly exports both packages but only imports org.osgi.util.promise.
+	 * 
+	 * <pre>
+	 * Export-Package: org.osgi.service.async;version="1.0";uses:="org.osgi.framework,org.osgi.util.promise",org.osgi.service.async.delegate;version="1.0";uses:="org.osgi.util.promise",org.osgi.util.promise;version="1.0";uses:="org.osgi.util.function",org.osgi.util.function;version="1.0"
+	 * Import-Package: org.osgi.framework;version="[1.6,2)",org.osgi.framework.wiring;version="[1.0,2)",org.osgi.service.async;version="[1.0,1.1)",org.osgi.service.async.delegate;version="[1.0,2)",org.osgi.service.log;version="[1.3,2)",org.osgi.util.promise;version="[1.0,1.1)",org.osgi.util.tracker;version="[1.5,2)"
+	 * Tool: Bnd-3.0.0.201506011706
+	 * </pre>
+	 * 
+	 * So effectively the offer to import org.osgi.util.promise is broken. If
+	 * the framework wanted to resolve the bundle by importing
+	 * org.osgi.util.promise, that package has a uses constraint on
+	 * org.osgi.util.function and since the bundle only exports
+	 * org.osgi.util.function, the framework can only resolve the bundle to
+	 * another exporter of org.osgi.util.promise if that exporter imports
+	 * org.osgi.util.function from this bundle. Obviously that wont work for
+	 * additional bundle attempting the same thing. bnd fails to also import
+	 * org.osgi.util.function. This issue exists in bnd 2.4.1 and master. We
+	 * have 4 packages
+	 * 
+	 * <pre>
+	 * p1 -> p2			exported (makes p2 importable)
+	 * p2 -> none		exported (force to import by p1)
+	 * p3 -> p1			private  (makes p1 importable)
+	 * p4 -> p3         exported (p4 cannot be imported due to private ref)
+	 * <pre>
+	 */
+
+	public void testNoImportForUsedExport_971() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setExportPackage("test.missingimports_971.p1,test.missingimports_971.p2,test.missingimports_971.p4");
+		b.setPrivatePackage("test.missingimports_971.p3");
+		b.build();
+		assertTrue(b.check());
+
+		assertTrue(b.getExports().containsFQN("test.missingimports_971.p1"));
+		assertTrue(b.getExports().containsFQN("test.missingimports_971.p2"));
+		assertTrue(b.getExports().containsFQN("test.missingimports_971.p4"));
+		assertTrue(b.getImports().containsFQN("test.missingimports_971.p1"));
+		assertTrue(b.getImports().containsFQN("test.missingimports_971.p2"));
+		b.getJar().getManifest().write(System.out);
+	}
 	/*
 	 * Private package header doesn't allow the use of negation (!) #840
 	 */

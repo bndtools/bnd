@@ -1,17 +1,28 @@
 package test;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.jar.Manifest;
 
-import junit.framework.*;
-import aQute.bnd.build.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.osgi.eclipse.*;
-import aQute.bnd.service.*;
-import aQute.bnd.version.*;
-import aQute.lib.deployer.*;
-import aQute.lib.io.*;
+import junit.framework.TestCase;
+import aQute.bnd.build.Container;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.eclipse.EclipseClasspath;
+import aQute.bnd.service.Strategy;
+import aQute.bnd.version.Version;
+import aQute.lib.deployer.FileRepo;
+import aQute.lib.io.IO;
 
 @SuppressWarnings({
 		"resource", "restriction"
@@ -350,7 +361,7 @@ public class ProjectTest extends TestCase {
 		}
 		
 		assertEquals( 12, project.getExports().size());
-		assertEquals( 9, project.getImports().size());
+		assertEquals(18, project.getImports().size());
 		assertEquals( 12, project.getContained().size());
 		project.close();
 	}
