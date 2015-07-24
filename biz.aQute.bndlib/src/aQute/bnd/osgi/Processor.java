@@ -1,26 +1,63 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.*;
-import java.util.jar.*;
-import java.util.regex.*;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.header.*;
-import aQute.bnd.service.*;
-import aQute.bnd.service.url.*;
-import aQute.bnd.version.*;
-import aQute.lib.collections.*;
-import aQute.lib.hex.*;
-import aQute.lib.io.*;
-import aQute.lib.strings.*;
-import aQute.lib.utf8properties.*;
-import aQute.libg.cryptography.*;
-import aQute.libg.generics.*;
-import aQute.service.reporter.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.service.Plugin;
+import aQute.bnd.service.Registry;
+import aQute.bnd.service.RegistryDonePlugin;
+import aQute.bnd.service.RegistryPlugin;
+import aQute.bnd.service.url.URLConnectionHandler;
+import aQute.bnd.version.Version;
+import aQute.lib.collections.ExtList;
+import aQute.lib.collections.SortedList;
+import aQute.lib.hex.Hex;
+import aQute.lib.io.IO;
+import aQute.lib.io.IOConstants;
+import aQute.lib.strings.Strings;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.cryptography.SHA1;
+import aQute.libg.generics.Create;
+import aQute.service.reporter.Reporter;
 
 public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
 	static final int				BUFFER_SIZE			= IOConstants.PAGE_SIZE * 1;
@@ -61,6 +98,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	HashSet<String>					missingCommand;
 	Boolean							strict;
 	boolean							fixupMessages;
+	List<ClassLoader>				auxiliary			= new ArrayList<ClassLoader>();
 
 	public static class FileLine {
 		public static final FileLine	DUMMY	= new FileLine(null, 0, 0);
@@ -1608,7 +1646,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		trace = x;
 	}
 
-	public static class CL extends URLClassLoader {
+	public class CL extends URLClassLoader {
 
 		CL() {
 			super(new URL[0], Processor.class.getClassLoader());
@@ -1675,6 +1713,18 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				return c;
 			}
 			catch (Throwable t) {
+				
+				//
+				// Try out our auxliary classloaders
+				//
+
+				for (ClassLoader cl : auxiliary)
+					try {
+						return cl.loadClass(name);
+					}
+					catch (Exception e) {
+					
+				}
 				StringBuilder sb = new StringBuilder();
 				sb.append(name);
 				sb.append(" not found, parent:  ");
@@ -2664,4 +2714,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		this.exceptions = p.isExceptions();
 	}
 
+	/**
+	 * Add an auxiliary class loader that can be set by Gradle, Bndtools
+	 */
+
+	public void addAuxiliary(ClassLoader loader) {
+		auxiliary.remove(loader);
+		auxiliary.add(loader);
+	}
 }
