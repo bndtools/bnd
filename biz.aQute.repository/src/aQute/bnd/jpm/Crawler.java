@@ -18,6 +18,8 @@ public class Crawler extends Thread {
 	private Semaphore	throttle	= new Semaphore(2);
 
 	public Crawler(Repository repository) {
+		super(repository.getName());
+		super.setDaemon(true);
 		this.repository = repository;
 	}
 
