@@ -26,6 +26,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 
     private boolean noCheckCnf = false;
     private boolean warnExistingLaunch = true;
+    private boolean buildBeforeLaunch = true;
     private boolean editorOpenSourceTab = false;
 
     @Override
@@ -53,6 +54,9 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         final Button btnWarnExistingLaunch = new Button(grpLaunching, SWT.CHECK);
         btnWarnExistingLaunch.setText(Messages.BndPreferencePage_btnWarnExistingLaunch);
 
+        final Button btnBuildBeforeLaunch = new Button(grpLaunching, SWT.CHECK);
+        btnBuildBeforeLaunch.setText(Messages.BndPreferencePage_btnBuildBeforeLaunch);
+
         Group editorGroup = new Group(composite, SWT.NONE);
         editorGroup.setText(Messages.BndPreferencePage_editorGroup);
 
@@ -63,6 +67,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         btnNoCheckCnf.setSelection(noCheckCnf);
         btnCheckCnfNow.setEnabled(!noCheckCnf);
         btnWarnExistingLaunch.setSelection(warnExistingLaunch);
+        btnBuildBeforeLaunch.setSelection(buildBeforeLaunch);
         btnEditorOpenSourceTab.setSelection(editorOpenSourceTab);
         // headless already done
         // versionControlIgnores already done
@@ -83,6 +88,13 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
                 }
             }
         });
+        btnBuildBeforeLaunch.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                buildBeforeLaunch = btnBuildBeforeLaunch.getSelection();
+            }
+        });
+
         btnWarnExistingLaunch.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -125,6 +137,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         BndPreferences prefs = new BndPreferences();
         prefs.setHideInitCnfWizard(noCheckCnf);
         prefs.setWarnExistingLaunch(warnExistingLaunch);
+        prefs.setBuildBeforeLaunch(buildBeforeLaunch);
         prefs.setEditorOpenSourceTab(editorOpenSourceTab);
         return true;
     }
@@ -135,6 +148,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 
         noCheckCnf = prefs.getHideInitCnfWizard();
         warnExistingLaunch = prefs.getWarnExistingLaunches();
+        buildBeforeLaunch = prefs.getBuildBeforeLaunch();
         editorOpenSourceTab = prefs.getEditorOpenSourceTab();
     }
 

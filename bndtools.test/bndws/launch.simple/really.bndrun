@@ -2,7 +2,7 @@
 #
 # targets
 #
-pi = pi2;host=192.168.67.122;jdb=1044;shell=1
+pi = pi2;host=192.168.2.4;jdb=1044;shell=1
 wlp = wlp;jdb=7777;shell=-22
 liferay=liferay;shell=11311;jdb=8000
 

@@ -45,7 +45,8 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 
     @Override
     public boolean buildForLaunch(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor) throws CoreException {
-        boolean result = super.buildForLaunch(configuration, mode, monitor);
+        BndPreferences prefs = new BndPreferences();
+        boolean result = !prefs.getBuildBeforeLaunch() || super.buildForLaunch(configuration, mode, monitor);
 
         model = LaunchUtils.getBndProject(configuration);
         try {
