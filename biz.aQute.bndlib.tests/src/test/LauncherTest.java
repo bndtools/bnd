@@ -9,6 +9,7 @@ import junit.framework.TestCase;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.ProjectTester;
+import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -19,12 +20,114 @@ public class LauncherTest extends TestCase {
 
 	private static Workspace	workspace;
 	private static Project		project;
-	
+
 	public void tearDown() {
 		if (project != null) {
 			project.close();
 			workspace.close();
 		}
+	}
+
+	/**
+	 * Gradle Problems exporting an executable jar #980 Test the packager's
+	 * difference between plan export in gradle & from bndtools
+	 * 
+	 * @throws Exception
+	 */
+	public static void testPackagerDifference() throws Exception {
+
+		//
+		// First as we basically do it in bndtools for a project
+		//
+
+		{
+			Project project = getProject();
+			project.clear();
+			ProjectLauncher l = project.getProjectLauncher();
+			l.setTrace(true);
+			Jar executable = l.executable();
+			assertNotNull(executable);
+
+			Properties p = new Properties();
+			Resource resource = executable.getResource("launcher.properties");
+
+			p.load(resource.openInputStream());
+
+			assertEquals("1", p.getProperty("in.workspace"));
+			assertEquals("2", p.getProperty("in.project"));
+			assertEquals(null, p.getProperty("in.x"));
+		}
+
+		//
+		// First as we basically do it in bndtools for a file
+		//
+
+		{
+			Project project = getProject();
+			project.clear();
+			File f = project.getFile("x.bndrun");
+			Run run = new Run(project.getWorkspace(), project.getBase(), f);
+			ProjectLauncher l = run.getProjectLauncher();
+			l.setTrace(true);
+			Jar executable = l.executable();
+			assertNotNull(executable);
+
+			Properties p = new Properties();
+			Resource resource = executable.getResource("launcher.properties");
+
+			p.load(resource.openInputStream());
+
+			assertEquals("1", p.getProperty("in.workspace"));
+			assertEquals("3", p.getProperty("in.x"));
+			assertEquals(null, p.getProperty("in.project"));
+		}
+
+		// Test project with export
+
+		{
+
+			Project project = getProject();
+			project.getWorkspace().setProperty("-runproperties.x", "bar=2");
+			project.clear();
+			File f = new File("generated/test.jar");
+			project.export(null, true, f);
+
+			try (Jar executable = new Jar(f);) {
+
+				Properties p = new Properties();
+				Resource resource = executable.getResource("launcher.properties");
+
+				p.load(resource.openInputStream());
+
+				assertEquals("1", p.getProperty("in.workspace"));
+				assertEquals("2", p.getProperty("in.project"));
+				assertEquals(null, p.getProperty("in.x"));
+			}
+		}
+
+		// Test file with export
+
+		{
+
+			Project project = getProject();
+			project.getWorkspace().setProperty("-runproperties.x", "bar=2");
+			project.clear();
+			File f = new File("generated/test.jar");
+			project.export("x.bndrun", true, f);
+
+			try (Jar executable = new Jar(f);) {
+
+				Properties p = new Properties();
+				Resource resource = executable.getResource("launcher.properties");
+
+				p.load(resource.openInputStream());
+
+				assertEquals("1", p.getProperty("in.workspace"));
+				assertEquals(null, p.getProperty("in.project"));
+				assertEquals("3", p.getProperty("in.x"));
+			}
+		}
+
 	}
 
 	/**
@@ -53,12 +156,11 @@ public class LauncherTest extends TestCase {
 	// assertEquals(42, l.start(null));
 	// }
 
-	
 	/**
 	 * Test if we can keep the framework state.
 	 */
 	public static void testRunKeep() throws Exception {
-		
+
 		//
 		// First set persistence after clearing the storage
 		//
@@ -69,12 +171,12 @@ public class LauncherTest extends TestCase {
 		l.setTrace(true);
 		l.getRunProperties().put("test.cmd", "setpersistence");
 		assertEquals(55, l.launch());
-		
+
 		//
 		// Check that we really clear by clearing and checking state
 		// this must fail with -2
 		//
-		
+
 		project = getProject();
 		project.setProperty("-runkeep", "false");
 		l = project.getProjectLauncher();
@@ -82,7 +184,7 @@ public class LauncherTest extends TestCase {
 		l.setTrace(true);
 		l.getRunProperties().put("test.cmd", "getpersistence");
 		assertEquals(-2, l.launch());
-		
+
 		//
 		// We now try to set the state again with a cleared framework
 		//
@@ -93,13 +195,12 @@ public class LauncherTest extends TestCase {
 		l.setTrace(true);
 		l.getRunProperties().put("test.cmd", "setpersistence");
 		assertEquals(55, l.launch());
-		
 
 		//
 		// And now it should have been saved if we do not clear
 		// the framework
 		//
-		
+
 		project = getProject();
 		project.setProperty("-runkeep", "true");
 		l = project.getProjectLauncher();
@@ -107,7 +208,7 @@ public class LauncherTest extends TestCase {
 		l.setTrace(true);
 		l.getRunProperties().put("test.cmd", "getpersistence");
 		assertEquals(65, l.launch());
-		
+
 	}
 
 	public static void testNoReferences() throws Exception {

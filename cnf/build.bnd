@@ -104,3 +104,5 @@ Bundle-Developers: \
 -runpath:\
 	org.eclipse.osgi;version=3.5,\
 	com.springsource.junit;export="junit.framework;version=3.8"
+
+-runproperties.testsuite: in.workspace=1
