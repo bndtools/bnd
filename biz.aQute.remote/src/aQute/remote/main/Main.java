@@ -1,12 +1,14 @@
 package aQute.remote.main;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 
-import aQute.lib.collections.*;
-import aQute.lib.getopt.*;
-import aQute.lib.io.*;
-import aQute.libg.reporter.*;
-import aQute.remote.api.*;
+import aQute.lib.collections.ExtList;
+import aQute.lib.getopt.CommandLine;
+import aQute.lib.getopt.Options;
+import aQute.lib.io.IO;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.remote.api.Agent;
 
 /**
  * This is a main program. This starts an Envoy, a restricted Agent that will
@@ -51,6 +53,8 @@ public class Main extends ReporterAdapter {
 		int port(int deflt);
 
 		String network(String deflt);
+
+		boolean all();
 	}
 
 	/**
@@ -62,7 +66,7 @@ public class Main extends ReporterAdapter {
 		setExceptions(options.exceptions());
 
 		int port = options.port(Agent.DEFAULT_PORT);
-		String network = options.network("localhost");
+		String network = options.network(options.all() ? "0.0.0.0" : "localhost");
 
 		File cache = IO.getFile(options.cache("~/.bnd/remote/cache"));
 		File storage = IO.getFile(options.storage("storage"));
