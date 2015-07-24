@@ -1,15 +1,17 @@
 package aQute.bnd.jpm;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.SortedSet;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
-import org.osgi.service.indexer.impl.util.*;
+import org.osgi.service.indexer.impl.util.Hex;
 
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
-import aQute.bnd.version.*;
-import aQute.lib.io.*;
+import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
 
 public class JPMTest extends TestCase {
 	File				tmp;
@@ -32,7 +34,9 @@ public class JPMTest extends TestCase {
 
 	@Override
 	protected void tearDown() throws Exception {
+		repo.close();
 		IO.delete(tmp);
+
 		super.tearDown();
 	}
 

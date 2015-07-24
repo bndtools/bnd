@@ -1473,19 +1473,19 @@ public class Analyzer extends Processor {
 		Set<PackageRef> privatePackages = new HashSet<PackageRef>(contained.keySet());
 		privatePackages.removeAll(exports.keySet());
 
-		// private references = ∀ p : private packages | uses(p)
-		Set<PackageRef> privateReferences = newSet();
-		for (PackageRef p : privatePackages) {
+		// private references = ∀ p : contained packages | uses(p)
+		Set<PackageRef> containedReferences = newSet();
+		for (PackageRef p : contained.keySet()) {
 			Collection<PackageRef> uses = this.uses.get(p);
 			if (uses != null)
-				privateReferences.addAll(uses);
+				containedReferences.addAll(uses);
 		}
 
-		// Assume we are going to export all exported packages
+		// Assume we are going to import all exported packages
 		Set<PackageRef> toBeImported = new HashSet<PackageRef>(exports.keySet());
 
-		// Remove packages that are not referenced privately
-		toBeImported.retainAll(privateReferences);
+		// Remove packages that are not referenced locally
+		toBeImported.retainAll(containedReferences);
 
 		// Not necessary to import anything that is already
 		// imported in the Import-Package statement.

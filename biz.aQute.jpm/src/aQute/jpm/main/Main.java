@@ -780,8 +780,9 @@ public class Main extends ReporterAdapter {
 			error("No write acces, might require administrator or root privileges (sudo in *nix)");
 			return;
 		}
+		error("Not supported right now");
 
-		jpm.gc();
+		// jpm.gc();
 	}
 
 	@Description("Remove jpm from the system by deleting all artifacts and metadata")
