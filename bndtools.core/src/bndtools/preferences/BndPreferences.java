@@ -32,6 +32,7 @@ public class BndPreferences {
     private static final String PREF_HEADLESS_BUILD_PLUGINS = "headlessBuildPlugins";
     private static final String PREF_VCS_IGNORES_CREATE = "versionControlIgnoresCreate";
     private static final String PREF_VCS_IGNORES_PLUGINS = "versionControlIgnoresPlugins";
+    private static final String PREF_BUILDBEFORELAUNCH = "buildBeforeLaunch";
 
     private final IPreferenceStore store;
 
@@ -40,6 +41,7 @@ public class BndPreferences {
 
         // Defaults...
         store.setDefault(PREF_WARN_EXISTING_LAUNCH, true);
+        store.setDefault(PREF_BUILDBEFORELAUNCH, true);
         store.setDefault(PREF_HEADLESS_BUILD_CREATE, true);
         store.setDefault(PREF_HEADLESS_BUILD_PLUGINS, "");
         store.setDefault(PREF_VCS_IGNORES_CREATE, true);
@@ -189,7 +191,7 @@ public class BndPreferences {
      * <li>When plugins is not null and not empty then plugins itself is returned</li>
      * <li>Otherwise this method determines from the preferences which plugins are enabled</li>
      * </ul>
-     * 
+     *
      * @param manager
      *            the headless build manager
      * @param plugins
@@ -232,7 +234,7 @@ public class BndPreferences {
      * to detect which plugins can apply ignores for the version control system</li>
      * <li>Otherwise this method determines from the preferences which plugins are enabled</li>
      * </ul>
-     * 
+     *
      * @param manager
      *            the version control ignores manager
      * @param project
@@ -257,5 +259,13 @@ public class BndPreferences {
         }
 
         return getVersionControlIgnoresPlugins(manager.getAllPluginsInformation(), true).keySet();
+    }
+
+    public boolean getBuildBeforeLaunch() {
+        return store.getBoolean(PREF_BUILDBEFORELAUNCH);
+    }
+
+    public void setBuildBeforeLaunch(boolean b) {
+        store.setValue(PREF_BUILDBEFORELAUNCH, b);
     }
 }
