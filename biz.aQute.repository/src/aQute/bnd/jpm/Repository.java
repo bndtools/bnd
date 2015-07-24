@@ -1,50 +1,93 @@
 package aQute.bnd.jpm;
 
-import static aQute.lib.io.IO.*;
+import static aQute.lib.io.IO.copy;
 
-import java.awt.*;
-import java.awt.datatransfer.*;
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.Map.Entry;
+import java.awt.Desktop;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Formatter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.*;
-import java.util.jar.*;
-import java.util.regex.*;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.concurrent.Semaphore;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import javax.xml.parsers.*;
-import javax.xml.xpath.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
 
-import aQute.bnd.build.*;
 import aQute.bnd.build.Container;
-import aQute.bnd.header.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.header.Attrs;
 import aQute.bnd.jpm.StoredRevisionCache.Download;
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
-import aQute.bnd.osgi.resource.*;
-import aQute.bnd.service.*;
-import aQute.bnd.service.repository.*;
-import aQute.bnd.version.*;
-import aQute.jpm.facade.repo.*;
-import aQute.jsonrpc.proxy.*;
-import aQute.lib.collections.*;
-import aQute.lib.converter.*;
-import aQute.lib.hex.*;
-import aQute.lib.io.*;
-import aQute.lib.justif.*;
-import aQute.lib.settings.*;
-import aQute.libg.cryptography.*;
-import aQute.libg.glob.*;
-import aQute.libg.reporter.*;
-import aQute.rest.urlclient.*;
-import aQute.service.library.*;
+import aQute.bnd.osgi.resource.FilterParser;
+import aQute.bnd.service.Actionable;
+import aQute.bnd.service.Plugin;
+import aQute.bnd.service.Refreshable;
+import aQute.bnd.service.Registry;
+import aQute.bnd.service.RegistryPlugin;
+import aQute.bnd.service.RepositoryListenerPlugin;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.Strategy;
+import aQute.bnd.service.repository.InfoRepository;
+import aQute.bnd.service.repository.SearchableRepository;
+import aQute.bnd.version.Version;
+import aQute.jpm.facade.repo.JpmRepo;
+import aQute.jsonrpc.proxy.JSONRPCProxy;
+import aQute.lib.collections.MultiMap;
+import aQute.lib.collections.SortedList;
+import aQute.lib.converter.Converter;
+import aQute.lib.hex.Hex;
+import aQute.lib.io.IO;
+import aQute.lib.justif.Justif;
+import aQute.lib.settings.Settings;
+import aQute.libg.cryptography.MD5;
+import aQute.libg.cryptography.SHA1;
+import aQute.libg.cryptography.SHA256;
+import aQute.libg.glob.Glob;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.rest.urlclient.URLClient;
+import aQute.service.library.Coordinate;
+import aQute.service.library.Library;
 import aQute.service.library.Library.Program;
 import aQute.service.library.Library.Revision;
 import aQute.service.library.Library.RevisionRef;
-import aQute.service.reporter.*;
+import aQute.service.library.Revisions;
+import aQute.service.reporter.Reporter;
 
 /**
  * A bnd repository based on the jpm4j server.
@@ -83,7 +126,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	private File								indexFile;
 	private boolean								indexRecurse;
 	Index										index;
-	private boolean								offline;
+	boolean										offline;
 	private Registry							registry;
 	StoredRevisionCache							cache;
 	Set<File>									notfound					= new HashSet<File>();
@@ -240,6 +283,10 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				failure(listeners, file, "Not found");
 				return;
 			}
+		}
+
+		if (!isConnected()) {
+			failure(listeners, file, "Not online");
 		}
 
 		if (file.isFile()) {
@@ -621,6 +668,8 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		cache.refresh();
 		notfound.clear();
 		notfoundref.clear();
+		if (crawler != null)
+			crawler.refresh();
 		return true;
 	}
 
@@ -930,6 +979,23 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	 */
 	private Map<String,Runnable> getRepositoryActions() throws Exception {
 		Map<String,Runnable> map = new LinkedHashMap<String,Runnable>();
+
+		if (offline) {
+			if (isConnected()) {
+				map.put("Try Online", new Runnable() {
+					public void run() {
+						offline = false;
+					}
+
+				});
+			}
+		} else {
+			map.put("Go Offline", new Runnable() {
+				public void run() {
+					offline = true;
+				}
+			});
+		}
 
 		map.put("Inspect", new Runnable() {
 			public void run() {
@@ -1284,6 +1350,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	String[]	sizes	= {
 			"bytes", "Kb", "Mb", "Gb", "Tb", "Pb", "Showing off?"
 						};
+	private Crawler	crawler;
 
 	private String size(long size, int power) {
 		if (power >= sizes.length)
@@ -1562,7 +1629,10 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	@Override
-	public void close() throws IOException {}
+	public void close() throws IOException {
+		if (crawler != null)
+			crawler.close();
+	}
 
 	@Override
 	public String getLocation() {
@@ -1604,6 +1674,8 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			index = new Index(indexFile);
 			index.setRecurse(indexRecurse);
 			index.setReporter(reporter);
+			crawler = new Crawler(this);
+			crawler.start();
 		}
 	}
 
