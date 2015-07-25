@@ -28,9 +28,8 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		nested
 	}
 
-	private final Map<TypeRef,OCDDef>	classToOCDMap	= new HashMap<TypeRef,OCDDef>();
-
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
+		Map<TypeRef,OCDDef> classToOCDMap = new HashMap<TypeRef,OCDDef>();
 		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.METATYPE_ANNOTATIONS));
 		if (header.size() == 0)
 			return false;
@@ -62,44 +61,45 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 						break;
 					OCDDef definition = OCDReader.getOCDDef(c, analyzer, options, finder);
 					if (definition != null) {
-						definition.prepare(analyzer);
-						if (!ocdIds.add(definition.id)) {
-							analyzer.error("Duplicate OCD id %s from class %s; known ids %s", definition.id, c.getFQN(), ocdIds);
-						}
-						for (DesignateDef dDef: definition.designates) {
-							if (dDef.pid != null && !pids.add(dDef.pid)) {
-								analyzer.error("Duplicate pid %s from class %s", dDef.pid, c.getFQN());
-							}
-						}
 						classToOCDMap.put(c.getClassName(), definition);
-						String name = "OSGI-INF/metatype/" + analyzer.validResourcePath(definition.id, "Invalid resource name") + ".xml";
-						analyzer.getJar().putResource(name, new TagResource(definition.getTag()));
 					}
 				}
 			}
 		}
 		
 		header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS));
-		if (header.size() == 0)
-			return false;
+		if (header.size() > 0) {
 
-	    instructions = new Instructions(header);
-	    list = analyzer.getClassspace().values();
+			instructions = new Instructions(header);
+			list = analyzer.getClassspace().values();
 
-		for (Clazz c: list) {
-			for (Instruction instruction : instructions.keySet()) {
+			for (Clazz c : list) {
+				for (Instruction instruction : instructions.keySet()) {
 
-				if (instruction.matches(c.getFQN())) {
-					if (instruction.isNegated())
-						break;
-					DesignateDef designate = DesignateReader.getDesignate(c, analyzer, classToOCDMap, finder);
-					if (designate != null) {
-						designate.prepare(analyzer);
-						String name = "OSGI-INF/metatype/" + analyzer.validResourcePath(c.getFQN(), "Invalid resource name") + ".xml";
-						analyzer.getJar().putResource(name, new TagResource(designate.getOuterTag()));
+					if (instruction.matches(c.getFQN())) {
+						if (instruction.isNegated())
+							break;
+						DesignateReader.getDesignate(c, analyzer, classToOCDMap, finder);
 					}
 				}
 			}
+		}
+
+		for (Map.Entry<TypeRef,OCDDef> entry : classToOCDMap.entrySet()) {
+			TypeRef c = entry.getKey();
+			OCDDef definition = entry.getValue();
+			definition.prepare(analyzer);
+			if (!ocdIds.add(definition.id)) {
+				analyzer.error("Duplicate OCD id %s from class %s; known ids %s", definition.id, c.getFQN(), ocdIds);
+			}
+			for (DesignateDef dDef : definition.designates) {
+				if (dDef.pid != null && !pids.add(dDef.pid)) {
+					analyzer.error("Duplicate pid %s from class %s", dDef.pid, c.getFQN());
+				}
+			}
+			String name = "OSGI-INF/metatype/" + analyzer.validResourcePath(definition.id, "Invalid resource name")
+					+ ".xml";
+			analyzer.getJar().putResource(name, new TagResource(definition.getTag()));
 		}
 		return false;
 	}
