@@ -1080,6 +1080,10 @@ public class SpecMetatypeTest extends TestCase {
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 		System.err.println(b.getJar().getResources().keySet());
+		for (String res : b.getJar().getResources().keySet()) {
+			if (res.endsWith(".xml"))
+				System.err.println(res);
+		}
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
@@ -1217,13 +1221,25 @@ public class SpecMetatypeTest extends TestCase {
 	@Component(configurationPid="simplePid")
 	@Designate(ocd = DesignateOCD.class, factory=true)
 	public static class DesignateComponent {}
+
+	@Component(name = "simplePidName")
+	@Designate(ocd = DesignateOCD.class, factory = true)
+	public static class DesignateComponent2 {}
+
+	@Component
+	@Designate(ocd = DesignateOCD.class, factory = true)
+	public static class DesignateComponent3 {}
+
+	@Component(configurationPid = "$")
+	@Designate(ocd = DesignateOCD.class, factory = true)
+	public static class DesignateComponent4 {}
 	
 	public static void testDesignate() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, DesignateOCD.class.getName());
-		b.setProperty(Constants.DSANNOTATIONS, DesignateComponent.class.getName());
+		b.setProperty(Constants.DSANNOTATIONS, DesignateComponent.class.getName() + "*");
 		b.build();
 		{
 			Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$DesignateOCD.xml");
@@ -1236,19 +1252,22 @@ public class SpecMetatypeTest extends TestCase {
 			XmlTester xt = xmlTester13(r);
 			xt.assertExactAttribute("Test metatype spec metatype test designate OCD", "metatype:MetaData/OCD/@name");
 			xt.assertExactAttribute("test.metatype.SpecMetatypeTest$DesignateOCD", "metatype:MetaData/OCD/@id");
-		}
-		{
-			Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$DesignateComponent.xml");
-			assertEquals(0, b.getErrors().size());
-			assertEquals(0, b.getWarnings().size());
-			System.err.println(b.getJar().getResources().keySet());
-			assertNotNull(r);
-			IO.copy(r.openInputStream(), System.err);
 
-			//TODO should all designates be at v 1.2?
-			XmlTester xt = xmlTester13(r);
-			xt.assertExactAttribute("simplePid", "metatype:MetaData/Designate/@factoryPid");
-			xt.assertExactAttribute("test.metatype.SpecMetatypeTest$DesignateOCD", "metatype:MetaData/Designate/Object/@ocdref");
+			xt.assertExactAttribute("simplePid", "metatype:MetaData/Designate[1]/@factoryPid");
+			xt.assertExactAttribute("test.metatype.SpecMetatypeTest$DesignateOCD",
+					"metatype:MetaData/Designate[1]/Object/@ocdref");
+
+			xt.assertExactAttribute("simplePidName", "metatype:MetaData/Designate[2]/@factoryPid");
+			xt.assertExactAttribute("test.metatype.SpecMetatypeTest$DesignateOCD",
+					"metatype:MetaData/Designate[2]/Object/@ocdref");
+
+			xt.assertExactAttribute(DesignateComponent3.class.getName(), "metatype:MetaData/Designate[3]/@factoryPid");
+			xt.assertExactAttribute("test.metatype.SpecMetatypeTest$DesignateOCD",
+					"metatype:MetaData/Designate[3]/Object/@ocdref");
+
+			xt.assertExactAttribute(DesignateComponent4.class.getName(), "metatype:MetaData/Designate[4]/@factoryPid");
+			xt.assertExactAttribute("test.metatype.SpecMetatypeTest$DesignateOCD",
+					"metatype:MetaData/Designate[4]/Object/@ocdref");
 		}
 	}
 
