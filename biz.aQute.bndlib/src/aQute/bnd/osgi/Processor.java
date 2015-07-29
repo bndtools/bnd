@@ -1646,10 +1646,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		trace = x;
 	}
 
-	public class CL extends URLClassLoader {
+	public static class CL extends URLClassLoader {
 
-		CL() {
+		private Processor	processor;
+
+		CL(Processor p) {
 			super(new URL[0], Processor.class.getClassLoader());
+			this.processor = p;
 		}
 
 		void closex() {
@@ -1718,7 +1721,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				// Try out our auxliary classloaders
 				//
 
-				for (ClassLoader cl : auxiliary)
+				for (ClassLoader cl : processor.auxiliary)
 					try {
 						return cl.loadClass(name);
 					}
@@ -1740,7 +1743,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	protected CL getLoader() {
 		if (pluginLoader == null) {
-			pluginLoader = new CL();
+			pluginLoader = new CL(this);
 		}
 		return pluginLoader;
 	}
