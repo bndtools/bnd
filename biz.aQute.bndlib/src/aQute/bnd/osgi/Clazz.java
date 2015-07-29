@@ -1,17 +1,31 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
-import java.lang.annotation.*;
-import java.lang.reflect.*;
-import java.nio.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.Modifier;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.lib.utf8properties.*;
-import aQute.libg.generics.*;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.generics.Create;
 
 public class Clazz {
 
@@ -1853,8 +1867,11 @@ public class Clazz {
 			return false;
 
 		Clazz clazz = analyzer.findClass(zuper);
-		if (clazz == null)
+		if (clazz == null) {
+			analyzer.warning("While traversing the type tree while searching %s on %s cannot find class %s", query,
+					this, zuper);
 			return false;
+		}
 
 		return clazz.is(query, instr, analyzer);
 	}
