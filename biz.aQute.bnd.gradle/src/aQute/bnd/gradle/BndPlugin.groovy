@@ -48,16 +48,6 @@ public class BndPlugin implements Plugin<Project> {
           throw new GradleException("Unable to load bnd workspace ${rootDir}")
         }
       }
-      if (!rootProject.hasProperty('bndWorkspaceInitialized')) {
-        Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
-        bndWorkspace.addGestalt(Constants.GESTALT_BATCH, null)
-        if (rootProject.hasProperty('bnd_gestalt')) {
-          rootProject.bnd_gestalt.trim().split(/\s*,\s*/).each {
-            bndWorkspace.addGestalt(it, null)
-          }
-        }
-        rootProject.ext.bndWorkspaceInitialized = true
-      }
       this.bndProject = bndWorkspace.getProject(name)
       if (bndProject == null) {
         throw new GradleException("Unable to load bnd project ${name} from workspace ${rootDir}")
