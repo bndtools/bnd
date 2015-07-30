@@ -1549,7 +1549,7 @@ public class Project extends Processor {
 	 * @return
 	 */
 	public boolean isNoBundles() {
-		return getProperty(NOBUNDLES) != null;
+		return isTrue(getProperty(NOBUNDLES));
 	}
 
 	public File saveBuild(Jar jar) throws Exception {
