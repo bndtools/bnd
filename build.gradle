@@ -6,6 +6,7 @@
  */
 
 import aQute.bnd.build.Workspace
+import aQute.bnd.osgi.Constants
 
 /* Add bnd gradle plugin as a script dependency */
 buildscript {
@@ -15,6 +16,8 @@ buildscript {
 }
 
 /* Initialize the bnd workspace */
+Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
+Workspace.addGestalt(Constants.GESTALT_BATCH, null)
 ext.bndWorkspace = Workspace.getWorkspace(rootDir, bnd_cnf)
 if (bndWorkspace == null) {
   throw new GradleException("Unable to load workspace ${rootDir}/${bnd_cnf}")
