@@ -37,6 +37,7 @@ public class LauncherTest extends TestCase {
 		project.setProperty(Constants.TESTER, "biz.aQute.tester");
 		project.clear();
 		project.build();
+		assertTrue(project.check());
 
 		ProjectTester pt = project.getProjectTester();
 		pt.addTest("test.TestCase1");
