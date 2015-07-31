@@ -1,8 +1,12 @@
 package aQute.bnd.osgi;
 
-import java.nio.charset.*;
-import java.util.*;
-import java.util.regex.*;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 public interface Constants {
 	/*
@@ -218,6 +222,7 @@ public interface Constants {
 	String							TESTCONTINUOUS								= "-testcontinuous";
 	String							TESTSOURCES									= "-testsources";
 	String							TESTUNRESOLVED								= "-testunresolved";
+	String	TESTER					= "-tester";
 	String							UNDERTEST									= "-undertest";
 	String							UPTO										= "-upto";
 	String							PROVIDER_POLICY								= "-provider-policy";
@@ -242,7 +247,8 @@ public interface Constants {
 			NOJUNITOSGI, PREPROCESSMATCHERS, UPTO, INVALIDFILENAMES, FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE,
 			NOEE, OUTPUTMASK, TESTUNRESOLVED, RUNJDB, RUNENV, RUNEE, EEPROFILE, RUNREQUIRES, EXPORT, GESTALT,
 			BNDDRIVER, CHECK, DISTRO, METATYPE_ANNOTATIONS, METATYPE_ANNOTATIONS_OPTIONS, PACKAGEINFOTYPE,
-			JAVAC_SOURCE, JAVAC_TARGET, JAVAC_PROFILE, JAVAC, JAVA, JAVA_DEBUG, EXPORTTYPE, RUNREMOTE
+ JAVAC_SOURCE, JAVAC_TARGET,
+			JAVAC_PROFILE, JAVAC, JAVA, JAVA_DEBUG, EXPORTTYPE, RUNREMOTE, TESTER
 
 																				};
 

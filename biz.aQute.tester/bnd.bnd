@@ -1,0 +1,46 @@
+Bundle-Version: 1.0.0.${tstamp}
+Bundle-Description: \
+	A bnd tester. If this bundle is used as the tester (previously aQute.junit) then \
+	it will add itself to the -runbundles at the end. At startup, this bundle will then \
+	run the tests. This bundle does NOT contain JUnit itself. It will import JUnit just \
+	like any other bundle.
+   
+
+# The dependency on aQute packages is only for the 
+# master side. When launched, those dependencies
+# are not necessary
+Import-Package: \
+	aQute.*;resolution:=optional, \
+	junit.framework;version='[3.8,5]',\
+	*
+
+Bundle-Activator: \
+	aQute.junit.Activator
+
+Private-Package: \
+	aQute.junit, \
+	aQute.junit.constants, \
+	aQute.junit.runtime, \
+	aQute.tester.plugin
+	
+
+Tester-Plugin: \
+	aQute.tester.plugin.ProjectTesterImpl
+
+Conditional-Package: aQute.lib*
+
+
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
+-buildpath: \
+	biz.aQute.junit;version=latest;packages=aQute.junit.*, \
+	com.springsource.org.junit;version='[4.11,5)',\
+	osgi.core;version=4.3.1,\
+	biz.aQute.bndlib;version=latest,\
+	ee.j2se;version=${javac.compliance}
+	
+	
+
+
+	

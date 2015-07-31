@@ -5,7 +5,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.Manifest;
 
-import junit.framework.TestCase;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.ProjectTester;
@@ -15,6 +14,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class LauncherTest extends TestCase {
 
@@ -26,6 +26,23 @@ public class LauncherTest extends TestCase {
 			project.close();
 			workspace.close();
 		}
+	}
+
+	/**
+	 * Try out the new tester that does not contain JUnit
+	 */
+	public static void testJUnitLessTester() throws Exception {
+		Project project = getProject();
+		project.setProperty(Constants.TESTPATH, "");
+		project.setProperty(Constants.TESTER, "biz.aQute.tester");
+		project.clear();
+		project.build();
+
+		ProjectTester pt = project.getProjectTester();
+		pt.addTest("test.TestCase1");
+		pt.addTest("test.TestCase2:m1");
+
+		assertEquals(2, pt.test());
 	}
 
 	/**
