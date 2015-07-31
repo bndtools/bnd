@@ -5,7 +5,7 @@
 
 Bundle-Version:				1.0.0.${tstamp}
 Bundle-SymbolicName:		_project_.launch
-JPMCommand:					_cmd_
+JPM-Command:					_cmd_
 
 
 -runfw:						org.eclipse.osgi

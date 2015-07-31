@@ -36,3 +36,6 @@ Import-Package: org.eclipse.ui*;texteditor=!;ui.workbench=!,\
 	*
 
 Bundle-Activator: bndtools.jareditor.internal.Plugin
+
+Export-Package: \
+	bndtools.test.plugin;bnd-plugins=true
