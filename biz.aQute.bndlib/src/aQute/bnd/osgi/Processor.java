@@ -1162,7 +1162,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return false;
 
 		if (value.startsWith("!"))
-			return !isTrue(value.substring(1));
+			if (value.equals("!"))
+				return false;
+			else
+				return !isTrue(value.substring(1));
 
 		if ("false".equalsIgnoreCase(value))
 			return false;

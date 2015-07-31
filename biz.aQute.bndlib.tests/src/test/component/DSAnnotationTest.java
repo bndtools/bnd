@@ -796,7 +796,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public static void testBasicFelix12() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*_basicFelix12");
-		b.setProperty("-ds-felix-extensions", "");
+		b.setProperty("-ds-felix-extensions", "true");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
