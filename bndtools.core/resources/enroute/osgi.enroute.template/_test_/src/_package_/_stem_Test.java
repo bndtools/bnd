@@ -7,11 +7,6 @@ import org.osgi.framework.FrameworkUtil;
 
 /**
  * 
- * 
- * 
- * 
- * 
- * 
  */
 
 public class _stem_Test {
@@ -19,9 +14,6 @@ public class _stem_Test {
     private final BundleContext context = FrameworkUtil.getBundle(this.getClass()).getBundleContext();
     
     /*
-     * 
-     * 
-     * 
      * 
      */
     @Test

@@ -20,14 +20,14 @@ Test-Cases: ${test-cases}
 
 -includeresource: {readme.md}
 
--buildpath:  \
-	osgi.enroute.base.api;version=1.0,\
-	biz.aQute.junit
+-buildpath: osgi.enroute.base.api;version=1.0
 	
 -testpath: \
-	biz.aQute.junit
+	osgi.enroute.junit.wrapper;version=4.12
+
+-runrequires: \
+	osgi.identity;filter:='(osgi.identity=_project_)',\
+	osgi.identity;filter:='(osgi.identity=osgi.enroute.junit.wrapper)'
 
 -runbundles: \
 	${error;Resolve first}
--runrequires:  \
-	osgi.identity;filter:='(osgi.identity=_test_)'
