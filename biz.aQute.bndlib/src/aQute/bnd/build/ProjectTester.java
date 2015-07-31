@@ -1,13 +1,16 @@
 package aQute.bnd.build;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Constants;
 
 public abstract class ProjectTester {
 	final Project				project;
-	final Collection<Container>	testbundles;
+	final Collection<Container>		testpath;
 	final ProjectLauncher		launcher;
 	final List<String>			tests		= new ArrayList<String>();
 	File						reportDir;
@@ -18,10 +21,10 @@ public abstract class ProjectTester {
 		launcher = project.getProjectLauncher();
 		launcher.setCwd(project.getBase());
 		launcher.addRunVM("-ea");
-		testbundles = project.getTestpath();
+		testpath = project.getTestpath();
 		continuous = project.is(Constants.TESTCONTINUOUS);
 		
-		for (Container c : testbundles) {
+		for (Container c : testpath) {
 			launcher.addClasspath(c);
 		}
 		reportDir = new File(project.getTarget(), project.getProperty("test-reports", "test-reports"));
