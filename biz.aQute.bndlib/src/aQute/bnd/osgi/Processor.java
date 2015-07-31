@@ -1191,6 +1191,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return getProperty(key, deflt, ",");
 	}
 
+	@SuppressWarnings("resource")
 	public String getProperty(String key, String deflt, String separator) {
 
 		String value = null;
