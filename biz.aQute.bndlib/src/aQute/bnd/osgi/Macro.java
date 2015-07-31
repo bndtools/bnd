@@ -1,18 +1,44 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.text.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Formatter;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import javax.script.*;
+import javax.script.Bindings;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 
-import aQute.bnd.version.*;
-import aQute.lib.collections.*;
-import aQute.lib.io.*;
-import aQute.lib.utf8properties.*;
+import aQute.bnd.version.Version;
+import aQute.bnd.version.VersionRange;
+import aQute.lib.collections.ExtList;
+import aQute.lib.collections.SortedList;
+import aQute.lib.io.IO;
+import aQute.lib.utf8properties.UTF8Properties;
 
 /**
  * Provide a macro processor. This processor can replace variables in strings
@@ -167,13 +193,14 @@ public class Macro {
 					return process(value, new Link(source, link, key));
 				}
 
+
 				if (key != null && key.trim().length() > 0) {
 					value = System.getProperty(key);
 					if (value != null)
 						return value;
 				}
 
-				if (key.indexOf(';') >= 0) {
+				if (key != null && key.indexOf(';') >= 0) {
 					String parts[] = key.split(";");
 					if (parts.length > 1) {
 						if (parts.length >= 16) {
@@ -238,6 +265,7 @@ public class Macro {
 	 */
 	static Pattern	commands	= Pattern.compile("(?<!\\\\);");
 
+	@SuppressWarnings("resource")
 	private String doCommands(String key, Link source) {
 		String[] args = commands.split(key);
 		if (args == null || args.length == 0)

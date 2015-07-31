@@ -2288,7 +2288,10 @@ public class Project extends Processor {
 	}
 
 	public ProjectTester getProjectTester() throws Exception {
-		return getHandler(ProjectTester.class, getTestpath(), TESTER_PLUGIN, "biz.aQute.junit");
+		String defaultDefault = since(About._3_0) ? "biz.aQute.tester" : "biz.aQute.junit";
+
+		return getHandler(ProjectTester.class, getTestpath(), TESTER_PLUGIN,
+				getProperty(Constants.TESTER, defaultDefault));
 	}
 
 	private <T> T getHandler(Class<T> target, Collection<Container> containers, String header, String defaultHandler)
@@ -2315,6 +2318,16 @@ public class Project extends Processor {
 						} else {
 							trace("found handler %s from %s", defaultHandler, c);
 							handlerClass = clz.asSubclass(target);
+
+							try {
+								Constructor< ? extends T> constructor = handlerClass.getConstructor(Project.class,
+										Container.class);
+								return constructor.newInstance(this, c);
+							}
+							catch (Exception e) {
+								// ignore
+							}
+
 							Constructor< ? extends T> constructor = handlerClass.getConstructor(Project.class);
 							return constructor.newInstance(this);
 						}

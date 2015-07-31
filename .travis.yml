@@ -12,5 +12,5 @@ install:
   - mvn --version
 
 script:
-  - ./gradlew --continue
+  - ./gradlew --continue --info
   - mvn -f bnd-maven-plugin --batch-mode --quiet -Dmaven.repo.local=bnd-maven-plugin/target/m2 -Dfile=../dist/bundles/biz.aQute.bndlib/biz.aQute.bndlib-latest.jar install:install-file install

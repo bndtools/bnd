@@ -1,9 +1,12 @@
 package aQute.bnd.osgi;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
 
-import aQute.bnd.header.*;
-import aQute.bnd.version.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.version.Version;
 
 /**
  * This package contains a number of classes that assists by analyzing JARs and
@@ -43,6 +46,8 @@ public class About {
 	public static Version				_3_0		= new Version(3, 0, 0);
 
 	public static String[]				CHANGES_3_0	= {
+			"Replaced the biz.aQute.junit tester with biz.aQute.tester. The difference is that the biz.aQute.tester runs as a bundle and does NOT provide JUnit"
+					+ " (and broken hamcrest) packages. The old tester can be set with -tester=biz.aQute.junit.",
 			"Use source file for SHA when a class has corresponding source in OSGI-OPT/src. This ignores differences in compilers",
 			"new maven plugin",
 			"${tstamp} is now consistent for a project build",
