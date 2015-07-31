@@ -1,10 +1,12 @@
 package test;
 
 import java.io.File;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.Manifest;
 
+import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.ProjectTester;
@@ -13,6 +15,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
 import junit.framework.TestCase;
 
@@ -33,6 +36,11 @@ public class LauncherTest extends TestCase {
 	 */
 	public static void testJUnitLessTester() throws Exception {
 		Project project = getProject();
+
+		List<Container> bundles = project.getBundles(Strategy.HIGHEST, "biz.aQute.tester", "TESTER");
+		assertNotNull(bundles);
+		assertEquals(1, bundles.size());
+
 		project.setProperty(Constants.TESTPATH, "");
 		project.setProperty(Constants.TESTER, "biz.aQute.tester");
 		project.clear();
@@ -84,20 +92,22 @@ public class LauncherTest extends TestCase {
 			Project project = getProject();
 			project.clear();
 			File f = project.getFile("x.bndrun");
-			Run run = new Run(project.getWorkspace(), project.getBase(), f);
-			ProjectLauncher l = run.getProjectLauncher();
-			l.setTrace(true);
-			Jar executable = l.executable();
-			assertNotNull(executable);
+			try (Run run = new Run(project.getWorkspace(), project.getBase(), f);) {
 
-			Properties p = new Properties();
-			Resource resource = executable.getResource("launcher.properties");
+				ProjectLauncher l = run.getProjectLauncher();
+				l.setTrace(true);
+				Jar executable = l.executable();
+				assertNotNull(executable);
 
-			p.load(resource.openInputStream());
+				Properties p = new Properties();
+				Resource resource = executable.getResource("launcher.properties");
 
-			assertEquals("1", p.getProperty("in.workspace"));
-			assertEquals("3", p.getProperty("in.x"));
-			assertEquals(null, p.getProperty("in.project"));
+				p.load(resource.openInputStream());
+
+				assertEquals("1", p.getProperty("in.workspace"));
+				assertEquals("3", p.getProperty("in.x"));
+				assertEquals(null, p.getProperty("in.project"));
+			}
 		}
 
 		// Test project with export
