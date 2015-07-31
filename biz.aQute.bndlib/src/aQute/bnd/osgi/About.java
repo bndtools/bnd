@@ -41,27 +41,24 @@ import aQute.bnd.version.Version;
  * @version $Revision: 1.2 $
  */
 public class About {
-	public static Version				_2_3		= new Version(2, 3, 0);
-	public static Version				_2_4		= new Version(2, 4, 0);
-	public static Version				_3_0		= new Version(3, 0, 0);
+	public static Version	_2_3	= new Version(2, 3, 0);
+	public static Version	_2_4	= new Version(2, 4, 0);
+	public static Version	_3_0	= new Version(3, 0, 0);
+	public static Version	CURRENT	= _3_0;
 
-	public static String[]				CHANGES_3_0	= {
+	public static String[] CHANGES_3_0 = {
+			"In places where a bundle returns a boolean words like not set, empty string, false, not, off are interpreted as false, "
+					+ "otherwise the expression is true. As a slight addition, you can start it with ! to invert the remaining part.",
 			"Replaced the biz.aQute.junit tester with biz.aQute.tester. The difference is that the biz.aQute.tester runs as a bundle and does NOT provide JUnit"
 					+ " (and broken hamcrest) packages. The old tester can be set with -tester=biz.aQute.junit.",
 			"Use source file for SHA when a class has corresponding source in OSGI-OPT/src. This ignores differences in compilers",
-			"new maven plugin",
-			"${tstamp} is now consistent for a project build",
-			"target attribute is removed in bindex from a DS component",
-			"Support multiple source folders",
-			"Launcher changes to support multiple remote launchers",
-			"Better support for error locations on errors",
+			"new maven plugin", "${tstamp} is now consistent for a project build",
+			"target attribute is removed in bindex from a DS component", "Support multiple source folders",
+			"Launcher changes to support multiple remote launchers", "Better support for error locations on errors",
 			"Drop generale JAR urls on JPM repo will analyze the JAR and cerate an entry (though it will of course not be on JPM itself)",
 			"-runpath.* adds any provided capabilities to the frameworks (as it already did for packages)",
-			"Support for access rules as used in Eclipse",
-			"Publish all artifacts on bintray",
-			"Performance improvements",
-			"SearchableRepo now provides the browse URL",
-			"Bindex now supports DS > 1.2",
+			"Support for access rules as used in Eclipse", "Publish all artifacts on bintray",
+			"Performance improvements", "SearchableRepo now provides the browse URL", "Bindex now supports DS > 1.2",
 			"Allowing embedded activators to start before the bundles are started (they normally started after all bundles were started)",
 			"Dropping URLs to JPM from Linux failed due to mucky URLs (newlines!!)",
 			"No longer a warning when you import from yourself and there is no export metadata (we’re building it!)",
@@ -73,35 +70,27 @@ public class About {
 
 			"${isdir} and ${env} now return empty (false) if no value",
 
-			"Additional checks for non-existent imports or empty imports",
-			"-runkeep does now work",
+			"Additional checks for non-existent imports or empty imports", "-runkeep does now work",
 			"${versionmask} macro to use when ${version} is used for other purposes",
 
 			"Added annotation attributes by treating manifest annotations as meta annotations",
 			"Fixed #708, versionless import when having split packages where earlier packages have no content",
-			"-runproperties is now a merged header",
-			"Added JSONCodec hook",
-			"Gradle plugin supports non-bnd builds better",
-			"OSGi Enterprise DS & Metatype annotations",
+			"-runproperties is now a merged header", "Added JSONCodec hook",
+			"Gradle plugin supports non-bnd builds better", "OSGi Enterprise DS & Metatype annotations",
 			"-pom now accepts artifactid, groupid, where, and version properties. General better support for generating POMs",
 			"Added a ${stem;<string>} macro that returns the stem (before the extension) of a file name",
 			"Added a ${thisfile} macro that returns the name of the properties file of the current processor if it exists."
-													};
+	};
 
-	public static String[]				CHANGES_2_4	= {
+	public static String[]	CHANGES_2_4	= {
 			"Added checks for imports from private packages and exports of empty packages. These checks are enabled by -check ALL | (EXPORTS|IMPORTS)*. All is recommended but might break builds",
 			"Added -runkeep instruction. It turned out that it was impossible to keep the framework directory between restarts",
 			"Added ${versionmask} macro that is identical to ${version} but can be used when you want to use the version macro for yourself",
 			"Manifest Annotations use any defined methods as attributes from the annotation they are applied to",
-			"Made many more headers merged headers",
-			"Added several support methods so bnd can generate a pom",
-			"Laucher moved to Java 6",
-			"Always read bnd files with UTF-8 with a fallback to ISO-8859-1",
-			"Full Java 8 support",
-			"Added life cycle plugin that can interact with workspace/project creation/deletion",
-			"Allow includes in bnd files to specify a URL",
-			"Support for Gradle plugin",
-			"Support Travis builds",
+			"Made many more headers merged headers", "Added several support methods so bnd can generate a pom",
+			"Laucher moved to Java 6", "Always read bnd files with UTF-8 with a fallback to ISO-8859-1",
+			"Full Java 8 support", "Added life cycle plugin that can interact with workspace/project creation/deletion",
+			"Allow includes in bnd files to specify a URL", "Support for Gradle plugin", "Support Travis builds",
 			"Added support for gestalt, allows build tools to communicate out what the environment they run in supports. See -bnd-driver",
 			"Full window testing, removed many window bugs",
 			"Removed (rather unknown) feature that did not prefix a sub-bundle when the sub-bundle file name "
@@ -113,11 +102,10 @@ public class About {
 			"Projects can now be selected by version in a path. This "
 					+ "enables a project to depend on a version that starts as a project but "
 					+ "later becomes a repository entry."
-													};
-	public static String[]				CHANGES_2_3	= {
+											};
+	public static String[]	CHANGES_2_3	= {
 			"More aggressive upgrade to a later DS release, current analyzer was missing cases that required a higher version",
-			"Allow bnd -version",
-			"Added bnd sync command that forces the cache to be the current version",
+			"Allow bnd -version", "Added bnd sync command that forces the cache to be the current version",
 			"Invoke Dynamic instruction length was missing",
 			"Skips Class Constants if not used in the code (in Java 8, a constant expression can still refer to the defining class",
 			"Added x86-64 for the processors",
@@ -127,8 +115,7 @@ public class About {
 					+ "or ends with a @ (provider range). I.e. @1.2.3 -> [1.2.3,2) and 1.2.3@ -> [1.2.3,1.3.0) ",
 			"Added an ${unescape;...} macro that changes \n, \t etc to their unescaped characters",
 			"Warns about '=' signs in DS Component annotation for properties element to catch confusion with bnd Component annotation",
-			"Added -runenv to add environment vars in the launched vm",
-			"Now correctly supports JUnit 4",
+			"Added -runenv to add environment vars in the launched vm", "Now correctly supports JUnit 4",
 			"Added options to the bnd test command: test names, and setting continuous and trace flags",
 			"Included DSTestWiring class which makes it easier to handle dependencies in unit tests, both inside and outside a framework",
 			"The replace macro can now take a separator string, this separator was alwas ', '",
@@ -145,8 +132,7 @@ public class About {
 			"Added a find command to bnd that can find imported or exported packages from a set of bundles",
 			"Support X.class instruction in older Groovy (189)",
 			"[-fixupmessages] Patterns to fixup errors and warnings, you can remove, move, or replace messages.",
-			"Added a [bnd changes] command",
-			"#388 ${githead} macro, provides the SHA for the current workspace",
+			"Added a [bnd changes] command", "#388 ${githead} macro, provides the SHA for the current workspace",
 			"Improved bnd diff and bnd baseline commands. Better output and work better when no files are specied, defaults to project",
 			"#414 Error reported when version=project is used in -runbundles",
 			"#427 The classes macro and other places that crawl for classes now get a sorted list by the class name.",
@@ -170,10 +156,13 @@ public class About {
 			"Set two properties (project.junit and project.junit.osgi) that indicate the availability of tests.",
 			"Support URLs in the [bnd repo] put command",
 			"It is now possible to specify a URL on a plugin path so that if the resource is not on the file system it will get downloaded."
-													};
+											};
 
-	public static Map<Version,String[]>	CHANGES		= new TreeMap<Version,String[]>(Collections.reverseOrder());
+	public static Map<Version,String[]> CHANGES = new TreeMap<Version,String[]>(Collections.reverseOrder());
+
 	static {
+		CHANGES.put(_3_0, CHANGES_3_0);
+		CHANGES.put(_2_4, CHANGES_2_4);
 		CHANGES.put(_2_3, CHANGES_2_3);
 	}
 

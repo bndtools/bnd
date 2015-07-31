@@ -1153,8 +1153,19 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public static boolean isTrue(String value) {
+
 		if (value == null)
 			return false;
+
+		value = value.trim();
+		if (value.isEmpty())
+			return false;
+
+		if (value.startsWith("!"))
+			if (value.equals("!"))
+				return false;
+			else
+				return !isTrue(value.substring(1));
 
 		if ("false".equalsIgnoreCase(value))
 			return false;
