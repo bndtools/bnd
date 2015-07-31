@@ -502,7 +502,9 @@ public class Workspace extends Processor {
 			list.add(settings);
 
 			if (!isTrue(getProperty(NOBUILDINCACHE))) {
-				list.add(new CachedFileRepo());
+				CachedFileRepo cache = new CachedFileRepo();
+				cache.init(); // init early so the contents can be plugins
+				list.add(cache);
 			}
 
 			resourceRepositoryImpl = new ResourceRepositoryImpl();
