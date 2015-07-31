@@ -1,2 +1,4 @@
 Foo	foo
 -include ~${workspace}/cnf/bar.bnd
+
+-plugin.foo = bndtools.test.plugin.TestPlugin

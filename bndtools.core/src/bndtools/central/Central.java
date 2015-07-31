@@ -35,12 +35,14 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
+import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Refreshable;
@@ -58,6 +60,8 @@ public class Central implements IStartupParticipant {
     static WorkspaceR5Repository r5Repository = null;
     static RepositoryPlugin workspaceRepo = null;
 
+    private static Auxiliary auxiliary;
+
     static final AtomicBoolean indexValid = new AtomicBoolean(false);
 
     private final BundleContext bundleContext;
@@ -65,6 +69,16 @@ public class Central implements IStartupParticipant {
     private final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
 
     private RepositoryListenerPluginTracker repoListenerTracker;
+
+    static {
+        try {
+            BundleContext context = FrameworkUtil.getBundle(Central.class).getBundleContext();
+            Bundle bndlib = FrameworkUtil.getBundle(Workspace.class);
+            auxiliary = new Auxiliary(context, bndlib);
+        } catch (Exception e) {
+            // ignore
+        }
+    }
 
     /**
      * WARNING: Do not instantiate this class. It must be public to allow instantiation by the Eclipse registry, but it
@@ -92,6 +106,13 @@ public class Central implements IStartupParticipant {
         synchronized (Central.class) {
             instance = null;
         }
+
+        if (auxiliary != null)
+            try {
+                auxiliary.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
     }
 
     public static Central getInstance() {
@@ -244,6 +265,8 @@ public class Central implements IStartupParticipant {
 
         try {
             Workspace.setDriver(Constants.BNDDRIVER_ECLIPSE);
+            Workspace.addGestalt(Constants.GESTALT_INTERACTIVE, new Attrs());
+
             newWorkspace = Workspace.getWorkspace(getWorkspaceDirectory());
 
             newWorkspace.addBasicPlugin(new WorkspaceListener(newWorkspace));
