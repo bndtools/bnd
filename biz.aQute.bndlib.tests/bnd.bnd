@@ -16,6 +16,9 @@
 	junit.osgi;version=3.8.2,\
 	org.mockito.mockito-all;version=1.9.0
 
+-testpath: \
+    biz.aQute.repository;version=snapshot
+
 -runtrace: true
 
 # This project is a test project. For historical reasons, the test code is in src
