@@ -1,4 +1,3 @@
-Bundle-Version: 0.0.0.${tstamp}
 Private-Package: \
 	aQute.bnd.exporter.probe,\
 	org.osgi.resource.dto,\

@@ -7,18 +7,16 @@ Private-Package: \
 Bundle-Activator: com.example.demo.Activator
 Bundle-SymbolicName: demo
 
--testpath: \
-	com.springsource.org.junit;version=4.11, \
-	biz.aQute.junit; version=snapshot
+-tester: \
+    biz.aQute.tester;version=snapshot
 
 -runpath: \
-	org.apache.felix.framework;version='[4.2.1,5]', \
+	org.apache.felix.framework;version='[4.2.1,5)', \
 	biz.aQute.launcher; version=snapshot
- 	
+
 -runbundles: org.apache.felix.scr,\
 	org.apache.felix.configadmin, \
 	com.springsource.org.junit; version=4.11
-	
 
 Bundle-Activator: test.TestActivator
 
@@ -30,7 +28,7 @@ Import-Package: \
 	osgi.core;version=4.3.1,\
 	biz.aQute.bnd.annotation;version=latest,\
 	com.springsource.org.junit
-	
+
 -runtrace: true
 -runvm: 
 #"-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=1044"

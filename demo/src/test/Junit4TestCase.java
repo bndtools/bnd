@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class Juni4TestCase {
+public class Junit4TestCase {
 
 	@Parameters
 	public static Collection<Object[]> data() {
@@ -22,7 +22,7 @@ public class Juni4TestCase {
 		});
 	}
 
-	public Juni4TestCase(int i, int j) {
+	public Junit4TestCase(int i, int j) {
 		System.out.println("out: " + i + " " + j);
 	}
 

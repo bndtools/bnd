@@ -1,4 +1,3 @@
-Bundle-Version: 1.0.0.${tstamp}
 Bundle-Description: \
 	A bnd tester. If this bundle is used as the tester (previously aQute.junit) then \
 	it will add itself to the -runbundles at the end. At startup, this bundle will then \
@@ -11,7 +10,7 @@ Bundle-Description: \
 # are not necessary
 Import-Package: \
 	aQute.*;resolution:=optional, \
-	junit.framework;version='[3.8,5]',\
+	junit.framework;version='[3.8,5)',\
 	*
 
 Bundle-Activator: \
