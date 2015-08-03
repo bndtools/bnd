@@ -33,16 +33,17 @@ Bnd-Plugins:
 
 Export-Package: \
 	aQute.bnd.service.progress,\
-	aQute.bnd.deployer.http,\
-	aQute.bnd.deployer.obr,\
-	aQute.bnd.deployer.repository,\
+	aQute.bnd.deployer.http;bnd-plugins=true,\
+	aQute.bnd.deployer.obr;bnd-plugins=true,\
+	aQute.bnd.deployer.repository;bnd-plugins=true,\
 	aQute.bnd.deployer.repository.api,\
-	aQute.bnd.deployer.repository.providers,\
-	org.osgi.service.indexer;provide:=true,\
-	org.osgi.service.bindex;version=1.0;provide:=true,\
+	aQute.bnd.deployer.repository.providers;bnd-plugins=true,\
+	org.osgi.service.indexer;provide:=true;bnd-plugins=true,\
+	org.osgi.service.bindex;version=1.0;provide:=true;bnd-plugins=true,\
 	org.osgi.service.coordinator;-split-package:=merge-first,\
 	org.osgi.service.log;provide:=true;-split-package:=merge-first,\
-	aQute.bnd.deployer.repository.wrapper
+	aQute.bnd.deployer.repository.wrapper;bnd-plugins=true,\
+	aQute.bnd.jpm;bnd-plugins=true
 
 bindex-pkgs: \
 	org.osgi.service.obr,\
