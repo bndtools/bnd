@@ -1,12 +1,15 @@
 package aQute.bnd.header;
 
-import java.util.*;
+import java.io.IOException;
+import java.util.List;
+import java.util.regex.Pattern;
 
-import aQute.libg.generics.*;
-import aQute.libg.qtokens.*;
-import aQute.service.reporter.*;
+import aQute.libg.generics.Create;
+import aQute.libg.qtokens.QuotedTokenizer;
+import aQute.service.reporter.Reporter;
 
 public class OSGiHeader {
+	public final static Pattern TOKEN_P = Pattern.compile("[-a-zA-Z0-9_]+");
 
 	static public Parameters parseHeader(String value) {
 		return parseHeader(value, null);
@@ -138,6 +141,40 @@ public class OSGiHeader {
 		}
 
 		return result;
+	}
+
+	/**
+	 * @param sb
+	 * @param value
+	 * @return
+	 * @throws IOException
+	 */
+	public static boolean quote(Appendable sb, String value) throws IOException {
+		if (value.startsWith("\\\""))
+			value = value.substring(2);
+		if (value.endsWith("\\\""))
+			value = value.substring(0, value.length() - 2);
+		if (value.startsWith("\"") && value.endsWith("\""))
+			value = value.substring(1, value.length() - 1);
+
+		boolean clean = (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"')
+				|| TOKEN_P.matcher(value).matches();
+		if (!clean)
+			sb.append("\"");
+		for (int i = 0; i < value.length(); i++) {
+			char c = value.charAt(i);
+			switch (c) {
+				case '"' :
+					sb.append('\\').append('"');
+					break;
+
+				default :
+					sb.append(c);
+			}
+		}
+		if (!clean)
+			sb.append("\"");
+		return clean;
 	}
 
 }

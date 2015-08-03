@@ -41,6 +41,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Registry;
@@ -1388,31 +1389,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @throws IOException
 	 */
 	public static boolean quote(Appendable sb, String value) throws IOException {
-		if (value.startsWith("\\\""))
-			value = value.substring(2);
-		if (value.endsWith("\\\""))
-			value = value.substring(0, value.length() - 2);
-		if (value.startsWith("\"") && value.endsWith("\""))
-			value = value.substring(1, value.length() - 1);
-
-		boolean clean = (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"')
-				|| Verifier.TOKEN.matcher(value).matches();
-		if (!clean)
-			sb.append("\"");
-		for (int i = 0; i < value.length(); i++) {
-			char c = value.charAt(i);
-			switch (c) {
-				case '"' :
-					sb.append('\\').append('"');
-					break;
-
-				default :
-					sb.append(c);
-			}
-		}
-		if (!clean)
-			sb.append("\"");
-		return clean;
+		return OSGiHeader.quote(sb, value);
 	}
 
 	public Macro getReplacer() {

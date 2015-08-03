@@ -10,7 +10,6 @@ import aQute.bnd.osgi.Constants;
 
 public abstract class ProjectTester {
 	final Project				project;
-	final Collection<Container>		testpath;
 	final ProjectLauncher		launcher;
 	final List<String>			tests		= new ArrayList<String>();
 	File						reportDir;
@@ -21,12 +20,8 @@ public abstract class ProjectTester {
 		launcher = project.getProjectLauncher();
 		launcher.setCwd(project.getBase());
 		launcher.addRunVM("-ea");
-		testpath = project.getTestpath();
 		continuous = project.is(Constants.TESTCONTINUOUS);
 		
-		for (Container c : testpath) {
-			launcher.addClasspath(c);
-		}
 		reportDir = new File(project.getTarget(), project.getProperty("test-reports", "test-reports"));
 	}
 
