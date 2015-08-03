@@ -1,10 +1,13 @@
 package aQute.bnd.header;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
-import aQute.bnd.osgi.*;
-import aQute.lib.collections.*;
-import aQute.service.reporter.*;
+import aQute.lib.collections.SortedList;
+import aQute.service.reporter.Reporter;
 
 public class Parameters implements Map<String,Attrs> {
 	private LinkedHashMap<String,Attrs>	map;
@@ -28,7 +31,7 @@ public class Parameters implements Map<String,Attrs> {
 	
 	public void add(String key, Attrs attrs) {
 		while ( containsKey(key))
-			key += Constants.DUPLICATE_MARKER;
+			key += "~";
 		put(key,attrs);
 	}
 	public boolean containsKey(final String name) {
@@ -45,7 +48,7 @@ public class Parameters implements Map<String,Attrs> {
 		if (map == null)
 			return false;
 
-		return map.containsKey((String) name);
+		return map.containsKey(name);
 	}
 
 	public boolean containsValue(Attrs value) {
@@ -62,7 +65,7 @@ public class Parameters implements Map<String,Attrs> {
 		if (map == null)
 			return false;
 
-		return map.containsValue((Attrs) value);
+		return map.containsValue(value);
 	}
 
 	public Set<java.util.Map.Entry<String,Attrs>> entrySet() {
@@ -79,7 +82,7 @@ public class Parameters implements Map<String,Attrs> {
 		if (map == null)
 			return null;
 
-		return map.get((String) key);
+		return map.get(key);
 	}
 
 	public Attrs get(String key) {
@@ -133,7 +136,7 @@ public class Parameters implements Map<String,Attrs> {
 		if (map == null)
 			return null;
 
-		return map.remove((String) var0);
+		return map.remove(var0);
 	}
 
 	public Attrs remove(String var0) {
@@ -166,7 +169,7 @@ public class Parameters implements Map<String,Attrs> {
 		String del = "";
 		for (Map.Entry<String,Attrs> s : entrySet()) {
 			sb.append(del);
-			sb.append(Processor.removeDuplicateMarker(s.getKey()));
+			sb.append(removeDuplicateMarker(s.getKey()));
 			if (!s.getValue().isEmpty()) {
 				sb.append(';');
 				s.getValue().append(sb);
@@ -174,6 +177,12 @@ public class Parameters implements Map<String,Attrs> {
 
 			del = ",";
 		}
+	}
+
+	private Object removeDuplicateMarker(String key) {
+		while (key.endsWith("~"))
+			key = key.substring(0, key.length() - 1);
+		return key;
 	}
 
 	@Override

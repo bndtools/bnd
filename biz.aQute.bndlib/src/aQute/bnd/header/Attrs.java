@@ -1,11 +1,19 @@
 package aQute.bnd.header;
 
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.regex.*;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.osgi.*;
-import aQute.bnd.version.*;
+import aQute.bnd.version.Version;
 
 public class Attrs implements Map<String,String> {
 	public interface DataType<T> {
@@ -228,7 +236,7 @@ public class Attrs implements Map<String,String> {
 		if (map == null)
 			return false;
 
-		return map.containsKey((String) name);
+		return map.containsKey(name);
 	}
 
 	public boolean containsValue(String value) {
@@ -245,7 +253,7 @@ public class Attrs implements Map<String,String> {
 		if (map == null)
 			return false;
 
-		return map.containsValue((String) value);
+		return map.containsValue(value);
 	}
 
 	public Set<java.util.Map.Entry<String,String>> entrySet() {
@@ -262,7 +270,7 @@ public class Attrs implements Map<String,String> {
 		if (map == null)
 			return null;
 
-		return map.get((String) key);
+		return map.get(key);
 	}
 
 	public String get(String key) {
@@ -354,7 +362,7 @@ public class Attrs implements Map<String,String> {
 		if (map == null)
 			return null;
 
-		return map.remove((String) var0);
+		return map.remove(var0);
 	}
 
 	public String remove(String var0) {
@@ -401,7 +409,7 @@ public class Attrs implements Map<String,String> {
 					}
 				}
 				sb.append("=");
-				Processor.quote(sb, e.getValue());
+				OSGiHeader.quote(sb, e.getValue());
 				del = ";";
 			}
 		}

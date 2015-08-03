@@ -1,6 +1,7 @@
 package aQute.bnd.version;
 
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Version implements Comparable<Version> {
 	final int					major;
@@ -163,5 +164,9 @@ public class Version implements Comparable<Version> {
 
 	public Version getWithoutQualifier() {
 		return new Version(major, minor, micro);
+	}
+
+	public static boolean isVersion(String version) {
+		return version != null && VERSION.matcher(version).matches();
 	}
 }
