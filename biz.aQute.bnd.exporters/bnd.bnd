@@ -1,5 +1,7 @@
-Bundle-Version: 0.0.0.${tstamp}
 
 -buildpath: \
 	ee.j2se;version=1.6,\
-	biz.aQute.bndlib;version=latest;packages=*
+	biz.aQute.bndlib;version=latest;packages=*, \
+	osgi.core;version=6
+
+-sub: *.bnd

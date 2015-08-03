@@ -1,0 +1,14 @@
+Bundle-Version: 0.0.0.${tstamp}
+Private-Package: \
+	aQute.bnd.exporter.probe,\
+	org.osgi.resource.dto,\
+	org.osgi.dto,\
+	aQute.service.reporter
+
+Conditional-Package: \
+	aQute.bnd.header, \
+	aQute.bnd.version, \
+	aQute.lib*
+
+Import-Package: \
+	org.osgi.framework; version=1.1, *
