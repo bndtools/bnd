@@ -10,7 +10,7 @@ Bundle-Description: \
 # are not necessary
 Import-Package: \
 	aQute.*;resolution:=optional, \
-	junit.framework;version='[3.8,5]',\
+	junit.framework;version='[3.8,5)',\
 	*
 
 Bundle-Activator: \

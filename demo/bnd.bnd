@@ -12,7 +12,7 @@ Bundle-SymbolicName: demo
 	biz.aQute.junit; version=snapshot
 
 -runpath: \
-	org.apache.felix.framework;version='[4.2.1,5]', \
+	org.apache.felix.framework;version='[4.2.1,5)', \
 	biz.aQute.launcher; version=snapshot
  	
 -runbundles: org.apache.felix.scr,\
