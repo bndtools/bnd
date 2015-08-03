@@ -6,7 +6,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.Manifest;
 
-import junit.framework.TestCase;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
@@ -18,6 +17,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class LauncherTest extends TestCase {
 
@@ -163,13 +163,13 @@ public class LauncherTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testJuni4Tester() throws Exception {
+	public static void testJunit4Tester() throws Exception {
 		Project project = getProject();
 		project.clear();
 		project.build();
 
 		ProjectTester pt = project.getProjectTester();
-		pt.addTest("test.Juni4TestCase");
+		pt.addTest("test.Junit4TestCase");
 
 		assertEquals(0, pt.test());
 		assertTrue(project.check());
