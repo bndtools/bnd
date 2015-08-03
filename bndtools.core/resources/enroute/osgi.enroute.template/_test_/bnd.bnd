@@ -20,9 +20,8 @@ Test-Cases: ${test-cases}
 
 -includeresource: {readme.md}
 
--buildpath: osgi.enroute.base.api;version=1.0
-	
--testpath: \
+-buildpath: \
+	osgi.enroute.base.api;version=1.0, \
 	osgi.enroute.junit.wrapper;version=4.12
 
 -runrequires: \
