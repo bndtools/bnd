@@ -6,6 +6,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.Manifest;
 
+import junit.framework.TestCase;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
@@ -17,7 +18,6 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
-import junit.framework.TestCase;
 
 public class LauncherTest extends TestCase {
 
@@ -565,7 +565,7 @@ public class LauncherTest extends TestCase {
 		String runbundles = project.getProperty(Constants.RUNBUNDLES);
 		project.setProperty(Constants.RUNBUNDLES, runbundles + "," + mandatorynoversion + ";version=file");
 		ProjectTester tester = project.getProjectTester();
-
+		tester.prepare();
 		ProjectLauncher l = tester.getProjectLauncher();
 		l.addRunBundle(mandatorynoversion);
 		l.setTimeout(25000, TimeUnit.MILLISECONDS);
