@@ -6,7 +6,7 @@
     aQute.libg;version=latest,\
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.repository;version=snapshot,\
-	org.apache.felix.resolver;version=1.1;packages=org.apache.felix.resolver.*,\
+	org.apache.felix.resolver;version=1.4;packages=org.apache.felix.resolver.*,\
 	osgi.cmpn;version=4.3.1
 	
 -testpath: \
@@ -20,7 +20,7 @@ Export-Package:  \
 
 Private-Package:  \
 	biz.aQute.resolve.*,\
-	org.apache.felix.resolver
+	org.apache.felix.resolver.*
 
 Conditional-Package: aQute.lib*
 
