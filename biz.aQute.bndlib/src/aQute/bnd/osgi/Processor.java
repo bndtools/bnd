@@ -3,7 +3,6 @@ package aQute.bnd.osgi;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -99,7 +98,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	HashSet<String>					missingCommand;
 	Boolean							strict;
 	boolean							fixupMessages;
-	List<ClassLoader>				auxiliary			= new ArrayList<ClassLoader>();
 
 	public static class FileLine {
 		public static final FileLine	DUMMY	= new FileLine(null, 0, 0);
@@ -1637,11 +1635,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public static class CL extends URLClassLoader {
 
-		private Processor	processor;
-
 		CL(Processor p) {
-			super(new URL[0], Processor.class.getClassLoader());
-			this.processor = p;
+			super(new URL[0], p.getClass().getClassLoader());
 		}
 
 		void closex() {
@@ -1705,18 +1700,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				return c;
 			}
 			catch (Throwable t) {
-				
-				//
-				// Try out our auxliary classloaders
-				//
-
-				for (ClassLoader cl : processor.auxiliary)
-					try {
-						return cl.loadClass(name);
-					}
-					catch (Exception e) {
-					
-				}
 				StringBuilder sb = new StringBuilder();
 				sb.append(name);
 				sb.append(" not found, parent:  ");
@@ -2704,14 +2687,5 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		this.trace = p.isTrace();
 		this.pedantic = p.isPedantic();
 		this.exceptions = p.isExceptions();
-	}
-
-	/**
-	 * Add an auxiliary class loader that can be set by Gradle, Bndtools
-	 */
-
-	public void addAuxiliary(ClassLoader loader) {
-		auxiliary.remove(loader);
-		auxiliary.add(loader);
 	}
 }
