@@ -1,5 +1,6 @@
 package aQute.bnd.header;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -400,16 +401,7 @@ public class Attrs implements Map<String,String> {
 			String del = "";
 			for (Map.Entry<String,String> e : entrySet()) {
 				sb.append(del);
-				sb.append(e.getKey());
-
-				if (types != null) {
-					Type type = types.get(e.getKey());
-					if (type != null) {
-						sb.append(":").append(type);
-					}
-				}
-				sb.append("=");
-				OSGiHeader.quote(sb, e.getValue());
+				append(sb, e);
 				del = ";";
 			}
 		}
@@ -417,6 +409,19 @@ public class Attrs implements Map<String,String> {
 			// Cannot happen
 			e.printStackTrace();
 		}
+	}
+
+	public void append(StringBuilder sb, Map.Entry<String,String> e) throws IOException {
+		sb.append(e.getKey());
+
+		if (types != null) {
+			Type type = types.get(e.getKey());
+			if (type != null) {
+				sb.append(":").append(type);
+			}
+		}
+		sb.append("=");
+		OSGiHeader.quote(sb, e.getValue());
 	}
 
 	@Override
@@ -543,6 +548,16 @@ public class Attrs implements Map<String,String> {
 			if ( override || local == null )
 				put(e.getKey(), e.getValue());
 		}		
+	}
+
+	/**
+	 * Check if a directive, if so, return directive name otherwise null
+	 */
+	public static String toDirective(String key) {
+		if (key == null || !key.endsWith(":"))
+			return null;
+
+		return key.substring(0, key.length());
 	}
 
 }
