@@ -1,22 +1,63 @@
 package aQute.bnd.build.model;
 
-import java.beans.*;
-import java.io.*;
-import java.util.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.TreeMap;
 
-import org.osgi.resource.*;
+import org.osgi.resource.Requirement;
 
-import aQute.bnd.build.*;
-import aQute.bnd.build.model.clauses.*;
-import aQute.bnd.build.model.conversions.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.properties.*;
-import aQute.bnd.version.*;
-import aQute.lib.io.*;
-import aQute.lib.utf8properties.*;
-import aQute.libg.tuple.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.build.model.clauses.HeaderClause;
+import aQute.bnd.build.model.clauses.ImportPattern;
+import aQute.bnd.build.model.clauses.ServiceComponent;
+import aQute.bnd.build.model.clauses.VersionedClause;
+import aQute.bnd.build.model.conversions.ClauseListConverter;
+import aQute.bnd.build.model.conversions.CollectionFormatter;
+import aQute.bnd.build.model.conversions.Converter;
+import aQute.bnd.build.model.conversions.DefaultBooleanFormatter;
+import aQute.bnd.build.model.conversions.DefaultFormatter;
+import aQute.bnd.build.model.conversions.EEConverter;
+import aQute.bnd.build.model.conversions.EEFormatter;
+import aQute.bnd.build.model.conversions.HeaderClauseFormatter;
+import aQute.bnd.build.model.conversions.HeaderClauseListConverter;
+import aQute.bnd.build.model.conversions.MapFormatter;
+import aQute.bnd.build.model.conversions.NewlineEscapedStringFormatter;
+import aQute.bnd.build.model.conversions.NoopConverter;
+import aQute.bnd.build.model.conversions.PropertiesConverter;
+import aQute.bnd.build.model.conversions.PropertiesEntryFormatter;
+import aQute.bnd.build.model.conversions.RequirementFormatter;
+import aQute.bnd.build.model.conversions.RequirementListConverter;
+import aQute.bnd.build.model.conversions.SimpleListConverter;
+import aQute.bnd.build.model.conversions.VersionedClauseConverter;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.properties.IDocument;
+import aQute.bnd.properties.IRegion;
+import aQute.bnd.properties.LineType;
+import aQute.bnd.properties.PropertiesLineReader;
+import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.tuple.Pair;
 
 /**
  * A model for a Bnd file. In the first iteration, use a simple Properties
@@ -44,6 +85,7 @@ public class BndEditModel {
 			aQute.bnd.osgi.Constants.RUNFW,
 			aQute.bnd.osgi.Constants.RUNVM,
 			aQute.bnd.osgi.Constants.RUNPROGRAMARGS,
+			aQute.bnd.osgi.Constants.DISTRO,
 			// BndConstants.RUNVMARGS,
 			// BndConstants.TESTSUITES,
 			aQute.bnd.osgi.Constants.TESTCASES, aQute.bnd.osgi.Constants.PLUGIN, aQute.bnd.osgi.Constants.PLUGINPATH,
@@ -821,6 +863,15 @@ public class BndEditModel {
 	public void setPluginPath(List<String> pluginPath) {
 		List<String> old = getPluginPath();
 		doSetObject(aQute.bnd.osgi.Constants.PLUGINPATH, old, pluginPath, stringListFormatter);
+	}
+
+	public List<String> getDistro() {
+		return doGetObject(aQute.bnd.osgi.Constants.DISTRO, listConverter);
+	}
+
+	public void setDistro(List<String> distros) {
+		List<String> old = getPluginPath();
+		doSetObject(aQute.bnd.osgi.Constants.DISTRO, old, distros, stringListFormatter);
 	}
 
 	public List<String> getRunRepos() {

@@ -1,8 +1,8 @@
 package aQute.bnd.build.model.clauses;
 
-import org.osgi.framework.*;
+import org.osgi.framework.Constants;
 
-import aQute.bnd.header.*;
+import aQute.bnd.header.Attrs;
 
 public class ExportedPackage extends HeaderClause {
 
@@ -42,4 +42,16 @@ public class ExportedPackage extends HeaderClause {
 	public static ExportedPackage error(String msg) {
 		return new ExportedPackage(msg, null);
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(getName());
+		if (isProvided())
+			sb.append(";").append("provided:=true");
+		if (getAttribs().containsKey("version"))
+			sb.append(";version=").append(getAttribs().get("version"));
+
+		return sb.toString();
+	}
+
 }
