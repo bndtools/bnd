@@ -1,20 +1,24 @@
 package aQute.bnd.build.model;
 
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.EnumSet;
 
-import aQute.bnd.version.*;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.version.Version;
+import aQute.lib.utf8properties.UTF8Properties;
 
 public enum EE {
 
-    OSGI_Minimum_1_0("OSGi/Minimum-1.0", "OSGi/Minimum", new Version("1.0")),
+	OSGI_Minimum_1_0("OSGi/Minimum-1.0", "OSGi/Minimum", new Version("1.0")),
 
-    OSGI_Minimum_1_1("OSGi/Minimum-1.1", "OSGi/Minimum", new Version("1.1"), OSGI_Minimum_1_0),
+	OSGI_Minimum_1_1("OSGi/Minimum-1.1", "OSGi/Minimum", new Version("1.1"), OSGI_Minimum_1_0),
 
 	OSGI_Minimum_1_2("OSGi/Minimum-1.2", "OSGi/Minimum", new Version("1.2"), OSGI_Minimum_1_1),
 
-    JRE_1_1("JRE-1.1", "JRE", new Version("1.1")),
+	JRE_1_1("JRE-1.1", "JRE", new Version("1.1")),
 
-    J2SE_1_2("J2SE-1.2", "JavaSE", new Version("1.2"), JRE_1_1),
+	J2SE_1_2("J2SE-1.2", "JavaSE", new Version("1.2"), JRE_1_1),
 
 	J2SE_1_3("J2SE-1.3", "JavaSE", new Version("1.3"), J2SE_1_2, OSGI_Minimum_1_1),
 
@@ -44,32 +48,34 @@ public enum EE {
 
 	JavaSE_1_9("JavaSE-1.9", "JavaSE", new Version("1.9"), JavaSE_1_8, JavaSE_compact3_1_9),
 
-    UNKNOWN("Unknown","unknown", new Version(0));
+	UNKNOWN("Unknown", "unknown", new Version(0));
 
-    private final String eeName;
-    private final String capabilityName;
-    private final Version capabilityVersion;
-    private final EE[] compatible;
+	private final String			eeName;
+	private final String			capabilityName;
+	private final Version			capabilityVersion;
+	private final EE[]				compatible;
 	private transient EnumSet<EE>	compatibleSet;
+	private transient Parameters	packages	= null;
 
-    EE(String name, String capabilityName, Version capabilityVersion, EE... compatible) {
-        this.eeName = name;
-        this.capabilityName = capabilityName;
-        this.capabilityVersion = capabilityVersion;
-        this.compatible = compatible;
-    }
+	EE(String name, String capabilityName, Version capabilityVersion, EE... compatible) {
+		this.eeName = name;
+		this.capabilityName = capabilityName;
+		this.capabilityVersion = capabilityVersion;
+		this.compatible = compatible;
+	}
 
-    public String getEEName() {
-        return eeName;
-    }
+	public String getEEName() {
+		return eeName;
+	}
 
-    /**
-     * @return An array of EEs that this EE implicitly offers, through backwards compatibility.
-     */
-    public EE[] getCompatible() {
+	/**
+	 * @return An array of EEs that this EE implicitly offers, through backwards
+	 *         compatibility.
+	 */
+	public EE[] getCompatible() {
 		EnumSet<EE> set = getCompatibleSet();
 		return set.toArray(new EE[set.size()]);
-    }
+	}
 
 	private EnumSet<EE> getCompatibleSet() {
 		if (compatibleSet != null) {
@@ -93,11 +99,32 @@ public enum EE {
 		return capabilityVersion;
 	}
 
-    public static EE parse(String str) {
-        for (EE ee : values()) {
-            if (ee.eeName.equals(str))
-                return ee;
-        }
-        return null;
-    }
+	public static EE parse(String str) {
+		for (EE ee : values()) {
+			if (ee.eeName.equals(str))
+				return ee;
+		}
+		return null;
+	}
+
+	/**
+	 * Return the list of packages
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+	public Parameters getPackages() throws IOException {
+		if (packages == null) {
+			InputStream stream = EE.class.getResourceAsStream(name() + ".properties");
+			if (stream == null)
+				return new Parameters();
+
+			UTF8Properties props = new UTF8Properties();
+			props.load(stream);
+
+			String exports = props.getProperty("org.osgi.framework.system.packages");
+			packages = new Parameters(exports);
+		}
+		return packages;
+	}
 }
