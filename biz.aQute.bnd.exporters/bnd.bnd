@@ -5,3 +5,12 @@
 	osgi.core;version=6
 
 -sub: *.bnd
+-runfw: org.apache.felix.framework;version='[4.2.1,4.2.1]'
+-runee: JavaSE-1.7
+
+
+-runbundles: \
+	biz.aQute.bnd.exporters.probe
+	
+-runremote: karaf; jdb=5005; host=locahost
+-runremote: biz.aQute.remote.launcher

@@ -1,5 +1,5 @@
 Private-Package: \
-	aQute.bnd.exporter.probe,\
+	aQute.bnd.exporters.probe,\
 	org.osgi.resource.dto,\
 	org.osgi.dto,\
 	aQute.service.reporter
@@ -10,4 +10,7 @@ Conditional-Package: \
 	aQute.lib*
 
 Import-Package: \
-	org.osgi.framework; version=1.1, *
+	org.osgi.framework; version=1.5, *
+
+Bundle-Activator: \
+	aQute.bnd.exporters.probe.Probe
