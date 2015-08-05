@@ -1,8 +1,8 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
--buildpath: osgi.core;version=4.3.1,\
-	osgi.r5;version=1.0.1,\
+-buildpath: osgi.core;version=6.0.0,\
+	osgi.enterprise;version=5.0.0, \
     aQute.libg;version=latest,\
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.repository;version=snapshot,\
@@ -18,9 +18,21 @@ Export-Package:  \
 	org.osgi.service.log;-split-package:=first,\
 	org.osgi.service.resolver;-split-package:=first
 
-Private-Package:  \
+#
+# We include the DTO packages so we do not force
+# Eclipse to run the latest & greatest OSGi
+# and we do not use these classes for interchange
+#
+
+Private-Package: \
 	biz.aQute.resolve.*,\
+<<<<<<< Updated upstream
 	org.apache.felix.resolver.*
+=======
+	org.apache.felix.resolver,\
+	org.osgi.resource.dto,\
+	org.osgi.dto
+>>>>>>> Stashed changes
 
 Conditional-Package: aQute.lib*
 

@@ -3,7 +3,6 @@ package biz.aQute.resolve;
 import java.io.File;
 import java.util.List;
 
-import junit.framework.TestCase;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
@@ -11,6 +10,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.lib.deployer.FileRepo;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import junit.framework.TestCase;
 
 /**
  * Test the project resolver
@@ -52,19 +52,6 @@ public class ProjectResolverTest extends TestCase {
 		List<Container> runbundles = pr.getRunBundles();
 		assertEquals(2, runbundles.size());
 		System.out.println(Strings.join("\n", runbundles));
-		pr.close();
-	}
-
-	public void testProfile() throws Exception {
-		Run run = new Run(ws, IO.work, IO.getFile("testdata/projectresolver/simple.bndrun"));
-		run.setProperty("-distro", "org.apache.felix.gogo.runtime");
-		ProjectResolver pr = new ProjectResolver(run);
-		pr.setTrace(true);
-		pr.resolve();
-		assertTrue(pr.check());
-		List<Container> runbundles = pr.getRunBundles();
-		assertEquals(1, runbundles.size());
-		System.out.println(Strings.join("\n", pr.getRunBundles()));
 		pr.close();
 	}
 

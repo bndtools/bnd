@@ -12,8 +12,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
@@ -21,15 +19,18 @@ import org.osgi.resource.Resource;
 import org.osgi.service.log.LogService;
 import org.osgi.service.repository.Repository;
 
-import test.lib.MockRegistry;
-import test.lib.NullLogService;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.lib.io.IO;
+import junit.framework.TestCase;
+import test.lib.MockRegistry;
+import test.lib.NullLogService;
 
 @SuppressWarnings("restriction")
 public class BndrunResolveContextTest extends TestCase {
@@ -37,15 +38,15 @@ public class BndrunResolveContextTest extends TestCase {
     private static final LogService log = new NullLogService();
 
     /**
-     * Simple test that resolves a requirement
-     */
+	 * Simple test that checks if we can find a resource through the
+	 * findProviders
+	 */
     public static void testSimple() {
         MockRegistry registry = new MockRegistry();
         registry.addPlugin(createRepo(IO.getFile("testdata/repo1.index.xml"), "Repository1"));
         
         BndrunResolveContext context = new BndrunResolveContext(new BndEditModel(), registry, log);
 
-        
         Requirement req = new CapReqBuilder("osgi.wiring.package").addDirective("filter", "(osgi.wiring.package=org.apache.felix.gogo.api)").buildSyntheticRequirement();
         List<Capability> providers = context.findProviders(req);
         assertEquals(1, providers.size());
@@ -94,11 +95,12 @@ public class BndrunResolveContextTest extends TestCase {
         model.setRunBlacklist( Arrays.asList(blacklist));
         
         BndrunResolveContext context = new BndrunResolveContext(model, registry, log);
+		context.init();
 
-        Collection<Resource> resources = context.getMandatoryResources();
-        assertEquals(1, resources.size());
-        Resource fwkResource = resources.iterator().next();
-        assertEquals(IO.getFile("testdata/org.apache.felix.framework-4.0.0.jar").toURI(), findContentURI(fwkResource));
+		Resource framework = context.getFramework();
+		assertNotNull(framework);
+
+		assertEquals(IO.getFile("testdata/org.apache.felix.framework-4.0.0.jar").toURI(), findContentURI(framework));
     }
 
     
@@ -245,10 +247,10 @@ public class BndrunResolveContextTest extends TestCase {
         runModel.setRunFw("org.apache.felix.framework;version='[4,4.1)'");
 
         BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
-        Collection<Resource> resources = context.getMandatoryResources();
-        assertEquals(1, resources.size());
-        Resource fwkResource = resources.iterator().next();
-        assertEquals(IO.getFile("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(fwkResource));
+		context.init();
+
+		assertEquals(IO.getFile("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(),
+				findContentURI(context.getFramework()));
     }
 
     public static void testChooseHighestFrameworkVersion() {
@@ -266,10 +268,10 @@ public class BndrunResolveContextTest extends TestCase {
         runModel.setRunFw("org.apache.felix.framework;version='[4,4.1)'");
 
         context = new BndrunResolveContext(runModel, registry, log);
-        resources = context.getMandatoryResources();
-        assertEquals(1, resources.size());
-        fwkResource = resources.iterator().next();
-        assertEquals(IO.getFile("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(fwkResource));
+		context.init();
+
+		assertEquals(IO.getFile("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(),
+				findContentURI(context.getFramework()));
 
         // Try it the other way round
         registry = new MockRegistry();
@@ -280,10 +282,10 @@ public class BndrunResolveContextTest extends TestCase {
         runModel.setRunFw("org.apache.felix.framework;version='[4,4.1)'");
 
         context = new BndrunResolveContext(runModel, registry, log);
-        resources = context.getMandatoryResources();
-        assertEquals(1, resources.size());
-        fwkResource = resources.iterator().next();
-        assertEquals(IO.getFile("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(fwkResource));
+		context.init();
+
+		assertEquals(IO.getFile("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(),
+				findContentURI(context.getFramework()));
     }
 
     public static void testFrameworkCapabilitiesPreferredOverRepository() {
@@ -517,12 +519,21 @@ public class BndrunResolveContextTest extends TestCase {
         runModel.setRunRequires(Collections.singletonList(req));
 
         BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
-        Collection<Resource> mandRes = context.getMandatoryResources();
+		context.init();
 
-        assertEquals(2, mandRes.size());
-        Iterator<Resource> iter = mandRes.iterator();
-        assertEquals(IO.getFile("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(), findContentURI(iter.next()));
-        assertEquals("<<INITIAL>>", iter.next().getCapabilities("osgi.identity").get(0).getAttributes().get("osgi.identity"));
+		assertEquals(IO.getFile("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(),
+				findContentURI(context.getFramework()));
+
+		Collection<Resource> mandRes = context.getMandatoryResources();
+
+		assertEquals(1, mandRes.size());
+		Resource resource = mandRes.iterator().next();
+		assertNotNull(resource);
+
+		IdentityCapability ic = ResourceUtils.getIdentityCapability(resource);
+		assertNotNull(ic);
+
+		assertEquals("<<INITIAL>>", ic.osgi_identity());
     }
 
     public static void testEERequirementResolvesFramework() {

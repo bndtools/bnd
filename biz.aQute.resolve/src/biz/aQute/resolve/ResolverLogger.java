@@ -4,12 +4,16 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.log.LogService;
+
 import aQute.lib.io.IO;
 
-public class ResolverLogger {
+public class ResolverLogger implements LogService {
 
 	public static final int		DEFAULT_LEVEL	= 4;
 
@@ -41,6 +45,12 @@ public class ResolverLogger {
 		}
 	}
 
+	public ResolverLogger(int level, PrintStream out) {
+		this.level = level;
+		file = null;
+		printer = new PrintWriter(out);
+	}
+
 	public void log(int level, String msg, Throwable throwable) {
 		String s = "";
 		s = s + msg;
@@ -65,6 +75,7 @@ public class ResolverLogger {
 			default :
 				printer.println("UNKNOWN[" + level + "]: " + s);
 		}
+		printer.flush();
 		log = null;
 	}
 
@@ -112,5 +123,20 @@ public class ResolverLogger {
 
 	public int getLogLevel() {
 		return level;
+	}
+
+	@Override
+	public void log(int level, String message) {
+		log(level, message, null);
+	}
+
+	@Override
+	public void log(ServiceReference sr, int level, String message) {
+		log(level, message, null);
+	}
+
+	@Override
+	public void log(ServiceReference sr, int level, String message, Throwable exception) {
+		log(level, message, exception);
 	}
 }
