@@ -4173,6 +4173,21 @@ public class bnd extends Processor {
 	}
 
 	/**
+	 * Remote command
+	 * 
+	 * @throws Exception
+	 */
+
+	public void _remote(RemoteCommand.RemoteOptions options) throws Exception {
+		RemoteCommand rc = new RemoteCommand(this, options);
+		String help = options._command().subCmd(options, rc);
+		if (help != null)
+			out.println(help);
+		getInfo(rc);
+		rc.close();
+	}
+
+	/**
 	 * Export a bndrun file
 	 */
 

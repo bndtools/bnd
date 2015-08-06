@@ -8,7 +8,8 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 
-Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable
+Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable, aQute.remote.*, org.osgi.*, org.yaml.*
+
 -includeresource: \
  LICENSE, \
  embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}, \
@@ -17,7 +18,7 @@ Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable
  @${repo;biz.aQute.repository;latest}!/!META-INF/*, \
  @${repo;biz.aQute.resolve;latest}!/!META-INF/*
 
-Import-Package: 
+Import-Package: *
 
 Main-Class:                     aQute.bnd.main.bnd
 JPM-Command:                    bnd
@@ -29,17 +30,20 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 
 -dependson: biz.aQute.bnd.embedded-repo
 
--buildpath: aQute.libg;version=latest,\
+-buildpath: \
+	aQute.libg;version=latest,\
 	biz.aQute.bndlib;version=project,\
 	org.apache.tools.ant,\
 	org.osgi.service.component.annotations;version=1.3.0,\
 	org.osgi.service.metatype.annotations;version=1.3.0,\
 	osgi.cmpn;version=4.3.1,\
-	osgi.core;version=4.3.1,\
+	osgi.core;version=6.0.0,\
 	org.osgi.impl.bundle.bindex,\
-	osgi.r5;version=1.0.1, \
-	biz.aQute.repository;version=latest, \
-	biz.aQute.resolve;version=latest
+	osgi.r5;version=1.0.1,\
+	biz.aQute.repository;version=latest,\
+	biz.aQute.resolve;version=latest,\
+	biz.aQute.remote.api;version=latest,\
+	org.yaml.snakeyaml;version=1.15
 
 -testpath: \
 	junit.osgi

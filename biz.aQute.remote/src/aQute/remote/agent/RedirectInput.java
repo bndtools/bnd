@@ -1,6 +1,7 @@
 package aQute.remote.agent;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * An filter stream that takes a string from the supervisor and then provides it
@@ -77,6 +78,7 @@ public class RedirectInput extends InputStream {
 	 */
 	@Override
 	public int read() throws IOException {
+		System.out.flush();
 		synchronized (ring) {
 			while (in == out) {
 				try {
