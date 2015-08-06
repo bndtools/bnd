@@ -1,23 +1,32 @@
 package aQute.bnd.osgi.resource;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.osgi.framework.Version;
+import org.osgi.framework.namespace.BundleNamespace;
+import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
+import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.namespace.contract.ContractNamespace;
+import org.osgi.namespace.extender.ExtenderNamespace;
+import org.osgi.namespace.service.ServiceNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
+import org.osgi.service.repository.ContentNamespace;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.VersionRange;
+import aQute.lib.converter.Converter;
 import aQute.libg.filters.AndFilter;
 import aQute.libg.filters.Filter;
 import aQute.libg.filters.LiteralFilter;
@@ -51,14 +60,14 @@ public class CapReqBuilder {
 	}
 
 	public static CapReqBuilder clone(Capability capability) {
-		CapReqBuilder builder = new CapReqBuilder(capability.getNamespace());
+		CapabilityBuilder builder = new CapabilityBuilder(capability.getNamespace());
 		builder.addAttributes(capability.getAttributes());
 		builder.addDirectives(capability.getDirectives());
 		return builder;
 	}
 
 	public static CapReqBuilder clone(Requirement requirement) {
-		CapReqBuilder builder = new CapReqBuilder(requirement.getNamespace());
+		RequirementBuilder builder = new RequirementBuilder(requirement.getNamespace());
 		builder.addAttributes(requirement.getAttributes());
 		builder.addDirectives(requirement.getDirectives());
 		return builder;
@@ -120,13 +129,13 @@ public class CapReqBuilder {
 		Filter filter;
 		SimpleFilter pkgNameFilter = new SimpleFilter(PackageNamespace.PACKAGE_NAMESPACE, pkgName);
 		if (range != null)
-			filter = new AndFilter().addChild(pkgNameFilter).addChild(
-					new LiteralFilter(Filters.fromVersionRange(range)));
+			filter = new AndFilter().addChild(pkgNameFilter)
+					.addChild(new LiteralFilter(Filters.fromVersionRange(range)));
 		else
 			filter = pkgNameFilter;
 
-		return new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE).addDirective(
-				Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
+		return new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE)
+				.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
 	}
 
 	public static CapReqBuilder createBundleRequirement(String bsn, String range) {
@@ -137,8 +146,8 @@ public class CapReqBuilder {
 		else
 			filter = bsnFilter;
 
-		return new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(
-				Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
+		return new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
+				.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
 
 	}
 
@@ -309,4 +318,84 @@ public class CapReqBuilder {
 		}
 		addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
 	}
+
+	public boolean isPackage() {
+		return PackageNamespace.PACKAGE_NAMESPACE.equals(getNamespace());
+	}
+
+	public boolean isHost() {
+		return HostNamespace.HOST_NAMESPACE.equals(getNamespace());
+	}
+
+	public boolean isBundle() {
+		return BundleNamespace.BUNDLE_NAMESPACE.equals(getNamespace());
+	}
+
+	public boolean isService() {
+		return ServiceNamespace.SERVICE_NAMESPACE.equals(getNamespace());
+	}
+
+	public boolean isContract() {
+		return ContractNamespace.CONTRACT_NAMESPACE.equals(getNamespace());
+	}
+
+	public boolean isIdentity() {
+		return IdentityNamespace.IDENTITY_NAMESPACE.equals(getNamespace());
+	}
+
+	public boolean isContent() {
+		return ContentNamespace.CONTENT_NAMESPACE.equals(getNamespace());
+	}
+
+	public boolean isEE() {
+		return ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE.equals(getNamespace());
+	}
+
+	public boolean isExtender() {
+		return ExtenderNamespace.EXTENDER_NAMESPACE.equals(getNamespace());
+	}
+
+	public Attrs toAttrs() {
+		Attrs attrs = new Attrs();
+
+		if (attributes != null)
+			attrs.putAllTyped(attributes);
+
+		if (directives != null)
+			for (Entry<String,String> e : directives.entrySet()) {
+				attrs.put(e.getKey() + ":", e.getValue());
+			}
+
+		return attrs;
+	}
+
+	/**
+	 * Checks the attributes for correctly typed objects, mainly version named
+	 * attributes
+	 * 
+	 * @throws Exception
+	 */
+	public void fixup() throws Exception {
+
+		if (attributes == null)
+			return;
+
+		Object vs = attributes.get("version");
+		if (vs == null || vs instanceof Version)
+			return;
+
+		if (vs instanceof Collection || vs.getClass().isArray()) {
+			List< ? > versions = Converter.cnv(tref, vs);
+			System.out.println("Versions " + vs);
+			attributes.put("version", versions.get(0).getClass());
+			return;
+		}
+
+		String v = vs.toString();
+		if (aQute.bnd.version.Version.isVersion(v)) {
+			attributes.put("version", new Version(v));
+		}
+
+	}
+
 }
