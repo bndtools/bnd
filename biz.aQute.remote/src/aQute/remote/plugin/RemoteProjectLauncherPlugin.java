@@ -1,15 +1,23 @@
 package aQute.remote.plugin;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
-import aQute.bnd.build.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.converter.*;
-import aQute.lib.strings.*;
-import aQute.remote.util.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.build.RunSession;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.lib.converter.Converter;
+import aQute.lib.strings.Strings;
+import aQute.remote.util.JMXBundleDeployer;
 
 /**
  * This is the plugin. It is found by bnd on the -runpath when it needs to
@@ -18,10 +26,12 @@ import aQute.remote.util.*;
  * remote framework specifications.
  */
 public class RemoteProjectLauncherPlugin extends ProjectLauncher {
-	private static Converter		converter	= new Converter();
+	private static Converter converter = new Converter();
+
 	static {
 		converter.setFatalIsException(false);
 	}
+
 	private Parameters				runremote;
 	private List<RunSessionImpl>	sessions	= new ArrayList<RunSessionImpl>();
 	private boolean					prepared;
@@ -220,11 +230,17 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 			for (String path : this.getRunpath()) {
 				File file = new File(path);
 				try {
-					if (bsn.equals(new Jar(file).getBsn())) {
-						long bundleId = jmxBundleDeployer.deploy(bsn, file);
+					Jar jar = new Jar(file);
+					try {
+						if (bsn.equals(jar.getBsn())) {
+							long bundleId = jmxBundleDeployer.deploy(bsn, file);
 
-						trace("agent installed with bundleId=", bundleId);
-						break;
+							trace("agent installed with bundleId=", bundleId);
+							break;
+						}
+					}
+					finally {
+						jar.close();
 					}
 				}
 				catch (Exception e) {
