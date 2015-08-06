@@ -3,6 +3,7 @@ package aQute.bnd.osgi;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -810,7 +811,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return new LinkedHashMap<K,V>(t);
 	}
 
-	public void close() {
+	public void close() throws IOException {
 		for (Closeable c : toBeClosed) {
 			try {
 				c.close();

@@ -2,6 +2,7 @@ package test;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -389,8 +390,10 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * #388 Manifest header to get GIT head
+	 * 
+	 * @throws IOException
 	 */
-	public void testGitHead() {
+	public void testGitHead() throws IOException {
 		Builder b = new Builder();
 		try {
 			String s = b.getReplacer().process("${githead}");

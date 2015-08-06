@@ -1,10 +1,12 @@
 package test;
 
-import java.io.*;
+import java.io.IOException;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.strings.*;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.OSInformation;
+import aQute.bnd.osgi.Processor;
+import aQute.lib.strings.Strings;
+import junit.framework.TestCase;
 
 public class ProcessorTest extends TestCase {
 
@@ -30,7 +32,7 @@ public class ProcessorTest extends TestCase {
 		p.close();
 	}
 
-	public void testNative() {
+	public void testNative() throws IOException {
 		Processor p = new Processor();
 		
 		String s = p._native_capability(new String[]{"_native_capability"});

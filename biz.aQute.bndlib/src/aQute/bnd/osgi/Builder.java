@@ -1,29 +1,52 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.jar.*;
-import java.util.regex.*;
-import java.util.zip.*;
+import java.util.Set;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.ZipException;
 
-import aQute.bnd.component.*;
-import aQute.bnd.differ.*;
-import aQute.bnd.header.*;
-import aQute.bnd.make.*;
-import aQute.bnd.make.component.*;
-import aQute.bnd.make.metatype.*;
-import aQute.bnd.maven.*;
-import aQute.bnd.metatype.*;
+import aQute.bnd.component.DSAnnotations;
+import aQute.bnd.differ.DiffPluginImpl;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.make.Make;
+import aQute.bnd.make.MakeBnd;
+import aQute.bnd.make.MakeCopy;
+import aQute.bnd.make.component.ServiceComponent;
+import aQute.bnd.make.metatype.MetatypePlugin;
+import aQute.bnd.maven.PomPropertiesResource;
+import aQute.bnd.maven.PomResource;
+import aQute.bnd.metatype.MetatypeAnnotations;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.bnd.service.*;
-import aQute.bnd.service.diff.*;
-import aQute.bnd.version.*;
-import aQute.lib.collections.*;
-import aQute.lib.hex.*;
-import aQute.lib.io.*;
-import aQute.libg.generics.*;
+import aQute.bnd.service.SignerPlugin;
+import aQute.bnd.service.diff.Delta;
+import aQute.bnd.service.diff.Diff;
+import aQute.bnd.service.diff.Tree;
+import aQute.bnd.service.diff.Type;
+import aQute.bnd.version.Version;
+import aQute.lib.collections.MultiMap;
+import aQute.lib.hex.Hex;
+import aQute.lib.io.IO;
+import aQute.libg.generics.Create;
 
 /**
  * Include-Resource: ( [name '=' ] file )+ Private-Package: package-decl ( ','
@@ -1219,11 +1242,6 @@ public class Builder extends Analyzer {
 			warning("File on sourcepath that does not exist: " + cp);
 
 		sourcePath.add(cp);
-	}
-
-	@Override
-	public void close() {
-		super.close();
 	}
 
 	/**

@@ -1,16 +1,34 @@
 package test;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.Def;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.bnd.test.*;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.FileResource;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Packages;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.test.BndTestCase;
+import aQute.lib.io.IO;
 
 class T0 {}
 
@@ -769,9 +787,11 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * Test if version works
+	 * 
+	 * @throws IOException
 	 */
 
-	public static void testVersion() {
+	public static void testVersion() throws IOException {
 		Analyzer a = new Analyzer();
 		try {
 			String v = a.getBndVersion();

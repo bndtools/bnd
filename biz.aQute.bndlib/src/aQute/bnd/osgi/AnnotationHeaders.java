@@ -262,21 +262,21 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	/*
 	 * Bundle-Copyright header
 	 */
-	private void doBundeCopyright(BundleCopyright annotation) {
+	private void doBundeCopyright(BundleCopyright annotation) throws IOException {
 		add(Constants.BUNDLE_COPYRIGHT, annotation.value());
 	}
 
 	/*
 	 * Bundle-DocURL header
 	 */
-	private void doBundleDocURL(BundleDocURL annotation) {
+	private void doBundleDocURL(BundleDocURL annotation) throws IOException {
 		add(Constants.BUNDLE_DOCURL, annotation.value());
 	}
 
 	/*
 	 * Bundle-Category header
 	 */
-	private void doBundleCategory(BundleCategory annotation) {
+	private void doBundleCategory(BundleCategory annotation) throws IOException {
 		if (annotation.custom() != null)
 			for (String s : annotation.custom()) {
 				add(Constants.BUNDLE_CATEGORY, s);
@@ -404,7 +404,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	/*
 	 * Adds a header. Will preprocess the text.
 	 */
-	private void add(String name, String value) {
+	private void add(String name, String value) throws IOException {
 		if (value == null)
 			return;
 

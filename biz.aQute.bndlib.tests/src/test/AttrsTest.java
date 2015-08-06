@@ -1,10 +1,11 @@
 package test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
-import junit.framework.*;
-import aQute.bnd.header.*;
-import aQute.bnd.version.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.version.Version;
+import junit.framework.TestCase;
 
 public class AttrsTest extends TestCase {
 
@@ -53,4 +54,5 @@ public class AttrsTest extends TestCase {
 		assertEquals( "1.2.3,2.1.0", attr.get("versions"));
 		assertEquals( "version:Version=\"1.2.3\";versions:List<Version>=\"1.2.3,2.1.0\"", attr.toString());
 	}
+
 }

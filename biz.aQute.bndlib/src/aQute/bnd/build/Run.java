@@ -1,10 +1,11 @@
 package aQute.bnd.build;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.List;
+import java.util.Map;
 
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.export.*;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.service.export.Exporter;
 
 public class Run extends Project {
 
@@ -20,10 +21,6 @@ public class Run extends Project {
 		return getPropertiesFile().getName();
 	}
 	
-	public void close() {
-		super.close();
-	}
-
 	public Map.Entry<String,Resource> export(String type, Map<String,String> options) throws Exception {
 		Exporter exporter = getExporter(type);
 		if (exporter == null) {

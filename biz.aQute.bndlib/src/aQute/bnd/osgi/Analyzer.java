@@ -2024,7 +2024,7 @@ public class Analyzer extends Processor {
 	}
 
 	@Override
-	public void close() {
+	public void close() throws IOException {
 		if (diagnostics) {
 			PrintStream out = System.err;
 			out.printf("Current directory            : %s%n", new File("").getAbsolutePath());
