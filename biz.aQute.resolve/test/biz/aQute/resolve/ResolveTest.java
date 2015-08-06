@@ -1,4 +1,4 @@
-package biz.aQute.resolve.internal;
+package biz.aQute.resolve;
 
 import static test.lib.Utils.createRepo;
 
@@ -28,6 +28,7 @@ import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.lib.io.IO;
 import biz.aQute.resolve.BndResolver;
+import biz.aQute.resolve.BndrunResolveContext;
 import biz.aQute.resolve.ResolutionCallback;
 import biz.aQute.resolve.ResolveProcess;
 import biz.aQute.resolve.ResolverLogger;
@@ -160,21 +161,22 @@ public class ResolveTest extends TestCase {
 	//
 	// }
 
-	private static boolean equals(Requirement a, Requirement b) {
-		if ( a== b)
-			return true;
-		
-		if ( a == null || b == null)
-			return false;
-					
-		if ( a.equals(b))
-			return true;
-		
-		if ( !a.getNamespace().equals(b.getNamespace()))
-			return false;
-		
-		return a.getDirectives().equals(b.getDirectives()) && a.getAttributes().equals(b.getAttributes());
-	}
+	// private static boolean equals(Requirement a, Requirement b) {
+	// if ( a== b)
+	// return true;
+	//
+	// if ( a == null || b == null)
+	// return false;
+	//
+	// if ( a.equals(b))
+	// return true;
+	//
+	// if ( !a.getNamespace().equals(b.getNamespace()))
+	// return false;
+	//
+	// return a.getDirectives().equals(b.getDirectives()) &&
+	// a.getAttributes().equals(b.getAttributes());
+	// }
 
 	private static Resource getResource(Set<Resource> resources, String bsn, String versionString) {
 		for (Resource resource : resources) {

@@ -26,13 +26,9 @@ Export-Package:  \
 
 Private-Package: \
 	biz.aQute.resolve.*,\
-<<<<<<< Updated upstream
 	org.apache.felix.resolver.*
-=======
-	org.apache.felix.resolver,\
 	org.osgi.resource.dto,\
 	org.osgi.dto
->>>>>>> Stashed changes
 
 Conditional-Package: aQute.lib*
 

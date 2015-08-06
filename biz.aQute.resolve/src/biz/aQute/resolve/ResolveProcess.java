@@ -31,7 +31,6 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Registry;
 import aQute.libg.tuple.Pair;
-import biz.aQute.resolve.internal.BndrunResolveContext;
 
 public class ResolveProcess {
 

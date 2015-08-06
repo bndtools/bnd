@@ -25,7 +25,6 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.Strategy;
-import biz.aQute.resolve.internal.BndrunResolveContext;
 
 /**
  * This class provides resolving capabilities to a Project (and this a bndrun

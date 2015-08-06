@@ -1,4 +1,4 @@
-package biz.aQute.resolve.internal;
+package biz.aQute.resolve;
 
 import static test.lib.Utils.createRepo;
 

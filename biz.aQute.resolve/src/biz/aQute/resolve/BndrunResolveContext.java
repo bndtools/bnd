@@ -1,4 +1,4 @@
-package biz.aQute.resolve.internal;
+package biz.aQute.resolve;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -34,8 +34,6 @@ import aQute.bnd.service.Registry;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.lib.converter.Converter;
-import biz.aQute.resolve.AbstractResolveContext;
-import biz.aQute.resolve.ResolutionCallback;
 
 /**
  * This class does the resolving for bundles. It loads the details from a

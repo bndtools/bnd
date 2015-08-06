@@ -1,4 +1,4 @@
-package biz.aQute.resolve.internal;
+package biz.aQute.resolve;
 
 import static test.lib.Utils.createRepo;
 import static test.lib.Utils.findContentURI;
@@ -28,6 +28,7 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.lib.io.IO;
+import biz.aQute.resolve.BndrunResolveContext;
 import junit.framework.TestCase;
 import test.lib.MockRegistry;
 import test.lib.NullLogService;
