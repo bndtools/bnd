@@ -121,7 +121,7 @@ public abstract class AbstractConsoleApp extends Env {
 				this.width = opts.width();
 
 			CommandLine handler = opts._command();
-			List<String> arguments = opts._();
+			List<String> arguments = opts._arguments();
 
 			if (arguments.isEmpty()) {
 				Justif j = new Justif();

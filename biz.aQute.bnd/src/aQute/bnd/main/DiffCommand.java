@@ -68,7 +68,7 @@ public class DiffCommand {
 	public void diff(diffOptions options) throws Exception {
 		DiffPluginImpl di = new DiffPluginImpl();
 
-		List<String> args = options._();
+		List<String> args = options._arguments();
 		if (args.size() == 0) {
 			Project project = bnd.getProject();
 			if (project != null) {
@@ -85,13 +85,13 @@ public class DiffCommand {
 				return;
 			}
 			
-		} else if (options._().size() == 1) {
+		} else if (options._arguments().size() == 1) {
 			bnd.trace("Show tree");
 			showTree(bnd, options);
 			return;
 		}
 
-		if (options._().size() != 2) {
+		if (options._arguments().size() != 2) {
 			throw new IllegalArgumentException("Requires 2 jar files input");
 		}
 
@@ -187,7 +187,7 @@ public class DiffCommand {
 
 		Instructions packageFilters = new Instructions(options.pack());
 
-		Jar newer = new Jar(bnd.getFile(options._().get(0)));
+		Jar newer = new Jar(bnd.getFile(options._arguments().get(0)));
 		try {
 			Differ di = new DiffPluginImpl();
 			Tree n = di.tree(newer);

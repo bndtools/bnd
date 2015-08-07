@@ -600,7 +600,7 @@ public class CommandLine {
 	}
 
 	public String subCmd(Options opts, Object target) throws Exception {
-		List<String> arguments = opts._();
+		List<String> arguments = opts._arguments();
 
 		if (arguments.isEmpty()) {
 			Justif j = new Justif();

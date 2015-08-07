@@ -66,7 +66,7 @@ public class CommandTest extends TestCase {
 			assertEquals("bb", x.bb(), "bb");
 			assertEquals(Arrays.asList(new File("f1.txt"), new File("f2.txt")), x.input());
 			assertEquals(false, x.notset());
-			assertEquals(Arrays.asList("-a", "--a", "a"), x._());
+			assertEquals(Arrays.asList("-a", "--a", "a"), x._arguments());
 
 			return "a";
 		}

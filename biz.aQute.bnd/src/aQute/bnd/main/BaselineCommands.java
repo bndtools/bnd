@@ -94,7 +94,7 @@ public class BaselineCommands {
 			+ "is a local project, then we use the projects current build and the baseline jar in the release repo.")
 	public void _baseline(baseLineOptions opts) throws Exception {
 
-		List<String> args = opts._();
+		List<String> args = opts._arguments();
 		if (args.size() == 0) {
 			Project project = bnd.getProject();
 			if (project != null) {
@@ -260,7 +260,7 @@ public class BaselineCommands {
 
 		Tag top = new Tag("jschema");
 		int n = 1000;
-		for (String spec : opts._()) {
+		for (String spec : opts._arguments()) {
 			File f = bnd.getFile(spec);
 			if (!f.isFile()) {
 				bnd.messages.NoSuchFile_(f);

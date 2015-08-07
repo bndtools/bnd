@@ -33,7 +33,7 @@ public class ResolveCommand extends Processor {
 
 	public void _find(ResolveOptions options, bnd bnd) throws Exception {
 
-		List<String> args = options._();
+		List<String> args = options._arguments();
 
 		for (String bndrun : args) {
 			Project p = bnd.getProject(options.project());
@@ -61,7 +61,7 @@ public class ResolveCommand extends Processor {
 	}
 
 	public void _query(QueryOptions options) throws Exception {
-		List<String> args = options._();
+		List<String> args = options._arguments();
 		String bsn = args.remove(0);
 		String version = null;
 		if (!args.isEmpty())

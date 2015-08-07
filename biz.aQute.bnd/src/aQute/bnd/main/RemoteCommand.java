@@ -124,7 +124,7 @@ class RemoteCommand extends Processor {
 	interface RevisonOptions extends Options {}
 
 	public void _revisions(RevisonOptions opts) throws Exception {
-		long[] ids = Converter.cnv(long[].class, opts._());
+		long[] ids = Converter.cnv(long[].class, opts._arguments());
 		dump(agent.getBundleRevisons(ids));
 	}
 
@@ -163,7 +163,7 @@ class RemoteCommand extends Processor {
 	}
 
 	public void _distro(DistroOptions opts) throws Exception {
-		List<String> arts = opts._();
+		List<String> arts = opts._arguments();
 		String bsn;
 		String version;
 

@@ -36,7 +36,7 @@ public class Plugins {
 	}
 
 	public void _add(PluginAddOptions opts) throws Exception {
-		List<String> args = opts._();
+		List<String> args = opts._arguments();
 		Map<String,Class< ? >> plugins = getAnnotatedPlugins();
 
 		if (args.isEmpty()) {
@@ -81,7 +81,7 @@ public class Plugins {
 	interface PluginRemoveOptions extends Options {}
 
 	public void _remove(PluginRemoveOptions opts) {
-		List<String> args = opts._();
+		List<String> args = opts._arguments();
 
 		if (args.isEmpty()) {
 			for (String file : ws.getFile("cnf/ext").list()) {

@@ -124,7 +124,7 @@ public class RepoCommand {
 		this.writable = w;
 		bnd.trace("writable " + w);
 
-		List<String> args = opts._();
+		List<String> args = opts._arguments();
 		if (args.size() == 0) {
 			// Default command
 			_repos(null);
@@ -236,7 +236,7 @@ public class RepoCommand {
 		if (from == null)
 			from = new Instruction("*");
 
-		List<String> args = opts._();
+		List<String> args = opts._arguments();
 		if (args.isEmpty()) {
 			bnd.error("Get needs at least a bsn");
 			return;
@@ -320,7 +320,7 @@ public class RepoCommand {
 			return;
 		}
 
-		List<String> args = opts._();
+		List<String> args = opts._arguments();
 		if (args.isEmpty()) {
 			bnd.out.println("Writable repo is " + writable.getName() + " (" + writable.getLocation() + ")");
 			return;
@@ -406,9 +406,9 @@ public class RepoCommand {
 	@Description("Diff jars (or show tree)")
 	public void _diff(diffOptions options) throws UnsupportedEncodingException, IOException, Exception {
 
-		List<String> _ = options._();
-		String newer = _.remove(0);
-		String older = _.size() > 0 ? _.remove(0) : null;
+		List<String> args = options._arguments();
+		String newer = args.remove(0);
+		String older = args.size() > 0 ? args.remove(0) : null;
 
 		RepositoryPlugin rnewer = findRepo(newer);
 		RepositoryPlugin rolder = older == null ? null : findRepo(older);
@@ -492,7 +492,7 @@ public class RepoCommand {
 	@Description("Displays a list of versions for a given bsn that can be found in the current repositories.")
 	public void _versions(VersionsOptions opts) throws Exception {
 		TreeSet<Version> versions = new TreeSet<Version>();
-		String bsn = opts._().remove(0);
+		String bsn = opts._arguments().remove(0);
 		for (RepositoryPlugin repo : repos) {
 			versions.addAll(repo.versions(bsn));
 		}
@@ -512,7 +512,7 @@ public class RepoCommand {
 	}
 
 	public void _copy(CopyOptions options) throws Exception {
-		List<String> args = options._();
+		List<String> args = options._arguments();
 		Workspace ws = Workspace.findWorkspace(bnd.getBase());
 		if (ws == null) {
 			bnd.error("Cannot find a workspace from " + bnd.getBase());

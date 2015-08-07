@@ -21,7 +21,7 @@ public class EnrouteCommand {
 		this.bnd = bnd;
 		this.opts = opts;
 
-		List<String> args = opts._();
+		List<String> args = opts._arguments();
 		if (args.size() == 0) {
 			// Default command
 			printHelp();
@@ -84,7 +84,7 @@ public class EnrouteCommand {
 	public void _workspace(WorkspaceOptions opts) throws Exception {
 		File base = bnd.getBase();
 
-		String name = opts._().get(0);
+		String name = opts._arguments().get(0);
 
 		File workspaceDir = Processor.getFile(base, name);
 		name = workspaceDir.getName();

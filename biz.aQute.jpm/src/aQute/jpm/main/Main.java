@@ -357,7 +357,7 @@ public class Main extends ReporterAdapter {
 					jpm.setUnderTest();
 
 				CommandLine handler = opts._command();
-				List<String> arguments = opts._();
+				List<String> arguments = opts._arguments();
 
 				if (arguments.isEmpty()) {
 					Justif j = new Justif();
@@ -466,7 +466,7 @@ public class Main extends ReporterAdapter {
 			return;
 		}
 
-		for (String coordinate : opts._()) {
+		for (String coordinate : opts._arguments()) {
 			trace("install %s", coordinate);
 			File file = IO.getFile(base, coordinate);
 			if (file.isFile()) {
@@ -514,13 +514,13 @@ public class Main extends ReporterAdapter {
 
 	@Description("Manage the jpm4j services")
 	public void _service(ServiceOptions opts) throws Exception {
-		if (opts._().isEmpty()) {
+		if (opts._arguments().isEmpty()) {
 			for (ServiceData sd : jpm.getServices())
 				print(sd);
 			return;
 		}
 
-		List<String> cmdline = opts._();
+		List<String> cmdline = opts._arguments();
 		String name = cmdline.remove(0);
 
 		Service s = jpm.getService(name);
@@ -698,7 +698,7 @@ public class Main extends ReporterAdapter {
 	public void _command(CommandOptions opts) throws Exception {
 
 		if (opts.remove()) {
-			Instructions instrs = new Instructions(opts._());
+			Instructions instrs = new Instructions(opts._arguments());
 			for (CommandData cmd : jpm.getCommands()) {
 				if (instrs.matches(cmd.name)) {
 					jpm.deleteCommand(cmd.name);
@@ -707,12 +707,12 @@ public class Main extends ReporterAdapter {
 			return;
 		}
 
-		if (opts._().isEmpty()) {
+		if (opts._arguments().isEmpty()) {
 			print(jpm.getCommands());
 			return;
 		}
 
-		String cmd = opts._().get(0);
+		String cmd = opts._arguments().get(0);
 
 		CommandData data = jpm.getCommand(cmd);
 		if (data == null) {
@@ -908,7 +908,7 @@ public class Main extends ReporterAdapter {
 	@Description("Show platform information")
 	public void _platform(PlatformOptions opts) throws IOException, Exception {
 		CommandLine cli = opts._command();
-		List<String> cmds = opts._();
+		List<String> cmds = opts._arguments();
 		if (cmds.isEmpty()) {
 			if (opts.verbose()) {
 				Justif j = new Justif(80, 30, 40, 50, 60);
@@ -971,7 +971,7 @@ public class Main extends ReporterAdapter {
 			error("No write acces, might require administrator or root privileges (sudo in *nix)");
 			return;
 		}
-		for (String s : options._()) {
+		for (String s : options._arguments()) {
 			Service service = jpm.getService(s);
 			if (service == null)
 				error("Non existent service %s", s);
@@ -1007,7 +1007,7 @@ public class Main extends ReporterAdapter {
 
 	@Description("Restart a service")
 	public void _restart(RestartOptions options) throws Exception {
-		for (String s : options._()) {
+		for (String s : options._arguments()) {
 			Service service = jpm.getService(s);
 			if (service == null)
 				error("Non existent service %s", s);
@@ -1043,7 +1043,7 @@ public class Main extends ReporterAdapter {
 
 	@Description("Trace a service")
 	public void _trace(traceOptions options) throws Exception {
-		List<String> args = options._();
+		List<String> args = options._arguments();
 		String s = args.remove(0);
 		boolean on = args.isEmpty() || !"off".equalsIgnoreCase(args.remove(0));
 
@@ -1077,7 +1077,7 @@ public class Main extends ReporterAdapter {
 
 	@Description("Stop a service")
 	public void _stop(StopOptions options) throws Exception {
-		for (String s : options._()) {
+		for (String s : options._arguments()) {
 			Service service = jpm.getService(s);
 			if (service == null)
 				error("Non existent service %s", s);
@@ -1115,7 +1115,7 @@ public class Main extends ReporterAdapter {
 	@Description("Status of a service/services")
 	public void _status(statusOptions options) throws InterruptedException {
 		while (true) {
-			for (String s : options._()) {
+			for (String s : options._arguments()) {
 				String runs = "false";
 				String status = "no service";
 				try {
@@ -1262,7 +1262,7 @@ public class Main extends ReporterAdapter {
 	@Description("Show the service log")
 	public void _log(logOptions opts) throws Exception {
 
-		String s = opts._().isEmpty() ? null : opts._().get(0);
+		String s = opts._arguments().isEmpty() ? null : opts._arguments().get(0);
 		if (s == null) {
 			error("No such service %s", s);
 			return;
@@ -1346,7 +1346,7 @@ public class Main extends ReporterAdapter {
 	public void _settings(settingOptions opts) throws Exception {
 		try {
 			trace("settings %s", opts.clear());
-			List<String> rest = opts._();
+			List<String> rest = opts._arguments();
 
 			if (opts.clear()) {
 				settings.clear();
@@ -1458,10 +1458,10 @@ public class Main extends ReporterAdapter {
 			error("Must be administrator");
 
 		if (opts.delete())
-			InstallCert.deleteCert(opts._().get(0), opts.secret() == null ? jpm.getPlatform().defaultCacertsPassword()
+			InstallCert.deleteCert(opts._arguments().get(0), opts.secret() == null ? jpm.getPlatform().defaultCacertsPassword()
 					: opts.secret(), opts.cacerts());
 		else
-			InstallCert.installCert(this, opts._().get(0), opts.port() == 0 ? 443 : opts.port(),
+			InstallCert.installCert(this, opts._arguments().get(0), opts.port() == 0 ? 443 : opts.port(),
 					opts.secret() == null ? jpm.getPlatform().defaultCacertsPassword() : opts.secret(), opts.cacerts(),
 					opts.install());
 	}
@@ -1567,7 +1567,7 @@ public class Main extends ReporterAdapter {
 		if (opts.limit() > 0)
 			limit = opts.limit();
 
-		String q = new ExtList<String>(opts._()).join(" ");
+		String q = new ExtList<String>(opts._arguments()).join(" ");
 		List<Program> programs = jpm.find(q, skip, limit);
 		printPrograms(programs);
 	}
@@ -1650,7 +1650,7 @@ public class Main extends ReporterAdapter {
 
 	@Description("Deposit a file in a private depository")
 	public void _deposit(DepositOptions options) {
-		File f = IO.getFile(base, options._().get(0));
+		File f = IO.getFile(base, options._arguments().get(0));
 		if (f.isFile()) {
 			error("No such file %s", f);
 		}
@@ -1685,7 +1685,7 @@ public class Main extends ReporterAdapter {
 			names.add(service.name);
 		}
 
-		for (String pattern : opts._()) {
+		for (String pattern : opts._arguments()) {
 			Glob glob = new Glob(pattern);
 			for (String name : names) {
 				if (glob.matcher(name).matches()) {
@@ -1724,12 +1724,12 @@ public class Main extends ReporterAdapter {
 	@Description("Generate additional files for jpm")
 	public void _generate(GenerateOptions opts) throws Exception {
 
-		if (opts._().isEmpty()) {
+		if (opts._arguments().isEmpty()) {
 			error("Syntax: jpm generate <markdown|bash-completion>");
 			return;
 		}
 
-		String genType = opts._().get(0);
+		String genType = opts._arguments().get(0);
 
 		if (genType.equalsIgnoreCase("markdown")) {
 			IO.copy(this.getClass().getResourceAsStream("/static/jpm_prefix.md"), out);
@@ -1768,7 +1768,7 @@ public class Main extends ReporterAdapter {
 	}
 
 	public void _get(GetOptions options) throws Exception {
-		String coord = options._().get(0);
+		String coord = options._arguments().get(0);
 		String f = options.output();
 		if (f == null)
 			IO.copy(new URL(coord).openStream(), System.out);
@@ -1791,14 +1791,14 @@ public class Main extends ReporterAdapter {
 
 	@Description("Provide information about a jar file")
 	public void _what(WhatOptions opts) throws Exception {
-		if (opts._().size() == 0) {
+		if (opts._arguments().size() == 0) {
 			error("Syntax: jpm what <jar file | url>");
 			return;
 		}
 
 		String res;
-		if (opts._().size() == 1) {
-			res = jpm.what(opts._().get(0), opts.shortinfo());
+		if (opts._arguments().size() == 1) {
+			res = jpm.what(opts._arguments().get(0), opts.shortinfo());
 			if (res != null) {
 				out.println(res);
 			} else {
@@ -1806,7 +1806,7 @@ public class Main extends ReporterAdapter {
 			}
 		} else {
 			ArrayList<String> fails = new ArrayList<String>();
-			for (String key : opts._()) {
+			for (String key : opts._arguments()) {
 				res = jpm.what(key, !opts.longinfo());
 				if (res != null) {
 					out.println(res);
@@ -1858,11 +1858,11 @@ public class Main extends ReporterAdapter {
 		ArrayList<UpdateMemo> toUpdate = new ArrayList<JustAnotherPackageManager.UpdateMemo>();
 
 		ArrayList<CommandData> datas = new ArrayList<CommandData>();
-		if (opts._().size() == 0) {
+		if (opts._arguments().size() == 0) {
 			datas.addAll(jpm.getCommands());
 			datas.addAll(jpm.getServices());
 		} else {
-			for (String pattern : opts._()) {
+			for (String pattern : opts._arguments()) {
 				Glob glob = new Glob(pattern);
 				for (String name : refs) {
 					if (glob.matcher(name).matches()) {
@@ -1886,7 +1886,7 @@ public class Main extends ReporterAdapter {
 			jpm.listUpdates(notFound, upToDate, toUpdate, data, opts.staged());
 		}
 
-		if (opts.all() || opts._().size() > 0) {
+		if (opts.all() || opts._arguments().size() > 0) {
 			for (UpdateMemo memo : toUpdate) {
 				jpm.update(memo);
 			}
@@ -1964,7 +1964,7 @@ public class Main extends ReporterAdapter {
 
 	@Description("List the candidates for a coordinate")
 	public void _candidates(CandidateOptions options) throws Exception {
-		String c = options._().get(0);
+		String c = options._arguments().get(0);
 
 		if (!Coordinate.COORDINATE_P.matcher(c).matches()) {
 			error("Not a proper coordinate %s", c);
