@@ -1,16 +1,26 @@
 package aQute.lib.getopt;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Formatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.*;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.configurable.*;
-import aQute.lib.justif.*;
-import aQute.lib.markdown.*;
-import aQute.libg.generics.*;
-import aQute.libg.reporter.*;
-import aQute.service.reporter.*;
+import aQute.configurable.Config;
+import aQute.configurable.Configurable;
+import aQute.lib.justif.Justif;
+import aQute.lib.markdown.MarkdownFormatter;
+import aQute.libg.generics.Create;
+import aQute.libg.reporter.ReporterMessages;
+import aQute.service.reporter.Reporter;
 
 /**
  * Helps parsing command lines. This class takes target object, a primary
@@ -274,6 +284,7 @@ public class CommandLine {
 		}
 
 		values.put(".", arguments);
+		values.put(".arguments", arguments);
 		values.put(".command", this);
 		values.put(".properties", properties);
 		return Configurable.createConfigurable(specification, values);
