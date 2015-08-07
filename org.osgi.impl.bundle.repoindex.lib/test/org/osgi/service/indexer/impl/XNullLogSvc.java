@@ -5,7 +5,7 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.log.LogService;
 
 @Ignore
-public class NullLogSvc implements LogService {
+public class XNullLogSvc implements LogService {
 
 	public void log(int level, String message) {
 	}
