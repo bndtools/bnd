@@ -258,7 +258,8 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 		return resolved;
 	}
 
-	private static void addBasicCapabilities(ResourceBuilder builder, String bsn, Version version, URI resolvedUri) {
+	private static void addBasicCapabilities(ResourceBuilder builder, String bsn, Version version, URI resolvedUri)
+			throws Exception {
 		CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
 			.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn)
 			.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_BUNDLE)

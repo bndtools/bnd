@@ -1,21 +1,27 @@
 package aQute.bnd.deployer.repository.wrapper;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
-import org.osgi.resource.*;
-import org.osgi.service.repository.*;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.service.repository.Repository;
 
-import aQute.bnd.build.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.osgi.resource.*;
-import aQute.bnd.service.*;
-import aQute.bnd.service.repository.*;
-import aQute.lib.collections.*;
-import aQute.lib.converter.*;
-import aQute.lib.io.*;
-import aQute.libg.reporter.*;
-import aQute.service.reporter.*;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.resource.FilterParser;
+import aQute.bnd.service.Registry;
+import aQute.bnd.service.RegistryDonePlugin;
+import aQute.bnd.service.RegistryPlugin;
+import aQute.bnd.service.repository.InfoRepository;
+import aQute.lib.collections.MultiMap;
+import aQute.lib.converter.Converter;
+import aQute.lib.io.IO;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.service.reporter.Reporter;
 
 public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, RegistryDonePlugin, Repository {
 
@@ -129,7 +135,12 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 	})
 	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
 		MultiMap<Requirement,Capability> result = new MultiMap<Requirement,Capability>();
-		wrapper.findProviders(result, requirements);
+		try {
+			wrapper.findProviders(result, requirements);
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 		return (Map) result;
 	}
 

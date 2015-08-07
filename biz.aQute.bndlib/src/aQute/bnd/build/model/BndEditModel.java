@@ -68,10 +68,10 @@ import aQute.libg.tuple.Pair;
  */
 public class BndEditModel {
 
-	public static final String										NEWLINE_LINE_SEPARATOR		= "\\n\\\n\t";
-	public static final String										LIST_SEPARATOR				= ",\\\n\t";
+	public static final String	NEWLINE_LINE_SEPARATOR	= "\\n\\\n\t";
+	public static final String	LIST_SEPARATOR			= ",\\\n\t";
 
-	private static String[]											KNOWN_PROPERTIES			= new String[] {
+	private static String[] KNOWN_PROPERTIES = new String[] {
 			Constants.BUNDLE_LICENSE, Constants.BUNDLE_CATEGORY, Constants.BUNDLE_NAME, Constants.BUNDLE_DESCRIPTION,
 			Constants.BUNDLE_COPYRIGHT, Constants.BUNDLE_UPDATELOCATION, Constants.BUNDLE_VENDOR,
 			Constants.BUNDLE_CONTACTADDRESS, Constants.BUNDLE_DOCURL, Constants.BUNDLE_SYMBOLICNAME,
@@ -79,152 +79,117 @@ public class BndEditModel {
 			aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, aQute.bnd.osgi.Constants.SOURCES,
 			aQute.bnd.osgi.Constants.SERVICE_COMPONENT, aQute.bnd.osgi.Constants.CLASSPATH,
 			aQute.bnd.osgi.Constants.BUILDPATH, aQute.bnd.osgi.Constants.RUNBUNDLES,
-			aQute.bnd.osgi.Constants.RUNPROPERTIES,
-			aQute.bnd.osgi.Constants.SUB,
-			aQute.bnd.osgi.Constants.RUNFRAMEWORK,
-			aQute.bnd.osgi.Constants.RUNFW,
-			aQute.bnd.osgi.Constants.RUNVM,
-			aQute.bnd.osgi.Constants.RUNPROGRAMARGS,
+			aQute.bnd.osgi.Constants.RUNPROPERTIES, aQute.bnd.osgi.Constants.SUB, aQute.bnd.osgi.Constants.RUNFRAMEWORK,
+			aQute.bnd.osgi.Constants.RUNFW, aQute.bnd.osgi.Constants.RUNVM, aQute.bnd.osgi.Constants.RUNPROGRAMARGS,
 			aQute.bnd.osgi.Constants.DISTRO,
 			// BndConstants.RUNVMARGS,
 			// BndConstants.TESTSUITES,
 			aQute.bnd.osgi.Constants.TESTCASES, aQute.bnd.osgi.Constants.PLUGIN, aQute.bnd.osgi.Constants.PLUGINPATH,
 			aQute.bnd.osgi.Constants.RUNREPOS, aQute.bnd.osgi.Constants.RUNREQUIRES, aQute.bnd.osgi.Constants.RUNEE,
 			Constants.BUNDLE_BLUEPRINT, Constants.INCLUDE_RESOURCE
-																								};
+	};
 
-	public static final String										BUNDLE_VERSION_MACRO		= "${"
-																										+ Constants.BUNDLE_VERSION
-																										+ "}";
+	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
 
-	private final Map<String,Converter< ? extends Object,String>>	converters					= new HashMap<String,Converter< ? extends Object,String>>();
-	private final Map<String,Converter<String, ? extends Object>>	formatters					= new HashMap<String,Converter<String, ? extends Object>>();
+	private final Map<String,Converter< ? extends Object,String>>	converters	= new HashMap<String,Converter< ? extends Object,String>>();
+	private final Map<String,Converter<String, ? extends Object>>	formatters	= new HashMap<String,Converter<String, ? extends Object>>();
 	// private final DataModelHelper obrModelHelper = new DataModelHelperImpl();
 
-	private File													bndResource;
-	private String													bndResourceName;
+	private File	bndResource;
+	private String	bndResourceName;
 
-	private final PropertyChangeSupport								propChangeSupport			= new PropertyChangeSupport(
-																										this);
-	private Properties										properties					= new UTF8Properties();
-	private final Map<String,Object>								objectProperties			= new HashMap<String,Object>();
-	private final Map<String,String>								changesToSave				= new TreeMap<String,String>();
-	private Project													project;
+	private final PropertyChangeSupport	propChangeSupport	= new PropertyChangeSupport(this);
+	private Properties					properties			= new UTF8Properties();
+	private final Map<String,Object>	objectProperties	= new HashMap<String,Object>();
+	private final Map<String,String>	changesToSave		= new TreeMap<String,String>();
+	private Project						project;
 
 	// CONVERTERS
-	private Converter<List<VersionedClause>,String>					buildPathConverter			= new ClauseListConverter<VersionedClause>(
-																										new Converter<VersionedClause,Pair<String,Attrs>>() {
-																											public VersionedClause convert(
-																													Pair<String,Attrs> input)
-																													throws IllegalArgumentException {
-																												if (input == null)
-																													return null;
-																												return new VersionedClause(
-																														input.getFirst(),
-																														input.getSecond());
-																											}
+	private Converter<List<VersionedClause>,String>		buildPathConverter			= new ClauseListConverter<VersionedClause>(
+			new Converter<VersionedClause,Pair<String,Attrs>>() {
+				public VersionedClause convert(Pair<String,Attrs> input) throws IllegalArgumentException {
+					if (input == null)
+						return null;
+					return new VersionedClause(input.getFirst(), input.getSecond());
+				}
 
-																											@Override
-																											public VersionedClause error(
-																													String msg) {
-																												return null;
-																											}
-																										});
-	private Converter<List<VersionedClause>,String>					buildPackagesConverter		= new ClauseListConverter<VersionedClause>(
-																										new Converter<VersionedClause,Pair<String,Attrs>>() {
-																											public VersionedClause convert(
-																													Pair<String,Attrs> input)
-																													throws IllegalArgumentException {
-																												if (input == null)
-																													return null;
-																												return new VersionedClause(
-																														input.getFirst(),
-																														input.getSecond());
-																											}
-																											@Override
-																											public VersionedClause error(
-																													String msg) {
-																												return VersionedClause.error(msg);
-																											}
-																										});
-	private Converter<List<VersionedClause>,String>					clauseListConverter			= new ClauseListConverter<VersionedClause>(
-																										new VersionedClauseConverter());
-	private Converter<String,String>								stringConverter				= new NoopConverter<String>();
-	private Converter<Boolean,String>								includedSourcesConverter	= new Converter<Boolean,String>() {
-																									public Boolean convert(
-																											String string)
-																											throws IllegalArgumentException {
-																										return Boolean
-																												.valueOf(string);
-																									}
+				@Override
+				public VersionedClause error(String msg) {
+					return null;
+				}
+			});
+	private Converter<List<VersionedClause>,String>		buildPackagesConverter		= new ClauseListConverter<VersionedClause>(
+			new Converter<VersionedClause,Pair<String,Attrs>>() {
+				public VersionedClause convert(Pair<String,Attrs> input) throws IllegalArgumentException {
+					if (input == null)
+						return null;
+					return new VersionedClause(input.getFirst(), input.getSecond());
+				}
 
-																									@Override
-																									public Boolean error(
-																											String msg) {
-																										return Boolean.FALSE;
-																									}
-																								};
-	private Converter<List<String>,String>							listConverter				= SimpleListConverter
-																										.create();
-	private Converter<List<HeaderClause>,String>					headerClauseListConverter	= new HeaderClauseListConverter();
-	private ClauseListConverter<ExportedPackage>					exportPackageConverter		= new ClauseListConverter<ExportedPackage>(
-																										new Converter<ExportedPackage,Pair<String,Attrs>>() {
-																											public ExportedPackage convert(
-																													Pair<String,Attrs> input) {
-																												if (input == null)
-																													return null;
-																												return new ExportedPackage(
-																														input.getFirst(),
-																														input.getSecond());
-																											}
+				@Override
+				public VersionedClause error(String msg) {
+					return VersionedClause.error(msg);
+				}
+			});
+	private Converter<List<VersionedClause>,String>		clauseListConverter			= new ClauseListConverter<VersionedClause>(
+			new VersionedClauseConverter());
+	private Converter<String,String>					stringConverter				= new NoopConverter<String>();
+	private Converter<Boolean,String>					includedSourcesConverter	= new Converter<Boolean,String>() {
+		public Boolean convert(String string) throws IllegalArgumentException {
+			return Boolean.valueOf(string);
+		}
 
-																											@Override
-																											public ExportedPackage error(
-																													String msg) {
-																												return ExportedPackage.error(msg);
-																											}
-																										});
-	private Converter<List<ServiceComponent>,String>				serviceComponentConverter	= new ClauseListConverter<ServiceComponent>(
-																										new Converter<ServiceComponent,Pair<String,Attrs>>() {
-																											public ServiceComponent convert(
-																													Pair<String,Attrs> input)
-																													throws IllegalArgumentException {
-																												if (input == null)
-																													return null;
-																												return new ServiceComponent(
-																														input.getFirst(),
-																														input.getSecond());
-																											}
+		@Override
+		public Boolean error(String msg) {
+			return Boolean.FALSE;
+		}
+	};
+	private Converter<List<String>,String>				listConverter				= SimpleListConverter.create();
+	private Converter<List<HeaderClause>,String>		headerClauseListConverter	= new HeaderClauseListConverter();
+	private ClauseListConverter<ExportedPackage>		exportPackageConverter		= new ClauseListConverter<ExportedPackage>(
+			new Converter<ExportedPackage,Pair<String,Attrs>>() {
+				public ExportedPackage convert(Pair<String,Attrs> input) {
+					if (input == null)
+						return null;
+					return new ExportedPackage(input.getFirst(), input.getSecond());
+				}
 
-																											@Override
-																											public ServiceComponent error(
-																													String msg) {
-																												return ServiceComponent.error(msg);
-																											}
-																										});
-	private Converter<List<ImportPattern>,String>					importPatternConverter		= new ClauseListConverter<ImportPattern>(
-																										new Converter<ImportPattern,Pair<String,Attrs>>() {
-																											public ImportPattern convert(
-																													Pair<String,Attrs> input)
-																													throws IllegalArgumentException {
-																												if (input == null)
-																													return null;
-																												return new ImportPattern(
-																														input.getFirst(),
-																														input.getSecond());
-																											}
+				@Override
+				public ExportedPackage error(String msg) {
+					return ExportedPackage.error(msg);
+				}
+			});
+	private Converter<List<ServiceComponent>,String>	serviceComponentConverter	= new ClauseListConverter<ServiceComponent>(
+			new Converter<ServiceComponent,Pair<String,Attrs>>() {
+				public ServiceComponent convert(Pair<String,Attrs> input) throws IllegalArgumentException {
+					if (input == null)
+						return null;
+					return new ServiceComponent(input.getFirst(), input.getSecond());
+				}
 
-																											@Override
-																											public ImportPattern error(
-																													String msg) {
-																												return ImportPattern.error(msg);
-																											}
-																										});
+				@Override
+				public ServiceComponent error(String msg) {
+					return ServiceComponent.error(msg);
+				}
+			});
+	private Converter<List<ImportPattern>,String>		importPatternConverter		= new ClauseListConverter<ImportPattern>(
+			new Converter<ImportPattern,Pair<String,Attrs>>() {
+				public ImportPattern convert(Pair<String,Attrs> input) throws IllegalArgumentException {
+					if (input == null)
+						return null;
+					return new ImportPattern(input.getFirst(), input.getSecond());
+				}
 
-	private Converter<Map<String,String>,String>					propertiesConverter			= new PropertiesConverter();
+				@Override
+				public ImportPattern error(String msg) {
+					return ImportPattern.error(msg);
+				}
+			});
 
-	private Converter<List<Requirement>,String>						requirementListConverter	= new RequirementListConverter();
-	private Converter<EE,String>									eeConverter					= new EEConverter();
+	private Converter<Map<String,String>,String> propertiesConverter = new PropertiesConverter();
+
+	private Converter<List<Requirement>,String>	requirementListConverter	= new RequirementListConverter();
+	private Converter<EE,String>				eeConverter					= new EEConverter();
 
 	// Converter<ResolveMode, String> resolveModeConverter =
 	// EnumConverter.create(ResolveMode.class, ResolveMode.manual);
@@ -232,29 +197,21 @@ public class BndEditModel {
 	// FORMATTERS
 	private Converter<String,String>								newlineEscapeFormatter		= new NewlineEscapedStringFormatter();
 	private Converter<String,Boolean>								defaultFalseBoolFormatter	= new DefaultBooleanFormatter(
-																										false);
+			false);
 	private Converter<String,Collection< ? >>						stringListFormatter			= new CollectionFormatter<Object>(
-																										LIST_SEPARATOR,
-																										(String) null);
+			LIST_SEPARATOR, (String) null);
 	private Converter<String,Collection< ? extends HeaderClause>>	headerClauseListFormatter	= new CollectionFormatter<HeaderClause>(
-																										LIST_SEPARATOR,
-																										new HeaderClauseFormatter(),
-																										null);
+			LIST_SEPARATOR, new HeaderClauseFormatter(), null);
 	private Converter<String,Map<String,String>>					propertiesFormatter			= new MapFormatter(
-																										LIST_SEPARATOR,
-																										new PropertiesEntryFormatter(),
-																										null);
+			LIST_SEPARATOR, new PropertiesEntryFormatter(), null);
 
-	private Converter<String,Collection< ? extends Requirement>>	requirementListFormatter	= new CollectionFormatter<Requirement>(
-																										LIST_SEPARATOR,
-																										new RequirementFormatter(),
-																										null);
+	private Converter<String,Collection< ? extends Requirement>> requirementListFormatter = new CollectionFormatter<Requirement>(
+			LIST_SEPARATOR, new RequirementFormatter(), null);
 
-	private Converter<String,EE>									eeFormatter					= new EEFormatter();
-	private Converter<String,Collection< ? extends String>>			runReposFormatter			= new CollectionFormatter<String>(
-																										LIST_SEPARATOR,
-																										aQute.bnd.osgi.Constants.EMPTY_HEADER);
-	private Workspace	workspace;
+	private Converter<String,EE>							eeFormatter			= new EEFormatter();
+	private Converter<String,Collection< ? extends String>>	runReposFormatter	= new CollectionFormatter<String>(
+			LIST_SEPARATOR, aQute.bnd.osgi.Constants.EMPTY_HEADER);
+	private Workspace										workspace;
 
 	// Converter<String, ResolveMode> resolveModeFormatter =
 	// EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
@@ -351,7 +308,7 @@ public class BndEditModel {
 
 	public BndEditModel(Workspace ws) {
 		this();
-		this.workspace=ws;
+		this.workspace = ws;
 	}
 
 	public void loadFrom(IDocument document) throws IOException {
@@ -901,8 +858,8 @@ public class BndEditModel {
 	}
 
 	public void setRunFramework(String clause) {
-		assert (Constants.RUNFRAMEWORK_SERVICES.equals(clause.toLowerCase().trim()) || Constants.RUNFRAMEWORK_NONE
-				.equals(clause.toLowerCase().trim()));
+		assert(Constants.RUNFRAMEWORK_SERVICES.equals(clause.toLowerCase().trim())
+				|| Constants.RUNFRAMEWORK_NONE.equals(clause.toLowerCase().trim()));
 		String oldValue = getRunFramework();
 		doSetObject(aQute.bnd.osgi.Constants.RUNFRAMEWORK, oldValue, clause, newlineEscapeFormatter);
 	}
@@ -1083,15 +1040,15 @@ public class BndEditModel {
 			result = new Processor();
 		else
 			result = new Processor(parent);
-		
+
 		StringBuilder sb = new StringBuilder();
-		
+
 		for (Entry<String,String> e : changesToSave.entrySet()) {
-			sb.append(e.getKey()).append( ": ").append( e.getValue()).append("\n\n");
+			sb.append(e.getKey()).append(": ").append(e.getValue()).append("\n\n");
 		}
 		UTF8Properties p = new UTF8Properties();
-		p.load( new StringReader(sb.toString()));
-		
+		p.load(new StringReader(sb.toString()));
+
 		result.getProperties().putAll(properties);
 		result.getProperties().putAll(p);
 		return result;

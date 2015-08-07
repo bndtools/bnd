@@ -753,8 +753,8 @@ public class Verifier extends Processor {
 			if (!a.endsWith(":")) {
 				Attrs.Type t = attrs.getType(a);
 				if ("version".equals(a)) {
-					if (t != Attrs.Type.VERSION)
-						error("Version attributes should always be of type version, it is version:%s=%s for %s", t, v,
+					if (t != Attrs.Type.VERSION && t != Attrs.Type.VERSIONS)
+						error("Version attributes should always be of type Version or List<Version>, it is version:%s=%s for %s", t, v,
 								key);
 				} else
 					verifyType(t, v);

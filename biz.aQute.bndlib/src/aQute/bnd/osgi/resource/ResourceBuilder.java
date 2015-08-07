@@ -1,12 +1,15 @@
 package aQute.bnd.osgi.resource;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.osgi.framework.Constants;
+import org.osgi.framework.Version;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.framework.namespace.HostNamespace;
@@ -23,6 +26,7 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.VersionRange;
+import aQute.lib.filter.Filter;
 
 public class ResourceBuilder {
 
@@ -32,7 +36,7 @@ public class ResourceBuilder {
 
 	private boolean					built			= false;
 
-	public ResourceBuilder addCapability(Capability capability) {
+	public ResourceBuilder addCapability(Capability capability) throws Exception {
 		CapReqBuilder builder = CapReqBuilder.clone(capability);
 		return addCapability(builder);
 	}
@@ -47,7 +51,7 @@ public class ResourceBuilder {
 		return this;
 	}
 
-	public ResourceBuilder addRequirement(Requirement requirement) {
+	public ResourceBuilder addRequirement(Requirement requirement) throws Exception {
 		CapReqBuilder builder = CapReqBuilder.clone(requirement);
 		return addRequirement(builder);
 	}
@@ -81,8 +85,9 @@ public class ResourceBuilder {
 	 * 
 	 * @param manifest
 	 *            The manifest to parse
+	 * @throws Exception
 	 */
-	public void addManifest(Domain manifest) {
+	public void addManifest(Domain manifest) throws Exception {
 
 		//
 		// Do the Bundle Identity Ns
@@ -117,7 +122,7 @@ public class ResourceBuilder {
 
 			String version = manifest.getBundleVersion();
 			if (version != null)
-				identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
+				identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, new Version(version));
 
 			String copyright = manifest.get(Constants.BUNDLE_COPYRIGHT);
 			if (copyright != null) {
@@ -187,20 +192,23 @@ public class ResourceBuilder {
 
 	/**
 	 * Add the Require-Bundle header
+	 * 
+	 * @throws Exception
 	 */
 
-	public void addRequireBundles(Parameters requireBundle) {
+	public void addRequireBundles(Parameters requireBundle) throws Exception {
 		for (Entry<String,Attrs> clause : requireBundle.entrySet()) {
 			addRequireBundle(Processor.removeDuplicateMarker(clause.getKey()), clause.getValue());
 		}
 	}
 
-	public void addRequireBundle(String bsn, VersionRange range) {
+	public void addRequireBundle(String bsn, VersionRange range) throws Exception {
 		Attrs attrs = new Attrs();
 		attrs.put("bundle-version", range.toString());
 		addRequireBundle(bsn, attrs);
 	}
-	public void addRequireBundle(String bsn, Attrs attrs) {
+
+	public void addRequireBundle(String bsn, Attrs attrs) throws Exception {
 		CapReqBuilder rbb = new CapReqBuilder(resource, BundleNamespace.BUNDLE_NAMESPACE);
 		rbb.addAttributesOrDirectives(attrs);
 
@@ -219,7 +227,7 @@ public class ResourceBuilder {
 		addRequirement(rbb.buildRequirement());
 	}
 
-	public void addFragmentHost(String bsn, Attrs attrs) {
+	public void addFragmentHost(String bsn, Attrs attrs) throws Exception {
 		CapReqBuilder rbb = new CapReqBuilder(resource, HostNamespace.HOST_NAMESPACE);
 		rbb.addAttributesOrDirectives(attrs);
 
@@ -238,20 +246,20 @@ public class ResourceBuilder {
 		addRequirement(rbb.buildRequirement());
 	}
 
-	public void addRequireCapabilities(Parameters required) {
+	public void addRequireCapabilities(Parameters required) throws Exception {
 		for (Entry<String,Attrs> clause : required.entrySet()) {
 			String namespace = Processor.removeDuplicateMarker(clause.getKey());
 			addRequireCapability(namespace, Processor.removeDuplicateMarker(clause.getKey()), clause.getValue());
 		}
 	}
 
-	public void addRequireCapability(String namespace, String name, Attrs attrs) {
+	public void addRequireCapability(String namespace, String name, Attrs attrs) throws Exception {
 		CapReqBuilder req = new CapReqBuilder(resource, namespace);
 		req.addAttributesOrDirectives(attrs);
 		addRequirement(req.buildRequirement());
 	}
 
-	public void addProvideCapabilities(Parameters capabilities) {
+	public void addProvideCapabilities(Parameters capabilities) throws Exception {
 		for (Entry<String,Attrs> clause : capabilities.entrySet()) {
 			String namespace = Processor.removeDuplicateMarker(clause.getKey());
 			Attrs attrs = clause.getValue();
@@ -260,7 +268,7 @@ public class ResourceBuilder {
 		}
 	}
 
-	public void addProvideCapability(String namespace, Attrs attrs) {
+	public void addProvideCapability(String namespace, Attrs attrs) throws Exception {
 		CapReqBuilder capb = new CapReqBuilder(resource, namespace);
 		capb.addAttributesOrDirectives(attrs);
 		addCapability(capb);
@@ -268,8 +276,10 @@ public class ResourceBuilder {
 
 	/**
 	 * Add Exported Packages
+	 * 
+	 * @throws Exception
 	 */
-	public void addExportPackages(Parameters exports) {
+	public void addExportPackages(Parameters exports) throws Exception {
 		for (Entry<String,Attrs> clause : exports.entrySet()) {
 			String pname = Processor.removeDuplicateMarker(clause.getKey());
 			Attrs attrs = clause.getValue();
@@ -278,7 +288,7 @@ public class ResourceBuilder {
 		}
 	}
 
-	public void addExportPackage(String packageName, Attrs attrs) {
+	public void addExportPackage(String packageName, Attrs attrs) throws Exception {
 		CapReqBuilder capb = new CapReqBuilder(resource, PackageNamespace.PACKAGE_NAMESPACE);
 		capb.addAttributesOrDirectives(attrs);
 		capb.addAttribute(PackageNamespace.PACKAGE_NAMESPACE, packageName);
@@ -287,8 +297,10 @@ public class ResourceBuilder {
 
 	/**
 	 * Add imported packages
+	 * 
+	 * @throws Exception
 	 */
-	public void addImportPackages(Parameters imports) {
+	public void addImportPackages(Parameters imports) throws Exception {
 		for (Entry<String,Attrs> clause : imports.entrySet()) {
 			String pname = Processor.removeDuplicateMarker(clause.getKey());
 			Attrs attrs = clause.getValue();
@@ -297,19 +309,19 @@ public class ResourceBuilder {
 		}
 	}
 
-	public void addImportPackage(String pname, Attrs attrs) {
+	public void addImportPackage(String pname, Attrs attrs) throws Exception {
 		CapReqBuilder reqb = new CapReqBuilder(resource, PackageNamespace.PACKAGE_NAMESPACE);
 		reqb.addAttributesOrDirectives(attrs);
 		reqb.addAttribute(PackageNamespace.PACKAGE_NAMESPACE, pname);
 
-		reqb.addFilter(PackageNamespace.PACKAGE_NAMESPACE, pname, attrs);
+		reqb.addFilter(PackageNamespace.PACKAGE_NAMESPACE, pname, attrs.getVersion(), null);
 		addRequirement(reqb);
 	}
 
 	// Correct version according to R5 specification section 3.4.1
 	// BREE J2SE-1.4 ==> osgi.ee=JavaSE, version:Version=1.4
 	// See bug 329, https://github.com/bndtools/bnd/issues/329
-	public void addExecutionEnvironment(EE ee) {
+	public void addExecutionEnvironment(EE ee) throws Exception {
 
 
 		CapReqBuilder builder = new CapReqBuilder(resource,
@@ -324,7 +336,7 @@ public class ResourceBuilder {
 		addCapability(builder);
 	}
 
-	public void addAllExecutionEnvironments(EE ee) throws IOException {
+	public void addAllExecutionEnvironments(EE ee) throws Exception {
 		addExportPackages(ee.getPackages());
 		addExecutionEnvironment(ee);
 		for (EE compatibleEE : ee.getCompatible()) {
@@ -332,7 +344,7 @@ public class ResourceBuilder {
 		}
 	}
 
-	public void copyCapabilities(Set<String> ignoreNamespaces, Resource r) {
+	public void copyCapabilities(Set<String> ignoreNamespaces, Resource r) throws Exception {
 		for (Capability c : r.getCapabilities(null)) {
 			if (ignoreNamespaces.contains(c.getNamespace()))
 				continue;
@@ -341,7 +353,7 @@ public class ResourceBuilder {
 		}
 	}
 
-	public void addCapabilities(List<Capability> capabilities) {
+	public void addCapabilities(List<Capability> capabilities) throws Exception {
 		if (capabilities == null || capabilities.isEmpty())
 			return;
 
@@ -350,7 +362,7 @@ public class ResourceBuilder {
 
 	}
 
-	public void addRequirement(List<Requirement> requirements) {
+	public void addRequirement(List<Requirement> requirements) throws Exception {
 		if (requirements == null || requirements.isEmpty())
 			return;
 
@@ -359,10 +371,30 @@ public class ResourceBuilder {
 
 	}
 
-	public void addRequirements(List<Requirement> requires) {
+	public void addRequirements(List<Requirement> requires) throws Exception {
 		for (Requirement req : requires) {
 			addRequirement(req);
 		}
+	}
+
+	public List<Capability> findCapabilities(String ns, String filter) {
+		if (filter == null || capabilities.isEmpty())
+			return Collections.EMPTY_LIST;
+
+		List<Capability> capabilities = new ArrayList<Capability>();
+		Filter f = new Filter(filter);
+
+		for (Capability c : getCapabilities()) {
+			if (ns != null && !ns.equals(c.getNamespace()))
+				continue;
+
+			Map<String,Object> attributes = c.getAttributes();
+			if (attributes != null) {
+				if (f.matchMap(attributes))
+					capabilities.add(c);
+			}
+		}
+		return capabilities;
 	}
 
 }
