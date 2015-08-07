@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Text;
 
 import aQute.bnd.build.Workspace;
 import bndtools.Plugin;
+import bndtools.central.Central;
 
 public class ProjectLocationGroup {
 
@@ -65,13 +66,38 @@ public class ProjectLocationGroup {
 
     private static IPath findWorkspaceLocation() {
 
-        for (IProject iproj : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-            if (iproj.getName().equals(Workspace.CNFDIR)) {
-                return iproj.getRawLocation().removeLastSegments(1);
+        try {
+            for (IProject iproj : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+                if (iproj.getName().equals(Workspace.CNFDIR)) {
+                    IPath rawLocation = iproj.getRawLocation();
+                    if (rawLocation == null)
+                        break;
+
+                    return iproj.getRawLocation().removeLastSegments(1);
+                }
+            }
+        } catch (Exception e) {
+            // nice try
+        }
+
+        IPath p = Platform.getLocation();
+
+        Workspace ws;
+        try {
+            ws = Central.getWorkspace();
+        } catch (Exception e) {
+            ws = null;
+            for (IProject iproj : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+                if (iproj.getName().equals(Workspace.CNFDIR)) {
+                    return iproj.getRawLocation().removeLastSegments(1);
+                }
             }
         }
 
-        return Platform.getLocation();
+        if (ws != null)
+            p = Path.fromOSString(ws.getBase().getAbsolutePath());
+
+        return p;
     }
 
     /**
