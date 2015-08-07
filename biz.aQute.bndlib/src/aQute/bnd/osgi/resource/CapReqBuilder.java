@@ -84,6 +84,9 @@ public class CapReqBuilder {
 	}
 
 	public CapReqBuilder addAttribute(String name, Object value) throws Exception {
+		if (value == null)
+			return this;
+
 		if (value.getClass().isArray()) {
 			value = Converter.cnv(List.class, value);
 		}
@@ -92,8 +95,7 @@ public class CapReqBuilder {
 			value = toVersions(value);
 		}
 
-		if (value != null)
-			attributes.put(name, value);
+		attributes.put(name, value);
 		return this;
 	}
 

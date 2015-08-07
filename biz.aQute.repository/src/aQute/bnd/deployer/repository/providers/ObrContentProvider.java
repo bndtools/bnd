@@ -266,7 +266,10 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 			.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
 		
 		CapReqBuilder content = new CapReqBuilder(ContentNamespace.CONTENT_NAMESPACE)
-			.addAttribute(ContentNamespace.CONTENT_NAMESPACE, null)
+				// null attributes are skipped anyway
+				// Setting this to a "reasonable" value got the testGetHttp to
+				// failed utterly because it interpreted the value as the SHA?
+				// .addAttribute(ContentNamespace.CONTENT_NAMESPACE, null)
 			.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, resolvedUri);
 		
 		CapReqBuilder host = new CapReqBuilder(HostNamespace.HOST_NAMESPACE)
