@@ -12,6 +12,7 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import org.osgi.framework.namespace.BundleNamespace;
+import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.framework.wiring.dto.BundleRevisionDTO;
@@ -50,6 +51,7 @@ class RemoteCommand extends Processor {
 	static {
 		IGNORED_NAMESPACES.add(PackageNamespace.PACKAGE_NAMESPACE); // handled
 																	// specially
+		IGNORED_NAMESPACES.add(HostNamespace.HOST_NAMESPACE);
 		IGNORED_NAMESPACES.add(BundleNamespace.BUNDLE_NAMESPACE);
 		IGNORED_NAMESPACES.add(IdentityNamespace.IDENTITY_NAMESPACE);
 		IGNORED_NAMESPACES.add(ContentNamespace.CONTENT_NAMESPACE);
@@ -219,6 +221,7 @@ class RemoteCommand extends Processor {
 						else
 							value = new Version((String) value);
 					}
+					crb.addAttribute(key, value);
 				}
 				crb.addDirectives(c.directives);
 
@@ -266,7 +269,10 @@ class RemoteCommand extends Processor {
 			jar.setManifest(m);
 
 			Verifier v = new Verifier(jar);
+			v.setProperty("-fixupmessages",
+					"osgi* namespaces must not be specified with generic requirements/capabilities");
 			v.verify();
+			v.getErrors();
 
 			if (isFailOk() || v.isOk())
 				jar.write(output);

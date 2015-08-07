@@ -33,6 +33,22 @@ public class LauncherTest extends TestCase {
 	}
 
 	/**
+	 * Test the packager for remote
+	 * 
+	 * @throws Exception
+	 */
+	public static void testRemotePackager() throws Exception {
+		Project project = getProject();
+		project.clear();
+		project.setProperty("-runpath", "biz.aQute.remote.launcher;version=latest");
+		ProjectLauncher l = project.getProjectLauncher();
+		l.setTrace(true);
+		Jar executable = l.executable();
+		assertTrue(project.check());
+		assertNotNull(executable);
+	}
+
+	/**
 	 * Try out the new tester that does not contain JUnit
 	 */
 	public static void testJUnitLessTester() throws Exception {

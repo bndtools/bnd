@@ -43,7 +43,7 @@ public class RemoteTest extends TestCase {
 			framework.init();
 			framework.start();
 			context = framework.getBundleContext();
-			location = "reference:" + IO.getFile("generated/biz.aQute.remote.agent-3.0.0.jar").toURI().toString();
+			location = "reference:" + IO.getFile("generated/biz.aQute.remote.agent.jar").toURI().toString();
 			agent = context.installBundle(location);
 			agent.start();
 
