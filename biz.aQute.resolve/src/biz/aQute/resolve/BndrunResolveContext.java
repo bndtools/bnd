@@ -12,7 +12,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.jar.Manifest;
 
+import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -146,10 +148,6 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			// ugly
 			//
 
-			CapReqBuilder crb = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
-			crb.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, "system");
-			crb.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, "0");
-			system.addCapability(crb);
 
 			//
 			// If we have a distro, we do not load the environment
@@ -210,6 +208,18 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			// so we can create the resource and set it as the system resource
 			//
 
+			List<Capability> frameworkPackages = system.findCapabilities(PackageNamespace.PACKAGE_NAMESPACE,
+					"(" + PackageNamespace.PACKAGE_NAMESPACE + "=org.osgi.framework)");
+			if (!frameworkPackages.isEmpty()) {
+				Capability c = frameworkPackages.get(0);
+				Version version = (Version) c.getAttributes().get(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+
+				CapReqBuilder crb = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
+				crb.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, "system");
+				crb.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
+				system.addCapability(crb);
+			}
+
 			setSystemResource(system.build());
 		}
 		catch (Exception e) {
@@ -219,7 +229,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		super.init();
 	}
 
-	void loadFramework(ResourceBuilder system) {
+	void loadFramework(ResourceBuilder system) throws Exception {
 		Parameters parameters = new Parameters(properties.getProperty(Constants.RUNFW));
 		if (parameters.isEmpty()) {
 			log.log(LogService.LOG_WARNING, "No -runfw set");
@@ -346,7 +356,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		return resource == systemResource;
 	}
 
-	Resource constructInputRequirements() {
+	Resource constructInputRequirements() throws Exception {
 		Parameters inputRequirements = new Parameters(properties.mergeProperties(Constants.RUNREQUIRES));
 		if (inputRequirements != null && !inputRequirements.isEmpty()) {
 			List<Requirement> requires = CapReqBuilder.getRequirementsFrom(inputRequirements);
@@ -361,7 +371,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			return null;
 	}
 
-	private void constructBlacklist() {
+	private void constructBlacklist() throws Exception {
 		Parameters blacklist = new Parameters(properties.mergeProperties(Constants.RUNBLACKLIST));
 		if (blacklist != null && !blacklist.isEmpty()) {
 			List<Requirement> reject = CapReqBuilder.getRequirementsFrom(blacklist);

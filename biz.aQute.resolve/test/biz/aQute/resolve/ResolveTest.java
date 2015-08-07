@@ -27,11 +27,6 @@ import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.lib.io.IO;
-import biz.aQute.resolve.BndResolver;
-import biz.aQute.resolve.BndrunResolveContext;
-import biz.aQute.resolve.ResolutionCallback;
-import biz.aQute.resolve.ResolveProcess;
-import biz.aQute.resolve.ResolverLogger;
 import junit.framework.TestCase;
 import test.lib.MockRegistry;
 import test.lib.NullLogService;
@@ -50,14 +45,14 @@ public class ResolveTest extends TestCase {
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml")));
 
 		BndEditModel model = new BndEditModel();
-		model.setDistro(Arrays.asList("testdata/karaf-distro.mf;version=file"));
+		model.setDistro(Arrays.asList("testdata/distro.jar;version=file"));
 		List<Requirement> requires = new ArrayList<Requirement>();
 		CapReqBuilder capReq = CapReqBuilder.createBundleRequirement("org.apache.felix.gogo.shell", "[0,1)");
 		requires.add(capReq.buildSyntheticRequirement());
 
 		model.setRunRequires(requires);
 		BndrunResolveContext context = new BndrunResolveContext(model, registry, log);
-		context.setLevel(4);
+		context.setLevel(0);
 		context.init();
 
 		Resolver resolver = new BndResolver(new ResolverLogger(4));
@@ -65,8 +60,10 @@ public class ResolveTest extends TestCase {
 		try {
 			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
 			Set<Resource> resources = resolved.keySet();
-			Resource resource = getResource(resources, "system", "0");
-			assertNotNull(resource);
+			Resource system = getResource(resources, "system", "1.8.0");
+			Resource shell = getResource(resources, "org.apache.felix.gogo.shell", "0.10.0");
+			assertNotNull(system);
+			assertNotNull(shell);
 		}
 		catch (ResolutionException e) {
 			fail("Resolve failed");

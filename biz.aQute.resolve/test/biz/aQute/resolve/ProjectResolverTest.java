@@ -2,11 +2,14 @@ package biz.aQute.resolve;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
+
+import org.osgi.resource.Resource;
+import org.osgi.resource.Wire;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.osgi.Constants;
 import aQute.lib.deployer.FileRepo;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -47,7 +50,7 @@ public class ProjectResolverTest extends TestCase {
 		Run run = new Run(ws, IO.work, IO.getFile("testdata/projectresolver/simple.bndrun"));
 		ProjectResolver pr = new ProjectResolver(run);
 		pr.setTrace(true);
-		pr.resolve();
+		Map<Resource,List<Wire>> resolve = pr.resolve();
 		assertTrue(pr.check());
 		List<Container> runbundles = pr.getRunBundles();
 		assertEquals(2, runbundles.size());
@@ -55,24 +58,4 @@ public class ProjectResolverTest extends TestCase {
 		pr.close();
 	}
 
-	public void testDistro() throws Exception {
-		try {
-			Run run = new Run(ws, IO.work, IO.getFile(home, "base.bndrun"));
-			run.setProperty(Constants.RUNREQUIRES,
-					"osgi.identity;filter:='(osgi.identity=com.example.jerome.application)'");
-			run.setProperty(Constants.DISTRO, "osgi.enroute.base.api");
-
-			ProjectResolver pr = new ProjectResolver(run);
-			pr.setTrace(true);
-			pr.resolve();
-			assertTrue(pr.check());
-			List<Container> runbundles = pr.getRunBundles();
-			assertEquals(1, runbundles.size());
-			System.out.println(Strings.join("\n", pr.getRunBundles()));
-			pr.close();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 }

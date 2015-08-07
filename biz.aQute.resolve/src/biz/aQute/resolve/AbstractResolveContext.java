@@ -103,7 +103,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	private Resource								systemResource;
 	private Resource								inputResource;
 	private Set<Resource>							blacklistedResources	= new HashSet<Resource>();
-	private int										level					= 1;
+	private int										level					= 0;
 	private Resource								framework;
 
 	public AbstractResolveContext(LogService log) {
@@ -682,9 +682,10 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	 *            the system resource being build up
 	 * @param framework
 	 *            the framework resource
+	 * @throws Exception
 	 */
 
-	protected void setFramework(ResourceBuilder system, Resource framework) {
+	protected void setFramework(ResourceBuilder system, Resource framework) throws Exception {
 
 		//
 		// We copy the framework capabilities
@@ -729,7 +730,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	 * Add all the capabilities from a system resource, i.e. something on
 	 * -runpath
 	 */
-	protected void addSystemResource(ResourceBuilder system, Resource resource) {
+	protected void addSystemResource(ResourceBuilder system, Resource resource) throws Exception {
 		system.copyCapabilities(IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES, resource);
 
 	}
@@ -788,7 +789,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		};
 	}
 
-	public static Capability createPackageCapability(String packageName, String versionString) {
+	public static Capability createPackageCapability(String packageName, String versionString) throws Exception {
 		CapReqBuilder builder = new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE);
 		builder.addAttribute(PackageNamespace.PACKAGE_NAMESPACE, packageName);
 		Version version = versionString != null ? new Version(versionString) : Version.emptyVersion;
@@ -941,7 +942,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	}
 
-	public void setInputRequirements(Requirement... reqs) {
+	public void setInputRequirements(Requirement... reqs) throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
 		for (Requirement r : reqs) {
 			rb.addRequirement(r);

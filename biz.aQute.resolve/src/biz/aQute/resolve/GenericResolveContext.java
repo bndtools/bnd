@@ -1,7 +1,5 @@
 package biz.aQute.resolve;
 
-import java.io.IOException;
-
 import org.osgi.resource.Resource;
 import org.osgi.service.log.LogService;
 
@@ -52,16 +50,16 @@ public class GenericResolveContext extends AbstractResolveContext {
 		return system;
 	}
 
-	public void addFramework(String framework, String version) {
+	public void addFramework(String framework, String version) throws Exception {
 		Resource r = getHighestResource(framework, version);
 		setFramework(system, r);
 	}
 
-	public void addEE(EE ee) throws IOException {
+	public void addEE(EE ee) throws Exception {
 		system.addAllExecutionEnvironments(ee);
 	}
 
-	public void addRequireBundle(String bsn, VersionRange versionRange) {
+	public void addRequireBundle(String bsn, VersionRange versionRange) throws Exception {
 		input.addRequireBundle(bsn, versionRange);
 	}
 

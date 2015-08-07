@@ -2,20 +2,16 @@ package biz.aQute.resolve;
 
 import static test.lib.Utils.createRepo;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import junit.framework.TestCase;
 
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
-import org.osgi.service.resolver.ResolutionException;
 import org.osgi.service.resolver.Resolver;
 
 import aQute.bnd.build.model.EE;
@@ -23,9 +19,7 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.io.IO;
-import biz.aQute.resolve.BndResolver;
-import biz.aQute.resolve.GenericResolveContext;
-import biz.aQute.resolve.ResolverLogger;
+import junit.framework.TestCase;
 
 @SuppressWarnings("restriction")
 public class GenericResolveContextResolveTest extends TestCase {
@@ -34,8 +28,10 @@ public class GenericResolveContextResolveTest extends TestCase {
 	/**
 	 * Simple basic resolve. We use a small index with gogo + framework and then
 	 * try to see if we can resolve the runtime from the shell requirement.
+	 * 
+	 * @throws Exception
 	 */
-	public void testSimpleResolve() throws IOException, ResolutionException {
+	public void testSimpleResolve() throws Exception {
 		Repository repository = createRepo(IO.getFile("testdata/repo3.index.xml"));
 		GenericResolveContext grc = new GenericResolveContext(logger);
 		grc.setLevel(2);

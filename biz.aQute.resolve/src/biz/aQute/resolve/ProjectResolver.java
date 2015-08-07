@@ -129,9 +129,11 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 
 	/**
 	 * Validate the current project for resolving.
+	 * 
+	 * @throws Exception
 	 */
 
-	public void validate() {
+	public void validate() throws Exception {
 		BndrunResolveContext context = getContext();
 		String runrequires = project.getProperty(RUNREQUIRES);
 		if (runrequires == null || runrequires.isEmpty()) {
@@ -150,14 +152,14 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 		}
 	}
 
-	private void exists(BndrunResolveContext context, String framework, String msg) {
+	private void exists(BndrunResolveContext context, String framework, String msg) throws Exception {
 		Parameters p = new Parameters(framework);
 		for (Map.Entry<String,Attrs> e : p.entrySet()) {
 			exists(context, e.getKey(), e.getValue(), msg);
 		}
 	}
 
-	private void exists(BndrunResolveContext context, String namespace, Attrs attrs, String msg) {
+	private void exists(BndrunResolveContext context, String namespace, Attrs attrs, String msg) throws Exception {
 		Requirement req = CapReqBuilder.getRequirementFrom(namespace, attrs);
 		List<Capability> caps = context.findProviders(req);
 		if (caps == null || caps.isEmpty())
