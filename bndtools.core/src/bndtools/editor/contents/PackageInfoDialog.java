@@ -339,8 +339,8 @@ public class PackageInfoDialog extends TitleAreaDialog {
             this.version = version;
         }
 
-        public String formatVersionSpec() {
-            return "version " + getVersion().toString();
+        public synchronized String formatVersionSpec(boolean java5) {
+            return java5 ? String.format("@org.osgi.annotation.versioning.Version(\"%s\")%npackage %s;%n", version, name) : String.format("version %s%n", version);
         }
 
         @Override

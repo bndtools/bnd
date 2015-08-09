@@ -21,7 +21,7 @@ public class OSGiSpecAPITemplate implements IProjectTemplate {
     @Override
     public void modifyInitialBndModel(BndEditModel model, String projectName, ProjectPaths projectPaths) {
         model.setExportedPackages(Arrays.asList(new ExportedPackage[] {
-            new ExportedPackage(projectName, new Attrs())
+                new ExportedPackage(projectName, new Attrs())
         }));
 
         // Bundle-Version: 1.0.0
@@ -36,7 +36,9 @@ public class OSGiSpecAPITemplate implements IProjectTemplate {
         tmp = model.getBuildPath();
         if (tmp != null)
             buildPath.addAll(tmp);
-        buildPath.add(new VersionedClause("osgi.annotation", new Attrs()));
+        Attrs attrs = new Attrs();
+        attrs.put("packages", "*");
+        buildPath.add(new VersionedClause("osgi.annotation", attrs));
         model.setBuildPath(buildPath);
     }
 

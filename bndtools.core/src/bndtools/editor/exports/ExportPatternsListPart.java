@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IContainer;
@@ -60,6 +59,7 @@ import aQute.bnd.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.editor.contents.PackageInfoDialog;
+import bndtools.editor.contents.PackageInfoStyle;
 import bndtools.editor.contents.PackageInfoDialog.FileVersionTuple;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
 import bndtools.internal.pkgselection.IPackageFilter;
@@ -69,8 +69,6 @@ import bndtools.preferences.BndPreferences;
 
 public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage> {
     private static final ILogger logger = Logger.getLogger(ExportPatternsListPart.class);
-
-    private static final String PACKAGEINFO = "packageinfo";
 
     public ExportPatternsListPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style, Constants.EXPORT_PACKAGE, "Export Packages", new ExportedPackageLabelProvider());
@@ -85,6 +83,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
         List<ExportedPackage> added = null;
 
         final IPackageFilter filter = new IPackageFilter() {
+            @Override
             public boolean select(String packageName) {
                 if (packageName.equals("java") || packageName.startsWith("java."))
                     return false;
@@ -103,7 +102,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
         IJavaProject javaProject = JavaCore.create(project);
 
         IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[] {
-            javaProject
+                javaProject
         });
         JavaSearchScopePackageLister packageLister = new JavaSearchScopePackageLister(searchScope, window);
 
@@ -168,8 +167,8 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
                 if (!result.containsKey(pkg.getName())) {
                     File pkgDir = new File(sourceDir, pkg.getName().replace('.', '/'));
                     if (pkgDir.isDirectory()) {
-                        File pkgInfo = new File(pkgDir, PACKAGEINFO);
-                        if (!pkgInfo.exists())
+                        PackageInfoStyle existingPkgInfo = PackageInfoStyle.findExisting(pkgDir);
+                        if (existingPkgInfo == null)
                             result.put(pkg.getName(), new FileVersionTuple(pkg.getName(), pkgDir));
                     }
                 }
@@ -181,17 +180,25 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
 
     private static void generatePackageInfos(final Collection< ? extends FileVersionTuple> pkgs) throws CoreException {
         final IWorkspaceRunnable wsOperation = new IWorkspaceRunnable() {
+            @Override
             public void run(IProgressMonitor monitor) throws CoreException {
                 SubMonitor progress = SubMonitor.convert(monitor, pkgs.size());
                 MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Errors occurred while creating packageinfo files.", null);
                 for (FileVersionTuple pkg : pkgs) {
                     IContainer[] locations = ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(pkg.getFile().toURI());
                     if (locations != null && locations.length > 0) {
-                        IFile pkgInfoFile = locations[0].getFile(new Path(PACKAGEINFO));
+                        IContainer container = locations[0];
+
+                        PackageInfoStyle packageInfoStyle = PackageInfoStyle.calculatePackageInfoStyle(container.getProject());
+                        IFile pkgInfoFile = container.getFile(new Path(packageInfoStyle.getFileName()));
 
                         try {
-                            ByteArrayInputStream input = new ByteArrayInputStream(pkg.formatVersionSpec().getBytes("UTF-8"));
-                            pkgInfoFile.create(input, false, progress.newChild(1, 0));
+                            String formattedPackageInfo = packageInfoStyle.format(pkg.getVersion(), pkg.getName());
+                            ByteArrayInputStream input = new ByteArrayInputStream(formattedPackageInfo.getBytes("UTF-8"));
+                            if (pkgInfoFile.exists())
+                                pkgInfoFile.setContents(input, false, true, progress.newChild(1, 0));
+                            else
+                                pkgInfoFile.create(input, false, progress.newChild(1, 0));
                         } catch (CoreException e) {
                             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating file " + pkgInfoFile.getFullPath(), e));
                         } catch (UnsupportedEncodingException e) {
@@ -205,6 +212,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
             }
         };
         IRunnableWithProgress uiOperation = new IRunnableWithProgress() {
+            @Override
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 try {
                     ResourcesPlugin.getWorkspace().run(wsOperation, monitor);
