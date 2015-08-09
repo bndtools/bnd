@@ -339,10 +339,6 @@ public class PackageInfoDialog extends TitleAreaDialog {
             this.version = version;
         }
 
-        public synchronized String formatVersionSpec(boolean java5) {
-            return java5 ? String.format("@org.osgi.annotation.versioning.Version(\"%s\")%npackage %s;%n", version, name) : String.format("version %s%n", version);
-        }
-
         @Override
         public int hashCode() {
             final int prime = 31;
