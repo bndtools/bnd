@@ -182,11 +182,13 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 	private String calculateLocation(Resource resource) throws IOException {
 		String location = resource.getLocation();
 
-		File path = new File(location);
+		File path = new File(location).getCanonicalFile();
 		String fileName = path.getName();
-		String dir = path.getAbsoluteFile().getParentFile().toURI().toURL().toString();
+		String dir = path.getParentFile().toURI().toURL().toString();
 
-		String result = location;
+		URI cwd = new File("").getCanonicalFile().toURI();
+
+		String result = cwd.relativize(path.toURI()).getPath();
 
 		GeneratorState state = getStateLocal();
 		if (state != null) {

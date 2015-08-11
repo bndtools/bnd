@@ -1,5 +1,6 @@
 package org.osgi.service.indexer.impl;
 
+import static java.util.Collections.singletonMap;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyString;
@@ -100,6 +101,21 @@ public class TestIndexer extends TestCase {
 
 	public void testFragmentBsnVersion() throws Exception {
 		assertFragmentMatch("testdata/fragment-01.txt", "testdata/01-bsn+version.jar");
+	}
+
+	public void testFragmentBsnVersionWithScrewyPath() throws Exception {
+		assertFragmentMatch("testdata/fragment-01.txt", "testdata/../testdata/01-bsn+version.jar");
+	}
+
+	public void testFragmentBsnVersionWithBundleOutsideTheParentPath() throws Exception {
+		RepoIndex indexer = new RepoIndex();
+
+		StringWriter writer = new StringWriter();
+		indexer.indexFragment(Collections.singleton(new File("generated/../testdata/01-bsn+version.jar")), writer,
+				singletonMap(RepoIndex.ROOT_URL, new File("testdata").getAbsoluteFile().toURI().toURL().toString()));
+
+		String expected = Utils.readStream(new FileInputStream("testdata/fragment-01-relative.txt"));
+		assertEquals(expected, writer.toString().trim());
 	}
 
 	public void testFragmentLocalization() throws Exception {
