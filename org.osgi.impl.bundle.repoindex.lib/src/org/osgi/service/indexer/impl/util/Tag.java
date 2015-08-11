@@ -35,6 +35,7 @@ public class Tag {
 	String name;
 	Map<String, String> attributes = new TreeMap<String, String>();
 	Vector<Object> content = new Vector<Object>();
+	Vector<String>		comments	= new Vector<String>();
 
 	static SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
@@ -118,6 +119,13 @@ public class Tag {
 	}
 
 	/**
+	 * Add a new content tag.
+	 */
+	public void addComment(String comment) {
+		comments.addElement(comment);
+	}
+
+	/**
 	 * Return the name of the tag.
 	 */
 	public String getName() {
@@ -151,6 +159,13 @@ public class Tag {
 	 */
 	public Vector<Object> getContents() {
 		return content;
+	}
+
+	/**
+	 * Return the contents.
+	 */
+	public Vector<String> getComments() {
+		return comments;
 	}
 
 	/**
@@ -201,10 +216,11 @@ public class Tag {
 	 * Print the tag formatted to a PrintWriter.
 	 */
 	public void print(Indent indent, PrintWriter pw) {
-		boolean empty = content.size() == 0;
+		boolean empty = (content.size() + comments.size()) == 0;
 
 		printOpen(indent, pw, empty);
 		if (!empty) {
+			printComments(indent, pw);
 			printContents(indent, pw);
 			printClose(indent, pw);
 		}
@@ -231,6 +247,16 @@ public class Tag {
 			pw.print("/>");
 		else
 			pw.print('>');
+	}
+
+	public void printComments(Indent indent, PrintWriter pw) {
+		for (String comment : this.comments) {
+			Indent nextIndent = indent.next();
+			nextIndent.print(pw);
+			pw.print("<!-- ");
+			pw.print(escape(comment));
+			pw.print(" -->");
+		}
 	}
 
 	public void printContents(Indent indent, PrintWriter pw) {

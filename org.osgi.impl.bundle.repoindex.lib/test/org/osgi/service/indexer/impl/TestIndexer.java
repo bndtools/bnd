@@ -24,8 +24,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import junit.framework.TestCase;
-
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.osgi.framework.FrameworkUtil;
@@ -35,6 +33,8 @@ import org.osgi.service.indexer.Resource;
 import org.osgi.service.indexer.ResourceAnalyzer;
 import org.osgi.service.indexer.ResourceIndexer;
 import org.osgi.service.log.LogService;
+
+import junit.framework.TestCase;
 
 public class TestIndexer extends TestCase {
 
@@ -306,6 +306,25 @@ public class TestIndexer extends TestCase {
 		String expected = Utils.readStream(new FileInputStream("testdata/fragment-wibble-filtered.txt"));
 
 		assertEquals(expected, writer.toString().trim());
+	}
+
+	public void testAnalyzerException() throws Exception {
+		RepoIndex indexer = new RepoIndex();
+		indexer.addAnalyzer(new BadAnalyzer(), null);
+
+		StringWriter writer = new StringWriter();
+		LinkedHashSet<File> files = new LinkedHashSet<File>();
+		files.add(new File("testdata/01-bsn+version.jar"));
+		files.add(new File("testdata/02-localization.jar"));
+
+		indexer.indexFragment(files, writer, null);
+
+		String xml = writer.toString().trim();
+		String comment = "  <!-- Error calling analyzer \"org.osgi.service.indexer.impl.BadAnalyzer\" on resource testdata/01-bsn+version.jar with message java.lang.IllegalStateException: Bwa Ha Ha Ha! and stack: java.lang.IllegalStateException: Bwa Ha Ha Ha!";
+		assertTrue(String.format("Did not contain the correct comment %s in %s", comment, xml), xml.contains(comment));
+
+		comment = "  <!-- Error calling analyzer \"org.osgi.service.indexer.impl.BadAnalyzer\" on resource testdata/02-localization.jar with message java.lang.IllegalStateException: Bwa Ha Ha Ha! and stack: java.lang.IllegalStateException: Bwa Ha Ha Ha!";
+		assertTrue(String.format("Did not contain the correct comment %s in %s", comment, xml), xml.contains(comment));
 	}
 
 	public void testRootInSubdirectory() throws Exception {
