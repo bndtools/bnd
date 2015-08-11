@@ -10,16 +10,16 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipException;
 
-import junit.framework.TestCase;
-import test.lib.MockRegistry;
-import test.repository.FailingGeneratingProvider;
-import test.repository.NonGeneratingProvider;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.lib.io.IO;
+import junit.framework.TestCase;
+import test.lib.MockRegistry;
+import test.repository.FailingGeneratingProvider;
+import test.repository.NonGeneratingProvider;
 
 @SuppressWarnings("resource")
 public class TestLocalIndexGeneration extends TestCase {
@@ -43,6 +43,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		config = new HashMap<String,String>();
 		config.put("local", outputDir.getAbsolutePath());
 		config.put("type", "R5");
+		config.put("pretty", "true");
 		repo.setProperties(config);
 		repo.setReporter(reporter);
 	}
@@ -68,10 +69,10 @@ public class TestLocalIndexGeneration extends TestCase {
 				IO.getFile(outputDir, "name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
 			.getAbsolutePath(), deployedFile.getAbsolutePath());
 
-		File indexFile = IO.getFile(outputDir, "index.xml.gz");
+		File indexFile = IO.getFile(outputDir, "index.xml");
 		assertTrue(indexFile.exists());
 
-		File indexFileSha = IO.getFile(outputDir, "index.xml.gz.sha");
+		File indexFileSha = IO.getFile(outputDir, "index.xml.sha");
 		assertTrue(indexFileSha.exists());
 
 		AbstractIndexedRepo repo2 = createRepoForIndex(indexFile);

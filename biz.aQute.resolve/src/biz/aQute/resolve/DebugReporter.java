@@ -23,6 +23,7 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
+import aQute.lib.converter.Converter;
 
 public class DebugReporter {
 	PrintStream						out;
@@ -137,7 +138,12 @@ public class DebugReporter {
 				break;
 			case ServiceNamespace.SERVICE_NAMESPACE :
 				ns = "Service";
-				name = (String) attributes.remove(Constants.OBJECTCLASS);
+				try {
+					name = Converter.cnv(String.class, attributes.remove(Constants.OBJECTCLASS));
+				}
+				catch (Exception e) {
+					name = attributes.remove(Constants.OBJECTCLASS) + "";
+				}
 				break;
 		}
 		out.printf("%sc: %-16s %-60s %s || %s%n", prefix, ns, name, attributes, c.getDirectives());

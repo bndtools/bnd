@@ -63,6 +63,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	 *            The bnd registry
 	 * @param log
 	 */
+	@Deprecated
 	public BndrunResolveContext(BndEditModel runModel, Registry registry, LogService log) {
 		super(log);
 		try {
@@ -208,6 +209,11 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			// so we can create the resource and set it as the system resource
 			//
 
+			//
+			// TODO Add osgi.wiring.bundle + osgi.wiring.host
+			// filed a bug about using the impl version for the system
+			// capabilities
+			//
 			List<Capability> frameworkPackages = system.findCapabilities(PackageNamespace.PACKAGE_NAMESPACE,
 					"(" + PackageNamespace.PACKAGE_NAMESPACE + "=org.osgi.framework)");
 			if (!frameworkPackages.isEmpty()) {
@@ -215,7 +221,8 @@ public class BndrunResolveContext extends AbstractResolveContext {
 				Version version = (Version) c.getAttributes().get(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 
 				CapReqBuilder crb = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
-				crb.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, "system");
+				crb.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, "system.bundle");
+
 				crb.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
 				system.addCapability(crb);
 			}
@@ -252,7 +259,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 		Resource framework = getHighestResource(name, version);
 		if (framework == null) {
-			log.log(LogService.LOG_ERROR, "Cannot find frameowork " + name + ";" + version);
+			log.log(LogService.LOG_ERROR, "Cannot find framework " + name + ";" + version);
 		} else
 			super.setFramework(system, framework);
 
