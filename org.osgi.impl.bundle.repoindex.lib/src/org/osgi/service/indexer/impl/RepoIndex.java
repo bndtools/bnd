@@ -5,12 +5,15 @@ import static org.osgi.framework.FrameworkUtil.createFilter;
 import java.io.File;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -236,6 +239,7 @@ public class RepoIndex implements ResourceIndexer {
 		List<Capability> caps = new AddOnlyList<Capability>(new LinkedList<Capability>());
 		List<Requirement> reqs = new AddOnlyList<Requirement>(new LinkedList<Requirement>());
 
+		Tag resourceTag = new Tag(Schema.ELEM_RESOURCE);
 		try {
 			// Read config settings and save in thread local state
 			if (config != null) {
@@ -269,6 +273,16 @@ public class RepoIndex implements ResourceIndexer {
 							} catch (Exception e) {
 								log(LogService.LOG_ERROR,
 										MessageFormat.format("Error calling analyzer \"{0}\" on resource {1}.", analyzer.getClass().getName(), resource.getLocation()), e);
+
+								StringWriter writer = new StringWriter();
+								Formatter comment = new Formatter(writer);
+								comment.format(
+										"Error calling analyzer \"%s\" on resource %s with message %s and stack: ",
+										analyzer.getClass().getName(), resource.getLocation(), e);
+								comment.close();
+								e.printStackTrace(new PrintWriter(writer));
+
+								resourceTag.addComment(writer.toString());
 							}
 						}
 					}
@@ -280,7 +294,6 @@ public class RepoIndex implements ResourceIndexer {
 			resource.close();
 		}
 
-		Tag resourceTag = new Tag(Schema.ELEM_RESOURCE);
 		for (Capability cap : caps) {
 			Tag capTag = new Tag(Schema.ELEM_CAPABILITY);
 			capTag.addAttribute(Schema.ATTR_NAMESPACE, cap.getNamespace());
@@ -303,8 +316,27 @@ public class RepoIndex implements ResourceIndexer {
 	}
 
 	private void log(int level, String message, Throwable t) {
-		if (log != null)
+		if (log != null) {
 			log.log(level, message, t);
+		} else {
+			PrintStream ps;
+			switch (level) {
+				case LogService.LOG_DEBUG :
+					return;
+				case LogService.LOG_INFO :
+					ps = System.out;
+					break;
+				case LogService.LOG_WARNING :
+				case LogService.LOG_ERROR :
+				default :
+					ps = System.err;
+					break;
+			}
+			ps.println(message);
+			if (t != null) {
+				t.printStackTrace(ps);
+			}
+		}
 	}
 
 	private static void appendAttributeAndDirectiveTags(Tag parentTag, Map<String, Object> attribs, Map<String, String> directives) {
