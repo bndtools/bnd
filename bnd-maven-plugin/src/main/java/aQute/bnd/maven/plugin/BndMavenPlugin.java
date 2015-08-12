@@ -88,10 +88,8 @@ public class BndMavenPlugin extends AbstractMojo {
 		
 		File bndFile = new File(project.getBasedir(), Project.BNDFILE);
 		try {
-			if (bndFile.isFile())
-				builder.setProperties(bndFile, project.getBasedir());
-			else
-				builder.setBase(project.getBasedir());
+			builder.setBase(project.getBasedir());
+			loadProjectProperties(builder, project);
 			
 			// Reject sub-bundle projects
 			Collection<? extends Builder> subs = builder.getSubBuilders();
@@ -156,6 +154,18 @@ public class BndMavenPlugin extends AbstractMojo {
 		} finally {
 			builder.close();
 		}
+	}
+
+	private void loadProjectProperties(Builder builder, MavenProject project) {
+		// Load parent project properties first
+		MavenProject parentProject = project.getParent();
+		if (parentProject != null) {
+			loadProjectProperties(builder, parentProject);
+		}
+		
+		// Merge in current project properties
+		File bndFile = new File(project.getBasedir(), Project.BNDFILE);
+		builder.mergeProperties(bndFile, true);
 	}
 
 	private void reportErrorsAndWarnings(Builder builder) throws MojoExecutionException {
