@@ -51,6 +51,8 @@ import aQute.lib.io.IO;
 @Mojo(name = "bnd-process", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class BndMavenPlugin extends AbstractMojo {
 	
+	private static final String PACKAGING_POM = "pom";
+
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
 	private File targetDir;
 
@@ -69,6 +71,13 @@ public class BndMavenPlugin extends AbstractMojo {
 	public void execute() throws MojoExecutionException {
 		Log log = getLog();
 
+		// Exit without generating anything if this is a pom-packaging project.
+		// Probably it's just a parent project.
+		if (PACKAGING_POM.equals(project.getPackaging())) {
+			log.info("skip project with packaging=pom");
+			return;
+		}
+		
 		Properties beanProperties = new BeanProperties();
 		beanProperties.put("project", project);
 		Properties mavenProperties = new Properties(beanProperties);
@@ -79,10 +88,8 @@ public class BndMavenPlugin extends AbstractMojo {
 		
 		File bndFile = new File(project.getBasedir(), Project.BNDFILE);
 		try {
-			if (bndFile.isFile())
-				builder.setProperties(bndFile, project.getBasedir());
-			else
-				builder.setBase(project.getBasedir());
+			builder.setBase(project.getBasedir());
+			loadProjectProperties(builder, project);
 			
 			// Reject sub-bundle projects
 			Collection<? extends Builder> subs = builder.getSubBuilders();
@@ -94,7 +101,6 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			// Set bnd classpath
 			List<File> classpath = new LinkedList<File>();
-			@SuppressWarnings("unchecked")
 			Set<Artifact> artifacts = project.getArtifacts();
 			for (Artifact artifact : artifacts) {
 				File artifactFile = artifact.getFile();
@@ -150,6 +156,18 @@ public class BndMavenPlugin extends AbstractMojo {
 		}
 	}
 
+	private void loadProjectProperties(Builder builder, MavenProject project) {
+		// Load parent project properties first
+		MavenProject parentProject = project.getParent();
+		if (parentProject != null) {
+			loadProjectProperties(builder, parentProject);
+		}
+		
+		// Merge in current project properties
+		File bndFile = new File(project.getBasedir(), Project.BNDFILE);
+		builder.mergeProperties(bndFile, true);
+	}
+
 	private void reportErrorsAndWarnings(Builder builder) throws MojoExecutionException {
 		Log log = getLog();
 
@@ -199,6 +217,8 @@ public class BndMavenPlugin extends AbstractMojo {
 	}
 
 	private class BeanProperties extends Properties {
+		private static final long serialVersionUID = 1L;
+
 		BeanProperties() {
 			super();
 		}
@@ -223,7 +243,7 @@ public class BndMavenPlugin extends AbstractMojo {
 			Object value = null;
 			try {
 				final String getterName = "get" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
-				value = target.getClass().getMethod(getterName, null).invoke(target, null);
+				value = target.getClass().getMethod(getterName, (Class<?>) null).invoke(target, (Object[]) null);
 			} catch (Exception e) {
 				getLog().debug("Could not find getter method for field: " + fieldName, e);
 			}

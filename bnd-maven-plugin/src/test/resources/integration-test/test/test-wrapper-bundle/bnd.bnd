@@ -1,3 +1,5 @@
 Export-Package: \
 	org.example.api,\
 	org.example.types
+
+X-ParentProjectProperty: overridden
