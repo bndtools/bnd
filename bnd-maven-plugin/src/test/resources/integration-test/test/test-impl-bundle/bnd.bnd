@@ -1,5 +1,5 @@
 -dsannotations: *
--metatype: *
+-metatypeannotations: *
 Project-Build-SourceEncoding: ${project.build.sourceEncoding}
 Project-GroupId-ArtifactId: ${project.groupId}.${project.artifactId}
 Project-Build-OutputDirectory: ${project.build.outputDirectory}
