@@ -1,19 +1,17 @@
 package org.example.impl;
 
-import static aQute.bnd.annotation.metatype.Meta.*;
+import org.osgi.service.metatype.annotations.*;
 
 import java.io.File;
 
-@OCD
+@ObjectClassDefinition
 public interface Config {
 
-	@AD
 	String hostName();
 
-	@AD
 	int port();
 
-	@AD(required = false, deflt = "${user.home}/.cache", description = "Cache directory")
+	@AttributeDefinition(required = false, defaultValue = "${user.home}/.cache", description = "Cache directory")
 	File cacheDir();
 
 }

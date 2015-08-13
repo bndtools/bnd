@@ -11,13 +11,13 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.osgi</groupId>
-			<artifactId>org.osgi.compendium</artifactId>
-			<version>5.0.0</version>
+			<artifactId>osgi.cmpn</artifactId>
+			<version>6.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.osgi</groupId>
-			<artifactId>org.osgi.annotation</artifactId>
-			<version>6.0.0</version>
+			<artifactId>osgi.annotation</artifactId>
+			<version>6.0.1</version>
 		</dependency>
 	</dependencies>
 
