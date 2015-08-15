@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.Manifest;
 
-import junit.framework.TestCase;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -23,6 +22,7 @@ import aQute.bnd.service.Strategy;
 import aQute.bnd.version.Version;
 import aQute.lib.deployer.FileRepo;
 import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 @SuppressWarnings({
 		"resource", "restriction"
@@ -104,7 +104,20 @@ public class ProjectTest extends TestCase {
 		List<Container> testpath = new ArrayList<Container>(project.getTestpath());
 		assertEquals( 3, testpath.size());
 	}
-	
+
+	public void testRepoFilterBuildPath() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+		Project project = ws.getProject("repofilter");
+		assertNotNull(project);
+		project.setProperty("-buildpath", "p3; version='[1,2)'; repos=Relea*");
+
+		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
+		assertEquals(2, buildpath.size());
+		// Without repos filter we would get lowest version, i.e. 1.0.0 from the
+		// repo named "Repo".
+		assertEquals("1.1.0", buildpath.get(1).getVersion());
+	}
+
 	/**
 	 * Check if a project=version, which is illegal on -runbundles, is actually
 	 * reported as an error.
@@ -694,13 +707,13 @@ public class ProjectTest extends TestCase {
 	}
 
 	public void testBuildAll() throws Exception {
-		assertTrue(testBuildAll("*", 18).check()); // there are 14 projects
+		assertTrue(testBuildAll("*", 19).check()); // there are 14 projects
 		assertTrue(testBuildAll("p*", 11).check()); // 7 begin with p
-		assertTrue(testBuildAll("!p*, *", 7).check()); // negation: 6 don't
+		assertTrue(testBuildAll("!p*, *", 8).check()); // negation: 6 don't
 														// begin with p
 		assertTrue(testBuildAll("*-*", 6).check()); // more than one wildcard: 7
 													// have a dash
-		assertTrue(testBuildAll("!p*, p1, *", 7).check("Missing dependson p1")); // check
+		assertTrue(testBuildAll("!p*, p1, *", 8).check("Missing dependson p1")); // check
 																					// that
 																					// an
 																					// unused
@@ -708,7 +721,7 @@ public class ProjectTest extends TestCase {
 																					// is
 																					// an
 																					// error
-		assertTrue(testBuildAll("p*, !*-*, *", 16).check()); // check that
+		assertTrue(testBuildAll("p*, !*-*, *", 17).check()); // check that
 																// negation
 																// works after
 																// some projects

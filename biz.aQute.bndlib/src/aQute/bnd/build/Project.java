@@ -36,6 +36,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
@@ -999,6 +1000,7 @@ public class Project extends Processor {
 		}
 
 		useStrategy = overrideStrategy(attrs, useStrategy);
+		Pattern reposFilter = repoNameFilter(attrs);
 
 		List<RepositoryPlugin> plugins = workspace.getRepositories();
 
@@ -1027,6 +1029,13 @@ public class Project extends Processor {
 
 			SortedMap<Version,RepositoryPlugin> versions = new TreeMap<Version,RepositoryPlugin>();
 			for (RepositoryPlugin plugin : plugins) {
+
+				if (reposFilter != null) {
+					boolean matches = reposFilter.matcher(plugin.getName()).matches();
+					if (!matches)
+						continue;
+				}
+
 				try {
 					SortedSet<Version> vs = plugin.versions(bsn);
 					if (vs != null) {
@@ -1131,6 +1140,15 @@ public class Project extends Processor {
 			}
 		}
 		return useStrategy;
+	}
+
+	protected Pattern repoNameFilter(Map<String,String> attrs) {
+		if (attrs == null)
+			return null;
+		String patternStr = attrs.get("repos");
+		if (patternStr == null)
+			return null;
+		return Glob.toPattern(patternStr);
 	}
 
 	/**
