@@ -132,7 +132,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
             return ((RepositoryBundle) element).getRepo();
         }
         if (element instanceof RepositoryBundleVersion) {
-            return ((RepositoryBundleVersion) element).getBundle();
+            return ((RepositoryBundleVersion) element).getParentBundle();
         }
         return null;
     }

@@ -227,7 +227,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
             bsn = ((RepositoryBundle) elem).getBsn();
         } else if (elem instanceof RepositoryBundleVersion) {
             RepositoryBundleVersion rbv = (RepositoryBundleVersion) elem;
-            bsn = rbv.getBundle().getBsn();
+            bsn = rbv.getBsn();
             version = rbv.getVersion();
         } else if (elem instanceof ProjectBundle) {
             bsn = ((ProjectBundle) elem).getBsn();

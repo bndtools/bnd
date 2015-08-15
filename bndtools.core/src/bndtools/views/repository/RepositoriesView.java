@@ -774,7 +774,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         else if (element instanceof RepositoryBundle)
             return ((RepositoryBundle) element).getRepo();
         else if (element instanceof RepositoryBundleVersion)
-            return ((RepositoryBundleVersion) element).getBundle().getRepo();
+            return ((RepositoryBundleVersion) element).getParentBundle().getRepo();
 
         return null;
     }

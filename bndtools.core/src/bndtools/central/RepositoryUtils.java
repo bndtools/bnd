@@ -58,7 +58,7 @@ public class RepositoryUtils {
 
     public static VersionedClause convertRepoBundleVersion(RepositoryBundleVersion bundleVersion, DependencyPhase phase) {
         Attrs attribs = new Attrs();
-        if (RepoUtils.isWorkspaceRepo(bundleVersion.getBundle().getRepo()))
+        if (RepoUtils.isWorkspaceRepo(bundleVersion.getParentBundle().getRepo()))
             attribs.put(Constants.VERSION_ATTRIBUTE, VERSION_LATEST);
         else {
             StringBuilder builder = new StringBuilder();
@@ -70,7 +70,7 @@ public class RepositoryUtils {
 
             attribs.put(Constants.VERSION_ATTRIBUTE, builder.toString());
         }
-        return new VersionedClause(bundleVersion.getBundle().getBsn(), attribs);
+        return new VersionedClause(bundleVersion.getParentBundle().getBsn(), attribs);
     }
 
 }
