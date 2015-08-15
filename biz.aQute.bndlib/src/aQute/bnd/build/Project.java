@@ -38,6 +38,7 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
+import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -79,6 +80,7 @@ import aQute.libg.glob.Glob;
 import aQute.libg.reporter.ReporterMessages;
 import aQute.libg.sed.Replacer;
 import aQute.libg.sed.Sed;
+import aQute.libg.tuple.Pair;
 
 /**
  * This class is NOT threadsafe
@@ -548,6 +550,10 @@ public class Project extends Processor {
 				String versionRange = attrs.get("version");
 				boolean triedGetBundle = false;
 
+				if (bsn.indexOf('*') >= 0) {
+					return getBundlesWildcard(bsn, versionRange, strategyx, attrs);
+				}
+
 				if (versionRange != null) {
 					if (versionRange.equals(VERSION_ATTR_LATEST) || versionRange.equals(VERSION_ATTR_SNAPSHOT)) {
 						found = getBundle(bsn, versionRange, strategyx, attrs);
@@ -631,6 +637,105 @@ public class Project extends Processor {
 	 */
 	Collection<Container> getBundles(Strategy strategy, String spec) throws Exception {
 		return getBundles(strategy, spec, null);
+	}
+
+	/**
+	 * Get all bundles matching a wildcard expression.
+	 * 
+	 * @param bsnPattern
+	 *            A bsn wildcard, e.g. "osgi*" or just "*".
+	 * @param range
+	 *            A range to narrow the versions of bundles found, or null to
+	 *            return any version.
+	 * @param strategyx
+	 *            The version selection strategy, which may be 'HIGHEST' or
+	 *            'LOWEST' only -- 'EXACT' is not permitted.
+	 * @param attrs
+	 *            Additional search attributes.
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Container> getBundlesWildcard(String bsnPattern, String range, Strategy strategyx,
+			Map<String,String> attrs) throws Exception {
+
+		if (VERSION_ATTR_SNAPSHOT.equals(range) || VERSION_ATTR_PROJECT.equals(range))
+			return Collections.singletonList(new Container(this, bsnPattern, range, TYPE.ERROR, null,
+					"Cannot use snapshot or project version with wildcard matches", null, null));
+		if (strategyx == Strategy.EXACT)
+			return Collections.singletonList(new Container(this, bsnPattern, range, TYPE.ERROR, null,
+					"Cannot use exact version strategy with wildcard matches", null, null));
+
+		VersionRange versionRange;
+		if (range == null || VERSION_ATTR_LATEST.equals(range))
+			versionRange = new VersionRange("0");
+		else
+			versionRange = new VersionRange(range);
+
+		Pattern repoFilter = repoNameFilter(attrs);
+
+		if (bsnPattern != null)
+			bsnPattern = bsnPattern.trim();
+		if (bsnPattern.length() == 0 || bsnPattern.equals("*"))
+			bsnPattern = null;
+
+		SortedMap<String,Pair<Version,RepositoryPlugin>> providerMap = new TreeMap<String,Pair<Version,RepositoryPlugin>>();
+
+		List<RepositoryPlugin> plugins = workspace.getRepositories();
+		for (RepositoryPlugin plugin : plugins) {
+			if (repoFilter != null) {
+				boolean matches = repoFilter.matcher(plugin.getName()).matches();
+				if (!matches)
+					continue;
+			}
+
+			List<String> bsns = plugin.list(bsnPattern);
+			if (bsns != null)
+				for (String bsn : bsns) {
+					SortedSet<Version> versions = plugin.versions(bsn);
+					if (versions != null && !versions.isEmpty()) {
+						Pair<Version,RepositoryPlugin> currentProvider = providerMap.get(bsn);
+
+						Version candidate;
+						switch (strategyx) {
+							case HIGHEST :
+								candidate = versions.last();
+								if (currentProvider == null || candidate.compareTo(currentProvider.getFirst()) > 0) {
+									providerMap.put(bsn, new Pair<Version,RepositoryPlugin>(candidate, plugin));
+								}
+								break;
+
+							case LOWEST :
+								candidate = versions.first();
+								if (currentProvider == null || candidate.compareTo(currentProvider.getFirst()) < 0) {
+									providerMap.put(bsn, new Pair<Version,RepositoryPlugin>(candidate, plugin));
+								}
+								break;
+							default :
+								// we shouldn't have reached this point!
+								throw new IllegalStateException(
+										"Cannot use exact version strategy with wildcard matches");
+						}
+					}
+				}
+
+		}
+
+		List<Container> containers = new ArrayList<Container>(providerMap.size());
+
+		for (Entry<String, Pair<Version, RepositoryPlugin>> entry : providerMap.entrySet()) {
+			String bsn = entry.getKey();
+			Version version = entry.getValue().getFirst();
+			RepositoryPlugin repo = entry.getValue().getSecond();
+			
+			DownloadBlocker downloadBlocker = new DownloadBlocker(this);
+			File bundle = repo.get(bsn, version, attrs, downloadBlocker);
+			if (bundle != null && !bundle.getName().endsWith(".lib")) {
+				containers.add(new Container(this, bsn, range, Container.TYPE.REPO, bundle, null, attrs,
+						downloadBlocker));
+			}
+		}
+
+		return containers;
 	}
 
 	static void mergeNames(String names, Set<String> set) {

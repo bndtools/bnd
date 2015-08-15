@@ -117,6 +117,37 @@ public class ProjectTest extends TestCase {
 		// repo named "Repo".
 		assertEquals("1.1.0", buildpath.get(1).getVersion());
 	}
+	
+	public void testWildcardBuildPath() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+		Project project = ws.getProject("repofilter");
+		assertNotNull(project);
+		project.setProperty("-buildpath", "lib*");
+
+		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
+		// assertEquals(7, buildpath.size());
+
+		for (int i = 1; i < buildpath.size(); i++) {
+			Container c = buildpath.get(i);
+			assertEquals(Container.TYPE.REPO, c.getType());
+		}
+	}
+
+	public void testWildcardBuildPathWithRepoFilter() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+		Project project = ws.getProject("repofilter");
+		assertNotNull(project);
+		project.setProperty("-buildpath", "*; repos=Relea*");
+
+		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
+		assertEquals(3, buildpath.size());
+
+		assertEquals(Container.TYPE.REPO, buildpath.get(1).getType());
+		assertEquals("org.apache.felix.configadmin", buildpath.get(1).getBundleSymbolicName());
+
+		assertEquals(Container.TYPE.REPO, buildpath.get(2).getType());
+		assertEquals("p3", buildpath.get(2).getBundleSymbolicName());
+	}
 
 	/**
 	 * Check if a project=version, which is illegal on -runbundles, is actually
