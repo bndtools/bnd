@@ -22,6 +22,7 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.Function;
+import org.bndtools.utils.collections.IdentityHashSet;
 import org.bndtools.utils.swt.FilterPanelPart;
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
 import org.bndtools.utils.swt.SWTUtil;
@@ -84,6 +85,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Refreshable;
+import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.converter.Converter;
@@ -95,6 +97,7 @@ import bndtools.central.RepositoryUtils;
 import bndtools.model.repo.ContinueSearchElement;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
+import bndtools.model.repo.RepositoryEntry;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
 import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
 import bndtools.preferences.JpmPreferences;
@@ -115,6 +118,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     private Action collapseAllAction;
     private Action refreshAction;
     private Action advancedSearchAction;
+    private Action downloadAction;
 
     private String advancedSearchState;
 
@@ -136,8 +140,6 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
 
         viewer.setLabelProvider(new RepositoryTreeLabelProvider(false));
         getViewSite().setSelectionProvider(viewer);
-
-        createActions();
 
         JpmPreferences jpmPrefs = new JpmPreferences();
         final boolean showJpmOnClick = jpmPrefs.getBrowserSelection() != JpmPreferences.PREF_BROWSER_EXTERNAL;
@@ -467,6 +469,76 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         advancedSearchAction.setText("Advanced Search");
         advancedSearchAction.setToolTipText("Toggle Advanced Search");
         advancedSearchAction.setImageDescriptor(Icons.desc("search"));
+
+        downloadAction = new Action() {
+            @Override
+            public void run() {
+                IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+
+                // The set of Repos included in the selection; they will be completely downloaded.
+                Set<RemoteRepositoryPlugin> repos = new IdentityHashSet<>(selectionByType(selection, RemoteRepositoryPlugin.class));
+
+                // The set of Bundles included in the selection.
+                Set<RepositoryBundle> bundles = new IdentityHashSet<RepositoryBundle>();
+                for (RepositoryBundle bundle : selectionByType(selection, RepositoryBundle.class)) {
+                    // filter out bundles that come from already-selected repos.
+                    if (!repos.contains(bundle.getRepo()))
+                        bundles.add(bundle);
+                }
+
+                // The set of Bundle Versions included in the selection
+                Set<RepositoryBundleVersion> bundleVersions = new IdentityHashSet<RepositoryBundleVersion>();
+                for (RepositoryBundleVersion bundleVersion : selectionByType(selection, RepositoryBundleVersion.class)) {
+                    // filter out bundles that come from already-selected repos.
+                    if (!repos.contains(bundleVersion.getRepo()))
+                        bundleVersions.add(bundleVersion);
+                }
+
+                RepoDownloadJob downloadJob = new RepoDownloadJob(repos, bundles, bundleVersions);
+                downloadJob.schedule();
+            }
+
+            private <T> List<T> selectionByType(IStructuredSelection selection, Class<T> type) {
+                List<T> result = new ArrayList<T>(selection.size());
+                @SuppressWarnings("unchecked")
+                Iterator<Object> iterator = selection.iterator();
+                while (iterator.hasNext()) {
+                    Object item = iterator.next();
+                    if (type.isInstance(item)) {
+                        @SuppressWarnings("unchecked")
+                        T cast = (T) item;
+                        result.add(cast);
+                    }
+                }
+                return result;
+            }
+        };
+        downloadAction.setText("Download Repository Content");
+        downloadAction.setImageDescriptor(Icons.desc("download"));
+        downloadAction.setEnabled(false);
+
+        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+
+                boolean enable = false;
+                @SuppressWarnings("unchecked")
+                List<Object> list = selection.toList();
+                for (Object item : list) {
+                    if (item instanceof RemoteRepositoryPlugin) {
+                        enable = true;
+                        break;
+                    } else if (item instanceof RepositoryEntry) {
+                        if (!((RepositoryEntry) item).isLocal()) {
+                            enable = true;
+                            break;
+                        }
+                    }
+                }
+                downloadAction.setEnabled(enable);
+            }
+        });
     }
 
     void createContextMenu() {
@@ -609,6 +681,8 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
 
     private void fillToolBar(IToolBarManager toolBar) {
         toolBar.add(advancedSearchAction);
+        toolBar.add(downloadAction);
+        toolBar.add(new Separator());
         toolBar.add(refreshAction);
         toolBar.add(collapseAllAction);
         toolBar.add(new Separator());
