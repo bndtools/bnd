@@ -12,6 +12,13 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
+
+import aQute.bnd.service.RemoteRepositoryPlugin;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.ResourceHandle;
+import aQute.bnd.service.ResourceHandle.Location;
+import aQute.bnd.service.Strategy;
+import aQute.bnd.version.Version;
 import bndtools.Plugin;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
