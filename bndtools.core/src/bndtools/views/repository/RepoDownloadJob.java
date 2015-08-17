@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.SortedSet;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -25,6 +28,8 @@ import bndtools.model.repo.RepositoryBundleVersion;
 
 public class RepoDownloadJob extends Job {
 
+    private static final Lock LOCK = new ReentrantLock(true);
+
     private final Collection<RemoteRepositoryPlugin> repos;
     private final Collection<RepositoryBundle> bundles;
     private final Collection<RepositoryBundleVersion> bundleVersions;
@@ -38,44 +43,64 @@ public class RepoDownloadJob extends Job {
 
     @Override
     protected IStatus run(IProgressMonitor progress) {
-        MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "One or more repository files failed to download.", null);
+        SubMonitor monitor = SubMonitor.convert(progress);
 
-        List<RepositoryBundleVersion> rbvs = new LinkedList<RepositoryBundleVersion>();
+        boolean locked = LOCK.tryLock();
         try {
-            for (RemoteRepositoryPlugin repo : repos) {
-                expandContentsInto(repo, rbvs);
-            }
-            for (RepositoryBundle bundle : bundles) {
-                expandContentsInto(bundle, rbvs);
-            }
-            rbvs.addAll(bundleVersions);
-        } catch (Exception e) {
-            return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error listing repository contents", e);
-        }
+            while (!locked) {
+                monitor.setBlocked(new Status(IStatus.INFO, Plugin.PLUGIN_ID, 0, "Waiting for other download jobs to complete.", null));
+                if (progress.isCanceled())
+                    return Status.CANCEL_STATUS;
 
-        SubMonitor monitor = SubMonitor.convert(progress, rbvs.size());
-        for (RepositoryBundleVersion rbv : rbvs) {
-            if (monitor.isCanceled())
-                return Status.CANCEL_STATUS;
+                try {
+                    locked = LOCK.tryLock(5, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {}
+            }
+            monitor.clearBlocked();
 
-            String resourceName = "<<unknown>>";
+            MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "One or more repository files failed to download.", null);
+            monitor.setTaskName("Expanding repository contents");
+            List<RepositoryBundleVersion> rbvs = new LinkedList<RepositoryBundleVersion>();
             try {
-                RemoteRepositoryPlugin repo = (RemoteRepositoryPlugin) rbv.getRepo();
-                ResourceHandle handle = repo.getHandle(rbv.getBsn(), rbv.getVersion().toString(), Strategy.EXACT, Collections.<String, String> emptyMap());
-                resourceName = handle.getName();
-                Location location = handle.getLocation();
-
-                if (location == Location.remote) {
-                    monitor.setTaskName("Downloading " + handle.getName());
-                    handle.request();
+                for (RemoteRepositoryPlugin repo : repos) {
+                    expandContentsInto(repo, rbvs);
                 }
+                for (RepositoryBundle bundle : bundles) {
+                    expandContentsInto(bundle, rbvs);
+                }
+                rbvs.addAll(bundleVersions);
             } catch (Exception e) {
-                status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Download of %s:%s with remote name %s failed", rbv.getBsn(), rbv.getVersion(), resourceName), e));
-            } finally {
-                monitor.worked(1);
+                return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error listing repository contents", e);
             }
+
+            monitor.setWorkRemaining(rbvs.size());
+            for (RepositoryBundleVersion rbv : rbvs) {
+                if (monitor.isCanceled())
+                    return Status.CANCEL_STATUS;
+
+                String resourceName = "<<unknown>>";
+                try {
+                    RemoteRepositoryPlugin repo = (RemoteRepositoryPlugin) rbv.getRepo();
+                    ResourceHandle handle = repo.getHandle(rbv.getBsn(), rbv.getVersion().toString(), Strategy.EXACT, Collections.<String, String> emptyMap());
+                    resourceName = handle.getName();
+                    Location location = handle.getLocation();
+
+                    if (location == Location.remote) {
+                        monitor.setTaskName("Downloading " + handle.getName());
+                        handle.request();
+                    }
+                } catch (Exception e) {
+                    status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Download of %s:%s with remote name %s failed", rbv.getBsn(), rbv.getVersion(), resourceName), e));
+                } finally {
+                    monitor.worked(1);
+                }
+            }
+            return status;
+        } finally {
+            if (locked)
+                LOCK.unlock();
         }
-        return status;
+
     }
 
     private void expandContentsInto(RemoteRepositoryPlugin repo, List<RepositoryBundleVersion> rbvs) throws Exception {
@@ -97,6 +122,13 @@ public class RepoDownloadJob extends Job {
                 rbvs.add(rbv);
             }
         }
+    }
+
+    @Override
+    protected void canceling() {
+        Thread myThread = getThread();
+        if (myThread != null)
+            myThread.interrupt();
     }
 
 }
