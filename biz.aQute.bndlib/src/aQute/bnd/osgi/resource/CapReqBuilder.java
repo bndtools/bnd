@@ -400,15 +400,6 @@ public class CapReqBuilder {
 				if (e.getKey().equals("version") || value instanceof Version)
 					value = toBndVersions(value);
 
-				if (value instanceof Collection) {
-					List<Version> versions = new ArrayList<Version>();
-					for (Object v : (Collection< ? >) value) {
-						versions.add(new Version(v.toString()));
-					}
-					value = versions;
-				} else {
-					value = new Version(value.toString());
-				}
 				attrs.putTyped(e.getKey(), value);
 			}
 		}
