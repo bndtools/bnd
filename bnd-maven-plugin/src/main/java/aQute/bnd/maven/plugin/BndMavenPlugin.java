@@ -152,7 +152,7 @@ public class BndMavenPlugin extends AbstractMojo {
 		} catch (Exception e) {
 			throw new MojoExecutionException("bnd error", e);
 		} finally {
-			builder.close();
+			IO.close(builder);
 		}
 	}
 
