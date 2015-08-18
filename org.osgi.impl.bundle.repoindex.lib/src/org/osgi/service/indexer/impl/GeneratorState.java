@@ -1,24 +1,25 @@
 package org.osgi.service.indexer.impl;
 
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 class GeneratorState {
 
-	private final URL rootUrl;
+	private final URI		rootUrl;
 	private final String urlTemplate;
 	private URLResolver		resolver;
 
-	public GeneratorState(URL rootUrl, String urlTemplate, URLResolver resolver) {
+	public GeneratorState(URI rootUrl, String urlTemplate, URLResolver resolver) throws URISyntaxException {
 		this.rootUrl = rootUrl;
 		this.urlTemplate = urlTemplate;
 		this.resolver = resolver;
 	}
 
-	public URL getRootUrl() {
+	URI getRootUrl() {
 		return rootUrl;
 	}
 
-	public String getUrlTemplate() {
+	String getUrlTemplate() {
 		return urlTemplate;
 	}
 

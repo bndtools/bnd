@@ -258,14 +258,18 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 		return resolved;
 	}
 
-	private static void addBasicCapabilities(ResourceBuilder builder, String bsn, Version version, URI resolvedUri) {
+	private static void addBasicCapabilities(ResourceBuilder builder, String bsn, Version version, URI resolvedUri)
+			throws Exception {
 		CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
 			.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn)
 			.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_BUNDLE)
 			.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
 		
 		CapReqBuilder content = new CapReqBuilder(ContentNamespace.CONTENT_NAMESPACE)
-			.addAttribute(ContentNamespace.CONTENT_NAMESPACE, null)
+				// null attributes are skipped anyway
+				// Setting this to a "reasonable" value got the testGetHttp to
+				// failed utterly because it interpreted the value as the SHA?
+				// .addAttribute(ContentNamespace.CONTENT_NAMESPACE, null)
 			.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, resolvedUri);
 		
 		CapReqBuilder host = new CapReqBuilder(HostNamespace.HOST_NAMESPACE)

@@ -1,26 +1,38 @@
 package aQute.bnd.deployer.repository.wrapper;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
 
-import org.osgi.framework.*;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.indexer.ResourceIndexer.IndexResult;
-import org.osgi.service.indexer.impl.*;
-import org.osgi.service.repository.*;
+import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
+import org.osgi.service.indexer.impl.RepoIndex;
+import org.osgi.service.repository.Repository;
 
-import aQute.bnd.build.*;
-import aQute.bnd.osgi.resource.*;
-import aQute.bnd.service.repository.*;
+import aQute.bnd.build.DownloadBlocker;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.PersistentResource;
+import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.service.repository.InfoRepository;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
-import aQute.lib.collections.*;
+import aQute.lib.collections.MultiMap;
 import aQute.lib.filter.Filter;
-import aQute.lib.hex.*;
-import aQute.lib.persistentmap.*;
+import aQute.lib.hex.Hex;
+import aQute.lib.persistentmap.PersistentMap;
 
 public class InfoRepositoryWrapper implements Repository {
 	final RepoIndex								repoIndexer;
@@ -148,9 +160,11 @@ public class InfoRepositoryWrapper implements Repository {
 	 * The repository method
 	 * 
 	 * @param result2
+	 * @throws Exception
 	 */
 
-	public void findProviders(Map<Requirement,List<Capability>> result, Collection< ? extends Requirement> requirements) {
+	public void findProviders(Map<Requirement,List<Capability>> result, Collection< ? extends Requirement> requirements)
+			throws Exception {
 		init();
 
 		nextReq: for (Requirement req : requirements) {
@@ -181,8 +195,13 @@ public class InfoRepositoryWrapper implements Repository {
 	})
 	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
 		MultiMap<Requirement,Capability> result = new MultiMap<Requirement,Capability>();
-		findProviders(result, requirements);
-		return (Map) result;
+		try {
+			findProviders(result, requirements);
+			return (Map) result;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/*

@@ -1,7 +1,11 @@
 package aQute.remote.agent;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Handles the redirection of the output. Any text written to this PrintStream
@@ -9,12 +13,13 @@ import java.util.*;
  * recursive calls that can happen when there is shit happening deep down below.
  */
 public class RedirectOutput extends PrintStream {
-
+	static Timer						timer	= new Timer();
 	private final List<AgentServer>		agents;
 	private final PrintStream			out;
 	private StringBuilder				sb		= new StringBuilder();
 	private boolean						err;
 	private static ThreadLocal<Boolean>	onStack	= new ThreadLocal<Boolean>();
+	private TimerTask					active;
 
 	/**
 	 * If we do not have an original, we create a null stream because the
@@ -38,7 +43,7 @@ public class RedirectOutput extends PrintStream {
 
 	public void write(int b) {
 		this.write(new byte[] {
-			(byte) b
+				(byte) b
 		}, 0, 1);
 	}
 
@@ -55,6 +60,7 @@ public class RedirectOutput extends PrintStream {
 			onStack.set(true);
 			try {
 				sb.append(new String(b, off, len)); // default encoding!
+				flushConditional();
 			}
 			catch (Exception e) {
 				// e.printStackTrace();
@@ -67,9 +73,35 @@ public class RedirectOutput extends PrintStream {
 		}
 	}
 
+	private void flushConditional() {
+		synchronized (this) {
+			if (active != null)
+				return;
+
+			active = new TimerTask() {
+
+				@Override
+				public void run() {
+					synchronized (RedirectOutput.this) {
+						active = null;
+					}
+					flush();
+				}
+
+			};
+			timer.schedule(active, 300);
+		}
+	}
+
 	public void flush() {
-		final String output = sb.toString();
-		sb = new StringBuilder();
+		final String output;
+		synchronized (this) {
+			if (sb.length() == 0)
+				return;
+
+			output = sb.toString();
+			sb = new StringBuilder();
+		}
 
 		for (AgentServer agent : agents) {
 			if (agent.quit)

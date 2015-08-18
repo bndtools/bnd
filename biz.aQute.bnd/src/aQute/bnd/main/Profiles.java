@@ -65,7 +65,7 @@ public class Profiles extends Processor {
 
 		Collection<String> paths = new ArrayList<String>(new Parameters( b.getProperty("-paths")).keySet());
 		if (paths.isEmpty())
-			paths = options._();
+			paths = options._arguments();
 		
 		trace("input %s", paths);
 

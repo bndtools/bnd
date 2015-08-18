@@ -1,16 +1,37 @@
 package aQute.bnd.osgi.resource;
 
-import java.util.*;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
-import org.osgi.framework.namespace.*;
-import org.osgi.resource.*;
+import org.osgi.framework.Version;
+import org.osgi.framework.namespace.BundleNamespace;
+import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
+import org.osgi.framework.namespace.HostNamespace;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.namespace.contract.ContractNamespace;
+import org.osgi.namespace.extender.ExtenderNamespace;
+import org.osgi.namespace.service.ServiceNamespace;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Namespace;
+import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
+import org.osgi.service.repository.ContentNamespace;
 
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.version.*;
-import aQute.libg.filters.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.version.VersionRange;
+import aQute.lib.converter.Converter;
+import aQute.libg.filters.AndFilter;
+import aQute.libg.filters.Filter;
+import aQute.libg.filters.LiteralFilter;
+import aQute.libg.filters.SimpleFilter;
 
 public class CapReqBuilder {
 
@@ -23,7 +44,7 @@ public class CapReqBuilder {
 		this.namespace = namespace;
 	}
 
-	public CapReqBuilder(String ns, Attrs attrs) {
+	public CapReqBuilder(String ns, Attrs attrs) throws Exception {
 		this.namespace = ns;
 		for (Entry<String,String> entry : attrs.entrySet()) {
 			String key = entry.getKey();
@@ -34,15 +55,20 @@ public class CapReqBuilder {
 		}
 	}
 
-	public static CapReqBuilder clone(Capability capability) {
-		CapReqBuilder builder = new CapReqBuilder(capability.getNamespace());
+	public CapReqBuilder(Resource resource, String namespace) {
+		this(namespace);
+		setResource(resource);
+	}
+
+	public static CapReqBuilder clone(Capability capability) throws Exception {
+		CapabilityBuilder builder = new CapabilityBuilder(capability.getNamespace());
 		builder.addAttributes(capability.getAttributes());
 		builder.addDirectives(capability.getDirectives());
 		return builder;
 	}
 
-	public static CapReqBuilder clone(Requirement requirement) {
-		CapReqBuilder builder = new CapReqBuilder(requirement.getNamespace());
+	public static CapReqBuilder clone(Requirement requirement) throws Exception {
+		RequirementBuilder builder = new RequirementBuilder(requirement.getNamespace());
 		builder.addAttributes(requirement.getAttributes());
 		builder.addDirectives(requirement.getDirectives());
 		return builder;
@@ -57,14 +83,45 @@ public class CapReqBuilder {
 		return this;
 	}
 
-	public CapReqBuilder addAttribute(String name, Object value) {
-		if (value != null)
-			attributes.put(name, value);
+	public CapReqBuilder addAttribute(String name, Object value) throws Exception {
+		if (value == null)
+			return this;
+
+		if (value.getClass().isArray()) {
+			value = Converter.cnv(List.class, value);
+		}
+
+		if ("version".equals(name)) {
+			value = toVersions(value);
+		}
+
+		attributes.put(name, value);
 		return this;
 	}
 
-	public CapReqBuilder addAttributes(Map< ? extends String, ? extends Object> attributes) {
-		this.attributes.putAll(attributes);
+	public boolean isVersion(Object value) {
+		if (value instanceof Version)
+			return true;
+
+		if (value instanceof Collection) {
+			if (((Collection< ? >) value).isEmpty())
+				return true;
+
+			return isVersion(((Collection< ? >) value).iterator().next());
+		}
+		if (value.getClass().isArray()) {
+			if (Array.getLength(value) == 0)
+				return true;
+
+			return isVersion(((Object[]) value)[0]);
+		}
+		return false;
+	}
+
+	public CapReqBuilder addAttributes(Map< ? extends String, ? extends Object> attributes) throws Exception {
+		for (Entry< ? extends String, ? extends Object> e : attributes.entrySet()) {
+			addAttribute(e.getKey(), e.getValue());
+		}
 		return this;
 	}
 
@@ -104,13 +161,13 @@ public class CapReqBuilder {
 		Filter filter;
 		SimpleFilter pkgNameFilter = new SimpleFilter(PackageNamespace.PACKAGE_NAMESPACE, pkgName);
 		if (range != null)
-			filter = new AndFilter().addChild(pkgNameFilter).addChild(
-					new LiteralFilter(Filters.fromVersionRange(range)));
+			filter = new AndFilter().addChild(pkgNameFilter)
+					.addChild(new LiteralFilter(Filters.fromVersionRange(range)));
 		else
 			filter = pkgNameFilter;
 
-		return new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE).addDirective(
-				Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
+		return new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE)
+				.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
 	}
 
 	public static CapReqBuilder createBundleRequirement(String bsn, String range) {
@@ -121,8 +178,8 @@ public class CapReqBuilder {
 		else
 			filter = bsnFilter;
 
-		return new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(
-				Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
+		return new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
+				.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
 
 	}
 
@@ -183,7 +240,7 @@ public class CapReqBuilder {
 		return addDirective("filter", f.toString());
 	}
 
-	public static List<Requirement> getRequirementsFrom(Parameters rr) {
+	public static List<Requirement> getRequirementsFrom(Parameters rr) throws Exception {
 		List<Requirement> requirements = new ArrayList<Requirement>();
 		for (Entry<String,Attrs> e : rr.entrySet()) {
 			requirements.add(getRequirementFrom(Processor.removeDuplicateMarker(e.getKey()), e.getValue()));
@@ -191,7 +248,7 @@ public class CapReqBuilder {
 		return requirements;
 	}
 
-	public static Requirement getRequirementFrom(String namespace, Attrs attrs) {
+	public static Requirement getRequirementFrom(String namespace, Attrs attrs) throws Exception {
 		CapReqBuilder builder = new CapReqBuilder(namespace);
 		for (Entry<String,String> entry : attrs.entrySet()) {
 			String key = entry.getKey();
@@ -205,19 +262,19 @@ public class CapReqBuilder {
 		return builder.buildSyntheticRequirement();
 	}
 
-	public CapReqBuilder from(Capability c) {
+	public CapReqBuilder from(Capability c) throws Exception {
 		addAttributes(c.getAttributes());
 		addDirectives(c.getDirectives());
 		return this;
 	}
 
-	public CapReqBuilder from(Requirement r) {
+	public CapReqBuilder from(Requirement r) throws Exception {
 		addAttributes(r.getAttributes());
 		addDirectives(r.getDirectives());
 		return this;
 	}
 
-	public static Capability copy(Capability c, Resource r) {
+	public static Capability copy(Capability c, Resource r) throws Exception {
 		CapReqBuilder from = new CapReqBuilder(c.getNamespace()).from(c);
 		if (r == null)
 			return from.buildSyntheticCapability();
@@ -225,11 +282,211 @@ public class CapReqBuilder {
 			return from.setResource(r).buildCapability();
 	}
 
-	public static Requirement copy(Requirement c, Resource r) {
+	public static Requirement copy(Requirement c, Resource r) throws Exception {
 		CapReqBuilder from = new CapReqBuilder(c.getNamespace()).from(c);
 		if (r == null)
 			return from.buildSyntheticRequirement();
 		else
 			return from.setResource(r).buildRequirement();
+	}
+
+	/**
+	 * In bnd, we only use one map for both directives & attributes. This method
+	 * will properly dispatch them AND take care of typing
+	 * 
+	 * @param attrs
+	 * @throws Exception
+	 */
+	public void addAttributesOrDirectives(Attrs attrs) throws Exception {
+		for (Entry<String,String> e : attrs.entrySet()) {
+			String directive = Attrs.toDirective(e.getKey());
+			if (directive != null) {
+				addDirective(directive, e.getValue());
+			} else {
+				Object typed = attrs.getTyped(e.getKey());
+				if (typed instanceof aQute.bnd.version.Version) {
+					typed = new Version(typed.toString());
+				}
+				addAttribute(e.getKey(), typed);
+			}
+		}
+
+	}
+
+	public void addFilter(String ns, String name, String version, Attrs attrs) {
+		List<String> parts = new ArrayList<String>();
+
+		parts.add("(" + ns + "=" + name + ")");
+		if (version != null && VersionRange.isVersionRange(version)) {
+			VersionRange range = VersionRange.parseVersionRange(version);
+			parts.add(range.toFilter());
+		}
+
+		// TODO we skip the attributes?
+		if (attrs != null)
+			for (Entry<String,String> a : attrs.entrySet()) {
+				String key = a.getKey();
+				parts.add("(" + key + "=" + a.getValue() + ")");
+			}
+
+		StringBuilder sb = new StringBuilder();
+		if (parts.size() > 0)
+			sb.append("(&");
+		for (String s : parts) {
+			sb.append(s);
+		}
+		if (parts.size() > 0)
+			sb.append(")");
+		addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, sb.toString());
+	}
+
+	public void and(String... s) {
+		String previous = directives == null ? null : directives.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+		StringBuilder filter = new StringBuilder();
+
+		if (previous != null) {
+			filter.append("(&").append(previous);
+		}
+		filter.append(s);
+		if (previous != null) {
+			filter.append(")");
+		}
+		addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
+	}
+
+	public boolean isPackage() {
+		return PackageNamespace.PACKAGE_NAMESPACE.equals(getNamespace());
+	}
+
+	public boolean isHost() {
+		return HostNamespace.HOST_NAMESPACE.equals(getNamespace());
+	}
+
+	public boolean isBundle() {
+		return BundleNamespace.BUNDLE_NAMESPACE.equals(getNamespace());
+	}
+
+	public boolean isService() {
+		return ServiceNamespace.SERVICE_NAMESPACE.equals(getNamespace());
+	}
+
+	public boolean isContract() {
+		return ContractNamespace.CONTRACT_NAMESPACE.equals(getNamespace());
+	}
+
+	public boolean isIdentity() {
+		return IdentityNamespace.IDENTITY_NAMESPACE.equals(getNamespace());
+	}
+
+	public boolean isContent() {
+		return ContentNamespace.CONTENT_NAMESPACE.equals(getNamespace());
+	}
+
+	public boolean isEE() {
+		return ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE.equals(getNamespace());
+	}
+
+	public boolean isExtender() {
+		return ExtenderNamespace.EXTENDER_NAMESPACE.equals(getNamespace());
+	}
+
+	public Attrs toAttrs() {
+		Attrs attrs = new Attrs();
+
+		if (attributes != null) {
+			for (Entry<String,Object> e : attributes.entrySet()) {
+				Object value = e.getValue();
+
+				if (e.getKey().equals("version") || value instanceof Version)
+					value = toBndVersions(value);
+
+				if (value instanceof Collection) {
+					List<Version> versions = new ArrayList<Version>();
+					for (Object v : (Collection< ? >) value) {
+						versions.add(new Version(v.toString()));
+					}
+					value = versions;
+				} else {
+					value = new Version(value.toString());
+				}
+				attrs.putTyped(e.getKey(), value);
+			}
+		}
+
+		if (directives != null)
+			for (Entry<String,String> e : directives.entrySet()) {
+				attrs.put(e.getKey() + ":", e.getValue());
+			}
+
+		return attrs;
+	}
+
+	private Object toBndVersions(Object value) {
+		if (value instanceof aQute.bnd.version.Version)
+			return value;
+
+		if (value instanceof Version)
+			return new aQute.bnd.version.Version(value.toString());
+
+		if (value instanceof String)
+			return new aQute.bnd.version.Version((String) value);
+
+		if (value instanceof Collection) {
+			List<aQute.bnd.version.Version> bnds = new ArrayList<>();
+			for (Object m : (Collection< ? >) value) {
+				bnds.add((aQute.bnd.version.Version) toBndVersions(m));
+			}
+			return bnds;
+		}
+
+		throw new IllegalArgumentException("cannot convert " + value + " to a bnd Version(s) object as requested");
+	}
+
+	private Object toVersions(Object value) {
+		if (value instanceof Version)
+			return value;
+
+		if (value instanceof aQute.bnd.version.Version)
+			return new Version(value.toString());
+
+		if (value instanceof String)
+			return new Version((String) value);
+
+		if (value instanceof Collection) {
+			Collection< ? > v = (Collection< ? >) value;
+			if (v.isEmpty())
+				return value;
+
+			if (v.iterator().next() instanceof Version)
+				return value;
+
+			List<Version> osgis = new ArrayList<>();
+			for (Object m : (Collection< ? >) value) {
+				osgis.add((Version) toVersions(m));
+			}
+			return osgis;
+		}
+
+		throw new IllegalArgumentException(
+				"cannot convert " + value + " to a org.osgi.framework Version(s) object as requested");
+	}
+
+	public static RequirementBuilder createRequirementFromCapability(Capability cap) {
+		RequirementBuilder req = new RequirementBuilder(cap.getNamespace());
+		StringBuilder sb = new StringBuilder("(&");
+		for (Entry<String,Object> e : cap.getAttributes().entrySet()) {
+			Object v = e.getValue();
+			if (v instanceof Version || e.getKey().equals("version")) {
+				VersionRange r = new VersionRange(v.toString());
+				String filter = r.toFilter();
+				sb.append(filter);
+
+			} else
+				sb.append("(").append(e.getKey()).append("=").append(v);
+		}
+		sb.append(")");
+
+		req.and(sb.toString());
+		return req;
 	}
 }

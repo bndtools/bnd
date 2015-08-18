@@ -331,7 +331,7 @@ public class bnd extends Processor {
 			}
 
 			CommandLine handler = options._command();
-			List<String> arguments = options._();
+			List<String> arguments = options._arguments();
 
 			// Rewrite command line to match jar commands and
 			// handle commands that provide file names
@@ -436,10 +436,10 @@ public class bnd extends Processor {
 		if (sdir != null)
 			dir = getFile(sdir);
 
-		if (options._().isEmpty())
+		if (options._arguments().isEmpty())
 			add(jar, dir, ".", options.verbose());
 		else
-			for (String f : options._()) {
+			for (String f : options._arguments()) {
 				f = f.replace(File.separatorChar, '/');
 				add(jar, dir, f, options.verbose());
 			}
@@ -549,7 +549,7 @@ public class bnd extends Processor {
 			jar = new Jar("cin", System.in);
 		}
 		try {
-			Instructions instructions = new Instructions(opts._());
+			Instructions instructions = new Instructions(opts._arguments());
 			Collection<String> selected = instructions.select(jar.getResources().keySet(), true);
 			File store = getBase();
 			if (opts.cdir() != null)
@@ -607,7 +607,7 @@ public class bnd extends Processor {
 		}
 
 		try {
-			Instructions instructions = new Instructions(opts._());
+			Instructions instructions = new Instructions(opts._arguments());
 			Collection<String> selected = instructions.select(jar.getResources().keySet(), true);
 
 			for (String path : selected) {
@@ -644,7 +644,7 @@ public class bnd extends Processor {
 
 	@Description("Execute a file based on its extension. Supported extensions are: bnd (build), bndrun (run), and jar (print)")
 	public void _do(dooptions options) throws Exception {
-		for (String path : options._()) {
+		for (String path : options._arguments()) {
 			if (path.endsWith(Constants.DEFAULT_BND_EXTENSION)) {
 				build(options.output(), options.force(), path);
 			} else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION) || path.endsWith(Constants.DEFAULT_BAR_EXTENSION)) {
@@ -711,7 +711,7 @@ public class bnd extends Processor {
 			return;
 		}
 
-		List<String> l = new ArrayList<String>(options._());
+		List<String> l = new ArrayList<String>(options._arguments());
 		if (l.isEmpty()) {
 			err.printf("Name         %s\n", project.getName());
 			err.printf("Actions      %s\n", project.getActions().keySet());
@@ -730,7 +730,7 @@ public class bnd extends Processor {
 			arg = l.remove(0);
 
 		if (!l.isEmpty()) {
-			messages.MoreArgumentsThanNeeded_(options._());
+			messages.MoreArgumentsThanNeeded_(options._arguments());
 			return;
 		}
 
@@ -772,8 +772,8 @@ public class bnd extends Processor {
 		}
 
 		String mask = null;
-		if (!options._().isEmpty()) {
-			mask = options._().get(0);
+		if (!options._arguments().isEmpty()) {
+			mask = options._arguments().get(0);
 			if (mask.equalsIgnoreCase("major"))
 				mask = "+00";
 			else if (mask.equalsIgnoreCase("minor"))
@@ -886,7 +886,7 @@ public class bnd extends Processor {
 
 			@Override
 			public void doit(Project project) throws Exception {
-				List<String> testNames = opts._();
+				List<String> testNames = opts._arguments();
 				if (!testNames.isEmpty())
 					project.setProperty(TESTCASES, "");
 
@@ -953,7 +953,7 @@ public class bnd extends Processor {
 
 	@Description("Run a project in the OSGi launcher")
 	public void _run(runOptions opts) throws Exception {
-		doRun(opts._(), opts.verify(), opts.project());
+		doRun(opts._arguments(), opts.verify(), opts.project());
 	}
 
 	private void doRun(List<String> args, boolean verify, String project) throws Exception {
@@ -1014,7 +1014,7 @@ public class bnd extends Processor {
 	public void _syntax(syntaxOptions opts) throws Exception {
 		int w = opts.width() < 80 ? 120 : opts.width();
 		Justif justif = new Justif(w, opts.width(), 40, 42, w - 10);
-		List<String> args = opts._();
+		List<String> args = opts._arguments();
 		StringBuilder sb = new StringBuilder();
 		Formatter f = new Formatter(sb);
 		for (String s : args) {
@@ -1085,7 +1085,7 @@ public class bnd extends Processor {
 			return;
 		}
 
-		List<String> cmdline = opts._();
+		List<String> cmdline = opts._arguments();
 		File output = null;
 
 		if (opts.output() != null) {
@@ -1093,7 +1093,7 @@ public class bnd extends Processor {
 		} else
 			output = getBase();
 
-		if (opts._().size() > 1) {
+		if (opts._arguments().size() > 1) {
 			if (!output.exists() && !output.mkdirs()) {
 				throw new IOException("Could not create directory " + output);
 			}
@@ -1221,7 +1221,7 @@ public class bnd extends Processor {
 		getInfo(project);
 
 		String del = "";
-		for (String s : options._()) {
+		for (String s : options._arguments()) {
 			if (!s.startsWith("${")) {
 				s = "${" + s;
 			}
@@ -1339,7 +1339,7 @@ public class bnd extends Processor {
 		final MultiMap<PackageRef,PackageRef> packages = new MultiMap<PackageRef,PackageRef>();
 		Set<TypeRef> set = Create.set();
 		Instructions filter = new Instructions(options.match());
-		for (String arg : options._()) {
+		for (String arg : options._arguments()) {
 			try {
 				File file = new File(arg);
 				Jar jar = new Jar(file.getName(), file);
@@ -1438,8 +1438,8 @@ public class bnd extends Processor {
 		if (!dir.isDirectory())
 			error("Eclipse requires a path to a directory: " + dir.getAbsolutePath());
 
-		if (options._().size() != 0)
-			error("Unnecessary arguments %s", options._());
+		if (options._arguments().size() != 0)
+			error("Unnecessary arguments %s", options._arguments());
 
 		if (!isOk())
 			return;
@@ -1492,7 +1492,7 @@ public class bnd extends Processor {
 		List<String> order = new ArrayList<String>();
 		List<String> active = new ArrayList<String>();
 
-		for (String s : options._()) {
+		for (String s : options._arguments()) {
 			prebuild(active, order, builders, s);
 		}
 
@@ -1600,11 +1600,11 @@ public class bnd extends Processor {
 		if (options.charset() != null)
 			charset = options.charset();
 
-		if (options._().isEmpty()) {
+		if (options._arguments().isEmpty()) {
 			error("Need a jarfile as source");
 			return;
 		}
-		List<String> args = options._();
+		List<String> args = options._arguments();
 		File file = getFile(args.remove(0));
 		if (!file.isFile()) {
 			error("File does not exist %s", file);
@@ -1686,7 +1686,7 @@ public class bnd extends Processor {
 				classpath.add(getFile(cp));
 			}
 
-		for (String j : options._()) {
+		for (String j : options._arguments()) {
 			File file = getFile(j);
 			if (!file.isFile()) {
 				error("File does not exist %s", file);
@@ -1930,7 +1930,7 @@ public class bnd extends Processor {
 
 	@Description("Printout the JAR")
 	public void _print(printOptions options) throws Exception {
-		for (String s : options._()) {
+		for (String s : options._arguments()) {
 			int opts = 0;
 			if (options.verify())
 				opts |= VERIFY;
@@ -2281,7 +2281,7 @@ public class bnd extends Processor {
 
 	public void patch(patchOptions opts) throws Exception {
 		PatchCommand pcmd = new PatchCommand(this);
-		List<String> args = opts._();
+		List<String> args = opts._arguments();
 		opts._command().execute(pcmd, args.remove(0), args);
 	}
 
@@ -2348,7 +2348,7 @@ public class bnd extends Processor {
 
 			boolean hadOne = false;
 			try {
-				for (String arg : opts._()) {
+				for (String arg : opts._arguments()) {
 					trace("will run test %s", arg);
 					File f = getFile(arg);
 					errors += runtTest(f, ws, reportDir, summary);
@@ -2577,7 +2577,7 @@ public class bnd extends Processor {
 
 	@Description("Verify jars")
 	public void _verify(verifyOptions opts) throws Exception {
-		for (String path : opts._()) {
+		for (String path : opts._arguments()) {
 			File f = getFile(path);
 			if (!f.isFile()) {
 				error("No such file: %ss", f);
@@ -2614,7 +2614,7 @@ public class bnd extends Processor {
 
 	@Description("Merge a binary jar with its sources. It is possible to specify  source path")
 	public void _source(sourceOptions opts) throws Exception {
-		List<String> arguments = opts._();
+		List<String> arguments = opts._arguments();
 		File jarFile = getFile(arguments.remove(0));
 
 		if (!jarFile.exists()) {
@@ -2775,8 +2775,8 @@ public class bnd extends Processor {
 
 	@Description("Converter to different formats")
 	public void _convert(convertOptions opts) throws IOException {
-		File from = getFile(opts._().get(0));
-		File to = getFile(opts._().get(1));
+		File from = getFile(opts._arguments().get(0));
+		File to = getFile(opts._arguments().get(1));
 		if (opts.m2p()) {
 			FileInputStream in = new FileInputStream(from);
 			try {
@@ -2853,7 +2853,7 @@ public class bnd extends Processor {
 
 		Instructions instructions = new Instructions(opts.header());
 
-		for (String s : opts._()) {
+		for (String s : opts._arguments()) {
 			Jar jar = getJar(s);
 			if (jar == null) {
 				err.println("no file " + s);
@@ -3073,7 +3073,7 @@ public class bnd extends Processor {
 
 	@Description("Grep the manifest of bundles/jar files. ")
 	public void _grep(grepOptions opts) throws Exception {
-		List<String> args = opts._();
+		List<String> args = opts._arguments();
 		String s = args.remove(0);
 		Pattern pattern = Glob.toPattern(s);
 		if (pattern == null) {
@@ -3205,7 +3205,7 @@ public class bnd extends Processor {
 			}
 
 			trace("settings %s", opts.clear());
-			List<String> rest = opts._();
+			List<String> rest = opts._arguments();
 
 			if (opts.publicKey()) {
 				out.println(tos(!opts.base64(), settings.getPublicKey()));
@@ -3331,7 +3331,7 @@ public class bnd extends Processor {
 		if (algs == null)
 			algs = Arrays.asList(Alg.SHA1);
 
-		for (String s : o._()) {
+		for (String s : o._arguments()) {
 			File f = getFile(s);
 			if (f.isFile()) {
 
@@ -3385,7 +3385,7 @@ public class bnd extends Processor {
 		if (o.process()) {
 			long time = (System.currentTimeMillis() - start);
 			float mb = total / 1000000;
-			out.format("Total %s Mb, %s ms, %s Mb/sec %s files\n", mb, time, (total / time) / 1024, o._().size());
+			out.format("Total %s Mb, %s ms, %s Mb/sec %s files\n", mb, time, (total / time) / 1024, o._arguments().size());
 		}
 	}
 
@@ -3401,7 +3401,7 @@ public class bnd extends Processor {
 		mc.setTrace(isTrace());
 		mc.setExceptions(isExceptions());
 		mc.setPedantic(isPedantic());
-		mc.run(options._().toArray(new String[0]), 1);
+		mc.run(options._arguments().toArray(new String[0]), 1);
 		getInfo(mc);
 	}
 
@@ -3467,7 +3467,7 @@ public class bnd extends Processor {
 				trace("actionable %s - %s", o, o.title());
 				Map<String,Runnable> map = o.actions();
 				if (map != null) {
-					if (opts._().isEmpty()) {
+					if (opts._arguments().isEmpty()) {
 						out.printf("# %s%n", o.title());
 						if (opts.tooltip() && o.tooltip() != null) {
 							out.printf("%s%n", o.tooltip());
@@ -3477,7 +3477,7 @@ public class bnd extends Processor {
 							out.printf("  %s%n", entry);
 						}
 					} else {
-						for (String entry : opts._()) {
+						for (String entry : opts._arguments()) {
 							Runnable r = map.get(entry);
 							if (r != null) {
 								r.run();
@@ -3552,7 +3552,7 @@ public class bnd extends Processor {
 	public void _find(FindOptions options) throws Exception {
 		List<File> files = new ArrayList<File>();
 
-		List<String> args = options._();
+		List<String> args = options._arguments();
 		if (args.size() == 0) {
 			Project p = getProject();
 			if (p == null) {
@@ -3632,7 +3632,7 @@ public class bnd extends Processor {
 		}
 		Jar jar = new Jar(name);
 		addClose(jar);
-		List<String> list = options._();
+		List<String> list = options._arguments();
 		Collections.reverse(list);
 
 		try {
@@ -3672,7 +3672,7 @@ public class bnd extends Processor {
 
 	@Description("Show the Execution Environments of a JAR")
 	public void _ees(EEOptions options) throws Exception {
-		for (String path : options._()) {
+		for (String path : options._arguments()) {
 			File f = getFile(path);
 			if (!f.isFile()) {
 				error("Not a file");
@@ -3814,7 +3814,7 @@ public class bnd extends Processor {
 			Collections.sort(versions, Collections.reverseOrder());
 		}
 
-		List<String> files = opts._();
+		List<String> files = opts._arguments();
 
 		for (String f : files) {
 			BufferedReader r = IO.reader(getFile(f));
@@ -3951,7 +3951,7 @@ public class bnd extends Processor {
 	}
 
 	public void _copy(CopyOptions options) throws Exception {
-		List<String> files = options._();
+		List<String> files = options._arguments();
 		if (files.size() < 2) {
 			error("Need at least a source and a destination");
 			return;
@@ -4045,7 +4045,7 @@ public class bnd extends Processor {
 
 	@Description("Add a workspace, or a project or a plugin to the workspace")
 	public void _add(AddOptions opts) throws Exception {
-		List<String> args = opts._();
+		List<String> args = opts._arguments();
 
 		String what = args.remove(0);
 
@@ -4100,7 +4100,7 @@ public class bnd extends Processor {
 
 	@Description("Remove a project or a plugin from the workspace")
 	public void _remove(RemoveOptions opts) throws Exception {
-		List<String> args = opts._();
+		List<String> args = opts._arguments();
 
 		String what = args.remove(0);
 
@@ -4173,6 +4173,21 @@ public class bnd extends Processor {
 	}
 
 	/**
+	 * Remote command
+	 * 
+	 * @throws Exception
+	 */
+
+	public void _remote(RemoteCommand.RemoteOptions options) throws Exception {
+		RemoteCommand rc = new RemoteCommand(this, options);
+		String help = options._command().subCmd(options, rc);
+		if (help != null)
+			out.println(help);
+		getInfo(rc);
+		rc.close();
+	}
+
+	/**
 	 * Export a bndrun file
 	 */
 
@@ -4204,7 +4219,7 @@ public class bnd extends Processor {
 			}
 		}
 
-		for (String bndrun : opts._()) {
+		for (String bndrun : opts._arguments()) {
 			File f = getFile(bndrun);
 			if (!f.isFile()) {
 				error("No such file: %s", f);

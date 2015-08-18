@@ -10,8 +10,6 @@ import org.osgi.service.resolver.ResolutionException;
 import org.osgi.service.resolver.ResolveContext;
 import org.osgi.service.resolver.Resolver;
 
-import biz.aQute.resolve.internal.InternalResolverLogger;
-
 public class BndResolver implements Resolver {
 
 	private final Resolver	resolver;

@@ -23,7 +23,9 @@ Private-Package: \
 	aQute.remote.agent,\
 	org.apache.felix.service.command,\
 	org.osgi.dto,\
+	org.osgi.resource.dto,\
 	org.osgi.framework.dto,\
+	org.osgi.framework.wiring.dto,\
 	aQute.remote.util
 
 #
@@ -43,4 +45,6 @@ Import-Package: \
 	org.osgi.framework.wiring;version='[1.0,2)',\
 	org.osgi.dto;resolution:=optional,\
 	org.osgi.framework.dto;resolution:=optional,\
+	org.osgi.resource.dto;resolution:=optional,\
+	org.osgi.framework.wiring.dto;resolution:=optional,\
 	*

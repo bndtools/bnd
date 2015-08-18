@@ -1,6 +1,7 @@
 package test;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -24,11 +25,27 @@ public class LauncherTest extends TestCase {
 	private static Workspace	workspace;
 	private static Project		project;
 
-	public void tearDown() {
+	public void tearDown() throws IOException {
 		if (project != null) {
 			project.close();
 			workspace.close();
 		}
+	}
+
+	/**
+	 * Test the packager for remote
+	 * 
+	 * @throws Exception
+	 */
+	public static void testRemotePackager() throws Exception {
+		Project project = getProject();
+		project.clear();
+		project.setProperty("-runpath", "biz.aQute.remote.launcher;version=latest");
+		ProjectLauncher l = project.getProjectLauncher();
+		l.setTrace(true);
+		Jar executable = l.executable();
+		assertTrue(project.check());
+		assertNotNull(executable);
 	}
 
 	/**

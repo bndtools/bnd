@@ -255,7 +255,7 @@ public class RepoIndex implements ResourceIndexer {
 					rootURL = new File(System.getProperty("user.dir")).toURI().toURL();
 
 				String urlTemplate = config.get(ResourceIndexer.URL_TEMPLATE);
-				bundleAnalyzer.setStateLocal(new GeneratorState(rootURL, urlTemplate, resolver));
+				bundleAnalyzer.setStateLocal(new GeneratorState(rootURL.toURI().normalize(), urlTemplate, resolver));
 			} else {
 				bundleAnalyzer.setStateLocal(null);
 			}

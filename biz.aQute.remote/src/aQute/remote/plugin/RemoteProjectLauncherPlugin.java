@@ -1,15 +1,30 @@
 package aQute.remote.plugin;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.jar.Manifest;
 
-import aQute.bnd.build.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.converter.*;
-import aQute.lib.strings.*;
-import aQute.remote.util.*;
+import aQute.bnd.build.Container;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.build.RunSession;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.FileResource;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.URLResource;
+import aQute.bnd.version.Version;
+import aQute.lib.converter.Converter;
+import aQute.lib.strings.Strings;
+import aQute.remote.embedded.activator.EmbeddedActivator;
+import aQute.remote.util.JMXBundleDeployer;
 
 /**
  * This is the plugin. It is found by bnd on the -runpath when it needs to
@@ -18,10 +33,12 @@ import aQute.remote.util.*;
  * remote framework specifications.
  */
 public class RemoteProjectLauncherPlugin extends ProjectLauncher {
-	private static Converter		converter	= new Converter();
+	private static Converter converter = new Converter();
+
 	static {
 		converter.setFatalIsException(false);
 	}
+
 	private Parameters				runremote;
 	private List<RunSessionImpl>	sessions	= new ArrayList<RunSessionImpl>();
 	private boolean					prepared;
@@ -220,11 +237,17 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 			for (String path : this.getRunpath()) {
 				File file = new File(path);
 				try {
-					if (bsn.equals(new Jar(file).getBsn())) {
-						long bundleId = jmxBundleDeployer.deploy(bsn, file);
+					Jar jar = new Jar(file);
+					try {
+						if (bsn.equals(jar.getBsn())) {
+							long bundleId = jmxBundleDeployer.deploy(bsn, file);
 
-						trace("agent installed with bundleId=", bundleId);
-						break;
+							trace("agent installed with bundleId=", bundleId);
+							break;
+						}
+					}
+					finally {
+						jar.close();
 					}
 				}
 				catch (Exception e) {
@@ -232,5 +255,52 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Created a JAR that is a bundle and that contains its dependencies
+	 */
+
+	@Override
+	public Jar executable() throws Exception {
+		Collection<String> bsns = getProject().getBsns();
+		if (bsns.size() != 1)
+			throw new IllegalArgumentException("Can only handle a single bsn for a run configuration " + bsns);
+		String bsn = bsns.iterator().next();
+
+		Jar jar = new Jar(bsn);
+		String path = "aQute/remote/embedded/activator/EmbeddedActivator.class";
+		URLResource resource = new URLResource(getClass().getClassLoader().getResource(path));
+		jar.putResource("aQute/remote/embedded/activator/EmbeddedActivator.class", resource);
+
+		Collection<Container> rb = getProject().getRunbundles();
+		rb = Container.flatten(rb);
+		Attrs attrs = new Attrs();
+
+		for (Container c : rb) {
+			if (c.getError() != null) {
+				getProject().error("invalid runbundle %s", c);
+			} else {
+				File f = c.getFile();
+				String tbsn = c.getBundleSymbolicName();
+				String version = c.getVersion();
+				if (version == null || !Version.isVersion(version))
+					getProject().warning("The version of embedded bundle %s does not have a proper version", c);
+
+				jar.putResource("jar/" + c.getBundleSymbolicName() + ".jar", new FileResource(f));
+
+				attrs.put(tbsn, version);
+			}
+		}
+
+		Analyzer a = new Analyzer(getProject());
+		a.setJar(jar);
+
+		a.setBundleActivator(EmbeddedActivator.class.getName());
+		a.setProperty("Bnd-Embedded", attrs.toString().replace(';', ','));
+		Manifest manifest = a.calcManifest();
+		jar.setManifest(manifest);
+		getProject().getInfo(a);
+		return jar;
 	}
 }

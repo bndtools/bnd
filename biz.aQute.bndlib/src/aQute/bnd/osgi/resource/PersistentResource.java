@@ -1,16 +1,25 @@
 package aQute.bnd.osgi.resource;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
-import org.osgi.framework.*;
-import org.osgi.resource.*;
+import org.osgi.framework.Version;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
 
-import aQute.bnd.util.dto.*;
-import aQute.lib.collections.*;
-import aQute.lib.converter.*;
-import aQute.lib.hex.*;
+import aQute.bnd.util.dto.DTO;
+import aQute.lib.collections.MultiMap;
+import aQute.lib.converter.Converter;
+import aQute.lib.hex.Hex;
 
 /**
  * This class provides an efficient way to store a resource through JSON
@@ -62,7 +71,7 @@ public class PersistentResource extends DTO implements Resource {
 				if (value instanceof Collection) {
 					Object[] cnv = ((Collection< ? >) value).toArray();
 					for (int i = 0; i < cnv.length; i++) {
-						cnv[i] = convert(t, (String) cnv[i]);
+						cnv[i] = convert(t, cnv[i]);
 					}
 					converted = cnv;
 				} else
@@ -146,7 +155,7 @@ public class PersistentResource extends DTO implements Resource {
 		Arrays.sort(namespaces);
 	}
 
-	public Resource getResource() {
+	public Resource getResource() throws Exception {
 		if (resource == null) {
 			ResourceBuilder rb = new ResourceBuilder();
 

@@ -24,7 +24,7 @@ public class PatchCommand {
 	}
 
 	public void _create(createOptions opts) throws Exception {
-		List<String> arguments = opts._();
+		List<String> arguments = opts._arguments();
 
 		Jar a = new Jar(bnd.getFile(arguments.remove(0)));
 		Manifest am = a.getManifest();

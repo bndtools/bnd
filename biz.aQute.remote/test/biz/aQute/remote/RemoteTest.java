@@ -1,20 +1,25 @@
 package biz.aQute.remote;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import junit.framework.*;
-
-import org.osgi.framework.*;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
-import org.osgi.framework.dto.*;
-import org.osgi.framework.launch.*;
+import org.osgi.framework.dto.BundleDTO;
+import org.osgi.framework.launch.Framework;
+import org.osgi.framework.wiring.dto.BundleRevisionDTO;
 
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.version.Version;
-import aQute.lib.io.*;
-import aQute.remote.api.*;
-import aQute.remote.plugin.*;
+import aQute.lib.io.IO;
+import aQute.remote.api.Agent;
+import aQute.remote.plugin.LauncherSupervisor;
+import junit.framework.TestCase;
 
 public class RemoteTest extends TestCase {
 	private int						random;
@@ -38,7 +43,7 @@ public class RemoteTest extends TestCase {
 			framework.init();
 			framework.start();
 			context = framework.getBundleContext();
-			location = "reference:" + IO.getFile("generated/biz.aQute.remote.agent-3.0.0.jar").toURI().toString();
+			location = "reference:" + IO.getFile("generated/biz.aQute.remote.agent.jar").toURI().toString();
 			agent = context.installBundle(location);
 			agent.start();
 
@@ -77,7 +82,7 @@ public class RemoteTest extends TestCase {
 		//
 		// Install the bundle systemio
 		//
-		File f = IO.getFile("generated/biz.aQute.remote.test.systemio-3.0.0.jar");
+		File f = IO.getFile("generated/biz.aQute.remote.test.systemio.jar");
 		String sha = supervisor.addFile(f);
 		BundleDTO bundle = agent.install(f.getAbsolutePath(), sha);
 
@@ -87,6 +92,8 @@ public class RemoteTest extends TestCase {
 
 		String result = agent.start(bundle.id);
 		assertNull(result, result);
+
+		Thread.sleep(1000);
 		assertEquals("Hello World", stdout.toString().trim());
 		stdout.setLength(0);
 
@@ -97,6 +104,7 @@ public class RemoteTest extends TestCase {
 		// stop the bundle (will return input as uppercase)
 		result = agent.stop(bundle.id);
 		assertNull(result, result);
+		Thread.sleep(1000);
 		assertEquals("INPUT", stdout.toString().trim());
 
 	}
@@ -196,5 +204,22 @@ public class RemoteTest extends TestCase {
 		jar.write(file);
 		b.close();
 		return file;
+	}
+
+	/*
+	 * Test if we can get the BundleRevisionDTOs
+	 */
+
+	public void testBRD() throws Exception {
+		LauncherSupervisor supervisor = new LauncherSupervisor();
+		supervisor.connect("localhost", Agent.DEFAULT_PORT);
+		assertNotNull(supervisor);
+
+		Agent agent = supervisor.getAgent();
+		assertNotNull(agent);
+
+		List<BundleRevisionDTO> bundleRevisons = agent.getBundleRevisons();
+		assertNotNull(bundleRevisons);
+
 	}
 }

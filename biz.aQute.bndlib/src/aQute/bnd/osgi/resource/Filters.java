@@ -1,14 +1,18 @@
 package aQute.bnd.osgi.resource;
 
-import org.osgi.framework.namespace.*;
+import org.osgi.framework.namespace.IdentityNamespace;
 
-import aQute.bnd.version.*;
-import aQute.libg.filters.*;
+import aQute.bnd.version.VersionRange;
+import aQute.libg.filters.AndFilter;
+import aQute.libg.filters.Filter;
+import aQute.libg.filters.NotFilter;
+import aQute.libg.filters.Operator;
+import aQute.libg.filters.SimpleFilter;
 
 public class Filters {
-	
-	public static final String DEFAULT_VERSION_ATTR = IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE;
-	
+
+	public static final String	DEFAULT_VERSION_ATTR	= IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+
 	/**
 	 * Generate an LDAP-style version filter from a version range, e.g.
 	 * {@code [1.0,2.0)} generates {@code (&(version>=1.0)(!(version>=2.0))}
@@ -38,27 +42,30 @@ public class Filters {
 		if (range == null)
 			return null;
 		VersionRange parsedRange = new VersionRange(range);
-		
+
 		Filter left;
 		if (parsedRange.includeLow())
 			left = new SimpleFilter(versionAttr, Operator.GreaterThanOrEqual, parsedRange.getLow().toString());
 		else
-			left = new NotFilter(new SimpleFilter(versionAttr, Operator.LessThanOrEqual, parsedRange.getLow().toString()));
-		
+			left = new NotFilter(new SimpleFilter(versionAttr, Operator.LessThanOrEqual, parsedRange.getLow()
+					.toString()));
+
 		Filter right;
 		if (!parsedRange.isRange())
 			right = null;
 		else if (parsedRange.includeHigh())
 			right = new SimpleFilter(versionAttr, Operator.LessThanOrEqual, parsedRange.getHigh().toString());
 		else
-			right = new NotFilter(new SimpleFilter(versionAttr, Operator.GreaterThanOrEqual, parsedRange.getHigh().toString()));
-		
+			right = new NotFilter(new SimpleFilter(versionAttr, Operator.GreaterThanOrEqual, parsedRange.getHigh()
+					.toString()));
+
 		Filter result;
 		if (right != null)
 			result = new AndFilter().addChild(left).addChild(right);
 		else
 			result = left;
-		
+
 		return result.toString();
 	}
+
 }

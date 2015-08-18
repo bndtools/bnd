@@ -1,25 +1,57 @@
 package aQute.remote.agent;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Formatter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.*;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.osgi.framework.*;
-import org.osgi.framework.dto.*;
-import org.osgi.framework.wiring.*;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.Constants;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.ServiceReference;
+import org.osgi.framework.dto.BundleDTO;
+import org.osgi.framework.dto.FrameworkDTO;
+import org.osgi.framework.dto.ServiceReferenceDTO;
+import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.framework.wiring.FrameworkWiring;
+import org.osgi.framework.wiring.dto.BundleRevisionDTO;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.dto.CapabilityDTO;
+import org.osgi.resource.dto.RequirementDTO;
 
-import aQute.lib.converter.*;
-import aQute.libg.shacache.*;
-import aQute.remote.api.*;
+import aQute.lib.converter.Converter;
+import aQute.lib.converter.TypeReference;
+import aQute.libg.shacache.ShaCache;
+import aQute.libg.shacache.ShaSource;
+import aQute.remote.api.Agent;
+import aQute.remote.api.Event;
 import aQute.remote.api.Event.Type;
-import aQute.remote.util.*;
+import aQute.remote.api.Supervisor;
+import aQute.remote.util.Link;
 
 /**
  * Implementation of the Agent. This implementation implements the Agent
  * interfaces and communicates with a Supervisor interfaces.
  */
 public class AgentServer implements Agent, Closeable, FrameworkListener {
+	AtomicInteger sequence = new AtomicInteger(1000);
 
 	//
 	// Constant so we do not have to repeat it
@@ -547,6 +579,80 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 
 			refresh.await();
 		}
+	}
+
+	/**
+	 * Return the bundle revisions
+	 */
+	@Override
+	public List<BundleRevisionDTO> getBundleRevisons(long... bundleId) throws Exception {
+
+		Bundle[] bundles;
+		if (bundleId.length == 0) {
+			bundles = context.getBundles();
+		} else {
+			bundles = new Bundle[bundleId.length];
+			for (int i = 0; i < bundleId.length; i++) {
+				bundles[i] = context.getBundle(bundleId[i]);
+			}
+		}
+
+		List<BundleRevisionDTO> revisions = new ArrayList<BundleRevisionDTO>(bundles.length);
+
+		for (Bundle b : bundles) {
+			BundleRevision resource = b.adapt(BundleRevision.class);
+			BundleRevisionDTO bwd = toDTO(resource);
+			revisions.add(bwd);
+		}
+
+		return revisions;
+	}
+
+	/*
+	 * Turn a bundle in a Bundle Revision dto. On a r6 framework we could do
+	 * this with adapt but on earlier frameworks we're on our own
+	 */
+
+	private BundleRevisionDTO toDTO(BundleRevision resource) {
+		BundleRevisionDTO brd = new BundleRevisionDTO();
+		brd.bundle = resource.getBundle().getBundleId();
+		brd.id = sequence.getAndIncrement();
+		brd.symbolicName = resource.getSymbolicName();
+		brd.type = resource.getTypes();
+		brd.version = resource.getVersion().toString();
+
+		brd.requirements = new ArrayList<RequirementDTO>();
+		
+		for (Requirement r : resource.getRequirements(null)) {
+			brd.requirements.add(toDTO(brd.id, r));
+		}
+
+		brd.capabilities = new ArrayList<CapabilityDTO>();
+		for (Capability c : resource.getCapabilities(null)) {
+			brd.capabilities.add(toDTO(brd.id, c));
+		}
+		
+		return brd;
+	}
+
+	private RequirementDTO toDTO(int resource, Requirement r) {
+		RequirementDTO rd = new RequirementDTO();
+		rd.id = sequence.getAndIncrement();
+		rd.resource = resource;
+		rd.namespace = r.getNamespace();
+		rd.directives = r.getDirectives();
+		rd.attributes = r.getAttributes();
+		return rd;
+	}
+
+	private CapabilityDTO toDTO(int resource, Capability r) {
+		CapabilityDTO rd = new CapabilityDTO();
+		rd.id = sequence.getAndIncrement();
+		rd.resource = resource;
+		rd.namespace = r.getNamespace();
+		rd.directives = r.getDirectives();
+		rd.attributes = r.getAttributes();
+		return rd;
 	}
 
 }

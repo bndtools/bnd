@@ -27,8 +27,8 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.service.repository.InfoRepository;
 import aQute.lib.io.IO;
+import biz.aQute.resolve.BndrunResolveContext;
 import biz.aQute.resolve.ResolveProcess;
-import biz.aQute.resolve.internal.BndrunResolveContext;
 
 @SuppressWarnings("restriction")
 public class JpmRepoTest extends TestCase {

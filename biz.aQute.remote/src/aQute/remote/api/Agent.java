@@ -1,9 +1,13 @@
 package aQute.remote.api;
 
-import java.util.*;
-import java.util.regex.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
-import org.osgi.framework.dto.*;
+import org.osgi.framework.dto.BundleDTO;
+import org.osgi.framework.dto.FrameworkDTO;
+import org.osgi.framework.wiring.dto.BundleRevisionDTO;
 
 /**
  * An agent runs on remote OSGi framework and provides the means to control this
@@ -18,32 +22,32 @@ public interface Agent {
 	 * The default port. The port can be overridden with the System/framework
 	 * property {$value {@link #AGENT_SERVER_PORT_KEY}.
 	 */
-	int		DEFAULT_PORT		= 29998;
+	int DEFAULT_PORT = 29998;
 
 	/**
 	 * The property key to set the agent's port.
 	 */
-	String	AGENT_SERVER_PORT_KEY	= "aQute.agent.server.port";
+	String AGENT_SERVER_PORT_KEY = "aQute.agent.server.port";
 
 	/**
 	 * The pattern for a server port specification: {@code [<interface>:]<port>}
 	 * .
 	 */
-	Pattern	PORT_P					= Pattern.compile("(?:([^:]+):)?(\\d+)");
+	Pattern	PORT_P			= Pattern.compile("(?:([^:]+):)?(\\d+)");
 	/**
 	 * The port for attaching to a remote Gogo CommandSession
 	 */
-	int		COMMAND_SESSION		= -1;
+	int		COMMAND_SESSION	= -1;
 
 	/**
 	 * The port for having no redircet of IO
 	 */
-	int		NONE				= 0;
+	int NONE = 0;
 
 	/**
 	 * The port for System.in, out, err redirecting.
 	 */
-	int		CONSOLE				= 1;
+	int CONSOLE = 1;
 
 	/**
 	 * An Envoy is an agent that can install a framework (well, -runpath) and
@@ -55,6 +59,13 @@ public interface Agent {
 	 * @return true if this is a limited envoy, otherwise true for a true Agent.
 	 */
 	boolean isEnvoy();
+
+	/**
+	 * Get the Bundle Revisions for the given ids. If no ids are given, the
+	 * revisions for all bundles must be returned.
+	 */
+
+	List<BundleRevisionDTO> getBundleRevisons(long... bundleId) throws Exception;
 
 	/**
 	 * Get the framework DTO

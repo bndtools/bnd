@@ -31,7 +31,6 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Registry;
 import aQute.libg.tuple.Pair;
-import biz.aQute.resolve.internal.BndrunResolveContext;
 
 public class ResolveProcess {
 
@@ -349,7 +348,7 @@ public class ResolveProcess {
 	 * capRequirements.add(req); } } } } }
 	 */
 
-	private static void removeFrameworkAndInputResources(Map<Resource,List<Wire>> resourceMap, GenericResolveContext rc) {
+	private static void removeFrameworkAndInputResources(Map<Resource,List<Wire>> resourceMap, AbstractResolveContext rc) {
 		for (Iterator<Resource> iter = resourceMap.keySet().iterator(); iter.hasNext();) {
 			Resource resource = iter.next();
 			if (rc.isSystemResource(resource))

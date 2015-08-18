@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -33,13 +35,14 @@ import org.osgi.service.indexer.impl.util.Yield;
 import org.osgi.service.log.LogService;
 
 public class BundleAnalyzer implements ResourceAnalyzer {
+	private static URI cwd = new File("").toURI().normalize();
 
 	private static final String SHA_256 = "SHA-256";
 
 	// Duplicate these constants here to avoid a compile-time dependency on OSGi
 	// R4.3
-	private static final String PROVIDE_CAPABILITY = "Provide-Capability";
-	private static final String REQUIRE_CAPABILITY = "Require-Capability";
+	private static final String	PROVIDE_CAPABILITY	= "Provide-Capability";
+	private static final String	REQUIRE_CAPABILITY	= "Require-Capability";
 
 	// Obsolete OSGi constants
 	private static final String IMPORT_SERVICE_AVAILABILITY = "availability:";
@@ -179,19 +182,15 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		return Hex.toHexString(digest.digest());
 	}
 
-	private String calculateLocation(Resource resource) throws IOException {
-		String location = resource.getLocation();
-
-		File path = new File(location).getCanonicalFile();
-		String fileName = path.getName();
-		String dir = path.getParentFile().toURI().toURL().toString();
-
-		URI cwd = new File("").getCanonicalFile().toURI();
-
-		String result = cwd.relativize(path.toURI()).getPath();
+	private String calculateLocation(Resource resource) throws IOException, URISyntaxException {
+		File file = new File(resource.getLocation()).getAbsoluteFile();
+		URI normalizedUri = file.toURI().normalize();
+		File normalizedFile = Paths.get(normalizedUri).toFile();
 
 		GeneratorState state = getStateLocal();
-		if (state != null) {
+		if (state == null) {
+			return cwd.relativize(normalizedUri).toString();
+		} else {
 
 			//
 			// Check if a resolver was specified
@@ -202,42 +201,41 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			URLResolver resolver = state.getResolver();
 			if (resolver != null) {
 				try {
-					URI uri = resolver.resolver(path);
+					URI uri = resolver.resolver(file);
 					if (uri != null)
 						return uri.toString();
 				}
 				catch (Exception e) {
 					if (log != null)
-						log.log(LogService.LOG_ERROR, "Resolver failed on " + path + ", falling back to old method");
+						log.log(LogService.LOG_ERROR, "Resolver failed on " + normalizedUri + ", falling back to old method");
 				}
 			}
 
-			String rootUrl = state.getRootUrl().toString();
-			if (!rootUrl.endsWith("/"))
-				rootUrl += "/";
 
-			if (rootUrl != null) {
-				if (dir.startsWith(rootUrl))
-					dir = dir.substring(rootUrl.length());
-				else
-					throw new IllegalArgumentException("Cannot index files above the root URL.");
-			}
+			URI root = state.getRootUrl();
+			URI absoluteDir = normalizedFile.getParentFile().toURI();
+			URI relativeDir = root.relativize(absoluteDir);
 
+			if (relativeDir == absoluteDir)
+				throw new IllegalArgumentException(
+						"Cannot index files above the root URL. Root = " + root + " path is " + normalizedFile);
+
+			String fileName = normalizedFile.getName();
 			String urlTemplate = state.getUrlTemplate();
+
 			if (urlTemplate != null) {
 				String bsn = (urlTemplate.indexOf("%s") == -1) ? "" : Util.getSymbolicName(resource).getName();
 				Version version = (urlTemplate.indexOf("%v") == -1) ? Version.emptyVersion : Util.getVersion(resource);
-				urlTemplate = urlTemplate.replaceAll("%s", "%1\\$s").replaceAll("%f", "%2\\$s").replaceAll("%p", "%3\\$s").replaceAll("%v", "%4\\$s");
-				result = String.format(urlTemplate, bsn, fileName, dir, version);
+				urlTemplate = urlTemplate.replaceAll("%s", "%1\\$s").replaceAll("%f", "%2\\$s")
+						.replaceAll("%p", "%3\\$s").replaceAll("%v", "%4\\$s");
+				return String.format(urlTemplate, bsn, fileName, relativeDir.toString(), version);
 			} else {
-				result = dir + fileName;
+				return relativeDir.resolve(fileName).toString();
 			}
 		}
-
-		return result;
 	}
 
-	private void doBundleAndHost(Resource resource, List<? super Capability> caps) throws Exception {
+	private void doBundleAndHost(Resource resource, List< ? super Capability> caps) throws Exception {
 		Builder bundleBuilder = new Builder().setNamespace(Namespaces.NS_WIRING_BUNDLE);
 		Builder hostBuilder = new Builder().setNamespace(Namespaces.NS_WIRING_HOST);
 		boolean allowFragments = true;

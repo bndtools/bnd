@@ -1,23 +1,77 @@
 package aQute.bnd.osgi.resource;
 
-import java.io.*;
-import java.lang.reflect.*;
+import java.io.File;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.net.*;
-import java.util.*;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.osgi.framework.namespace.*;
-import org.osgi.namespace.contract.*;
-import org.osgi.namespace.extender.*;
-import org.osgi.namespace.service.*;
-import org.osgi.resource.*;
-import org.osgi.service.repository.*;
+import org.osgi.framework.namespace.BundleNamespace;
+import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
+import org.osgi.framework.namespace.HostNamespace;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.namespace.contract.ContractNamespace;
+import org.osgi.namespace.extender.ExtenderNamespace;
+import org.osgi.namespace.service.ServiceNamespace;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
+import org.osgi.service.repository.ContentNamespace;
 
-import aQute.bnd.version.*;
-import aQute.lib.converter.*;
+import aQute.bnd.version.Version;
+import aQute.lib.converter.Converter;
 import aQute.lib.converter.Converter.Hook;
 
 public class ResourceUtils {
+
+	/**
+	 * A comparator that compares the identity versions
+	 */
+	public static final Comparator<Resource> IDENTITY_VERSION_COMPARATOR = new Comparator<Resource>() {
+
+		@Override
+		public int compare(Resource o1, Resource o2) {
+			if (o1 == o2)
+				return 0;
+
+			if (o1 == null)
+				return -1;
+
+			if (o2 == null)
+				return 1;
+
+			if (o1.equals(o2))
+				return 0;
+
+
+			String v1 = getIdentityVersion(o1);
+			String v2 = getIdentityVersion(o2);
+
+			if (v1 == v2)
+				return 0;
+
+			if (v1 == null)
+				return -1;
+
+			if (v2 == null)
+				return 1;
+
+			return new Version(v1).compareTo(new Version(v2));
+		}
+
+	};
+
 	static Converter	cnv	= new Converter();
 	static {
 		cnv.hook(Version.class, new Hook() {
@@ -91,6 +145,36 @@ public class ResourceUtils {
 			return null;
 
 		return as(caps.get(0), IdentityCapability.class);
+	}
+
+	public static String getIdentityVersion(Resource resource) {
+		IdentityCapability cap = getIdentityCapability(resource);
+		if (cap == null)
+			return null;
+
+		Object v = cap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+		if (v == null)
+			return null;
+
+		return v.toString();
+	}
+
+	public static Version toVersion(Object v) {
+		if (v instanceof Version)
+			return (Version) v;
+
+		if (v instanceof String) {
+			if (!Version.isVersion((String) v))
+				return null;
+
+			return new Version((String) v);
+		}
+
+		if (v instanceof org.osgi.framework.Version) {
+			return new Version(v.toString());
+		}
+
+		return null;
 	}
 
 	public static final Version getVersion(Capability cap) {
@@ -218,4 +302,18 @@ public class ResourceUtils {
 
 		return (T) cnv.convert(method.getGenericReturnType(), value);
 	}
+
+	public static Set<Resource> getResources(Collection< ? extends Capability> providers) {
+		if (providers == null || providers.isEmpty())
+			return Collections.EMPTY_SET;
+
+		Set<Resource> resources = new HashSet<>(providers.size() * 2);
+
+		for (Capability c : providers) {
+			resources.add(c.getResource());
+		}
+
+		return resources;
+	}
+
 }
