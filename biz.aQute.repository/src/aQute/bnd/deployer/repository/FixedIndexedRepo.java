@@ -1,11 +1,18 @@
 package aQute.bnd.deployer.repository;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import static aQute.bnd.deployer.repository.RepoConstants.DEFAULT_CACHE_DIR;
 
-import aQute.bnd.service.*;
-import static aQute.bnd.deployer.repository.RepoConstants.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import aQute.bnd.service.Actionable;
 
 /**
  * A simple read-only OBR-based repository that uses a list of index locations
@@ -96,6 +103,11 @@ public class FixedIndexedRepo extends AbstractIndexedRepo implements Actionable 
 			return EMPTY_LOCATION;
 		else
 			return locations.toString();
+	}
+
+	public void setLocations(String locations) throws MalformedURLException, URISyntaxException {
+		parseLocations(locations); // for verification right syntax
+		this.locations = locations;
 	}
 
 	public File getRoot() {

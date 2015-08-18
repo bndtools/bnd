@@ -2,6 +2,9 @@ package biz.aQute.resolve;
 
 import static test.lib.Utils.createRepo;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +28,8 @@ import org.osgi.service.resolver.Resolver;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.deployer.repository.FixedIndexedRepo;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.lib.io.IO;
 import junit.framework.TestCase;
@@ -35,6 +40,40 @@ import test.lib.NullLogService;
 public class ResolveTest extends TestCase {
 
 	private static final LogService log = new NullLogService();
+
+	/**
+	 * Test minimal setup
+	 * 
+	 * @throws URISyntaxException
+	 * @throws MalformedURLException
+	 */
+	public static void testMinimalSetup() throws MalformedURLException, URISyntaxException {
+		File index = IO.getFile("testdata/repo3.index.xml");
+		FixedIndexedRepo fir = new FixedIndexedRepo();
+		fir.setLocations(index.toURI().toString());
+
+		Processor model = new Processor();
+
+		model.setProperty("-runfw", "org.apache.felix.framework");
+		model.setProperty("-runrequires", "osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)'");
+		BndrunResolveContext context = new BndrunResolveContext(model, null, model, log);
+		context.setLevel(0);
+		context.addRepository(fir);
+		context.init();
+
+		Resolver resolver = new BndResolver(new ResolverLogger(4));
+
+		try {
+			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+			Set<Resource> resources = resolved.keySet();
+			Resource shell = getResource(resources, "org.apache.felix.gogo.shell", "0.10.0");
+			assertNotNull(shell);
+		}
+		catch (ResolutionException e) {
+			e.printStackTrace();
+			fail("Resolve failed");
+		}
+	}
 
 	/**
 	 * Test if we can resolve with a distro
@@ -60,9 +99,7 @@ public class ResolveTest extends TestCase {
 		try {
 			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
 			Set<Resource> resources = resolved.keySet();
-			Resource system = getResource(resources, "system", "1.8.0");
 			Resource shell = getResource(resources, "org.apache.felix.gogo.shell", "0.10.0");
-			assertNotNull(system);
 			assertNotNull(shell);
 		}
 		catch (ResolutionException e) {

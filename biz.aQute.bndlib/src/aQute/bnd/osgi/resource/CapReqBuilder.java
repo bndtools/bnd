@@ -470,4 +470,23 @@ public class CapReqBuilder {
 		throw new IllegalArgumentException(
 				"cannot convert " + value + " to a org.osgi.framework Version(s) object as requested");
 	}
+
+	public static RequirementBuilder createRequirementFromCapability(Capability cap) {
+		RequirementBuilder req = new RequirementBuilder(cap.getNamespace());
+		StringBuilder sb = new StringBuilder("(&");
+		for (Entry<String,Object> e : cap.getAttributes().entrySet()) {
+			Object v = e.getValue();
+			if (v instanceof Version || e.getKey().equals("version")) {
+				VersionRange r = new VersionRange(v.toString());
+				String filter = r.toFilter();
+				sb.append(filter);
+
+			} else
+				sb.append("(").append(e.getKey()).append("=").append(v);
+		}
+		sb.append(")");
+
+		req.and(sb.toString());
+		return req;
+	}
 }

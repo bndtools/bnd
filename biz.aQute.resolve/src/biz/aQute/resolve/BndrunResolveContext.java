@@ -105,7 +105,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	 * model.
 	 */
 	@Override
-	protected synchronized void init() {
+	public synchronized void init() {
 
 		if (initialized)
 			return;
