@@ -26,6 +26,7 @@ import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.RunSession;
 import aQute.bnd.osgi.Processor;
+import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.launch.LaunchConstants;
@@ -175,7 +176,7 @@ public class NativeBndLaunchDelegate extends JavaRemoteApplicationLaunchConfigur
             }
 
             monitor.done();
-            p.close();
+            IO.close(p);
         }
     }
 
