@@ -36,9 +36,9 @@ public class OSGiSpecAPITemplate implements IProjectTemplate {
         tmp = model.getBuildPath();
         if (tmp != null)
             buildPath.addAll(tmp);
-        Attrs attrs = new Attrs();
-        attrs.put("packages", "*");
-        buildPath.add(new VersionedClause("osgi.annotation", attrs));
+        VersionedClause annotationLib = new VersionedClause("osgi.annotation", null);
+        annotationLib.setVersionRange("6.0.1");
+        buildPath.add(annotationLib);
         model.setBuildPath(buildPath);
     }
 

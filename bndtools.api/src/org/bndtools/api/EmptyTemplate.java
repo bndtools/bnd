@@ -5,7 +5,6 @@ import java.util.List;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
-import aQute.bnd.header.Attrs;
 
 public class EmptyTemplate implements IProjectTemplate {
 
@@ -17,9 +16,10 @@ public class EmptyTemplate implements IProjectTemplate {
         tmp = model.getBuildPath();
         if (tmp != null)
             buildPath.addAll(tmp);
-        Attrs attrs = new Attrs();
-        attrs.put("packages", "*");
-        buildPath.add(new VersionedClause("osgi.annotation", attrs));
+
+        VersionedClause annotationLib = new VersionedClause("osgi.annotation", null);
+        annotationLib.setVersionRange("6.0.1");
+        buildPath.add(annotationLib);
         model.setBuildPath(buildPath);
     }
 
