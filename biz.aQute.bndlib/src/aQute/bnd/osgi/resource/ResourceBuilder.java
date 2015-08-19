@@ -288,6 +288,15 @@ public class ResourceBuilder {
 		}
 	}
 
+	public void addEE(EE ee) throws Exception {
+		addExportPackages(ee.getPackages());
+		EE[] compatibles = ee.getCompatible();
+		addExecutionEnvironment(ee);
+		for (EE compatible : compatibles) {
+			addExecutionEnvironment(compatible);
+		}
+	}
+
 	public void addExportPackage(String packageName, Attrs attrs) throws Exception {
 		CapReqBuilder capb = new CapReqBuilder(resource, PackageNamespace.PACKAGE_NAMESPACE);
 		capb.addAttributesOrDirectives(attrs);

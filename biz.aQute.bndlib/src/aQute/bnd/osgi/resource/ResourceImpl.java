@@ -1,11 +1,20 @@
 package aQute.bnd.osgi.resource;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-import org.osgi.framework.namespace.*;
-import org.osgi.resource.*;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
 
-class ResourceImpl implements Resource {
+import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
+import aQute.bnd.version.Version;
+
+class ResourceImpl implements Resource, Comparable<Resource> {
 
 	private List<Capability>				allCapabilities;
 	private Map<String,List<Capability>>	capabilityMap;
@@ -80,6 +89,41 @@ class ResourceImpl implements Resource {
 			builder.append("]");
 		}
 		return builder.toString();
+	}
+
+	@Override
+	public int compareTo(Resource o) {
+		IdentityCapability me = ResourceUtils.getIdentityCapability(this);
+		IdentityCapability them = ResourceUtils.getIdentityCapability(o);
+
+		String myName = me.osgi_identity();
+		String theirName = them.osgi_identity();
+		if (myName == theirName)
+			return 0;
+
+		if (myName == null)
+			return -1;
+
+		if (theirName == null)
+			return 1;
+
+		int n = myName.compareTo(theirName);
+		if (n != 0)
+			return n;
+
+		Version myVersion = me.version();
+		Version theirVersion = them.version();
+
+		if (myVersion == theirVersion)
+			return 0;
+
+		if (myVersion == null)
+			return -1;
+
+		if (theirVersion == null)
+			return 1;
+
+		return myVersion.compareTo(theirVersion);
 	}
 
 }

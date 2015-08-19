@@ -131,8 +131,10 @@ public class CapReqBuilder {
 		return this;
 	}
 
-	public CapReqBuilder addDirectives(Map< ? extends String, ? extends String> directives) {
-		this.directives.putAll(directives);
+	public CapReqBuilder addDirectives(Map<String, String> directives) {
+		for (Entry<String,String> e : directives.entrySet()) {
+			addDirective(e.getKey(), e.getValue());
+		}
 		return this;
 	}
 
@@ -249,6 +251,11 @@ public class CapReqBuilder {
 	}
 
 	public static Requirement getRequirementFrom(String namespace, Attrs attrs) throws Exception {
+		CapReqBuilder builder = createCapReqBuilder(namespace, attrs);
+		return builder.buildSyntheticRequirement();
+	}
+
+	public static CapReqBuilder createCapReqBuilder(String namespace, Attrs attrs) throws Exception {
 		CapReqBuilder builder = new CapReqBuilder(namespace);
 		for (Entry<String,String> entry : attrs.entrySet()) {
 			String key = entry.getKey();
@@ -259,7 +266,20 @@ public class CapReqBuilder {
 				builder.addAttribute(key, entry.getValue());
 			}
 		}
-		return builder.buildSyntheticRequirement();
+		return builder;
+	}
+
+	public static List<Capability> getCapabilitiesFrom(Parameters rr) throws Exception {
+		List<Capability> capabilities = new ArrayList<>();
+		for (Entry<String,Attrs> e : rr.entrySet()) {
+			capabilities.add(getCapabilityFrom(Processor.removeDuplicateMarker(e.getKey()), e.getValue()));
+		}
+		return capabilities;
+	}
+
+	public static Capability getCapabilityFrom(String namespace, Attrs attrs) throws Exception {
+		CapReqBuilder builder = createCapReqBuilder(namespace, attrs);
+		return builder.buildSyntheticCapability();
 	}
 
 	public CapReqBuilder from(Capability c) throws Exception {
@@ -347,7 +367,9 @@ public class CapReqBuilder {
 		if (previous != null) {
 			filter.append("(&").append(previous);
 		}
-		filter.append(s);
+		for (String subexpr : s)
+			filter.append(subexpr);
+
 		if (previous != null) {
 			filter.append(")");
 		}
@@ -473,7 +495,7 @@ public class CapReqBuilder {
 				sb.append(filter);
 
 			} else
-				sb.append("(").append(e.getKey()).append("=").append(v);
+				sb.append("(").append(e.getKey()).append("=").append(v).append(")");
 		}
 		sb.append(")");
 
