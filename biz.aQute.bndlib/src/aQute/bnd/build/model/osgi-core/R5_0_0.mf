@@ -1,0 +1,34 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1331766149681
+Bundle-Copyright: Copyright (c) OSGi Alliance (2000, 2012). All Rights R
+ eserved.
+Bundle-Description: OSGi Service Platform Release 5 Version 5.0, Core In
+ terfaces and Classes for use in compiling bundles.
+Bundle-License: http://opensource.org/licenses/apache2.0.php; link="http
+ ://www.apache.org/licenses/LICENSE-2.0"; description="Apache License, V
+ ersion 2.0"
+Bundle-ManifestVersion: 2
+Bundle-Name: osgi.core
+Bundle-SymbolicName: osgi.core
+Bundle-Vendor: OSGi Alliance
+Bundle-Version: 5.0.0.201203141902
+Created-By: 1.6.0_29 (Sun Microsystems Inc.)
+DynamicImport-Package: *
+Export-Package: org.osgi.resource;version="1.0",org.osgi.framework.start
+ level;uses:="org.osgi.framework";version="1.0",org.osgi.framework.wirin
+ g;uses:="org.osgi.resource,org.osgi.framework";version="1.1",org.osgi.f
+ ramework.hooks.bundle;uses:="org.osgi.framework";version="1.1",org.osgi
+ .framework.hooks.service;uses:="org.osgi.framework";version="1.1",org.o
+ sgi.framework.hooks.resolver;uses:="org.osgi.framework.wiring";version=
+ "1.0",org.osgi.framework.namespace;uses:="org.osgi.resource";version="1
+ .0",org.osgi.framework.launch;uses:="org.osgi.framework";version="1.1",
+ org.osgi.framework;uses:="javax.security.auth.x500";version="1.7",org.o
+ sgi.framework.hooks.weaving;uses:="org.osgi.framework.wiring";version="
+ 1.0",org.osgi.service.condpermadmin;uses:="org.osgi.framework,org.osgi.
+ service.permissionadmin";version="1.1.1",org.osgi.service.packageadmin;
+ uses:="org.osgi.framework";version="1.2",org.osgi.service.permissionadm
+ in;version="1.2",org.osgi.service.startlevel;uses:="org.osgi.framework"
+ ;version="1.1",org.osgi.service.url;version="1.0",org.osgi.util.tracker
+ ;uses:="org.osgi.framework";version="1.5.1"
+Import-Package: javax.security.auth.x500;resolution:=optional
+Tool: Bnd-1.51.0

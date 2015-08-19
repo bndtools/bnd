@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.osgi.dto.DTO;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -13,6 +12,7 @@ import org.osgi.resource.Resource;
 
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
+import aQute.bnd.util.dto.DTO;
 
 public class Utils {
 	static FilterParser fp = new FilterParser();

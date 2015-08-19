@@ -1,11 +1,61 @@
 package aQute.lib.collections;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.SortedSet;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
 public class CollectionsTest extends TestCase {
+
+	List<String>	a	= Arrays.asList("a");
+	List<String>	ab	= Arrays.asList("a", "b");
+	List<String>	abc	= Arrays.asList("a", "b", "c");
+	List<String>	bc	= Arrays.asList("b", "c");
+	List<String>	cd	= Arrays.asList("c", "d");
+	List<String>	b	= Arrays.asList("b");
+
+	@SuppressWarnings("unchecked")
+	public void testLogicRetain() {
+		assertEqualsList(Arrays.asList("a"), Logic.retain(a));
+		assertEqualsList(Arrays.asList("a"), Logic.retain(a, a, a, a));
+		assertEqualsList(Arrays.asList("a"), Logic.retain(a, abc));
+		assertEqualsList(Arrays.asList("b", "c"), Logic.retain(bc, abc));
+		assertEqualsList(Arrays.asList("b"), Logic.retain(bc, abc, ab));
+		
+	}
 	
+	@SuppressWarnings("unchecked")
+	public void testHasOverlap() {
+		assertFalse(Logic.hasOverlap(a));
+		assertTrue(Logic.hasOverlap(a, ab));
+		assertFalse(Logic.hasOverlap(a, b));
+		assertFalse(Logic.hasOverlap(a, cd, bc));
+		assertTrue(Logic.hasOverlap(a, cd, bc, abc));
+	}
+	private void assertEqualsList(List<String> a, Collection<String> b) {
+		assertTrue(compare(a, b));
+	}
+
+	private <T> boolean compare(Collection<T> a, Collection<T> b) {
+		if (a == b)
+			return true;
+		if (a == null || b == null)
+			return false;
+
+		if (a.equals(b))
+			return true;
+
+		List<T> aa = new ArrayList<T>(a);
+		List<T> bb = new ArrayList<T>(b);
+		return aa.equals(bb);
+	}
+
 	public void testSortedList() throws Exception {
 		SortedList<String> sl = new SortedList<String>("f", "a", "b", "c", "d", "c", "e");
 		assertEquals("[a, b, c, c, d, e, f]", sl.toString());

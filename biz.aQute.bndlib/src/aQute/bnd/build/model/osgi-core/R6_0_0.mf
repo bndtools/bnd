@@ -1,0 +1,38 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1394131053386
+Bundle-Copyright: Copyright (c) OSGi Alliance (2000, 2014). All Rights R
+ eserved.
+Bundle-Description: OSGi Core Release 6, Interfaces and Classes for use 
+ in compiling bundles.
+Bundle-License: http://opensource.org/licenses/apache2.0.php; link="http
+ ://www.apache.org/licenses/LICENSE-2.0"; description="Apache License, V
+ ersion 2.0"
+Bundle-ManifestVersion: 2
+Bundle-Name: osgi.core
+Bundle-SymbolicName: osgi.core
+Bundle-Vendor: OSGi Alliance
+Bundle-Version: 6.0.0.201403061837
+Created-By: 1.6.0_45 (Sun Microsystems Inc.)
+DynamicImport-Package: *
+Export-Package: org.osgi.dto;version="1.0",org.osgi.resource;version="1.
+ 0",org.osgi.resource.dto;version="1.0";uses:="org.osgi.dto",org.osgi.fr
+ amework;version="1.8",org.osgi.framework.dto;version="1.8";uses:="org.o
+ sgi.dto",org.osgi.framework.hooks.bundle;version="1.1";uses:="org.osgi.
+ framework",org.osgi.framework.hooks.resolver;version="1.0";uses:="org.o
+ sgi.framework.wiring",org.osgi.framework.hooks.service;version="1.1";us
+ es:="org.osgi.framework",org.osgi.framework.hooks.weaving;version="1.1"
+ ;uses:="org.osgi.framework.wiring",org.osgi.framework.launch;version="1
+ .2";uses:="org.osgi.framework",org.osgi.framework.namespace;version="1.
+ 1";uses:="org.osgi.resource",org.osgi.framework.startlevel;version="1.0
+ ";uses:="org.osgi.framework",org.osgi.framework.startlevel.dto;version=
+ "1.0";uses:="org.osgi.dto",org.osgi.framework.wiring;version="1.2";uses
+ :="org.osgi.framework,org.osgi.resource",org.osgi.framework.wiring.dto;
+ version="1.2";uses:="org.osgi.dto,org.osgi.resource.dto",org.osgi.servi
+ ce.condpermadmin;version="1.1.1";uses:="org.osgi.framework,org.osgi.ser
+ vice.permissionadmin",org.osgi.service.packageadmin;version="1.2";uses:
+ ="org.osgi.framework",org.osgi.service.permissionadmin;version="1.2",or
+ g.osgi.service.startlevel;version="1.1";uses:="org.osgi.framework",org.
+ osgi.service.url;version="1.0",org.osgi.util.tracker;version="1.5.1";us
+ es:="org.osgi.framework"
+Import-Package: javax.security.auth.x500;resolution:=optional
+Tool: Bnd-2.2.0.20130927-173453

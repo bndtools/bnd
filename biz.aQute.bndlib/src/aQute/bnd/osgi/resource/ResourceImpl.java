@@ -1,17 +1,32 @@
 package aQute.bnd.osgi.resource;
 
-import java.util.*;
+import static aQute.bnd.osgi.resource.ResourceUtils.getLocations;
+import static aQute.lib.collections.Logic.retain;
 
-import org.osgi.framework.namespace.*;
-import org.osgi.resource.*;
+import java.net.URI;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-class ResourceImpl implements Resource {
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
+
+import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
+import aQute.bnd.version.Version;
+
+class ResourceImpl implements Resource, Comparable<Resource> {
 
 	private List<Capability>				allCapabilities;
 	private Map<String,List<Capability>>	capabilityMap;
 
 	private List<Requirement>				allRequirements;
 	private Map<String,List<Requirement>>	requirementMap;
+	private Map<URI,String>					locations;
 
 	void setCapabilities(List<Capability> capabilities) {
 		allCapabilities = capabilities;
@@ -82,4 +97,85 @@ class ResourceImpl implements Resource {
 		return builder.toString();
 	}
 
+	@Override
+	public int compareTo(Resource o) {
+		IdentityCapability me = ResourceUtils.getIdentityCapability(this);
+		IdentityCapability them = ResourceUtils.getIdentityCapability(o);
+
+		String myName = me.osgi_identity();
+		String theirName = them.osgi_identity();
+		if (myName == theirName)
+			return 0;
+
+		if (myName == null)
+			return -1;
+
+		if (theirName == null)
+			return 1;
+
+		int n = myName.compareTo(theirName);
+		if (n != 0)
+			return n;
+
+		Version myVersion = me.version();
+		Version theirVersion = them.version();
+
+		if (myVersion == theirVersion)
+			return 0;
+
+		if (myVersion == null)
+			return -1;
+
+		if (theirVersion == null)
+			return 1;
+
+		return myVersion.compareTo(theirVersion);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public boolean equals(Object other) {
+		if (this == other)
+			return true;
+
+		if (other == null || !(other instanceof Resource))
+			return false;
+
+		Map<URI,String> thisLocations = getContentURIs();
+		Map<URI,String> otherLocations;
+
+		if (other instanceof ResourceImpl) {
+			otherLocations = ((ResourceImpl) other).getContentURIs();
+		} else {
+			otherLocations = getLocations((Resource) other);
+		}
+
+		Collection<URI> overlap = retain(thisLocations.keySet(), otherLocations.keySet());
+
+		for (URI uri : overlap) {
+			String thisSha = thisLocations.get(uri);
+			String otherSha = otherLocations.get(uri);
+			if (thisSha == otherSha)
+				return true;
+
+			if (thisSha != null && otherSha != null) {
+				if (thisSha.equals(otherSha))
+					return true;
+			}
+		}
+
+		return false;
+	}
+
+	public Map<URI,String> getContentURIs() {
+		if (locations == null) {
+			locations = ResourceUtils.getLocations(this);
+		}
+		return locations;
+	}
+
+	@Override
+	public int hashCode() {
+		return getContentURIs().hashCode();
+	}
 }

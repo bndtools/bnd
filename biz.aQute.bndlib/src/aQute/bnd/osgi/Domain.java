@@ -1,17 +1,43 @@
 package aQute.bnd.osgi;
 
-import static aQute.bnd.osgi.Constants.*;
+import static aQute.bnd.osgi.Constants.BUNDLE_ACTIVATOR;
+import static aQute.bnd.osgi.Constants.BUNDLE_CLASSPATH;
+import static aQute.bnd.osgi.Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT;
+import static aQute.bnd.osgi.Constants.BUNDLE_SYMBOLICNAME;
+import static aQute.bnd.osgi.Constants.BUNDLE_VERSION;
+import static aQute.bnd.osgi.Constants.CONDITIONAL_PACKAGE;
+import static aQute.bnd.osgi.Constants.DYNAMICIMPORT_PACKAGE;
+import static aQute.bnd.osgi.Constants.EXPORT_CONTENTS;
+import static aQute.bnd.osgi.Constants.EXPORT_PACKAGE;
+import static aQute.bnd.osgi.Constants.FAIL_OK;
+import static aQute.bnd.osgi.Constants.FRAGMENT_HOST;
+import static aQute.bnd.osgi.Constants.IMPORT_PACKAGE;
+import static aQute.bnd.osgi.Constants.INCLUDERESOURCE;
+import static aQute.bnd.osgi.Constants.INCLUDE_RESOURCE;
+import static aQute.bnd.osgi.Constants.PRIVATEPACKAGE;
+import static aQute.bnd.osgi.Constants.PRIVATE_PACKAGE;
+import static aQute.bnd.osgi.Constants.SOURCES;
+import static aQute.bnd.osgi.Constants.WAB;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.jar.*;
+import java.util.Properties;
+import java.util.jar.Attributes;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
 
-import aQute.bnd.header.*;
-import aQute.bnd.version.*;
-import aQute.lib.converter.*;
-import aQute.lib.utf8properties.*;
-import aQute.service.reporter.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.version.Version;
+import aQute.lib.converter.Converter;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.service.reporter.Reporter;
 
 /**
  * This class abstracts domains that have properties holding OSGi meta data. It
@@ -382,21 +408,27 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public static Domain domain(File file) throws IOException {
-		FileInputStream in = new FileInputStream(file);
-		try {
-			JarInputStream jin = new JarInputStream(in);
-			try {
+		try (FileInputStream in = new FileInputStream(file);) {
+
+			if (file.getName().endsWith(".mf")) {
+				Manifest m = new Manifest(in);
+				return domain(m);
+			}
+
+			if (file.getName().endsWith(".properties") || file.getName().endsWith(".bnd")) {
+				Processor p = new Processor();
+				p.setProperties(file);
+				return domain(p);
+			}
+
+			// default & last. Assume JAR
+
+			try (JarInputStream jin = new JarInputStream(in);) {
 				Manifest m = jin.getManifest();
 				if (m == null)
 					return null;
 				return domain(m);
 			}
-			finally {
-				jin.close();
-			}
-		}
-		finally {
-			in.close();
 		}
 	}
 }

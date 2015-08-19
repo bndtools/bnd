@@ -8,13 +8,15 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
@@ -25,13 +27,16 @@ import org.osgi.namespace.contract.ContractNamespace;
 import org.osgi.namespace.extender.ExtenderNamespace;
 import org.osgi.namespace.service.ServiceNamespace;
 import org.osgi.resource.Capability;
+import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.ContentNamespace;
 
+import aQute.bnd.header.Attrs;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.Converter.Hook;
+import aQute.lib.filter.Filter;
 
 public class ResourceUtils {
 
@@ -54,7 +59,6 @@ public class ResourceUtils {
 			if (o1.equals(o2))
 				return 0;
 
-
 			String v1 = getIdentityVersion(o1);
 			String v2 = getIdentityVersion(o2);
 
@@ -72,7 +76,31 @@ public class ResourceUtils {
 
 	};
 
-	static Converter	cnv	= new Converter();
+	private static final Comparator< ? super Resource> RESOURCE_COMPARATOR = new Comparator<Resource>() {
+
+		@Override
+		public int compare(Resource o1, Resource o2) {
+			if (o1 == o2)
+				return 0;
+
+			if (o1 == null)
+				return -1;
+			if (o2 == null)
+				return 1;
+
+			if (o1.equals(o2))
+				return 0;
+
+			if (o1 instanceof ResourceImpl && o2 instanceof ResourceImpl) {
+				return ((ResourceImpl) o1).compareTo(o2);
+			}
+
+			return o1.toString().compareTo(o2.toString());
+		}
+	};
+
+	static Converter cnv = new Converter();
+
 	static {
 		cnv.hook(Version.class, new Hook() {
 
@@ -90,8 +118,8 @@ public class ResourceUtils {
 	public static interface IdentityCapability extends Capability {
 		public enum Type {
 			bundle(IdentityNamespace.TYPE_BUNDLE), fragment(IdentityNamespace.TYPE_FRAGMENT), unknown(
-					IdentityNamespace.TYPE_UNKNOWN), ;
-			private String	s;
+					IdentityNamespace.TYPE_UNKNOWN),;
+			private String s;
 
 			private Type(String s) {
 				this.s = s;
@@ -124,6 +152,7 @@ public class ResourceUtils {
 	}
 
 	public interface ContentCapability extends Capability {
+		String osgi_content();
 		URI url();
 
 		long size();
@@ -132,13 +161,20 @@ public class ResourceUtils {
 	}
 
 	public static ContentCapability getContentCapability(Resource resource) {
-		List<Capability> caps = resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE);
-		if (caps == null || caps.isEmpty())
+		List<ContentCapability> caps = getContentCapabilities(resource);
+		if (caps.isEmpty())
 			return null;
-
-		return as(caps.get(0), ContentCapability.class);
+		return caps.get(0);
 	}
 
+	public static List<ContentCapability> getContentCapabilities(Resource resource) {
+		List<ContentCapability> result = new ArrayList<>();
+
+		for (Capability c : resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE)) {
+			result.add(as(c, ContentCapability.class));
+		}
+		return result;
+	}
 	public static IdentityCapability getIdentityCapability(Resource resource) {
 		List<Capability> caps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
 		if (caps == null || caps.isEmpty())
@@ -258,7 +294,7 @@ public class ResourceUtils {
 	@SuppressWarnings("unchecked")
 	public static <T extends Capability> T as(final Capability cap, Class<T> type) {
 		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class< ? >[] {
-			type
+				type
 		}, new InvocationHandler() {
 
 			@Override
@@ -274,7 +310,7 @@ public class ResourceUtils {
 	@SuppressWarnings("unchecked")
 	public static <T extends Requirement> T as(final Requirement req, Class<T> type) {
 		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class< ? >[] {
-			type
+				type
 		}, new InvocationHandler() {
 
 			@Override
@@ -307,7 +343,7 @@ public class ResourceUtils {
 		if (providers == null || providers.isEmpty())
 			return Collections.EMPTY_SET;
 
-		Set<Resource> resources = new HashSet<>(providers.size() * 2);
+		Set<Resource> resources = new TreeSet<Resource>(RESOURCE_COMPARATOR);
 
 		for (Capability c : providers) {
 			resources.add(c.getResource());
@@ -316,4 +352,70 @@ public class ResourceUtils {
 		return resources;
 	}
 
+	public static Requirement createWildcardRequirement() {
+		return CapReqBuilder.createSimpleRequirement(IdentityNamespace.IDENTITY_NAMESPACE, "*", null)
+				.buildSyntheticRequirement();
+	}
+
+	public static boolean matches(Requirement r, Capability c) {
+		String requirementEffective = getEffective(r.getDirectives());
+		String capabilityEffective = getEffective(c.getDirectives());
+		if (!requirementEffective.equals(capabilityEffective))
+			return false;
+
+		String filter = r.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+		if (filter == null)
+			return false;
+
+		try {
+			Filter f = new Filter(filter);
+			return f.matchMap(c.getAttributes());
+		}
+		catch (Exception e) {
+			return false;
+		}
+	}
+
+	public static String getEffective(Map<String,String> directives) {
+		String effective = directives.get(Namespace.CAPABILITY_EFFECTIVE_DIRECTIVE);
+		if (effective == null)
+			return Namespace.EFFECTIVE_RESOLVE;
+		else
+			return effective;
+	}
+
+	public static ResolutionDirective getResolution(Requirement r) {
+		String resolution = r.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE);
+		if (resolution == null || resolution.equals(Namespace.RESOLUTION_MANDATORY))
+			return ResolutionDirective.mandatory;
+
+		if (resolution.equals(Namespace.RESOLUTION_OPTIONAL))
+			return ResolutionDirective.optional;
+
+		return null;
+	}
+
+	public static String toRequireCapability(Requirement req) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(req.getNamespace());
+
+		CapReqBuilder r = new CapReqBuilder(req.getNamespace());
+		r.addAttributes(req.getAttributes());
+		r.addDirectives(req.getDirectives());
+		Attrs attrs = r.toAttrs();
+		sb.append(";").append(attrs);
+		return sb.toString();
+	}
+
+	public static Map<URI,String> getLocations(Resource resource) {
+		Map<URI,String> locations = new HashMap<>();
+		for (ContentCapability c : getContentCapabilities(resource)) {
+			URI uri = c.url();
+			String sha = c.osgi_content();
+
+			if (uri != null) 
+				locations.put(uri, sha);
+		}
+		return locations;
+	}
 }
