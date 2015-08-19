@@ -95,8 +95,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	private final Map<CacheKey,List<Capability>>	providerCache			= new HashMap<CacheKey,List<Capability>>();
 	private final Set<Resource>						optionalRoots			= new HashSet<Resource>();
 	private final ConcurrentMap<Resource,Integer>	resourcePriorities		= new ConcurrentHashMap<Resource,Integer>();
-	private final Comparator<Capability>			capabilityComparator	= new CapabilityComparator();
-	private Map<String,Set<String>>					effectiveSet			= new HashMap<>();;
+	private final Comparator<Capability>			capabilityComparator;
+	private Map<String,Set<String>>					effectiveSet			= new HashMap<String,Set<String>>();
 	private final List<ResolverHook>				resolverHooks			= new ArrayList<ResolverHook>();
 	private final List<ResolutionCallback>			callbacks				= new LinkedList<ResolutionCallback>();
 	private boolean									initialised				= false;
@@ -108,6 +108,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	public AbstractResolveContext(LogService log) {
 		this.log = log;
+		this.capabilityComparator = new CapabilityComparator(log);
 	}
 
 	protected synchronized void init() {
@@ -209,15 +210,11 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 			// Next find out if the requirement is satisfied by a capability on
 			// the same resource
-			Resource resource = requirement.getResource();
-			if (resource != null) {
-				List<Capability> selfCaps = resource.getCapabilities(requirement.getNamespace());
-				if (selfCaps != null) {
-					for (Capability selfCap : selfCaps) {
-						if (matches(requirement, selfCap))
-							firstStageResult.add(selfCap);
-					}
-				}
+			processMandatoryResource(requirement, firstStageResult, requirement.getResource());
+			// Next find out if the requirement is satisfied by a capability on
+			// a Mandatory resource
+			for (Resource res : getMandatoryResources()) {
+				processMandatoryResource(requirement, firstStageResult, res);
 			}
 
 			// If the requirement is optional and doesn't come from an optional
@@ -233,35 +230,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 			} else {
 
-				// Second stage results: repository contents; may be reordered.
-				ArrayList<Capability> secondStageResult = new ArrayList<Capability>();
-
-				// Iterate over the repos
-				int order = 0;
-				ArrayList<Capability> repoCapabilities = new ArrayList<Capability>();
-				for (Repository repo : repositories) {
-					repoCapabilities.clear();
-					Collection<Capability> capabilities = findProviders(repo, requirement);
-					if (capabilities != null && !capabilities.isEmpty()) {
-						repoCapabilities.ensureCapacity(capabilities.size());
-						for (Capability capability : capabilities) {
-							if (isPermitted(capability.getResource())
-									&& isCorrectEffectiveness(requirement, capability)) {
-								repoCapabilities.add(capability);
-								setResourcePriority(order, capability.getResource());
-							}
-						}
-						secondStageResult.addAll(repoCapabilities);
-					}
-					order++;
-				}
-				Collections.sort(secondStageResult, capabilityComparator);
-
-				// Convert second-stage results to a list and post-process
-				ArrayList<Capability> secondStageList = new ArrayList<Capability>(secondStageResult);
-
-				// Post-processing second stage results
-				postProcessProviders(requirement, firstStageResult, secondStageList);
+				ArrayList<Capability> secondStageList = findProvidersFromRepositories(requirement, firstStageResult);
 
 				// Concatenate both stages, eliminating duplicates between the
 				// two
@@ -273,6 +242,53 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		log.log(LogService.LOG_DEBUG, "for " + requirement + " found " + result);
 		return result;
 
+	}
+
+	protected void processMandatoryResource(Requirement requirement, LinkedHashSet<Capability> firstStageResult,
+			Resource resource) {
+		if (resource != null) {
+			List<Capability> selfCaps = resource.getCapabilities(requirement.getNamespace());
+			if (selfCaps != null) {
+				for (Capability selfCap : selfCaps) {
+					if (matches(requirement, selfCap))
+						firstStageResult.add(selfCap);
+				}
+			}
+		}
+	}
+
+	protected ArrayList<Capability> findProvidersFromRepositories(Requirement requirement,
+			LinkedHashSet<Capability> existingWiredCapabilities) {
+		// Second stage results: repository contents; may be reordered.
+		ArrayList<Capability> secondStageResult = new ArrayList<Capability>();
+
+		// Iterate over the repos
+		int order = 0;
+		ArrayList<Capability> repoCapabilities = new ArrayList<Capability>();
+		for (Repository repo : repositories) {
+			repoCapabilities.clear();
+			Collection<Capability> capabilities = findProviders(repo, requirement);
+			if (capabilities != null && !capabilities.isEmpty()) {
+				repoCapabilities.ensureCapacity(capabilities.size());
+				for (Capability capability : capabilities) {
+					if (isPermitted(capability.getResource())
+							&& isCorrectEffectiveness(requirement, capability)) {
+						repoCapabilities.add(capability);
+						setResourcePriority(order, capability.getResource());
+					}
+				}
+				secondStageResult.addAll(repoCapabilities);
+			}
+			order++;
+		}
+		Collections.sort(secondStageResult, capabilityComparator);
+
+		// Convert second-stage results to a list and post-process
+		ArrayList<Capability> secondStageList = new ArrayList<Capability>(secondStageResult);
+
+		// Post-processing second stage results
+		postProcessProviders(requirement, existingWiredCapabilities, secondStageList);
+		return secondStageList;
 	}
 
 	/**
@@ -492,7 +508,11 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	private class CapabilityComparator implements Comparator<Capability> {
 
-		public CapabilityComparator() {}
+		private final LogService log;
+
+		public CapabilityComparator(LogService log) {
+			this.log = log;
+		}
 
 		public int compare(Capability o1, Capability o2) {
 
@@ -525,14 +545,22 @@ public abstract class AbstractResolveContext extends ResolveContext {
 					return +1;
 			}
 
-			// 4. Higher package version
+			// 4. Higher capability version
 			String ns1 = o1.getNamespace();
 			String ns2 = o2.getNamespace();
-			if (PACKAGE_NAMESPACE.equals(ns1) && PACKAGE_NAMESPACE.equals(ns2)) {
-				Version v1 = getVersion(o1, PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-				Version v2 = getVersion(o2, PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-				if (!v1.equals(v2))
-					return v2.compareTo(v1);
+			if (ns1 == ns2 || (ns1 != null && ns1.equals(ns2))) {
+				try {
+					// We use package namespace, as that defines the general
+					// contract for versions
+					Version v1 = getVersion(o1, PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+					Version v2 = getVersion(o2, PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+					if (!v1.equals(v2))
+						return v2.compareTo(v1);
+				}
+				catch (Exception e) {
+					log.log(LogService.LOG_INFO,
+							"Unable to determine the versions of the capabilities " + o1 + " and " + o2, e);
+				}
 			}
 
 			// 5. Higher resource version
