@@ -39,6 +39,8 @@ class BundleSorter extends ViewerSorter {
         if (ver2 == null) {
             ver2 = Version.emptyVersion;
         }
-        return ver1.compareTo(ver2);
+        // We want to see higher versions *earlier* in the list, therefore
+        // This comparison is the reverse of what you would expect
+        return ver2.compareTo(ver1);
     }
 }

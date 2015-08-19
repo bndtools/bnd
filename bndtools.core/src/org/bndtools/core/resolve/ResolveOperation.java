@@ -1,7 +1,9 @@
 package org.bndtools.core.resolve;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -85,23 +87,30 @@ public class ResolveOperation implements IRunnableWithProgress {
 
             ReporterLogService log = new ReporterLogService(Central.getWorkspace());
             Map<Resource,List<Wire>> wirings = resolve.resolveRequired(model, Central.getWorkspace(), bndResolver, callbacks, log);
-            result = new ResolutionResult(Outcome.Resolved, wirings, null, status, logger.getLog());
+
+            Map<Resource,List<Wire>> optionalResources = new HashMap<Resource,List<Wire>>(resolve.getOptionalResources().size());
+
+            for (Resource optional : resolve.getOptionalResources()) {
+                optionalResources.put(optional, new ArrayList<Wire>(resolve.getOptionalReasons(optional)));
+            }
+
+            result = new ResolutionResult(Outcome.Resolved, wirings, optionalResources, null, status, logger.getLog());
             if (coordination != null)
                 coordination.end();
         } catch (ResolveCancelledException e) {
-            result = new ResolutionResult(Outcome.Cancelled, null, null, status, logger.getLog());
+            result = new ResolutionResult(Outcome.Cancelled, null, null, null, status, logger.getLog());
 
             if (coordination != null)
                 coordination.fail(e);
         } catch (ResolutionException e) {
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, e.getLocalizedMessage(), e));
-            result = new ResolutionResult(Outcome.Unresolved, null, e, status, logger.getLog());
+            result = new ResolutionResult(Outcome.Unresolved, null, null, e, status, logger.getLog());
 
             if (coordination != null)
                 coordination.fail(e);
         } catch (Exception e) {
             status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Exception during resolution.", e));
-            result = new ResolutionResult(Outcome.Error, null, null, status, logger.getLog());
+            result = new ResolutionResult(Outcome.Error, null, null, null, status, logger.getLog());
 
             if (coordination != null)
                 coordination.fail(e);

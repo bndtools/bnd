@@ -2,6 +2,7 @@ package org.bndtools.core.resolve.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +13,7 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -123,6 +125,14 @@ public class ResolutionSuccessPanel {
         optionalViewer.setLabelProvider(new ResourceLabelProvider());
         optionalViewer.setSorter(new BundleSorter());
 
+        optionalViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                IStructuredSelection sel = (IStructuredSelection) event.getSelection();
+                doOptionalReasonUpdate((Resource) sel.getFirstElement());
+            }
+        });
+
         optionalViewer.addCheckStateListener(new ICheckStateListener() {
             @Override
             public void checkStateChanged(CheckStateChangedEvent event) {
@@ -133,6 +143,16 @@ public class ResolutionSuccessPanel {
                     checkedOptional.remove(resource);
                 }
                 presenter.updateButtons();
+                updateResolveOptionalButton();
+
+                optionalViewer.setSelection(new ISelection() {
+                    @Override
+                    public boolean isEmpty() {
+                        return true;
+                    }
+                });
+
+                doOptionalReasonUpdate(resource);
             }
         });
 
@@ -217,7 +237,13 @@ public class ResolutionSuccessPanel {
 
         Map<Resource,List<Wire>> wirings = (result != null) ? result.getResourceWirings() : null;
         requiredViewer.setInput(wirings != null ? wirings.keySet() : null);
+        wirings = (result != null) ? result.getOptionalResources() : null;
+        optionalViewer.setInput(wirings != null ? wirings.keySet() : null);
 
+        updateResolveOptionalButton();
+    }
+
+    private void updateResolveOptionalButton() {
         if (!checkedOptional.isEmpty()) {
             btnAddResolveOptional.setEnabled(true);
             presenter.setMessage("Click 'Add and Resolve' to add the checked optional bundles to requirements and re-resolve.", IMessageProvider.INFORMATION);
@@ -232,6 +258,18 @@ public class ResolutionSuccessPanel {
     }
 
     public void dispose() {}
+
+    private void doOptionalReasonUpdate(Resource resource) {
+        reasonsContentProvider.setOptional(true);
+        if (result != null) {
+            Map<Resource,List<Wire>> combined = new HashMap<Resource,List<Wire>>(result.getResourceWirings());
+            combined.putAll(result.getOptionalResources());
+            reasonsContentProvider.setResolution(combined);
+        }
+
+        reasonsViewer.setInput(resource);
+        reasonsViewer.expandToLevel(2);
+    }
 
     private static Requirement resourceToRequirement(Resource resource) {
         Capability identity = ResourceUtils.getIdentityCapability(resource);
