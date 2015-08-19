@@ -1,34 +1,38 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
--buildpath: osgi.core;version=6.0.0,\
+# We keep 4.3.1 at the top of the buildpath, and add 6.0.0 purely for the DTO, resource 
+# and namespace packages. This is safe as these packages have no dependency on other API.
+
+-buildpath: osgi.core;version=4.3.1,\
+	osgi.core;version=6.0.0;packages="org.osgi.dto, org.osgi.resource, org.osgi.framework.namespace",\
 	osgi.enterprise;version=5.0.0, \
     aQute.libg;version=latest,\
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.repository;version=snapshot,\
-	org.apache.felix.resolver;version=1.4;packages=org.apache.felix.resolver.*,\
-	osgi.cmpn;version=4.3.1
+	org.apache.felix.resolver;version=1.4;packages=org.apache.felix.resolver.*
 	
 -testpath: \
 	junit.osgi,\
 	org.mockito.mockito-all
 
-Export-Package:  \
-	biz.aQute.resolve,\
-	org.osgi.service.log;-split-package:=first,\
-	org.osgi.service.resolver;-split-package:=first
-
 #
 # We include the DTO packages so we do not force
 # Eclipse to run the latest & greatest OSGi
-# and we do not use these classes for interchange
+# The DTO class is the supertype of the Utils.ResolveTrace
+# The resource package must already be available so that the bundle
+# hosting aQute.bnd.osgi.resource can export the various wire impls
 #
+Export-Package:  \
+	biz.aQute.resolve,\
+	org.osgi.service.log;-split-package:=first,\
+	org.osgi.service.resolver;-split-package:=first,\
+	org.osgi.dto
+
 
 Private-Package: \
 	biz.aQute.resolve.*,\
 	org.apache.felix.resolver.*
-	org.osgi.resource.dto,\
-	org.osgi.dto
 
 Conditional-Package: aQute.lib*
 
