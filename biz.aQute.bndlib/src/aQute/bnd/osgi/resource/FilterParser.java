@@ -857,6 +857,11 @@ public class FilterParser {
 			return s.charAt(n++);
 		}
 
+		char wsNext() {
+			ws();
+			return next();
+		}
+
 		char current() {
 			return s.charAt(n);
 		}
@@ -945,12 +950,12 @@ public class FilterParser {
 		}
 
 		try {
-			char c = rover.next();
+			char c = rover.wsNext();
 			if (c != '(')
 				throw new IllegalArgumentException("Expression must start with a (");
-
+			rover.ws();
 			e = parse0(rover);
-			c = rover.next();
+			c = rover.wsNext();
 
 			if (c != ')')
 				throw new IllegalArgumentException("Expression must end with a )");
@@ -963,6 +968,7 @@ public class FilterParser {
 	}
 
 	Expression parse0(Rover rover) {
+		rover.ws();
 		switch (rover.next()) {
 			case '&' :
 				return And.make(parseExprs(rover));
@@ -1004,9 +1010,11 @@ public class FilterParser {
 
 	private List<Expression> parseExprs(Rover rover) {
 		ArrayList<Expression> exprs = new ArrayList<Expression>();
+		rover.ws();
 		while (rover.current() == '(') {
 			Expression expr = parse(rover);
 			exprs.add(expr);
+			rover.ws();
 		}
 		return exprs;
 	}

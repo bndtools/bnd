@@ -14,9 +14,14 @@ public class RequirementImpl extends CapReq implements Requirement {
 	}
 
 	public String toString() {
-		if (msg == null) {
-			msg = fp.parse(this).toString();
+		try {
+			if (msg == null) {
+				msg = fp.parse(this).toString();
+			}
+			return msg;
 		}
-		return msg;
+		catch (Exception e) {
+			return e.getMessage();
+		}
 	}
 }

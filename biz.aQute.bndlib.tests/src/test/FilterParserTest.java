@@ -10,6 +10,14 @@ import junit.framework.TestCase;
 public class FilterParserTest extends TestCase {
 	FilterParser fp = new FilterParser();
 
+	public void testSpaces() throws Exception {
+		FilterParser p = new FilterParser();
+		p.parse("(| (a=b) (b=c) )");
+		p.parse("(| (&(osgi.ee=JavaSE)(version=1.6)) (&(osgi.ee=JavaSE/compact1)(version=1.8)) )");
+		p.parse("(  &  (   org.osgi.framework.windowing.system   =   xyz    )     )");
+		p.parse("( | ( org.osgi.framework.windowing.system=xyz))");
+	}
+
 	public void testNestedAnd() throws IOException {
 		aQute.bnd.osgi.resource.FilterParser.Expression exp = fp
 				.parse("(&(osgi.wiring.package=osgi.enroute.webserver)(&(version>=1.0.0)(!(version>=2.0.0))))");
