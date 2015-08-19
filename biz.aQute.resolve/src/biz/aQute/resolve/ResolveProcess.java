@@ -157,8 +157,9 @@ public class ResolveProcess {
 								list = new ArrayList<>();
 								discoveredOptional.put(optionalRes, list);
 							}
-
-							list.add(new WireImpl(cap, requirement));
+							WireImpl candidateWire = new WireImpl(cap, requirement);
+							if (!list.contains(candidateWire))
+								list.add(candidateWire);
 						}
 					}
 
