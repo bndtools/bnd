@@ -8,9 +8,11 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -150,6 +152,7 @@ public class ResourceUtils {
 	}
 
 	public interface ContentCapability extends Capability {
+		String osgi_content();
 		URI url();
 
 		long size();
@@ -158,13 +161,20 @@ public class ResourceUtils {
 	}
 
 	public static ContentCapability getContentCapability(Resource resource) {
-		List<Capability> caps = resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE);
-		if (caps == null || caps.isEmpty())
+		List<ContentCapability> caps = getContentCapabilities(resource);
+		if (caps.isEmpty())
 			return null;
-
-		return as(caps.get(0), ContentCapability.class);
+		return caps.get(0);
 	}
 
+	public static List<ContentCapability> getContentCapabilities(Resource resource) {
+		List<ContentCapability> result = new ArrayList<>();
+
+		for (Capability c : resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE)) {
+			result.add(as(c, ContentCapability.class));
+		}
+		return result;
+	}
 	public static IdentityCapability getIdentityCapability(Resource resource) {
 		List<Capability> caps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
 		if (caps == null || caps.isEmpty())
@@ -395,5 +405,17 @@ public class ResourceUtils {
 		Attrs attrs = r.toAttrs();
 		sb.append(";").append(attrs);
 		return sb.toString();
+	}
+
+	public static Map<URI,String> getLocations(Resource resource) {
+		Map<URI,String> locations = new HashMap<>();
+		for (ContentCapability c : getContentCapabilities(resource)) {
+			URI uri = c.url();
+			String sha = c.osgi_content();
+
+			if (uri != null) 
+				locations.put(uri, sha);
+		}
+		return locations;
 	}
 }

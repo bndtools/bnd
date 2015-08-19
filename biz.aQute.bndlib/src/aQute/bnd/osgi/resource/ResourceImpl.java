@@ -1,5 +1,10 @@
 package aQute.bnd.osgi.resource;
 
+import static aQute.bnd.osgi.resource.ResourceUtils.getLocations;
+import static aQute.lib.collections.Logic.retain;
+
+import java.net.URI;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -21,6 +26,7 @@ class ResourceImpl implements Resource, Comparable<Resource> {
 
 	private List<Requirement>				allRequirements;
 	private Map<String,List<Requirement>>	requirementMap;
+	private Map<URI,String>					locations;
 
 	void setCapabilities(List<Capability> capabilities) {
 		allCapabilities = capabilities;
@@ -126,4 +132,50 @@ class ResourceImpl implements Resource, Comparable<Resource> {
 		return myVersion.compareTo(theirVersion);
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public boolean equals(Object other) {
+		if (this == other)
+			return true;
+
+		if (other == null || !(other instanceof Resource))
+			return false;
+
+		Map<URI,String> thisLocations = getContentURIs();
+		Map<URI,String> otherLocations;
+
+		if (other instanceof ResourceImpl) {
+			otherLocations = ((ResourceImpl) other).getContentURIs();
+		} else {
+			otherLocations = getLocations((Resource) other);
+		}
+
+		Collection<URI> overlap = retain(thisLocations.keySet(), otherLocations.keySet());
+
+		for (URI uri : overlap) {
+			String thisSha = thisLocations.get(uri);
+			String otherSha = otherLocations.get(uri);
+			if (thisSha == otherSha)
+				return true;
+
+			if (thisSha != null && otherSha != null) {
+				if (thisSha.equals(otherSha))
+					return true;
+			}
+		}
+
+		return false;
+	}
+
+	public Map<URI,String> getContentURIs() {
+		if (locations == null) {
+			locations = ResourceUtils.getLocations(this);
+		}
+		return locations;
+	}
+
+	@Override
+	public int hashCode() {
+		return getContentURIs().hashCode();
+	}
 }

@@ -23,4 +23,16 @@ public class Logic {
 		}
 		return result;
 	}
+
+	public static <T> boolean hasOverlap(Collection<T> source, Collection<T>... toBeChecked) {
+		for (T t : source) {
+			for (Collection<T> l : toBeChecked) {
+				for (T r : l) {
+					if (t.equals(r))
+						return true;
+				}
+			}
+		}
+		return false;
+	}
 }

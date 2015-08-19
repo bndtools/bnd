@@ -21,7 +21,7 @@ public class ValidatorTest extends TestCase {
 		}
 	}
 
-	public void testLarger() throws Exception {
+	public void _testLarger() throws Exception {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
 			system.addEE(EE.JavaSE_1_8);
