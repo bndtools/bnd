@@ -1,42 +1,35 @@
 package aQute.bnd.main;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.apache.felix.resolver.ResolverImpl;
-import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
-import org.osgi.resource.Wire;
 import org.osgi.service.repository.Repository;
-import org.osgi.service.resolver.ResolutionException;
-import org.osgi.service.resolver.Resolver;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.deployer.repository.FixedIndexedRepo;
+import aQute.bnd.build.model.EE;
+import aQute.bnd.build.model.OSGI_CORE;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.main.bnd.projectOptions;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
-import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
-import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
-import biz.aQute.resolve.BndrunResolveContext;
-import biz.aQute.resolve.LogReporter;
 import biz.aQute.resolve.ProjectResolver;
+import biz.aQute.resolve.ResolverValidator;
 
 public class ResolveCommand extends Processor {
 
@@ -146,56 +139,50 @@ public class ResolveCommand extends Processor {
 			"index-path"
 	})
 	interface ValidateOptions extends Options {
+		EE ee(EE ee);
 
+		OSGI_CORE core();
+
+		String system();
+
+		Parameters packages();
+
+		Parameters capabilities();
 	}
 
 	public void _validate(ValidateOptions options) throws Exception {
-		LogReporter reporter = new LogReporter(this);
+
+		ResourceBuilder system = new ResourceBuilder();
+
+		system.addEE(options.ee(EE.JavaSE_1_8));
+		if (options.core() != null)
+			system.addManifest(options.core().getManifest());
+
+		if (options.packages() != null)
+			system.addExportPackages(options.packages());
+
+		if (options.capabilities() != null)
+			system.addProvideCapabilities(options.capabilities());
+
+		if ( options.system() != null) {
+			File f = IO.getFile(options.system());
+			if ( !f.isFile()) {
+				error("Specified system file but not found: " + f);
+				return;
+			}
+			Domain domain = Domain.domain(f);
+			system.addManifest(domain);
+		}
+
 		List<String> args = options._arguments();
-
 		File index = getFile(args.remove(0));
-		FixedIndexedRepo fir = new FixedIndexedRepo();
-		fir.setLocations(index.toURI().toString());
 
-		Resolver resolver = new ResolverImpl(reporter);
-		Requirement r = CapReqBuilder.createSimpleRequirement(IdentityNamespace.IDENTITY_NAMESPACE, "*", null)
-				.buildSyntheticRequirement();
+		ResolverValidator validator = new ResolverValidator(bnd);
+		validator.addRepository(index.toURI());
+		validator.setSystem(system.build());
 
-		setProperty("-runfw", "org.eclipse.osgi");
-
-		Map<Requirement,Collection<Capability>> providers = fir.findProviders(Collections.singleton(r));
-		Set<Resource> resources = ResourceUtils.getResources(providers.get(r));
-		for (Resource resource : resources) {
-			IdentityCapability identityCapability = ResourceUtils.getIdentityCapability(resource);
-			Requirement req = CapReqBuilder.createRequirementFromCapability(identityCapability)
-					.buildSyntheticRequirement();
-			
-			setProperty("-runrequires", "osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)'");
-			resolve(reporter, fir, resolver, resource);
-
-		}
+		validator.validate();
 
 	}
 
-	public void resolve(LogReporter reporter, FixedIndexedRepo fir, Resolver resolver, Resource resource)
-			throws Exception {
-		trace("resolving %s", resource);
-
-		BndrunResolveContext brc = new BndrunResolveContext(this, null, this, reporter);
-		brc.addRepository(fir);
-		brc.setInputRequirements(resource.getRequirements(null).toArray(new Requirement[0]));
-		brc.init();
-
-		try {
-			Map<Resource,List<Wire>> resolve2 = resolver.resolve(brc);
-			trace("resolving %s succeeded", resource);
-		}
-		catch (ResolutionException e) {
-			error("!!!! %s :: %s", e.getUnresolvedRequirements());
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-			error("resolving %s failed with %s", resource, e);
-		}
-	}
 }
