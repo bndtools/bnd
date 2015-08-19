@@ -11,6 +11,11 @@ public class WireImpl implements Wire {
 	private final Requirement	requirement;
 
 	public WireImpl(Capability capability, Requirement requirement) {
+		if (capability == null || requirement == null) {
+			throw new IllegalArgumentException(
+					"Both a capabability and a requirement are required. The following were supplied. Cap: "
+							+ String.valueOf(capability) + " Req: " + String.valueOf(requirement));
+		}
 		this.capability = capability;
 		this.requirement = requirement;
 	}
@@ -40,6 +45,30 @@ public class WireImpl implements Wire {
 		final StringBuilder builder = new StringBuilder();
 		builder.append("WireImpl [").append(requirement.toString()).append("  -->  ").append(capability).append("]");
 		return builder.toString();
+	}
+
+	@Override
+	public int hashCode() {
+		return capability.hashCode() + requirement.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this)
+			return true;
+
+		if (obj instanceof Wire) {
+			Wire w = (Wire) obj;
+
+			if (capability.equals(w.getCapability()) && requirement.equals(w.getRequirement())) {
+				Resource provider = getProvider();
+				Resource requirer = getRequirer();
+
+				return (provider == null ? w.getProvider() == null : provider.equals(w.getProvider()))
+						&& (requirer == null ? w.getRequirer() == null : requirer.equals(w.getRequirer()));
+			}
+		}
+		return false;
 	}
 
 }
