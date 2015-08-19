@@ -176,12 +176,16 @@ public class ResolveCommand extends Processor {
 
 		List<String> args = options._arguments();
 		File index = getFile(args.remove(0));
+		trace("validating %s", index);
 
 		ResolverValidator validator = new ResolverValidator(bnd);
+		validator.use(bnd);
 		validator.addRepository(index.toURI());
 		validator.setSystem(system.build());
 
 		validator.validate();
+
+		bnd.getInfo(validator);
 
 	}
 

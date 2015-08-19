@@ -109,6 +109,7 @@ public class ResolverValidator extends Processor {
 			trace("resolving %s succeeded", context.getInputResource().getRequirements(null));
 		}
 		catch (ResolutionException e) {
+			trace("resolving %s failed %s", e.getUnresolvedRequirements());
 			error("!!!! %s :: %s", resource, e.getMessage());
 
 			ResourcesRepository systemRepository = new ResourcesRepository(system);
