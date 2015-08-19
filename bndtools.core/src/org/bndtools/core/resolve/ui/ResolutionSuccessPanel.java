@@ -2,8 +2,13 @@ package org.bndtools.core.resolve.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.utils.resources.ResourceUtils;
@@ -12,6 +17,7 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -20,12 +26,15 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
@@ -51,6 +60,7 @@ public class ResolutionSuccessPanel {
 
     private final ResolutionTreeContentProvider reasonsContentProvider = new ResolutionTreeContentProvider();
     private final List<Resource> checkedOptional = new ArrayList<Resource>();
+    private final Map<Resource,Requirement> addedOptionals = new HashMap<>();
 
     private Composite composite;
     private TableViewer requiredViewer;
@@ -58,6 +68,7 @@ public class ResolutionSuccessPanel {
     private TreeViewer reasonsViewer;
     private Button btnAddResolveOptional;
     private ResolutionResult result;
+    private Section sectOptional;
 
     public ResolutionSuccessPanel(BndEditModel model, ResolutionResultPresenter presenter) {
         this.model = model;
@@ -104,7 +115,7 @@ public class ResolutionSuccessPanel {
             }
         });
 
-        Section sectOptional = toolkit.createSection(composite, Section.TITLE_BAR | Section.TWISTIE);
+        sectOptional = toolkit.createSection(composite, Section.TITLE_BAR | Section.TWISTIE);
         sectOptional.setText("Optional Resources");
 
         Composite cmpOptional = toolkit.createComposite(sectOptional);
@@ -123,16 +134,36 @@ public class ResolutionSuccessPanel {
         optionalViewer.setLabelProvider(new ResourceLabelProvider());
         optionalViewer.setSorter(new BundleSorter());
 
+        optionalViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                IStructuredSelection sel = (IStructuredSelection) event.getSelection();
+                doOptionalReasonUpdate((Resource) sel.getFirstElement());
+            }
+        });
+
         optionalViewer.addCheckStateListener(new ICheckStateListener() {
             @Override
             public void checkStateChanged(CheckStateChangedEvent event) {
                 Resource resource = (Resource) event.getElement();
-                if (event.getChecked()) {
-                    checkedOptional.add(resource);
-                } else {
-                    checkedOptional.remove(resource);
+                if (!addedOptionals.containsKey(resource)) {
+                    if (event.getChecked()) {
+                        checkedOptional.add(resource);
+                    } else {
+                        checkedOptional.remove(resource);
+                    }
                 }
                 presenter.updateButtons();
+                updateResolveOptionalButton();
+
+                optionalViewer.setSelection(new ISelection() {
+                    @Override
+                    public boolean isEmpty() {
+                        return true;
+                    }
+                });
+
+                doOptionalReasonUpdate(resource);
             }
         });
 
@@ -143,7 +174,7 @@ public class ResolutionSuccessPanel {
         gl_cmpOptionalButtons.marginWidth = 0;
         cmpOptionalButtons.setLayout(gl_cmpOptionalButtons);
 
-        btnAddResolveOptional = toolkit.createButton(cmpOptionalButtons, "Add and Resolve", SWT.NONE);
+        btnAddResolveOptional = toolkit.createButton(cmpOptionalButtons, "Update and Resolve", SWT.NONE);
         btnAddResolveOptional.setEnabled(false);
         btnAddResolveOptional.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -157,7 +188,15 @@ public class ResolutionSuccessPanel {
         btnAllOptional.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                // TODO
+                optionalViewer.setAllChecked(true);
+                checkedOptional.clear();
+                for (Object object : optionalViewer.getCheckedElements()) {
+                    if (!addedOptionals.containsKey(object)) {
+                        checkedOptional.add((Resource) object);
+                    }
+                }
+                presenter.updateButtons();
+                updateResolveOptionalButton();
             }
         });
         btnAllOptional.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
@@ -166,9 +205,10 @@ public class ResolutionSuccessPanel {
         btnClearOptional.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
+                optionalViewer.setAllChecked(false);
                 checkedOptional.clear();
-                optionalViewer.setCheckedElements(checkedOptional.toArray());
                 presenter.updateButtons();
+                updateResolveOptionalButton();
             }
         });
         btnClearOptional.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
@@ -201,8 +241,17 @@ public class ResolutionSuccessPanel {
         ArrayList<Requirement> newRequires = new ArrayList<Requirement>(oldRequires.size() + checkedOptional.size());
         newRequires.addAll(oldRequires);
 
+        for (Iterator<Entry<Resource,Requirement>> it = addedOptionals.entrySet().iterator(); it.hasNext();) {
+            Entry<Resource,Requirement> entry = it.next();
+            if (!optionalViewer.getChecked(entry.getKey())) {
+                newRequires.remove(entry.getValue());
+                it.remove();
+            }
+        }
+
         for (Resource resource : checkedOptional) {
             Requirement req = resourceToRequirement(resource);
+            addedOptionals.put(resource, req);
             newRequires.add(req);
         }
 
@@ -215,16 +264,51 @@ public class ResolutionSuccessPanel {
         this.result = result;
         checkedOptional.clear();
 
-        Map<Resource,List<Wire>> wirings = (result != null) ? result.getResourceWirings() : null;
-        requiredViewer.setInput(wirings != null ? wirings.keySet() : null);
+        Set<Resource> wirings = (result != null) ? result.getResourceWirings().keySet() : null;
+        requiredViewer.setInput(wirings != null ? wirings : null);
+        wirings = (result != null) ? new HashSet<Resource>(result.getOptionalResources().keySet()) : new HashSet<Resource>();
 
-        if (!checkedOptional.isEmpty()) {
+        wirings.addAll(addedOptionals.keySet());
+
+        if (wirings.isEmpty()) {
+            sectOptional.setExpanded(false);
+        } else {
+            sectOptional.setExpanded(true);
+        }
+        optionalViewer.setInput(wirings.isEmpty() ? null : wirings);
+        optionalViewer.setGrayedElements(addedOptionals.keySet().toArray());
+        optionalViewer.setCheckedElements(addedOptionals.keySet().toArray());
+
+        for (TableItem tableItem : optionalViewer.getTable().getItems()) {
+            Display display = Display.getCurrent();
+            Color addedColor = display.getSystemColor(SWT.COLOR_GRAY);
+            if (tableItem.getGrayed()) {
+                tableItem.setBackground(addedColor);
+            } else {
+                tableItem.setBackground(null);
+            }
+        }
+
+        updateResolveOptionalButton();
+    }
+
+    private void updateResolveOptionalButton() {
+        if (!checkedOptional.isEmpty() || previouslyAddedNowRemoved()) {
             btnAddResolveOptional.setEnabled(true);
-            presenter.setMessage("Click 'Add and Resolve' to add the checked optional bundles to requirements and re-resolve.", IMessageProvider.INFORMATION);
+            presenter.setMessage("Click 'Update and Resolve' to add the checked optional bundles to requirements and re-resolve.", IMessageProvider.INFORMATION);
         } else {
             btnAddResolveOptional.setEnabled(false);
             presenter.setMessage(null, IMessageProvider.INFORMATION);
         }
+    }
+
+    private boolean previouslyAddedNowRemoved() {
+        for (Resource resource : addedOptionals.keySet()) {
+            if (!optionalViewer.getChecked(resource)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean isComplete() {
@@ -232,6 +316,18 @@ public class ResolutionSuccessPanel {
     }
 
     public void dispose() {}
+
+    private void doOptionalReasonUpdate(Resource resource) {
+        reasonsContentProvider.setOptional(true);
+        if (result != null) {
+            Map<Resource,List<Wire>> combined = new HashMap<Resource,List<Wire>>(result.getResourceWirings());
+            combined.putAll(result.getOptionalResources());
+            reasonsContentProvider.setResolution(combined);
+        }
+
+        reasonsViewer.setInput(resource);
+        reasonsViewer.expandToLevel(2);
+    }
 
     private static Requirement resourceToRequirement(Resource resource) {
         Capability identity = ResourceUtils.getIdentityCapability(resource);
