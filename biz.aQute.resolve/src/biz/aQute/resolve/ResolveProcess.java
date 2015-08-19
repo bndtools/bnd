@@ -1,6 +1,9 @@
 package biz.aQute.resolve;
 
 import static org.osgi.framework.namespace.BundleNamespace.BUNDLE_NAMESPACE;
+import static org.osgi.framework.namespace.IdentityNamespace.IDENTITY_NAMESPACE;
+import static org.osgi.resource.Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE;
+import static org.osgi.resource.Namespace.RESOLUTION_OPTIONAL;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,6 +11,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +34,8 @@ import org.osgi.service.resolver.Resolver;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.WireImpl;
 import aQute.bnd.service.Registry;
 import aQute.libg.tuple.Pair;
 
@@ -53,6 +60,9 @@ public class ResolveProcess {
 	public Map<Resource,List<Wire>> resolveRequired(Processor properties, Project project, Registry plugins,
 			Resolver resolver,
 			Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
+		required = new HashMap<Resource,List<Wire>>();
+		optional = new HashMap<Resource,List<Wire>>();
+		
 		BndrunResolveContext rc = new BndrunResolveContext(properties, project, plugins, log);
 		rc.addCallbacks(callbacks);
 		// 1. Resolve initial requirements
@@ -101,6 +111,8 @@ public class ResolveProcess {
 				}
 			}
 
+			final Map<Resource,List<Wire>> discoveredOptional = new LinkedHashMap<Resource,List<Wire>>();
+
 			// 5. Resolve the rest
 			BndrunResolveContext rc2 = new BndrunResolveContext(properties, project, plugins, log) {
 
@@ -118,6 +130,41 @@ public class ResolveProcess {
 					}
 					return false;
 				}
+
+				@Override
+				public List<Capability> findProviders(Requirement requirement) {
+
+					List<Capability> toReturn = super.findProviders(requirement);
+
+					if (toReturn.isEmpty() && isEffective(requirement) && RESOLUTION_OPTIONAL
+							.equals(requirement.getDirectives().get(REQUIREMENT_RESOLUTION_DIRECTIVE))) {
+						// We have an effective optional requirement that is
+						// unmatched
+						// AbstractResolveContext deliberately does not include
+						// optionals,
+						// so we force a repo check here so that we can populate
+						// the optional
+						// map
+
+						for (Capability cap : findProvidersFromRepositories(requirement,
+								new LinkedHashSet<Capability>())) {
+
+							Resource optionalRes = cap.getResource();
+
+							List<Wire> list = discoveredOptional.get(optionalRes);
+
+							if (list == null) {
+								list = new ArrayList<>();
+								discoveredOptional.put(optionalRes, list);
+							}
+
+							list.add(new WireImpl(cap, requirement));
+						}
+					}
+
+					return toReturn;
+				}
+
 			};
 
 			rc2.addCallbacks(callbacks);
@@ -128,7 +175,8 @@ public class ResolveProcess {
 
 			Map<Resource,List<Wire>> result = invertWirings(wirings);
 			removeFrameworkAndInputResources(result, rc2);
-
+			required.putAll(result);
+			optional = tidyUpOptional(wirings, discoveredOptional, log);
 			return result;
 		}
 		catch (ResolutionException re) {
@@ -275,56 +323,6 @@ public class ResolveProcess {
 		}
 	}
 
-	public Map<Resource,List<Wire>> resolveOptional(BndEditModel inputModel, Set<Resource> requiredResources,
-			Registry plugins, Resolver resolver, Collection<ResolutionCallback> callbacks, LogService log)
-			throws ResolutionException {
-		BndrunResolveContext rc = new BndrunResolveContext(inputModel, plugins, log);
-		rc.addCallbacks(callbacks);
-		rc.setOptionalRoots(requiredResources);
-
-		Map<Resource,List<Wire>> wirings = resolver.resolve(rc);
-		removeFrameworkAndInputResources(wirings, rc);
-
-		// Remove requiredResources
-		for (Iterator<Resource> iter = wirings.keySet().iterator(); iter.hasNext();) {
-			Resource resource = iter.next();
-			if (requiredResources.contains(resource))
-				iter.remove();
-		}
-
-		return invertWirings(wirings);
-	}
-
-	public boolean XXXresolve(BndEditModel inputModel, Registry pluginRegistry, Resolver resolver, LogService log) {
-		try {
-			// Resolve required resources
-			BndrunResolveContext resolveContext = new BndrunResolveContext(inputModel, pluginRegistry, log);
-			Map<Resource,List<Wire>> wirings = resolver.resolve(resolveContext);
-			required = invertWirings(wirings);
-			removeFrameworkAndInputResources(required, resolveContext);
-
-			// Resolve optional resources
-			resolveContext = new BndrunResolveContext(inputModel, pluginRegistry, log);
-			resolveContext.setOptionalRoots(wirings.keySet());
-			Map<Resource,List<Wire>> optionalWirings = resolver.resolve(resolveContext);
-			optional = invertWirings(optionalWirings);
-			removeFrameworkAndInputResources(optional, resolveContext);
-
-			// Remove required resources from optional resource map
-			for (Iterator<Resource> iter = optional.keySet().iterator(); iter.hasNext();) {
-				Resource resource = iter.next();
-				if (required.containsKey(resource))
-					iter.remove();
-			}
-
-			return true;
-		}
-		catch (ResolutionException e) {
-			resolutionException = e;
-			return false;
-		}
-	}
-
 	/*
 	 * private void processOptionalRequirements(BndrunResolveContext
 	 * resolveContext) { optionalReasons = new
@@ -383,6 +381,85 @@ public class ResolveProcess {
 			}
 		}
 		return inverted;
+	}
+
+	private static Map<Resource,List<Wire>> tidyUpOptional(Map<Resource,List<Wire>> required,
+			Map<Resource,List<Wire>> discoveredOptional, LogService log) {
+		Map<Resource,List<Wire>> toReturn = new HashMap<Resource,List<Wire>>();
+
+		Set<Capability> requiredIdentities = new HashSet<Capability>();
+		for (Resource r : required.keySet()) {
+			Capability normalisedIdentity = toPureIdentity(r, log);
+			if (normalisedIdentity != null) {
+				requiredIdentities.add(normalisedIdentity);
+			}
+		}
+
+		Set<Capability> acceptedIdentities = new HashSet<>();
+
+		for (Entry<Resource,List<Wire>> entry : discoveredOptional.entrySet()) {
+			// If we're required we are not also optional
+			Resource optionalResource = entry.getKey();
+			if (required.containsKey(optionalResource)) {
+				continue;
+			}
+			// If another resource with the same identity is required
+			// then we defer to it, otherwise we will get the an optional
+			// resource showing up from a different repository
+			Capability optionalIdentity = toPureIdentity(optionalResource, log);
+			if (requiredIdentities.contains(optionalIdentity)) {
+				continue;
+			}
+
+			// Only wires to required resources should kept
+			List<Wire> validWires = new ArrayList<Wire>();
+			optional: for (Wire optionalWire : entry.getValue()) {
+				Resource requirer = optionalWire.getRequirer();
+				Capability requirerIdentity = toPureIdentity(requirer, log);
+				if (required.containsKey(requirer)) {
+					Requirement req = optionalWire.getRequirement();
+					// Somebody does require this - do they have a match
+					// already?
+					List<Wire> requiredWires = required.get(requirer);
+					for (Wire requiredWire : requiredWires) {
+						if (req.equals(requiredWire.getRequirement())) {
+							continue optional;
+						}
+					}
+					validWires.add(optionalWire);
+				}
+			}
+			// If there is at least one valid wire then we want the optional
+			// resource, but only if we don't already have one for that identity
+			// This can happen if the same resource is in multiple repos
+			if (!validWires.isEmpty()) {
+				if (acceptedIdentities.add(optionalIdentity)) {
+					toReturn.put(optionalResource, validWires);
+				} else {
+					log.log(LogService.LOG_INFO, "Discarding the optional resource " + optionalResource
+							+ " because another optional resource with the identity " + optionalIdentity
+							+ " has already been selected. This usually happens when the same bundle is present in multiple repositories.");
+				}
+			}
+		}
+
+		return toReturn;
+	}
+
+	private static Capability toPureIdentity(Resource r, LogService log) {
+		List<Capability> capabilities = r.getCapabilities(IDENTITY_NAMESPACE);
+		if (capabilities.size() != 1) {
+			log.log(LogService.LOG_WARNING,
+					"The resource " + r + " has the wrong number of identity capabilities " + capabilities.size());
+			return null;
+		}
+		try {
+			return CapReqBuilder.copy(capabilities.get(0), null);
+		}
+		catch (Exception e) {
+			log.log(LogService.LOG_ERROR, "Unable to copy the capability " + capabilities.get(0));
+			return null;
+		}
 	}
 
 	public ResolutionException getResolutionException() {
