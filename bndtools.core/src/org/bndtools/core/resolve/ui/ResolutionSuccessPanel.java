@@ -177,7 +177,13 @@ public class ResolutionSuccessPanel {
         btnAllOptional.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                // TODO
+                optionalViewer.setAllChecked(true);
+                checkedOptional.clear();
+                for (Object object : optionalViewer.getCheckedElements()) {
+                    checkedOptional.add((Resource) object);
+                }
+                presenter.updateButtons();
+                updateResolveOptionalButton();
             }
         });
         btnAllOptional.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
@@ -186,9 +192,10 @@ public class ResolutionSuccessPanel {
         btnClearOptional.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
+                optionalViewer.setAllChecked(false);
                 checkedOptional.clear();
-                optionalViewer.setCheckedElements(checkedOptional.toArray());
                 presenter.updateButtons();
+                updateResolveOptionalButton();
             }
         });
         btnClearOptional.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
