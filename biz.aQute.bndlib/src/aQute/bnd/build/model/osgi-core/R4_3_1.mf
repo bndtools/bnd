@@ -1,0 +1,32 @@
+Manifest-Version: 1
+Bnd-LastModified: 1349915034178
+Bundle-Copyright: Copyright (c) OSGi Alliance (2000, 2012). All Rights R
+ eserved.
+Bundle-Description: OSGi Service Platform Release 4 Version 4.3, Core In
+ terfaces and Classes for use in compiling bundles.
+Bundle-License: http://opensource.org/licenses/apache2.0.php; link="http
+ ://www.apache.org/licenses/LICENSE-2.0"; description="Apache License, V
+ ersion 2.0"
+Bundle-ManifestVersion: 2
+Bundle-Name: osgi.core
+Bundle-SymbolicName: osgi.core
+Bundle-Vendor: OSGi Alliance
+Bundle-Version: 4.3.1.201210102023
+Created-By: 1.6.0_35 (Sun Microsystems Inc.)
+DynamicImport-Package: *
+Export-Package: org.osgi.framework.startlevel;uses:="org.osgi.framework"
+ ;version="1.0",org.osgi.framework.wiring;uses:="org.osgi.framework";ver
+ sion="1.0",org.osgi.framework.hooks.bundle;uses:="org.osgi.framework";v
+ ersion="1.0",org.osgi.framework.hooks.service;uses:="org.osgi.framework
+ ";version="1.1",org.osgi.framework.hooks.resolver;uses:="org.osgi.frame
+ work.wiring";version="1.0",org.osgi.framework.launch;uses:="org.osgi.fr
+ amework";version="1.0",org.osgi.framework;uses:="javax.security.auth.x5
+ 00";version="1.6",org.osgi.framework.hooks.weaving;uses:="org.osgi.fram
+ ework.wiring";version="1.0",org.osgi.service.condpermadmin;uses:="org.o
+ sgi.framework,org.osgi.service.permissionadmin";version="1.1.1",org.osg
+ i.service.packageadmin;uses:="org.osgi.framework";version="1.2",org.osg
+ i.service.permissionadmin;version="1.2",org.osgi.service.startlevel;use
+ s:="org.osgi.framework";version="1.1",org.osgi.service.url;version="1.0
+ "
+Import-Package: javax.security.auth.x500;resolution:=optional
+Tool: Bnd-1.44.0
