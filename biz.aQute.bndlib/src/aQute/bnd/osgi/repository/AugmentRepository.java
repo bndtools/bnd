@@ -45,7 +45,7 @@ public class AugmentRepository implements Repository {
 					Capability wrappedCapability = wrapped.get(originalCapability);
 					if (wrappedCapability != null) {
 						provided.add(wrappedCapability);
-						replaced |= true;
+						replaced = true;
 					} else
 						provided.add(originalCapability);
 				}
