@@ -30,7 +30,7 @@ Export-Package: \
 	aQute.bnd.build.model.clauses;-noimport:=true,\
 	aQute.service.reporter;-noimport:=true,\
 	aQute.bnd.testing;-noimport:=true,\
-	aQute.bnd.osgi.repository,\
+	aQute.bnd.osgi.repository;-noimport:=true,\
 	aQute.bnd.maven.support;-noimport:=true,\
 	aQute.bnd.url;-noimport:=true,\
 	aQute.bnd.util.dto;-noimport:=true,\
