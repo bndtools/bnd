@@ -187,6 +187,7 @@ public interface Constants {
 	String							RUNSYSTEMCAPABILITIES						= "-runsystemcapabilities";
 	String							RUNBUNDLES									= "-runbundles";
 	String							RUNREPOS									= "-runrepos";
+	String	AUGMENT					= "-augment";
 
 	/**
 	 * @deprecated This is for support of the legacy OBR requirement format, use

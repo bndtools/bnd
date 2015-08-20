@@ -42,6 +42,74 @@ public class ResolveTest extends TestCase {
 	private static final LogService log = new NullLogService();
 
 	/**
+	 * Test if we can augment
+	 * 
+	 * @throws Exception
+	 */
+
+	public static void testResolveWithAugments() throws Exception {
+		// Add requirement
+		assertAugmentResolve("org.apache.felix.gogo.shell;cap:='foo;foo=gogo';req:='foo;filter:=\"(foo=*)\"'",
+				"foo;filter:='(foo=gogo)'",
+				null);
+
+		// Default effective
+		assertAugmentResolve("org.apache.felix.gogo.shell;cap:='foo;foo=gogo'", "foo;filter:='(foo=*)'", null);
+
+		// Wildcard name
+		assertAugmentResolve("*.shell;cap:='foo;foo=gogo'", "foo;filter:='(foo=gogo)'", null);
+		assertAugmentResolve("org.apache.felix.gogo.*;cap:='foo;foo=gogo'", "foo;filter:='(foo=*)'", null);
+		assertAugmentResolveFails("gogo.*;cap:='foo;foo=gogo'", "foo;filter:='(foo=*)'", null);
+
+		// Version range
+		assertAugmentResolve("org.apache.felix.gogo.*;version='[0,1)';cap:='foo;foo=gogo'", "foo;filter:='(foo=*)'",
+				null);
+
+		assertAugmentResolveFails("org.apache.felix.gogo.*;version='[1,2)';cap:='foo;foo=gogo'",
+				"foo;filter:='(foo=*)'", null);
+
+		// Effective
+		assertAugmentResolve("org.apache.felix.gogo.shell;cap:='foo;foo=gogo;effective:=foo'",
+				"foo;filter:='(foo=gogo)';effective:=foo", "foo");
+		assertAugmentResolveFails("org.apache.felix.gogo.shell;cap:='foo;foo=gogo;effective:=bar'",
+				"foo;filter:='(foo=*)';effective:=foo", "foo");
+
+
+	}
+
+	private static void assertAugmentResolveFails(String augment, String require, String effective) throws Exception {
+		try {
+			assertAugmentResolve(augment, require, effective);
+			fail("Failed to fail augment=" + augment + ", require=" + require + ", effective=" + effective);
+		}
+		catch (AssertionError | ResolutionException e) {
+			// Yup, expected
+		}
+	}
+
+	private static void assertAugmentResolve(String augment, String require, String effective) throws Exception {
+
+		MockRegistry registry = new MockRegistry();
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml")));
+
+		Processor model = new Processor();
+		model.setRunfw("org.apache.felix.framework");
+		model.setProperty("-augment", augment);
+		model.setRunRequires(require);
+		if (effective != null)
+			model.setProperty("-resolve.effective", effective);
+
+		BndrunResolveContext context = new BndrunResolveContext(model, null, registry, log);
+
+		Resolver resolver = new BndResolver(new ResolverLogger(4));
+
+		Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+		Set<Resource> resources = resolved.keySet();
+		Resource resource = getResource(resources, "org.apache.felix.gogo.runtime", "0.10");
+		assertNotNull(resource);
+	}
+
+	/**
 	 * Test minimal setup
 	 * 
 	 * @throws URISyntaxException
@@ -77,8 +145,10 @@ public class ResolveTest extends TestCase {
 
 	/**
 	 * Test if we can resolve with a distro
+	 * 
+	 * @throws ResolutionException
 	 */
-	public static void testResolveWithDistro() {
+	public static void testResolveWithDistro() throws ResolutionException {
 
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml")));
@@ -96,15 +166,10 @@ public class ResolveTest extends TestCase {
 
 		Resolver resolver = new BndResolver(new ResolverLogger(4));
 
-		try {
-			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
-			Set<Resource> resources = resolved.keySet();
-			Resource shell = getResource(resources, "org.apache.felix.gogo.shell", "0.10.0");
-			assertNotNull(shell);
-		}
-		catch (ResolutionException e) {
-			fail("Resolve failed");
-		}
+		Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+		Set<Resource> resources = resolved.keySet();
+		Resource shell = getResource(resources, "org.apache.felix.gogo.shell", "0.10.0");
+		assertNotNull(shell);
 	}
 
 	/**

@@ -17,7 +17,7 @@ public class RepositoryTest extends TestCase {
 
 	public void testXMLParser() throws Exception {
 		URL url = RepositoryTest.class.getResource("larger-repo.xml");
-		try (XMLResourceParser xrp = new XMLResourceParser(url);) {
+		try (XMLResourceParser xrp = new XMLResourceParser(url.toURI());) {
 			xrp.setTrace(true);
 			List<Resource> resources = xrp.parse();
 			assertTrue(xrp.check());

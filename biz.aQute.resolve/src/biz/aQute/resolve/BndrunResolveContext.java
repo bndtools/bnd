@@ -1,7 +1,9 @@
 package biz.aQute.resolve;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,6 +32,8 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.repository.AggregateRepository;
+import aQute.bnd.osgi.repository.AugmentRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.service.Registry;
@@ -148,7 +152,6 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			// Let's identify the system resource to make it look less
 			// ugly
 			//
-
 
 			//
 			// If we have a distro, we do not load the environment
@@ -316,15 +319,17 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	 * Load all the OSGi repositories from our registry
 	 * <p>
 	 * TODO Use Instruction ...
+	 * 
+	 * @throws Exception
 	 */
 
-	private void loadRepositories() throws IOException {
-
+	private void loadRepositories() throws Exception {
 		//
 		// Get all of the repositories from the plugin registry
 		//
 
 		List<Repository> allRepos = registry.getPlugins(Repository.class);
+		Collection<Repository> orderedRepositories;
 
 		String rn = properties.mergeProperties(Constants.RUNREPOS);
 		if (rn == null) {
@@ -332,10 +337,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			//
 			// No filter set, so we use all
 			//
-
-			for (Repository repo : allRepos) {
-				super.addRepository(repo);
-			}
+			orderedRepositories = allRepos;
 
 		} else {
 
@@ -348,12 +350,23 @@ public class BndrunResolveContext extends AbstractResolveContext {
 				repoNameMap.put(repo.toString(), repo);
 
 			// Create the result list
-
+			orderedRepositories = new ArrayList<>();
 			for (String repoName : repoNames.keySet()) {
 				Repository repo = repoNameMap.get(repoName);
 				if (repo != null)
-					super.addRepository(repo);
+					orderedRepositories.add(repo);
 			}
+		}
+
+		Parameters augments = new Parameters(properties.mergeProperties(Constants.AUGMENT));
+		if (!augments.isEmpty()) {
+			AggregateRepository aggregate = new AggregateRepository(orderedRepositories);
+			AugmentRepository augment = new AugmentRepository(augments, aggregate);
+			orderedRepositories = Collections.singleton((Repository) augment);
+		}
+
+		for (Repository repository : orderedRepositories) {
+			super.addRepository(repository);
 		}
 	}
 

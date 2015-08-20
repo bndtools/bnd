@@ -881,10 +881,6 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		}
 	}
 
-	public List<Repository> getRespositories() {
-		return repositories;
-	}
-
 	public List<ResolutionCallback> getCallbacks() {
 		return callbacks;
 	}

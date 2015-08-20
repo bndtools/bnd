@@ -2,8 +2,10 @@ package aQute.bnd.main;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -30,6 +32,7 @@ import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import biz.aQute.resolve.ProjectResolver;
 import biz.aQute.resolve.ResolverValidator;
+import biz.aQute.resolve.ResolverValidator.Resolution;
 
 public class ResolveCommand extends Processor {
 
@@ -148,6 +151,8 @@ public class ResolveCommand extends Processor {
 		Parameters packages();
 
 		Parameters capabilities();
+
+		boolean all();
 	}
 
 	public void _validate(ValidateOptions options) throws Exception {
@@ -164,9 +169,9 @@ public class ResolveCommand extends Processor {
 		if (options.capabilities() != null)
 			system.addProvideCapabilities(options.capabilities());
 
-		if ( options.system() != null) {
+		if (options.system() != null) {
 			File f = IO.getFile(options.system());
-			if ( !f.isFile()) {
+			if (!f.isFile()) {
 				error("Specified system file but not found: " + f);
 				return;
 			}
@@ -183,7 +188,35 @@ public class ResolveCommand extends Processor {
 		validator.addRepository(index.toURI());
 		validator.setSystem(system.build());
 
-		validator.validate();
+		List<Resolution> result = validator.validate();
+		Set<Requirement> done = new HashSet<>();
+
+		for (Resolution res : result) {
+			if (options.all()) {
+				bnd.out.format("%s %-60s%n", res.succeeded ? "OK" : "**", res.resource,
+						res.message == null ? "" : res.message);
+			}
+			if (!res.succeeded) {
+				for (Requirement req : res.missing) {
+					if (done.contains(req))
+						continue;
+
+					bnd.out.format("    missing   %s%n", req);
+					done.add(req);
+				}
+				if (options.all()) {
+					for (Requirement req : res.repos) {
+						bnd.out.format("    repos     %s%n", req);
+					}
+					for (Requirement req : res.system) {
+						bnd.out.format("    system    %s%n", req);
+					}
+					for (Requirement req : res.optionals) {
+						bnd.out.format("    optional  %s%n", req);
+					}
+				}
+			}
+		}
 
 		bnd.getInfo(validator);
 

@@ -24,26 +24,36 @@ import org.osgi.service.resolver.Resolver;
 
 import aQute.bnd.deployer.repository.FixedIndexedRepo;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.ResolutionDirective;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
-import aQute.bnd.osgi.resource.ResourcesRepository;
 import aQute.lib.strings.Strings;
 
 public class ResolverValidator extends Processor {
 
-	LogReporter			reporter		= new LogReporter(this);
-	Resolver			resolver		= new ResolverImpl(reporter);
-	List<URI>			repositories	= new ArrayList<>();
+	LogReporter	reporter		= new LogReporter(this);
+	Resolver	resolver		= new ResolverImpl(reporter);
+	List<URI>	repositories	= new ArrayList<>();
 	Resource	system			= null;
+
+	public static class Resolution {
+		public Resource				resource;
+		public boolean				succeeded;
+		public String				message;
+		public List<Requirement>	system		= new ArrayList<>();
+		public List<Requirement>	repos		= new ArrayList<>();
+		public List<Requirement>	missing		= new ArrayList<>();
+		public List<Requirement>	optionals	= new ArrayList<>();
+		public List<Requirement>	unresolved	= new ArrayList<>();
+	}
 
 	public ResolverValidator(Processor parent) throws Exception {
 		super(parent);
 	}
 
-	public ResolverValidator() {
-	}
+	public ResolverValidator() {}
 
 	public void addRepository(URI url) throws Exception {
 		repositories.add(url);
@@ -54,7 +64,7 @@ public class ResolverValidator extends Processor {
 		this.system = resource;
 	}
 
-	public boolean validate() throws Exception {
+	public List<Resolution> validate() throws Exception {
 
 		FixedIndexedRepo repository = new FixedIndexedRepo();
 		repository.setLocations(Strings.join(repositories));
@@ -62,14 +72,16 @@ public class ResolverValidator extends Processor {
 		Set<Resource> resources = getAllResources(repository);
 		setProperty("-runfw", "dummy");
 
-		validateResources(repository, resources);
-		return false;
+		return validateResources(repository, resources);
 	}
 
-	public void validateResources(Repository repository, Set<Resource> resources) throws Exception {
+	public List<Resolution> validateResources(Repository repository, Set<Resource> resources) throws Exception {
+		List<Resolution> result = new ArrayList<>();
 		for (Resource resource : resources) {
-			resolve(repository, resource);
+			Resolution resolution = resolve(repository, resource);
+			result.add(resolution);
 		}
+		return result;
 	}
 
 	public static Set<Resource> getAllResources(Repository repository) {
@@ -95,7 +107,9 @@ public class ResolverValidator extends Processor {
 		return createRequirementFromCapability(identityCapability).buildSyntheticRequirement();
 	}
 
-	public void resolve(Repository repository, Resource resource) throws Exception {
+	public Resolution resolve(Repository repository, Resource resource) throws Exception {
+		Resolution resolution = new Resolution();
+
 		Requirement identity = getIdentity(resource);
 		setProperty("-runrequires", ResourceUtils.toRequireCapability(identity));
 
@@ -104,13 +118,24 @@ public class ResolverValidator extends Processor {
 		context.addRepository(repository);
 		context.init();
 
+		resolution.resource = resource;
+
 		try {
 			Map<Resource,List<Wire>> resolve2 = resolver.resolve(context);
-			trace("resolving %s succeeded", context.getInputResource().getRequirements(null));
+			resolution.succeeded = true;
+
+			trace("resolving %s succeeded", resource);
 		}
 		catch (ResolutionException e) {
-			trace("resolving %s failed %s", e.getUnresolvedRequirements());
-			error("!!!! %s :: %s", resource, e.getMessage());
+			trace("resolving %s failed", resource);
+
+			resolution.succeeded = false;
+			resolution.message = e.getMessage();
+
+			for (Requirement req : e.getUnresolvedRequirements()) {
+				trace("    missing %s", req);
+				resolution.unresolved.add(req);
+			}
 
 			ResourcesRepository systemRepository = new ResourcesRepository(system);
 
@@ -128,20 +153,26 @@ public class ResolverValidator extends Processor {
 
 					if (missing) {
 						if (ResourceUtils.getResolution(r) == ResolutionDirective.optional)
-							error("     optional but missing %s", r);
+							resolution.optionals.add(r);
 						else
-							error("     missing %s", r);
+							resolution.missing.add(r);
 
-					} else
+					} else {
 						trace("     found %s in repo", r);
-				} else
+						resolution.repos.add(r);
+					}
+				} else {
 					trace("     found %s in system", r);
+					resolution.system.add(r);
+				}
 			}
-
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 			error("resolving %s failed with %s", context.getInputResource().getRequirements(null), e);
+			resolution.message = e.getMessage();
 		}
+
+		return resolution;
 	}
 }

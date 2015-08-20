@@ -327,6 +327,18 @@ public abstract class Domain implements Iterable<String> {
 		set(FAIL_OK, b + "");
 	}
 	
+	public void setRunfw(String runfw) {
+		set(Constants.RUNFW, runfw);
+	}
+
+	public void setRunRequires(String runRq) {
+		set(Constants.RUNREQUIRES, runRq);
+	}
+
+	public void setAugment(String augments) {
+		set(Constants.AUGMENT, augments);
+	}
+
 	/**
 	 * Indicates that this run should ignore errors and succeed anyway
 	 * 
