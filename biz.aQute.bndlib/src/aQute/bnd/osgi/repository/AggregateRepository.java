@@ -21,7 +21,8 @@ public class AggregateRepository implements Repository {
 	}
 
 	public AggregateRepository(Repository... repositories) {
-		this.repositories = repositories;
+		this.repositories = new Repository[repositories.length];
+		System.arraycopy(repositories, 0, this.repositories, 0, repositories.length);
 	}
 
 	@SuppressWarnings({
