@@ -2,6 +2,7 @@ package aQute.bnd.osgi.resource;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,13 @@ public class ResourceBuilder {
 
 	private boolean					built			= false;
 
+	public ResourceBuilder(Resource source) throws Exception {
+		addCapabilities(source.getCapabilities(null));
+		addRequirements(source.getRequirements(null));
+	}
+
+	public ResourceBuilder() {}
+
 	public ResourceBuilder addCapability(Capability capability) throws Exception {
 		CapReqBuilder builder = CapReqBuilder.clone(capability);
 		return addCapability(builder);
@@ -45,10 +53,15 @@ public class ResourceBuilder {
 		if (built)
 			throw new IllegalStateException("Resource already built");
 
-		Capability cap = builder.setResource(resource).buildCapability();
-		capabilities.add(cap);
+		addCapability0(builder);
 
 		return this;
+	}
+
+	public Capability addCapability0(CapReqBuilder builder) {
+		Capability cap = builder.setResource(resource).buildCapability();
+		capabilities.add(cap);
+		return cap;
 	}
 
 	public ResourceBuilder addRequirement(Requirement requirement) throws Exception {
@@ -259,19 +272,22 @@ public class ResourceBuilder {
 		addRequirement(req.buildRequirement());
 	}
 
-	public void addProvideCapabilities(Parameters capabilities) throws Exception {
+	public List<Capability> addProvideCapabilities(Parameters capabilities) throws Exception {
+		List<Capability> added = new ArrayList<>();
 		for (Entry<String,Attrs> clause : capabilities.entrySet()) {
 			String namespace = Processor.removeDuplicateMarker(clause.getKey());
 			Attrs attrs = clause.getValue();
 
-			addProvideCapability(namespace, attrs);
+			Capability addedCapability = addProvideCapability(namespace, attrs);
+			added.add(addedCapability);
 		}
+		return added;
 	}
 
-	public void addProvideCapability(String namespace, Attrs attrs) throws Exception {
+	public Capability addProvideCapability(String namespace, Attrs attrs) throws Exception {
 		CapReqBuilder capb = new CapReqBuilder(resource, namespace);
 		capb.addAttributesOrDirectives(attrs);
-		addCapability(capb);
+		return addCapability0(capb);
 	}
 
 	/**
@@ -404,6 +420,19 @@ public class ResourceBuilder {
 			}
 		}
 		return capabilities;
+	}
+
+	public Map<Capability,Capability> from(Resource bundle) throws Exception {
+		Map<Capability,Capability>	mapping  = new HashMap<Capability,Capability>();
+		
+		addRequirements(bundle.getRequirements(null));
+		
+		for ( Capability c : bundle.getCapabilities(null)) {
+			CapReqBuilder clone = CapReqBuilder.clone(c);
+			Capability addedCapability = addCapability0(clone);
+			mapping.put(c, addedCapability);
+		}
+		return mapping;
 	}
 
 }

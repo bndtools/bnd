@@ -47,6 +47,12 @@ public class About {
 	public static Version	CURRENT	= _3_0;
 
 	public static String[] CHANGES_3_0 = {
+			"Added bnd command bnd resolve validate <index.xml> to validate that a repository file is complete",
+			"Extended the resource package with many functions to work easily with resources, capabilities and requirements",
+			"Properly handles optionals in resolve", "Handles SCR Release 6",
+			"Added knowledge about OSGi R6 Core to OSGi ",
+			"Build path can now handle wildcards for bsn",
+			"Added a -augment instruction to add capabilities and requirements to resources during bnd resolves",
 			"In places where a bundle returns a boolean words like not set, empty string, false, not, off are interpreted as false, "
 					+ "otherwise the expression is true. As a slight addition, you can start it with ! to invert the remaining part.",
 			"Replaced the biz.aQute.junit tester with biz.aQute.tester. The difference is that the biz.aQute.tester runs as a bundle and does NOT provide JUnit"
@@ -64,15 +70,11 @@ public class About {
 			"No longer a warning when you import from yourself and there is no export metadata (we’re building it!)",
 			"Additional conversions in converter; Dictionary, URI/L cleanup",
 			"Force the current working directory to be the project base during launching",
-
 			"Version mismatch between pacakge(-)info(.java) and manifest are now not taking qualifier into account ",
 			"Missing bundles on -runbundles are now errors",
-
 			"${isdir} and ${env} now return empty (false) if no value",
-
 			"Additional checks for non-existent imports or empty imports", "-runkeep does now work",
 			"${versionmask} macro to use when ${version} is used for other purposes",
-
 			"Added annotation attributes by treating manifest annotations as meta annotations",
 			"Fixed #708, versionless import when having split packages where earlier packages have no content",
 			"-runproperties is now a merged header", "Added JSONCodec hook",

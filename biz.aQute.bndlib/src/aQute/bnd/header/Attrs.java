@@ -482,7 +482,25 @@ public class Attrs implements Map<String,String> {
 		return (T) convert(t, s);
 	}
 
-	private Object convert(Type t, String s) {
+	public static Type toType(String type) {
+		for (Type t : Type.values()) {
+			if (t.toString.equals(type))
+				return t;
+		}
+		return null;
+	}
+	public static Object convert(String t, String s) {
+		if (s == null)
+			return null;
+
+		Type type = toType(t);
+		if (type == null)
+			return null;
+
+		return convert(type, s);
+	}
+
+	public static Object convert(Type t, String s) {
 		if (t.sub == null) {
 			switch (t) {
 				case STRING :
@@ -557,7 +575,7 @@ public class Attrs implements Map<String,String> {
 		if (key == null || !key.endsWith(":"))
 			return null;
 
-		return key.substring(0, key.length());
+		return key.substring(0, key.length() - 1);
 	}
 
 }

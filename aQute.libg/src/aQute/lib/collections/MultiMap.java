@@ -73,6 +73,10 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 
 	@SuppressWarnings("unchecked")
 	public boolean addAll(K key, Collection< ? extends V> value) {
+
+		if (value == null)
+			return false;
+
 		assert keyClass.isInstance(key);
 		List<V> set = get(key);
 		if (set == null) {
@@ -91,6 +95,14 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 			return r;
 		}
 		return set.addAll(value);
+	}
+
+	public boolean addAll(Map<K, ? extends Collection< ? extends V>> map) {
+		boolean added = false;
+		for (java.util.Map.Entry<K, ? extends Collection< ? extends V>> e : map.entrySet()) {
+			added |= addAll(e.getKey(), e.getValue());
+		}
+		return added;
 	}
 
 	public boolean removeValue(K key, V value) {

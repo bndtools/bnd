@@ -418,4 +418,14 @@ public class ResourceUtils {
 		}
 		return locations;
 	}
+
+	public static List<Capability> findProviders(Requirement requirement,
+			Collection< ? extends Capability> capabilities) {
+		List<Capability> result = new ArrayList<>();
+		for (Capability capability : capabilities)
+			if (matches(requirement, capability))
+				result.add(capability);
+		return result;
+	}
+
 }
