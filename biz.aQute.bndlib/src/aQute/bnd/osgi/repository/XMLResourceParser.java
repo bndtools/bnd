@@ -49,6 +49,7 @@ public class XMLResourceParser extends Processor {
 	final private XMLStreamReader	reader;
 	final private Set<URI>			traversed;
 	final private String			what;
+	@SuppressWarnings("unused")
 	final private URI				url;
 
 	private int						depth;
