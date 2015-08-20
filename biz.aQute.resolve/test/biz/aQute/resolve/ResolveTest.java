@@ -49,29 +49,31 @@ public class ResolveTest extends TestCase {
 
 	public static void testResolveWithAugments() throws Exception {
 		// Add requirement
-		assertAugmentResolve("org.apache.felix.gogo.shell;cap:='foo;foo=gogo';req:='foo;filter:=\"(foo=*)\"'",
+		assertAugmentResolve(
+				"org.apache.felix.gogo.shell;capability:='foo;foo=gogo';requirement:='foo;filter:=\"(foo=*)\"'",
 				"foo;filter:='(foo=gogo)'",
 				null);
 
 		// Default effective
-		assertAugmentResolve("org.apache.felix.gogo.shell;cap:='foo;foo=gogo'", "foo;filter:='(foo=*)'", null);
+		assertAugmentResolve("org.apache.felix.gogo.shell;capability:='foo;foo=gogo'", "foo;filter:='(foo=*)'", null);
 
 		// Wildcard name
-		assertAugmentResolve("*.shell;cap:='foo;foo=gogo'", "foo;filter:='(foo=gogo)'", null);
-		assertAugmentResolve("org.apache.felix.gogo.*;cap:='foo;foo=gogo'", "foo;filter:='(foo=*)'", null);
-		assertAugmentResolveFails("gogo.*;cap:='foo;foo=gogo'", "foo;filter:='(foo=*)'", null);
+		assertAugmentResolve("*.shell;capability:='foo;foo=gogo'", "foo;filter:='(foo=gogo)'", null);
+		assertAugmentResolve("org.apache.felix.gogo.*;capability:='foo;foo=gogo'", "foo;filter:='(foo=*)'", null);
+		assertAugmentResolveFails("gogo.*;capability:='foo;foo=gogo'", "foo;filter:='(foo=*)'", null);
 
 		// Version range
-		assertAugmentResolve("org.apache.felix.gogo.*;version='[0,1)';cap:='foo;foo=gogo'", "foo;filter:='(foo=*)'",
+		assertAugmentResolve("org.apache.felix.gogo.*;version='[0,1)';capability:='foo;foo=gogo'",
+				"foo;filter:='(foo=*)'",
 				null);
 
-		assertAugmentResolveFails("org.apache.felix.gogo.*;version='[1,2)';cap:='foo;foo=gogo'",
+		assertAugmentResolveFails("org.apache.felix.gogo.*;version='[1,2)';capability:='foo;foo=gogo'",
 				"foo;filter:='(foo=*)'", null);
 
 		// Effective
-		assertAugmentResolve("org.apache.felix.gogo.shell;cap:='foo;foo=gogo;effective:=foo'",
+		assertAugmentResolve("org.apache.felix.gogo.shell;capability:='foo;foo=gogo;effective:=foo'",
 				"foo;filter:='(foo=gogo)';effective:=foo", "foo");
-		assertAugmentResolveFails("org.apache.felix.gogo.shell;cap:='foo;foo=gogo;effective:=bar'",
+		assertAugmentResolveFails("org.apache.felix.gogo.shell;capability:='foo;foo=gogo;effective:=bar'",
 				"foo;filter:='(foo=*)';effective:=foo", "foo");
 
 

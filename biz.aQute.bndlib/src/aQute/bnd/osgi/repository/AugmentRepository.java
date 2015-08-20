@@ -14,6 +14,7 @@ import org.osgi.service.repository.Repository;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
@@ -92,8 +93,8 @@ public class AugmentRepository implements Repository {
 		Requirement bundleRequirement = CapReqBuilder.createBundleRequirement(bsn, range).buildSyntheticRequirement();
 
 		Augment augment = new Augment();
-		augment.additionalCapabilities = new Parameters(attrs.get("cap:"));
-		augment.additionalRequirements = new Parameters(attrs.get("req:"));
+		augment.additionalCapabilities = new Parameters(attrs.get(Constants.AUGMENT_CAPABILITY_DIRECTIVE));
+		augment.additionalRequirements = new Parameters(attrs.get(Constants.AUGMENT_REQUIREMENT_DIRECTIVE));
 
 		operations.add(bundleRequirement, augment);
 	}
