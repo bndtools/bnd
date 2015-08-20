@@ -21,7 +21,7 @@ public class FilterParser {
 	final Map<String,Expression>	cache	= new HashMap<String,FilterParser.Expression>();
 
 	public enum Op {
-		GREATER(">"), GREATER_OR_EQUAL(">="), LESS("<"), LESS_OR_EQUAL("<="), EQUAL("=="), NOT_EQUAL("!="), RANGE("..");
+		GREATER(">"), GREATER_OR_EQUAL(">="), LESS("<"), LESS_OR_EQUAL("<="), EQUAL("="), NOT_EQUAL("!="), RANGE("..");
 
 		private String	symbol;
 
