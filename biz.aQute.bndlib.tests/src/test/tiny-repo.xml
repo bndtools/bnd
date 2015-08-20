@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<repository increment="1439892430880" name="Release" xmlns="http://www.osgi.org/xmlns/repository/v1.0.0">
+  <resource>
+    <capability namespace="osgi.identity">
+      <attribute name="osgi.identity" value="aQute.xray.plugin"/>
+    </capability>
+    <capability namespace="foo">
+      <attribute name="osgi.identity" value="aQute.xray.plugin"/>
+    </capability>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.apache.felix.scr)(version&gt;=1.6.0)(!(version&gt;=2.0.0)))"/>
+    </requirement>
+  </resource>
+</repository>

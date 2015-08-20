@@ -1,4 +1,4 @@
-package aQute.bnd.osgi.resource;
+package aQute.bnd.osgi.repository;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,6 +9,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.lib.collections.MultiMap;
 
 public class ResourcesRepository implements org.osgi.service.repository.Repository {
