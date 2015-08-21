@@ -1,13 +1,12 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
--buildpath: osgi.core;version=5.0.0,\
-	osgi.enterprise;version=5.0.0, \
+-buildpath: osgi.core;version=@5,\
+	osgi.cmpn;version=@5, \
     aQute.libg;version=latest,\
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.repository;version=snapshot,\
-	org.apache.felix.resolver;version=1.4;packages=org.apache.felix.resolver.*,\
-	osgi.cmpn;version=4.3.1
+	org.apache.felix.resolver;version=1.4;packages=org.apache.felix.resolver.*
 	
 -testpath: \
 	junit.osgi,\

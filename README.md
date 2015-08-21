@@ -3,7 +3,7 @@ bnd is a swiss army knife for OSGi, it creates manifest headers for you based on
 analyzing the class code, it verifies your settings, it manages project dependencies,
 gives you quote of the day, diffs jars, and much more. 
 
-The information about bnd can be found at <http://www.aQute.biz/Bnd>
+The information about bnd can be found at <http://bnd.bndtools.org>
 
 ## Repository
 The git repository contains all code. It contains the following projects:
@@ -20,7 +20,6 @@ The git repository contains all code. It contains the following projects:
 * cnf - Configuration directory
 * demo - Used in testing
 * dist - Contains the distribution after 'gradle'
-* osgi.r5 - OSGi jars without all dependencies
 
 ## License
 All code is Apache 2.0 Licensed so you can do what you want with the source code. 

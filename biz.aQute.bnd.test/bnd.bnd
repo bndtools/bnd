@@ -9,6 +9,6 @@ Export-Package:         aQute.bnd.test.*
 -buildpath: \
     aQute.libg;version=project,\
 	biz.aQute.bndlib;version=project,\
-	osgi.core;version=4.3.1,\
-	osgi.cmpn;version=4.3.1,\
+	osgi.core;version=@5,\
+	osgi.cmpn;version=@5,\
 	junit.osgi
