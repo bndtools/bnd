@@ -1,25 +1,45 @@
 package test.component;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.jar.Manifest;
 
-import javax.xml.namespace.*;
-import javax.xml.parsers.*;
-import javax.xml.xpath.*;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
-import org.osgi.framework.*;
-import org.w3c.dom.*;
-import org.xml.sax.*;
+import org.osgi.framework.ServiceReference;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
-import aQute.bnd.annotation.component.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.lib.io.IO;
+import aQute.lib.io.IOConstants;
 
+/**
+ * Test for use of DS components specified only by Service-Component headers.
+ */
 @SuppressWarnings({
 		"resource", "rawtypes"
 })
@@ -81,49 +101,12 @@ public class ComponentTest extends TestCase {
 	}
 
 	/**
-	 * Whitespace in Component name causes Component initialization to fail #548
-	 */
-
-	@Component(name = "Hello World Bnd ^ % / \\ $")
-	static class BrokenNameDS {
-
-	}
-
-	@Component(name = "Hello World")
-	static class BrokenNameBnd {
-
-	}
-
-	public void testBrokenName() throws Exception {
-		Builder b = new Builder();
-		try {
-			b.addClasspath(IO.getFile("bin"));
-			b.setProperty("Service-Component", "*Broken*");
-			b.setPrivatePackage("test.component");
-			Jar build = b.build();
-			assertTrue(b.check("Invalid component name"));
-			
-			Domain m = Domain.domain(build.getManifest());
-			
-			Parameters parameters = m.getParameters("Service-Component");
-			assertEquals( 2, parameters.size());
-			
-			System.out.println(parameters);
-			assertTrue( parameters.keySet().contains("OSGI-INF/Hello-World-Bnd---------$.xml"));
-			assertTrue( parameters.keySet().contains("OSGI-INF/Hello-World.xml"));
-		}
-		finally {
-			b.close();
-		}
-	}
-
-	/**
 	 * 112.5.7 says refeence order is used to order binding services, so from
 	 * headers we preserve order.
 	 * 
 	 * @throws Exception
 	 */
-	public static void testHeaderReferenceOrder() throws Exception {
+	public void testHeaderReferenceOrder() throws Exception {
 		Document doc = setup(ReferenceOrder.class.getName()
 				+ ";version:=1.1;z=org.osgi.service.http.HttpService?;a=org.osgi.service.http.HttpService?",
 				ReferenceOrder.class.getName());
@@ -136,7 +119,7 @@ public class ComponentTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testScalaObject() throws Exception {
+	public void testScalaObject() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("jar/com.test.scala.jar"));
 		b.setProperty("Service-Component", "*");
@@ -158,7 +141,7 @@ public class ComponentTest extends TestCase {
 	 * This is from https://github.com/bndtools/bnd/issues#issue/23
 	 */
 
-	public static void testProvideFromSuperClass() throws Exception {
+	public void testProvideFromSuperClass() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			IO.getFile("bin")
@@ -182,7 +165,7 @@ public class ComponentTest extends TestCase {
 	 * and no component
 	 */
 
-	public static void testNonFQNAndNoAnnotations() throws Exception {
+	public void testNonFQNAndNoAnnotations() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource",
 				"org/osgi/impl/service/coordinator/AnnotationWithJSR14.class=jar/AnnotationWithJSR14.jclass");
@@ -219,7 +202,7 @@ public class ComponentTest extends TestCase {
 		return doc;
 	}
 
-	public static void testV1_1Directives() throws Exception {
+	public void testV1_1Directives() throws Exception {
 		Element component = setup(
 				"test.activator.Activator11;factory:=blabla;immediate:=true;enabled:=false;configuration-policy:=optional;activate:=start;deactivate:=stop;modified:=modded",
 				"test.activator.Activator11").getDocumentElement();
@@ -233,12 +216,12 @@ public class ComponentTest extends TestCase {
 
 	}
 
-	public static void testNoNamespace() throws Exception {
+	public void testNoNamespace() throws Exception {
 		Element component = setup("test.activator.Activator");
 		assertEquals(null, component.getNamespaceURI());
 	}
 
-	public static void testAutoNamespace() throws Exception {
+	public void testAutoNamespace() throws Exception {
 		Element component = setup("test.activator.Activator;activate:='start';deactivate:='stop'");
 		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
 
@@ -260,12 +243,12 @@ public class ComponentTest extends TestCase {
 
 	}
 
-	public static void testCustomVersion() throws Exception {
+	public void testCustomVersion() throws Exception {
 		Element component = setup("test.activator.Activator;version:=2");
 		assertEquals("http://www.osgi.org/xmlns/scr/v2.0.0", component.getNamespaceURI());
 	}
 
-	public static void testCustomNamespace() throws Exception {
+	public void testCustomNamespace() throws Exception {
 		Element component = setup("test.activator.Activator;xmlns:='http://www.osgi.org/xmlns/xscr/v2.0.0'");
 		assertEquals("http://www.osgi.org/xmlns/xscr/v2.0.0", component.getNamespaceURI());
 	}
@@ -326,7 +309,7 @@ public class ComponentTest extends TestCase {
 	 * assertEquals(0, b.getErrors().size()); assertEquals(0,
 	 * b.getWarnings().size()); }
 	 */
-	public static void testImplementation() throws Exception {
+	public void testImplementation() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Analyzer.SERVICE_COMPONENT,
 				"silly.name;implementation:=test.activator.Activator;provide:=java.io.Serialization;servicefactory:=true");
@@ -355,7 +338,7 @@ public class ComponentTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testProperties() throws Exception {
+	public void testProperties() throws Exception {
 		java.util.Properties p = new Properties();
 		p.put(Analyzer.EXPORT_PACKAGE, "test.activator,org.osgi.service.http");
 		p.put(Analyzer.IMPORT_PACKAGE, "*");
@@ -418,7 +401,7 @@ public class ComponentTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testUnknownDirective() throws Exception {
+	public void testUnknownDirective() throws Exception {
 		java.util.Properties p = new Properties();
 		p.put(Analyzer.EXPORT_PACKAGE, "test.activator,org.osgi.service.http");
 		p.put(Analyzer.IMPORT_PACKAGE, "*");
@@ -442,7 +425,7 @@ public class ComponentTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testDirectives() throws Exception {
+	public void testDirectives() throws Exception {
 		Document doc = setup(
 				"test.activator.Activator;http=org.osgi.service.http.HttpService;dynamic:=http;optional:=http;provide:=test.activator.Activator; multiple:=http",
 				"test.activator.Activator");
@@ -463,7 +446,7 @@ public class ComponentTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testBadFilter() throws Exception {
+	public void testBadFilter() throws Exception {
 		java.util.Properties p = new Properties();
 		p.put(Analyzer.EXPORT_PACKAGE, "test.activator,org.osgi.service.http");
 		p.put(Analyzer.IMPORT_PACKAGE, "*");
@@ -487,7 +470,7 @@ public class ComponentTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testFilter() throws Exception {
+	public void testFilter() throws Exception {
 		Element component = setup("test.activator.Activator;http=\"org.osgi.service.http.HttpService(|(p=1)(p=2))\"");
 		Element implementation = (Element) component.getElementsByTagName("implementation").item(0);
 		assertEquals(null, implementation.getNamespaceURI());
@@ -506,7 +489,7 @@ public class ComponentTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testSimple() throws Exception {
+	public void testSimple() throws Exception {
 		Element component = setup("test.activator.Activator;http=org.osgi.service.http.HttpService?");
 		Element implementation = (Element) component.getElementsByTagName("implementation").item(0);
 		assertEquals(null, implementation.getNamespaceURI());
@@ -526,28 +509,28 @@ public class ComponentTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testQuestion() throws Exception {
+	public void testQuestion() throws Exception {
 		Element component = setup("test.activator.Activator;http=org.osgi.service.http.HttpService?");
 		Element reference = (Element) component.getElementsByTagName("reference").item(0);
 		assertEquals("0..1", reference.getAttribute("cardinality"));
 		assertEquals("dynamic", reference.getAttribute("policy"));
 	}
 
-	public static void testStar() throws Exception {
+	public void testStar() throws Exception {
 		Element component = setup("test.activator.Activator;http=org.osgi.service.http.HttpService*");
 		Element reference = (Element) component.getElementsByTagName("reference").item(0);
 		assertEquals("0..n", reference.getAttribute("cardinality"));
 		assertEquals("dynamic", reference.getAttribute("policy"));
 	}
 
-	public static void testPlus() throws Exception {
+	public void testPlus() throws Exception {
 		Element component = setup("test.activator.Activator;http=org.osgi.service.http.HttpService+");
 		Element reference = (Element) component.getElementsByTagName("reference").item(0);
 		assertEquals("1..n", reference.getAttribute("cardinality"));
 		assertEquals("dynamic", reference.getAttribute("policy"));
 	}
 
-	public static void testTilde() throws Exception {
+	public void testTilde() throws Exception {
 		Element component = setup("test.activator.Activator;http=org.osgi.service.http.HttpService~");
 		Element reference = (Element) component.getElementsByTagName("reference").item(0);
 		assertEquals("0..1", reference.getAttribute("cardinality"));

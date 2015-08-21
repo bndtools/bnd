@@ -29,11 +29,10 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 	}
 
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
-		Map<TypeRef,OCDDef> classToOCDMap = new HashMap<TypeRef,OCDDef>();
-		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.METATYPE_ANNOTATIONS));
+		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.METATYPE_ANNOTATIONS, "*"));
 		if (header.size() == 0)
 			return false;
-		
+
 		Parameters optionsHeader = OSGiHeader.parseHeader(analyzer.getProperty(Constants.METATYPE_ANNOTATIONS_OPTIONS));
 		EnumSet<Options> options = EnumSet.noneOf(Options.class);
 		for (String s : optionsHeader.keySet()) {
@@ -45,6 +44,8 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 						Constants.METATYPE_ANNOTATIONS_OPTIONS, s, EnumSet.allOf(Options.class));
 			}
 		}
+
+		Map<TypeRef,OCDDef> classToOCDMap = new HashMap<TypeRef,OCDDef>();
 
 		Set<String> ocdIds = new HashSet<String>();
 		Set<String> pids = new HashSet<String>();

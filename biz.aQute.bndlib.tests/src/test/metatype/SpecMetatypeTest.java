@@ -141,11 +141,11 @@ public class SpecMetatypeTest extends TestCase {
 		String nullid();
 	}
 	
-	static void assertAD(XmlTester xt, String id, String name) throws XPathExpressionException {
+	private void assertAD(XmlTester xt, String id, String name) throws XPathExpressionException {
 		assertAD(xt, id, name, null, null, null, 0, "String", null, null, null);
 	}
 
-	public static void testNaming() throws Exception {
+	public void testNaming() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -206,7 +206,7 @@ public class SpecMetatypeTest extends TestCase {
 		String a$$$(); // a$
 	}
 	
-	public static void testADCollision() throws Exception {
+	public void testADCollision() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -226,7 +226,7 @@ public class SpecMetatypeTest extends TestCase {
 		
 	}
 
-	public static void testOCDCollision() throws Exception {
+	public void testOCDCollision() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -266,7 +266,7 @@ public class SpecMetatypeTest extends TestCase {
 		
 	}
 
-	public static void testPidCollision() throws Exception {
+	public void testPidCollision() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -458,7 +458,7 @@ public class SpecMetatypeTest extends TestCase {
 		StringList<String> stringList();
 	}
 
-	public static void testCollections() throws Exception {
+	public void testCollections() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -504,10 +504,13 @@ public class SpecMetatypeTest extends TestCase {
 
 	private static final String[] optionLabels = {"requireConfiguration", "optionalConfiguration", "ignoreConfiguration"};
 	private static final String[] optionValues = optionLabels;
-	static void assertAD(XmlTester xt, String id, String name, String[] optionLabels, String[] optionValues) throws XPathExpressionException {
+
+	private void assertAD(XmlTester xt, String id, String name, String[] optionLabels, String[] optionValues)
+			throws XPathExpressionException {
 		assertAD(xt, id, name, null, null, null, 0, "String", null, optionLabels, optionValues);
 	}
-	public static void testEnum() throws Exception {
+
+	public void testEnum() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -554,7 +557,7 @@ public class SpecMetatypeTest extends TestCase {
 	@ObjectClassDefinition(name = "name", pid={"ocdNamePid"})
 	public static interface OCDName {}
 
-	public static void testOCD() throws Exception {
+	public void testOCD() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -624,7 +627,7 @@ public class SpecMetatypeTest extends TestCase {
 				"localization");
 	}
 
-	static void assertOCD(Builder b, String cname, String id, String name, String description, String designate,
+	private void assertOCD(Builder b, String cname, String id, String name, String description, String designate,
 			boolean factory, String localization) throws Exception {
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/" + id + ".xml");
 		assertNotNull(r);
@@ -709,7 +712,7 @@ public class SpecMetatypeTest extends TestCase {
 		String notRequired();
 	}
 
-	public static void testAD() throws Exception {
+	public void testAD() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -752,11 +755,11 @@ public class SpecMetatypeTest extends TestCase {
 				});
 	}
 
-	private static XmlTester xmlTester13(Resource r) throws Exception {
+	private XmlTester xmlTester13(Resource r) throws Exception {
 		return xmlTester(r, MetatypeVersion.VERSION_1_3);
 	}
 
-	private static XmlTester xmlTester(Resource r, MetatypeVersion version) throws Exception {
+	private XmlTester xmlTester(Resource r, MetatypeVersion version) throws Exception {
 		XmlTester xt = new XmlTester(r.openInputStream(), "metatype", version.getNamespace());
 		xt.assertNamespace(version.getNamespace());
 		return xt;
@@ -785,7 +788,7 @@ public class SpecMetatypeTest extends TestCase {
 		String fromChild();
 	}
 	
-	public static void testADWithInheritance() throws Exception {
+	public void testADWithInheritance() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -813,7 +816,7 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	@SuppressWarnings("null")
-	static void assertAD(XmlTester xt,
+	private void assertAD(XmlTester xt,
 	String id, String name, String min, String max, String deflt, int cardinality, String type, String description,
 			String[] optionLabels, 
 			String[] optionValues) throws XPathExpressionException {
@@ -947,7 +950,7 @@ public class SpecMetatypeTest extends TestCase {
 		URI[] raURI();
 	}
 
-	public static void testReturnTypes() throws Exception {
+	public void testReturnTypes() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -1069,7 +1072,7 @@ public class SpecMetatypeTest extends TestCase {
 		boolean enabled();
 	}
 
-	public static void testSimple() throws Exception {
+	public void testSimple() throws Exception {
 		MetatypeVersion version = MetatypeVersion.VERSION_1_3;
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
@@ -1122,7 +1125,7 @@ public class SpecMetatypeTest extends TestCase {
 		String[] strings() default {"bar", "baz"};
 	}
 	
-	public static void testAnnotationDefaults() throws Exception {
+	public void testAnnotationDefaults() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -1160,7 +1163,7 @@ public class SpecMetatypeTest extends TestCase {
 		
 	}
 	
-	public static void testAbstract() throws Exception {
+	public void testAbstract() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -1181,7 +1184,7 @@ public class SpecMetatypeTest extends TestCase {
 		NestedInner inner();
 	}
 	
-	public static void testNested() throws Exception {
+	public void testNested() throws Exception {
 		{
 			Builder b = new Builder();
 			b.addClasspath(new File("bin"));
@@ -1234,7 +1237,7 @@ public class SpecMetatypeTest extends TestCase {
 	@Designate(ocd = DesignateOCD.class, factory = true)
 	public static class DesignateComponent4 {}
 	
-	public static void testDesignate() throws Exception {
+	public void testDesignate() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -1322,7 +1325,7 @@ public class SpecMetatypeTest extends TestCase {
 		boolean enabled();
 	}
 
-	public static void testExtensions() throws Exception {
+	public void testExtensions() throws Exception {
 		MetatypeVersion version = MetatypeVersion.VERSION_1_3;
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
@@ -1380,7 +1383,7 @@ public class SpecMetatypeTest extends TestCase {
 		String[] escapes();
 	}
 
-	public static void testEscapes() throws Exception {
+	public void testEscapes() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");

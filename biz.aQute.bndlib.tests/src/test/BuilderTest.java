@@ -357,6 +357,8 @@ public class BuilderTest extends BndTestCase {
 			a.setExportPackage("test.component");
 			a.setProperty("testcases", "${sort;${classes;extending;junit.framework.TestCase;concrete}}");
 			a.setProperty("Test-Cases", "${testcases}");
+			a.setProperty("-dsannotations", "!*");
+			a.setProperty("-metatypeannotations", "!*");
 			Jar jar = a.build();
 			assertTrue(a.check());
 			Manifest m = jar.getManifest();
@@ -2487,11 +2489,11 @@ public class BuilderTest extends BndTestCase {
 	public static void testFindActivator() throws Exception {
 		Builder bmaker = new Builder();
 		try {
-			Properties p = new Properties();
-			p.put("Bundle-Activator", "test.activator.Activator");
-			p.put("build", "xyz"); // for @Version annotation
-			p.put("Private-Package", "test.*");
-			bmaker.setProperties(p);
+			bmaker.setProperty("Bundle-Activator", "test.activator.Activator");
+			bmaker.setProperty("build", "xyz"); // for @Version annotation
+			bmaker.setProperty("Private-Package", "test.*");
+			bmaker.setProperty("-dsannotations", "!*");
+			bmaker.setProperty("-metatypeannotations", "!*");
 			bmaker.setClasspath(new File[] {
 				new File("bin")
 			});

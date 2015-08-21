@@ -35,6 +35,7 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.osgi.service.component.annotations.ServiceScope;
 import org.osgi.service.log.LogService;
 import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 import aQute.bnd.annotation.xml.XMLAttribute;
 import aQute.bnd.component.AnnotationReader;
@@ -49,7 +50,7 @@ import aQute.bnd.test.BndTestCase;
 import aQute.bnd.test.XmlTester;
 
 /**
- * #118
+ * Test for use of DS components specified using spec DS annotations.
  */
 @SuppressWarnings({
 		"resource", "restriction"
@@ -72,7 +73,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
-	public static void testValidNamespaceVersion() throws Exception {
+	public void testValidNamespaceVersion() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*ValidNSVersion");
 		b.setProperty("Private-Package", "test.component");
@@ -106,7 +107,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
-	public static void testProperties() throws Exception {
+	public void testProperties() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*x");
 		b.setProperty("Private-Package", "test.component");
@@ -344,7 +345,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
-	public static void testBasic() throws Exception {
+	public void testBasic() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*_basic");
 		b.setProperty("Private-Package", "test.component");
@@ -793,7 +794,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
-	public static void testBasicFelix12() throws Exception {
+	public void testBasicFelix12() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*_basicFelix12");
 		b.setProperty("-ds-felix-extensions", "true");
@@ -820,7 +821,7 @@ public class DSAnnotationTest extends BndTestCase {
 		checkDSFelix12(jar, "test.component.DSAnnotationTest$updated_basicFelix12");
 	}
 
-	private static void checkDSFelix12(Jar jar, String name) throws Exception, XPathExpressionException {
+	private void checkDSFelix12(Jar jar, String name) throws Exception, XPathExpressionException {
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
@@ -884,7 +885,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
-	public static void testEnums() throws Exception {
+	public void testEnums() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Enums");
 		b.setProperty("Private-Package", "test.component");
@@ -963,7 +964,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
-	public static void testMethods() throws Exception {
+	public void testMethods() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Methods");
 		b.setProperty("Private-Package", "test.component");
@@ -1038,19 +1039,19 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
-	public static void testInheritance() throws Exception {
+	public void testInheritance() throws Exception {
 		testInheritance("-dsannotations-inherit", "true", false);
 	}
 
-	public static void testInheritanceFlag() throws Exception {
+	public void testInheritanceFlag() throws Exception {
 		testInheritance(Constants.DSANNOTATIONS_OPTIONS, "inherit", false);
 	}
 
-	public static void testInheritanceExtenderFlag() throws Exception {
+	public void testInheritanceExtenderFlag() throws Exception {
 		testInheritance(Constants.DSANNOTATIONS_OPTIONS, "inherit,extender", true);
 	}
 
-	public static void testInheritance(String key, String value, boolean extender) throws Exception {
+	public void testInheritance(String key, String value, boolean extender) throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Bottom");
 		b.setProperty(key, value);
@@ -1081,7 +1082,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 	
-	public static void testBadFlag() throws Exception {
+	public void testBadFlag() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Bottom");
 		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "foo");
@@ -1129,7 +1130,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
-	public static void testPrototypes() throws Exception {
+	public void testPrototypes() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Prototypes");
 		b.setProperty("Private-Package", "test.component");
@@ -1189,15 +1190,15 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
-	public static void testBinds() throws Exception {
+	public void testBinds() throws Exception {
 		testBinds(false);
 	}
 
-	public static void testBindsExtender() throws Exception {
+	public void testBindsExtender() throws Exception {
 		testBinds(true);
 	}
 
-	public static void testBinds(boolean extender) throws Exception {
+	public void testBinds(boolean extender) throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*CheckBinds");
 		if (extender)
@@ -1284,7 +1285,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
-	public static void testBinds13() throws Exception {
+	public void testBinds13() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*CheckBinds13");
 		b.setProperty("Private-Package", "test.component");
@@ -1314,7 +1315,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 	
-	public static void testNoUnbindDynamic() throws Exception {
+	public void testNoUnbindDynamic() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*NoUnbindDynamic");
 		b.setProperty("Private-Package", "test.component");
@@ -1329,7 +1330,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component(name="testConfigPolicy", configurationPolicy=ConfigurationPolicy.IGNORE)
 	public static class TestConfigPolicy {}
 	
-	public static void testConfigPolicySetsNamespace() throws Exception {
+	public void testConfigPolicySetsNamespace() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*TestConfigPolicy");
 		b.setProperty("Private-Package", "test.component");
@@ -1373,7 +1374,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
-	public static void testIssue347() throws Exception {
+	public void testIssue347() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*issue347");
 		b.setProperty("Private-Package", "test.component");
@@ -1442,7 +1443,7 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 	
-	public static void testReferenceInComponent() throws Exception {
+	public void testReferenceInComponent() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*ref_on_comp");
 		b.setProperty("Private-Package", "test.component");
@@ -1809,7 +1810,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
-	public static void testBasic13() throws Exception {
+	public void testBasic13() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13_*");
 		b.setProperty("Private-Package", "test.component");
@@ -1833,7 +1834,7 @@ public class DSAnnotationTest extends BndTestCase {
 		checkDS13(jar, "test.component.DSAnnotationTest$DS13_dollar_pids_basic", "test.component.DSAnnotationTest$DS13_dollar_pids_basic pid2", "");
 	}
 
-	private static void checkDS13(Jar jar, String name, String pids, String scope) throws Exception, XPathExpressionException {
+	private void checkDS13(Jar jar, String name, String pids, String scope) throws Exception, XPathExpressionException {
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
@@ -1871,7 +1872,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("", "scr:component/reference[1]/@policy-option");
 	}
 
-	public static void testNoHeaderDups() throws Exception {
+	public void testNoHeaderDups() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13_*");
 		b.setProperty("Private-Package", "test.component");
@@ -1967,7 +1968,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
-	public static void testAnnoConfig13() throws Exception {
+	public void testAnnoConfig13() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13anno_*");
 		b.setProperty("Private-Package", "test.component");
@@ -1985,7 +1986,7 @@ public class DSAnnotationTest extends BndTestCase {
 		checkDS13Anno(jar, DS13anno_configTypes_modified.class.getName(), "");
 	}
 	
-	private static void checkDS13Anno(Jar jar, String name, String pids) throws Exception, XPathExpressionException {
+	private void checkDS13Anno(Jar jar, String name, String pids) throws Exception, XPathExpressionException {
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
@@ -2079,7 +2080,7 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 
-	public static void testAnnoConfigNames13() throws Exception {
+	public void testAnnoConfigNames13() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13annoNames_config*");
 		b.setProperty("Private-Package", "test.component");
@@ -2094,7 +2095,7 @@ public class DSAnnotationTest extends BndTestCase {
 		checkDS13AnnoConfigNames(jar, DS13annoNames_config.class.getName());
 	}
 	
-	private static void checkDS13AnnoConfigNames(Jar jar, String name) throws Exception, XPathExpressionException {
+	private void checkDS13AnnoConfigNames(Jar jar, String name) throws Exception, XPathExpressionException {
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
@@ -2206,7 +2207,7 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 
-	public static void testAnnoConfigOverrides13() throws Exception {
+	public void testAnnoConfigOverrides13() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13annoOverride_*");
 		b.setProperty("Private-Package", "test.component");
@@ -2224,7 +2225,7 @@ public class DSAnnotationTest extends BndTestCase {
 		checkDS13AnnoOverride(jar, DS13annoOverride_d_m.class.getName());
 	}
 	
-	private static void checkDS13AnnoOverride(Jar jar, String name) throws Exception, XPathExpressionException {
+	private void checkDS13AnnoOverride(Jar jar, String name) throws Exception, XPathExpressionException {
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
@@ -2282,7 +2283,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
-	public static void testFieldInjection() throws Exception {
+	public void testFieldInjection() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*TestFieldInjection");
 		b.setProperty("Private-Package", "test.component");
@@ -2347,7 +2348,7 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 	
-	public static void testFieldCollectionType() throws Exception {
+	public void testFieldCollectionType() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*TestFieldCollectionType");
 		b.setProperty("Private-Package", "test.component");
@@ -2391,7 +2392,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("tuple", "scr:component/reference[5]/@field-collection-type");
 	}
 
-	private static void checkProvides(Attributes a, String[]... objectClass) {
+	private void checkProvides(Attributes a, String[]... objectClass) {
 		String p = a.getValue(Constants.PROVIDE_CAPABILITY);
 		System.err.println(Constants.PROVIDE_CAPABILITY + ":" + p);
 		Parameters header = new Parameters(p);
@@ -2409,7 +2410,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
-	private static void checkRequires(Attributes a, boolean extender, String... objectClass) {
+	private void checkRequires(Attributes a, boolean extender, String... objectClass) {
 		String p = a.getValue(Constants.REQUIRE_CAPABILITY);
 		System.err.println(Constants.REQUIRE_CAPABILITY + ":" + p);
 		Parameters header = new Parameters(p);
@@ -2433,12 +2434,12 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
-	private static Attributes getAttr(Jar jar) throws Exception {
+	private Attributes getAttr(Jar jar) throws Exception {
 		Manifest m = jar.getManifest();
 		return m.getMainAttributes();
 	}
 
-	private static List<Attrs> getAll(Parameters p, String key) {
+	private List<Attrs> getAll(Parameters p, String key) {
 		List<Attrs> l = new ArrayList<Attrs>();
 		for (; p.containsKey(key); key += aQute.bnd.osgi.Constants.DUPLICATE_MARKER) {
 			l.add(p.get(key));
@@ -2452,6 +2453,7 @@ public class DSAnnotationTest extends BndTestCase {
 		void activate(Map<String,Object> props) {}
 	}
 
+	@ObjectClassDefinition
 	@interface config {}
 
 	@Component
@@ -2488,7 +2490,7 @@ public class DSAnnotationTest extends BndTestCase {
 		void activate(Map<String,Object> props) {}
 	}
 
-	public static void testDesignate() throws Exception {
+	public void testDesignate() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*Designate*");
 		b.setProperty("Private-Package", "test.component");
@@ -2505,7 +2507,7 @@ public class DSAnnotationTest extends BndTestCase {
 		checkConfigurationPolicy(jar, DesignateFactoryOptional.class, "optional");
 	}
 
-	static void checkConfigurationPolicy(Jar jar, Class< ? > clazz, String option) throws Exception,
+	void checkConfigurationPolicy(Jar jar, Class< ? > clazz, String option) throws Exception,
 			XPathExpressionException {
 		Resource r = jar.getResource("OSGI-INF/" + clazz.getName() + ".xml");
 		assertNotNull(r);
@@ -2574,7 +2576,7 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 
-	public static void testExtraAttributes() throws Exception {
+	public void testExtraAttributes() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$ExtraAttributes*");
 		b.setProperty("Private-Package", "test.component");
@@ -2660,7 +2662,7 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 
-	public static void testPrefixCollisionExtraAttributes() throws Exception {
+	public void testPrefixCollisionExtraAttributes() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$PrefixCollisionExtraAttributes*");
 		b.setProperty("Private-Package", "test.component");
@@ -2750,7 +2752,7 @@ public class DSAnnotationTest extends BndTestCase {
 		public void run() {}
 	}
 
-	public static void testPrefixCollisionExtraAttributesDefaultPrefix() throws Exception {
+	public void testPrefixCollisionExtraAttributesDefaultPrefix() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DefaultPrefixCollisionExtraAttributes*");
 		b.setProperty("Private-Package", "test.component");
@@ -2798,7 +2800,7 @@ public class DSAnnotationTest extends BndTestCase {
 		void stop() {}
 	}
 
-	public static void testMixedStandardBnd() throws Exception {
+	public void testMixedStandardBnd() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$MixedStdBnd");
 		b.setProperty("Private-Package", "test.component");
@@ -2832,7 +2834,7 @@ public class DSAnnotationTest extends BndTestCase {
 		private LogService			log2;
 	}
 
-	public static void testVolatileFieldDynamic() throws Exception {
+	public void testVolatileFieldDynamic() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*VolatileField");
 		b.setProperty("Private-Package", "test.component");
@@ -2871,7 +2873,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
-	public static void testFinalDynamicCollectionField() throws Exception {
+	public void testFinalDynamicCollectionField() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*FinalDynamicCollectionField");
 		b.setProperty("Private-Package", "test.component");
