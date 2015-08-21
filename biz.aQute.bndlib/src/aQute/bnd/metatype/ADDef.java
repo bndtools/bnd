@@ -2,6 +2,8 @@ package aQute.bnd.metatype;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.AttributeType;
@@ -67,7 +69,8 @@ public class ADDef extends ExtensionDef {
 			StringBuffer b = new StringBuffer();
 			String sep = "";
 			for (String defaultValue :defaults) {
-				b.append(sep).append(defaultValue);
+				b.append(sep);
+				escape(defaultValue, b);
 				sep = ",";
 			}
 			ad.addAttribute("default", b.toString());
@@ -80,6 +83,20 @@ public class ADDef extends ExtensionDef {
 		addAttributes(ad, namespaces);
 
 		return ad;
+	}
+
+	private static final Pattern	escapes	= Pattern.compile("[ ,\\\\]");
+
+	private void escape(String defaultValue, StringBuffer b) {
+		Matcher m = escapes.matcher(defaultValue);
+		while (m.find()) {
+			String match = m.group();
+			if (match.equals("\\"))
+				m.appendReplacement(b, "\\\\\\\\");
+			else
+				m.appendReplacement(b, "\\\\" + match);
+		}
+		m.appendTail(b);
 	}
 
 }

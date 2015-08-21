@@ -824,7 +824,7 @@ public class SpecMetatypeTest extends TestCase {
 		xt.assertExactAttribute(max == null ? "" : max,
 				"metatype:MetaData/OCD/AD[@id='" + id + "']/@max");
 		xt.assertExactAttribute(deflt == null ? "" : deflt,
-				"metatype:MetaData/OCD/AD[@id='" + id + "']/@deflt");
+ "metatype:MetaData/OCD/AD[@id='" + id + "']/@default");
 		if (cardinality == 0) {
 			xt.assertExactAttribute("",
 					"metatype:MetaData/OCD/AD[@id='" + id + "']/@cardinality");
@@ -1369,6 +1369,34 @@ public class SpecMetatypeTest extends TestCase {
 		xt.assertExactAttribute("A", "metatype:MetaData/OCD/AD[@id='enabled']/@foo:fooAttr2");
 		xt.assertExactAttribute(Object.class.getName(), "metatype:MetaData/OCD/AD[@id='enabled']/@foo:classAttr2");
 		xt.assertExactAttribute("true", "metatype:MetaData/OCD/AD[@id='enabled']/@foo:booleanAttr2");
+
+	}
+
+	@ObjectClassDefinition
+	@interface Escapes {
+		@AttributeDefinition(defaultValue = {
+				" , \\", "a,b", "c,d", "'apostrophe'", "\"quote\"&amp;"
+		})
+		String[] escapes();
+	}
+
+	public static void testEscapes() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setProperty("Export-Package", "test.metatype");
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, Escapes.class.getName());
+		b.build();
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$Escapes.xml");
+		assertEquals(0, b.getErrors().size());
+		assertEquals(0, b.getWarnings().size());
+		System.err.println(b.getJar().getResources().keySet());
+		assertNotNull(r);
+		IO.copy(r.openInputStream(), System.err);
+
+		XmlTester xt = xmlTester13(r);
+
+		assertAD(xt, "escapes", "Escapes", null, null, "\\ \\,\\ \\\\,a\\,b,c\\,d,'apostrophe',\"quote\"&amp;",
+				2147483647, "String", null, null, null);
 
 	}
 
