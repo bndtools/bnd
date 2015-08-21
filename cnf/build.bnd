@@ -86,8 +86,8 @@ bndlib:                   aQute.libg;version='[${bnd-version-base},${bnd-version
 aQute-repository:         biz.aQute.repository;version='[${bnd-version-base},${bnd-version-ceiling})'
 aQute-resolve:            biz.aQute.resolve;version='[${bnd-version-base},${bnd-version-ceiling})'
 
-osgi.core.version:        4.3.1
-osgi.cmpn.version:        4.3.1
+osgi.core.version:        5.0.0
+osgi.cmpn.version:        5.0.0
 
 # We use git
 Git-Descriptor:           ${system-allow-fail;git describe --dirty --always}

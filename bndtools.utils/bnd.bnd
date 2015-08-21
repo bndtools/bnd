@@ -6,7 +6,6 @@
     osgi.cmpn;version=${osgi.cmpn.version},\
     ${bndlib}, \
     org.eclipse.osgi, \
-    osgi.r5;version=1.0.1, \
     org.eclipse.equinox.common, \
     org.eclipse.equinox.registry, \
     org.eclipse.core.runtime, \
