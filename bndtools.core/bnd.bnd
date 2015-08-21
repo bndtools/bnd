@@ -92,7 +92,6 @@ eclipse.deps: \
 	${eclipse.deps},\
 	javax.xml,\
 	javax.xml.stream,\
-	osgi.r5;version=1.0.1,\
 	libs/org.osgi.service.obr-1.0.2.jar;version=file,\
 	libs/jcip-annotations.jar;version=file,\
 	bndtools.api;version=latest,\
