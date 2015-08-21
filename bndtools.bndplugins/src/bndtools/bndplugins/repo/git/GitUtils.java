@@ -8,22 +8,23 @@ import java.util.Map;
 
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.errors.ConfigInvalidException;
 import org.eclipse.jgit.errors.TransportException;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileBasedConfig;
-import org.eclipse.jgit.storage.file.FileRepository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.util.FS;
 
 public class GitUtils {
 
-    private static final Map<File,FileRepository> localRepos = new HashMap<File,FileRepository>();
+    private static final Map<File,Repository> localRepos = new HashMap<File,Repository>();
 
-    public static synchronized FileRepository getRepository(File gitRoot, String branch, String gitUrl, String gitPushUrl) throws IOException, ConfigInvalidException, JGitInternalException {
+    public static synchronized Repository getRepository(File gitRoot, String branch, String gitUrl, String gitPushUrl) throws IOException, ConfigInvalidException, JGitInternalException, GitAPIException {
 
         File dotGit;
         if (gitRoot.getName().equals(Constants.DOT_GIT)) {
@@ -32,7 +33,7 @@ public class GitUtils {
             dotGit = new File(gitRoot, Constants.DOT_GIT);
         }
 
-        FileRepository repository = localRepos.get(dotGit);
+        Repository repository = localRepos.get(dotGit);
         if (repository != null && dotGit.exists()) {
             return repository;
         }
@@ -84,7 +85,7 @@ public class GitUtils {
         return repository;
     }
 
-    private static boolean branchExists(Git git, String branch) {
+    private static boolean branchExists(Git git, String branch) throws GitAPIException {
         List<Ref> refs = git.branchList().call();
         for (Ref ref : refs) {
             if (branch.equals(ref.getName())) {
