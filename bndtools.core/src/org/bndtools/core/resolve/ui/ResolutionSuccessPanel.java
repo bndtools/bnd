@@ -264,9 +264,9 @@ public class ResolutionSuccessPanel {
         this.result = result;
         checkedOptional.clear();
 
-        Set<Resource> wirings = (result != null) ? result.getResourceWirings().keySet() : null;
+        Set<Resource> wirings = (result != null && result.getResourceWirings() != null) ? result.getResourceWirings().keySet() : null;
         requiredViewer.setInput(wirings != null ? wirings : null);
-        wirings = (result != null) ? new HashSet<Resource>(result.getOptionalResources().keySet()) : new HashSet<Resource>();
+        wirings = (result != null && result.getOptionalResources() != null) ? new HashSet<Resource>(result.getOptionalResources().keySet()) : new HashSet<Resource>();
 
         wirings.addAll(addedOptionals.keySet());
 
