@@ -1,20 +1,11 @@
 #
-# Eclipse Repositories
+# Eclipse Repository. Eclipse 4.3.2
 #
-
-# SDK 3.7.2
-eclipse-repo: aQute.bnd.deployer.repository.FixedIndexedRepo; name=Eclipse SDK 3.7.2; locations=http://eclipse-repo-3.7.2.s3.amazonaws.com/index.xml.gz
-
-# SDK 4.2RC4
-#eclipse-repo: aQute.lib.deployer.obr.OBR; name=Eclipse SDK 4.2RC4; locations=https://s3.amazonaws.com/eclipse-obr-4.2RC4/repository.xml
-
-
-
+eclipse-repo: aQute.bnd.deployer.repository.FixedIndexedRepo; name="Eclipse IDE for Java Developers 4.3.2"; locations=https://dl.bintray.com/bndtools/eclipse-repo/4.3.2/index.xml.gz
 
 #
 # Bnd Repository. See ${workspace}/gradle.properties for the bnd_repourl property.
 #
-
 bndRepo: ${bnd_repourl}/index.xml.gz
 
 #
