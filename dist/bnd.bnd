@@ -20,6 +20,5 @@
              org.osgi.impl.bundle.repoindex.lib, \
              org.osgi.impl.bundle.repoindex.ant, \
              org.osgi.impl.bundle.repoindex.cli, \
-             org.osgi.impl.bundle.repoindex.test, \
-             osgi.r5
+             org.osgi.impl.bundle.repoindex.test
 -nobundles = true

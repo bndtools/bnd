@@ -2,7 +2,7 @@
 -buildpath: \
 	ee.j2se;version=1.6,\
 	biz.aQute.bndlib;version=latest;packages=*, \
-	osgi.core;version=6
+	osgi.core;version=@6
 
 -sub: *.bnd
 -runfw: org.apache.felix.framework;version='[4.2.1,4.2.1]'

@@ -25,7 +25,7 @@ Import-Package: \
 	*
 
 -buildpath: \
-	osgi.core;version=4.3.1,\
+	osgi.core;version=@5,\
 	biz.aQute.bnd.annotation;version=latest,\
 	com.springsource.org.junit
 
