@@ -22,7 +22,6 @@ Conditional-Package: org.example.tests.utils
 -runpath: org.mockito.mockito-all;version=1.9
 -runbundles: \
 	org.osgi.impl.bundle.repoindex.lib;version=latest,\
-  	osgi.cmpn;version=4.3.1, \
   	com.springsource.org.junit;version=4.10.0
   
 -runvm: -ea
