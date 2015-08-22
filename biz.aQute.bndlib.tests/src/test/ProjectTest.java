@@ -109,7 +109,7 @@ public class ProjectTest extends TestCase {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("repofilter");
 		assertNotNull(project);
-		project.setProperty("-buildpath", "p3; version='[1,2)'; repos=Relea*");
+		project.setProperty("-buildpath", "p3; version='[1,2)'; repo=Relea*");
 
 		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
 		assertEquals(2, buildpath.size());
@@ -122,7 +122,7 @@ public class ProjectTest extends TestCase {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("repofilter");
 
-		project.setProperty("-buildpath", "org.apache.felix.configadmin; version=latest; repos=Rel*|Repo");
+		project.setProperty("-buildpath", "org.apache.felix.configadmin; version=latest; repo=\"Rel*,Repo\"");
 		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
 		assertEquals(2, buildpath.size());
 		// Expect 1.2.0 from Release repo; not 1.8.8 from Repo2
@@ -148,7 +148,7 @@ public class ProjectTest extends TestCase {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("repofilter");
 		assertNotNull(project);
-		project.setProperty("-buildpath", "*; repos=Relea*");
+		project.setProperty("-buildpath", "*; repo=Relea*");
 
 		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
 		assertEquals(3, buildpath.size());

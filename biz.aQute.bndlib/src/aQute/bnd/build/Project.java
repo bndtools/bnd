@@ -673,7 +673,7 @@ public class Project extends Processor {
 		else
 			versionRange = new VersionRange(range);
 
-		RepoFilter repoFilter = repoNameFilter(attrs);
+		RepoFilter repoFilter = parseRepoFilter(attrs);
 
 		if (bsnPattern != null)
 			bsnPattern = bsnPattern.trim();
@@ -1105,7 +1105,7 @@ public class Project extends Processor {
 		}
 
 		useStrategy = overrideStrategy(attrs, useStrategy);
-		RepoFilter repoFilter = repoNameFilter(attrs);
+		RepoFilter repoFilter = parseRepoFilter(attrs);
 
 		List<RepositoryPlugin> plugins = workspace.getRepositories();
 
@@ -1262,15 +1262,15 @@ public class Project extends Processor {
 		}
 	}
 
-	protected RepoFilter repoNameFilter(Map<String,String> attrs) {
+	protected RepoFilter parseRepoFilter(Map<String,String> attrs) {
 		if (attrs == null)
 			return null;
-		String patternStr = attrs.get("repos");
+		String patternStr = attrs.get("repo");
 		if (patternStr == null)
 			return null;
 
 		List<Pattern> patterns = new LinkedList<>();
-		QuotedTokenizer tokenize = new QuotedTokenizer(patternStr, "|");
+		QuotedTokenizer tokenize = new QuotedTokenizer(patternStr, ",");
 
 		String token = tokenize.nextToken();
 		while (token != null) {
