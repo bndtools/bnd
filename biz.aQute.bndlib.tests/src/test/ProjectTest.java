@@ -118,6 +118,17 @@ public class ProjectTest extends TestCase {
 		assertEquals("1.1.0", buildpath.get(1).getVersion());
 	}
 	
+	public void testRepoFilterBuildPathMultiple() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+		Project project = ws.getProject("repofilter");
+
+		project.setProperty("-buildpath", "org.apache.felix.configadmin; version=latest; repos=Rel*|Repo");
+		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
+		assertEquals(2, buildpath.size());
+		// Expect 1.2.0 from Release repo; not 1.8.8 from Repo2
+		assertEquals("1.2.0", buildpath.get(1).getVersion());
+	}
+
 	public void testWildcardBuildPath() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("repofilter");
@@ -175,7 +186,8 @@ public class ProjectTest extends TestCase {
 
 		top.setProperty("a", "${repo;org.apache.felix.configadmin;latest}");
 		System.out.println( "a= '" + top.getProperty("a") + "'");
-		assertTrue(top.getProperty("a").endsWith("org.apache.felix.configadmin/org.apache.felix.configadmin-1.2.0.jar".replace('/',File.separatorChar)));
+		assertTrue(top.getProperty("a").endsWith("org.apache.felix.configadmin/org.apache.felix.configadmin-1.8.8.jar"
+				.replace('/', File.separatorChar)));
 
 		top.setProperty("a", "${repo;IdoNotExist;latest}");
 		top.getProperty("a");
@@ -485,14 +497,14 @@ public class ProjectTest extends TestCase {
 		System.err.println(project.getPlugins(FileRepo.class));
 		String s = project.getReplacer().process(("${repo;libtest}"));
 		System.err.println(s);
-		assertTrue(s.contains("org.apache.felix.configadmin" + File.separator + "org.apache.felix.configadmin-1.2.0"));
+		assertTrue(s.contains("org.apache.felix.configadmin" + File.separator + "org.apache.felix.configadmin-1.8.8"));
 		assertTrue(s.contains("org.apache.felix.ipojo" + File.separator + "org.apache.felix.ipojo-1.0.0.jar"));
 
 		s = project.getReplacer().process(("${repo;libtestxyz}"));
 		assertTrue(s.matches(""));
 
 		s = project.getReplacer().process("${repo;org.apache.felix.configadmin;1.0.0;highest}");
-		assertTrue(s.endsWith("org.apache.felix.configadmin-1.2.0.jar"));
+		assertTrue(s.endsWith("org.apache.felix.configadmin-1.8.8.jar"));
 		s = project.getReplacer().process("${repo;org.apache.felix.configadmin;1.0.0;lowest}");
 		assertTrue(s.endsWith("org.apache.felix.configadmin-1.0.1.jar"));
 	}
