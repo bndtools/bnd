@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -77,6 +78,7 @@ import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.command.Command;
 import aQute.libg.generics.Create;
 import aQute.libg.glob.Glob;
+import aQute.libg.qtokens.QuotedTokenizer;
 import aQute.libg.reporter.ReporterMessages;
 import aQute.libg.sed.Replacer;
 import aQute.libg.sed.Sed;
@@ -671,7 +673,7 @@ public class Project extends Processor {
 		else
 			versionRange = new VersionRange(range);
 
-		Pattern repoFilter = repoNameFilter(attrs);
+		RepoFilter repoFilter = parseRepoFilter(attrs);
 
 		if (bsnPattern != null)
 			bsnPattern = bsnPattern.trim();
@@ -682,11 +684,9 @@ public class Project extends Processor {
 
 		List<RepositoryPlugin> plugins = workspace.getRepositories();
 		for (RepositoryPlugin plugin : plugins) {
-			if (repoFilter != null) {
-				boolean matches = repoFilter.matcher(plugin.getName()).matches();
-				if (!matches)
-					continue;
-			}
+
+			if (repoFilter != null && !repoFilter.match(plugin))
+				continue;
 
 			List<String> bsns = plugin.list(bsnPattern);
 			if (bsns != null)
@@ -1105,7 +1105,7 @@ public class Project extends Processor {
 		}
 
 		useStrategy = overrideStrategy(attrs, useStrategy);
-		Pattern reposFilter = repoNameFilter(attrs);
+		RepoFilter repoFilter = parseRepoFilter(attrs);
 
 		List<RepositoryPlugin> plugins = workspace.getRepositories();
 
@@ -1135,11 +1135,8 @@ public class Project extends Processor {
 			SortedMap<Version,RepositoryPlugin> versions = new TreeMap<Version,RepositoryPlugin>();
 			for (RepositoryPlugin plugin : plugins) {
 
-				if (reposFilter != null) {
-					boolean matches = reposFilter.matcher(plugin.getName()).matches();
-					if (!matches)
-						continue;
-				}
+				if (repoFilter != null && !repoFilter.match(plugin))
+					continue;
 
 				try {
 					SortedSet<Version> vs = plugin.versions(bsn);
@@ -1247,13 +1244,40 @@ public class Project extends Processor {
 		return useStrategy;
 	}
 
-	protected Pattern repoNameFilter(Map<String,String> attrs) {
+	private static class RepoFilter {
+		private Pattern[] patterns;
+
+		RepoFilter(Pattern[] patterns) {
+			this.patterns = patterns;
+		}
+
+		boolean match(RepositoryPlugin repo) {
+			if (patterns == null)
+				return true;
+			for (Pattern pattern : patterns) {
+				if (pattern.matcher(repo.getName()).matches())
+					return true;
+			}
+			return false;
+		}
+	}
+
+	protected RepoFilter parseRepoFilter(Map<String,String> attrs) {
 		if (attrs == null)
 			return null;
-		String patternStr = attrs.get("repos");
+		String patternStr = attrs.get("repo");
 		if (patternStr == null)
 			return null;
-		return Glob.toPattern(patternStr);
+
+		List<Pattern> patterns = new LinkedList<>();
+		QuotedTokenizer tokenize = new QuotedTokenizer(patternStr, ",");
+
+		String token = tokenize.nextToken();
+		while (token != null) {
+			patterns.add(Glob.toPattern(token));
+			token = tokenize.nextToken();
+		}
+		return new RepoFilter(patterns.toArray(new Pattern[patterns.size()]));
 	}
 
 	/**

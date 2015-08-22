@@ -6,6 +6,9 @@ build = sometime
                                 readonly=false;name=Release, \
                         aQute.lib.deployer.FileRepo; \
                                 location=${workspace}/cnf/repo; \
-                                readonly=true;name=Repo
-                                
+                                readonly=true;name=Repo,\
+                        aQute.lib.deployer.FileRepo; \
+                                location=${workspace}/cnf/repo2; \
+                                readonly=true;name=Repo2
+
 -runrepos: testing
