@@ -190,4 +190,5 @@ crossplatform.runprops: \
 	eclipse.application=org.eclipse.ui.ide.workbench,\
 	eclipse.consoleLog=,\
 	eclipse.product=org.eclipse.sdk.ide,\
-	osgi.console=
+	osgi.console=,\
+	osgi.instance.area.default=../bndtools.test/workspace
