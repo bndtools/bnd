@@ -19,55 +19,64 @@ workspace.bundles: \
 	org.bndtools.versioncontrol.ignores.manager;version=snapshot,\
 	org.bndtools.versioncontrol.ignores.plugin.git;version=snapshot
 
-p2.bundles: org.eclipse.equinox.p2.core,\
+p2.bundles: \
+	org.eclipse.equinox.p2.core,\
 	org.eclipse.equinox.p2.engine,\
-	org.eclipse.equinox.p2.repository,\
+	org.eclipse.equinox.p2.jarprocessor,\
 	org.eclipse.equinox.p2.metadata,\
 	org.eclipse.equinox.p2.metadata.repository,\
-	org.eclipse.equinox.p2.jarprocessor
+	org.eclipse.equinox.p2.repository
 
-sdk.bundles: org.eclipse.sdk,\
-	org.eclipse.pde.runtime
+sdk.bundles: \
+	org.eclipse.pde.runtime,\
+	org.eclipse.sdk
 
 help.bundles: \
+	javax.el,\
+	javax.servlet,\
+	javax.servlet.jsp,\
+	org.apache.commons.logging,\
+	org.apache.lucene,\
+	org.apache.lucene.analysis,\
+	org.apache.lucene.core,\
+	org.apache.lucene.misc,\
+	org.apache.lucene.queries,\
+	org.eclipse.ant.core,\
+	org.eclipse.equinox.http.jetty,\
+	org.eclipse.equinox.http.registry,\
+	org.eclipse.equinox.http.servlet,\
+	org.eclipse.equinox.jsp.jasper,\
+	org.eclipse.equinox.jsp.jasper.registry,\
 	org.eclipse.help,\
 	org.eclipse.help.base,\
 	org.eclipse.help.ui,\
 	org.eclipse.help.webapp,\
-	org.apache.lucene,\
-	org.apache.lucene.core,\
-	org.apache.lucene.analysis,\
-	org.apache.lucene.misc,\
-	org.apache.lucene.queries,\
 	org.eclipse.platform.doc.user,\
-	org.eclipse.ant.core,\
-	javax.el,\
-	javax.servlet,\
-	javax.servlet.jsp,\
-	org.hamcrest.core,\
-	org.apache.commons.logging,\
-	org.eclipse.equinox.http.jetty,\
-	org.eclipse.equinox.http.servlet,\
-	org.eclipse.equinox.http.registry,\
-	org.eclipse.equinox.jsp.jasper,\
-	org.eclipse.equinox.jsp.jasper.registry,\
 	org.eclipse.search,\
 	org.eclipse.ui.cheatsheets,\
 	org.eclipse.ui.net
 
 # TODO: separate this morass into more coherent libs!
-crossplatform.bundles:\
-	${bndlib},\
+crossplatform.bundles: \
 	${aQute-repository},\
 	${aQute-resolve},\
+	${bndlib},\
+	${help.bundles},\
+	${p2.bundles},\
+	${workspace.bundles},\
 	bndtools.runtime.eclipse.applaunch,\
-	org.osgi.impl.bundle.bindex;version=latest,\
-	javax.xml,\
-	javax.xml.stream,\
+	com.ibm.icu,\
+	javax.annotation,\
 	javax.el,\
 	javax.inject,\
-	javax.annotation,\
-	com.ibm.icu,\
+	javax.xml,\
+	javax.xml.stream,\
+	org.apache.batik.css,\
+	org.apache.batik.util,\
+	org.apache.batik.util.gui,\
+	org.apache.jasper.glassfish,\
+	org.eclipse.compare,\
+	org.eclipse.compare.core,\
 	org.eclipse.core.commands,\
 	org.eclipse.core.contenttype,\
 	org.eclipse.core.databinding,\
@@ -75,116 +84,110 @@ crossplatform.bundles:\
 	org.eclipse.core.databinding.observable,\
 	org.eclipse.core.databinding.property,\
 	org.eclipse.core.expressions,\
-	org.eclipse.core.jobs,\
-	org.eclipse.core.runtime,\
-	org.eclipse.core.runtime.compatibility.auth,\
-	org.eclipse.equinox.app,\
-	org.eclipse.equinox.common,\
-	org.eclipse.equinox.ds,\
-	org.eclipse.equinox.launcher,\
-	org.eclipse.equinox.preferences,\
-	org.eclipse.equinox.registry,\
-	org.eclipse.equinox.simpleconfigurator,\
-	org.eclipse.equinox.util,\
-	org.eclipse.jetty.http,\
-	org.eclipse.jetty.io,\
-	org.eclipse.jetty.util,\
-	org.eclipse.jetty.continuation,\
-	org.eclipse.jetty.servlet,\
-	org.eclipse.jetty.security,\
-	org.eclipse.jetty.server,\
-	org.apache.jasper.glassfish,\
-	org.eclipse.jface,\
-	org.eclipse.jface.databinding,\
-	org.eclipse.osgi.services,\
-	org.eclipse.rcp,\
-	org.eclipse.swt,\
-	org.eclipse.ui,\
-	org.eclipse.ui.workbench,\
-	org.eclipse.update.configurator,\
-	org.eclipse.core.resources,\
 	org.eclipse.core.filebuffers,\
 	org.eclipse.core.filesystem,\
-	org.eclipse.jdt.debug,\
-	org.eclipse.debug.core,\
-	org.eclipse.core.variables,\
-	org.eclipse.debug.ui,\
-	org.eclipse.ui.console,\
-	org.eclipse.jface.text,\
-	org.eclipse.text,\
-	org.eclipse.ui.ide,\
-	org.eclipse.ui.workbench.texteditor,\
-	org.eclipse.ecf,\
-	org.eclipse.ecf.identity,\
-	org.eclipse.ecf.filetransfer,\
-	org.eclipse.ecf.provider.filetransfer,\
-	org.eclipse.equinox.security,\
-	org.eclipse.compare.core,\
-	org.eclipse.ui.editors,\
-	org.eclipse.jdt.core,\
-	org.eclipse.ui.forms,\
-	org.eclipse.jdt.debug.ui,\
-	org.eclipse.jdt.core.manipulation,\
-	org.eclipse.jdt.launching,\
-	org.eclipse.jdt.ui,\
-	org.eclipse.ltk.core.refactoring,\
-	org.eclipse.ui.navigator.resources,\
-	org.eclipse.ui.navigator,\
-	org.eclipse.ui.views.properties.tabbed,\
-	org.eclipse.ui.views,\
-	org.eclipse.ltk.ui.refactoring,\
-	org.eclipse.compare,\
-	org.eclipse.team.core,\
-	org.eclipse.team.ui,\
-	org.eclipse.ui.ide.application,\
+	org.eclipse.core.jobs,\
 	org.eclipse.core.net,\
-	org.eclipse.equinox.p2.artifact.repository,\
-	org.eclipse.ui.views.log,\
-	org.eclipse.jdt.junit.core,\
-	org.eclipse.jdt.junit.runtime,\
-	org.eclipse.jdt.junit,\
-	org.junit,\
-	org.eclipse.equinox.simpleconfigurator.manipulator,\
-	org.eclipse.equinox.frameworkadmin,\
-	org.eclipse.equinox.frameworkadmin.equinox,\
-	org.eclipse.equinox.event,\
-	org.eclipse.ui.browser,\
-	org.eclipse.emf.common,\
-	org.eclipse.emf.ecore,\
-	org.eclipse.emf.ecore.change,\
-	org.eclipse.emf.ecore.xmi,\
+	org.eclipse.core.resources,\
+	org.eclipse.core.runtime,\
+	org.eclipse.core.runtime.compatibility.auth,\
+	org.eclipse.core.variables,\
+	org.eclipse.debug.core,\
+	org.eclipse.debug.ui,\
 	org.eclipse.e4.core.commands,\
 	org.eclipse.e4.core.contexts,\
 	org.eclipse.e4.core.di,\
 	org.eclipse.e4.core.di.extensions,\
 	org.eclipse.e4.core.services,\
-	org.eclipse.e4.ui.model.workbench,\
-	org.eclipse.e4.ui.di,\
-	org.eclipse.e4.ui.services,\
-	org.eclipse.e4.ui.workbench,\
-	org.eclipse.e4.ui.workbench.renderers.swt,\
-	org.eclipse.e4.ui.workbench.swt,\
+	org.eclipse.e4.ui.bindings,\
 	org.eclipse.e4.ui.css.core,\
 	org.eclipse.e4.ui.css.swt,\
-	org.eclipse.e4.ui.bindings,\
-	org.eclipse.e4.ui.workbench3,\
 	org.eclipse.e4.ui.css.swt.theme,\
+	org.eclipse.e4.ui.di,\
+	org.eclipse.e4.ui.model.workbench,\
+	org.eclipse.e4.ui.services,\
 	org.eclipse.e4.ui.widgets,\
+	org.eclipse.e4.ui.workbench,\
+	org.eclipse.e4.ui.workbench3,\
 	org.eclipse.e4.ui.workbench.addons.swt,\
+	org.eclipse.e4.ui.workbench.renderers.swt,\
+	org.eclipse.e4.ui.workbench.swt,\
+	org.eclipse.ecf,\
+	org.eclipse.ecf.filetransfer,\
+	org.eclipse.ecf.identity,\
+	org.eclipse.ecf.provider.filetransfer,\
+	org.eclipse.emf.common,\
+	org.eclipse.emf.ecore,\
+	org.eclipse.emf.ecore.change,\
+	org.eclipse.emf.ecore.xmi,\
+	org.eclipse.equinox.app,\
 	org.eclipse.equinox.bidi,\
+	org.eclipse.equinox.common,\
+	org.eclipse.equinox.ds,\
+	org.eclipse.equinox.event,\
+	org.eclipse.equinox.frameworkadmin,\
+	org.eclipse.equinox.frameworkadmin.equinox,\
+	org.eclipse.equinox.launcher,\
+	org.eclipse.equinox.p2.artifact.repository,\
+	org.eclipse.equinox.preferences,\
+	org.eclipse.equinox.registry,\
+	org.eclipse.equinox.security,\
+	org.eclipse.equinox.simpleconfigurator,\
+	org.eclipse.equinox.simpleconfigurator.manipulator,\
+	org.eclipse.equinox.util,\
+	org.eclipse.jdt.core,\
+	org.eclipse.jdt.core.manipulation,\
+	org.eclipse.jdt.debug,\
+	org.eclipse.jdt.debug.ui,\
+	org.eclipse.jdt.junit,\
+	org.eclipse.jdt.junit.core,\
+	org.eclipse.jdt.junit.runtime,\
+	org.eclipse.jdt.launching,\
+	org.eclipse.jdt.ui,\
+	org.eclipse.jetty.continuation,\
+	org.eclipse.jetty.http,\
+	org.eclipse.jetty.io,\
+	org.eclipse.jetty.security,\
+	org.eclipse.jetty.server,\
+	org.eclipse.jetty.servlet,\
+	org.eclipse.jetty.util,\
+	org.eclipse.jface,\
+	org.eclipse.jface.databinding,\
+	org.eclipse.jface.text,\
+	org.eclipse.ltk.core.refactoring,\
+	org.eclipse.ltk.ui.refactoring,\
+	org.eclipse.osgi.services,\
+	org.eclipse.rcp,\
+	org.eclipse.swt,\
+	org.eclipse.team.core,\
+	org.eclipse.team.ui,\
+	org.eclipse.text,\
+	org.eclipse.ui,\
+	org.eclipse.ui.browser,\
+	org.eclipse.ui.console,\
+	org.eclipse.ui.editors,\
+	org.eclipse.ui.forms,\
+	org.eclipse.ui.ide,\
+	org.eclipse.ui.ide.application,\
+	org.eclipse.ui.navigator,\
+	org.eclipse.ui.navigator.resources,\
+	org.eclipse.ui.views,\
+	org.eclipse.ui.views.log,\
+	org.eclipse.ui.views.properties.tabbed,\
+	org.eclipse.ui.workbench,\
+	org.eclipse.ui.workbench.texteditor,\
+	org.eclipse.update.configurator,\
+	org.hamcrest.core,\
+	org.junit,\
+	org.osgi.impl.bundle.bindex;version=latest,\
 	org.w3c.css.sac,\
-	org.apache.batik.css,\
-	org.apache.batik.util,\
-	org.apache.batik.util.gui,\
-	org.w3c.dom.svg,\
 	org.w3c.dom.smil,\
-	${help.bundles},\
-	${p2.bundles},\
-	${workspace.bundles}
+	org.w3c.dom.svg
 
 crossplatform.vmargs: -Xmx512m -XX:MaxPermSize=256m
 
-crossplatform.runprops: eclipse.application=org.eclipse.ui.ide.workbench,\
+crossplatform.runprops: \
+	eclipse.application=org.eclipse.ui.ide.workbench,\
+	eclipse.consoleLog=,\
 	eclipse.product=org.eclipse.sdk.ide,\
-	osgi.console=,\
-	eclipse.consoleLog=
+	osgi.console=
