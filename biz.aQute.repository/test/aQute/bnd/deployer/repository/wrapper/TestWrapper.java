@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -28,6 +26,7 @@ import aQute.lib.deployer.InfoFileRepo;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.map.MAP;
+import junit.framework.TestCase;
 
 public class TestWrapper extends TestCase {
 	private File	tmp;
@@ -136,6 +135,7 @@ public class TestWrapper extends TestCase {
 	 */
 
 	public void testAugment() throws Exception {
+		System.err.println(">>> testAugment");
 		Repository repo = getJpmRepo();
 
 		augmentTest(repo);
@@ -147,6 +147,7 @@ public class TestWrapper extends TestCase {
 	}
 
 	private void augmentTest(InfoRepository repo) throws Exception, IOException {
+		System.err.println(">>> augmentTest");
 		assertNotNull(repo.get("biz.aQute.jpm.daemon", new Version("1.1.0"), null));
 
 		InfoRepositoryWrapper iw = new InfoRepositoryWrapper(tmp, Collections.singleton(repo));
@@ -230,8 +231,11 @@ public class TestWrapper extends TestCase {
 	}
 
 	private Repository getJpmRepo() {
+		System.err.println(">>> getJpmRepo");
 		Repository repo = new Repository();
+		System.err.println("||| created repo");
 		repo.setProperties(MAP.$("location", tmp.getAbsolutePath()).$("index", "testdata/ws/cnf/jpm4j.json"));
+		System.err.println("<<< getJpmRepo");
 		return repo;
 	}
 
