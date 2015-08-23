@@ -39,6 +39,12 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.service.repository.ContentNamespace;
+import org.osgi.service.repository.Repository;
+
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
@@ -59,6 +65,9 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.eclipse.EclipseClasspath;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.CommandPlugin;
 import aQute.bnd.service.DependencyContributor;
 import aQute.bnd.service.Deploy;
@@ -93,6 +102,7 @@ public class Project extends Processor {
 	final static String			DEFAULT_ACTIONS			= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
 	public final static String	BNDFILE					= "bnd.bnd";
 	public final static String	BNDCNF					= "cnf";
+	public final static String	SHA_256					= "SHA-256";
 	final Workspace				workspace;
 	boolean						preparedPaths;
 	final Collection<Project>	dependson				= new LinkedHashSet<Project>();
@@ -1042,6 +1052,8 @@ public class Project extends Processor {
 
 		if (VERSION_ATTR_SNAPSHOT.equals(range) || VERSION_ATTR_PROJECT.equals(range)) {
 			return getBundleFromProject(bsn, attrs);
+		} else if (VERSION_ATTR_HASH.equals(range)) {
+			return getBundleByHash(bsn, attrs);
 		}
 
 		Strategy useStrategy = strategy;
@@ -1266,6 +1278,69 @@ public class Project extends Processor {
 				return null;
 			pname = pname.substring(0, n);
 		}
+	}
+
+	private Container getBundleByHash(String bsn, Map<String,String> attrs) throws Exception {
+		String hashStr = attrs.get("hash");
+		String algo = SHA_256;
+
+		String hash = hashStr;
+		int colonIndex = hashStr.indexOf(':');
+		if (colonIndex > -1) {
+			algo = hashStr.substring(0, colonIndex);
+			int afterColon = colonIndex + 1;
+			hash = (colonIndex < hashStr.length()) ? hashStr.substring(afterColon) : "";
+		}
+
+		for (RepositoryPlugin plugin : workspace.getRepositories()) {
+			// The plugin *may* understand version=hash directly
+			DownloadBlocker blocker = new DownloadBlocker(this);
+			File result = plugin.get(bsn, Version.LOWEST, Collections.unmodifiableMap(attrs), blocker);
+
+			// If not, and if the repository implements the OSGi Repository
+			// Service, use a capability search on the osgi.content namespace.
+			if (result == null && plugin instanceof Repository) {
+				Repository repo = (Repository) plugin;
+
+				if (!SHA_256.equals(algo))
+					// R5 repos only support SHA-256
+					continue;
+
+				Requirement contentReq = new CapReqBuilder(ContentNamespace.CONTENT_NAMESPACE)
+						.filter(String.format("(%s=%s)", ContentNamespace.CONTENT_NAMESPACE, hash))
+						.buildSyntheticRequirement();
+				Set<Requirement> reqs = Collections.singleton(contentReq);
+
+
+				Map<Requirement,Collection<Capability>> providers = repo.findProviders(reqs);
+				Collection<Capability> caps = providers != null ? providers.get(contentReq) : null;
+				if (caps != null && !caps.isEmpty()) {
+					Capability cap = caps.iterator().next();
+
+					IdentityCapability idCap = ResourceUtils.getIdentityCapability(cap.getResource());
+					Map<String,Object> idAttrs = idCap.getAttributes();
+					String id = (String) idAttrs.get(IdentityNamespace.IDENTITY_NAMESPACE);
+					Object version = idAttrs.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+					Version bndVersion = version != null ? Version.parseVersion(version.toString()) : Version.LOWEST;
+
+					if (!bsn.equals(id)) {
+						String error = String.format("Resource with requested hash does not match ID '%s' [hash: %s]",
+								bsn, hashStr);
+						return new Container(this, bsn, "hash", Container.TYPE.ERROR, null, error,
+								null, null);
+					}
+
+					result = plugin.get(id, bndVersion, null, blocker);
+				}
+			}
+
+			if (result != null)
+				return toContainer(bsn, "hash", attrs, result, blocker);
+		}
+
+		// If we reach this far, none of the repos found the resource.
+		return new Container(this, bsn, "hash", Container.TYPE.ERROR, null,
+				"Could not find resource by content hash " + hashStr, null, null);
 	}
 
 	/**

@@ -844,4 +844,50 @@ public class ProjectTest extends TestCase {
 		assertEquals("-XX:+FlightRecorder", arr[1]);
 		assertEquals("-XX:FlightRecorderOptions=defaultrecording=true,dumponexit=true", arr[2]);
 	}
+
+	public void testHashVersion() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws-versionhash"));
+		Project project = ws.getProject("p1");
+		assertNotNull(project);
+		project.setProperty("-buildpath",
+				"tmp; version=hash; hash=7fe83bfd5999fa4ef9cec40282d5d67dd0ff3303bac6b8c7b0e8be80a821441c");
+
+		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
+		assertEquals(2, buildpath.size());
+		assertEquals("bar", buildpath.get(1).getManifest().getMainAttributes().getValue("Prints"));
+	}
+
+	public void testHashVersionWithAlgorithm() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws-versionhash"));
+		Project project = ws.getProject("p1");
+		assertNotNull(project);
+		project.setProperty("-buildpath",
+				"tmp; version=hash; hash=SHA-256:7fe83bfd5999fa4ef9cec40282d5d67dd0ff3303bac6b8c7b0e8be80a821441c");
+
+		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
+		assertEquals(2, buildpath.size());
+		assertEquals("bar", buildpath.get(1).getManifest().getMainAttributes().getValue("Prints"));
+	}
+
+	public void testHashVersionWithAlgorithmNotFound() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws-versionhash"));
+		Project project = ws.getProject("p1");
+		assertNotNull(project);
+		project.setProperty("-buildpath",
+				"tmp; version=hash; hash=SHA-1:7fe83bfd5999fa4ef9cec40282d5d67dd0ff3303bac6b8c7b0e8be80a821441c");
+
+		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
+		assertEquals(1, buildpath.size());
+	}
+
+	public void testHashVersionNonMatchingBsn() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws-versionhash"));
+		Project project = ws.getProject("p1");
+		assertNotNull(project);
+		project.setProperty("-buildpath",
+				"WRONG; version=hash; hash=SHA-256:7fe83bfd5999fa4ef9cec40282d5d67dd0ff3303bac6b8c7b0e8be80a821441c");
+
+		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
+		assertEquals(1, buildpath.size());
+	}
 }
