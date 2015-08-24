@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -28,9 +26,10 @@ import aQute.lib.deployer.InfoFileRepo;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.map.MAP;
+import junit.framework.TestCase;
 
 public class TestWrapper extends TestCase {
-	private File	tmp;
+	private File tmp;
 
 	public void setUp() throws Exception {
 		tmp = IO.getFile("generated/test/" + getName());
@@ -85,18 +84,21 @@ public class TestWrapper extends TestCase {
 	}
 
 	public void testJPMRepoBasic() throws Exception {
-		Repository repo = getJpmRepo();
-		testRepo(1, repo);
+		try (Repository repo = getJpmRepo();) {
+			testRepo(1, repo);
+		}
 	}
 
 	public void testFileRepoBasic() throws Exception {
-		InfoFileRepo repo = getFileRepo(true);
-		testRepo(1, repo);
+		try (InfoFileRepo repo = getFileRepo(true);) {
+			testRepo(1, repo);
+		}
 	}
 
 	public void testFileRepoBasicWithoutIndex() throws Exception {
-		InfoFileRepo repo = getFileRepo(false);
-		testRepo(0, repo);
+		try (InfoFileRepo repo = getFileRepo(false);) {
+			testRepo(0, repo);
+		}
 	}
 
 	private void testRepo(int count, InfoRepository... repo) throws Exception, FileNotFoundException, IOException {
