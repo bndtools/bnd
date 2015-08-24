@@ -36,7 +36,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 	};
 
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
-		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS));
+		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS, "*"));
 		if (header.size() == 0)
 			return false;
 

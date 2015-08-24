@@ -1,26 +1,48 @@
 package test.metatype;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.File;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Queue;
+import java.util.Set;
+import java.util.Stack;
+import java.util.regex.Pattern;
 
-import javax.xml.namespace.*;
-import javax.xml.parsers.*;
-import javax.xml.xpath.*;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
-import junit.framework.*;
+import junit.framework.AssertionFailedError;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
 
-import aQute.bnd.annotation.metatype.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
-import aQute.libg.generics.*;
+import aQute.bnd.annotation.metatype.Configurable;
+import aQute.bnd.annotation.metatype.Meta;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.test.BndTestCase;
+import aQute.lib.io.IO;
+import aQute.libg.generics.Create;
 
 @SuppressWarnings("resource")
-public class BNDMetatypeTest extends TestCase {
+public class BNDMetatypeTest extends BndTestCase {
 	static DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
 	static XPathFactory				xpathf	= XPathFactory.newInstance();
 	static XPath					xpath	= xpathf.newXPath();
@@ -54,7 +76,7 @@ public class BNDMetatypeTest extends TestCase {
 		}
 	}
 
-	public static void testOptions() {
+	public void testOptions() {
 
 	}
 
@@ -76,7 +98,7 @@ public class BNDMetatypeTest extends TestCase {
 		Integer port();
 	}
 
-	public static void testConfigurableForNonPrimitives() {
+	public void testConfigurableForNonPrimitives() {
 		Map<String,String> p = new HashMap<String,String>();
 		C config = Configurable.createConfigurable(C.class, p);
 		assertNull(config.port());
@@ -183,7 +205,7 @@ public class BNDMetatypeTest extends TestCase {
 		String nullid();
 	}
 
-	public static void testNaming() throws Exception {
+	public void testNaming() throws Exception {
 		Map<String,Object> map = Create.map();
 
 		map.put("_secret", "_secret");
@@ -248,9 +270,9 @@ public class BNDMetatypeTest extends TestCase {
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
+		b.setProperty("-metatypeannotations", "!*");
 		b.build();
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertOk(b);
 
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$Naming.xml");
 		IO.copy(r.openInputStream(), System.err);
@@ -293,7 +315,7 @@ public class BNDMetatypeTest extends TestCase {
 		MyList<String> myList();
 	}
 
-	public static void testCollections() throws Exception {
+	public void testCollections() throws Exception {
 		CollectionsTest trt = set(CollectionsTest.class, new int[] {
 				1, 2, 3
 		});
@@ -322,7 +344,7 @@ public class BNDMetatypeTest extends TestCase {
 		assertEqualList(source, trt.myList());
 	}
 
-	private static void assertEqualList(List< ? > a, Collection< ? > b) {
+	private void assertEqualList(List< ? > a, Collection< ? > b) {
 		if (a.size() == b.size()) {
 			for (Object x : a) {
 				if (!b.contains(x))
@@ -350,7 +372,7 @@ public class BNDMetatypeTest extends TestCase {
 		URI constructor();
 	}
 
-	public static void testSpecialConversions() throws URISyntaxException {
+	public void testSpecialConversions() throws URISyntaxException {
 		Properties p = new Properties();
 		p.put("enumv", "A");
 		p.put("pattern", ".*");
@@ -370,7 +392,7 @@ public class BNDMetatypeTest extends TestCase {
 	 * @throws URISyntaxException
 	 */
 
-	public static void testConverter() throws URISyntaxException {
+	public void testConverter() throws URISyntaxException {
 		{
 			// Test collections as value
 			TestReturnTypes trt = set(TestReturnTypes.class, Arrays.asList(55));
@@ -580,7 +602,7 @@ public class BNDMetatypeTest extends TestCase {
 		}
 	}
 
-	static <T> T set(Class<T> interf, Object value) {
+	private <T> T set(Class<T> interf, Object value) {
 		Properties p = new Properties();
 		Method ms[] = interf.getMethods();
 
@@ -607,14 +629,17 @@ public class BNDMetatypeTest extends TestCase {
 		X o();
 	}
 
-	public static void testEnum() throws Exception {
+	public void testEnum() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
+		b.setProperty("-metatypeannotations", "");
+
 		b.build();
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertOk(b);
+
+
 
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$Enums.xml");
 		IO.copy(r.openInputStream(), System.err);
@@ -659,14 +684,18 @@ public class BNDMetatypeTest extends TestCase {
 	@Meta.OCD(name = "name")
 	public static interface OCDName {}
 
-	public static void testOCD() throws Exception {
+	public void testOCD() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
+		b.setProperty("-metatypeannotations", "");
+
 		b.build();
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertOk(b);
+
+
+
 		System.err.println(b.getJar().getResources().keySet());
 
 		assertOCD(b, "test.metatype.BNDMetatypeTest$OCDEmpty", "test.metatype.BNDMetatypeTest$OCDEmpty",
@@ -689,7 +718,7 @@ public class BNDMetatypeTest extends TestCase {
 				"localization");
 	}
 
-	static void assertOCD(Builder b, String cname, String id, String name, String description, String designate,
+	private void assertOCD(Builder b, String cname, String id, String name, String description, String designate,
 			boolean factory, String localization) throws Exception {
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/" + cname + ".xml");
 		assertNotNull(r);
@@ -782,15 +811,19 @@ public class BNDMetatypeTest extends TestCase {
 		String notRequired();
 	}
 
-	public static void testAD() throws Exception {
+	public void testAD() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
+		b.setProperty("-metatypeannotations", "!*");
+
 		b.build();
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$TestAD.xml");
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertOk(b);
+
+
+
 		System.err.println(b.getJar().getResources().keySet());
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
@@ -848,16 +881,20 @@ public class BNDMetatypeTest extends TestCase {
 		String fromChild();
 	}
 	
-	public static void testADWithInheritance() throws Exception {
+	public void testADWithInheritance() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
+		b.setProperty("-metatypeannotations", "!*");
+
 		b.setProperty("-metatype-inherit", "true");
 		b.build();
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$TestADWithInheritanceChild.xml");
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertOk(b);
+
+
+
 		System.err.println(b.getJar().getResources().keySet());
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
@@ -869,7 +906,7 @@ public class BNDMetatypeTest extends TestCase {
 		assertAD(d, "fromSuperTwo", "From super two", "fromSuperTwo", null, null, null, 0, "String", null, null, null);
 	}
 
-	static void assertAD(Document d, @SuppressWarnings("unused")
+	private void assertAD(Document d, @SuppressWarnings("unused")
 	String mname, String name, String id, String min, String max, String deflt, int cardinality, String type,
 			String description, @SuppressWarnings("unused")
 			String[] optionvalues, @SuppressWarnings("unused")
@@ -987,15 +1024,19 @@ public class BNDMetatypeTest extends TestCase {
 		URI[] raURI();
 	}
 
-	public static void testReturnTypes() throws Exception {
+	public void testReturnTypes() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
+		b.setProperty("-metatypeannotations", "!*");
+
 		b.build();
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$TestReturnTypes.xml");
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertOk(b);
+
+
+
 		System.err.println(b.getJar().getResources().keySet());
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
@@ -1106,15 +1147,18 @@ public class BNDMetatypeTest extends TestCase {
 		boolean enabled();
 	}
 
-	public static void testSimple() throws Exception {
+	public void testSimple() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
+		b.setProperty("-metatypeannotations", "!*");
+
 		b.build();
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$TestSimple.xml");
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertOk(b);
+
+
 		System.err.println(b.getJar().getResources().keySet());
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
@@ -1195,7 +1239,7 @@ public class BNDMetatypeTest extends TestCase {
 		boolean isAlsoFalse();
 	}
 
-	public static void testConfigurable() {
+	public void testConfigurable() {
 		Map<String,Object> ht = new Hashtable<String,Object>();
 		DefaultBoolean db = Configurable.createConfigurable(DefaultBoolean.class, ht);
 		assertTrue(db.istrue());

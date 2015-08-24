@@ -1,16 +1,21 @@
 package aQute.bnd.test;
 
-import java.util.*;
+import java.util.List;
 
-import junit.framework.*;
-import aQute.service.reporter.*;
+import junit.framework.AssertionFailedError;
+import junit.framework.TestCase;
+import aQute.service.reporter.Reporter;
 
 public abstract class BndTestCase extends TestCase {
 
 	protected static void assertOk(Reporter reporter) {
+		assertOk(reporter, 0, 0);
+	}
+
+	protected static void assertOk(Reporter reporter, int errors, int warnings) throws AssertionFailedError {
 		try {
-			assertEquals(0, reporter.getErrors().size());
-			assertEquals(0, reporter.getWarnings().size());
+			assertEquals(errors, reporter.getErrors().size());
+			assertEquals(warnings, reporter.getWarnings().size());
 		}
 		catch (AssertionFailedError t) {
 			print("Errors", reporter.getErrors());

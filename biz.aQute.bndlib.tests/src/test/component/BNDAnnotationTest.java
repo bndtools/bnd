@@ -1,29 +1,59 @@
 package test.component;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.jar.Manifest;
 
-import javax.xml.namespace.*;
-import javax.xml.parsers.*;
-import javax.xml.xpath.*;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
-import org.osgi.framework.*;
-import org.osgi.service.component.*;
-import org.osgi.service.event.*;
-import org.osgi.service.log.*;
-import org.w3c.dom.*;
+import junit.framework.AssertionFailedError;
 
-import aQute.bnd.annotation.component.*;
-import aQute.bnd.annotation.metatype.*;
-import aQute.bnd.osgi.*;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.event.EventAdmin;
+import org.osgi.service.log.LogService;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import aQute.bnd.annotation.component.Activate;
+import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.ConfigurationPolicy;
+import aQute.bnd.annotation.component.Deactivate;
+import aQute.bnd.annotation.component.Modified;
+import aQute.bnd.annotation.component.Reference;
+import aQute.bnd.annotation.metatype.Meta;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.service.*;
-import aQute.bnd.service.repository.*;
-import junit.framework.*;
+import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.repository.SearchableRepository;
+import aQute.bnd.test.BndTestCase;
 
+/**
+ * Test for use of DS components specified using bnd proprietary annotations.
+ */
 @SuppressWarnings({"resource", "unused", "rawtypes"})
-public class BNDAnnotationTest extends TestCase {
+public class BNDAnnotationTest extends BndTestCase {
 	static final DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
 	static final XPathFactory			xpathf	= XPathFactory.newInstance();
 	static final XPath					xpath	= xpathf.newXPath();
@@ -67,6 +97,53 @@ public class BNDAnnotationTest extends TestCase {
 		}
 	}
 
+	private Builder builder(String spec) throws Exception {
+		return builder(spec, 0, 0);
+	}
+
+	private Builder builder(String spec, int errors, int warnings) throws IOException, Exception, AssertionFailedError {
+		Builder b = new Builder();
+		b.setExceptions(true);
+		b.setClasspath(new File[] {
+			new File("bin")
+		});
+		b.setProperty("Service-Component", spec);
+		b.setProperty("Private-Package", "test.component");
+		b.setProperty("-dsannotations", "");
+		b.build();
+		assertOk(b, errors, warnings);
+		return b;
+	}
+
+	/**
+	 * Whitespace in Component name causes Component initialization to fail #548
+	 */
+
+	@Component(name = "Hello World Bnd ^ % / \\ $")
+	static class BrokenNameDS {
+
+	}
+
+	@Component(name = "Hello World")
+	static class BrokenNameBnd {
+
+	}
+
+	public void testBrokenName() throws Exception {
+		Builder b = builder("*Broken*", 0, 2);
+		Jar build = b.getJar();
+		assertTrue(b.check("Invalid component name"));
+
+		Domain m = Domain.domain(build.getManifest());
+
+		Parameters parameters = m.getParameters("Service-Component");
+		assertEquals(2, parameters.size());
+
+		System.out.println(parameters);
+		assertTrue(parameters.keySet().contains("OSGI-INF/Hello-World-Bnd---------$.xml"));
+		assertTrue(parameters.keySet().contains("OSGI-INF/Hello-World.xml"));
+	}
+
 	/**
 	 * Can we order the references? References are ordered by their name as Java
 	 * does not define the order of the methods.
@@ -90,12 +167,8 @@ public class BNDAnnotationTest extends TestCase {
 		Map<String,Object> map) {}
 	}
 
-	public static void testAnnotationReferenceOrdering() throws Exception {
-		Builder b = new Builder();
-		b.addClasspath(new File("bin"));
-		b.setProperty("Service-Component", "*TestReferenceOrdering");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
+	public void testAnnotationReferenceOrdering() throws Exception {
+		Builder b = builder("*TestReferenceOrdering");
 		Document doc = doc(b, "test.component.BNDAnnotationTest$TestReferenceOrdering");
 		NodeList nodes = (NodeList) xpath.evaluate("//reference", doc, XPathConstants.NODESET);
 		assertEquals("a", nodes.item(0).getAttributes().getNamedItem("name").getTextContent());
@@ -127,15 +200,8 @@ public class BNDAnnotationTest extends TestCase {
 	@Component(designateFactory = SearchableRepository.class)
 	static class MetatypeConfig4 {}
 
-	public static void testConfig() throws Exception {
-		Builder b = new Builder();
-		b.setExceptions(true);
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		b.setProperty("Service-Component", "*MetatypeConfig*");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
+	public void testConfig() throws Exception {
+		Builder b = builder("*MetatypeConfig*");
 		assertTrue(b.check());
 		System.err.println(b.getJar().getResources().keySet());
 
@@ -193,19 +259,8 @@ public class BNDAnnotationTest extends TestCase {
 		ComponentContext c) {}
 	}
 
-	public static void testPropertiesAndConfig() throws Exception {
-		Builder b = new Builder();
-		b.setExceptions(true);
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		b.setProperty("Service-Component", "*PropertiesAndConfig");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
-		System.err.println(b.getErrors());
-		System.err.println(b.getWarnings());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+	public void testPropertiesAndConfig() throws Exception {
+		Builder b = builder("*PropertiesAndConfig");
 
 		Resource cr = b.getJar().getResource("OSGI-INF/props.xml");
 		cr.write(System.err);
@@ -266,14 +321,8 @@ public class BNDAnnotationTest extends TestCase {
 		ComponentContext c) {}
 	}
 
-	public static void testPackagePrivateActivateMethodBndAnnos() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		b.setProperty("Service-Component", "*ActivateMethod");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
+	public void testPackagePrivateActivateMethodBndAnnos() throws Exception {
+		Builder b = builder("*ActivateMethod");
 		assertTrue(b.check());
 
 		{
@@ -328,21 +377,12 @@ public class BNDAnnotationTest extends TestCase {
 
 	}
 
-	public static void testAnnotatedWithAttribute() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		b.setProperty("Service-Component", "*NoUnbind;log=org.osgi.service.log.LogService");
-		b.setProperty("Private-Package", "test.component");
-		Jar jar = b.build();
+	public void testAnnotatedWithAttribute() throws Exception {
+		Builder b = builder("*NoUnbind;log=org.osgi.service.log.LogService");
+		Jar jar = b.getJar();
 		Manifest manifest = jar.getManifest();
 		String sc = manifest.getMainAttributes().getValue(Constants.SERVICE_COMPONENT);
 		assertFalse(sc.contains(";"));
-		System.err.println(b.getErrors());
-		System.err.println(b.getWarnings());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
 
 	}
 
@@ -352,7 +392,7 @@ public class BNDAnnotationTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testJSR14ComponentAnnotations() throws Exception {
+	public void testJSR14ComponentAnnotations() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource",
 				"org/osgi/impl/service/coordinator/AnnotationWithJSR14.class=jar/AnnotationWithJSR14.jclass");
@@ -379,18 +419,8 @@ public class BNDAnnotationTest extends TestCase {
 
 	}
 
-	public static void testNoUnbind() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		b.setProperty("Service-Component", "*NoUnbind");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
-		System.err.println(b.getErrors());
-		System.err.println(b.getWarnings());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+	public void testNoUnbind() throws Exception {
+		Builder b = builder("*NoUnbind");
 
 		Document doc = doc(b, "nounbind");
 		assertEquals("setLog", xpath.evaluate("component/reference/@bind", doc));
@@ -405,19 +435,9 @@ public class BNDAnnotationTest extends TestCase {
 		LogService log) {}
 	}
 
-	public static void testNoUnbindDynamic() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		b.setProperty("Service-Component", "*NoUnbindDynamic");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
-		System.err.println(b.getErrors());
-		System.err.println(b.getWarnings());
-		assertEquals(1, b.getErrors().size());
+	public void testNoUnbindDynamic() throws Exception {
+		Builder b = builder("*NoUnbindDynamic", 1, 0);
 		assertTrue(b.getErrors().get(0).endsWith("dynamic but has no unbind method."));
-		assertEquals(0, b.getWarnings().size());
 	}
 
 	// this is a bnd annotation not a DS annotation
@@ -430,18 +450,8 @@ public class BNDAnnotationTest extends TestCase {
 
 	}
 
-	public static void testExplicitUnbind() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		b.setProperty("Service-Component", "*ExplicitUnbind");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
-		System.err.println(b.getErrors());
-		System.err.println(b.getWarnings());
-		assertEquals(1, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+	public void testExplicitUnbind() throws Exception {
+		Builder b = builder("*ExplicitUnbind", 1, 0);
 
 		Document doc = doc(b, "explicitunbind");
 		assertEquals("setLog", xpath.evaluate("component/reference/@bind", doc));
@@ -480,14 +490,8 @@ public class BNDAnnotationTest extends TestCase {
 
 	}
 
-	public static void testNewVersion() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		b.setProperty("Service-Component", "*Version");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
+	public void testNewVersion() throws Exception {
+		Builder b = builder("*Version");
 		assertTrue(b.check());
 
 		{
@@ -520,18 +524,8 @@ public class BNDAnnotationTest extends TestCase {
 		}
 	}
 
-	public static void testSameRefName() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		b.setProperty("Service-Component", "*.SameRefName");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
-		System.err.println(b.getErrors());
-		System.err.println(b.getWarnings());
-		assertEquals(1, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+	public void testSameRefName() throws Exception {
+		Builder b = builder("*.SameRefName", 1, 0);
 
 		// Document doc = doc(b, "cpcomp");
 	}
@@ -547,18 +541,8 @@ public class BNDAnnotationTest extends TestCase {
 
 	}
 
-	public static void testConfigurationPolicy() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		b.setProperty("Service-Component", "*.ConfigurationPolicyTest");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
-		System.err.println(b.getErrors());
-		System.err.println(b.getWarnings());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+	public void testConfigurationPolicy() throws Exception {
+		Builder b = builder("*.ConfigurationPolicyTest");
 
 		Document doc = doc(b, "cpcomp");
 		assertEquals("java.io.Serializable",
@@ -604,18 +588,10 @@ public class BNDAnnotationTest extends TestCase {
 
 	}
 
-	public static void testActivateWithActivateWithWrongArguments() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		b.setProperty("Service-Component", "*.ActivateWithWrongArguments");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
-		System.err.println(b.getErrors());
-		System.err.println(b.getWarnings());
-		assertEquals(2, b.getErrors().size()); // same error detected twice
-		assertEquals(0, b.getWarnings().size());
+	public void testActivateWithActivateWithWrongArguments() throws Exception {
+		Builder b = builder("*.ActivateWithWrongArguments", 2, 0);// same error
+																	// detected
+																	// twice
 
 		Document doc = doc(b, "wacomp");
 		assertAttribute(doc, "", "scr:component/@activate"); // validation
@@ -640,18 +616,8 @@ public class BNDAnnotationTest extends TestCase {
 
 	}
 
-	public static void testActivateWithMultipleArguments() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		b.setProperty("Service-Component", "*.ActivateWithMultipleArguments");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
-		System.err.println(b.getErrors());
-		System.err.println(b.getWarnings());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+	public void testActivateWithMultipleArguments() throws Exception {
+		Builder b = builder("*.ActivateWithMultipleArguments");
 
 		Document doc = doc(b, "amcomp");
 		assertAttribute(doc, "whatever", "scr:component/@activate");
@@ -679,18 +645,8 @@ public class BNDAnnotationTest extends TestCase {
 
 	}
 
-	public static void testMultipleArguments() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		b.setProperty("Service-Component", "*.(MultipleArguments|ReferenceArgument)");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
-		System.err.println(b.getErrors());
-		System.err.println(b.getWarnings());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+	public void testMultipleArguments() throws Exception {
+		Builder b = builder("*.(MultipleArguments|ReferenceArgument)");
 
 		Document doc = doc(b, "mcomp");
 		assertAttribute(doc, "bindWithMap", "scr:component/reference/@bind");
@@ -722,18 +678,8 @@ public class BNDAnnotationTest extends TestCase {
 		LogService log) {}
 	}
 
-	public static void testTypeVersusDetailed() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		b.setProperty("Service-Component", "*.TypeVersusDetailed");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
-		System.err.println(b.getErrors());
-		System.err.println(b.getWarnings());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+	public void testTypeVersusDetailed() throws Exception {
+		Builder b = builder("*.TypeVersusDetailed");
 
 		Document doc = doc(b, "xcomp");
 		print(doc, "");
@@ -754,18 +700,8 @@ public class BNDAnnotationTest extends TestCase {
 		protected void xyz() {}
 	}
 
-	public static void testAnnotationsNamespaceVersion() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		b.setProperty("Service-Component", "*.MyComponent4");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
-		System.err.println(b.getErrors());
-		System.err.println(b.getWarnings());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+	public void testAnnotationsNamespaceVersion() throws Exception {
+		Builder b = builder("*MyComponent4");
 
 		Document doc = doc(b, "acomp");
 		System.err.println(doc.getDocumentElement().getNamespaceURI());
@@ -783,18 +719,8 @@ public class BNDAnnotationTest extends TestCase {
 		}
 	}
 
-	public static void testAnnotationsStrangeBindMethods() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		b.setProperty("Service-Component", "*.MyComponent2");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
-		System.err.println(b.getErrors());
-		System.err.println(b.getWarnings());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+	public void testAnnotationsStrangeBindMethods() throws Exception {
+		Builder b = builder("*MyComponent2");
 
 		Document doc = doc(b, "acomp");
 		assertEquals("addLogMultiple", xpath.evaluate("//@bind", doc));
@@ -817,18 +743,8 @@ public class BNDAnnotationTest extends TestCase {
 		}
 	}
 
-	public static void testAnnotationsSettingUnbind() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		b.setProperty("Service-Component", "*.MyComponent3");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
-		System.err.println(b.getErrors());
-		System.err.println(b.getWarnings());
-		assertEquals(1, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+	public void testAnnotationsSettingUnbind() throws Exception {
+		Builder b = builder("*MyComponent3", 1, 0);
 
 		Document doc = doc(b, "acomp");
 		assertAttribute(doc, "putx", "scr:component/reference[1]/@name");
@@ -867,18 +783,8 @@ public class BNDAnnotationTest extends TestCase {
 
 	}
 
-	public static void testAnnotations() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] {
-			new File("bin")
-		});
-		b.setProperty("Service-Component", "*.MyComponent");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
-		System.err.println(b.getErrors());
-		System.err.println(b.getWarnings());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+	public void testAnnotations() throws Exception {
+		Builder b = builder("*MyComponent");
 
 		Document doc = doc(b, "acomp");
 		print(doc, "");
@@ -947,17 +853,8 @@ public class BNDAnnotationTest extends TestCase {
 		void stop() {}
 	}
 
-	public static void testMixedBndStandard() throws Exception {
-		Builder b = new Builder();
-		b.setClasspath(new File[] {
-				new File("bin")
-		});
-		b.setProperty("Service-Component", "*MixedBndStd");
-		b.setProperty("Private-Package", "test.component");
-		b.build();
-		System.err.println(b.getErrors());
-		System.err.println(b.getWarnings());
-		assertEquals(5, b.getErrors().size());
+	public void testMixedBndStandard() throws Exception {
+		Builder b = builder("*MixedBndStd", 5, 0);
 		List<String> errors = new ArrayList<String>(b.getErrors());
 		Collections.sort(errors);
 		assertEquals(
@@ -975,7 +872,6 @@ public class BNDAnnotationTest extends TestCase {
 		assertEquals(
 				"The DS component mixed-bnd-std uses bnd annotations to declare it as a component, but also uses the standard DS annotation: org.osgi.service.component.annotations.Reference on method setLog with signature (Lorg/osgi/service/log/LogService;)V. It is an error to mix these two types of annotations",
 				errors.get(4));
-		assertEquals(0, b.getWarnings().size());
 	}
 
 }
