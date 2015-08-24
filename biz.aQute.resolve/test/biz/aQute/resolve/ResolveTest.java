@@ -22,6 +22,7 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 import org.osgi.service.log.LogService;
+import org.osgi.service.repository.Repository;
 import org.osgi.service.resolver.ResolutionException;
 import org.osgi.service.resolver.Resolver;
 
@@ -29,17 +30,64 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.deployer.repository.FixedIndexedRepo;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.lib.io.IO;
+import aQute.libg.reporter.ReporterAdapter;
 import junit.framework.TestCase;
 import test.lib.MockRegistry;
-import test.lib.NullLogService;
 
 @SuppressWarnings("restriction")
 public class ResolveTest extends TestCase {
 
-	private static final LogService log = new NullLogService();
+	private static final LogService log = new LogReporter(new ReporterAdapter(System.out));
+
+	/**
+	 * The enRoute base guard resolved but is missing bundles, the runbundles do
+	 * not run
+	 */
+
+	public void testenRouteGuard() throws Exception {
+		MockRegistry registry = new MockRegistry();
+		Repository repo = createRepo(IO.getFile("testdata/enroute/index.xml"));
+		registry.addPlugin(repo);
+
+		List<Requirement> reqs = CapReqBuilder.getRequirementsFrom(
+				new Parameters("osgi.wiring.package;filter:='(osgi.wiring.package=org.osgi.service.async)'"));
+		Collection<Capability> pack = repo.findProviders(reqs).get(reqs.get(0));
+		assertEquals(2, pack.size());
+
+		ResourceBuilder b = new ResourceBuilder();
+		File guard = IO.getFile("testdata/enroute/osgi.enroute.base.guard.jar");
+		Domain manifest = Domain.domain(guard);
+		b.addManifest(manifest);
+		Repository resourceRepository = new ResourcesRepository(b.build());
+		registry.addPlugin(resourceRepository);
+
+		Processor model = new Processor();
+		model.setRunfw("org.eclipse.osgi");
+		model.setRunblacklist(
+				"osgi.identity;filter:='(osgi.identity=osgi.enroute.base.api)',osgi.identity;filter:='(osgi.identity=osgi.cmpn)',osgi.identity;filter:='(osgi.identity=osgi.core)");
+		model.setRunRequires("osgi.identity;filter:='(osgi.identity=osgi.enroute.base.guard)'");
+		model.setRunee("JavaSE-1.8");
+		try {
+			BndrunResolveContext context = new BndrunResolveContext(model, null, registry, log);
+			Resolver resolver = new BndResolver(new ResolverLogger(4));
+
+			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+			Set<Resource> resources = resolved.keySet();
+		}
+		catch (ResolutionException e) {
+			String msg = e.getMessage().replaceAll("\\[caused by:", "\n->");
+			System.out.println(msg);
+			fail(msg);
+		}
+
+	}
 
 	/**
 	 * Test if we can augment
@@ -51,8 +99,7 @@ public class ResolveTest extends TestCase {
 		// Add requirement
 		assertAugmentResolve(
 				"org.apache.felix.gogo.shell;capability:='foo;foo=gogo';requirement:='foo;filter:=\"(foo=*)\"'",
-				"foo;filter:='(foo=gogo)'",
-				null);
+				"foo;filter:='(foo=gogo)'", null);
 
 		// Default effective
 		assertAugmentResolve("org.apache.felix.gogo.shell;capability:='foo;foo=gogo'", "foo;filter:='(foo=*)'", null);
@@ -64,8 +111,7 @@ public class ResolveTest extends TestCase {
 
 		// Version range
 		assertAugmentResolve("org.apache.felix.gogo.*;version='[0,1)';capability:='foo;foo=gogo'",
-				"foo;filter:='(foo=*)'",
-				null);
+				"foo;filter:='(foo=*)'", null);
 
 		assertAugmentResolveFails("org.apache.felix.gogo.*;version='[1,2)';capability:='foo;foo=gogo'",
 				"foo;filter:='(foo=*)'", null);
@@ -75,7 +121,6 @@ public class ResolveTest extends TestCase {
 				"foo;filter:='(foo=gogo)';effective:=foo", "foo");
 		assertAugmentResolveFails("org.apache.felix.gogo.shell;capability:='foo;foo=gogo;effective:=bar'",
 				"foo;filter:='(foo=*)';effective:=foo", "foo");
-
 
 	}
 

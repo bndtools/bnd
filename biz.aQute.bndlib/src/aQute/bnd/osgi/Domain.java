@@ -387,6 +387,22 @@ public abstract class Domain implements Iterable<String> {
 
 	}
 
+	public void setRunblacklist(String blacklist) {
+		set(Constants.RUNBLACKLIST, blacklist);
+	}
+
+	public String getRunblacklist() {
+		return get(Constants.RUNBLACKLIST);
+	}
+
+	public void setRunee(String string) {
+		set(Constants.RUNEE, string);
+	}
+
+	public String getRunee() {
+		return get(Constants.RUNEE);
+	}
+
 	public void setTranslation(Jar jar) throws Exception {
 
 		Manifest m = jar.getManifest();
