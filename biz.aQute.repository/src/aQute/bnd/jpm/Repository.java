@@ -234,6 +234,8 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		boolean recurse();
 
 		boolean trace();
+
+		boolean crawl();
 	}
 
 	/**
@@ -638,6 +640,8 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 					depositoryName = "home";
 				canwrite = email != null;
 			}
+
+			crawl = options.crawl();
 
 		}
 		catch (Exception e) {
@@ -1350,7 +1354,9 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	String[]	sizes	= {
 			"bytes", "Kb", "Mb", "Gb", "Tb", "Pb", "Showing off?"
 						};
+
 	private Crawler	crawler;
+	private boolean	crawl;
 
 	private String size(long size, int power) {
 		if (power >= sizes.length)
@@ -1674,8 +1680,11 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			index = new Index(indexFile);
 			index.setRecurse(indexRecurse);
 			index.setReporter(reporter);
-			crawler = new Crawler(this);
-			crawler.start();
+
+			if (crawl == true) {
+				crawler = new Crawler(this);
+				crawler.start();
+			}
 		}
 	}
 

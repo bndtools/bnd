@@ -153,6 +153,7 @@ public class ResourceUtils {
 
 	public interface ContentCapability extends Capability {
 		String osgi_content();
+
 		URI url();
 
 		long size();
@@ -175,6 +176,7 @@ public class ResourceUtils {
 		}
 		return result;
 	}
+
 	public static IdentityCapability getIdentityCapability(Resource resource) {
 		List<Capability> caps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
 		if (caps == null || caps.isEmpty())
@@ -357,10 +359,34 @@ public class ResourceUtils {
 				.buildSyntheticRequirement();
 	}
 
+	public static boolean isEffective(Requirement r, Capability c) {
+		String capabilityEffective = c.getDirectives().get(Namespace.CAPABILITY_EFFECTIVE_DIRECTIVE);
+
+		//
+		// resolve on the capability will always match any
+		// requirement effective
+		//
+
+		if (capabilityEffective == null) // default resolve
+			return true;
+
+		if (capabilityEffective.equals(Namespace.EFFECTIVE_RESOLVE))
+			return true;
+
+		String requirementEffective = r.getDirectives().get(Namespace.CAPABILITY_EFFECTIVE_DIRECTIVE);
+
+		//
+		// If requirement is resolve but capability isn't
+		//
+
+		if (requirementEffective == null)
+			return false;
+
+		return capabilityEffective.equals(requirementEffective);
+	}
+
 	public static boolean matches(Requirement r, Capability c) {
-		String requirementEffective = getEffective(r.getDirectives());
-		String capabilityEffective = getEffective(c.getDirectives());
-		if (!requirementEffective.equals(capabilityEffective))
+		if (!isEffective(r, c))
 			return false;
 
 		String filter = r.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
@@ -413,7 +439,7 @@ public class ResourceUtils {
 			URI uri = c.url();
 			String sha = c.osgi_content();
 
-			if (uri != null) 
+			if (uri != null)
 				locations.put(uri, sha);
 		}
 		return locations;

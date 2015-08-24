@@ -463,7 +463,12 @@ public class CapReqBuilder {
 			return new Version(value.toString());
 
 		if (value instanceof String)
-			return new Version((String) value);
+			try {
+				return new Version((String) value);
+			}
+			catch (Exception e) {
+				return value;
+			}
 
 		if (value instanceof Collection) {
 			Collection< ? > v = (Collection< ? >) value;
