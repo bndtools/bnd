@@ -50,12 +50,16 @@ public class TestWrapper extends TestCase {
 	 */
 
 	public void testImportService() throws Exception {
+		System.err.println(">>> testImportService");
 		InfoRepositoryWrapper iw = getRepo();
+		System.err.println("||| testImportService 1");
 
 		Requirement cr = new CapReqBuilder("osgi.service").filter("(objectClass=org.slf4j.Logger)")
 				.addDirective("effective", "active").buildSyntheticRequirement();
 
+		System.err.println("||| testImportService 2");
 		Map<Requirement,Collection<Capability>> provider = iw.findProviders(Collections.singleton(cr));
+		System.err.println("||| testImportService 3");
 		assertNotNull(provider);
 		assertEquals(1, provider.size());
 		Capability cap = provider.values().iterator().next().iterator().next();
@@ -102,9 +106,12 @@ public class TestWrapper extends TestCase {
 	}
 
 	private void testRepo(int count, InfoRepository... repo) throws Exception, FileNotFoundException, IOException {
+		System.out.println(">>> testRepo 1");
 		List<InfoRepository> repos = Arrays.asList(repo);
 
+		int i = 1;
 		for (InfoRepository r : repos) {
+			System.out.println("||| testRepo 2." + (i++));
 			assertNotNull(r.get("biz.aQute.jpm.daemon", new Version("1.1.0"), null));
 		}
 
@@ -113,15 +120,19 @@ public class TestWrapper extends TestCase {
 		Requirement req = CapReqBuilder.createBundleRequirement("biz.aQute.jpm.daemon", null)
 				.buildSyntheticRequirement();
 
+		System.out.println("||| testRepo 3");
 		Map<Requirement,Collection<Capability>> result = iw.findProviders(Arrays.asList(req));
+		System.out.println("||| testRepo 4");
 		assertNotNull(result);
 		assertEquals(count, result.size());
 
 		iw.close();
 
 		iw = new InfoRepositoryWrapper(tmp, repos);
+		System.out.println("||| testRepo 5");
 
 		result = iw.findProviders(Arrays.asList(req));
+		System.out.println("||| testRepo 6");
 		assertNotNull(result);
 		assertEquals(count, result.size());
 
@@ -138,6 +149,7 @@ public class TestWrapper extends TestCase {
 	 */
 
 	public void testAugment() throws Exception {
+		System.err.println(">>> testAugment");
 		Repository repo = getJpmRepo();
 
 		augmentTest(repo);
@@ -149,6 +161,7 @@ public class TestWrapper extends TestCase {
 	}
 
 	private void augmentTest(InfoRepository repo) throws Exception, IOException {
+		System.err.println(">>> augmentTest");
 		assertNotNull(repo.get("biz.aQute.jpm.daemon", new Version("1.1.0"), null));
 
 		InfoRepositoryWrapper iw = new InfoRepositoryWrapper(tmp, Collections.singleton(repo));
@@ -232,8 +245,11 @@ public class TestWrapper extends TestCase {
 	}
 
 	private Repository getJpmRepo() {
+		System.err.println(">>> getJpmRepo");
 		Repository repo = new Repository();
+		System.err.println("||| created repo");
 		repo.setProperties(MAP.$("location", tmp.getAbsolutePath()).$("index", "testdata/ws/cnf/jpm4j.json"));
+		System.err.println("<<< getJpmRepo");
 		return repo;
 	}
 
