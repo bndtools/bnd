@@ -13,9 +13,16 @@ public class SearchableRepositoryTreeContentProvider extends RepositoryTreeConte
         if (repo instanceof SearchableRepository) {
             String filter = getFilter();
             if (filter != null && filter.length() > 0) {
-                result = new Object[bundles.length + 1];
-                System.arraycopy(bundles, 0, result, 0, bundles.length);
-                result[bundles.length] = new ContinueSearchElement(filter, (SearchableRepository) repo);
+                ContinueSearchElement newElem = new ContinueSearchElement(filter, (SearchableRepository) repo);
+                if (bundles != null) {
+                    result = new Object[bundles.length + 1];
+                    System.arraycopy(bundles, 0, result, 0, bundles.length);
+                    result[bundles.length] = newElem;
+                } else {
+                    result = new Object[] {
+                            newElem
+                    };
+                }
             }
         }
 
