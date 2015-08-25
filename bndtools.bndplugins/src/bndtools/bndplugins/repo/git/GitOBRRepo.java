@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.MergeResult.MergeStatus;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.lib.Constants;
@@ -141,7 +142,8 @@ public class GitOBRRepo extends LocalIndexedRepo {
             PullResult pullResult = git.pull().call();
 
             // Check result
-            if (pullResult.getMergeResult().getMergeStatus() == MergeStatus.CONFLICTING || pullResult.getMergeResult().getMergeStatus() == MergeStatus.FAILED) {
+            MergeResult mergeResult = pullResult.getMergeResult();
+            if (mergeResult != null && (mergeResult.getMergeStatus() == MergeStatus.CONFLICTING || mergeResult.getMergeStatus() == MergeStatus.FAILED)) {
 
                 // TODO: How to report failure
                 throw new RuntimeException(String.format("Failed to merge changes from %s", gitUri));
