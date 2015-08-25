@@ -58,7 +58,7 @@ public class FilterParser {
 		static Expression	TRUE	= new Expression() {
 
 										@Override
-										public boolean eval(Map<String,Object> map) {
+			public boolean eval(Map<String, ? > map) {
 											return true;
 										}
 
@@ -80,7 +80,7 @@ public class FilterParser {
 		static Expression	FALSE	= new Expression() {
 
 										@Override
-										public boolean eval(Map<String,Object> map) {
+			public boolean eval(Map<String, ? > map) {
 											return false;
 										}
 
@@ -99,7 +99,7 @@ public class FilterParser {
 										}
 									};
 
-		public abstract boolean eval(Map<String,Object> map);
+		public abstract boolean eval(Map<String, ? > map);
 
 		public abstract <T> T visit(ExpressionVisitor<T> visitor);
 		
@@ -217,7 +217,7 @@ public class FilterParser {
 		}
 
 		@Override
-		public boolean eval(Map<String,Object> map) {
+		public boolean eval(Map<String, ? > map) {
 			Object target = map.get(key);
 			if (target instanceof Iterable) {
 				for (Object scalar : (Iterable< ? >) target) {
@@ -351,7 +351,7 @@ public class FilterParser {
 	public abstract static class WithRangeExpression extends Expression {
 		RangeExpression	range;
 
-		public boolean eval(Map<String,Object> map) {
+		public boolean eval(Map<String, ? > map) {
 			return range == null || range.eval(map);
 		}
 
@@ -380,7 +380,7 @@ public class FilterParser {
 		}
 
 		@Override
-		public boolean eval(Map<String,Object> map) {
+		public boolean eval(Map<String, ? > map) {
 			String p = (String) map.get("osgi.wiring.package");
 			if (p == null)
 				return false;
@@ -421,7 +421,7 @@ public class FilterParser {
 		}
 
 		@Override
-		public boolean eval(Map<String,Object> map) {
+		public boolean eval(Map<String, ? > map) {
 			String p = (String) map.get("osgi.wiring.host");
 			if (p == null)
 				return false;
@@ -462,7 +462,7 @@ public class FilterParser {
 		}
 
 		@Override
-		public boolean eval(Map<String,Object> map) {
+		public boolean eval(Map<String, ? > map) {
 			String p = (String) map.get("osgi.wiring.bundle");
 			if (p == null)
 				return false;
@@ -500,7 +500,7 @@ public class FilterParser {
 		}
 
 		@Override
-		public boolean eval(Map<String,Object> map) {
+		public boolean eval(Map<String, ? > map) {
 			String p = (String) map.get("osgi.identity");
 			if (p == null)
 				return false;
@@ -574,7 +574,7 @@ public class FilterParser {
 			this.expressions = exprs.toArray(new Expression[exprs.size()]);
 		}
 
-		public boolean eval(Map<String,Object> map) {
+		public boolean eval(Map<String, ? > map) {
 			for (Expression e : expressions) {
 				if (!e.eval(map))
 					return false;
@@ -667,7 +667,7 @@ public class FilterParser {
 			this.expressions = exprs.toArray(new Expression[exprs.size()]);
 		}
 
-		public boolean eval(Map<String,Object> map) {
+		public boolean eval(Map<String, ? > map) {
 			for (Expression e : expressions) {
 				if (e.eval(map))
 					return true;
@@ -712,7 +712,7 @@ public class FilterParser {
 			this.expr = expr;
 		}
 
-		public boolean eval(Map<String,Object> map) {
+		public boolean eval(Map<String, ? > map) {
 			return !expr.eval(map);
 		}
 

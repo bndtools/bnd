@@ -1502,17 +1502,20 @@ public class Clazz {
 		if (annotations == null)
 			annotations = new HashSet<TypeRef>();
 
-		TypeRef tr = analyzer.getTypeRef(pool[type_index].toString());
-		annotations.add(tr);
+		String typeName = (String) pool[type_index];
+		TypeRef typeRef = null;
+		if (typeName != null) {
+			typeRef = analyzer.getTypeRef(typeName);
+			annotations.add(typeRef);
 
-		TypeRef name = analyzer.getTypeRef((String) pool[type_index]);
-		if (policy == RetentionPolicy.RUNTIME) {
-			referTo(type_index, 0);
-			hasRuntimeAnnotations = true;
-			if (api != null && (Modifier.isPublic(access_flags) || Modifier.isProtected(access_flags)))
-				api.add(name.getPackageRef());
-		} else {
-			hasClassAnnotations = true;
+			if (policy == RetentionPolicy.RUNTIME) {
+				referTo(type_index, 0);
+				hasRuntimeAnnotations = true;
+				if (api != null && (Modifier.isPublic(access_flags) || Modifier.isProtected(access_flags)))
+					api.add(typeRef.getPackageRef());
+			} else {
+				hasClassAnnotations = true;
+			}
 		}
 		int num_element_value_pairs = in.readUnsignedShort();
 		Map<String,Object> elements = null;
@@ -1527,7 +1530,7 @@ public class Clazz {
 			}
 		}
 		if (collect)
-			return new Annotation(name, elements, member, policy);
+			return new Annotation(typeRef, elements, member, policy);
 		return null;
 	}
 

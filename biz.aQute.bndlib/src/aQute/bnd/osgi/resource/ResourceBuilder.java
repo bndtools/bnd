@@ -229,8 +229,8 @@ public class ResourceBuilder {
 		filter.append("(").append(BundleNamespace.BUNDLE_NAMESPACE).append("=").append(bsn).append(")");
 
 		String v = attrs.getVersion();
-		if (v != null && VersionRange.isVersionRange(v)) {
-			VersionRange range = VersionRange.parseVersionRange(v);
+		if (v != null && VersionRange.isOSGiVersionRange(v)) {
+			VersionRange range = VersionRange.parseOSGiVersionRange(v);
 			filter.insert(0, "(&");
 			filter.append(range.toFilter());
 			filter.append(")");
@@ -248,8 +248,8 @@ public class ResourceBuilder {
 		filter.append("(").append(HostNamespace.HOST_NAMESPACE).append("=").append(bsn).append(")");
 
 		String v = attrs.getVersion();
-		if (v != null && VersionRange.isVersionRange(v)) {
-			VersionRange range = VersionRange.parseVersionRange(v);
+		if (v != null && VersionRange.isOSGiVersionRange(v)) {
+			VersionRange range = VersionRange.parseOSGiVersionRange(v);
 			filter.insert(0, "(&");
 			filter.append(range.toFilter());
 			filter.append(")");
@@ -334,13 +334,13 @@ public class ResourceBuilder {
 		}
 	}
 
-	public void addImportPackage(String pname, Attrs attrs) throws Exception {
+	public Requirement addImportPackage(String pname, Attrs attrs) throws Exception {
 		CapReqBuilder reqb = new CapReqBuilder(resource, PackageNamespace.PACKAGE_NAMESPACE);
-		reqb.addAttributesOrDirectives(attrs);
-		reqb.addAttribute(PackageNamespace.PACKAGE_NAMESPACE, pname);
-
-		reqb.addFilter(PackageNamespace.PACKAGE_NAMESPACE, pname, attrs.getVersion(), null);
-		addRequirement(reqb);
+		reqb.addDirectives(attrs);
+		reqb.addFilter(PackageNamespace.PACKAGE_NAMESPACE, pname, attrs.getVersion(), attrs);
+		Requirement requirement = reqb.buildRequirement();
+		addRequirement(requirement);
+		return requirement;
 	}
 
 	// Correct version according to R5 specification section 3.4.1
