@@ -1,7 +1,10 @@
 package aQute.bnd.version;
 
-import java.util.*;
-import java.util.regex.*;
+import java.util.ArrayList;
+import java.util.Formatter;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class VersionRange {
 	final Version	high;
@@ -9,8 +12,8 @@ public class VersionRange {
 	char			start	= '[';
 	char			end		= ']';
 
-	static Pattern	RANGE	= Pattern.compile("(\\(|\\[)\\s*(" + Version.VERSION_STRING + ")\\s*,\\s*("
-									+ Version.VERSION_STRING + ")\\s*(\\)|\\])");
+	static Pattern RANGE = Pattern.compile(
+			"(\\(|\\[)\\s*(" + Version.VERSION_STRING + ")\\s*,\\s*(" + Version.VERSION_STRING + ")\\s*(\\)|\\])");
 
 	public VersionRange(String string) {
 		string = string.trim();
@@ -63,7 +66,7 @@ public class VersionRange {
 		start = b ? '[' : '(';
 		end = c ? ']' : ')';
 		low = lower;
-		high = upper;
+		high = unique(upper);
 	}
 
 	public VersionRange(String low, String higher) {
@@ -72,9 +75,19 @@ public class VersionRange {
 
 	public VersionRange(Version low, Version higher) {
 		this.low = low;
-		this.high = higher;
+		this.high = unique(higher);
 		start = '[';
 		end = this.low.equals(this.high) ? ']' : ')';
+	}
+
+	static Version unique(Version v) {
+		if (Version.HIGHEST.equals(v))
+			return Version.HIGHEST;
+
+		if (Version.LOWEST.equals(v))
+			return Version.LOWEST;
+
+		return v;
 	}
 
 	public boolean isRange() {
@@ -91,8 +104,8 @@ public class VersionRange {
 
 	@Override
 	public String toString() {
-		if (high == low)
-			return high.toString();
+		if (high == Version.HIGHEST)
+			return low.toString();
 
 		StringBuilder sb = new StringBuilder();
 		sb.append(start);
@@ -147,6 +160,8 @@ public class VersionRange {
 	public String toFilter() {
 		Formatter f = new Formatter();
 		try {
+			if (high == Version.HIGHEST)
+				return "(version>=" + low + ")";
 			if (isRange()) {
 				f.format("(&");
 				if (includeLow())
@@ -210,4 +225,22 @@ public class VersionRange {
 
 		return new VersionRange(version);
 	}
+
+	public static VersionRange parseOSGiVersionRange(String version) {
+		if (Version.isVersion(version))
+			return new VersionRange(new Version(version), Version.HIGHEST);
+
+		if (isVersionRange(version))
+			return new VersionRange(version);
+		return null;
+	}
+
+	public static boolean isOSGiVersionRange(String range) {
+		return Version.isVersion(range) || isVersionRange(range);
+	}
+
+	public boolean isSingleVersion() {
+		return high == Version.HIGHEST;
+	}
+
 }
