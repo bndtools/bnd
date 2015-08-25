@@ -578,4 +578,14 @@ public class Attrs implements Map<String,String> {
 		return key.substring(0, key.length() - 1);
 	}
 
+	public static Attrs create(String key, String value) {
+		Attrs attrs = new Attrs();
+		attrs.put(key, value);
+		return attrs;
+	}
+
+	public Attrs with(String key, String value) {
+		put(key, value);
+		return this;
+	}
 }
