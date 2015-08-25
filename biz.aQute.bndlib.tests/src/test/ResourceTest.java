@@ -11,7 +11,9 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.deployer.repository.FixedIndexedRepo;
+import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import junit.framework.TestCase;
@@ -19,6 +21,38 @@ import junit.framework.TestCase;
 public class ResourceTest extends TestCase {
 	static String	defaultSHA		= "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 	static String	alternativeSHA	= "AAAAAAAAAAAAFFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+	static FilterParser	filterParser	= new FilterParser();
+
+	public void testImportPackage() throws Exception {
+		ResourceBuilder rb = new ResourceBuilder();
+		Requirement importPackage = rb.addImportPackage("com.foo",
+				Attrs.create("version", "1.2.3").with("mandatory:", "a,b").with("a", "1").with("b", "2"));
+		String filter = importPackage.getDirectives().get("filter");
+		assertEquals("(&(osgi.wiring.package=com.foo)(version>=1.2.3)(a=1)(b=2))", filter);
+	}
+
+	public void testEscapeFilterValue() throws Exception {
+		assertEquals("abc", CapReqBuilder.escapeFilterValue("abc"));
+		assertEquals("abc\\\\", CapReqBuilder.escapeFilterValue("abc\\"));
+		assertEquals("ab\\\\c", CapReqBuilder.escapeFilterValue("ab\\c"));
+		assertEquals("a\\\\bc", CapReqBuilder.escapeFilterValue("a\\bc"));
+		assertEquals("\\\\abc", CapReqBuilder.escapeFilterValue("\\abc"));
+
+		assertEquals("abc\\(", CapReqBuilder.escapeFilterValue("abc("));
+		assertEquals("ab\\(c", CapReqBuilder.escapeFilterValue("ab(c"));
+		assertEquals("a\\(bc", CapReqBuilder.escapeFilterValue("a(bc"));
+		assertEquals("\\(abc", CapReqBuilder.escapeFilterValue("(abc"));
+
+		assertEquals("abc\\)", CapReqBuilder.escapeFilterValue("abc)"));
+		assertEquals("ab\\)c", CapReqBuilder.escapeFilterValue("ab)c"));
+		assertEquals("a\\)bc", CapReqBuilder.escapeFilterValue("a)bc"));
+		assertEquals("\\)abc", CapReqBuilder.escapeFilterValue(")abc"));
+
+		assertEquals("abc\\*", CapReqBuilder.escapeFilterValue("abc*"));
+		assertEquals("ab\\*c", CapReqBuilder.escapeFilterValue("ab*c"));
+		assertEquals("a\\*bc", CapReqBuilder.escapeFilterValue("a*bc"));
+		assertEquals("\\*abc", CapReqBuilder.escapeFilterValue("*abc"));
+	}
 
 	public void testEquals() throws Exception {
 

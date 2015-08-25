@@ -2,12 +2,15 @@ package aQute.bnd.osgi.resource;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
+import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
@@ -131,7 +134,7 @@ public class CapReqBuilder {
 		return this;
 	}
 
-	public CapReqBuilder addDirectives(Map<String, String> directives) {
+	public CapReqBuilder addDirectives(Map<String,String> directives) {
 		for (Entry<String,String> e : directives.entrySet()) {
 			addDirective(e.getKey(), e.getValue());
 		}
@@ -337,17 +340,22 @@ public class CapReqBuilder {
 		List<String> parts = new ArrayList<String>();
 
 		parts.add("(" + ns + "=" + name + ")");
-		if (version != null && VersionRange.isVersionRange(version)) {
-			VersionRange range = VersionRange.parseVersionRange(version);
+		if (version != null && VersionRange.isOSGiVersionRange(version)) {
+			VersionRange range = VersionRange.parseOSGiVersionRange(version);
 			parts.add(range.toFilter());
 		}
 
-		// TODO we skip the attributes?
-		if (attrs != null)
-			for (Entry<String,String> a : attrs.entrySet()) {
-				String key = a.getKey();
-				parts.add("(" + key + "=" + a.getValue() + ")");
+		String mandatory = attrs.get(Constants.MANDATORY_DIRECTIVE + ":");
+		if (mandatory != null) {
+			String mandatoryAttrs[] = mandatory.split("\\s*,\\s*");
+			Arrays.sort(mandatoryAttrs);
+			for (String mandatoryAttr : mandatoryAttrs) {
+				String value = attrs.get(mandatoryAttr);
+				if (value != null) {
+					parts.add("(" + mandatoryAttr + "=" + escapeFilterValue(value) + ")");
+				}
 			}
+		}
 
 		StringBuilder sb = new StringBuilder();
 		if (parts.size() > 0)
@@ -358,6 +366,23 @@ public class CapReqBuilder {
 		if (parts.size() > 0)
 			sb.append(")");
 		addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, sb.toString());
+	}
+
+	/**
+	 * If value must contain one of the characters reverse solidus ('\' \u005C),
+	 * asterisk ('*' \u002A), parentheses open ('(' \u0028) or parentheses close
+	 * (')' \u0029), then these characters should be preceded with the reverse
+	 * solidus ('\' \u005C) character. Spaces are significant in value. Space
+	 * characters are defined by Character.isWhiteSpace().
+	 * 
+	 * @param value
+	 * @return
+	 */
+
+	static Pattern ESCAPE_FILTER_VALUE_P = Pattern.compile("[\\\\()*]");
+
+	public static String escapeFilterValue(String value) {
+		return ESCAPE_FILTER_VALUE_P.matcher(value).replaceAll("\\\\$0");
 	}
 
 	public void and(String... s) {
@@ -464,6 +489,7 @@ public class CapReqBuilder {
 
 		if (value instanceof String)
 			try {
+				System.out.println("Got " + value);
 				return new Version((String) value);
 			}
 			catch (Exception e) {
