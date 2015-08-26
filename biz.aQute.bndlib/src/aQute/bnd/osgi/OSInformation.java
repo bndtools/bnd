@@ -131,7 +131,10 @@ public class OSInformation {
 		}
 
 		if (sysPropOsName.startsWith("Windows")) {
-			if (sysPropOsVersion.startsWith("6.3")) {
+			if (sysPropOsVersion.startsWith("10.0")) {
+				osversion = new Version(10, 0, 0);
+				osnames = "Windows10,Windows 10,Win32";
+			} else if (sysPropOsVersion.startsWith("6.3")) {
 				osversion = new Version(6, 3, 0);
 				osnames = "Windows8.1,Windows 8.1,Win32";
 			} else if (sysPropOsVersion.startsWith("6.2")) {
@@ -149,7 +152,7 @@ public class OSInformation {
 			} else {
 				throw new IllegalArgumentException(
 						String.format(
-								"Unrecognised or unsupported Windows version while processing ${native_capability} macro: %s version %s. Supported: XP, Vista, Win7, Win8., Win8.1",
+								"Unrecognised or unsupported Windows version while processing ${native_capability} macro: %s version %s. Supported: XP, Vista, Win7, Win8, Win8.1, Win10.",
 								sysPropOsName, sysPropOsVersion));
 			}
 
