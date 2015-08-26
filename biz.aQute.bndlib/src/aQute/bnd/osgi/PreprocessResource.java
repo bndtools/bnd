@@ -1,6 +1,13 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+
+import aQute.lib.io.IO;
 
 public class PreprocessResource extends AbstractResource {
 	final Resource	resource;
@@ -34,7 +41,8 @@ public class PreprocessResource extends AbstractResource {
 			return data;
 
 		} catch( Exception e) {
-			throw new IllegalArgumentException("Invalid resource to pre-process, likely binary");
+			return IO.read(resource.openInputStream());
+
 		}
 		finally {
 			if (rdr != null) {

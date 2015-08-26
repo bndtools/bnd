@@ -432,7 +432,7 @@ public interface Constants {
 	/**
 	 * List of standard matchers for preprocessing
 	 */
-	String							DEFAULT_PREPROCESSS_MATCHERS				= "!*.(jpg|jpeg|jif|jfif|jp2|jpx|j2k|j2c|fpx|png|gif|swf|doc|pdf|tiff|tif|raw|bmp|ppm|pgm|pbm|pnm|pfm|webp|zip|jar|gz|tar|tgz|exe|com|bin|mp[0-9]|mpeg|mov|):i, *";
+	String DEFAULT_PREPROCESSS_MATCHERS = "!*.(ico|jpg|jpeg|jif|jfif|jp2|jpx|j2k|j2c|fpx|png|gif|swf|doc|pdf|tiff|tif|raw|bmp|ppm|pgm|pbm|pnm|pfm|webp|zip|jar|gz|tar|tgz|exe|com|bin|mp[0-9]|mpeg|mov|):i, *";
 
 	/*
 	 * Default properties as listed in defaults.bnd
