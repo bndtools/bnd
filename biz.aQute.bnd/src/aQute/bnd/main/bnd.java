@@ -143,8 +143,8 @@ import aQute.service.reporter.Reporter;
  * @version $Revision: 1.14 $
  */
 public class bnd extends Processor {
-	static Pattern				ASSIGNMENT	= Pattern.compile( //
-													"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
+	static Pattern				ASSIGNMENT	= Pattern.compile(									//
+			"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
 	Settings					settings	= new Settings();
 	final PrintStream			err			= System.err;
 	final public PrintStream	out			= System.out;
@@ -153,13 +153,12 @@ public class bnd extends Processor {
 	private Workspace			ws;
 	private char[]				password;
 
-	static Pattern				JARCOMMANDS	= Pattern.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
+	static Pattern JARCOMMANDS = Pattern.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
-	static Pattern				COMMAND		= Pattern.compile("\\w[\\w\\d]+");
-	static Pattern				EMAIL_P		= Pattern
-													.compile(
-															"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
-															Pattern.CASE_INSENSITIVE);
+	static Pattern	COMMAND	= Pattern.compile("\\w[\\w\\d]+");
+	static Pattern	EMAIL_P	= Pattern.compile(
+			"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
+			Pattern.CASE_INSENSITIVE);
 
 	@Description("OSGi Bundle Tool")
 	interface bndOptions extends Options {
@@ -647,7 +646,8 @@ public class bnd extends Processor {
 		for (String path : options._arguments()) {
 			if (path.endsWith(Constants.DEFAULT_BND_EXTENSION)) {
 				build(options.output(), options.force(), path);
-			} else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION) || path.endsWith(Constants.DEFAULT_BAR_EXTENSION)) {
+			} else
+				if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION) || path.endsWith(Constants.DEFAULT_BAR_EXTENSION)) {
 				Jar jar = getJar(path);
 				doPrint(jar, MANIFEST, null);
 			} else if (path.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
@@ -863,7 +863,7 @@ public class bnd extends Processor {
 
 	@Description("Test a project according to an OSGi test")
 	@Arguments(arg = {
-		"testclass[:method]..."
+			"testclass[:method]..."
 	})
 	interface testOptions extends projectOptions {
 		@Description("Verify all the dependencies before launching (runpath, runbundles, testpath)")
@@ -1876,20 +1876,20 @@ public class bnd extends Processor {
 	 * Print out a JAR
 	 */
 
-	final static int	VERIFY		= 1;
+	final static int VERIFY = 1;
 
-	final static int	MANIFEST	= 2;
+	final static int MANIFEST = 2;
 
-	final static int	LIST		= 4;
+	final static int LIST = 4;
 
-	final static int	IMPEXP		= 16;
-	final static int	USES		= 32;
-	final static int	USEDBY		= 64;
-	final static int	COMPONENT	= 128;
-	final static int	METATYPE	= 256;
-	final static int	API			= 512;
-
-	static final int	HEX			= 0;
+	final static int	IMPEXP			= 16;
+	final static int	USES			= 32;
+	final static int	USEDBY			= 64;
+	final static int	COMPONENT		= 128;
+	final static int	METATYPE		= 256;
+	final static int	API				= 512;
+	final static int	CAPABILITIES	= 1024;
+	static final int	HEX				= 0;
 
 	@Arguments(arg = "jar-file...")
 	@Description("Provides detailed view of the bundle. It will analyze the bundle and then show its contents from different perspectives. If no options are specified, prints the manifest.")
@@ -1926,6 +1926,9 @@ public class bnd extends Processor {
 
 		@Description("Show all packages, not just exported, in the API view")
 		boolean xport();
+
+		@Description("Show the capabilities")
+		boolean capabilities();
 	}
 
 	@Description("Printout the JAR")
@@ -1958,6 +1961,9 @@ public class bnd extends Processor {
 
 			if (options.typemeta())
 				opts |= METATYPE;
+
+			if (options.capabilities())
+				opts |= CAPABILITIES;
 
 			if (opts == 0)
 				opts = MANIFEST | IMPEXP;
@@ -2014,6 +2020,20 @@ public class bnd extends Processor {
 					warning("File has no manifest");
 			}
 
+			if ((options & CAPABILITIES) != 0) {
+				out.println("[CAPABILITIES]");
+				Manifest m = jar.getManifest();
+				Domain domain = Domain.domain(m);
+
+				if (m != null) {
+					Parameters provide = domain.getProvideCapability();
+					Parameters require = domain.getRequireCapability();
+					print(Constants.PROVIDE_CAPABILITY, new TreeMap<String,Attrs>(provide));
+					print(Constants.REQUIRE_CAPABILITY, new TreeMap<String,Attrs>(require));
+				} else
+					warning("File has no manifest");
+			}
+
 			if ((options & (USES | USEDBY | API)) != 0) {
 				out.println();
 				analyzer.setPedantic(isPedantic());
@@ -2043,8 +2063,8 @@ public class bnd extends Processor {
 
 					Set<PackageRef> privates = analyzer.getPrivates();
 					for (PackageRef export : exports.keySet()) {
-						Map<Def,List<TypeRef>> xRef = analyzer.getXRef(export, privates, Modifier.PROTECTED
-								+ Modifier.PUBLIC);
+						Map<Def,List<TypeRef>> xRef = analyzer.getXRef(export, privates,
+								Modifier.PROTECTED + Modifier.PUBLIC);
 						if (!xRef.isEmpty()) {
 							out.println();
 							out.printf("%s refers to private Packages (not good)\n\n", export);
@@ -2055,7 +2075,7 @@ public class bnd extends Processor {
 
 								refs.retainAll(privates);
 								out.printf("%60s %-40s %s\n", e.getKey().getOwnerType().getFQN() //
-										, e.getKey().getName(), refs);
+								, e.getKey().getName(), refs);
 							}
 							out.println();
 						}
@@ -2821,8 +2841,7 @@ public class bnd extends Processor {
 			"<jar-path>", "[...]"
 	})
 	interface selectOptions extends Options {
-		@Description("A simple assertion on a manifest header (e.g. "
-				+ Constants.BUNDLE_VERSION
+		@Description("A simple assertion on a manifest header (e.g. " + Constants.BUNDLE_VERSION
 				+ "=1.0.1) or an OSGi filter that is asserted on all manifest headers. Comparisons are case insensitive. The key 'resources' holds the pathnames of all resources and can also be asserted to check for the presence of a header.")
 		String where();
 
@@ -3149,7 +3168,7 @@ public class bnd extends Processor {
 	 */
 	@Description("Set bnd/jpm global variables. The key can be wildcard.")
 	@Arguments(arg = {
-		"<key>[=<value>]..."
+			"<key>[=<value>]..."
 	})
 	interface settingOptions extends Options {
 		@Description("Clear all the settings, including the public and private key")
@@ -3373,8 +3392,8 @@ public class bnd extends Processor {
 						del = " ";
 					}
 					if (o.process()) {
-						sb.append(del).append(System.currentTimeMillis() - now).append(" ms ")
-								.append(f.length() / 1000).append(" Kb");
+						sb.append(del).append(System.currentTimeMillis() - now).append(" ms ").append(f.length() / 1000)
+								.append(" Kb");
 						total += f.length();
 					}
 					out.println(sb);
@@ -3385,7 +3404,8 @@ public class bnd extends Processor {
 		if (o.process()) {
 			long time = (System.currentTimeMillis() - start);
 			float mb = total / 1000000;
-			out.format("Total %s Mb, %s ms, %s Mb/sec %s files\n", mb, time, (total / time) / 1024, o._arguments().size());
+			out.format("Total %s Mb, %s ms, %s Mb/sec %s files\n", mb, time, (total / time) / 1024,
+					o._arguments().size());
 		}
 	}
 
@@ -3708,8 +3728,8 @@ public class bnd extends Processor {
 
 		try {
 			final Project p = getProject(options.project());
-			final Workspace workspace = p == null || options.full() ? Workspace.getWorkspace(getBase()) : p
-					.getWorkspace();
+			final Workspace workspace = p == null || options.full() ? Workspace.getWorkspace(getBase())
+					: p.getWorkspace();
 
 			if (!workspace.exists()) {
 				error("cannot find workspace");
@@ -3789,7 +3809,7 @@ public class bnd extends Processor {
 
 	}
 
-	static Pattern	LINE_P	= Pattern.compile("\\s*(([^\\s]#|[^#])+)(\\s*#.*)?");
+	static Pattern LINE_P = Pattern.compile("\\s*(([^\\s]#|[^#])+)(\\s*#.*)?");
 
 	public void _bsn2url(Bsn2UrlOptions opts) throws Exception {
 		Project p = getProject(opts.project());
@@ -3854,8 +3874,8 @@ public class bnd extends Processor {
 										return;
 									}
 
-									out.println(descriptor.url + " #" + descriptor.bsn + ";version="
-											+ descriptor.version);
+									out.println(
+											descriptor.url + " #" + descriptor.bsn + ";version=" + descriptor.version);
 								}
 							}
 						}
@@ -4040,7 +4060,7 @@ public class bnd extends Processor {
 			"what", "name..."
 	})
 	interface AddOptions extends Options {
-		
+
 	}
 
 	@Description("Add a workspace, or a project or a plugin to the workspace")
@@ -4070,13 +4090,13 @@ public class bnd extends Processor {
 				ws = Workspace.createWorkspace(wsdir);
 				if (ws == null) {
 					error("Could not create workspace");
-				} 
+				}
 			}
 			getInfo(ws);
 			return;
 		}
 
-		if ("plugin".equals(what)) {			
+		if ("plugin".equals(what)) {
 			Workspace ws = getWorkspace(getBase());
 			if (ws == null) {
 				error("No workspace found from %s", getBase());
@@ -4084,8 +4104,8 @@ public class bnd extends Processor {
 			}
 
 			CommandLine cl = new CommandLine(this);
-			String help = cl.execute(new Plugins(this,ws), "add", new ExtList<String>(args));
-			if ( help != null)
+			String help = cl.execute(new Plugins(this, ws), "add", new ExtList<String>(args));
+			if (help != null)
 				out.println(help);
 			getInfo(ws);
 			return;
@@ -4128,10 +4148,10 @@ public class bnd extends Processor {
 			return;
 		}
 
-		if ("plugin".equals(what)) {			
+		if ("plugin".equals(what)) {
 			CommandLine cl = new CommandLine(this);
 			String help = cl.execute(new Plugins(this, ws), "remove", new ExtList<String>(args));
-			if ( help != null)
+			if (help != null)
 				out.println(help);
 			return;
 		}
