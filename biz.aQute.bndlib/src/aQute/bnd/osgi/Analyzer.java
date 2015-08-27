@@ -2611,6 +2611,31 @@ public class Analyzer extends Processor {
 	}
 
 	/**
+	 * Return an attribute of a package
+	 */
+
+	public String _packageattribute(String[] args) {
+		Macro.verifyCommand(args,
+				"${packageattribute;<packagename>[;<attributename>]}, Return an attribute of a package, default the version. Only available after analysis",
+				null, 2, 3);
+
+		String packageName = args[1];
+		String attrName = "version";
+		if (args.length > 2)
+			attrName = args[2];
+
+		Attrs attrs = contained.getByFQN(packageName);
+		if (attrs == null)
+			return "";
+
+		String value = attrs.get(attrName);
+		if (value == null)
+			return "";
+		else
+			return value;
+	}
+
+	/**
 	 * Locate a resource on the class path.
 	 * 
 	 * @param path

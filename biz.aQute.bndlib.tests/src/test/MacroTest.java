@@ -1,17 +1,43 @@
 package test;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.jar.Manifest;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Macro;
+import aQute.bnd.osgi.Processor;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class MacroTest extends TestCase {
 	
 	
+	/**
+	 * A macro to get an attribute from a package
+	 * 
+	 * @throws Exception
+	 */
+
+	public static void testPackageAttribute() throws Exception {
+		Builder builder = new Builder();
+		builder.addClasspath(IO.getFile("jar/osgi.jar"));
+		builder.setExportPackage("org.osgi.service.event;foo=3");
+		builder.setProperty("Header-Version", "${packageattribute;org.osgi.service.event}");
+		builder.setProperty("Header-Foo", "${packageattribute;org.osgi.service.event;from:}");
+		builder.build();
+		assertTrue(builder.check());
+
+		Manifest m = builder.getJar().getManifest();
+		String value = m.getMainAttributes().getValue("Header-Version");
+		assertEquals("1.0.1", value);
+		value = m.getMainAttributes().getValue("Header-Foo");
+		assertNotNull(value);
+	}
 	/*
 	 * #722 ${cat;<file>} removes \ before a $
 	 */
