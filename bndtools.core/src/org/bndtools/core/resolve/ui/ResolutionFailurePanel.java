@@ -139,21 +139,32 @@ public class ResolutionFailurePanel {
 
     private static String formatFailureStatus(IStatus status, boolean exceptions, String indent) {
         StringWriter writer = new StringWriter();
-        PrintWriter pw = new PrintWriter(writer);
+        try (PrintWriter pw = new PrintWriter(writer);) {
 
-        if (status.isMultiStatus()) {
-            IStatus[] children = status.getChildren();
-            for (IStatus child : children)
-                pw.print(formatFailureStatus(child, exceptions, indent + "  "));
-        } else {
-            pw.println(status.getMessage());
-            if (exceptions) {
-                Throwable exception = status.getException();
-                if (exception != null)
-                    exception.printStackTrace(pw);
+            if (status.isMultiStatus()) {
+                IStatus[] children = status.getChildren();
+                for (IStatus child : children)
+                    pw.print(formatFailureStatus(child, exceptions, indent + "  "));
+            } else {
+                if (status.getException() instanceof ResolutionException) {
+                    String message = status.getException().getMessage();
+                    if (message != null)
+                        message = message.replaceAll("\\[caused by:", "\r\n-> ");
+                    else
+                        message = status.getException().toString();
+
+                    pw.println(message);
+                } else {
+                    pw.println(status.getMessage());
+
+                    if (exceptions) {
+                        Throwable exception = status.getException();
+                        if (exception != null)
+                            exception.printStackTrace(pw);
+                    }
+                }
             }
         }
-        pw.close();
         return writer.toString();
     }
 
@@ -261,9 +272,9 @@ public class ResolutionFailurePanel {
         Clipboard clipboard = new Clipboard(composite.getDisplay());
         TextTransfer transfer = TextTransfer.getInstance();
         clipboard.setContents(new Object[] {
-            builder.toString()
+                builder.toString()
         }, new Transfer[] {
-            transfer
+                transfer
         });
         clipboard.dispose();
     }
