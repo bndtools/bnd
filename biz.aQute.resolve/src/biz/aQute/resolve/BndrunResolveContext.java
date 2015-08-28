@@ -377,18 +377,19 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	}
 
 	Resource constructInputRequirements() throws Exception {
+        ResourceBuilder resBuilder = new ResourceBuilder();
+        
+        CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
+            .addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, IDENTITY_INITIAL_RESOURCE);
+        resBuilder.addCapability(identity);
+        
 		Parameters inputRequirements = new Parameters(properties.mergeProperties(Constants.RUNREQUIRES));
 		if (inputRequirements != null && !inputRequirements.isEmpty()) {
 			List<Requirement> requires = CapReqBuilder.getRequirementsFrom(inputRequirements);
-
-			ResourceBuilder resBuilder = new ResourceBuilder();
-			CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
-					.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, IDENTITY_INITIAL_RESOURCE);
-			resBuilder.addCapability(identity);
 			resBuilder.addRequirements(requires);
-			return resBuilder.build();
-		} else
-			return null;
+        }
+        
+        return resBuilder.build();
 	}
 
 	private void constructBlacklist() throws Exception {
