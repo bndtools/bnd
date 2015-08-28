@@ -25,8 +25,7 @@ Test-Cases: ${test-cases}
 	osgi.enroute.junit.wrapper;version=4.12
 
 -runrequires: \
-	osgi.identity;filter:='(osgi.identity=_project_)',\
-	osgi.identity;filter:='(osgi.identity=osgi.enroute.junit.wrapper)'
+	osgi.identity;filter:='(osgi.identity=_project_)'
 
 -runbundles: \
 	${error;Resolve first}

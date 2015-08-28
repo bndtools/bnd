@@ -1,0 +1,10 @@
+language: java
+jdk:
+  - oraclejdk8
+
+env:
+  - TERM=dumb
+
+install: ./gradlew --version
+
+script: ./gradlew --continue
