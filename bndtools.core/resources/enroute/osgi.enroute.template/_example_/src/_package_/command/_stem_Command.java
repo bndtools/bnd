@@ -3,8 +3,8 @@ package _package_.command;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import osgi.enroute.debug.api.Debug;
 import _package_.api._stem_;
+import osgi.enroute.debug.api.Debug;
 
 /**
  * This is the implementation. It registers the _stem_ interface and calls it
