@@ -231,7 +231,7 @@
    <extension point="org.eclipse.ui.handlers">
       <handler
          commandId="bndtools.core.removeRepoResource"
-         class="bndtools.views.RemoveRepoResourceHandler">
+         class="bndtools.views.repository.RemoveRepoResourceHandler">
          <enabledWhen>
             <with variable="selection">
                <count value="+" />
