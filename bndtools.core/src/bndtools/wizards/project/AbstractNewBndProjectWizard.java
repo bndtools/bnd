@@ -31,6 +31,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -149,7 +150,9 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         headlessBuildManager.setup(enabledPlugins, false, project.getProject().getLocation().toFile(), true, enabledIgnorePlugins);
 
         /* refresh the project; files were created outside of Eclipse API */
-        project.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
+        project.getProject().refreshLocal(IResource.DEPTH_INFINITE, progress);
+
+        project.getProject().build(IncrementalProjectBuilder.CLEAN_BUILD, progress);
     }
 
     protected static IFile importResource(IProject project, String fullPath, BndProjectResource bndProjectResource, IProgressMonitor monitor) throws CoreException {
