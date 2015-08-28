@@ -1,6 +1,6 @@
 package _package_;
 
-
+import junit.framework.TestCase;
 
 /*
  * 
@@ -8,7 +8,7 @@ package _package_;
  * 
  */
 
-public class _stem_ImplTest {
+public class _stem_ImplTest extends TestCase {
 	
 	/*
 	 * 
