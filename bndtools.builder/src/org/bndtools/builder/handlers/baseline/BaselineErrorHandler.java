@@ -152,25 +152,27 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
     List<MarkerData> generateAddedMethodMarker(IJavaProject javaProject, String className, final String methodName, final Delta requiresDelta) throws JavaModelException {
         final List<MarkerData> markers = new LinkedList<MarkerData>();
         final CompilationUnit ast = createAST(javaProject, className);
-        ast.accept(new ASTVisitor() {
-            @Override
-            public boolean visit(MethodDeclaration methodDecl) {
-                String signature = ASTUtil.buildMethodSignature(methodDecl);
-                if (signature.equals(methodName)) {
-                    // Create the marker attribs here
-                    Map<String,Object> attribs = new HashMap<String,Object>();
-                    attribs.put(IMarker.CHAR_START, methodDecl.getStartPosition());
-                    attribs.put(IMarker.CHAR_END, methodDecl.getStartPosition() + methodDecl.getLength());
+        if (ast != null) {
+            ast.accept(new ASTVisitor() {
+                @Override
+                public boolean visit(MethodDeclaration methodDecl) {
+                    String signature = ASTUtil.buildMethodSignature(methodDecl);
+                    if (signature.equals(methodName)) {
+                        // Create the marker attribs here
+                        Map<String,Object> attribs = new HashMap<String,Object>();
+                        attribs.put(IMarker.CHAR_START, methodDecl.getStartPosition());
+                        attribs.put(IMarker.CHAR_END, methodDecl.getStartPosition() + methodDecl.getLength());
 
-                    String message = String.format("This method was added, which requires a %s change to the package.", requiresDelta);
-                    attribs.put(IMarker.MESSAGE, message);
+                        String message = String.format("This method was added, which requires a %s change to the package.", requiresDelta);
+                        attribs.put(IMarker.MESSAGE, message);
 
-                    markers.add(new MarkerData(ast.getJavaElement().getResource(), attribs, false));
+                        markers.add(new MarkerData(ast.getJavaElement().getResource(), attribs, false));
+                    }
+
+                    return false;
                 }
-
-                return false;
-            }
-        });
+            });
+        }
         return markers;
     }
 
