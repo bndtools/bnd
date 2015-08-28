@@ -1,24 +1,42 @@
 package aQute.bnd.deployer.repository.providers;
 
-import static aQute.bnd.deployer.repository.api.Decision.*;
-import static javax.xml.stream.XMLStreamConstants.*;
+import static aQute.bnd.deployer.repository.api.Decision.accept;
+import static aQute.bnd.deployer.repository.api.Decision.reject;
+import static aQute.bnd.deployer.repository.api.Decision.undecided;
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import javax.xml.stream.*;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
-import org.osgi.framework.*;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.resource.Resource;
-import org.osgi.service.indexer.*;
-import org.osgi.service.indexer.impl.*;
-import org.osgi.service.log.*;
-import org.osgi.service.repository.*;
+import org.osgi.service.indexer.ResourceAnalyzer;
+import org.osgi.service.indexer.ResourceIndexer;
+import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
+import org.osgi.service.indexer.impl.RepoIndex;
+import org.osgi.service.log.LogService;
+import org.osgi.service.repository.ContentNamespace;
 
-import aQute.bnd.deployer.repository.api.*;
-import aQute.bnd.osgi.resource.*;
-import aQute.bnd.service.*;
+import aQute.bnd.deployer.repository.api.CheckResult;
+import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
+import aQute.bnd.deployer.repository.api.IRepositoryIndexProcessor;
+import aQute.bnd.deployer.repository.api.Referral;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.service.Registry;
 
 public class R5RepoContentProvider implements IRepositoryContentProvider {
 
@@ -259,11 +277,16 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 			}
 		}
 
+		long modified = 0;
+		for (File file : files)
+			modified = Math.max(modified, file.lastModified());
+
 		Map<String,String> config = new HashMap<String,String>();
 		config.put(ResourceIndexer.REPOSITORY_NAME, repoName);
 		config.put(ResourceIndexer.ROOT_URL, baseUri.toString());
 		config.put(ResourceIndexer.PRETTY, Boolean.toString(pretty));
 		config.put(ResourceIndexer.COMPRESSED, Boolean.toString(!pretty));
+		config.put(org.osgi.service.indexer.impl.RepoIndex.REPOSITORY_INCREMENT_OVERRIDE, Long.toString(modified));
 
 		indexer.index(files, output, config);
 	}
