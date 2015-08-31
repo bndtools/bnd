@@ -1,14 +1,23 @@
 package aQute.lib.persistentmap;
 
-import java.io.*;
-import java.lang.ref.*;
-import java.lang.reflect.*;
-import java.nio.channels.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.lang.ref.SoftReference;
+import java.lang.reflect.Type;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
+import java.util.AbstractMap;
+import java.util.AbstractSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
-import aQute.lib.io.*;
-import aQute.lib.json.*;
+import aQute.lib.io.IO;
+import aQute.lib.json.JSONCodec;
 
 /**
  * Implements a low performance but easy to use map that is backed on a
@@ -197,7 +206,7 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 			try {
 				FileLock lock = lockFile.getChannel().lock();
 				if (!lock.isValid()) {
-					System.out.println("Ouch, got invalid lock " + dir + " " + Thread.currentThread().getName());
+					System.err.println("Ouch, got invalid lock " + dir + " " + Thread.currentThread().getName());
 					return null;
 				}
 				return lock;
@@ -212,7 +221,7 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 
 	private void unlock(FileLock lock) throws IOException {
 		if (lock == null || !lock.isValid()) {
-			System.out.println("Ouch, invalid lock was used " + dir + " " + Thread.currentThread().getName());
+			System.err.println("Ouch, invalid lock was used " + dir + " " + Thread.currentThread().getName());
 			return;
 		}
 		lock.release();

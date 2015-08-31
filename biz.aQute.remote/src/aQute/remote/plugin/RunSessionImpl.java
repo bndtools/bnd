@@ -108,7 +108,6 @@ public class RunSessionImpl implements RunSession {
 
 			update(dto);
 			int exitCode = supervisor.join();
-			System.out.println("Exiting " + dto.name + " " + exitCode);
 			return exitCode;
 		}
 		catch (Exception e) {

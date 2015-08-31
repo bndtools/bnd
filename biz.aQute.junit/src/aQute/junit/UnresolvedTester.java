@@ -1,10 +1,13 @@
 package aQute.junit;
 
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import junit.framework.*;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 
-import org.osgi.framework.*;
+import junit.framework.TestCase;
 
 /**
  * Verify that all bundles are resolved
@@ -15,7 +18,6 @@ public class UnresolvedTester extends TestCase {
 	
 	public void setBundleContext(BundleContext context) {
 		this.context = context;
-		System.out.println("got context " + context);
 	}
 
 	@SuppressWarnings("deprecation")

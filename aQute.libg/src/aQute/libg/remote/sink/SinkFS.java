@@ -1,12 +1,14 @@
 package aQute.libg.remote.sink;
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.io.File;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import aQute.lib.io.*;
-import aQute.libg.cryptography.*;
-import aQute.libg.remote.*;
+import aQute.lib.io.IO;
+import aQute.libg.cryptography.SHA1;
+import aQute.libg.remote.Delta;
+import aQute.libg.remote.Source;
 
 public class SinkFS {
 	final Map<File,String>	shas	= new ConcurrentHashMap<File,String>();
@@ -63,7 +65,6 @@ public class SinkFS {
 	}
 
 	private void copy(byte[] data, File file, String sha) throws Exception {
-		System.out.println("copy " + file + " " + sha);
 		file.getParentFile().mkdirs();
 		IO.copy(data, file);
 		shas.put(file, sha);

@@ -1,11 +1,14 @@
 package aQute.remote.plugin;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
-import org.osgi.dto.*;
+import org.osgi.dto.DTO;
 
-import aQute.remote.api.*;
-import aQute.remote.util.*;
+import aQute.remote.api.Agent;
+import aQute.remote.api.Event;
+import aQute.remote.api.Supervisor;
+import aQute.remote.util.AgentSupervisor;
 
 /**
  * This is the supervisor on the bnd launcher side. It provides the SHA
@@ -25,7 +28,6 @@ public class LauncherSupervisor extends AgentSupervisor<Supervisor,Agent> implem
 
 	@Override
 	public void event(Event e) throws Exception {
-		System.out.println(e);
 		switch (e.type) {
 			case exit :
 				exit(e.code);

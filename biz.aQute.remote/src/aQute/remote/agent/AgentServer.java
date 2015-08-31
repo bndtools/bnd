@@ -569,7 +569,6 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 
 				@Override
 				public void frameworkEvent(FrameworkEvent event) {
-					System.out.println("refreshed");
 					refresh.countDown();
 				}
 			});
