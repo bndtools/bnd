@@ -1,12 +1,16 @@
 package aQute.bnd.ant;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.StringTokenizer;
 
-import org.apache.tools.ant.*;
+import org.apache.tools.ant.BuildException;
 
-import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectTester;
+import aQute.bnd.build.Workspace;
 
 public class TestTask extends BaseTask {
 
@@ -62,7 +66,6 @@ public class TestTask extends BaseTask {
 	}
 
 	private void executeProject(Project project) throws Exception {
-		System.out.println("Testing " + project.getPropertiesFile());
 
 		ProjectTester tester = project.getProjectTester();
 		tester.setContinuous(continuous);

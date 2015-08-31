@@ -489,7 +489,6 @@ public class CapReqBuilder {
 
 		if (value instanceof String)
 			try {
-				System.out.println("Got " + value);
 				return new Version((String) value);
 			}
 			catch (Exception e) {

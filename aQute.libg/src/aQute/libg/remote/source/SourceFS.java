@@ -210,7 +210,6 @@ class SourceFS {
 	}
 
 	public byte[] getData(String sha) throws Exception {
-		System.out.println("Get data " + sha);
 		List<File> files = shas.get(sha);
 		if (files == null)
 			return null;

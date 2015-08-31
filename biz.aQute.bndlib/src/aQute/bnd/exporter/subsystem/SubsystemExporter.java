@@ -1,15 +1,29 @@
 package aQute.bnd.exporter.subsystem;
 
-import static aQute.bnd.osgi.Constants.*;
+import static aQute.bnd.osgi.Constants.REMOVEHEADERS;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
-import aQute.bnd.annotation.plugin.*;
-import aQute.bnd.build.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.export.*;
+import aQute.bnd.annotation.plugin.BndPlugin;
+import aQute.bnd.build.Container;
+import aQute.bnd.build.Project;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.EmbeddedResource;
+import aQute.bnd.osgi.FileResource;
+import aQute.bnd.osgi.Instructions;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.JarResource;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.osgi.Verifier;
+import aQute.bnd.service.export.Exporter;
 
 @BndPlugin(name = "subsystem")
 public class SubsystemExporter implements Exporter {
@@ -64,7 +78,6 @@ public class SubsystemExporter implements Exporter {
 		}
 
 		for (File file : files) {
-			System.out.println("File " + file);
 
 			Domain domain = Domain.domain(file);
 			String bsn = domain.getBundleSymbolicName().getKey();

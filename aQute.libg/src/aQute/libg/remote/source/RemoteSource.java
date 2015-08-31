@@ -1,10 +1,17 @@
 package aQute.libg.remote.source;
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.atomic.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import aQute.libg.remote.*;
+import aQute.libg.remote.Area;
+import aQute.libg.remote.Event;
+import aQute.libg.remote.Sink;
+import aQute.libg.remote.Source;
+import aQute.libg.remote.Welcome;
 
 /**
  * Controls a different file system trough a Sink. It can translate files with
@@ -56,7 +63,6 @@ public class RemoteSource implements Source {
 
 	@Override
 	public void event(Event e, Area area) throws Exception {
-		System.out.println("Event " + e);
 		switch (e) {
 
 			case created :

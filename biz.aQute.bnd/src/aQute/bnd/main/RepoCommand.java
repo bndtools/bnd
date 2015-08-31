@@ -1,28 +1,57 @@
 package aQute.bnd.main;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
-import aQute.bnd.build.*;
-import aQute.bnd.differ.*;
-import aQute.bnd.header.*;
-import aQute.bnd.maven.support.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.build.DownloadBlocker;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.differ.DiffImpl;
+import aQute.bnd.differ.RepositoryElement;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.maven.support.MavenRemoteRepository;
+import aQute.bnd.osgi.Descriptors;
+import aQute.bnd.osgi.Instruction;
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Verifier;
-import aQute.bnd.service.*;
+import aQute.bnd.service.Refreshable;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
-import aQute.bnd.service.diff.*;
-import aQute.bnd.service.repository.*;
+import aQute.bnd.service.diff.Delta;
+import aQute.bnd.service.diff.Diff;
+import aQute.bnd.service.diff.Tree;
+import aQute.bnd.service.repository.ResourceRepository;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
-import aQute.bnd.version.*;
-import aQute.lib.collections.*;
-import aQute.lib.deployer.*;
-import aQute.lib.getopt.*;
-import aQute.lib.io.*;
-import aQute.lib.json.*;
-import aQute.libg.cryptography.*;
-import aQute.libg.glob.*;
+import aQute.bnd.version.Version;
+import aQute.bnd.version.VersionRange;
+import aQute.lib.collections.MultiMap;
+import aQute.lib.collections.SortedList;
+import aQute.lib.deployer.FileRepo;
+import aQute.lib.getopt.Arguments;
+import aQute.lib.getopt.Description;
+import aQute.lib.getopt.OptionArgument;
+import aQute.lib.getopt.Options;
+import aQute.lib.io.IO;
+import aQute.lib.json.JSONCodec;
+import aQute.libg.cryptography.SHA1;
+import aQute.libg.glob.Glob;
 
 public class RepoCommand {
 	final static JSONCodec	codec	= new JSONCodec();
@@ -100,7 +129,6 @@ public class RepoCommand {
 			} else {
 				Workspace w = bnd.getWorkspace((File) null);
 				if (w != null) {
-					System.out.println("Ws " + w.getBase());
 					repos.addAll(w.getRepositories());
 				}
 			}

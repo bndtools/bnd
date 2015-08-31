@@ -1,13 +1,23 @@
 package aQute.libg.remote.sink;
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.io.File;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import aQute.lib.io.*;
-import aQute.lib.json.*;
-import aQute.libg.command.*;
-import aQute.libg.remote.*;
+import aQute.lib.io.IO;
+import aQute.lib.json.JSONCodec;
+import aQute.libg.command.Command;
+import aQute.libg.remote.Area;
+import aQute.libg.remote.Delta;
+import aQute.libg.remote.Event;
+import aQute.libg.remote.Sink;
+import aQute.libg.remote.Source;
+import aQute.libg.remote.Welcome;
 
 public class RemoteSink implements Sink {
 	final static JSONCodec		codec	= new JSONCodec();
@@ -182,7 +192,6 @@ public class RemoteSink implements Sink {
 	})
 	@Override
 	public Welcome getWelcome(int highest) {
-		System.out.println("Getting version " + highest + " " + Sink.version);
 		Welcome welcome = new Welcome();
 		welcome.separatorChar = File.separatorChar;
 		welcome.properties = (Map) System.getProperties();

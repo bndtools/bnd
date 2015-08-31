@@ -3744,7 +3744,6 @@ public class bnd extends Processor {
 				forker.doWhen(dep.getDependson(), dep, new Runnable() {
 
 					public void run() {
-						System.out.println("start " + dep);
 						if (!quit.get()) {
 
 							try {
@@ -3757,7 +3756,6 @@ public class bnd extends Processor {
 							catch (Exception e) {
 								e.printStackTrace();
 							}
-							System.out.println("done " + dep);
 						}
 					}
 				});
