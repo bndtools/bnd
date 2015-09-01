@@ -47,6 +47,7 @@ public class About {
 	public static Version	CURRENT	= _3_0;
 
 	public static String[] CHANGES_3_0 = {
+			"No longer analyzes the packages on the classpath, only information in manifest is used to find out package information",
 			"Added bnd command bnd resolve validate <index.xml> to validate that a repository file is complete",
 			"Extended the resource package with many functions to work easily with resources, capabilities and requirements",
 			"Properly handles optionals in resolve", "Handles SCR Release 6",

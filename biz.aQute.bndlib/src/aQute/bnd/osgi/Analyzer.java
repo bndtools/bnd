@@ -192,6 +192,11 @@ public class Analyzer extends Processor {
 
 				getManifestInfoFromClasspath(current, classpathExports, contracts);
 
+				Manifest m = current.getManifest();
+				if (m == null)
+					for (String dir : current.getDirectories().keySet()) {
+						learnPackage(current, getPackageRef(dir), classpathExports);
+					}
 			}
 
 			// Handle the bundle activator
