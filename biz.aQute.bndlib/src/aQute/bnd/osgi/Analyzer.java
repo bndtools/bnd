@@ -189,9 +189,14 @@ public class Analyzer extends Processor {
 			//
 
 			for (Jar current : getClasspath()) {
+
 				getManifestInfoFromClasspath(current, classpathExports, contracts);
-				for (String dir : current.getDirectories().keySet())
-					learnPackage(current, getPackageRef(dir), classpathExports);
+
+				Manifest m = current.getManifest();
+				if (m == null)
+					for (String dir : current.getDirectories().keySet()) {
+						learnPackage(current, getPackageRef(dir), classpathExports);
+					}
 			}
 
 			// Handle the bundle activator
@@ -2724,7 +2729,7 @@ public class Analyzer extends Processor {
 				Filter f = new Filter(filter);
 				if (f.match(map))
 					continue;
-				error("%s fails %s", REQUIRE_BND, require.get(filter));
+				error("%s fails for filter %s values=%s", REQUIRE_BND, require.get(filter), map);
 			}
 			catch (Exception t) {
 				error("%s with value %s throws exception", t, REQUIRE_BND, require);

@@ -1,14 +1,23 @@
 package aQute.junit;
 
-import java.io.*;
-import java.net.*;
-import java.text.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.InetAddress;
+import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import junit.framework.*;
+import org.osgi.framework.Bundle;
 
-import org.osgi.framework.*;
+import junit.framework.AssertionFailedError;
+import junit.framework.Test;
 
 public class JunitXmlReport implements TestReporter {
 	Tag				testsuite	= new Tag("testsuite");
@@ -63,25 +72,6 @@ public class JunitXmlReport implements TestReporter {
 			property.addAttribute("value", entry.getValue());
 		}
 
-		Tag bundles = new Tag(testsuite, "bundles");
-		Bundle bs[] = fw.getBundleContext().getBundles();
-
-		for (int i = 0; i < bs.length; i++) {
-			Tag bundle = new Tag("bundle");
-			bundle.addAttribute("location", bs[i].getLocation());
-			bundle.addAttribute("modified", df.format(new Date(bs[i].getLastModified())));
-			bundle.addAttribute("state", bs[i].getState());
-			bundle.addAttribute("id", bs[i].getBundleId() + "");
-			if ( bs[i].getSymbolicName() != null)
-				bundle.addAttribute("bsn", bs[i].getSymbolicName());
-			if ( bs[i].getVersion() != null)
-				bundle.addAttribute("version", bs[i].getVersion());
-
-			if (bs[i].equals(targetBundle))
-				bundle.addAttribute("target", "true");
-
-			bundles.addContent(bundle);
-		}
 		if (targetBundle != null) {
 			String header = targetBundle.getHeaders().get(aQute.bnd.osgi.Constants.BND_ADDXMLTOTEST);
 			if (header != null) {
