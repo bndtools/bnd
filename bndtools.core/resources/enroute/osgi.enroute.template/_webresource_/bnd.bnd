@@ -2,7 +2,10 @@
 # _PROJECT_
 #
 
-Bundle-Version: 	0.0.0.${tstamp}
+vrs 	= ${version;===;${Bundle-Version}}
+path 	= /static/_packagepath_/${vrs}
+
+Bundle-Version: 	1.0.0.${tstamp}
 Bundle-Description: \
 	A bundle that exports a web resource, for example bootstrap or angular. \
 	\
@@ -14,11 +17,15 @@ Bundle-Vendor: 		${warning;The vendor/group responsible for this webresource}
 
 Provide-Capability:	\
 	osgi.enroute.webresource; \
-		osgi.enroute.webresource=_package_/${version;=;${Bundle-Version}}; \
-		version:Version=${version;===;${Bundle-Version}}
+		osgi.enroute.webresource=/_packagepath_}; \
+		version:Version=${vrs}; \
+		root=${path}
+-buildpath: \
+	osgi.enroute.base.api
 
 -includeresource: \
 	{readme.md}, \
-	{static=static}, \
+	{${path}=${vrs}}, \
 	{LICENSE.txt}
 
+Export-Package: _package_.capabilities
