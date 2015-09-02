@@ -38,7 +38,6 @@ import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 import aQute.bnd.annotation.xml.XMLAttribute;
-import aQute.bnd.component.AnnotationReader;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
@@ -56,6 +55,8 @@ import aQute.bnd.test.XmlTester;
 		"resource", "restriction"
 })
 public class DSAnnotationTest extends BndTestCase {
+
+	public static final String	FELIX_1_2				= "http://felix.apache.org/xmlns/scr/v1.2.0-felix";
 
 	private static String[]	SERIALIZABLE_RUNNABLE	= {
 			Serializable.class.getName(), Runnable.class.getName()
@@ -317,8 +318,8 @@ public class DSAnnotationTest extends BndTestCase {
 		@Modified
 		void changed() {}
 
-		@Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, name = "foo", policy = ReferencePolicy.DYNAMIC, service = Object.class, target = "(objectclass=*)", unbind = "unset", updated = "updatedLogService", policyOption = ReferencePolicyOption.GREEDY)
-		void setLogService(@SuppressWarnings("unused") LogService log) {
+		@Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, name = "foo", policy = ReferencePolicy.DYNAMIC, service = LogService.class, target = "(objectclass=*)", unbind = "unset", updated = "updatedLogService", policyOption = ReferencePolicyOption.GREEDY)
+		void setLogService(@SuppressWarnings("unused") Object log) {
 
 		}
 
@@ -363,7 +364,7 @@ public class DSAnnotationTest extends BndTestCase {
 			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 			assertNotNull(r);
 			r.write(System.err);
-			XmlTester xt = new XmlTester(r.openInputStream()); 
+			XmlTester xt = new XmlTester(r.openInputStream());
 
 			// Test the defaults
 			xt.assertAttribute("test.component.DSAnnotationTest$DS10_basic", "component/implementation/@class");
@@ -394,10 +395,10 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("", "component/reference[1]/@policy");
 			xt.assertAttribute("", "component/reference[1]/@target");
 			xt.assertAttribute("", "component/reference[1]/@policy-option");
-	}
-	{
+		}
+		{
 			//
-			// Test the DS 1.1 defaults 
+			// Test the DS 1.1 defaults
 			//
 
 			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$DS11_basic.xml");
@@ -437,94 +438,94 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("", "scr:component/reference[1]/@policy");
 			xt.assertAttribute("", "scr:component/reference[1]/@target");
 			xt.assertAttribute("", "scr:component/reference[1]/@policy-option");
-	}
-	{
-		//
-		// Test a DS 1.1 bind method results in the DS 1.1 namespace
-		//
+		}
+		{
+			//
+			// Test a DS 1.1 bind method results in the DS 1.1 namespace
+			//
 
-		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$DS11_ref1_basic.xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
-		assertNotNull(r);
-		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0"); // #136
-																											// was
-																											// http://www.osgi.org/xmlns/scr/1.1.0
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$DS11_ref1_basic.xml");
+			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0"); // #136
+																												// was
+																												// http://www.osgi.org/xmlns/scr/1.1.0
 
-		// Test the defaults
-		xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref1_basic", "scr:component/implementation/@class");
+			// Test the defaults
+			xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref1_basic", "scr:component/implementation/@class");
 
-		// Default must be the implementation class
-		xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref1_basic", "scr:component/@name");
+			// Default must be the implementation class
+			xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref1_basic", "scr:component/@name");
 
-		xt.assertAttribute("", "scr:component/@configuration-policy");
-		xt.assertAttribute("", "scr:component/@immediate");
-		xt.assertAttribute("", "scr:component/@enabled");
-		xt.assertAttribute("", "scr:component/@factory");
-		xt.assertAttribute("", "scr:component/service/@servicefactory");
-		xt.assertAttribute("", "scr:component/@configuration-pid");
-		xt.assertAttribute("activate", "scr:component/@activate");
-		xt.assertAttribute("deactivate", "scr:component/@deactivate");
-		xt.assertAttribute("", "scr:component/@modified");
-		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
-		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
+			xt.assertAttribute("", "scr:component/@configuration-policy");
+			xt.assertAttribute("", "scr:component/@immediate");
+			xt.assertAttribute("", "scr:component/@enabled");
+			xt.assertAttribute("", "scr:component/@factory");
+			xt.assertAttribute("", "scr:component/service/@servicefactory");
+			xt.assertAttribute("", "scr:component/@configuration-pid");
+			xt.assertAttribute("activate", "scr:component/@activate");
+			xt.assertAttribute("deactivate", "scr:component/@deactivate");
+			xt.assertAttribute("", "scr:component/@modified");
+			xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
+			xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-		xt.assertAttribute("0", "count(scr:component/properties)");
-		xt.assertAttribute("0", "count(scr:component/property)");
+			xt.assertAttribute("0", "count(scr:component/properties)");
+			xt.assertAttribute("0", "count(scr:component/property)");
 
-		xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@name");
-		xt.assertAttribute("", "scr:component/reference[1]/@target");
-		xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@bind");
-		xt.assertAttribute("unxsetLogService", "scr:component/reference[1]/@unbind");
-		xt.assertAttribute("", "scr:component/reference[1]/@cardinality");
-		xt.assertAttribute("", "scr:component/reference[1]/@policy");
-		xt.assertAttribute("", "scr:component/reference[1]/@target");
-		xt.assertAttribute("", "scr:component/reference[1]/@policy-option");
-	}
-	{
-		//
-		// Test a DS 1.1 unbind method results in the DS 1.1 namespace
-		//
+			xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@name");
+			xt.assertAttribute("", "scr:component/reference[1]/@target");
+			xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@bind");
+			xt.assertAttribute("unxsetLogService", "scr:component/reference[1]/@unbind");
+			xt.assertAttribute("", "scr:component/reference[1]/@cardinality");
+			xt.assertAttribute("", "scr:component/reference[1]/@policy");
+			xt.assertAttribute("", "scr:component/reference[1]/@target");
+			xt.assertAttribute("", "scr:component/reference[1]/@policy-option");
+		}
+		{
+			//
+			// Test a DS 1.1 unbind method results in the DS 1.1 namespace
+			//
 
-		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$DS11_ref2_basic.xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
-		assertNotNull(r);
-		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0"); // #136
-																											// was
-																											// http://www.osgi.org/xmlns/scr/1.1.0
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$DS11_ref2_basic.xml");
+			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0"); // #136
+																												// was
+																												// http://www.osgi.org/xmlns/scr/1.1.0
 
-		// Test the defaults
-		xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref2_basic", "scr:component/implementation/@class");
+			// Test the defaults
+			xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref2_basic", "scr:component/implementation/@class");
 
-		// Default must be the implementation class
-		xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref2_basic", "scr:component/@name");
+			// Default must be the implementation class
+			xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref2_basic", "scr:component/@name");
 
-		xt.assertAttribute("", "scr:component/@configuration-policy");
-		xt.assertAttribute("", "scr:component/@immediate");
-		xt.assertAttribute("", "scr:component/@enabled");
-		xt.assertAttribute("", "scr:component/@factory");
-		xt.assertAttribute("", "scr:component/service/@servicefactory");
-		xt.assertAttribute("", "scr:component/@configuration-pid");
-		xt.assertAttribute("activate", "scr:component/@activate");
-		xt.assertAttribute("deactivate", "scr:component/@deactivate");
-		xt.assertAttribute("", "scr:component/@modified");
-		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
-		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
+			xt.assertAttribute("", "scr:component/@configuration-policy");
+			xt.assertAttribute("", "scr:component/@immediate");
+			xt.assertAttribute("", "scr:component/@enabled");
+			xt.assertAttribute("", "scr:component/@factory");
+			xt.assertAttribute("", "scr:component/service/@servicefactory");
+			xt.assertAttribute("", "scr:component/@configuration-pid");
+			xt.assertAttribute("activate", "scr:component/@activate");
+			xt.assertAttribute("deactivate", "scr:component/@deactivate");
+			xt.assertAttribute("", "scr:component/@modified");
+			xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
+			xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-		xt.assertAttribute("0", "count(scr:component/properties)");
-		xt.assertAttribute("0", "count(scr:component/property)");
+			xt.assertAttribute("0", "count(scr:component/properties)");
+			xt.assertAttribute("0", "count(scr:component/property)");
 
-		xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@name");
-		xt.assertAttribute("", "scr:component/reference[1]/@target");
-		xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@bind");
-		xt.assertAttribute("unxsetLogService", "scr:component/reference[1]/@unbind");
-		xt.assertAttribute("", "scr:component/reference[1]/@cardinality");
-		xt.assertAttribute("", "scr:component/reference[1]/@policy");
-		xt.assertAttribute("", "scr:component/reference[1]/@target");
-		xt.assertAttribute("", "scr:component/reference[1]/@policy-option");
-	}
-	{
+			xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@name");
+			xt.assertAttribute("", "scr:component/reference[1]/@target");
+			xt.assertAttribute("xsetLogService", "scr:component/reference[1]/@bind");
+			xt.assertAttribute("unxsetLogService", "scr:component/reference[1]/@unbind");
+			xt.assertAttribute("", "scr:component/reference[1]/@cardinality");
+			xt.assertAttribute("", "scr:component/reference[1]/@policy");
+			xt.assertAttribute("", "scr:component/reference[1]/@target");
+			xt.assertAttribute("", "scr:component/reference[1]/@policy-option");
+		}
+		{
 			//
 			// Test all the defaults
 			//
@@ -613,14 +614,17 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 		Attributes a = getAttr(jar);
 		checkProvides(a, SERIALIZABLE_RUNNABLE, OBJECT);
-		checkRequires(a, true, LogService.class.getName(), Object.class.getName());
+		// n.b. we should merge the 2 logService requires, so when we fix that
+		// we'll need to update this test.
+		// one is plain, other has cardinality multiple.
+		checkRequires(a, true, LogService.class.getName(), LogService.class.getName());
 	}
 	
 	/**
 	 * Check that a Felix 1.2 compotible class ends up with the Felix 1.2 namespace and appropriate activate/deactivate attributes
 	 *
 	 */
-	@Component()
+	@Component(xmlns = FELIX_1_2)
 	public static class activate_basicFelix12 implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
@@ -649,7 +653,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
-	@Component()
+	@Component(xmlns = FELIX_1_2)
 	public static class deactivate_basicFelix12 implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
@@ -678,7 +682,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
-	@Component()
+	@Component(xmlns = FELIX_1_2)
 	public static class modified_basicFelix12 implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
@@ -707,7 +711,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
-	@Component()
+	@Component(xmlns = FELIX_1_2)
 	public static class bind_basicFelix12 implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
@@ -736,7 +740,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
-	@Component()
+	@Component(xmlns = FELIX_1_2)
 	public static class unbind_basicFelix12 implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
@@ -765,7 +769,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
-	@Component()
+	@Component(xmlns = FELIX_1_2)
 	public static class updated_basicFelix12 implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
 
@@ -826,7 +830,7 @@ public class DSAnnotationTest extends BndTestCase {
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr", AnnotationReader.FELIX_1_2); 
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", FELIX_1_2);
 		// Test the defaults
 		xt.assertAttribute(name, "scr:component/implementation/@class");
 
@@ -1831,7 +1835,8 @@ public class DSAnnotationTest extends BndTestCase {
 		checkDS13(jar, "test.component.DSAnnotationTest$DS13_ref_updated_basic", "", "");
 		checkDS13(jar, "test.component.DSAnnotationTest$DS13_scope_basic", "", "prototype");
 		checkDS13(jar, "test.component.DSAnnotationTest$DS13_pids_basic", "pid1 pid2", "");
-		checkDS13(jar, "test.component.DSAnnotationTest$DS13_dollar_pids_basic", "test.component.DSAnnotationTest$DS13_dollar_pids_basic pid2", "");
+		checkDS13(jar, "test.component.DSAnnotationTest$DS13_dollar_pids_basic",
+				"test.component.DSAnnotationTest$DS13_dollar_pids_basic pid2", "");
 	}
 
 	private void checkDS13(Jar jar, String name, String pids, String scope) throws Exception, XPathExpressionException {
@@ -2415,7 +2420,7 @@ public class DSAnnotationTest extends BndTestCase {
 		System.err.println(Constants.REQUIRE_CAPABILITY + ":" + p);
 		Parameters header = new Parameters(p);
 		List<Attrs> attrs = getAll(header, "osgi.service");
-		assertEquals(objectClass.length, attrs.size());
+		assertEquals("osgi.service attributes: " + attrs, objectClass.length, attrs.size());
 		for (String o : objectClass) {
 			boolean found = false;
 			for (Attrs at : attrs) {
@@ -2902,6 +2907,62 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[2]/@interface");
 		xt.assertNoAttribute("scr:component/reference[2]/@policy");
 		xt.assertNoAttribute("scr:component/reference[2]/@field-option");
+
+	}
+
+	@Component
+	static class MismatchedUnbind {
+		@Reference
+		void setLogService10(LogService ls) {}
+
+		void updatedLogService10(FinalDynamicCollectionField notLs) {}
+
+		void unsetLogService10(FinalDynamicCollectionField notLs) {}
+
+		@Reference
+		void setLogService11(LogService ls, Map<String,Object> props) {}
+
+		void unsetLogService11(FinalDynamicCollectionField notLs, Map<String,Object> props) {}
+
+		@Reference
+		void setLogService13(Map<String,Object> props, LogService ls) {}
+
+		void unsetLogService13(Map<String,Object> props, FinalDynamicCollectionField notLs) {}
+	}
+
+	public void testMismatchedUnbind() throws Exception {
+
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*MismatchedUnbind");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b, 0, 8);
+		Attributes a = getAttr(jar);
+		checkRequires(a, false, LogService.class.getName());
+
+		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$MismatchedUnbind.xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+
+		xt.assertAttribute("LogService10", "scr:component/reference[1]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[1]/@interface");
+		xt.assertAttribute("setLogService10", "scr:component/reference[1]/@bind");
+		xt.assertNoAttribute("scr:component/reference[1]/@unbind");
+		xt.assertNoAttribute("scr:component/reference[1]/@updated");
+
+		xt.assertAttribute("LogService11", "scr:component/reference[2]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[2]/@interface");
+		xt.assertAttribute("setLogService11", "scr:component/reference[2]/@bind");
+		xt.assertNoAttribute("scr:component/reference[2]/@unbind");
+
+		xt.assertAttribute("LogService13", "scr:component/reference[3]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[3]/@interface");
+		xt.assertAttribute("setLogService13", "scr:component/reference[3]/@bind");
+		xt.assertNoAttribute("scr:component/reference[3]/@unbind");
 
 	}
 }

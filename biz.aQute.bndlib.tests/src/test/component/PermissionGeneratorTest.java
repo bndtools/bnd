@@ -119,8 +119,7 @@ public class PermissionGeneratorTest extends BndTestCase {
 						"java.lang.Object")), 
 						registeredServices);
 		assertEquals("Required services",
-				new TreeSet<>(Arrays.asList("java.lang.Object",
-						"org.osgi.service.log.LogService")), 
+				new TreeSet<>(Arrays.asList("org.osgi.service.log.LogService")), 
 						requiredServices);
 		/* @formatter:on */
 	}

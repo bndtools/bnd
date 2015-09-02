@@ -54,8 +54,6 @@ public class AnnotationReader extends ClassDataCollector {
 	public static final Version	V1_2					= new Version("1.2.0");																												// "1.2.0"
 	public static final Version	V1_3					= new Version("1.3.0");																												// "1.3.0"
 
-	public static final String FELIX_1_2				= "http://felix.apache.org/xmlns/scr/v1.2.0-felix";
-	
 	static Pattern				BINDNAME				= Pattern.compile("(set|add|bind)?(.*)");
 	
 	static Pattern				BINDDESCRIPTORDS10			= Pattern
@@ -159,8 +157,7 @@ public class AnnotationReader extends ClassDataCollector {
 
 				if (rdef.policy == ReferencePolicy.DYNAMIC && rdef.unbind == null)
 					analyzer.error("In component class %s, reference %s is dynamic but has no unbind method.",
-							className.getFQN(), rdef.name)
-.details(
+							className.getFQN(), rdef.name).details(
 							getDetails(rdef, ErrorType.DYNAMIC_REFERENCE_WITHOUT_UNBIND));
 			}
 		}
@@ -191,14 +188,14 @@ public class AnnotationReader extends ClassDataCollector {
 					return value;
 			}
 			analyzer.warning(
-					"None of the methods related method to %s in the class %s named %s for service type %s have an acceptable signature. The descriptors found are:",
-					rdef.bind, component.implementation, value, rdef.service, methods);
+					"None of the methods related to '%s' in the class '%s' named '%s' for service type '%s' have an acceptable signature. The descriptors found are:",
+					rdef.bind, component.implementation, value, rdef.service);
 			//We make this a separate loop because we shouldn't add warnings until we know that there was no match
+			// We need to include the method name in the warning or it may be
+			// ignored as duplicate (from another non-match)
 			for(String descriptor : methods.get(value)) {
-				analyzer.warning(
-					"  descriptor: %s", descriptor).details(
-						getDetails(rdef,
-							ErrorType.UNSET_OR_MODIFY_WITH_WRONG_SIGNATURE));
+				analyzer.warning("  methodname: %s descriptor: %s", value, descriptor).details(
+						getDetails(rdef, ErrorType.UNSET_OR_MODIFY_WITH_WRONG_SIGNATURE));
 			}
 		}
 		return null;
@@ -686,6 +683,7 @@ details);
 		String inferredService = null;
 		String plainType = null;
 		boolean hasMapReturnType;
+		Version minVersion = null;
 
 		DeclarativeServicesAnnotationError details = getDetails(def, ErrorType.REFERENCE);
 
@@ -694,39 +692,33 @@ details);
 		Matcher m = BINDDESCRIPTORDS10.matcher(methodDescriptor);
 		if (m.matches()) {
 			inferredService = Descriptors.binaryToFQN(m.group(1));
-			if (m.group(3) == null && noMatch(annoService, inferredService)) { // ServiceReference
-																				// is
-																				// always
-																				// OK,
-																				// match
-																				// is
-																				// always
-																				// OK
+			// ServiceReference (group 3) is always OK, match is always OK
+			if (m.group(3) == null && noMatch(annoService, inferredService)) {
 				if (m.group(7) == null) {
-					def.updateVersion(V1_3); // single arg, Map or
-												// ServiceObjects, and it's not
-												// the service type, so we must
-												// be V3.
-				} // if the type is specified it may still not match as it could
-					// be a superclass of the specified service.
-			}
-			if (annoService == null)
-				if (m.group(3) != null) {
-					plainType = "Lorg/osgi/framework/ServiceReference<";
-					inferredService = null;
-				} else if (m.group(4) != null) {
-					plainType = "Lorg/osgi/service/component/ComponentServiceObjects<";
-					inferredService = null;
-				} else if (m.group(5) != null) {
-					plainType = "Ljava/util/Map$Entry<Ljava/util/Map<Ljava/lang/String;Ljava/lang/Object;>;";
-					inferredService = null;
+					// single arg of recognized Map, Map.Entry or ServiceObjects
+					// so we must be V3.
+					minVersion = V1_3;
 				}
+			}
+			if (m.group(3) != null) {
+				plainType = "Lorg/osgi/framework/ServiceReference<";
+				inferredService = null;
+			} else if (m.group(4) != null) {
+				plainType = "Lorg/osgi/service/component/ComponentServiceObjects<";
+				inferredService = null;
+			} else if (m.group(5) != null) {
+				plainType = "Ljava/util/Map$Entry<Ljava/util/Map<Ljava/lang/String;Ljava/lang/Object;>;";
+				inferredService = null;
+			} else if (m.group(6) != null) {
+				// we cannot infer the service from just a map.
+				inferredService = null;
+			}
 			hasMapReturnType = m.group(9) != null;
 		} else {
 			m = BINDDESCRIPTORDS11.matcher(methodDescriptor);
 			if (m.matches()) {
 				inferredService = Descriptors.binaryToFQN(m.group(1));
-				def.updateVersion(V1_1);
+				minVersion = V1_1;
 				hasMapReturnType = m.group(4) != null;
 			} else {
 				m = BINDDESCRIPTORDS13.matcher(methodDescriptor);
@@ -734,7 +726,7 @@ details);
 					inferredService = m.group(7);
 					if (inferredService != null)
 						inferredService = Descriptors.binaryToFQN(inferredService);
-					def.updateVersion(V1_3);
+					minVersion = V1_3;
 					if (!ReferenceScope.PROTOTYPE.equals(def.scope) && m.group(3) != null) {
 						analyzer.error("In component %s, to use ComponentServiceObjects the scope must be 'prototype'",
 								component.implementation, "").details(details);
@@ -754,35 +746,87 @@ details);
 			}
 		}
 
-		checkMapReturnType(hasMapReturnType, details);
 		String service = annoService;
-		if (service == null)
-			service = inferredService;
-		if (service == null && signature != null && plainType != null) {
+		if (inferredService == null && signature != null && plainType != null) {
 			int start = signature.indexOf(plainType);
 			if (start > -1) {
 				start += plainType.length();
 				String[] sigs = signature.substring(start).split("[<;>]");
 				if (sigs.length > 0) {
-					service = sigs[0].substring(1).replace('/', '.');
+					inferredService = sigs[0].substring(1).replace('/', '.');
 				}
 			}
 		}
+		// if the type is specified it may still not match as it could
+		// be a superclass of the specified service.
+		if (!assignable(annoService, inferredService)) {
+			return null;
+		}
+		if (service == null)
+			service = inferredService;
+		checkMapReturnType(hasMapReturnType, details);
+		if (minVersion != null)
+			def.updateVersion(minVersion);
 		return service;
+	}
+
+	private boolean assignable(String annoService, String inferredService) {
+		if (Object.class.getName().equals(inferredService))
+			return true;
+		try {
+			Clazz annoServiceClazz = analyzer.findClass(analyzer.getTypeRefFromFQN(annoService));
+			Clazz inferredServiceClazz = analyzer.findClass(analyzer.getTypeRefFromFQN(inferredService));
+			Boolean result = assignable(annoServiceClazz, inferredServiceClazz);
+			return result == null ? true : result;
+		}
+		catch (Exception e) {}
+		// we couldn't determine
+		return true;
+	}
+
+	private Boolean assignable(Clazz annoServiceClazz, Clazz inferredServiceClazz) {
+		if (annoServiceClazz == null || inferredServiceClazz == null)
+			return null;
+		if (annoServiceClazz.equals(inferredServiceClazz))
+			return true;
+		if (!inferredServiceClazz.isInterface()) {
+			if (annoServiceClazz.isInterface())
+				return false;
+			TypeRef zuper = annoServiceClazz.getSuper();
+			if (zuper == null)
+				return false;
+			try {
+				return assignable(analyzer.findClass(zuper), inferredServiceClazz);
+			}
+			catch (Exception e) {
+				// can't tell
+				return null;
+			}
+		}
+		TypeRef[] intfs = annoServiceClazz.getInterfaces();
+		if (intfs == null)
+			return false;
+		boolean indeterminate = false;
+		for (TypeRef intf : intfs) {
+			try {
+				if (assignable(analyzer.findClass(intf), inferredServiceClazz))
+					return true;
+			}
+			catch (Exception e) {
+				indeterminate = true;
+			}
+		}
+		return indeterminate ? null : false;
 	}
 
 	private void checkMapReturnType(boolean hasMapReturnType, DeclarativeServicesAnnotationError details) {
 		if (hasMapReturnType) {
 			if (!options.contains(Options.felixExtensions)) {
 				analyzer.error(
-						"In component %s, to use a return type of Map you must specify the -dsannotations-flags felixExtensions flag",
+						"In component %s, to use a return type of Map you must specify the -dsannotations-options felixExtensions flag "
+								+ " and use a felix extension attribute or explicitly specify the appropriate xmlns.",
 						component.implementation, "").details(details);
 			}
-			// TODO rethink how this is signalled.
-			if (component.xmlns == null) {
-				component.xmlns = FELIX_1_2;
-			}
-
 		}
 	}
 
