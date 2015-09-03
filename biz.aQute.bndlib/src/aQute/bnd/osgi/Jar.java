@@ -1,20 +1,42 @@
 package aQute.bnd.osgi;
 
-import static aQute.lib.io.IO.*;
+import static aQute.lib.io.IO.getFile;
 
-import java.io.*;
-import java.net.*;
-import java.security.*;
-import java.util.*;
-import java.util.jar.*;
-import java.util.regex.*;
-import java.util.zip.*;
+import java.io.Closeable;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.security.DigestOutputStream;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
-import aQute.bnd.version.*;
+import aQute.bnd.version.Version;
 import aQute.lib.base64.Base64;
-import aQute.lib.io.*;
-import aQute.lib.zip.*;
-import aQute.service.reporter.*;
+import aQute.lib.io.IO;
+import aQute.lib.io.IOConstants;
+import aQute.lib.zip.ZipUtil;
+import aQute.service.reporter.Reporter;
 
 public class Jar implements Closeable {
 	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
@@ -260,34 +282,7 @@ public class Jar implements Closeable {
 		check();
 
 		if (!doNotTouchManifest && !nomanifest && algorithms != null) {
-
-			// ok, we have a request to create digests
-			// of the resources. Since we have to output
-			// the manifest first, we have a slight problem.
-			// We can also not make multiple passes over the resource
-			// because some resources are not idempotent and/or can
-			// take significant time. So we just copy the jar
-			// to a temporary file, read it in again, calculate
-			// the checksums and save.
-
-			String[] algs = algorithms;
-			algorithms = null;
-			try {
-				File f = File.createTempFile(getName(), ".jar");
-				write(f);
-				Jar tmp = new Jar(f);
-				try {
-					tmp.calcChecksums(algorithms);
-					tmp.write(out);
-				}
-				finally {
-					f.delete();
-					tmp.close();
-				}
-			}
-			finally {
-				algorithms = algs;
-			}
+			doChecksums(out);
 			return;
 		}
 
@@ -320,6 +315,85 @@ public class Jar implements Closeable {
 				writeResource(jout, directories, entry.getKey(), entry.getValue());
 		}
 		jout.finish();
+	}
+
+	public void writeFolder(File dir) throws Exception {
+		dir.mkdirs();
+
+		if (!dir.exists())
+			throw new IllegalArgumentException(
+					"The directory " + dir + " to write the JAR " + this + " could not be created");
+
+		if (!dir.isDirectory())
+			throw new IllegalArgumentException(
+					"The directory " + dir + " to write the JAR " + this + " to is not a directory");
+
+		check();
+
+		Set<String> done = new HashSet<String>();
+
+		Set<String> directories = new HashSet<String>();
+		if (doNotTouchManifest) {
+			Resource r = getResource(manifestName);
+			if (r != null) {
+				copyResource(dir, manifestName, r);
+				done.add(manifestName);
+			}
+		} else {
+			File file = IO.getFile(dir, manifestName);
+			file.getParentFile().mkdirs();
+			try (FileOutputStream fout = new FileOutputStream(file);) {
+				writeManifest(fout);
+				done.add(manifestName);
+			}
+		}
+
+
+		for (Map.Entry<String,Resource> entry : getResources().entrySet()) {
+			String path = entry.getKey();
+			if (done.contains(path))
+				continue;
+
+			Resource resource = entry.getValue();
+			copyResource(dir, path, resource);
+		}
+
+	}
+
+	private void copyResource(File dir, String path, Resource resource) throws IOException, Exception {
+		File to = IO.getFile(dir, path);
+		to.getParentFile().mkdirs();
+		IO.copy(resource.openInputStream(), to);
+	}
+
+	public void doChecksums(OutputStream out) throws IOException, Exception {
+		// ok, we have a request to create digests
+		// of the resources. Since we have to output
+		// the manifest first, we have a slight problem.
+		// We can also not make multiple passes over the resource
+		// because some resources are not idempotent and/or can
+		// take significant time. So we just copy the jar
+		// to a temporary file, read it in again, calculate
+		// the checksums and save.
+
+		String[] algs = algorithms;
+		algorithms = null;
+		try {
+			File f = File.createTempFile(getName(), ".jar");
+			write(f);
+			Jar tmp = new Jar(f);
+			try {
+				tmp.calcChecksums(algorithms);
+				tmp.write(out);
+			}
+			finally {
+				f.delete();
+				tmp.close();
+			}
+		}
+		finally {
+			algorithms = algs;
+		}
 	}
 
 	private void doManifest(Set<String> done, ZipOutputStream jout) throws Exception {

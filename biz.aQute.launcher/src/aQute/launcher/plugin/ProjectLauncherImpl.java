@@ -1,45 +1,73 @@
 package aQute.launcher.plugin;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.text.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.jar.*;
+import java.util.Properties;
+import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
-import aQute.bnd.build.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.launcher.constants.*;
-import aQute.launcher.pre.*;
-import aQute.lib.utf8properties.*;
-import aQute.libg.cryptography.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.EmbeddedResource;
+import aQute.bnd.osgi.FileResource;
+import aQute.bnd.osgi.Instructions;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.URLResource;
+import aQute.launcher.constants.LauncherConstants;
+import aQute.launcher.pre.EmbeddedLauncher;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.cryptography.SHA1;
 
 public class ProjectLauncherImpl extends ProjectLauncher {
 	private static final String	EMBEDDED_LAUNCHER_FQN	= "aQute.launcher.pre.EmbeddedLauncher";
 	private static final String	EMBEDDED_LAUNCHER		= "aQute/launcher/pre/EmbeddedLauncher.class";
 	private static final String	JPM_LAUNCHER			= "aQute/launcher/pre/JpmLauncher.class";
 	private static final String	JPM_LAUNCHER_FQN		= "aQute.launcher.pre.JpmLauncher";
-	
-	final private Project		project;
-	final private File			propertiesFile;
-	boolean						prepared;
-	
-	DatagramSocket 		listenerComms;
+
+	final private Project	project;
+	final private File		propertiesFile;
+	boolean					prepared;
+
+	DatagramSocket listenerComms;
 
 	public ProjectLauncherImpl(Project project) throws Exception {
 		super(project);
 		project.trace("created a aQute launcher plugin");
 		this.project = project;
 		propertiesFile = File.createTempFile("launch", ".properties", project.getTarget());
-		project.trace(MessageFormat.format("launcher plugin using temp launch file {0}",
-				propertiesFile.getAbsolutePath()));
+		project.trace(
+				MessageFormat.format("launcher plugin using temp launch file {0}", propertiesFile.getAbsolutePath()));
 		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=\"" + propertiesFile.getAbsolutePath() + "\"");
 
 		if (project.getRunProperties().get("noframework") != null) {
 			setRunFramework(NONE);
-			project.warning("The noframework property in -runproperties is replaced by a project setting: '-runframework: none'");
+			project.warning(
+					"The noframework property in -runproperties is replaced by a project setting: '-runframework: none'");
 		}
 
 		super.addDefault(Constants.DEFAULT_LAUNCHER_BSN);
@@ -117,8 +145,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	private LauncherConstants getConstants(Collection<String> runbundles, boolean exported) throws Exception, FileNotFoundException,
-			IOException {
+	private LauncherConstants getConstants(Collection<String> runbundles, boolean exported)
+			throws Exception, FileNotFoundException, IOException {
 		project.trace("preparing the aQute launcher plugin");
 
 		LauncherConstants lc = new LauncherConstants();
@@ -295,19 +323,33 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			m.getMainAttributes().putValue("JPM-Runbundles", Processor.join(runbundleShas));
 			URLResource jpmLauncher = new URLResource(this.getClass().getResource("/" + JPM_LAUNCHER));
 			jar.putResource(JPM_LAUNCHER, jpmLauncher);
+			doStart(jar, JPM_LAUNCHER_FQN);
 		} else {
 			project.trace("Use Embedded launcher");
 			m.getMainAttributes().putValue("Main-Class", EMBEDDED_LAUNCHER_FQN);
 			m.getMainAttributes().putValue(EmbeddedLauncher.EMBEDDED_RUNPATH, Processor.join(classpath));
 			URLResource embeddedLauncher = new URLResource(this.getClass().getResource("/" + EMBEDDED_LAUNCHER));
 			jar.putResource(EMBEDDED_LAUNCHER, embeddedLauncher);
+			doStart(jar, EMBEDDED_LAUNCHER_FQN);
 		}
-		if ( project.getProperty(Constants.DIGESTS) != null)
+		if (project.getProperty(Constants.DIGESTS) != null)
 			jar.setDigestAlgorithms(project.getProperty(Constants.DIGESTS).trim().split("\\s*,\\s*"));
 		else
-			jar.setDigestAlgorithms(new String[]{"SHA-1", "MD-5"});
+			jar.setDigestAlgorithms(new String[] {
+					"SHA-1", "MD-5"
+			});
 		jar.setManifest(m);
 		return jar;
+	}
+
+	/*
+	 * Useful for when exported as folder or unzipped
+	 */
+	void doStart(Jar jar, String fqn) throws UnsupportedEncodingException {
+		String nix = "#!/bin/sh\njava -cp . " + fqn + "\n";
+		String pc = "java -cp . " + fqn + "\r\n";
+		jar.putResource("start", new EmbeddedResource(nix, 0));
+		jar.putResource("start.bat", new EmbeddedResource(pc, 0));
 	}
 
 }

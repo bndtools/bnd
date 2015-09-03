@@ -1,15 +1,45 @@
 package test;
 
-import java.io.*;
-import java.util.jar.*;
-import java.util.zip.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipInputStream;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.EmbeddedResource;
+import aQute.bnd.osgi.FileResource;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 @SuppressWarnings("resource")
 
 public class JarTest extends TestCase {
+
+	public static void testWriteFolder() throws Exception {
+		File tmp = IO.getFile("generated/tmp");
+		IO.delete(tmp);
+		tmp.mkdirs();
+
+		Builder b = new Builder();
+		b.setIncludeResource("/a/b.txt;literal='ab', /a/c.txt;literal='ac', /a/c/d/e.txt;literal='acde'");
+		b.build();
+		assertTrue(b.check());
+
+		b.getJar().writeFolder(tmp);
+
+		assertTrue(IO.getFile(tmp, "META-INF/MANIFEST.MF").isFile());
+		assertEquals("ab", IO.collect(IO.getFile(tmp, "a/b.txt")));
+		assertEquals("acde", IO.collect(IO.getFile(tmp, "a/c/d/e.txt")));
+
+		IO.delete(tmp);
+	}
 
 	public static void testNoManifest() throws Exception {
 		Jar jar = new Jar("dot");
