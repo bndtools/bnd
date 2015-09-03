@@ -1,9 +1,16 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
-import java.util.zip.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
-import aQute.lib.io.*;
+import aQute.lib.io.IO;
 
 public class EmbeddedResource implements Resource {
 	byte	data[];
@@ -13,6 +20,10 @@ public class EmbeddedResource implements Resource {
 	public EmbeddedResource(byte data[], long lastModified) {
 		this.data = data;
 		this.lastModified = lastModified;
+	}
+
+	public EmbeddedResource(String pc, int lastModified) throws UnsupportedEncodingException {
+		this(pc.getBytes("UTF-8"), lastModified);
 	}
 
 	public InputStream openInputStream() throws FileNotFoundException {
