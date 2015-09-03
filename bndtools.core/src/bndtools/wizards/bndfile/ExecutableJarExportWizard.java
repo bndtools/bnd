@@ -33,10 +33,11 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
         IRunnableWithProgress task;
 
         destinationPage.saveLastExport();
+        String path = destinationPage.getJarPath();
         if (destinationPage.isFolder())
-            task = new GenerateLauncherFolderRunnable(bndProject, destinationPage.getFolderPath());
-        else
-            task = new GenerateLauncherJarRunnable(bndProject, destinationPage.getJarPath());
+            path = destinationPage.getFolderPath();
+
+        task = new GenerateLauncherJarRunnable(bndProject, path, destinationPage.isFolder());
 
         try {
             getContainer().run(true, true, task);
