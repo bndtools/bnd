@@ -1,10 +1,9 @@
-package aQute.bnd.deployer.repository.aether;
+package aQute.bnd.version;
 
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.version.*;
-
-public class MvnVersion implements Comparable<MvnVersion> {
+public class MavenVersion implements Comparable<MavenVersion> {
 
 	public static final String		VERSION_STRING		= "(\\d{1,9})(\\.(\\d{1,9})(\\.(\\d{1,9}))?)?([-\\.]?([-_\\.\\da-zA-Z]+))?";
 
@@ -14,11 +13,11 @@ public class MvnVersion implements Comparable<MvnVersion> {
 
 	private final Version			osgiVersion;
 
-	public MvnVersion(Version osgiVersion) {
+	public MavenVersion(Version osgiVersion) {
 		this.osgiVersion = osgiVersion;
 	}
 
-	public static final MvnVersion parseString(String versionStr) {
+	public static final MavenVersion parseString(String versionStr) {
 		versionStr = versionStr.trim();
 		Matcher m = VERSION.matcher(versionStr);
 		if (!m.matches())
@@ -29,7 +28,7 @@ public class MvnVersion implements Comparable<MvnVersion> {
 		int micro = (m.group(5) != null) ? Integer.parseInt(m.group(5)) : 0;
 		String qualifier = m.group(7);
 		Version version = new Version(major, minor, micro, qualifier);
-		return new MvnVersion(version);
+		return new MavenVersion(version);
 	}
 
 	public Version getOSGiVersion() {
@@ -40,7 +39,7 @@ public class MvnVersion implements Comparable<MvnVersion> {
 		return QUALIFIER_SNAPSHOT.equals(osgiVersion.getQualifier());
 	}
 
-	public int compareTo(MvnVersion other) {
+	public int compareTo(MavenVersion other) {
 		return this.osgiVersion.compareTo(other.osgiVersion);
 	}
 
@@ -71,7 +70,7 @@ public class MvnVersion implements Comparable<MvnVersion> {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		MvnVersion other = (MvnVersion) obj;
+		MavenVersion other = (MavenVersion) obj;
 		if (osgiVersion == null) {
 			if (other.osgiVersion != null)
 				return false;

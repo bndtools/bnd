@@ -5,6 +5,7 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Verifier;
+import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 
 final class ConversionUtils {
@@ -49,7 +50,7 @@ final class ConversionUtils {
 			throw new IllegalArgumentException("Invalid version " + versionString);
 		Version version = Version.parseVersion(versionString);
 		
-		return new DefaultArtifact(groupId, artifactId, JAR_EXTENSION, new MvnVersion(version).toString());
+		return new DefaultArtifact(groupId, artifactId, JAR_EXTENSION, new MavenVersion(version).toString());
 	}
 
 	public static String maybeMavenCoordsToBsn(String coords) throws IllegalArgumentException {
