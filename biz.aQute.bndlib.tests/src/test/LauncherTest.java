@@ -96,9 +96,9 @@ public class LauncherTest extends TestCase {
 
 			p.load(resource.openInputStream());
 
-			assertEquals("1", p.getProperty("in.workspace"));
-			assertEquals("2", p.getProperty("in.project"));
-			assertEquals(null, p.getProperty("in.x"));
+			assertEquals("workspace", p.getProperty("in.workspace"));
+			assertEquals("project", p.getProperty("in.project"));
+			assertEquals("project", p.getProperty("in.bndrun"));
 		}
 
 		//
@@ -121,9 +121,9 @@ public class LauncherTest extends TestCase {
 
 				p.load(resource.openInputStream());
 
-				assertEquals("1", p.getProperty("in.workspace"));
-				assertEquals("3", p.getProperty("in.x"));
-				assertEquals(null, p.getProperty("in.project"));
+				assertEquals("workspace", p.getProperty("in.workspace"));
+				assertEquals("workspace", p.getProperty("in.project"));
+				assertEquals("bndrun", p.getProperty("in.bndrun"));
 			}
 		}
 
@@ -132,10 +132,9 @@ public class LauncherTest extends TestCase {
 		{
 
 			Project project = getProject();
-			project.getWorkspace().setProperty("-runproperties.x", "bar=2");
 			project.clear();
 			File f = new File("generated/test.jar");
-			project.export(null, true, f);
+			project.export(null, false, f);
 
 			try (Jar executable = new Jar(f);) {
 
@@ -144,9 +143,9 @@ public class LauncherTest extends TestCase {
 
 				p.load(resource.openInputStream());
 
-				assertEquals("1", p.getProperty("in.workspace"));
-				assertEquals("2", p.getProperty("in.project"));
-				assertEquals(null, p.getProperty("in.x"));
+				assertEquals("workspace", p.getProperty("in.workspace"));
+				assertEquals("project", p.getProperty("in.project"));
+				assertEquals("project", p.getProperty("in.bndrun"));
 			}
 		}
 
@@ -155,10 +154,9 @@ public class LauncherTest extends TestCase {
 		{
 
 			Project project = getProject();
-			project.getWorkspace().setProperty("-runproperties.x", "bar=2");
 			project.clear();
 			File f = new File("generated/test.jar");
-			project.export("x.bndrun", true, f);
+			project.export("x.bndrun", false, f);
 
 			try (Jar executable = new Jar(f);) {
 
@@ -167,9 +165,9 @@ public class LauncherTest extends TestCase {
 
 				p.load(resource.openInputStream());
 
-				assertEquals("1", p.getProperty("in.workspace"));
-				assertEquals(null, p.getProperty("in.project"));
-				assertEquals("3", p.getProperty("in.x"));
+				assertEquals("workspace", p.getProperty("in.workspace"));
+				assertEquals("workspace", p.getProperty("in.project"));
+				assertEquals("bndrun", p.getProperty("in.bndrun"));
 			}
 		}
 

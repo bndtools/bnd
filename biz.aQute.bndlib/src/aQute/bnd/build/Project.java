@@ -1884,8 +1884,7 @@ public class Project extends Processor {
 				if (!runFile.isFile())
 					throw new IOException(String.format("Run file %s does not exist (or is not a file).",
 							runFile.getAbsolutePath()));
-				packageProject = new Project(getWorkspace(), getBase(), runFile);
-				packageProject.setParent(this);
+				packageProject = new Run(getWorkspace(), getBase(), runFile);
 			}
 
 			packageProject.clear();
@@ -1916,8 +1915,7 @@ public class Project extends Processor {
 			if (!runFile.isFile())
 				throw new IOException(String.format("Run file %s does not exist (or is not a file).",
 						runFile.getAbsolutePath()));
-			packageProject = new Project(getWorkspace(), getBase(), runFile);
-			packageProject.setParent(this);
+			packageProject = new Run(getWorkspace(), getBase(), runFile);
 		}
 
 		packageProject.clear();

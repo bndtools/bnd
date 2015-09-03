@@ -42,6 +42,6 @@ base.version:   1.1.0
 Export-Package: \
 	test.api
 
-
--runproperties: in.project=2
+-runproperties.testlauncher1: in.project=project
+-runproperties.testlauncher2: in.bndrun=project
 #-export: x.bndrun
