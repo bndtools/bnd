@@ -5,7 +5,6 @@ import org.osgi.service.component.annotations.Component;
 import osgi.enroute.configurer.api.RequireConfigurerExtender;
 import osgi.enroute.google.angular.capabilities.RequireAngularWebResource;
 import osgi.enroute.rest.api.REST;
-import osgi.enroute.rest.api.RESTRequest;
 import osgi.enroute.twitter.bootstrap.capabilities.RequireBootstrapWebResource;
 import osgi.enroute.webserver.capabilities.RequireWebServerExtender;
 
@@ -16,7 +15,7 @@ import osgi.enroute.webserver.capabilities.RequireWebServerExtender;
 @Component(name="_pid_")
 public class _stem_Application implements REST {
 
-	public String getUpper(RESTRequest rq, String string) {
+	public String getUpper(String string) {
 		return string.toUpperCase();
 	}
 
