@@ -1891,6 +1891,7 @@ public class Project extends Processor {
 			ProjectLauncher launcher = packageProject.getProjectLauncher();
 			launcher.setKeep(keep);
 			Jar jar = launcher.executable();
+			getInfo(launcher);
 
 			outStream = new FileOutputStream(output);
 			jar.write(outStream);
