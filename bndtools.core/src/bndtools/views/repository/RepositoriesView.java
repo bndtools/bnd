@@ -71,9 +71,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.XMLMemento;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ResourceTransfer;
@@ -117,6 +119,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
 
     private Action collapseAllAction;
     private Action refreshAction;
+    private Action addBundlesAction;
     private Action advancedSearchAction;
     private Action downloadAction;
 
@@ -262,6 +265,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                     RepositoryPlugin repo = (RepositoryPlugin) element;
                     writableRepoSelected = repo.canWrite();
                 }
+                addBundlesAction.setEnabled(writableRepoSelected);
             }
         });
         tree.addMouseListener(new MouseAdapter() {
@@ -424,6 +428,28 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         refreshAction.setText("Refresh");
         refreshAction.setToolTipText("Refresh Repositories Tree");
         refreshAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_refresh.png"));
+
+        addBundlesAction = new Action() {
+            @Override
+            public void run() {
+                IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+                Object element = selection.getFirstElement();
+                if (element != null && element instanceof RepositoryPlugin) {
+                    RepositoryPlugin repo = (RepositoryPlugin) element;
+                    if (repo.canWrite()) {
+                        AddFilesToRepositoryWizard wizard = new AddFilesToRepositoryWizard(repo, new File[0]);
+                        WizardDialog dialog = new WizardDialog(getViewSite().getShell(), wizard);
+                        dialog.open();
+
+                        viewer.refresh(repo);
+                    }
+                }
+            }
+        };
+        addBundlesAction.setEnabled(false);
+        addBundlesAction.setText("Add");
+        addBundlesAction.setToolTipText("Add Bundles to Repository");
+        addBundlesAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJ_ADD));
 
         advancedSearchAction = new Action("Advanced Search", Action.AS_CHECK_BOX) {
             @Override
@@ -685,6 +711,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         toolBar.add(new Separator());
         toolBar.add(refreshAction);
         toolBar.add(collapseAllAction);
+        toolBar.add(addBundlesAction);
         toolBar.add(new Separator());
     }
 
