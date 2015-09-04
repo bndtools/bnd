@@ -4,14 +4,15 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Properties;
 
 import junit.framework.TestCase;
 
 /**
  * Test if we properly can read
+ * 
  * @author aqute
- *
  */
 public class UTF8PropertiesTest extends TestCase {
 	String trickypart = "\u00A0\u00A1\u00A2\u00A3\u00A4\u00A5\u00A6\u00A7\u00A8\u00A9\u00AA\u00AB\u00AC\u00AD\u00AE\u00AF"
@@ -20,44 +21,60 @@ public class UTF8PropertiesTest extends TestCase {
 			+ "\u00D0\u00D1\u00D2\u00D3\u00D4\u00D5\u00D6\u00D7\u00D8\u00D9\u00DA\u00DB\u00DC\u00DD\u00DE\u00DF"
 			+ "\u00E0\u00E1\u00E2\u00E3\u00E4\u00E5\u00E6\u00E7\u00E8\u00E9\u00EA\u00EB\u00EC\u00ED\u00EE\u00EF"
 			+ "\u00F0\u00F1\u00F2\u00F3\u00F4\u00F5\u00F6\u00F7\u00F8\u00F9\u00FA\u00FB\u00FC\u00FD\u00FE\u00FF";
-	
-	
+
 	public void testBackslashEncodingWithReader() throws IOException {
 		Properties p = new UTF8Properties();
-		p.load( new StringReader("x=abc \\\\ def\n"));
+		p.load(new StringReader("x=abc \\\\ def\n"));
 		assertEquals("abc \\ def", p.get("x"));
 	}
+
 	public void testISO8859Encoding() throws IOException {
 		Properties p = new UTF8Properties();
-		p.load( new ByteArrayInputStream(("x="+trickypart+"\n").getBytes("ISO-8859-1")));
+		p.load(new ByteArrayInputStream(("x=" + trickypart + "\n").getBytes("ISO-8859-1")));
 		assertEquals(trickypart, p.get("x"));
 	}
-	
+
 	public void testUTF8Encoding() throws IOException {
 		Properties p = new UTF8Properties();
-		p.load( new ByteArrayInputStream(("x="+trickypart+"\n").getBytes("UTF-8")));
+		p.load(new ByteArrayInputStream(("x=" + trickypart + "\n").getBytes("UTF-8")));
 		assertEquals(trickypart, p.get("x"));
 	}
-	
+
 	public void testShowUTF8PropertiesDoNotSkipBackslash() throws IOException {
 		Properties p = new UTF8Properties();
-		p.load( new ByteArrayInputStream("x=abc \\ def\n".getBytes("UTF-8")));
+		p.load(new ByteArrayInputStream("x=abc \\ def\n".getBytes("UTF-8")));
 		assertEquals("abc  def", p.get("x"));
 	}
-	
+
 	public void testShowPropertiesSkipBackslash() throws IOException {
 		Properties p = new Properties();
-		p.load( new StringReader("x=abc \\ def\n"));
+		p.load(new StringReader("x=abc \\ def\n"));
 		assertEquals("abc  def", p.get("x"));
 	}
-	
+
 	public void testWriteWithoutComment() throws IOException {
 		UTF8Properties p = new UTF8Properties();
 		p.put("Foo", "Foo");
-		ByteArrayOutputStream bout  = new ByteArrayOutputStream();
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		p.store(bout);
 		String s = new String(bout.toByteArray(), "UTF-8");
 		assertFalse(s.startsWith("#"));
+
+		assertTrue("Foo should be in there", s.indexOf("Foo") >= 0);
 	}
-	
+
+	public void testWrite() throws IOException {
+		UTF8Properties p = new UTF8Properties();
+		p.put("Foo", "Foo");
+		p.put("Bar", "Bar\n#comment");
+		StringWriter sw = new StringWriter();
+		p.store(sw, null);
+		String s = sw.toString();
+		assertNotNull(s);
+		assertTrue(s.contains("#comment"));
+		UTF8Properties p1 = new UTF8Properties();
+		p1.load(new StringReader(s));
+		assertEquals(p, p1);
+	}
+
 }
