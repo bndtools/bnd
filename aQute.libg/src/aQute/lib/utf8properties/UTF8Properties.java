@@ -4,10 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -110,13 +110,9 @@ public class UTF8Properties extends Properties {
 
 	@Override
 	public void store(OutputStream out, String msg) throws IOException {
-		OutputStreamWriter osw = new OutputStreamWriter(out, UTF8);
-		super.store(osw, msg);
-	}
-
-	public void store(OutputStream out) throws IOException {
-
 		StringWriter sw = new StringWriter();
+		super.store(sw, null);
+
 		String[] lines = sw.toString().split("\n\r?");
 
 		for (String line : lines) {
@@ -127,4 +123,25 @@ public class UTF8Properties extends Properties {
 			out.write("\n".getBytes(UTF8));
 		}
 	}
+
+	@Override
+	public void store(Writer out, String msg) throws IOException {
+		StringWriter sw = new StringWriter();
+		super.store(sw, null);
+
+		String[] lines = sw.toString().split("\n\r?");
+
+		for (String line : lines) {
+			if (line.startsWith("#"))
+				continue;
+
+			out.write(line);
+			out.write("\n");
+		}
+	}
+
+	public void store(OutputStream out) throws IOException {
+		store(out, null);
+	}
+
 }
