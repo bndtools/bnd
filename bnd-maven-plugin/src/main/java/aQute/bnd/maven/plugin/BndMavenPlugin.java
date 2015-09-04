@@ -46,12 +46,16 @@ import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.version.MavenVersion;
+import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 
 @Mojo(name = "bnd-process", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class BndMavenPlugin extends AbstractMojo {
 	
 	private static final String PACKAGING_POM = "pom";
+	private static final String SNAPSHOT = "SNAPSHOT";
+	private static final String TSTAMP = "${tstamp}";
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
 	private File targetDir;
@@ -128,8 +132,9 @@ public class BndMavenPlugin extends AbstractMojo {
 			}
 
 			// Set Bundle-Version
-			MavenVersion mvnVersion = new MavenVersion(project.getVersion());
-			builder.setProperty(Constants.BUNDLE_VERSION, mvnVersion.toBndVersion());
+			Version version = MavenVersion.parseString(project.getVersion()).getOSGiVersion();
+			version = replaceSNAPSHOT(version);
+			builder.setProperty(Constants.BUNDLE_VERSION, version.toString());
 
 			// Build bnd Jar (in memory)
 			Jar bndJar = builder.build();
@@ -215,6 +220,22 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			IO.copy(entry.getValue().openInputStream(), outFile);
 		}
+	}
+
+	private Version replaceSNAPSHOT(Version version) {
+		String qualifier = version.getQualifier();
+		if (qualifier != null) {
+			int i = qualifier.indexOf(SNAPSHOT);
+			if (i >= 0) {
+				qualifier = new StringBuilder()
+					.append(qualifier.substring(0, i))
+					.append(TSTAMP)
+					.append(qualifier.substring(i + SNAPSHOT.length()))
+					.toString();
+				version = new Version(version.getMajor(), version.getMinor(), version.getMicro(), qualifier);
+			}
+		}
+		return version;
 	}
 
 	private class BeanProperties extends Properties {
