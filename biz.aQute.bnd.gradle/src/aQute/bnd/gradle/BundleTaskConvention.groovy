@@ -22,7 +22,7 @@ package aQute.bnd.gradle
 import aQute.bnd.osgi.Builder
 import aQute.bnd.osgi.Constants
 import aQute.bnd.osgi.Jar
-import aQute.bnd.version.Version
+import aQute.bnd.version.MavenVersion
 import org.gradle.api.GradleException
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.SourceSet
@@ -160,7 +160,7 @@ class BundleTaskConvention {
         // set bundle version from task's version if necessary
         def String bundleVersion = builder.getProperty(Constants.BUNDLE_VERSION)
         if (isEmpty(bundleVersion)) {
-          builder.setProperty(Constants.BUNDLE_VERSION, Version.parseVersion(version).toString())
+          builder.setProperty(Constants.BUNDLE_VERSION, MavenVersion.parseString(version).getOSGiVersion().toString())
         }
 
         logger.debug 'builder properties: {}', builder.getProperties()

@@ -1,36 +1,68 @@
 package aQute.bnd.deployer.repository.aether;
 
-import static aQute.bnd.deployer.repository.RepoConstants.*;
+import static aQute.bnd.deployer.repository.RepoConstants.DEFAULT_CACHE_DIR;
 
-import java.io.*;
-import java.net.*;
-import java.security.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
-import org.apache.maven.repository.internal.*;
-import org.eclipse.aether.*;
-import org.eclipse.aether.artifact.*;
-import org.eclipse.aether.connector.basic.*;
-import org.eclipse.aether.deployment.*;
-import org.eclipse.aether.impl.*;
+import org.apache.maven.repository.internal.DefaultArtifactDescriptorReader;
+import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
+import org.eclipse.aether.deployment.DeployRequest;
+import org.eclipse.aether.impl.ArtifactDescriptorReader;
+import org.eclipse.aether.impl.DefaultServiceLocator;
 import org.eclipse.aether.impl.DefaultServiceLocator.ErrorHandler;
-import org.eclipse.aether.repository.*;
+import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RemoteRepository.Builder;
-import org.eclipse.aether.resolution.*;
-import org.eclipse.aether.spi.connector.*;
-import org.eclipse.aether.spi.connector.transport.*;
-import org.eclipse.aether.transfer.*;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.resolution.VersionRangeRequest;
+import org.eclipse.aether.resolution.VersionRangeResult;
+import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
+import org.eclipse.aether.spi.connector.transport.TransporterFactory;
+import org.eclipse.aether.transfer.AbstractTransferListener;
+import org.eclipse.aether.transfer.TransferCancelledException;
+import org.eclipse.aether.transfer.TransferEvent;
 import org.eclipse.aether.transfer.TransferEvent.RequestType;
-import org.eclipse.aether.transport.file.*;
-import org.eclipse.aether.transport.http.*;
-import org.eclipse.aether.util.repository.*;
+import org.eclipse.aether.transfer.TransferResource;
+import org.eclipse.aether.transport.file.FileTransporterFactory;
+import org.eclipse.aether.transport.http.HttpTransporterFactory;
+import org.eclipse.aether.util.repository.AuthenticationBuilder;
 
-import aQute.bnd.deployer.repository.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
-import aQute.bnd.version.*;
-import aQute.lib.io.*;
-import aQute.service.reporter.*;
+import aQute.bnd.deployer.repository.FixedIndexedRepo;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.service.IndexProvider;
+import aQute.bnd.service.Plugin;
+import aQute.bnd.service.Registry;
+import aQute.bnd.service.RegistryPlugin;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.ResolutionPhase;
+import aQute.bnd.version.MavenVersion;
+import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
+import aQute.service.reporter.Reporter;
 
 @aQute.bnd.annotation.plugin.BndPlugin(name="aether", parameters=AetherRepository.Config.class)
 public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugin, IndexProvider {
@@ -309,7 +341,7 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 		SortedSet<Version> versions = new TreeSet<Version>();
 		for (org.eclipse.aether.version.Version version : rangeResult.getVersions()) {
 			try {
-				versions.add(MvnVersion.parseString(version.toString()).getOSGiVersion());
+				versions.add(MavenVersion.parseString(version.toString()).getOSGiVersion());
 			}
 			catch (IllegalArgumentException e) {
 				// ignore version
@@ -344,7 +376,7 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 
 			String[] coords = ConversionUtils.getGroupAndArtifactForBsn(bsn);
 
-			MvnVersion mvnVersion = new MvnVersion(version);
+			MavenVersion mvnVersion = new MavenVersion(version);
 
 			String versionStr = null;
 
