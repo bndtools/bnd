@@ -64,7 +64,7 @@ releaserepo:            ${workspace}/dist/bundles
 copyright:              Copyright (c) aQute SARL (2000, ${tstamp;yyyy}) and others. All Rights Reserved.
 copyright.html:         Copyright &copy; aQute SARL (2000, ${tstamp;yyyy}) and others. All Rights Reserved.
 
-base.version:           3.0.0
+base.version:           3.1.0
 build.version:          ${base.version}.${tstamp}
 -outputmask:            ${@bsn}-${version;===;${@version}}.jar
 groupid:                biz.aQute.bnd
