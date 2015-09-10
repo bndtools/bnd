@@ -76,7 +76,7 @@ base-version-qualifier:   DEV
 # Version of bnd/bndlib to use consistently throughout the build
 # NB. this must be specified as full M.m.u version (but no qualifier)
 # On advice of Peter we use an up-to-major version range
-bnd-version-base:         3.0.0
+bnd-version-base:         3.1.0
 bnd-version-ceiling:      4.0.0
 bndlib:                   aQute.libg;version='[${bnd-version-base},${bnd-version-ceiling})', \
                           biz.aQute.bndlib;version='[${bnd-version-base},${bnd-version-ceiling})'
