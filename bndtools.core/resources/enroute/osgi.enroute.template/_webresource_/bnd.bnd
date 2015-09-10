@@ -17,7 +17,7 @@ Bundle-Vendor: 		${warning;The vendor/group responsible for this webresource}
 
 Provide-Capability:	\
 	osgi.enroute.webresource; \
-		osgi.enroute.webresource=/_packagepath_}; \
+		osgi.enroute.webresource=/_packagepath_; \
 		version:Version=${vrs}; \
 		root=${path}
 -buildpath: \
