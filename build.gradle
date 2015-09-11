@@ -36,6 +36,9 @@ subprojects {
     if (JavaVersion.current().isJava8Compatible()) {
       javadoc.options.addStringOption('Xdoclint:none', '-quiet') 
     }
+    test.testLogging {
+      exceptionFormat 'full'
+    }
   }
 }
 
