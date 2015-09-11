@@ -4,11 +4,13 @@
 	<parent>
 		<groupId>biz.aQute.bnd</groupId>
 		<artifactId>bnd-plugins-parent</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
+		<version>3.1.0</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>bnd-indexer-maven-plugin</artifactId>
+	<description>This maven plugin is used to make OSGi indexes from lists of maven dependencies.</description>
+	<name>${project.groupId}:${project.artifactId}</name>
 	<packaging>maven-plugin</packaging>
 
 	<dependencies>

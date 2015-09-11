@@ -6,12 +6,12 @@
 	<groupId>biz.aQute.bnd</groupId>
 	<artifactId>bnd-plugins-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>3.0.0-SNAPSHOT</version>
+	<version>3.1.0</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.version>3.1.1</maven.version>
-		<bnd.version>3.0.0</bnd.version>
+		<bnd.version>3.1.0</bnd.version>
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<maven.compiler.source>1.7</maven.compiler.source>
 	</properties>
