@@ -5,7 +5,7 @@ import java.util.List;
 import org.eclipse.jface.wizard.Wizard;
 
 import bndtools.model.repo.DependencyPhase;
-import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.clauses.VersionedClause;
 
 public class RepoBundleSelectionWizard extends Wizard {
@@ -17,14 +17,14 @@ public class RepoBundleSelectionWizard extends Wizard {
     /**
      * Create a wizard for editing the specified list of bundles. The supplied collection will be modified by this
      * wizard.
-     * 
+     *
      * @param bundles
      *            A mutable collection of bundles.
      * @throws Exception
      */
-    public RepoBundleSelectionWizard(@SuppressWarnings("unused") final Project project, List<VersionedClause> bundles, DependencyPhase phase) throws Exception {
+    public RepoBundleSelectionWizard(Workspace workspace, List<VersionedClause> bundles, DependencyPhase phase) throws Exception {
         this.phase = phase;
-        selectionPage = new RepoBundleSelectionWizardPage(phase);
+        selectionPage = new RepoBundleSelectionWizardPage(workspace, phase);
         selectionPage.setSelectedBundles(bundles);
         addPage(selectionPage);
     }

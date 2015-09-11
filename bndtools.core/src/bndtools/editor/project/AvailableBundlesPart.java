@@ -1,5 +1,6 @@
 package bndtools.editor.project;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -125,7 +126,7 @@ public class AvailableBundlesPart extends BndEditorPart {
         viewer.setContentProvider(contentProvider);
         viewer.setLabelProvider(new RepositoryTreeLabelProvider(true));
         viewer.setFilters(new ViewerFilter[] {
-            includedRepoFilter
+                includedRepoFilter
         });
 
         txtSearch.addModifyListener(new ModifyListener() {
@@ -151,7 +152,7 @@ public class AvailableBundlesPart extends BndEditorPart {
         });
 
         viewer.addDragSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
-            LocalSelectionTransfer.getTransfer()
+                LocalSelectionTransfer.getTransfer()
         }, new SelectionDragAdapter(viewer) {
             @Override
             public void dragStart(DragSourceEvent event) {
@@ -174,7 +175,7 @@ public class AvailableBundlesPart extends BndEditorPart {
     @Override
     protected String[] getProperties() {
         return new String[] {
-            BndConstants.RUNREPOS
+                BndConstants.RUNREPOS
         };
     }
 
@@ -182,7 +183,14 @@ public class AvailableBundlesPart extends BndEditorPart {
     protected void refreshFromModel() {
         List<String> tmp = model.getRunRepos();
         includedRepos = (tmp == null) ? null : new HashSet<String>(tmp);
-        viewer.setInput(RepositoryUtils.listRepositories(true));
+
+        List<RepositoryPlugin> repos;
+        try {
+            repos = RepositoryUtils.listRepositories(getLocalWorkspace(), true);
+        } catch (Exception e) {
+            repos = Collections.emptyList();
+        }
+        viewer.setInput(repos);
     }
 
     @Override

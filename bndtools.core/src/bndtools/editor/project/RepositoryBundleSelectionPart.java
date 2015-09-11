@@ -16,10 +16,7 @@ import java.util.Set;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.core.ui.wizards.jpm.AddJpmDependenciesWizard;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -56,13 +53,11 @@ import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IManagedForm;
-import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.ResourceTransfer;
 
-import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
@@ -70,8 +65,8 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
 import bndtools.Plugin;
-import bndtools.central.Central;
 import bndtools.central.RepositoryUtils;
+import bndtools.editor.common.BndEditorPart;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.DependencyPhase;
 import bndtools.model.repo.ProjectBundle;
@@ -82,7 +77,7 @@ import bndtools.types.Pair;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 
-public abstract class RepositoryBundleSelectionPart extends SectionPart implements PropertyChangeListener {
+public abstract class RepositoryBundleSelectionPart extends BndEditorPart implements PropertyChangeListener {
     private static final ILogger logger = Logger.getLogger(RepositoryBundleSelectionPart.class);
 
     private final String propertyName;
@@ -100,6 +95,13 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
         this.propertyName = propertyName;
         this.phase = phase;
         createSection(getSection(), toolkit);
+    }
+
+    @Override
+    protected String[] getProperties() {
+        return new String[] {
+                propertyName
+        };
     }
 
     protected ToolItem createAddItemTool(ToolBar toolbar) {
@@ -165,6 +167,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 
         // Listeners
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 ToolItem remove = getRemoveItemTool();
                 if (remove != null)
@@ -415,9 +418,8 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
     }
 
     private void doAdd() {
-        Project project = getProject();
         try {
-            RepoBundleSelectionWizard wizard = createBundleSelectionWizard(project, getBundles());
+            RepoBundleSelectionWizard wizard = createBundleSelectionWizard(getBundles());
             if (wizard != null) {
                 WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
                 if (dialog.open() == Window.OK) {
@@ -428,25 +430,6 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
         } catch (Exception e) {
             ErrorDialog.openError(getSection().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error opening bundle resolver wizard.", e));
         }
-    }
-
-    Project getProject() {
-        Project project = null;
-        try {
-            BndEditModel model = (BndEditModel) getManagedForm().getInput();
-            File bndFile = model.getBndResource();
-            IPath path = Central.toPath(bndFile);
-            IFile resource = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
-            File projectDir = resource.getProject().getLocation().toFile();
-            if (Project.BNDFILE.equals(resource.getName())) {
-                project = Central.getProject(projectDir);
-            } else {
-                project = new Project(Central.getWorkspace(), projectDir, resource.getLocation().toFile());
-            }
-        } catch (Exception e) {
-            logger.logError("Error getting project from editor model", e);
-        }
-        return project;
     }
 
     private void doRemove() {
@@ -471,8 +454,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
     }
 
     @Override
-    public void commit(boolean onSave) {
-        super.commit(onSave);
+    public void commitToModel(boolean onSave) {
         saveToModel(model, bundles);
     }
 
@@ -480,9 +462,8 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
 
     protected abstract List<VersionedClause> loadFromModel(BndEditModel model);
 
-    protected final RepoBundleSelectionWizard createBundleSelectionWizard(Project project, List<VersionedClause> bundles) throws Exception {
-        // Need to get the project from the input model...
-        RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, bundles, phase);
+    protected final RepoBundleSelectionWizard createBundleSelectionWizard(List<VersionedClause> bundles) throws Exception {
+        RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(getLocalWorkspace(), bundles, phase);
         setSelectionWizardTitleAndMessage(wizard);
 
         return wizard;
@@ -491,14 +472,13 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
     protected abstract void setSelectionWizardTitleAndMessage(RepoBundleSelectionWizard wizard);
 
     @Override
-    public void refresh() {
+    public void refreshFromModel() {
         List<VersionedClause> bundles = loadFromModel(model);
         if (bundles != null) {
             setBundles(new ArrayList<VersionedClause>(bundles));
         } else {
             setBundles(new ArrayList<VersionedClause>());
         }
-        super.refresh();
     }
 
     @Override
@@ -516,6 +496,7 @@ public abstract class RepositoryBundleSelectionPart extends SectionPart implemen
             model.removePropertyChangeListener(propertyName, this);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         IFormPage page = (IFormPage) getManagedForm().getContainer();
         if (page.isActive()) {

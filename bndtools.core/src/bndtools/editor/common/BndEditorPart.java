@@ -11,13 +11,15 @@ import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
+import bndtools.central.Central;
 
 public abstract class BndEditorPart extends SectionPart implements PropertyChangeListener {
 
     protected BndEditModel model;
 
-    private List<String> subscribedProps = new LinkedList<String>();
+    private final List<String> subscribedProps = new LinkedList<String>();
 
     public BndEditorPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
@@ -50,17 +52,18 @@ public abstract class BndEditorPart extends SectionPart implements PropertyChang
     }
 
     @Override
-    public void refresh() {
+    public final void refresh() {
         refreshFromModel();
         super.refresh();
     }
 
     @Override
-    public void commit(boolean onSave) {
+    public final void commit(boolean onSave) {
         super.commit(onSave);
         commitToModel(onSave);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         IFormPage page = (IFormPage) getManagedForm().getContainer();
         if (page.isActive()) {
@@ -68,6 +71,10 @@ public abstract class BndEditorPart extends SectionPart implements PropertyChang
         } else {
             markStale();
         }
+    }
+
+    protected Workspace getLocalWorkspace() {
+        return Central.getWorkspaceIfPresent();
     }
 
 }

@@ -40,6 +40,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
@@ -60,6 +61,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
     private final Map<String,VersionedClause> selectedBundles = new LinkedHashMap<String,VersionedClause>();
+    private final Workspace workspace;
     private final DependencyPhase phase;
 
     TreeViewer availableViewer;
@@ -92,8 +94,9 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         }
     };
 
-    protected RepoBundleSelectionWizardPage(DependencyPhase phase) {
+    protected RepoBundleSelectionWizardPage(Workspace workspace, DependencyPhase phase) {
         super("bundleSelectionPage");
+        this.workspace = workspace;
         this.phase = phase;
     }
 
@@ -120,7 +123,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         availableViewer.setAutoExpandLevel(2);
 
         availableViewer.setFilters(new ViewerFilter[] {
-            alreadySelectedFilter
+                alreadySelectedFilter
         });
 
         // Load data
@@ -140,15 +143,17 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
             }
         });
         selectionSearchTxt.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 availableViewer.setFilters(new ViewerFilter[] {
-                    alreadySelectedFilter
+                        alreadySelectedFilter
                 });
             }
         });
         availableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             // Enable add button when a bundle or bundle version is selected on
             // the left
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 IStructuredSelection sel = (IStructuredSelection) availableViewer.getSelection();
                 for (Iterator< ? > iter = sel.iterator(); iter.hasNext();) {
@@ -162,6 +167,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
             }
         });
         availableViewer.addOpenListener(new IOpenListener() {
+            @Override
             public void open(OpenEvent event) {
                 doAdd();
             }
@@ -197,12 +203,14 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
         selectedViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             // Enable the remove button when a bundle is selected on the right
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 ISelection sel = selectedViewer.getSelection();
                 removeButton.setEnabled(!sel.isEmpty());
             }
         });
         selectedViewer.addOpenListener(new IOpenListener() {
+            @Override
             public void open(OpenEvent event) {
                 doRemove();
             }
@@ -222,6 +230,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         return panel;
     }
 
+    @Override
     public void createControl(Composite parent) {
         // Create controls
         Composite composite = new Composite(parent, SWT.NONE);
@@ -277,7 +286,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
     protected void refreshBundleList() throws Exception {
         Central.getWorkspace().refresh();
-        availableViewer.setInput(RepositoryUtils.listRepositories(true));
+        availableViewer.setInput(RepositoryUtils.listRepositories(workspace, true));
     }
 
     void doAdd() {
@@ -336,6 +345,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
 
 class MapValuesContentProvider implements IStructuredContentProvider {
 
+    @Override
     public Object[] getElements(Object inputElement) {
         Map< ? , ? > map = (Map< ? , ? >) inputElement;
 
@@ -343,7 +353,9 @@ class MapValuesContentProvider implements IStructuredContentProvider {
         return values.toArray(new Object[values.size()]);
     }
 
+    @Override
     public void dispose() {}
 
+    @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
 }

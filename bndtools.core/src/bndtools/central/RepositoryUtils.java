@@ -30,7 +30,10 @@ public class RepositoryUtils {
         } catch (Exception e1) {
             return Collections.emptyList();
         }
+        return listRepositories(workspace, hideCache);
+    }
 
+    public static List<RepositoryPlugin> listRepositories(Workspace workspace, boolean hideCache) {
         try {
             List<RepositoryPlugin> plugins = workspace.getPlugins(RepositoryPlugin.class);
             List<RepositoryPlugin> repos = new ArrayList<RepositoryPlugin>(plugins.size() + 1);

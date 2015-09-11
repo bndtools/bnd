@@ -10,6 +10,7 @@
  *******************************************************************************/
 package bndtools.editor;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -103,44 +104,10 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
     private final Map<String,IFormPageFactory> pageFactories = new LinkedHashMap<String,IFormPageFactory>();
 
-    private final BndEditModel model;
-    private final BndSourceEditorPage sourcePage;
-
     private final Image buildFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bndtools-logo-16x16.png").createImage();
 
-    public BndEditor() {
-        BndEditModel model2;
-        try {
-            model2 = new BndEditModel(Central.getWorkspace());
-        } catch (Exception e) {
-            System.err.println("Unable to create BndEditModel with Workspace, defaulting to without Workspace");
-            model2 = new BndEditModel();
-        }
-        model = model2;
-
-        sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
-
-        pageFactories.put(WORKSPACE_PAGE, WorkspacePage.MAIN_FACTORY);
-        pageFactories.put(WORKSPACE_EXT_PAGE, WorkspacePage.EXT_FACTORY);
-        pageFactories.put(CONTENT_PAGE, BundleContentPage.FACTORY);
-        pageFactories.put(DESCRIPTION_PAGE, BundleDescriptionPage.FACTORY);
-        pageFactories.put(BUILD_PAGE, ProjectBuildPage.FACTORY);
-        pageFactories.put(PROJECT_RUN_PAGE, ProjectRunPage.FACTORY_PROJECT);
-        pageFactories.put(BNDRUN_PAGE, ProjectRunPage.FACTORY_BNDRUN);
-        pageFactories.put(TEST_SUITES_PAGE, TestSuitesPage.FACTORY);
-
-        IConfigurationElement[] configElems = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "editorPages");
-        if (configElems != null)
-            for (IConfigurationElement configElem : configElems) {
-                String id = configElem.getAttribute("id");
-                if (id != null) {
-                    if (pageFactories.containsKey(id))
-                        logger.logError("Duplicate form page ID: " + id, null);
-                    else
-                        pageFactories.put(id, new DelayedPageFactory(configElem));
-                }
-            }
-    }
+    private BndSourceEditorPage sourcePage;
+    private BndEditModel model;
 
     static Pair<String,String> getFileAndProject(IEditorInput input) {
         String path;
@@ -441,17 +408,15 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         super.init(site, input);
-        sourcePage.init(site, input);
 
-        setSourcePage(sourcePage);
-
-        setPartNameForInput(input);
-
-        IResource resource = ResourceUtil.getResource(input);
-        String resourceName;
-        if (resource != null) {
-            resource.getWorkspace().addResourceChangeListener(this);
-            resourceName = resource.getName();
+        // Work out our input file and subscribe to resource changes
+        final String resourceName;
+        final File inputFile;
+        IResource inputResource = ResourceUtil.getResource(input);
+        if (inputResource != null) {
+            inputResource.getWorkspace().addResourceChangeListener(this);
+            resourceName = inputResource.getName();
+            inputFile = inputResource.getLocation().toFile();
         } else {
             IStorage storage = (IStorage) input.getAdapter(IStorage.class);
             if (storage != null) {
@@ -459,17 +424,23 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             } else {
                 resourceName = input.getName();
             }
+            inputFile = null;
         }
+
+        // Get the workspace and load the bnd edit model
+        Workspace ws = Central.getWorkspaceIfPresent();
+        model = ws != null ? new BndEditModel(ws) : new BndEditModel();
+
+        initPages(site, input);
+        setSourcePage(sourcePage);
+        setPartNameForInput(input);
 
         final IDocumentProvider docProvider = sourcePage.getDocumentProvider();
         IDocument document = docProvider.getDocument(input);
         try {
             model.loadFrom(new IDocumentWrapper(document));
             model.setBndResourceName(resourceName);
-
-            if (resource != null) {
-                model.setBndResource(resource.getLocation().toFile());
-            }
+            model.setBndResource(inputFile);
             // model.addPropertyChangeListener(modelListener);
         } catch (IOException e) {
             throw new PartInitException("Error reading editor input.", e);
@@ -527,6 +498,33 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                 }
             }
         });
+    }
+
+    private void initPages(IEditorSite site, IEditorInput input) throws PartInitException {
+        // Initialise pages
+        sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
+        pageFactories.put(WORKSPACE_PAGE, WorkspacePage.MAIN_FACTORY);
+        pageFactories.put(WORKSPACE_EXT_PAGE, WorkspacePage.EXT_FACTORY);
+        pageFactories.put(CONTENT_PAGE, BundleContentPage.FACTORY);
+        pageFactories.put(DESCRIPTION_PAGE, BundleDescriptionPage.FACTORY);
+        pageFactories.put(BUILD_PAGE, ProjectBuildPage.FACTORY);
+        pageFactories.put(PROJECT_RUN_PAGE, ProjectRunPage.FACTORY_PROJECT);
+        pageFactories.put(BNDRUN_PAGE, ProjectRunPage.FACTORY_BNDRUN);
+        pageFactories.put(TEST_SUITES_PAGE, TestSuitesPage.FACTORY);
+
+        IConfigurationElement[] configElems = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "editorPages");
+        if (configElems != null)
+            for (IConfigurationElement configElem : configElems) {
+                String id = configElem.getAttribute("id");
+                if (id != null) {
+                    if (pageFactories.containsKey(id))
+                        logger.logError("Duplicate form page ID: " + id, null);
+                    else
+                        pageFactories.put(id, new DelayedPageFactory(configElem));
+                }
+            }
+        sourcePage.init(site, input);
+        sourcePage.initialize(this);
     }
 
     private void setPartNameForInput(IEditorInput input) {
