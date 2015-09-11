@@ -15,8 +15,7 @@ install:
 
 script:
   - ./gradlew --continue
-  - mvn -f bnd-maven-plugin --batch-mode --quiet -Dmaven.repo.local=bnd-maven-plugin/target/m2 -Dfile=../dist/bundles/biz.aQute.bndlib/biz.aQute.bndlib-latest.jar install:install-file install
-  - mvn -f bnd-indexer-maven-plugin --batch-mode --quiet -Dmaven.repo.local=bnd-maven-plugin/target/m2 -Dfile=../dist/bundles/biz.aQute.bndlib/biz.aQute.bndlib-latest.jar install:install-file install
+  - mvn -f maven --batch-mode --quiet -Dmaven.repo.local=bnd-maven-plugin/target/m2 -Dfile=../dist/bundles/biz.aQute.bndlib/biz.aQute.bndlib-latest.jar install:install-file install
 
 cache:
   directories:
