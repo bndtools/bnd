@@ -12,9 +12,7 @@ import aQute.bnd.service.export.Exporter;
 public class Run extends Project {
 
 	/**
-	 * Create a stand alone Run without a workspace.
-	 * 
-	 * @throws Exception
+	 * Create a stand alone Run without a workspace. @throws Exception
 	 */
 	public static Run createStandaloneRun(File file) throws Exception {
 		try (Processor run = new Processor();) {
@@ -52,8 +50,7 @@ public class Run extends Project {
 				throw new IllegalArgumentException("The bndrun file is not standalone and no workspace is passed");
 
 			return new Run(workspace, file);
-		}
-		else
+		} else
 			return createStandaloneRun(run.getProperties());
 	}
 

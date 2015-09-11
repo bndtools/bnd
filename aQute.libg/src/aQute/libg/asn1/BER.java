@@ -5,7 +5,7 @@ import java.text.*;
 import java.util.*;
 
 public class BER implements Types {
-	final static DateFormat				df	= new SimpleDateFormat("yyyyMMddHHmmss\\Z");
+	final static DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss\\Z");
 
 	final DataInputStream	xin;
 	long					position;
@@ -160,9 +160,7 @@ public class BER implements Types {
 	 * end-of-contents octets can be considered as the encoding of a value whose
 	 * tag is universal class, whose form is primitive, whose number of the tag
 	 * is zero, and whose contents are absent, thus: End-of-contents Length
-	 * Contents 0016 0016 Absent
-	 * 
-	 * @return
+	 * Contents 0016 0016 Absent @return
 	 */
 	private long readLength() throws IOException {
 		long n = readByte();
@@ -449,7 +447,7 @@ public class BER implements Types {
 			case UTCTIME :
 			case GENERALIZED_TIME :
 				Date date = pdu.getDate();
-				synchronized(df) {
+				synchronized (df) {
 					String ss = df.format(date);
 					byte d[] = ss.getBytes("ASCII");
 					out.write(d);

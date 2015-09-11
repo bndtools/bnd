@@ -13,12 +13,12 @@ import aQute.lib.io.*;
 
 public class TestObrRepo extends TestCase {
 
-	private static final String obrSrc = "testdata/fullobr.xml";
-	private static final String obrDst = "testdata/fullobr.tmp.xml";
+	private static final String		obrSrc	= "testdata/fullobr.xml";
+	private static final String		obrDst	= "testdata/fullobr.tmp.xml";
 	private static FixedIndexedRepo	obr;
-	private static NanoHTTPD			httpd;
-	private static int					httpdPort;
-	private static Processor			reporter;
+	private static NanoHTTPD		httpd;
+	private static int				httpdPort;
+	private static Processor		reporter;
 
 	@Override
 	protected void setUp() throws Exception {

@@ -31,7 +31,8 @@ public class Utils {
 				result.append(line);
 			}
 			return result.toString();
-		} finally {
+		}
+		finally {
 			reader.close();
 		}
 	}

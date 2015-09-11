@@ -89,7 +89,7 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 				Workspace workspace = registry.getPlugin(Workspace.class);
 				Processor p = new Processor(workspace);
 				try {
-					
+
 					if (!config.augments().equals("WORKSPACE")) {
 						File f = IO.getFile(workspace.getBuildDir(), config.augments());
 						if (!f.isFile()) {
@@ -128,7 +128,7 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 		}
 	}
 
-	FilterParser	fp	= new FilterParser();
+	FilterParser fp = new FilterParser();
 
 	@SuppressWarnings({
 			"unchecked", "rawtypes"

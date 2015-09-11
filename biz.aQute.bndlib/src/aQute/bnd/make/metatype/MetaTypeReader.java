@@ -25,37 +25,37 @@ import aQute.lib.tag.Tag;
 import aQute.libg.generics.Create;
 
 public class MetaTypeReader extends WriteResource {
-	final Analyzer			reporter;
-	Clazz					clazz;
-	String					interfaces[];
-	Tag						metadata	= new Tag("metatype:MetaData", new String[] {
+	final Analyzer	reporter;
+	Clazz			clazz;
+	String			interfaces[];
+	Tag				metadata	= new Tag("metatype:MetaData", new String[] {
 			"xmlns:metatype", "http://www.osgi.org/xmlns/metatype/v1.1.0"
-										});
-	Tag						ocd			= new Tag(metadata, "OCD");
-	Tag						designate	= new Tag(metadata, "Designate");
-	Tag						object		= new Tag(designate, "Object");
+									});
+	Tag				ocd			= new Tag(metadata, "OCD");
+	Tag				designate	= new Tag(metadata, "Designate");
+	Tag				object		= new Tag(designate, "Object");
 
 	// Resource
-	String					extra;
+	String extra;
 
 	// Should we process super interfaces
-	boolean					inherit;
+	boolean inherit;
 
 	// One time init
-	boolean					finished;
+	boolean finished;
 
 	// Designate
-	boolean					override;
-	String					designatePid;
-	boolean					factory;
+	boolean	override;
+	String	designatePid;
+	boolean	factory;
 
 	// AD
-	Map<MethodDef,Meta.AD>	methods		= new LinkedHashMap<MethodDef,Meta.AD>();
+	Map<MethodDef,Meta.AD> methods = new LinkedHashMap<MethodDef,Meta.AD>();
 
 	// OCD
-	Annotation				ocdAnnotation;
+	Annotation ocdAnnotation;
 
-	MethodDef				method;
+	MethodDef method;
 
 	public MetaTypeReader(Clazz clazz, Analyzer reporter) {
 		this.clazz = clazz;
@@ -64,25 +64,18 @@ public class MetaTypeReader extends WriteResource {
 	}
 
 	/**
-	 * @param id
-	 * @param name
-	 * @param cardinality
-	 * @param required
-	 * @param deflt
-	 * @param type
-	 * @param max
-	 * @param min
-	 * @param optionLabels
-	 * @param optionValues
+	 * @param id @param name @param cardinality @param required @param
+	 * deflt @param type @param max @param min @param optionLabels @param
+	 * optionValues
 	 */
 
-	static Pattern	COLLECTION	= Pattern.compile("(.*(Collection|Set|List|Queue|Stack|Deque))<(L.+;)>");
+	static Pattern COLLECTION = Pattern.compile("(.*(Collection|Set|List|Queue|Stack|Deque))<(L.+;)>");
 
 	private void addMethod(MethodDef method, Meta.AD ad) throws Exception {
 
-		if ( method.isStatic())
+		if (method.isStatic())
 			return;
-		
+
 		// Set all the defaults.
 
 		String rtype = method.getGenericReturnType();
@@ -362,7 +355,8 @@ public class MetaTypeReader extends WriteResource {
 			return;
 		Clazz ec = reporter.findClass(ref);
 		if (ec == null) {
-			reporter.error("Missing inherited class for Metatype annotations: " + ref + " from " + child.getClassName());
+			reporter.error(
+					"Missing inherited class for Metatype annotations: " + ref + " from " + child.getClassName());
 		} else {
 			MetaTypeReader mtr = new MetaTypeReader(ec, reporter);
 			mtr.setDesignate(designatePid, factory);

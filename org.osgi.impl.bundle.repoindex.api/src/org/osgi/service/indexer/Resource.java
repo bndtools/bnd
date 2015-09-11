@@ -33,7 +33,7 @@ public interface Resource {
 	/**
 	 * @return the properties
 	 */
-	Dictionary<String, Object> getProperties();
+	Dictionary<String,Object> getProperties();
 
 	/**
 	 * @return the size of the resource
@@ -41,36 +41,29 @@ public interface Resource {
 	long getSize();
 
 	/**
-	 * @return an input stream from which the resource can be read
-	 * @throws IOException
-	 *             when an I/O error occurred
+	 * @return an input stream from which the resource can be read @throws
+	 * IOException when an I/O error occurred
 	 */
 	InputStream getStream() throws IOException;
 
 	/**
-	 * @return the manifest of the resource
-	 * @throws IOException
-	 *             when an I/O error occurred
+	 * @return the manifest of the resource @throws IOException when an I/O
+	 * error occurred
 	 */
 	Manifest getManifest() throws IOException;
 
 	/**
-	 * @param prefix
-	 *            the prefix of the children that must be returned (typically
-	 *            the directory in the JAR)
-	 * @return a list of children under the specified prefix (typically the
-	 *         entries in the directory)
-	 * @throws IOException
-	 *             when an I/O error occurred
+	 * @param prefix the prefix of the children that must be returned (typically
+	 * the directory in the JAR) @return a list of children under the specified
+	 * prefix (typically the entries in the directory) @throws IOException when
+	 * an I/O error occurred
 	 */
 	List<String> listChildren(String prefix) throws IOException;
 
 	/**
-	 * @param path
-	 *            the path of the child (typically the path in the JAR)
-	 * @return the child on the specified path, as a resource
-	 * @throws IOException
-	 *             when an I/O error occurred
+	 * @param path the path of the child (typically the path in the JAR) @return
+	 * the child on the specified path, as a resource @throws IOException when
+	 * an I/O error occurred
 	 */
 	Resource getChild(String path) throws IOException;
 

@@ -11,9 +11,9 @@ public class XmlParseTest extends TestCase {
 		b.setProperty("-includeresource", "OSGI-INF/blueprint/x.xml=testresources/blueprint.xml");
 		Jar jar = b.build();
 		assertTrue(b.check());
-		assertTrue( b.getImports().containsFQN("a.b"));
-		assertTrue( b.getImports().containsFQN("d.e"));
-		
+		assertTrue(b.getImports().containsFQN("a.b"));
+		assertTrue(b.getImports().containsFQN("d.e"));
+
 		b.close();
 	}
 }

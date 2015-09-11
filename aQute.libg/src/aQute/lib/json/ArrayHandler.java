@@ -7,41 +7,41 @@ import java.util.*;
 import aQute.lib.hex.*;
 
 public class ArrayHandler extends Handler {
-	Type	componentType;
+	Type componentType;
 
 	ArrayHandler(@SuppressWarnings("unused") Class< ? > rawClass, Type componentType) {
 		this.componentType = componentType;
 	}
 
 	@Override
-	public
-	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
-		
+	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
+
 		// Byte arrays should not be treated as arrays. We treat them
 		// as hex strings
-		
-		if ( object instanceof byte[]) {
-			StringHandler.string(app,  Hex.toHexString((byte[]) object));
+
+		if (object instanceof byte[]) {
+			StringHandler.string(app, Hex.toHexString((byte[]) object));
 			return;
 		}
 		app.append("[");
 		app.indent();
 		String del = "";
 		int l = Array.getLength(object);
-		for (int i = 0; i < l; i++) try {
-			app.append(del);
-			app.encode(Array.get(object, i), componentType, visited);
-			del = ",";
-		} catch( Exception e) {
-			throw new IllegalArgumentException("[" + i + "]", e);
-		}
+		for (int i = 0; i < l; i++)
+			try {
+				app.append(del);
+				app.encode(Array.get(object, i), componentType, visited);
+				del = ",";
+			}
+			catch (Exception e) {
+				throw new IllegalArgumentException("[" + i + "]", e);
+			}
 		app.undent();
 		app.append("]");
 	}
 
 	@Override
-	public
-	Object decodeArray(Decoder r) throws Exception {
+	public Object decodeArray(Decoder r) throws Exception {
 		ArrayList<Object> list = new ArrayList<Object>();
 		r.codec.parseArray(list, componentType, r);
 		Object array = Array.newInstance(r.codec.getRawClass(componentType), list.size());

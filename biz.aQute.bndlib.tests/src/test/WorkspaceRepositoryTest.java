@@ -15,10 +15,9 @@ public class WorkspaceRepositoryTest extends TestCase {
 	private static void reallyClean(Workspace ws) throws Exception {
 		String wsName = ws.getBase().getName();
 		for (Project project : ws.getAllProjects()) {
-			if (("p1".equals(project.getName()) && "ws-repo-test".equals(wsName)) ||
-				("p2".equals(project.getName()) && "ws-repo-test".equals(wsName)) ||
-				("p3".equals(project.getName()) && "ws-repo-test".equals(wsName))
-			   ) {
+			if (("p1".equals(project.getName()) && "ws-repo-test".equals(wsName))
+					|| ("p2".equals(project.getName()) && "ws-repo-test".equals(wsName))
+					|| ("p3".equals(project.getName()) && "ws-repo-test".equals(wsName))) {
 				File output = project.getSrcOutput().getAbsoluteFile();
 				if (output.isDirectory() && output.getParentFile() != null) {
 					IO.delete(output);
@@ -40,8 +39,9 @@ public class WorkspaceRepositoryTest extends TestCase {
 	}
 
 	public static void testIMustBeUpdated() {
-		
+
 	}
+
 	public void setUp() throws Exception {
 		workspace = new Workspace(IO.getFile("testresources/ws-repo-test"));
 		repo = new WorkspaceRepository(workspace);
@@ -92,7 +92,7 @@ public class WorkspaceRepositoryTest extends TestCase {
 		assertNotNull(versions);
 		assertEquals(0, versions.size());
 	}
-	
+
 	public void testVersionsTranslateFromMavenStyle() throws Exception {
 		SortedSet<Version> versions = repo.versions("p5");
 		assertTrue(workspace.check());

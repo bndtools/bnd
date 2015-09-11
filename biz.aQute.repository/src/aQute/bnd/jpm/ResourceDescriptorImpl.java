@@ -12,7 +12,7 @@ public class ResourceDescriptorImpl extends ResourceDescriptor {
 		this.revision = ref;
 	}
 
-	final Library.RevisionRef	revision;
+	final Library.RevisionRef revision;
 
 	@Override
 	public int hashCode() {

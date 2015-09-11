@@ -18,14 +18,13 @@ import aQute.libg.remote.Delta;
 import aQute.libg.remote.Sink;
 
 class SourceFS {
-	static Pattern							WINDOWS_PREFIX	= Pattern.compile("(\\p{Alpha}):\\\\(.*)");
-	static Pattern							WINDOWS_FILE_P	= Pattern
-																	.compile("(?:\\p{Alpha}:|\\\\)(\\\\[\\p{Alnum}-_+.~@$%&=]+)*");
-	static Pattern							UNIX_FILE_P		= Pattern.compile("(/[\\p{Alnum}-_+.~@$%&=]+)+");
-	static Pattern							LOCAL_P			= File.separatorChar == '\\' ? WINDOWS_FILE_P : UNIX_FILE_P;
+	static Pattern	WINDOWS_PREFIX	= Pattern.compile("(\\p{Alpha}):\\\\(.*)");
+	static Pattern	WINDOWS_FILE_P	= Pattern.compile("(?:\\p{Alpha}:|\\\\)(\\\\[\\p{Alnum}-_+.~@$%&=]+)*");
+	static Pattern	UNIX_FILE_P		= Pattern.compile("(/[\\p{Alnum}-_+.~@$%&=]+)+");
+	static Pattern	LOCAL_P			= File.separatorChar == '\\' ? WINDOWS_FILE_P : UNIX_FILE_P;
 
-	private MultiMap<String,File>			shas			= new MultiMap<String,File>();
-	private final Map<File,FileDescription>	files			= new HashMap<File,FileDescription>();
+	private MultiMap<String,File>			shas	= new MultiMap<String,File>();
+	private final Map<File,FileDescription>	files	= new HashMap<File,FileDescription>();
 	private final boolean					pathConversion;
 	private final String					cwd;
 	private final char						separatorChar;
@@ -112,8 +111,7 @@ class SourceFS {
 			remotePath = abs.substring(cwd.length());
 			while (remotePath.startsWith(File.separator))
 				remotePath = remotePath.substring(1);
-		}
-		else {
+		} else {
 			if (File.separatorChar == '\\') {
 
 				//

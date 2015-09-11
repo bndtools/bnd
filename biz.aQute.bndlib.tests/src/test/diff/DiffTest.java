@@ -9,28 +9,27 @@ import aQute.bnd.service.diff.*;
 import aQute.lib.io.*;
 
 public class DiffTest extends TestCase {
-	static DiffPluginImpl	differ	= new DiffPluginImpl();
+	static DiffPluginImpl differ = new DiffPluginImpl();
 
 	/**
-	 * Test API differences. We have a package in the /demo workspace project and we have
-	 * the same package in our test.api package. If you make changes, copy the demo.jar
-	 * in the testresources directory.
-	 * 
+	 * Test API differences. We have a package in the /demo workspace project
+	 * and we have the same package in our test.api package. If you make
+	 * changes, copy the demo.jar in the testresources directory.
 	 */
-	
+
 	public void testBaselineDiffs() throws Exception {
-		
+
 		Tree newerTree = make(IO.getFile("testresources/baseline/test1.jar"));
 		Tree olderTree = make(IO.getFile("testresources/baseline/test2.jar"));
 		Diff diff = newerTree.diff(olderTree);
-		
-		assertEquals( Delta.MAJOR, diff.getDelta());
-		assertEquals( Delta.UNCHANGED, diff.get("<init>()").getDelta());
-		assertEquals( Delta.ADDED, diff.get("putAll(Ljava/util/List<Ljava/lang/Integer;>;)").getDelta());
-		assertEquals( Delta.REMOVED, diff.get("putAll(Ljava/util/List<Ljava/lang/String;>;)").getDelta());
+
+		assertEquals(Delta.MAJOR, diff.getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("<init>()").getDelta());
+		assertEquals(Delta.ADDED, diff.get("putAll(Ljava/util/List<Ljava/lang/Integer;>;)").getDelta());
+		assertEquals(Delta.REMOVED, diff.get("putAll(Ljava/util/List<Ljava/lang/String;>;)").getDelta());
 		show(diff, 2);
 	}
-	
+
 	private Tree make(File file) throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(file);
@@ -41,12 +40,11 @@ public class DiffTest extends TestCase {
 	}
 
 	/**
-	 * Test API differences. We have a package in the /demo workspace project and we have
-	 * the same package in our test.api package. If you make changes, copy the demo.jar
-	 * in the testresources directory.
-	 * 
+	 * Test API differences. We have a package in the /demo workspace project
+	 * and we have the same package in our test.api package. If you make
+	 * changes, copy the demo.jar in the testresources directory.
 	 */
-	
+
 	public void testAPI() throws Exception {
 		Jar older = new Jar(IO.getFile("testresources/demo.jar"));
 		Builder b = new Builder();
@@ -54,35 +52,29 @@ public class DiffTest extends TestCase {
 		b.setExportPackage("test.api");
 		b.build();
 		assertTrue(b.check());
-		
+
 		Jar newer = b.getJar();
 		Tree newerTree = differ.tree(newer).get("<api>").get("test.api").get("test.api.Interf");
 		Tree olderTree = differ.tree(older).get("<api>").get("test.api").get("test.api.Interf");
 		Diff diff = newerTree.diff(olderTree);
-		
+
 		show(diff, 2);
-		
-		
-		assertEquals( Delta.MAJOR , diff.getDelta() );
-		assertEquals( Delta.MAJOR , diff.get("foo()").getDelta() );
-		assertEquals( Delta.UNCHANGED , diff.get("foo()").get("abstract").getDelta() );
-		assertEquals( Delta.ADDED , diff.get("foo()").get("java.util.Collection<Ljava.lang.Integer;>").getDelta() );
-		assertEquals( Delta.REMOVED , diff.get("foo()").get("java.util.Collection<Ljava.lang.String;>").getDelta() );
-		assertEquals( Delta.UNCHANGED , diff.get("fooInt()").getDelta() );
-		assertEquals( Delta.UNCHANGED , diff.get("fooString()").getDelta() );
-		assertEquals( Delta.MAJOR , diff.get("foo()").getDelta() );
 
-		
-		assertEquals( Delta.ADDED , diff.get("foo(Ljava/util/List<Ljava/lang/Integer;>;)").getDelta() );
-		assertEquals( Delta.REMOVED , diff.get("foo(Ljava/util/List<Ljava/lang/String;>;)").getDelta() );
+		assertEquals(Delta.MAJOR, diff.getDelta());
+		assertEquals(Delta.MAJOR, diff.get("foo()").getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("foo()").get("abstract").getDelta());
+		assertEquals(Delta.ADDED, diff.get("foo()").get("java.util.Collection<Ljava.lang.Integer;>").getDelta());
+		assertEquals(Delta.REMOVED, diff.get("foo()").get("java.util.Collection<Ljava.lang.String;>").getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("fooInt()").getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("fooString()").getDelta());
+		assertEquals(Delta.MAJOR, diff.get("foo()").getDelta());
 
-		
+		assertEquals(Delta.ADDED, diff.get("foo(Ljava/util/List<Ljava/lang/Integer;>;)").getDelta());
+		assertEquals(Delta.REMOVED, diff.get("foo(Ljava/util/List<Ljava/lang/String;>;)").getDelta());
+
 		b.close();
 	}
-	
-	
-	
-	
+
 	public void testInheritanceII() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("bin"));
@@ -100,29 +92,20 @@ public class DiffTest extends TestCase {
 	 * Even stranger is the fact that, though always about the same class, the
 	 * actual diff is not consistent. Tested with several versions of bnd
 	 * (including master HEAD) as well as several versions of the guava bundles
-	 * from maven central. Reproduced by @bnd .
-	 * 
-	 * <pre>
-	 * $ java -jar biz.aQute.bnd.jar diff guava-14.0.1.jar guava-14.0.1.jar
-	 * MINOR      PACKAGE    com.google.common.collect
-	 *  MINOR      CLASS      com.google.common.collect.ContiguousSet
-	 *   MINOR      METHOD     tailSet(java.lang.Object,boolean)
-	 *    ADDED      RETURN     com.google.common.collect.ImmutableCollection
-	 *    ADDED      RETURN     com.google.common.collect.ImmutableSet
-	 *    ADDED      RETURN     com.google.common.collect.ImmutableSortedSet
-	 *    ADDED      RETURN
-	 * com.google.common.collect.ImmutableSortedSetFauxverideShim
-	 *    ADDED      RETURN     com.google.common.collect.SortedIterable
-	 *    ADDED      RETURN     java.io.Serializable
-	 *    ADDED      RETURN     java.lang.Iterable
-	 *    ADDED      RETURN     java.lang.Iterable
-	 *    ADDED      RETURN     java.lang.Iterable
-	 *    ADDED      RETURN     java.util.Collection
-	 *    ADDED      RETURN     java.util.Collection
-	 *    ADDED      RETURN     java.util.Set
-	 * </pre>
-	 * 
-	 * @throws Exception
+	 * from maven central. Reproduced by @bnd . <pre> $ java -jar
+	 * biz.aQute.bnd.jar diff guava-14.0.1.jar guava-14.0.1.jar MINOR PACKAGE
+	 * com.google.common.collect MINOR CLASS
+	 * com.google.common.collect.ContiguousSet MINOR METHOD
+	 * tailSet(java.lang.Object,boolean) ADDED RETURN
+	 * com.google.common.collect.ImmutableCollection ADDED RETURN
+	 * com.google.common.collect.ImmutableSet ADDED RETURN
+	 * com.google.common.collect.ImmutableSortedSet ADDED RETURN
+	 * com.google.common.collect.ImmutableSortedSetFauxverideShim ADDED RETURN
+	 * com.google.common.collect.SortedIterable ADDED RETURN
+	 * java.io.Serializable ADDED RETURN java.lang.Iterable ADDED RETURN
+	 * java.lang.Iterable ADDED RETURN java.lang.Iterable ADDED RETURN
+	 * java.util.Collection ADDED RETURN java.util.Collection ADDED RETURN
+	 * java.util.Set </pre> @throws Exception
 	 */
 
 	public void testGuavaDiff() throws Exception {
@@ -136,15 +119,9 @@ public class DiffTest extends TestCase {
 
 	/**
 	 * Test the scenario where nested annotations can generate false positive in
-	 * diffs
-	 * <p>
-	 * The trigger is a class-level annotations of the form
-	 * 
-	 * <pre>
-	 * {@literal @}Properties(value = { {@literal @}Property(name = "some.key", value = "some.value") })
-	 * </pre>
-	 * 
-	 * @throws Exception
+	 * diffs <p> The trigger is a class-level annotations of the form <pre>
+	 * {@literal @}Properties(value = { {@literal @}Property(name = "some.key",
+	 * value = "some.value") }) </pre> @throws Exception
 	 */
 	public void testNestedExportedAnnotations() throws Exception {
 		Builder b = new Builder();
@@ -158,18 +135,12 @@ public class DiffTest extends TestCase {
 		assertTrue(diff.getDelta() == Delta.UNCHANGED);
 		b.close();
 	}
-	
+
 	/**
 	 * Test the scenario where nested annotations can generate false positive in
-	 * diffs
-	 * <p>
-	 * The trigger is a class-level annotations of the form
-	 * 
-	 * <pre>
-	 * {@literal @}Properties(value = { {@literal @}Property(name = "some.key", value = "some.value") })
-	 * </pre>
-	 * 
-	 * @throws Exception
+	 * diffs <p> The trigger is a class-level annotations of the form <pre>
+	 * {@literal @}Properties(value = { {@literal @}Property(name = "some.key",
+	 * value = "some.value") }) </pre> @throws Exception
 	 */
 	public void testNestedExportedAnnotations2() throws Exception {
 
@@ -194,7 +165,7 @@ public class DiffTest extends TestCase {
 	}
 
 	public static class II {
-		final int	x	= 3;
+		final int x = 3;
 
 		public II foo() {
 			return null;
@@ -253,7 +224,8 @@ public class DiffTest extends TestCase {
 	public static void testSimple() throws Exception {
 
 		DiffPluginImpl differ = new DiffPluginImpl();
-		differ.setIgnore("Bundle-Copyright,Bundle-Description,Bundle-License,Bundle-Name,bundle-manifestversion,Export-Package,Import-Package,Bundle-Vendor,Bundle-Version");
+		differ.setIgnore(
+				"Bundle-Copyright,Bundle-Description,Bundle-License,Bundle-Name,bundle-manifestversion,Export-Package,Import-Package,Bundle-Vendor,Bundle-Version");
 		Tree newer = differ.tree(new Jar(IO.getFile("jar/osgi.core-4.3.0.jar")));
 		Tree older = differ.tree(new Jar(IO.getFile("jar/osgi.core.jar"))); // 4.2
 		Diff diff = newer.get("<manifest>").diff(older.get("<manifest>"));

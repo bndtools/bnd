@@ -9,8 +9,10 @@ import aQute.bnd.build.model.conversions.*;
 public class FormattersTest extends TestCase {
 
 	public void testCollectionFormatter() {
-		Converter<String,Collection<?>> formatter = new CollectionFormatter<Object>(",\\\n\t", (String) null);
-		String formatted = formatter.convert(Arrays.asList(new String[] {"a", "b", "c"}));
+		Converter<String,Collection< ? >> formatter = new CollectionFormatter<Object>(",\\\n\t", (String) null);
+		String formatted = formatter.convert(Arrays.asList(new String[] {
+				"a", "b", "c"
+		}));
 		assertEquals("\\\n\ta,\\\n\tb,\\\n\tc", formatted);
 	}
 
@@ -18,8 +20,10 @@ public class FormattersTest extends TestCase {
 	 * Don't add leading separator for single entries
 	 */
 	public void testCollectionFormatterSingleEntry() {
-		Converter<String,Collection<?>> formatter = new CollectionFormatter<Object>(",\\\n\t", (String) null);
-		String formatted = formatter.convert(Arrays.asList(new String[] {"a"}));
+		Converter<String,Collection< ? >> formatter = new CollectionFormatter<Object>(",\\\n\t", (String) null);
+		String formatted = formatter.convert(Arrays.asList(new String[] {
+				"a"
+		}));
 		assertEquals("a", formatted);
 	}
 

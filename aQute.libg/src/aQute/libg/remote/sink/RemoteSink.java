@@ -25,9 +25,9 @@ public class RemoteSink implements Sink {
 	Source[]					sources;
 	final Map<String,AreaImpl>	areas	= new ConcurrentHashMap<String,AreaImpl>();
 
-	final File					areasDir;
-	final SinkFS				sinkfs;
-	private File				shacache;
+	final File		areasDir;
+	final SinkFS	sinkfs;
+	private File	shacache;
 
 	public RemoteSink(File root, Source... s) throws Exception {
 		this.root = root;

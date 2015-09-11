@@ -14,7 +14,7 @@ public class MergeTest extends TestCase {
 		testMerge("first", new String[] {
 				"A", "C"
 		}, new String[] {
-			"B"
+				"B"
 		}, "first", 0, 0);
 	}
 
@@ -22,7 +22,7 @@ public class MergeTest extends TestCase {
 		testMerge("merge-first", new String[] {
 				"A", "B", "C"
 		}, new String[] {
-			""
+				""
 		}, "first", 0, 0);
 	}
 
@@ -36,7 +36,7 @@ public class MergeTest extends TestCase {
 		testMerge("merge-last", new String[] {
 				"A", "B", "C"
 		}, new String[] {
-			""
+				""
 		}, "last", 0, 0);
 	}
 

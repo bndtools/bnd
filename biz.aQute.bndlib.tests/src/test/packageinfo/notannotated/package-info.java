@@ -2,4 +2,3 @@
 package test.packageinfo.notannotated;
 
 import org.osgi.annotation.versioning.*;
-

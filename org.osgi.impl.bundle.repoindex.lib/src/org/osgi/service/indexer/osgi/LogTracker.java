@@ -7,7 +7,7 @@ import org.osgi.framework.*;
 import org.osgi.service.log.*;
 import org.osgi.util.tracker.*;
 
-class LogTracker extends ServiceTracker<LogService,LogService> implements LogService {
+class LogTracker extends ServiceTracker<LogService,LogService>implements LogService {
 
 	public LogTracker(BundleContext context) {
 		super(context, LogService.class, null);

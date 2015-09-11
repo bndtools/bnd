@@ -2,25 +2,26 @@ package aQute.bnd.service.repository;
 
 public enum Phase {
 	/**
-	 * Submitted by developer, can be used by other developer
-	 * but is not yet generally available.
+	 * Submitted by developer, can be used by other developer but is not yet
+	 * generally available.
 	 */
-	STAGING, 
+	STAGING,
 	/**
-	 * Locked, generally for QA to test in preparation for becoming the next master
+	 * Locked, generally for QA to test in preparation for becoming the next
+	 * master
 	 */
-	LOCKED, 
+	LOCKED,
 	/**
 	 * Curremt master
 	 */
-	MASTER, 
-	
+	MASTER,
+
 	/**
-	 * Retired, no longer available for searching though still available for existing
-	 * projects.
+	 * Retired, no longer available for searching though still available for
+	 * existing projects.
 	 */
-	RETIRED, 
-	
+	RETIRED,
+
 	/**
 	 * Revoked/withdrawn. Should fail any dependent builds.
 	 */

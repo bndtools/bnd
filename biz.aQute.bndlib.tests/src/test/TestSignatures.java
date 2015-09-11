@@ -9,7 +9,7 @@ import aQute.bnd.compatibility.*;
 
 @SuppressWarnings("restriction")
 public class TestSignatures extends TestCase {
-	static Signatures	s	= new Signatures();
+	static Signatures s = new Signatures();
 
 	public static void testScopes() throws Exception {
 		assertEquals("<E:Ljava/lang/Object;>(TE;TC;TD;)V",
@@ -54,8 +54,10 @@ public class TestSignatures extends TestCase {
 
 	public static void testWildcards() throws Exception {
 		assertEquals("Ljava/util/Collection<*>;", s.getSignature(Z.class.getField("wildcard_001")));
-		assertEquals("Ljava/util/Collection<+Ljava/lang/Cloneable;>;", s.getSignature(Z.class.getField("wildcard_002")));
-		assertEquals("Ljava/util/Collection<-Ljava/lang/Cloneable;>;", s.getSignature(Z.class.getField("wildcard_003")));
+		assertEquals("Ljava/util/Collection<+Ljava/lang/Cloneable;>;",
+				s.getSignature(Z.class.getField("wildcard_002")));
+		assertEquals("Ljava/util/Collection<-Ljava/lang/Cloneable;>;",
+				s.getSignature(Z.class.getField("wildcard_003")));
 		assertEquals("Ljava/util/Collection<+TC;>;", s.getSignature(Z.class.getField("wildcard_004")));
 		assertEquals("Ljava/util/Collection<-TC;>;", s.getSignature(Z.class.getField("wildcard_005")));
 		assertEquals("Ljava/util/Collection<+Ltest/signatures/Z<TC;>.V<Ljava/lang/Integer;>;>;",
@@ -71,8 +73,8 @@ public class TestSignatures extends TestCase {
 		assertEquals(s.normalize("<A:Ljava/lang/Object;>(TA;TB;)V"), s.normalize("<E:Ljava/lang/Object;>(TE;TC;)V"));
 
 		// we use (A,A) and test against (A,B)
-		assertFalse(s.normalize("<A:Ljava/lang/Object;>(TA;TA;)V").equals(
-				s.normalize("<E:Ljava/lang/Object;>(TE;TC;)V")));
+		assertFalse(
+				s.normalize("<A:Ljava/lang/Object;>(TA;TA;)V").equals(s.normalize("<E:Ljava/lang/Object;>(TE;TC;)V")));
 		assertEquals("<_0:Ljava/lang/Object;>(T_0;)V", s.normalize("<E:Ljava/lang/Object;>(TE;)V"));
 		assertEquals("<_0:Ljava/lang/Object;>(T_0;T_1;T_2;)V", s.normalize("<E:Ljava/lang/Object;>(TE;TC;TD;)V"));
 		assertEquals("<_0:Ljava/lang/Object;>Ljava/lang/Object;",

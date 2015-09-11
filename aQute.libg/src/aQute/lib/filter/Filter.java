@@ -14,14 +14,14 @@ import java.util.Hashtable;
 import java.util.Map;
 
 public class Filter {
-	final char			WILDCARD	= 65535;
+	final char WILDCARD = 65535;
 
-	final static int	EQ			= 0;
-	final static int	LE			= 1;
-	final static int	GE			= 2;
-	final static int	APPROX		= 3;
+	final static int	EQ		= 0;
+	final static int	LE		= 1;
+	final static int	GE		= 2;
+	final static int	APPROX	= 3;
 
-	String				filter;
+	String filter;
 
 	abstract class Query {
 		static final String	GARBAGE		= "Trailing garbage";
@@ -32,7 +32,7 @@ public class Filter {
 		static final String	TRUNCATED	= "Truncated expression";
 		static final String	EQUALITY	= "Only equality supported";
 
-		private String		tail;
+		private String tail;
 
 		boolean match() throws IllegalArgumentException {
 			tail = filter;
@@ -182,7 +182,7 @@ public class Filter {
 			if (obj == null)
 				return false;
 			try {
-				Class< T > numClass = (Class<T>) obj.getClass();
+				Class<T> numClass = (Class<T>) obj.getClass();
 				if (numClass == String.class) {
 					return compareString((String) obj, op, s);
 				} else if (numClass == Character.class) {
@@ -219,13 +219,13 @@ public class Filter {
 						if (compare(Array.get(obj, i), op, s))
 							return true;
 				} else {
-					Constructor< T > constructor = numClass.getConstructor(String.class);
+					Constructor<T> constructor = numClass.getConstructor(String.class);
 					T source = constructor.newInstance(s);
-					if ( op == EQ )
+					if (op == EQ)
 						return source.equals(obj);
 					Comparable<T> a = Comparable.class.cast(source);
 					Comparable<T> b = Comparable.class.cast(obj);
-						return compareSign(op,a.compareTo((T)b));
+					return compareSign(op, a.compareTo((T) b));
 				}
 			}
 			catch (Exception e) {}
@@ -234,7 +234,7 @@ public class Filter {
 	}
 
 	class DictQuery extends Query {
-		private Dictionary< ? , ? >	dict;
+		private Dictionary< ? , ? > dict;
 
 		DictQuery(Dictionary< ? , ? > dict) {
 			this.dict = dict;
@@ -247,7 +247,7 @@ public class Filter {
 	}
 
 	class MapQuery extends Query {
-		private Map< ? , ? >	map;
+		private Map< ? , ? > map;
 
 		MapQuery(Map< ? , ? > dict) {
 			this.map = dict;

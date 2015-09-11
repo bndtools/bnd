@@ -133,7 +133,6 @@ public class SubsystemExporter implements Exporter {
 		return files;
 	}
 
-
 	private void headers(final Project project, Attributes application) {
 		for (String key : project.getPropertyKeys(true)) {
 			if (!Verifier.HEADER_PATTERN.matcher(key).matches())

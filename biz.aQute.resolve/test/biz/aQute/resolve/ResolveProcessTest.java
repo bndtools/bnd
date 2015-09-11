@@ -162,11 +162,9 @@ public class ResolveProcessTest extends TestCase {
 
 		Wire wire = iterator.next();
 		assertEquals("org.apache.felix.scr",
-				wire.getRequirer().getCapabilities(IDENTITY_NAMESPACE)
-				.get(0).getAttributes().get(IDENTITY_NAMESPACE));
+				wire.getRequirer().getCapabilities(IDENTITY_NAMESPACE).get(0).getAttributes().get(IDENTITY_NAMESPACE));
 		assertTrue(wire.getRequirement().toString(),
-				wire.getRequirement()
-				.getDirectives().get(REQUIREMENT_FILTER_DIRECTIVE).contains(packageName));
+				wire.getRequirement().getDirectives().get(REQUIREMENT_FILTER_DIRECTIVE).contains(packageName));
 
 		for (String pkg : morePackages) {
 			wire = iterator.next();

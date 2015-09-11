@@ -35,18 +35,18 @@ public class CommandLine {
 	static int			LINELENGTH	= 60;
 	static Pattern		ASSIGNMENT	= Pattern.compile("(\\w[\\w\\d]*+)\\s*=\\s*([^\\s]+)\\s*");
 	Reporter			reporter;
-	Justif				justif		= new Justif(80,30,32,70);
+	Justif				justif		= new Justif(80, 30, 32, 70);
 	CommandLineMessages	msg;
-	private Object	result;
+	private Object		result;
 
 	class Option {
-		public char shortcut;
-		public String name;
-		public String paramType;
-		public String description;
-		public boolean required;
+		public char		shortcut;
+		public String	name;
+		public String	paramType;
+		public String	description;
+		public boolean	required;
 	}
-	
+
 	public CommandLine(Reporter reporter) {
 		this.reporter = reporter;
 		msg = ReporterMessages.base(reporter, CommandLineMessages.class);
@@ -74,7 +74,6 @@ public class CommandLine {
 			return sb.toString();
 		}
 
-		
 		//
 		// Find the appropriate method
 		//
@@ -153,24 +152,25 @@ public class CommandLine {
 		return help(target, cmd, optionClass);
 	}
 
-	public void generateDocumentation(Object target,Appendable out) {
+	public void generateDocumentation(Object target, Appendable out) {
 		MarkdownFormatter f = new MarkdownFormatter(out);
-		
+
 		f.h1("Available Commands:");
-		
+
 		Map<String,Method> commands = getCommands(target);
-		for(String command : commands.keySet()) {
-			Class< ? extends Options> specification = (Class< ? extends Options>) commands.get(command).getParameterTypes()[0];
+		for (String command : commands.keySet()) {
+			Class< ? extends Options> specification = (Class< ? extends Options>) commands.get(command)
+					.getParameterTypes()[0];
 			Map<String,Method> options = getOptions(specification);
 			Arguments patterns = specification.getAnnotation(Arguments.class);
-			
+
 			f.h2(command);
-			
+
 			Description descr = specification.getAnnotation(Description.class);
 			if (descr != null) {
-				f.format(descr.value()+"%n%n");
+				f.format(descr.value() + "%n%n");
 			}
-			
+
 			f.h3("Synopsis:");
 			f.code(getSynopsis(command, options, patterns));
 
@@ -179,18 +179,16 @@ public class CommandLine {
 				for (Entry<String,Method> entry : options.entrySet()) {
 					Option option = getOption(entry.getKey(), entry.getValue());
 
-					f.inlineCode("%s -%s --%s %s%s", 
-							option.required ? " " : "[", //
+					f.inlineCode("%s -%s --%s %s%s", option.required ? " " : "[", //
 							option.shortcut, //
-							option.name,
-							option.paramType, //
+							option.name, option.paramType, //
 							option.required ? " " : "]");
-					
+
 					if (option.description != null) {
 						f.format("%s", option.description);
 						f.endP();
 					}
-					
+
 				}
 				f.format("%n");
 			}
@@ -240,7 +238,7 @@ public class CommandLine {
 					String name = option.substring(2);
 					Method m = options.get(name);
 					if (m == null) { // Maybe due to capitalization modif
-						m = options.get(Character.toLowerCase(name.charAt(0))+name.substring(1));
+						m = options.get(Character.toLowerCase(name.charAt(0)) + name.substring(1));
 					}
 					if (m == null)
 						msg.UnrecognizedOption_(name);
@@ -310,20 +308,20 @@ public class CommandLine {
 
 			map.put(name, m);
 		}
-		
+
 		// In case two options have the same first char, uppercase one of them
-		// In case 3+  --------------------------------, throw an error
+		// In case 3+ --------------------------------, throw an error
 		char prevChar = '\0';
 		boolean throwOnNextMatch = false;
-		Map<String, Method> toModify = new HashMap<String,Method>();
+		Map<String,Method> toModify = new HashMap<String,Method>();
 		for (String name : map.keySet()) {
-			if(Character.toLowerCase(name.charAt(0)) != name.charAt(0)) { // 
-				throw new Error("Only commands with lower case first char are acceptable ("+name+")");
+			if (Character.toLowerCase(name.charAt(0)) != name.charAt(0)) { //
+				throw new Error("Only commands with lower case first char are acceptable (" + name + ")");
 			}
-			
-			if(Character.toLowerCase(name.charAt(0)) == prevChar) {
-				if(throwOnNextMatch) {
-					throw new Error("3 options with same first letter (one is: "+name+")");
+
+			if (Character.toLowerCase(name.charAt(0)) == prevChar) {
+				if (throwOnNextMatch) {
+					throw new Error("3 options with same first letter (one is: " + name + ")");
 				} else {
 					toModify.put(name, map.get(name));
 					throwOnNextMatch = true;
@@ -331,33 +329,24 @@ public class CommandLine {
 			} else {
 				throwOnNextMatch = false;
 				prevChar = name.charAt(0);
-			}		
+			}
 		}
-		
+
 		for (String name : toModify.keySet()) {
 			map.remove(name);
-			String newName = Character.toUpperCase(name.charAt(0))+name.substring(1);
+			String newName = Character.toUpperCase(name.charAt(0)) + name.substring(1);
 			map.put(newName, toModify.get(name));
 		}
-		
+
 		return map;
 	}
 
 	/**
 	 * Assign an option, must handle flags, parameters, and parameters that can
-	 * happen multiple times.
-	 * 
-	 * @param options
-	 *            The command line map
-	 * @param args
-	 *            the args input
-	 * @param i
-	 *            where we are
-	 * @param m
-	 *            the selected method for this option
-	 * @param last
-	 *            if this is the last in a multi single character option
-	 * @return
+	 * happen multiple times. @param options The command line map @param args
+	 * the args input @param i where we are @param m the selected method for
+	 * this option @param last if this is the last in a multi single character
+	 * option @return
 	 */
 	public void assignOptionValue(Map<String,Object> options, Method m, List<String> args, boolean last) {
 		String name = m.getName();
@@ -410,15 +399,14 @@ public class CommandLine {
 	 * Provide a help text.
 	 */
 
-	public void help(Formatter f, 
-	Object target, String cmd, Class< ? extends Options> specification) {
+	public void help(Formatter f, Object target, String cmd, Class< ? extends Options> specification) {
 		Description descr = specification.getAnnotation(Description.class);
 		Arguments patterns = specification.getAnnotation(Arguments.class);
 
 		String description = descr == null ? "" : descr.value();
 
 		f.format("%nNAME%n  %s \t0- \t1%s%n%n", cmd, description);
-		
+
 		Map<String,Method> options = getOptions(specification);
 		f.format("SYNOPSIS%n");
 		f.format(getSynopsis(cmd, options, patterns));
@@ -435,9 +423,8 @@ public class CommandLine {
 
 				f.format("   %s -%s, --%s %s%s \t0- \t1%s%n", option.required ? " " : "[", //
 						option.shortcut, //
-						option.name,
-						option.paramType, //
-						option.required ? " " : "]",//
+						option.name, option.paramType, //
+						option.required ? " " : "]", //
 						option.description);
 			}
 			f.format("%n");
@@ -448,13 +435,13 @@ public class CommandLine {
 		Option option = new Option();
 		Config cfg = m.getAnnotation(Config.class);
 		Description d = m.getAnnotation(Description.class);
-		
+
 		option.shortcut = optionName.charAt(0);
-		option.name = Character.toLowerCase(optionName.charAt(0))+optionName.substring(1);
+		option.name = Character.toLowerCase(optionName.charAt(0)) + optionName.substring(1);
 		option.description = cfg != null ? cfg.description() : (d == null ? "" : d.value());
 		option.required = isMandatory(m);
 		String pt = getTypeDescriptor(m.getGenericReturnType());
-		if(pt.length() != 0)
+		if (pt.length() != 0)
 			pt += " ";
 		option.paramType = pt;
 
@@ -484,7 +471,7 @@ public class CommandLine {
 		return sb.toString();
 	}
 
-	static Pattern	LAST_PART	= Pattern.compile(".*[\\$\\.]([^\\$\\.]+)");
+	static Pattern LAST_PART = Pattern.compile(".*[\\$\\.]([^\\$\\.]+)");
 
 	private static String lastPart(String name) {
 		Matcher m = LAST_PART.matcher(name);
@@ -504,22 +491,22 @@ public class CommandLine {
 		}
 		for (Entry<String,Method> e : getCommands(target).entrySet()) {
 			Method m = e.getValue();
-			if ( m.getName().startsWith("__")) {
+			if (m.getName().startsWith("__")) {
 				Class< ? extends Options> options = (Class< ? extends Options>) m.getParameterTypes()[0];
-				help(f,options, "MAIN OPTIONS");
+				help(f, options, "MAIN OPTIONS");
 			}
 		}
 		f.format("Available sub-commands: %n%n");
 
 		for (Entry<String,Method> e : getCommands(target).entrySet()) {
-			if ( e.getValue().getName().startsWith("__"))
+			if (e.getValue().getName().startsWith("__"))
 				continue;
-			
+
 			Description d = e.getValue().getAnnotation(Description.class);
 			String desc = " ";
-			if ( d != null)
+			if (d != null)
 				desc = d.value();
-			
+
 			f.format("  %s\t0-\t1%s %n", e.getKey(), desc);
 		}
 		f.format("%n");
@@ -541,10 +528,7 @@ public class CommandLine {
 	}
 
 	/**
-	 * Parse a class and return a list of command names
-	 * 
-	 * @param target
-	 * @return
+	 * Parse a class and return a list of command names @param target @return
 	 */
 	public Map<String,Method> getCommands(Object target) {
 		Map<String,Method> map = new TreeMap<String,Method>();
@@ -574,8 +558,7 @@ public class CommandLine {
 	}
 
 	/**
-	 * @param m
-	 * @return
+	 * @param m @return
 	 */
 	private boolean isOption(Method m) {
 		return m.getReturnType() == boolean.class || m.getReturnType() == Boolean.class;

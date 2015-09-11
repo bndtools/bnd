@@ -68,17 +68,17 @@ public class PermissionGeneratorTest extends BndTestCase {
 		}
 		return result;
 	}
-	
+
 	private static void assertNotingLeft(Set<String> permissions) {
 		assertEquals("No other permissions expected", Collections.emptySet(), permissions);
 	}
-	
+
 	private static void assertPackageAvailable(Set<String> permissions) {
 		Set<String> importedPackages = filterAndSubtract(permissions,
 				"^\\(org.osgi.framework.PackagePermission \"([^\"]+)\" \"import\"\\)$");
 		Set<String> exportedPackages = filterAndSubtract(permissions,
 				"^\\(org.osgi.framework.PackagePermission \"([^\"]+)\" \"export\"\\)$");
-		
+
 		/* @formatter:off */
 		assertEquals("Imported packages",
 			     new TreeSet<>(Arrays.asList("aQute.bnd.annotation.metatype",
@@ -105,7 +105,7 @@ public class PermissionGeneratorTest extends BndTestCase {
 			     exportedPackages);
 		/* @formatter:on */
 	}
-	
+
 	private static void assertServicesAvailable(Set<String> permissions) {
 		Set<String> registeredServices = filterAndSubtract(permissions,
 				"^\\(org.osgi.framework.ServicePermission \"([^\"]+)\" \"register\"\\)$");
@@ -171,7 +171,8 @@ public class PermissionGeneratorTest extends BndTestCase {
 	}
 
 	public static void testConcatenatedPermissionsNoAdmin() throws Exception {
-		Set<String> permissions = getPermissionsGeneratedFor("${permissions;packages}${permissions;services}${permissions;capabilities}");
+		Set<String> permissions = getPermissionsGeneratedFor(
+				"${permissions;packages}${permissions;services}${permissions;capabilities}");
 		assertPackageAvailable(permissions);
 		assertServicesAvailable(permissions);
 		assertCapabilitiesAvailable(permissions);
@@ -194,7 +195,7 @@ public class PermissionGeneratorTest extends BndTestCase {
 		assertAdminAvailable(permissions);
 		assertNotingLeft(permissions);
 	}
-	
+
 	public static void testCustomCapabilityParsing() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Require-Capability", "osgi.service;filter:=\"(objectClass=*)\"");

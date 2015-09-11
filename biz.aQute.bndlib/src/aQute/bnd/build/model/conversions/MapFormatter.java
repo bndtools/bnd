@@ -5,7 +5,7 @@ import java.util.Map.Entry;
 
 public class MapFormatter implements Converter<String,Map<String,String>> {
 
-	private CollectionFormatter<Entry<String,String>>	entrySetFormatter;
+	private CollectionFormatter<Entry<String,String>> entrySetFormatter;
 
 	public MapFormatter(String listSeparator, Converter<String, ? super Entry<String,String>> entryFormatter,
 			String emptyOutput) {

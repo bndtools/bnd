@@ -19,7 +19,7 @@ import aQute.lib.io.IOConstants;
 
 @SuppressWarnings("resource")
 public class ResourcesTest extends TestCase {
-	static final int	BUFFER_SIZE	= IOConstants.PAGE_SIZE * 1;
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
 
 	/**
 	 * Command facility in Include-Resource
@@ -122,9 +122,7 @@ public class ResourcesTest extends TestCase {
 
 	/**
 	 * If a name starts with a - sign then it is ok if it does not exist. The -
-	 * sign must be skipped obviously.
-	 * 
-	 * @throws Exception
+	 * sign must be skipped obviously. @throws Exception
 	 */
 	public static void testAbsentIsOk() throws Exception {
 		{
@@ -280,7 +278,8 @@ public class ResourcesTest extends TestCase {
 
 	public static void testIncludeResourceDirectivesFilterNonRecursive() throws Exception {
 		Builder b = new Builder();
-		b.setProperty("Include-Resource", "TargetFolder=testresources/ws/p2/Resources;filter:=re*.txt;recursive:=false");
+		b.setProperty("Include-Resource",
+				"TargetFolder=testresources/ws/p2/Resources;filter:=re*.txt;recursive:=false");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 		Resource r = jar.getResource("TargetFolder/resource3.txt");
@@ -330,7 +329,7 @@ public class ResourcesTest extends TestCase {
 		p.setProperty("Include-Resource", "text;literal=TEXT;extra='hello/world;charset=UTF-8'");
 		bmaker.setProperties(p);
 		bmaker.setClasspath(new String[] {
-			"src"
+				"src"
 		});
 		Jar jar = bmaker.build();
 		Resource resource = jar.getResource("text");
@@ -345,9 +344,8 @@ public class ResourcesTest extends TestCase {
 	}
 
 	/**
-	 * Check if we can create a jar on demand through the make facility.
-	 * 
-	 * @throws Exception
+	 * Check if we can create a jar on demand through the make facility. @throws
+	 * Exception
 	 */
 	public static void testOnDemandResource() throws Exception {
 		Builder bmaker = new Builder();
@@ -358,7 +356,7 @@ public class ResourcesTest extends TestCase {
 		p.setProperty("Include-Resource", "ondemand.jar");
 		bmaker.setProperties(p);
 		bmaker.setClasspath(new String[] {
-			"bin"
+				"bin"
 		});
 		Jar jar = bmaker.build();
 		Resource resource = jar.getResource("ondemand.jar");

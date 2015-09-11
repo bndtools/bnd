@@ -6,7 +6,7 @@ import java.net.URISyntaxException;
 class GeneratorState {
 
 	private final URI		rootUrl;
-	private final String urlTemplate;
+	private final String	urlTemplate;
 	private URLResolver		resolver;
 
 	public GeneratorState(URI rootUrl, String urlTemplate, URLResolver resolver) throws URISyntaxException {

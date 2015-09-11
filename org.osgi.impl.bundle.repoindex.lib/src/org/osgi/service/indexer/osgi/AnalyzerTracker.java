@@ -9,8 +9,8 @@ import org.osgi.util.tracker.*;
 
 class AnalyzerTracker extends ServiceTracker<ResourceAnalyzer,TrackingStruct> {
 
-	private final RepoIndex indexer;
-	private final LogService log;
+	private final RepoIndex		indexer;
+	private final LogService	log;
 
 	public AnalyzerTracker(BundleContext context, RepoIndex indexer, LogService log) {
 		super(context, ResourceAnalyzer.class, null);
@@ -19,9 +19,9 @@ class AnalyzerTracker extends ServiceTracker<ResourceAnalyzer,TrackingStruct> {
 	}
 
 	static class TrackingStruct {
-		ResourceAnalyzer analyzer;
-		Filter filter;
-		boolean valid;
+		ResourceAnalyzer	analyzer;
+		Filter				filter;
+		boolean				valid;
 	}
 
 	@Override
@@ -41,7 +41,8 @@ class AnalyzerTracker extends ServiceTracker<ResourceAnalyzer,TrackingStruct> {
 			struct.valid = true;
 
 			indexer.addAnalyzer(analyzer, filter);
-		} catch (InvalidSyntaxException e) {
+		}
+		catch (InvalidSyntaxException e) {
 			struct.valid = false;
 			log.log(reference, LogService.LOG_ERROR, "Ignoring ResourceAnalyzer due to invalid filter expression", e);
 		}
@@ -63,7 +64,8 @@ class AnalyzerTracker extends ServiceTracker<ResourceAnalyzer,TrackingStruct> {
 			struct.valid = true;
 
 			indexer.addAnalyzer(struct.analyzer, filter);
-		} catch (InvalidSyntaxException e) {
+		}
+		catch (InvalidSyntaxException e) {
 			struct.valid = false;
 			log.log(reference, LogService.LOG_ERROR, "Ignoring ResourceAnalyzer due to invalid filter expression", e);
 		}

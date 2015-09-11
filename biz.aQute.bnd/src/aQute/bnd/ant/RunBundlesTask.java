@@ -9,8 +9,8 @@ import aQute.bnd.build.Project;
 
 public class RunBundlesTask extends BaseTask {
 
-	private File			rootDir;
-	private String			outputDir;
+	private File	rootDir;
+	private String	outputDir;
 	private File	bndFile	= new File(Project.BNDFILE);
 
 	@Override
@@ -26,7 +26,7 @@ public class RunBundlesTask extends BaseTask {
 			}
 			// 2nd arg is not used, so no use trying to set it
 			Project bndProject = new Project(workspace, null, bndFile);
-			
+
 			bndProject.exportRunbundles(bndFile.getName(), new File(outputDir));
 
 			bndProject.close();

@@ -23,13 +23,12 @@ import junit.framework.TestCase;
 
 @SuppressWarnings("restriction")
 public class GenericResolveContextResolveTest extends TestCase {
-	ResolverLogger	logger	= new ResolverLogger(0, System.out);
+	ResolverLogger logger = new ResolverLogger(0, System.out);
 
 	/**
 	 * Simple basic resolve. We use a small index with gogo + framework and then
-	 * try to see if we can resolve the runtime from the shell requirement.
-	 * 
-	 * @throws Exception
+	 * try to see if we can resolve the runtime from the shell
+	 * requirement. @throws Exception
 	 */
 	public void testSimpleResolve() throws Exception {
 		Repository repository = createRepo(IO.getFile("testdata/repo3.index.xml"));
@@ -57,8 +56,8 @@ public class GenericResolveContextResolveTest extends TestCase {
 		grc.setLevel(2);
 		grc.addRepository(repository);
 
-		Requirement logservice = new CapReqBuilder("osgi.service").addDirective("filter",
-				"(objectClass=org.osgi.service.log.LogService)").buildSyntheticRequirement();
+		Requirement logservice = new CapReqBuilder("osgi.service")
+				.addDirective("filter", "(objectClass=org.osgi.service.log.LogService)").buildSyntheticRequirement();
 		List<Capability> providers = grc.findProviders(logservice);
 
 		assertEquals(2, providers.size());
@@ -83,7 +82,6 @@ public class GenericResolveContextResolveTest extends TestCase {
 
 		assertNames(providers, "test.a", "test.b");
 	}
-
 
 	public void testResolveRequirementActiveDirective() {
 		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"));

@@ -4,7 +4,7 @@ import java.io.*;
 import java.security.*;
 
 public class MD5 extends Digest {
-	public final static String	ALGORITHM	= "MD5";
+	public final static String ALGORITHM = "MD5";
 
 	public static Digester<MD5> getDigester(OutputStream... out) throws Exception {
 		return new Digester<MD5>(MessageDigest.getInstance(ALGORITHM), out) {
@@ -35,13 +35,14 @@ public class MD5 extends Digest {
 		return ALGORITHM;
 	}
 
-	public static MD5 digest(byte [] data) throws Exception {
+	public static MD5 digest(byte[] data) throws Exception {
 		return getDigester().from(data);
 	}
 
 	public static MD5 digest(File f) throws NoSuchAlgorithmException, Exception {
 		return getDigester().from(f);
 	}
+
 	public static MD5 digest(InputStream f) throws NoSuchAlgorithmException, Exception {
 		return getDigester().from(f);
 	}

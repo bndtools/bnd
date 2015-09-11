@@ -12,12 +12,10 @@ import aQute.bnd.version.*;
  * Workspace will always create one Workspace Repository. References to the
  * contents are stored in a text file in {@code ./cnf/dependencies.json}.
  * Associated with the repository is a cache (which might be shared with other
- * subsystems).
- * <p>
- * This repository can be used to get plugin dependencies.
+ * subsystems). <p> This repository can be used to get plugin dependencies.
  */
 public interface ResourceRepository {
-	String	FILENAME	= "repo.json";
+	String FILENAME = "repo.json";
 
 	enum TYPE {
 		ADD, REMOVE, START_DOWNLOAD, END_DOWNLOAD, ERROR
@@ -29,6 +27,7 @@ public interface ResourceRepository {
 			this.descriptor = rds;
 			this.exception = exception;
 		}
+
 		public TYPE					type;
 		public ResourceDescriptor	descriptor;
 		public Exception			exception;
@@ -40,26 +39,24 @@ public interface ResourceRepository {
 
 	/**
 	 * Get the list of Resource Descriptors. This contains all the descriptors
-	 * that are n the file, regardless of cache.
-	 * 
-	 * @param filter
-	 *            An OSGi filter matched against the {@link ResourceDescriptor}
-	 * @return an immutable list of resource descriptors
+	 * that are n the file, regardless of cache. @param filter An OSGi filter
+	 * matched against the {@link ResourceDescriptor} @return an immutable list
+	 * of resource descriptors
 	 */
 	List< ? extends ResourceDescriptor> filter(String repository, String filter) throws Exception;
 
-	File getResource(byte[] id,RepositoryPlugin.DownloadListener ... listeners) throws Exception;
+	File getResource(byte[] id, RepositoryPlugin.DownloadListener... listeners) throws Exception;
 
 	ResourceDescriptor getResourceDescriptor(byte[] sha) throws Exception;
-	
+
 	boolean delete(String repoId, byte[] rd) throws Exception;
 
 	boolean add(String repoId, ResourceDescriptor rd) throws Exception;
 
 	void addListener(Listener rrl);
-	
+
 	boolean deleteCache(byte[] id) throws Exception;
-	
+
 	SortedSet<ResourceDescriptor> find(String repository, String bsn, VersionRange range) throws Exception;
 
 	File getCacheDir(String name);

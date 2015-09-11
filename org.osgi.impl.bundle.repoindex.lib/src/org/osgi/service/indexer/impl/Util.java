@@ -27,24 +27,27 @@ public class Util {
 	public static SymbolicName getSymbolicName(Resource resource) throws IOException {
 		Manifest manifest = resource.getManifest();
 		if (manifest == null)
-			throw new IllegalArgumentException(String.format("Cannot identify symbolic name for resource %s: manifest unavailable", resource.getLocation()));
+			throw new IllegalArgumentException(String.format(
+					"Cannot identify symbolic name for resource %s: manifest unavailable", resource.getLocation()));
 
 		String header = manifest.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
 		if (header == null)
-			throw new IllegalArgumentException("Not an OSGi R4+ bundle: missing 'Bundle-SymbolicName' entry from manifest.");
+			throw new IllegalArgumentException(
+					"Not an OSGi R4+ bundle: missing 'Bundle-SymbolicName' entry from manifest.");
 
-		Map<String, Map<String, String>> map = OSGiHeader.parseHeader(header);
+		Map<String,Map<String,String>> map = OSGiHeader.parseHeader(header);
 		if (map.size() != 1)
 			throw new IllegalArgumentException("Invalid format for Bundle-SymbolicName header.");
 
-		Entry<String, Map<String, String>> entry = map.entrySet().iterator().next();
+		Entry<String,Map<String,String>> entry = map.entrySet().iterator().next();
 		return new SymbolicName(entry.getKey(), entry.getValue());
 	}
 
 	public static Version getVersion(Resource resource) throws IOException {
 		Manifest manifest = resource.getManifest();
 		if (manifest == null)
-			throw new IllegalArgumentException(String.format("Cannot identify version for resource %s: manifest unavailable", resource.getLocation()));
+			throw new IllegalArgumentException(String
+					.format("Cannot identify version for resource %s: manifest unavailable", resource.getLocation()));
 		String versionStr = manifest.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
 		Version version = (versionStr != null) ? new Version(versionStr) : Version.emptyVersion;
 		return version;
@@ -110,7 +113,7 @@ public class Util {
 		return result;
 	}
 
-	private static List<?> parseListValue(String value, String typeStr) throws IllegalArgumentException {
+	private static List< ? > parseListValue(String value, String typeStr) throws IllegalArgumentException {
 
 		QuotedTokenizer tokenizer = new QuotedTokenizer(value, ",");
 		String[] tokens = tokenizer.getTokens();
@@ -124,21 +127,21 @@ public class Util {
 	private static Object parseScalarValue(String value, String typeStr) throws IllegalArgumentException {
 		ScalarType type = Enum.valueOf(ScalarType.class, typeStr);
 		switch (type) {
-		case String:
-			return value;
-		case Long:
-			return Long.valueOf(value);
-		case Double:
-			return Double.valueOf(value);
-		case Version:
-			return new Version(value);
-		default:
-			throw new IllegalArgumentException(typeStr);
+			case String :
+				return value;
+			case Long :
+				return Long.valueOf(value);
+			case Double :
+				return Double.valueOf(value);
+			case Version :
+				return new Version(value);
+			default :
+				throw new IllegalArgumentException(typeStr);
 		}
 	}
 
-	public static void copyAttribsToBuilder(Builder builder, Map<String, String> attribs) {
-		for (Entry<String, String> attrib : attribs.entrySet()) {
+	public static void copyAttribsToBuilder(Builder builder, Map<String,String> attribs) {
+		for (Entry<String,String> attrib : attribs.entrySet()) {
 			String key = attrib.getKey();
 
 			if (key.endsWith(":")) {
@@ -194,12 +197,9 @@ public class Util {
 	}
 
 	/**
-	 * Returns a list of resource paths matching the glob pattern, e.g.
-	 * {@code OSGI-INF/blueprint/*.xml}. Wildcards only permitted in the final
-	 * path segment.
-	 * 
-	 * @return
-	 * @throws IOException
+	 * Returns a list of resource paths matching the glob pattern, e.g. {@code
+	 * OSGI-INF/blueprint/*.xml}. Wildcards only permitted in the final path
+	 * segment. @return @throws IOException
 	 */
 	public static final List<String> findMatchingPaths(Resource resource, String globPattern) throws IOException {
 		String prefix;

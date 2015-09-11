@@ -53,18 +53,14 @@ public class EnrouteCommand {
 			+ "This template will also install a gradle build system and a travis continuous integration"
 			+ "control file.%n"
 			+ "A workspace cannot be created at the root of a file system. The general layout of the"
-			+ "file system is%n"
-			+ "%n%n" //
+			+ "file system is%n" + "%n%n" //
 			+ "    ../wss/%n" //
-			+ "          com.acme.prime/%n"
-			+ "             .metadata/%n" //
-			+ "                 ....%n"
-			+ "             scm/%n"//
+			+ "          com.acme.prime/%n" + "             .metadata/%n" //
+			+ "                 ....%n" + "             scm/%n"//
 			+ "                 cnf/%n" //
-			+ "                     build.bnd%n"
-			+ "                     ....%n"
+			+ "                     build.bnd%n" + "                     ....%n"
 			+ "                 com.acme.prime.runner.api%n" //
-			)
+	)
 	@Arguments(arg = "workspace")
 	public interface WorkspaceOptions extends Options {
 		@Description("Create a single workspace for the Eclipse workspace and the bnd workspace. This is not recommended because if you fully clean the directory you delete Eclipse metadata.")
@@ -113,15 +109,14 @@ public class EnrouteCommand {
 			return;
 		}
 
-		
 		File eclipseDir = workspaceDir;
 		workspaceDir.mkdirs();
-		
-		if ( !opts.single())
+
+		if (!opts.single())
 			workspaceDir = new File(workspaceDir, "scm");
-		
+
 		workspaceDir.mkdirs();
-		
+
 		if (!base.isDirectory()) {
 			bnd.error("Could not create directory for the bnd workspace %s", base);
 		} else if (!eclipseDir.isDirectory()) {
@@ -134,8 +129,7 @@ public class EnrouteCommand {
 		}
 
 		if (!opts.update() && !opts.force() && workspaceDir.list().length > 0) {
-			bnd.error(
-					"The workspace directory %s is not empty, specify -u/--update to update or -f/--force to replace",
+			bnd.error("The workspace directory %s is not empty, specify -u/--update to update or -f/--force to replace",
 					workspaceDir);
 		}
 
@@ -153,11 +147,12 @@ public class EnrouteCommand {
 		if (readme.isFile())
 			IO.copy(readme, bnd.out);
 
-			bnd.out.printf("%nWorkspace %s created.%n%n" //
-					+ " Start Eclipse:%n" //
-					+ "   1) Select the Eclipse workspace %s%n" //
-					+ "   2) Package Explorer context menu: Import/General/Existing Projects from %s%n" + "%n" + "", //
-					workspaceDir.getName(), eclipseDir, workspaceDir);
+		bnd.out.printf(
+				"%nWorkspace %s created.%n%n" //
+						+ " Start Eclipse:%n" //
+						+ "   1) Select the Eclipse workspace %s%n" //
+						+ "   2) Package Explorer context menu: Import/General/Existing Projects from %s%n" + "%n" + "", //
+				workspaceDir.getName(), eclipseDir, workspaceDir);
 
 	}
 

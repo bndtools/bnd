@@ -56,7 +56,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return loader.getResource(path);
 	}
 
-	public Enumeration< String > getEntryPaths(String path) {
+	public Enumeration<String> getEntryPaths(String path) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -64,7 +64,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return new Hashtable<String,String>();
 	}
 
-	public Dictionary< String , String > getHeaders(String locale) {
+	public Dictionary<String,String> getHeaders(String locale) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -169,7 +169,8 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 			catch (MalformedURLException e) {
 				throw new BundleException(
 						"For the mini framework, the location must be a proper URL even though this is not required by the specification "
-								+ location, e);
+								+ location,
+						e);
 			}
 			c = new Context(this, last, ++ID, location);
 			bundles.put(new Long(c.id), c);
@@ -233,7 +234,6 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		throw new UnsupportedOperationException();
 	}
 
-
 	public ServiceReference< ? > getServiceReference(String clazz) {
 		return null;
 	}
@@ -241,7 +241,6 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	public ServiceReference< ? >[] getServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
 		return null;
 	}
-
 
 	public void removeBundleListener(BundleListener listener) {
 		// ok
@@ -280,7 +279,8 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return 0;
 	}
 
-	public ServiceRegistration< ? > registerService(String[] clazzes, Object service, Dictionary<String, ? > properties) {
+	public ServiceRegistration< ? > registerService(String[] clazzes, Object service,
+			Dictionary<String, ? > properties) {
 		// TODO Auto-generated method stub
 		return null;
 	}

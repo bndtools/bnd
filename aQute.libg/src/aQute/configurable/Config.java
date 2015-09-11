@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Config {
-	String	NULL	= "<<NULL>>";
+	String NULL = "<<NULL>>";
 
 	boolean required() default false;
 

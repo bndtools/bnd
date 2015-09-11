@@ -244,7 +244,7 @@ public class FileRepoTest extends TestCase {
 	}
 
 	public void testCommands() throws Exception {
-		
+
 		FileRepo repo = new FileRepo();
 		File root = tmp;
 		delete(root);

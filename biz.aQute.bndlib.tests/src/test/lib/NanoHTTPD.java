@@ -7,71 +7,46 @@ import java.util.*;
 import aQute.lib.io.*;
 
 /**
- * A simple, tiny, nicely embeddable HTTP 1.0 (partially 1.1) server in Java
- * <p>
+ * A simple, tiny, nicely embeddable HTTP 1.0 (partially 1.1) server in Java <p>
  * NanoHTTPD version 1.25, Copyright &copy; 2001,2005-2012 Jarno Elonen
  * (elonen@iki.fi, http://iki.fi/elonen/) and Copyright &copy; 2010 Konstantinos
- * Togias (info@ktogias.gr, http://ktogias.gr)
- * <p>
- * <b>Features + limitations: </b>
- * <ul>
- * <li>Only one Java file</li>
- * <li>Java 1.1 compatible</li>
- * <li>Released as open source, Modified BSD licence</li>
- * <li>No fixed config files, logging, authorization etc. (Implement yourself if
- * you need them.)</li>
- * <li>Supports parameter parsing of GET and POST methods (+ rudimentary PUT
- * support in 1.25)</li>
- * <li>Supports both dynamic content and file serving</li>
- * <li>Supports file upload (since version 1.2, 2010)</li>
- * <li>Supports partial content (streaming)</li>
- * <li>Supports ETags</li>
- * <li>Never caches anything</li>
- * <li>Doesn't limit bandwidth, request time or simultaneous connections</li>
- * <li>Default code serves files and shows all HTTP parameters and headers</li>
- * <li>File server supports directory listing, index.html and index.htm</li>
- * <li>File server supports partial content (streaming)</li>
- * <li>File server supports ETags</li>
- * <li>File server does the 301 redirection trick for directories without '/'</li>
- * <li>File server supports simple skipping for files (continue download)</li>
- * <li>File server serves also very long files without memory overhead</li>
- * <li>Contains a built-in list of most common mime types</li>
- * <li>All header names are converted lowercase so they don't vary between
- * browsers/clients</li>
- * </ul>
- * <p>
- * <b>Ways to use: </b>
- * <ul>
- * <li>Run as a standalone app, serves files and shows requests</li>
- * <li>Subclass serve() and embed to your own program</li>
- * <li>Call serveFile() from serve() with your own base directory</li>
- * </ul>
- * See the end of the source file for distribution license (Modified BSD
- * licence)
+ * Togias (info@ktogias.gr, http://ktogias.gr) <p> <b>Features + limitations:
+ * </b> <ul> <li>Only one Java file</li> <li>Java 1.1 compatible</li>
+ * <li>Released as open source, Modified BSD licence</li> <li>No fixed config
+ * files, logging, authorization etc. (Implement yourself if you need
+ * them.)</li> <li>Supports parameter parsing of GET and POST methods (+
+ * rudimentary PUT support in 1.25)</li> <li>Supports both dynamic content and
+ * file serving</li> <li>Supports file upload (since version 1.2, 2010)</li>
+ * <li>Supports partial content (streaming)</li> <li>Supports ETags</li>
+ * <li>Never caches anything</li> <li>Doesn't limit bandwidth, request time or
+ * simultaneous connections</li> <li>Default code serves files and shows all
+ * HTTP parameters and headers</li> <li>File server supports directory listing,
+ * index.html and index.htm</li> <li>File server supports partial content
+ * (streaming)</li> <li>File server supports ETags</li> <li>File server does the
+ * 301 redirection trick for directories without '/'</li> <li>File server
+ * supports simple skipping for files (continue download)</li> <li>File server
+ * serves also very long files without memory overhead</li> <li>Contains a
+ * built-in list of most common mime types</li> <li>All header names are
+ * converted lowercase so they don't vary between browsers/clients</li> </ul>
+ * <p> <b>Ways to use: </b> <ul> <li>Run as a standalone app, serves files and
+ * shows requests</li> <li>Subclass serve() and embed to your own program</li>
+ * <li>Call serveFile() from serve() with your own base directory</li> </ul> See
+ * the end of the source file for distribution license (Modified BSD licence)
  */
 public class NanoHTTPD {
-	static final int	BUFFER_SIZE	= IOConstants.PAGE_SIZE * 1;
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
 
 	// ==================================================
 	// API parts
 	// ==================================================
 
 	/**
-	 * Override this to customize the server.
-	 * <p>
-	 * (By default, this delegates to serveFile() and allows directory listing.)
-	 * 
-	 * @param uri
-	 *            Percent-decoded URI without parameters, for example
-	 *            "/index.cgi"
-	 * @param method
-	 *            "GET", "POST" etc.
-	 * @param parms
-	 *            Parsed, percent decoded parameters from URI and, in case of
-	 *            POST, data.
-	 * @param header
-	 *            Header entries, percent decoded
-	 * @return HTTP response, see class Response for details
+	 * Override this to customize the server. <p> (By default, this delegates to
+	 * serveFile() and allows directory listing.) @param uri Percent-decoded URI
+	 * without parameters, for example "/index.cgi" @param method "GET", "POST"
+	 * etc. @param parms Parsed, percent decoded parameters from URI and, in
+	 * case of POST, data. @param header Header entries, percent decoded @return
+	 * HTTP response, see class Response for details
 	 */
 	public Response serve(String uri, String method, Properties header, Properties parms, Properties files) {
 		myOut.println(method + " '" + uri + "' ");
@@ -139,47 +114,46 @@ public class NanoHTTPD {
 		/**
 		 * HTTP status code after processing, e.g. "200 OK", HTTP_OK
 		 */
-		public String		status;
+		public String status;
 
 		/**
 		 * MIME type of content, e.g. "text/html"
 		 */
-		public String		mimeType;
+		public String mimeType;
 
 		/**
 		 * Data of the response, may be null.
 		 */
-		public InputStream	data;
+		public InputStream data;
 
 		/**
 		 * Headers for the HTTP response. Use addHeader() to add lines.
 		 */
-		public Properties	header	= new Properties();
+		public Properties header = new Properties();
 	}
 
 	/**
 	 * Some HTTP response status codes
 	 */
-	public static final String	HTTP_OK	= "200 OK", HTTP_PARTIALCONTENT = "206 Partial Content",
-			HTTP_RANGE_NOT_SATISFIABLE = "416 Requested Range Not Satisfiable",
-			HTTP_REDIRECT = "301 Moved Permanently", HTTP_NOTMODIFIED = "304 Not Modified",
-			HTTP_FORBIDDEN = "403 Forbidden", HTTP_NOTFOUND = "404 Not Found", HTTP_BADREQUEST = "400 Bad Request",
-			HTTP_INTERNALERROR = "500 Internal Server Error", HTTP_NOTIMPLEMENTED = "501 Not Implemented";
+	public static final String HTTP_OK = "200 OK", HTTP_PARTIALCONTENT = "206 Partial Content",
+			HTTP_RANGE_NOT_SATISFIABLE = "416 Requested Range Not Satisfiable", HTTP_REDIRECT = "301 Moved Permanently",
+			HTTP_NOTMODIFIED = "304 Not Modified", HTTP_FORBIDDEN = "403 Forbidden", HTTP_NOTFOUND = "404 Not Found",
+			HTTP_BADREQUEST = "400 Bad Request", HTTP_INTERNALERROR = "500 Internal Server Error",
+			HTTP_NOTIMPLEMENTED = "501 Not Implemented";
 
 	/**
 	 * Common mime types for dynamic content
 	 */
-	public static final String	MIME_PLAINTEXT	= "text/plain", MIME_HTML = "text/html",
-			MIME_DEFAULT_BINARY = "application/octet-stream", MIME_XML = "text/xml";
+			public static final String MIME_PLAINTEXT = "text/plain", MIME_HTML = "text/html",
+					MIME_DEFAULT_BINARY = "application/octet-stream", MIME_XML = "text/xml";
 
 	// ==================================================
 	// Socket & server code
 	// ==================================================
 
 	/**
-	 * Starts a HTTP server to given port.
-	 * <p>
-	 * Throws an IOException if the socket is already in use
+	 * Starts a HTTP server to given port. <p> Throws an IOException if the
+	 * socket is already in use
 	 */
 	public NanoHTTPD(int port, File wwwroot) throws IOException {
 		myTcpPort = port;
@@ -475,8 +449,7 @@ public class NanoHTTPD {
 				String mpline = in.readLine();
 				while (mpline != null) {
 					if (mpline.indexOf(boundary) == -1)
-						sendError(
-								HTTP_BADREQUEST,
+						sendError(HTTP_BADREQUEST,
 								"BAD REQUEST: Content type is multipart/form-data but next chunk does not start with boundary. Usage: GET /example/file.html");
 					boundarycount++;
 					Properties item = new Properties();
@@ -499,8 +472,8 @@ public class NanoHTTPD {
 							String token = st.nextToken();
 							int p = token.indexOf('=');
 							if (p != -1)
-								disposition.put(token.substring(0, p).trim().toLowerCase(), token.substring(p + 1)
-										.trim());
+								disposition.put(token.substring(0, p).trim().toLowerCase(),
+										token.substring(p + 1).trim());
 						}
 						String pname = disposition.getProperty("name");
 						pname = pname.substring(1, pname.length() - 1);
@@ -604,8 +577,8 @@ public class NanoHTTPD {
 		}
 
 		/**
-		 * Decodes the percent encoding scheme. <br/>
-		 * For example: "an+example%20string" -> "an example string"
+		 * Decodes the percent encoding scheme. <br/> For example:
+		 * "an+example%20string" -> "an example string"
 		 */
 		private String decodePercent(String str) throws InterruptedException {
 			try {
@@ -721,7 +694,7 @@ public class NanoHTTPD {
 			}
 		}
 
-		private Socket	mySocket;
+		private Socket mySocket;
 	}
 
 	/**
@@ -790,8 +763,8 @@ public class NanoHTTPD {
 			// directory, send a redirect.
 			if (!uri.endsWith("/")) {
 				uri += "/";
-				res = new Response(HTTP_REDIRECT, MIME_HTML, "<html><body>Redirected: <a href=\"" + uri + "\">" + uri
-						+ "</a></body></html>");
+				res = new Response(HTTP_REDIRECT, MIME_HTML,
+						"<html><body>Redirected: <a href=\"" + uri + "\">" + uri + "</a></body></html>");
 				res.addHeader("Location", uri);
 			}
 
@@ -935,28 +908,31 @@ public class NanoHTTPD {
 	/**
 	 * Hashtable mapping (String)FILENAME_EXTENSION -> (String)MIME_TYPE
 	 */
-	private static Hashtable<String,String>	theMimeTypes	= new Hashtable<String,String>();
+	private static Hashtable<String,String> theMimeTypes = new Hashtable<String,String>();
+
 	static {
 		StringTokenizer st = new StringTokenizer("css		text/css " + "htm		text/html " + "html		text/html "
-				+ "xml		text/xml " + "txt		text/plain " + "asc		text/plain " + "gif		image/gif " + "jpg		image/jpeg "
-				+ "jpeg		image/jpeg " + "png		image/png " + "mp3		audio/mpeg " + "m3u		audio/mpeg-url "
-				+ "mp4		video/mp4 " + "ogv		video/ogg " + "flv		video/x-flv " + "mov		video/quicktime "
-				+ "swf		application/x-shockwave-flash " + "js			application/javascript " + "pdf		application/pdf "
-				+ "doc		application/msword " + "ogg		application/x-ogg " + "zip		application/octet-stream "
+				+ "xml		text/xml " + "txt		text/plain " + "asc		text/plain " + "gif		image/gif "
+				+ "jpg		image/jpeg " + "jpeg		image/jpeg " + "png		image/png " + "mp3		audio/mpeg "
+				+ "m3u		audio/mpeg-url " + "mp4		video/mp4 " + "ogv		video/ogg " + "flv		video/x-flv "
+				+ "mov		video/quicktime " + "swf		application/x-shockwave-flash "
+				+ "js			application/javascript " + "pdf		application/pdf " + "doc		application/msword "
+				+ "ogg		application/x-ogg " + "zip		application/octet-stream "
 				+ "exe		application/octet-stream " + "class		application/octet-stream ");
 		while (st.hasMoreTokens())
 			theMimeTypes.put(st.nextToken(), st.nextToken());
 	}
 
-	static int								theBufferSize	= 16 * 1024;
+	static int theBufferSize = 16 * 1024;
 
 	// Change this if you want to log to somewhere else than stdout
-	protected static PrintStream			myOut			= System.out;
+	protected static PrintStream myOut = System.out;
 
 	/**
 	 * GMT date formatter
 	 */
-	static java.text.SimpleDateFormat		gmtFrmt;
+	static java.text.SimpleDateFormat gmtFrmt;
+
 	static {
 		gmtFrmt = new java.text.SimpleDateFormat("E, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
 		gmtFrmt.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -965,29 +941,25 @@ public class NanoHTTPD {
 	/**
 	 * The distribution licence
 	 */
-	private static final String				LICENCE			= "Copyright (C) 2001,2005-2011 by Jarno Elonen <elonen@iki.fi>\n"
-																	+ "and Copyright (C) 2010 by Konstantinos Togias <info@ktogias.gr>\n"
-																	+ "\n"
-																	+ "Redistribution and use in source and binary forms, with or without\n"
-																	+ "modification, are permitted provided that the following conditions\n"
-																	+ "are met:\n"
-																	+ "\n"
-																	+ "Redistributions of source code must retain the above copyright notice,\n"
-																	+ "this list of conditions and the following disclaimer. Redistributions in\n"
-																	+ "binary form must reproduce the above copyright notice, this list of\n"
-																	+ "conditions and the following disclaimer in the documentation and/or other\n"
-																	+ "materials provided with the distribution. The name of the author may not\n"
-																	+ "be used to endorse or promote products derived from this software without\n"
-																	+ "specific prior written permission. \n"
-																	+ " \n"
-																	+ "THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR\n"
-																	+ "IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES\n"
-																	+ "OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.\n"
-																	+ "IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,\n"
-																	+ "INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT\n"
-																	+ "NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\n"
-																	+ "DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\n"
-																	+ "THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n"
-																	+ "(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n"
-																	+ "OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.";
+	private static final String LICENCE = "Copyright (C) 2001,2005-2011 by Jarno Elonen <elonen@iki.fi>\n"
+			+ "and Copyright (C) 2010 by Konstantinos Togias <info@ktogias.gr>\n" + "\n"
+			+ "Redistribution and use in source and binary forms, with or without\n"
+			+ "modification, are permitted provided that the following conditions\n" + "are met:\n" + "\n"
+			+ "Redistributions of source code must retain the above copyright notice,\n"
+			+ "this list of conditions and the following disclaimer. Redistributions in\n"
+			+ "binary form must reproduce the above copyright notice, this list of\n"
+			+ "conditions and the following disclaimer in the documentation and/or other\n"
+			+ "materials provided with the distribution. The name of the author may not\n"
+			+ "be used to endorse or promote products derived from this software without\n"
+			+ "specific prior written permission. \n" + " \n"
+			+ "THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR\n"
+			+ "IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES\n"
+			+ "OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.\n"
+			+ "IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,\n"
+			+ "INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT\n"
+			+ "NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\n"
+			+ "DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\n"
+			+ "THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n"
+			+ "(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n"
+			+ "OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.";
 }

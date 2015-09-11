@@ -15,12 +15,9 @@ import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class MacroTest extends TestCase {
-	
-	
+
 	/**
-	 * A macro to get an attribute from a package
-	 * 
-	 * @throws Exception
+	 * A macro to get an attribute from a package @throws Exception
 	 */
 
 	public static void testPackageAttribute() throws Exception {
@@ -86,43 +83,42 @@ public class MacroTest extends TestCase {
 	}
 
 	/**
-	 * File name tests
-	 * 
-	 * @throws Exception
+	 * File name tests @throws Exception
 	 */
-	
+
 	public void testFileNameMacros() throws Exception {
 		Processor processor = new Processor();
-		File a= IO.getFile("testresources/testfilenamemacros.properties");
+		File a = IO.getFile("testresources/testfilenamemacros.properties");
 		processor.setProperties(a);
-		
+
 		File b = IO.getFile(processor._thisfile(new String[0]));
-		assertEquals( a,b);
-		
-		assertEquals( "properties", processor.getReplacer()._extension(new String[]{"","testresources/testfilenamemacros.properties"}));
-		
-		assertEquals( "testfilenamemacros.properties", processor.getReplacer().process("${basename;testfilenamemacros.properties}"));
-		assertEquals( "testfilenamemacros", processor.getReplacer().process("${stem;testfilenamemacros.properties}"));
+		assertEquals(a, b);
+
+		assertEquals("properties", processor.getReplacer()._extension(new String[] {
+				"", "testresources/testfilenamemacros.properties"
+		}));
+
+		assertEquals("testfilenamemacros.properties",
+				processor.getReplacer().process("${basename;testfilenamemacros.properties}"));
+		assertEquals("testfilenamemacros", processor.getReplacer().process("${stem;testfilenamemacros.properties}"));
 	}
-	
+
 	/**
 	 * List functions
 	 */
 	public void testMacroLists() throws Exception {
 		Processor processor = new Processor();
-		
-		
+
 		assertEquals("true", processor.getReplacer().process("${apply;isnumber;1,2,3,4}"));
 		assertEquals("10", processor.getReplacer().process("${apply;sum;1,2,3,4}"));
 		assertEquals("false", processor.getReplacer().process("${apply;isnumber;1,2,3,a,4}"));
-		
-		
-		
+
 		processor.setProperty("double", "${1}${1}");
 		processor.setProperty("mulbyindex", "${js;${1}*${2}}");
 		assertEquals("A,B,C,D,E,F", processor.getReplacer().process("${map;toupper;a, b, c, d, e, f}"));
 		assertEquals("aa,bb,cc,dd,ee,ff", processor.getReplacer().process("${map;double;a, b, c, d, e, f}"));
-		assertEquals( "0,2,6,12,20,30,42,56,72,90", processor.getReplacer().process("${foreach;mulbyindex;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+		assertEquals("0,2,6,12,20,30,42,56,72,90",
+				processor.getReplacer().process("${foreach;mulbyindex;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
 
 		assertEquals("6", processor.getReplacer().process("${size;a, b, c, d, e, f}"));
 		assertEquals("0", processor.getReplacer().process("${size;}"));
@@ -130,7 +126,7 @@ public class MacroTest extends TestCase {
 		assertEquals("d", processor.getReplacer().process("${get;3;a, b, c, d, e, f}"));
 		assertEquals("d", processor.getReplacer().process("${get;-3;a, b, c, d, e, f}"));
 		assertEquals("f", processor.getReplacer().process("${get;-1;a, b, c, d, e, f}"));
-		
+
 		assertEquals("b,c", processor.getReplacer().process("${sublist;1;3;a, b, c, d, e, f}"));
 		assertEquals("e,f", processor.getReplacer().process("${sublist;-1;-3;a, b, c, d, e, f}"));
 
@@ -138,51 +134,50 @@ public class MacroTest extends TestCase {
 		assertEquals("", processor.getReplacer().process("${first;}"));
 		assertEquals("f", processor.getReplacer().process("${last;a, b, c, d, e, f}"));
 		assertEquals("", processor.getReplacer().process("${last;}"));
-		
-		assertEquals( "5", processor.getReplacer().process("${indexof;6;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
-		assertEquals( "-1", processor.getReplacer().process("${indexof;60;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
-		
-		assertEquals( "9", processor.getReplacer().process("${lastindexof;7;1, 2, 3, 4, 5, 6, 7, 7, 7, 10}"));
-		
-		assertEquals( "10,9,8,7,6,5,4,3,2,1", processor.getReplacer().process("${reverse;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
-		
-		assertEquals( "55", processor.getReplacer().process("${sum;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
-		assertEquals( "55", processor.getReplacer().process("${sum;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
-		
-		assertEquals( "5.5", processor.getReplacer().process("${average;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
-		
-		assertEquals( "-16", processor.getReplacer().process("${nmin;2, 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
-		assertEquals( "-16", processor.getReplacer().process("${nmin;2; 0; -13; 40 ; 55 ; -16; 700; -8; 9; 10}"));
-		
-		assertEquals( "700", processor.getReplacer().process("${nmax;2; 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
-		assertEquals( "700", processor.getReplacer().process("${nmax;2; 0; -13; 40; 55; -16; 700, -8, 9, 10}"));
 
-		assertEquals( "-13", processor.getReplacer().process("${min;2; 0; -13; 40; 55; -16; 700, -8, 9, 10}"));
-		assertEquals( "9", processor.getReplacer().process("${max;2; 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
-	}	
-	
-	
+		assertEquals("5", processor.getReplacer().process("${indexof;6;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+		assertEquals("-1", processor.getReplacer().process("${indexof;60;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+
+		assertEquals("9", processor.getReplacer().process("${lastindexof;7;1, 2, 3, 4, 5, 6, 7, 7, 7, 10}"));
+
+		assertEquals("10,9,8,7,6,5,4,3,2,1",
+				processor.getReplacer().process("${reverse;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+
+		assertEquals("55", processor.getReplacer().process("${sum;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+		assertEquals("55", processor.getReplacer().process("${sum;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+
+		assertEquals("5.5", processor.getReplacer().process("${average;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+
+		assertEquals("-16", processor.getReplacer().process("${nmin;2, 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
+		assertEquals("-16", processor.getReplacer().process("${nmin;2; 0; -13; 40 ; 55 ; -16; 700; -8; 9; 10}"));
+
+		assertEquals("700", processor.getReplacer().process("${nmax;2; 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
+		assertEquals("700", processor.getReplacer().process("${nmax;2; 0; -13; 40; 55; -16; 700, -8, 9, 10}"));
+
+		assertEquals("-13", processor.getReplacer().process("${min;2; 0; -13; 40; 55; -16; 700, -8, 9, 10}"));
+		assertEquals("9", processor.getReplacer().process("${max;2; 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
+	}
+
 	/**
 	 * String functions
 	 */
-	
+
 	public void testMacroStrings() throws Exception {
-		Processor processor = new Processor();		
+		Processor processor = new Processor();
 		processor.setProperty("empty", "");
 
 		assertEquals("6", processor.getReplacer().process("${length;abcdef}"));
-		
+
 		assertEquals("true", processor.getReplacer().process("${is;1.3;1.3;1.3}"));
 		assertEquals("false", processor.getReplacer().process("${is;abc;1.3}"));
-		
+
 		assertEquals("true", processor.getReplacer().process("${isnumber;1.3}"));
 		assertEquals("false", processor.getReplacer().process("${isnumber;abc}"));
-		
-		
+
 		assertEquals("true", processor.getReplacer().process("${isempty;${empty}}"));
 		assertEquals("true", processor.getReplacer().process("${isempty;${empty};${empty};${empty};${empty};}"));
 		assertEquals("false", processor.getReplacer().process("${isempty;abc}"));
-		
+
 		assertEquals("\n000010", processor.getReplacer().process("${format;\n%06d;10}"));
 		assertEquals("000010", processor.getReplacer().process("${format;%1$06d;10}"));
 		assertEquals("2e C8 300 620", processor.getReplacer().process("${format;%x %X %d %o;46;200;300;400;500}"));
@@ -190,7 +185,7 @@ public class MacroTest extends TestCase {
 		assertEquals(String.format("%,6d", 100000), processor.getReplacer().process("${format;%,6d;100000}"));
 
 		assertEquals("xyz", processor.getReplacer().process("${trim; \txyz\t  }"));
-		
+
 		assertEquals("DEFbDEFcdDEFef", processor.getReplacer().process("${subst;abacdaef;a;DEF}"));
 		assertEquals("DEFbacdaef", processor.getReplacer().process("${subst;abacdaef;a;DEF;1}"));
 		assertEquals("DEFbDEFcdaef", processor.getReplacer().process("${subst;abacdaef;a;DEF;2}"));
@@ -199,76 +194,71 @@ public class MacroTest extends TestCase {
 
 		assertEquals("true", processor.getReplacer().process("${matches;aaaabcdef;[a]+bcdef}"));
 		assertEquals("false", processor.getReplacer().process("${matches;bcdef;[a]+bcdef}"));
-		
+
 		assertEquals("-1", processor.getReplacer().process("${ncompare;2;200}"));
 		assertEquals("1", processor.getReplacer().process("${ncompare;200;1}"));
 		assertEquals("0", processor.getReplacer().process("${ncompare;200;200}"));
-		
+
 		assertEquals("-1", processor.getReplacer().process("${compare;abc;def}"));
 		assertEquals("1", processor.getReplacer().process("${compare;def;abc}"));
 		assertEquals("0", processor.getReplacer().process("${compare;abc;abc}"));
-		
-		
-		
+
 		assertEquals("ABCDEF", processor.getReplacer().process("${toupper;abcdef}"));
 		assertEquals("abcdef", processor.getReplacer().process("${tolower;ABCDEF}"));
 
 		assertEquals("ab,efab,ef", processor.getReplacer().process("${split;cd;abcdefabcdef}"));
 		assertEquals("ab,d,fab,d,f", processor.getReplacer().process("${split;[ce];abcdefabcdef}"));
-		
+
 		assertEquals("3", processor.getReplacer().process("${find;abcdef;def}"));
 		assertEquals("-1", processor.getReplacer().process("${find;abc;defxyz}"));
 		assertEquals("9", processor.getReplacer().process("${findlast;def;abcdefabcdef}"));
 
 		assertEquals("abcdef", processor.getReplacer().process("${startswith;abcdef;abc}"));
 		assertEquals("", processor.getReplacer().process("${startswith;abcdef;xyz}"));
-		
+
 		assertEquals("abcdef", processor.getReplacer().process("${endswith;abcdef;def}"));
 		assertEquals("", processor.getReplacer().process("${endswith;abcdef;xyz}"));
-		
+
 		assertEquals("abcdef", processor.getReplacer().process("${endswith;abcdef;def}"));
 		assertEquals("", processor.getReplacer().process("${endswith;abcdef;xyz}"));
-		
+
 		assertEquals("def", processor.getReplacer().process("${extension;abcdef.def}"));
 		assertEquals("", processor.getReplacer().process("${extension;abcdefxyz}"));
-		
+
 		assertEquals("abc", processor.getReplacer().process("${substring;abcdef;0;3}"));
 		assertEquals("abc", processor.getReplacer().process("${substring;abcdef;;3}"));
 		assertEquals("def", processor.getReplacer().process("${substring;abcdef;-3}"));
 		assertEquals("de", processor.getReplacer().process("${substring;abcdef;-3;-1}"));
 		assertEquals("def", processor.getReplacer().process("${substring;abcdef;3}"));
 
-		
 		assertEquals("6", processor.getReplacer().process("${length;abcdef}"));
 		assertEquals("0", processor.getReplacer().process("${length;}"));
-		
+
 	}
-	
 
 	/**
 	 * Test rand
 	 */
-	
+
 	public void testRan() {
 		Processor processor = new Processor();
-		for ( int i=0; i<1000; i++) {
+		for (int i = 0; i < 1000; i++) {
 			int value = Integer.parseInt(processor.getReplacer().process("${rand;-10;10}"));
-			assertTrue( value >= -10 && value <= 10);
+			assertTrue(value >= -10 && value <= 10);
 		}
 	}
-	
-	
+
 	/**
 	 * Test Javascript stuff
 	 */
-	
+
 	public void testJSSimple() {
 		Processor processor = new Processor();
 		processor.setProperty("alpha", "25");
-		assertEquals("3",processor.getReplacer().process("${js;1+2;}"));
-		assertEquals("25",processor.getReplacer().process("${js;domain.get('alpha');}"));
-		assertEquals("5",processor.getReplacer().process("${js;domain.get('alpha')/5;}"));
-		
+		assertEquals("3", processor.getReplacer().process("${js;1+2;}"));
+		assertEquals("25", processor.getReplacer().process("${js;domain.get('alpha');}"));
+		assertEquals("5", processor.getReplacer().process("${js;domain.get('alpha')/5;}"));
+
 	}
 
 	/**
@@ -277,10 +267,9 @@ public class MacroTest extends TestCase {
 	public void testJSINit() {
 		Processor processor = new Processor();
 		processor.setProperty("javascript", "function top() { return 13; }");
-		assertEquals("16",processor.getReplacer().process("${js;1+2+top()}"));
+		assertEquals("16", processor.getReplacer().process("${js;1+2+top()}"));
 	}
-	
-	
+
 	/**
 	 * See if the initcode is concatenated correctly
 	 */
@@ -289,10 +278,9 @@ public class MacroTest extends TestCase {
 		processor.setProperty("javascript", "function top() { return 1; }");
 		processor.setProperty("javascript.1", "function top() { return 2; }");
 		processor.setProperty("javascript.2", "function top() { return 3; }");
-		assertEquals("3",processor.getReplacer().process("${js;top()}"));
+		assertEquals("3", processor.getReplacer().process("${js;top()}"));
 	}
-	
-	
+
 	/**
 	 * Test control characters
 	 */
@@ -300,29 +288,30 @@ public class MacroTest extends TestCase {
 		Processor p = new Processor();
 		p.setProperty("a", "a, b, c");
 		String s = p.getReplacer().process("${unescape;${replace;${a};(.+);$0;\\n}}\n");
-		assertEquals( "a\nb\nc\n",s);
+		assertEquals("a\nb\nc\n", s);
 	}
-	
+
 	/**
 	 * Test the custom macros
 	 */
-	
+
 	public void testCustomMacros() {
 		Processor x = new Processor();
 		x.setProperty("foo", "Hello ${1}");
 		assertEquals("Hello Peter", x.getReplacer().process("${foo;Peter}"));
-		
+
 		assertTemplate("this is 1 abc, and this is def", "this is 1 ${1}, and this is ${2}", "abc;def");
 		assertTemplate("abc,def", "${#}", "abc;def");
-		assertTemplate("osgi.ee;filter:='(&(osgi.ee=JavaSE)(version=1.6))'", "osgi.ee;filter:='(&(osgi.ee=JavaSE)(version=1.${1}))'", "6");
+		assertTemplate("osgi.ee;filter:='(&(osgi.ee=JavaSE)(version=1.6))'",
+				"osgi.ee;filter:='(&(osgi.ee=JavaSE)(version=1.${1}))'", "6");
 	}
-	
+
 	void assertTemplate(String result, String template, String params) {
 		Processor top = new Processor();
 		top.setProperty("template", template);
-		top.setProperty("macro", "${template;"+params+"}");
+		top.setProperty("macro", "${template;" + params + "}");
 		String expanded = top.getProperty("macro");
-		assertEquals( result, expanded);
+		assertEquals(result, expanded);
 	}
 
 	/**
@@ -421,14 +410,14 @@ public class MacroTest extends TestCase {
 		assertEquals(12, a12.length());
 		assertNotSame(a, a12);
 	}
-	
+
 	/**
 	 * Test the native macro
 	 */
 	public static void testNativeCapabilityMacro() {
 		Processor p = new Processor();
 		p.setProperty("a", "${native_capability}");
-		
+
 		String origOsName = System.getProperty("os.name");
 		String origOsVersion = System.getProperty("os.version");
 		String origOsArch = System.getProperty("os.arch");
@@ -439,49 +428,63 @@ public class MacroTest extends TestCase {
 			System.setProperty("os.arch", "x86_64");
 			processed = p.getProperty("a");
 			assertEquals(0, p.getErrors().size());
-			assertEquals("osgi.native;osgi.native.osname:List<String>=\"MacOSX,Mac OS X\";osgi.native.osversion:Version=10.8.2;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"", processed);
+			assertEquals(
+					"osgi.native;osgi.native.osname:List<String>=\"MacOSX,Mac OS X\";osgi.native.osversion:Version=10.8.2;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"",
+					processed);
 
 			System.setProperty("os.name", "Linux");
 			System.setProperty("os.arch", "amd64");
 			System.setProperty("os.version", "3.8.8-202.fc18.x86_64");
 			processed = p.getProperty("a");
 			assertEquals(0, p.getErrors().size());
-			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Linux\";osgi.native.osversion:Version=3.8.8.-202_fc18_x86_64;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"", processed);
+			assertEquals(
+					"osgi.native;osgi.native.osname:List<String>=\"Linux\";osgi.native.osversion:Version=3.8.8.-202_fc18_x86_64;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"",
+					processed);
 
 			System.setProperty("os.name", "Linux");
 			System.setProperty("os.arch", "em64t");
 			System.setProperty("os.version", "3.8.8-202.fc18.x86_64");
 			processed = p.getProperty("a");
 			assertEquals(0, p.getErrors().size());
-			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Linux\";osgi.native.osversion:Version=3.8.8.-202_fc18_x86_64;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"", processed);
+			assertEquals(
+					"osgi.native;osgi.native.osname:List<String>=\"Linux\";osgi.native.osversion:Version=3.8.8.-202_fc18_x86_64;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"",
+					processed);
 
 			System.setProperty("os.name", "Windows XP");
 			System.setProperty("os.version", "5.1.7601.17514");
 			System.setProperty("os.arch", "x86");
 			processed = p.getProperty("a");
 			assertEquals(0, p.getErrors().size());
-			assertEquals("osgi.native;osgi.native.osname:List<String>=\"WindowsXP,WinXP,Windows XP,Win32\";osgi.native.osversion:Version=5.1.0;osgi.native.processor:List<String>=\"x86,pentium,i386,i486,i586,i686\"", processed);
+			assertEquals(
+					"osgi.native;osgi.native.osname:List<String>=\"WindowsXP,WinXP,Windows XP,Win32\";osgi.native.osversion:Version=5.1.0;osgi.native.processor:List<String>=\"x86,pentium,i386,i486,i586,i686\"",
+					processed);
 
 			System.setProperty("os.name", "Windows Vista");
 			System.setProperty("os.version", "6.0.7601.17514");
 			System.setProperty("os.arch", "x86");
 			processed = p.getProperty("a");
 			assertEquals(0, p.getErrors().size());
-			assertEquals("osgi.native;osgi.native.osname:List<String>=\"WindowsVista,WinVista,Windows Vista,Win32\";osgi.native.osversion:Version=6.0.0;osgi.native.processor:List<String>=\"x86,pentium,i386,i486,i586,i686\"", processed);
+			assertEquals(
+					"osgi.native;osgi.native.osname:List<String>=\"WindowsVista,WinVista,Windows Vista,Win32\";osgi.native.osversion:Version=6.0.0;osgi.native.processor:List<String>=\"x86,pentium,i386,i486,i586,i686\"",
+					processed);
 
 			System.setProperty("os.name", "Windows 7");
 			System.setProperty("os.version", "6.1.7601.17514");
 			System.setProperty("os.arch", "x86");
 			processed = p.getProperty("a");
 			assertEquals(0, p.getErrors().size());
-			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Windows7,Windows 7,Win32\";osgi.native.osversion:Version=6.1.0;osgi.native.processor:List<String>=\"x86,pentium,i386,i486,i586,i686\"", processed);
+			assertEquals(
+					"osgi.native;osgi.native.osname:List<String>=\"Windows7,Windows 7,Win32\";osgi.native.osversion:Version=6.1.0;osgi.native.processor:List<String>=\"x86,pentium,i386,i486,i586,i686\"",
+					processed);
 
 			System.setProperty("os.name", "Windows 8");
 			System.setProperty("os.version", "6.2.7601.17514");
 			System.setProperty("os.arch", "x86");
 			processed = p.getProperty("a");
 			assertEquals(0, p.getErrors().size());
-			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Windows8,Windows 8,Win32\";osgi.native.osversion:Version=6.2.0;osgi.native.processor:List<String>=\"x86,pentium,i386,i486,i586,i686\"", processed);
+			assertEquals(
+					"osgi.native;osgi.native.osname:List<String>=\"Windows8,Windows 8,Win32\";osgi.native.osversion:Version=6.2.0;osgi.native.processor:List<String>=\"x86,pentium,i386,i486,i586,i686\"",
+					processed);
 
 			System.setProperty("os.name", "Windows 3.1");
 			System.setProperty("os.version", "3.1.7601.17514");
@@ -495,21 +498,27 @@ public class MacroTest extends TestCase {
 			System.setProperty("os.version", "3.8");
 			processed = p.getProperty("a");
 			assertEquals(0, p.getErrors().size());
-			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Solaris\";osgi.native.osversion:Version=3.8.0;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"", processed);
+			assertEquals(
+					"osgi.native;osgi.native.osname:List<String>=\"Solaris\";osgi.native.osversion:Version=3.8.0;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"",
+					processed);
 
 			System.setProperty("os.name", "AIX");
 			System.setProperty("os.arch", "amd64");
 			System.setProperty("os.version", "3.8-202.x86_64");
 			processed = p.getProperty("a");
 			assertEquals(0, p.getErrors().size());
-			assertEquals("osgi.native;osgi.native.osname:List<String>=\"AIX\";osgi.native.osversion:Version=3.8.0.-202_x86_64;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"", processed);
+			assertEquals(
+					"osgi.native;osgi.native.osname:List<String>=\"AIX\";osgi.native.osversion:Version=3.8.0.-202_x86_64;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"",
+					processed);
 
 			System.setProperty("os.name", "HP-UX");
 			System.setProperty("os.arch", "amd64");
 			System.setProperty("os.version", "3.8.8-202.fc18.x86_64");
 			processed = p.getProperty("a");
 			assertEquals(0, p.getErrors().size());
-			assertEquals("osgi.native;osgi.native.osname:List<String>=\"HPUX,hp-ux\";osgi.native.osversion:Version=3.8.8.-202_fc18_x86_64;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"", processed);
+			assertEquals(
+					"osgi.native;osgi.native.osname:List<String>=\"HPUX,hp-ux\";osgi.native.osversion:Version=3.8.8.-202_fc18_x86_64;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"",
+					processed);
 
 			/* unknown processor */
 			System.setProperty("os.name", "Linux");
@@ -538,17 +547,23 @@ public class MacroTest extends TestCase {
 			p.setProperty("a", "${native_capability;osname=Some Very Cool OS;}");
 			processed = p.getProperty("a");
 			assertEquals(0, p.getErrors().size());
-			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Some Very Cool OS\";osgi.native.osversion:Version=3.8.8.-202_fc18_x86_64;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"", processed);
+			assertEquals(
+					"osgi.native;osgi.native.osname:List<String>=\"Some Very Cool OS\";osgi.native.osversion:Version=3.8.8.-202_fc18_x86_64;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"",
+					processed);
 
 			p.setProperty("a", "${native_capability;osversion=3.2.0.qualifier;}");
 			processed = p.getProperty("a");
 			assertEquals(0, p.getErrors().size());
-			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Linux\";osgi.native.osversion:Version=3.2.0.qualifier;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"", processed);
+			assertEquals(
+					"osgi.native;osgi.native.osname:List<String>=\"Linux\";osgi.native.osversion:Version=3.2.0.qualifier;osgi.native.processor:List<String>=\"x86-64,amd64,em64t,x86_64\"",
+					processed);
 
 			p.setProperty("a", "${native_capability;processor=mips12345;}");
 			processed = p.getProperty("a");
 			assertEquals(0, p.getErrors().size());
-			assertEquals("osgi.native;osgi.native.osname:List<String>=\"Linux\";osgi.native.osversion:Version=3.8.8.-202_fc18_x86_64;osgi.native.processor:List<String>=\"mips12345\"", processed);
+			assertEquals(
+					"osgi.native;osgi.native.osname:List<String>=\"Linux\";osgi.native.osversion:Version=3.8.8.-202_fc18_x86_64;osgi.native.processor:List<String>=\"mips12345\"",
+					processed);
 
 			/* invalid override field */
 			p.setProperty("a", "${native_capability;invalidoverridefield=value}");
@@ -599,7 +614,8 @@ public class MacroTest extends TestCase {
 			processed = p.getProperty("a");
 			assertEquals(1, p.getErrors().size());
 			p.getErrors().clear();
-		} finally {
+		}
+		finally {
 			System.setProperty("os.name", origOsName);
 			System.setProperty("os.version", origOsVersion);
 			System.setProperty("os.arch", origOsArch);
@@ -659,8 +675,9 @@ public class MacroTest extends TestCase {
 
 	public static void testSystem() throws Exception {
 		// disable this test on windows
-		if (!"/".equals(File.separator)) return;
-		
+		if (!"/".equals(File.separator))
+			return;
+
 		Processor p = new Processor();
 		Macro macro = new Macro(p);
 		assertEquals("Hello World", macro.process("${system;echo Hello World}"));
@@ -735,7 +752,7 @@ public class MacroTest extends TestCase {
 		// Add the S modifier. If qualifier is SNAPSHOT, it will return a
 		// maven version
 		//
-		
+
 		assertEquals("1.2.3-SNAPSHOT", macro.process("${version;===S;1.2.3.SNAPSHOT}"));
 		assertEquals("1.2.3.SNAPSHOT", macro.process("${version;====;1.2.3.SNAPSHOT}"));
 		assertEquals("1.2.3.X", macro.process("${version;===S;1.2.3.X}"));
@@ -786,7 +803,7 @@ public class MacroTest extends TestCase {
 		assertTrue(b.contains("src/test/MacroTest.java"));
 		assertTrue(b.contains("src/test/ManifestTest.java"));
 	}
-	
+
 	/**
 	 * Check the uniq command
 	 */
@@ -869,8 +886,9 @@ public class MacroTest extends TestCase {
 		assertEquals("200808151421", m.process("${tstamp;yyyyMMddHHmm;UTC;" + aug152008 + "}"));
 		assertEquals("200808151521", m.process("${tstamp;yyyyMMddHHmm;GMT+01;" + aug152008 + "}"));
 		assertEquals("2008", m.process("${tstamp;yyyy;UTC;" + aug152008 + "}"));
-		
-		// Why Tokyo? Japan doesn't use daylight savings, so the test shouldn't break when clocks change.
+
+		// Why Tokyo? Japan doesn't use daylight savings, so the test shouldn't
+		// break when clocks change.
 		assertEquals("200808152321", m.process("${tstamp;yyyyMMddHHmm;Asia/Tokyo;" + aug152008 + "}"));
 	}
 
@@ -899,7 +917,7 @@ public class MacroTest extends TestCase {
 		p.setProperty("Export-Package", "org.objectweb.*;version=1.5-SNAPSHOT");
 		builder.setProperties(p);
 		builder.setClasspath(new File[] {
-			IO.getFile("jar/asm.jar")
+				IO.getFile("jar/asm.jar")
 		});
 		Jar jar = builder.build();
 		Manifest manifest = jar.getManifest();
@@ -952,8 +970,8 @@ public class MacroTest extends TestCase {
 		assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").indexOf("FieldVisitor.xyz,") >= 0);
 		assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").indexOf("MethodVisitor.xyz,") >= 0);
 		assertTrue(m.process("${findpath;(.*)\\.class}").indexOf("org/objectweb/asm/AnnotationVisitor.class,") >= 0);
-		assertTrue(m.process("${findpath;(.*)\\.class}").indexOf(
-				"org/objectweb/asm/ByteVector.class, org/objectweb/asm/ClassAdapter.class,") >= 0);
+		assertTrue(m.process("${findpath;(.*)\\.class}")
+				.indexOf("org/objectweb/asm/ByteVector.class, org/objectweb/asm/ClassAdapter.class,") >= 0);
 		assertEquals("META-INF/MANIFEST.MF", m.process("${findpath;META-INF/MANIFEST.MF}"));
 		assertEquals("Label.class", m.process("${findname;Label\\..*}"));
 		assertEquals("Adapter, Visitor, Writer", m.process("${findname;Method(.*)\\.class;$1}"));
@@ -969,7 +987,7 @@ public class MacroTest extends TestCase {
 		m.process("    ${warning;xw;1;2;3 ${three}}");
 		m.process("    ${error;xe;1;2;3 ${three}}");
 		m.process("    ${if;1;$<a>}");
-		
+
 		assertTrue("xw", p.getWarnings().get(0).endsWith("xw"));
 		assertTrue("1", p.getWarnings().get(1).endsWith("1"));
 		assertTrue("2", p.getWarnings().get(2).endsWith("2"));
@@ -1051,7 +1069,7 @@ public class MacroTest extends TestCase {
 		assertEquals("aa,bb,cc,dd,ee,ff", m.process("${join;aa,bb,cc,dd,ee,ff}"));
 		assertEquals("aa,bb,cc,dd,ee,ff", m.process("${join;aa,bb,cc;dd,ee,ff}"));
 		assertEquals("aa,bb,cc,dd,ee,ff", m.process("${join;aa;bb;cc;dd;ee,ff}"));
-		
+
 		assertEquals("aaXbbXccXddXeeXff", m.process("${sjoin;X;aa,bb,cc,dd,ee,ff}"));
 		assertEquals("aa\nbb\ncc\ndd\nee\nff", m.process("${sjoin;\n;aa,bb,cc;dd,ee,ff}"));
 		assertEquals("aa\nbb\ncc\ndd\nee\nff", m.process("${unescape;${sjoin;\\n;aa,bb,cc;dd,ee,ff}}"));
@@ -1097,7 +1115,7 @@ public class MacroTest extends TestCase {
 	public static void testPackagesMacro() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new Jar[] {
-			new Jar(IO.getFile("bin"))
+				new Jar(IO.getFile("bin"))
 		});
 		b.setProperty("Private-Package",
 				"test.packageinfo.annotated,test.packageinfo.notannotated,test.packageinfo.nopackageinfo");

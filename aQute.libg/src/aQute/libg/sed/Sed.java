@@ -16,12 +16,12 @@ import java.util.regex.Pattern;
 import aQute.lib.io.IO;
 
 public class Sed {
-	final File					file;
-	final Replacer				macro;
-	File						output;
-	boolean						backup			= true;
+	final File		file;
+	final Replacer	macro;
+	File			output;
+	boolean			backup	= true;
 
-	final Map<Pattern,String>	replacements	= new LinkedHashMap<Pattern,String>();
+	final Map<Pattern,String> replacements = new LinkedHashMap<Pattern,String>();
 
 	public Sed(Replacer macro, File file) {
 		assert file.isFile();

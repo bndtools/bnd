@@ -3,10 +3,10 @@ package aQute.bnd.deployer.repository;
 import java.util.*;
 
 public class MapToDictionaryAdapter extends Dictionary<String,Object> {
-	
-	private final Map<String,Object>	map;
 
-	public MapToDictionaryAdapter(Map<String, Object> map) {
+	private final Map<String,Object> map;
+
+	public MapToDictionaryAdapter(Map<String,Object> map) {
 		this.map = map;
 	}
 
@@ -17,6 +17,7 @@ public class MapToDictionaryAdapter extends Dictionary<String,Object> {
 			public boolean hasMoreElements() {
 				return iter.hasNext();
 			}
+
 			public Object nextElement() {
 				return iter.next();
 			}
@@ -40,6 +41,7 @@ public class MapToDictionaryAdapter extends Dictionary<String,Object> {
 			public boolean hasMoreElements() {
 				return iter.hasNext();
 			}
+
 			public String nextElement() {
 				return iter.next();
 			}

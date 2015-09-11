@@ -10,7 +10,7 @@ import aQute.bnd.service.diff.*;
 @SuppressWarnings("resource")
 public class ComponentOrderingTest extends TestCase {
 
-	static DiffPluginImpl	differ	= new DiffPluginImpl();
+	static DiffPluginImpl differ = new DiffPluginImpl();
 
 	public static void testOrdering() throws Exception {
 		Builder builder = new Builder();
@@ -19,7 +19,7 @@ public class ComponentOrderingTest extends TestCase {
 		Jar a = builder.build();
 
 		String exa = (String) a.getManifest().getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
-		
+
 		builder = new Builder();
 		builder.addClasspath(new File("bin"));
 		builder.setProperty("Service-Component", "OSGI-INF/d.xml,OSGI-INF/b.xml,OSGI-INF/a.xml,OSGI-INF/c.xml");

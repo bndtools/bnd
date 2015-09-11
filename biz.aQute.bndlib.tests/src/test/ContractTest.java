@@ -11,9 +11,7 @@ import aQute.lib.io.*;
 public class ContractTest extends TestCase {
 
 	/**
-	 * Test the warnings that we have no no version
-	 * 
-	 * @throws Exception
+	 * Test the warnings that we have no no version @throws Exception
 	 */
 	public void testWarningVersion() throws Exception {
 		Jar bjara = getContractExporter("abc", null, "${exports}");
@@ -26,17 +24,17 @@ public class ContractTest extends TestCase {
 		a.setImportPackage("test.packageinfo,*");
 		a.setProperty("Export-Package", "test.refer");
 		Jar ajar = a.build();
-		assertTrue(a.check("Contract \\[name=abc;version=0.0.0;from=biz.aQute.bndlib.tests] does not declare a version"));
+		assertTrue(
+				a.check("Contract \\[name=abc;version=0.0.0;from=biz.aQute.bndlib.tests] does not declare a version"));
 
 		Domain domain = Domain.domain(ajar.getManifest());
 		Parameters p = domain.getRequireCapability();
 		p.remove("osgi.ee");
 		assertEquals(0, p.size());
 	}
+
 	/**
-	 * Test the warnings that we have no uses
-	 * 
-	 * @throws Exception
+	 * Test the warnings that we have no uses @throws Exception
 	 */
 	public void testWarningUses() throws Exception {
 		Jar bjara = getContractExporter("abc", "2.5", null);
@@ -58,9 +56,7 @@ public class ContractTest extends TestCase {
 	}
 
 	/**
-	 * Make sure we do not add a contract if not used
-	 * 
-	 * @throws Exception
+	 * Make sure we do not add a contract if not used @throws Exception
 	 */
 	public void testUnused() throws Exception {
 		Jar bjara = getContractExporter("atest", "2.5", "${exports}");
@@ -82,9 +78,7 @@ public class ContractTest extends TestCase {
 	}
 
 	/**
-	 * Test if we can select
-	 * 
-	 * @throws Exception
+	 * Test if we can select @throws Exception
 	 */
 	public void testSelect() throws Exception {
 		Jar bjara = getContractExporter("atest", "2.5", "${exports}");
@@ -114,9 +108,8 @@ public class ContractTest extends TestCase {
 	}
 
 	/**
-	 * Test if we can detect an overlap, and then if we can control the overlap
-	 * 
-	 * @throws Exception
+	 * Test if we can detect an overlap, and then if we can control the
+	 * overlap @throws Exception
 	 */
 	public void testOverlap() throws Exception {
 		Jar bjar = getContractExporter("test", "2.5", "${exports}");
@@ -130,8 +123,8 @@ public class ContractTest extends TestCase {
 		a.setImportPackage("org.osgi.service.cm,*");
 		a.setProperty("Export-Package", "test.refer");
 		Jar ajar = a.build();
-		assertTrue(a
-				.check("Contracts \\[Contract \\[name=test;version=2.5.0;from=biz.aQute.bndlib.tests\\], Contract \\[name=test;version=2.5.0"));
+		assertTrue(a.check(
+				"Contracts \\[Contract \\[name=test;version=2.5.0;from=biz.aQute.bndlib.tests\\], Contract \\[name=test;version=2.5.0"));
 
 	}
 

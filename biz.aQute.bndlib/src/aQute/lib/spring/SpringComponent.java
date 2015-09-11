@@ -18,11 +18,9 @@ import aQute.bnd.service.*;
  * This component is called when we find a resource in the META-INF/*.xml
  * pattern. We parse the resource and and the imports to the builder. Parsing is
  * done with XSLT (first time I see the use of having XML for the Spring
- * configuration files!).
- * 
- * @author aqute
+ * configuration files!). @author aqute
  */
-@BndPlugin(name="spring")
+@BndPlugin(name = "spring")
 public class SpringComponent implements AnalyzerPlugin {
 	static Transformer	transformer;
 	static Pattern		SPRING_SOURCE	= Pattern.compile("META-INF/spring/.*\\.xml");
@@ -83,8 +81,8 @@ public class SpringComponent implements AnalyzerPlugin {
 					for (Iterator<CharSequence> r = set.iterator(); r.hasNext();) {
 						PackageRef pack = analyzer.getPackageRef((String) r.next());
 						if (!QN.matcher(pack.getFQN()).matches())
-							analyzer.warning("Package does not seem a package in spring resource (" + path + "): "
-									+ pack);
+							analyzer.warning(
+									"Package does not seem a package in spring resource (" + path + "): " + pack);
 						if (!analyzer.getReferred().containsKey(pack))
 							analyzer.getReferred().put(pack, new Attrs());
 					}

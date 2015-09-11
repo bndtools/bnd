@@ -20,7 +20,8 @@ public class CommandLineOptions {
 		super();
 		try {
 			rootURL = new File(System.getProperty("user.dir")).toURI().toURL();
-		} catch (MalformedURLException e) {
+		}
+		catch (MalformedURLException e) {
 			throw new ExceptionInInitializerError(e);
 		}
 	}
@@ -48,10 +49,12 @@ public class CommandLineOptions {
 	 * Output File
 	 */
 
-	public static final String DEFAULT_OUTPUT_FILENAME = DEFAULT_PRETTY ? Index.DEFAULT_FILENAME_UNCOMPRESSED : Index.DEFAULT_FILENAME_COMPRESSED;
+	public static final String DEFAULT_OUTPUT_FILENAME = DEFAULT_PRETTY ? Index.DEFAULT_FILENAME_UNCOMPRESSED
+			: Index.DEFAULT_FILENAME_COMPRESSED;
 
-	@Option(name = "-r", metaVar = "/output/file/index.xml(.gz)", usage = "Output file name " + "(default = " + Index.DEFAULT_FILENAME_COMPRESSED + " for normal output, "
-			+ Index.DEFAULT_FILENAME_UNCOMPRESSED + " for pretty output)")
+	@Option(name = "-r", metaVar = "/output/file/index.xml(.gz)", usage = "Output file name " + "(default = "
+			+ Index.DEFAULT_FILENAME_COMPRESSED + " for normal output, " + Index.DEFAULT_FILENAME_UNCOMPRESSED
+			+ " for pretty output)")
 	File outputFile = new File(DEFAULT_OUTPUT_FILENAME);
 
 	/*
@@ -60,7 +63,8 @@ public class CommandLineOptions {
 
 	public static final String DEFAULT_REPOSITORY_NAME = ResourceIndexer.REPOSITORYNAME_DEFAULT;
 
-	@Option(name = "-n", metaVar = "RepositoryName", usage = "Repository name (default = " + DEFAULT_REPOSITORY_NAME + ")")
+	@Option(name = "-n", metaVar = "RepositoryName", usage = "Repository name (default = " + DEFAULT_REPOSITORY_NAME
+			+ ")")
 	String repositoryName = DEFAULT_REPOSITORY_NAME;
 
 	/*
@@ -165,6 +169,7 @@ public class CommandLineOptions {
 		out.printf("%s [options...] <file> [<file>*]%n", programName);
 		parser.printUsage(out);
 		out.println();
-		out.printf("Example: java -jar org.osgi.impl.bundle.repoindex.cli.jar /some/path/with/bundels /some/bundle/file.jar%n");
+		out.printf(
+				"Example: java -jar org.osgi.impl.bundle.repoindex.cli.jar /some/path/with/bundels /some/bundle/file.jar%n");
 	}
 }

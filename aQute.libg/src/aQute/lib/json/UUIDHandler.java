@@ -7,14 +7,12 @@ import java.util.UUID;
 
 public class UUIDHandler extends Handler {
 	@Override
-	public
-	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
+	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
 		StringHandler.string(app, object.toString());
 	}
 
 	@Override
-	public
-	Object decode(Decoder dec, String s) throws Exception {
+	public Object decode(Decoder dec, String s) throws Exception {
 		return UUID.fromString(s);
 	}
 

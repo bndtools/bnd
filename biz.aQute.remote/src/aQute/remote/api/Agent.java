@@ -12,9 +12,9 @@ import org.osgi.framework.wiring.dto.BundleRevisionDTO;
 /**
  * An agent runs on remote OSGi framework and provides the means to control this
  * framework. This API can also be used to install a framework before an agent
- * is started. Such a pre-agent is called an Envoy. An Envoy implements
- * {@link #createFramework(String, Collection, Map)} and {@link #isEnvoy()} only
- * but switches to the agent API once the framework is installed.
+ * is started. Such a pre-agent is called an Envoy. An Envoy implements {@link
+ * #createFramework(String, Collection, Map)} and {@link #isEnvoy()} only but
+ * switches to the agent API once the framework is installed.
  */
 public interface Agent {
 
@@ -51,12 +51,11 @@ public interface Agent {
 
 	/**
 	 * An Envoy is an agent that can install a framework (well, -runpath) and
-	 * launch it with an Agent. An envoy can only handle this method and
-	 * {@link #createFramework(String, Collection, Map)} so other methods should
-	 * not be called. This rather awkward model is necessary so that we do not
-	 * have to reconnect to the actual agent.
-	 * 
-	 * @return true if this is a limited envoy, otherwise true for a true Agent.
+	 * launch it with an Agent. An envoy can only handle this method and {@link
+	 * #createFramework(String, Collection, Map)} so other methods should not be
+	 * called. This rather awkward model is necessary so that we do not have to
+	 * reconnect to the actual agent. @return true if this is a limited envoy,
+	 * otherwise true for a true Agent.
 	 */
 	boolean isEnvoy();
 
@@ -75,40 +74,26 @@ public interface Agent {
 	/**
 	 * Install a new bundle at the given bundle location. The SHA identifies the
 	 * file and should be retrievable through {@link Supervisor#getFile(String)}
-	 * .
-	 * 
-	 * @param location
-	 *            the bundle location
-	 * @param sha
-	 *            the sha of the bundle's JAR
-	 * @return A Bundle DTO
+	 * . @param location the bundle location @param sha the sha of the bundle's
+	 * JAR @return A Bundle DTO
 	 */
 	BundleDTO install(String location, String sha) throws Exception;
 
 	/**
-	 * Start a number of bundles
-	 * 
-	 * @param id
-	 *            the bundle ids
-	 * @return any errors that occurred
+	 * Start a number of bundles @param id the bundle ids @return any errors
+	 * that occurred
 	 */
 	String start(long... id) throws Exception;
 
 	/**
-	 * Stop a number of bundles
-	 * 
-	 * @param id
-	 *            the bundle ids
-	 * @return any errors that occurred
+	 * Stop a number of bundles @param id the bundle ids @return any errors that
+	 * occurred
 	 */
 	String stop(long... id) throws Exception;
 
 	/**
-	 * Uninstall a number of bundles
-	 * 
-	 * @param id
-	 *            the bundle ids
-	 * @return any errors that occurred
+	 * Uninstall a number of bundles @param id the bundle ids @return any errors
+	 * that occurred
 	 */
 
 	String uninstall(long... id) throws Exception;
@@ -119,46 +104,33 @@ public interface Agent {
 	 * differences are reflected in the installed bundles. That is, a change in
 	 * the SHA will update, a new entry will install, and a removed entry will
 	 * uninstall. This is the preferred way to keep the remote framework
-	 * synchronized since it is idempotent.
-	 * 
-	 * @param bundles
-	 *            the bundles to update
+	 * synchronized since it is idempotent. @param bundles the bundles to update
 	 */
 	String update(Map<String,String> bundles) throws Exception;
 
 	/**
-	 * Redirect I/O from port. Port can be {@link #CONSOLE},
-	 * {@link #COMMAND_SESSION}, {@link #NONE}, or a TCP Telnet port.
-	 * 
-	 * @param port
-	 *            the port to redirect from
-	 * @return if the redirection was changed
+	 * Redirect I/O from port. Port can be {@link #CONSOLE}, {@link
+	 * #COMMAND_SESSION}, {@link #NONE}, or a TCP Telnet port. @param port the
+	 * port to redirect from @return if the redirection was changed
 	 */
 	boolean redirect(int port) throws Exception;
 
 	/**
 	 * Send a text to the potentially redirected stdin stream so that remotely
-	 * executing code will read it from an InputStream.
-	 * 
-	 * @param s
-	 *            text that should be read as input
-	 * @return true if this was redirected
+	 * executing code will read it from an InputStream. @param s text that
+	 * should be read as input @return true if this was redirected
 	 */
 	boolean stdin(String s) throws Exception;
 
 	/**
-	 * Execute a remote command on Gogo (if present) and return the result.
-	 * 
-	 * @param cmd
-	 *            the command to execute
-	 * @return the result
+	 * Execute a remote command on Gogo (if present) and return the
+	 * result. @param cmd the command to execute @return the result
 	 */
 	String shell(String cmd) throws Exception;
 
 	/**
-	 * Get the remote's system's System properties
-	 * 
-	 * @return the remote systems properties
+	 * Get the remote's system's System properties @return the remote systems
+	 * properties
 	 */
 	Map<String,String> getSystemProperties() throws Exception;
 
@@ -168,15 +140,9 @@ public interface Agent {
 	 * created multiple independent frameworks. If this framework already
 	 * existed, and the given parameters are identical, that framework will be
 	 * used for the aget that will take over. Otherwise the current framework is
-	 * stopped and a new framework is started.
-	 * 
-	 * @param name
-	 *            the name of the framework
-	 * @param runpath
-	 *            the runpath the install
-	 * @param properties
-	 *            the framework properties
-	 * @return if this created a new framework
+	 * stopped and a new framework is started. @param name the name of the
+	 * framework @param runpath the runpath the install @param properties the
+	 * framework properties @return if this created a new framework
 	 */
 	boolean createFramework(String name, Collection<String> runpath, Map<String,Object> properties) throws Exception;
 

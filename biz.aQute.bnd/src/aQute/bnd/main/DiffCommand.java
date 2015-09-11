@@ -25,7 +25,7 @@ import aQute.lib.getopt.Options;
 import aQute.lib.tag.Tag;
 
 public class DiffCommand {
-	bnd	bnd;
+	bnd bnd;
 
 	DiffCommand(bnd bnd) {
 		this.bnd = bnd;
@@ -74,8 +74,11 @@ public class DiffCommand {
 			if (project != null) {
 				for (Builder b : project.getSubBuilders()) {
 					ProjectBuilder pb = (ProjectBuilder) b;
-					Jar older = pb.getBaselineJar(); // make sure remains before disabling baselining
-					pb.setProperty(Constants.BASELINE, ""); // do not do baselining in build
+					Jar older = pb.getBaselineJar(); // make sure remains before
+														// disabling baselining
+					pb.setProperty(Constants.BASELINE, ""); // do not do
+															// baselining in
+															// build
 					Jar newer = pb.build();
 					di.setIgnore(pb.getProperty(Constants.DIFFIGNORE));
 					diff(options, di, newer, older);
@@ -84,7 +87,7 @@ public class DiffCommand {
 				bnd.getInfo(project);
 				return;
 			}
-			
+
 		} else if (options._arguments().size() == 1) {
 			bnd.trace("Show tree");
 			showTree(bnd, options);
@@ -170,11 +173,7 @@ public class DiffCommand {
 	}
 
 	/**
-	 * Just show the single tree
-	 * 
-	 * @param bnd
-	 * @param options
-	 * @throws Exception
+	 * Just show the single tree @param bnd @param options @throws Exception
 	 */
 
 	private static void showTree(bnd bnd, diffOptions options) throws Exception {

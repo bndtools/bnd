@@ -30,7 +30,7 @@ import aQute.launcher.minifw.*;
 public class Launcher implements ServiceListener {
 
 	// Use our own constant for this rather than depend on OSGi core 4.3
-	private static final String			FRAMEWORK_SYSTEM_CAPABILITIES_EXTRA	= "org.osgi.framework.system.capabilities.extra";
+	private static final String FRAMEWORK_SYSTEM_CAPABILITIES_EXTRA = "org.osgi.framework.system.capabilities.extra";
 
 	private PrintStream					out;
 	LauncherConstants					parms;
@@ -42,17 +42,17 @@ public class Launcher implements ServiceListener {
 	private Callable<Integer>			mainThread;
 	@SuppressWarnings("deprecation")
 	private PackageAdmin				padmin;
-	private final List<BundleActivator>	embedded							= new ArrayList<BundleActivator>();
-	private final Map<Bundle,Throwable>	errors								= new HashMap<Bundle,Throwable>();
-	private final Map<File,Bundle>		installedBundles					= new LinkedHashMap<File,Bundle>();
-	private File						home								= new File(System.getProperty("user.home"));
-	private File						bnd									= new File(home, "bnd");
-	private List<Bundle>				wantsToBeStarted					= new ArrayList<Bundle>();
-	AtomicBoolean						active								= new AtomicBoolean();
-	
+	private final List<BundleActivator>	embedded			= new ArrayList<BundleActivator>();
+	private final Map<Bundle,Throwable>	errors				= new HashMap<Bundle,Throwable>();
+	private final Map<File,Bundle>		installedBundles	= new LinkedHashMap<File,Bundle>();
+	private File						home				= new File(System.getProperty("user.home"));
+	private File						bnd					= new File(home, "bnd");
+	private List<Bundle>				wantsToBeStarted	= new ArrayList<Bundle>();
+	AtomicBoolean						active				= new AtomicBoolean();
+
 	private AtomicReference<DatagramSocket> commsSocket = new AtomicReference<DatagramSocket>();
 
-	public static void main(String[] args) {		
+	public static void main(String[] args) {
 		try {
 			int exitcode = 0;
 			try {
@@ -101,8 +101,7 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
-	static void load(final InputStream in, Properties properties) throws UnsupportedEncodingException,
-			IOException {
+	static void load(final InputStream in, Properties properties) throws UnsupportedEncodingException, IOException {
 		InputStreamReader ir = new InputStreamReader(in, "UTF-8");
 		try {
 			properties.load(ir);
@@ -150,11 +149,11 @@ public class Launcher implements ServiceListener {
 		System.exit(ERROR);
 	}
 
-	public static int main(String[] args,Properties p) throws Throwable {
+	public static int main(String[] args, Properties p) throws Throwable {
 		Launcher target = new Launcher(p, null);
 		return target.run(args);
 	}
-	
+
 	public Launcher(Properties properties, final File propertiesFile) throws Exception {
 		this.properties = properties;
 
@@ -167,21 +166,20 @@ public class Launcher implements ServiceListener {
 				properties.put(key, v);
 		}
 
-
 		System.getProperties().putAll(properties);
-		
-		
+
 		this.parms = new LauncherConstants(properties);
 		out = System.err;
-		
+
 		setupComms();
 
 		trace("properties " + properties);
-		trace("inited runbundles=%s activators=%s timeout=%s properties=%s", parms.runbundles, parms.activators, parms.timeout);
-		
+		trace("inited runbundles=%s activators=%s timeout=%s properties=%s", parms.runbundles, parms.activators,
+				parms.timeout);
+
 		if (propertiesFile != null && parms.embedded == false) {
 			TimerTask watchdog = new TimerTask() {
-				long	begin	= propertiesFile.lastModified();
+				long begin = propertiesFile.lastModified();
 
 				public void run() {
 					long now = propertiesFile.lastModified();
@@ -206,27 +204,28 @@ public class Launcher implements ServiceListener {
 
 	private void setupComms() {
 		DatagramSocket oldSocket;
-		if(parms.notificationPort == -1) {
+		if (parms.notificationPort == -1) {
 			oldSocket = commsSocket.getAndSet(null);
 		} else {
 			oldSocket = commsSocket.get();
-			if(oldSocket != null && oldSocket.getPort() == parms.notificationPort) {
+			if (oldSocket != null && oldSocket.getPort() == parms.notificationPort) {
 				oldSocket = null;
 			} else {
 				DatagramSocket newSocket;
 				try {
 					newSocket = new DatagramSocket(new InetSocketAddress(InetAddress.getLocalHost(), 0));
 					newSocket.connect(new InetSocketAddress(InetAddress.getLocalHost(), parms.notificationPort));
-					
-				} catch (IOException ioe) {
-					//TODO what now?
+
+				}
+				catch (IOException ioe) {
+					// TODO what now?
 					newSocket = null;
 				}
 				commsSocket.compareAndSet(oldSocket, newSocket);
 			}
 		}
-		
-		if(oldSocket != null) {
+
+		if (oldSocket != null) {
 			oldSocket.close();
 		}
 	}
@@ -390,9 +389,7 @@ public class Launcher implements ServiceListener {
 	/**
 	 * Ensure that all the bundles in the parameters are actually started. We
 	 * can start in embedded mode (bundles are inside our main jar) or in file
-	 * system mode.
-	 * 
-	 * @param begin
+	 * system mode. @param begin
 	 */
 	@SuppressWarnings("deprecation")
 	void update(long before) throws Exception {
@@ -428,14 +425,15 @@ public class Launcher implements ServiceListener {
 		// Get the resolved status
 		if (padmin != null && padmin.resolveBundles(null) == false) {
 			List<String> failed = new ArrayList<String>();
-			
-			for ( Bundle b : installedBundles.values()) {
+
+			for (Bundle b : installedBundles.values()) {
 				try {
-					if ( b.getState() == Bundle.INSTALLED) {
+					if (b.getState() == Bundle.INSTALLED) {
 						b.start();
 					}
-				} catch( Exception e) {
-					failed.add( b.getSymbolicName() + "-" + b.getVersion() + "" + e.getMessage() + "\n");
+				}
+				catch (Exception e) {
+					failed.add(b.getSymbolicName() + "-" + b.getVersion() + "" + e.getMessage() + "\n");
 				}
 			}
 			error("could not resolve the bundles: " + failed);
@@ -546,10 +544,7 @@ public class Launcher implements ServiceListener {
 	 * jpm option since it stores the paths with a macro in the JAR through the
 	 * packager. This path is platform independent and must therefore be
 	 * translated to the executing platform. if no macro is present, we assume
-	 * the path is already native.
-	 * 
-	 * @param s
-	 * @return
+	 * the path is already native. @param s @return
 	 */
 	private String toNativePath(String s) {
 		if (!s.contains("${"))
@@ -600,11 +595,8 @@ public class Launcher implements ServiceListener {
 	}
 
 	/**
-	 * Install/Update the bundles from the current jar.
-	 * 
-	 * @param tobestarted
-	 * @throws BundleException
-	 * @throws IOException
+	 * Install/Update the bundles from the current jar. @param
+	 * tobestarted @throws BundleException @throws IOException
 	 */
 	void installEmbedded(List<Bundle> tobestarted) throws BundleException, IOException {
 		trace("starting in embedded mode");
@@ -711,7 +703,7 @@ public class Launcher implements ServiceListener {
 	private void doSecurity() {
 		try {
 			PermissionInfo allPermissions[] = new PermissionInfo[] {
-				new PermissionInfo(AllPermission.class.getName(), null, null)
+					new PermissionInfo(AllPermission.class.getName(), null, null)
 			};
 			policy = new SimplePermissionPolicy(this, systemBundle.getBundleContext());
 
@@ -869,8 +861,8 @@ public class Launcher implements ServiceListener {
 	}
 
 	protected void deleteFiles(File wd) {
-		if ( wd.isDirectory()) {
-			for ( File sub : wd.listFiles()) {
+		if (wd.isDirectory()) {
+			for (File sub : wd.listFiles()) {
 				deleteFiles(sub);
 			}
 		}
@@ -878,12 +870,8 @@ public class Launcher implements ServiceListener {
 	}
 
 	/**
-	 * Try to get the stupid service interface ...
-	 * 
-	 * @param loader
-	 * @param string
-	 * @return
-	 * @throws IOException
+	 * Try to get the stupid service interface ... @param loader @param
+	 * string @return @throws IOException
 	 */
 	private List<String> getMetaInfServices(ClassLoader loader, String factory) throws IOException {
 		if (loader == null)
@@ -1113,13 +1101,13 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
-	static PermissionCollection	all	= new AllPermissionCollection();
+	static PermissionCollection all = new AllPermissionCollection();
 
 	class AllPolicy extends Policy {
 
 		@Override
 		public PermissionCollection getPermissions(CodeSource codesource) {
-			if ( codesource == null)
+			if (codesource == null)
 				trace("Granting AllPermission to a bundle without codesource!");
 			else
 				trace("Granting AllPermission to %s", codesource.getLocation());
@@ -1159,11 +1147,11 @@ public class Launcher implements ServiceListener {
 	}
 
 	/**
-	 * Monitor the services. If a service is registered with the
-	 * {@code main.thread} property then check if it is a {@code Runnable}
-	 * (priority for backward compatibility) or a {@code Callable<Integer>}. If
-	 * so, we set it as the main thread runner and call it once the
-	 * initialization is all done.
+	 * Monitor the services. If a service is registered with the {@code
+	 * main.thread} property then check if it is a {@code Runnable} (priority
+	 * for backward compatibility) or a {@code Callable<Integer>}. If so, we set
+	 * it as the main thread runner and call it once the initialization is all
+	 * done.
 	 */
 
 	@SuppressWarnings("unchecked")
@@ -1182,9 +1170,9 @@ public class Launcher implements ServiceListener {
 					try {
 						m = service.getClass().getMethod("call");
 						if (m.getReturnType() != Integer.class)
-							throw new IllegalArgumentException("Found a main thread service which is Callable<"
-									+ m.getReturnType().getName() + "> which should be Callable<Integer> "
-									+ event.getServiceReference());
+							throw new IllegalArgumentException(
+									"Found a main thread service which is Callable<" + m.getReturnType().getName()
+											+ "> which should be Callable<Integer> " + event.getServiceReference());
 						mainThread = (Callable<Integer>) service;
 					}
 					catch (NoSuchMethodException e) {
@@ -1253,35 +1241,36 @@ public class Launcher implements ServiceListener {
 		if (e != null && parms.trace)
 			e.printStackTrace(out);
 		out.flush();
-		
+
 		DatagramSocket socket = commsSocket.get();
 
-		if(socket != null) {
+		if (socket != null) {
 			int severity;
-			if(message.startsWith("! ")) {
-				severity = 0; //NotificationType.ERROR.ordinal();
+			if (message.startsWith("! ")) {
+				severity = 0; // NotificationType.ERROR.ordinal();
 			} else if (message.startsWith("# ") && parms.trace) {
-				severity = 2; //NotificationType.INFO.ordinal();
+				severity = 2; // NotificationType.INFO.ordinal();
 			} else {
 				return;
 			}
-			
+
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			DataOutputStream dos = new DataOutputStream(outputStream);
 			try {
 				dos.writeInt(severity);
 				dos.writeUTF(message.substring(2));
-				
+
 				byte[] byteArray = outputStream.toByteArray();
 				socket.send(new DatagramPacket(byteArray, byteArray.length));
-			} catch (IOException ioe) {
+			}
+			catch (IOException ioe) {
 				out.println("! Unable to send notification to " + socket.getRemoteSocketAddress());
 				if (parms.trace)
 					ioe.printStackTrace(out);
 				out.flush();
 			}
 		}
-		
+
 	}
 
 	public void error(String msg, Object... objects) {
@@ -1289,15 +1278,12 @@ public class Launcher implements ServiceListener {
 	}
 
 	/**
-	 * Find a bundle by its location.
-	 * 
-	 * @param path the location to find
-	 * @return
+	 * Find a bundle by its location. @param path the location to find @return
 	 */
 	private Bundle getBundleByLocation(String path) {
 		BundleContext context = systemBundle.getBundleContext();
-		for ( Bundle b : context.getBundles() ) {
-			if ( b.getLocation().equals(path))
+		for (Bundle b : context.getBundles()) {
+			if (b.getLocation().equals(path))
 				return b;
 		}
 		return null;

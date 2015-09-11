@@ -9,10 +9,10 @@ import java.util.regex.*;
 })
 public class Configurable<T> {
 	public static Pattern SPLITTER_P = Pattern.compile("(?<!\\\\)\\|");
-	
+
 	public static <T> T createConfigurable(Class<T> c, Map< ? , ? > properties) {
 		Object o = Proxy.newProxyInstance(c.getClassLoader(), new Class< ? >[] {
-			c
+				c
 		}, new ConfigurableHandler(properties, c.getClassLoader()));
 		return c.cast(o);
 	}
@@ -56,9 +56,9 @@ public class Configurable<T> {
 			}
 			if (o == null) {
 				Class< ? > rt = method.getReturnType();
-				if (rt == boolean.class )
+				if (rt == boolean.class)
 					return false;
-				
+
 				if (method.getReturnType().isPrimitive()) {
 
 					o = "0";
@@ -100,7 +100,7 @@ public class Configurable<T> {
 						return false;
 					return true;
 				}
-				if ( o instanceof String) {
+				if (o instanceof String) {
 					return Boolean.parseBoolean((String) o);
 				}
 				return true;
@@ -165,11 +165,12 @@ public class Configurable<T> {
 			catch (Throwable t) {
 				// handled on next line
 			}
-			throw new IllegalArgumentException("No conversion to " + resultType + " from " + actualType + " value " + o);
+			throw new IllegalArgumentException(
+					"No conversion to " + resultType + " from " + actualType + " value " + o);
 		}
 
-		private Object convert(ParameterizedType pType, Object o) throws InstantiationException,
-				IllegalAccessException, Exception {
+		private Object convert(ParameterizedType pType, Object o)
+				throws InstantiationException, IllegalAccessException, Exception {
 			Class< ? > resultType = (Class< ? >) pType.getRawType();
 			if (Collection.class.isAssignableFrom(resultType)) {
 				Collection< ? > input = toCollection(o);
@@ -223,16 +224,16 @@ public class Configurable<T> {
 				}
 				return result;
 			}
-			throw new IllegalArgumentException("cannot convert to " + pType
-					+ " because it uses generics and is not a Collection or a map");
+			throw new IllegalArgumentException(
+					"cannot convert to " + pType + " because it uses generics and is not a Collection or a map");
 		}
 
 		Object convertArray(Type componentType, Object o) throws Exception {
-			if ( o instanceof String) {
+			if (o instanceof String) {
 				String s = (String) o;
-				if ( componentType == Byte.class || componentType == byte.class)
+				if (componentType == Byte.class || componentType == byte.class)
 					return s.getBytes("UTF-8");
-				if ( componentType == Character.class || componentType ==char.class)
+				if (componentType == Character.class || componentType == char.class)
 					return s.toCharArray();
 			}
 			Collection< ? > input = toCollection(o);
@@ -253,8 +254,8 @@ public class Configurable<T> {
 			if (type instanceof ParameterizedType)
 				return (Class< ? >) ((ParameterizedType) type).getRawType();
 
-			throw new IllegalArgumentException("For the raw type, type must be ParamaterizedType or Class but is "
-					+ type);
+			throw new IllegalArgumentException(
+					"For the raw type, type must be ParamaterizedType or Class but is " + type);
 		}
 
 		private Collection< ? > toCollection(Object o) {
@@ -277,9 +278,9 @@ public class Configurable<T> {
 				String s = (String) o;
 				if (SPLITTER_P.matcher(s).find())
 					return Arrays.asList(s.split("\\|"));
-				else 
+				else
 					return unescape(s);
-				
+
 			}
 			return Arrays.asList(o);
 		}
@@ -309,21 +310,20 @@ public class Configurable<T> {
 		}
 		return sb.toString();
 	}
-	
+
 	public static List<String> unescape(String s) {
 		// do it the OSGi way
-		List<String>	tokens = new ArrayList<String>();
-		
+		List<String> tokens = new ArrayList<String>();
+
 		String[] parts = s.split("(?<!\\\\),");
-		
-		for ( String p : parts) {
-			p = p.replaceAll("^\\s*","");
-			p = p.replaceAll("(?!<\\\\)\\s*$","");
+
+		for (String p : parts) {
+			p = p.replaceAll("^\\s*", "");
+			p = p.replaceAll("(?!<\\\\)\\s*$", "");
 			p = p.replaceAll("\\\\([\\s,\\\\|])", "$1");
 			tokens.add(p);
 		}
 		return tokens;
 	}
-
 
 }

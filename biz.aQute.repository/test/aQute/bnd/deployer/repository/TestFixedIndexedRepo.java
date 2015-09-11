@@ -16,7 +16,7 @@ import aQute.lib.io.IO;
 
 public class TestFixedIndexedRepo extends TestCase {
 
-	private File	tmp;
+	private File tmp;
 
 	public void setUp() {
 		tmp = IO.getFile("generated/tmp/" + getName());

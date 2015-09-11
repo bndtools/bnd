@@ -13,15 +13,13 @@ class DependencyCollector {
 	}
 
 	/**
-	 * Add a revision to this collector and start the download
-	 * 
-	 * @param key
-	 * @throws Exception
+	 * Add a revision to this collector and start the download @param
+	 * key @throws Exception
 	 */
 	public void add(String coordinate, String name) throws Exception {
-		jpm.reporter.trace("add %s = %s", coordinate,name);
+		jpm.reporter.trace("add %s = %s", coordinate, name);
 		ArtifactData candidate = jpm.getCandidateAsync(coordinate);
-		if ( candidate == null) {
+		if (candidate == null) {
 			jpm.reporter.error("Cannot find %s", coordinate);
 			return;
 		}
@@ -35,7 +33,7 @@ class DependencyCollector {
 				if (artifact.error != null)
 					jpm.reporter.error("Download error %s for %s", artifact.error, artifact.url);
 				File file = new File(artifact.file);
-				if ( !file.isFile())
+				if (!file.isFile())
 					jpm.reporter.error("No file found for %s", artifact.url);
 			}
 			synced = true;
@@ -46,11 +44,11 @@ class DependencyCollector {
 		sync();
 		List<String> paths = new ArrayList<String>();
 		for (ArtifactData artifact : list) {
-			if ( artifact.error == null) {
-				paths.add( artifact.file);
+			if (artifact.error == null) {
+				paths.add(artifact.file);
 			}
 		}
-		
+
 		return paths;
 	}
 
@@ -58,8 +56,8 @@ class DependencyCollector {
 		sync();
 		List<byte[]> digests = new ArrayList<byte[]>();
 		for (ArtifactData artifact : list) {
-			if ( artifact.error == null) {
-				digests.add( artifact.sha);
+			if (artifact.error == null) {
+				digests.add(artifact.sha);
 			}
 		}
 		return digests;
@@ -67,6 +65,6 @@ class DependencyCollector {
 
 	public void add(ArtifactData artifact) {
 		list.add(artifact);
-		
+
 	}
 }

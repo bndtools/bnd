@@ -121,11 +121,11 @@ public class Converter {
 		// this is kind of opportune in OSGi because of the silly
 		// dictionaries we're still having
 		//
-		
-		if ( o instanceof Dictionary && !(o instanceof Map)) {
-			Dictionary<?,?> dict = (Dictionary< ? , ? >) o;
+
+		if (o instanceof Dictionary && !(o instanceof Map)) {
+			Dictionary< ? , ? > dict = (Dictionary< ? , ? >) o;
 			Map<Object,Object> map = new HashMap<Object,Object>();
-			Enumeration<?> e = dict.keys();
+			Enumeration< ? > e = dict.keys();
 			while (e.hasMoreElements()) {
 				Object k = e.nextElement();
 				Object v = dict.get(k);
@@ -133,15 +133,13 @@ public class Converter {
 			}
 			o = map;
 		}
-		
+
 		if (Collection.class.isAssignableFrom(resultType))
 			return collection(type, resultType, o);
-
 
 		if (Map.class.isAssignableFrom(resultType))
 			return map(type, resultType, o);
 
-		
 		if (type instanceof GenericArrayType) {
 			GenericArrayType gType = (GenericArrayType) type;
 			return array(gType.getGenericComponentType(), o);
@@ -231,7 +229,7 @@ public class Converter {
 			resultType = Double.class;
 		}
 
-		assert !resultType.isPrimitive();
+		assert!resultType.isPrimitive();
 
 		if (actualType == String.class) {
 			String input = (String) o;
@@ -244,7 +242,8 @@ public class Converter {
 			if (Enum.class.isAssignableFrom(resultType)) {
 				try {
 					return Enum.valueOf((Class<Enum>) resultType, input);
-				} catch( Exception e) {
+				}
+				catch (Exception e) {
 					input = input.toUpperCase();
 					return Enum.valueOf((Class<Enum>) resultType, input);
 				}
@@ -327,8 +326,8 @@ public class Converter {
 				return instance;
 			}
 			catch (Exception e) {
-				return error("No conversion found for " + o.getClass() + " to " + type + ", error " + e + " on key "
-						+ key);
+				return error(
+						"No conversion found for " + o.getClass() + " to " + type + ", error " + e + " on key " + key);
 			}
 		}
 
@@ -532,15 +531,11 @@ public class Converter {
 	}
 
 	/**
-	 * Convert a map to an interface.
-	 * 
-	 * @param interfc
-	 * @param properties
-	 * @return
+	 * Convert a map to an interface. @param interfc @param properties @return
 	 */
 	public <T> T proxy(Class<T> interfc, final Map< ? , ? > properties) {
 		return (T) Proxy.newProxyInstance(interfc.getClassLoader(), new Class[] {
-			interfc
+				interfc
 		}, new InvocationHandler() {
 
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -548,9 +543,8 @@ public class Converter {
 				if (o == null)
 					o = properties.get(mangleMethodName(method.getName()));
 
-
-				if ( o == null) {
-					if ( args!=null && args.length == 1 ) {
+				if (o == null) {
+					if (args != null && args.length == 1) {
 						o = args[0];
 					} else {
 						o = method.getDefaultValue();

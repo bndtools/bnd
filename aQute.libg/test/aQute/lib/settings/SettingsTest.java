@@ -18,15 +18,15 @@ public class SettingsTest extends TestCase {
 			assertNotNull(s.getPublicKey());
 			byte[] publicKey = s.getPublicKey();
 			s.save();
-			
+
 			Settings ss = new Settings(tmp.getName());
 			assertEquals("b", ss.get("a"));
 			assertNotNull(ss.getPublicKey());
-			assertTrue( Arrays.equals(publicKey, ss.getPublicKey()));
-			
+			assertTrue(Arrays.equals(publicKey, ss.getPublicKey()));
+
 			ss.clear();
 			assertNull(ss.get("a"));
-			
+
 		}
 		finally {
 			IO.delete(tmp);

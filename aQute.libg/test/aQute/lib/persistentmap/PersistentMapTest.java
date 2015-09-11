@@ -22,8 +22,8 @@ public class PersistentMapTest extends TestCase {
 			assertEquals("def", pm2.get("abc"));
 
 			assertEquals(Arrays.asList("abc"), new ArrayList<String>(pm2.keySet()));
-			
-			for ( Map.Entry<String,String> e : pm2.entrySet()) {
+
+			for (Map.Entry<String,String> e : pm2.entrySet()) {
 				e.setValue("XXX");
 			}
 			assertEquals("XXX", pm2.get("abc"));
@@ -35,7 +35,7 @@ public class PersistentMapTest extends TestCase {
 		}
 	}
 
-	public static class X  {
+	public static class X {
 		public String		abc;
 		public int			def;
 		public List<String>	list	= new ArrayList<String>();
@@ -53,15 +53,15 @@ public class PersistentMapTest extends TestCase {
 			pm.close();
 
 			PersistentMap<X> pm2 = new PersistentMap<X>(new File(tmp, "simple"), X.class);
-			
+
 			X x2 = pm2.get("abc");
 			assertEquals("def", x2.abc);
 			assertEquals(5, x2.def);
 
 			pm2.remove("abc");
-			
+
 			assertEquals(0, pm2.size());
-			
+
 			pm2.close();
 		}
 		finally {

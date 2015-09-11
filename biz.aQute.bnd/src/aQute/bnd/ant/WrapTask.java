@@ -13,20 +13,16 @@ import aQute.libg.qtokens.*;
 
 /**
  * Task to wrap a JAR as an OSGi bundle. You can specify the following
- * properties:
- * <ul>
- * <li>bsn and version = Will set the appropriate properties</li>
- * <li>a classpath</li>
- * <li>an output directory or an output file if only one JAR is specified</li>
- * <li>A search directory (definitions) for bnd files named the same as the
- * source which are used for info</li>
- * </ul>
+ * properties: <ul> <li>bsn and version = Will set the appropriate
+ * properties</li> <li>a classpath</li> <li>an output directory or an output
+ * file if only one JAR is specified</li> <li>A search directory (definitions)
+ * for bnd files named the same as the source which are used for info</li> </ul>
  */
 public class WrapTask extends BaseTask {
 	/**
 	 * List of jars to wrap
 	 */
-	List<File>	jars		= new ArrayList<File>();
+	List<File> jars = new ArrayList<File>();
 
 	/**
 	 * Output directory or file (directory must be used
@@ -49,14 +45,16 @@ public class WrapTask extends BaseTask {
 				throw new BuildException("No files set", getLocation());
 
 			if (output != null && jars.size() > 1 && !output.isDirectory()) {
-				throw new BuildException("Multiple jars must be wrapped but the output given is not a directory "
-						+ output, getLocation());
+				throw new BuildException(
+						"Multiple jars must be wrapped but the output given is not a directory " + output,
+						getLocation());
 			}
 
 			if (definitions != null && jars.size() > 1 && !definitions.isDirectory()) {
 				throw new BuildException(
 						"Multiple jars must be wrapped but the definitions parameters is not a directory "
-								+ definitions, getLocation());
+								+ definitions,
+						getLocation());
 			}
 
 			for (File file : jars) {
@@ -97,7 +95,7 @@ public class WrapTask extends BaseTask {
 
 				Manifest manifest = wrapper.calcManifest();
 				if (wrapper.isOk()) {
-				    wrapper.getJar().setManifest(manifest);
+					wrapper.getJar().setManifest(manifest);
 					boolean saved = wrapper.save(outputFile, force);
 					log(String.format("%30s %6d %s%n", wrapper.getJar().getBsn() + "-" + wrapper.getJar().getVersion(),
 							outputFile.length(), saved ? "" : "(not modified)"));

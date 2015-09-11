@@ -10,14 +10,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
-public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>> {
+public class MultiMap<K, V> extends HashMap<K,List<V>>implements Map<K,List<V>> {
 	private static final long	serialVersionUID	= 1L;
 	final boolean				noduplicates;
 	final Class< ? >			keyClass;
 	final Class< ? >			valueClass;
 
-	final Set<V>				EMPTY				= Collections.emptySet();
+	final Set<V> EMPTY = Collections.emptySet();
 
 	public MultiMap() {
 		this(false);
@@ -37,15 +36,16 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 
 	public MultiMap(Map<K,List<V>> other) {
 		this();
-		for ( java.util.Map.Entry<K,List<V>> e : other.entrySet()) {
+		for (java.util.Map.Entry<K,List<V>> e : other.entrySet()) {
 			addAll(e.getKey(), e.getValue());
 		}
 	}
+
 	public MultiMap(MultiMap<K,V> other) {
 		keyClass = other.keyClass;
-		valueClass  = other.valueClass;
+		valueClass = other.valueClass;
 		noduplicates = other.noduplicates;
-		for ( java.util.Map.Entry<K,List<V>> e : other.entrySet()) {
+		for (java.util.Map.Entry<K,List<V>> e : other.entrySet()) {
 			addAll(e.getKey(), e.getValue());
 		}
 	}
@@ -141,8 +141,8 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 
 	public Iterator<V> all() {
 		return new Iterator<V>() {
-			Iterator<List<V>>	master	= values().iterator();
-			Iterator<V>			current	= null;
+			Iterator<List<V>> master = values().iterator();
+			Iterator<V> current = null;
 
 			public boolean hasNext() {
 				if (current == null || !current.hasNext()) {
@@ -195,15 +195,14 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 	}
 
 	/**
-	 * Return a collection with all values
-	 * @return
+	 * Return a collection with all values @return
 	 */
 	public List<V> allValues() {
-		List<V>	result = new ArrayList<V>();
+		List<V> result = new ArrayList<V>();
 		Iterator<V> i = all();
-		while( i.hasNext())
+		while (i.hasNext())
 			result.add(i.next());
-		
+
 		return result;
 	}
 

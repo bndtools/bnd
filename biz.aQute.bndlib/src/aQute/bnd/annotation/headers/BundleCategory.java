@@ -6,10 +6,8 @@ import java.lang.annotation.*;
  * The Bundle-Category header holds a comma-separated list of category names.
  * These categories are free form but there is a list on the <a
  * href='http://www.osgi.org/Specifications/Reference#categories'>OSGi
- * Website</a>
- * <p>
- * All categories are merged together with any duplicates removed
- * See {@link About}
+ * Website</a> <p> All categories are merged together with any duplicates
+ * removed See {@link About}
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({
@@ -22,10 +20,10 @@ public @interface BundleCategory {
 	 * href='http://www.osgi.org/Specifications/Reference#categories'>OSGi
 	 * Website</a>
 	 */
-	Category[] value();
+	Category[]value();
 
 	/**
 	 * Custom categories.
 	 */
-	String[] custom() default {};
+	String[]custom() default {};
 }

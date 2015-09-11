@@ -17,12 +17,11 @@ import aQute.lib.io.*;
 @SuppressWarnings("restriction")
 public class TestCommandLine extends TestCase {
 
-	private static final String	CLI	= "org.osgi.impl.bundle.repoindex.cli";
+	private static final String CLI = "org.osgi.impl.bundle.repoindex.cli";
 
-	private File tempDir;
-	private Workspace			ws;
-	private File				jarFile;
-
+	private File		tempDir;
+	private Workspace	ws;
+	private File		jarFile;
 
 	@Override
 	protected void setUp() throws Exception {
@@ -54,7 +53,8 @@ public class TestCommandLine extends TestCase {
 	private void execute(String[] args, boolean runInTempDir) throws Exception {
 		List<String> cmdLine = new LinkedList<String>();
 		cmdLine.add("java");
-		// cmdLine.add("-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=9001,suspend=y");
+		// cmdLine.add("-Xdebug
+		// -Xrunjdwp:transport=dt_socket,server=y,address=9001,suspend=y");
 		cmdLine.add("-jar");
 		cmdLine.add(jarFile.getAbsolutePath());
 
@@ -83,7 +83,9 @@ public class TestCommandLine extends TestCase {
 
 	public void testBasicCommandLine() throws Exception {
 		File tempFile = copyToTempFile(tempDir, "testdata/01-bsn+version.jar");
-		String[] args = new String[] { "--noincrement", tempFile.getAbsolutePath() };
+		String[] args = new String[] {
+				"--noincrement", tempFile.getAbsolutePath()
+		};
 		execute(args);
 		assertTrue(new File("generated/index.xml.gz").exists());
 
@@ -95,9 +97,12 @@ public class TestCommandLine extends TestCase {
 
 	public void testResourceInWorkingDir() throws Exception {
 		File tempFile = new File(tempDir, "01-bsn+version.jar");
-		Utils.copyFully(Utils.class.getResourceAsStream("/testdata/01-bsn+version.jar"), new FileOutputStream(tempFile));
+		Utils.copyFully(Utils.class.getResourceAsStream("/testdata/01-bsn+version.jar"),
+				new FileOutputStream(tempFile));
 
-		String[] args = new String[] { "--noincrement", "01-bsn+version.jar" };
+		String[] args = new String[] {
+				"--noincrement", "01-bsn+version.jar"
+		};
 		execute(args, true);
 		File outputFile = new File(tempDir, "index.xml.gz");
 		assertTrue(outputFile.exists());
@@ -110,17 +115,21 @@ public class TestCommandLine extends TestCase {
 
 	public void testUnknownArg() throws Exception {
 		File tempFile = copyToTempFile(tempDir, "testdata/01-bsn+version.jar");
-		String[] args = new String[] { "--nonsense", tempFile.getAbsolutePath() };
+		String[] args = new String[] {
+				"--nonsense", tempFile.getAbsolutePath()
+		};
 		try {
 			execute(args);
 			fail("Expected exception");
-		} catch (Exception e) {
 		}
+		catch (Exception e) {}
 	}
 
 	public void testPrettyPrint() throws Exception {
 		File tempFile = copyToTempFile(tempDir, "testdata/01-bsn+version.jar");
-		String[] args = new String[] { "--pretty", "--noincrement", tempFile.getAbsolutePath() };
+		String[] args = new String[] {
+				"--pretty", "--noincrement", tempFile.getAbsolutePath()
+		};
 		execute(args);
 		assertTrue(new File("generated/index.xml").exists());
 
@@ -131,22 +140,28 @@ public class TestCommandLine extends TestCase {
 
 	public void testKnownBundleRecognition() throws Exception {
 		File tempFile = copyToTempFile(tempDir, "testdata/org.eclipse.equinox.ds-1.4.0.jar");
-		String[] args = new String[] { "--pretty", "--noincrement", tempFile.getAbsolutePath() };
+		String[] args = new String[] {
+				"--pretty", "--noincrement", tempFile.getAbsolutePath()
+		};
 		execute(args);
 		assertTrue(new File("generated/index.xml").exists());
 
-		String expected = Utils.readStream(getClass().getResourceAsStream("/testdata/org.eclipse.equinox.ds-1.4.0.xml"));
+		String expected = Utils
+				.readStream(getClass().getResourceAsStream("/testdata/org.eclipse.equinox.ds-1.4.0.xml"));
 		String actual = Utils.readStream(new FileInputStream("generated/index.xml"));
 		assertEquals(expected, actual);
 	}
 
 	public void testKnownBundleOverride() throws Exception {
 		File tempFile = copyToTempFile(tempDir, "testdata/org.eclipse.equinox.ds-1.4.0.jar");
-		String[] args = new String[] { "--pretty", "--noincrement", "-K", tempFile.getAbsolutePath() };
+		String[] args = new String[] {
+				"--pretty", "--noincrement", "-K", tempFile.getAbsolutePath()
+		};
 		execute(args);
 		assertTrue(new File("generated/index.xml").exists());
 
-		String expected = Utils.readStream(getClass().getResourceAsStream("/testdata/org.eclipse.equinox.ds-1.4.0-overridden.xml"));
+		String expected = Utils
+				.readStream(getClass().getResourceAsStream("/testdata/org.eclipse.equinox.ds-1.4.0-overridden.xml"));
 		String actual = Utils.readStream(new FileInputStream("generated/index.xml"));
 		assertEquals(expected, actual);
 	}
@@ -159,11 +174,14 @@ public class TestCommandLine extends TestCase {
 		props.store(new FileOutputStream(knownBundlesFile), "");
 
 		File tempFile = copyToTempFile(tempDir, "testdata/org.eclipse.equinox.ds-1.4.0.jar");
-		String[] args = new String[] { "--pretty", "--noincrement", "-k", knownBundlesFile.getName(), tempFile.getAbsolutePath() };
+		String[] args = new String[] {
+				"--pretty", "--noincrement", "-k", knownBundlesFile.getName(), tempFile.getAbsolutePath()
+		};
 		execute(args);
 		assertTrue(new File("generated/index.xml").exists());
 
-		String expected = Utils.readStream(getClass().getResourceAsStream("/testdata/org.eclipse.equinox.ds-1.4.0-extra.xml"));
+		String expected = Utils
+				.readStream(getClass().getResourceAsStream("/testdata/org.eclipse.equinox.ds-1.4.0-extra.xml"));
 		String actual = Utils.readStream(new FileInputStream("generated/index.xml"));
 		assertEquals(expected, actual);
 	}

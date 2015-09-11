@@ -13,17 +13,17 @@ import aQute.lib.io.*;
 
 public class TestCompressedObrRepo extends TestCase {
 
-	private static final String obrSrc = "testdata/fullobr.xml";
-	private static final String obrDst = "testdata/fullobr.xml.gz";
+	private static final String		obrSrc	= "testdata/fullobr.xml";
+	private static final String		obrDst	= "testdata/fullobr.xml.gz";
 	private static FixedIndexedRepo	obr;
-	private static NanoHTTPD			httpd;
-	private static int					httpdPort;
-	private static Processor			reporter;
+	private static NanoHTTPD		httpd;
+	private static int				httpdPort;
+	private static Processor		reporter;
 
 	@Override
 	protected void setUp() throws Exception {
 		httpd = new NanoHTTPD(0, IO.getFile("testdata/http"));
-		httpdPort = httpd .getPort();
+		httpdPort = httpd.getPort();
 
 		Sed.file2GzFile(obrSrc, "__httpdPort__", Integer.toString(httpdPort), obrDst);
 

@@ -50,15 +50,16 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 	// Filename suffix for JAR files
 	private static final String SUFFIX_JAR = ".jar";
 
-	private final ThreadLocal<GeneratorState> state = new ThreadLocal<GeneratorState>();
+	private final ThreadLocal<GeneratorState>	state	= new ThreadLocal<GeneratorState>();
 	@SuppressWarnings("unused")
-	private final LogService log;
+	private final LogService					log;
 
 	public BundleAnalyzer(LogService log) {
 		this.log = log;
 	}
 
-	public void analyzeResource(Resource resource, List<Capability> capabilities, List<Requirement> requirements) throws Exception {
+	public void analyzeResource(Resource resource, List<Capability> capabilities, List<Requirement> requirements)
+			throws Exception {
 		MimeType mimeType = Util.getMimeType(resource);
 		if (mimeType == MimeType.Bundle || mimeType == MimeType.Fragment) {
 			doBundleIdentity(resource, mimeType, capabilities);
@@ -80,37 +81,40 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		}
 	}
 
-	private void doBundleIdentity(Resource resource, MimeType mimeType, List<? super Capability> caps) throws Exception {
+	private void doBundleIdentity(Resource resource, MimeType mimeType, List< ? super Capability> caps)
+			throws Exception {
 		Manifest manifest = resource.getManifest();
 		if (manifest == null)
 			throw new IllegalArgumentException("Missing bundle manifest.");
 
 		String type;
 		switch (mimeType) {
-		case Bundle:
-			type = Namespaces.RESOURCE_TYPE_BUNDLE;
-			break;
-		case Fragment:
-			type = Namespaces.RESOURCE_TYPE_FRAGMENT;
-			break;
-		default:
-			type = Namespaces.RESOURCE_TYPE_PLAIN_JAR;
-			break;
+			case Bundle :
+				type = Namespaces.RESOURCE_TYPE_BUNDLE;
+				break;
+			case Fragment :
+				type = Namespaces.RESOURCE_TYPE_FRAGMENT;
+				break;
+			default :
+				type = Namespaces.RESOURCE_TYPE_PLAIN_JAR;
+				break;
 		}
 
 		SymbolicName bsn = Util.getSymbolicName(resource);
-		boolean singleton = Boolean.TRUE.toString().equalsIgnoreCase(bsn.getAttributes().get(Constants.SINGLETON_DIRECTIVE + ":"));
+		boolean singleton = Boolean.TRUE.toString()
+				.equalsIgnoreCase(bsn.getAttributes().get(Constants.SINGLETON_DIRECTIVE + ":"));
 
 		Version version = Util.getVersion(resource);
 
-		Builder builder = new Builder().setNamespace(Namespaces.NS_IDENTITY).addAttribute(Namespaces.NS_IDENTITY, bsn.getName()).addAttribute(Namespaces.ATTR_IDENTITY_TYPE, type)
+		Builder builder = new Builder().setNamespace(Namespaces.NS_IDENTITY)
+				.addAttribute(Namespaces.NS_IDENTITY, bsn.getName()).addAttribute(Namespaces.ATTR_IDENTITY_TYPE, type)
 				.addAttribute(Namespaces.ATTR_VERSION, version);
 		if (singleton)
 			builder.addDirective(Namespaces.DIRECTIVE_SINGLETON, Boolean.TRUE.toString());
 		caps.add(builder.buildCapability());
 	}
 
-	private void doPlainJarIdentity(Resource resource, List<? super Capability> caps) {
+	private void doPlainJarIdentity(Resource resource, List< ? super Capability> caps) {
 		String name = (String) resource.getProperties().get(Resource.NAME);
 		if (name.toLowerCase().endsWith(SUFFIX_JAR))
 			name = name.substring(0, name.length() - SUFFIX_JAR.length());
@@ -122,7 +126,8 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 				String versionStr = name.substring(dashIndex + 1);
 				version = new Version(versionStr);
 				name = name.substring(0, dashIndex);
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				version = null;
 			}
 		}
@@ -142,7 +147,8 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		return state.get();
 	}
 
-	private void doContent(Resource resource, MimeType mimeType, List<? super Capability> capabilities) throws Exception {
+	private void doContent(Resource resource, MimeType mimeType, List< ? super Capability> capabilities)
+			throws Exception {
 		Builder builder = new Builder().setNamespace(Namespaces.NS_CONTENT);
 
 		String sha = calculateSHA(resource);
@@ -174,7 +180,8 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 
 				digest.update(buf, 0, bytesRead);
 			}
-		} finally {
+		}
+		finally {
 			if (stream != null)
 				stream.close();
 		}
@@ -207,10 +214,10 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 				}
 				catch (Exception e) {
 					if (log != null)
-						log.log(LogService.LOG_ERROR, "Resolver failed on " + normalizedUri + ", falling back to old method");
+						log.log(LogService.LOG_ERROR,
+								"Resolver failed on " + normalizedUri + ", falling back to old method");
 				}
 			}
-
 
 			URI root = state.getRootUrl();
 			URI absoluteDir = normalizedFile.getParentFile().toURI();
@@ -247,10 +254,12 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		SymbolicName bsn = Util.getSymbolicName(resource);
 		Version version = Util.getVersion(resource);
 
-		bundleBuilder.addAttribute(Namespaces.NS_WIRING_BUNDLE, bsn.getName()).addAttribute(Constants.BUNDLE_VERSION_ATTRIBUTE, version);
-		hostBuilder.addAttribute(Namespaces.NS_WIRING_HOST, bsn.getName()).addAttribute(Constants.BUNDLE_VERSION_ATTRIBUTE, version);
+		bundleBuilder.addAttribute(Namespaces.NS_WIRING_BUNDLE, bsn.getName())
+				.addAttribute(Constants.BUNDLE_VERSION_ATTRIBUTE, version);
+		hostBuilder.addAttribute(Namespaces.NS_WIRING_HOST, bsn.getName())
+				.addAttribute(Constants.BUNDLE_VERSION_ATTRIBUTE, version);
 
-		for (Entry<String, String> attribEntry : bsn.getAttributes().entrySet()) {
+		for (Entry<String,String> attribEntry : bsn.getAttributes().entrySet()) {
 			String key = attribEntry.getKey();
 			if (key.endsWith(":")) {
 				String directiveName = key.substring(0, key.length() - 1);
@@ -270,12 +279,12 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			caps.add(hostBuilder.buildCapability());
 	}
 
-	private void doExports(Resource resource, List<? super Capability> caps) throws Exception {
+	private void doExports(Resource resource, List< ? super Capability> caps) throws Exception {
 		Manifest manifest = resource.getManifest();
 
 		String exportsStr = manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
-		Map<String, Map<String, String>> exports = OSGiHeader.parseHeader(exportsStr);
-		for (Entry<String, Map<String, String>> entry : exports.entrySet()) {
+		Map<String,Map<String,String>> exports = OSGiHeader.parseHeader(exportsStr);
+		for (Entry<String,Map<String,String>> entry : exports.entrySet()) {
 			Builder builder = new Builder().setNamespace(Namespaces.NS_WIRING_PACKAGE);
 
 			String pkgName = OSGiHeader.removeDuplicateMarker(entry.getKey());
@@ -285,9 +294,10 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			Version version = (versionStr != null) ? new Version(versionStr) : new Version(0, 0, 0);
 			builder.addAttribute(Namespaces.ATTR_VERSION, version);
 
-			for (Entry<String, String> attribEntry : entry.getValue().entrySet()) {
+			for (Entry<String,String> attribEntry : entry.getValue().entrySet()) {
 				String key = attribEntry.getKey();
-				if (!"specification-version".equalsIgnoreCase(key) && !Constants.VERSION_ATTRIBUTE.equalsIgnoreCase(key)) {
+				if (!"specification-version".equalsIgnoreCase(key)
+						&& !Constants.VERSION_ATTRIBUTE.equalsIgnoreCase(key)) {
 					if (key.endsWith(":"))
 						builder.addDirective(key.substring(0, key.length() - 1), attribEntry.getValue());
 					else
@@ -304,12 +314,12 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		}
 	}
 
-	private void doImports(Resource resource, List<? super Requirement> reqs) throws Exception {
+	private void doImports(Resource resource, List< ? super Requirement> reqs) throws Exception {
 		Manifest manifest = resource.getManifest();
 
 		String importsStr = manifest.getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
-		Map<String, Map<String, String>> imports = OSGiHeader.parseHeader(importsStr);
-		for (Entry<String, Map<String, String>> entry : imports.entrySet()) {
+		Map<String,Map<String,String>> imports = OSGiHeader.parseHeader(importsStr);
+		for (Entry<String,Map<String,String>> entry : imports.entrySet()) {
 			StringBuilder filter = new StringBuilder();
 
 			String pkgName = OSGiHeader.removeDuplicateMarker(entry.getKey());
@@ -323,7 +333,8 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 				filter.append(")");
 			}
 
-			Builder builder = new Builder().setNamespace(Namespaces.NS_WIRING_PACKAGE).addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString());
+			Builder builder = new Builder().setNamespace(Namespaces.NS_WIRING_PACKAGE)
+					.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString());
 
 			copyAttribsAndDirectives(entry.getValue(), builder, Constants.VERSION_ATTRIBUTE, "specification-version");
 
@@ -331,10 +342,10 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		}
 	}
 
-	private void copyAttribsAndDirectives(Map<String, String> input, Builder output, String... ignores) {
+	private void copyAttribsAndDirectives(Map<String,String> input, Builder output, String... ignores) {
 		Set<String> ignoreSet = new HashSet<String>(Arrays.asList(ignores));
 
-		for (Entry<String, String> entry : input.entrySet()) {
+		for (Entry<String,String> entry : input.entrySet()) {
 			String key = entry.getKey();
 			if (!ignoreSet.contains(key)) {
 				if (key.endsWith(":")) {
@@ -347,15 +358,15 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		}
 	}
 
-	private void doRequireBundles(Resource resource, List<? super Requirement> reqs) throws Exception {
+	private void doRequireBundles(Resource resource, List< ? super Requirement> reqs) throws Exception {
 		Manifest manifest = resource.getManifest();
 
 		String requiresStr = manifest.getMainAttributes().getValue(Constants.REQUIRE_BUNDLE);
 		if (requiresStr == null)
 			return;
 
-		Map<String, Map<String, String>> requires = OSGiHeader.parseHeader(requiresStr);
-		for (Entry<String, Map<String, String>> entry : requires.entrySet()) {
+		Map<String,Map<String,String>> requires = OSGiHeader.parseHeader(requiresStr);
+		for (Entry<String,Map<String,String>> entry : requires.entrySet()) {
 			StringBuilder filter = new StringBuilder();
 
 			String bsn = OSGiHeader.removeDuplicateMarker(entry.getKey());
@@ -369,7 +380,8 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 				filter.append(")");
 			}
 
-			Builder builder = new Builder().setNamespace(Namespaces.NS_WIRING_BUNDLE).addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString());
+			Builder builder = new Builder().setNamespace(Namespaces.NS_WIRING_BUNDLE)
+					.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString());
 
 			copyAttribsAndDirectives(entry.getValue(), builder, Constants.BUNDLE_VERSION_ATTRIBUTE);
 
@@ -377,54 +389,57 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		}
 	}
 
-	private void doFragment(Resource resource, List<? super Requirement> reqs) throws Exception {
+	private void doFragment(Resource resource, List< ? super Requirement> reqs) throws Exception {
 		Manifest manifest = resource.getManifest();
 		String fragmentHost = manifest.getMainAttributes().getValue(Constants.FRAGMENT_HOST);
 
 		if (fragmentHost != null) {
 			StringBuilder filter = new StringBuilder();
-			Map<String, Map<String, String>> fragmentList = OSGiHeader.parseHeader(fragmentHost);
+			Map<String,Map<String,String>> fragmentList = OSGiHeader.parseHeader(fragmentHost);
 			if (fragmentList.size() != 1)
 				throw new IllegalArgumentException("Invalid Fragment-Host header: cannot contain multiple entries");
-			Entry<String, Map<String, String>> entry = fragmentList.entrySet().iterator().next();
+			Entry<String,Map<String,String>> entry = fragmentList.entrySet().iterator().next();
 
 			String bsn = entry.getKey();
 			filter.append("(&(osgi.wiring.host=").append(bsn).append(")");
 
 			String versionStr = entry.getValue().get(Constants.BUNDLE_VERSION_ATTRIBUTE);
-			VersionRange version = versionStr != null ? new VersionRange(versionStr) : new VersionRange(Version.emptyVersion.toString());
+			VersionRange version = versionStr != null ? new VersionRange(versionStr)
+					: new VersionRange(Version.emptyVersion.toString());
 			Util.addVersionFilter(filter, version, VersionKey.BundleVersion);
 			filter.append(")");
 
-			Builder builder = new Builder().setNamespace(Namespaces.NS_WIRING_HOST).addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString());
+			Builder builder = new Builder().setNamespace(Namespaces.NS_WIRING_HOST)
+					.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString());
 
 			reqs.add(builder.buildRequirement());
 		}
 	}
 
-	private void doExportService(Resource resource, List<? super Capability> caps) throws Exception {
+	private void doExportService(Resource resource, List< ? super Capability> caps) throws Exception {
 		@SuppressWarnings("deprecation")
 		String exportsStr = resource.getManifest().getMainAttributes().getValue(Constants.EXPORT_SERVICE);
-		Map<String, Map<String, String>> exports = OSGiHeader.parseHeader(exportsStr);
+		Map<String,Map<String,String>> exports = OSGiHeader.parseHeader(exportsStr);
 
-		for (Entry<String, Map<String, String>> export : exports.entrySet()) {
+		for (Entry<String,Map<String,String>> export : exports.entrySet()) {
 			String service = OSGiHeader.removeDuplicateMarker(export.getKey());
-			Builder builder = new Builder().setNamespace(Namespaces.NS_SERVICE).addAttribute(Constants.OBJECTCLASS, service);
-			for (Entry<String, String> attribEntry : export.getValue().entrySet())
+			Builder builder = new Builder().setNamespace(Namespaces.NS_SERVICE).addAttribute(Constants.OBJECTCLASS,
+					service);
+			for (Entry<String,String> attribEntry : export.getValue().entrySet())
 				builder.addAttribute(attribEntry.getKey(), attribEntry.getValue());
 			builder.addDirective(Namespaces.DIRECTIVE_EFFECTIVE, Namespaces.EFFECTIVE_ACTIVE);
 			caps.add(builder.buildCapability());
 		}
 	}
 
-	private void doImportService(Resource resource, List<? super Requirement> reqs) throws Exception {
+	private void doImportService(Resource resource, List< ? super Requirement> reqs) throws Exception {
 		@SuppressWarnings("deprecation")
 		String importsStr = resource.getManifest().getMainAttributes().getValue(Constants.IMPORT_SERVICE);
-		Map<String, Map<String, String>> imports = OSGiHeader.parseHeader(importsStr);
+		Map<String,Map<String,String>> imports = OSGiHeader.parseHeader(importsStr);
 
-		for (Entry<String, Map<String, String>> imp : imports.entrySet()) {
+		for (Entry<String,Map<String,String>> imp : imports.entrySet()) {
 			String service = OSGiHeader.removeDuplicateMarker(imp.getKey());
-			Map<String, String> attribs = imp.getValue();
+			Map<String,String> attribs = imp.getValue();
 
 			boolean optional = false;
 			String availabilityStr = attribs.get(IMPORT_SERVICE_AVAILABILITY);
@@ -434,7 +449,8 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			StringBuilder filter = new StringBuilder();
 			filter.append('(').append(Constants.OBJECTCLASS).append('=').append(service).append(')');
 
-			Builder builder = new Builder().setNamespace(Namespaces.NS_SERVICE).addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString())
+			Builder builder = new Builder().setNamespace(Namespaces.NS_SERVICE)
+					.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString())
 					.addDirective(Namespaces.DIRECTIVE_EFFECTIVE, Namespaces.EFFECTIVE_ACTIVE);
 			if (optional)
 				builder.addDirective(Namespaces.DIRECTIVE_RESOLUTION, Constants.RESOLUTION_OPTIONAL);
@@ -442,10 +458,11 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		}
 	}
 
-	private void doBREE(Resource resource, List<? super Requirement> reqs) throws Exception {
+	private void doBREE(Resource resource, List< ? super Requirement> reqs) throws Exception {
 		@SuppressWarnings("deprecation")
-		String breeStr = resource.getManifest().getMainAttributes().getValue(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT);
-		Map<String, Map<String, String>> brees = OSGiHeader.parseHeader(breeStr);
+		String breeStr = resource.getManifest().getMainAttributes()
+				.getValue(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT);
+		Map<String,Map<String,String>> brees = OSGiHeader.parseHeader(breeStr);
 
 		final String filter;
 		if (!brees.isEmpty()) {
@@ -462,12 +479,13 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 				filter = builder.toString();
 			}
 
-			Requirement requirement = new Builder().setNamespace(Namespaces.NS_EE).addDirective(Namespaces.DIRECTIVE_FILTER, filter).buildRequirement();
+			Requirement requirement = new Builder().setNamespace(Namespaces.NS_EE)
+					.addDirective(Namespaces.DIRECTIVE_FILTER, filter).buildRequirement();
 			reqs.add(requirement);
 		}
 	}
 
-	private void doCapabilities(Resource resource, final List<? super Capability> caps) throws Exception {
+	private void doCapabilities(Resource resource, final List< ? super Capability> caps) throws Exception {
 		String capsStr = resource.getManifest().getMainAttributes().getValue(PROVIDE_CAPABILITY);
 		buildFromHeader(capsStr, new Yield<Builder>() {
 			public void yield(Builder builder) {
@@ -476,7 +494,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		});
 	}
 
-	private void doRequirements(Resource resource, final List<? super Requirement> reqs) throws IOException {
+	private void doRequirements(Resource resource, final List< ? super Requirement> reqs) throws IOException {
 		String reqsStr = resource.getManifest().getMainAttributes().getValue(REQUIRE_CAPABILITY);
 		buildFromHeader(reqsStr, new Yield<Builder>() {
 			public void yield(Builder builder) {
@@ -485,7 +503,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		});
 	}
 
-	private void doBundleNativeCode(Resource resource, final List<? super Requirement> reqs) throws IOException {
+	private void doBundleNativeCode(Resource resource, final List< ? super Requirement> reqs) throws IOException {
 		String nativeHeaderStr = resource.getManifest().getMainAttributes().getValue(Constants.BUNDLE_NATIVECODE);
 		if (nativeHeaderStr == null)
 			return;
@@ -493,8 +511,8 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		boolean optional = false;
 		List<String> options = new LinkedList<String>();
 
-		Map<String, Map<String, String>> nativeHeader = OSGiHeader.parseHeader(nativeHeaderStr);
-		for (Entry<String, Map<String, String>> entry : nativeHeader.entrySet()) {
+		Map<String,Map<String,String>> nativeHeader = OSGiHeader.parseHeader(nativeHeaderStr);
+		for (Entry<String,Map<String,String>> entry : nativeHeader.entrySet()) {
 			String name = entry.getKey();
 			if ("*".equals(name)) {
 				optional = true;
@@ -502,9 +520,10 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			}
 
 			StringBuilder builder = new StringBuilder().append("(&");
-			Map<String, String> attribs = entry.getValue();
+			Map<String,String> attribs = entry.getValue();
 
-			String osnamesFilter = buildFilter(attribs, Constants.BUNDLE_NATIVECODE_OSNAME, Namespaces.ATTR_NATIVE_OSNAME);
+			String osnamesFilter = buildFilter(attribs, Constants.BUNDLE_NATIVECODE_OSNAME,
+					Namespaces.ATTR_NATIVE_OSNAME);
 			if (osnamesFilter != null)
 				builder.append(osnamesFilter);
 
@@ -512,11 +531,13 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			if (versionRangeStr != null)
 				Util.addVersionFilter(builder, new VersionRange(versionRangeStr), VersionKey.NativeOsVersion);
 
-			String processorFilter = buildFilter(attribs, Constants.BUNDLE_NATIVECODE_PROCESSOR, Namespaces.ATTR_NATIVE_PROCESSOR);
+			String processorFilter = buildFilter(attribs, Constants.BUNDLE_NATIVECODE_PROCESSOR,
+					Namespaces.ATTR_NATIVE_PROCESSOR);
 			if (processorFilter != null)
 				builder.append(processorFilter);
 
-			String languageFilter = buildFilter(attribs, Constants.BUNDLE_NATIVECODE_LANGUAGE, Namespaces.ATTR_NATIVE_LANGUAGE);
+			String languageFilter = buildFilter(attribs, Constants.BUNDLE_NATIVECODE_LANGUAGE,
+					Namespaces.ATTR_NATIVE_LANGUAGE);
 			if (languageFilter != null)
 				builder.append(languageFilter);
 
@@ -542,7 +563,8 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			filter = builder.toString();
 		}
 
-		Builder builder = new Builder().setNamespace(Namespaces.NS_NATIVE).addDirective(Namespaces.DIRECTIVE_FILTER, filter);
+		Builder builder = new Builder().setNamespace(Namespaces.NS_NATIVE).addDirective(Namespaces.DIRECTIVE_FILTER,
+				filter);
 		if (optional)
 			builder.addDirective(Namespaces.DIRECTIVE_RESOLUTION, Namespaces.RESOLUTION_OPTIONAL);
 		reqs.add(builder.buildRequirement());
@@ -550,18 +572,13 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 
 	/*
 	 * Assemble a compound filter by searching a map of attributes. E.g. the
-	 * following values:
-	 * 
-	 * 1. foo=bar 2. foo=baz 3. foo=quux
-	 * 
-	 * become the filter (|(foo~=bar)(foo~=baz)(foo~=quux)).
-	 * 
-	 * Note that the duplicate foo keys will have trailing tildes as duplicate
-	 * markers, these will be removed.
+	 * following values: 1. foo=bar 2. foo=baz 3. foo=quux become the filter
+	 * (|(foo~=bar)(foo~=baz)(foo~=quux)). Note that the duplicate foo keys will
+	 * have trailing tildes as duplicate markers, these will be removed.
 	 */
-	private String buildFilter(Map<String, String> attribs, String match, String filterKey) {
+	private String buildFilter(Map<String,String> attribs, String match, String filterKey) {
 		List<String> options = new LinkedList<String>();
-		for (Entry<String, String> entry : attribs.entrySet()) {
+		for (Entry<String,String> entry : attribs.entrySet()) {
 			String key = OSGiHeader.removeDuplicateMarker(entry.getKey());
 			if (match.equals(key)) {
 				String filter = String.format("(%s~=%s)", filterKey, entry.getValue());
@@ -586,13 +603,13 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 	private static void buildFromHeader(String headerStr, Yield<Builder> output) {
 		if (headerStr == null)
 			return;
-		Map<String, Map<String, String>> header = OSGiHeader.parseHeader(headerStr);
+		Map<String,Map<String,String>> header = OSGiHeader.parseHeader(headerStr);
 
-		for (Entry<String, Map<String, String>> entry : header.entrySet()) {
+		for (Entry<String,Map<String,String>> entry : header.entrySet()) {
 			String namespace = OSGiHeader.removeDuplicateMarker(entry.getKey());
 			Builder builder = new Builder().setNamespace(namespace);
 
-			Map<String, String> attribs = entry.getValue();
+			Map<String,String> attribs = entry.getValue();
 			Util.copyAttribsToBuilder(builder, attribs);
 			output.yield(builder);
 		}

@@ -8,11 +8,11 @@ import aQute.bnd.service.*;
 import aQute.junit.constants.*;
 
 public class ProjectTesterImpl extends ProjectTester implements TesterConstants, EclipseJUnitTester {
-	int		port	= -1;
-	String	host;
-	Project	project;
-	boolean	prepared;
-	private Container me;
+	int					port	= -1;
+	String				host;
+	Project				project;
+	boolean				prepared;
+	private Container	me;
 
 	public ProjectTesterImpl(Project project, Container me) throws Exception {
 		super(project);
@@ -43,12 +43,13 @@ public class ProjectTesterImpl extends ProjectTester implements TesterConstants,
 			if (testnames.size() > 0) {
 				launcher.getRunProperties().put(TESTER_NAMES, Processor.join(testnames));
 			}
-			
+
 			//
-			// We used to add this bundle to the -runpath. However, now we add it
+			// We used to add this bundle to the -runpath. However, now we add
+			// it
 			// ad the add the end of the -runbundles
 			//
-			
+
 			launcher.addRunBundle(me.getFile().getAbsolutePath());
 			launcher.prepare();
 		}

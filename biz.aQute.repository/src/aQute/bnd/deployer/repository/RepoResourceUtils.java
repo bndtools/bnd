@@ -16,10 +16,12 @@ import aQute.lib.io.*;
 import aQute.libg.generics.*;
 
 public final class RepoResourceUtils {
-	
-	private static final int									READ_AHEAD_MAX					= 5 * 1024 * 1024;
 
-	public static void readIndex(String name, URI baseUri, InputStream stream, Collection<IRepositoryContentProvider> contentProviders, IRepositoryIndexProcessor listener, LogService log) throws Exception {
+	private static final int READ_AHEAD_MAX = 5 * 1024 * 1024;
+
+	public static void readIndex(String name, URI baseUri, InputStream stream,
+			Collection<IRepositoryContentProvider> contentProviders, IRepositoryIndexProcessor listener, LogService log)
+					throws Exception {
 		// Make sure we have a buffering stream
 		InputStream bufferedStream;
 		if (stream.markSupported())
@@ -44,7 +46,10 @@ public final class RepoResourceUtils {
 				selectedProvider = provider;
 				break;
 			} else if (checkResult.getDecision() == Decision.undecided) {
-				log.log(LogService.LOG_WARNING, String.format("Content provider '%s' was unable to determine compatibility with index at URL '%s': %s", provider.getName(), baseUri, checkResult.getMessage()));
+				log.log(LogService.LOG_WARNING,
+						String.format(
+								"Content provider '%s' was unable to determine compatibility with index at URL '%s': %s",
+								provider.getName(), baseUri, checkResult.getMessage()));
 				if (maybeSelectedProvider == null)
 					maybeSelectedProvider = provider;
 			}
@@ -55,9 +60,13 @@ public final class RepoResourceUtils {
 		if (selectedProvider == null) {
 			if (maybeSelectedProvider != null) {
 				selectedProvider = maybeSelectedProvider;
-				log.log(LogService.LOG_WARNING, String.format("No content provider matches the specified index unambiguously. Selected '%s' arbitrarily.", selectedProvider.getName()));
+				log.log(LogService.LOG_WARNING,
+						String.format(
+								"No content provider matches the specified index unambiguously. Selected '%s' arbitrarily.",
+								selectedProvider.getName()));
 			} else {
-				throw new IOException("Invalid repository index: no configured content provider understands the specified index.");
+				throw new IOException(
+						"Invalid repository index: no configured content provider understands the specified index.");
 			}
 		}
 
@@ -70,23 +79,22 @@ public final class RepoResourceUtils {
 		}
 	}
 
-	
-	
 	public static Capability getIdentityCapability(Resource resource) {
 		List<Capability> identityCaps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
 		if (identityCaps == null || identityCaps.isEmpty())
 			throw new IllegalArgumentException("Resource has no identity capability.");
 		return identityCaps.iterator().next();
 	}
-	
+
 	public static String getResourceIdentity(Resource resource) {
 		return (String) getIdentityCapability(resource).getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
 	}
 
 	public static Version getResourceVersion(Resource resource) {
 		Version result;
-		
-		Object versionObj = getIdentityCapability(resource).getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+
+		Object versionObj = getIdentityCapability(resource).getAttributes()
+				.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 		if (versionObj == null) {
 			result = Version.emptyVersion;
 		} else if (versionObj instanceof org.osgi.framework.Version) {
@@ -95,10 +103,10 @@ public final class RepoResourceUtils {
 		} else {
 			throw new IllegalArgumentException("Cannot convert to Version from type: " + versionObj.getClass());
 		}
-		
+
 		return result;
 	}
-	
+
 	public static URI getContentUrl(Resource resource) {
 		List<Capability> caps = resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE);
 		if (caps == null || caps.isEmpty())
@@ -109,7 +117,7 @@ public final class RepoResourceUtils {
 			throw new IllegalArgumentException("Resource content has no 'uri' attribute.");
 		if (uri instanceof URI)
 			return (URI) uri;
-		
+
 		try {
 			if (uri instanceof URL)
 				return ((URL) uri).toURI();
@@ -119,30 +127,31 @@ public final class RepoResourceUtils {
 		catch (URISyntaxException e) {
 			throw new IllegalArgumentException("Failed to convert resource content location to a valid URI.", e);
 		}
-		
+
 		throw new IllegalArgumentException("Failed to convert resource content location to a valid URI.");
 	}
-	
+
 	public static String getContentSha(Resource resource) {
 		List<Capability> caps = resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE);
 		if (caps == null || caps.isEmpty())
 			return null;
-		
+
 		Object contentObj = caps.iterator().next().getAttributes().get(ContentNamespace.CONTENT_NAMESPACE);
 		if (contentObj == null)
 			return null;
 		if (contentObj instanceof String)
 			return (String) contentObj;
-		
-		throw new IllegalArgumentException("Content attribute is wrong type: " + contentObj.getClass().toString() + " (expected String).");
+
+		throw new IllegalArgumentException(
+				"Content attribute is wrong type: " + contentObj.getClass().toString() + " (expected String).");
 	}
-	
+
 	public static List<Resource> narrowVersionsByVersionRange(SortedMap<Version,Resource> versionMap, String rangeStr) {
 		List<Resource> result;
 		if (aQute.bnd.osgi.Constants.VERSION_ATTR_LATEST.equals(rangeStr)) {
 			Version highest = versionMap.lastKey();
 			result = Create.list(new Resource[] {
-				versionMap.get(highest)
+					versionMap.get(highest)
 			});
 		} else {
 			VersionRange range = rangeStr != null ? new VersionRange(rangeStr) : null;
@@ -164,7 +173,5 @@ public final class RepoResourceUtils {
 		}
 		return result;
 	}
-
-
 
 }

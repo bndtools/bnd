@@ -32,23 +32,22 @@ public class TestActivator implements BundleActivator {
 		} else if ("getpersistence".equals(p)) {
 			System.err.println("In get persistence");
 			File file = context.getDataFile("test.file");
-			if ( !file.isFile()) {
+			if (!file.isFile()) {
 				System.err.println("test.file does not exist");
 				System.exit(-2);
 			}
-			
+
 			DataInputStream din = new DataInputStream(new FileInputStream(file));
 			String s = din.readUTF();
 			din.close();
 			if (s.equals("Hello World")) {
 				System.err.println("test.file exists & found text");
 				System.exit(65);
-			}
-			else {
+			} else {
 				System.err.println("test.file exists & not found text");
 				System.exit(-1);
 			}
-			
+
 		} else if ("env".equals(p)) {
 			String answer = System.getenv("ANSWER");
 			try {

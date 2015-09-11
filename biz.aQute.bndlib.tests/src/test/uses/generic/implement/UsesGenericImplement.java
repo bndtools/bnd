@@ -7,6 +7,5 @@ public class UsesGenericImplement implements Marker<Callback> {
 
 	@SuppressWarnings("unused")
 	private Subject subject;
-	
 
 }

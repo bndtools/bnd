@@ -13,13 +13,13 @@ import aQute.lib.io.*;
 import aQute.libg.map.*;
 
 public class JSONTest extends TestCase {
-	JSONCodec	codec	= new JSONCodec();
+	JSONCodec codec = new JSONCodec();
 
 	static abstract class Base<V> implements List<V> {}
 
 	public static class Version {
 
-		private String	string;
+		private String string;
 
 		public Version(String string) {
 			this.string = string;
@@ -56,9 +56,10 @@ public class JSONTest extends TestCase {
 
 	static class VX {
 		public VX() throws Exception {}
+
 		public static Version DEFAULT_VERSION = new Version("1.2.3.static");
-		
-		public Version	v	= new Version("1.2.3.foo");
+
+		public Version v = new Version("1.2.3.foo");
 	}
 
 	/**
@@ -69,8 +70,7 @@ public class JSONTest extends TestCase {
 		c.addHandler(Version.class, new Handler() {
 
 			@Override
-			public
-			void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
+			public void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
 				app.encode(object.toString(), String.class, visited);
 			}
 
@@ -92,7 +92,6 @@ public class JSONTest extends TestCase {
 
 	}
 
-
 	public void testGenericsVars() {
 		ParameterizedType type = (ParameterizedType) new TypeReference<Base<String>>() {}.getType();
 		System.out.println(type);
@@ -110,7 +109,7 @@ public class JSONTest extends TestCase {
 	 */
 
 	public static class Generics<T> {
-		public T	field;
+		public T field;
 	}
 
 	public void testGenerics() throws Exception {
@@ -125,11 +124,11 @@ public class JSONTest extends TestCase {
 	}
 
 	static class A {
-		public MultiMap<String,B>	mmap	= new MultiMap<String,B>();
+		public MultiMap<String,B> mmap = new MultiMap<String,B>();
 	}
 
 	static class B {
-		public int	b;
+		public int b;
 	}
 
 	public void testMultiMap() throws Exception {
@@ -145,7 +144,7 @@ public class JSONTest extends TestCase {
 	 */
 
 	public static class ListByteArray {
-		public List<byte[]>	set;
+		public List<byte[]> set;
 	}
 
 	public static class AnotherOne {
@@ -155,13 +154,13 @@ public class JSONTest extends TestCase {
 
 	public void testListOfByteArray() throws Exception {
 		final List<byte[]> l = Arrays.asList(new byte[] {
-			1
+				1
 		}, new byte[] {
-			2
+				2
 		}, new byte[] {
-			3
+				3
 		}, new byte[] {
-			4
+				4
 		});
 		String s = codec.enc().put(l).toString();
 		assertEquals("[\"01\",\"02\",\"03\",\"04\"]", s);
@@ -177,9 +176,7 @@ public class JSONTest extends TestCase {
 	}
 
 	/**
-	 * test the hex/base64 encoding
-	 * 
-	 * @throws Exception
+	 * test the hex/base64 encoding @throws Exception
 	 */
 	public void testBase64AndHex() throws Exception {
 		byte[] b = "abc".getBytes("UTF-8");
@@ -226,10 +223,7 @@ public class JSONTest extends TestCase {
 	}
 
 	/**
-	 * Test conversion of iterable
-	 * 
-	 * @throws Exception
-	 * @throws IOException
+	 * Test conversion of iterable @throws Exception @throws IOException
 	 */
 
 	public void testIterable() throws IOException, Exception {
@@ -269,23 +263,19 @@ public class JSONTest extends TestCase {
 	}
 
 	/**
-	 * Test escaping
-	 * 
-	 * @throws Exception
+	 * Test escaping @throws Exception
 	 */
 
 	public void testEscape() throws Exception {
 
-		assertEquals("{\"message\":\"Hello world\"}", codec.dec().from("\"{\\\"message\\\":\\\"Hello world\\\"}\"")
-				.get(String.class));
-		assertEquals("\"{\\\"message\\\":\\\"Hello world\\\"}\"", codec.enc().put("{\"message\":\"Hello world\"}")
-				.toString());
+		assertEquals("{\"message\":\"Hello world\"}",
+				codec.dec().from("\"{\\\"message\\\":\\\"Hello world\\\"}\"").get(String.class));
+		assertEquals("\"{\\\"message\\\":\\\"Hello world\\\"}\"",
+				codec.enc().put("{\"message\":\"Hello world\"}").toString());
 	}
 
 	/**
-	 * Test maps
-	 * 
-	 * @throws Exception
+	 * Test maps @throws Exception
 	 */
 
 	public void testStream() throws Exception {
@@ -296,9 +286,7 @@ public class JSONTest extends TestCase {
 	}
 
 	/**
-	 * Test maps
-	 * 
-	 * @throws Exception
+	 * Test maps @throws Exception
 	 */
 
 	public void testMaps() throws Exception {
@@ -312,9 +300,7 @@ public class JSONTest extends TestCase {
 	}
 
 	/**
-	 * Test primitive arrays
-	 * 
-	 * @throws Exception
+	 * Test primitive arrays @throws Exception
 	 */
 	public static void testPrimitiveArrays() throws Exception {
 		Decoder dec = new JSONCodec().dec();
@@ -410,9 +396,7 @@ public class JSONTest extends TestCase {
 	}
 
 	/**
-	 * Test byte arrays
-	 * 
-	 * @throws Exception
+	 * Test byte arrays @throws Exception
 	 */
 	public static void testByteArrays() throws Exception {
 		Encoder enc = new JSONCodec().enc();
@@ -436,9 +420,8 @@ public class JSONTest extends TestCase {
 	}
 
 	/**
-	 * Basic tests to see if the default types returns something useful
-	 * 
-	 * @throws Exception
+	 * Basic tests to see if the default types returns something useful @throws
+	 * Exception
 	 */
 	public static void testEncodeBasic() throws Exception {
 		Encoder enc = new JSONCodec().enc();
@@ -525,7 +508,7 @@ public class JSONTest extends TestCase {
 																	// types
 	public int[]			array		= {
 			1, 2, 3
-										};							// Provides
+											};						// Provides
 																	// generic
 																	// types
 
@@ -555,12 +538,12 @@ public class JSONTest extends TestCase {
 		Decoder dec = new JSONCodec().dec();
 
 		assertEquals(MAP.$("1", 1).$("2", 2).$("3", 3), dec.from("{\"1\":1,\"2\":2,\"3\":3}").get());
-		assertEquals(MAP.$("1", 1).$("2", 2).$("3", 3), dec.from("\t\n\r {    \"1\"  :  1,  \"2\" :2 ,\"3\" : 3 \n}")
-				.get());
+		assertEquals(MAP.$("1", 1).$("2", 2).$("3", 3),
+				dec.from("\t\n\r {    \"1\"  :  1,  \"2\" :2 ,\"3\" : 3 \n}").get());
 
 		Field field = getClass().getField("map");
-		assertEquals(MAP.$("1", 1).$("2", 2).$("3", 3), dec.from("\t\n\r {    \"1\"  :  1,  \"2\" :2 ,\"3\" : 3 \n}")
-				.get(field.getGenericType()));
+		assertEquals(MAP.$("1", 1).$("2", 2).$("3", 3),
+				dec.from("\t\n\r {    \"1\"  :  1,  \"2\" :2 ,\"3\" : 3 \n}").get(field.getGenericType()));
 
 		field = getClass().getField("mapIntegerKeys");
 		assertEquals(MAP.$(1, 1).$(2, 2).$(3, 3), dec.from("{\"1\":1,\"2\":2,\"3\":3}").get(field.getGenericType()));
@@ -607,8 +590,8 @@ public class JSONTest extends TestCase {
 		data1.s = "abc";
 		data1.sh = -10;
 
-		assertEquals("{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3,\"f\":3,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}", enc
-				.to().put(data1).toString());
+		assertEquals("{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3,\"f\":3,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}",
+				enc.to().put(data1).toString());
 	}
 
 	public static void testEncodeType() throws Exception {
@@ -633,9 +616,9 @@ public class JSONTest extends TestCase {
 
 	public static void testDecodeType() throws Exception {
 		Decoder dec = new JSONCodec().dec();
-		Data1 d = dec.from(
-				"{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3.0,\"f\":3.0,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}").get(
-				Data1.class);
+		Data1 d = dec
+				.from("{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3.0,\"f\":3.0,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}")
+				.get(Data1.class);
 		assertEquals(false, d.b);
 		assertEquals(-1, d.by);
 		assertEquals('1', d.ch);
@@ -649,9 +632,9 @@ public class JSONTest extends TestCase {
 
 	public static void testDecodeTypeA() throws Exception {
 		Decoder dec = new JSONCodec().dec();
-		Data1A d = dec.from(
-				"{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3.0,\"f\":3.0,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}").get(
-				Data1A.class);
+		Data1A d = dec
+				.from("{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3.0,\"f\":3.0,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}")
+				.get(Data1A.class);
 		assertEquals((Boolean) false, d.b);
 		assertEquals((Byte) (byte) (-1), d.by);
 		assertEquals((Character) '1', d.ch);
@@ -698,7 +681,7 @@ public class JSONTest extends TestCase {
 	 * Test extra field
 	 */
 	public static class Data3 {
-		public Map<String,Object>	__extra;
+		public Map<String,Object> __extra;
 	}
 
 	public static void testExtra() throws Exception {
@@ -797,7 +780,7 @@ public class JSONTest extends TestCase {
 	 */
 
 	public static class DataDefaults {
-		public int	a	= 3;
+		public int a = 3;
 	}
 
 	public static void testDefaults() throws Exception {
@@ -872,8 +855,9 @@ public class JSONTest extends TestCase {
 
 	public static interface C {}
 
-	public static class D extends LinkedHashMap<Object,Object> implements C {
-		private static final long	serialVersionUID	= 1L;}
+	public static class D extends LinkedHashMap<Object,Object>implements C {
+		private static final long serialVersionUID = 1L;
+	}
 
 	public void testMapInheritance() throws Exception {
 		D d = new D();

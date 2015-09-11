@@ -112,7 +112,9 @@ public class VersionPolicyTest extends TestCase {
 		a.addClasspath(new File("bin"));
 		a.setPrivatePackage("test.versionpolicy.implemented");
 		a.setExportPackage("test.versionpolicy.api");
-		a.setImportPackage("test.versionpolicy.api"); //what changed so this is not automatically added?
+		a.setImportPackage("test.versionpolicy.api"); // what changed so this is
+														// not automatically
+														// added?
 		a.setProperty("build", "123");
 		Jar jar = a.build();
 		assertTrue(a.check());
@@ -126,10 +128,11 @@ public class VersionPolicyTest extends TestCase {
 		assertEquals("[1.2,1.3)", attrs.get("version"));
 
 	}
-	
+
 	/**
-	 * Test if the implementation of "AnnotatedProviderInterface", which is annotated with OSGi R6
-	 * @ProviderType, causes import of the api package to use the provider version policy
+	 * Test if the implementation of "AnnotatedProviderInterface", which is
+	 * annotated with OSGi R6 @ProviderType, causes import of the api package to
+	 * use the provider version policy
 	 */
 	public static void testProviderTypeR6() throws Exception {
 		Builder b = new Builder();
@@ -141,7 +144,7 @@ public class VersionPolicyTest extends TestCase {
 		assertTrue(b.check());
 		Manifest m = jar.getManifest();
 		m.write(System.err);
-		
+
 		Domain d = Domain.domain(m);
 		Parameters params = d.getImportPackage();
 		Attrs attrs = params.get("test.version.annotations.osgi");

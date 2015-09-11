@@ -31,21 +31,20 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.xmlattribute.XMLAttributeFinder;
 
 public class OCDReader extends ClassDataCollector {
-	
-	private Analyzer	analyzer;
-	private Clazz	clazz;
-	private EnumSet<Options>			options;
-	
-	private TypeRef name;
-	private boolean topLevel = true;
-	private Set<TypeRef> analyzed;
 
-	private final Map<MethodDef,ADDef>	methods		= new LinkedHashMap<MethodDef,ADDef>();
+	private Analyzer			analyzer;
+	private Clazz				clazz;
+	private EnumSet<Options>	options;
+
+	private TypeRef			name;
+	private boolean			topLevel	= true;
+	private Set<TypeRef>	analyzed;
+
+	private final Map<MethodDef,ADDef>	methods	= new LinkedHashMap<MethodDef,ADDef>();
 	private ADDef						current;
-	private OCDDef ocd;
+	private OCDDef						ocd;
 
-	private final XMLAttributeFinder	finder;
-
+	private final XMLAttributeFinder finder;
 
 	OCDReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder finder) {
 		this.analyzer = analyzer;
@@ -54,57 +53,52 @@ public class OCDReader extends ClassDataCollector {
 		this.finder = finder;
 	}
 
-
-	static OCDDef getOCDDef(Clazz c, Analyzer analyzer, EnumSet<Options> options, XMLAttributeFinder finder) throws Exception {
+	static OCDDef getOCDDef(Clazz c, Analyzer analyzer, EnumSet<Options> options, XMLAttributeFinder finder)
+			throws Exception {
 
 		OCDReader r = new OCDReader(analyzer, c, options, finder);
 		return r.getDef();
 	}
 
+	private OCDDef getDef() throws Exception {
+		clazz.parseClassFileWithCollector(this);
+		if (ocd != null) {
+			topLevel = false;
+			parseExtends(clazz);
 
-     private OCDDef getDef() throws Exception {
-    	 clazz.parseClassFileWithCollector(this);
-    	 if (ocd != null) {
-    		 topLevel = false;
-    		 parseExtends(clazz);
-    		 
-    		 doMethods();
-    	 }
-    	 return ocd;
-     }
+			doMethods();
+		}
+		return ocd;
+	}
 
+	private void parseExtends(Clazz clazz) {
+		TypeRef[] inherits = clazz.getInterfaces();
+		if (inherits != null) {
+			if (analyzed == null) {
+				analyzed = new HashSet<TypeRef>();
+			}
+			for (TypeRef typeRef : inherits) {
+				if (!typeRef.isJava() && analyzed.add(typeRef)) {
+					try {
+						Clazz inherit = analyzer.findClass(typeRef);
+						if (inherit != null) {
+							inherit.parseClassFileWithCollector(this);
+							parseExtends(inherit);
+						} else {
+							analyzer.error("Could not obtain super class %s of class %s", typeRef.getFQN(),
+									clazz.getClassName().getFQN());
+						}
+					}
+					catch (Exception e) {
+						analyzer.error("Could not obtain super class %s of class %s; exception %s", typeRef.getFQN(),
+								clazz.getClassName().getFQN(), e.getMessage());
+					}
+				}
 
-     private void parseExtends(Clazz clazz) {
-    	 TypeRef[] inherits = clazz.getInterfaces();
-    	 if (inherits != null) {
-    		 if (analyzed == null) {
-    			 analyzed = new HashSet<TypeRef>();
-    		 }
-    		 for (TypeRef typeRef: inherits) {
-    			 if (!typeRef.isJava() && analyzed.add(typeRef)) {
-    				 try {
-    					 Clazz inherit = analyzer.findClass(typeRef);
-    					 if (inherit != null) {
-    						 inherit.parseClassFileWithCollector(this);
-    						 parseExtends(inherit);
-    					 } else {
-    							analyzer.error(
-    									"Could not obtain super class %s of class %s",
-    									typeRef.getFQN(), clazz.getClassName().getFQN());	
-    					 }
-    				 }
-    				 catch (Exception e) {
-							analyzer.error(
-									"Could not obtain super class %s of class %s; exception %s",
-									typeRef.getFQN(), clazz.getClassName().getFQN(), e.getMessage());	
-    				 }
-    			 }
+			}
+		}
 
-    		 }
-    	 }
-
-     }
-
+	}
 
 	@Override
 	public void classBegin(int access, TypeRef name) {
@@ -127,24 +121,22 @@ public class OCDReader extends ClassDataCollector {
 		current = null;
 	}
 
-	//TODO what about Queue|Stack|Deque?
-	static Pattern	GENERIC	= Pattern.compile("((" + Collection.class.getName() + "|" + 
-			Set.class.getName() + "|" +
-			List.class.getName() + "|" +
-			Iterable.class.getName() + ")|(.*))<(L.+;)>");
+	// TODO what about Queue|Stack|Deque?
+	static Pattern GENERIC = Pattern.compile("((" + Collection.class.getName() + "|" + Set.class.getName() + "|"
+			+ List.class.getName() + "|" + Iterable.class.getName() + ")|(.*))<(L.+;)>");
+
 	private void doMethods() throws Exception {
 		for (Map.Entry<MethodDef,ADDef> entry : methods.entrySet()) {
 			MethodDef defined = entry.getKey();
 			if (defined.isConstructor()) {
-				analyzer.error(
-						"Constructor %s for %s.%s found; only interfaces and annotations allowed for OCDs",
-						defined.getName(), clazz.getClassName().getFQN(), defined.getName());	
+				analyzer.error("Constructor %s for %s.%s found; only interfaces and annotations allowed for OCDs",
+						defined.getName(), clazz.getClassName().getFQN(), defined.getName());
 
 			}
 			if (defined.getPrototype().length > 0) {
 				analyzer.error(
 						"Element %s for %s.%s has parameters; only no-parameter elements in an OCD interface allowed",
-						defined.getName(), clazz.getClassName().getFQN(), defined.getName());	
+						defined.getName(), clazz.getClassName().getFQN(), defined.getName());
 				continue;
 			}
 			ADDef ad = entry.getValue();
@@ -183,15 +175,14 @@ public class OCDReader extends ClassDataCollector {
 				}
 			}
 			catch (Exception e) {
-				analyzer.error(
-						"AD for %s.%s Can not parse option values from type (%s), %s",
+				analyzer.error("AD for %s.%s Can not parse option values from type (%s), %s",
 						clazz.getClassName().getFQN(), defined.getName(), defined.getType().getFQN(), e.getMessage());
 			}
 			if (ad.ad != null) {
 				doAD(ad);
 			}
 			if (ad.defaults == null && clazz.isAnnotation() && defined.getConstant() != null) {
-				//defaults from annotation default
+				// defaults from annotation default
 				Object value = defined.getConstant();
 				boolean isClass = false;
 				TypeRef type = defined.getType().getClassRef();
@@ -202,11 +193,15 @@ public class OCDReader extends ClassDataCollector {
 						try {
 							Clazz r = analyzer.findClass(type);
 							if (r.isAnnotation()) {
-								analyzer.warning("Nested annotation type found in field % s, %s", defined.getName(), type.getFQN());
+								analyzer.warning("Nested annotation type found in field % s, %s", defined.getName(),
+										type.getFQN());
 								return;
 							}
-						} catch (Exception e) {
-							analyzer.error("Exception looking at annotation type default for element with descriptor %s,  type %s", e, defined, type);
+						}
+						catch (Exception e) {
+							analyzer.error(
+									"Exception looking at annotation type default for element with descriptor %s,  type %s",
+									e, defined, type);
 						}
 					}
 				}
@@ -220,7 +215,7 @@ public class OCDReader extends ClassDataCollector {
 						}
 					} else {
 						ad.defaults = new String[] {
-							valueToProperty(value, isClass)
+								valueToProperty(value, isClass)
 						};
 					}
 				}
@@ -228,22 +223,20 @@ public class OCDReader extends ClassDataCollector {
 		}
 	}
 
-	//Determine if we can identify that this class is a concrete subtype of collection with a no-arg constructor
-	//So far this implementation doesn't try very hard. It only looks to see if the class directly implements a known collection interface.
-	static Pattern	COLLECTION	= Pattern.compile("(" + Collection.class.getName() + "|" + 
-			Set.class.getName() + "|" +
-			List.class.getName() + "|" +
-			Queue.class.getName() + "|" +
-			Stack.class.getName() + "|" +
-			Deque.class.getName() + ")");
-	
+	// Determine if we can identify that this class is a concrete subtype of
+	// collection with a no-arg constructor
+	// So far this implementation doesn't try very hard. It only looks to see if
+	// the class directly implements a known collection interface.
+	static Pattern COLLECTION = Pattern
+			.compile("(" + Collection.class.getName() + "|" + Set.class.getName() + "|" + List.class.getName() + "|"
+					+ Queue.class.getName() + "|" + Stack.class.getName() + "|" + Deque.class.getName() + ")");
+
 	private boolean identifiableCollection(String type, boolean intface, boolean topLevel) {
 		try {
 			Clazz clazz = analyzer.findClass(analyzer.getTypeRefFromFQN(type));
-			if (clazz != null &&
-					(!topLevel || !clazz.isAbstract()) && 
-					((intface && clazz.isInterface()) ^ clazz.hasPublicNoArgsConstructor())) {
-				TypeRef[] intfs= clazz.getInterfaces();
+			if (clazz != null && (!topLevel || !clazz.isAbstract())
+					&& ((intface && clazz.isInterface()) ^ clazz.hasPublicNoArgsConstructor())) {
+				TypeRef[] intfs = clazz.getInterfaces();
 				if (intfs != null) {
 					for (TypeRef intf : intfs) {
 						if (COLLECTION.matcher(intf.getFQN()).matches()
@@ -262,13 +255,12 @@ public class OCDReader extends ClassDataCollector {
 		return false;
 	}
 
-
 	private String valueToProperty(Object value, boolean isClass) {
 		if (isClass)
 			return ((TypeRef) value).getFQN();
 		return value.toString();
 	}
-	
+
 	private void doAD(ADDef adDef) throws Exception {
 		AttributeDefinition ad = adDef.ad;
 		Annotation a = adDef.a;
@@ -294,7 +286,7 @@ public class OCDReader extends ClassDataCollector {
 		if (a.get("options") != null) {
 			adDef.options.clear();
 			for (Object o : (Object[]) a.get("options")) {
-				Option opt = ((Annotation)o).getAnnotation();
+				Option opt = ((Annotation) o).getAnnotation();
 				adDef.options.add(new OptionDef(opt.label(), opt.value()));
 			}
 		}
@@ -302,59 +294,61 @@ public class OCDReader extends ClassDataCollector {
 	}
 
 	private static final Pattern p = Pattern.compile("(\\$\\$)|(\\$)|(__)|(_)");
-    
-    static String fixup(String name)
-    {
-        Matcher m = p.matcher(name);
-        StringBuffer b = new StringBuffer();
-        while (m.find())
-        {
-            String replacement = "";//null;
-            if (m.group(1) != null) replacement = "\\$";
-            if (m.group(2) != null) replacement = "";
-            if (m.group(3) != null) replacement = "_";
-            if (m.group(4) != null) replacement = ".";
-            
-            m.appendReplacement(b, replacement);
-        }
-        m.appendTail(b);
-        return b.toString();
-    }
-    
-    static String space(String name) {
-    	return Clazz.unCamel(name);
-    }
 
-    AttributeType getType(String rtype) {
-    	if (rtype.endsWith("[]")) {
+	static String fixup(String name) {
+		Matcher m = p.matcher(name);
+		StringBuffer b = new StringBuffer();
+		while (m.find()) {
+			String replacement = "";// null;
+			if (m.group(1) != null)
+				replacement = "\\$";
+			if (m.group(2) != null)
+				replacement = "";
+			if (m.group(3) != null)
+				replacement = "_";
+			if (m.group(4) != null)
+				replacement = ".";
+
+			m.appendReplacement(b, replacement);
+		}
+		m.appendTail(b);
+		return b.toString();
+	}
+
+	static String space(String name) {
+		return Clazz.unCamel(name);
+	}
+
+	AttributeType getType(String rtype) {
+		if (rtype.endsWith("[]")) {
 			analyzer.error("Can only handle array of depth one field , nested type %s", rtype);
-    		return null;
-    	}
+			return null;
+		}
 
-    	if ("boolean".equals(rtype) || Boolean.class.getName().equals(rtype))
-    		return AttributeType.BOOLEAN;
-    	else if ("byte".equals(rtype) || Byte.class.getName().equals(rtype))
-    		return AttributeType.BYTE;
-    	else if ("char".equals(rtype) || Character.class.getName().equals(rtype))
-    		return AttributeType.CHARACTER;
-    	else if ("short".equals(rtype) || Short.class.getName().equals(rtype))
-    		return AttributeType.SHORT;
-    	else if ("int".equals(rtype) || Integer.class.getName().equals(rtype))
-    		return AttributeType.INTEGER;
-    	else if ("long".equals(rtype) || Long.class.getName().equals(rtype))
-    		return AttributeType.LONG;
-    	else if ("float".equals(rtype) || Float.class.getName().equals(rtype))
-    		return AttributeType.FLOAT;
-    	else if ("double".equals(rtype) || Double.class.getName().equals(rtype))
-    		return AttributeType.DOUBLE;
-    	else if (String.class.getName().equals(rtype) || Class.class.getName().equals(rtype) || acceptableType(rtype) ) 
-    		return AttributeType.STRING;
-    	else {
-    		return null;
+		if ("boolean".equals(rtype) || Boolean.class.getName().equals(rtype))
+			return AttributeType.BOOLEAN;
+		else if ("byte".equals(rtype) || Byte.class.getName().equals(rtype))
+			return AttributeType.BYTE;
+		else if ("char".equals(rtype) || Character.class.getName().equals(rtype))
+			return AttributeType.CHARACTER;
+		else if ("short".equals(rtype) || Short.class.getName().equals(rtype))
+			return AttributeType.SHORT;
+		else if ("int".equals(rtype) || Integer.class.getName().equals(rtype))
+			return AttributeType.INTEGER;
+		else if ("long".equals(rtype) || Long.class.getName().equals(rtype))
+			return AttributeType.LONG;
+		else if ("float".equals(rtype) || Float.class.getName().equals(rtype))
+			return AttributeType.FLOAT;
+		else if ("double".equals(rtype) || Double.class.getName().equals(rtype))
+			return AttributeType.DOUBLE;
+		else if (String.class.getName().equals(rtype) || Class.class.getName().equals(rtype) || acceptableType(rtype))
+			return AttributeType.STRING;
+		else {
+			return null;
 
-    	}
-    }
-    
+		}
+	}
+
 	private boolean acceptableType(String rtype) {
 		TypeRef ref = analyzer.getTypeRefFromFQN(rtype);
 		try {
@@ -367,7 +361,7 @@ public class OCDReader extends ClassDataCollector {
 				return true;
 			}
 			if (!returnType.isInterface()) {
-				analyzer.error("Abstract classes not allowed as interface method return values: %s", rtype);				
+				analyzer.error("Abstract classes not allowed as interface method return values: %s", rtype);
 			} else {
 				analyzer.error("Nested metatype only allowed with option: nested type %s", rtype);
 			}
@@ -378,7 +372,6 @@ public class OCDReader extends ClassDataCollector {
 			return false;
 		}
 	}
-
 
 	private void parseOptionValues(Clazz c, final List<OptionDef> options) throws Exception {
 
@@ -393,8 +386,7 @@ public class OCDReader extends ClassDataCollector {
 		});
 	}
 
-	
-    @Override
+	@Override
 	public void annotation(Annotation annotation) throws Exception {
 		try {
 			java.lang.annotation.Annotation a = annotation.getAnnotation();
@@ -429,7 +421,7 @@ public class OCDReader extends ClassDataCollector {
 	}
 
 	private void doOCD(ObjectClassDefinition o, Annotation annotation) {
-    	if (topLevel) {
+		if (topLevel) {
 			if (clazz.isInterface()) {
 				if (ocd == null)
 					ocd = new OCDDef(finder);
@@ -455,15 +447,12 @@ public class OCDReader extends ClassDataCollector {
 				analyzer.error("ObjectClassDefinition applied to non-interface, non-annotation class %s", clazz);
 			}
 		}
-    }
-
-	private void designates(String[] pids, boolean factory) {
-		for (String pid: pids) {
-			ocd.designates.add(new DesignateDef(ocd.id, pid, factory, finder));
-		}		
 	}
 
-
-
+	private void designates(String[] pids, boolean factory) {
+		for (String pid : pids) {
+			ocd.designates.add(new DesignateDef(ocd.id, pid, factory, finder));
+		}
+	}
 
 }

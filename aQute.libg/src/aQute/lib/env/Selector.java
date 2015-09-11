@@ -44,12 +44,12 @@ public class Selector {
 	transient Pattern	pattern;
 	transient boolean	optional;
 
-	final String		input;
-	final String		match;
-	final boolean		negated;
-	final boolean		duplicate;
-	final boolean		literal;
-	final boolean		any;
+	final String	input;
+	final String	match;
+	final boolean	negated;
+	final boolean	duplicate;
+	final boolean	literal;
+	final boolean	any;
 	final boolean	caseInsensitive;
 
 	public Selector(String input) {
@@ -64,12 +64,12 @@ public class Selector {
 		} else
 			negated = false;
 
-		if ( s.endsWith(":i")) {
+		if (s.endsWith(":i")) {
 			caseInsensitive = true;
-			s = s.substring(0, s.length()-2);
+			s = s.substring(0, s.length() - 2);
 		} else
 			caseInsensitive = false;
-		
+
 		if (input.equals("*")) {
 			any = true;
 			literal = false;
@@ -159,7 +159,7 @@ public class Selector {
 
 	public Matcher getMatcher(String value) {
 		if (pattern == null) {
-			if ( !caseInsensitive)
+			if (!caseInsensitive)
 				pattern = Pattern.compile(match);
 			else
 				pattern = Pattern.compile(match, Pattern.CASE_INSENSITIVE);

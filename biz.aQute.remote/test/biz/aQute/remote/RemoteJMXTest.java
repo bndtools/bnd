@@ -33,10 +33,9 @@ public class RemoteJMXTest extends TestCase {
 		BundleContext context = framework.getBundleContext();
 
 		String[] bundles = {
-				"../cnf/repo/osgi.cmpn/osgi.cmpn-4.3.1.jar",
-				"testdata/slf4j-simple-1.7.12.jar", "testdata/slf4j-api-1.7.12.jar",
-				"testdata/org.apache.aries.util-1.1.0.jar", "testdata/org.apache.aries.jmx-1.1.1.jar",
-				"generated/biz.aQute.remote.test.jmx-3.0.0.jar"
+				"../cnf/repo/osgi.cmpn/osgi.cmpn-4.3.1.jar", "testdata/slf4j-simple-1.7.12.jar",
+				"testdata/slf4j-api-1.7.12.jar", "testdata/org.apache.aries.util-1.1.0.jar",
+				"testdata/org.apache.aries.jmx-1.1.1.jar", "generated/biz.aQute.remote.test.jmx-3.0.0.jar"
 		};
 
 		for (String bundle : bundles) {

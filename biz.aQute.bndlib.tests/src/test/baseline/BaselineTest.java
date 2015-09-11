@@ -182,9 +182,7 @@ public class BaselineTest extends TestCase {
 
 	/**
 	 * When a JAR is build the manifest is not set in the resources but in a
-	 * instance var.
-	 * 
-	 * @throws Exception
+	 * instance var. @throws Exception
 	 */
 	public void testPrematureJar() throws Exception {
 		Builder b1 = new Builder();
@@ -226,8 +224,8 @@ public class BaselineTest extends TestCase {
 		}
 	}
 
-	static Pattern	VERSION_HEADER_P	= Pattern.compile("Bundle-Header:(" + Verifier.VERSION_STRING + ")",
-												Pattern.CASE_INSENSITIVE);
+	static Pattern VERSION_HEADER_P = Pattern.compile("Bundle-Header:(" + Verifier.VERSION_STRING + ")",
+			Pattern.CASE_INSENSITIVE);
 
 	void print(Diff diff, String indent) {
 		if (diff.getDelta() == Delta.UNCHANGED)
@@ -240,14 +238,7 @@ public class BaselineTest extends TestCase {
 	}
 
 	/**
-	 * In repo:
-	 * 
-	 * <pre>
-	 * p3-1.1.0.jar
-	 * p3-1.2.0.jar
-	 * </pre>
-	 * 
-	 * @throws Exception
+	 * In repo: <pre> p3-1.1.0.jar p3-1.2.0.jar </pre> @throws Exception
 	 */
 	public void testRepository() throws Exception {
 		Jar v1_2_0_a = mock(Jar.class);
@@ -258,15 +249,14 @@ public class BaselineTest extends TestCase {
 		getWorkspace().addBasicPlugin(repo);
 		@SuppressWarnings("unchecked")
 		Map<String,String> map = any(Map.class);
-		when(repo.get(anyString(), any(Version.class), map)).thenReturn(
-				IO.getFile("testresources/ws/cnf/releaserepo/p3/p3-1.2.0.jar"));
+		when(repo.get(anyString(), any(Version.class), map))
+				.thenReturn(IO.getFile("testresources/ws/cnf/releaserepo/p3/p3-1.2.0.jar"));
 		System.out.println(repo.get("p3", new Version("1.2.0.b"), new Attrs()));
 
 		when(repo.canWrite()).thenReturn(true);
 		when(repo.getName()).thenReturn("Baseline");
-		when(repo.versions("p3")).thenReturn(
-				new SortedList<Version>(new Version("1.1.0.a"), new Version("1.1.0.b"), new Version("1.2.0.a"),
-						new Version("1.2.0.b")));
+		when(repo.versions("p3")).thenReturn(new SortedList<Version>(new Version("1.1.0.a"), new Version("1.1.0.b"),
+				new Version("1.2.0.a"), new Version("1.2.0.b")));
 
 		Project p3 = getWorkspace().getProject("p3");
 		p3.setBundleVersion("1.3.0");
@@ -324,9 +314,8 @@ public class BaselineTest extends TestCase {
 
 	/**
 	 * Check what happens when there is nothing in the repo ... We do not
-	 * generate an error when version <=1.0.0, otherwise we generate an error.
-	 * 
-	 * @throws Exception
+	 * generate an error when version <=1.0.0, otherwise we generate an
+	 * error. @throws Exception
 	 */
 	public void testNothingInRepo() throws Exception {
 		File tmp = new File("tmp");

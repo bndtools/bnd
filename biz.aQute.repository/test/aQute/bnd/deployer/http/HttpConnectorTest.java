@@ -22,10 +22,10 @@ import aQute.lib.io.*;
 
 public class HttpConnectorTest extends TestCase {
 
-	private static final String	LOCALHOST		= "127.0.0.1";
+	private static final String LOCALHOST = "127.0.0.1";
 
-	private static int			HTTP_PORT		= 0;
-	private static int			HTTPS_PORT		= 0;
+	private static int	HTTP_PORT	= 0;
+	private static int	HTTPS_PORT	= 0;
 
 	private static final String	RESOURCE_BASE	= "testdata/http";
 	private static final String	SECURED_PATH	= "/securebundles/*";
@@ -34,9 +34,9 @@ public class HttpConnectorTest extends TestCase {
 	private static final String	KEYSTORE_PATH	= "testdata/example.keystore";
 	private static final String	KEYSTORE_PASS	= "opensesame";
 
-	private static final String	EXPECTED_ETAG	= "64035a95";
+	private static final String EXPECTED_ETAG = "64035a95";
 
-	private static Server				jetty;
+	private static Server jetty;
 
 	private static String getUrl(boolean http) {
 		if (http) {
@@ -89,7 +89,7 @@ public class HttpConnectorTest extends TestCase {
 		Constraint constraint = new Constraint();
 		constraint.setName(Constraint.__BASIC_AUTH);
 		constraint.setRoles(new String[] {
-			REQUIRED_ROLE
+				REQUIRED_ROLE
 		});
 		constraint.setAuthenticate(true);
 
@@ -104,7 +104,7 @@ public class HttpConnectorTest extends TestCase {
 		securityHandler.setHandler(resourceHandler);
 		securityHandler.setLoginService(loginSvc);
 		securityHandler.setConstraintMappings(new ConstraintMapping[] {
-			cm
+				cm
 		});
 
 		// Finally!! Start the server
@@ -114,7 +114,7 @@ public class HttpConnectorTest extends TestCase {
 		while (!server.isRunning()) {
 			Thread.sleep(10);
 		}
-		
+
 		HTTP_PORT = httpConnector.getLocalPort();
 		HTTPS_PORT = sslConnector.getLocalPort();
 		assertNotSame(new Integer(0), new Integer(HTTP_PORT));
@@ -249,7 +249,7 @@ public class HttpConnectorTest extends TestCase {
 			assertTrue(e instanceof SSLHandshakeException);
 		}
 	}
-	
+
 	public static void testConnectWithUserPassHTTPS() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
 		Map<String,String> config = new HashMap<String,String>();

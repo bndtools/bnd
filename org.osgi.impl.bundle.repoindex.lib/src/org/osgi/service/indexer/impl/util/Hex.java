@@ -2,7 +2,9 @@ package org.osgi.service.indexer.impl.util;
 
 public class Hex {
 
-	private final static char[] HEX = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+	private final static char[] HEX = {
+			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+	};
 
 	public final static String toHexString(byte data[]) {
 		StringBuilder sb = new StringBuilder();

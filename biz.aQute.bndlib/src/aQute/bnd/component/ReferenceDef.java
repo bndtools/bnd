@@ -19,10 +19,10 @@ import aQute.lib.tag.Tag;
  */
 
 class ReferenceDef extends ExtensionDef {
-	
-	String					className;
-	String					bindDescriptor;
-	
+
+	String	className;
+	String	bindDescriptor;
+
 	Version					version	= AnnotationReader.V1_0;
 	String					name;
 	String					service;
@@ -43,11 +43,8 @@ class ReferenceDef extends ExtensionDef {
 	}
 
 	/**
-	 * Prepare the reference, will check for any errors.
-	 * 
-	 * @param analyzer
-	 *            the analyzer to report errors to.
-	 * @throws Exception
+	 * Prepare the reference, will check for any errors. @param analyzer the
+	 * analyzer to report errors to. @throws Exception
 	 */
 	public void prepare(Analyzer analyzer) throws Exception {
 		if (name == null)
@@ -64,17 +61,15 @@ class ReferenceDef extends ExtensionDef {
 
 		if (service == null)
 			analyzer.error("No interface specified on %s", name);
-		
+
 		if (scope != null || field != null)
 			updateVersion(AnnotationReader.V1_3);
 
 	}
 
 	/**
-	 * Calculate the tag.
-	 * 
-	 * @param namespaces
-	 * @return a tag for the reference element.
+	 * Calculate the tag. @param namespaces @return a tag for the reference
+	 * element.
 	 */
 	public Tag getTag(Namespaces namespaces) {
 		Tag ref = new Tag("reference");
@@ -102,19 +97,19 @@ class ReferenceDef extends ExtensionDef {
 
 		if (policyOption != null)
 			ref.addAttribute("policy-option", policyOption.toString());
-		
+
 		if (scope != null)
 			ref.addAttribute("scope", scope.toString());
-		
+
 		if (field != null)
 			ref.addAttribute("field", field);
-		
+
 		if (fieldOption != null)
 			ref.addAttribute("field-option", fieldOption.toString());
-		
-		if (fieldCollectionType != null) 
+
+		if (fieldCollectionType != null)
 			ref.addAttribute("field-collection-type", fieldCollectionType.toString());
-			
+
 		addAttributes(ref, namespaces);
 
 		return ref;
@@ -124,10 +119,9 @@ class ReferenceDef extends ExtensionDef {
 	public String toString() {
 		return name;
 	}
-	
+
 	void updateVersion(Version version) {
 		this.version = ComponentDef.max(this.version, version);
 	}
-
 
 }

@@ -13,15 +13,15 @@ public class ObjectHandler extends Handler {
 
 	ObjectHandler(JSONCodec codec, Class< ? > c) throws Exception {
 		rawClass = c;
-		
+
 		List<Field> fields = new ArrayList<Field>();
-		for ( Field f : c.getFields()) {
+		for (Field f : c.getFields()) {
 			if (Modifier.isStatic(f.getModifiers()))
 				continue;
 			fields.add(f);
 		}
 
-		this.fields = fields.toArray( new Field[fields.size()]); 
+		this.fields = fields.toArray(new Field[fields.size()]);
 
 		// Sort the fields so the output is canonical
 		Arrays.sort(this.fields, new Comparator<Field>() {
@@ -57,39 +57,39 @@ public class ObjectHandler extends Handler {
 	}
 
 	@Override
-	public
-	void encode(Encoder app, Object object, Map<Object,Type> visited) throws Exception {
+	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws Exception {
 		app.append("{");
 		app.indent();
 		String del = "";
-		for (int i = 0; i < fields.length; i++) try {
-			if (fields[i].getName().startsWith("__"))
-				continue;
-
-			Object value = fields[i].get(object);
-			if (!app.writeDefaults) {
-				if (value == defaults[i])
+		for (int i = 0; i < fields.length; i++)
+			try {
+				if (fields[i].getName().startsWith("__"))
 					continue;
 
-				if (value != null && value.equals(defaults[i]))
-					continue;
+				Object value = fields[i].get(object);
+				if (!app.writeDefaults) {
+					if (value == defaults[i])
+						continue;
+
+					if (value != null && value.equals(defaults[i]))
+						continue;
+				}
+
+				app.append(del);
+				StringHandler.string(app, fields[i].getName());
+				app.append(":");
+				app.encode(value, types[i], visited);
+				del = ",";
 			}
-
-			app.append(del);
-			StringHandler.string(app, fields[i].getName());
-			app.append(":");
-			app.encode(value, types[i], visited);
-			del = ",";
-		} catch( Exception e) {
-			throw new IllegalArgumentException(fields[i].getName() +":", e);
-		}
+			catch (Exception e) {
+				throw new IllegalArgumentException(fields[i].getName() + ":", e);
+			}
 		app.undent();
 		app.append("}");
 	}
 
 	@Override
-	public
-	Object decodeObject(Decoder r) throws Exception {
+	public Object decodeObject(Decoder r) throws Exception {
 		assert r.current() == '{';
 		Object targetObject = rawClass.newInstance();
 
@@ -113,9 +113,9 @@ public class ObjectHandler extends Handler {
 				// We have a field and thus a type
 				Object value = r.codec.decode(f.getGenericType(), r);
 				if (value != null || !r.codec.ignorenull) {
-					if ( Modifier.isFinal(f.getModifiers()))
+					if (Modifier.isFinal(f.getModifiers()))
 						throw new IllegalArgumentException("Field " + f + " is final");
-							
+
 					f.set(targetObject, value);
 				}
 			} else {
@@ -148,8 +148,8 @@ public class ObjectHandler extends Handler {
 				continue;
 			}
 
-			throw new IllegalArgumentException("Invalid character in parsing object, expected } or , but found "
-					+ (char) c);
+			throw new IllegalArgumentException(
+					"Invalid character in parsing object, expected } or , but found " + (char) c);
 		}
 		assert r.current() == '}';
 		r.read(); // skip closing

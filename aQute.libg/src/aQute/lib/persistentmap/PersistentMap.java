@@ -27,7 +27,7 @@ import aQute.lib.json.JSONCodec;
  * non-concurrent implementation so you must ensure it is only used in a single
  * thread. It cannot of course also not share the data directory.
  */
-public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable {
+public class PersistentMap<V> extends AbstractMap<String,V>implements Closeable {
 
 	final static JSONCodec				codec	= new JSONCodec();
 	final File							dir;
@@ -37,7 +37,7 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 	boolean								inited	= false;
 	boolean								closed	= false;
 
-	Type								type;
+	Type type;
 
 	public PersistentMap(File dir, Type type) throws Exception {
 		this.dir = dir;
@@ -120,8 +120,8 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 			public Iterator<java.util.Map.Entry<String,V>> iterator() {
 				init();
 				return new Iterator<Map.Entry<String,V>>() {
-					Iterator<java.util.Map.Entry<String,SoftReference<V>>>	it	= cache.entrySet().iterator();
-					java.util.Map.Entry<String,SoftReference<V>>			entry;
+					Iterator<java.util.Map.Entry<String,SoftReference<V>>> it = cache.entrySet().iterator();
+					java.util.Map.Entry<String,SoftReference<V>> entry;
 
 					public boolean hasNext() {
 						return it.hasNext();
@@ -292,8 +292,8 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 		try {
 			FileLock lock = lock();
 			try {
-				for ( File f : data.listFiles()) {
-					if ( f.lastModified() < whenOlder )
+				for (File f : data.listFiles()) {
+					if (f.lastModified() < whenOlder)
 						IO.deleteWithException(f);
 				}
 				cache.clear();

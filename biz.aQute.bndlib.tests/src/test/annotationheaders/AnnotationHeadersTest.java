@@ -47,7 +47,7 @@ public class AnnotationHeadersTest extends TestCase {
 			attrs = p.get("license");
 			assertNotNull(attrs);
 			assertEquals("abc", attrs.get("foo"));
-			
+
 			p = new Parameters(m.getMainAttributes().getValue("Require-Capability"));
 			// namespaces must be "osgi.ee", "nsx" and "nsy" ONLY
 			assertNotNull(p.get("nsx"));
@@ -58,7 +58,7 @@ public class AnnotationHeadersTest extends TestCase {
 			assertEquals("spurious Require-Capability namespaces", 5, p.size());
 
 			attrs = p.get("nsx");
-			assertEquals(Arrays.asList("abc","def"), attrs.getTyped("foo"));
+			assertEquals(Arrays.asList("abc", "def"), attrs.getTyped("foo"));
 
 			attrs = p.get("nsy");
 			assertEquals("hello", attrs.get("value"));
@@ -112,39 +112,38 @@ public class AnnotationHeadersTest extends TestCase {
 	@mkriens
 	@tkriens
 	@BundleCategory(Category.adoption)
-	
+
 	class B {
-		
+
 	}
-	
+
 	@BundleCopyright("[[\n\rXyz: Hello world. , ; = \\]]")
 	class Z {
-		
+
 	}
-	
-	
+
 	@BundleCopyright("v=${@version} p=${@package} c=${@class} s=${@class-short}")
 	@Angular
 	class C {
-		
+
 	}
 
 	//
-	// Check if we can 
+	// Check if we can
 	interface X {
-		@RequireCapability(ns="x",filter="(x=xx)")
+		@RequireCapability(ns = "x", filter = "(x=xx)")
 		@interface Require {}
-		@ProvideCapability(ns="x",name="xx")
+
+		@ProvideCapability(ns = "x", name = "xx")
 		@interface Provide {}
 	}
+
 	@X.Provide
-	class XImpl {
-	}
-		
-	
-	@ProvideCapability(ns = "extrattrs", name = "extrattrs", value="extra=YES")
+	class XImpl {}
+
+	@ProvideCapability(ns = "extrattrs", name = "extrattrs", value = "extra=YES")
 	interface ExtraAttrs {
-		
+
 	}
 
 	@RequireCapability(ns = "nofilter", filter = "")
@@ -161,12 +160,11 @@ public class AnnotationHeadersTest extends TestCase {
 		assertTrue(b.check());
 		Manifest manifest = b.getJar().getManifest();
 		manifest.write(System.out);
-		Parameters provideWithExtraAttrs = new Parameters(manifest.getMainAttributes().getValue(
-				Constants.PROVIDE_CAPABILITY));
+		Parameters provideWithExtraAttrs = new Parameters(
+				manifest.getMainAttributes().getValue(Constants.PROVIDE_CAPABILITY));
 		Attrs attrs = provideWithExtraAttrs.get("extrattrs");
 		assertNotNull(attrs);
-		assertEquals("extrattrs=extrattrs;extra=YES",
- attrs.toString());
+		assertEquals("extrattrs=extrattrs;extra=YES", attrs.toString());
 
 		String rc = manifest.getMainAttributes().getValue(Constants.REQUIRE_CAPABILITY);
 		assertNotNull(rc);
@@ -174,75 +172,69 @@ public class AnnotationHeadersTest extends TestCase {
 		assertTrue(rc.contains("osgi.webresource=/google"));
 		assertTrue(rc.contains(">=1.2.3")); // from package info
 		assertTrue(rc.contains(">=2.0.0")); // from package info
-		
+
 		assertFalse(rc.contains("xx"));
-		
+
 		assertTrue(rc.contains(",nofilter,"));
 
 		String pc = manifest.getMainAttributes().getValue(Constants.PROVIDE_CAPABILITY);
 		assertNotNull(pc);
 		System.out.println(pc);
 		assertTrue(pc.contains("x=xx"));
-		
 
 		assertFalse(rc.contains("not.there"));
-		
+
 		String bl = manifest.getMainAttributes().getValue(Constants.BUNDLE_LICENSE);
 		assertNotNull(bl);
 		System.out.println(bl);
 		assertTrue(bl.contains("http://www.opensource.org/licenses/apache2.0.php;"));
 		assertTrue(bl.contains("MIT"));
 		assertFalse(bl.contains("GPL"));
-		
+
 		String dv = manifest.getMainAttributes().getValue(Constants.BUNDLE_DEVELOPERS);
 		assertNotNull(dv);
 		System.out.println(dv);
 		assertTrue(dv.contains("Peter Kriens"));
-		
+
 		dv = manifest.getMainAttributes().getValue(Constants.BUNDLE_CONTRIBUTORS);
 		assertNotNull(dv);
 		System.out.println(dv);
 		assertTrue(dv.contains("Mieke Kriens"));
 		assertTrue(dv.contains("Thomas Kriens"));
 		assertFalse(dv.contains("Mischa Kriens"));
-		
+
 		dv = manifest.getMainAttributes().getValue(Constants.BUNDLE_COPYRIGHT);
 		assertNotNull(dv);
 		System.out.println(dv);
 		assertTrue(dv.contains("other baloney"));
 		Matcher m = Pattern.compile("([0-9]{4})").matcher(dv);
-		assertTrue( m.find());
-		assertTrue( Integer.parseInt(m.group(1)) >= 2014);
+		assertTrue(m.find());
+		assertTrue(Integer.parseInt(m.group(1)) >= 2014);
 		assertTrue(dv.contains("v=1.2.3"));
 		assertTrue(dv.contains("p=test.annotationheaders"));
 		assertTrue(dv.contains("c=test.annotationheaders.AnnotationHeadersTest$C"));
 		assertTrue(dv.contains("s=AnnotationHeadersTest$C"));
-		
-		
-		
+
 		dv = manifest.getMainAttributes().getValue(Constants.BUNDLE_DOCURL);
 		assertNotNull(dv);
 		System.out.println(dv);
 		assertTrue(dv.contains("http://www.aQute.biz"));
-		
 
 		Parameters cpr = new Parameters(manifest.getMainAttributes().getValue(Constants.BUNDLE_COPYRIGHT));
-		for ( Entry<String,Attrs> e : cpr.entrySet()) {
+		for (Entry<String,Attrs> e : cpr.entrySet()) {
 			System.out.println("cpr: " + e);
 		}
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		Jar.writeManifest(manifest,bout);
-		String s = new String( bout.toByteArray(), "UTF-8");
+		Jar.writeManifest(manifest, bout);
+		String s = new String(bout.toByteArray(), "UTF-8");
 		System.out.println(s);
 		ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
 		Manifest m2 = new Manifest(bin);
 		String v = m2.getMainAttributes().getValue(Constants.BUNDLE_COPYRIGHT);
-		assertNotNull(v );
-		assertTrue( v.contains("Hello world"));
-		assertNull( m2.getMainAttributes().getValue("Xyz"));
+		assertNotNull(v);
+		assertTrue(v.contains("Hello world"));
+		assertNull(m2.getMainAttributes().getValue("Xyz"));
 		b.close();
 	}
-	
-	
-	
+
 }

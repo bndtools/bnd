@@ -138,9 +138,7 @@ import aQute.libg.sed.Sed;
 import aQute.service.reporter.Reporter;
 
 /**
- * Utility to make bundles.
- * 
- * @version $Revision: 1.14 $
+ * Utility to make bundles. @version $Revision: 1.14 $
  */
 public class bnd extends Processor {
 	static Pattern				ASSIGNMENT	= Pattern.compile(									//
@@ -212,10 +210,8 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Rewrite the command line to mimic the jar command
-	 * 
-	 * @param args
-	 * @throws Exception
+	 * Rewrite the command line to mimic the jar command @param args @throws
+	 * Exception
 	 */
 	private void rewrite(List<String> args) throws Exception {
 		if (args.isEmpty())
@@ -308,10 +304,7 @@ public class bnd extends Processor {
 
 	/**
 	 * Main command. This has options the bnd base options and will then run
-	 * another command.
-	 * 
-	 * @param options
-	 * @throws Exception
+	 * another command. @param options @throws Exception
 	 */
 	@Description("The swiss army tool for OSGi")
 	public void _bnd(bndOptions options) throws Exception {
@@ -414,17 +407,10 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Create jar file
-	 * 
-	 * <pre>
-	 *     jar c[v0M]f jarfile [-C dir] inputfiles [-Joption] 
-	 *     jar c[v0]mf manifest jarfile [-C dir] inputfiles [-Joption] 
-	 *     jar c[v0M] [-C dir] inputfiles [-Joption] 
-	 *     jar c[v0]m manifest [-C dir] inputfiles [-Joption]
-	 * </pre>
-	 * 
-	 * @param options
-	 * @throws Exception
+	 * Create jar file <pre> jar c[v0M]f jarfile [-C dir] inputfiles [-Joption]
+	 * jar c[v0]mf manifest jarfile [-C dir] inputfiles [-Joption] jar c[v0M]
+	 * [-C dir] inputfiles [-Joption] jar c[v0]m manifest [-C dir] inputfiles
+	 * [-Joption] </pre> @param options @throws Exception
 	 */
 	@Description("Create jar, used to support backward compatible java jar commands")
 	public void _create(createOptions options) throws Exception {
@@ -482,12 +468,8 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Helper for the jar create function, adds files to the jar
-	 * 
-	 * @param jar
-	 * @param base
-	 * @param path
-	 * @param report
+	 * Helper for the jar create function, adds files to the jar @param
+	 * jar @param base @param path @param report
 	 */
 	private void add(Jar jar, File base, String path, boolean report) {
 		if (path.endsWith("/"))
@@ -623,13 +605,8 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * The do command interprets files and does a default action for each file
-	 * 
-	 * @param project
-	 * @param args
-	 * @param i
-	 * @return
-	 * @throws Exception
+	 * The do command interprets files and does a default action for each
+	 * file @param project @param args @param i @return @throws Exception
 	 */
 
 	@Description("Execute a file based on its extension. Supported extensions are: bnd (build), bndrun (run), and jar (print)")
@@ -748,11 +725,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Bump a version number
-	 * 
-	 * @param args
-	 * @param i
-	 * @throws Exception
+	 * Bump a version number @param args @param i @throws Exception
 	 */
 	@Description("Bumps the version of a project. Will take the current version and then increment "
 			+ "with a major, minor, or micro increment. The default bump is minor.")
@@ -1053,10 +1026,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Package a bnd or bndrun file for packaging.
-	 * 
-	 * @param path
-	 * @throws Exception
+	 * Package a bnd or bndrun file for packaging. @param path @throws Exception
 	 */
 	@Description("Package a bnd or bndrun file into a single jar that executes with java -jar <>.jar. The JAR contains all dependencies, including the framework and the launcher. "
 			+ "A profile can be specified which will be used to find properties. If a property is not found, a property with the name [<profile>]NAME will be looked up. This allows "
@@ -1191,12 +1161,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Show the value of a macro
-	 * 
-	 * @param args
-	 * @param i
-	 * @return
-	 * @throws Exception
+	 * Show the value of a macro @param args @param i @return @throws Exception
 	 */
 	@Description("Show macro value. Macro can contain the ${ and } parentheses but it is also ok without. You can use the ':' instead of the ';' in a macro")
 	@Arguments(arg = {
@@ -1239,11 +1204,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Release the project
-	 * 
-	 * @param args
-	 * @param i
-	 * @throws Exception
+	 * Release the project @param args @param i @throws Exception
 	 */
 	@Description("Release this project")
 	interface releaseOptions extends Options {
@@ -1303,10 +1264,8 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Cross reference every class in the jar file to the files it references
-	 * 
-	 * @param args
-	 * @param i
+	 * Cross reference every class in the jar file to the files it
+	 * references @param args @param i
 	 */
 	@Description("Show a cross references for all classes in a set of jars.")
 	@Arguments(arg = {
@@ -1579,11 +1538,8 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * View files from JARs We parse the commandline and print each file on it.
-	 * 
-	 * @param args
-	 * @param i
-	 * @throws Exception
+	 * View files from JARs We parse the commandline and print each file on
+	 * it. @param args @param i @throws Exception
 	 */
 	@Description("View a resource from a JAR file. Manifest will be pretty printed and class files are shown disassembled.")
 	@Arguments(arg = {
@@ -1639,11 +1595,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Wrap a jar to a bundle.
-	 * 
-	 * @param args
-	 * @param i
-	 * @throws Exception
+	 * Wrap a jar to a bundle. @param args @param i @throws Exception
 	 */
 	@Description("Wrap a jar into a bundle. This is a poor man's facility to "
 			+ "quickly turn a non-OSGi JAR into an OSGi bundle. "
@@ -1768,11 +1720,8 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Printout all the variables in scope.
-	 * 
-	 * @param args
-	 * @param i
-	 * @throws Exception
+	 * Printout all the variables in scope. @param args @param i @throws
+	 * Exception
 	 */
 	@Description("Show a lot of info about the project you're in")
 	interface debugOptions extends Options {
@@ -1846,16 +1795,13 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Manage the repo.
-	 * 
-	 * <pre>
-	 * out.println(&quot; bnd repo [--repo|-r ('maven'| &lt;dir&gt;)]*&quot;);
-	 * out.println(&quot;        repos                          # list the repositories&quot;);
-	 * out.println(&quot;        list                           # list all content (not always possible)&quot;);
-	 * out.println(&quot;        get &lt;bsn&gt; &lt;version&gt; &lt;file&gt;?    # get an artifact&quot;);
-	 * out.println(&quot;        put &lt;file&gt;+                    # put in artifacts&quot;);
-	 * out.println(&quot;        help&quot;);
-	 * </pre>
+	 * Manage the repo. <pre> out.println(&quot; bnd repo [--repo|-r ('maven'|
+	 * &lt;dir&gt;)]*&quot;); out.println(&quot; repos # list the
+	 * repositories&quot;); out.println(&quot; list # list all content (not
+	 * always possible)&quot;); out.println(&quot; get &lt;bsn&gt;
+	 * &lt;version&gt; &lt;file&gt;? # get an artifact&quot;);
+	 * out.println(&quot; put &lt;file&gt;+ # put in artifacts&quot;);
+	 * out.println(&quot; help&quot;); </pre>
 	 */
 
 	@Description("Manage the repositories")
@@ -2181,9 +2127,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Print the components in this JAR.
-	 * 
-	 * @param jar
+	 * Print the components in this JAR. @param jar
 	 */
 	private void printComponents(PrintStream out, Jar jar) throws Exception {
 		out.println("[COMPONENTS]");
@@ -2218,9 +2162,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Print the metatypes in this JAR.
-	 * 
-	 * @param jar
+	 * Print the metatypes in this JAR. @param jar
 	 */
 	private void printMetatype(PrintStream out, Jar jar) throws Exception {
 		out.println("[METATYPE]");
@@ -2275,8 +2217,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * @param msg
-	 * @param ports
+	 * @param msg @param ports
 	 */
 
 	private void print(String msg, Map< ? , ? extends Map< ? , ? >> ports) {
@@ -2306,11 +2247,8 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Run the tests from a prepared bnd file.
-	 * 
-	 * @param args
-	 * @param i
-	 * @throws Exception
+	 * Run the tests from a prepared bnd file. @param args @param i @throws
+	 * Exception
 	 */
 
 	@Description("Run OSGi tests and create report")
@@ -2584,9 +2522,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Merge a bundle with its source.
-	 * 
-	 * @throws Exception
+	 * Merge a bundle with its source. @throws Exception
 	 */
 
 	@Description("Verify jars")
@@ -2616,9 +2552,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Merge a bundle with its source.
-	 * 
-	 * @throws Exception
+	 * Merge a bundle with its source. @throws Exception
 	 */
 
 	@Description("Merge a binary jar with its sources. It is possible to specify  source path")
@@ -2673,10 +2607,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Diff two jar files
-	 * 
-	 * @return
-	 * @throws Exception
+	 * Diff two jar files @return @throws Exception
 	 */
 
 	@Description("Diff jars")
@@ -2686,10 +2617,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Baseline
-	 * 
-	 * @return
-	 * @throws Exception
+	 * Baseline @return @throws Exception
 	 */
 
 	@Description("Compare a newer bundle to a baselined bundle and provide versioning advice")
@@ -2699,10 +2627,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Create a schema of package deltas and versions
-	 * 
-	 * @return
-	 * @throws Exception
+	 * Create a schema of package deltas and versions @return @throws Exception
 	 */
 
 	@Description("Highly specialized function to create an overview of package deltas in ees")
@@ -2926,10 +2851,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Central routine to get a JAR with error checking
-	 * 
-	 * @param s
-	 * @return
+	 * Central routine to get a JAR with error checking @param s @return
 	 */
 	Jar getJar(String s) {
 
@@ -2960,9 +2882,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Show the version of this bnd
-	 * 
-	 * @throws IOException
+	 * Show the version of this bnd @throws IOException
 	 */
 
 	@Description("Show version information about bnd")
@@ -3292,12 +3212,8 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Set the private key in the settings for this machine
-	 * 
-	 * @param hex
-	 * @param data
-	 * @return
-	 * @throws Exception
+	 * Set the private key in the settings for this machine @param hex @param
+	 * data @return @throws Exception
 	 */
 
 	private String tos(boolean hex, byte[] data) {
@@ -3316,10 +3232,7 @@ public class bnd extends Processor {
 	};
 
 	/**
-	 * hash a file
-	 * 
-	 * @throws Exception
-	 * @throws NoSuchAlgorithmException
+	 * hash a file @throws Exception @throws NoSuchAlgorithmException
 	 */
 	@Description("Digest a number of files")
 	@Arguments(arg = "file...")
@@ -3410,9 +3323,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Maven command
-	 * 
-	 * @throws Exception
+	 * Maven command @throws Exception
 	 */
 
 	@Description("Maven bundle command")
@@ -3679,9 +3590,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Show the class versions used in a JAR
-	 * 
-	 * @throws Exception
+	 * Show the class versions used in a JAR @throws Exception
 	 */
 
 	@Arguments(arg = "<jar-file>...")
@@ -3712,9 +3621,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Lets see if we can build in parallel
-	 * 
-	 * @throws Exception
+	 * Lets see if we can build in parallel @throws Exception
 	 */
 
 	@Description("experimental - parallel build")
@@ -3783,9 +3690,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Force a cache update of the workspace
-	 * 
-	 * @throws Exception
+	 * Force a cache update of the workspace @throws Exception
 	 */
 
 	public void _sync(projectOptions options) throws Exception {
@@ -3892,9 +3797,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Show the loaded workspace plugins
-	 * 
-	 * @throws Exception
+	 * Show the loaded workspace plugins @throws Exception
 	 */
 
 	public void _plugins(projectOptions opts) throws Exception {
@@ -4176,9 +4079,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Resolve command
-	 * 
-	 * @throws Exception
+	 * Resolve command @throws Exception
 	 */
 
 	public void _resolve(ResolveCommand.ResolveOptions options) throws Exception {
@@ -4191,9 +4092,7 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Remote command
-	 * 
-	 * @throws Exception
+	 * Remote command @throws Exception
 	 */
 
 	public void _remote(RemoteCommand.RemoteOptions options) throws Exception {

@@ -12,27 +12,23 @@ import aQute.service.reporter.*;
 
 public class MavenDeployCmd extends Processor {
 
-	String		repository	= "nexus";
-	String		url			= "http://oss.sonatype.org/service/local/staging/deploy/maven2";
-	String		homedir;
-	String		keyname;
+	String	repository	= "nexus";
+	String	url			= "http://oss.sonatype.org/service/local/staging/deploy/maven2";
+	String	homedir;
+	String	keyname;
 
 	String		passphrase;
 	Reporter	reporter;
 
 	/**
 	 * maven deploy [-url repo] [-passphrase passphrase] [-homedir homedir]
-	 * [-keyname keyname] bundle ...
-	 * 
-	 * @param args
-	 * @param i
-	 * @throws Exception
+	 * [-keyname keyname] bundle ... @param args @param i @throws Exception
 	 */
 	void run(String args[], int i) throws Exception {
 		if (i >= args.length) {
 			System.err.printf("Usage:%n");
-			System.err
-					.println("  deploy [-url repo] [-passphrase passphrase] [-homedir homedir] [-keyname keyname] bundle ...");
+			System.err.println(
+					"  deploy [-url repo] [-passphrase passphrase] [-homedir homedir] [-keyname keyname] bundle ...");
 			System.err.println("  settings");
 			return;
 		}
@@ -102,8 +98,8 @@ public class MavenDeployCmd extends Processor {
 			Jar src = new Jar("src");
 			try {
 				split(original, main, src);
-				Parameters exports = project.parseHeader(manifest.getMainAttributes()
-						.getValue(Constants.EXPORT_PACKAGE));
+				Parameters exports = project
+						.parseHeader(manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
 				File jdoc = new File(tmp, "jdoc");
 				if (!jdoc.exists() && !jdoc.mkdirs()) {
 					throw new IOException("Could not create directory " + jdoc);
@@ -172,8 +168,8 @@ public class MavenDeployCmd extends Processor {
 
 		int result = command.execute(stdout, stderr);
 		if (result != 0) {
-			b.error("Maven deploy to %s failed to sign and transfer %s because %s", repository, file, "" + stdout
-					+ stderr);
+			b.error("Maven deploy to %s failed to sign and transfer %s because %s", repository, file,
+					"" + stdout + stderr);
 		}
 	}
 

@@ -16,9 +16,9 @@ public class Decoder implements Closeable {
 	Map<String,Object>	extra;
 	String				encoding	= "UTF-8";
 
-	boolean				strict;
-	boolean				inflate;
-	boolean				keepOpen	= false;
+	boolean	strict;
+	boolean	inflate;
+	boolean	keepOpen	= false;
 
 	Decoder(JSONCodec codec) {
 		this.codec = codec;
@@ -39,6 +39,7 @@ public class Decoder implements Closeable {
 	public Decoder from(byte[] data) throws Exception {
 		return from(new ByteArrayInputStream(data));
 	}
+
 	public Decoder charset(String encoding) {
 		this.encoding = encoding;
 		return this;
@@ -123,7 +124,7 @@ public class Decoder implements Closeable {
 		keepOpen = true;
 		return this;
 	}
-	
+
 	int read() throws Exception {
 		current = reader.read();
 		if (digest != null) {
@@ -138,10 +139,7 @@ public class Decoder implements Closeable {
 	}
 
 	/**
-	 * Skip any whitespace.
-	 * 
-	 * @return
-	 * @throws Exception
+	 * Skip any whitespace. @return @throws Exception
 	 */
 	int skipWs() throws Exception {
 		while (Character.isWhitespace(current()))
@@ -150,10 +148,7 @@ public class Decoder implements Closeable {
 	}
 
 	/**
-	 * Skip any whitespace.
-	 * 
-	 * @return
-	 * @throws Exception
+	 * Skip any whitespace. @return @throws Exception
 	 */
 	int next() throws Exception {
 		read();

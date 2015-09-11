@@ -7,7 +7,7 @@ import aQute.lib.tag.*;
 public class Namespaces {
 
 	// namespace >> prefix
-	final Map<String,String>	namespaces	= new LinkedHashMap<String,String>();
+	final Map<String,String> namespaces = new LinkedHashMap<String,String>();
 
 	public void registerNamespace(String prefix, String namespace) {
 		if (namespaces.containsKey(namespace))

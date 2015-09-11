@@ -80,7 +80,7 @@ public class PermissionGenerator {
 		public abstract void generate(StringBuilder sb, Builder builder);
 	}
 
-	public static final String	KEY					= "permissions";
+	public static final String KEY = "permissions";
 
 	public static Set<String> getDeclaredServices(Builder builder) {
 		Set<String> declaredServices = new TreeSet<>();
@@ -98,7 +98,7 @@ public class PermissionGenerator {
 		return declaredServices;
 	}
 
-	private static final String	MATCH_ALL	= "*";
+	private static final String	MATCH_ALL		= "*";
 	private static final String	VALID_WILDCARD	= ".*";
 
 	static final class FindReferencedServices extends ExpressionVisitor<Set<String>> {
@@ -188,7 +188,7 @@ public class PermissionGenerator {
 		return parameters;
 	}
 
-	private final Builder		builder;
+	private final Builder			builder;
 	private final Set<Parameter>	parameters;
 
 	public PermissionGenerator(Builder builder, final String... args) {

@@ -8,11 +8,12 @@ public class Props implements Map<String,String> {
 
 	/**
 	 */
-	static String				EXTENDED	= "[\\-0-9a-zA-Z\\._]+";
+	static String EXTENDED = "[\\-0-9a-zA-Z\\._]+";
 
 	private Map<String,String>	map;
 	static Map<String,String>	EMPTY		= Collections.emptyMap();
 	public static Props			EMPTY_ATTRS	= new Props();
+
 	static {
 		EMPTY_ATTRS.map = Collections.emptyMap();
 	}
@@ -111,7 +112,6 @@ public class Props implements Map<String,String> {
 
 		if (map == null)
 			map = new LinkedHashMap<String,String>();
-
 
 		return map.put(key, value);
 	}

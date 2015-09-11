@@ -9,34 +9,25 @@ import aQute.bnd.osgi.Clazz.MethodDef;
 
 /**
  * Create an XML call tree of a set of classes. The structure of the XML is:
- * 
- * <pre>
- *    calltree ::= &lt;using&gt; &lt;usedby&gt;
- *    using    ::= &lt;method&gt; *
- *    usedby   ::= &lt;method&gt; *
- *    method   ::= &lt;ref&gt;
- * </pre>
- * 
- * The <code>using</code> element contains methods in the set of classes and
- * their references. The <code>usedby</code> element contains the used methods
- * and their references to the set of classes. The <code>ref</code> element
- * contains the class, the method name, the descriptor, and a pretty print
- * version of the method. The XML does not contain an XML processor instruction
- * to make it easier to include in other XML. The encoding is always UTF-8. This
- * class can be used as a resource, just add it to a JAR and the data is
- * generated when the resource is written (saving time when the JAR is up to
- * date and does not have to be generated). However, the actual write method is
- * a static method and can be called as well:
- * {@link #writeCalltree(PrintWriter, Collection)}.
+ * <pre> calltree ::= &lt;using&gt; &lt;usedby&gt; using ::= &lt;method&gt; *
+ * usedby ::= &lt;method&gt; * method ::= &lt;ref&gt; </pre> The
+ * <code>using</code> element contains methods in the set of classes and their
+ * references. The <code>usedby</code> element contains the used methods and
+ * their references to the set of classes. The <code>ref</code> element contains
+ * the class, the method name, the descriptor, and a pretty print version of the
+ * method. The XML does not contain an XML processor instruction to make it
+ * easier to include in other XML. The encoding is always UTF-8. This class can
+ * be used as a resource, just add it to a JAR and the data is generated when
+ * the resource is written (saving time when the JAR is up to date and does not
+ * have to be generated). However, the actual write method is a static method
+ * and can be called as well: {@link #writeCalltree(PrintWriter, Collection)}.
  */
 public class CalltreeResource extends WriteResource {
-	Collection<Clazz>	classes;
+	Collection<Clazz> classes;
 
 	/**
-	 * Create a resource for inclusion that will print a call tree.
-	 * 
-	 * @param values
-	 *            the classes for which the call tree is generated.
+	 * Create a resource for inclusion that will print a call tree. @param
+	 * values the classes for which the call tree is generated.
 	 */
 	public CalltreeResource(Collection<Clazz> values) {
 		this.classes = values;
@@ -69,14 +60,8 @@ public class CalltreeResource extends WriteResource {
 	}
 
 	/**
-	 * Print the call tree in XML.
-	 * 
-	 * @param out
-	 *            The output writer
-	 * @param classes
-	 *            The set of classes
-	 * @throws IOException
-	 *             Any errors
+	 * Print the call tree in XML. @param out The output writer @param classes
+	 * The set of classes @throws IOException Any errors
 	 */
 	public static void writeCalltree(PrintWriter out, Collection<Clazz> classes) throws Exception {
 
@@ -86,21 +71,21 @@ public class CalltreeResource extends WriteResource {
 				COMPARATOR);
 
 		ClassDataCollector cd = new ClassDataCollector() {
-//			Clazz.MethodDef	source;
+			// Clazz.MethodDef source;
 
 			// Before a method is parsed
 			@Override
 			public void method(Clazz.MethodDef source) {
-//				this.source = source;
+				// this.source = source;
 				xref(using, source, null);
 				xref(usedby, source, null);
 			}
 
 			// For any reference in the previous method.
-//			public void reference(Clazz.MethodDef reference) {
-//				xref(using, source, reference);
-//				xref(usedby, reference, source);
-//			}
+			// public void reference(Clazz.MethodDef reference) {
+			// xref(using, source, reference);
+			// xref(usedby, reference, source);
+			// }
 		};
 		for (Clazz clazz : classes) {
 			clazz.parseClassFileWithCollector(cd);
@@ -115,14 +100,13 @@ public class CalltreeResource extends WriteResource {
 	/*
 	 * Add a new reference
 	 */
-	static Comparator<Clazz.MethodDef>	COMPARATOR	= new Comparator<Clazz.MethodDef>() {
+	static Comparator<Clazz.MethodDef> COMPARATOR = new Comparator<Clazz.MethodDef>() {
 
-														public int compare(MethodDef a, MethodDef b) {
-															int r = a.getName().compareTo(b.getName());
-															return r != 0 ? r : a.getDescriptor().toString()
-																	.compareTo(b.getDescriptor().toString());
-														}
-													};
+		public int compare(MethodDef a, MethodDef b) {
+			int r = a.getName().compareTo(b.getName());
+			return r != 0 ? r : a.getDescriptor().toString().compareTo(b.getDescriptor().toString());
+		}
+	};
 
 	static void xref(Map<Clazz.MethodDef,Set<Clazz.MethodDef>> references, Clazz.MethodDef source,
 			Clazz.MethodDef reference) {

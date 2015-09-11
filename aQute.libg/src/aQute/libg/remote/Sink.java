@@ -7,19 +7,16 @@ import java.util.*;
  * known files between a Source and the Sink.
  */
 public interface Sink {
-	int	version	= 1;
+	int version = 1;
 
 	boolean sync(String areaId, Collection<Delta> deltas) throws Exception;
 
 	/**
 	 * Return the protocol version that must be used. The parameter passed
-	 * specifies the highest supported by the caller.
-	 * 
-	 * @return
+	 * specifies the highest supported by the caller. @return
 	 */
 	Welcome getWelcome(int highestAccepted);
 
-	
 	/**
 	 * Return a list of areas
 	 */
@@ -29,27 +26,21 @@ public interface Sink {
 	 * Get a specific area
 	 */
 	Area getArea(String areaId) throws Exception;
-	
+
 	/**
 	 * Remove an area
 	 */
 	boolean removeArea(String areaId) throws Exception;
 
 	/**
-	 * Create a new area
-	 * 
-	 * @param area
-	 *            area id, or null for a new area
-	 * @return
+	 * Create a new area @param area area id, or null for a new area @return
 	 */
 	Area createArea(String areaId) throws Exception;
 
 	/**
-	 * Launch
-	 * 
-	 * @return
+	 * Launch @return
 	 */
-	
+
 	boolean launch(String areaId, Map<String,String> env, List<String> args) throws Exception;
 
 	int exit(String area) throws Exception;

@@ -20,7 +20,7 @@ public abstract class Pom {
 	}
 
 	public enum Scope {
-		compile, runtime, system, import_, provided, test, ;
+		compile, runtime, system, import_, provided, test,;
 
 		// private boolean includes(Scope other) {
 		// if (other == this) return true;
@@ -33,8 +33,8 @@ public abstract class Pom {
 		// }
 	}
 
-	final Maven			maven;
-	final URI			home;
+	final Maven	maven;
+	final URI	home;
 
 	String				groupId;
 	String				artifactId;
@@ -324,10 +324,7 @@ public abstract class Pom {
 	}
 
 	/**
-	 * @param writer
-	 * @param dep
-	 * @throws IOException
-	 * @throws Exception
+	 * @param writer @param dep @throws IOException @throws Exception
 	 */
 	private void doEntry(Writer writer, Pom dep) throws IOException, Exception {
 		writer.append(dep.getGroupId());

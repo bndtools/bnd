@@ -29,21 +29,23 @@ public class ConversionUtilsTest extends TestCase {
 		assertEquals("com.paremus", artifact.getGroupId());
 		assertEquals("org.bndtools.example.foo", artifact.getArtifactId());
 	}
-	
+
 	public void testMaybeMavenCoordsToBsn() throws Exception {
 		assertEquals("org.example.foo", ConversionUtils.maybeMavenCoordsToBsn("org.example.foo"));
 		assertEquals("org.example.foo.bar", ConversionUtils.maybeMavenCoordsToBsn("org.example:foo.bar"));
-		
+
 		try {
 			ConversionUtils.maybeMavenCoordsToBsn(":foo.bar");
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		}
+		catch (IllegalArgumentException e) {
 			// expected
 		}
 		try {
 			ConversionUtils.maybeMavenCoordsToBsn("org.example:");
 			fail("Should have thrown IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		}
+		catch (IllegalArgumentException e) {
 			// expected
 		}
 	}

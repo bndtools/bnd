@@ -15,14 +15,14 @@ import aQute.service.reporter.*;
 import aQute.struct.*;
 
 public class Index {
-	Reporter	reporter	= new ReporterAdapter(System.out);
+	Reporter reporter = new ReporterAdapter(System.out);
 
 	static public class Repo extends struct {
 		public List<Library.RevisionRef>	revisionRefs	= list();
 		public boolean						learning		= true;
 		public boolean						recurse			= false;
 
-		byte[]								synced;
+		byte[] synced;
 
 		// Manually print this so that we
 		// have 1 line per resource, making it easier on git
@@ -33,22 +33,21 @@ public class Index {
 		}
 	}
 
-	private static final SortedSet<Version>						EMPTY_VERSIONS	= Collections
-																						.unmodifiableSortedSet(new TreeSet<Version>());
+	private static final SortedSet<Version> EMPTY_VERSIONS = Collections.unmodifiableSortedSet(new TreeSet<Version>());
 
-	private File												indexFile;
+	private File indexFile;
 
-	private Map<String,TreeMap<Version,Library.RevisionRef>>	cache;
+	private Map<String,TreeMap<Version,Library.RevisionRef>> cache;
 
-	private Repo												repo;
+	private Repo repo;
 
 	public Index(File file) {
 		this.indexFile = file;
 	}
 
-	static final JSONCodec	codec	= new JSONCodec();
+	static final JSONCodec codec = new JSONCodec();
 
-	private boolean			dirty;
+	private boolean dirty;
 
 	private void init() throws Exception {
 		if (repo == null) {

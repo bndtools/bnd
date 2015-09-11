@@ -24,7 +24,8 @@ public class Utils {
 				result.append(line);
 			}
 			return result.toString();
-		} finally {
+		}
+		finally {
 			reader.close();
 		}
 	}
@@ -38,14 +39,17 @@ public class Utils {
 					break;
 				output.write(buf, 0, bytesRead);
 			}
-		} finally {
+		}
+		finally {
 			try {
 				input.close();
-			} catch (IOException e) { /* ignore */
+			}
+			catch (IOException e) { /* ignore */
 			}
 			try {
 				output.close();
-			} catch (IOException e) { /* ignore */
+			}
+			catch (IOException e) { /* ignore */
 			}
 		}
 	}
@@ -59,28 +63,24 @@ public class Utils {
 	}
 
 	/**
-	 * Deletes the specified file. Folders are recursively deleted.<br>
-	 * If file(s) cannot be deleted, no feedback is provided (fail silently).
-	 * 
-	 * @param f
-	 *            file to be deleted
+	 * Deletes the specified file. Folders are recursively deleted.<br> If
+	 * file(s) cannot be deleted, no feedback is provided (fail
+	 * silently). @param f file to be deleted
 	 */
 	public static void delete(File f) {
 		try {
 			deleteWithException(f);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			// Ignore a failed delete
 		}
 	}
 
 	/**
-	 * Deletes the specified file. Folders are recursively deleted.<br>
-	 * Throws exception if any of the files could not be deleted.
-	 * 
-	 * @param f
-	 *            file to be deleted
-	 * @throws IOException
-	 *             if the file (or contents of a folder) could not be deleted
+	 * Deletes the specified file. Folders are recursively deleted.<br> Throws
+	 * exception if any of the files could not be deleted. @param f file to be
+	 * deleted @throws IOException if the file (or contents of a folder) could
+	 * not be deleted
 	 */
 	public static void deleteWithException(File f) throws IOException {
 		f = f.getAbsoluteFile();
@@ -95,7 +95,8 @@ public class Utils {
 			for (File sub : subs) {
 				try {
 					deleteWithException(sub);
-				} catch (IOException e) {
+				}
+				catch (IOException e) {
 					wasDeleted = false;
 				}
 			}

@@ -47,7 +47,8 @@ public class BNDMetatypeTest extends BndTestCase {
 	static XPathFactory				xpathf	= XPathFactory.newInstance();
 	static XPath					xpath	= xpathf.newXPath();
 
-	static DocumentBuilder			db;
+	static DocumentBuilder db;
+
 	static {
 		try {
 			dbf.setNamespaceAware(true);
@@ -82,15 +83,12 @@ public class BNDMetatypeTest extends BndTestCase {
 
 	/**
 	 * Configuration should return null for nonprimitive properties if not
-	 * defined. Now it returns 0. Testcase:
-	 * 
-	 * @OCD interface Config {
-	 * @ad(required = false) Integer port(); } Config config =
-	 *              Configurable.createConfigurable(Config.class, properties);
-	 *              assert config.port() == null; // property port is not set
-	 *              Fix: Please delete
-	 *              "|| Number.class.isAssignableFrom(method.getReturnType())"
-	 *              from aQute/bnd/annotation/metatype/Configurable.java
+	 * defined. Now it returns 0. Testcase: @OCD interface Config { @ad(required
+	 * = false) Integer port(); } Config config =
+	 * Configurable.createConfigurable(Config.class, properties); assert
+	 * config.port() == null; // property port is not set Fix: Please delete "||
+	 * Number.class.isAssignableFrom(method.getReturnType())" from
+	 * aQute/bnd/annotation/metatype/Configurable.java
 	 */
 	@Meta.OCD
 	static interface C {
@@ -286,7 +284,7 @@ public class BNDMetatypeTest extends BndTestCase {
 	 */
 
 	public static class MyList<T> extends ArrayList<T> {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		public MyList() {
 			System.err.println("Constr");
@@ -387,9 +385,7 @@ public class BNDMetatypeTest extends BndTestCase {
 	}
 
 	/**
-	 * Test the converter.
-	 * 
-	 * @throws URISyntaxException
+	 * Test the converter. @throws URISyntaxException
 	 */
 
 	public void testConverter() throws URISyntaxException {
@@ -397,25 +393,25 @@ public class BNDMetatypeTest extends BndTestCase {
 			// Test collections as value
 			TestReturnTypes trt = set(TestReturnTypes.class, Arrays.asList(55));
 			assertTrue(Arrays.equals(new boolean[] {
-				true
+					true
 			}, trt.rpaBoolean()));
 			assertTrue(Arrays.equals(new byte[] {
-				55
+					55
 			}, trt.rpaByte()));
 			assertTrue(Arrays.equals(new short[] {
-				55
+					55
 			}, trt.rpaShort()));
 			assertTrue(Arrays.equals(new int[] {
-				55
+					55
 			}, trt.rpaInt()));
 			assertTrue(Arrays.equals(new long[] {
-				55
+					55
 			}, trt.rpaLong()));
 			assertTrue(Arrays.equals(new float[] {
-				55
+					55
 			}, trt.rpaFloat()));
 			assertTrue(Arrays.equals(new double[] {
-				55
+					55
 			}, trt.rpaDouble()));
 			assertEquals(Arrays.asList(true), trt.rBooleans());
 			assertEquals(Arrays.asList(new Byte((byte) 55)), trt.rBytes());
@@ -428,59 +424,59 @@ public class BNDMetatypeTest extends BndTestCase {
 			assertEquals(Arrays.asList(new URI("55")), trt.rURIs());
 
 			assertTrue(Arrays.equals(new Boolean[] {
-				true
+					true
 			}, trt.raBoolean()));
 			assertTrue(Arrays.equals(new Byte[] {
-				55
+					55
 			}, trt.raByte()));
 			assertTrue(Arrays.equals(new Short[] {
-				55
+					55
 			}, trt.raShort()));
 			assertTrue(Arrays.equals(new Integer[] {
-				55
+					55
 			}, trt.raInt()));
 			assertTrue(Arrays.equals(new Long[] {
-				55L
+					55L
 			}, trt.raLong()));
 			assertTrue(Arrays.equals(new Float[] {
-				55F
+					55F
 			}, trt.raFloat()));
 			assertTrue(Arrays.equals(new Double[] {
-				55D
+					55D
 			}, trt.raDouble()));
 			assertTrue(Arrays.equals(new String[] {
-				"55"
+					"55"
 			}, trt.raString()));
 			assertTrue(Arrays.equals(new URI[] {
-				new URI("55")
+					new URI("55")
 			}, trt.raURI()));
 
 		}
 		{
 			// Test primitive arrays as value
 			TestReturnTypes trt = set(TestReturnTypes.class, new int[] {
-				55
+					55
 			});
 			assertTrue(Arrays.equals(new boolean[] {
-				true
+					true
 			}, trt.rpaBoolean()));
 			assertTrue(Arrays.equals(new byte[] {
-				55
+					55
 			}, trt.rpaByte()));
 			assertTrue(Arrays.equals(new short[] {
-				55
+					55
 			}, trt.rpaShort()));
 			assertTrue(Arrays.equals(new int[] {
-				55
+					55
 			}, trt.rpaInt()));
 			assertTrue(Arrays.equals(new long[] {
-				55
+					55
 			}, trt.rpaLong()));
 			assertTrue(Arrays.equals(new float[] {
-				55
+					55
 			}, trt.rpaFloat()));
 			assertTrue(Arrays.equals(new double[] {
-				55
+					55
 			}, trt.rpaDouble()));
 			assertEquals(Arrays.asList(true), trt.rBooleans());
 			assertEquals(Arrays.asList(new Byte((byte) 55)), trt.rBytes());
@@ -493,31 +489,31 @@ public class BNDMetatypeTest extends BndTestCase {
 			assertEquals(Arrays.asList(new URI("55")), trt.rURIs());
 
 			assertTrue(Arrays.equals(new Boolean[] {
-				true
+					true
 			}, trt.raBoolean()));
 			assertTrue(Arrays.equals(new Byte[] {
-				55
+					55
 			}, trt.raByte()));
 			assertTrue(Arrays.equals(new Short[] {
-				55
+					55
 			}, trt.raShort()));
 			assertTrue(Arrays.equals(new Integer[] {
-				55
+					55
 			}, trt.raInt()));
 			assertTrue(Arrays.equals(new Long[] {
-				55L
+					55L
 			}, trt.raLong()));
 			assertTrue(Arrays.equals(new Float[] {
-				55F
+					55F
 			}, trt.raFloat()));
 			assertTrue(Arrays.equals(new Double[] {
-				55D
+					55D
 			}, trt.raDouble()));
 			assertTrue(Arrays.equals(new String[] {
-				"55"
+					"55"
 			}, trt.raString()));
 			assertTrue(Arrays.equals(new URI[] {
-				new URI("55")
+					new URI("55")
 			}, trt.raURI()));
 
 		}
@@ -542,25 +538,25 @@ public class BNDMetatypeTest extends BndTestCase {
 			assertEquals("55", trt.rString());
 			assertEquals(new URI("55"), trt.rURI());
 			assertTrue(Arrays.equals(new boolean[] {
-				true
+					true
 			}, trt.rpaBoolean()));
 			assertTrue(Arrays.equals(new byte[] {
-				55
+					55
 			}, trt.rpaByte()));
 			assertTrue(Arrays.equals(new short[] {
-				55
+					55
 			}, trt.rpaShort()));
 			assertTrue(Arrays.equals(new int[] {
-				55
+					55
 			}, trt.rpaInt()));
 			assertTrue(Arrays.equals(new long[] {
-				55
+					55
 			}, trt.rpaLong()));
 			assertTrue(Arrays.equals(new float[] {
-				55
+					55
 			}, trt.rpaFloat()));
 			assertTrue(Arrays.equals(new double[] {
-				55
+					55
 			}, trt.rpaDouble()));
 			assertEquals(Arrays.asList(true), trt.rBooleans());
 			assertEquals(Arrays.asList(new Byte((byte) 55)), trt.rBytes());
@@ -573,31 +569,31 @@ public class BNDMetatypeTest extends BndTestCase {
 			assertEquals(Arrays.asList(new URI("55")), trt.rURIs());
 
 			assertTrue(Arrays.equals(new Boolean[] {
-				true
+					true
 			}, trt.raBoolean()));
 			assertTrue(Arrays.equals(new Byte[] {
-				55
+					55
 			}, trt.raByte()));
 			assertTrue(Arrays.equals(new Short[] {
-				55
+					55
 			}, trt.raShort()));
 			assertTrue(Arrays.equals(new Integer[] {
-				55
+					55
 			}, trt.raInt()));
 			assertTrue(Arrays.equals(new Long[] {
-				55L
+					55L
 			}, trt.raLong()));
 			assertTrue(Arrays.equals(new Float[] {
-				55F
+					55F
 			}, trt.raFloat()));
 			assertTrue(Arrays.equals(new Double[] {
-				55D
+					55D
 			}, trt.raDouble()));
 			assertTrue(Arrays.equals(new String[] {
-				"55"
+					"55"
 			}, trt.raString()));
 			assertTrue(Arrays.equals(new URI[] {
-				new URI("55")
+					new URI("55")
 			}, trt.raURI()));
 		}
 	}
@@ -638,8 +634,6 @@ public class BNDMetatypeTest extends BndTestCase {
 
 		b.build();
 		assertOk(b);
-
-
 
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$Enums.xml");
 		IO.copy(r.openInputStream(), System.err);
@@ -694,8 +688,6 @@ public class BNDMetatypeTest extends BndTestCase {
 		b.build();
 		assertOk(b);
 
-
-
 		System.err.println(b.getJar().getResources().keySet());
 
 		assertOCD(b, "test.metatype.BNDMetatypeTest$OCDEmpty", "test.metatype.BNDMetatypeTest$OCDEmpty",
@@ -703,13 +695,14 @@ public class BNDMetatypeTest extends BndTestCase {
 		assertOCD(b, "test.metatype.BNDMetatypeTest$OCDName", "test.metatype.BNDMetatypeTest$OCDName", "name", null,
 				"test.metatype.BNDMetatypeTest$OCDName", false, null);
 		assertOCD(b, "test.metatype.BNDMetatypeTest$OCDDescription", "test.metatype.BNDMetatypeTest$OCDDescription",
-				"BNDMetatype test OCDDescription", "description", "test.metatype.BNDMetatypeTest$OCDDescription", false, null);
+				"BNDMetatype test OCDDescription", "description", "test.metatype.BNDMetatypeTest$OCDDescription", false,
+				null);
 		assertOCD(b, "test.metatype.BNDMetatypeTest$OCDDesignatePidOnly",
 				"test.metatype.BNDMetatypeTest$OCDDesignatePidOnly", "BNDMetatype test OCDDesignate pid only", null,
 				"test.metatype.BNDMetatypeTest$OCDDesignatePidOnly", false, null);
 		assertOCD(b, "test.metatype.BNDMetatypeTest$OCDDesignatePidFactory",
-				"test.metatype.BNDMetatypeTest$OCDDesignatePidFactory", "BNDMetatype test OCDDesignate pid factory", null,
-				"test.metatype.BNDMetatypeTest$OCDDesignatePidFactory", true, null);
+				"test.metatype.BNDMetatypeTest$OCDDesignatePidFactory", "BNDMetatype test OCDDesignate pid factory",
+				null, "test.metatype.BNDMetatypeTest$OCDDesignatePidFactory", true, null);
 		assertOCD(b, "test.metatype.BNDMetatypeTest$OCDId", "id", "BNDMetatype test OCDId", null, "id", false, null);
 		assertOCD(b, "test.metatype.BNDMetatypeTest$OCDIdWithPid", "id", "BNDMetatype test OCDId with pid", null, "id",
 				false, null);
@@ -822,8 +815,6 @@ public class BNDMetatypeTest extends BndTestCase {
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$TestAD.xml");
 		assertOk(b);
 
-
-
 		System.err.println(b.getJar().getResources().keySet());
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
@@ -853,9 +844,9 @@ public class BNDMetatypeTest extends BndTestCase {
 		assertAD(d, "labelsAndValues", "Labels and values", "labelsAndValues", null, null, null, 0, "String", null,
 				new String[] {
 						"a", "b"
-				}, new String[] {
-						"A", "A"
-				});
+		}, new String[] {
+				"A", "A"
+		});
 	}
 
 	/**
@@ -875,12 +866,12 @@ public class BNDMetatypeTest extends BndTestCase {
 	}
 
 	@Meta.OCD(description = "adinheritance-child")
-	public static interface TestADWithInheritanceChild extends TestADWithInheritanceSuperOne,
-		TestADWithInheritanceSuperTwo {
+	public static interface TestADWithInheritanceChild
+			extends TestADWithInheritanceSuperOne, TestADWithInheritanceSuperTwo {
 		@Meta.AD
 		String fromChild();
 	}
-	
+
 	public void testADWithInheritance() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
@@ -890,27 +881,25 @@ public class BNDMetatypeTest extends BndTestCase {
 
 		b.setProperty("-metatype-inherit", "true");
 		b.build();
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$TestADWithInheritanceChild.xml");
+		Resource r = b.getJar()
+				.getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$TestADWithInheritanceChild.xml");
 		assertOk(b);
-
-
 
 		System.err.println(b.getJar().getResources().keySet());
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
-		
+
 		Document d = db.parse(r.openInputStream());
-		
+
 		assertAD(d, "fromChild", "From child", "fromChild", null, null, null, 0, "String", null, null, null);
 		assertAD(d, "fromSuperOne", "From super one", "fromSuperOne", null, null, null, 0, "String", null, null, null);
 		assertAD(d, "fromSuperTwo", "From super two", "fromSuperTwo", null, null, null, 0, "String", null, null, null);
 	}
 
-	private void assertAD(Document d, @SuppressWarnings("unused")
-	String mname, String name, String id, String min, String max, String deflt, int cardinality, String type,
-			String description, @SuppressWarnings("unused")
-			String[] optionvalues, @SuppressWarnings("unused")
-			String optionLabels[]) throws XPathExpressionException {
+	private void assertAD(Document d, @SuppressWarnings("unused") String mname, String name, String id, String min,
+			String max, String deflt, int cardinality, String type, String description,
+			@SuppressWarnings("unused") String[] optionvalues, @SuppressWarnings("unused") String optionLabels[])
+					throws XPathExpressionException {
 		assertEquals(name, xpath.evaluate("//OCD/AD[@id='" + id + "']/@name", d, XPathConstants.STRING));
 		assertEquals(id, xpath.evaluate("//OCD/AD[@id='" + id + "']/@id", d, XPathConstants.STRING));
 		assertEquals(min == null ? "" : min,
@@ -1035,8 +1024,6 @@ public class BNDMetatypeTest extends BndTestCase {
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$TestReturnTypes.xml");
 		assertOk(b);
 
-
-
 		System.err.println(b.getJar().getResources().keySet());
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
@@ -1130,9 +1117,7 @@ public class BNDMetatypeTest extends BndTestCase {
 	}
 
 	/**
-	 * Test simple
-	 * 
-	 * @author aqute
+	 * Test simple @author aqute
 	 */
 	@Meta.OCD(description = "simple", name = "TestSimple")
 	public static interface TestSimple {
@@ -1158,7 +1143,6 @@ public class BNDMetatypeTest extends BndTestCase {
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$TestSimple.xml");
 		assertOk(b);
 
-
 		System.err.println(b.getJar().getResources().keySet());
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
@@ -1175,19 +1159,17 @@ public class BNDMetatypeTest extends BndTestCase {
 		assertEquals("String", xpath.evaluate("//OCD/AD[@id='simple']/@type", d));
 		assertEquals("true", xpath.evaluate("//OCD/AD[@id='notSoSimple']/@required", d));
 		/**
-		 * https://github.com/bndtools/bnd/issues/281
-		 * 
-		 * Using the Bnd annotations library (1.52.3), the generated metatype
-		 * file will have required='false' for all fields annotated with
-		 * @Meta.AD(). When this annotation is omitted, or when the required
-		 * property is explicitly set, the field is correctly marked as
-		 * required. Taking a glance at the code, the bug appears to be due to
-		 * aQute.bnd.osgi.Annotation using
-		 * aQute.bnd.annotation.metatype.Configurable internally for bridging
-		 * Bnd-annotations to Java-annotations. This configurable only obtains
-		 * the values from the Bnd-annotation, omitting the defaults defined in
-		 * the Java annotation. The workaround is to explicitly mention the
-		 * required property on each field annotated with @Meta.AD.
+		 * https://github.com/bndtools/bnd/issues/281 Using the Bnd annotations
+		 * library (1.52.3), the generated metatype file will have
+		 * required='false' for all fields annotated with @Meta.AD(). When this
+		 * annotation is omitted, or when the required property is explicitly
+		 * set, the field is correctly marked as required. Taking a glance at
+		 * the code, the bug appears to be due to aQute.bnd.osgi.Annotation
+		 * using aQute.bnd.annotation.metatype.Configurable internally for
+		 * bridging Bnd-annotations to Java-annotations. This configurable only
+		 * obtains the values from the Bnd-annotation, omitting the defaults
+		 * defined in the Java annotation. The workaround is to explicitly
+		 * mention the required property on each field annotated with @Meta.AD.
 		 */
 		assertEquals("true", xpath.evaluate("//OCD/AD[@id='simple']/@required", d));
 		assertEquals(Integer.MAX_VALUE + "", xpath.evaluate("//OCD/AD[@id='notSoSimple']/@cardinality", d));
@@ -1196,37 +1178,23 @@ public class BNDMetatypeTest extends BndTestCase {
 
 	/**
 	 * https://github.com/bndtools/bnd/issues/316 Example Configuration:
-	 * 
-	 * <pre>
-	 *  @Meta.AD(required = false, type = Type.Boolean, deflt = "false")
-	 *  boolean enabled();
-	 * It appears that in the configurable class that this logic
-	 * 
-	 * if (resultType == boolean.class || resultType == Boolean.class) {
-	 *         if ( actualType == boolean.class || actualType ==   Boolean.class)
-	 *             return o;
-	 * 
-	 *         if (Number.class.isAssignableFrom(actualType)) {
-	 *             double b = ((Number) o).doubleValue();
-	 *             if (b == 0)
-	 *                 return false;
-	 *             else
-	 *                 return true;
-	 *         }
-	 *         return true;
-	 * </pre>
-	 * 
-	 * Does not perform as expected. The deflt value from the configuration
-	 * interface will always be a string, and the value is never parsed,
-	 * therefore the third if statement is basically unreachable for a default
-	 * value. Additionally the default behavior of returning true is unexpected
-	 * because default values for booleans is false, configuration admin would
-	 * use false for anything NOT equal, ignore case "true", so why would this
-	 * be true, and how could that assumption even be made when, at least in the
-	 * aforementioned case of the default value, the incoming value isn't
-	 * processed(parsed, or in someway checked for actual content). Note that
-	 * per documentation available an number value was tried for the deflt, ie
-	 * "0", but again the value isn't processed so this had no effect.
+	 * <pre> @Meta.AD(required = false, type = Type.Boolean, deflt = "false")
+	 * boolean enabled(); It appears that in the configurable class that this
+	 * logic if (resultType == boolean.class || resultType == Boolean.class) {
+	 * if ( actualType == boolean.class || actualType == Boolean.class) return
+	 * o; if (Number.class.isAssignableFrom(actualType)) { double b = ((Number)
+	 * o).doubleValue(); if (b == 0) return false; else return true; } return
+	 * true; </pre> Does not perform as expected. The deflt value from the
+	 * configuration interface will always be a string, and the value is never
+	 * parsed, therefore the third if statement is basically unreachable for a
+	 * default value. Additionally the default behavior of returning true is
+	 * unexpected because default values for booleans is false, configuration
+	 * admin would use false for anything NOT equal, ignore case "true", so why
+	 * would this be true, and how could that assumption even be made when, at
+	 * least in the aforementioned case of the default value, the incoming value
+	 * isn't processed(parsed, or in someway checked for actual content). Note
+	 * that per documentation available an number value was tried for the deflt,
+	 * ie "0", but again the value isn't processed so this had no effect.
 	 */
 	static interface DefaultBoolean {
 		@Meta.AD(deflt = "true", required = false)

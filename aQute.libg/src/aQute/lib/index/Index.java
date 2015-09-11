@@ -7,19 +7,15 @@ import java.nio.channels.FileChannel.MapMode;
 import java.util.*;
 
 /**
- * <pre>
- *   0   ->   0, 122   -> 1
- *   123 -> 123, 244   -> 2
- *   245 -> 245, ...
- * </pre>
+ * <pre> 0 -> 0, 122 -> 1 123 -> 123, 244 -> 2 245 -> 245, ... </pre>
  */
 public class Index implements Iterable<byte[]> {
-	final static int					LEAF		= 0;
-	final static int					INDEX		= 1;
+	final static int	LEAF	= 0;
+	final static int	INDEX	= 1;
 
-	final static int					SIGNATURE	= 0;
-	final static int					MAGIC		= 0x494C4458;
-	final static int					KEYSIZE		= 4;
+	final static int	SIGNATURE	= 0;
+	final static int	MAGIC		= 0x494C4458;
+	final static int	KEYSIZE		= 4;
 
 	FileChannel							file;
 	final int							pageSize	= 4096;
@@ -30,7 +26,7 @@ public class Index implements Iterable<byte[]> {
 	final LinkedHashMap<Integer,Page>	cache		= new LinkedHashMap<Integer,Index.Page>();
 	final MappedByteBuffer				settings;
 
-	private int							nextPage;
+	private int nextPage;
 
 	class Page {
 		final static int		TYPE_OFFSET		= 0;
@@ -59,8 +55,8 @@ public class Index implements Iterable<byte[]> {
 
 		Iterator<byte[]> iterator() {
 			return new Iterator<byte[]>() {
-				Iterator<byte[]>	i;
-				int					rover	= 0;
+				Iterator<byte[]> i;
+				int rover = 0;
 
 				public byte[] next() {
 					if (leaf) {
@@ -255,8 +251,8 @@ public class Index implements Iterable<byte[]> {
 
 		public void toString(StringBuilder sb, String indent) throws IOException {
 			for (int i = 0; i < n; i++) {
-				sb.append(String.format("%s %02d:%02d %20s %s %d%n", indent, number, i, hex(k(i), 0, 4), leaf ? "=="
-						: "->", c(i)));
+				sb.append(String.format("%s %02d:%02d %20s %s %d%n", indent, number, i, hex(k(i), 0, 4),
+						leaf ? "==" : "->", c(i)));
 				if (!leaf) {
 					long c = c(i);
 					Page sub = getPage((int) c);

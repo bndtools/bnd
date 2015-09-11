@@ -3,4 +3,3 @@
 package test.packageinfo.annotated;
 
 import org.osgi.annotation.versioning.*;
-

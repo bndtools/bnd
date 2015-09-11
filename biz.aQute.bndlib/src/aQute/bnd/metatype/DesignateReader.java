@@ -15,14 +15,14 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.xmlattribute.XMLAttributeFinder;
 
 public class DesignateReader extends ClassDataCollector {
-	
-	private Analyzer	analyzer;
-	private Clazz	clazz;
-	private Map<TypeRef,OCDDef>			classToOCDMap;
-	
-	private String[] pids;
+
+	private Analyzer			analyzer;
+	private Clazz				clazz;
+	private Map<TypeRef,OCDDef>	classToOCDMap;
+
+	private String[]					pids;
 	private String						pid;
-	private Annotation designate;
+	private Annotation					designate;
 	private final XMLAttributeFinder	finder;
 	private DesignateDef				def;
 
@@ -35,8 +35,8 @@ public class DesignateReader extends ClassDataCollector {
 
 	static DesignateDef getDesignate(Clazz c, Analyzer analyzer, Map<TypeRef,OCDDef> classToOCDMap,
 			XMLAttributeFinder finder) throws Exception {
-	 		DesignateReader r = new DesignateReader(analyzer, c, classToOCDMap, finder);
-	 		return r.getDef();
+		DesignateReader r = new DesignateReader(analyzer, c, classToOCDMap, finder);
+		return r.getDef();
 	}
 
 	private DesignateDef getDef() throws Exception {
@@ -46,16 +46,15 @@ public class DesignateReader extends ClassDataCollector {
 				analyzer.error(
 						"DS Component %s specifies multiple pids %s, and a Designate which requires exactly one pid",
 						clazz.getClassName().getFQN(), Arrays.asList(pids));
-				return null;				
+				return null;
 			}
 			TypeRef ocdClass = designate.get("ocd");
 			// ocdClass = ocdClass.substring(1, ocdClass.length() - 1);
 			OCDDef ocd = classToOCDMap.get(ocdClass);
 			if (ocd == null) {
-				analyzer.error(
-						"DS Component %s specifies ocd class %s which cannot be found; known classes %s",
+				analyzer.error("DS Component %s specifies ocd class %s which cannot be found; known classes %s",
 						clazz.getClassName().getFQN(), ocdClass, classToOCDMap.keySet());
-				return null;				
+				return null;
 			}
 			String id = ocd.id;
 			boolean factoryPid = Boolean.TRUE == designate.get("factory");
@@ -70,8 +69,7 @@ public class DesignateReader extends ClassDataCollector {
 		return null;
 	}
 
-
-    @Override
+	@Override
 	public void annotation(Annotation annotation) throws Exception {
 		try {
 			java.lang.annotation.Annotation a = annotation.getAnnotation();
@@ -110,6 +108,5 @@ public class DesignateReader extends ClassDataCollector {
 			def = new DesignateDef(finder);
 		def.addExtensionAttribute(xmlAttr, annotation);
 	}
-
 
 }

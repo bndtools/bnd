@@ -76,18 +76,18 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	//
 	// Initialize the main class for a local launch start
 	//
-	
+
 	protected int invoke(Class< ? > main, String args[]) throws Exception {
 		LauncherConstants lc = getConstants(getRunBundles(), false);
-		
+
 		Method mainMethod = main.getMethod("main", args.getClass(), Properties.class);
 		Object o = mainMethod.invoke(null, (Object) args, lc.getProperties(new UTF8Properties()));
-		if ( o == null)
+		if (o == null)
 			return 0;
-		
+
 		return (Integer) o;
 	}
-	
+
 	/**
 	 * Cleanup the properties file. Is called after the process terminates.
 	 */
@@ -95,7 +95,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	@Override
 	public void cleanup() {
 		propertiesFile.delete();
-		if(listenerComms != null) {
+		if (listenerComms != null) {
 			listenerComms.close();
 			listenerComms = null;
 		}
@@ -140,10 +140,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	}
 
 	/**
-	 * @return
-	 * @throws Exception
-	 * @throws FileNotFoundException
-	 * @throws IOException
+	 * @return @throws Exception @throws FileNotFoundException @throws
+	 * IOException
 	 */
 	private LauncherConstants getConstants(Collection<String> runbundles, boolean exported)
 			throws Exception, FileNotFoundException, IOException {
@@ -160,27 +158,26 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		lc.services = super.getRunFramework() == SERVICES ? true : false;
 		lc.activators.addAll(getActivators());
 		lc.name = getProject().getName();
-		
-		if(!exported && !getNotificationListeners().isEmpty()) {
-			if(listenerComms == null) {
+
+		if (!exported && !getNotificationListeners().isEmpty()) {
+			if (listenerComms == null) {
 				listenerComms = new DatagramSocket(new InetSocketAddress(InetAddress.getLocalHost(), 0));
 				new Thread(new Runnable() {
 					public void run() {
 						DatagramSocket socket = listenerComms;
 						DatagramPacket packet = new DatagramPacket(new byte[65536], 65536);
-						while(!socket.isClosed()) {
+						while (!socket.isClosed()) {
 							try {
 								socket.receive(packet);
-								DataInputStream dai = new DataInputStream(new ByteArrayInputStream(
-										packet.getData(), packet.getOffset(), packet.getLength()));
+								DataInputStream dai = new DataInputStream(new ByteArrayInputStream(packet.getData(),
+										packet.getOffset(), packet.getLength()));
 								NotificationType type = NotificationType.values()[dai.readInt()];
 								String message = dai.readUTF();
-								for(NotificationListener listener : getNotificationListeners()) {
+								for (NotificationListener listener : getNotificationListeners()) {
 									listener.notify(type, message);
 								}
 							}
-							catch (IOException e) {
-							}
+							catch (IOException e) {}
 						}
 					}
 				}).start();
@@ -221,34 +218,32 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 * into the JAR and the runbundles are copied to a directory in the jar. The
 	 * launcher will see that it starts in embedded mode and will automatically
 	 * detect that it should load the bundles from inside. This is drive by the
-	 * launcher.embedded flag.
-	 * 
-	 * @throws Exception
+	 * launcher.embedded flag. @throws Exception
 	 */
 
 	@Override
 	public Jar executable() throws Exception {
-		
+
 		// TODO use constants in the future
 		Parameters packageHeader = OSGiHeader.parseHeader(project.getProperty("-package"));
 		boolean useShas = packageHeader.containsKey("jpm");
 		project.trace("Useshas %s %s", useShas, packageHeader);
 
 		Jar jar = new Jar(project.getName());
-		
+
 		Builder b = new Builder();
 		project.addClose(b);
-		
+
 		if (!project.getIncludeResource().isEmpty()) {
 			b.setIncludeResource(project.getIncludeResource().toString());
 			b.setProperty(Constants.RESOURCEONLY, "true");
 			b.build();
-			if ( b.isOk()) {
+			if (b.isOk()) {
 				jar.addAll(b.getJar());
 			}
 			project.getInfo(b);
 		}
-		
+
 		List<String> runpath = getRunpath();
 
 		Set<String> runpathShas = new LinkedHashSet<String>();

@@ -4,7 +4,7 @@ import java.io.*;
 import java.lang.reflect.*;
 
 public class HCodec implements Codec {
-	final Codec	codec;
+	final Codec codec;
 
 	public HCodec(Codec codec) {
 		this.codec = codec;

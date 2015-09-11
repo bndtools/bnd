@@ -13,17 +13,17 @@ import aQute.lib.justif.*;
 import aQute.lib.settings.*;
 
 public abstract class AbstractConsoleApp extends Env {
-	Settings					settings;
+	Settings settings;
 
 	protected final PrintStream	err;
 	protected final PrintStream	out;
 
-	static String				encoding	= System.getProperty("file.encoding");
-	int							width		= 120;									// characters
-	int							tabs[]		= {
+	static String			encoding	= System.getProperty("file.encoding");
+	int						width		= 120;									// characters
+	int						tabs[]		= {
 			40, 48, 56, 64, 72, 80, 88, 96, 104, 112
 											};
-	private final Object		target;
+	private final Object	target;
 
 	static {
 		if (encoding == null)
@@ -31,9 +31,7 @@ public abstract class AbstractConsoleApp extends Env {
 	}
 
 	/**
-	 * Default constructor
-	 * 
-	 * @throws UnsupportedEncodingException
+	 * Default constructor @throws UnsupportedEncodingException
 	 */
 
 	public AbstractConsoleApp(Object target) throws UnsupportedEncodingException {
@@ -47,9 +45,7 @@ public abstract class AbstractConsoleApp extends Env {
 	}
 
 	/**
-	 * Main entry
-	 * 
-	 * @throws Exception
+	 * Main entry @throws Exception
 	 */
 	public void run(String args[]) throws Exception {
 		try {
@@ -97,12 +93,8 @@ public abstract class AbstractConsoleApp extends Env {
 	}
 
 	/**
-	 * Initialize the repository and other global vars.
-	 * 
-	 * @param opts
-	 *            the options
-	 * @throws InterruptedException
-	 * @throws IOException
+	 * Initialize the repository and other global vars. @param opts the
+	 * options @throws InterruptedException @throws IOException
 	 */
 	@Description("")
 	public void __main(MainOptions opts) throws IOException {
@@ -116,7 +108,7 @@ public abstract class AbstractConsoleApp extends Env {
 				setBase(IO.getFile(getBase(), opts.base()));
 			else
 				setBase(IO.work);
-			
+
 			if (opts.width() > 0)
 				this.width = opts.width();
 

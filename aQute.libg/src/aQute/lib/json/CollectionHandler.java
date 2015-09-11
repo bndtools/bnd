@@ -35,27 +35,27 @@ public class CollectionHandler extends Handler {
 	}
 
 	@Override
-	public
-	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
+	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
 		Iterable< ? > collection = (Iterable< ? >) object;
 
 		app.append("[");
 		String del = "";
 		int index = 0;
-		for (Object o : collection) try {
-			app.append(del);
-			app.encode(o, componentType, visited);
-			del = ",";
-			index++;
-		} catch( Exception e) {
-			throw new IllegalArgumentException("["+index+"]", e);
-		}
+		for (Object o : collection)
+			try {
+				app.append(del);
+				app.encode(o, componentType, visited);
+				del = ",";
+				index++;
+			}
+			catch (Exception e) {
+				throw new IllegalArgumentException("[" + index + "]", e);
+			}
 		app.append("]");
 	}
 
 	@Override
-	public
-	Object decodeArray(Decoder r) throws Exception {
+	public Object decodeArray(Decoder r) throws Exception {
 		@SuppressWarnings("unchecked")
 		Collection<Object> c = (Collection<Object>) rawClass.newInstance();
 		r.codec.parseArray(c, componentType, r);

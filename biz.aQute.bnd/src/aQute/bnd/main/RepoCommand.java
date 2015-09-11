@@ -54,7 +54,7 @@ import aQute.libg.cryptography.SHA1;
 import aQute.libg.glob.Glob;
 
 public class RepoCommand {
-	final static JSONCodec	codec	= new JSONCodec();
+	final static JSONCodec codec = new JSONCodec();
 
 	@Description("Access to the repositories. Provides a number of sub commands to manipulate the repository "
 			+ "(see repo help) that provide access to the installed repos for the current project.")
@@ -86,11 +86,7 @@ public class RepoCommand {
 	final List<RepositoryPlugin>	repos	= new ArrayList<RepositoryPlugin>();
 
 	/**
-	 * Called from the command line
-	 * 
-	 * @param bnd
-	 * @param opts
-	 * @throws Exception
+	 * Called from the command line @param bnd @param opts @throws Exception
 	 */
 	public RepoCommand(bnd bnd, repoOptions opts) throws Exception {
 		this.opts = opts;
@@ -239,9 +235,7 @@ public class RepoCommand {
 	}
 
 	/**
-	 * get a file from the repo
-	 * 
-	 * @param opts
+	 * get a file from the repo @param opts
 	 */
 
 	@Description("Get an artifact from a repository.")
@@ -334,7 +328,7 @@ public class RepoCommand {
 
 	@Description("Put an artifact into the repository after it has been verified.")
 	@Arguments(arg = {
-		"<jar>..."
+			"<jar>..."
 	})
 	interface putOptions extends Options {
 		@Description("Put in repository even if verification fails (actually, no verification is done).")
@@ -469,7 +463,7 @@ public class RepoCommand {
 
 					if (options.remove() == false && options.added() == false
 							|| (options.remove() //
-							&& version.getDelta() == Delta.REMOVED)
+									&& version.getDelta() == Delta.REMOVED)
 							|| (options.added() && version.getDelta() == Delta.ADDED)) {
 
 						map.add(bsn.getName(), version.getName());
@@ -660,13 +654,13 @@ public class RepoCommand {
 
 	private DownloadBlocker findMatchingVersion(RepositoryPlugin dest, String bsn, Version version) throws Exception {
 		Version floor = version.getWithoutQualifier();
-		Version ceiling = new Version(floor.getMajor()+1, 0,0);
-		VersionRange range = new VersionRange(true,floor, ceiling, false);
+		Version ceiling = new Version(floor.getMajor() + 1, 0, 0);
+		VersionRange range = new VersionRange(true, floor, ceiling, false);
 		SortedSet<Version> versions = dest.versions(bsn);
-		if ( versions == null || versions.isEmpty())
+		if (versions == null || versions.isEmpty())
 			return null;
-		
-		for ( Version v : range.filter(versions)) {
+
+		for (Version v : range.filter(versions)) {
 			// First one is highest
 			// TODO Diff
 		}

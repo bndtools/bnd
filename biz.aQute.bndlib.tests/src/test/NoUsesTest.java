@@ -100,7 +100,7 @@ public class NoUsesTest extends TestCase {
 		assertNull("org.osgi.framework", uses);
 	}
 
-	static String findUses(Builder bmaker, String pack, String ... ignore) throws Exception {
+	static String findUses(Builder bmaker, String pack, String... ignore) throws Exception {
 		File cp[] = {
 				new File("bin"), IO.getFile("jar/osgi.jar")
 		};

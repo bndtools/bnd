@@ -6,9 +6,9 @@ import aQute.bnd.service.progress.*;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 
 public class ProgressWrappingStream extends InputStream {
-	
+
 	private InputStream	delegate;
-	private Task	task;
+	private Task		task;
 
 	public ProgressWrappingStream(InputStream delegate, String name, int size, ProgressPlugin progressPlugin) {
 		this.delegate = delegate;

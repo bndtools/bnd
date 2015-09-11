@@ -5,12 +5,9 @@ import java.util.Map.Entry;
 
 /**
  * Formatter. This formatter allows you to build up an input string and then
- * wraps the text. The following markup is available
- * <ul>
- * <li>$- - Line over the remaining width
- * <li>\\t[0-9] - Go to tab position, and set indent to that position
- * <li>\\f - Newlin
- * </ul>
+ * wraps the text. The following markup is available <ul> <li>$- - Line over the
+ * remaining width <li>\\t[0-9] - Go to tab position, and set indent to that
+ * position <li>\\f - Newlin </ul>
  */
 public class Justif {
 	final int[]		tabs;
@@ -31,15 +28,10 @@ public class Justif {
 
 	/**
 	 * Routine to wrap a stringbuffer. Basically adds line endings but has the
-	 * following control characters:
-	 * <ul>
-	 * <li>Space at the beginnng of a line is repeated when wrapped for indent.</li>
-	 * <li>A tab will mark the current position and wrapping will return to that
-	 * position</li>
-	 * <li>A form feed in a tabbed colum will break but stay in the column</li>
-	 * </ul>
-	 * 
-	 * @param sb
+	 * following control characters: <ul> <li>Space at the beginnng of a line is
+	 * repeated when wrapped for indent.</li> <li>A tab will mark the current
+	 * position and wrapping will return to that position</li> <li>A form feed
+	 * in a tabbed colum will break but stay in the column</li> </ul> @param sb
 	 */
 	public void wrap(StringBuilder sb) {
 		List<Integer> indents = new ArrayList<Integer>();
@@ -139,12 +131,12 @@ public class Justif {
 					begin = false;
 					if (linelength > width) {
 						if (lastSpace == 0) {
-							lastSpace = r-1;
+							lastSpace = r - 1;
 							sb.insert(lastSpace, ' ');
 							r++;
 						}
 						sb.setCharAt(lastSpace, '\n');
-						linelength = r-lastSpace -1;
+						linelength = r - lastSpace - 1;
 
 						for (int i = 0; i < indent; i++) {
 							sb.insert(lastSpace + 1, ' ');
@@ -193,20 +185,20 @@ public class Justif {
 		sb.append("\t1");
 		sb.append(separator);
 		sb.append("\t2");
-		if ( value instanceof Iterable) {
-			Iterator<?> it = ((Iterable< ? >) value).iterator();
-			boolean hadone=false;
+		if (value instanceof Iterable) {
+			Iterator< ? > it = ((Iterable< ? >) value).iterator();
+			boolean hadone = false;
 			String del = "";
-			while ( it.hasNext() ) {
-				sb.append(del).append(it.next()+"");
+			while (it.hasNext()) {
+				sb.append(del).append(it.next() + "");
 				sb.append("\r");
-				hadone=true;
+				hadone = true;
 				del = "\t2";
 			}
-			if ( !hadone)
+			if (!hadone)
 				sb.append("\r");
 		} else {
-			sb.append(value+"");
+			sb.append(value + "");
 			sb.append("\r");
 		}
 	}

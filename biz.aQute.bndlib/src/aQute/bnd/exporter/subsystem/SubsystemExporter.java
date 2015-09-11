@@ -42,8 +42,8 @@ public class SubsystemExporter implements Exporter {
 	@Override
 	public String[] getTypes() {
 		return new String[] {
-		// OSGI_SUBSYSTEM_APPLICATION, OSGI_SUBSYSTEM_FEATURE,
-		// OSGI_SUBSYSTEM_COMPOSITE
+				// OSGI_SUBSYSTEM_APPLICATION, OSGI_SUBSYSTEM_FEATURE,
+				// OSGI_SUBSYSTEM_COMPOSITE
 		};
 	}
 

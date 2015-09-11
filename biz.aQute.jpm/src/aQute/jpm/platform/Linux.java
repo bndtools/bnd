@@ -8,7 +8,7 @@ import aQute.jpm.lib.*;
 class Linux extends Unix {
 
 	static final String COMPLETION_DIRECTORY = "/etc/bash_completion.d";
-	
+
 	@Override
 	public void shell(String initial) throws IOException {
 		throw new UnsupportedOperationException();
@@ -23,7 +23,7 @@ class Linux extends Unix {
 	public void uninstall() {
 
 	}
-	
+
 	public String toString() {
 		return "Linux";
 	}
@@ -31,21 +31,21 @@ class Linux extends Unix {
 	@Override
 	public String installCompletion(Object target) throws Exception {
 		File dir = new File(COMPLETION_DIRECTORY);
-		
-		if(!dir.exists() || !dir.canWrite()) {
+
+		if (!dir.exists() || !dir.canWrite()) {
 			return "Bash completion directory does not exist or cannot be written to";
 		}
-		
+
 		File f = new File(dir, "jpm-completion.bash");
 		parseCompletion(target, f);
-		
-		return "Bash completion file installed in "+COMPLETION_DIRECTORY;
+
+		return "Bash completion file installed in " + COMPLETION_DIRECTORY;
 	}
 
 	@Override
 	public void getVMs(Collection<JVM> vms) throws Exception {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override

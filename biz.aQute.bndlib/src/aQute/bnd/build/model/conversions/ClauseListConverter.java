@@ -9,14 +9,14 @@ import aQute.libg.tuple.*;
 
 public class ClauseListConverter<R> implements Converter<List<R>,String> {
 
-	private final Converter< ? extends R, ? super Pair<String,Attrs>>	itemConverter;
+	private final Converter< ? extends R, ? super Pair<String,Attrs>> itemConverter;
 
 	public ClauseListConverter(Converter< ? extends R, ? super Pair<String,Attrs>> itemConverter) {
 		this.itemConverter = itemConverter;
 	}
 
 	public List<R> convert(String input) throws IllegalArgumentException {
-		if (input == null) 
+		if (input == null)
 			return null;
 
 		List<R> result = new ArrayList<R>();

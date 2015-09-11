@@ -1,15 +1,12 @@
 package aQute.bnd.build.model.conversions;
 
-
 /**
  * Turns newlines to textual escaped newlines and orphaned backslashes to double
- * backslashes.
- * 
- * @author aqute
+ * backslashes. @author aqute
  */
 public class NewlineEscapedStringFormatter implements Converter<String,String> {
 
-	private static final String	CONTINUE_STRING	= "\\\n\t";
+	private static final String CONTINUE_STRING = "\\\n\t";
 
 	public String convert(String input) throws IllegalArgumentException {
 		if (input == null)
@@ -64,7 +61,7 @@ public class NewlineEscapedStringFormatter implements Converter<String,String> {
 					} else
 						pos++;
 					break;
-					
+
 				default :
 					pos++;
 					result.append(c);

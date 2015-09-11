@@ -40,7 +40,8 @@ public class Activator extends Thread implements BundleActivator {
 		Matcher m = Agent.PORT_P.matcher(port);
 		if (!m.matches())
 			throw new IllegalArgumentException(
-					"Invalid port specification in property aQute.agent.server.port, expects [<host>:]<port> : " + port);
+					"Invalid port specification in property aQute.agent.server.port, expects [<host>:]<port> : "
+							+ port);
 
 		//
 		// See if the host was set, otherwise use localhost

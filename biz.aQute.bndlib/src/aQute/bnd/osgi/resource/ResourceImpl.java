@@ -44,11 +44,11 @@ class ResourceImpl implements Resource, Comparable<Resource> {
 
 	public List<Capability> getCapabilities(String namespace) {
 		List<Capability> caps = allCapabilities;
-		if ( namespace != null)
+		if (namespace != null)
 			caps = capabilityMap.get(namespace);
-		if ( caps == null || caps.isEmpty())
+		if (caps == null || caps.isEmpty())
 			return Collections.emptyList();
-		
+
 		return Collections.unmodifiableList(caps);
 	}
 
@@ -68,11 +68,11 @@ class ResourceImpl implements Resource, Comparable<Resource> {
 
 	public List<Requirement> getRequirements(String namespace) {
 		List<Requirement> reqs = allRequirements;
-		if ( namespace != null)
+		if (namespace != null)
 			reqs = requirementMap.get(namespace);
-		if ( reqs == null || reqs.isEmpty())
+		if (reqs == null || reqs.isEmpty())
 			return Collections.emptyList();
-		
+
 		return Collections.unmodifiableList(reqs);
 	}
 
@@ -84,7 +84,7 @@ class ResourceImpl implements Resource, Comparable<Resource> {
 			Capability idCap = identities.get(0);
 			Object id = idCap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
 			Object version = idCap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-			
+
 			builder.append(id).append(" version=").append(version);
 		} else {
 			// Generic toString

@@ -27,65 +27,49 @@ import java.util.regex.Pattern;
  * convert data objects to JSON and JSON to (type safe) Java objects. The
  * conversion is very much driven by classes and their public fields. Generic
  * information, when present is taken into account. </p> Usage patterns to
- * encode:
- * 
- * <pre>
- *  JSONCoder codec = new JSONCodec(); // 
- * 	assert "1".equals( codec.enc().to().put(1).toString());
- * 	assert "[1,2,3]".equals( codec.enc().to().put(Arrays.asList(1,2,3).toString());
- * 
- *  Map m = new HashMap();
- *  m.put("a", "A");
- * 	assert "{\"a\":\"A\"}".equals( codec.enc().to().put(m).toString());
- * 
- *  static class D { public int a; }
- *  D d = new D();
- *  d.a = 41;
- *  assert "{\"a\":41}".equals( codec.enc().to().put(d).toString());
- * </pre>
- * 
- * It is possible to redirect the encoder to another output (default is a
- * string). See {@link Encoder#to()},{@link Encoder#to(File))},
- * {@link Encoder#to(OutputStream)}, {@link Encoder#to(Appendable))}. To reset
- * the string output call {@link Encoder#to()}.
- * <p/>
- * This Codec class can be used in a concurrent environment. The Decoders and
- * Encoders, however, must only be used in a single thread.
- * <p/>
- * Will now use hex for encoding byte arrays
+ * encode: <pre> JSONCoder codec = new JSONCodec(); // assert "1".equals(
+ * codec.enc().to().put(1).toString()); assert "[1,2,3]".equals(
+ * codec.enc().to().put(Arrays.asList(1,2,3).toString()); Map m = new HashMap();
+ * m.put("a", "A"); assert "{\"a\":\"A\"}".equals(
+ * codec.enc().to().put(m).toString()); static class D { public int a; } D d =
+ * new D(); d.a = 41; assert "{\"a\":41}".equals(
+ * codec.enc().to().put(d).toString()); </pre> It is possible to redirect the
+ * encoder to another output (default is a string). See {@link
+ * Encoder#to()},{@link Encoder#to(File))}, {@link Encoder#to(OutputStream)},
+ * {@link Encoder#to(Appendable))}. To reset the string output call {@link
+ * Encoder#to()}. <p/> This Codec class can be used in a concurrent environment.
+ * The Decoders and Encoders, however, must only be used in a single thread.
+ * <p/> Will now use hex for encoding byte arrays
  */
 public class JSONCodec {
-	final static String								START_CHARACTERS	= "[{\"-0123456789tfn";
+	final static String START_CHARACTERS = "[{\"-0123456789tfn";
 
 	// Handlers
-	private final static WeakHashMap<Type,Handler>	handlers			= new WeakHashMap<Type,Handler>();
-	private static StringHandler					sh					= new StringHandler();
-	private static BooleanHandler					bh					= new BooleanHandler();
-	private static CharacterHandler					ch					= new CharacterHandler();
-	private static CollectionHandler				dch					= new CollectionHandler(ArrayList.class,
-																				Object.class);
-	private static SpecialHandler					sph					= new SpecialHandler(Pattern.class, null, null);
-	private static DateHandler						sdh					= new DateHandler();
-	private static FileHandler						fh					= new FileHandler();
-	private static ByteArrayHandler					byteh				= new ByteArrayHandler();
-	private static UUIDHandler						uuidh				= new UUIDHandler();
+	private final static WeakHashMap<Type,Handler>	handlers	= new WeakHashMap<Type,Handler>();
+	private static StringHandler					sh			= new StringHandler();
+	private static BooleanHandler					bh			= new BooleanHandler();
+	private static CharacterHandler					ch			= new CharacterHandler();
+	private static CollectionHandler				dch			= new CollectionHandler(ArrayList.class, Object.class);
+	private static SpecialHandler					sph			= new SpecialHandler(Pattern.class, null, null);
+	private static DateHandler						sdh			= new DateHandler();
+	private static FileHandler						fh			= new FileHandler();
+	private static ByteArrayHandler					byteh		= new ByteArrayHandler();
+	private static UUIDHandler						uuidh		= new UUIDHandler();
 
-	boolean											ignorenull;
-	Map<Type,Handler>								localHandlers		= new ConcurrentHashMap<Type,Handler>();
+	boolean				ignorenull;
+	Map<Type,Handler>	localHandlers	= new ConcurrentHashMap<Type,Handler>();
 
 	/**
-	 * Create a new Encoder with the state and appropriate API.
-	 * 
-	 * @return an Encoder
+	 * Create a new Encoder with the state and appropriate API. @return an
+	 * Encoder
 	 */
 	public Encoder enc() {
 		return new Encoder(this);
 	}
 
 	/**
-	 * Create a new Decoder with the state and appropriate API.
-	 * 
-	 * @return a Decoder
+	 * Create a new Decoder with the state and appropriate API. @return a
+	 * Decoder
 	 */
 	public Decoder dec() {
 		return new Decoder(this);
@@ -168,9 +152,9 @@ public class JSONCodec {
 			return h;
 
 		h = localHandlers.get(type);
-		if ( h != null)
+		if (h != null)
 			return h;
-		
+
 		if (type instanceof Class) {
 
 			Class< ? > clazz = (Class< ? >) type;
@@ -504,8 +488,8 @@ public class JSONCodec {
 				continue;
 			}
 
-			throw new IllegalArgumentException("Invalid character in parsing list, expected ] or , but found "
-					+ (char) c);
+			throw new IllegalArgumentException(
+					"Invalid character in parsing list, expected ] or , but found " + (char) c);
 		}
 		assert r.current() == ']';
 		r.read(); // skip closing
@@ -530,10 +514,7 @@ public class JSONCodec {
 	}
 
 	/**
-	 * Ignore null values in output and input
-	 * 
-	 * @param ignorenull
-	 * @return
+	 * Ignore null values in output and input @param ignorenull @return
 	 */
 	public JSONCodec setIgnorenull(boolean ignorenull) {
 		this.ignorenull = ignorenull;

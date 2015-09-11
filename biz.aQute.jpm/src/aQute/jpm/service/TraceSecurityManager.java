@@ -4,7 +4,7 @@ import java.security.*;
 import java.util.*;
 
 public class TraceSecurityManager extends SecurityManager {
-	final HashSet<Permission>	had	= new HashSet<Permission>();
+	final HashSet<Permission> had = new HashSet<Permission>();
 
 	public TraceSecurityManager() {
 
@@ -12,7 +12,7 @@ public class TraceSecurityManager extends SecurityManager {
 			public void run() {
 				Set<Permission> hadx;
 				synchronized (TraceSecurityManager.this) {
-					 hadx = new HashSet<Permission>(TraceSecurityManager.this.had);
+					hadx = new HashSet<Permission>(TraceSecurityManager.this.had);
 				}
 				Set<Permission> implied = new HashSet<Permission>();
 
@@ -53,9 +53,9 @@ public class TraceSecurityManager extends SecurityManager {
 	}
 
 	public synchronized void checkPermission(Permission perm) {
-		if ( perm.getClass() == AllPermission.class)
+		if (perm.getClass() == AllPermission.class)
 			throw new SecurityException();
-		
+
 		if (had.contains(perm))
 			return;
 

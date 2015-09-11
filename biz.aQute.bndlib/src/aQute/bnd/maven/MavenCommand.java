@@ -31,11 +31,7 @@ public class MavenCommand extends Processor {
 
 	/**
 	 * maven deploy [-url repo] [-passphrase passphrase] [-homedir homedir]
-	 * [-keyname keyname] bundle ...
-	 * 
-	 * @param args
-	 * @param i
-	 * @throws Exception
+	 * [-keyname keyname] bundle ... @param args @param i @throws Exception
 	 */
 	public void run(String args[], int i) throws Exception {
 		temp = new File("maven-bundle");
@@ -81,29 +77,25 @@ public class MavenCommand extends Processor {
 
 	private void help() {
 		System.err.printf("Usage:%n");
-		System.err
-				.printf("  maven %n" //
-						+ "  [-temp <dir>]            use as temp directory%n" //
-						+ "  settings                 show maven settings%n" //
-						+ "  bundle                   turn a bundle into a maven bundle%n" //
-						+ "    [-properties <file>]   provide properties, properties starting with javadoc are options for javadoc, like javadoc-tag=...%n"
-						+ "    [-javadoc <file|url>]  where to find the javadoc (zip/dir), otherwise generated%n" //
-						+ "    [-source <file|url>]   where to find the source (zip/dir), otherwise from OSGI-OPT/src%n" //
-						+ "    [-scm <url>]           required scm in pom, otherwise from Bundle-SCM%n" //
-						+ "    [-url <url>]           required project url in pom%n" //
-						+ "    [-bsn bsn]             overrides bsn%n" //
-						+ "    [-version <version>]   overrides version%n" //
-						+ "    [-developer <email>]   developer email%n" //
-						+ "    [-nodelete]            do not delete temp files%n" //
-						+ "    [-passphrase <gpgp passphrase>] signer password%n"//
-						+ "        <file|url>%n");
+		System.err.printf("  maven %n" //
+				+ "  [-temp <dir>]            use as temp directory%n" //
+				+ "  settings                 show maven settings%n" //
+				+ "  bundle                   turn a bundle into a maven bundle%n" //
+				+ "    [-properties <file>]   provide properties, properties starting with javadoc are options for javadoc, like javadoc-tag=...%n"
+				+ "    [-javadoc <file|url>]  where to find the javadoc (zip/dir), otherwise generated%n" //
+				+ "    [-source <file|url>]   where to find the source (zip/dir), otherwise from OSGI-OPT/src%n" //
+				+ "    [-scm <url>]           required scm in pom, otherwise from Bundle-SCM%n" //
+				+ "    [-url <url>]           required project url in pom%n" //
+				+ "    [-bsn bsn]             overrides bsn%n" //
+				+ "    [-version <version>]   overrides version%n" //
+				+ "    [-developer <email>]   developer email%n" //
+				+ "    [-nodelete]            do not delete temp files%n" //
+				+ "    [-passphrase <gpgp passphrase>] signer password%n"//
+				+ "        <file|url>%n");
 	}
 
 	/**
-	 * Show the maven settings
-	 * 
-	 * @throws FileNotFoundException
-	 * @throws Exception
+	 * Show the maven settings @throws FileNotFoundException @throws Exception
 	 */
 	private void settings() throws FileNotFoundException, Exception {
 		File userHome = new File(System.getProperty("user.home"));
@@ -129,11 +121,7 @@ public class MavenCommand extends Processor {
 	}
 
 	/**
-	 * Create a maven bundle.
-	 * 
-	 * @param args
-	 * @param i
-	 * @throws Exception
+	 * Create a maven bundle. @param args @param i @throws Exception
 	 */
 	private void bundle(String args[], int i) throws Exception {
 		List<String> developers = new ArrayList<String>();
@@ -365,9 +353,7 @@ public class MavenCommand extends Processor {
 	}
 
 	/**
-	 * @return
-	 * @throws IOException
-	 * @throws MalformedURLException
+	 * @return @throws IOException @throws MalformedURLException
 	 */
 	protected Jar getJarFromFileOrURL(String spec) throws IOException, MalformedURLException {
 		Jar jar;
@@ -480,10 +466,7 @@ public class MavenCommand extends Processor {
 	}
 
 	/**
-	 * Generate a license string
-	 * 
-	 * @param attr
-	 * @return
+	 * Generate a license string @param attr @return
 	 */
 	private String license(Attributes attr) {
 		Parameters map = Processor.parseHeader(attr.getValue(Constants.BUNDLE_LICENSE), null);
@@ -517,10 +500,7 @@ public class MavenCommand extends Processor {
 	}
 
 	/**
-	 * Generate the copyright statement.
-	 * 
-	 * @param attr
-	 * @return
+	 * Generate the copyright statement. @param attr @return
 	 */
 	private String copyright(Attributes attr) {
 		return attr.getValue(Constants.BUNDLE_COPYRIGHT);

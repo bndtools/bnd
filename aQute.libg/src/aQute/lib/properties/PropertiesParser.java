@@ -12,7 +12,7 @@ import aQute.lib.io.*;
  */
 public class PropertiesParser {
 
-	public static final String	$$$ERRORS	= "$$$ERRORS";
+	public static final String $$$ERRORS = "$$$ERRORS";
 
 	static public Properties parse(URI input) throws Exception {
 

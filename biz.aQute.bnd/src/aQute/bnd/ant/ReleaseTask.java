@@ -6,31 +6,16 @@ import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
 
 /**
- * <p>
- * ANT task to release into a repository, equivalent to:
- * <code>&lt;bnd command="release"/&gt;</code>
- * </p>
- * <p>
- * To release into the <em>default</em> repository (defined by
- * <code>-releaserepo</code> in <code>build.bnd</code>):
- * </p>
- * 
- * <pre>
- *    &lt;bndrelease/&gt;
- * </pre>
- * <p>
- * To release into a specific named repository:
- * 
- * <pre>
- *    &lt;bndrelease releaserepo="My Repository"/&gt;
- * </pre>
- * 
- * @author Neil Bartlett
- * @see {@link BndTask} for setup instructions.
+ * <p> ANT task to release into a repository, equivalent to: <code>&lt;bnd
+ * command="release"/&gt;</code> </p> <p> To release into the <em>default</em>
+ * repository (defined by <code>-releaserepo</code> in <code>build.bnd</code>):
+ * </p> <pre> &lt;bndrelease/&gt; </pre> <p> To release into a specific named
+ * repository: <pre> &lt;bndrelease releaserepo="My Repository"/&gt;
+ * </pre> @author Neil Bartlett @see {@link BndTask} for setup instructions.
  */
 public class ReleaseTask extends BaseTask {
 
-	String	releaseRepo	= null;
+	String releaseRepo = null;
 
 	@Override
 	public void execute() throws BuildException {

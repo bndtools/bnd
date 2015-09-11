@@ -29,7 +29,7 @@ import aQute.libg.generics.Create;
 
 public class Clazz {
 
-	static Pattern	METHOD_DESCRIPTOR	= Pattern.compile("(.*)\\)(.+)");
+	static Pattern METHOD_DESCRIPTOR = Pattern.compile("(.*)\\)(.+)");
 
 	public class ClassConstant {
 		int				cname;
@@ -58,7 +58,7 @@ public class Clazz {
 		OpenJDK7(51, "JavaSE-1.7", "(&(osgi.ee=JavaSE)(version=1.7))"), //
 		OpenJDK8(52, "JavaSE-1.8", "(&(osgi.ee=JavaSE)(version=1.8))") {
 
-			Map<String,Set<String>>	profiles;
+			Map<String,Set<String>> profiles;
 
 			public Map<String,Set<String>> getProfiles() throws IOException {
 				if (profiles == null) {
@@ -86,9 +86,9 @@ public class Clazz {
 		UNKNOWN(Integer.MAX_VALUE, "<>", null)//
 		;
 
-		final int		major;
-		final String	ee;
-		final String	filter;
+		final int major;
+		final String ee;
+		final String filter;
 
 		JAVA(int major, String ee, String filter) {
 			this.major = major;
@@ -145,51 +145,32 @@ public class Clazz {
 
 	}
 
-	public final static EnumSet<QUERY>	HAS_ARGUMENT	= EnumSet.of(QUERY.IMPLEMENTS, QUERY.EXTENDS, QUERY.IMPORTS,
-																QUERY.NAMED, QUERY.VERSION, QUERY.ANNOTATED);
+	public final static EnumSet<QUERY> HAS_ARGUMENT = EnumSet.of(QUERY.IMPLEMENTS, QUERY.EXTENDS, QUERY.IMPORTS,
+			QUERY.NAMED, QUERY.VERSION, QUERY.ANNOTATED);
 
 	/**
-	 * <pre>
-	 * ACC_PUBLIC 0x0001 Declared public; may be accessed from outside its
-	 * package. 
-	 * ACC_FINAL 0x0010 Declared final; no subclasses allowed.
+	 * <pre> ACC_PUBLIC 0x0001 Declared public; may be accessed from outside its
+	 * package. ACC_FINAL 0x0010 Declared final; no subclasses allowed.
 	 * ACC_SUPER 0x0020 Treat superclass methods specially when invoked by the
-	 * invokespecial instruction. 
-	 * ACC_INTERFACE 0x0200 Is an interface, not a
-	 * class. 
-	 * ACC_ABSTRACT 0x0400 Declared abstract; may not be instantiated.
-	 * </pre>
-	 * 
-	 * @param mod
+	 * invokespecial instruction. ACC_INTERFACE 0x0200 Is an interface, not a
+	 * class. ACC_ABSTRACT 0x0400 Declared abstract; may not be instantiated.
+	 * </pre> @param mod
 	 */
-	final static int					ACC_PUBLIC		= 0x0001;												// Declared
-	// public;
-	// may
-	// be
-	// accessed
-	// from outside its package.
-	final static int					ACC_FINAL		= 0x0010;												// Declared
-	// final;
-	// no
-	// subclasses
-	// allowed.
-	final static int					ACC_SUPER		= 0x0020;												// Treat
-	// superclass
-	// methods
-	// specially when invoked by the
-	// invokespecial instruction.
-	final static int					ACC_INTERFACE	= 0x0200;												// Is
-	// an
-	// interface,
-	// not
-	// a
-	// classs
-	final static int					ACC_ABSTRACT	= 0x0400;												// Declared
 
-	// a thing not in the source code
-	final static int					ACC_SYNTHETIC	= 0x1000;
-	final static int					ACC_ANNOTATION	= 0x2000;
-	final static int					ACC_ENUM		= 0x4000;
+	// Declared public; may be accessed from outside its package.
+	final static int	ACC_PUBLIC		= 0x0001;
+	// Declared final; no subclasses allowed.
+	final static int	ACC_FINAL		= 0x0010;
+	// Treat superclass methods specially when invoked by the invokespecial
+	// instruction.
+	final static int	ACC_SUPER		= 0x0020;
+	// Is an interface, not a class
+	final static int	ACC_INTERFACE	= 0x0200;
+	// Declared a thing not in the source code
+	final static int	ACC_ABSTRACT	= 0x0400;
+	final static int	ACC_SYNTHETIC	= 0x1000;
+	final static int	ACC_ANNOTATION	= 0x2000;
+	final static int	ACC_ENUM		= 0x4000;
 
 	static protected class Assoc {
 		Assoc(byte tag, int a, int b) {
@@ -420,7 +401,7 @@ public class Clazz {
 		}
 	}
 
-	final static byte						SkipTable[]		= { //
+	final static byte SkipTable[] = { //
 			0, // 0 non existent
 			-1, // 1 CONSTANT_utf8 UTF 8, handled in
 			// method
@@ -441,45 +422,45 @@ public class Clazz {
 			2, // 16 CONSTANT_MethodType
 			-1, // 17 Not defined
 			4, // 18 CONSTANT_InvokeDynamic
-															};
+	};
 
-	public static final Comparator<Clazz>	NAME_COMPARATOR	= new Comparator<Clazz>() {
+	public static final Comparator<Clazz> NAME_COMPARATOR = new Comparator<Clazz>() {
 
-																public int compare(Clazz a, Clazz b) {
-																	return a.className.compareTo(b.className);
-																}
+		public int compare(Clazz a, Clazz b) {
+			return a.className.compareTo(b.className);
+		}
 
-															};
+	};
 
-	boolean									hasRuntimeAnnotations;
-	boolean									hasClassAnnotations;
-	boolean									hasDefaultConstructor;
+	boolean	hasRuntimeAnnotations;
+	boolean	hasClassAnnotations;
+	boolean	hasDefaultConstructor;
 
-	TypeRef									className;
-	Object									pool[];
-	int										intPool[];
-	Set<PackageRef>							imports			= Create.set();
-	String									path;
-	int										minor			= 0;
-	int										major			= 0;
-	int										innerAccess		= -1;
-	int										accessx			= 0;
-	String									sourceFile;
-	Set<TypeRef>							xref;
-	Set<TypeRef>							annotations;
-	int										forName			= 0;
-	int										class$			= 0;
-	TypeRef[]								interfaces;
-	TypeRef									zuper;
-	ClassDataCollector						cd				= null;
-	Resource								resource;
-	FieldDef								last			= null;
-	boolean									deprecated;
-	Set<PackageRef>							api;
-	final Analyzer							analyzer;
-	String									classSignature;
+	TypeRef				className;
+	Object				pool[];
+	int					intPool[];
+	Set<PackageRef>		imports		= Create.set();
+	String				path;
+	int					minor		= 0;
+	int					major		= 0;
+	int					innerAccess	= -1;
+	int					accessx		= 0;
+	String				sourceFile;
+	Set<TypeRef>		xref;
+	Set<TypeRef>		annotations;
+	int					forName		= 0;
+	int					class$		= 0;
+	TypeRef[]			interfaces;
+	TypeRef				zuper;
+	ClassDataCollector	cd			= null;
+	Resource			resource;
+	FieldDef			last		= null;
+	boolean				deprecated;
+	Set<PackageRef>		api;
+	final Analyzer		analyzer;
+	String				classSignature;
 
-	private boolean							detectLdc;
+	private boolean detectLdc;
 
 	public Clazz(Analyzer analyzer, String path, Resource resource) {
 		this.path = path;
@@ -799,10 +780,7 @@ public class Clazz {
 	protected void pool(@SuppressWarnings("unused") Object[] pool, @SuppressWarnings("unused") int[] intPool) {}
 
 	/**
-	 * @param in
-	 * @param poolIndex
-	 * @param tag
-	 * @throws IOException
+	 * @param in @param poolIndex @param tag @throws IOException
 	 */
 	protected void nameAndType(DataInputStream in, int poolIndex, byte tag) throws IOException {
 		int name_index = in.readUnsignedShort();
@@ -811,10 +789,7 @@ public class Clazz {
 	}
 
 	/**
-	 * @param in
-	 * @param poolIndex
-	 * @param tag
-	 * @throws IOException
+	 * @param in @param poolIndex @param tag @throws IOException
 	 */
 	private void ref(DataInputStream in, int poolIndex) throws IOException {
 		int class_index = in.readUnsignedShort();
@@ -823,9 +798,7 @@ public class Clazz {
 	}
 
 	/**
-	 * @param in
-	 * @param poolIndex
-	 * @throws IOException
+	 * @param in @param poolIndex @throws IOException
 	 */
 	private void constantString(DataInputStream in, int poolIndex) throws IOException {
 		int string_index = in.readUnsignedShort();
@@ -833,9 +806,7 @@ public class Clazz {
 	}
 
 	/**
-	 * @param in
-	 * @param poolIndex
-	 * @throws IOException
+	 * @param in @param poolIndex @throws IOException
 	 */
 	protected void constantClass(DataInputStream in, int poolIndex) throws IOException {
 		int class_index = in.readUnsignedShort();
@@ -845,8 +816,7 @@ public class Clazz {
 	}
 
 	/**
-	 * @param in
-	 * @throws IOException
+	 * @param in @throws IOException
 	 */
 	protected void constantDouble(DataInputStream in, int poolIndex) throws IOException {
 		if (cd != null)
@@ -856,8 +826,7 @@ public class Clazz {
 	}
 
 	/**
-	 * @param in
-	 * @throws IOException
+	 * @param in @throws IOException
 	 */
 	protected void constantLong(DataInputStream in, int poolIndex) throws IOException {
 		if (cd != null) {
@@ -867,9 +836,7 @@ public class Clazz {
 	}
 
 	/**
-	 * @param in
-	 * @param poolIndex
-	 * @throws IOException
+	 * @param in @param poolIndex @throws IOException
 	 */
 	protected void constantUtf8(DataInputStream in, int poolIndex) throws IOException {
 		// CONSTANT_Utf8
@@ -880,12 +847,8 @@ public class Clazz {
 
 	/**
 	 * Find a method reference in the pool that points to the given class,
-	 * methodname and descriptor.
-	 * 
-	 * @param clazz
-	 * @param methodname
-	 * @param descriptor
-	 * @return index in constant pool
+	 * methodname and descriptor. @param clazz @param methodname @param
+	 * descriptor @return index in constant pool
 	 */
 	private int findMethodReference(String clazz, String methodname, String descriptor) {
 		for (int i = 1; i < pool.length; i++) {
@@ -916,14 +879,11 @@ public class Clazz {
 	}
 
 	/**
-	 * Called for each attribute in the class, field, or method.
-	 * 
-	 * @param in
-	 *            The stream
-	 * @param access_flags
-	 * @throws Exception
+	 * Called for each attribute in the class, field, or method. @param in The
+	 * stream @param access_flags @throws Exception
 	 */
-	private void doAttributes(DataInputStream in, ElementType member, boolean crawl, int access_flags) throws Exception {
+	private void doAttributes(DataInputStream in, ElementType member, boolean crawl, int access_flags)
+			throws Exception {
 		int attributesCount = in.readUnsignedShort();
 		for (int j = 0; j < attributesCount; j++) {
 			// skip name CONSTANT_Utf8 pointer
@@ -932,12 +892,8 @@ public class Clazz {
 	}
 
 	/**
-	 * Process a single attribute, if not recognized, skip it.
-	 * 
-	 * @param in
-	 *            the data stream
-	 * @param access_flags
-	 * @throws Exception
+	 * Process a single attribute, if not recognized, skip it. @param in the
+	 * data stream @param access_flags @throws Exception
 	 */
 	private void doAttribute(DataInputStream in, ElementType member, boolean crawl, int access_flags) throws Exception {
 		int attribute_name_index = in.readUnsignedShort();
@@ -988,17 +944,9 @@ public class Clazz {
 	}
 
 	/**
-	 * <pre>
-	 * EnclosingMethod_attribute { 
-	 * 	u2 attribute_name_index; 
-	 * 	u4 attribute_length; 
-	 * 	u2 class_index
-	 * 	u2 method_index;
-	 * }
-	 * </pre>
-	 * 
-	 * @param in
-	 * @throws IOException
+	 * <pre> EnclosingMethod_attribute { u2 attribute_name_index; u4
+	 * attribute_length; u2 class_index u2 method_index; } </pre> @param
+	 * in @throws IOException
 	 */
 	private void doEnclosingMethod(DataInputStream in) throws IOException {
 		int cIndex = in.readShort();
@@ -1022,21 +970,10 @@ public class Clazz {
 	}
 
 	/**
-	 * <pre>
-	 * InnerClasses_attribute {
-	 * 	u2 attribute_name_index; 
-	 * 	u4 attribute_length; 
-	 * 	u2 number_of_classes; {	
-	 * 		u2 inner_class_info_index;
-	 * 		u2 outer_class_info_index; 
-	 * 		u2 inner_name_index; 
-	 * 		u2 inner_class_access_flags;
-	 * 	} classes[number_of_classes];
-	 * }
-	 * </pre>
-	 * 
-	 * @param in
-	 * @throws Exception
+	 * <pre> InnerClasses_attribute { u2 attribute_name_index; u4
+	 * attribute_length; u2 number_of_classes; { u2 inner_class_info_index; u2
+	 * outer_class_info_index; u2 inner_name_index; u2 inner_class_access_flags;
+	 * } classes[number_of_classes]; } </pre> @param in @throws Exception
 	 */
 	private void doInnerClasses(DataInputStream in) throws Exception {
 		int number_of_classes = in.readShort();
@@ -1070,18 +1007,9 @@ public class Clazz {
 	}
 
 	/**
-	 * Handle a signature
-	 * 
-	 * <pre>
-	 * Signature_attribute { 
-	 *     u2 attribute_name_index; 
-	 *     u4 attribute_length; 
-	 *     u2 signature_index; 
-	 *     }
-	 * </pre>
-	 * 
-	 * @param member
-	 * @param access_flags
+	 * Handle a signature <pre> Signature_attribute { u2 attribute_name_index;
+	 * u4 attribute_length; u2 signature_index; } </pre> @param member @param
+	 * access_flags
 	 */
 
 	void doSignature(DataInputStream in, ElementType member, int access_flags) throws IOException {
@@ -1132,28 +1060,12 @@ public class Clazz {
 	}
 
 	/**
-	 * <pre>
-	 * Code_attribute {
-	 * 		u2 attribute_name_index;
-	 * 		u4 attribute_length;
-	 * 		u2 max_stack;
-	 * 		u2 max_locals;
-	 * 		u4 code_length;
-	 * 		u1 code[code_length];
-	 * 		u2 exception_table_length;
-	 * 		{    	u2 start_pc;
-	 * 		      	u2 end_pc;
-	 * 		      	u2  handler_pc;
-	 * 		      	u2  catch_type;
-	 * 		}	exception_table[exception_table_length];
-	 * 		u2 attributes_count;
-	 * 		attribute_info attributes[attributes_count];
-	 * 	}
-	 * </pre>
-	 * 
-	 * @param in
-	 * @param pool
-	 * @throws Exception
+	 * <pre> Code_attribute { u2 attribute_name_index; u4 attribute_length; u2
+	 * max_stack; u2 max_locals; u4 code_length; u1 code[code_length]; u2
+	 * exception_table_length; { u2 start_pc; u2 end_pc; u2 handler_pc; u2
+	 * catch_type; } exception_table[exception_table_length]; u2
+	 * attributes_count; attribute_info attributes[attributes_count]; }
+	 * </pre> @param in @param pool @throws Exception
 	 */
 	private void doCode(DataInputStream in) throws Exception {
 		/* int max_stack = */in.readUnsignedShort();
@@ -1174,9 +1086,7 @@ public class Clazz {
 	}
 
 	/**
-	 * We must find Class.forName references ...
-	 * 
-	 * @param code
+	 * We must find Class.forName references ... @param code
 	 */
 	protected void crawl(byte[] code) {
 		ByteBuffer bb = ByteBuffer.wrap(code);
@@ -1254,10 +1164,10 @@ public class Clazz {
 					break;
 				}
 
-				/*
-				 * 3/5: opcode, indexbyte1, indexbyte2 or iinc, indexbyte1,
-				 * indexbyte2, countbyte1, countbyte2
-				 */
+					/*
+					 * 3/5: opcode, indexbyte1, indexbyte2 or iinc, indexbyte1,
+					 * indexbyte2, countbyte1, countbyte2
+					 */
 				case OpCodes.wide :
 					int opcode = 0xFF & bb.get();
 					bb.getShort(); // at least 3 bytes
@@ -1308,8 +1218,8 @@ public class Clazz {
 		this.sourceFile = pool[sourcefile_index].toString();
 	}
 
-	private void doParameterAnnotations(DataInputStream in, ElementType member, RetentionPolicy policy, int access_flags)
-			throws Exception {
+	private void doParameterAnnotations(DataInputStream in, ElementType member, RetentionPolicy policy,
+			int access_flags) throws Exception {
 		int num_parameters = in.readUnsignedByte();
 		for (int p = 0; p < num_parameters; p++) {
 			if (cd != null)
@@ -1596,10 +1506,8 @@ public class Clazz {
 	}
 
 	/**
-	 * Add a new package reference.
-	 * 
-	 * @param packageRef
-	 *            A '.' delimited package name
+	 * Add a new package reference. @param packageRef A '.' delimited package
+	 * name
 	 */
 	void referTo(TypeRef typeRef, int modifiers) {
 		if (xref != null)
@@ -1628,20 +1536,13 @@ public class Clazz {
 
 	/**
 	 * This method parses a descriptor and adds the package of the descriptor to
-	 * the referenced packages. The syntax of the descriptor is:
-	 * 
-	 * <pre>
-	 *   descriptor ::= ( '(' reference * ')' )? reference
-	 *   reference  ::= 'L' classname ( '&lt;' references '&gt;' )? ';' | 'B' | 'Z' | ... | '+' | '-' | '['
-	 * </pre>
-	 * 
-	 * This methods uses heavy recursion to parse the descriptor and a roving
-	 * pointer to limit the creation of string objects.
-	 * 
-	 * @param descriptor
-	 *            The to be parsed descriptor
-	 * @param rover
-	 *            The pointer to start at
+	 * the referenced packages. The syntax of the descriptor is: <pre>
+	 * descriptor ::= ( '(' reference * ')' )? reference reference ::= 'L'
+	 * classname ( '&lt;' references '&gt;' )? ';' | 'B' | 'Z' | ... | '+' | '-'
+	 * | '[' </pre> This methods uses heavy recursion to parse the descriptor
+	 * and a roving pointer to limit the creation of string objects. @param
+	 * descriptor The to be parsed descriptor @param rover The pointer to start
+	 * at
 	 */
 
 	public void parseDescriptor(String descriptor, int modifiers) {
@@ -1661,15 +1562,9 @@ public class Clazz {
 
 	/**
 	 * Parse a sequence of references. A sequence ends with a given character or
-	 * when the string ends.
-	 * 
-	 * @param descriptor
-	 *            The whole descriptor.
-	 * @param rover
-	 *            The index in the descriptor
-	 * @param delimiter
-	 *            The end character or 0
-	 * @return the last index processed, one character after the delimeter
+	 * when the string ends. @param descriptor The whole descriptor. @param
+	 * rover The index in the descriptor @param delimiter The end character or
+	 * 0 @return the last index processed, one character after the delimeter
 	 */
 	int parseReferences(String descriptor, int rover, char delimiter, int modifiers) {
 		int r = rover;
@@ -1681,13 +1576,9 @@ public class Clazz {
 
 	/**
 	 * Parse a single reference. This can be a single character or an object
-	 * reference when it starts with 'L'.
-	 * 
-	 * @param descriptor
-	 *            The descriptor
-	 * @param rover
-	 *            The place to start
-	 * @return The return index after the reference
+	 * reference when it starts with 'L'. @param descriptor The
+	 * descriptor @param rover The place to start @return The return index after
+	 * the reference
 	 */
 	int parseReference(String descriptor, int rover, int modifiers) {
 		int r = rover;
@@ -1729,11 +1620,7 @@ public class Clazz {
 	}
 
 	/**
-	 * FormalTypeParameters
-	 * 
-	 * @param descriptor
-	 * @param index
-	 * @return
+	 * FormalTypeParameters @param descriptor @param index @return
 	 */
 	private int parseFormalTypeParameters(String descriptor, int index, int modifiers) {
 		index++;
@@ -1913,7 +1800,8 @@ public class Clazz {
 				throw new IllegalArgumentException(
 						"Invalid class file (or parsing is wrong), Assoc is not method ref! (10)");
 		} else
-			throw new IllegalArgumentException("Invalid class file (or parsing is wrong), Not an assoc at a method ref");
+			throw new IllegalArgumentException(
+					"Invalid class file (or parsing is wrong), Not an assoc at a method ref");
 	}
 
 	public boolean isPublic() {
@@ -2022,12 +1910,8 @@ public class Clazz {
 	}
 
 	/**
-	 * To provide an enclosing instance
-	 * 
-	 * @param access
-	 * @param name
-	 * @param descriptor
-	 * @return
+	 * To provide an enclosing instance @param access @param name @param
+	 * descriptor @return
 	 */
 	public MethodDef getMethodDef(int access, String name, String descriptor) {
 		return new MethodDef(access, name, descriptor);

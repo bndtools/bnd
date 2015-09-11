@@ -12,19 +12,19 @@ public class LauncherConstants {
 
 	// MUST BE ALIGNED WITH ProjectLauncher! Donot want to create coupling
 	// so cannot refer.
-	public final static int		OK							= 0;
-	public final static int		ERROR						= -2;
-	public final static int		WARNING						= -1;
-	public final static int		TIMEDOUT					= -3;
-	public final static int		UPDATE_NEEDED				= -4;
-	public final static int		CANCELED					= -5;
-	public final static int		DUPLICATE_BUNDLE			= -6;
-	public final static int		RESOLVE_ERROR				= -7;
-	public final static int		ACTIVATOR_ERROR				= -8;
-	public static final int		STOPPED						= -9;
-	
+	public final static int	OK					= 0;
+	public final static int	ERROR				= -2;
+	public final static int	WARNING				= -1;
+	public final static int	TIMEDOUT			= -3;
+	public final static int	UPDATE_NEEDED		= -4;
+	public final static int	CANCELED			= -5;
+	public final static int	DUPLICATE_BUNDLE	= -6;
+	public final static int	RESOLVE_ERROR		= -7;
+	public final static int	ACTIVATOR_ERROR		= -8;
+	public static final int	STOPPED				= -9;
+
 	// Start custom errors from here
-	public final static int		CUSTOM_LAUNCHER				= -128;
+	public final static int CUSTOM_LAUNCHER = -128;
 
 	// Local names
 	final static String			LAUNCH_SERVICES				= "launch.services";
@@ -60,12 +60,10 @@ public class LauncherConstants {
 	public Map<String,String>	runProperties				= new HashMap<String,String>();
 	public boolean				embedded					= false;
 	public String				name;
-	public int     				notificationPort			= -1;
+	public int					notificationPort			= -1;
 
 	/**
-	 * Translate a constants to properties.
-	 * 
-	 * @return
+	 * Translate a constants to properties. @return
 	 */
 	public Properties getProperties(Properties p) {
 		p.setProperty(LAUNCH_NOREFERENCES, noreferences + "");
@@ -84,7 +82,7 @@ public class LauncherConstants {
 		p.setProperty(LAUNCH_EMBEDDED, embedded + "");
 		if (name != null)
 			p.setProperty(LAUNCH_NAME, name);
-		
+
 		p.setProperty(LAUNCH_NOTIFICATION_PORT, String.valueOf(notificationPort));
 
 		for (Map.Entry<String,String> entry : runProperties.entrySet()) {
@@ -106,9 +104,7 @@ public class LauncherConstants {
 	public LauncherConstants() {}
 
 	/**
-	 * Create a constants from properties.
-	 * 
-	 * @param p
+	 * Create a constants from properties. @param p
 	 */
 	public LauncherConstants(Properties p) {
 		services = Boolean.valueOf(p.getProperty(LAUNCH_SERVICES));

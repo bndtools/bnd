@@ -90,7 +90,7 @@ public class CompareTest<O extends Serializable> extends TestCase {
 
 	}
 
-	public A1<Collection<String>[]>	a1;
+	public A1<Collection<String>[]> a1;
 
 	@SuppressWarnings("static-method")
 	<Y, X extends A1<Y>> A1< ? extends X> bar() {

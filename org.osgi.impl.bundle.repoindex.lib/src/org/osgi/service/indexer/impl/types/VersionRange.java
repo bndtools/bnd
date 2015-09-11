@@ -23,14 +23,14 @@ import org.osgi.framework.Version;
 
 public class VersionRange implements Comparable<VersionRange> {
 
-	final Version high;
-	final Version low;
+	final Version	high;
+	final Version	low;
 
-	char start = '[';
-	char end = ']';
+	char	start	= '[';
+	char	end		= ']';
 
-	static String V = "[0-9]+(\\.[0-9]+(\\.[0-9]+(\\.[a-zA-Z0-9_-]+)?)?)?";
-	static Pattern RANGE = Pattern.compile("(\\(|\\[)\\s*(" + V + ")\\s*,\\s*(" + V + ")\\s*(\\)|\\])");
+	static String	V		= "[0-9]+(\\.[0-9]+(\\.[0-9]+(\\.[a-zA-Z0-9_-]+)?)?)?";
+	static Pattern	RANGE	= Pattern.compile("(\\(|\\[)\\s*(" + V + ")\\s*,\\s*(" + V + ")\\s*(\\)|\\])");
 
 	public VersionRange(boolean lowInclusive, Version low, Version high, boolean highInclusive) {
 		if (low.compareTo(high) > 0)

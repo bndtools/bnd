@@ -45,7 +45,7 @@ import aQute.service.reporter.Reporter;
  * provides convenient methods to access these properties via semantic methods.
  */
 public abstract class Domain implements Iterable<String> {
-	final Properties	translation	= new UTF8Properties();
+	final Properties translation = new UTF8Properties();
 
 	public abstract String get(String key);
 
@@ -59,16 +59,15 @@ public abstract class Domain implements Iterable<String> {
 	public String translate(String key) {
 		return translate(key, null);
 	}
-	
-	
+
 	public String translate(String key, String deflt) {
 		String value = get(key);
-		if ( value == null)
+		if (value == null)
 			return deflt;
-		
-		if ( value.indexOf('%')>=0) {
+
+		if (value.indexOf('%') >= 0) {
 			value = value.trim().substring(1);
-			return translation.getProperty(value,value);
+			return translation.getProperty(value, value);
 		}
 		return null;
 	}
@@ -140,7 +139,7 @@ public abstract class Domain implements Iterable<String> {
 				final Iterator<String> it = processor.getPropertyKeys(true).iterator();
 
 				return new Iterator<String>() {
-					String	current;
+					String current;
 
 					public boolean hasNext() {
 						return it.hasNext();
@@ -193,13 +192,10 @@ public abstract class Domain implements Iterable<String> {
 	public Parameters getParameters(String key, String deflt, Reporter reporter) {
 		return new Parameters(get(key, deflt), reporter);
 	}
-	
-	
+
 	public Parameters getRequireBundle() {
 		return getParameters(Constants.REQUIRE_BUNDLE);
 	}
-
-
 
 	public Parameters getImportPackage() {
 		return getParameters(IMPORT_PACKAGE);
@@ -326,7 +322,7 @@ public abstract class Domain implements Iterable<String> {
 	public void setFailOk(boolean b) {
 		set(FAIL_OK, b + "");
 	}
-	
+
 	public void setRunfw(String runfw) {
 		set(Constants.RUNFW, runfw);
 	}
@@ -340,20 +336,17 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	/**
-	 * Indicates that this run should ignore errors and succeed anyway
-	 * 
-	 * @return true if this processor should return errors
+	 * Indicates that this run should ignore errors and succeed anyway @return
+	 * true if this processor should return errors
 	 */
 	public boolean isFailOk() {
 		return Processor.isTrue(get(FAIL_OK));
 	}
 
 	/**
-	 * Find an icon with the requested size in the list of icons.
-	 * 
-	 * @param requestedSize
-	 *            the number of pixels desired
-	 * @return null or a the selected URI (which may be relative)
+	 * Find an icon with the requested size in the list of icons. @param
+	 * requestedSize the number of pixels desired @return null or a the selected
+	 * URI (which may be relative)
 	 */
 	public String getIcon(int requestedSize) throws Exception {
 		String spec = get(Constants.BUNDLE_ICON);

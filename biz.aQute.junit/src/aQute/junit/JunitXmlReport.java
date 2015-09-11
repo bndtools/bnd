@@ -128,17 +128,18 @@ public class JunitXmlReport implements TestReporter {
 	// <testcase classname="test.AnnotationsTest" name="testComponentReader"
 	// time="0.045" />
 	static Pattern NAMEANDCLASS = Pattern.compile("(.*)\\((.*)\\)");
+
 	public void startTest(Test test) {
 		String nameAndClass = test.toString();
 		String name = nameAndClass;
-		String clazz  = test.getClass().getName();
-		
+		String clazz = test.getClass().getName();
+
 		Matcher m = NAMEANDCLASS.matcher(nameAndClass);
 		if (m.matches()) {
 			name = m.group(1);
 			clazz = m.group(2);
 		}
-		
+
 		testcase = new Tag("testcase");
 		testsuite.addContent(testcase);
 		testcase.addAttribute("classname", clazz);

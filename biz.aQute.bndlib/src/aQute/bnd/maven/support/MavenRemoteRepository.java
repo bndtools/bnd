@@ -127,11 +127,12 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		return Arrays.toString(repositories);
 	}
 
-	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener ... listeners) throws Exception {
-		File f= get(bsn, version.toString(), Strategy.EXACT, properties);
-		if ( f == null)
+	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
+			throws Exception {
+		File f = get(bsn, version.toString(), Strategy.EXACT, properties);
+		if (f == null)
 			return null;
-		
+
 		for (DownloadListener l : listeners) {
 			try {
 				l.success(f);

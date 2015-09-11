@@ -22,25 +22,26 @@ import aQute.libg.cryptography.*;
 
 public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, Participant, Actionable {
 
-	private final String							UPWARDS_ARROW					= " \u2191";
-	private final String							DOWNWARDS_ARROW					= " \u2193";
-	Pattern	REPO_FILE	= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+)(-[-a-zA-z0-9_]+)?\\.(jar|lib)");
-	private static final String			CACHE_PATH				= ".cache";
-	public static final String			PROP_LOCAL_DIR			= "local";
-	public static final String			PROP_READONLY			= "readonly";
-	public static final String			PROP_PRETTY				= "pretty";
-	public static final String			PROP_OVERWRITE			= "overwrite";
-	public static final String			PROP_ONLYDIRS			= "onlydirs";
-	
+	private final String		UPWARDS_ARROW	= " \u2191";
+	private final String		DOWNWARDS_ARROW	= " \u2193";
+	Pattern						REPO_FILE		= Pattern
+			.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+)(-[-a-zA-z0-9_]+)?\\.(jar|lib)");
+	private static final String	CACHE_PATH		= ".cache";
+	public static final String	PROP_LOCAL_DIR	= "local";
+	public static final String	PROP_READONLY	= "readonly";
+	public static final String	PROP_PRETTY		= "pretty";
+	public static final String	PROP_OVERWRITE	= "overwrite";
+	public static final String	PROP_ONLYDIRS	= "onlydirs";
+
 	@SuppressWarnings("deprecation")
-	private boolean						readOnly;
-	private boolean						pretty					= false;
-	private boolean						overwrite				= true;
-	private File						storageDir;
-	private String				onlydirs				= null;
+	private boolean	readOnly;
+	private boolean	pretty		= false;
+	private boolean	overwrite	= true;
+	private File	storageDir;
+	private String	onlydirs	= null;
 
 	// @GuardedBy("newFilesInCoordination")
-	private final List<URI>				newFilesInCoordination	= new LinkedList<URI>();
+	private final List<URI> newFilesInCoordination = new LinkedList<URI>();
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -50,13 +51,13 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		// Load essential properties
 		String localDirPath = map.get(PROP_LOCAL_DIR);
 		if (localDirPath == null)
-			throw new IllegalArgumentException(String.format("Attribute '%s' must be set on %s plugin.",
-					PROP_LOCAL_DIR, getClass().getName()));
+			throw new IllegalArgumentException(
+					String.format("Attribute '%s' must be set on %s plugin.", PROP_LOCAL_DIR, getClass().getName()));
 
 		storageDir = new File(localDirPath);
 		if (storageDir.exists() && !storageDir.isDirectory())
-			throw new IllegalArgumentException(String.format("Local path '%s' exists and is not a directory.",
-					localDirPath));
+			throw new IllegalArgumentException(
+					String.format("Local path '%s' exists and is not a directory.", localDirPath));
 
 		readOnly = Boolean.parseBoolean(map.get(PROP_READONLY));
 		pretty = Boolean.parseBoolean(map.get(PROP_PRETTY));
@@ -66,9 +67,9 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		// Set the local index and cache directory locations
 		cacheDir = new File(storageDir, CACHE_PATH);
 		if (cacheDir.exists() && !cacheDir.isDirectory())
-			throw new IllegalArgumentException(String.format(
-					"Cannot create repository cache: '%s' already exists but is not directory.",
-					cacheDir.getAbsolutePath()));
+			throw new IllegalArgumentException(
+					String.format("Cannot create repository cache: '%s' already exists but is not directory.",
+							cacheDir.getAbsolutePath()));
 	}
 
 	@Override
@@ -89,9 +90,10 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 				}
 			}
 			catch (Exception e) {
-				logService.log(LogService.LOG_ERROR, String.format(
-						"Unable to load/generate index file '%s' for repository type %s", indexFile,
-						contentProvider.getName()), e);
+				logService.log(LogService.LOG_ERROR,
+						String.format("Unable to load/generate index file '%s' for repository type %s", indexFile,
+								contentProvider.getName()),
+						e);
 			}
 		}
 
@@ -100,8 +102,8 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	}
 
 	/**
-	 * @param contentProvider the repository content provider
-	 * @return the filename of the index on local storage
+	 * @param contentProvider the repository content provider @return the
+	 * filename of the index on local storage
 	 */
 	private File getIndexFile(IRepositoryContentProvider contentProvider) {
 		String indexFileName = contentProvider.getDefaultIndexName(pretty);
@@ -121,8 +123,9 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 				generateIndex(indexFile, provider);
 			}
 			catch (Exception e) {
-				logService.log(LogService.LOG_ERROR, String.format(
-						"Unable to regenerate index file '%s' for repository type %s", indexFile, provider.getName()),
+				logService.log(LogService.LOG_ERROR,
+						String.format("Unable to regenerate index file '%s' for repository type %s", indexFile,
+								provider.getName()),
 						e);
 			}
 		}
@@ -264,8 +267,8 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	}
 
 	protected File putArtifact(File tmpFile) throws Exception {
-		assert (tmpFile != null);
-		assert (tmpFile.isFile());
+		assert(tmpFile != null);
+		assert(tmpFile.isFile());
 
 		init();
 
@@ -277,8 +280,8 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 			File dir = new File(storageDir, bsn);
 			if (dir.exists() && !dir.isDirectory())
-				throw new IllegalArgumentException("Path already exists but is not a directory: "
-						+ dir.getAbsolutePath());
+				throw new IllegalArgumentException(
+						"Path already exists but is not a directory: " + dir.getAbsolutePath());
 			if (!dir.exists() && !dir.mkdirs()) {
 				throw new IOException("Could not create directory " + dir);
 			}
@@ -427,21 +430,21 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			public void run() {
 				regenerateAllIndexes();
 			}
-			
+
 		});
-		if ( target.length == 3 ) {
+		if (target.length == 3) {
 			String bsn = (String) target[1];
 			String version = (String) target[2];
-			
+
 			@SuppressWarnings("deprecation")
 			FileRepo storageRepo = new FileRepo(storageDir);
 			@SuppressWarnings("deprecation")
-			final File f = storageRepo.get(bsn, new VersionRange(version, version),0);
-			if ( f != null) {
+			final File f = storageRepo.get(bsn, new VersionRange(version, version), 0);
+			if (f != null) {
 				map.put("Delete", new Runnable() {
 
 					public void run() {
-						deleteEntry(f);						
+						deleteEntry(f);
 						regenerateAllIndexes();
 					}
 
@@ -449,36 +452,36 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 						File parent = f.getParentFile();
 						f.delete();
 						File[] listFiles = parent.listFiles();
-						if ( listFiles.length == 1 && listFiles[0].getName().endsWith("-latest.jar"))
+						if (listFiles.length == 1 && listFiles[0].getName().endsWith("-latest.jar"))
 							listFiles[0].delete();
-						
+
 						listFiles = parent.listFiles();
-						if ( listFiles.length == 0) 
+						if (listFiles.length == 0)
 							IO.delete(parent);
 					}
-					
+
 				});
 			}
-			
+
 		}
 		return map;
 	}
 
 	public String tooltip(Object... target) throws Exception {
-		if ( target == null || target.length==0)
-			return "LocalIndexedRepo @ " + getLocation(); 
-		
-		if ( target.length==2) {
+		if (target == null || target.length == 0)
+			return "LocalIndexedRepo @ " + getLocation();
+
+		if (target.length == 2) {
 			ResourceHandle h = getHandle(target);
-			if ( h == null) {
+			if (h == null) {
 				regenerateAllIndexes();
 				refresh();
 				return null;
 			}
-			if ( h.getLocation() == Location.remote) {
+			if (h.getLocation() == Location.remote) {
 				return h.getName() + " (remote, not yet cached)";
 			}
-			
+
 			return h.request().getAbsolutePath() + "\n" + SHA1.digest(h.request()).asHex() + "\n" + h.getLocation();
 		}
 		return null;
@@ -487,9 +490,9 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	private ResourceHandle getHandle(Object... target) throws Exception {
 		String bsn = (String) target[0];
 		Version v = (Version) target[1];
-		VersionRange r = new VersionRange("["+v.getWithoutQualifier()+","+v.getWithoutQualifier()+"]");
-		ResourceHandle[] handles = getHandles(bsn,r.toString());
-		if ( handles==null || handles.length==0) {
+		VersionRange r = new VersionRange("[" + v.getWithoutQualifier() + "," + v.getWithoutQualifier() + "]");
+		ResourceHandle[] handles = getHandles(bsn, r.toString());
+		if (handles == null || handles.length == 0) {
 			return null;
 		}
 		ResourceHandle h = handles[0];
@@ -497,34 +500,34 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	}
 
 	public String title(Object... target) throws Exception {
-		if ( target == null)
+		if (target == null)
 			return null;
-		
-		if ( target.length==2) {
+
+		if (target.length == 2) {
 			ResourceHandle handle = getHandle(target);
-			if ( handle != null) {
+			if (handle != null) {
 				String where = "";
-				switch( handle.getLocation()) {
+				switch (handle.getLocation()) {
 					case local :
 						where = "";
 						break;
-						
+
 					case remote :
 						where = UPWARDS_ARROW;
 						break;
-						
+
 					case remote_cached :
 						where = DOWNWARDS_ARROW;
 						break;
 					default :
 						where = "?";
 						break;
-					
+
 				}
 				return target[1] + " " + where;
 			}
 		}
-		
+
 		return null;
 	}
 }

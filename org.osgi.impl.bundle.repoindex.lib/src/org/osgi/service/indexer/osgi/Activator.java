@@ -6,10 +6,10 @@ import org.osgi.service.indexer.impl.*;
 
 public class Activator implements BundleActivator {
 
-	private LogTracker logTracker;
-	private AnalyzerTracker analyzerTracker;
+	private LogTracker		logTracker;
+	private AnalyzerTracker	analyzerTracker;
 
-	private ServiceRegistration<ResourceIndexer>	registration;
+	private ServiceRegistration<ResourceIndexer> registration;
 
 	public void start(BundleContext context) throws Exception {
 		logTracker = new LogTracker(context);

@@ -8,15 +8,11 @@ import aQute.bnd.service.diff.*;
  * An element can be compared to another element of the same type. Elements with
  * the same name and same place in the hierarchy should have the same type. The
  * idea is that for a certain resource type you create an element (Structured or
- * Leaf). This process is done for the newer and older resource.
- * <p>
- * A Leaf type has a value, comparison is rather simple in this case.
- * <p>
- * A Structured type has named children. The comparison between the newer and
- * older child elements is then done on their name. Two elements with the same
- * name are then matched.
- * <p>
- * The classes are prepared for extension but so far it turned out to be
+ * Leaf). This process is done for the newer and older resource. <p> A Leaf type
+ * has a value, comparison is rather simple in this case. <p> A Structured type
+ * has named children. The comparison between the newer and older child elements
+ * is then done on their name. Two elements with the same name are then matched.
+ * <p> The classes are prepared for extension but so far it turned out to be
  * unnecessary.
  */
 

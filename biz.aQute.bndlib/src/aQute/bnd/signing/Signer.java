@@ -20,8 +20,8 @@ public class Signer extends Processor {
 
 	static Pattern	METAINFDIR		= Pattern.compile("META-INF/[^/]*");
 	String			digestNames[]	= new String[] {
-										"MD5"
-									};
+			"MD5"
+										};
 	File			keystoreFile	= new File("keystore");
 	String			password;
 	String			alias;

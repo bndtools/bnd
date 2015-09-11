@@ -53,7 +53,7 @@ public class EnvoyDispatcher implements Closeable {
 
 	public class EnvoyImpl implements Envoy {
 
-		private Link<Envoy,EnvoySupervisor>	link;
+		private Link<Envoy,EnvoySupervisor> link;
 
 		EnvoyImpl(Socket socket) throws IOException {
 			envoys.add(this);
@@ -143,8 +143,8 @@ public class EnvoyDispatcher implements Closeable {
 
 			properties.put(Constants.FRAMEWORK_STORAGE, info.storage.getAbsolutePath());
 
-			Method newFw = info.dispatcher
-					.getMethod("createFramework", String.class, Map.class, File.class, File.class);
+			Method newFw = info.dispatcher.getMethod("createFramework", String.class, Map.class, File.class,
+					File.class);
 
 			info.framework = (Closeable) newFw.invoke(null, name, properties, storage, cache.getRoot());
 

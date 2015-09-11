@@ -9,12 +9,12 @@ public class ResolverLoggerTest extends TestCase {
 
 		rl.log(ResolverLogger.LOG_ERROR, "test", null);
 		assertEquals(String.format("ERROR: test%n"), rl.getLog());
-		
-		for ( int i=0; i < 100000; i++) {
+
+		for (int i = 0; i < 100000; i++) {
 			rl.log(ResolverLogger.LOG_ERROR, "test " + i, null);
 		}
-		
+
 		String s = rl.getLog();
-		assertTrue( s.endsWith(String.format("test 99999%n")));
+		assertTrue(s.endsWith(String.format("test 99999%n")));
 	}
 }

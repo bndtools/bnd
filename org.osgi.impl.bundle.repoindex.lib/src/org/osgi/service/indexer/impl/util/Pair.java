@@ -2,11 +2,11 @@ package org.osgi.service.indexer.impl.util;
 
 public class Pair<A, B> {
 
-	private final A first;
-	private final B second;
+	private final A	first;
+	private final B	second;
 
-	public static <A, B> Pair<A, B> create(A first, B second) {
-		return new Pair<A, B>(first, second);
+	public static <A, B> Pair<A,B> create(A first, B second) {
+		return new Pair<A,B>(first, second);
 	}
 
 	public Pair(A first, B second) {
@@ -44,7 +44,7 @@ public class Pair<A, B> {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Pair<?, ?> other = (Pair<?, ?>) obj;
+		Pair< ? , ? > other = (Pair< ? , ? >) obj;
 		if (first == null) {
 			if (other.first != null)
 				return false;

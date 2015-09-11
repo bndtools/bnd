@@ -21,7 +21,8 @@ public class BlueprintAnalyzer implements ResourceAnalyzer {
 		this.log = log;
 	}
 
-	public void analyzeResource(Resource resource, List<Capability> capabilities, List<Requirement> requirements) throws Exception {
+	public void analyzeResource(Resource resource, List<Capability> capabilities, List<Requirement> requirements)
+			throws Exception {
 		boolean blueprintEnabled = false;
 
 		String header = resource.getManifest().getMainAttributes().getValue(BUNDLE_BLUEPRINT_HEADER);
@@ -45,8 +46,10 @@ public class BlueprintAnalyzer implements ResourceAnalyzer {
 
 	private Requirement createRequirement() {
 		Builder builder = new Builder().setNamespace(Namespaces.NS_EXTENDER);
-		String filter = String.format("(&(%s=%s)(version>=1.0.0)(!(version>=2.0.0)))", Namespaces.NS_EXTENDER, Namespaces.EXTENDER_BLUEPRINT);
-		builder.addDirective(Namespaces.DIRECTIVE_FILTER, filter).addDirective(Namespaces.DIRECTIVE_EFFECTIVE, Namespaces.EFFECTIVE_ACTIVE);
+		String filter = String.format("(&(%s=%s)(version>=1.0.0)(!(version>=2.0.0)))", Namespaces.NS_EXTENDER,
+				Namespaces.EXTENDER_BLUEPRINT);
+		builder.addDirective(Namespaces.DIRECTIVE_FILTER, filter).addDirective(Namespaces.DIRECTIVE_EFFECTIVE,
+				Namespaces.EFFECTIVE_ACTIVE);
 		return builder.buildRequirement();
 	}
 

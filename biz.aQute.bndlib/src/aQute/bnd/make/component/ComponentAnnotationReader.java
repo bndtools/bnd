@@ -17,47 +17,44 @@ import aQute.service.reporter.*;
 
 /**
  * This converts bnd style annotations to, roughly, the header format.
- *
  */
 public class ComponentAnnotationReader extends ClassDataCollector {
 
-	String						EMPTY[]					= new String[0];
-	private static final String	V1_1					= "1.1.0";																																// "1.1.0"
-	static Pattern				BINDDESCRIPTOR			= Pattern
-																.compile("\\(L([^;]*);(Ljava/util/Map;|Lorg/osgi/framework/ServiceReference;)*\\)V");
-	static Pattern				BINDMETHOD				= Pattern.compile("(set|bind|add)(.)(.*)");
+	String						EMPTY[]			= new String[0];
+	private static final String	V1_1			= "1.1.0";											// "1.1.0"
+	static Pattern				BINDDESCRIPTOR	= Pattern
+			.compile("\\(L([^;]*);(Ljava/util/Map;|Lorg/osgi/framework/ServiceReference;)*\\)V");
+	static Pattern				BINDMETHOD		= Pattern.compile("(set|bind|add)(.)(.*)");
 
-	static Pattern				ACTIVATEDESCRIPTOR		= Pattern
-																.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)V");
-	static Pattern				OLDACTIVATEDESCRIPTOR	= Pattern
-																.compile("\\(Lorg/osgi/service/component/ComponentContext;\\)V");
+	static Pattern	ACTIVATEDESCRIPTOR		= Pattern.compile(
+			"\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)V");
+	static Pattern	OLDACTIVATEDESCRIPTOR	= Pattern.compile("\\(Lorg/osgi/service/component/ComponentContext;\\)V");
 
-	static Pattern				OLDBINDDESCRIPTOR		= Pattern.compile("\\(L([^;]*);\\)V");
-	static Pattern				REFERENCEBINDDESCRIPTOR	= Pattern
-																.compile("\\(Lorg/osgi/framework/ServiceReference;\\)V");
+	static Pattern	OLDBINDDESCRIPTOR		= Pattern.compile("\\(L([^;]*);\\)V");
+	static Pattern	REFERENCEBINDDESCRIPTOR	= Pattern.compile("\\(Lorg/osgi/framework/ServiceReference;\\)V");
 
-	static String[]				ACTIVATE_ARGUMENTS		= {
+	static String[]	ACTIVATE_ARGUMENTS		= {
 			"org.osgi.service.component.ComponentContext", "org.osgi.framework.BundleContext", Map.class.getName(),
 			"org.osgi.framework.BundleContext"
-														};
-	static String[]				OLD_ACTIVATE_ARGUMENTS	= {
-															"org.osgi.service.component.ComponentContext"
-														};
+												};
+	static String[]	OLD_ACTIVATE_ARGUMENTS	= {
+			"org.osgi.service.component.ComponentContext"
+												};
 
-	Reporter					reporter				= new Processor();
-	MethodDef					method;
+	Reporter	reporter	= new Processor();
+	MethodDef	method;
 	FieldDef	field;
-	TypeRef						className;
-	Clazz						clazz;
-	TypeRef						interfaces[];
-	Set<String>					multiple				= new HashSet<String>();
-	Set<String>					optional				= new HashSet<String>();
-	Set<String>					dynamic					= new HashSet<String>();
+	TypeRef		className;
+	Clazz		clazz;
+	TypeRef		interfaces[];
+	Set<String>	multiple	= new HashSet<String>();
+	Set<String>	optional	= new HashSet<String>();
+	Set<String>	dynamic		= new HashSet<String>();
 
-	Map<String,String>			map						= new TreeMap<String,String>();
-	Set<String>					descriptors				= new HashSet<String>();
-	List<String>				properties				= new ArrayList<String>();
-	String						version					= null;
+	Map<String,String>										map						= new TreeMap<String,String>();
+	Set<String>												descriptors				= new HashSet<String>();
+	List<String>											properties				= new ArrayList<String>();
+	String													version					= null;
 	Map<String,List<DeclarativeServicesAnnotationError>>	mismatchedAnnotations	= new HashMap<String,List<DeclarativeServicesAnnotationError>>();
 
 	// TODO make patterns for descriptors
@@ -96,7 +93,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				componentName = (componentName == null) ? className.getFQN() : componentName;
 				for (Entry<String,List<DeclarativeServicesAnnotationError>> e : mismatchedAnnotations.entrySet()) {
 					for (DeclarativeServicesAnnotationError errorDetails : e.getValue()) {
-						if(errorDetails.fieldName != null) {
+						if (errorDetails.fieldName != null) {
 							reporter.error(
 									"The DS component %s uses bnd annotations to declare it as a component, but also uses the standard DS annotation: %s on field %s. It is an error to mix these two types of annotations",
 									componentName, e.getKey(), errorDetails.fieldName).details(errorDetails);
@@ -177,8 +174,9 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 			if (!ACTIVATEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches())
 				reporter.error(
 						"Activate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-						className, method.getDescriptor()).details(new DeclarativeServicesAnnotationError(
-								className.getFQN(), method.getName(), method.getDescriptor().toString(), ErrorType.ACTIVATE_SIGNATURE_ERROR));
+						className, method.getDescriptor())
+						.details(new DeclarativeServicesAnnotationError(className.getFQN(), method.getName(),
+								method.getDescriptor().toString(), ErrorType.ACTIVATE_SIGNATURE_ERROR));
 
 			if (method.getName().equals("activate")
 					&& OLDACTIVATEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches()) {
@@ -195,8 +193,9 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 			if (!ACTIVATEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches())
 				reporter.error(
 						"Deactivate method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-						className, method.getDescriptor()).details(new DeclarativeServicesAnnotationError(
-								className.getFQN(), method.getName(), method.getDescriptor().toString(), ErrorType.DEACTIVATE_SIGNATURE_ERROR));
+						className, method.getDescriptor())
+						.details(new DeclarativeServicesAnnotationError(className.getFQN(), method.getName(),
+								method.getDescriptor().toString(), ErrorType.DEACTIVATE_SIGNATURE_ERROR));
 			if (method.getName().equals("deactivate")
 					&& OLDACTIVATEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches()) {
 				// This is the default!
@@ -208,8 +207,9 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 			if (!ACTIVATEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches())
 				reporter.error(
 						"Modified method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
-						className, method.getDescriptor()).details(new DeclarativeServicesAnnotationError(
-								className.getFQN(), method.getName(), method.getDescriptor().toString(), ErrorType.MODIFIED_SIGNATURE_ERROR));
+						className, method.getDescriptor())
+						.details(new DeclarativeServicesAnnotationError(className.getFQN(), method.getName(),
+								method.getDescriptor().toString(), ErrorType.MODIFIED_SIGNATURE_ERROR));
 			set(COMPONENT_MODIFIED, method, "<>");
 			setVersion(V1_1);
 		} else if (fqn.equals(Reference.class.getName())) {
@@ -230,9 +230,11 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 
 			unbind = annotation.get(Reference.UNBIND);
 
-			//this error reporting currently handled in HeaderReader.  If we rewrite this to go directly to ComponentDesc, we'll want this.
-//			if (unbind != null && !descriptors.contains(unbind))
-//				reporter.error("In component %s, for bind method %s, missing unbind method %s", name, bind, unbind);
+			// this error reporting currently handled in HeaderReader. If we
+			// rewrite this to go directly to ComponentDesc, we'll want this.
+			// if (unbind != null && !descriptors.contains(unbind))
+			// reporter.error("In component %s, for bind method %s, missing
+			// unbind method %s", name, bind, unbind);
 
 			if (bind != null) {
 				name = name + "/" + bind;
@@ -260,13 +262,13 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 			String target = annotation.get(Reference.TARGET);
 			if (target != null) {
 				String error = Verifier.validateFilter(target);
-				if(error != null) {
+				if (error != null) {
 					reporter.error("Invalid target filter %s for %s: %s", target, name, error)
-						.details(new DeclarativeServicesAnnotationError(className.getFQN(), bind, method.getDescriptor().toString(),
-							ErrorType.INVALID_TARGET_FILTER));
+							.details(new DeclarativeServicesAnnotationError(className.getFQN(), bind,
+									method.getDescriptor().toString(), ErrorType.INVALID_TARGET_FILTER));
 				}
 				service = service + target;
-			} 
+			}
 
 			Integer c = annotation.get(Reference.TYPE);
 			if (c != null && !c.equals(0) && !c.equals((int) '1')) {
@@ -276,8 +278,9 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 			if (map.containsKey(name))
 				reporter.error(
 						"In component %s, Multiple references with the same name: %s. Previous def: %s, this def: %s",
-						name, map.get(name), service, "").details(new DeclarativeServicesAnnotationError(
-								className.getFQN(), null, null, ErrorType.MULTIPLE_REFERENCES_SAME_NAME));
+						name, map.get(name), service, "")
+						.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
+								ErrorType.MULTIPLE_REFERENCES_SAME_NAME));
 			map.put(name, service);
 
 			if (isTrue(annotation.get(Reference.MULTIPLE)))
@@ -332,7 +335,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 		return Modifier.isPublic(method.getAccess()) || Modifier.isProtected(method.getAccess());
 	}
 
-	static Pattern	PROPERTY_PATTERN	= Pattern.compile("\\s*([^=\\s]+)\\s*=(.+)");
+	static Pattern PROPERTY_PATTERN = Pattern.compile("\\s*([^=\\s]+)\\s*=(.+)");
 
 	private void doProperties(aQute.bnd.osgi.Annotation annotation) {
 		Object[] properties = annotation.get(Component.PROPERTIES);
@@ -342,10 +345,10 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				String p = (String) o;
 				Matcher m = PROPERTY_PATTERN.matcher(p);
 				if (m.matches())
-					this.properties.add(m.group(1)+"="+m.group(2));
+					this.properties.add(m.group(1) + "=" + m.group(2));
 				else
-					throw new IllegalArgumentException("Malformed property '" + p + "' on: "
-							+ annotation.get(Component.NAME));
+					throw new IllegalArgumentException(
+							"Malformed property '" + p + "' on: " + annotation.get(Component.NAME));
 			}
 		}
 	}
@@ -376,10 +379,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 
 	/**
 	 * Skip L and ; and replace / for . in an object descriptor. A string like
-	 * Lcom/acme/Foo; becomes com.acme.Foo
-	 * 
-	 * @param string
-	 * @return
+	 * Lcom/acme/Foo; becomes com.acme.Foo @param string @return
 	 */
 
 	// private String descriptorToFQN(String string) {

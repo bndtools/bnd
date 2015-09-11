@@ -11,13 +11,11 @@ import aQute.service.reporter.*;
  * Mainly used for testing where reporters are needed.
  */
 public class ReporterAdapter implements Reporter, Report, Runnable {
-	final List<String>	errors		= new ArrayList<String>();
-	final List<String>	warnings	= new ArrayList<String>();
-	final List<LocationImpl> locations = new ArrayList<LocationImpl>();
-	
+	final List<String>			errors		= new ArrayList<String>();
+	final List<String>			warnings	= new ArrayList<String>();
+	final List<LocationImpl>	locations	= new ArrayList<LocationImpl>();
+
 	static class LocationImpl extends Location implements SetLocation {
-
-
 
 		public LocationImpl(String e) {
 			// TODO Auto-generated constructor stub
@@ -66,14 +64,14 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 			this.length = length;
 			return this;
 		}
-		
+
 	}
-	
-	final Formatter		out;
-	boolean				trace;
-	boolean				pedantic;
-	boolean				exceptions;
-	
+
+	final Formatter	out;
+	boolean			trace;
+	boolean			pedantic;
+	boolean			exceptions;
+
 	/**
 	 * @return the exceptions
 	 */
@@ -82,8 +80,7 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 	}
 
 	/**
-	 * @param exceptions
-	 *            the exceptions to set
+	 * @param exceptions the exceptions to set
 	 */
 	public void setExceptions(boolean exceptions) {
 		this.exceptions = exceptions;
@@ -104,8 +101,7 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 	}
 
 	/**
-	 * @param pedantic
-	 *            the pedantic to set
+	 * @param pedantic the pedantic to set
 	 */
 	public void setPedantic(boolean pedantic) {
 		this.pedantic = pedantic;
@@ -130,7 +126,7 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 		StackTraceElement[] stackTrace = t.getStackTrace();
 		String method = stackTrace[0].getMethodName();
 		String cname = stackTrace[0].getClassName();
-		String e = String.format("["+shorten(cname) +"."+method+"] " +s, args);
+		String e = String.format("[" + shorten(cname) + "." + method + "] " + s, args);
 		errors.add(e);
 		trace("ERROR: %s", e);
 		if (isExceptions() || isTrace())
@@ -143,10 +139,10 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 
 	private String shorten(String cname) {
 		int index = cname.lastIndexOf('$');
-		if ( index < 0)
+		if (index < 0)
 			index = cname.lastIndexOf('.');
-		
-		return cname.substring(index+1);
+
+		return cname.substring(index + 1);
 	}
 
 	public SetLocation warning(String s, Object... args) {
@@ -158,7 +154,7 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 
 	private SetLocation location(String e) {
 		LocationImpl loc = new LocationImpl(e);
-		locations.add( loc );
+		locations.add(loc);
 		return loc;
 	}
 
@@ -257,8 +253,9 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 	}
 
 	public boolean getInfo(Report other) {
-		return getInfo(other,null);
+		return getInfo(other, null);
 	}
+
 	public boolean getInfo(Report other, String prefix) {
 		addErrors(prefix, other.getErrors());
 		addWarnings(prefix, other.getWarnings());
@@ -266,7 +263,7 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 	}
 
 	public Location getLocation(String msg) {
-		for ( LocationImpl loc : locations ) {
+		for (LocationImpl loc : locations) {
 			if ((loc.message != null) && loc.message.equals(msg))
 				return loc;
 		}
@@ -274,8 +271,8 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 	}
 
 	/**
-	 * Handy routine that can be extended by subclasses
-	 * so they can run inside the context
+	 * Handy routine that can be extended by subclasses so they can run inside
+	 * the context
 	 */
 	public void run() {
 		throw new UnsupportedOperationException("Must be implemented by subclass");
@@ -284,35 +281,36 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 	/**
 	 * Return a messages object bound to this adapter
 	 */
-	
+
 	public <T> T getMessages(Class<T> c) {
 		return ReporterMessages.base(this, c);
 	}
-	
+
 	/**
 	 * Add a number of errors
 	 */
-	
-	public void addErrors( String prefix, Collection<String> errors) {
-		if ( prefix == null)
+
+	public void addErrors(String prefix, Collection<String> errors) {
+		if (prefix == null)
 			prefix = "";
 		else
 			prefix = prefix + ": ";
-		for ( String s: errors) {
-			this.errors.add( prefix + s);
+		for (String s : errors) {
+			this.errors.add(prefix + s);
 		}
 	}
+
 	/**
 	 * Add a number of warnings
 	 */
-	
-	public void addWarnings( String prefix, Collection<String> warnings) {
-		if ( prefix == null)
+
+	public void addWarnings(String prefix, Collection<String> warnings) {
+		if (prefix == null)
 			prefix = "";
 		else
 			prefix = prefix + ": ";
-		for ( String s: warnings) {
-			this.warnings.add( prefix  + s);
+		for (String s : warnings) {
+			this.warnings.add(prefix + s);
 		}
 	}
 }

@@ -65,13 +65,16 @@ public class TestMultipleLocalIndexGeneration extends TestCase {
 	}
 
 	public void testDeployBundle() throws Exception {
-		PutResult r = repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
+		PutResult r = repo.put(
+				new BufferedInputStream(
+						new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
+				new RepositoryPlugin.PutOptions());
 		File deployedFile = new File(r.artifact);
 
 		assertEquals(
-				IO.getFile(
-outputDir, "name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
-						.getAbsolutePath(), deployedFile.getAbsolutePath());
+				IO.getFile(outputDir, "name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
+						.getAbsolutePath(),
+				deployedFile.getAbsolutePath());
 
 		File r5IndexFile = IO.getFile(outputDir, "index.xml.gz");
 		assertTrue(r5IndexFile.exists());

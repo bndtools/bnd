@@ -6,27 +6,28 @@ import aQute.bnd.annotation.*;
 import aQute.libg.generics.*;
 
 public class Descriptors {
-	Map<String,TypeRef>		typeRefCache		= Create.map();
-	Map<String,Descriptor>	descriptorCache		= Create.map();
-	Map<String,PackageRef>	packageCache		= Create.map();
+	Map<String,TypeRef>		typeRefCache	= Create.map();
+	Map<String,Descriptor>	descriptorCache	= Create.map();
+	Map<String,PackageRef>	packageCache	= Create.map();
 
 	// MUST BE BEFORE PRIMITIVES, THEY USE THE DEFAULT PACKAGE!!
 	final static PackageRef	DEFAULT_PACKAGE		= new PackageRef();
 	final static PackageRef	PRIMITIVE_PACKAGE	= new PackageRef();
 
-	final static TypeRef	VOID				= new ConcreteRef("V", "void", PRIMITIVE_PACKAGE);
-	final static TypeRef	BOOLEAN				= new ConcreteRef("Z", "boolean", PRIMITIVE_PACKAGE);
-	final static TypeRef	BYTE				= new ConcreteRef("B", "byte", PRIMITIVE_PACKAGE);
-	final static TypeRef	CHAR				= new ConcreteRef("C", "char", PRIMITIVE_PACKAGE);
-	final static TypeRef	SHORT				= new ConcreteRef("S", "short", PRIMITIVE_PACKAGE);
-	final static TypeRef	INTEGER				= new ConcreteRef("I", "int", PRIMITIVE_PACKAGE);
-	final static TypeRef	LONG				= new ConcreteRef("J", "long", PRIMITIVE_PACKAGE);
-	final static TypeRef	DOUBLE				= new ConcreteRef("D", "double", PRIMITIVE_PACKAGE);
-	final static TypeRef	FLOAT				= new ConcreteRef("F", "float", PRIMITIVE_PACKAGE);
+	final static TypeRef	VOID	= new ConcreteRef("V", "void", PRIMITIVE_PACKAGE);
+	final static TypeRef	BOOLEAN	= new ConcreteRef("Z", "boolean", PRIMITIVE_PACKAGE);
+	final static TypeRef	BYTE	= new ConcreteRef("B", "byte", PRIMITIVE_PACKAGE);
+	final static TypeRef	CHAR	= new ConcreteRef("C", "char", PRIMITIVE_PACKAGE);
+	final static TypeRef	SHORT	= new ConcreteRef("S", "short", PRIMITIVE_PACKAGE);
+	final static TypeRef	INTEGER	= new ConcreteRef("I", "int", PRIMITIVE_PACKAGE);
+	final static TypeRef	LONG	= new ConcreteRef("J", "long", PRIMITIVE_PACKAGE);
+	final static TypeRef	DOUBLE	= new ConcreteRef("D", "double", PRIMITIVE_PACKAGE);
+	final static TypeRef	FLOAT	= new ConcreteRef("F", "float", PRIMITIVE_PACKAGE);
 
 	public enum SignatureType {
 		TYPEVAR, METHOD, FIELD;
 	}
+
 	public class Signature {
 		public Map<String,Signature>	typevariables	= new HashMap<String,Signature>();
 		public Signature				type;
@@ -138,10 +139,7 @@ public class Descriptors {
 		}
 
 		/**
-		 * Decide if the package is a metadata package.
-		 * 
-		 * @param pack
-		 * @return
+		 * Decide if the package is a metadata package. @param pack @return
 		 */
 		public boolean isMetaData() {
 			if (isDefaultPackage())
@@ -261,7 +259,7 @@ public class Descriptors {
 	}
 
 	private static class ArrayRef implements TypeRef {
-		final TypeRef	component;
+		final TypeRef component;
 
 		ArrayRef(TypeRef component) {
 			this.component = component;
@@ -353,7 +351,7 @@ public class Descriptors {
 	}
 
 	public TypeRef getTypeRef(String binaryClassName) {
-		assert !binaryClassName.endsWith(".class");
+		assert!binaryClassName.endsWith(".class");
 
 		TypeRef ref = typeRefCache.get(binaryClassName);
 		if (ref != null)
@@ -487,8 +485,8 @@ public class Descriptors {
 					break;
 
 				default :
-					throw new IllegalArgumentException("Invalid type in descriptor: " + c + " from " + descriptor + "["
-							+ index + "]");
+					throw new IllegalArgumentException(
+							"Invalid type in descriptor: " + c + " from " + descriptor + "[" + index + "]");
 			}
 			types.add(getTypeRef(sb.toString()));
 			return index;
@@ -603,76 +601,76 @@ public class Descriptors {
 		return getTypeRef(path.substring(0, path.length() - 6));
 	}
 
-	
-//	static class Rover {
-//		int n = 0;
-//		String string;
-//		Rover(String string) {
-//			this.string = string;
-//
-//		}
-//		
-//		boolean at( String s) {
-//			if ( n + s.length() > string.length())
-//				return false;
-//			
-//			for ( int i=0; i<s.length(); i++) {
-//				if (  string.charAt(n+i) != s.charAt(n+i))
-//					return false;
-//			}
-//			
-//			n += s.length();
-//			return true;
-//		}
-//		
-//		String upTo(char c) {
-//			for ( int i=n; i < string.length(); i++) {
-//				if ( string.charAt(i) == c) {
-//					String s = string.substring(n,i);
-//					n = i;
-//					return s;
-//				}
-//			}
-//			throw new IllegalArgumentException("Looking for " + c + " in " + string + " from " + n);
-//		}
-//		
-//	}
-//	public Signature getSignature(String signature) {
-//		Signature s = new Signature();
-//		Rover r = new Rover(signature);
-//		
-//		
-//		int n = parseTypeVarsDecl(s, rover);
-//		n = parseParameters(s, descriptor, n);
-//		n = parseTypeVarsDecl(s, descriptor, n);
-//
-//		assert n == descriptor.length();
-//		return s;
-//	}
-//
-//	private int parseParameters(Signature s, String descriptor, int n) {
-//		// TODO Auto-generated method stub
-//		return 0;
-//	}
-//
-//	/**
-//	 * <X::Ljava/util/List<Ljava/lang/String;>;Y:Ljava/lang/Object;>(TY;)TX;
-//	 */
-//	private void parseTypeVarsDecl(Signature s, Rover rover) {
-//		if ( rover.at("<"))  {
-//			while ( !rover.at(">")) {
-//				String name = rover.upTo(':');
-//				rover.n++;
-//				do {
-//					Signature tr = parseTypeReference(s, rover);
-//					s.typevariables.put(name, tr);
-//				} while( rover.at(":"));
-//			}
-//		}
-//	}
-//
-//	private TypeRef parseTypeReference(String descriptor, int i) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
+	// static class Rover {
+	// int n = 0;
+	// String string;
+	// Rover(String string) {
+	// this.string = string;
+	//
+	// }
+	//
+	// boolean at( String s) {
+	// if ( n + s.length() > string.length())
+	// return false;
+	//
+	// for ( int i=0; i<s.length(); i++) {
+	// if ( string.charAt(n+i) != s.charAt(n+i))
+	// return false;
+	// }
+	//
+	// n += s.length();
+	// return true;
+	// }
+	//
+	// String upTo(char c) {
+	// for ( int i=n; i < string.length(); i++) {
+	// if ( string.charAt(i) == c) {
+	// String s = string.substring(n,i);
+	// n = i;
+	// return s;
+	// }
+	// }
+	// throw new IllegalArgumentException("Looking for " + c + " in " + string +
+	// " from " + n);
+	// }
+	//
+	// }
+	// public Signature getSignature(String signature) {
+	// Signature s = new Signature();
+	// Rover r = new Rover(signature);
+	//
+	//
+	// int n = parseTypeVarsDecl(s, rover);
+	// n = parseParameters(s, descriptor, n);
+	// n = parseTypeVarsDecl(s, descriptor, n);
+	//
+	// assert n == descriptor.length();
+	// return s;
+	// }
+	//
+	// private int parseParameters(Signature s, String descriptor, int n) {
+	// // TODO Auto-generated method stub
+	// return 0;
+	// }
+	//
+	// /**
+	// * <X::Ljava/util/List<Ljava/lang/String;>;Y:Ljava/lang/Object;>(TY;)TX;
+	// */
+	// private void parseTypeVarsDecl(Signature s, Rover rover) {
+	// if ( rover.at("<")) {
+	// while ( !rover.at(">")) {
+	// String name = rover.upTo(':');
+	// rover.n++;
+	// do {
+	// Signature tr = parseTypeReference(s, rover);
+	// s.typevariables.put(name, tr);
+	// } while( rover.at(":"));
+	// }
+	// }
+	// }
+	//
+	// private TypeRef parseTypeReference(String descriptor, int i) {
+	// // TODO Auto-generated method stub
+	// return null;
+	// }
 }

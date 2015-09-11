@@ -31,7 +31,7 @@ public class Plugins {
 		boolean force();
 
 		// boolean interactive();
-		
+
 		// String jar();
 	}
 
@@ -45,7 +45,7 @@ public class Plugins {
 		}
 
 		String pluginName = args.remove(0);
-		String alias = opts.alias()==null ? pluginName : opts.alias();
+		String alias = opts.alias() == null ? pluginName : opts.alias();
 
 		Class< ? > plugin = plugins.get(pluginName);
 		if (plugin == null) {

@@ -7,8 +7,8 @@ public final class SimpleFilter extends Filter {
 	private final String	value;
 
 	/**
-	 * Construct a simple filter with the default "equals" operator, i.e.
-	 * {@code (name=value)}.
+	 * Construct a simple filter with the default "equals" operator, i.e. {@code
+	 * (name=value)}.
 	 */
 	public SimpleFilter(String name, String value) {
 		this(name, Operator.Equals, value);

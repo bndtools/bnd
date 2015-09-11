@@ -57,7 +57,7 @@ public class UsesTest extends TestCase {
 	public static void testUsesAnnotation() throws Exception {
 		checkUses("test.uses.annotation", "test.uses.annotation.annotation");
 	}
-	
+
 	public static void testUsesMulti() throws Exception {
 		// Check for consistent ordering
 		for (int i = 0; i < 10; i++)

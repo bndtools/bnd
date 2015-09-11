@@ -45,44 +45,41 @@ import aQute.lib.collections.MultiMap;
  * Processes spec DS annotations into xml.
  */
 public class AnnotationReader extends ClassDataCollector {
-	final static TypeRef[]		EMPTY					= new TypeRef[0];
-	final static Pattern		PROPERTY_PATTERN		= Pattern
-																.compile("\\s*([^=\\s:]+)\\s*(?::\\s*(Boolean|Byte|Character|Short|Integer|Long|Float|Double|String)\\s*)?=(.*)");
+	final static TypeRef[]	EMPTY				= new TypeRef[0];
+	final static Pattern	PROPERTY_PATTERN	= Pattern.compile(
+			"\\s*([^=\\s:]+)\\s*(?::\\s*(Boolean|Byte|Character|Short|Integer|Long|Float|Double|String)\\s*)?=(.*)");
 
-	public static final Version	V1_0					= new Version("1.0.0");																												// "1.0.0"
-	public static final Version	V1_1					= new Version("1.1.0");																												// "1.1.0"
-	public static final Version	V1_2					= new Version("1.2.0");																												// "1.2.0"
-	public static final Version	V1_3					= new Version("1.3.0");																												// "1.3.0"
+	public static final Version	V1_0	= new Version("1.0.0");	// "1.0.0"
+	public static final Version	V1_1	= new Version("1.1.0");	// "1.1.0"
+	public static final Version	V1_2	= new Version("1.2.0");	// "1.2.0"
+	public static final Version	V1_3	= new Version("1.3.0");	// "1.3.0"
 
-	static Pattern				BINDNAME				= Pattern.compile("(set|add|bind)?(.*)");
-	
-	static Pattern				BINDDESCRIPTORDS10			= Pattern
-																	.compile("\\(L(((org/osgi/framework/ServiceReference)|(org/osgi/service/component/ComponentServiceObjects)|(java/util/Map\\$Entry)|(java/util/Map))|([^;]+));\\)(V|(Ljava/util/Map;))");
-	static Pattern				BINDDESCRIPTORDS11			= Pattern
-																.compile("\\(L([^;]+);(Ljava/util/Map;)?\\)(V|(Ljava/util/Map;))");
+	static Pattern BINDNAME = Pattern.compile("(set|add|bind)?(.*)");
 
-	//includes support for felix extensions
-	static Pattern				BINDDESCRIPTORDS13			= Pattern
-																	.compile("\\(((Lorg/osgi/framework/ServiceReference;)|(Lorg/osgi/service/component/ComponentServiceObjects;)|(Ljava/util/Map;)|(Ljava/util/Map\\$Entry;)|(L([^;]+);))+\\)(V|(Ljava/util/Map;))");
+	static Pattern	BINDDESCRIPTORDS10	= Pattern.compile(
+			"\\(L(((org/osgi/framework/ServiceReference)|(org/osgi/service/component/ComponentServiceObjects)|(java/util/Map\\$Entry)|(java/util/Map))|([^;]+));\\)(V|(Ljava/util/Map;))");
+	static Pattern	BINDDESCRIPTORDS11	= Pattern.compile("\\(L([^;]+);(Ljava/util/Map;)?\\)(V|(Ljava/util/Map;))");
 
-	static Pattern				LIFECYCLEDESCRIPTORDS10		= Pattern
-																.compile("\\((Lorg/osgi/service/component/ComponentContext;)\\)(V|(Ljava/util/Map;))");
-	static Pattern				LIFECYCLEDESCRIPTORDS11		= Pattern
-																.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)(V|(Ljava/util/Map;))");
-	static Pattern				LIFECYCLEDESCRIPTORDS13		= Pattern
-																.compile("\\((L([^;]+);)*\\)(V|(Ljava/util/Map;))");
-	static Pattern				LIFECYCLEARGUMENT			= Pattern
-																.compile("((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(L([^;]+);))");	
+	// includes support for felix extensions
+	static Pattern BINDDESCRIPTORDS13 = Pattern.compile(
+			"\\(((Lorg/osgi/framework/ServiceReference;)|(Lorg/osgi/service/component/ComponentServiceObjects;)|(Ljava/util/Map;)|(Ljava/util/Map\\$Entry;)|(L([^;]+);))+\\)(V|(Ljava/util/Map;))");
 
-	static Pattern				IDENTIFIERTOPROPERTY		= Pattern
-																.compile("(__)|(_)|(\\$\\$)|(\\$)");
+	static Pattern	LIFECYCLEDESCRIPTORDS10	= Pattern
+			.compile("\\((Lorg/osgi/service/component/ComponentContext;)\\)(V|(Ljava/util/Map;))");
+	static Pattern	LIFECYCLEDESCRIPTORDS11	= Pattern.compile(
+			"\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)(V|(Ljava/util/Map;))");
+	static Pattern	LIFECYCLEDESCRIPTORDS13	= Pattern.compile("\\((L([^;]+);)*\\)(V|(Ljava/util/Map;))");
+	static Pattern	LIFECYCLEARGUMENT		= Pattern.compile(
+			"((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(L([^;]+);))");
 
-	static Pattern				DEACTIVATEDESCRIPTORDS11	= Pattern
-																.compile("\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(Ljava/lang/Integer;)|(I))*\\)(V|(Ljava/util/Map;))");
-	static Pattern				DEACTIVATEDESCRIPTORDS13	= Pattern
-																.compile("\\(((L([^;]+);)|(I))*\\)(V|(Ljava/util/Map;))");
+	static Pattern IDENTIFIERTOPROPERTY = Pattern.compile("(__)|(_)|(\\$\\$)|(\\$)");
 
-	final static Map<String,Class< ? >>	wrappers;
+	static Pattern	DEACTIVATEDESCRIPTORDS11	= Pattern.compile(
+			"\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(Ljava/lang/Integer;)|(I))*\\)(V|(Ljava/util/Map;))");
+	static Pattern	DEACTIVATEDESCRIPTORDS13	= Pattern.compile("\\(((L([^;]+);)|(I))*\\)(V|(Ljava/util/Map;))");
+
+	final static Map<String,Class< ? >> wrappers;
+
 	static {
 		Map<String,Class< ? >> map = new HashMap<String,Class< ? >>();
 		map.put("boolean", Boolean.class);
@@ -96,25 +93,25 @@ public class AnnotationReader extends ClassDataCollector {
 		wrappers = Collections.unmodifiableMap(map);
 	}
 
-	ComponentDef											component;
+	ComponentDef component;
 
-	Clazz						clazz;
-	TypeRef						interfaces[];
-	FieldDef					member;
-	TypeRef						className;
-	Analyzer					analyzer;
-	MultiMap<String,String>		methods					= new MultiMap<String,String>();
-	TypeRef						extendsClass;
-	boolean						baseclass				= true;
-	final EnumSet<Options>		options;
-	
-	final Map<FieldDef,ReferenceDef>	referencesByMember			= new HashMap<FieldDef,ReferenceDef>();
+	Clazz					clazz;
+	TypeRef					interfaces[];
+	FieldDef				member;
+	TypeRef					className;
+	Analyzer				analyzer;
+	MultiMap<String,String>	methods		= new MultiMap<String,String>();
+	TypeRef					extendsClass;
+	boolean					baseclass	= true;
+	final EnumSet<Options>	options;
 
-	final XMLAttributeFinder			finder;
+	final Map<FieldDef,ReferenceDef> referencesByMember = new HashMap<FieldDef,ReferenceDef>();
+
+	final XMLAttributeFinder finder;
 
 	Map<String,List<DeclarativeServicesAnnotationError>> mismatchedAnnotations = new HashMap<String,List<DeclarativeServicesAnnotationError>>();
 
-	AnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder			finder) {
+	AnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder finder) {
 		this.analyzer = analyzer;
 		this.clazz = clazz;
 		this.options = options;
@@ -122,7 +119,8 @@ public class AnnotationReader extends ClassDataCollector {
 		this.component = new ComponentDef(finder);
 	}
 
-	public static ComponentDef getDefinition(Clazz c, Analyzer analyzer, EnumSet<Options> options, XMLAttributeFinder finder) throws Exception {
+	public static ComponentDef getDefinition(Clazz c, Analyzer analyzer, EnumSet<Options> options,
+			XMLAttributeFinder finder) throws Exception {
 		AnnotationReader r = new AnnotationReader(analyzer, c, options, finder);
 		return r.getDef();
 	}
@@ -141,8 +139,8 @@ public class AnnotationReader extends ClassDataCollector {
 				Clazz ec = analyzer.findClass(extendsClass);
 				if (ec == null) {
 					analyzer.error("Missing super class for DS annotations: %s from %s", extendsClass,
-							clazz.getClassName()).details(
-							new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
+							clazz.getClassName())
+							.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
 									ErrorType.UNABLE_TO_LOCATE_SUPER_CLASS));
 				} else {
 					ec.parseClassFileWithCollector(this);
@@ -157,16 +155,15 @@ public class AnnotationReader extends ClassDataCollector {
 
 				if (rdef.policy == ReferencePolicy.DYNAMIC && rdef.unbind == null)
 					analyzer.error("In component class %s, reference %s is dynamic but has no unbind method.",
-							className.getFQN(), rdef.name).details(
-							getDetails(rdef, ErrorType.DYNAMIC_REFERENCE_WITHOUT_UNBIND));
+							className.getFQN(), rdef.name)
+							.details(getDetails(rdef, ErrorType.DYNAMIC_REFERENCE_WITHOUT_UNBIND));
 			}
 		}
 		return component;
 	}
 
 	/**
-	 * @param analyzer
-	 * @param rdef
+	 * @param analyzer @param rdef
 	 */
 	protected String referredMethod(Analyzer analyzer, ReferenceDef rdef, String value, String... matches) {
 		if (value == null) {
@@ -190,12 +187,13 @@ public class AnnotationReader extends ClassDataCollector {
 			analyzer.warning(
 					"None of the methods related to '%s' in the class '%s' named '%s' for service type '%s' have an acceptable signature. The descriptors found are:",
 					rdef.bind, component.implementation, value, rdef.service);
-			//We make this a separate loop because we shouldn't add warnings until we know that there was no match
+			// We make this a separate loop because we shouldn't add warnings
+			// until we know that there was no match
 			// We need to include the method name in the warning or it may be
 			// ignored as duplicate (from another non-match)
-			for(String descriptor : methods.get(value)) {
-				analyzer.warning("  methodname: %s descriptor: %s", value, descriptor).details(
-						getDetails(rdef, ErrorType.UNSET_OR_MODIFY_WITH_WRONG_SIGNATURE));
+			for (String descriptor : methods.get(value)) {
+				analyzer.warning("  methodname: %s descriptor: %s", value, descriptor)
+						.details(getDetails(rdef, ErrorType.UNSET_OR_MODIFY_WITH_WRONG_SIGNATURE));
 			}
 		}
 		return null;
@@ -249,8 +247,8 @@ public class AnnotationReader extends ClassDataCollector {
 
 		switch (annotation.getElementType()) {
 			case METHOD :
-				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(), member
-						.getDescriptor().toString(), ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
+				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
+						member.getDescriptor().toString(), ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
 				break;
 			case FIELD :
 				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
@@ -294,8 +292,7 @@ public class AnnotationReader extends ClassDataCollector {
 		DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
 				member.getName(), methodDescriptor, ErrorType.ACTIVATE_SIGNATURE_ERROR);
 		if (!(member instanceof MethodDef)) {
-			analyzer.error("Activate annotation on a field", clazz, member.getDescriptor()).details(
-details);
+			analyzer.error("Activate annotation on a field", clazz, member.getDescriptor()).details(details);
 			return;
 		}
 		boolean hasMapReturnType = false;
@@ -397,15 +394,9 @@ details);
 	}
 
 	/**
-	 * look for annotation arguments and extract properties from them
-	 * 
-	 * @param methodDescriptor
-	 * @param fqn
-	 *            TODO
-	 * @param method
-	 *            TODO
-	 * @param descriptor
-	 *            TODO
+	 * look for annotation arguments and extract properties from them @param
+	 * methodDescriptor @param fqn TODO @param method TODO @param descriptor
+	 * TODO
 	 */
 	private void processAnnotationArguments(final String methodDescriptor,
 			final DeclarativeServicesAnnotationError details) {
@@ -453,8 +444,8 @@ details);
 								if (value != null) {
 									String name = identifierToPropertyName(defined.getName());
 									if (value.getClass().isArray()) {
-										//add element individually
-										for (int i = 0; i< Array.getLength(value); i++) {
+										// add element individually
+										for (int i = 0; i < Array.getLength(value); i++) {
 											Object element = Array.get(value, i);
 											valueToProperty(name, element, isClass, typeClass);
 										}
@@ -463,12 +454,14 @@ details);
 								}
 							}
 
-							private void valueToProperty(String name, Object value, boolean isClass, Class< ? > typeClass) {
+							private void valueToProperty(String name, Object value, boolean isClass,
+									Class< ? > typeClass) {
 								if (isClass)
 									value = ((TypeRef) value).getFQN();
 								if (typeClass == null)
 									typeClass = value.getClass();
-								//enums already come out as the enum name, no processing needed.
+								// enums already come out as the enum name, no
+								// processing needed.
 								String type = typeClass.getSimpleName();
 								component.propertyType.put(name, type);
 								props.add(name, value.toString());
@@ -485,8 +478,8 @@ details);
 										replace = ".";
 									else if (m.group(3) != null) // $$ to $
 										replace = "\\$";
-									//group 4 $ removed.
-									m.appendReplacement(b, replace); 
+									// group 4 $ removed.
+									m.appendReplacement(b, replace);
 								}
 								m.appendTail(b);
 								return b.toString();
@@ -511,11 +504,8 @@ details);
 	}
 
 	/**
-	 * @param reference
-	 * @Reference proxy backed by raw.
-	 * @param raw
-	 * @Reference contents
-	 * @throws Exception
+	 * @param reference @Reference proxy backed by raw. @param raw @Reference
+	 * contents @throws Exception
 	 */
 	protected void doReference(Reference reference, Annotation raw) throws Exception {
 		ReferenceDef def;
@@ -547,9 +537,8 @@ details);
 		if (def.target != null) {
 			String error = Verifier.validateFilter(def.target);
 			if (error != null)
-				analyzer.error("Invalid target filter %s for %s: %s", def.target, def.name, error).details(
-						getDetails(def,
-								ErrorType.INVALID_TARGET_FILTER));
+				analyzer.error("Invalid target filter %s for %s: %s", def.target, def.name, error)
+						.details(getDetails(def, ErrorType.INVALID_TARGET_FILTER));
 		}
 
 		String annoService = null;
@@ -568,8 +557,8 @@ details);
 					if (m.matches())
 						def.name = m.group(2);
 					else
-						analyzer.error("Invalid name for bind method %s", member.getName()).details(
-								getDetails(def, ErrorType.INVALID_REFERENCE_BIND_METHOD_NAME));
+						analyzer.error("Invalid name for bind method %s", member.getName())
+								.details(getDetails(def, ErrorType.INVALID_REFERENCE_BIND_METHOD_NAME));
 				}
 
 				def.service = determineReferenceType(def.bindDescriptor, def, annoService, member.getSignature());
@@ -631,8 +620,8 @@ details);
 						if (def.fieldOption == FieldOption.REPLACE)
 							analyzer.error(
 									"In component %s, collection type field: %s is final and dynamic but marked with 'replace' fieldOption. Changing this to 'update'.",
-									className, def.field).details(
-									getDetails(def, ErrorType.DYNAMIC_FINAL_FIELD_WITH_REPLACE));
+									className, def.field)
+									.details(getDetails(def, ErrorType.DYNAMIC_FINAL_FIELD_WITH_REPLACE));
 						def.fieldOption = FieldOption.UPDATE;
 					}
 				}
@@ -653,9 +642,8 @@ details);
 		if (component.references.containsKey(def.name))
 			analyzer.error(
 					"In component %s, multiple references with the same name: %s. Previous def: %s, this def: %s",
-					className, component.references.get(def.name), def.service, "").details(
-					getDetails(def,
-							ErrorType.MULTIPLE_REFERENCES_SAME_NAME));
+					className, component.references.get(def.name), def.service, "")
+					.details(getDetails(def, ErrorType.MULTIPLE_REFERENCES_SAME_NAME));
 		else
 			component.references.put(def.name, def);
 
@@ -831,10 +819,9 @@ details);
 	}
 
 	/**
-	 * 
-	 * @param annoService
-	 * @param inferredService
-	 * @return true if the inferred service is a non-parameter object because it differs from the specified service type.
+	 * @param annoService @param inferredService @return true if the inferred
+	 * service is a non-parameter object because it differs from the specified
+	 * service type.
 	 */
 	private boolean noMatch(String annoService, String inferredService) {
 		if (annoService == null)
@@ -843,8 +830,7 @@ details);
 	}
 
 	/**
-	 * @param annotation
-	 * @throws Exception
+	 * @param annotation @throws Exception
 	 */
 	@SuppressWarnings("deprecation")
 	protected void doComponent(Component comp, Annotation annotation) throws Exception {
@@ -888,7 +874,7 @@ details);
 		if (annotation.get("immediate") != null)
 			component.immediate = comp.immediate();
 		if (annotation.get("servicefactory") != null)
-			component.scope = comp.servicefactory()? ServiceScope.BUNDLE: ServiceScope.SINGLETON;
+			component.scope = comp.servicefactory() ? ServiceScope.BUNDLE : ServiceScope.SINGLETON;
 		if (annotation.get("scope") != null && comp.scope() != ServiceScope.DEFAULT) {
 			component.scope = comp.scope();
 			if (comp.scope() == ServiceScope.PROTOTYPE) {
@@ -916,8 +902,8 @@ details);
 							"Found an = sign in an OSGi DS Component annotation on %s. In the bnd annotation "
 									+ "this is an actual property but in the OSGi, this element must refer to a path with Java properties. "
 									+ "However, found a path with an '=' sign which looks like a mixup (%s) with the 'property' element.",
-							clazz, entry).details(
-							new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
+							clazz, entry)
+							.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
 									ErrorType.COMPONENT_PROPERTIES_ERROR));
 				}
 				component.properties.add(entry);
@@ -944,13 +930,13 @@ details);
 				component.service[i] = (TypeRef) x[i];
 			}
 		}
-		
-		//make sure reference processing knows this is a Reference in Component
+
+		// make sure reference processing knows this is a Reference in Component
 		member = null;
 		Object[] refAnnotations = annotation.get("reference");
 		if (refAnnotations != null) {
-			for (Object o: refAnnotations) {
-				Annotation refAnnotation = (Annotation)o;
+			for (Object o : refAnnotations) {
+				Annotation refAnnotation = (Annotation) o;
 				Reference ref = refAnnotation.getAnnotation();
 				doReference(ref, refAnnotation);
 			}
@@ -964,18 +950,18 @@ details);
 
 	private void doProperty(String[] properties) {
 		if (properties != null && properties.length > 0) {
-			MultiMap<String, String> props = new MultiMap<String, String>();
+			MultiMap<String,String> props = new MultiMap<String,String>();
 			for (String p : properties) {
 				Matcher m = PROPERTY_PATTERN.matcher(p);
 
 				if (m.matches()) {
 					String key = m.group(1);
 					String type = m.group(2);
-					if ( type == null)
+					if (type == null)
 						type = "String";
-					
-					component.propertyType.put(key,  type);
-					
+
+					component.propertyType.put(key, type);
+
 					String value = m.group(3);
 					props.add(key, value);
 				} else
@@ -1012,7 +998,7 @@ details);
 		this.member = method;
 		methods.add(method.getName(), method.getDescriptor().toString());
 	}
-	
+
 	@Override
 	public void field(FieldDef field) {
 		this.member = field;

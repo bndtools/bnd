@@ -45,7 +45,7 @@ public class LinkTest extends TestCase {
 	}
 
 	public class LocalImpl implements Local, Closeable {
-		Link<Local,Remote>	link;
+		Link<Local,Remote> link;
 
 		public LocalImpl(Class<Remote> type, InputStream in, OutputStream out) {
 			link = new Link<Local,Remote>(type, this, in, out);
@@ -70,7 +70,7 @@ public class LinkTest extends TestCase {
 	}
 
 	public class RemoteImpl implements Remote, Closeable {
-		Link<Remote,Local>	link;
+		Link<Remote,Local> link;
 
 		public RemoteImpl(Class<Local> type, InputStream in, OutputStream out) {
 			link = new Link<Remote,Local>(type, this, in, out);
@@ -94,9 +94,7 @@ public class LinkTest extends TestCase {
 	}
 
 	/**
-	 * Test transfer
-	 * 
-	 * @throws Exception
+	 * Test transfer @throws Exception
 	 */
 
 	public void testTransfer() throws Exception {
@@ -119,9 +117,7 @@ public class LinkTest extends TestCase {
 	}
 
 	/**
-	 * Test simple
-	 * 
-	 * @throws InterruptedException
+	 * Test simple @throws InterruptedException
 	 */
 
 	public void testSimple() throws IOException, InterruptedException {
@@ -147,9 +143,7 @@ public class LinkTest extends TestCase {
 	}
 
 	/**
-	 * Only close in
-	 * 
-	 * @throws InterruptedException
+	 * Only close in @throws InterruptedException
 	 */
 
 	public void testCloseLocalIn() throws IOException, InterruptedException {

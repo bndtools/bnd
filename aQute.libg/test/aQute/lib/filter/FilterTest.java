@@ -20,6 +20,6 @@ public class FilterTest extends TestCase {
 
 	private void verify(String string) {
 		assertNull("Invalid filter", new Filter(string).verify());
-		
+
 	}
 }

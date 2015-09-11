@@ -4,9 +4,8 @@ import java.io.*;
 
 /**
  * Represents a data stream that has a tag associated with it; the primary
- * use-case is an HTTP response stream with an ETag header.
- * 
- * @author Neil Bartlett
+ * use-case is an HTTP response stream with an ETag header. @author Neil
+ * Bartlett
  */
 public class TaggedData {
 

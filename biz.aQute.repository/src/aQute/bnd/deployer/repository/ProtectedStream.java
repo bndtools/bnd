@@ -4,14 +4,12 @@ import java.io.*;
 
 /**
  * This is used to prevent content providers with interfering with the state of
- * the underlying stream by calling ant of {@link InputStream#close()},
- * {@link InputStream#mark(int)} or {@link InputStream#reset()}.
- * 
- * @author Neil Bartlett
+ * the underlying stream by calling ant of {@link InputStream#close()}, {@link
+ * InputStream#mark(int)} or {@link InputStream#reset()}. @author Neil Bartlett
  */
 class ProtectedStream extends InputStream {
 
-	private InputStream	delegate;
+	private InputStream delegate;
 
 	ProtectedStream(InputStream delegate) {
 		this.delegate = delegate;

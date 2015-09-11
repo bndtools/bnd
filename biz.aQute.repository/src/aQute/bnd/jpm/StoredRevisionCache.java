@@ -104,8 +104,8 @@ public class StoredRevisionCache {
 				d = doDownload(url);
 
 				if (!Arrays.equals(sha, d.sha))
-					throw new Exception("Shas did not match (expected)" + Hex.toHexString(sha) + " (downloaded)"
-							+ d.tmp + " (" + Hex.toHexString(d.sha) + ")");
+					throw new Exception("Shas did not match (expected)" + Hex.toHexString(sha) + " (downloaded)" + d.tmp
+							+ " (" + Hex.toHexString(d.sha) + ")");
 
 				file.getParentFile().mkdirs();
 				if (!d.tmp.renameTo(file)) {
@@ -215,17 +215,17 @@ public class StoredRevisionCache {
 	static void disableTrust(HttpsURLConnection httpsConnection) throws GeneralSecurityException {
 		if (sslSocketFactory == null) {
 			trustAllCerts = new TrustManager[] {
-				new X509TrustManager() {
-					public X509Certificate[] getAcceptedIssuers() {
-						return null;
+					new X509TrustManager() {
+						public X509Certificate[] getAcceptedIssuers() {
+							return null;
+						}
+
+						public void checkServerTrusted(X509Certificate[] certs, String authType)
+								throws CertificateException {}
+
+						public void checkClientTrusted(X509Certificate[] certs, String authType)
+								throws CertificateException {}
 					}
-
-					public void checkServerTrusted(X509Certificate[] certs, String authType)
-							throws CertificateException {}
-
-					public void checkClientTrusted(X509Certificate[] certs, String authType)
-							throws CertificateException {}
-				}
 			};
 
 			trustAnyHost = new HostnameVerifier() {
@@ -282,21 +282,15 @@ public class StoredRevisionCache {
 	}
 
 	/**
-	 * Check if a revision has sources ...
-	 * 
-	 * @param revision
-	 * @return
+	 * Check if a revision has sources ... @param revision @return
 	 */
 	public boolean hasSources(String bsn, String version, byte[] sha) {
 		return getPath(bsn, version, sha, true).isFile();
 	}
 
 	/**
-	 * Remove the sources from the cache.
-	 * 
-	 * @param bsn
-	 * @param string
-	 * @param revision
+	 * Remove the sources from the cache. @param bsn @param string @param
+	 * revision
 	 */
 	public void removeSources(String bsn, String version, byte[] sha) {
 		getPath(bsn, version, sha, true).delete();

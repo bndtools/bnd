@@ -58,11 +58,11 @@ public class BasicTestReport implements TestListener, TestReporter {
 			assert context != null;
 			try {
 				Method m = test.getClass().getMethod("setBundleContext", new Class[] {
-					BundleContext.class
+						BundleContext.class
 				});
 				m.setAccessible(true);
 				m.invoke(test, new Object[] {
-					context
+						context
 				});
 				activator.trace("set context through setter");
 			}

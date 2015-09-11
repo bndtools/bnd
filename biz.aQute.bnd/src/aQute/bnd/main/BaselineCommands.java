@@ -60,8 +60,7 @@ public class BaselineCommands {
 	final Baseline				baseline;
 	final DiffPluginImpl		differ				= new DiffPluginImpl();
 	final Collection<String>	SKIP_HEADERS		= Arrays.asList(Constants.CREATED_BY, Constants.BND_LASTMODIFIED,
-															Constants.BUNDLE_MANIFESTVERSION, "Manifest-Version",
-															Constants.TOOL);
+			Constants.BUNDLE_MANIFESTVERSION, "Manifest-Version", Constants.TOOL);
 
 	BaselineCommands(bnd bnd) throws IOException {
 		this.bnd = bnd;
@@ -101,14 +100,16 @@ public class BaselineCommands {
 				for (Builder b : project.getSubBuilders()) {
 					ProjectBuilder pb = (ProjectBuilder) b;
 					Jar older = pb.getBaselineJar();
-					if ( older == null) {
+					if (older == null) {
 						bnd.error("No baseline JAR available. Did you set " + Constants.BASELINE);
 						return;
 					}
 					try {
-						pb.setProperty(Constants.BASELINE, ""); // do not do baselining in build
+						pb.setProperty(Constants.BASELINE, ""); // do not do
+																// baselining in
+																// build
 						// make sure disabling is after getting the baseline jar
-						
+
 						Jar newer = pb.build();
 						try {
 							differ.setIgnore(pb.getProperty(Constants.DIFFIGNORE));
@@ -144,8 +145,8 @@ public class BaselineCommands {
 		baseline(opts, nj, oj);
 	}
 
-	private void baseline(baseLineOptions opts, Jar newer, Jar older) throws FileNotFoundException,
-			UnsupportedEncodingException, IOException, Exception {
+	private void baseline(baseLineOptions opts, Jar newer, Jar older)
+			throws FileNotFoundException, UnsupportedEncodingException, IOException, Exception {
 		PrintStream out = null;
 
 		if (opts.fixup() != null) {
@@ -163,7 +164,8 @@ public class BaselineCommands {
 		});
 
 		if (!opts.quiet()) {
-			bnd.out.printf("===============================================================%n%s %s %s-%s", bundleInfo.mismatch ? '*' : ' ', bundleInfo.bsn, newer.getVersion(), older.getVersion());
+			bnd.out.printf("===============================================================%n%s %s %s-%s",
+					bundleInfo.mismatch ? '*' : ' ', bundleInfo.bsn, newer.getVersion(), older.getVersion());
 			if (bundleInfo.mismatch && bundleInfo.suggestedVersion != null)
 				bnd.out.printf(" suggests %s", bundleInfo.suggestedVersion);
 
@@ -181,8 +183,10 @@ public class BaselineCommands {
 							info.packageName, //
 							info.packageDiff.getDelta(), //
 							info.newerVersion, //
-							info.olderVersion != null && info.olderVersion.equals(Version.LOWEST) ? "-": info.olderVersion,//
-							info.suggestedVersion != null && info.suggestedVersion.compareTo(info.newerVersion) <= 0 ? "ok" : info.suggestedVersion, //
+							info.olderVersion != null && info.olderVersion.equals(Version.LOWEST) ? "-"
+									: info.olderVersion, //
+							info.suggestedVersion != null && info.suggestedVersion.compareTo(info.newerVersion) <= 0
+									? "ok" : info.suggestedVersion, //
 							info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
 				}
 			}
@@ -214,11 +218,8 @@ public class BaselineCommands {
 
 	/**
 	 * Print out the packages from spec jars and check in which ees they appear.
-	 * Example
-	 * 
-	 * <pre>
-	 * package overview -ee j2se-1.6.0 -ee j2se-1.5.0 -ee j2ee-1.4.0 javax.activation-1.1.jar
-	 * </pre>
+	 * Example <pre> package overview -ee j2se-1.6.0 -ee j2se-1.5.0 -ee
+	 * j2ee-1.4.0 javax.activation-1.1.jar </pre>
 	 */
 	@Description("Print out the packages from spec jars and check in which ees they appear. Very specific. For example, schema ee.j2se-1.6.0 ee.j2se-1.5.0 ee.j2ee-1.4.0")
 	interface schemaOptions extends Options {
@@ -246,14 +247,8 @@ public class BaselineCommands {
 	/**
 	 * Create a schema of a set of jars outling the packages and their versions.
 	 * This will create a list of packages with multiple versions, link to their
-	 * specifications, and the deltas between versions.
-	 * 
-	 * <pre>
-	 *    bnd package schema <file.jar>*
-	 * </pre>
-	 * 
-	 * @param opts
-	 * @throws Exception
+	 * specifications, and the deltas between versions. <pre> bnd package schema
+	 * <file.jar>* </pre> @param opts @throws Exception
 	 */
 	public void _schema(schemaOptions opts) throws Exception {
 		MultiMap<String,PSpec> map = new MultiMap<String,PSpec>();
@@ -488,9 +483,7 @@ public class BaselineCommands {
 	}
 
 	/**
-	 * @param exports
-	 * @param out
-	 * @throws IOException
+	 * @param exports @param out @throws IOException
 	 */
 	public void doExportPackage(Info[] infos, PrintStream out) throws IOException {
 

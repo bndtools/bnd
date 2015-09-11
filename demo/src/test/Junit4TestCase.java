@@ -26,7 +26,6 @@ public class Junit4TestCase {
 		System.out.println("out: " + i + " " + j);
 	}
 
-
 	@Test
 	public void foo() {
 		System.out.println("foo");

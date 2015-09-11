@@ -79,10 +79,7 @@ public class MavenDependencyGraph {
 	}
 
 	/**
-	 * @param xp
-	 * @param node
-	 * @param d
-	 * @throws XPathExpressionException
+	 * @param xp @param node @param d @throws XPathExpressionException
 	 */
 
 	public Artifact getArtifact(String groupId, String artifactId, String version) {

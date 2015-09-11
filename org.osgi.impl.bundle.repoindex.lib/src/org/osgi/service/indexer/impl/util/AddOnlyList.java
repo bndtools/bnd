@@ -6,36 +6,25 @@ import java.util.List;
 import java.util.ListIterator;
 
 /**
- * <p>
- * A List implementation in which destructive removal or replacement of elements
- * is forbidden. Any attempt to either <b>remove</b> elements (e.g. through
- * {@link #remove(int)}, {@link #clear()}, {@link Iterator#remove()}) or
- * <b>replace</b> elements (e.g. through {@link #set(int, Object)} or
- * {@link ListIterator#set(Object)}) will throw an
- * {@link UnsupportedOperationException}.
- * </p>
- * 
- * <p>
- * Note that this is a wrapper class only. It must be initialised with an actual
- * {@link List} implementation for its underlying data structure.
- * </p>
- * 
- * @author Neil Bartlett
- * 
- * @param <T>
+ * <p> A List implementation in which destructive removal or replacement of
+ * elements is forbidden. Any attempt to either <b>remove</b> elements (e.g.
+ * through {@link #remove(int)}, {@link #clear()}, {@link Iterator#remove()}) or
+ * <b>replace</b> elements (e.g. through {@link #set(int, Object)} or {@link
+ * ListIterator#set(Object)}) will throw an {@link
+ * UnsupportedOperationException}. </p> <p> Note that this is a wrapper class
+ * only. It must be initialised with an actual {@link List} implementation for
+ * its underlying data structure. </p> @author Neil Bartlett @param <T>
  */
 public class AddOnlyList<T> implements List<T> {
 
-	static final String ERROR_REMOVE = "Removal of items is not permitted.";
-	static final String ERROR_REPLACE = "Replacement of items is not permitted.";
+	static final String	ERROR_REMOVE	= "Removal of items is not permitted.";
+	static final String	ERROR_REPLACE	= "Replacement of items is not permitted.";
 
 	private final List<T> delegate;
 
 	/**
-	 * Create a new add-only list based on the specified underlying list.
-	 * 
-	 * @param list
-	 *            The list providing the underlying data structure.
+	 * Create a new add-only list based on the specified underlying list. @param
+	 * list The list providing the underlying data structure.
 	 */
 	public AddOnlyList(List<T> list) {
 		this.delegate = list;
@@ -47,11 +36,11 @@ public class AddOnlyList<T> implements List<T> {
 		throw new UnsupportedOperationException(ERROR_REMOVE);
 	}
 
-	public boolean removeAll(Collection<?> c) {
+	public boolean removeAll(Collection< ? > c) {
 		throw new UnsupportedOperationException(ERROR_REMOVE);
 	}
 
-	public boolean retainAll(Collection<?> c) {
+	public boolean retainAll(Collection< ? > c) {
 		throw new UnsupportedOperationException(ERROR_REMOVE);
 	}
 
@@ -111,15 +100,15 @@ public class AddOnlyList<T> implements List<T> {
 		return delegate.add(e);
 	}
 
-	public boolean containsAll(Collection<?> c) {
+	public boolean containsAll(Collection< ? > c) {
 		return delegate.containsAll(c);
 	}
 
-	public boolean addAll(Collection<? extends T> c) {
+	public boolean addAll(Collection< ? extends T> c) {
 		return delegate.addAll(c);
 	}
 
-	public boolean addAll(int index, Collection<? extends T> c) {
+	public boolean addAll(int index, Collection< ? extends T> c) {
 		return delegate.addAll(index, c);
 	}
 

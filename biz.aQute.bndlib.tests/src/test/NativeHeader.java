@@ -6,12 +6,12 @@ import junit.framework.*;
 import aQute.bnd.osgi.*;
 
 public class NativeHeader extends TestCase {
-	static Builder	b	= new Builder();
+	static Builder b = new Builder();
+
 	static {
 		try {
 
-			b.setProperty(
-					"Include-Resource",
+			b.setProperty("Include-Resource",
 					"x.so;literal='x',y.so;literal='y',native/libclib_jiio.so;literal='',native/libmlib_jai.so;literal='', org/osgi/test/cases/framework/fragments/tb8/linux_x86/libNative.so;literal=''");
 			b.build();
 		}
@@ -22,7 +22,8 @@ public class NativeHeader extends TestCase {
 
 	public static void testFunnyHeader() throws Exception {
 		Verifier v = new Verifier(b);
-		v.doNative("org/osgi/test/cases/framework/fragments/tb8/linux_x86/libNative.so; osname=Linux; processor=x86; osversion=\"(1000,10000]\",");
+		v.doNative(
+				"org/osgi/test/cases/framework/fragments/tb8/linux_x86/libNative.so; osname=Linux; processor=x86; osversion=\"(1000,10000]\",");
 		assertBad(v, "name");
 	}
 
@@ -40,8 +41,8 @@ public class NativeHeader extends TestCase {
 
 	public static void testSimple() throws Exception {
 		Verifier v = new Verifier(b);
-		v.doNative("\rnative/libclib_jiio.so ;\r" + "native/libmlib_jai.so;\r" + "osname=Linux ;\r"
-				+ "processor=amd64\r");
+		v.doNative(
+				"\rnative/libclib_jiio.so ;\r" + "native/libmlib_jai.so;\r" + "osname=Linux ;\r" + "processor=amd64\r");
 		assertOk(v);
 	}
 

@@ -37,11 +37,13 @@ public class TestOSGiServices extends TestCase {
 
 		StringWriter writer = new StringWriter();
 
-		Map<String, String> config = new HashMap<String, String>();
+		Map<String,String> config = new HashMap<String,String>();
 		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURI().toString());
-		indexer.indexFragment(Collections.singleton(copyToTempFile(tempDir, "testdata/01-bsn+version.jar")), writer, config);
+		indexer.indexFragment(Collections.singleton(copyToTempFile(tempDir, "testdata/01-bsn+version.jar")), writer,
+				config);
 
-		assertEquals(readStream(TestOSGiServices.class.getResourceAsStream("/testdata/fragment-basic.txt")), writer.toString().trim());
+		assertEquals(readStream(TestOSGiServices.class.getResourceAsStream("/testdata/fragment-basic.txt")),
+				writer.toString().trim());
 
 		context.ungetService(ref);
 	}
@@ -55,11 +57,13 @@ public class TestOSGiServices extends TestCase {
 		ResourceIndexer indexer = context.getService(ref);
 		StringWriter writer = new StringWriter();
 
-		Map<String, String> config = new HashMap<String, String>();
+		Map<String,String> config = new HashMap<String,String>();
 		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURI().toString());
-		indexer.indexFragment(Collections.singleton(copyToTempFile(tempDir, "testdata/01-bsn+version.jar")), writer, config);
+		indexer.indexFragment(Collections.singleton(copyToTempFile(tempDir, "testdata/01-bsn+version.jar")), writer,
+				config);
 
-		assertEquals(readStream(TestOSGiServices.class.getResourceAsStream("/testdata/fragment-wibble.txt")), writer.toString().trim());
+		assertEquals(readStream(TestOSGiServices.class.getResourceAsStream("/testdata/fragment-wibble.txt")),
+				writer.toString().trim());
 
 		context.ungetService(ref);
 		reg.unregister();
@@ -68,7 +72,7 @@ public class TestOSGiServices extends TestCase {
 	// Test whiteboard registration of Resource Analyzers, with resource filter
 	// property.
 	public void testWhiteboardAnalyzerWithFilter() throws Exception {
-		Dictionary<String, Object> analyzerProps = new Hashtable<String, Object>();
+		Dictionary<String,Object> analyzerProps = new Hashtable<String,Object>();
 		analyzerProps.put(ResourceAnalyzer.FILTER, "(location=*sion.jar)");
 		ServiceRegistration<ResourceAnalyzer> reg = context.registerService(ResourceAnalyzer.class,
 				new WibbleAnalyzer(), analyzerProps);
@@ -81,11 +85,12 @@ public class TestOSGiServices extends TestCase {
 		files.add(copyToTempFile(tempDir, "testdata/01-bsn+version.jar"));
 		files.add(copyToTempFile(tempDir, "testdata/02-localization.jar"));
 
-		Map<String, String> config = new HashMap<String, String>();
+		Map<String,String> config = new HashMap<String,String>();
 		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURI().toString());
 		indexer.indexFragment(files, writer, config);
 
-		assertEquals(readStream(TestOSGiServices.class.getResourceAsStream("/testdata/fragment-wibble-filtered.txt")), writer.toString().trim());
+		assertEquals(readStream(TestOSGiServices.class.getResourceAsStream("/testdata/fragment-wibble-filtered.txt")),
+				writer.toString().trim());
 
 		context.ungetService(ref);
 		reg.unregister();
@@ -100,7 +105,8 @@ public class TestOSGiServices extends TestCase {
 
 		// Register a broken analyzer that throws exceptions
 		ResourceAnalyzer brokenAnalyzer = new ResourceAnalyzer() {
-			public void analyzeResource(Resource resource, List<Capability> capabilities, List<Requirement> requirements) throws Exception {
+			public void analyzeResource(Resource resource, List<Capability> capabilities,
+					List<Requirement> requirements) throws Exception {
 				throw new Exception("Bang!");
 			}
 		};
@@ -112,13 +118,14 @@ public class TestOSGiServices extends TestCase {
 		ResourceIndexer indexer = context.getService(ref);
 		StringWriter writer = new StringWriter();
 		Set<File> files = Collections.singleton(copyToTempFile(tempDir, "testdata/01-bsn+version.jar"));
-		Map<String, String> config = new HashMap<String, String>();
+		Map<String,String> config = new HashMap<String,String>();
 		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURI().toString());
 		indexer.indexFragment(files, writer, config);
 
 		// Verify log output
 		ArgumentCaptor<Exception> exceptionCaptor = ArgumentCaptor.forClass(Exception.class);
-		verify(mockLog).log(any(ServiceReference.class), eq(LogService.LOG_ERROR), anyString(), exceptionCaptor.capture());
+		verify(mockLog).log(any(ServiceReference.class), eq(LogService.LOG_ERROR), anyString(),
+				exceptionCaptor.capture());
 		assertEquals("Bang!", exceptionCaptor.getValue().getMessage());
 
 		mockAnalyzerReg.unregister();

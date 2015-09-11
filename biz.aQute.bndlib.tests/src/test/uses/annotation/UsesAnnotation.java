@@ -6,9 +6,9 @@ import test.uses.annotation.annotation.Annotation;
 
 @Annotation
 public class UsesAnnotation {
-	
+
 	private UsesAnnotation(Subject subject) {
-		
+
 	}
 
 }

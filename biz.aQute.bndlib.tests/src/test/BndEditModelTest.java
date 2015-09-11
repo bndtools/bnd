@@ -16,7 +16,7 @@ import aQute.bnd.osgi.resource.*;
 import aQute.bnd.properties.*;
 
 public class BndEditModelTest extends TestCase {
-	static CapReqBuilder	cp	= new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
+	static CapReqBuilder cp = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
 
 	public static void testVariableInRunRequirements() throws Exception {
 		Workspace ws = new Workspace(new File("testresources/ws"));
@@ -36,31 +36,30 @@ public class BndEditModelTest extends TestCase {
 		assertEquals("osgi.identity;filter:='(osgi.identity=b)'", rrr[2]);
 		assertEquals("osgi.identity;filter:='(osgi.identity=c)'", rrr[3]);
 
-		//[cs] don't know how to update this.
+		// [cs] don't know how to update this.
 		List<Requirement> r = model.getRunRequires();
 		assertEquals(3, r.size());
 		assertEquals(new CapReqBuilder("${var}").buildSyntheticRequirement(), r.get(0));
-		assertEquals(new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).
-				addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=b)").
-				buildSyntheticRequirement(), r.get(1));
-		assertEquals(new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).
-				addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=c)").
-				buildSyntheticRequirement(), r.get(2));
+		assertEquals(new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
+				.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=b)").buildSyntheticRequirement(),
+				r.get(1));
+		assertEquals(new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
+				.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=c)").buildSyntheticRequirement(),
+				r.get(2));
 
 		// Test Set with variables
 		List<Requirement> rr = new LinkedList<Requirement>();
-		rr.add(new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).
-				addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=b)").
-				buildSyntheticRequirement());
+		rr.add(new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
+				.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=b)").buildSyntheticRequirement());
 		rr.add(new CapReqBuilder("${var}").buildSyntheticRequirement());
 		model.setRunRequires(rr);
-		
+
 		// VERIFY
 		processor = model.getProperties();
 		runrequirements = processor.mergeProperties(Constants.RUNREQUIRES);
 		rrr = runrequirements.split(",");
 		assertEquals(3, rrr.length);
-		assertEquals("osgi.identity;filter:='(osgi.identity=b)'",rrr[0]);
+		assertEquals("osgi.identity;filter:='(osgi.identity=b)'", rrr[0]);
 		assertEquals("osgi.identity;filter:='(osgi.identity=variable)'", rrr[1]);
 		assertEquals("osgi.identity;filter:='(osgi.identity=variable2)'", rrr[2]);
 
@@ -110,7 +109,7 @@ public class BndEditModelTest extends TestCase {
 		model.loadFrom(f);
 
 		List<ExportedPackage> ep = model.getSystemPackages();
-		
+
 		assertEquals("com.sun.xml.internal.bind", model.getProperties().mergeProperties(Constants.RUNSYSTEMPACKAGES));
 
 		ExportedPackage e = new ExportedPackage("testing", null);

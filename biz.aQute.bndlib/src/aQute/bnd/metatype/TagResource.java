@@ -9,7 +9,7 @@ import aQute.bnd.osgi.WriteResource;
 import aQute.lib.tag.Tag;
 
 public class TagResource extends WriteResource {
-	final Tag	tag;
+	final Tag tag;
 
 	public TagResource(Tag tag) {
 		this.tag = tag;

@@ -96,10 +96,8 @@ public class ProjectPom extends Pom {
 	// }
 
 	/**
-	 * @param parentArtifactId
-	 * @param parentGroupId
-	 * @param parentVersion
-	 * @throws Exception
+	 * @param parentArtifactId @param parentGroupId @param parentVersion @throws
+	 * Exception
 	 */
 	private void setNames(Pom pom) throws Exception {
 		if (artifactId == null || artifactId.length() == 0)
@@ -135,7 +133,7 @@ public class ProjectPom extends Pom {
 	}
 
 	// Match any macros
-	final static Pattern	MACRO	= Pattern.compile("(\\$\\{\\s*([^}\\s]+)\\s*\\})");
+	final static Pattern MACRO = Pattern.compile("(\\$\\{\\s*([^}\\s]+)\\s*\\})");
 
 	@Override
 	protected String replace(String in) {

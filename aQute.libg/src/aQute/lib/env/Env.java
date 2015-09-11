@@ -200,10 +200,10 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 	protected Properties getProperties() {
 		return properties;
 	}
+
 	/**
 	 * Return a file relative to the base.
 	 */
-
 
 	public File getFile(String file, String notfound) {
 		File f = IO.getFile(getBase(), file);
@@ -213,6 +213,7 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 		}
 		return f;
 	}
+
 	public File getDir(String file, String notfound) {
 		File f = IO.getFile(base, file);
 		if (!f.isDirectory() && notfound != null) {
@@ -225,51 +226,33 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 	/**
 	 * This method returns an interface that can be used to get and set the
 	 * properties in a type safe way (as well as describing any semantics of
-	 * these properties).
-	 * <p/>
-	 * The interface must have get and/or set methods. The name is mangled to
-	 * change _ to . and to remove $ (which is used to mask keywords like new).
-	 * If _ and $ are in there twice, one remains. The set methods return the
-	 * proxy object itself so you can use it in a builder style.
-	 * <p/>
-	 * The values are always stored as strings (and can use macros). The result
-	 * is converted to the desired type. Arguments in the set methods are always
-	 * converted to strings using the toString methods. 
-	 * <p/>
-	 * Example:
-	 * 
-	 * <pre>
-	 * 	interface MyConfig {
-	 *    int level();
-	 *    MyConfig level(int level);
-	 *    Pattern pattern();
-	 *    MyConfig pattern(String p);
-	 *  }
-	 *  
-	 *  Env env = ...
-	 *  MyConfig c = env.config(MyConfig.class, "myconfig.");
-	 * </pre>
-	 * 
-	 * @param front
-	 *            the fronting interface
-	 * @param prefix
-	 *            the prefix in the properties
-	 * @return an interface that can be used to get and set properties
+	 * these properties). <p/> The interface must have get and/or set methods.
+	 * The name is mangled to change _ to . and to remove $ (which is used to
+	 * mask keywords like new). If _ and $ are in there twice, one remains. The
+	 * set methods return the proxy object itself so you can use it in a builder
+	 * style. <p/> The values are always stored as strings (and can use macros).
+	 * The result is converted to the desired type. Arguments in the set methods
+	 * are always converted to strings using the toString methods. <p/> Example:
+	 * <pre> interface MyConfig { int level(); MyConfig level(int level);
+	 * Pattern pattern(); MyConfig pattern(String p); } Env env = ... MyConfig c
+	 * = env.config(MyConfig.class, "myconfig."); </pre> @param front the
+	 * fronting interface @param prefix the prefix in the properties @return an
+	 * interface that can be used to get and set properties
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> T config(Class< ? > front, final String prefix) {
 		final Env THIS = this;
-		
+
 		return (T) java.lang.reflect.Proxy.newProxyInstance(front.getClassLoader(), new Class[] {
-			front
+				front
 		}, new InvocationHandler() {
 
 			public Object invoke(Object target, Method method, Object[] parameters) throws Throwable {
 				String name = mangleMethodName(prefix, method.getName());
-				if ( parameters == null || parameters.length == 0) {
+				if (parameters == null || parameters.length == 0) {
 					String value = getProperty(name);
-					if ( value == null) {
-						if ( method.getReturnType().isPrimitive())
+					if (value == null) {
+						if (method.getReturnType().isPrimitive())
 							return Converter.cnv(method.getReturnType(), null);
 						else
 							return null;
@@ -284,7 +267,7 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 						removeProperty(name);
 					else
 						setProperty(name, arg.toString());
-					if( method.getReturnType().isInstance(THIS))
+					if (method.getReturnType().isInstance(THIS))
 						return THIS;
 					return Converter.cnv(method.getReturnType(), null);
 				}

@@ -12,7 +12,7 @@ import aQute.libg.reporter.*;
 
 public class JPMTest extends TestCase {
 
-	static Settings	settings;
+	static Settings settings;
 
 	@Override
 	public void setUp() {
@@ -24,7 +24,7 @@ public class JPMTest extends TestCase {
 		settings.clear();
 	}
 
-	static File	cwd	= new File(System.getProperty("user.dir")).getAbsoluteFile();
+	static File cwd = new File(System.getProperty("user.dir")).getAbsoluteFile();
 
 	static class PLF extends Unix {
 
@@ -50,12 +50,14 @@ public class JPMTest extends TestCase {
 		}
 
 		@Override
-		public String createCommand(CommandData data, Map<String,String> map, boolean force, String... strings) throws Exception {
+		public String createCommand(CommandData data, Map<String,String> map, boolean force, String... strings)
+				throws Exception {
 			return null;
 		}
 
 		@Override
-		public String createService(ServiceData data, Map<String,String> map, boolean force, String... strings) throws Exception {
+		public String createService(ServiceData data, Map<String,String> map, boolean force, String... strings)
+				throws Exception {
 			return null;
 		}
 
@@ -74,7 +76,7 @@ public class JPMTest extends TestCase {
 		@Override
 		public void getVMs(Collection<JVM> vms) throws Exception {
 			// TODO Auto-generated method stub
-			
+
 		}
 
 		@Override
@@ -167,7 +169,7 @@ public class JPMTest extends TestCase {
 			IO.delete(tmp);
 		}
 	}
-	
+
 	public void testVM() throws Exception {
 		File tmp = new File("tmp");
 		IO.delete(tmp);
@@ -178,12 +180,12 @@ public class JPMTest extends TestCase {
 		JustAnotherPackageManager jpm = new JustAnotherPackageManager(new ReporterAdapter(), null, home, bin);
 		SortedSet<JVM> vms = jpm.getVMs();
 		assertNotNull(vms);
-		assertTrue(vms.size()>=1);
+		assertTrue(vms.size() >= 1);
 
 		System.out.println(vms);
 		File f = IO.getFile("~/jdk1.8");
-		if ( f.isDirectory()) {
-			JVM jvm = jpm.addVm( f);
+		if (f.isDirectory()) {
+			JVM jvm = jpm.addVm(f);
 			assertNotNull(jvm);
 		}
 	}

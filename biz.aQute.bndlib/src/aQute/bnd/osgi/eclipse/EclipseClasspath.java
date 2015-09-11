@@ -14,9 +14,7 @@ import aQute.service.reporter.*;
 /**
  * Parse the Eclipse project information for the classpath. Unfortunately, it is
  * impossible to read the variables. They are ignored but that can cause
- * problems.
- * 
- * @version $Revision: 1.2 $
+ * problems. @version $Revision: 1.2 $
  */
 public class EclipseClasspath {
 	static DocumentBuilderFactory	documentBuilderFactory	= DocumentBuilderFactory.newInstance();
@@ -26,31 +24,26 @@ public class EclipseClasspath {
 	Set<File>						sources					= new LinkedHashSet<File>();
 	Set<File>						allSources				= new LinkedHashSet<File>();
 
-	Set<File>						classpath				= new LinkedHashSet<File>();
-	List<File>						dependents				= new ArrayList<File>();
-	File							output;
-	boolean							recurse					= true;
-	Set<File>						exports					= new LinkedHashSet<File>();
-	Map<String,String>				properties				= new HashMap<String,String>();
-	Reporter						reporter;
-	int								options;
-	Set<File>						bootclasspath			= new LinkedHashSet<File>();
+	Set<File>			classpath		= new LinkedHashSet<File>();
+	List<File>			dependents		= new ArrayList<File>();
+	File				output;
+	boolean				recurse			= true;
+	Set<File>			exports			= new LinkedHashSet<File>();
+	Map<String,String>	properties		= new HashMap<String,String>();
+	Reporter			reporter;
+	int					options;
+	Set<File>			bootclasspath	= new LinkedHashSet<File>();
 
-	public final static int			DO_VARIABLES			= 1;
+	public final static int DO_VARIABLES = 1;
 
 	/**
-	 * Parse an Eclipse project structure to discover the classpath.
-	 * 
-	 * @param workspace
-	 *            Points to workspace
-	 * @param project
-	 *            Points to project
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
+	 * Parse an Eclipse project structure to discover the classpath. @param
+	 * workspace Points to workspace @param project Points to project @throws
+	 * ParserConfigurationException @throws SAXException @throws IOException
 	 */
 
-	public EclipseClasspath(Reporter reporter, File workspace, File project, @SuppressWarnings("unused") int options) throws Exception {
+	public EclipseClasspath(Reporter reporter, File workspace, File project, @SuppressWarnings("unused") int options)
+			throws Exception {
 		this.project = project.getCanonicalFile();
 		this.workspace = workspace.getCanonicalFile();
 		this.reporter = reporter;
@@ -65,15 +58,10 @@ public class EclipseClasspath {
 
 	/**
 	 * Recursive routine to parse the files. If a sub project is detected, it is
-	 * parsed before the parsing continues. This should give the right order.
-	 * 
-	 * @param project
-	 *            Project directory
-	 * @param top
-	 *            If this is the top project
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
+	 * parsed before the parsing continues. This should give the right
+	 * order. @param project Project directory @param top If this is the top
+	 * project @throws ParserConfigurationException @throws SAXException @throws
+	 * IOException
 	 */
 	void parse(File project, boolean top) throws ParserConfigurationException, SAXException, IOException {
 		File file = new File(project, ".classpath");
@@ -169,7 +157,7 @@ public class EclipseClasspath {
 		return result;
 	}
 
-	static Pattern	PATH	= Pattern.compile("([A-Z_]+)/(.*)");
+	static Pattern PATH = Pattern.compile("([A-Z_]+)/(.*)");
 
 	private File replaceVar(String path) {
 		if ((options & DO_VARIABLES) == 0)

@@ -63,8 +63,7 @@ public class PomResource extends WriteResource {
 		} else {
 			int n = bsn.lastIndexOf('.');
 			if (n <= 0)
-				throw new RuntimeException("\"" + GROUPID + "\" not set and"
-						+ Constants.BUNDLE_SYMBOLICNAME
+				throw new RuntimeException("\"" + GROUPID + "\" not set and" + Constants.BUNDLE_SYMBOLICNAME
 						+ " does not contain a '.' to separate into a groupid and artifactid.");
 
 			artifactId = processor.get(ARTIFACTID);
@@ -193,9 +192,9 @@ public class PomResource extends WriteResource {
 		}
 
 		String scm = processor.get(Constants.BUNDLE_SCM);
-		if ( scm != null && scm.length() > 0 ) {
+		if (scm != null && scm.length() > 0) {
 			Attrs pscm = OSGiHeader.parseProperties(scm);
-			
+
 			Tag tscm = new Tag(project, "scm");
 			for (String s : pscm.keySet()) {
 				new Tag(tscm, s, pscm.get(s));
@@ -218,10 +217,10 @@ public class PomResource extends WriteResource {
 
 				for (String s : i.keySet()) {
 					if (s.equals("roles")) {
-						Tag troles = new Tag(tdeveloper,"roles");
-						
+						Tag troles = new Tag(tdeveloper, "roles");
+
 						String[] roles = i.get(s).trim().split("\\s*,\\s*");
-						for ( String role : roles) {
+						for (String role : roles) {
 							new Tag(troles, "role", role);
 						}
 					} else
@@ -236,13 +235,8 @@ public class PomResource extends WriteResource {
 	}
 
 	/**
-	 * Utility function to print a tag from a map
-	 * 
-	 * @param ps
-	 * @param values
-	 * @param string
-	 * @param tag
-	 * @param object
+	 * Utility function to print a tag from a map @param ps @param values @param
+	 * string @param tag @param object
 	 */
 	private Tag tagFromMap(Tag parent, Map<String,String> values, String string, String tag, String object) {
 		String value = values.get(string);

@@ -8,11 +8,11 @@ import org.osgi.service.cm.Configuration;
 
 @SuppressWarnings("rawtypes")
 public class StaticConfiguration implements Configuration {
-	
-	private final String factoryPid;
-	private final String pid;
-	private final Dictionary properties;
-	
+
+	private final String		factoryPid;
+	private final String		pid;
+	private final Dictionary	properties;
+
 	public static StaticConfiguration createSingletonConfiguration(String pid, Dictionary properties) {
 		return new StaticConfiguration(null, pid, properties);
 	}
@@ -72,11 +72,9 @@ public class StaticConfiguration implements Configuration {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((factoryPid == null) ? 0 : factoryPid.hashCode());
+		result = prime * result + ((factoryPid == null) ? 0 : factoryPid.hashCode());
 		result = prime * result + ((pid == null) ? 0 : pid.hashCode());
-		result = prime * result
-				+ ((properties == null) ? 0 : properties.hashCode());
+		result = prime * result + ((properties == null) ? 0 : properties.hashCode());
 		return result;
 	}
 

@@ -57,7 +57,7 @@ public class InstallCert {
 
 	public static void installCert(Reporter reporter, String host, int port, String passphrase, File file,
 			boolean install) throws Exception {
-		
+
 		KeyStore ks = getKeystore(passphrase, file);
 
 		SSLContext context = SSLContext.getInstance("TLS");
@@ -66,7 +66,7 @@ public class InstallCert {
 		X509TrustManager defaultTrustManager = (X509TrustManager) tmf.getTrustManagers()[0];
 		SavingTrustManager tm = new SavingTrustManager(defaultTrustManager);
 		context.init(null, new TrustManager[] {
-			tm
+				tm
 		}, null);
 		SSLSocketFactory factory = context.getSocketFactory();
 
@@ -92,22 +92,23 @@ public class InstallCert {
 		reporter.trace("Server sent " + chain.length + " certificate(s):");
 
 		System.out.println("Chain");
-		String trusted=null;
-		
+		String trusted = null;
+
 		for (int i = 0; i < chain.length; i++) {
 			X509Certificate cert = chain[i];
 			String alias = ks.getCertificateAlias(cert);
-			if ( alias != null && trusted == null)
+			if (alias != null && trusted == null)
 				trusted = alias;
-			
+
 			System.out.printf("%-40s %s%n", alias, cert.getSubjectDN());
 		}
-		
-		if ( trusted != null) {
-			System.out.println("This server is trusted, certificate in the chain was found as alias \"" + trusted + "\"");
+
+		if (trusted != null) {
+			System.out
+					.println("This server is trusted, certificate in the chain was found as alias \"" + trusted + "\"");
 			return;
 		}
-		
+
 		if (!install)
 			return;
 
@@ -173,21 +174,21 @@ public class InstallCert {
 		}
 		return file;
 	}
-	
-	public static void deleteCert(String alias, String password, File cacerts) throws FileNotFoundException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+
+	public static void deleteCert(String alias, String password, File cacerts) throws FileNotFoundException,
+			KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
 		KeyStore ks = getKeystore(password, cacerts);
-		
+
 		Certificate certificate = ks.getCertificate(alias);
-		if ( certificate == null) {
+		if (certificate == null) {
 			System.out.println("No such alias " + alias);
 			return;
 		}
 
 		ks.deleteEntry(alias);
-		
+
 		saveKeystore(password, cacerts, ks);
 	}
-
 
 	private static class SavingTrustManager implements X509TrustManager {
 
@@ -211,6 +212,5 @@ public class InstallCert {
 			tm.checkServerTrusted(chain, authType);
 		}
 	}
-
 
 }

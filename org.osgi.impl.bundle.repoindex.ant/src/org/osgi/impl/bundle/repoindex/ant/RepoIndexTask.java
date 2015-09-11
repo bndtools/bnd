@@ -17,10 +17,10 @@ import de.kalpatec.pojosr.framework.launch.*;
 @SuppressWarnings("restriction")
 public class RepoIndexTask extends Task {
 
-	private final List<FileSet> fileSets = new LinkedList<FileSet>();
-	private final Map<String, String> config = new HashMap<String, String>();
+	private final List<FileSet>			fileSets	= new LinkedList<FileSet>();
+	private final Map<String,String>	config		= new HashMap<String,String>();
 
-	private File repositoryFile = null;
+	private File	repositoryFile		= null;
 	private boolean	knownBundles;
 	private boolean	builtInknownBundles	= true;
 	private String	additionalKnownBundles;
@@ -75,7 +75,7 @@ public class RepoIndexTask extends Task {
 		FileOutputStream fos = null;
 		try {
 			// Configure PojoSR
-			Map<String, Object> pojoSrConfig = new HashMap<String, Object>();
+			Map<String,Object> pojoSrConfig = new HashMap<String,Object>();
 			pojoSrConfig.put(PojoServiceRegistryFactory.BUNDLE_DESCRIPTORS, new ClasspathScanner());
 
 			// Start PojoSR 'framework'
@@ -108,13 +108,16 @@ public class RepoIndexTask extends Task {
 			// Run
 			fos = new FileOutputStream(repositoryFile);
 			index.index(fileList, fos, config);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new BuildException(e);
-		} finally {
+		}
+		finally {
 			if (fos != null) {
 				try {
 					fos.close();
-				} catch (IOException e) {
+				}
+				catch (IOException e) {
 					/* swallow */
 				}
 				fos = null;

@@ -46,20 +46,24 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	JUnitEclipseReport	jUnitEclipseReport;
 	volatile Thread		thread;
 
-	public Activator() {
-	}
+	public Activator() {}
 
 	public void start(BundleContext context) throws Exception {
 		this.context = context;
 		active = true;
-		if (!Boolean.valueOf(context.getProperty(TESTER_SEPARATETHREAD)) && 
-				Boolean.valueOf(context.getProperty("launch.services"))) { // can't register services on mini framework
+		if (!Boolean.valueOf(context.getProperty(TESTER_SEPARATETHREAD))
+				&& Boolean.valueOf(context.getProperty("launch.services"))) { // can't
+																				// register
+																				// services
+																				// on
+																				// mini
+																				// framework
 			Hashtable<String,String> ht = new Hashtable<String,String>();
 			ht.put("main.thread", "true");
 			ht.put(Constants.SERVICE_DESCRIPTION, "JUnit tester");
 			context.registerService(Runnable.class.getName(), this, ht);
 		} else {
-			thread = new Thread(this,"bnd Runtime Test Bundle");
+			thread = new Thread(this, "bnd Runtime Test Bundle");
 			thread.start();
 		}
 	}
@@ -68,7 +72,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		active = false;
 		if (jUnitEclipseReport != null)
 			jUnitEclipseReport.close();
-		
+
 		if (thread != null) {
 			thread.interrupt();
 			thread.join(10000);
@@ -76,16 +80,15 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	public void run() {
-		
+
 		continuous = Boolean.valueOf(context.getProperty(TESTER_CONTINUOUS));
 		trace = context.getProperty(TESTER_TRACE) != null;
-		
+
 		if (thread == null)
 			trace("running in main thread");
-		
+
 		// We can be started on our own thread or from the main code
 		thread = Thread.currentThread();
-		
 
 		String testcases = context.getProperty(TESTER_NAMES);
 		trace("test cases %s", testcases);
@@ -101,25 +104,24 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			}
 		}
 
-
 		//
 		// Jenkins does not detect test failures unless reported
 		// by JUnit XML output. If we have an unresolved failure
 		// we timeout. The following will test if there are any
-		// unresolveds and report this as a JUnit failure. It can 
+		// unresolveds and report this as a JUnit failure. It can
 		// be disabled with -testunresolved=false
 		//
-		
+
 		String unresolved = context.getProperty(TESTER_UNRESOLVED);
 		trace("run unresolved %s", unresolved);
-		
+
 		if (unresolved == null || unresolved.equalsIgnoreCase("true")) {
 			//
 			// Check if there are any unresolved bundles.
 			// If yes, we run a test case to get a proper JUnit report
 			//
-			for ( Bundle b : context.getBundles()) {
-				if ( b.getState() == Bundle.INSTALLED) {
+			for (Bundle b : context.getBundles()) {
+				if (b.getState() == Bundle.INSTALLED) {
 					//
 					// Now do it again but as a test case
 					// so we get a proper JUnit report
@@ -132,11 +134,12 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		}
 
 		if (testcases == null) {
-//			if ( !continuous) {
-//				System.err.println("\nThe -testcontinuous property must be set if invoked without arguments\n");
-//				System.exit(-1);
-//			}
-				
+			// if ( !continuous) {
+			// System.err.println("\nThe -testcontinuous property must be set if
+			// invoked without arguments\n");
+			// System.exit(-1);
+			// }
+
 			trace("automatic testing of all bundles with " + aQute.bnd.osgi.Constants.TESTCASES + " header");
 			try {
 				automatic();
@@ -248,15 +251,9 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	/**
-	 * The main test routine.
-	 * 
-	 * @param bundle
-	 *            The bundle under test or null
-	 * @param testnames
-	 *            The names to test
-	 * @param report
-	 *            The report writer or null
-	 * @return # of errors
+	 * The main test routine. @param bundle The bundle under test or null @param
+	 * testnames The names to test @param report The report writer or
+	 * null @return # of errors
 	 */
 	int test(Bundle bundle, String testnames, Writer report) {
 		trace("testing bundle %s with %s", bundle, testnames);
@@ -264,14 +261,14 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		try {
 			List<String> names = new ArrayList<String>();
 			StringTokenizer st = new StringTokenizer(testnames, " ,");
-			
+
 			//
 			// Collect the test names and remove any duplicates
 			//
-			
+
 			while (st.hasMoreTokens()) {
 				String token = st.nextToken();
-				if ( !names.contains(token))
+				if (!names.contains(token))
 					names.add(token);
 			}
 
@@ -376,8 +373,8 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 					addTest(suite, clazz, method);
 				else {
 					diagnoseNoClass(tfw, fqn);
-					testResult.addError(suite, new Exception("Cannot load class " + fqn
-							+ ", was it included in the test bundle?"));
+					testResult.addError(suite,
+							new Exception("Cannot load class " + fqn + ", was it included in the test bundle?"));
 				}
 
 			} else {
@@ -386,8 +383,8 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 					addTest(suite, clazz, null);
 				else {
 					diagnoseNoClass(tfw, fqn);
-					testResult.addError(suite, new Exception("Cannot load class " + fqn
-							+ ", was it included in the test bundle?"));
+					testResult.addError(suite,
+							new Exception("Cannot load class " + fqn + ", was it included in the test bundle?"));
 				}
 			}
 		}
@@ -398,20 +395,32 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	private void diagnoseNoClass(Bundle tfw, String fqn) {
-		if ( tfw == null) {
+		if (tfw == null) {
 			error("No class found: %s, target bundle: %s", fqn, tfw);
 			trace("Installed bundles:");
-			for ( Bundle bundle : context.getBundles()) {
-				Class<?> c = loadClass(bundle,fqn);
+			for (Bundle bundle : context.getBundles()) {
+				Class< ? > c = loadClass(bundle, fqn);
 				String state;
-				switch(bundle.getState()) {
-					case Bundle.UNINSTALLED: state = "UNINSTALLED"; break;
-					case Bundle.INSTALLED: state = "INSTALLED"; break;
-					case Bundle.RESOLVED: state = "RESOLVED"; break;
-					case Bundle.STARTING: state = "STARTING"; break;
-					case Bundle.STOPPING: state = "STOPPING"; break;
-					case Bundle.ACTIVE: state = "ACTIVE"; break;
-					default:
+				switch (bundle.getState()) {
+					case Bundle.UNINSTALLED :
+						state = "UNINSTALLED";
+						break;
+					case Bundle.INSTALLED :
+						state = "INSTALLED";
+						break;
+					case Bundle.RESOLVED :
+						state = "RESOLVED";
+						break;
+					case Bundle.STARTING :
+						state = "STARTING";
+						break;
+					case Bundle.STOPPING :
+						state = "STOPPING";
+						break;
+					case Bundle.ACTIVE :
+						state = "ACTIVE";
+						break;
+					default :
 						state = "UNKNOWN";
 				}
 				trace("%s %s %s", bundle.getLocation(), state, c != null);
@@ -470,11 +479,11 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	private boolean hasJunit4Annotations(Class< ? > clazz) {
-		if ( hasAnnotations("org.junit.", clazz.getAnnotations()))
+		if (hasAnnotations("org.junit.", clazz.getAnnotations()))
 			return true;
-		
-		for ( Method m : clazz.getMethods()) {
-			if ( hasAnnotations("org.junit.", m.getAnnotations()) )
+
+		for (Method m : clazz.getMethods()) {
+			if (hasAnnotations("org.junit.", m.getAnnotations()))
 				return true;
 		}
 		return false;
@@ -533,12 +542,12 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		int realCount = 0;
 		for (Enumeration< ? > e = suite.tests(); e.hasMoreElements();) {
 			Test test = (Test) e.nextElement();
-			
-			if ( test instanceof JUnit4TestAdapter) {
-				
+
+			if (test instanceof JUnit4TestAdapter) {
+
 				list.add(test);
-				
-				for ( Test t : ((JUnit4TestAdapter) test).getTests()) {
+
+				for (Test t : ((JUnit4TestAdapter) test).getTests()) {
 					if (t instanceof TestSuite) {
 						realCount += flatten(list, (TestSuite) t);
 					} else
@@ -546,12 +555,11 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				}
 				continue;
 			}
-			
-			
+
 			list.add(test);
 			if (test instanceof TestSuite)
 				realCount += flatten(list, (TestSuite) test);
-			else 
+			else
 				realCount++;
 		}
 		return realCount;
@@ -625,10 +633,9 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	/**
-	 * Running a test from the command line
-	 * @param args
+	 * Running a test from the command line @param args
 	 */
-	
+
 	public static void main(String args[]) {
 		System.out.println("args " + Arrays.toString(args));
 	}

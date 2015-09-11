@@ -11,7 +11,8 @@ import org.osgi.service.indexer.ResourceAnalyzer;
 @Ignore
 public class BadAnalyzer implements ResourceAnalyzer {
 
-	public void analyzeResource(Resource resource, List<Capability> capabilities, List<Requirement> requirements) throws Exception {
+	public void analyzeResource(Resource resource, List<Capability> capabilities, List<Requirement> requirements)
+			throws Exception {
 		throw new IllegalStateException("Bwa Ha Ha Ha!");
 	}
 

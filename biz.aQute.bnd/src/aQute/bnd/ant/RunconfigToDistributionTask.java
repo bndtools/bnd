@@ -36,7 +36,7 @@ public class RunconfigToDistributionTask extends BaseTask {
 			}
 
 			for (VersionedClause runBundle : model.getRunBundles()) {
-				
+
 				String bsn = runBundle.getName();
 				if (bsn.endsWith(".jar")) {
 					bsn = bsn.substring(0, bsn.indexOf(".jar"));
@@ -52,11 +52,12 @@ public class RunconfigToDistributionTask extends BaseTask {
 						SortedSet<Version> versions = repo.versions(bsn);
 						for (Version availableVersion : versions) {
 							VersionRange range = null;
-							
-							if(runBundle.getVersionRange() != null &&  !runBundle.getVersionRange().equals(Constants.VERSION_ATTR_LATEST)) {
+
+							if (runBundle.getVersionRange() != null
+									&& !runBundle.getVersionRange().equals(Constants.VERSION_ATTR_LATEST)) {
 								range = new VersionRange(runBundle.getVersionRange());
 							}
-							
+
 							boolean rangeMatches = range == null || range.includes(availableVersion);
 							boolean availableMatches = version == null || availableVersion.compareTo(version) > 0;
 

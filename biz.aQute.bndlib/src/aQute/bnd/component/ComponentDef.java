@@ -29,10 +29,13 @@ import aQute.lib.tag.Tag;
  */
 class ComponentDef extends ExtensionDef {
 	final static String				NAMESPACE_STEM	= "http://www.osgi.org/xmlns/scr";
-	final static String 			MARKER 			= new String("|marker");
+	final static String				MARKER			= new String("|marker");
 	final List<String>				properties		= new ArrayList<String>();
-	final MultiMap<String,String>	property		= new MultiMap<String,String>(); //key is property name
-	final Map<String, String>		propertyType	= new HashMap<String, String>();
+	final MultiMap<String,String>	property		= new MultiMap<String,String>();			// key
+																								// is
+																								// property
+																								// name
+	final Map<String,String>		propertyType	= new HashMap<String,String>();
 	final Map<String,ReferenceDef>	references		= new LinkedHashMap<String,ReferenceDef>();
 	Version							version			= AnnotationReader.V1_0;
 	String							name;
@@ -56,16 +59,12 @@ class ComponentDef extends ExtensionDef {
 
 	/**
 	 * Called to prepare. If will look for any errors or inconsistencies in the
-	 * setup.
-	 * 
-	 * @param analyzer
-	 *            the analyzer to report errors and create references
-	 * @throws Exception
+	 * setup. @param analyzer the analyzer to report errors and create
+	 * references @throws Exception
 	 */
 	void prepare(Analyzer analyzer) throws Exception {
 
 		prepareVersion(analyzer);
-
 
 		if (implementation == null) {
 			analyzer.error("No Implementation defined for component " + name);
@@ -116,7 +115,7 @@ class ComponentDef extends ExtensionDef {
 	}
 
 	private void prepareVersion(Analyzer analyzer) throws Exception {
-		
+
 		for (ReferenceDef ref : references.values()) {
 			ref.prepare(analyzer);
 			updateVersion(ref.version);
@@ -127,25 +126,24 @@ class ComponentDef extends ExtensionDef {
 			updateVersion(AnnotationReader.V1_2);
 		if (modified != null)
 			updateVersion(AnnotationReader.V1_1);
-			
+
 	}
-	
+
 	void sortReferences() {
-		Map<String, ReferenceDef> temp = new TreeMap<String,ReferenceDef>(references);
+		Map<String,ReferenceDef> temp = new TreeMap<String,ReferenceDef>(references);
 		references.clear();
 		references.putAll(temp);
 	}
 
 	/**
-	 * Returns a tag describing the component element.
-	 * 
-	 * @return a component element
+	 * Returns a tag describing the component element. @return a component
+	 * element
 	 */
 	Tag getTag() {
 		String xmlns = this.xmlns;
 		if (xmlns == null && version != AnnotationReader.V1_0)
 			xmlns = NAMESPACE_STEM + "/v" + version;
-		Tag component = new Tag(xmlns == null? "component": "scr:component");
+		Tag component = new Tag(xmlns == null ? "component" : "scr:component");
 		Namespaces namespaces = null;
 		if (xmlns != null) {
 
@@ -184,7 +182,7 @@ class ComponentDef extends ExtensionDef {
 		if (configurationPid != null) {
 			StringBuilder b = new StringBuilder();
 			String space = "";
-			for (String pid: configurationPid) {
+			for (String pid : configurationPid) {
 				if ("$".equals(pid))
 					pid = name;
 				b.append(space).append(pid);
@@ -200,12 +198,12 @@ class ComponentDef extends ExtensionDef {
 
 		if (service != null && service.length != 0) {
 			Tag s = new Tag(component, "service");
-			if (scope != null) {//TODO check for DEFAULT???
-				if (AnnotationReader.V1_3.compareTo(version) >0 ) {
+			if (scope != null) {// TODO check for DEFAULT???
+				if (AnnotationReader.V1_3.compareTo(version) > 0) {
 					if (scope == ServiceScope.PROTOTYPE) {
 						throw new IllegalStateException("verification failed, pre 1.3 component with scope PROTOTYPE");
 					}
-				    s.addAttribute("servicefactory", scope == ServiceScope.BUNDLE);
+					s.addAttribute("servicefactory", scope == ServiceScope.BUNDLE);
 				} else {
 					s.addAttribute("scope", scope.toString().toLowerCase());
 				}
@@ -237,9 +235,9 @@ class ComponentDef extends ExtensionDef {
 			return v;
 
 		try {
-			if ( type.equals("Char"))
+			if (type.equals("Char"))
 				type = "Character";
-			
+
 			Class< ? > c = Class.forName("java.lang." + type);
 			if (c == String.class)
 				return v;
@@ -264,11 +262,11 @@ class ComponentDef extends ExtensionDef {
 		}
 		return v;
 	}
-	
+
 	void updateVersion(Version version) {
 		this.version = max(this.version, version);
 	}
-	
+
 	static <T extends Comparable<T>> T max(T a, T b) {
 		int n = a.compareTo(b);
 		if (n >= 0)

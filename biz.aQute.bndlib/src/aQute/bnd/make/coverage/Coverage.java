@@ -14,14 +14,10 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 public class Coverage {
 
 	/**
-	 * Create a cross reference table from source to dest.
-	 * 
-	 * @param source
-	 *            The methods that refer to dest
-	 * @param dest
-	 *            The methods that are being referred to
-	 * @return A mapping of source methods to destination methods.
-	 * @throws IOException
+	 * Create a cross reference table from source to dest. @param source The
+	 * methods that refer to dest @param dest The methods that are being
+	 * referred to @return A mapping of source methods to destination
+	 * methods. @throws IOException
 	 */
 	public static Map<MethodDef,List<MethodDef>> getCrossRef(Collection<Clazz> source, Collection<Clazz> dest)
 			throws Exception {
@@ -34,7 +30,7 @@ public class Coverage {
 			throws Exception {
 		for (final Clazz clazz : source) {
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
-//				MethodDef	source;
+				// MethodDef source;
 
 				@Override
 				public void implementsInterfaces(TypeRef names[]) {
@@ -55,16 +51,16 @@ public class Coverage {
 				// Method definitions
 				@Override
 				public void method(MethodDef source) {
-//					this.source = source;
+					// this.source = source;
 				}
 
 				// TODO need to use different reference method
-//				public void reference(MethodDef reference) {
-//					List<MethodDef> references = catalog.get(reference);
-//					if (references != null) {
-//						references.add(source);
-//					}
-//				}
+				// public void reference(MethodDef reference) {
+				// List<MethodDef> references = catalog.get(reference);
+				// if (references != null) {
+				// references.add(source);
+				// }
+				// }
 			});
 		}
 	}

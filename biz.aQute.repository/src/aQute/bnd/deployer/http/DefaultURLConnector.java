@@ -11,20 +11,20 @@ import aQute.bnd.service.progress.*;
 import aQute.bnd.service.url.*;
 import aQute.service.reporter.*;
 
-
 public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin {
 
 	@interface Config {
 		boolean disableServerVerify();
 	}
+
 	private static final String	HEADER_IF_NONE_MATCH	= "If-None-Match";
 	private static final String	HEADER_ETAG				= "ETag";
 	private static final String	HEADER_LOCATION			= "Location";
 	private static final int	RESPONSE_NOT_MODIFIED	= 304;
 
-	private boolean				disableServerVerify		= false;
-	private Reporter			reporter				= null;
-	private Registry			registry				= null;
+	private boolean		disableServerVerify	= false;
+	private Reporter	reporter			= null;
+	private Registry	registry			= null;
 
 	public InputStream connect(URL url) throws IOException {
 		if (url == null)
@@ -44,7 +44,7 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 	public TaggedData connectTagged(URL url) throws IOException {
 		return connectTagged(url, null);
 	}
-	
+
 	public TaggedData connectTagged(URL url, String tag) throws IOException {
 		return connectTagged(url, tag, new HashSet<String>());
 	}
@@ -70,7 +70,7 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 			httpConnection.setUseCaches(true);
 			if (tag != null)
 				httpConnection.setRequestProperty(HEADER_IF_NONE_MATCH, tag);
-			
+
 			httpConnection.setInstanceFollowRedirects(false);
 			httpConnection.connect();
 
@@ -88,18 +88,20 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 					if (reporter != null)
 						reporter.warning("HTTP address redirected from %s to %s", url.toString(), resolved.toString());
 					if (loopDetect.contains(resolved.toString()))
-						throw new IOException(String.format("Detected loop in HTTP redirect from '%s' to '%s'.", url, resolved));
+						throw new IOException(
+								String.format("Detected loop in HTTP redirect from '%s' to '%s'.", url, resolved));
 					if (Thread.currentThread().isInterrupted())
 						throw new IOException("Interrupted");
 					result = connectTagged(resolved, tag, loopDetect);
 				}
 				catch (URISyntaxException e) {
-					throw new IOException(String.format("Failed to resolve location '%s' against origin URL: %s", location, url), e);
+					throw new IOException(
+							String.format("Failed to resolve location '%s' against origin URL: %s", location, url), e);
 				}
 			} else {
 				String responseTag = httpConnection.getHeaderField(HEADER_ETAG);
 				// TODO: get content-size from the http header
-				
+
 				InputStream stream = createProgressWrappedStream(connection.getInputStream(), "Downloading " + url, -1);
 				result = new TaggedData(responseTag, stream);
 			}
@@ -118,7 +120,7 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 		ProgressPlugin progressPlugin = registry.getPlugin(ProgressPlugin.class);
 		if (progressPlugin == null)
 			return inputStream;
-		
+
 		return new ProgressWrappingStream(inputStream, name, size, progressPlugin);
 	}
 

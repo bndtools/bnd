@@ -33,8 +33,8 @@ public class XmlTester {
 		}
 	}
 
-	final Document						document;
-	final XPath							xpath	= xpathf.newXPath();
+	final Document	document;
+	final XPath		xpath	= xpathf.newXPath();
 
 	public XmlTester(InputStream in, final String... namespace) throws Exception {
 		xpath.setNamespaceContext(new NamespaceContext() {
@@ -73,21 +73,21 @@ public class XmlTester {
 		Assert.assertNotNull(o);
 		Assert.assertEquals(value, o);
 	}
-	
+
 	public void assertAttribute(String value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
 		Assert.assertNotNull(o);
 		Assert.assertEquals(value, o.trim());
 	}
-	
+
 	public void assertTrimmedAttribute(String value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
 		Assert.assertNotNull(o);
 		Assert.assertEquals(value, o.trim().replaceAll("\n", "\\\\n"));
 	}
-	
+
 	public void assertNoAttribute(String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
@@ -106,7 +106,7 @@ public class XmlTester {
 		Assert.assertNotNull(o);
 		Assert.assertEquals(value, o);
 	}
-	
+
 	public void assertCount(int value, String expr) throws XPathExpressionException {
 		assertNumber(Double.valueOf(value), "count(" + expr + ")");
 	}

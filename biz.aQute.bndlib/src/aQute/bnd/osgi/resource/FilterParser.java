@@ -18,12 +18,12 @@ import aQute.bnd.version.Version;
 import aQute.lib.strings.Strings;
 
 public class FilterParser {
-	final Map<String,Expression>	cache	= new HashMap<String,FilterParser.Expression>();
+	final Map<String,Expression> cache = new HashMap<String,FilterParser.Expression>();
 
 	public enum Op {
 		GREATER(">"), GREATER_OR_EQUAL(">="), LESS("<"), LESS_OR_EQUAL("<="), EQUAL("="), NOT_EQUAL("!="), RANGE("..");
 
-		private String	symbol;
+		private String symbol;
 
 		Op(String s) {
 			this.symbol = s;
@@ -57,52 +57,52 @@ public class FilterParser {
 	public static abstract class Expression {
 		static Expression	TRUE	= new Expression() {
 
-										@Override
+			@Override
 			public boolean eval(Map<String, ? > map) {
-											return true;
-										}
+				return true;
+			}
 
-										@Override
-										Expression not() {
-											return FALSE;
-										}
+			@Override
+			Expression not() {
+				return FALSE;
+			}
 
-										@Override
-										public <T> T visit(ExpressionVisitor<T> visitor) {
-											return visitor.visitTrue();
-										}
+			@Override
+			public <T> T visit(ExpressionVisitor<T> visitor) {
+				return visitor.visitTrue();
+			}
 
-										@Override
-										void toString(StringBuilder sb) {
-											sb.append("true");
-										}
-									};
+			@Override
+			void toString(StringBuilder sb) {
+				sb.append("true");
+			}
+		};
 		static Expression	FALSE	= new Expression() {
 
-										@Override
+			@Override
 			public boolean eval(Map<String, ? > map) {
-											return false;
-										}
+				return false;
+			}
 
-										@Override
-										public <T> T visit(ExpressionVisitor<T> visitor) {
-											return visitor.visitFalse();
-										}
+			@Override
+			public <T> T visit(ExpressionVisitor<T> visitor) {
+				return visitor.visitFalse();
+			}
 
-										@Override
-										Expression not() {
-											return TRUE;
-										}
+			@Override
+			Expression not() {
+				return TRUE;
+			}
 
-										void toString(StringBuilder sb) {
-											sb.append("false");
-										}
-									};
+			void toString(StringBuilder sb) {
+				sb.append("false");
+			}
+		};
 
 		public abstract boolean eval(Map<String, ? > map);
 
 		public abstract <T> T visit(ExpressionVisitor<T> visitor);
-		
+
 		Expression not() {
 			return null;
 		}
@@ -163,7 +163,7 @@ public class FilterParser {
 			}
 			return new RangeExpression(key, low, high);
 		}
-		
+
 		public String getRangeString() {
 			StringBuilder sb = new StringBuilder();
 			if (low != null) {
@@ -194,11 +194,11 @@ public class FilterParser {
 		public void toString(StringBuilder sb) {
 			sb.append(key).append("=").append(getRangeString());
 		}
-		
+
 		public SimpleExpression getLow() {
 			return low;
 		}
-		
+
 		public SimpleExpression getHigh() {
 			return high;
 		}
@@ -349,7 +349,7 @@ public class FilterParser {
 	}
 
 	public abstract static class WithRangeExpression extends Expression {
-		RangeExpression	range;
+		RangeExpression range;
 
 		public boolean eval(Map<String, ? > map) {
 			return range == null || range.eval(map);
@@ -367,13 +367,13 @@ public class FilterParser {
 		public RangeExpression getRangeExpression() {
 			return range;
 		}
-		
+
 		public abstract String printExcludingRange();
 
 	}
 
 	public static class PackageExpression extends WithRangeExpression {
-		final String	packageName;
+		final String packageName;
 
 		public PackageExpression(String value) {
 			this.packageName = value;
@@ -406,7 +406,7 @@ public class FilterParser {
 		public String query() {
 			return "p:" + packageName;
 		}
-		
+
 		@Override
 		public String printExcludingRange() {
 			return packageName;
@@ -414,7 +414,7 @@ public class FilterParser {
 	}
 
 	public static class HostExpression extends WithRangeExpression {
-		final String	hostName;
+		final String hostName;
 
 		public HostExpression(String value) {
 			this.hostName = value;
@@ -447,7 +447,7 @@ public class FilterParser {
 		public String query() {
 			return "bsn:" + hostName;
 		}
-		
+
 		@Override
 		public String printExcludingRange() {
 			return hostName;
@@ -455,7 +455,7 @@ public class FilterParser {
 	}
 
 	public static class BundleExpression extends WithRangeExpression {
-		final String	bundleName;
+		final String bundleName;
 
 		public BundleExpression(String value) {
 			this.bundleName = value;
@@ -484,7 +484,7 @@ public class FilterParser {
 		public String query() {
 			return "bsn:" + bundleName;
 		}
-		
+
 		@Override
 		public String printExcludingRange() {
 			return bundleName;
@@ -493,7 +493,7 @@ public class FilterParser {
 	}
 
 	public static class IdentityExpression extends WithRangeExpression {
-		final String	identity;
+		final String identity;
 
 		public IdentityExpression(String value) {
 			this.identity = value;
@@ -526,7 +526,7 @@ public class FilterParser {
 		public String query() {
 			return "bsn:" + identity;
 		}
-		
+
 		@Override
 		public String printExcludingRange() {
 			return identity;
@@ -534,7 +534,7 @@ public class FilterParser {
 	}
 
 	public static abstract class SubExpression extends Expression {
-		Expression[]	expressions;
+		Expression[] expressions;
 
 		void toString(StringBuilder sb) {
 			for (Expression e : expressions) {
@@ -706,7 +706,7 @@ public class FilterParser {
 	}
 
 	public static class Not extends Expression {
-		Expression	expr;
+		Expression expr;
 
 		private Not(Expression expr) {
 			this.expr = expr;
@@ -748,7 +748,7 @@ public class FilterParser {
 	}
 
 	public static class PatternExpression extends SimpleExpression {
-		final Pattern	pattern;
+		final Pattern pattern;
 
 		public PatternExpression(String key, String value) {
 			super(key, Op.EQUAL, value);
@@ -788,9 +788,9 @@ public class FilterParser {
 			return visitor.visit(this);
 		}
 	}
-	
+
 	public static abstract class ExpressionVisitor<T> {
-		private final T	defaultValue;
+		private final T defaultValue;
 
 		public ExpressionVisitor(T defaultValue) {
 			this.defaultValue = defaultValue;
@@ -1018,10 +1018,10 @@ public class FilterParser {
 		}
 		return exprs;
 	}
-	
+
 	public static String namespaceToCategory(String namespace) {
 		String result;
-		
+
 		if ("osgi.wiring.package".equals(namespace)) {
 			result = "Import-Package";
 		} else if ("osgi.wiring.bundle".equals(namespace)) {

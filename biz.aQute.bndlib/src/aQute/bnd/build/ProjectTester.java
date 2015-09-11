@@ -9,11 +9,11 @@ import java.util.List;
 import aQute.bnd.osgi.Constants;
 
 public abstract class ProjectTester {
-	final Project				project;
-	final ProjectLauncher		launcher;
-	final List<String>			tests		= new ArrayList<String>();
-	File						reportDir;
-	boolean						continuous	= true;
+	final Project			project;
+	final ProjectLauncher	launcher;
+	final List<String>		tests		= new ArrayList<String>();
+	File					reportDir;
+	boolean					continuous	= true;
 
 	public ProjectTester(Project project) throws Exception {
 		this.project = project;
@@ -21,7 +21,7 @@ public abstract class ProjectTester {
 		launcher.setCwd(project.getBase());
 		launcher.addRunVM("-ea");
 		continuous = project.is(Constants.TESTCONTINUOUS);
-		
+
 		reportDir = new File(project.getTarget(), project.getProperty("test-reports", "test-reports"));
 	}
 
@@ -65,11 +65,11 @@ public abstract class ProjectTester {
 	public void setContinuous(boolean b) {
 		this.continuous = b;
 	}
-	
+
 	public File getCwd() {
 		return launcher.getCwd();
 	}
-	
+
 	public void setCwd(File dir) {
 		launcher.setCwd(dir);
 	}

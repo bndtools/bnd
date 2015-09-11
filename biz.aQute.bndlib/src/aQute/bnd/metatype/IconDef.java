@@ -3,9 +3,9 @@ package aQute.bnd.metatype;
 import aQute.lib.tag.*;
 
 public class IconDef {
-	
-	String resource;
-	int size;
+
+	String	resource;
+	int		size;
 
 	public IconDef(String resource, int size) {
 		super();
@@ -15,7 +15,7 @@ public class IconDef {
 
 	Tag getTag() {
 		Tag icon = new Tag("Icon").addAttribute("resource", resource).addAttribute("size", size);
-		return icon;		
+		return icon;
 	}
 
 }

@@ -6,7 +6,7 @@ import aQute.lib.io.*;
 
 public class ProjectLaunchImplTest extends TestCase {
 
-	private Workspace	ws;
+	private Workspace ws;
 
 	protected void setUp() throws Exception {
 		ws = new Workspace(IO.getFile("test/ws"));

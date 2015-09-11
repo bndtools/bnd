@@ -17,7 +17,7 @@ import aQute.remote.plugin.*;
  */
 public class MainTest extends TestCase {
 
-	private Thread	thread;
+	private Thread thread;
 
 	@Override
 	protected void setUp() throws Exception {
@@ -27,8 +27,8 @@ public class MainTest extends TestCase {
 			public void run() {
 				try {
 					Main.main(new String[] {
-							"-p", Agent.DEFAULT_PORT + 1 + "", "-s", "generated/storage", "-c", "generated/cache",
-							"-n", "*", "-et"
+							"-p", Agent.DEFAULT_PORT + 1 + "", "-s", "generated/storage", "-c", "generated/cache", "-n",
+							"*", "-et"
 					});
 				}
 				catch (Exception e) {

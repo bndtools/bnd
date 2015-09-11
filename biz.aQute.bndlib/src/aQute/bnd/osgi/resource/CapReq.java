@@ -4,17 +4,20 @@ import java.util.*;
 
 import org.osgi.resource.*;
 
-class CapReq  {
-	
-	static enum MODE { Capability, Requirement }
-	
-	private final MODE mode;
-	private final String	namespace;
-	private final Resource	resource;
+class CapReq {
+
+	static enum MODE {
+		Capability, Requirement
+	}
+
+	private final MODE					mode;
+	private final String				namespace;
+	private final Resource				resource;
 	private final Map<String,String>	directives;
 	private final Map<String,Object>	attributes;
 
-	CapReq(MODE mode, String namespace, Resource resource, Map<String, String> directives, Map<String, Object> attributes) {
+	CapReq(MODE mode, String namespace, Resource resource, Map<String,String> directives,
+			Map<String,Object> attributes) {
 		this.mode = mode;
 		this.namespace = namespace;
 		this.resource = resource;

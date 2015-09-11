@@ -53,8 +53,8 @@ import aQute.lib.utf8properties.UTF8Properties;
 public class Macro {
 	final static String		NULLVALUE	= "c29e43048791e250dfd5723e7b8aa048df802c9262cfa8fbc4475b2e392a8ad2";
 	final static Pattern	NUMERIC_P	= Pattern.compile("[-+]?(\\d*\\.?\\d+|\\d+\\.)(e[-+]?[0-9]+)?");
-	final static Pattern	PRINTF_P	= Pattern
-												.compile("%(?:(\\d+)\\$)?(-|\\+|0|\\(|,|\\^|#| )*(\\d*)?(?:\\.(\\d+))?(a|A|b|B|h|H|d|f|c|s|x|X|u|o|z|Z|e|E|g|G|p|n|b|B|%)");
+	final static Pattern	PRINTF_P	= Pattern.compile(
+			"%(?:(\\d+)\\$)?(-|\\+|0|\\(|,|\\^|#| )*(\\d*)?(?:\\.(\\d+))?(a|A|b|B|h|H|d|f|c|s|x|X|u|o|z|Z|e|E|g|G|p|n|b|B|%)");
 	Processor				domain;
 	Object					targets[];
 	boolean					flattening;
@@ -193,7 +193,6 @@ public class Macro {
 					return process(value, new Link(source, link, key));
 				}
 
-
 				if (key != null && key.trim().length() > 0) {
 					value = System.getProperty(key);
 					if (value != null)
@@ -258,12 +257,9 @@ public class Macro {
 
 	/**
 	 * Parse the key as a command. A command consist of parameters separated by
-	 * ':'.
-	 * 
-	 * @param key
-	 * @return
+	 * ':'. @param key @return
 	 */
-	static Pattern	commands	= Pattern.compile("(?<!\\\\);");
+	static Pattern commands = Pattern.compile("(?<!\\\\);");
 
 	@SuppressWarnings("resource")
 	private String doCommands(String key, Link source) {
@@ -310,10 +306,10 @@ public class Macro {
 			String cname = "_" + method.replaceAll("-", "_");
 			try {
 				Method m = target.getClass().getMethod(cname, new Class[] {
-					String[].class
+						String[].class
 				});
 				Object result = m.invoke(target, new Object[] {
-					args
+						args
 				});
 				return result == null ? NULLVALUE : result.toString();
 			}
@@ -340,12 +336,10 @@ public class Macro {
 	}
 
 	/**
-	 * Return a unique list where the duplicates are removed.
-	 * 
-	 * @param args
-	 * @return
+	 * Return a unique list where the duplicates are removed. @param
+	 * args @return
 	 */
-	static String	_uniqHelp	= "${uniq;<list> ...}";
+	static String _uniqHelp = "${uniq;<list> ...}";
 
 	public String _uniq(String args[]) {
 		verifyCommand(args, _uniqHelp, null, 1, Integer.MAX_VALUE);
@@ -382,7 +376,7 @@ public class Macro {
 
 	}
 
-	static String	_filterHelp	= "${%s;<list>;<regex>}";
+	static String _filterHelp = "${%s;<list>;<regex>}";
 
 	String filter(String[] args, boolean include) {
 		verifyCommand(args, String.format(_filterHelp, args[0]), null, 3, 3);
@@ -397,7 +391,7 @@ public class Macro {
 		return Processor.join(list);
 	}
 
-	static String	_sortHelp	= "${sort;<list>...}";
+	static String _sortHelp = "${sort;<list>...}";
 
 	public String _sort(String args[]) {
 		verifyCommand(args, _sortHelp, null, 2, Integer.MAX_VALUE);
@@ -410,7 +404,7 @@ public class Macro {
 		return Processor.join(result);
 	}
 
-	static String	_nsortHelp	= "${nsort;<list>...}";
+	static String _nsortHelp = "${nsort;<list>...}";
 
 	public String _nsort(String args[]) {
 		verifyCommand(args, _nsortHelp, null, 2, Integer.MAX_VALUE);
@@ -440,7 +434,7 @@ public class Macro {
 		return result.join();
 	}
 
-	static String	_joinHelp	= "${join;<list>...}";
+	static String _joinHelp = "${join;<list>...}";
 
 	public String _join(String args[]) {
 
@@ -453,7 +447,7 @@ public class Macro {
 		return Processor.join(result);
 	}
 
-	static String	_sjoinHelp	= "${sjoin;<separator>;<list>...}";
+	static String _sjoinHelp = "${sjoin;<separator>;<list>...}";
 
 	public String _sjoin(String args[]) throws Exception {
 		verifyCommand(args, _sjoinHelp, null, 2, Integer.MAX_VALUE);
@@ -465,7 +459,7 @@ public class Macro {
 		return Processor.join(args[1], result);
 	}
 
-	static String	_ifHelp	= "${if;<condition>;<iftrue> [;<iffalse>] }";
+	static String _ifHelp = "${if;<condition>;<iftrue> [;<iffalse>] }";
 
 	public String _if(String args[]) {
 		verifyCommand(args, _ifHelp, null, 3, 4);
@@ -479,7 +473,7 @@ public class Macro {
 		return "";
 	}
 
-	public final static String	_nowHelp	= "${now;pattern|'long'}, returns current time";
+	public final static String _nowHelp = "${now;pattern|'long'}, returns current time";
 
 	public Object _now(String args[]) {
 		verifyCommand(args, _nowHelp, null, 1, 2);
@@ -495,7 +489,7 @@ public class Macro {
 		return new Date();
 	}
 
-	public final static String	_fmodifiedHelp	= "${fmodified;<list of filenames>...}, return latest modification date";
+	public final static String _fmodifiedHelp = "${fmodified;<list of filenames>...}, return latest modification date";
 
 	public String _fmodified(String args[]) throws Exception {
 		verifyCommand(args, _fmodifiedHelp, null, 2, Integer.MAX_VALUE);
@@ -540,10 +534,7 @@ public class Macro {
 	}
 
 	/**
-	 * replace ; <list> ; regex ; replace
-	 * 
-	 * @param args
-	 * @return
+	 * replace ; <list> ; regex ; replace @param args @return
 	 */
 	public String _replace(String args[]) {
 		if (args.length < 4 || args.length > 5) {
@@ -585,12 +576,9 @@ public class Macro {
 	}
 
 	/**
-	 * toclassname ; <path>.class ( , <path>.class ) *
-	 * 
-	 * @param args
-	 * @return
+	 * toclassname ; <path>.class ( , <path>.class ) * @param args @return
 	 */
-	static String	_toclassnameHelp	= "${classname;<list of class names>}, convert class paths to FQN class names ";
+	static String _toclassnameHelp = "${classname;<list of class names>}, convert class paths to FQN class names ";
 
 	public String _toclassname(String args[]) {
 		verifyCommand(args, _toclassnameHelp, null, 2, 2);
@@ -612,13 +600,10 @@ public class Macro {
 	}
 
 	/**
-	 * toclassname ; <path>.class ( , <path>.class ) *
-	 * 
-	 * @param args
-	 * @return
+	 * toclassname ; <path>.class ( , <path>.class ) * @param args @return
 	 */
 
-	static String	_toclasspathHelp	= "${toclasspath;<list>[;boolean]}, convert a list of class names to paths";
+	static String _toclasspathHelp = "${toclasspath;<list>[;boolean]}, convert a list of class names to paths";
 
 	public String _toclasspath(String args[]) {
 		verifyCommand(args, _toclasspathHelp, null, 2, 3);
@@ -688,10 +673,10 @@ public class Macro {
 	}
 
 	public String _isdir(String args[]) {
-//		if (args.length < 2) {
-//			domain.warning("Need at least one file name for ${isdir;...}");
-//			return null;
-//		}
+		// if (args.length < 2) {
+		// domain.warning("Need at least one file name for ${isdir;...}");
+		// return null;
+		// }
 		boolean isdir = true;
 		// If no dirs provided, return false
 		if (args.length < 2) {
@@ -728,20 +713,18 @@ public class Macro {
 		String tstamp = domain.getProperty(Constants.TSTAMP);
 		if (tstamp != null)
 			try {
-			now = Long.parseLong(tstamp);
+				now = Long.parseLong(tstamp);
 			}
 			catch (NumberFormatException e) {
 				// ignore, just use current time
-		}
+			}
 		return sdf.format(new Date(now));
 	}
 
 	/**
 	 * Wildcard a directory. The lists can contain Instruction that are matched
 	 * against the given directory ${lsr;<dir>;<list>(;<list>)*}
-	 * ${lsa;<dir>;<list>(;<list>)*}
-	 * 
-	 * @author aqute
+	 * ${lsa;<dir>;<list>(;<list>)*} @author aqute
 	 */
 
 	public String _lsr(String args[]) {
@@ -787,37 +770,26 @@ public class Macro {
 
 	/**
 	 * Modify a version to set a version policy. The policy is a mask that is
-	 * mapped to a version.
-	 * 
-	 * <pre>
-	 * +           increment
-	 * -           decrement
-	 * =           maintain
-	 * s			only pos=3 (qualifier). If qualifer == SNAPSHOT, return m.m.m-SNAPSHOT else m.m.m.q
-	 * s			only pos=3 (qualifier). If qualifer == SNAPSHOT, return m.m.m-SNAPSHOT else m.m.m
-	 * &tilde;           discard
-	 * 
-	 * ==+      = maintain major, minor, increment micro, discard qualifier
-	 * &tilde;&tilde;&tilde;=     = just get the qualifier
-	 * version=&quot;[${version;==;${@}},${version;=+;${@}})&quot;
-	 * </pre>
-	 * 
-	 * @param args
-	 * @return
+	 * mapped to a version. <pre> + increment - decrement = maintain s only
+	 * pos=3 (qualifier). If qualifer == SNAPSHOT, return m.m.m-SNAPSHOT else
+	 * m.m.m.q s only pos=3 (qualifier). If qualifer == SNAPSHOT, return
+	 * m.m.m-SNAPSHOT else m.m.m &tilde; discard ==+ = maintain major, minor,
+	 * increment micro, discard qualifier &tilde;&tilde;&tilde;= = just get the
+	 * qualifier version=&quot;[${version;==;${@}},${version;=+;${@}})&quot;
+	 * </pre> @param args @return
 	 */
 	final static String		MASK_STRING			= "[\\-+=~0123456789]{0,3}[=~]?";
 	final static Pattern	MASK				= Pattern.compile(MASK_STRING);
 	final static String		_versionHelp		= "${version;<mask>;<version>}, modify a version\n"
-														+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n"
-														+ "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
+			+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
 	final static Pattern	_versionPattern[]	= new Pattern[] {
 			null, null, MASK, Verifier.VERSION
-												};
+													};
 
 	public String _versionmask(String args[]) {
 		return _version(args);
-	}	
-	
+	}
+
 	public String _version(String args[]) {
 		verifyCommand(args, _versionHelp, null, 2, 3);
 
@@ -890,25 +862,16 @@ public class Macro {
 	}
 
 	/**
-	 * Schortcut for version policy
-	 * 
-	 * <pre>
-	 * -provide-policy : ${policy;[==,=+)}
-	 * -consume-policy : ${policy;[==,+)}
-	 * </pre>
-	 * 
-	 * @param args
-	 * @return
+	 * Schortcut for version policy <pre> -provide-policy : ${policy;[==,=+)}
+	 * -consume-policy : ${policy;[==,+)} </pre> @param args @return
 	 */
 
 	static Pattern	RANGE_MASK		= Pattern.compile("(\\[|\\()(" + MASK_STRING + "),(" + MASK_STRING + ")(\\]|\\))");
 	static String	_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookyp ${@}\n"
-											+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n"
-											+ "M ::= '+' | '-' | MQ\n"
-											+ "MQ ::= '~' | '='";
+			+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
 	static Pattern	_rangePattern[]	= new Pattern[] {
 			null, RANGE_MASK
-									};
+										};
 
 	public String _range(String args[]) {
 		verifyCommand(args, _rangeHelp, _rangePattern, 2, 3);
@@ -948,20 +911,16 @@ public class Macro {
 	}
 
 	/**
-	 * System command. Execute a command and insert the result.
-	 * 
-	 * @param args
-	 * @param help
-	 * @param patterns
-	 * @param low
-	 * @param high
+	 * System command. Execute a command and insert the result. @param
+	 * args @param help @param patterns @param low @param high
 	 */
 	public String system_internal(boolean allowFail, String args[]) throws Exception {
 		if (nosystem)
 			throw new RuntimeException("Macros in this mode cannot excute system commands");
 
-		verifyCommand(args, "${" + (allowFail ? "system-allow-fail" : "system")
-				+ ";<command>[;<in>]}, execute a system command", null, 2, 3);
+		verifyCommand(args,
+				"${" + (allowFail ? "system-allow-fail" : "system") + ";<command>[;<in>]}, execute a system command",
+				null, 2, 3);
 		String command = args[1];
 		String input = null;
 
@@ -1023,11 +982,7 @@ public class Macro {
 	}
 
 	/**
-	 * Get the contents of a file.
-	 * 
-	 * @param in
-	 * @return
-	 * @throws IOException
+	 * Get the contents of a file. @param in @return @throws IOException
 	 */
 
 	public String _cat(String args[]) throws IOException {
@@ -1120,18 +1075,11 @@ public class Macro {
 	 * Take all the properties and translate them to actual values. This method
 	 * takes the set properties and traverse them over all entries, including
 	 * the default properties for that properties. The values no longer contain
-	 * macros.
-	 * <p>
-	 * There are some rules
-	 * <ul>
-	 * <li>Property names starting with an underscore ('_') are ignored. These
-	 * are reserved for properties that cause an unwanted side effect when
-	 * expanded unnecessary
-	 * <li>Property names starting with a minus sign ('-') are not expanded to
-	 * maintain readability
-	 * </ul>
-	 * 
-	 * @return A new Properties with the flattened values
+	 * macros. <p> There are some rules <ul> <li>Property names starting with an
+	 * underscore ('_') are ignored. These are reserved for properties that
+	 * cause an unwanted side effect when expanded unnecessary <li>Property
+	 * names starting with a minus sign ('-') are not expanded to maintain
+	 * readability </ul> @return A new Properties with the flattened values
 	 */
 	public Properties getFlattenedProperties() {
 		return getFlattenedProperties(true);
@@ -1141,13 +1089,9 @@ public class Macro {
 	 * Take all the properties and translate them to actual values. This method
 	 * takes the set properties and traverse them over all entries, including
 	 * the default properties for that properties. The values no longer contain
-	 * macros.
-	 * <p>
-	 * Property names starting with an underscore ('_') are ignored. These are
-	 * reserved for properties that cause an unwanted side effect when expanded
-	 * unnecessary
-	 * 
-	 * @return A new Properties with the flattened values
+	 * macros. <p> Property names starting with an underscore ('_') are ignored.
+	 * These are reserved for properties that cause an unwanted side effect when
+	 * expanded unnecessary @return A new Properties with the flattened values
 	 */
 	public Properties getFlattenedProperties(boolean ignoreInstructions) {
 		// Some macros only work in a lower processor, so we
@@ -1171,7 +1115,7 @@ public class Macro {
 		}
 	}
 
-	public final static String	_fileHelp	= "${file;<base>;<paths>...}, create correct OS dependent path";
+	public final static String _fileHelp = "${file;<base>;<paths>...}, create correct OS dependent path";
 
 	public String _osfile(String args[]) {
 		verifyCommand(args, _fileHelp, null, 3, 3);
@@ -1188,7 +1132,7 @@ public class Macro {
 		return Processor.join(list, File.pathSeparator);
 	}
 
-	public final static String	_sizeHelp	= "${size;<collection>;...}, count the number of elements (of all collections combined)";
+	public final static String _sizeHelp = "${size;<collection>;...}, count the number of elements (of all collections combined)";
 
 	public int _size(String args[]) {
 		verifyCommand(args, _sizeHelp, null, 1, 16);
@@ -1265,7 +1209,7 @@ public class Macro {
 		return sb.toString();
 	}
 
-	static String	_startswith	= "${startswith;<string>;<prefix>}";
+	static String _startswith = "${startswith;<string>;<prefix>}";
 
 	public String _startswith(String args[]) throws Exception {
 		verifyCommand(args, _startswith, null, 3, 3);
@@ -1275,7 +1219,7 @@ public class Macro {
 			return "";
 	}
 
-	static String	_endswith	= "${endswith;<string>;<suffix>}";
+	static String _endswith = "${endswith;<string>;<suffix>}";
 
 	public String _endswith(String args[]) throws Exception {
 		verifyCommand(args, _endswith, null, 3, 3);
@@ -1285,7 +1229,7 @@ public class Macro {
 			return "";
 	}
 
-	static String	_extension	= "${extension;<string>}";
+	static String _extension = "${extension;<string>}";
 
 	public String _extension(String args[]) throws Exception {
 		verifyCommand(args, _extension, null, 2, 2);
@@ -1296,7 +1240,7 @@ public class Macro {
 		return name.substring(n + 1);
 	}
 
-	static String	_stem	= "${stem;<string>}";
+	static String _stem = "${stem;<string>}";
 
 	public String _stem(String args[]) throws Exception {
 		verifyCommand(args, _stem, null, 2, 2);
@@ -1304,10 +1248,10 @@ public class Macro {
 		int n = name.indexOf('.');
 		if (n < 0)
 			return name;
-		return name.substring(0,n);
+		return name.substring(0, n);
 	}
 
-	static String	_substring	= "${substring;<string>;<start>[;<end>]}";
+	static String _substring = "${substring;<string>;<start>[;<end>]}";
 
 	public String _substring(String args[]) throws Exception {
 		verifyCommand(args, _substring, null, 3, 4);
@@ -1354,7 +1298,7 @@ public class Macro {
 		return Math.round(d);
 	}
 
-	static String	_length	= "${length;<string>}";
+	static String _length = "${length;<string>}";
 
 	public int _length(String args[]) throws Exception {
 		verifyCommand(args, _length, null, 1, 2);
@@ -1364,7 +1308,7 @@ public class Macro {
 		return args[1].length();
 	}
 
-	static String	_get	= "${get;<index>;<list>}";
+	static String _get = "${get;<index>;<list>}";
 
 	public String _get(String args[]) throws Exception {
 		verifyCommand(args, _get, null, 3, 3);
@@ -1376,7 +1320,7 @@ public class Macro {
 		return list.get(index);
 	}
 
-	static String	_sublist	= "${sublist;<start>;<end>[;<list>...]}";
+	static String _sublist = "${sublist;<start>;<end>[;<list>...]}";
 
 	public String _sublist(String args[]) throws Exception {
 		verifyCommand(args, _sublist, null, 4, Integer.MAX_VALUE);
@@ -1408,7 +1352,7 @@ public class Macro {
 		return list;
 	}
 
-	static String	_first	= "${first;<list>[;<list>...]}";
+	static String _first = "${first;<list>[;<list>...]}";
 
 	public String _first(String args[]) throws Exception {
 		verifyCommand(args, _first, null, 1, Integer.MAX_VALUE);
@@ -1420,7 +1364,7 @@ public class Macro {
 		return list.get(0);
 	}
 
-	static String	_last	= "${last;<list>[;<list>...]}";
+	static String _last = "${last;<list>[;<list>...]}";
 
 	public String _last(String args[]) throws Exception {
 		verifyCommand(args, _last, null, 1, Integer.MAX_VALUE);
@@ -1432,7 +1376,7 @@ public class Macro {
 		return list.get(list.size() - 1);
 	}
 
-	static String	_max	= "${max;<list>[;<list>...]}";
+	static String _max = "${max;<list>[;<list>...]}";
 
 	public String _max(String args[]) throws Exception {
 		verifyCommand(args, _max, null, 2, Integer.MAX_VALUE);
@@ -1450,7 +1394,7 @@ public class Macro {
 		return a;
 	}
 
-	static String	_min	= "${min;<list>[;<list>...]}";
+	static String _min = "${min;<list>[;<list>...]}";
 
 	public String _min(String args[]) throws Exception {
 		verifyCommand(args, _min, null, 2, Integer.MAX_VALUE);
@@ -1468,7 +1412,7 @@ public class Macro {
 		return a;
 	}
 
-	static String	_nmax	= "${nmax;<list>[;<list>...]}";
+	static String _nmax = "${nmax;<list>[;<list>...]}";
 
 	public String _nmax(String args[]) throws Exception {
 		verifyCommand(args, _nmax, null, 2, Integer.MAX_VALUE);
@@ -1484,7 +1428,7 @@ public class Macro {
 		return toString(d);
 	}
 
-	static String	_nmin	= "${nmin;<list>[;<list>...]}";
+	static String _nmin = "${nmin;<list>[;<list>...]}";
 
 	public String _nmin(String args[]) throws Exception {
 		verifyCommand(args, _nmin, null, 2, Integer.MAX_VALUE);
@@ -1500,7 +1444,7 @@ public class Macro {
 		return toString(d);
 	}
 
-	static String	_sum	= "${sum;<list>[;<list>...]}";
+	static String _sum = "${sum;<list>[;<list>...]}";
 
 	public String _sum(String args[]) throws Exception {
 		verifyCommand(args, _sum, null, 2, Integer.MAX_VALUE);
@@ -1515,7 +1459,7 @@ public class Macro {
 		return toString(d);
 	}
 
-	static String	_average	= "${average;<list>[;<list>...]}";
+	static String _average = "${average;<list>[;<list>...]}";
 
 	public String _average(String args[]) throws Exception {
 		verifyCommand(args, _sum, null, 2, Integer.MAX_VALUE);
@@ -1533,7 +1477,7 @@ public class Macro {
 		return toString(d / list.size());
 	}
 
-	static String	_reverse	= "${reverse;<list>[;<list>...]}";
+	static String _reverse = "${reverse;<list>[;<list>...]}";
 
 	public String _reverse(String args[]) throws Exception {
 		verifyCommand(args, _reverse, null, 2, Integer.MAX_VALUE);
@@ -1543,7 +1487,7 @@ public class Macro {
 		return Processor.join(list);
 	}
 
-	static String	_indexof	= "${indexof;<value>;<list>[;<list>...]}";
+	static String _indexof = "${indexof;<value>;<list>[;<list>...]}";
 
 	public int _indexof(String args[]) throws Exception {
 		verifyCommand(args, _indexof, null, 3, Integer.MAX_VALUE);
@@ -1553,7 +1497,7 @@ public class Macro {
 		return list.indexOf(value);
 	}
 
-	static String	_lastindexof	= "${lastindexof;<value>;<list>[;<list>...]}";
+	static String _lastindexof = "${lastindexof;<value>;<list>[;<list>...]}";
 
 	public int _lastindexof(String args[]) throws Exception {
 		verifyCommand(args, _indexof, null, 3, Integer.MAX_VALUE);
@@ -1563,7 +1507,7 @@ public class Macro {
 		return list.lastIndexOf(value);
 	}
 
-	static String	_find	= "${find;<target>;<searched>}";
+	static String _find = "${find;<target>;<searched>}";
 
 	public int _find(String args[]) throws Exception {
 		verifyCommand(args, _find, null, 3, 3);
@@ -1571,7 +1515,7 @@ public class Macro {
 		return args[1].indexOf(args[2]);
 	}
 
-	static String	_findlast	= "${findlast;<find>;<target>}";
+	static String _findlast = "${findlast;<find>;<target>}";
 
 	public int _findlast(String args[]) throws Exception {
 		verifyCommand(args, _findlast, null, 3, 3);
@@ -1579,7 +1523,7 @@ public class Macro {
 		return args[2].lastIndexOf(args[1]);
 	}
 
-	static String	_split	= "${split;<regex>[;<target>...]}";
+	static String _split = "${split;<regex>[;<target>...]}";
 
 	public String _split(String args[]) throws Exception {
 		verifyCommand(args, _split, null, 2, Integer.MAX_VALUE);
@@ -1595,7 +1539,7 @@ public class Macro {
 		return Processor.join(collected);
 	}
 
-	static String	_js	= "${js [;<js expr>...]}";
+	static String _js = "${js [;<js expr>...]}";
 
 	public Object _js(String args[]) throws Exception {
 		verifyCommand(args, _js, null, 2, Integer.MAX_VALUE);
@@ -1649,7 +1593,7 @@ public class Macro {
 
 	}
 
-	static String	_toupper	= "${toupper;<target>}";
+	static String _toupper = "${toupper;<target>}";
 
 	public String _toupper(String args[]) throws Exception {
 		verifyCommand(args, _tolower, null, 2, 2);
@@ -1657,7 +1601,7 @@ public class Macro {
 		return args[1].toUpperCase();
 	}
 
-	static String	_tolower	= "${tolower;<target>}";
+	static String _tolower = "${tolower;<target>}";
 
 	public String _tolower(String args[]) throws Exception {
 		verifyCommand(args, _tolower, null, 2, 2);
@@ -1665,7 +1609,7 @@ public class Macro {
 		return args[1].toLowerCase();
 	}
 
-	static String	_compare	= "${compare;<astring>;<bstring>}";
+	static String _compare = "${compare;<astring>;<bstring>}";
 
 	public int _compare(String args[]) throws Exception {
 		verifyCommand(args, _compare, null, 3, 3);
@@ -1676,7 +1620,7 @@ public class Macro {
 		return n > 0 ? 1 : -1;
 	}
 
-	static String	_ncompare	= "${ncompare;<anumber>;<bnumber>}";
+	static String _ncompare = "${ncompare;<anumber>;<bnumber>}";
 
 	public int _ncompare(String args[]) throws Exception {
 		verifyCommand(args, _ncompare, null, 3, 3);
@@ -1689,7 +1633,7 @@ public class Macro {
 		return 0;
 	}
 
-	static String	_matches	= "${matches;<target>;<regex>}";
+	static String _matches = "${matches;<target>;<regex>}";
 
 	public boolean _matches(String args[]) throws Exception {
 		verifyCommand(args, _matches, null, 3, 3);
@@ -1727,7 +1671,7 @@ public class Macro {
 		return sb;
 	}
 
-	static String	_trim	= "${trim;<target>}";
+	static String _trim = "${trim;<target>}";
 
 	public String _trim(String args[]) throws Exception {
 		verifyCommand(args, _trim, null, 2, 2);
@@ -1735,7 +1679,7 @@ public class Macro {
 		return args[1].trim();
 	}
 
-	static String	_format	= "${format;<format>[;args...]}";
+	static String _format = "${format;<format>[;args...]}";
 
 	public String _format(String args[]) throws Exception {
 		verifyCommand(args, _format, null, 2, Integer.MAX_VALUE);
@@ -1747,7 +1691,7 @@ public class Macro {
 		while (n < args.length && m.find()) {
 			char conversion = m.group(5).charAt(0);
 			switch (conversion) {
-			// d|f|c|s|h|n|x|X|u|o|z|Z|e|E|g|G|p|\n|%)");
+				// d|f|c|s|h|n|x|X|u|o|z|Z|e|E|g|G|p|\n|%)");
 				case 'd' :
 				case 'u' :
 				case 'o' :
@@ -1779,7 +1723,8 @@ public class Macro {
 
 				case 'b' :
 					String v = args[n].toLowerCase();
-					if ( v == null || v.equals("false") || v.isEmpty() || (NUMERIC_P.matcher(v).matches() && Double.parseDouble(v)==0.0D))
+					if (v == null || v.equals("false") || v.isEmpty()
+							|| (NUMERIC_P.matcher(v).matches() && Double.parseDouble(v) == 0.0D))
 						args2[n - 2] = false;
 					else
 						args2[n - 2] = false;
@@ -1845,8 +1790,7 @@ public class Macro {
 		}
 	}
 
-
-	static String	_isempty	= "${isempty;[<target>...]}";
+	static String _isempty = "${isempty;[<target>...]}";
 
 	public boolean _isempty(String args[]) throws Exception {
 		verifyCommand(args, _isempty, null, 1, Integer.MAX_VALUE);
@@ -1858,7 +1802,7 @@ public class Macro {
 		return true;
 	}
 
-	static String	_isnumber	= "${isnumber[;<target>...]}";
+	static String _isnumber = "${isnumber[;<target>...]}";
 
 	public boolean _isnumber(String args[]) throws Exception {
 		verifyCommand(args, _isnumber, null, 2, Integer.MAX_VALUE);
@@ -1870,7 +1814,7 @@ public class Macro {
 		return true;
 	}
 
-	static String	_is	= "${is;<a>;<b>}";
+	static String _is = "${is;<a>;<b>}";
 
 	public boolean _is(String args[]) throws Exception {
 		verifyCommand(args, _is, null, 3, Integer.MAX_VALUE);
@@ -1887,7 +1831,8 @@ public class Macro {
 	 * Map a value from a list to a new value
 	 */
 
-	static String	_map	= "${map;<macro>[;<list>...]}";
+	static String _map = "${map;<macro>[;<list>...]}";
+
 	public String _map(String args[]) throws Exception {
 		verifyCommand(args, _map, null, 2, Integer.MAX_VALUE);
 		String macro = args[1];
@@ -1906,7 +1851,8 @@ public class Macro {
 	 * Map a value from a list to a new value, providing the value and the index
 	 */
 
-	static String	_foreach	= "${foreach;<macro>[;<list>...]}";
+	static String _foreach = "${foreach;<macro>[;<list>...]}";
+
 	public String _foreach(String args[]) throws Exception {
 		verifyCommand(args, _foreach, null, 2, Integer.MAX_VALUE);
 		String macro = args[1];
@@ -1926,7 +1872,8 @@ public class Macro {
 	 * Take a list and convert this to the argumets
 	 */
 
-	static String	_apply	= "${apply;<macro>[;<list>...]}";
+	static String _apply = "${apply;<macro>[;<list>...]}";
+
 	public String _apply(String args[]) throws Exception {
 		verifyCommand(args, _apply, null, 2, Integer.MAX_VALUE);
 		String macro = args[1];
@@ -1950,8 +1897,9 @@ public class Macro {
 		Formatter sb = new Formatter();
 		for (int i = 0; i < args.length; i++) {
 			long l = Long.parseLong(args[1]);
-			bytes(sb, l, 0, new String[] { "b", "Kb", "Mb", "Gb", "Tb", "Pb", "Eb", "Zb", "Yb", "Bb",
-					"Geopbyte" });
+			bytes(sb, l, 0, new String[] {
+					"b", "Kb", "Mb", "Gb", "Tb", "Pb", "Eb", "Zb", "Yb", "Bb", "Geopbyte"
+			});
 		}
 		return sb.toString();
 	}

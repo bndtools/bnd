@@ -21,9 +21,7 @@ public class ClassReferenceTest extends TestCase {
 	 * We create a JAR with the test.classreferenc.ClassReference class. This
 	 * class contains a javax.swing.Box.class reference Prior to Java 1.5, this
 	 * was done in a silly way that is handled specially. After 1.5 it is a
-	 * normal reference.
-	 * 
-	 * @throws Exception
+	 * normal reference. @throws Exception
 	 */
 
 	public void testSun_1_1() throws Exception {
@@ -102,11 +100,11 @@ public class ClassReferenceTest extends TestCase {
 		assertTrue(builder.check());
 		JAVA highestEE = builder.getHighestEE();
 		Map<String,Set<String>> profiles = highestEE.getProfiles();
-		if ( profiles != null) {
+		if (profiles != null) {
 			System.out.println("profiles" + profiles);
-			jar.getManifest().write(System.out);			
+			jar.getManifest().write(System.out);
 		}
-		
+
 		assertTrue(builder.check());
 		Manifest manifest = jar.getManifest();
 		String imports = manifest.getMainAttributes().getValue("Import-Package");

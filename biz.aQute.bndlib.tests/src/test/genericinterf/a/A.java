@@ -4,7 +4,7 @@ import test.genericinterf.b.*;
 import test.genericinterf.c.*;
 
 public class A<T> implements B<C<T>> {
-	public T	field;
+	public T field;
 
 	public static <X> X foo(@SuppressWarnings("unused") X x) {
 		return null;

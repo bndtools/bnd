@@ -4,12 +4,12 @@ import org.osgi.framework.*;
 
 public class MissingNoArgsConstructorActivator extends AbstractActivator {
 
-	public MissingNoArgsConstructorActivator(String s) { }
-	
-	@Override
-	public void start(BundleContext context) throws Exception { }
+	public MissingNoArgsConstructorActivator(String s) {}
 
 	@Override
-	public void stop(BundleContext context) throws Exception { }
+	public void start(BundleContext context) throws Exception {}
+
+	@Override
+	public void stop(BundleContext context) throws Exception {}
 
 }

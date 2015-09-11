@@ -9,7 +9,7 @@ import aQute.lib.getopt.*;
 import aQute.libg.generics.*;
 
 public class PatchCommand {
-	bnd	bnd;
+	bnd bnd;
 
 	public PatchCommand(bnd bnd) {
 		this.bnd = bnd;
@@ -59,7 +59,7 @@ public class PatchCommand {
 		b.write(patch);
 		a.close();
 		b.close();
-		
+
 		// TODO proper close
 	}
 
@@ -128,7 +128,8 @@ public class PatchCommand {
 		// b.putResource(path, a.getResource(path));
 		// }
 		//
-		// bm.getMainAttributes().putValue(Constants.BUNDLE_VERSION, patchVersion);
+		// bm.getMainAttributes().putValue(Constants.BUNDLE_VERSION,
+		// patchVersion);
 		// b.write(new File(newer));
 		// a.close();
 		// b.close();

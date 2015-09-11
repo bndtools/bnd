@@ -28,36 +28,23 @@ import aQute.libg.generics.*;
  * An element that compares the access field in a binary compatible way. This
  * element is used for classes, methods, constructors, and fields. For that
  * reason we also included the only method that uses this class as a static
- * method.
- * <p>
- * Packages
- * <ul>
- * <li>MAJOR - Remove a public type
- * <li>MINOR - Add a public class
- * <li>MINOR - Add an interface
- * <li>MINOR - Add a method to a class
- * <li>MINOR - Add a method to a provider interface
- * <li>MAJOR - Add a method to a consumer interface
- * <li>MINOR - Add a field
- * <li>MICRO - Add an annotation to a member
- * <li>MINOR - Change the value of a constant
- * <li>MICRO - -abstract
- * <li>MICRO - -final
- * <li>MICRO - -protected
- * <li>MAJOR - +abstract
- * <li>MAJOR - +final
- * <li>MAJOR - +protected
- * </ul>
+ * method. <p> Packages <ul> <li>MAJOR - Remove a public type <li>MINOR - Add a
+ * public class <li>MINOR - Add an interface <li>MINOR - Add a method to a class
+ * <li>MINOR - Add a method to a provider interface <li>MAJOR - Add a method to
+ * a consumer interface <li>MINOR - Add a field <li>MICRO - Add an annotation to
+ * a member <li>MINOR - Change the value of a constant <li>MICRO - -abstract
+ * <li>MICRO - -final <li>MICRO - -protected <li>MAJOR - +abstract <li>MAJOR -
+ * +final <li>MAJOR - +protected </ul>
  */
 
 class JavaElement {
-	static Pattern						PARAMETERS_P	= Pattern.compile(".*(\\(.*\\)).*");
+	static Pattern PARAMETERS_P = Pattern.compile(".*(\\(.*\\)).*");
 
-	final static EnumSet<Type>			INHERITED		= EnumSet.of(FIELD, METHOD, EXTENDS, IMPLEMENTS);
-	private static final Element		PROTECTED		= new Element(ACCESS, "protected", null, MAJOR, MINOR, null);
-	private static final Element		STATIC			= new Element(ACCESS, "static", null, MAJOR, MAJOR, null);
-	private static final Element		ABSTRACT		= new Element(ACCESS, "abstract", null, MAJOR, MINOR, null);
-	private static final Element		FINAL			= new Element(ACCESS, "final", null, MAJOR, MINOR, null);
+	final static EnumSet<Type>		INHERITED	= EnumSet.of(FIELD, METHOD, EXTENDS, IMPLEMENTS);
+	private static final Element	PROTECTED	= new Element(ACCESS, "protected", null, MAJOR, MINOR, null);
+	private static final Element	STATIC		= new Element(ACCESS, "static", null, MAJOR, MAJOR, null);
+	private static final Element	ABSTRACT	= new Element(ACCESS, "abstract", null, MAJOR, MINOR, null);
+	private static final Element	FINAL		= new Element(ACCESS, "final", null, MAJOR, MINOR, null);
 	// private static final Element DEPRECATED = new Element(ACCESS,
 	// "deprecated", null,
 	// CHANGED, CHANGED, null);
@@ -66,9 +53,9 @@ class JavaElement {
 	final Map<PackageRef,Instructions>	providerMatcher	= Create.map();
 	final Set<TypeRef>					notAccessible	= Create.set();
 	final Map<Object,Element>			cache			= Create.map();
-	MultiMap<PackageRef, //
+	MultiMap<PackageRef,																	//
 	Element>							packages;
-	final MultiMap<TypeRef, //
+	final MultiMap<TypeRef,																	//
 	Element>							covariant		= new MultiMap<TypeRef,Element>();
 	final Set<JAVA>						javas			= Create.set();
 	final Packages						exports;
@@ -76,9 +63,7 @@ class JavaElement {
 	/**
 	 * Create an element for the API. We take the exported packages and traverse
 	 * those for their classes. If there is no manifest or it does not describe
-	 * a bundle we assume the whole contents is exported.
-	 * 
-	 * @param infos
+	 * a bundle we assume the whole contents is exported. @param infos
 	 */
 	JavaElement(Analyzer analyzer) throws Exception {
 		this.analyzer = analyzer;
@@ -86,8 +71,8 @@ class JavaElement {
 		Manifest manifest = analyzer.getJar().getManifest();
 		if (manifest != null && manifest.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION) != null) {
 			exports = new Packages();
-			for (Map.Entry<String,Attrs> entry : OSGiHeader.parseHeader(
-					manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE)).entrySet())
+			for (Map.Entry<String,Attrs> entry : OSGiHeader
+					.parseHeader(manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE)).entrySet())
 				exports.put(analyzer.getPackageRef(entry.getKey()), entry.getValue());
 		} else
 			exports = analyzer.getContained();
@@ -160,13 +145,8 @@ class JavaElement {
 	 * Calculate the class element. This requires parsing the class file and
 	 * finding all the methods that were added etc. The parsing will take super
 	 * interfaces and super classes into account. For this reason it maintains a
-	 * queue of classes/interfaces to parse.
-	 * 
-	 * @param analyzer
-	 * @param clazz
-	 * @param infos
-	 * @return
-	 * @throws Exception
+	 * queue of classes/interfaces to parse. @param analyzer @param clazz @param
+	 * infos @return @throws Exception
 	 */
 	Element classElement(final Clazz clazz) throws Exception {
 		Element e = cache.get(clazz);
@@ -200,8 +180,8 @@ class JavaElement {
 			return before;
 
 		clazz.parseClassFileWithCollector(new ClassDataCollector() {
-			boolean			memberEnd;
-			Clazz.FieldDef	last;
+			boolean memberEnd;
+			Clazz.FieldDef last;
 
 			@Override
 			public void version(int minor, int major) {
@@ -269,12 +249,9 @@ class JavaElement {
 			}
 
 			/**
-			 * @param members
-			 * @param name
-			 * @param comment
-			 * @return
+			 * @param members @param name @param comment @return
 			 */
-			Set<Element>	OBJECT	= Create.set();
+			Set<Element> OBJECT = Create.set();
 
 			public String inherit(final Set<Element> members, TypeRef name) throws Exception {
 				if (name.isObject()) {
@@ -317,23 +294,11 @@ class JavaElement {
 			 * tree. Starting with ANNOTATED, and then properties. A property is
 			 * a PROPERTY property or an ANNOTATED property if it is an
 			 * annotation. If it is an array, the key is suffixed with the
-			 * index.
-			 * 
-			 * <pre>
-			 * public @interface Outer {
-			 *   Inner[] value();
-			 * }
-			 * public @interface Inner {
-			 *   String[] value();
-			 * }
-			 * @Outer( { @Inner("1","2"}) }
-			 * class Xyz {}
-			 * 
-			 *     ANNOTATED Outer (CHANGED/CHANGED)
-			 *      ANNOTATED Inner (CHANGED/CHANGED)
-			 *       PROPERTY value.0=1 (CHANGED/CHANGED)
-			 *       PROPERTY value.1=2 (CHANGED/CHANGED)
-			 * 
+			 * index. <pre> public @interface Outer { Inner[] value(); }
+			 * public @interface Inner { String[] value(); } @Outer(
+			 * { @Inner("1","2"}) } class Xyz {} ANNOTATED Outer
+			 * (CHANGED/CHANGED) ANNOTATED Inner (CHANGED/CHANGED) PROPERTY
+			 * value.0=1 (CHANGED/CHANGED) PROPERTY value.1=2 (CHANGED/CHANGED)
 			 * </pre>
 			 */
 			@Override
@@ -397,13 +362,13 @@ class JavaElement {
 					StringBuilder sb = new StringBuilder();
 					sb.append(key);
 					sb.append('=');
-					if ( member instanceof String) {
+					if (member instanceof String) {
 						sb.append("'");
 						sb.append(member);
 						sb.append("'");
 					} else
 						sb.append(member);
-						
+
 					properties.add(new Element(Type.PROPERTY, sb.toString(), null, CHANGED, CHANGED, null));
 				}
 			}
@@ -493,9 +458,10 @@ class JavaElement {
 			}
 		}
 
-		//System.out.println("methods/synthetic " + clazz+ " " + methods + " " + synthetic);
+		// System.out.println("methods/synthetic " + clazz+ " " + methods + " "
+		// + synthetic);
 		for (MethodDef m : methods) {
-			
+
 			Collection<Element> children = annotations.get(m);
 			if (children == null)
 				children = new HashSet<Element>();
@@ -517,44 +483,44 @@ class JavaElement {
 			// and all the implemented and extended types. This is already
 			// do for us when we get the element of the return type.
 
-
 			getCovariantReturns(children, m.getType(), m.getGenericReturnType());
 
 			/**
 			 * No longer includes synthetic methods in the tree
 			 */
-//			for (Iterator<MethodDef> i = synthetic.iterator(); i.hasNext();) {
-//				MethodDef s = i.next();
-//				if (s.getName().equals(m.getName()) && Arrays.equals(s.getPrototype(), m.getPrototype())) {
-//					i.remove();
-//					getCovariantReturns(children, s.getType());
-//				}
-//			}
+			// for (Iterator<MethodDef> i = synthetic.iterator(); i.hasNext();)
+			// {
+			// MethodDef s = i.next();
+			// if (s.getName().equals(m.getName()) &&
+			// Arrays.equals(s.getPrototype(), m.getPrototype())) {
+			// i.remove();
+			// getCovariantReturns(children, s.getType());
+			// }
+			// }
 
 			String signature = m.getSignature();
 			Matcher matcher;
-			if (signature !=null && (matcher = PARAMETERS_P.matcher(signature)).matches()) {
+			if (signature != null && (matcher = PARAMETERS_P.matcher(signature)).matches()) {
 				signature = matcher.group(1);
 			} else
 				signature = toString(m.getPrototype());
 
 			//
 			// Java default methods are concrete implementations of methods
-			// on an interface. 
+			// on an interface.
 			//
-			
-			if ( clazz.isInterface() && !m.isAbstract()) {
-				
+
+			if (clazz.isInterface() && !m.isAbstract()) {
+
 				//
 				// We have a Java 8 default method!
 				// Such a method is always a minor update
 				//
-				
+
 				add = MINOR;
 			}
-			
-			Element member = new Element(Type.METHOD, m.getName() + signature, children, add, remove,
-					null);
+
+			Element member = new Element(Type.METHOD, m.getName() + signature, children, add, remove, null);
 
 			if (!members.add(member)) {
 				members.remove(member);
@@ -563,47 +529,46 @@ class JavaElement {
 		}
 
 		/**
-		 * Repeat for the remaining synthetic methods
-		 * 
-		 * After long discussions with BJ we decided to skip the
-		 * synthetic methods since they do not seem to contribute
-		 * to the binary compatibility. They also seem to cause
-		 * problems between compilers. ECJ onlyu adds a synthetic methods
-		 * for the super class while Javac traverse the whole super chain.
-		 * I've actually not been able to figure out how ECJ gets away with this
-		 * but the behavior seems ok.
+		 * Repeat for the remaining synthetic methods After long discussions
+		 * with BJ we decided to skip the synthetic methods since they do not
+		 * seem to contribute to the binary compatibility. They also seem to
+		 * cause problems between compilers. ECJ onlyu adds a synthetic methods
+		 * for the super class while Javac traverse the whole super chain. I've
+		 * actually not been able to figure out how ECJ gets away with this but
+		 * the behavior seems ok.
 		 */
-//		for (MethodDef m : synthetic) {
-//			Collection<Element> children = annotations.get(m);
-//			if (children == null)
-//				children = new HashSet<Element>();
-//			access(children, m.getAccess(), m.isDeprecated());
-//
-//			// A final class cannot be extended, ergo,
-//			// all methods defined in it are by definition
-//			// final. However, marking them final (either
-//			// on the method or inheriting it from the class)
-//			// will create superfluous changes if we
-//			// override a method from a super class that was not
-//			// final. So we actually remove the final for methods
-//			// in a final class.
-//			if (clazz.isFinal())
-//				children.remove(FINAL);
-//
-//			// for covariant types we need to add the return types
-//			// and all the implemented and extended types. This is already
-//			// done for us when we get the element of the return type.
-//
-//			getCovariantReturns(children, m.getType());
-//
-//			Element member = new Element(Type.METHOD, m.getName() + toString(m.getPrototype()), children, add, remove,
-//					"synthetic");
-//
-//			if (!members.add(member)) {
-//				members.remove(member);
-//				members.add(member);
-//			}
-//		}
+		// for (MethodDef m : synthetic) {
+		// Collection<Element> children = annotations.get(m);
+		// if (children == null)
+		// children = new HashSet<Element>();
+		// access(children, m.getAccess(), m.isDeprecated());
+		//
+		// // A final class cannot be extended, ergo,
+		// // all methods defined in it are by definition
+		// // final. However, marking them final (either
+		// // on the method or inheriting it from the class)
+		// // will create superfluous changes if we
+		// // override a method from a super class that was not
+		// // final. So we actually remove the final for methods
+		// // in a final class.
+		// if (clazz.isFinal())
+		// children.remove(FINAL);
+		//
+		// // for covariant types we need to add the return types
+		// // and all the implemented and extended types. This is already
+		// // done for us when we get the element of the return type.
+		//
+		// getCovariantReturns(children, m.getType());
+		//
+		// Element member = new Element(Type.METHOD, m.getName() +
+		// toString(m.getPrototype()), children, add, remove,
+		// "synthetic");
+		//
+		// if (!members.add(member)) {
+		// members.remove(member);
+		// members.add(member);
+		// }
+		// }
 
 		for (Clazz.FieldDef f : fields) {
 			Collection<Element> children = annotations.get(f);
@@ -727,8 +692,8 @@ class JavaElement {
 		// elements.addAll(set);
 	}
 
-	private static void access(Collection<Element> children, int access, @SuppressWarnings("unused")
-	boolean deprecated) {
+	private static void access(Collection<Element> children, int access,
+			@SuppressWarnings("unused") boolean deprecated) {
 		if (!isPublic(access))
 			children.add(PROTECTED);
 		if (isAbstract(access))

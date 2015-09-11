@@ -12,21 +12,21 @@ import java.util.*;
  * objects or other Tag objects.
  */
 public class Tag {
-	Tag								parent;													// Parent
-																								// element
-	String							name;														// Name
-																								// of
-																								// the
-																								// tag
-	Hashtable<String,String>		attributes	= new Hashtable<String,String>();				// Attributes
-																								// name
-																								// ->
-																								// value
-	Vector<Object>					content		= new Vector<Object>();						// Content
-																								// elements
-	boolean							cdata;
+	Tag							parent;											// Parent
+																				// element
+	String						name;											// Name
+																				// of
+																				// the
+																				// tag
+	Hashtable<String,String>	attributes	= new Hashtable<String,String>();	// Attributes
+																				// name
+																				// ->
+																				// value
+	Vector<Object>				content		= new Vector<Object>();				// Content
+																				// elements
+	boolean						cdata;
 
-	final static SimpleDateFormat	format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+	final static SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
 	/**
 	 * Construct a new Tag with a name.
@@ -443,8 +443,7 @@ public class Tag {
 			return tn == sn || (sn != null && sn.equals(tn));
 		}
 		String suri = sn == null ? mapping.getAttribute("xmlns") : mapping.getAttribute("xmlns:" + sn);
-		String turi = tn == null ? child.findRecursiveAttribute("xmlns") : child.findRecursiveAttribute("xmlns:"
-				+ tn);
+		String turi = tn == null ? child.findRecursiveAttribute("xmlns") : child.findRecursiveAttribute("xmlns:" + tn);
 		return ((turi == null) && (suri == null)) || ((turi != null) && turi.equals(suri));
 	}
 

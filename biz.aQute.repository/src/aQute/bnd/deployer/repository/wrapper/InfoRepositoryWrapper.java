@@ -37,7 +37,7 @@ import aQute.lib.persistentmap.PersistentMap;
 public class InfoRepositoryWrapper implements Repository {
 	final RepoIndex								repoIndexer;
 	final PersistentMap<PersistentResource>		persistent;
-	final Collection< ? extends InfoRepository>	repos;							;
+	final Collection< ? extends InfoRepository>	repos;;
 	long										lastTime	= 0;
 	private Properties							augments	= new Properties();
 
@@ -45,11 +45,11 @@ public class InfoRepositoryWrapper implements Repository {
 
 	public InfoRepositoryWrapper(File dir, Collection< ? extends InfoRepository> repos) throws Exception {
 		this.repoIndexer = new RepoIndex();
-		
+
 		KnownBundleAnalyzer knownBundleAnalyzer = new KnownBundleAnalyzer();
 		this.augments = new Properties();
 		knownBundleAnalyzer.setKnownBundlesExtra(this.augments);
-		
+
 		this.repoIndexer.addAnalyzer(knownBundleAnalyzer, FrameworkUtil.createFilter("(name=*)"));
 		this.repos = repos;
 		this.persistent = new PersistentMap<PersistentResource>(dir, PersistentResource.class);
@@ -157,10 +157,7 @@ public class InfoRepositoryWrapper implements Repository {
 	}
 
 	/**
-	 * The repository method
-	 * 
-	 * @param result2
-	 * @throws Exception
+	 * The repository method @param result2 @throws Exception
 	 */
 
 	public void findProviders(Map<Requirement,List<Capability>> result, Collection< ? extends Requirement> requirements)
@@ -237,8 +234,7 @@ public class InfoRepositoryWrapper implements Repository {
 	}
 
 	/**
-	 * Clear all files that were indexed before this date
-	 * @param lastModified
+	 * Clear all files that were indexed before this date @param lastModified
 	 */
 	public void clear(long whenOlder) {
 		persistent.clear(whenOlder);

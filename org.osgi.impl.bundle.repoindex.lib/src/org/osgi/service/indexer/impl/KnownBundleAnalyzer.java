@@ -21,8 +21,8 @@ import org.osgi.service.indexer.impl.util.OSGiHeader;
 
 public class KnownBundleAnalyzer implements ResourceAnalyzer {
 
-	private final Properties defaultProperties;
-	private Properties extraProperties = null;
+	private final Properties	defaultProperties;
+	private Properties			extraProperties	= null;
 
 	public KnownBundleAnalyzer() {
 		defaultProperties = new Properties();
@@ -30,13 +30,15 @@ public class KnownBundleAnalyzer implements ResourceAnalyzer {
 		if (stream != null) {
 			try {
 				defaultProperties.load(stream);
-			} catch (IOException e) {
+			}
+			catch (IOException e) {
 				// ignore
-			} finally {
+			}
+			finally {
 				try {
 					stream.close();
-				} catch (IOException e) {
 				}
+				catch (IOException e) {}
 			}
 		}
 	}
@@ -53,25 +55,26 @@ public class KnownBundleAnalyzer implements ResourceAnalyzer {
 		SymbolicName resourceName;
 		try {
 			resourceName = Util.getSymbolicName(resource);
-		} catch (IllegalArgumentException e) {
+		}
+		catch (IllegalArgumentException e) {
 			// not a bundle, so return without analyzing
 			return;
 		}
 
-		for (Enumeration<?> names = defaultProperties.propertyNames(); names.hasMoreElements();) {
+		for (Enumeration< ? > names = defaultProperties.propertyNames(); names.hasMoreElements();) {
 			String propName = (String) names.nextElement();
 			processPropertyName(resource, caps, reqs, resourceName, propName, defaultProperties);
 		}
 
 		if (extraProperties != null)
-			for (Enumeration<?> names = extraProperties.propertyNames(); names.hasMoreElements();) {
+			for (Enumeration< ? > names = extraProperties.propertyNames(); names.hasMoreElements();) {
 				String propName = (String) names.nextElement();
 				processPropertyName(resource, caps, reqs, resourceName, propName, extraProperties, defaultProperties);
 			}
 	}
 
-	private static void processPropertyName(Resource resource, List<Capability> caps, List<Requirement> reqs, SymbolicName resourceName, String name, Properties... propertiesList)
-			throws IOException {
+	private static void processPropertyName(Resource resource, List<Capability> caps, List<Requirement> reqs,
+			SymbolicName resourceName, String name, Properties... propertiesList) throws IOException {
 		String[] bundleRef = name.split(";");
 		String bsn = bundleRef[0];
 
@@ -101,10 +104,11 @@ public class KnownBundleAnalyzer implements ResourceAnalyzer {
 		}
 	}
 
-	private static void processClause(String bundleRef, String clauseStr, List<Capability> caps, List<Requirement> reqs) {
-		Map<String, Map<String, String>> header = OSGiHeader.parseHeader(clauseStr);
+	private static void processClause(String bundleRef, String clauseStr, List<Capability> caps,
+			List<Requirement> reqs) {
+		Map<String,Map<String,String>> header = OSGiHeader.parseHeader(clauseStr);
 
-		for (Entry<String, Map<String, String>> entry : header.entrySet()) {
+		for (Entry<String,Map<String,String>> entry : header.entrySet()) {
 			String indicator = OSGiHeader.removeDuplicateMarker(entry.getKey());
 			IndicatorType type;
 
@@ -117,12 +121,13 @@ public class KnownBundleAnalyzer implements ResourceAnalyzer {
 				namespace = indicator.substring(IndicatorType.Requirement.getPrefix().length());
 			} else {
 				throw new IllegalArgumentException(MessageFormat.format(
-						"Invalid indicator format in known-bundle parsing for bundle  \"{0}\", expected cap=namespace or req=namespace, found \"{1}\".", bundleRef, indicator));
+						"Invalid indicator format in known-bundle parsing for bundle  \"{0}\", expected cap=namespace or req=namespace, found \"{1}\".",
+						bundleRef, indicator));
 			}
 
 			Builder builder = new Builder().setNamespace(namespace);
 
-			Map<String, String> attribs = entry.getValue();
+			Map<String,String> attribs = entry.getValue();
 			Util.copyAttribsToBuilder(builder, attribs);
 
 			if (type == IndicatorType.Capability)

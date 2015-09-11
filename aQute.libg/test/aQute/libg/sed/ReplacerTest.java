@@ -12,10 +12,10 @@ public class ReplacerTest extends TestCase {
 		final Map<String,String>	map	= new HashMap<String,String>();
 		final Domain				parent;
 		final ReplacerAdapter		replacer;
-		
+
 		public Processor(Processor parent) {
 			this.parent = parent;
-			this.replacer= new ReplacerAdapter(this);
+			this.replacer = new ReplacerAdapter(this);
 			this.replacer.setReporter(this);
 		}
 
@@ -31,7 +31,6 @@ public class ReplacerTest extends TestCase {
 			return parent;
 		}
 
-		
 		String getProcessed(String key) {
 			return replacer.getProcessed(key);
 		}
@@ -43,22 +42,22 @@ public class ReplacerTest extends TestCase {
 		public String process(String string) {
 			return getReplacer().process(string);
 		}
-		
+
 		@Override
 		public String toString() {
 			return map.toString();
 		}
 	}
-	
+
 	/**
 	 * Test non-string returns
 	 */
-	
+
 	public void testNonStrings() {
 		Processor top = new Processor();
 		top.getMap().put("p", "${processors}");
 		Integer n = Integer.parseInt(top.getProcessed("p"));
-		assertTrue( n >= 1);
+		assertTrue(n >= 1);
 	}
 
 	/**
@@ -98,7 +97,7 @@ public class ReplacerTest extends TestCase {
 		assertEquals("|\t" + cwd + "|", top.getProcessed("cwd.12"));
 		assertEquals("|\r" + cwd + "|", top.getProcessed("cwd.13"));
 		assertEquals("|\n" + cwd + "|", top.getProcessed("cwd.14"));
-		
+
 		top.check();
 	}
 
@@ -276,7 +275,7 @@ public class ReplacerTest extends TestCase {
 		Processor p = new Processor();
 		String a = p.process("${lsr;test/" + pckg + ";*.java}");
 		assertTrue(a.contains("ReplacerTest.java"));
-		assertFalse(a.contains("test/"+ pckg + "/ReplacerTest.java"));
+		assertFalse(a.contains("test/" + pckg + "/ReplacerTest.java"));
 
 		String b = p.process("${lsa;test/" + pckg + ";*.java}");
 		assertTrue(b.contains("test/" + pckg + "/ReplacerTest.java"));
@@ -384,7 +383,6 @@ public class ReplacerTest extends TestCase {
 		p.check();
 	}
 
-
 	/**
 	 * Check if we can check for the defintion of a variable
 	 */
@@ -420,7 +418,6 @@ public class ReplacerTest extends TestCase {
 		assertEquals("Test.class,com/acme/test/Test.class", p.process("${toclasspath;Test,com.acme.test.Test}"));
 		p.check();
 	}
-
 
 	public static void testWarning() {
 		Processor p = new Processor();

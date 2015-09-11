@@ -42,7 +42,6 @@ public class SpecMetatypeTest extends TestCase {
 	public enum Foo {
 		A, B
 	}
-	
 
 	/**
 	 * Test method naming options with '.' and reserved names
@@ -137,10 +136,10 @@ public class SpecMetatypeTest extends TestCase {
 
 		String noid();
 
-		@AttributeDefinition(name = "§NULL§") //Meta.NULL
+		@AttributeDefinition(name = "§NULL§") // Meta.NULL
 		String nullid();
 	}
-	
+
 	private void assertAD(XmlTester xt, String id, String name) throws XPathExpressionException {
 		assertAD(xt, id, name, null, null, null, 0, "String", null, null, null);
 	}
@@ -197,7 +196,7 @@ public class SpecMetatypeTest extends TestCase {
 		assertAD(xt, "noid", "Noid");
 		assertAD(xt, "nullid", "§NULL§");
 	}
-	
+
 	@ObjectClassDefinition
 	public static interface ADCollision {
 
@@ -205,7 +204,7 @@ public class SpecMetatypeTest extends TestCase {
 
 		String a$$$(); // a$
 	}
-	
+
 	public void testADCollision() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
@@ -215,15 +214,15 @@ public class SpecMetatypeTest extends TestCase {
 		System.out.println(b.getErrors());
 		assertEquals(1, b.getErrors().size());
 	}
-	
-	@ObjectClassDefinition(id="duplicate")
+
+	@ObjectClassDefinition(id = "duplicate")
 	public static interface DupOCDId1 {
-		
+
 	}
 
-	@ObjectClassDefinition(id="duplicate")
+	@ObjectClassDefinition(id = "duplicate")
 	public static interface DupOCDId2 {
-		
+
 	}
 
 	public void testOCDCollision() throws Exception {
@@ -231,39 +230,61 @@ public class SpecMetatypeTest extends TestCase {
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
 		String name = DupOCDId2.class.getName();
-		
+
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, name.substring(0, name.length() - "1".length()) + "*");
 		b.build();
 		assertEquals(1, b.getErrors().size());
 	}
-	
-	@ObjectClassDefinition(pid={"1"})
+
+	@ObjectClassDefinition(pid = {
+			"1"
+	})
 	public static interface DupPid1 {
-		
+
 	}
-	@ObjectClassDefinition(pid={"1"})
+
+	@ObjectClassDefinition(pid = {
+			"1"
+	})
 	public static interface DupPid2 {
-		
+
 	}
-	@ObjectClassDefinition(factoryPid={"2"})
+
+	@ObjectClassDefinition(factoryPid = {
+			"2"
+	})
 	public static interface DupPid3 {
-		
+
 	}
-	@ObjectClassDefinition(factoryPid={"2"})
+
+	@ObjectClassDefinition(factoryPid = {
+			"2"
+	})
 	public static interface DupPid4 {
-		
+
 	}
-	@ObjectClassDefinition(pid={"3"}, factoryPid={"3"})
+
+	@ObjectClassDefinition(pid = {
+			"3"
+	}, factoryPid = {
+			"3"
+	})
 	public static interface DupPid5 {
-		
+
 	}
-	@ObjectClassDefinition(pid={"4"})
+
+	@ObjectClassDefinition(pid = {
+			"4"
+	})
 	public static interface DupPid6 {
-		
+
 	}
-	@ObjectClassDefinition(factoryPid={"4"})
+
+	@ObjectClassDefinition(factoryPid = {
+			"4"
+	})
 	public static interface DupPid7 {
-		
+
 	}
 
 	public void testPidCollision() throws Exception {
@@ -271,33 +292,32 @@ public class SpecMetatypeTest extends TestCase {
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
 		String name = DupPid2.class.getName();
-		
+
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, name.substring(0, name.length() - "1".length()) + "*");
 		b.build();
 		System.err.println(b.getErrors());
 		assertEquals(4, b.getErrors().size());
 	}
-	
+
 	/**
 	 * Test the special conversions.
 	 */
 
 	public static class MyList<T> extends ArrayList<T> {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
-		public MyList() {
-		}
-		
+		public MyList() {}
+
 	}
-	
+
 	interface L<T> extends List<T> {}
-	
+
 	public static class StringList<T> implements L<T> {
 
 		@Override
 		public void add(int arg0, T arg1) {
 			// TODO Auto-generated method stub
-			
+
 		}
 
 		@Override
@@ -369,7 +389,7 @@ public class SpecMetatypeTest extends TestCase {
 		@Override
 		public void clear() {
 			// TODO Auto-generated method stub
-			
+
 		}
 
 		@Override
@@ -432,7 +452,7 @@ public class SpecMetatypeTest extends TestCase {
 			// TODO Auto-generated method stub
 			return null;
 		}
-    }
+	}
 
 	@ObjectClassDefinition
 	static interface CollectionsTest {
@@ -442,10 +462,10 @@ public class SpecMetatypeTest extends TestCase {
 
 		Set<String> set();
 
-//		Queue<String> queue();
+		// Queue<String> queue();
 
 		// Deque<String> deque();
-//		Stack<String> stack();
+		// Stack<String> stack();
 
 		ArrayList<String> arrayList();
 
@@ -454,7 +474,7 @@ public class SpecMetatypeTest extends TestCase {
 		LinkedHashSet<String> linkedHashSet();
 
 		MyList<String> myList();
-		
+
 		StringList<String> stringList();
 	}
 
@@ -471,7 +491,7 @@ public class SpecMetatypeTest extends TestCase {
 		System.err.println(b.getJar().getResources());
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$CollectionsTest.xml");
 		assertNotNull(r);
-        IO.copy(r.openInputStream(), System.err);
+		IO.copy(r.openInputStream(), System.err);
 
 		XmlTester xt = xmlTester13(r);
 
@@ -502,8 +522,10 @@ public class SpecMetatypeTest extends TestCase {
 		X o();
 	}
 
-	private static final String[] optionLabels = {"requireConfiguration", "optionalConfiguration", "ignoreConfiguration"};
-	private static final String[] optionValues = optionLabels;
+	private static final String[]	optionLabels	= {
+			"requireConfiguration", "optionalConfiguration", "ignoreConfiguration"
+														};
+	private static final String[]	optionValues	= optionLabels;
 
 	private void assertAD(XmlTester xt, String id, String name, String[] optionLabels, String[] optionValues)
 			throws XPathExpressionException {
@@ -533,28 +555,44 @@ public class SpecMetatypeTest extends TestCase {
 	/**
 	 * Test the OCD settings
 	 */
-	@ObjectClassDefinition(pid={"ocdEmptyPid"})
+	@ObjectClassDefinition(pid = {
+			"ocdEmptyPid"
+	})
 	public static interface OCDEmpty {}
 
-	@ObjectClassDefinition(description = "description", pid={"ocdDescriptionPid"})
+	@ObjectClassDefinition(description = "description", pid = {
+			"ocdDescriptionPid"
+	})
 	public static interface OCDDescription {}
 
-	@ObjectClassDefinition(pid={"ocdDesignatePidOnlyPid"})
+	@ObjectClassDefinition(pid = {
+			"ocdDesignatePidOnlyPid"
+	})
 	public static interface OCDDesignatePidOnly {}
 
-	@ObjectClassDefinition(factoryPid = {"ocdDesignatePidFactoryFactoryPid"})
+	@ObjectClassDefinition(factoryPid = {
+			"ocdDesignatePidFactoryFactoryPid"
+	})
 	public static interface OCDDesignatePidFactory {}
 
-	@ObjectClassDefinition(id = "id", pid={"ocdIdPid"})
+	@ObjectClassDefinition(id = "id", pid = {
+			"ocdIdPid"
+	})
 	public static interface OCDId {}
 
-	@ObjectClassDefinition(id = "id2", pid={"ocdId2Pid"})
+	@ObjectClassDefinition(id = "id2", pid = {
+			"ocdId2Pid"
+	})
 	public static interface OCDIdWithPid {}
 
-	@ObjectClassDefinition(localization = "localization", pid={"ocdLocalizationPid"})
+	@ObjectClassDefinition(localization = "localization", pid = {
+			"ocdLocalizationPid"
+	})
 	public static interface OCDLocalization {}
 
-	@ObjectClassDefinition(name = "name", pid={"ocdNamePid"})
+	@ObjectClassDefinition(name = "name", pid = {
+			"ocdNamePid"
+	})
 	public static interface OCDName {}
 
 	public void testOCD() throws Exception {
@@ -562,69 +600,36 @@ public class SpecMetatypeTest extends TestCase {
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
 		String name = OCDEmpty.class.getName();
-		
+
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, name.substring(0, name.length() - "Empty".length()) + "*");
 		b.build();
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 		System.err.println(b.getJar().getResources().keySet());
 
-		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDEmpty",
-				"test.metatype.SpecMetatypeTest$OCDEmpty",
-				"Test metatype spec metatype test OCDEmpty", 
-				null,
-				"ocdEmptyPid", 
-				false,
-				null);
-		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDName",
-				"test.metatype.SpecMetatypeTest$OCDName",
-				"name", 
-				null,
-				"ocdNamePid", 
-				false, 
-				null);
-		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDDescription", 
-				"test.metatype.SpecMetatypeTest$OCDDescription",
-				"Test metatype spec metatype test OCDDescription", 
-				"description", 
-				"ocdDescriptionPid",
-				false,
-				null);
+		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDEmpty", "test.metatype.SpecMetatypeTest$OCDEmpty",
+				"Test metatype spec metatype test OCDEmpty", null, "ocdEmptyPid", false, null);
+		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDName", "test.metatype.SpecMetatypeTest$OCDName", "name", null,
+				"ocdNamePid", false, null);
+		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDDescription", "test.metatype.SpecMetatypeTest$OCDDescription",
+				"Test metatype spec metatype test OCDDescription", "description", "ocdDescriptionPid", false, null);
 		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDDesignatePidOnly",
-				"test.metatype.SpecMetatypeTest$OCDDesignatePidOnly", 
-				"Test metatype spec metatype test OCDDesignate pid only",
-				null,
-				"ocdDesignatePidOnlyPid", 
-				false,
-				null);
+				"test.metatype.SpecMetatypeTest$OCDDesignatePidOnly",
+				"Test metatype spec metatype test OCDDesignate pid only", null, "ocdDesignatePidOnlyPid", false, null);
 		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDDesignatePidFactory",
-				"test.metatype.SpecMetatypeTest$OCDDesignatePidFactory", 
-				"Test metatype spec metatype test OCDDesignate pid factory", 
-				null,
-				"ocdDesignatePidFactoryFactoryPid",
-				true,
-				null);
-		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDId",
-				"id",
-				"Id", //5.2 name is derived from id 
-				null,
-				"ocdIdPid", 
-				false, 
-				null);
-		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDIdWithPid",
-				"id2", 
-				"Id2", 
-				null, 
-				"ocdId2Pid",
-				false,
-				null);
-		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDLocalization",
-				"test.metatype.SpecMetatypeTest$OCDLocalization",
-				"Test metatype spec metatype test OCDLocalization", 
-				null, 
-				"ocdLocalizationPid",
-				false,
-				"localization");
+				"test.metatype.SpecMetatypeTest$OCDDesignatePidFactory",
+				"Test metatype spec metatype test OCDDesignate pid factory", null, "ocdDesignatePidFactoryFactoryPid",
+				true, null);
+		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDId", "id", "Id", // 5.2
+																			// name
+																			// is
+																			// derived
+																			// from
+																			// id
+				null, "ocdIdPid", false, null);
+		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDIdWithPid", "id2", "Id2", null, "ocdId2Pid", false, null);
+		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDLocalization", "test.metatype.SpecMetatypeTest$OCDLocalization",
+				"Test metatype spec metatype test OCDLocalization", null, "ocdLocalizationPid", false, "localization");
 	}
 
 	private void assertOCD(Builder b, String cname, String id, String name, String description, String designate,
@@ -638,8 +643,7 @@ public class SpecMetatypeTest extends TestCase {
 		String expected = localization == null ? "OSGI-INF/I10n/" + cname : localization;
 		xt.assertExactAttribute(localization == null ? "OSGI-INF/l10n/" + cname : localization,
 				"metatype:MetaData/@localization");
-		xt.assertExactAttribute(description == null ? "" : description,
-				"metatype:MetaData/OCD/@description");
+		xt.assertExactAttribute(description == null ? "" : description, "metatype:MetaData/OCD/@description");
 
 		if (designate != null) {
 			if (factory)
@@ -672,7 +676,9 @@ public class SpecMetatypeTest extends TestCase {
 		@AttributeDefinition(min = "-1")
 		String withMin();
 
-		@AttributeDefinition(defaultValue = {"deflt"})
+		@AttributeDefinition(defaultValue = {
+				"deflt"
+		})
 		String withDefault();
 
 		@AttributeDefinition(cardinality = 0)
@@ -699,10 +705,14 @@ public class SpecMetatypeTest extends TestCase {
 		@AttributeDefinition(description = "description_xxx\"xxx'xxx")
 		String a();
 
-		@AttributeDefinition(options = {@Option(label= "a", value = "a"), @Option(label= "b", value = "b")})
+		@AttributeDefinition(options = {
+				@Option(label = "a", value = "a"), @Option(label = "b", value = "b")
+		})
 		String valuesOnly();
 
-		@AttributeDefinition(options = {@Option(label= "a", value = "A"), @Option(label= "b", value = "B")})
+		@AttributeDefinition(options = {
+				@Option(label = "a", value = "A"), @Option(label = "b", value = "B")
+		})
 		String labelsAndValues();
 
 		@AttributeDefinition(required = true)
@@ -735,10 +745,8 @@ public class SpecMetatypeTest extends TestCase {
 		assertAD(xt, "withC1", "With c1", null, null, null, 1, "String", null, null, null);
 		assertAD(xt, "withC0", "With c0", null, null, null, 0, "String", null, null, null);
 		assertAD(xt, "withC.1", "With c 1", null, null, null, -1, "String", null, null, null);
-		assertAD(xt, "withC.1ButArray", "With c 1 but array", null, null, null, -1, "String", null, null,
-				null);
-		assertAD(xt, "withC1ButCollection", "With c1 but collection", null, null, null, 1, "String",
-				null, null, null);
+		assertAD(xt, "withC.1ButArray", "With c 1 but array", null, null, null, -1, "String", null, null, null);
+		assertAD(xt, "withC1ButCollection", "With c1 but collection", null, null, null, 1, "String", null, null, null);
 		assertAD(xt, "withInt", "With int", null, null, null, 0, "String", null, null, null);
 		assertAD(xt, "withString", "With string", null, null, null, 0, "Integer", null, null, null);
 		assertAD(xt, "a", "A", null, null, null, 0, "String", "description_xxx\"xxx'xxx", null, null);
@@ -749,10 +757,9 @@ public class SpecMetatypeTest extends TestCase {
 		});
 		assertAD(xt, "labelsAndValues", "Labels and values", null, null, null, 0, "String", null, new String[] {
 				"a", "b"
-		},
-				new String[] {
-						"A", "B"
-				});
+		}, new String[] {
+				"A", "B"
+		});
 	}
 
 	private XmlTester xmlTester13(Resource r) throws Exception {
@@ -782,24 +789,22 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	@ObjectClassDefinition(description = "adinheritance-child")
-	public static interface TestADWithInheritanceChild extends TestADWithInheritanceSuperOne,
-		TestADWithInheritanceSuperTwo {
+	public static interface TestADWithInheritanceChild
+			extends TestADWithInheritanceSuperOne, TestADWithInheritanceSuperTwo {
 		@AttributeDefinition
 		String fromChild();
 	}
-	
+
 	public void testADWithInheritance() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
-		b.setProperty(
-				Constants.METATYPE_ANNOTATIONS,
-				TestADWithInheritanceChild.class.getName().substring(0,
-						TestADWithInheritanceChild.class.getName().length() - "Child".length())
-						+ "*");
-//		b.setProperty("-metatypeannotations-inherit", "true");
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, TestADWithInheritanceChild.class.getName().substring(0,
+				TestADWithInheritanceChild.class.getName().length() - "Child".length()) + "*");
+		// b.setProperty("-metatypeannotations-inherit", "true");
 		b.build();
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestADWithInheritanceChild.xml");
+		Resource r = b.getJar()
+				.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestADWithInheritanceChild.xml");
 		System.err.println(b.getErrors());
 		assertEquals(0, b.getErrors().size());
 		System.err.println(b.getWarnings());
@@ -807,33 +812,27 @@ public class SpecMetatypeTest extends TestCase {
 		System.err.println(b.getJar().getResources().keySet());
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
-		
+
 		XmlTester xt = xmlTester13(r);
-		
+
 		assertAD(xt, "fromChild", "From child", null, null, null, 0, "String", null, null, null);
 		assertAD(xt, "fromSuperOne", "From super one", null, null, null, 0, "String", null, null, null);
 		assertAD(xt, "fromSuperTwo", "From super two", null, null, null, 0, "String", null, null, null);
 	}
 
 	@SuppressWarnings("null")
-	private void assertAD(XmlTester xt,
-	String id, String name, String min, String max, String deflt, int cardinality, String type, String description,
-			String[] optionLabels, 
-			String[] optionValues) throws XPathExpressionException {
+	private void assertAD(XmlTester xt, String id, String name, String min, String max, String deflt, int cardinality,
+			String type, String description, String[] optionLabels, String[] optionValues)
+					throws XPathExpressionException {
 		xt.assertExactAttribute(name, "metatype:MetaData/OCD/AD[@id='" + id + "']/@name");
 		xt.assertExactAttribute(id, "metatype:MetaData/OCD/AD[@id='" + id + "']/@id");
-		xt.assertExactAttribute(min == null ? "" : min,
-				"metatype:MetaData/OCD/AD[@id='" + id + "']/@min");
-		xt.assertExactAttribute(max == null ? "" : max,
-				"metatype:MetaData/OCD/AD[@id='" + id + "']/@max");
-		xt.assertExactAttribute(deflt == null ? "" : deflt,
- "metatype:MetaData/OCD/AD[@id='" + id + "']/@default");
+		xt.assertExactAttribute(min == null ? "" : min, "metatype:MetaData/OCD/AD[@id='" + id + "']/@min");
+		xt.assertExactAttribute(max == null ? "" : max, "metatype:MetaData/OCD/AD[@id='" + id + "']/@max");
+		xt.assertExactAttribute(deflt == null ? "" : deflt, "metatype:MetaData/OCD/AD[@id='" + id + "']/@default");
 		if (cardinality == 0) {
-			xt.assertExactAttribute("",
-					"metatype:MetaData/OCD/AD[@id='" + id + "']/@cardinality");
+			xt.assertExactAttribute("", "metatype:MetaData/OCD/AD[@id='" + id + "']/@cardinality");
 		} else {
-			xt.assertExactAttribute(cardinality + "",
-					"metatype:MetaData/OCD/AD[@id='" + id + "']/@cardinality");
+			xt.assertExactAttribute(cardinality + "", "metatype:MetaData/OCD/AD[@id='" + id + "']/@cardinality");
 		}
 		xt.assertExactAttribute(type, "metatype:MetaData/OCD/AD[@id='" + id + "']/@type");
 		xt.assertExactAttribute(description == null ? "" : description,
@@ -841,14 +840,16 @@ public class SpecMetatypeTest extends TestCase {
 		assertEquals(optionLabels == null, optionValues == null);
 		if (optionLabels != null) {
 			assertEquals(optionLabels.length, optionValues.length);
-			
-			//option count is correct
-			xt.assertNumber(Double.valueOf(optionLabels.length), "count(metatype:MetaData/OCD/AD[@id='" + id + "']/Option)");
+
+			// option count is correct
+			xt.assertNumber(Double.valueOf(optionLabels.length),
+					"count(metatype:MetaData/OCD/AD[@id='" + id + "']/Option)");
 			for (int i = 0; i < optionLabels.length; i++) {
-				String expr = "metatype:MetaData/OCD/AD[@id='" + id + "']/Option[@label='" + optionLabels[i] + "']/@value";
+				String expr = "metatype:MetaData/OCD/AD[@id='" + id + "']/Option[@label='" + optionLabels[i]
+						+ "']/@value";
 				xt.assertExactAttribute(optionValues[i], expr);
 			}
-			
+
 		}
 	}
 
@@ -1050,16 +1051,15 @@ public class SpecMetatypeTest extends TestCase {
 		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='rDoubles']/@cardinality");
 		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='rStrings']/@cardinality");
 		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='rURIs']/@cardinality");
-		
+
 	}
-	
 
 	/**
-	 * Test simple
-	 * 
-	 * @author aqute
+	 * Test simple @author aqute
 	 */
-	@ObjectClassDefinition(description = "simple", name = "TestSimple", pid={"simplePid"})
+	@ObjectClassDefinition(description = "simple", name = "TestSimple", pid = {
+			"simplePid"
+	})
 	public static interface TestSimple {
 		@AttributeDefinition
 		String simple();
@@ -1068,7 +1068,9 @@ public class SpecMetatypeTest extends TestCase {
 
 		Collection<String> stringCollection();
 
-		@AttributeDefinition(defaultValue = {"true"}, required=false)
+		@AttributeDefinition(defaultValue = {
+				"true"
+		}, required = false)
 		boolean enabled();
 	}
 
@@ -1096,7 +1098,8 @@ public class SpecMetatypeTest extends TestCase {
 		xt.assertExactAttribute("simple", "metatype:MetaData/OCD/@description");
 		xt.assertExactAttribute("test.metatype.SpecMetatypeTest$TestSimple", "metatype:MetaData/OCD/@id");
 		xt.assertExactAttribute("simplePid", "metatype:MetaData/Designate/@pid");
-		xt.assertExactAttribute("test.metatype.SpecMetatypeTest$TestSimple", "metatype:MetaData/Designate/Object/@ocdref");
+		xt.assertExactAttribute("test.metatype.SpecMetatypeTest$TestSimple",
+				"metatype:MetaData/Designate/Object/@ocdref");
 		xt.assertExactAttribute("simple", "metatype:MetaData/OCD/AD[@id='simple']/@id");
 		xt.assertExactAttribute("Simple", "metatype:MetaData/OCD/AD[@id='simple']/@name");
 		xt.assertExactAttribute("String", "metatype:MetaData/OCD/AD[@id='simple']/@type");
@@ -1104,27 +1107,44 @@ public class SpecMetatypeTest extends TestCase {
 		xt.assertExactAttribute("true", "metatype:MetaData/OCD/AD[@id='enabled']/@default");
 		xt.assertExactAttribute(Integer.MAX_VALUE + "", "metatype:MetaData/OCD/AD[@id='notSoSimple']/@cardinality");
 	}
-	
+
 	@ObjectClassDefinition
 	public static @interface AnnotationDefaults {
 		int integer() default 1;
-		int[] integers() default {2,3};
-		
+
+		int[]integers() default {
+				2, 3
+		};
+
 		boolean bool() default true;
-		boolean[] bools() default {true, false};
-		
-		Class<?> clazz() default String.class;
-		Class<?>[] clazzs() default {Integer.class, Double.class};
-		
-		enum L {A, B, C}
-		
+
+		boolean[]bools() default {
+				true, false
+		};
+
+		Class< ? >clazz() default String.class;
+
+		Class< ? >[]clazzs() default {
+				Integer.class, Double.class
+		};
+
+		enum L {
+			A, B, C
+		}
+
 		L l() default L.A;
-		L[] ls() default{L.B, L.C};
-		
+
+		L[]ls() default {
+				L.B, L.C
+		};
+
 		String string() default "foo";
-		String[] strings() default {"bar", "baz"};
+
+		String[]strings() default {
+				"bar", "baz"
+		};
 	}
-	
+
 	public void testAnnotationDefaults() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
@@ -1143,26 +1163,27 @@ public class SpecMetatypeTest extends TestCase {
 		XmlTester xt = xmlTester13(r);
 		xt.assertExactAttribute("1", "metatype:MetaData/OCD/AD[@id='integer']/@default");
 		xt.assertExactAttribute("2,3", "metatype:MetaData/OCD/AD[@id='integers']/@default");
-		
+
 		xt.assertExactAttribute("true", "metatype:MetaData/OCD/AD[@id='bool']/@default");
 		xt.assertExactAttribute("true,false", "metatype:MetaData/OCD/AD[@id='bools']/@default");
-		
+
 		xt.assertExactAttribute(String.class.getName(), "metatype:MetaData/OCD/AD[@id='clazz']/@default");
-		xt.assertExactAttribute(Integer.class.getName() + "," + Double.class.getName(), "metatype:MetaData/OCD/AD[@id='clazzs']/@default");
-		
+		xt.assertExactAttribute(Integer.class.getName() + "," + Double.class.getName(),
+				"metatype:MetaData/OCD/AD[@id='clazzs']/@default");
+
 		xt.assertExactAttribute("A", "metatype:MetaData/OCD/AD[@id='l']/@default");
 		xt.assertExactAttribute("B,C", "metatype:MetaData/OCD/AD[@id='ls']/@default");
-		
+
 		xt.assertExactAttribute("foo", "metatype:MetaData/OCD/AD[@id='string']/@default");
 		xt.assertExactAttribute("bar,baz", "metatype:MetaData/OCD/AD[@id='strings']/@default");
-		
+
 	}
-	
+
 	@ObjectClassDefinition
 	public static abstract class Abstract {
-		
+
 	}
-	
+
 	public void testAbstract() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
@@ -1173,17 +1194,17 @@ public class SpecMetatypeTest extends TestCase {
 		assertEquals(1, b.getErrors().size());
 		assertNull(r);
 	}
-	
+
 	@ObjectClassDefinition
 	public static @interface NestedInner {
-		
+
 	}
-	
+
 	@ObjectClassDefinition
 	public static @interface NestedOuter {
 		NestedInner inner();
 	}
-	
+
 	public void testNested() throws Exception {
 		{
 			Builder b = new Builder();
@@ -1215,14 +1236,13 @@ public class SpecMetatypeTest extends TestCase {
 		}
 	}
 
-
 	@ObjectClassDefinition
 	public static @interface DesignateOCD {
-		
+
 	}
-	
-	@Component(configurationPid="simplePid")
-	@Designate(ocd = DesignateOCD.class, factory=true)
+
+	@Component(configurationPid = "simplePid")
+	@Designate(ocd = DesignateOCD.class, factory = true)
 	public static class DesignateComponent {}
 
 	@Component(name = "simplePidName")
@@ -1236,7 +1256,7 @@ public class SpecMetatypeTest extends TestCase {
 	@Component(configurationPid = "$")
 	@Designate(ocd = DesignateOCD.class, factory = true)
 	public static class DesignateComponent4 {}
-	
+
 	public void testDesignate() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
@@ -1284,9 +1304,9 @@ public class SpecMetatypeTest extends TestCase {
 
 		Foo fooAttr();
 
-		String[] stringArrayAttr();
+		String[]stringArrayAttr();
 
-		int[] intArrayAttr();
+		int[]intArrayAttr();
 	}
 
 	@XMLAttribute(namespace = "org.foo.extensions.v1", prefix = "foo", embedIn = "*")
@@ -1299,7 +1319,7 @@ public class SpecMetatypeTest extends TestCase {
 
 		Foo fooAttr2();
 
-		Class< ? > classAttr2() default Object.class;
+		Class< ? >classAttr2() default Object.class;
 
 	}
 
@@ -1320,7 +1340,7 @@ public class SpecMetatypeTest extends TestCase {
 
 		@ADTestExtensions(stringAttr2 = "ad2", fooAttr2 = Foo.A)
 		@AttributeDefinition(defaultValue = {
-			"true"
+				"true"
 		}, required = false)
 		boolean enabled();
 	}
@@ -1380,7 +1400,7 @@ public class SpecMetatypeTest extends TestCase {
 		@AttributeDefinition(defaultValue = {
 				" , \\", "a,b", "c,d", "'apostrophe'", "\"quote\"&amp;"
 		})
-		String[] escapes();
+		String[]escapes();
 	}
 
 	public void testEscapes() throws Exception {

@@ -10,7 +10,7 @@ import static aQute.bnd.deployer.repository.RepoResourceUtils.*;
 
 public class VersionedResourceIndex {
 
-	private final Map<String,SortedMap<Version,Resource>>	map	= new HashMap<String,SortedMap<Version,Resource>>();
+	private final Map<String,SortedMap<Version,Resource>> map = new HashMap<String,SortedMap<Version,Resource>>();
 
 	public synchronized void clear() {
 		map.clear();
@@ -88,6 +88,5 @@ public class VersionedResourceIndex {
 
 		return 0;
 	}
-
 
 }

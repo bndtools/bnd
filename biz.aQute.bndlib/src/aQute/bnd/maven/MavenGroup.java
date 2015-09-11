@@ -6,7 +6,7 @@ import aQute.bnd.service.*;
 import aQute.service.reporter.*;
 
 public class MavenGroup implements BsnToMavenPath, Plugin {
-	String	groupId	= "";
+	String groupId = "";
 
 	public String[] getGroupAndArtifact(String bsn) {
 		String[] result = new String[2];

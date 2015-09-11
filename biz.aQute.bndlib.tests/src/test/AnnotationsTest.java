@@ -16,8 +16,9 @@ import aQute.lib.io.*;
 
 public class AnnotationsTest extends TestCase {
 
-	@Component(name = "mycomp", enabled = true, factory = "abc", immediate = false, provide = LogService.class, servicefactory = true,
-			properties = {" aprop = a prop ", "    aprop2    =    really dumb value   ! "})
+	@Component(name = "mycomp", enabled = true, factory = "abc", immediate = false, provide = LogService.class, servicefactory = true, properties = {
+			" aprop = a prop ", "    aprop2    =    really dumb value   ! "
+	})
 	static class MyComponent implements Serializable {
 		private static final long	serialVersionUID	= 1L;
 		LogService					log;
@@ -109,7 +110,7 @@ public class AnnotationsTest extends TestCase {
 
 @Component
 class Target implements Serializable {
-	private static final long	serialVersionUID	= 1L;
+	private static final long serialVersionUID = 1L;
 
 	@Activate
 	void activate() {

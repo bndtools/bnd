@@ -18,6 +18,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
 import junit.framework.TestCase;
+
 @SuppressWarnings("resource")
 
 public class JarTest extends TestCase {
@@ -62,8 +63,8 @@ public class JarTest extends TestCase {
 		jar.setManifest(new Manifest());
 		jar.setDoNotTouchManifest();
 		jar.putResource("a/b", new FileResource(IO.getFile("testresources/bnd.jar")));
-		jar.putResource("META-INF/MANIFEST.MF", new EmbeddedResource("Manifest-Version: 1\r\nX: 1\r\n\r\n".getBytes(),
-				0));
+		jar.putResource("META-INF/MANIFEST.MF",
+				new EmbeddedResource("Manifest-Version: 1\r\nX: 1\r\n\r\n".getBytes(), 0));
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		jar.write(bout);
@@ -74,7 +75,7 @@ public class JarTest extends TestCase {
 		assertEquals("1", m.getMainAttributes().getValue("X"));
 		jin.close();
 	}
-	
+
 	public static void testRenameManifest() throws Exception {
 		Jar jar = new Jar("dot");
 		Manifest manifest = new Manifest();
@@ -89,7 +90,7 @@ public class JarTest extends TestCase {
 		ZipEntry firstEntry = zin.getNextEntry();
 		assertEquals("META-INF/FESTYMAN.MF", firstEntry.getName());
 		manifest = new Manifest(zin);
-		
+
 		assertEquals("1", manifest.getMainAttributes().getValue("X"));
 		zin.close();
 	}
@@ -122,7 +123,7 @@ public class JarTest extends TestCase {
 		Manifest manifest = new Manifest();
 		jar.setManifest(manifest);
 
-		String value =         "Test\nTest\nTest\nTest";
+		String value = "Test\nTest\nTest\nTest";
 		String expectedValue = "Test Test Test Test";
 
 		manifest.getMainAttributes().putValue(Constants.BUNDLE_DESCRIPTION, value);

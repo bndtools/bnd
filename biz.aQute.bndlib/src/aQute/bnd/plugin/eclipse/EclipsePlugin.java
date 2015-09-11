@@ -12,7 +12,7 @@ import aQute.lib.io.*;
  * created. You can either store a template under cnf/ant/project.xml or a
  * default is taken.
  */
-@BndPlugin(name="eclipse")
+@BndPlugin(name = "eclipse")
 public class EclipsePlugin extends LifeCyclePlugin {
 	@Override
 	public void created(Project p) throws IOException {
@@ -24,7 +24,7 @@ public class EclipsePlugin extends LifeCyclePlugin {
 
 	private void copy(String source, String dest, Project p) throws IOException {
 		File d = p.getFile(dest);
-		if ( d.isFile()) {
+		if (d.isFile()) {
 			return;
 		}
 
@@ -43,26 +43,25 @@ public class EclipsePlugin extends LifeCyclePlugin {
 
 		String s = IO.collect(in);
 		String process = p.getReplacer().process(s);
-		
+
 		d.getParentFile().mkdirs();
-		IO.store( process, d);
+		IO.store(process, d);
 	}
-	
+
 	@Override
 	public String toString() {
 		return "EclipsePlugin";
 	}
 
-	@Override 
+	@Override
 	public void init(Workspace ws) throws Exception {
-		
-		Project p = new Project(ws,ws.getFile("cnf"));
+
+		Project p = new Project(ws, ws.getFile("cnf"));
 		created(p);
-		
-		for ( Project pp : ws.getAllProjects()) {
+
+		for (Project pp : ws.getAllProjects()) {
 			created(pp);
 		}
 	}
-	
 
 }

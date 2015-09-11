@@ -111,11 +111,8 @@ class MacOS extends Unix {
 	}
 
 	/**
-	 * Return the VMs on the platform.
-	 * 
-	 * @throws SAXException
-	 * @throws IOException
-	 * @throws ParserConfigurationException
+	 * Return the VMs on the platform. @throws SAXException @throws
+	 * IOException @throws ParserConfigurationException
 	 */
 	@Override
 	public void getVMs(Collection<JVM> vms) throws Exception {
@@ -151,11 +148,11 @@ class MacOS extends Unix {
 
 		File home = new File(contents, "Home");
 		String error = verifyVM(home);
-		if ( error != null ) {
+		if (error != null) {
 			reporter.error("Invalid vm directory for MacOS %s: %s", vmdir, error);
 			return null;
 		}
-		
+
 		DocumentBuilder db = dbf.newDocumentBuilder();
 		try {
 			Document doc = db.parse(plist);
@@ -164,8 +161,8 @@ class MacOS extends Unix {
 			Node platformVersionNode = (Node) xp.evaluate("//dict/key[text()='JVMPlatformVersion']", doc,
 					XPathConstants.NODE);
 			Node vendorNode = (Node) xp.evaluate("//dict/key[text()='JVMVendor']", doc, XPathConstants.NODE);
-			Node capabilitiesNode = (Node) xp
-					.evaluate("//dict/key[text()='JVMCapabilities']", doc, XPathConstants.NODE);
+			Node capabilitiesNode = (Node) xp.evaluate("//dict/key[text()='JVMCapabilities']", doc,
+					XPathConstants.NODE);
 
 			JVM jvm = new JVM();
 			jvm.name = vmdir.getName();

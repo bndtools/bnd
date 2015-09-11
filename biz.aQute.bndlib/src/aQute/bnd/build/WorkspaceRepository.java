@@ -23,7 +23,7 @@ import aQute.lib.collections.SortedList;
 import aQute.libg.glob.Glob;
 
 public class WorkspaceRepository implements RepositoryPlugin, Actionable {
-	private final Workspace	workspace;
+	private final Workspace workspace;
 
 	public WorkspaceRepository(Workspace workspace) {
 		this.workspace = workspace;
@@ -33,7 +33,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		Collection<Project> projects = workspace.getAllProjects();
 		SortedMap<Version,File> foundVersion = new TreeMap<Version,File>();
 		for (Project project : projects) {
-			Map<String, Version> versions = project.getVersions();
+			Map<String,Version> versions = project.getVersions();
 			if (!versions.containsKey(bsn)) {
 				continue;
 			}
@@ -63,7 +63,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		}
 		if (result.length > 0) {
 			return new File[] {
-				result[0]
+					result[0]
 			};
 		}
 		return new File[0];
@@ -140,7 +140,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		List<Version> versions = new ArrayList<Version>();
 		Collection<Project> projects = workspace.getAllProjects();
 		for (Project project : projects) {
-			Map<String, Version> projectVersions = project.getVersions();
+			Map<String,Version> projectVersions = project.getVersions();
 			if (!projectVersions.containsKey(bsn)) {
 				continue;
 			}

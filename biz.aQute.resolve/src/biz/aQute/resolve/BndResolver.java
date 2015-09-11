@@ -12,7 +12,7 @@ import org.osgi.service.resolver.Resolver;
 
 public class BndResolver implements Resolver {
 
-	private final Resolver	resolver;
+	private final Resolver resolver;
 
 	public BndResolver(ResolverLogger logger) {
 		resolver = new ResolverImpl(new InternalResolverLogger(logger));
