@@ -1,49 +1,77 @@
 package aQute.bnd.build;
 
-import java.io.*;
-import java.lang.ref.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.ref.WeakReference;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Formatter;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.*;
-import java.util.concurrent.locks.*;
-import java.util.jar.*;
-import java.util.regex.*;
+import java.util.Properties;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import javax.naming.*;
+import javax.naming.TimeLimitExceededException;
 
-import aQute.bnd.annotation.plugin.*;
-import aQute.bnd.exporter.subsystem.*;
-import aQute.bnd.header.*;
-import aQute.bnd.maven.support.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.resource.repository.*;
-import aQute.bnd.service.*;
-import aQute.bnd.service.action.*;
-import aQute.bnd.service.extension.*;
-import aQute.bnd.service.lifecycle.*;
-import aQute.bnd.service.repository.*;
+import aQute.bnd.annotation.plugin.BndPlugin;
+import aQute.bnd.exporter.subsystem.SubsystemExporter;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.maven.support.Maven;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Macro;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Verifier;
+import aQute.bnd.resource.repository.ResourceRepositoryImpl;
+import aQute.bnd.service.BndListener;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.action.Action;
+import aQute.bnd.service.extension.ExtensionActivator;
+import aQute.bnd.service.lifecycle.LifeCyclePlugin;
+import aQute.bnd.service.repository.RepositoryDigest;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
-import aQute.bnd.url.*;
-import aQute.bnd.version.*;
-import aQute.lib.deployer.*;
-import aQute.lib.hex.*;
-import aQute.lib.io.*;
-import aQute.lib.settings.*;
-import aQute.lib.strings.*;
-import aQute.lib.utf8properties.*;
-import aQute.lib.zip.*;
-import aQute.service.reporter.*;
+import aQute.bnd.url.MultiURLConnectionHandler;
+import aQute.bnd.version.Version;
+import aQute.bnd.version.VersionRange;
+import aQute.lib.deployer.FileRepo;
+import aQute.lib.hex.Hex;
+import aQute.lib.io.IO;
+import aQute.lib.io.IOConstants;
+import aQute.lib.settings.Settings;
+import aQute.lib.strings.Strings;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.lib.zip.ZipUtil;
+import aQute.service.reporter.Reporter;
 
 public class Workspace extends Processor {
-	public static final String					EXT				= "ext";
+	public static final String EXT = "ext";
 
-	static final int							BUFFER_SIZE		= IOConstants.PAGE_SIZE * 16;
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
 
-	public static final String					BUILDFILE		= "build.bnd";
-	public static final String					CNFDIR			= "cnf";
-	public static final String					BNDDIR			= "bnd";
-	public static final String					CACHEDIR		= "cache";
+	public static final String	BUILDFILE	= "build.bnd";
+	public static final String	CNFDIR		= "cnf";
+	public static final String	BNDDIR		= "bnd";
+	public static final String	CACHEDIR	= "cache";
 
 	static Map<File,WeakReference<Workspace>>	cache			= newHashMap();
 	static Processor							defaults		= null;
@@ -62,9 +90,9 @@ public class Workspace extends Processor {
 	final ThreadLocal<Reporter>					signalBusy		= new ThreadLocal<Reporter>();
 	ResourceRepositoryImpl						resourceRepositoryImpl;
 
-	private Parameters							gestalt;
+	private Parameters gestalt;
 
-	private String								driver;
+	private String driver;
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -205,6 +233,11 @@ public class Workspace extends Processor {
 
 	}
 
+	Workspace() {
+		this.buildDir = IO.getFile("~/.bnd/default-ws");
+		this.buildDir.mkdirs();
+	}
+
 	public Project getProject(String bsn) throws Exception {
 		synchronized (models) {
 			Project project = models.get(bsn);
@@ -224,11 +257,11 @@ public class Workspace extends Processor {
 	void removeProject(Project p) throws Exception {
 		if (p.isCnf())
 			return;
-		
+
 		synchronized (models) {
 			models.remove(p.getName());
 		}
-		for ( LifeCyclePlugin lp : getPlugins(LifeCyclePlugin.class)) {
+		for (LifeCyclePlugin lp : getPlugins(LifeCyclePlugin.class)) {
 			lp.delete(p);
 		}
 	}
@@ -554,8 +587,8 @@ public class Workspace extends Processor {
 				continue;
 			}
 			try {
-				SortedSet<ResourceDescriptor> matches = resourceRepositoryImpl.find(null, bsn, new VersionRange(
-						stringRange));
+				SortedSet<ResourceDescriptor> matches = resourceRepositoryImpl.find(null, bsn,
+						new VersionRange(stringRange));
 				if (matches.isEmpty()) {
 					error("Extension %s;version=%s not found in base repo", bsn, stringRange);
 					continue;
@@ -582,7 +615,7 @@ public class Workspace extends Processor {
 
 				@SuppressWarnings("resource")
 				URLClassLoader cl = new URLClassLoader(new URL[] {
-					blocker.getKey().getFile().toURI().toURL()
+						blocker.getKey().getFile().toURI().toURL()
 				}, getClass().getClassLoader());
 				Enumeration<URL> manifests = cl.getResources("META-INF/MANIFEST.MF");
 				while (manifests.hasMoreElements()) {
@@ -904,7 +937,7 @@ public class Workspace extends Processor {
 	 */
 
 	public Project createProject(String name) throws Exception {
-		
+
 		if (!Verifier.SYMBOLICNAME.matcher(name).matches()) {
 			error("A project name is a Bundle Symbolic Name, this must therefore consist of only letters, digits and dots");
 			return null;
@@ -979,10 +1012,10 @@ public class Workspace extends Processor {
 			}
 		}
 
-		if ( !Verifier.isBsn(alias)) {
+		if (!Verifier.isBsn(alias)) {
 			error("Not a valid plugin name %s", alias);
 		}
-			
+
 		File ext = getFile(Workspace.CNFDIR + "/" + Workspace.EXT);
 		ext.mkdirs();
 
@@ -1010,9 +1043,9 @@ public class Workspace extends Processor {
 				setup.format("; \\\n \t%s = '%s'", e.getKey(), escaped(e.getValue()));
 			}
 			setup.format("\n\n");
-			
+
 			String out = setup.toString();
-			if ( l instanceof LifeCyclePlugin ) {
+			if (l instanceof LifeCyclePlugin) {
 				out = ((LifeCyclePlugin) l).augmentSetup(out, alias, parameters);
 				((LifeCyclePlugin) l).init(this);
 			}
@@ -1025,35 +1058,61 @@ public class Workspace extends Processor {
 		}
 
 		refresh();
-		
-		for ( LifeCyclePlugin lp : getPlugins(LifeCyclePlugin.class)) {
+
+		for (LifeCyclePlugin lp : getPlugins(LifeCyclePlugin.class)) {
 			lp.addedPlugin(this, plugin.getName(), alias, parameters);
 		}
 		return true;
 	}
 
 	static Pattern ESCAPE_P = Pattern.compile("(\"|')(.*)\1");
+
 	private Object escaped(String value) {
 		Matcher matcher = ESCAPE_P.matcher(value);
-		if ( matcher.matches())
+		if (matcher.matches())
 			value = matcher.group(2);
-		
+
 		return value.replaceAll("'", "\\'");
 	}
 
 	public boolean removePlugin(String alias) {
 		File ext = getFile(Workspace.CNFDIR + "/" + Workspace.EXT);
 		File f = new File(ext, alias + ".bnd");
-		if ( !f.exists()) {
+		if (!f.exists()) {
 			error("No such plugin %s", alias);
 			return false;
 		}
-		
+
 		IO.delete(f);
-		
-		refresh();	
+
+		refresh();
 		return true;
 	}
 
+	/**
+	 * Create a workspace that does not inherit from a cnf directory etc.
+	 * 
+	 * @param run
+	 * @return
+	 */
+	public static Workspace createStandaloneWorkspace(Properties run) {
+		Workspace ws = new Workspace();
+
+		Parameters standalone = new Parameters(run.getProperty("-standalone"));
+		int n = 1;
+
+		for (Map.Entry<String,Attrs> e : standalone.entrySet()) {
+			try (Formatter f = new Formatter();) {
+				f.format("aQute.bnd.deployer.repository.FixedIndexedRepo; name=_%s; locations='%s'", n, e.getKey());
+				for (Map.Entry<String,String> a : e.getValue().entrySet()) {
+					f.format(";%s='%s'", e.getKey(), e.getValue());
+				}
+				f.format("\n");
+				ws.setProperty("-plugin._" + n, f.toString());
+			}
+		}
+
+		return ws;
+	}
 
 }

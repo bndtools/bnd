@@ -124,11 +124,13 @@ public class Project extends Processor {
 	final Packages				containedPackages		= new Packages();
 	final PackageInfo			packageInfo				= new PackageInfo(this);
 
-	public Project(Workspace workspace, File projectDir, File buildFile) throws Exception {
+	public Project(Workspace workspace, File unused, File buildFile) throws Exception {
 		super(workspace);
 		this.workspace = workspace;
 		setFileMustExist(false);
-		setProperties(buildFile);
+		if (buildFile != null)
+			setProperties(buildFile);
+
 		assert workspace != null;
 		// For backward compatibility reasons, we also read
 		readBuildProperties();
