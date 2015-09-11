@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.util.filter.ScopeDependencyFilter;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
@@ -53,6 +55,9 @@ public class IndexerMojo extends AbstractMojo {
 
     @Parameter( property = "bnd.indexer.allowLocal", defaultValue = "false", readonly = true )
     private boolean allowLocal;
+
+    @Parameter( property = "bnd.indexer.scopes", readonly = true, required=false )
+    private List<String> scopes;
     
     @Component
     private RepositorySystem system;
@@ -62,8 +67,14 @@ public class IndexerMojo extends AbstractMojo {
 
     public void execute() throws MojoExecutionException, MojoFailureException {
 
+    	if(scopes == null || scopes.isEmpty()) {
+    		scopes = Arrays.asList("compile", "runtime");
+    	}
+    	
         DependencyResolutionRequest request = new DefaultDependencyResolutionRequest(project, session);
 
+        request.setResolutionFilter(new ScopeDependencyFilter(scopes, null));
+        
         DependencyResolutionResult result;
         try {
             result = resolver.resolve(request);
