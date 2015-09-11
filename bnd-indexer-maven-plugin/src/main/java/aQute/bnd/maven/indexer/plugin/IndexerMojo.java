@@ -1,4 +1,4 @@
-package com.paremus.osgi.maven.indexer;
+package aQute.bnd.maven.indexer.plugin;
 
 import java.io.BufferedReader;
 import java.io.File;
