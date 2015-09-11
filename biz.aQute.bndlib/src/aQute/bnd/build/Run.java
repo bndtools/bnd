@@ -62,7 +62,7 @@ public class Run extends Project {
 	}
 
 	public Run(Workspace workspace, File propertiesFile) throws Exception {
-		super(workspace, propertiesFile.getParentFile(), propertiesFile);
+		super(workspace, propertiesFile == null ? null : propertiesFile.getParentFile(), propertiesFile);
 	}
 
 	public void report(Map<String,Object> table) throws Exception {
