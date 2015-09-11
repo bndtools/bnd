@@ -1,24 +1,15 @@
 package aQute.bnd.maven.indexer.plugin;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.maven.RepositoryUtils;
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -35,6 +26,9 @@ import org.apache.maven.project.ProjectDependenciesResolver;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.graph.DependencyNode;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.ArtifactResult;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
@@ -54,20 +48,19 @@ public class IndexerMojo extends AbstractMojo {
     @Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
     private RepositorySystemSession session;
 
+    @Parameter(defaultValue = "${project.build.directory}", readonly = true)
+	private File targetDir;
+
+    @Parameter( property = "bnd.indexer.allowLocal", defaultValue = "false", readonly = true )
+    private boolean allowLocal;
+    
     @Component
     private RepositorySystem system;
 
     @Component
-    ProjectDependenciesResolver resolver;
+    private ProjectDependenciesResolver resolver;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
-        System.out.println(resolver.getClass());
-        System.out.println("project.getRemoteArtifactRepositories()");
-        System.out.println(project.getRemoteArtifactRepositories());
-        System.out.println("project.getRemoteProjectRepositories()");
-        System.out.println(project.getRemoteProjectRepositories());
-        System.out.println("project.getRepositories()");
-        System.out.println(project.getRepositories());
 
         DependencyResolutionRequest request = new DefaultDependencyResolutionRequest(project, session);
 
@@ -78,11 +71,16 @@ public class IndexerMojo extends AbstractMojo {
             throw new MojoExecutionException(e.getMessage(), e);
         }
 
-        Set<Artifact> artifacts = new LinkedHashSet<Artifact>();
+        Map<File, ArtifactResult> dependencies = new HashMap<>();
+        
         if (result.getDependencyGraph() != null && !result.getDependencyGraph().getChildren().isEmpty()) {
-            dumpArtifacts(result.getDependencyGraph().getChildren());
-            RepositoryUtils.toArtifacts(artifacts, result.getDependencyGraph().getChildren(),
-                    Collections.singletonList(project.getArtifact().getId()), null);
+            discoverArtifacts(dependencies, result.getDependencyGraph().getChildren(), project.getArtifact().getId());
+        }
+
+        Map<String, ArtifactRepository> repositories = new HashMap<>();
+       
+        for (ArtifactRepository artifactRepository : project.getRemoteArtifactRepositories()) {
+        	repositories.put(artifactRepository.getId(), artifactRepository);
         }
 
         RepoIndex indexer = new RepoIndex();
@@ -93,86 +91,71 @@ public class IndexerMojo extends AbstractMojo {
             throw new MojoExecutionException(e.getMessage(), e);
         }
         indexer.addAnalyzer(new KnownBundleAnalyzer(), filter);
-        URLResolver resolver = new MavenURLResolver();
+        
+        URLResolver resolver = new MavenURLResolver(dependencies, repositories);
         indexer.setURLResolver(resolver);
+        
         Map<String, String> config = new HashMap<String, String>();
         config.put(ResourceIndexer.PRETTY, "true");
-        Set<File> inputs = new HashSet<File>();
-        File outputPath = project.getBasedir();
-        for (Artifact artifact : artifacts) {
-            try {
-                List<String> downloadedRepositories = parseRemoteRepositores(artifact.getFile());
-                System.out.println("found jar file " + artifact.getFile().getName() + " in " + downloadedRepositories);
-                constructRemoteUrls(artifact, downloadedRepositories, project.getRemoteArtifactRepositories());
-            } catch (IOException e) {
-                throw new MojoExecutionException(e.getMessage(), e);
-            }
-            inputs.add(artifact.getFile());
-        }
-//        for (Artifact artifact : artifacts) {
-//            for (ArtifactRepository testRepo : project.getRemoteArtifactRepositories()) {
-//                System.out.println("testing " + artifact.getId() + " against " + testRepo.getId());
-//                System.out.println("-->" + artifact.getRepository());
-//            };
-//        }
 
         OutputStream output;
         try {
-            output = new FileOutputStream(new File(outputPath, "index.xml"));
+        	targetDir.mkdirs();
+            output = new FileOutputStream(new File(targetDir, "index.xml"));
         } catch (FileNotFoundException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
 
         try {
-            indexer.index(inputs, output, config);
+            indexer.index(dependencies.keySet(), output, config);
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
-
     }
 
-    private List<String> parseRemoteRepositores(File file) throws IOException {
-        List<String > repositories = new ArrayList<String>();
-        File path = file.getParentFile();
-        String name = file.getName();
-        File metadata = new File(path, "_remote.repositories");
-        if (!metadata.exists()) {
-            metadata = new File(path, "_maven.repositories");
-        }
-        if (metadata.exists()) {
-            String line;
-            try(BufferedReader reader = new BufferedReader(new FileReader(metadata))) {
-	            while ((line = reader.readLine()) != null) {
-	                if (line.startsWith("#")) continue;
-	                if (line.contains(name)) {
-	                    String repository = line.substring(line.indexOf(">") + 1, line.indexOf("="));
-	                    repositories.add(repository);
-	                }
-	            }
-            }
-        }
-        return repositories;
-    }
-    private void constructRemoteUrls(Artifact artifact, List<String> downloadedRepositories, List<ArtifactRepository> remoteArtifactRepositories) {
-        for (ArtifactRepository artifactRepository : remoteArtifactRepositories) {
-            System.out.println("testing " + artifactRepository.getId());
-            if (downloadedRepositories.contains(artifactRepository.getId())) {
-                System.out.println(artifactRepository.getUrl() + "/" + artifactRepository.getLayout().pathOf(artifact));
-            }
-        }
-    }
+    class MavenURLResolver implements URLResolver {
 
-    static class MavenURLResolver implements URLResolver {
+        private final Map<File, ArtifactResult> dependencies;
+		private final Map<String, ArtifactRepository> repositories;
 
-        public URI resolver(File file) throws Exception {
-            return file.toURI();
+		public MavenURLResolver(Map<File, ArtifactResult> dependencies, Map<String, ArtifactRepository> repositories) {
+			this.dependencies = dependencies;
+			this.repositories = repositories;
+        }
+
+		public URI resolver(File file) throws Exception {
+			ArtifactResult artifact = dependencies.get(file);
+			if(artifact == null) {
+				throw new FileNotFoundException("The file " + file.getCanonicalPath() + " is not known to this resolver");
+			}
+			
+			ArtifactRepository repo = repositories.get(artifact.getRepository().getId());
+			if(repo == null) {
+				if(allowLocal) {
+					getLog().info("The Artifact " + artifact.getArtifact().toString() + 
+							" could not be found in any repository, returning the local location");
+					return file.toURI();
+				}
+				throw new FileNotFoundException("The repository " + artifact.getRepository().getId() + " is not known to this resolver");
+			}
+			
+			return URI.create(repo.getUrl() + "/" + 
+					repo.getLayout().pathOf(RepositoryUtils.toArtifact(artifact.getArtifact())));
         }
     }
 
-    private static void dumpArtifacts(List<DependencyNode> nodes) {
+    private void discoverArtifacts(Map<File, ArtifactResult> files, List<DependencyNode> nodes, String parent) throws MojoExecutionException {
         for ( DependencyNode node : nodes) {
-            System.out.println(node.getArtifact().getArtifactId() + " repo " + node.getRepositories());
-            dumpArtifacts(node.getChildren());
+            //Ensure that the file is downloaded so we can index it
+            try {
+				ArtifactResult resolvedArtifact = system.resolveArtifact(session, new ArtifactRequest(node.getArtifact(), 
+						project.getRemoteProjectRepositories(), parent));
+				files.put(resolvedArtifact.getArtifact().getFile(), resolvedArtifact);
+			} catch (ArtifactResolutionException e) {
+				throw new MojoExecutionException("Failed to resolve the dependency " + node.getArtifact().toString(), e);
+			}
+            
+            discoverArtifacts(files, node.getChildren(), node.getRequestContext());
         }
     }
 
