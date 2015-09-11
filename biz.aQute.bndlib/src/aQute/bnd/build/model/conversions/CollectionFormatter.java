@@ -27,26 +27,20 @@ public class CollectionFormatter<T> implements Converter<String,Collection< ? ex
 		this(separator, itemFormatter, emptyOutput, false, "\\\n\t", "");
 	}
 
-	public CollectionFormatter(String separator, Converter<String, ? super T> itemFormatter, String emptyOutput, String prefix, String suffix) {
+	public CollectionFormatter(String separator, Converter<String, ? super T> itemFormatter, String emptyOutput,
+			String prefix, String suffix) {
 		this(separator, itemFormatter, emptyOutput, false, prefix, suffix);
 	}
 
 	/**
-	 * @param separator
-	 *            Separator between items
-	 * @param itemFormatter
-	 *            Formatter for each item
-	 * @param emptyOutput
-	 *            Output to produce for empty inputs
-	 * @param leadingSpace
-	 *            Whether to lead with a space before the first item
-	 * @param prefix
-	 *            Prefix for the first item in lists containing more than one
-	 *            items.
-	 * @param suffix
-	 *            Suffix to add at the end of the list
+	 * @param separator Separator between items @param itemFormatter Formatter
+	 * for each item @param emptyOutput Output to produce for empty
+	 * inputs @param leadingSpace Whether to lead with a space before the first
+	 * item @param prefix Prefix for the first item in lists containing more
+	 * than one items. @param suffix Suffix to add at the end of the list
 	 */
-	public CollectionFormatter(String separator, Converter<String, ? super T> itemFormatter, String emptyOutput, boolean leadingSpace, String prefix, String suffix) {
+	public CollectionFormatter(String separator, Converter<String, ? super T> itemFormatter, String emptyOutput,
+			boolean leadingSpace, String prefix, String suffix) {
 		this.separator = separator;
 		this.itemFormatter = itemFormatter;
 		this.emptyOutput = emptyOutput;
@@ -69,7 +63,7 @@ public class CollectionFormatter<T> implements Converter<String,Collection< ? ex
 					T item = input.iterator().next();
 					buffer.append(itemFormatter.convert(item));
 				} else {
-					String del  = initial == null ? "" : initial;
+					String del = initial == null ? "" : initial;
 					for (T item : input) {
 						buffer.append(del);
 						buffer.append(itemFormatter.convert(item));
@@ -77,7 +71,7 @@ public class CollectionFormatter<T> implements Converter<String,Collection< ? ex
 					}
 				}
 
-				if ( suffix != null)
+				if (suffix != null)
 					buffer.append(suffix);
 				result = buffer.toString();
 			}

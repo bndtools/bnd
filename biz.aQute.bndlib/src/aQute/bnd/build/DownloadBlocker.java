@@ -7,8 +7,8 @@ import aQute.service.reporter.*;
 
 /**
  * This class is intended to be used by the users of a {@link RepositoryPlugin}.
- * The
- * {@link RepositoryPlugin#get(String, aQute.bnd.version.Version, java.util.Map, aQute.bnd.service.RepositoryPlugin.DownloadListener...)}
+ * The {@link RepositoryPlugin#get(String, aQute.bnd.version.Version,
+ * java.util.Map, aQute.bnd.service.RepositoryPlugin.DownloadListener...)}
  * method takes one or more Download Listeners. These are called back with the
  * success or failure of a download. This class is a simple implementation of
  * this model, just call {@link #getReason()} and it blocks until success or
@@ -77,9 +77,7 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	/**
 	 * Return a failure reason or null. This method will block until either
 	 * {@link #success(File)} or {@link #failure(File, String)} has been called.
-	 * It can be called many times.
-	 * 
-	 * @return null or a reason for a failure
+	 * It can be called many times. @return null or a reason for a failure
 	 */
 	public synchronized String getReason() {
 		try {
@@ -94,9 +92,7 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	}
 
 	/**
-	 * Return the stage we're in
-	 * 
-	 * @return the current stage
+	 * Return the stage we're in @return the current stage
 	 */
 	public Stage getStage() {
 		return stage;

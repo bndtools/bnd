@@ -73,7 +73,7 @@ public class Main extends ReporterAdapter {
 	static Pattern				ASSIGNMENT		= Pattern.compile("\\s*([-\\w\\d_.]+)\\s*(?:=\\s*([^\\s]+)\\s*)?");
 	public final static Pattern	URL_PATTERN		= Pattern.compile("[a-zA-Z][0-9A-Za-z]{1,8}:.+");
 	public final static Pattern	BSNID_PATTERN	= Pattern.compile("([-A-Z0-9_.]+?)(-\\d+\\.\\d+.\\d+)?",
-														Pattern.CASE_INSENSITIVE);
+			Pattern.CASE_INSENSITIVE);
 	File						base			= new File(System.getProperty("user.dir"));
 	Settings					settings;
 	boolean						userMode		= false;
@@ -84,9 +84,9 @@ public class Main extends ReporterAdapter {
 	File						sm;
 	private String				url;
 	private JpmOptions			options;
-	static String				encoding		= System.getProperty("file.encoding");
-	int							width			= 120;																// characters
-	int							tabs[]			= {
+	static String				encoding	= System.getProperty("file.encoding");
+	int							width		= 120;									// characters
+	int							tabs[]		= {
 			40, 48, 56, 64, 72, 80, 88, 96, 104, 112
 												};
 
@@ -96,9 +96,7 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Default constructor
-	 * 
-	 * @throws UnsupportedEncodingException
+	 * Default constructor @throws UnsupportedEncodingException
 	 */
 
 	public Main() throws UnsupportedEncodingException {
@@ -108,9 +106,7 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Main entry
-	 * 
-	 * @throws Exception
+	 * Main entry @throws Exception
 	 */
 	public static void main(String args[]) throws Exception {
 		Main jpm = new Main();
@@ -175,7 +171,7 @@ public class Main extends ReporterAdapter {
 	 * Services
 	 */
 	@Arguments(arg = {
-		"[name]"
+			"[name]"
 	})
 	@Description("Manage the JPM services. Without arguments and options, this will show all the current services. Careful, if --remove is used all services are removed without any parameters.")
 	public interface ServiceOptions extends Options, ModifyService {
@@ -280,12 +276,8 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Initialize the repository and other global vars.
-	 * 
-	 * @param opts
-	 *            the options
-	 * @throws InterruptedException
-	 * @throws IOException
+	 * Initialize the repository and other global vars. @param opts the
+	 * options @throws InterruptedException @throws IOException
 	 */
 	@Description("Just Another Package Manager for Java (\"jpm help jpm\" to see a list of global options)")
 	public void _jpm(JpmOptions opts) throws IOException {
@@ -407,7 +399,7 @@ public class Main extends ReporterAdapter {
 	 * Install a jar options
 	 */
 	@Arguments(arg = {
-		"command|service"
+			"command|service"
 	})
 	@Description("Install a jar into the repository. If the jar defines a number of headers it can also be installed as a command and/or a service. "
 			+ "If not, additional information such as the name of the command and/or the main class must be specified with the appropriate flags.")
@@ -418,13 +410,15 @@ public class Main extends ReporterAdapter {
 		@Description("Force overwrite of existing command")
 		boolean force();
 
-		// @Description("Require a master version even when version is specified")
+		// @Description("Require a master version even when version is
+		// specified")
 		// boolean master(); // pl: not used
 
 		// @Description("Ignore digest")
 		// boolean xdigest(); // pl: not used
 
-		// @Description("Run service (if present) under the given user name, default is the name of the service")
+		// @Description("Run service (if present) under the given user name,
+		// default is the name of the service")
 		// String user(); // pl: not used
 
 		// /**
@@ -791,10 +785,7 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Main entry for the command line
-	 * 
-	 * @param args
-	 * @throws Exception
+	 * Main entry for the command line @param args @throws Exception
 	 */
 	public void run(String[] args) throws Exception {
 		CommandLine cl = new CommandLine(this);
@@ -806,9 +797,7 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Setup jpm to run on this system.
-	 * 
-	 * @throws Exception
+	 * Setup jpm to run on this system. @throws Exception
 	 */
 	@Description("Install jpm on the current system")
 	interface InitOptions extends Options {}
@@ -899,11 +888,7 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Show the platform info.
-	 * 
-	 * @param opts
-	 * @throws IOException
-	 * @throws Exception
+	 * Show the platform info. @param opts @throws IOException @throws Exception
 	 */
 	@Description("Show platform information")
 	public void _platform(PlatformOptions opts) throws IOException, Exception {
@@ -952,13 +937,10 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Start a service.
-	 * 
-	 * @param options
-	 * @throws Exception
+	 * Start a service. @param options @throws Exception
 	 */
 	@Arguments(arg = {
-		"service"
+			"service"
 	})
 	@Description("Start a service")
 	interface startOptions extends Options {
@@ -996,10 +978,7 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Restart a service.
-	 * 
-	 * @param options
-	 * @throws Exception
+	 * Restart a service. @param options @throws Exception
 	 */
 	@Arguments(arg = "service")
 	@Description("Restart a service")
@@ -1029,10 +1008,7 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Trace a service.
-	 * 
-	 * @param options
-	 * @throws Exception
+	 * Trace a service. @param options @throws Exception
 	 */
 	@Arguments(arg = {
 			"service", "[on|off]"
@@ -1067,10 +1043,7 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Stop a service.
-	 * 
-	 * @param options
-	 * @throws Exception
+	 * Stop a service. @param options @throws Exception
 	 */
 	@Description("Stop a service")
 	public interface StopOptions extends Options {}
@@ -1098,10 +1071,7 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Status a service.
-	 * 
-	 * @param options
-	 * @throws Exception
+	 * Status a service. @param options @throws Exception
 	 */
 	@Description("Status of a service")
 	@Arguments(arg = {
@@ -1140,9 +1110,7 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Show the current version
-	 * 
-	 * @throws IOException
+	 * Show the current version @throws IOException
 	 */
 
 	@Arguments(arg = {})
@@ -1458,8 +1426,8 @@ public class Main extends ReporterAdapter {
 			error("Must be administrator");
 
 		if (opts.delete())
-			InstallCert.deleteCert(opts._arguments().get(0), opts.secret() == null ? jpm.getPlatform().defaultCacertsPassword()
-					: opts.secret(), opts.cacerts());
+			InstallCert.deleteCert(opts._arguments().get(0),
+					opts.secret() == null ? jpm.getPlatform().defaultCacertsPassword() : opts.secret(), opts.cacerts());
 		else
 			InstallCert.installCert(this, opts._arguments().get(0), opts.port() == 0 ? 443 : opts.port(),
 					opts.secret() == null ? jpm.getPlatform().defaultCacertsPassword() : opts.secret(), opts.cacerts(),
@@ -1546,9 +1514,7 @@ public class Main extends ReporterAdapter {
 	interface findOptions extends Options {
 
 		/**
-		 * Number of search items to skip
-		 * 
-		 * @return
+		 * Number of search items to skip @return
 		 */
 		@Description("Number of programs to skip")
 		int skip();
@@ -1759,7 +1725,7 @@ public class Main extends ReporterAdapter {
 	 * Get an artifact
 	 */
 	@Arguments(arg = {
-		"coordinate"
+			"coordinate"
 	})
 	@Description("Get an artifact")
 	interface GetOptions extends Options {
@@ -1915,7 +1881,8 @@ public class Main extends ReporterAdapter {
 						f.format(" - %s (service) \t0- %s \t1-> %s%n", memo.current.name, memo.current.version,
 								memo.best.version);
 					} else {
-						f.format(" - %s \t0- %s \t1-> %s%n", memo.current.name, memo.current.version, memo.best.version);
+						f.format(" - %s \t0- %s \t1-> %s%n", memo.current.name, memo.current.version,
+								memo.best.version);
 					}
 				}
 				f.format("%n");
@@ -1938,7 +1905,8 @@ public class Main extends ReporterAdapter {
 			}
 
 			if (toUpdate.size() > 0) {
-				f.format("%nIn order to apply all possible updates, run jpm update again with the --all (or -a) flag.%n");
+				f.format(
+						"%nIn order to apply all possible updates, run jpm update again with the --all (or -a) flag.%n");
 			}
 			f.flush();
 			justif.wrap(sb);
@@ -1975,9 +1943,7 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Start jpm as daemon
-	 * 
-	 * @throws Exception
+	 * Start jpm as daemon @throws Exception
 	 */
 
 	public void _daemon(Options opts) throws Exception {

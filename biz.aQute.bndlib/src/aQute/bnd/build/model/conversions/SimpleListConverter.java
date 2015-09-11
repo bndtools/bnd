@@ -7,7 +7,7 @@ import aQute.libg.qtokens.*;
 
 public class SimpleListConverter<R> implements Converter<List<R>,String> {
 
-	private Converter< ? extends R, ? super String>	itemConverter;
+	private Converter< ? extends R, ? super String> itemConverter;
 
 	public static <R> Converter<List<R>,String> create(Converter<R, ? super String> itemConverter) {
 		return new SimpleListConverter<R>(itemConverter);
@@ -44,7 +44,7 @@ public class SimpleListConverter<R> implements Converter<List<R>,String> {
 	@Override
 	public List<R> error(String msg) {
 		List<R> l = new ArrayList<R>();
-		l.add( itemConverter.error(msg));
+		l.add(itemConverter.error(msg));
 		return l;
 	}
 

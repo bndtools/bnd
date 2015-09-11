@@ -5,7 +5,7 @@ import java.util.*;
 import aQute.lib.hex.*;
 
 public abstract class Digest {
-	final byte[]	digest;
+	final byte[] digest;
 
 	protected Digest(byte[] checksum, int width) {
 		this.digest = checksum;

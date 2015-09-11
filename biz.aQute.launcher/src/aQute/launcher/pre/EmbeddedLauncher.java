@@ -33,10 +33,10 @@ public class EmbeddedLauncher {
 				URLClassLoader urlc = new URLClassLoader(classpath.toArray(new URL[classpath.size()]));
 				Class< ? > embeddedLauncher = urlc.loadClass("aQute.launcher.Launcher");
 				Method method = embeddedLauncher.getMethod("main", new Class< ? >[] {
-					String[].class
+						String[].class
 				});
 				method.invoke(null, new Object[] {
-					args
+						args
 				});
 				return;
 			}

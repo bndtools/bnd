@@ -9,10 +9,7 @@ import java.util.concurrent.atomic.*;
  * tasks with {@link #doWhen(Collection, Object, Runnable)}. The collection is
  * the list of dependencies, the object is the target, and the runnable is run
  * to update the target. The runnable will only run when all its dependencies
- * have ran their associated runnable.
- * 
- * @author aqute
- * @param <T>
+ * have ran their associated runnable. @author aqute @param <T>
  */
 public class Forker<T> {
 	final Executor		executor;
@@ -75,9 +72,7 @@ public class Forker<T> {
 	}
 
 	/**
-	 * Constructor
-	 * 
-	 * @param executor
+	 * Constructor @param executor
 	 */
 	public Forker(Executor executor) {
 		this.executor = executor;
@@ -92,14 +87,9 @@ public class Forker<T> {
 
 	/**
 	 * Schedule a job for execution when the dependencies are done of target are
-	 * done.
-	 * 
-	 * @param dependencies
-	 *            the dependencies that must have run
-	 * @param target
-	 *            the target, is removed from all the dependencies when it ran
-	 * @param runnable
-	 *            the runnable to run
+	 * done. @param dependencies the dependencies that must have run @param
+	 * target the target, is removed from all the dependencies when it
+	 * ran @param runnable the runnable to run
 	 */
 	public synchronized void doWhen(Collection< ? extends T> dependencies, T target, Runnable runnable) {
 		if (waiting.containsKey(target))
@@ -162,9 +152,7 @@ public class Forker<T> {
 	}
 
 	/**
-	 * Called when the target has ran by the Job.
-	 * 
-	 * @param done
+	 * Called when the target has ran by the Job. @param done
 	 */
 	void done(Job done) {
 		synchronized (this) {
@@ -188,9 +176,7 @@ public class Forker<T> {
 	}
 
 	/**
-	 * Cancel the forker.
-	 * 
-	 * @throws InterruptedException
+	 * Cancel the forker. @throws InterruptedException
 	 */
 	public void cancel(long ms) throws InterruptedException {
 		System.err.println("canceled " + count);

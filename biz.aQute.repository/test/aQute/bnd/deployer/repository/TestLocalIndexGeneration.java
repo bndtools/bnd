@@ -62,12 +62,16 @@ public class TestLocalIndexGeneration extends TestCase {
 	}
 
 	public void testDeployBundle() throws Exception {
-		PutResult r = repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
+		PutResult r = repo.put(
+				new BufferedInputStream(
+						new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
+				new RepositoryPlugin.PutOptions());
 		File deployedFile = new File(r.artifact);
 
 		assertEquals(
 				IO.getFile(outputDir, "name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
-			.getAbsolutePath(), deployedFile.getAbsolutePath());
+						.getAbsolutePath(),
+				deployedFile.getAbsolutePath());
 
 		File indexFile = IO.getFile(outputDir, "index.xml");
 		assertTrue(indexFile.exists());
@@ -81,22 +85,29 @@ public class TestLocalIndexGeneration extends TestCase {
 		assertEquals(1, files.length);
 		assertEquals(deployedFile.getAbsoluteFile(), files[0]);
 	}
-	
+
 	public void testOverwrite() throws Exception {
 		config.put("overwrite", "false");
 		repo.setProperties(config);
-		
-		PutResult r = repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
+
+		PutResult r = repo.put(
+				new BufferedInputStream(
+						new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
+				new RepositoryPlugin.PutOptions());
 		File originalFile = new File(r.artifact);
 		assertEquals(
 				IO.getFile(outputDir, "name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
-				.getAbsolutePath(), originalFile.getAbsolutePath());
-		
+						.getAbsolutePath(),
+				originalFile.getAbsolutePath());
+
 		Jar newJar = new Jar(IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar"));
 		Jar dummyJar = new Jar(IO.getFile("testdata/bundles/dummybundle.jar"));
 		newJar.putResource("testOverwrite/dummybundle.jar", new JarResource(dummyJar));
 		newJar.write("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1-testOverwrite.jar");
-		r = repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1-testOverwrite.jar")), new RepositoryPlugin.PutOptions());
+		r = repo.put(
+				new BufferedInputStream(new FileInputStream(
+						"testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1-testOverwrite.jar")),
+				new RepositoryPlugin.PutOptions());
 		IO.delete(IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1-testOverwrite.jar"));
 		assertNull(r.artifact);
 	}
@@ -109,7 +120,10 @@ public class TestLocalIndexGeneration extends TestCase {
 		repo.setProperties(config);
 		repo.setReporter(reporter);
 
-		repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
+		repo.put(
+				new BufferedInputStream(
+						new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
+				new RepositoryPlugin.PutOptions());
 
 		assertEquals(0, reporter.getErrors().size());
 		assertTrue(reporter.getWarnings().size() > 0);
@@ -129,7 +143,10 @@ public class TestLocalIndexGeneration extends TestCase {
 		config.put("type", "Nongenerating");
 		repo.setProperties(config);
 
-		repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
+		repo.put(
+				new BufferedInputStream(
+						new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
+				new RepositoryPlugin.PutOptions());
 
 		assertEquals(0, reporter.getErrors().size());
 		assertTrue(reporter.getWarnings().size() > 0);
@@ -149,7 +166,10 @@ public class TestLocalIndexGeneration extends TestCase {
 		config.put("type", "Fail");
 		repo.setProperties(config);
 
-		repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
+		repo.put(
+				new BufferedInputStream(
+						new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
+				new RepositoryPlugin.PutOptions());
 
 		assertTrue(reporter.getErrors().size() > 0);
 		assertEquals(0, reporter.getWarnings().size());
@@ -186,8 +206,10 @@ public class TestLocalIndexGeneration extends TestCase {
 		repo.setProperties(config);
 		repo.setReporter(reporter);
 
-		PutResult r = repo.put(new BufferedInputStream(new FileInputStream(
-				"testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
+		PutResult r = repo.put(
+				new BufferedInputStream(
+						new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
+				new RepositoryPlugin.PutOptions());
 		File deployedFile = new File(r.artifact);
 
 		File compressedIndexFile = IO.getFile(outputDir, "index.xml.gz");
@@ -200,8 +222,7 @@ public class TestLocalIndexGeneration extends TestCase {
 			GZIPInputStream gzip = new GZIPInputStream(new FileInputStream(prettyIndexFile));
 			fail("expected opening gzip on index file would fail because it should be uncompressed");
 		}
-		catch (ZipException ze) {
-		}
+		catch (ZipException ze) {}
 		finally {
 			IO.delete(new File(r.artifact));
 			IO.delete(prettyIndexFile);

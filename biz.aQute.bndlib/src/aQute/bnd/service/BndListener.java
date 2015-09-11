@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.*;
 import aQute.service.reporter.*;
 
 public class BndListener {
-	final AtomicInteger	inside	= new AtomicInteger();
+	final AtomicInteger inside = new AtomicInteger();
 
 	public void changed(@SuppressWarnings("unused") File file) {}
 

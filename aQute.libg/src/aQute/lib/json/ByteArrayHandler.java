@@ -14,18 +14,16 @@ import aQute.lib.hex.Hex;
  * Will now use hex for encoding byte arrays
  */
 public class ByteArrayHandler extends Handler {
-	Pattern	ENCODING	= Pattern
-								.compile("((:?[\\dA-Za-z][\\dA-Za-z])*)|((:?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/)+={1,3})");
+	Pattern ENCODING = Pattern.compile(
+			"((:?[\\dA-Za-z][\\dA-Za-z])*)|((:?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/)+={1,3})");
 
 	@Override
-	public
-	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
+	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
 		StringHandler.string(app, Hex.toHexString((byte[]) object));
 	}
 
 	@Override
-	public
-	Object decodeArray(Decoder r) throws Exception {
+	public Object decodeArray(Decoder r) throws Exception {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 		ArrayList<Object> list = new ArrayList<Object>();
@@ -37,8 +35,7 @@ public class ByteArrayHandler extends Handler {
 	}
 
 	@Override
-	public
-	Object decode(Decoder dec, String s) throws Exception {
+	public Object decode(Decoder dec, String s) throws Exception {
 		boolean hex = true;
 		StringBuilder sb = new StringBuilder(s);
 		for (int i = sb.length() - 1; i >= 0; i--) {
@@ -77,7 +74,7 @@ public class ByteArrayHandler extends Handler {
 				}
 			}
 		}
-		if ( hex)
+		if (hex)
 			return Hex.toByteArray(sb.toString());
 		else
 			return Base64.decodeBase64(sb.toString());

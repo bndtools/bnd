@@ -4,5 +4,5 @@ import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Arguments {
-	String[] arg();
+	String[]arg();
 }

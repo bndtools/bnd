@@ -75,7 +75,6 @@ public class TestIndexer extends TestCase {
 
 	/**
 	 * Test if the resolver can change the URLs
-	 * 
 	 */
 	public void testResolverEffect() throws Exception {
 
@@ -213,7 +212,7 @@ public class TestIndexer extends TestCase {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		Set<File> files = Collections.emptySet();
 
-		Map<String, String> config = new HashMap<String, String>();
+		Map<String,String> config = new HashMap<String,String>();
 		config.put(RepoIndex.REPOSITORY_INCREMENT_OVERRIDE, "0");
 		config.put(ResourceIndexer.REPOSITORY_NAME, "empty");
 		config.put(ResourceIndexer.PRETTY, "true");
@@ -239,7 +238,7 @@ public class TestIndexer extends TestCase {
 		files.add(new File("testdata/03-export.jar"));
 		files.add(new File("testdata/06-requirebundle.jar"));
 
-		Map<String, String> config = new HashMap<String, String>();
+		Map<String,String> config = new HashMap<String,String>();
 		config.put(RepoIndex.REPOSITORY_INCREMENT_OVERRIDE, "0");
 		config.put(ResourceIndexer.REPOSITORY_NAME, "full-c+f");
 		indexer.index(files, out, config);
@@ -249,11 +248,19 @@ public class TestIndexer extends TestCase {
 	}
 
 	public void testFullIndexPrettyCompressedPermutations() throws Exception {
-		Boolean pretties[] = { null, Boolean.FALSE, Boolean.TRUE };
-		Boolean compressions[] = { null, Boolean.FALSE, Boolean.TRUE };
+		Boolean pretties[] = {
+				null, Boolean.FALSE, Boolean.TRUE
+		};
+		Boolean compressions[] = {
+				null, Boolean.FALSE, Boolean.TRUE
+		};
 
-		boolean outPretties[] = { false, false, false, true, false, false, true, true, true };
-		boolean outCompressions[] = { true, false, true, false, false, true, false, false, true };
+		boolean outPretties[] = {
+				false, false, false, true, false, false, true, true, true
+		};
+		boolean outCompressions[] = {
+				true, false, true, false, false, true, false, false, true
+		};
 
 		String expectedPretty = Utils.readStream(new FileInputStream("testdata/full-03+06.txt"));
 		String expectedNotPretty = Utils.readStream(new FileInputStream("testdata/full-03+06-not-pretty.txt"));
@@ -265,7 +272,7 @@ public class TestIndexer extends TestCase {
 		files.add(new File("testdata/03-export.jar"));
 		files.add(new File("testdata/06-requirebundle.jar"));
 
-		Map<String, String> config = new HashMap<String, String>();
+		Map<String,String> config = new HashMap<String,String>();
 
 		int outIndex = 0;
 		for (Boolean pretty : pretties) {
@@ -284,7 +291,8 @@ public class TestIndexer extends TestCase {
 				if (!outCompressions[outIndex]) {
 					assertEquals("pretty/compression = " + pretty + "/" + compression, expected, out.toString());
 				} else {
-					assertEquals("pretty/compression = " + pretty + "/" + compression, expected, Utils.decompress(out.toByteArray()));
+					assertEquals("pretty/compression = " + pretty + "/" + compression, expected,
+							Utils.decompress(out.toByteArray()));
 				}
 
 				config.clear();
@@ -346,7 +354,7 @@ public class TestIndexer extends TestCase {
 	public void testRootInSubdirectory() throws Exception {
 		RepoIndex indexer = new RepoIndex();
 
-		Map<String, String> props = new HashMap<String, String>();
+		Map<String,String> props = new HashMap<String,String>();
 		props.put(ResourceIndexer.ROOT_URL, new File("testdata").getAbsoluteFile().toURI().toURL().toString());
 
 		StringWriter writer = new StringWriter();
@@ -359,7 +367,7 @@ public class TestIndexer extends TestCase {
 	public void testRootInSubSubdirectory() throws Exception {
 		RepoIndex indexer = new RepoIndex();
 
-		Map<String, String> props = new HashMap<String, String>();
+		Map<String,String> props = new HashMap<String,String>();
 		props.put(ResourceIndexer.ROOT_URL, new File("testdata").getAbsoluteFile().toURI().toURL().toString());
 
 		StringWriter writer = new StringWriter();
@@ -371,7 +379,8 @@ public class TestIndexer extends TestCase {
 
 	public void testLogErrorsFromAnalyzer() throws Exception {
 		ResourceAnalyzer badAnalyzer = new ResourceAnalyzer() {
-			public void analyzeResource(Resource resource, List<Capability> capabilities, List<Requirement> requirements) throws Exception {
+			public void analyzeResource(Resource resource, List<Capability> capabilities,
+					List<Requirement> requirements) throws Exception {
 				throw new Exception("Bang!");
 			}
 		};
@@ -383,13 +392,14 @@ public class TestIndexer extends TestCase {
 		indexer.addAnalyzer(goodAnalyzer, null);
 
 		// Run the indexer
-		Map<String, String> props = new HashMap<String, String>();
+		Map<String,String> props = new HashMap<String,String>();
 		props.put(ResourceIndexer.ROOT_URL, new File("testdata").getAbsoluteFile().toURI().toURL().toString());
 		StringWriter writer = new StringWriter();
 		indexer.indexFragment(Collections.singleton(new File("testdata/subdir/01-bsn+version.jar")), writer, props);
 
 		// The "good" analyzer should have been called
-		verify(goodAnalyzer).analyzeResource(any(Resource.class), anyListOf(Capability.class), anyListOf(Requirement.class));
+		verify(goodAnalyzer).analyzeResource(any(Resource.class), anyListOf(Capability.class),
+				anyListOf(Requirement.class));
 
 		// The log service should have been notified about the exception
 		ArgumentCaptor<Exception> exceptionCaptor = ArgumentCaptor.forClass(Exception.class);
@@ -401,7 +411,7 @@ public class TestIndexer extends TestCase {
 		LogService log = mock(LogService.class);
 		RepoIndex indexer = new RepoIndex(log);
 
-		Map<String, String> props = new HashMap<String, String>();
+		Map<String,String> props = new HashMap<String,String>();
 		props.put(ResourceIndexer.ROOT_URL, new File("testdata/subdir").getAbsoluteFile().toURI().toURL().toString());
 
 		StringWriter writer = new StringWriter();
@@ -415,7 +425,7 @@ public class TestIndexer extends TestCase {
 		RepoIndex indexer = new RepoIndex(log);
 		indexer.addAnalyzer(new NaughtyAnalyzer(), null);
 
-		Map<String, String> props = new HashMap<String, String>();
+		Map<String,String> props = new HashMap<String,String>();
 		props.put(ResourceIndexer.ROOT_URL, new File("testdata").getAbsoluteFile().toURI().toURL().toString());
 
 		StringWriter writer = new StringWriter();
@@ -427,25 +437,29 @@ public class TestIndexer extends TestCase {
 	public void testRecogniseFelixSCR() throws Exception {
 		RepoIndex indexer = new RepoIndex();
 		indexer.addAnalyzer(new KnownBundleAnalyzer(), FrameworkUtil.createFilter("(name=*)"));
-		assertFragmentMatch(indexer, "testdata/org.apache.felix.scr-1.6.0.xml", "testdata/org.apache.felix.scr-1.6.0.jar");
+		assertFragmentMatch(indexer, "testdata/org.apache.felix.scr-1.6.0.xml",
+				"testdata/org.apache.felix.scr-1.6.0.jar");
 	}
 
 	public void testRecogniseAriesBlueprint() throws Exception {
 		RepoIndex indexer = new RepoIndex();
 		indexer.addAnalyzer(new KnownBundleAnalyzer(), FrameworkUtil.createFilter("(name=*)"));
-		assertFragmentMatch(indexer, "testdata/org.apache.aries.blueprint-1.0.0.xml", "testdata/org.apache.aries.blueprint-1.0.0.jar");
+		assertFragmentMatch(indexer, "testdata/org.apache.aries.blueprint-1.0.0.xml",
+				"testdata/org.apache.aries.blueprint-1.0.0.jar");
 	}
 
 	public void testRecogniseGeminiBlueprint() throws Exception {
 		RepoIndex indexer = new RepoIndex();
 		indexer.addAnalyzer(new KnownBundleAnalyzer(), FrameworkUtil.createFilter("(name=*)"));
-		assertFragmentMatch(indexer, "testdata/gemini-blueprint-extender-1.0.0.RELEASE.xml", "testdata/gemini-blueprint-extender-1.0.0.RELEASE.jar");
+		assertFragmentMatch(indexer, "testdata/gemini-blueprint-extender-1.0.0.RELEASE.xml",
+				"testdata/gemini-blueprint-extender-1.0.0.RELEASE.jar");
 	}
 
 	public void testRecogniseFelixJetty() throws Exception {
 		RepoIndex indexer = new RepoIndex();
 		indexer.addAnalyzer(new KnownBundleAnalyzer(), FrameworkUtil.createFilter("(name=*)"));
-		assertFragmentMatch(indexer, "testdata/org.apache.felix.http.jetty-2.2.0.xml", "testdata/org.apache.felix.http.jetty-2.2.0.jar");
+		assertFragmentMatch(indexer, "testdata/org.apache.felix.http.jetty-2.2.0.xml",
+				"testdata/org.apache.felix.http.jetty-2.2.0.jar");
 	}
 
 	public void testMacroExpansion() throws Exception {
@@ -454,7 +468,8 @@ public class TestIndexer extends TestCase {
 
 		RepoIndex indexer = new RepoIndex();
 		indexer.addAnalyzer(new KnownBundleAnalyzer(props), FrameworkUtil.createFilter("(name=*)"));
-		assertFragmentMatch(indexer, "testdata/org.apache.felix.eventadmin-1.2.14.xml", "testdata/org.apache.felix.eventadmin-1.2.14.jar");
+		assertFragmentMatch(indexer, "testdata/org.apache.felix.eventadmin-1.2.14.xml",
+				"testdata/org.apache.felix.eventadmin-1.2.14.jar");
 	}
 
 	public void testFragmentRequireBlueprint() throws Exception {
@@ -487,6 +502,7 @@ public class TestIndexer extends TestCase {
 	}
 
 	public void testImportServiceOptional() throws Exception {
-		assertFragmentMatch("testdata/org.apache.felix.eventadmin-1.3.2.xml", "testdata/org.apache.felix.eventadmin-1.3.2.jar");
+		assertFragmentMatch("testdata/org.apache.felix.eventadmin-1.3.2.xml",
+				"testdata/org.apache.felix.eventadmin-1.3.2.jar");
 	}
 }

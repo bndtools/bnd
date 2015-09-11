@@ -9,11 +9,11 @@ import java.util.regex.*;
  * TODO Implement string to byte[]
  */
 public class Base64 {
-	byte[]				data;
+	byte[] data;
 
 	static final String	alphabet	= "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 	static byte[]		values		= new byte[128];
-	static Pattern BASE64_P = Pattern.compile("(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?");
+	static Pattern		BASE64_P	= Pattern.compile("(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?");
 
 	static {
 		for (int i = 0; i < values.length; i++) {

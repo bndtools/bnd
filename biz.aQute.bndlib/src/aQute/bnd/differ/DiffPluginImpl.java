@@ -30,17 +30,17 @@ public class DiffPluginImpl implements Differ {
 	 * Headers that are considered major enough to parse according to spec and
 	 * compare their constituents
 	 */
-	final static Set<String>	MAJOR_HEADERS	= new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+	final static Set<String> MAJOR_HEADERS = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
 	/**
 	 * Headers that are considered not major enough to be considered
 	 */
-	final static Set<String>	IGNORE_HEADERS	= new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+	final static Set<String> IGNORE_HEADERS = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
 	/**
 	 * Headers that have values that should be sorted
 	 */
-	final static Set<String>	ORDERED_HEADERS	= new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+	final static Set<String> ORDERED_HEADERS = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
 	static {
 		MAJOR_HEADERS.add(Constants.EXPORT_PACKAGE);
@@ -62,11 +62,11 @@ public class DiffPluginImpl implements Differ {
 		ORDERED_HEADERS.add(Constants.TESTCASES);
 	}
 
-	Instructions				localIgnore		= null;
+	Instructions localIgnore = null;
 
 	/**
 	 * @see aQute.bnd.service.diff.Differ#diff(aQute.lib.resource.Jar,
-	 *      aQute.lib.resource.Jar)
+	 * aQute.lib.resource.Jar)
 	 */
 	public Tree tree(File newer) throws Exception {
 		Jar jnewer = new Jar(newer);
@@ -80,7 +80,7 @@ public class DiffPluginImpl implements Differ {
 
 	/**
 	 * @see aQute.bnd.service.diff.Differ#diff(aQute.lib.resource.Jar,
-	 *      aQute.lib.resource.Jar)
+	 * aQute.lib.resource.Jar)
 	 */
 	public Tree tree(Jar newer) throws Exception {
 		Analyzer anewer = new Analyzer();
@@ -99,13 +99,9 @@ public class DiffPluginImpl implements Differ {
 	}
 
 	/**
-	 * Create an element representing a bundle from the Jar.
-	 * 
-	 * @param infos
-	 * @param jar
-	 *            The Jar to be analyzed
-	 * @return the elements that should be compared
-	 * @throws Exception
+	 * Create an element representing a bundle from the Jar. @param infos @param
+	 * jar The Jar to be analyzed @return the elements that should be
+	 * compared @throws Exception
 	 */
 	private Element bundleElement(Analyzer analyzer) throws Exception {
 		List<Element> result = new ArrayList<Element>();
@@ -121,13 +117,10 @@ public class DiffPluginImpl implements Differ {
 	}
 
 	/**
-	 * Create an element representing all resources in the JAR
-	 * 
-	 * @param jar
-	 * @return
-	 * @throws Exception
+	 * Create an element representing all resources in the JAR @param
+	 * jar @return @throws Exception
 	 */
-	static Pattern	META_INF_P	= Pattern.compile("META-INF/([^/]+\\.(MF|SF|DSA|RSA))|(SIG-.*)");
+	static Pattern META_INF_P = Pattern.compile("META-INF/([^/]+\\.(MF|SF|DSA|RSA))|(SIG-.*)");
 
 	private Element resourcesElement(Analyzer analyzer) throws Exception {
 		Jar jar = analyzer.getJar();
@@ -173,7 +166,7 @@ public class DiffPluginImpl implements Differ {
 				}
 
 			}
-			
+
 			if (resource == null)
 				resource = entry.getValue();
 
@@ -193,12 +186,9 @@ public class DiffPluginImpl implements Differ {
 	}
 
 	/**
-	 * Create an element for each manifest header. There are
-	 * {@link #IGNORE_HEADERS} and {@link #MAJOR_HEADERS} that will be treated
-	 * differently.
-	 * 
-	 * @param manifest
-	 * @return
+	 * Create an element for each manifest header. There are {@link
+	 * #IGNORE_HEADERS} and {@link #MAJOR_HEADERS} that will be treated
+	 * differently. @param manifest @return
 	 */
 
 	private Element manifestElement(Manifest manifest) {
@@ -255,13 +245,13 @@ public class DiffPluginImpl implements Differ {
 	}
 
 	public void setIgnore(String diffignore) {
-		if ( diffignore == null) {
+		if (diffignore == null) {
 			localIgnore = null;
 			return;
 		}
-		
+
 		Parameters p = new Parameters(diffignore);
-		localIgnore = new Instructions(p); 
+		localIgnore = new Instructions(p);
 	}
 
 }

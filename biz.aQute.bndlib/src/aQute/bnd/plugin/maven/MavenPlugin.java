@@ -12,7 +12,7 @@ import aQute.lib.io.*;
  * This plugin provides life cycle support for maven projects
  */
 
-@BndPlugin(name="maven")
+@BndPlugin(name = "maven")
 public class MavenPlugin extends LifeCyclePlugin {
 
 	@Override
@@ -22,19 +22,19 @@ public class MavenPlugin extends LifeCyclePlugin {
 		copy("pom.xml", "pom.xml", p);
 
 		File root = workspace.getFile("pom.xml");
-		
+
 		doRoot(p, root);
-		
+
 		String rootPom = IO.collect(root);
-		if ( !rootPom.contains(getTag(p))) {
-			rootPom = rootPom.replaceAll("<!-- DO NOT EDIT MANAGED BY BND MAVEN LIFECYCLE PLUGIN -->\n", 
-					"$0\n\t\t"+ getTag(p) + "\n");
+		if (!rootPom.contains(getTag(p))) {
+			rootPom = rootPom.replaceAll("<!-- DO NOT EDIT MANAGED BY BND MAVEN LIFECYCLE PLUGIN -->\n",
+					"$0\n\t\t" + getTag(p) + "\n");
 			IO.store(rootPom, root);
 		}
 	}
 
 	private void doRoot(Project p, File root) throws IOException {
-		if( !root.isFile()) {
+		if (!root.isFile()) {
 			IO.delete(root);
 			copy("rootpom.xml", "../pom.xml", p);
 		}
@@ -86,18 +86,17 @@ public class MavenPlugin extends LifeCyclePlugin {
 	public void delete(Project p) throws IOException {
 		File root = p.getWorkspace().getFile("pom.xml");
 		String rootPom = IO.collect(root);
-		if ( rootPom.contains(getTag(p))) {
+		if (rootPom.contains(getTag(p))) {
 			rootPom = rootPom.replaceAll("\n\\s*" + getTag(p) + "\\s*", "\n");
 			IO.store(rootPom, root);
 		}
-		
+
 	}
 
 	private String getTag(Project p) {
-		return "<module>"+p+"</module>";
+		return "<module>" + p + "</module>";
 	}
-	
-	
+
 	@Override
 	public String toString() {
 		return "MavenPlugin";

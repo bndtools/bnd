@@ -5,15 +5,14 @@ import java.math.*;
 import java.util.*;
 
 public class NumberHandler extends Handler {
-	final Class< ? >	type;
+	final Class< ? > type;
 
 	NumberHandler(Class< ? > clazz) {
 		this.type = clazz;
 	}
 
 	@Override
-	public
-	void encode(Encoder app, Object object, Map<Object,Type> visited) throws Exception {
+	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws Exception {
 		String s = object.toString();
 		if (s.endsWith(".0"))
 			s = s.substring(0, s.length() - 2);
@@ -22,27 +21,23 @@ public class NumberHandler extends Handler {
 	}
 
 	@Override
-	public
-	Object decode(Decoder dec, boolean s) {
-		return decode(dec,s ? 1d : 0d);
+	public Object decode(Decoder dec, boolean s) {
+		return decode(dec, s ? 1d : 0d);
 	}
 
 	@Override
-	public
-	Object decode(Decoder dec, String s) {
+	public Object decode(Decoder dec, String s) {
 		double d = Double.parseDouble(s);
 		return decode(dec, d);
 	}
 
 	@Override
-	public
-	Object decode(Decoder dec) {
-		return decode(dec,0d);
+	public Object decode(Decoder dec) {
+		return decode(dec, 0d);
 	}
 
 	@Override
-	public
-	Object decode(Decoder dec, Number s) {
+	public Object decode(Decoder dec, Number s) {
 		double dd = s.doubleValue();
 
 		if (type == double.class || type == Double.class)

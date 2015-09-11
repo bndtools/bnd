@@ -12,23 +12,29 @@ import aQute.service.reporter.*;
 
 /**
  * Sign the jar file. -sign : <alias> [ ';' 'password:=' <password> ] [ ';'
- * 'keystore:=' <keystore> ] [ ';' 'sign-password:=' <pw> ] ( ',' ... )*
- * 
- * @author aqute
+ * 'keystore:=' <keystore> ] [ ';' 'sign-password:=' <pw> ] ( ',' ... )* @author
+ * aqute
  */
 
-@aQute.bnd.annotation.plugin.BndPlugin(name="signer", parameters=JartoolSigner.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name = "signer", parameters = JartoolSigner.Config.class)
 public class JartoolSigner implements Plugin, SignerPlugin {
-	
+
 	@interface Config {
 		String keystore();
-		String	storetype() default "JKS";
-		String	path() default "jarsigner";
-		String	storepass() default "";
-		String	keypass() default "";
-		String	sigFile() default "";
-		String	digestalg() default "";
+
+		String storetype() default "JKS";
+
+		String path() default "jarsigner";
+
+		String storepass() default "";
+
+		String keypass() default "";
+
+		String sigFile() default "";
+
+		String digestalg() default "";
 	}
+
 	String	keystore;
 	String	storetype;
 	String	path	= "jarsigner";

@@ -6,7 +6,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 
 public class ParseSignatureBuilder {
-	final Scope	root;
+	final Scope root;
 
 	public ParseSignatureBuilder(Scope root) {
 		this.root = root;
@@ -33,9 +33,9 @@ public class ParseSignatureBuilder {
 		Clazz clazz = new Clazz(analyzer, "", null);
 
 		clazz.parseClassFile(in, new ClassDataCollector() {
-			Scope	s;
-			Scope	enclosing;
-			Scope	declaring;
+			Scope s;
+			Scope enclosing;
+			Scope declaring;
 
 			@Override
 			public void classBegin(int access, TypeRef name) {
@@ -108,7 +108,8 @@ public class ParseSignatureBuilder {
 			}
 
 			@Override
-			public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName, int innerClassAccessFlags) {
+			public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName,
+					int innerClassAccessFlags) {
 				if (outerClass != null && innerClass != null && innerClass.getBinary().equals(s.name))
 					declaring = root.getScope(outerClass.getBinary());
 			}

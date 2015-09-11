@@ -25,7 +25,7 @@ public class IncludeHeaderTest extends TestCase {
 	}
 
 	/**
-	 * Test url includes 
+	 * Test url includes
 	 */
 	public static void testUrlIncludes2() throws IOException {
 		Analyzer a = new Analyzer();

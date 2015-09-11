@@ -28,6 +28,7 @@ public class TestMacro extends TestCase {
 		Properties extensionProps = new Properties();
 		extensionProps.put("message", "The meaning of GNU is \"${gnu}\".");
 
-		assertEquals("The meaning of GNU is \"GNU is not UNIX\".", Util.readProcessedProperty("message", extensionProps, baseProps));
+		assertEquals("The meaning of GNU is \"GNU is not UNIX\".",
+				Util.readProcessedProperty("message", extensionProps, baseProps));
 	}
 }

@@ -70,30 +70,14 @@ import aQute.struct.struct;
  * point for the command line. This program maintains a repository, a list of
  * installed commands, and a list of installed service. It provides the commands
  * to changes these resources. All information is kept in a platform specific
- * area. However, the layout of this area is standardized.
- * 
- * <pre>
- * 	platform/
- *      check									check for write access
- *      repo/                              		repository
- *        &lt;bsn&gt;/                     		bsn directory
- *          &lt;bsn&gt;-&lt;version&gt;.jar		jar file
- *      service/                               All service
- *        &lt;service&gt;/                      A service
- *        	data								Service data (JSON)
- *          wdir/								Working dir
- *          lock								Lock file (if running, contains port)
- *      commands/
- *        &lt;command&gt;						Command data (JSON)
- * </pre>
- * 
- * For each service, the platform must also have a user writable directory used
- * for working dir, lock, and logging.
- * 
- * <pre>
- *   platform var/
- *       wdir/									Working dir
- *       lock									Lock file (exists only when running, contains UDP port)
+ * area. However, the layout of this area is standardized. <pre> platform/ check
+ * check for write access repo/ repository &lt;bsn&gt;/ bsn directory
+ * &lt;bsn&gt;-&lt;version&gt;.jar jar file service/ All service
+ * &lt;service&gt;/ A service data Service data (JSON) wdir/ Working dir lock
+ * Lock file (if running, contains port) commands/ &lt;command&gt; Command data
+ * (JSON) </pre> For each service, the platform must also have a user writable
+ * directory used for working dir, lock, and logging. <pre> platform var/ wdir/
+ * Working dir lock Lock file (exists only when running, contains UDP port)
  * </pre>
  */
 
@@ -107,40 +91,35 @@ public class JustAnotherPackageManager {
 	private static final String	JPM_CACHE_GLOBAL	= "jpm.cache.global";
 	static final String			PERMISSION_ERROR	= "No write acces, might require administrator or root privileges (sudo in *nix)";
 	static JSONCodec			codec				= new JSONCodec();
-	static Pattern				BSN_P				= Pattern
-															.compile(
-																	"([-a-z0-9_]+(?:\\.[-a-z0-9_]+)+)(?:@([0-9]+(?:\\.[0-9]+(?:\\.[0-9]+(?:\\.[-_a-z0-9]+)?)?)?))?",
-																	Pattern.CASE_INSENSITIVE);
+	static Pattern				BSN_P				= Pattern.compile(
+			"([-a-z0-9_]+(?:\\.[-a-z0-9_]+)+)(?:@([0-9]+(?:\\.[0-9]+(?:\\.[0-9]+(?:\\.[-_a-z0-9]+)?)?)?))?",
+			Pattern.CASE_INSENSITIVE);
 	static Pattern				COORD_P				= Pattern
-															.compile(
-																	"([-a-z0-9_.]+):([-a-z0-9_.]+)(?::([-a-z0-9_.]+))?(?:@([-a-z0-9._]+))?",
-																	Pattern.CASE_INSENSITIVE);
+			.compile("([-a-z0-9_.]+):([-a-z0-9_.]+)(?::([-a-z0-9_.]+))?(?:@([-a-z0-9._]+))?", Pattern.CASE_INSENSITIVE);
 	static Pattern				URL_P				= Pattern.compile("([a-z]{3,6}:/.*)", Pattern.CASE_INSENSITIVE);
 	static Pattern				CMD_P				= Pattern.compile("([a-z_][a-z\\d_]*)", Pattern.CASE_INSENSITIVE);
 	static Pattern				SHA_P				= Pattern.compile("(?:sha:)?([a-fA-F0-9]{40,40})",
-															Pattern.CASE_INSENSITIVE);
+			Pattern.CASE_INSENSITIVE);
 	static Executor				executor;
 
-	final File					homeDir;
-	final File					binDir;
-	final File					repoDir;
-	final File					commandDir;
-	final File					serviceDir;
-	final File					service;
-	final Platform				platform;
-	final Reporter				reporter;
+	final File		homeDir;
+	final File		binDir;
+	final File		repoDir;
+	final File		commandDir;
+	final File		serviceDir;
+	final File		service;
+	final Platform	platform;
+	final Reporter	reporter;
 
-	JpmRepo						library;
-	final List<Service>			startedByDaemon		= new ArrayList<Service>();
-	boolean						localInstall		= false;
-	private URLClient			host;
-	private boolean				underTest			= System.getProperty("jpm.intest") != null;
-	Settings					settings;
+	JpmRepo				library;
+	final List<Service>	startedByDaemon	= new ArrayList<Service>();
+	boolean				localInstall	= false;
+	private URLClient	host;
+	private boolean		underTest		= System.getProperty("jpm.intest") != null;
+	Settings			settings;
 
 	/**
-	 * Constructor
-	 * 
-	 * @throws Exception
+	 * Constructor @throws Exception
 	 */
 	public JustAnotherPackageManager(Reporter reporter, Platform platform, File homeDir, File binDir) throws Exception {
 
@@ -183,8 +162,8 @@ public class JustAnotherPackageManager {
 	}
 
 	public boolean hasAccess() {
-		assert (binDir != null);
-		assert (homeDir != null);
+		assert(binDir != null);
+		assert(homeDir != null);
 
 		return binDir.canWrite() && homeDir.canWrite();
 	}
@@ -248,9 +227,7 @@ public class JustAnotherPackageManager {
 	}
 
 	/**
-	 * Garbage collect repository
-	 * 
-	 * @throws Exception
+	 * Garbage collect repository @throws Exception
 	 */
 	public void gc() throws Exception {
 		HashSet<byte[]> deps = new HashSet<byte[]>();
@@ -272,17 +249,18 @@ public class JustAnotherPackageManager {
 		for (File f : repoDir.listFiles()) {
 			String name = f.getName();
 			if (!deps.contains(name.getBytes())) {
-				if (!name.endsWith(".json") || !deps.contains(name.substring(0, name.length() - ".json".length()).getBytes())) { // Remove
-																														// json
-																														// files
-																														// only
-																														// if
-																														// the
-																														// bin
-																														// is
-																														// going
-																														// as
-																														// well
+				if (!name.endsWith(".json")
+						|| !deps.contains(name.substring(0, name.length() - ".json".length()).getBytes())) { // Remove
+					// json
+					// files
+					// only
+					// if
+					// the
+					// bin
+					// is
+					// going
+					// as
+					// well
 					f.delete();
 					count++;
 				} else {
@@ -482,10 +460,7 @@ public class JustAnotherPackageManager {
 	}
 
 	/**
-	 * @param data
-	 * @param target
-	 * @throws Exception
-	 * @throws IOException
+	 * @param data @param target @throws Exception @throws IOException
 	 */
 	public String createService(ServiceData data, boolean force) throws Exception, IOException {
 
@@ -534,10 +509,7 @@ public class JustAnotherPackageManager {
 	}
 
 	/**
-	 * @param data
-	 * @param target
-	 * @throws Exception
-	 * @throws IOException
+	 * @param data @param target @throws Exception @throws IOException
 	 */
 	public String createCommand(CommandData data, boolean force) throws Exception, IOException {
 
@@ -587,11 +559,9 @@ public class JustAnotherPackageManager {
 
 	/**
 	 * Verify that the jar file is correct. This also verifies ok when there are
-	 * no checksums or.
-	 * 
-	 * @throws IOException
+	 * no checksums or. @throws IOException
 	 */
-	static Pattern	MANIFEST_ENTRY	= Pattern.compile("(META-INF/[^/]+)|(.*/)");
+	static Pattern MANIFEST_ENTRY = Pattern.compile("(META-INF/[^/]+)|(.*/)");
 
 	public String verify(JarFile jar, String... algorithms) throws IOException {
 		if (algorithms == null || algorithms.length == 0)
@@ -641,10 +611,7 @@ public class JustAnotherPackageManager {
 	}
 
 	/**
-	 * @param clazz
-	 * @param dataFile
-	 * @return
-	 * @throws Exception
+	 * @param clazz @param dataFile @return @throws Exception
 	 */
 
 	private <T> T getData(Class<T> clazz, File dataFile) throws Exception {
@@ -664,9 +631,8 @@ public class JustAnotherPackageManager {
 	}
 
 	/**
-	 * This is called when JPM runs in the background to start jobs
-	 * 
-	 * @throws Exception
+	 * This is called when JPM runs in the background to start jobs @throws
+	 * Exception
 	 */
 	public void daemon() throws Exception {
 		Runtime.getRuntime().addShutdownHook(new Thread("Daemon shutdown") {
@@ -1025,13 +991,8 @@ public class JustAnotherPackageManager {
 
 	/**
 	 * Copy from the copy method in StructUtil. Did not want to drag that code
-	 * in. maybe this actually should go to struct.
-	 * 
-	 * @param from
-	 * @param to
-	 * @param excludes
-	 * @return
-	 * @throws Exception
+	 * in. maybe this actually should go to struct. @param from @param to @param
+	 * excludes @return @throws Exception
 	 */
 	static public <T extends struct> T xcopy(struct from, T to, String... excludes) throws Exception {
 		Arrays.sort(excludes);
@@ -1234,9 +1195,7 @@ public class JustAnotherPackageManager {
 	}
 
 	/**
-	 * Find programs
-	 * 
-	 * @throws Exception
+	 * Find programs @throws Exception
 	 */
 
 	public List<Program> find(String query, int skip, int limit) throws Exception {
@@ -1354,11 +1313,8 @@ public class JustAnotherPackageManager {
 	}
 
 	/**
-	 * Turn the shas into a readable form
-	 * 
-	 * @param dependencies
-	 * @return
-	 * @throws Exception
+	 * Turn the shas into a readable form @param dependencies @return @throws
+	 * Exception
 	 */
 
 	public List< ? > toString(List<byte[]> dependencies) throws Exception {
@@ -1375,10 +1331,7 @@ public class JustAnotherPackageManager {
 	}
 
 	/**
-	 * Get a list of candidates from a coordinate
-	 * 
-	 * @param c
-	 * @throws Exception
+	 * Get a list of candidates from a coordinate @param c @throws Exception
 	 */
 	public Iterable<Revision> getCandidates(Coordinate c) throws Exception {
 		return library.getRevisionsByCoordinate(c);
@@ -1394,16 +1347,16 @@ public class JustAnotherPackageManager {
 	public SortedSet<JVM> getVMs() throws Exception {
 		TreeSet<JVM> set = new TreeSet<JVM>(JVM.comparator);
 		String list = settings.get(JPM_VMS_EXTRA);
-		if ( list != null) {
+		if (list != null) {
 			ExtList<String> elist = new ExtList<String>(list.split("\\s*,\\s*"));
-			for ( String dir : elist) {
-				File f  = new File(dir);
+			for (String dir : elist) {
+				File f = new File(dir);
 				JVM jvm = getPlatform().getJVM(f);
-				if ( jvm == null) {
+				if (jvm == null) {
 					jvm = new JVM();
 					jvm.path = f.getCanonicalPath();
 					jvm.name = "Not a valid VM";
-					jvm.platformVersion = jvm.vendor=jvm.version = "";
+					jvm.platformVersion = jvm.vendor = jvm.version = "";
 				}
 				set.add(jvm);
 			}
@@ -1422,7 +1375,7 @@ public class JustAnotherPackageManager {
 		if (jvm == null) {
 			return null;
 		}
-		
+
 		String list = settings.get(JPM_VMS_EXTRA);
 		if (list == null)
 			list = platformRoot.getCanonicalPath();
@@ -1431,7 +1384,7 @@ public class JustAnotherPackageManager {
 			elist.remove(platformRoot.getCanonicalPath());
 			elist.add(0, platformRoot.getCanonicalPath());
 			list = Strings.join(",", elist);
-					
+
 		}
 		settings.put(JPM_VMS_EXTRA, list);
 		settings.save();

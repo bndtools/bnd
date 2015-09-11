@@ -80,31 +80,32 @@ public class JpmRepoTest extends TestCase {
 		assertEquals(1, shell.size());
 	}
 
-//	public void testResolveProviderWithRunpath() throws Exception {
-//		try {
-//			Project provider = ws.getProject("provider");
-//			provider.build();
-//			assertTrue(provider.check());
-//
-//			Project requirer = ws.getProject("requirer");
-//			requirer.build();
-//			assertTrue(requirer.check());
-//
-//			BndEditModel model = new BndEditModel();
-//			model.setProject(requirer);
-//			BndrunResolveContext context = new BndrunResolveContext(model, ws, log);
-//
-//			Resolver resolver = new ResolverImpl(new org.apache.felix.resolver.Logger(4));
-//
-//			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
-//			Set<Resource> resources = resolved.keySet();
-//			Resource resource = getResource(resources, "requirer", "0");
-//			assertNotNull(resource);
-//		}
-//		catch (ResolutionException e) {
-//			fail("Resolve failed " + e);
-//		}
-//	}
+	// public void testResolveProviderWithRunpath() throws Exception {
+	// try {
+	// Project provider = ws.getProject("provider");
+	// provider.build();
+	// assertTrue(provider.check());
+	//
+	// Project requirer = ws.getProject("requirer");
+	// requirer.build();
+	// assertTrue(requirer.check());
+	//
+	// BndEditModel model = new BndEditModel();
+	// model.setProject(requirer);
+	// BndrunResolveContext context = new BndrunResolveContext(model, ws, log);
+	//
+	// Resolver resolver = new ResolverImpl(new
+	// org.apache.felix.resolver.Logger(4));
+	//
+	// Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+	// Set<Resource> resources = resolved.keySet();
+	// Resource resource = getResource(resources, "requirer", "0");
+	// assertNotNull(resource);
+	// }
+	// catch (ResolutionException e) {
+	// fail("Resolve failed " + e);
+	// }
+	// }
 
 	public void testSimpleResolve() {
 		Repository repo = ws.getPlugin(Repository.class);

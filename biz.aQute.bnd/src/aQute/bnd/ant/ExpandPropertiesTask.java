@@ -9,7 +9,7 @@ import aQute.bnd.osgi.*;
 import aQute.lib.utf8properties.*;
 
 public class ExpandPropertiesTask extends BaseTask {
-	File	propertyFile;
+	File propertyFile;
 
 	@Override
 	@SuppressWarnings("cast")

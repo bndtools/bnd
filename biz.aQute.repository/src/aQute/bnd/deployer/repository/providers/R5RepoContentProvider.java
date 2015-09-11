@@ -40,30 +40,30 @@ import aQute.bnd.service.Registry;
 
 public class R5RepoContentProvider implements IRepositoryContentProvider {
 
-	public static final String	NAME					= "R5";
+	public static final String NAME = "R5";
 
-	private static final String	NS_URI					= "http://www.osgi.org/xmlns/repository/v1.0.0";
+	private static final String NS_URI = "http://www.osgi.org/xmlns/repository/v1.0.0";
 
 	private static final String	INDEX_NAME_COMPRESSED	= "index.xml.gz";
 	private static final String	INDEX_NAME_PRETTY		= "index.xml";
 
-	private static final String	TAG_REPOSITORY			= "repository";
-	private static final String	TAG_REFERRAL			= "referral";
-	private static final String	TAG_RESOURCE			= "resource";
-	private static final String	TAG_CAPABILITY			= "capability";
-	private static final String	TAG_REQUIREMENT			= "requirement";
-	private static final String	TAG_ATTRIBUTE			= "attribute";
-	private static final String	TAG_DIRECTIVE			= "directive";
+	private static final String	TAG_REPOSITORY	= "repository";
+	private static final String	TAG_REFERRAL	= "referral";
+	private static final String	TAG_RESOURCE	= "resource";
+	private static final String	TAG_CAPABILITY	= "capability";
+	private static final String	TAG_REQUIREMENT	= "requirement";
+	private static final String	TAG_ATTRIBUTE	= "attribute";
+	private static final String	TAG_DIRECTIVE	= "directive";
 
-	private static final String	ATTR_REFERRAL_URL		= "url";
-	private static final String	ATTR_REFERRAL_DEPTH		= "depth";
+	private static final String	ATTR_REFERRAL_URL	= "url";
+	private static final String	ATTR_REFERRAL_DEPTH	= "depth";
 
-	private static final String	ATTR_NAMESPACE			= "namespace";
+	private static final String ATTR_NAMESPACE = "namespace";
 
-	private static final String	ATTR_NAME				= "name";
-	private static final String	ATTR_VALUE				= "value";
-	private static final String	ATTR_TYPE				= "type";
-	
+	private static final String	ATTR_NAME	= "name";
+	private static final String	ATTR_VALUE	= "value";
+	private static final String	ATTR_TYPE	= "type";
+
 	public String getName() {
 		return NAME;
 	}
@@ -187,8 +187,11 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 							String valueStr = reader.getAttributeValue(null, ATTR_VALUE);
 							String typeAttr = reader.getAttributeValue(null, ATTR_TYPE);
 							if (capReqBuilder != null) {
-								// If the attribute is 'url' on the osgi.content namespace then resolve it relative to the base URI.
-								if (ContentNamespace.CONTENT_NAMESPACE.equals(capReqBuilder.getNamespace()) && ContentNamespace.CAPABILITY_URL_ATTRIBUTE.equals(name)) {
+								// If the attribute is 'url' on the osgi.content
+								// namespace then resolve it relative to the
+								// base URI.
+								if (ContentNamespace.CONTENT_NAMESPACE.equals(capReqBuilder.getNamespace())
+										&& ContentNamespace.CAPABILITY_URL_ATTRIBUTE.equals(name)) {
 									URI resolvedUri = resolveUri(valueStr, baseUri);
 									capReqBuilder.addAttribute(name, resolvedUri);
 								} else {
@@ -236,13 +239,13 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 
 	private static URI resolveUri(String uriStr, URI baseUri) throws URISyntaxException {
 		URI resolved;
-		
+
 		URI resourceUri = new URI(uriStr);
 		if (resourceUri.isAbsolute())
 			resolved = resourceUri;
 		else
 			resolved = baseUri.resolve(resourceUri);
-		
+
 		return resolved;
 	}
 
@@ -261,7 +264,8 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 		return true;
 	}
 
-	public void generateIndex(Set<File> files, OutputStream output, String repoName, URI baseUri, boolean pretty, Registry registry, LogService log) throws Exception {
+	public void generateIndex(Set<File> files, OutputStream output, String repoName, URI baseUri, boolean pretty,
+			Registry registry, LogService log) throws Exception {
 		RepoIndex indexer;
 		if (log != null)
 			indexer = new RepoIndex(log);

@@ -25,16 +25,18 @@ import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.glob.Glob;
 import aQute.service.reporter.Reporter;
 
-@aQute.bnd.annotation.plugin.BndPlugin(name="urlconnector", parameters=HttpBasicAuthURLConnector.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name = "urlconnector", parameters = HttpBasicAuthURLConnector.Config.class)
 public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 
 	@interface Config {
 		String configs();
+
 		boolean disableServerVerify() default false;
 	}
-	private static final String	PREFIX_PATTERN			= "pattern.";
-	private static final String	PREFIX_USER				= "uid.";
-	private static final String	PREFIX_PASSWORD			= "pwd.";
+
+	private static final String	PREFIX_PATTERN	= "pattern.";
+	private static final String	PREFIX_USER		= "uid.";
+	private static final String	PREFIX_PASSWORD	= "pwd.";
 
 	private static final String	HEADER_AUTHORIZATION	= "Authorization";
 	private static final String	PREFIX_BASIC_AUTH		= "Basic ";
@@ -57,12 +59,12 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		}
 	}
 
-	private final AtomicBoolean	inited				= new AtomicBoolean(false);
-	private final List<Mapping>	mappings			= new LinkedList<Mapping>();
+	private final AtomicBoolean	inited		= new AtomicBoolean(false);
+	private final List<Mapping>	mappings	= new LinkedList<Mapping>();
 
-	private Reporter			reporter;
-	private String				configFileList;
-	private boolean				disableSslVerify	= false;
+	private Reporter	reporter;
+	private String		configFileList;
+	private boolean		disableSslVerify	= false;
 
 	public void setReporter(Reporter reporter) {
 		this.reporter = reporter;

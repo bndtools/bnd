@@ -17,8 +17,8 @@ import aQute.bnd.service.diff.*;
 
 public class DiffImpl implements Diff, Comparable<DiffImpl> {
 
-	final Tree				older;
-	final Tree				newer;
+	final Tree					older;
+	final Tree					newer;
 	final Collection<DiffImpl>	children;
 	final Delta					delta;
 
@@ -27,42 +27,37 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 	 * children. horizontally is the current delta and this is indexed with the
 	 * child delta for each child. This escalates deltas from below up.
 	 */
-	final static Delta[][]		TRANSITIONS	= {
+	final static Delta[][] TRANSITIONS = {
 			{
-			IGNORED, UNCHANGED, CHANGED, MICRO, MINOR, MAJOR
+					IGNORED, UNCHANGED, CHANGED, MICRO, MINOR, MAJOR
 			}, // IGNORED
 			{
-			IGNORED, UNCHANGED, CHANGED, MICRO, MINOR, MAJOR
+					IGNORED, UNCHANGED, CHANGED, MICRO, MINOR, MAJOR
 			}, // UNCHANGED
 			{
-			IGNORED, CHANGED, CHANGED, MICRO, MINOR, MAJOR
+					IGNORED, CHANGED, CHANGED, MICRO, MINOR, MAJOR
 			}, // CHANGED
 			{
-			IGNORED, MICRO, MICRO, MICRO, MINOR, MAJOR
+					IGNORED, MICRO, MICRO, MICRO, MINOR, MAJOR
 			}, // MICRO
 			{
-			IGNORED, MINOR, MINOR, MINOR, MINOR, MAJOR
+					IGNORED, MINOR, MINOR, MINOR, MINOR, MAJOR
 			}, // MINOR
 			{
-			IGNORED, MAJOR, MAJOR, MAJOR, MAJOR, MAJOR
+					IGNORED, MAJOR, MAJOR, MAJOR, MAJOR, MAJOR
 			}, // MAJOR
 			{
-			IGNORED, MAJOR, MAJOR, MAJOR, MAJOR, MAJOR
+					IGNORED, MAJOR, MAJOR, MAJOR, MAJOR, MAJOR
 			}, // REMOVED
 			{
-			IGNORED, MINOR, MINOR, MINOR, MINOR, MAJOR
+					IGNORED, MINOR, MINOR, MINOR, MINOR, MAJOR
 			}, // ADDED
-											};
+	};
 
 	/**
 	 * Compares the newer against the older, traversing the children if
-	 * necessary.
-	 * 
-	 * @param newer
-	 *            The newer Element
-	 * @param older
-	 *            The older Element
-	 * @param types
+	 * necessary. @param newer The newer Element @param older The older
+	 * Element @param types
 	 */
 	public DiffImpl(Tree newer, Tree older) {
 		assert newer != null || older != null;
@@ -118,9 +113,9 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 	}
 
 	/**
-	 * Return the absolute delta. Also see
-	 * {@link #getDelta(aQute.bnd.service.diff.Diff.Ignore)} that allows you to
-	 * ignore Diff objects on the fly (and calculate their parents accordingly).
+	 * Return the absolute delta. Also see {@link
+	 * #getDelta(aQute.bnd.service.diff.Diff.Ignore)} that allows you to ignore
+	 * Diff objects on the fly (and calculate their parents accordingly).
 	 */
 	public Delta getDelta() {
 		return delta;
@@ -231,13 +226,12 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 		data.delta = delta;
 		data.name = getName();
 		data.children = new Data[children.size()];
-		
-		int i=0;		
-		for ( Diff d : children)
+
+		int i = 0;
+		for (Diff d : children)
 			data.children[i++] = d.serialize();
-				
+
 		return data;
 	}
-
 
 }

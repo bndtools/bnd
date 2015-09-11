@@ -9,9 +9,8 @@ import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.service.*;
 
 /**
- * This class is responsible for meta type types. It is a plugin that can
- * 
- * @author aqute
+ * This class is responsible for meta type types. It is a plugin that
+ * can @author aqute
  */
 public class MetatypePlugin implements AnalyzerPlugin {
 
@@ -23,13 +22,14 @@ public class MetatypePlugin implements AnalyzerPlugin {
 		for (String name : map.keySet()) {
 			Collection<Clazz> metatypes = analyzer.getClasses("", QUERY.ANNOTATED.toString(), Meta.OCD.class.getName(), //
 					QUERY.NAMED.toString(), name //
-					);
+			);
 			for (Clazz c : metatypes) {
 				jar.putResource("OSGI-INF/metatype/" + c.getFQN() + ".xml", new MetaTypeReader(c, analyzer));
 			}
 		}
 		return false;
 	}
+
 	@Override
 	public String toString() {
 		return "MetatypePlugin";

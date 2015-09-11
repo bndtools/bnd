@@ -31,8 +31,7 @@ public class MakeCopy implements MakePlugin {
 		catch (MalformedURLException mfue) {
 			// We ignore this
 		}
-		throw new IllegalArgumentException("Copy source does not exist " + from + " for destination "
-				+ destination);
+		throw new IllegalArgumentException("Copy source does not exist " + from + " for destination " + destination);
 	}
 
 }

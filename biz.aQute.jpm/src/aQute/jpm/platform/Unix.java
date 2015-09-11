@@ -22,7 +22,7 @@ import aQute.libg.glob.Glob;
 
 public abstract class Unix extends Platform {
 
-	public static String	JPM_GLOBAL	= "/var/jpm";
+	public static String JPM_GLOBAL = "/var/jpm";
 
 	@Override
 	public File getGlobal() {
@@ -117,8 +117,9 @@ public abstract class Unix extends Platform {
 	}
 
 	String			DAEMON			= "\n### JPM BEGIN ###\n" + "jpm daemon >" + JPM_GLOBAL + "/daemon.log 2>>"
-											+ JPM_GLOBAL + "/daemon.log &\n### JPM END ###\n";
+			+ JPM_GLOBAL + "/daemon.log &\n### JPM END ###\n";
 	static Pattern	DAEMON_PATTERN	= Pattern.compile("\n### JPM BEGIN ###\n.*\n### JPM END ###\n", Pattern.MULTILINE);
+
 	@Override
 	public void installDaemon(boolean user) throws Exception {
 		if (user)
@@ -236,7 +237,7 @@ public abstract class Unix extends Platform {
 
 	}
 
-	static Pattern	PATH_P	= Pattern.compile("(export|set)\\s+PATH\\s*=(.*):\\$PATH\\s*$");
+	static Pattern PATH_P = Pattern.compile("(export|set)\\s+PATH\\s*=(.*):\\$PATH\\s*$");
 
 	@Description("Add the bin directory for this jpm to your PATH in the user's environment variables")
 	public void _path(PathOptions options) throws IOException {
@@ -254,26 +255,26 @@ public abstract class Unix extends Platform {
 		List<String> paths = new ArrayList<String>(Arrays.asList(parts));
 
 		for (int i = 0; i < parts.length; i++) {
-			System.out.printf("%2d:%s %s %s%n", i, parts[i].toLowerCase().contains("jpm") ? "*" : " ", new File(
-					parts[i]).isDirectory() ? " " : "!", parts[i]);
+			System.out.printf("%2d:%s %s %s%n", i, parts[i].toLowerCase().contains("jpm") ? "*" : " ",
+					new File(parts[i]).isDirectory() ? " " : "!", parts[i]);
 		}
 
 		String bd = jpm.getBinDir().getAbsolutePath();
 		String s = IO.collect(file);
-		
+
 		//
 		// Remove the current binary path. If it is add, we add it later
 		//
 		if (options.remove() || options.add()) {
 			if (!bd.equals(getGlobalBinDir().getAbsolutePath())) {
-				s = s.replaceAll("(PATH\\s*=)"+bd+ ":(.*\\$PATH)", "$1$2");
-				reporter.trace("removed %s", bd );
+				s = s.replaceAll("(PATH\\s*=)" + bd + ":(.*\\$PATH)", "$1$2");
+				reporter.trace("removed %s", bd);
 			}
 		}
 
 		if (options.delete() != null) {
 			for (String delete : options.delete()) {
-				s = s.replaceAll("(PATH\\s*=)"+Glob.toPattern(delete) + ":(.*\\$PATH)", "$1$2");
+				s = s.replaceAll("(PATH\\s*=)" + Glob.toPattern(delete) + ":(.*\\$PATH)", "$1$2");
 			}
 		}
 
@@ -283,8 +284,8 @@ public abstract class Unix extends Platform {
 		s = s.replaceAll("\\s*(set|export)\\s+PATH\\s*=\\$PATH\\s*", "");
 
 		List<String> additions = new ArrayList<String>();
-		if (options.add() ) {
-			if ( !bd.equals( getGlobalBinDir().getAbsolutePath())) {
+		if (options.add()) {
+			if (!bd.equals(getGlobalBinDir().getAbsolutePath())) {
 				additions.add(bd);
 			}
 		}
@@ -301,8 +302,8 @@ public abstract class Unix extends Platform {
 
 		if (!additions.isEmpty()) {
 			s += "\nexport PATH=" + Strings.join(":", additions) + ":$PATH\n";
-			reporter.trace("s %s", s );
+			reporter.trace("s %s", s);
 		}
-		IO.store(s,file);
+		IO.store(s, file);
 	}
 }

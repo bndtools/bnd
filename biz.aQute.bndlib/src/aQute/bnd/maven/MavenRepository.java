@@ -12,11 +12,11 @@ import aQute.service.reporter.*;
 
 public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath {
 
-	public final static String	NAME	= "name";
+	public final static String NAME = "name";
 
-	File						root;
-	Reporter					reporter;
-	String						name;
+	File		root;
+	Reporter	reporter;
+	String		name;
 
 	@Override
 	public String toString() {
@@ -72,8 +72,8 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 					}
 				} else {
 					reporter.warning(
-							"Expected a version directory in maven: dir=%s raw-version=%s cleaned-up-version=%s",
-							vsdir, vv, v);
+							"Expected a version directory in maven: dir=%s raw-version=%s cleaned-up-version=%s", vsdir,
+							vv, v);
 				}
 			}
 		} else
@@ -128,9 +128,9 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 			Version v = new Version(version);
 			versions.add(v);
 		}
-		if ( versions.isEmpty())
+		if (versions.isEmpty())
 			return SortedList.empty();
-		
+
 		return new SortedList<Version>(versions);
 	}
 
@@ -206,11 +206,12 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		return root.toString();
 	}
 
-	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener ... listeners) throws Exception {
+	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
+			throws Exception {
 		File file = get(bsn, version.toString(), Strategy.EXACT, properties);
-		if ( file == null)
+		if (file == null)
 			return null;
-		
+
 		for (DownloadListener l : listeners) {
 			try {
 				l.success(file);

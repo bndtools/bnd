@@ -12,8 +12,8 @@ import aQute.libg.reporter.*;
 import aQute.service.reporter.*;
 
 public class BaseTask extends Task implements Reporter {
-	ReporterAdapter			reporter= new ReporterAdapter();
-	
+	ReporterAdapter reporter = new ReporterAdapter();
+
 	List<String>			errors			= new ArrayList<String>();
 	List<String>			warnings		= new ArrayList<String>();
 	List<String>			progress		= new ArrayList<String>();
@@ -25,11 +25,11 @@ public class BaseTask extends Task implements Reporter {
 	final AntMessages		messages		= ReporterMessages.base(this, AntMessages.class);
 	boolean					exceptions;
 
-
 	static {
 		Workspace.setDriver(Constants.BNDDRIVER_ANT);
 		Workspace.addGestalt(Constants.GESTALT_BATCH, null);
 	}
+
 	protected boolean report() {
 		return report(this);
 	}

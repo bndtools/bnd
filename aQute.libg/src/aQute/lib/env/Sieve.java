@@ -2,10 +2,9 @@ package aQute.lib.env;
 
 import java.util.*;
 
-
 public class Sieve implements Map<Selector,Props> {
 	private LinkedHashMap<Selector,Props>	map;
-	public static Sieve					ALWAYS	= new Sieve();
+	public static Sieve						ALWAYS	= new Sieve();
 	static Map<Selector,Props>				EMPTY	= Collections.emptyMap();
 
 	public Sieve(Sieve other) {
@@ -213,7 +212,7 @@ public class Sieve implements Map<Selector,Props> {
 		}
 		return null;
 	}
-	
+
 	public Selector finder(String value) {
 		for (Selector i : keySet()) {
 			if (i.finds(value)) {
@@ -222,13 +221,13 @@ public class Sieve implements Map<Selector,Props> {
 		}
 		return null;
 	}
-	
+
 	public boolean matches(String value) {
 		if (size() == 0)
 			return true;
 
 		Selector instr = matcher(value);
-		if (instr==null || instr.isNegated())
+		if (instr == null || instr.isNegated())
 			return false; // we deny this one explicitly
 		return true;
 	}

@@ -4,23 +4,35 @@ import junit.framework.*;
 
 public class EcjTest extends TestCase {
 
-	public static class A  {
-		public A foo() { System.out.println("In A"); return null; }
+	public static class A {
+		public A foo() {
+			System.out.println("In A");
+			return null;
+		}
 		// Object foo() ...
 	}
-	
+
 	public static class B extends A {
-		public B foo() {  System.out.println("In B"); return null; }
+		public B foo() {
+			System.out.println("In B");
+			return null;
+		}
 		// A foo() ...
 	}
+
 	public static class C extends B {
-		public C foo() {  System.out.println("In C"); return null; }
+		public C foo() {
+			System.out.println("In C");
+			return null;
+		}
 		// B foo() ...
 	}
+
 	public void testSimple() {
 		A c = new C();
-		c.foo(); //    9:	invokevirtual	#18; //Method test/EcjTest$A.foo:()Ltest/EcjTest$A;
+		c.foo(); // 9: invokevirtual #18; //Method
+					// test/EcjTest$A.foo:()Ltest/EcjTest$A;
 		// but prints in C
 	}
-	
+
 }

@@ -4,7 +4,7 @@ public enum Operator {
 
 	Equals("="), LessThanOrEqual("<="), GreaterThanOrEqual(">="), ApproxEqual("~=");
 
-	private final String	symbol;
+	private final String symbol;
 
 	Operator(String symbol) {
 		this.symbol = symbol;

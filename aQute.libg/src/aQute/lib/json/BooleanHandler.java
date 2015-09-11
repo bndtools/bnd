@@ -7,32 +7,27 @@ import java.util.*;
 public class BooleanHandler extends Handler {
 
 	@Override
-	public
-	void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
+	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
 		app.append(object.toString());
 	}
 
 	@Override
-	public
-	Object decode(Decoder dec, boolean s) {
+	public Object decode(Decoder dec, boolean s) {
 		return s;
 	}
 
 	@Override
-	public
-	Object decode(Decoder dec, String s) {
+	public Object decode(Decoder dec, String s) {
 		return Boolean.parseBoolean(s);
 	}
 
 	@Override
-	public
-	Object decode(Decoder dec, Number s) {
+	public Object decode(Decoder dec, Number s) {
 		return s.intValue() != 0;
 	}
 
 	@Override
-	public
-	Object decode(Decoder dec) {
+	public Object decode(Decoder dec) {
 		return false;
 	}
 

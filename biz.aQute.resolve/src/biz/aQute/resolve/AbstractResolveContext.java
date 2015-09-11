@@ -271,8 +271,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			if (capabilities != null && !capabilities.isEmpty()) {
 				repoCapabilities.ensureCapacity(capabilities.size());
 				for (Capability capability : capabilities) {
-					if (isPermitted(capability.getResource())
-							&& isCorrectEffectiveness(requirement, capability)) {
+					if (isPermitted(capability.getResource()) && isCorrectEffectiveness(requirement, capability)) {
 						repoCapabilities.add(capability);
 						setResourcePriority(order, capability.getResource());
 					}
@@ -293,14 +292,9 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	/**
 	 * Return any capabilities from the given repo. This method will filter the
-	 * blacklist.
-	 * 
-	 * @param repo
-	 *            The repo to fetch requirements from
-	 * @param requirement
-	 *            the requirement
-	 * @return a list of caps for the asked requirement minus and capabilities
-	 *         that are skipped.
+	 * blacklist. @param repo The repo to fetch requirements from @param
+	 * requirement the requirement @return a list of caps for the asked
+	 * requirement minus and capabilities that are skipped.
 	 */
 	protected Collection<Capability> findProviders(Repository repo, Requirement requirement) {
 		Map<Requirement,Collection<Capability>> map = repo.findProviders(Collections.singleton(requirement));
@@ -680,12 +674,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	/**
-	 * Get the framework repository from the
-	 * 
-	 * @param repos
-	 * @param bsn
-	 * @param version
-	 * @return
+	 * Get the framework repository from the @param repos @param bsn @param
+	 * version @return
 	 */
 	public List<Resource> getResources(List<Repository> repos, String bsn, String range) {
 		Requirement bundle = CapReqBuilder.createBundleRequirement(bsn, range).buildSyntheticRequirement();
@@ -704,13 +694,9 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	/**
-	 * Add a framework resource to the system resource builder
-	 * 
-	 * @param system
-	 *            the system resource being build up
-	 * @param framework
-	 *            the framework resource
-	 * @throws Exception
+	 * Add a framework resource to the system resource builder @param system the
+	 * system resource being build up @param framework the framework
+	 * resource @throws Exception
 	 */
 
 	protected void setFramework(ResourceBuilder system, Resource framework) throws Exception {
@@ -903,13 +889,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	/**
 	 * Load a bnd path from the OSGi repositories. We assume the highest version
-	 * allowed. This mimics Project.getBundles()
-	 * 
-	 * @param system
-	 * @param path
-	 * @param what
-	 * @throws IOException
-	 * @throws Exception
+	 * allowed. This mimics Project.getBundles() @param system @param
+	 * path @param what @throws IOException @throws Exception
 	 */
 	public void loadPath(ResourceBuilder system, String path, String what) throws IOException, Exception {
 		Parameters p = new Parameters(path);

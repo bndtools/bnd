@@ -16,7 +16,7 @@ public class Maven {
 	final Map<String,MavenEntry>	entries		= new ConcurrentHashMap<String,MavenEntry>();
 	final static String[]			ALGORITHMS	= {
 			"md5", "sha1"
-												};
+													};
 	boolean							usecache	= false;
 	final Executor					executor;
 	File							m2			= new File(userHome, ".m2");
@@ -31,7 +31,7 @@ public class Maven {
 
 	// http://repo1.maven.org/maven2/junit/junit/maven-metadata.xml
 
-	static Pattern	MAVEN_RANGE	= Pattern.compile("(\\[|\\()(.+)(,(.+))(\\]|\\))");
+	static Pattern MAVEN_RANGE = Pattern.compile("(\\[|\\()(.+)(,(.+))(\\]|\\))");
 
 	public CachedPom getPom(String groupId, String artifactId, String version, URI... extra) throws Exception {
 		MavenEntry entry = getEntry(groupId, artifactId, version);
@@ -39,12 +39,8 @@ public class Maven {
 	}
 
 	/**
-	 * @param groupId
-	 * @param artifactId
-	 * @param version
-	 * @param extra
-	 * @return
-	 * @throws Exception
+	 * @param groupId @param artifactId @param version @param
+	 * extra @return @throws Exception
 	 */
 	public MavenEntry getEntry(String groupId, String artifactId, String version) throws Exception {
 		String path = dirpath(groupId, artifactId, version);

@@ -26,18 +26,14 @@ import aQute.lib.io.IO;
  * we want to do this right. So in bnd we generally use this UTF-8 Properties
  * class. This class always writes UTF-8. However, it will try to read UTF-8
  * first. If this fails, it will try ISO-8859-1, and the last attempt is the
- * platform default.
- * <p>
- * An additional problem is backslash encoding. When reading properties, the
- * Properties class skips backslashes that have no correct next character. This
- * is not a real problem if it was not for bndtools where it turned out to be
- * real tricky to get the UI to understand this since text widgets read from the
- * properties (backslash removed) while the main text is just, well, the main
- * text and has the backslash present. Since we strife to fidelity, we actually
- * fixup the
- * <p>
- * This class can (and probably should) be used anywhere a Properties class is
- * used.
+ * platform default. <p> An additional problem is backslash encoding. When
+ * reading properties, the Properties class skips backslashes that have no
+ * correct next character. This is not a real problem if it was not for bndtools
+ * where it turned out to be real tricky to get the UI to understand this since
+ * text widgets read from the properties (backslash removed) while the main text
+ * is just, well, the main text and has the backslash present. Since we strife
+ * to fidelity, we actually fixup the <p> This class can (and probably should)
+ * be used anywhere a Properties class is used.
  */
 public class UTF8Properties extends Properties {
 	private static final long	serialVersionUID	= 1L;

@@ -6,8 +6,8 @@ import org.osgi.framework.Version;
 
 class Type {
 
-	private final ScalarType type;
-	private final boolean list;
+	private final ScalarType	type;
+	private final boolean		list;
 
 	public static Type scalar(ScalarType type) {
 		return new Type(type, false);
@@ -31,8 +31,8 @@ class Type {
 			result = scalar(ScalarType.String);
 		} else if (value instanceof Boolean) {
 			result = scalar(ScalarType.String);
-		} else if (value instanceof Collection<?>) {
-			Collection<?> coll = (Collection<?>) value;
+		} else if (value instanceof Collection< ? >) {
+			Collection< ? > coll = (Collection< ? >) value;
 			if (coll.isEmpty())
 				throw new IllegalArgumentException("Cannot determine scalar type of empty collection.");
 			Type elemType = typeOf(coll.iterator().next());
@@ -64,7 +64,7 @@ class Type {
 	public String convertToString(Object value) {
 		String result;
 		if (list) {
-			Collection<?> coll = (Collection<?>) value;
+			Collection< ? > coll = (Collection< ? >) value;
 			StringBuilder buf = new StringBuilder();
 			int count = 0;
 			for (Object obj : coll) {

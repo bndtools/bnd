@@ -12,7 +12,7 @@ import aQute.service.reporter.Reporter.SetLocation;
 public class ReporterMessages {
 
 	static class WARNINGImpl implements WARNING {
-		Reporter.SetLocation	loc;
+		Reporter.SetLocation loc;
 
 		public SetLocation file(String file) {
 			return loc.file(file);
@@ -49,6 +49,7 @@ public class ReporterMessages {
 		public Location location() {
 			return loc.location();
 		}
+
 		public SetLocation length(int length) {
 			loc.length(length);
 			return this;
@@ -64,7 +65,7 @@ public class ReporterMessages {
 	@SuppressWarnings("unchecked")
 	public static <T> T base(final Reporter reporter, Class<T> messages) {
 		return (T) Proxy.newProxyInstance(messages.getClassLoader(), new Class[] {
-			messages
+				messages
 		}, new InvocationHandler() {
 
 			public Object invoke(Object target, Method method, Object[] args) throws Throwable {

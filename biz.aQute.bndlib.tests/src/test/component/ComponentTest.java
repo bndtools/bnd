@@ -44,11 +44,11 @@ import aQute.lib.io.IOConstants;
 		"resource", "rawtypes"
 })
 public class ComponentTest extends TestCase {
-	static final int					BUFFER_SIZE	= IOConstants.PAGE_SIZE * 1;
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
 
-	static final DocumentBuilderFactory	dbf			= DocumentBuilderFactory.newInstance();
-	static final XPathFactory			xpathf		= XPathFactory.newInstance();
-	static final XPath					xpath		= xpathf.newXPath();
+	static final DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
+	static final XPathFactory			xpathf	= XPathFactory.newInstance();
+	static final XPath					xpath	= xpathf.newXPath();
 	static DocumentBuilder				db;
 
 	static {
@@ -102,22 +102,19 @@ public class ComponentTest extends TestCase {
 
 	/**
 	 * 112.5.7 says refeence order is used to order binding services, so from
-	 * headers we preserve order.
-	 * 
-	 * @throws Exception
+	 * headers we preserve order. @throws Exception
 	 */
 	public void testHeaderReferenceOrder() throws Exception {
-		Document doc = setup(ReferenceOrder.class.getName()
-				+ ";version:=1.1;z=org.osgi.service.http.HttpService?;a=org.osgi.service.http.HttpService?",
+		Document doc = setup(
+				ReferenceOrder.class.getName()
+						+ ";version:=1.1;z=org.osgi.service.http.HttpService?;a=org.osgi.service.http.HttpService?",
 				ReferenceOrder.class.getName());
 		assertAttribute(doc, "z", "scr:component/reference[1]/@name");
 		assertAttribute(doc, "a", "scr:component/reference[2]/@name");
 	}
 
 	/**
-	 * Test to see if we ignore scala.ScalaObject as interface
-	 * 
-	 * @throws Exception
+	 * Test to see if we ignore scala.ScalaObject as interface @throws Exception
 	 */
 	public void testScalaObject() throws Exception {
 		Builder b = new Builder();
@@ -144,7 +141,7 @@ public class ComponentTest extends TestCase {
 	public void testProvideFromSuperClass() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
-			IO.getFile("bin")
+				IO.getFile("bin")
 		});
 		b.setProperty("Service-Component", "*InheritedActivator");
 		b.setProperty("Private-Package", "test.activator.inherits");
@@ -334,9 +331,7 @@ public class ComponentTest extends TestCase {
 	}
 
 	/**
-	 * Standard activator with reference to http.
-	 * 
-	 * @throws Exception
+	 * Standard activator with reference to http. @throws Exception
 	 */
 	public void testProperties() throws Exception {
 		java.util.Properties p = new Properties();
@@ -356,27 +351,26 @@ public class ComponentTest extends TestCase {
 
 		Resource resource = jar.getResource("OSGI-INF/test.activator.Activator.xml");
 		IO.copy(resource.openInputStream(), System.out);
-		
-		Document doc = db.parse(new InputSource(resource
-				.openInputStream()));
+
+		Document doc = db.parse(new InputSource(resource.openInputStream()));
 
 		NodeList l = doc.getElementsByTagName("property");
 		assertEquals(2, l.getLength());
 
-		boolean aset=false, bset=false;
-		
-		for ( int i=0; i<2; i++) {
+		boolean aset = false, bset = false;
+
+		for (int i = 0; i < 2; i++) {
 			Node child = l.item(i);
 			NamedNodeMap attributes = child.getAttributes();
 			Node namedItem = attributes.getNamedItem("name");
 			String name = namedItem.getNodeValue();
 			String text = child.getFirstChild().getNodeValue().trim();
-			if ( name.equals("a")) {
-				aset=true;
+			if (name.equals("a")) {
+				aset = true;
 				assertEquals("3\n4", text);
 			}
 			if (name.equals("b")) {
-				bset=true;
+				bset = true;
 				assertEquals("1\n2\n3", text);
 			}
 		}
@@ -397,9 +391,7 @@ public class ComponentTest extends TestCase {
 	}
 
 	/**
-	 * Check if all the directives work
-	 * 
-	 * @throws Exception
+	 * Check if all the directives work @throws Exception
 	 */
 	public void testUnknownDirective() throws Exception {
 		java.util.Properties p = new Properties();
@@ -421,9 +413,7 @@ public class ComponentTest extends TestCase {
 	}
 
 	/**
-	 * Check if all the directives work
-	 * 
-	 * @throws Exception
+	 * Check if all the directives work @throws Exception
 	 */
 	public void testDirectives() throws Exception {
 		Document doc = setup(
@@ -442,9 +432,8 @@ public class ComponentTest extends TestCase {
 	}
 
 	/**
-	 * Check if a bad filter on a service component causes an error.
-	 * 
-	 * @throws Exception
+	 * Check if a bad filter on a service component causes an error. @throws
+	 * Exception
 	 */
 	public void testBadFilter() throws Exception {
 		java.util.Properties p = new Properties();
@@ -466,9 +455,7 @@ public class ComponentTest extends TestCase {
 	}
 
 	/**
-	 * Check if we can set a target filter
-	 * 
-	 * @throws Exception
+	 * Check if we can set a target filter @throws Exception
 	 */
 	public void testFilter() throws Exception {
 		Element component = setup("test.activator.Activator;http=\"org.osgi.service.http.HttpService(|(p=1)(p=2))\"");
@@ -485,9 +472,7 @@ public class ComponentTest extends TestCase {
 	}
 
 	/**
-	 * Standard activator with reference to http.
-	 * 
-	 * @throws Exception
+	 * Standard activator with reference to http. @throws Exception
 	 */
 	public void testSimple() throws Exception {
 		Element component = setup("test.activator.Activator;http=org.osgi.service.http.HttpService?");
@@ -505,9 +490,7 @@ public class ComponentTest extends TestCase {
 	}
 
 	/**
-	 * Standard activator with reference to http.
-	 * 
-	 * @throws Exception
+	 * Standard activator with reference to http. @throws Exception
 	 */
 	public void testQuestion() throws Exception {
 		Element component = setup("test.activator.Activator;http=org.osgi.service.http.HttpService?");

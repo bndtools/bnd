@@ -15,11 +15,11 @@ import aQute.remote.util.AgentSupervisor;
  * repository for the agent and handles the redirection. It also handles the
  * events.
  */
-public class LauncherSupervisor extends AgentSupervisor<Supervisor,Agent> implements Supervisor {
+public class LauncherSupervisor extends AgentSupervisor<Supervisor,Agent>implements Supervisor {
 	private Appendable	stdout;
 	private Appendable	stderr;
 	private Thread		stdin;
-	private int			shell	= -100; // always invalid so we update it
+	private int			shell	= -100;	// always invalid so we update it
 
 	static class Info extends DTO {
 		public String	sha;
@@ -108,14 +108,9 @@ public class LauncherSupervisor extends AgentSupervisor<Supervisor,Agent> implem
 	}
 
 	/**
-	 * The shell port to use.
-	 * <ul>
-	 * <li>&lt;0 – Attach to a local Gogo CommandSession
-	 * <li>0 – Use the standard console
-	 * <li>else – Open a stream to that port
-	 * </ul>
-	 * 
-	 * @param shellPort
+	 * The shell port to use. <ul> <li>&lt;0 – Attach to a local Gogo
+	 * CommandSession <li>0 – Use the standard console <li>else – Open a stream
+	 * to that port </ul> @param shellPort
 	 */
 	public void setShell(int shellPort) {
 		this.shell = shellPort;

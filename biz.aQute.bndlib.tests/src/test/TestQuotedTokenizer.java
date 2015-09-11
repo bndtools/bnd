@@ -57,13 +57,13 @@ public class TestQuotedTokenizer extends TestCase {
 		assertEquals("version", s[6]);
 		assertEquals("1.2.34,123", s[7]);
 	}
-	
+
 	public static void testEscapedQuote() {
 		QuotedTokenizer qt = new QuotedTokenizer("'\\'y'", ",");
 		String s = qt.nextToken();
 		assertEquals("'y", s);
 	}
-	
+
 	public static void testExplicitEmptyString() {
 		QuotedTokenizer qt = new QuotedTokenizer("literal=''", ";=,");
 		qt.nextToken();

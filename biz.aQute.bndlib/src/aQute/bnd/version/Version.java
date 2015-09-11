@@ -12,7 +12,7 @@ public class Version implements Comparable<Version> {
 	public final static Pattern	VERSION			= Pattern.compile(VERSION_STRING);
 	public final static Version	LOWEST			= new Version();
 	public final static Version	HIGHEST			= new Version(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE,
-														"\uFFFF");
+			"\uFFFF");
 
 	public static final Version	emptyVersion	= LOWEST;
 	public static final Version	ONE				= new Version(1, 0, 0);

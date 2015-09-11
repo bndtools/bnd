@@ -143,7 +143,7 @@ public class ManifestTest extends TestCase {
 		assertNotNull(entry);
 		assertNull(entry.getExtra());
 	}
-	
+
 	public static void testRenameManifest() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-manifest-name", "META-INF/FESTYMAN.MF");
@@ -152,12 +152,12 @@ public class ManifestTest extends TestCase {
 
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		Jar jar = b.build();
-		
+
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		jar.write(bout);
 		b.close();
 		jar.close();
-		
+
 		ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
 		ZipInputStream zin = new ZipInputStream(bin);
 		assertEquals("META-INF/FESTYMAN.MF", zin.getNextEntry().getName());

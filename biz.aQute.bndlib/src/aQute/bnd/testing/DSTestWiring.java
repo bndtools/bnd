@@ -13,12 +13,11 @@ import aQute.lib.collections.*;
 
 /**
  * Intended to wire a number components for testing using the DS (from bnd)
- * annotations.
- * <p>
- * TODO add the OSGi Annotations and support more options. needs cleanup
+ * annotations. <p> TODO add the OSGi Annotations and support more options.
+ * needs cleanup
  */
 public class DSTestWiring {
-	static Pattern	REFERENCE	= Pattern.compile("([^/]+)/([^/]+)(?:/([^/]+))?");
+	static Pattern REFERENCE = Pattern.compile("([^/]+)/([^/]+)(?:/([^/]+))?");
 
 	public static class Reference {
 		String	name;
@@ -36,7 +35,7 @@ public class DSTestWiring {
 		}
 	}
 
-	BundleContext	context	= null;
+	BundleContext context = null;
 
 	{
 		Bundle b = FrameworkUtil.getBundle(DSTestWiring.class);
@@ -146,8 +145,8 @@ public class DSTestWiring {
 							} else if (map.containsKey(types[i]))
 								parameters[i] = map.get(types[i]).get(0).instance;
 							else
-								throw new IllegalArgumentException("Not a pojo " + activate.getDeclaringClass()
-										+ ", requires " + types[i]);
+								throw new IllegalArgumentException(
+										"Not a pojo " + activate.getDeclaringClass() + ", requires " + types[i]);
 						}
 						activate.invoke(instance, parameters);
 					}
@@ -246,8 +245,8 @@ public class DSTestWiring {
 	}
 
 	final MultiMap<Class< ? >,Component< ? >>	map			= new MultiMap<Class< ? >,Component< ? >>();
-	final Set<Component< ? >>					components	= new HashSet<Component< ? >>();				;
-	final List<Component< ? >>					ordered		= new ArrayList<Component< ? >>();				;
+	final Set<Component< ? >>					components	= new HashSet<Component< ? >>();;
+	final List<Component< ? >>					ordered		= new ArrayList<Component< ? >>();;
 
 	public void wire() throws Exception {
 		for (Component< ? > c : components) {
@@ -266,15 +265,9 @@ public class DSTestWiring {
 	/**
 	 * Add the class by name. If the class cannot be found in the local class
 	 * loader, and a Bundle Context is specified, try each bundle for that
-	 * class.
-	 * 
-	 * @param cname
-	 *            the name of the class
-	 * @return the class
-	 * @throws ClassNotFoundException
-	 *             if not found
-	 * @throws Exception
-	 *             if something goes wrong
+	 * class. @param cname the name of the class @return the class @throws
+	 * ClassNotFoundException if not found @throws Exception if something goes
+	 * wrong
 	 */
 	public Component< ? > add(String cname) throws ClassNotFoundException, Exception {
 		try {

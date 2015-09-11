@@ -20,47 +20,35 @@ import org.osgi.service.cm.ManagedService;
 import org.osgi.service.cm.ManagedServiceFactory;
 
 /**
- * <p>
- * This is a simplified ConfigurationAdmin implementation that is intended for
- * statically configuring an OSGi runtime during startup. It should be used as
- * follows:
- * </p>
- * 
- * <ul>
- * <li>Load the configuration and instantiate a set of
- * {@link StaticConfiguration} objects.</li>
- * <li>Instantiate a {@code StaticConfigurationAdmin}.</li>
- * <li>Call {@link #start()}. This will register the object as a
- * {@link ConfigurationAdmin} service.</li>
- * <li>After all bundles are started, call {@link #updatedManagedServices()}.
- * This sends the {@code updated} signal to all registered
- * {@link ManagedService} and {@link ManagedServiceFactory} services.</li>
- * </ul>
- * 
- * <p>
- * Note that since the implementation is intended only for <em>static</em>
- * configuration, it does not support any methods for creating, modifying or
- * deleting configs. Any attempt to call these methods (including
- * {@link #getConfiguration(String)} with a not-already-existing PID) will throw
- * a {@link SecurityException}.
- * </p>
- * 
- * @author Neil Bartlett
+ * <p> This is a simplified ConfigurationAdmin implementation that is intended
+ * for statically configuring an OSGi runtime during startup. It should be used
+ * as follows: </p> <ul> <li>Load the configuration and instantiate a set of
+ * {@link StaticConfiguration} objects.</li> <li>Instantiate a {@code
+ * StaticConfigurationAdmin}.</li> <li>Call {@link #start()}. This will register
+ * the object as a {@link ConfigurationAdmin} service.</li> <li>After all
+ * bundles are started, call {@link #updatedManagedServices()}. This sends the
+ * {@code updated} signal to all registered {@link ManagedService} and {@link
+ * ManagedServiceFactory} services.</li> </ul> <p> Note that since the
+ * implementation is intended only for <em>static</em> configuration, it does
+ * not support any methods for creating, modifying or deleting configs. Any
+ * attempt to call these methods (including {@link #getConfiguration(String)}
+ * with a not-already-existing PID) will throw a {@link SecurityException}.
+ * </p> @author Neil Bartlett
  */
 public class StaticConfigurationAdmin implements ConfigurationAdmin {
-	
-	private final BundleContext context;
-	private final Map<String, StaticConfiguration> configsMap = new LinkedHashMap<String, StaticConfiguration>();
 
-	private ServiceRegistration serviceReg;
-	private PidTracker<ManagedService> msTracker;
-	private PidTracker<ManagedServiceFactory> msfTracker;
+	private final BundleContext						context;
+	private final Map<String,StaticConfiguration>	configsMap	= new LinkedHashMap<String,StaticConfiguration>();
+
+	private ServiceRegistration					serviceReg;
+	private PidTracker<ManagedService>			msTracker;
+	private PidTracker<ManagedServiceFactory>	msfTracker;
 
 	public StaticConfigurationAdmin(BundleContext context, Collection<StaticConfiguration> configs) {
 		this.context = context;
 		for (StaticConfiguration config : configs) {
 			String pid = config.getPid();
-			
+
 			if (configsMap.containsKey(pid))
 				throw new IllegalArgumentException("Duplicate configuration pid: " + pid);
 			configsMap.put(pid, config);
@@ -69,17 +57,18 @@ public class StaticConfigurationAdmin implements ConfigurationAdmin {
 
 	public void start() {
 		serviceReg = context.registerService(ConfigurationAdmin.class.getName(), this, null);
-		
+
 		msTracker = new PidTracker<ManagedService>(context, ManagedService.class);
 		msTracker.open();
 
 		msfTracker = new PidTracker<ManagedServiceFactory>(context, ManagedServiceFactory.class);
 		msfTracker.open();
 	}
-	
+
 	/**
-	 * Sends the configuration to all currently registered ManagedService and ManagedServiceFactory
-	 * services. Should be called after all bundles have been started.
+	 * Sends the configuration to all currently registered ManagedService and
+	 * ManagedServiceFactory services. Should be called after all bundles have
+	 * been started.
 	 */
 	public List<ConfigurationException> updatedManagedServices() {
 		List<ConfigurationException> exceptions = new LinkedList<ConfigurationException>();
@@ -91,7 +80,8 @@ public class StaticConfigurationAdmin implements ConfigurationAdmin {
 				if (msf != null) {
 					try {
 						msf.updated(factoryPid, config.getProperties());
-					} catch (ConfigurationException e) {
+					}
+					catch (ConfigurationException e) {
 						exceptions.add(e);
 					}
 				}
@@ -100,7 +90,8 @@ public class StaticConfigurationAdmin implements ConfigurationAdmin {
 				if (ms != null) {
 					try {
 						ms.updated(config.getProperties());
-					} catch (ConfigurationException e) {
+					}
+					catch (ConfigurationException e) {
 						exceptions.add(e);
 					}
 				}
@@ -148,13 +139,13 @@ public class StaticConfigurationAdmin implements ConfigurationAdmin {
 	@Override
 	public Configuration[] listConfigurations(String filterStr) throws IOException, InvalidSyntaxException {
 		Filter filter = filterStr != null ? FrameworkUtil.createFilter(filterStr) : null;
-		
+
 		List<StaticConfiguration> result = new ArrayList<StaticConfiguration>(configsMap.size());
 		for (StaticConfiguration config : configsMap.values()) {
 			if (filter == null || filter.match(config.getProperties()))
 				result.add(config);
 		}
-		
+
 		return result.toArray(new Configuration[result.size()]);
 	}
 

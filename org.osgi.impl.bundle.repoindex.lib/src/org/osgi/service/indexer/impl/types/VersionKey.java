@@ -5,7 +5,8 @@ import org.osgi.service.indexer.Namespaces;
 
 public enum VersionKey {
 
-	PackageVersion(Constants.VERSION_ATTRIBUTE), BundleVersion(Constants.BUNDLE_VERSION_ATTRIBUTE), NativeOsVersion(Namespaces.ATTR_NATIVE_OSVERSION);
+	PackageVersion(Constants.VERSION_ATTRIBUTE), BundleVersion(Constants.BUNDLE_VERSION_ATTRIBUTE), NativeOsVersion(
+			Namespaces.ATTR_NATIVE_OSVERSION);
 
 	private String key;
 

@@ -23,7 +23,7 @@ import aQute.bnd.xmlattribute.XMLAttributeFinder;
  * Analyze the class space for any classes that have an OSGi annotation for DS.
  */
 public class MetatypeAnnotations implements AnalyzerPlugin {
-	
+
 	enum Options {
 		nested
 	}
@@ -54,7 +54,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		Collection<Clazz> list = analyzer.getClassspace().values();
 
 		XMLAttributeFinder finder = new XMLAttributeFinder(analyzer);
-		for (Clazz c: list) {
+		for (Clazz c : list) {
 			for (Instruction instruction : instructions.keySet()) {
 
 				if (instruction.matches(c.getFQN())) {
@@ -67,7 +67,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 				}
 			}
 		}
-		
+
 		header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS));
 		if (header.size() > 0) {
 

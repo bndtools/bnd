@@ -110,11 +110,7 @@ public class PomParser extends Processor {
 
 	/**
 	 * The maven POM is quite straightforward, it is basically a structured
-	 * property file.
-	 * 
-	 * @param name
-	 * @param parent
-	 * @param p
+	 * property file. @param name @param parent @param p
 	 */
 	static void traverse(String name, Node parent, Properties p) {
 		if (skip.contains(parent.getNodeName()))

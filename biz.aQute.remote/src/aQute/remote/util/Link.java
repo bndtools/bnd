@@ -14,13 +14,11 @@ import aQute.lib.json.*;
  * This is a simple RPC module that has a R and L interface. The R interface is
  * implemented on the remote side. The methods on this subclass are then
  * available remotely. I.e. this is a two way street. Void messages are
- * asynchronous, other messages block to a reply.
- * 
- * @param <R>
+ * asynchronous, other messages block to a reply. @param <R>
  */
 public class Link<L, R> extends Thread implements Closeable {
-	private static final String[]		EMPTY		= new String[] {};
-	static JSONCodec					codec		= new JSONCodec();
+	private static final String[]	EMPTY	= new String[] {};
+	static JSONCodec				codec	= new JSONCodec();
 
 	final DataInputStream				in;
 	final DataOutputStream				out;
@@ -31,9 +29,9 @@ public class Link<L, R> extends Thread implements Closeable {
 	volatile boolean					transfer	= false;
 	private ThreadLocal<Integer>		msgid		= new ThreadLocal<Integer>();
 
-	R									remote;
-	L									local;
-	ExecutorService						executor	= Executors.newFixedThreadPool(4);
+	R				remote;
+	L				local;
+	ExecutorService	executor	= Executors.newFixedThreadPool(4);
 
 	static class Result {
 		boolean			resolved;
@@ -99,7 +97,7 @@ public class Link<L, R> extends Thread implements Closeable {
 
 		if (remote == null)
 			remote = (R) Proxy.newProxyInstance(remoteClass.getClassLoader(), new Class< ? >[] {
-				remoteClass
+					remoteClass
 			}, new InvocationHandler() {
 
 				public Object invoke(Object target, Method method, Object[] args) throws Throwable {
@@ -336,7 +334,7 @@ public class Link<L, R> extends Thread implements Closeable {
 
 				try {
 					send(id, null, new Object[] {
-						result
+							result
 					});
 				}
 				catch (Exception e) {
@@ -351,7 +349,7 @@ public class Link<L, R> extends Thread implements Closeable {
 				// t.printStackTrace();
 				try {
 					send(-id, null, new Object[] {
-						t + ""
+							t + ""
 					});
 				}
 				catch (Exception e) {
@@ -388,7 +386,7 @@ public class Link<L, R> extends Thread implements Closeable {
 		join();
 		if (result != null)
 			send(msgid.get(), null, new Object[] {
-				result
+					result
 			});
 		close();
 	}

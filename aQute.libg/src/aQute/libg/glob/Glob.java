@@ -10,14 +10,14 @@ public class Glob {
 	private final Pattern	pattern;
 
 	public Glob(String globString) {
-		this(globString,0);
+		this(globString, 0);
 	}
 
 	public Glob(String globString, int flags) {
 		this.glob = globString;
 		this.pattern = Pattern.compile(convertGlobToRegEx(globString), flags);
 	}
-	
+
 	public Matcher matcher(CharSequence input) {
 		return pattern.matcher(input);
 	}
@@ -113,9 +113,9 @@ public class Glob {
 	}
 
 	public static Pattern toPattern(String s) {
-		return toPattern(s,0);
+		return toPattern(s, 0);
 	}
-	
+
 	public static Pattern toPattern(String s, int flags) {
 		try {
 			return Pattern.compile(convertGlobToRegEx(s), flags);
@@ -127,13 +127,9 @@ public class Glob {
 	}
 
 	/**
-	 * Get a list of files that match the glob expression
-	 * 
-	 * @param root
-	 *            the directory to get the files from
-	 * @param recursive
-	 *            to traverse the dirs recursive
-	 * @return
+	 * Get a list of files that match the glob expression @param root the
+	 * directory to get the files from @param recursive to traverse the dirs
+	 * recursive @return
 	 */
 	public List<File> getFiles(File root, boolean recursive, boolean usePath) {
 		List<File> result = new ArrayList<File>();

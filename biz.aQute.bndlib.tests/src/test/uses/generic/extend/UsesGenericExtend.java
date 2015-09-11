@@ -10,6 +10,5 @@ public class UsesGenericExtend extends ArrayList<Callback> {
 
 	@SuppressWarnings("unused")
 	private Subject subject;
-	
 
 }

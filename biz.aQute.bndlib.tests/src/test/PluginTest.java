@@ -9,10 +9,11 @@ import junit.framework.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 import aQute.service.reporter.*;
+
 @SuppressWarnings("resource")
 
 public class PluginTest extends TestCase {
-	static Processor	main	= new Processor();
+	static Processor main = new Processor();
 
 	public static void testMissingPluginNotUsed() throws Exception {
 		Builder p = new Builder();
@@ -29,7 +30,7 @@ public class PluginTest extends TestCase {
 	}
 
 	static class TPlugin implements Plugin {
-		Map<String,String>	properties;
+		Map<String,String> properties;
 
 		@Override
 		public void setProperties(Map<String,String> map) {

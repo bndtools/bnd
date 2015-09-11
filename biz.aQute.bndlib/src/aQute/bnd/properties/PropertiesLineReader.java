@@ -7,11 +7,11 @@ public class PropertiesLineReader {
 	private final IDocument	document;
 	private final int		lineCount;
 
-	private int				lineNum		= 0;
+	private int lineNum = 0;
 
-	private IRegion			lastRegion	= null;
-	private String			lastKey		= null;
-	private String			lastValue	= null;
+	private IRegion	lastRegion	= null;
+	private String	lastKey		= null;
+	private String	lastValue	= null;
 
 	public PropertiesLineReader(IDocument document) {
 		this.document = document;

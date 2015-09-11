@@ -13,21 +13,19 @@ import aQute.libg.glob.*;
 /**
  * Provide Http Basic Authentication. This URL Connection Handler plugin will
  * add basic authentication to the matching URL Connections. The following
- * properties must be specified.
- * <ul>
- * <li>{@link URLConnectionHandler#MATCH} — The URL {@link Glob} expressions
- * <li>.password — The password for basic authentication
- * <li>user — The user id
- * </ul>
+ * properties must be specified. <ul> <li>{@link URLConnectionHandler#MATCH} —
+ * The URL {@link Glob} expressions <li>.password — The password for basic
+ * authentication <li>user — The user id </ul>
  */
-@aQute.bnd.annotation.plugin.BndPlugin(name="url.basic.authentication", parameters=BasicAuthentication.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name = "url.basic.authentication", parameters = BasicAuthentication.Config.class)
 public class BasicAuthentication extends DefaultURLConnectionHandler {
 
 	interface Config extends DefaultURLConnectionHandler.Config {
 		String user();
+
 		String _password();
 	}
-	
+
 	private static final String	USER					= "user";
 	private static final String	PASSWORD				= ".password";
 	private static final String	HEADER_AUTHORIZATION	= "Authorization";

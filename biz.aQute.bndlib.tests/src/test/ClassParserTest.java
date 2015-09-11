@@ -30,9 +30,9 @@ class ConstantValues {
 interface WithGenerics<VERYLONGTYPE, X extends Jar> {
 	List< ? super VERYLONGTYPE> baz2();
 
-	List< ? extends Jar>	field	= null;
+	List< ? extends Jar> field = null;
 
-	WithGenerics<URL,Jar>	x		= null;
+	WithGenerics<URL,Jar> x = null;
 }
 
 class Generics {
@@ -71,36 +71,37 @@ class Implemented implements Plugin {
 
 @SuppressWarnings("resource")
 public class ClassParserTest extends TestCase {
-	static Analyzer	a	= new Analyzer();
+	static Analyzer a = new Analyzer();
 
-	
 	/**
-	 * Java Type & Parameter annotations 
-	 * @throws Exception 
+	 * Java Type & Parameter annotations @throws Exception
 	 */
-	
+
 	public void testJavaTypeAnnotations() throws Exception {
 		Builder b = new Builder();
-		b.addClasspath( IO.getFile("java8/type_annotations/bin"));
+		b.addClasspath(IO.getFile("java8/type_annotations/bin"));
 		b.setExportPackage("reference.*");
 		Jar build = b.build();
-		assertTrue( b.check());
+		assertTrue(b.check());
 		assertTrue(b.getImports().containsFQN("runtime.annotations"));
 		assertTrue(b.getImports().containsFQN("runtime.annotations.repeated"));
 		assertFalse(b.getImports().containsFQN("invisible.annotations"));
 		assertFalse(b.getImports().containsFQN("invisible.annotations.repeated"));
-		assertEquals("reference.runtime.annotations.Foo,reference.runtime.annotations.ReferenceRuntime", b.getReplacer().process("${sort;${classes;ANNOTATION;runtime.annotations.RuntimeTypeAnnotation}}"));
-		assertEquals("reference.invisible.annotations.ReferenceInvisible", b.getReplacer().process("${sort;${classes;ANNOTATION;invisible.annotations.InvisibleParameterAnnotation}}"));
-		assertEquals("reference.runtime.annotations.ReferenceRuntime", b.getReplacer().process("${sort;${classes;ANNOTATION;runtime.annotations.RuntimeParameterAnnotation}}"));
-		assertEquals("reference.invisible.annotations.ReferenceInvisible", b.getReplacer().process("${sort;${classes;ANNOTATION;invisible.annotations.InvisibleTypeAnnotation}}"));
-		assertEquals("reference.invisible.annotations.ReferenceInvisible", b.getReplacer().process("${sort;${classes;ANNOTATION;invisible.annotations.InvisibleRepeatedAnnotation}}"));
-		assertEquals("reference.runtime.annotations.ReferenceRuntime", b.getReplacer().process("${sort;${classes;ANNOTATION;runtime.annotations.RuntimeRepeatedAnnotation}}"));
+		assertEquals("reference.runtime.annotations.Foo,reference.runtime.annotations.ReferenceRuntime",
+				b.getReplacer().process("${sort;${classes;ANNOTATION;runtime.annotations.RuntimeTypeAnnotation}}"));
+		assertEquals("reference.invisible.annotations.ReferenceInvisible", b.getReplacer()
+				.process("${sort;${classes;ANNOTATION;invisible.annotations.InvisibleParameterAnnotation}}"));
+		assertEquals("reference.runtime.annotations.ReferenceRuntime", b.getReplacer()
+				.process("${sort;${classes;ANNOTATION;runtime.annotations.RuntimeParameterAnnotation}}"));
+		assertEquals("reference.invisible.annotations.ReferenceInvisible",
+				b.getReplacer().process("${sort;${classes;ANNOTATION;invisible.annotations.InvisibleTypeAnnotation}}"));
+		assertEquals("reference.invisible.annotations.ReferenceInvisible", b.getReplacer()
+				.process("${sort;${classes;ANNOTATION;invisible.annotations.InvisibleRepeatedAnnotation}}"));
+		assertEquals("reference.runtime.annotations.ReferenceRuntime",
+				b.getReplacer().process("${sort;${classes;ANNOTATION;runtime.annotations.RuntimeRepeatedAnnotation}}"));
 		b.close();
 	}
-	
-	
-	
-	
+
 	/**
 	 * https://jira.codehaus.org/browse/GROOVY-6169 There are several components
 	 * involved here, but the symptoms point to the Groovy compiler. Gradle uses
@@ -122,17 +123,15 @@ public class ClassParserTest extends TestCase {
 	}
 
 	/**
-	 * Test the constant values
-	 * 
-	 * @throws Exception
+	 * Test the constant values @throws Exception
 	 */
 
 	public void testConstantValues() throws Exception {
 		final Map<String,Object> values = new HashMap<String,Object>();
-		Clazz c = new Clazz(a, "ConstantValues", new FileResource(IO.getFile(new File("").getAbsoluteFile(),
-				"bin/test/ConstantValues.class")));
+		Clazz c = new Clazz(a, "ConstantValues",
+				new FileResource(IO.getFile(new File("").getAbsoluteFile(), "bin/test/ConstantValues.class")));
 		c.parseClassFileWithCollector(new ClassDataCollector() {
-			Clazz.FieldDef	last;
+			Clazz.FieldDef last;
 
 			@Override
 			public void field(Clazz.FieldDef referenced) {
@@ -275,22 +274,21 @@ public class ClassParserTest extends TestCase {
 
 	/**
 	 * @Neil: I'm trying to use bnd to bundleize a library called JQuantLib, but
-	 *        it causes an ArrayIndexOutOfBoundsException while parsing a class.
-	 *        The problem is reproducible and I have even rebuilt the library
-	 *        from source and get the same problem. Here's the stack trace:
-	 *        java.lang.ArrayIndexOutOfBoundsException: -29373 at
-	 *        aQute.bnd.osgi.Clazz.parseClassFile(Clazz.java:262) at
-	 *        aQute.bnd.osgi.Clazz.<init>(Clazz.java:101) at
-	 *        aQute.bnd.osgi.Analyzer.analyzeJar(Analyzer.java:1647) at
-	 *        aQute.bnd.osgi.Analyzer.analyzeBundleClasspath(Analyzer.java:1563)
-	 *        at aQute.bnd.osgi.Analyzer.analyze(Analyzer.java:108) at
-	 *        aQute.bnd.osgi.Builder.analyze(Builder.java:192) at
-	 *        aQute.bnd.osgi.Builder.doConditional(Builder.java:158) at
-	 *        aQute.bnd.osgi.Builder.build(Builder.java:71) at
-	 *        aQute.bnd.main.bnd.doBuild(bnd.java:379) at
-	 *        aQute.bnd.main.bnd.run(bnd.java:130) at
-	 *        aQute.bnd.main.bnd.main(bnd.java:39)
-	 * @throws Exception
+	 * it causes an ArrayIndexOutOfBoundsException while parsing a class. The
+	 * problem is reproducible and I have even rebuilt the library from source
+	 * and get the same problem. Here's the stack trace:
+	 * java.lang.ArrayIndexOutOfBoundsException: -29373 at
+	 * aQute.bnd.osgi.Clazz.parseClassFile(Clazz.java:262) at
+	 * aQute.bnd.osgi.Clazz.<init>(Clazz.java:101) at
+	 * aQute.bnd.osgi.Analyzer.analyzeJar(Analyzer.java:1647) at
+	 * aQute.bnd.osgi.Analyzer.analyzeBundleClasspath(Analyzer.java:1563) at
+	 * aQute.bnd.osgi.Analyzer.analyze(Analyzer.java:108) at
+	 * aQute.bnd.osgi.Builder.analyze(Builder.java:192) at
+	 * aQute.bnd.osgi.Builder.doConditional(Builder.java:158) at
+	 * aQute.bnd.osgi.Builder.build(Builder.java:71) at
+	 * aQute.bnd.main.bnd.doBuild(bnd.java:379) at
+	 * aQute.bnd.main.bnd.run(bnd.java:130) at
+	 * aQute.bnd.main.bnd.main(bnd.java:39) @throws Exception
 	 */
 
 	public static void testJQuantlib() throws Exception {
@@ -360,7 +358,7 @@ public class ClassParserTest extends TestCase {
 		Builder builder = new Builder();
 		try {
 			builder.setClasspath(new File[] {
-				IO.getFile("jar/ecj_3.2.2.jar")
+					IO.getFile("jar/ecj_3.2.2.jar")
 			});
 			builder.setProperty(Analyzer.EXPORT_PACKAGE, "org.eclipse.*");
 			builder.build();
@@ -380,9 +378,7 @@ public class ClassParserTest extends TestCase {
 	 * skipBytes. skip is not guaranteed to real skip the amount of bytes, not
 	 * even if there are still bytes left. It seems to be able to stop skipping
 	 * if it is at the end of a buffer or so :-( Idiots. The
-	 * DataInputStream.skipBytes works correctly.
-	 * 
-	 * @throws IOException
+	 * DataInputStream.skipBytes works correctly. @throws IOException
 	 */
 	public void testLargeClass() throws IOException {
 		InputStream in = getClass().getResourceAsStream("Parser.jclass");

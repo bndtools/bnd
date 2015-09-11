@@ -48,12 +48,12 @@ public class DSAnnotationExtrasTest extends BndTestCase {
 		b.setProperty(Constants.DSANNOTATIONS, DS13reference_cardinalities.class.getName());
 		b.setProperty("Private-Package", DS13reference_cardinalities.class.getPackage().getName());
 		b.addClasspath(new File("bin"));
-		
+
 		Jar jar = b.build();
 		assertOk(b);
-		
+
 		Attributes attrs = jar.getManifest().getMainAttributes();
-		
+
 		Parameters requires = new Parameters(attrs.getValue(Constants.REQUIRE_CAPABILITY));
 		List<Attrs> serviceRequires = getAll(requires, "osgi.service");
 		assertEquals(4, serviceRequires.size());

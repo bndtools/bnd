@@ -46,16 +46,18 @@ public class OBRFragment {
 
 		CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
 		identity.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bundleSymbolicName.getKey());
-		identity.addAttribute(IdentityNamespace.CAPABILITY_COPYRIGHT_ATTRIBUTE, d.translate(Constants.BUNDLE_COPYRIGHT));
+		identity.addAttribute(IdentityNamespace.CAPABILITY_COPYRIGHT_ATTRIBUTE,
+				d.translate(Constants.BUNDLE_COPYRIGHT));
 		identity.addAttribute(IdentityNamespace.CAPABILITY_DESCRIPTION_ATTRIBUTE,
 				d.translate(Constants.BUNDLE_DESCRIPTION));
 		identity.addAttribute(IdentityNamespace.CAPABILITY_DOCUMENTATION_ATTRIBUTE,
 				d.translate(Constants.BUNDLE_DOCURL));
-		identity.addAttribute(IdentityNamespace.CAPABILITY_LICENSE_ATTRIBUTE, d.translate(aQute.bnd.osgi.Constants.BUNDLE_LICENSE));
+		identity.addAttribute(IdentityNamespace.CAPABILITY_LICENSE_ATTRIBUTE,
+				d.translate(aQute.bnd.osgi.Constants.BUNDLE_LICENSE));
 		if (singleton)
 			identity.addAttribute(IdentityNamespace.CAPABILITY_SINGLETON_DIRECTIVE, "true");
-		identity.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, isFragment ? IdentityNamespace.TYPE_FRAGMENT
-				: IdentityNamespace.TYPE_BUNDLE);
+		identity.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE,
+				isFragment ? IdentityNamespace.TYPE_FRAGMENT : IdentityNamespace.TYPE_BUNDLE);
 		identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, new Version(d.getBundleVersion()));
 
 		resource.addCapability(identity);
@@ -190,10 +192,8 @@ public class OBRFragment {
 				if (matcher.matches()) {
 					name = matcher.group(1);
 					Version v = Version.parseVersion(matcher.group(2));
-					formatter.format(
-							"%s",
-							filter(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, name,
-									MAP.$("version", v.toString())));
+					formatter.format("%s", filter(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, name,
+							MAP.$("version", v.toString())));
 				}
 			}
 			formatter.format(")");
@@ -275,8 +275,8 @@ public class OBRFragment {
 			if (base != null) {
 				String path = file.getAbsolutePath();
 				if (base.startsWith(path)) {
-					content.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, path.substring(base.length())
-							.replace(File.separatorChar, '/'));
+					content.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE,
+							path.substring(base.length()).replace(File.separatorChar, '/'));
 				} else {
 					reporter.error("Base path %s is not parent of file path: %s", base, file.getAbsolutePath());
 				}

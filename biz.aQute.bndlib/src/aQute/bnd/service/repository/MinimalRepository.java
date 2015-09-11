@@ -19,6 +19,6 @@ public interface MinimalRepository {
 	List<Version> versions(String bsn);
 
 	Future<File> get(String bsn, Version version, Map<String,String> attrs);
-	
+
 	boolean is(Gestalt gestalt);
 }

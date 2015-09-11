@@ -40,13 +40,13 @@ import aQute.remote.util.AgentSupervisor;
 
 class RemoteCommand extends Processor {
 	private static TypeReference<List<Version>>	tref				= new TypeReference<List<Version>>() {};
-	private Yaml				y					= new Yaml();
-	private bnd					bnd;
-	private LauncherSupervisor	launcher			= new LauncherSupervisor();
-	private Agent				agent;
-	private int					port;
-	private String				host;
-	private static Set<String>	IGNORED_NAMESPACES	= new HashSet<>();
+	private Yaml								y					= new Yaml();
+	private bnd									bnd;
+	private LauncherSupervisor					launcher			= new LauncherSupervisor();
+	private Agent								agent;
+	private int									port;
+	private String								host;
+	private static Set<String>					IGNORED_NAMESPACES	= new HashSet<>();
 
 	static {
 		IGNORED_NAMESPACES.add(PackageNamespace.PACKAGE_NAMESPACE); // handled
@@ -224,7 +224,6 @@ class RemoteCommand extends Processor {
 					crb.addAttribute(key, value);
 				}
 				crb.addDirectives(c.directives);
-
 
 				Attrs attrs = crb.toAttrs();
 

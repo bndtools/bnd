@@ -17,8 +17,8 @@ import org.osgi.service.log.LogService;
  */
 public class OSGiFrameworkAnalyzer implements ResourceAnalyzer {
 
-	private static final String SERVICE_FRAMEWORK_FACTORY = "META-INF/services/org.osgi.framework.launch.FrameworkFactory";
-	private static final String FRAMEWORK_PACKAGE = "org.osgi.framework";
+	private static final String	SERVICE_FRAMEWORK_FACTORY	= "META-INF/services/org.osgi.framework.launch.FrameworkFactory";
+	private static final String	FRAMEWORK_PACKAGE			= "org.osgi.framework";
 
 	@SuppressWarnings("unused")
 	private final LogService log;
@@ -30,7 +30,8 @@ public class OSGiFrameworkAnalyzer implements ResourceAnalyzer {
 	public void analyzeResource(Resource resource, List<Capability> caps, List<Requirement> reqs) throws Exception {
 		Resource fwkFactorySvc = resource.getChild(SERVICE_FRAMEWORK_FACTORY);
 		if (fwkFactorySvc != null) {
-			Builder builder = new Builder().setNamespace(Namespaces.NS_CONTRACT).addAttribute(Namespaces.NS_CONTRACT, Namespaces.CONTRACT_OSGI_FRAMEWORK);
+			Builder builder = new Builder().setNamespace(Namespaces.NS_CONTRACT).addAttribute(Namespaces.NS_CONTRACT,
+					Namespaces.CONTRACT_OSGI_FRAMEWORK);
 
 			Version specVersion = null;
 			StringBuilder uses = new StringBuilder();
@@ -64,12 +65,9 @@ public class OSGiFrameworkAnalyzer implements ResourceAnalyzer {
 
 	/**
 	 * Map the version of package {@code org.osgi.framework} to an OSGi
-	 * specification release version
-	 * 
-	 * @param pv
-	 *            Version of the {@code org.osgi.framework} packge
-	 * @return The OSGi specification release version, or {@code null} if not
-	 *         known.
+	 * specification release version @param pv Version of the {@code
+	 * org.osgi.framework} packge @return The OSGi specification release
+	 * version, or {@code null} if not known.
 	 */
 	private Version mapFrameworkPackageVersion(Version pv) {
 		if (pv.getMajor() != 1)
@@ -77,33 +75,33 @@ public class OSGiFrameworkAnalyzer implements ResourceAnalyzer {
 
 		Version version;
 		switch (pv.getMinor()) {
-		case 7:
-			version = new Version(5, 0, 0);
-			break;
-		case 6:
-			version = new Version(4, 3, 0);
-			break;
-		case 5:
-			version = new Version(4, 2, 0);
-			break;
-		case 4:
-			version = new Version(4, 1, 0);
-			break;
-		case 3:
-			version = new Version(4, 0, 0);
-			break;
-		case 2:
-			version = new Version(3, 0, 0);
-			break;
-		case 1:
-			version = new Version(2, 0, 0);
-			break;
-		case 0:
-			version = new Version(1, 0, 0);
-			break;
-		default:
-			version = null;
-			break;
+			case 7 :
+				version = new Version(5, 0, 0);
+				break;
+			case 6 :
+				version = new Version(4, 3, 0);
+				break;
+			case 5 :
+				version = new Version(4, 2, 0);
+				break;
+			case 4 :
+				version = new Version(4, 1, 0);
+				break;
+			case 3 :
+				version = new Version(4, 0, 0);
+				break;
+			case 2 :
+				version = new Version(3, 0, 0);
+				break;
+			case 1 :
+				version = new Version(2, 0, 0);
+				break;
+			case 0 :
+				version = new Version(1, 0, 0);
+				break;
+			default :
+				version = null;
+				break;
 		}
 
 		return version;

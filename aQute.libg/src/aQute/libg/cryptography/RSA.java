@@ -8,9 +8,9 @@ import java.security.spec.*;
 import aQute.libg.tuple.*;
 
 public class RSA {
-	final static String		ALGORITHM	= "RSA";
+	final static String ALGORITHM = "RSA";
 
-	final static KeyFactory	factory		= getKeyFactory();
+	final static KeyFactory factory = getKeyFactory();
 
 	static private KeyFactory getKeyFactory() {
 		try {

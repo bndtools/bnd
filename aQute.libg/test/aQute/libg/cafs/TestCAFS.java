@@ -5,7 +5,7 @@ import java.io.*;
 import junit.framework.*;
 
 public class TestCAFS extends TestCase {
-	File	tmp;
+	File tmp;
 
 	@Override
 	public void setUp() throws Exception {

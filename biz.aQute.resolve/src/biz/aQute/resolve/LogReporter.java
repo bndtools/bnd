@@ -6,7 +6,7 @@ import org.osgi.service.log.LogService;
 import aQute.service.reporter.Reporter;
 
 public class LogReporter extends org.apache.felix.resolver.Logger implements LogService {
-	private Reporter	reporter;
+	private Reporter reporter;
 
 	class Error extends Silent {
 

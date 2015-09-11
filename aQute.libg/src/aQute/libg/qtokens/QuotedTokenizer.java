@@ -95,9 +95,9 @@ public class QuotedTokenizer {
 			c = string.charAt(index++);
 			if (c == quote)
 				break;
-			if (c == '\\' && index < string.length() ) {
+			if (c == '\\' && index < string.length()) {
 				char cc = string.charAt(index++);
-				if ( cc != quote )
+				if (cc != quote)
 					sb.append("\\");
 				c = cc;
 			}

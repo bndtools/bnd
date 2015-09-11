@@ -10,6 +10,7 @@ public class ConsoleProgress implements ProgressPlugin {
 			public void worked(int units) {
 				// TODO
 			}
+
 			public void done(String message, Throwable e) {
 				System.out.println(": " + message);
 				if (e != null)

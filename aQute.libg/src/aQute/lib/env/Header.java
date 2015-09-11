@@ -10,9 +10,9 @@ import aQute.libg.qtokens.*;
 import aQute.service.reporter.*;
 
 public class Header implements Map<String,Props> {
-	public final static Pattern	TOKEN_P							= Pattern.compile("[-a-zA-Z0-9_]+");
+	public final static Pattern TOKEN_P = Pattern.compile("[-a-zA-Z0-9_]+");
 
-	public static final char	DUPLICATE_MARKER	= '~';
+	public static final char DUPLICATE_MARKER = '~';
 
 	private LinkedHashMap<String,Props>	map;
 	static Map<String,Props>			EMPTY	= Collections.emptyMap();
@@ -32,12 +32,12 @@ public class Header implements Map<String,Props> {
 		map.clear();
 	}
 
-	
 	public void add(String key, Props attrs) {
-		while ( containsKey(key))
+		while (containsKey(key))
 			key += "~";
-		put(key,attrs);
+		put(key, attrs);
 	}
+
 	public boolean containsKey(final String name) {
 		if (map == null)
 			return false;
@@ -222,6 +222,7 @@ public class Header implements Map<String,Props> {
 	public Map<String, ? extends Map<String,String>> asMapMap() {
 		return this;
 	}
+
 	static public Header parseHeader(String value) {
 		return parseHeader(value, null);
 	}
@@ -230,11 +231,7 @@ public class Header implements Map<String,Props> {
 	 * Standard OSGi header parser. This parser can handle the format clauses
 	 * ::= clause ( ',' clause ) + clause ::= name ( ';' name ) (';' key '='
 	 * value ) This is mapped to a Map { name => Map { attr|directive => value }
-	 * }
-	 * 
-	 * @param value
-	 *            A string
-	 * @return a Map<String,Map<String,String>>
+	 * } @param value A string @return a Map<String,Map<String,String>>
 	 */
 	static public Header parseHeader(String value, Reporter logger) {
 		return parseHeader(value, logger, new Header());
@@ -255,8 +252,9 @@ public class Header implements Map<String,Props> {
 			del = qt.getSeparator();
 			if (name == null || name.length() == 0) {
 				if (logger != null && logger.isPedantic()) {
-					logger.warning("Empty clause, usually caused by repeating a comma without any name field or by having spaces after the backslash of a property file: "
-							+ value);
+					logger.warning(
+							"Empty clause, usually caused by repeating a comma without any name field or by having spaces after the backslash of a property file: "
+									+ value);
 				}
 				if (name == null)
 					break;
@@ -299,10 +297,7 @@ public class Header implements Map<String,Props> {
 				for (String clauseName : aliases) {
 					if (result.containsKey(clauseName)) {
 						if (logger != null && logger.isPedantic())
-							logger.warning("Duplicate name "
-									+ clauseName
-									+ " used in header: '"
-									+ clauseName
+							logger.warning("Duplicate name " + clauseName + " used in header: '" + clauseName
 									+ "'. Duplicate names are specially marked in Bnd with a ~ at the end (which is stripped at printing time).");
 						while (result.containsKey(clauseName))
 							clauseName += "~";
@@ -360,10 +355,7 @@ public class Header implements Map<String,Props> {
 	}
 
 	/**
-	 * @param sb
-	 * @param value
-	 * @return
-	 * @throws IOException
+	 * @param sb @param value @return @throws IOException
 	 */
 	public static boolean quote(Appendable sb, String value) throws IOException {
 		if (value.startsWith("\\\""))

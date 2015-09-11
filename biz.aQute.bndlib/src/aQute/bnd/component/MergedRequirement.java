@@ -18,11 +18,12 @@ import aQute.libg.tuple.Pair;
  */
 public class MergedRequirement {
 
-	private static final String MULTIPLE = "\"multiple\"";
-	private static final String OPTIONAL = "\"optional\"";
+	private static final String	MULTIPLE	= "\"multiple\"";
+	private static final String	OPTIONAL	= "\"optional\"";
 
 	private static class FilterEffectivePair extends Pair<String,String> {
 		private static final long serialVersionUID = 1L;
+
 		FilterEffectivePair(String filter, String effective) {
 			super(filter, effective);
 		}
@@ -63,7 +64,7 @@ public class MergedRequirement {
 			newAttrs.put(Constants.CARDINALITY_DIRECTIVE, MULTIPLE);
 		filterMap.put(key, newAttrs);
 	}
-	
+
 	/**
 	 * Generate a list of strings formatted appropriately as entries in the
 	 * Require-Capability header.

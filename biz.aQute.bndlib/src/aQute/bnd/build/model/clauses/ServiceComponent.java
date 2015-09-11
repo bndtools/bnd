@@ -10,26 +10,26 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 
 	// v1.0.0 attributes
 	// public final static String COMPONENT_NAME = "name:";
-	public final static String		COMPONENT_FACTORY				= "factory:";
-	public final static String		COMPONENT_SERVICEFACTORY		= "servicefactory:";
-	public final static String		COMPONENT_IMMEDIATE				= "immediate:";
-	public final static String		COMPONENT_ENABLED				= "enabled:";
+	public final static String	COMPONENT_FACTORY			= "factory:";
+	public final static String	COMPONENT_SERVICEFACTORY	= "servicefactory:";
+	public final static String	COMPONENT_IMMEDIATE			= "immediate:";
+	public final static String	COMPONENT_ENABLED			= "enabled:";
 
-	public final static String		COMPONENT_DYNAMIC				= "dynamic:";
-	public final static String		COMPONENT_MULTIPLE				= "multiple:";
-	public final static String		COMPONENT_PROVIDE				= "provide:";
-	public final static String		COMPONENT_OPTIONAL				= "optional:";
-	public final static String		COMPONENT_PROPERTIES			= "properties:";
+	public final static String	COMPONENT_DYNAMIC		= "dynamic:";
+	public final static String	COMPONENT_MULTIPLE		= "multiple:";
+	public final static String	COMPONENT_PROVIDE		= "provide:";
+	public final static String	COMPONENT_OPTIONAL		= "optional:";
+	public final static String	COMPONENT_PROPERTIES	= "properties:";
 	// public final static String COMPONENT_IMPLEMENTATION = "implementation:";
 
 	// v1.1.0 attributes
-	public final static String		COMPONENT_VERSION				= "version:";
-	public final static String		COMPONENT_CONFIGURATION_POLICY	= "configuration-policy:";
-	public final static String		COMPONENT_MODIFIED				= "modified:";
-	public final static String		COMPONENT_ACTIVATE				= "activate:";
-	public final static String		COMPONENT_DEACTIVATE			= "deactivate:";
+	public final static String	COMPONENT_VERSION				= "version:";
+	public final static String	COMPONENT_CONFIGURATION_POLICY	= "configuration-policy:";
+	public final static String	COMPONENT_MODIFIED				= "modified:";
+	public final static String	COMPONENT_ACTIVATE				= "activate:";
+	public final static String	COMPONENT_DEACTIVATE			= "deactivate:";
 
-	private final static Pattern	REFERENCE_PATTERN				= Pattern.compile("([^(]+)(\\(.+\\))?");
+	private final static Pattern REFERENCE_PATTERN = Pattern.compile("([^(]+)(\\(.+\\))?");
 
 	public ServiceComponent(String name, Attrs attribs) {
 		super(name, attribs);
@@ -172,7 +172,7 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 			String referenceName = entry.getKey();
 
 			// Skip directives
-			if (referenceName.endsWith(":"))//$NON-NLS-1$
+			if (referenceName.endsWith(":")) //$NON-NLS-1$
 				continue;
 
 			ComponentSvcReference svcRef = new ComponentSvcReference();

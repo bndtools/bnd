@@ -201,13 +201,8 @@ public class PomFromManifest extends WriteResource {
 	}
 
 	/**
-	 * Utility function to print a tag from a map
-	 * 
-	 * @param ps
-	 * @param values
-	 * @param string
-	 * @param tag
-	 * @param object
+	 * Utility function to print a tag from a map @param ps @param values @param
+	 * string @param tag @param object
 	 */
 	private Tag tagFromMap(Tag parent, Map<String,String> values, String string, String tag, String object) {
 		String value = values.get(string);

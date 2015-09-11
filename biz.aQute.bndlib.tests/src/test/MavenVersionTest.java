@@ -59,8 +59,8 @@ public class MavenVersionTest extends TestCase {
 		mv = MavenVersion.parseString("1rc1");
 		assertEquals(new Version(1, 0, 0, "rc1"), mv.getOSGiVersion());
 		assertFalse(mv.isSnapshot());
-	}	
-	
+	}
+
 	public void testQualifierWithDotSeparator() {
 		MavenVersion mv = MavenVersion.parseString("1.2.3.beta-1");
 		assertEquals(new Version(1, 2, 3, "beta-1"), mv.getOSGiVersion());
@@ -72,7 +72,7 @@ public class MavenVersionTest extends TestCase {
 		assertEquals(new Version(1, 0, 0, "beta-1"), mv.getOSGiVersion());
 		assertFalse(mv.isSnapshot());
 	}
-	
+
 	public void testDotsInQualifier() {
 		MavenVersion mv = MavenVersion.parseString("1.2.3.4.5");
 		assertEquals(new Version(1, 2, 3, "4.5"), mv.getOSGiVersion());

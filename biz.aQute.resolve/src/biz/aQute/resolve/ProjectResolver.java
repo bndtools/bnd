@@ -128,9 +128,7 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 	}
 
 	/**
-	 * Validate the current project for resolving.
-	 * 
-	 * @throws Exception
+	 * Validate the current project for resolving. @throws Exception
 	 */
 
 	public void validate() throws Exception {

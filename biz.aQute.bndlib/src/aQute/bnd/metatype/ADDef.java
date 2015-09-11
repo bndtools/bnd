@@ -15,40 +15,40 @@ import aQute.bnd.xmlattribute.XMLAttributeFinder;
 import aQute.lib.tag.Tag;
 
 public class ADDef extends ExtensionDef {
-	AttributeDefinition		ad;
-	Annotation				a;
+	AttributeDefinition	ad;
+	Annotation			a;
 
-	String id;
-	String name;
-	String description;
-	AttributeType type; 
-	private String typeString;
-	int cardinality;
-	String min;
-	String max;
-	String[] defaults;
-	boolean required = true;
-	final List<OptionDef> options = new ArrayList<OptionDef>();
-	
+	String					id;
+	String					name;
+	String					description;
+	AttributeType			type;
+	private String			typeString;
+	int						cardinality;
+	String					min;
+	String					max;
+	String[]				defaults;
+	boolean					required	= true;
+	final List<OptionDef>	options		= new ArrayList<OptionDef>();
+
 	public ADDef(XMLAttributeFinder finder) {
 		super(finder);
 	}
 
 	public void prepare() {
-		typeString = (type == null)? "*INVALID*": type.toString();		
+		typeString = (type == null) ? "*INVALID*" : type.toString();
 	}
-	
+
 	Tag getTag(Namespaces namespaces) {
 		Tag ad = new Tag("AD").addAttribute("id", id).addAttribute("type", typeString);
 
 		if (cardinality != 0) {
 			ad.addAttribute("cardinality", cardinality);
 		}
-		
+
 		if (!required) {
 			ad.addAttribute("required", required);
 		}
-		
+
 		if (name != null) {
 			ad.addAttribute("name", name);
 		}
@@ -68,15 +68,15 @@ public class ADDef extends ExtensionDef {
 		if (defaults != null) {
 			StringBuffer b = new StringBuffer();
 			String sep = "";
-			for (String defaultValue :defaults) {
+			for (String defaultValue : defaults) {
 				b.append(sep);
 				escape(defaultValue, b);
 				sep = ",";
 			}
 			ad.addAttribute("default", b.toString());
 		}
-		
-		for (OptionDef option: options) {
+
+		for (OptionDef option : options) {
 			ad.addContent(option.getTag());
 		}
 
@@ -85,7 +85,7 @@ public class ADDef extends ExtensionDef {
 		return ad;
 	}
 
-	private static final Pattern	escapes	= Pattern.compile("[ ,\\\\]");
+	private static final Pattern escapes = Pattern.compile("[ ,\\\\]");
 
 	private void escape(String defaultValue, StringBuffer b) {
 		Matcher m = escapes.matcher(defaultValue);

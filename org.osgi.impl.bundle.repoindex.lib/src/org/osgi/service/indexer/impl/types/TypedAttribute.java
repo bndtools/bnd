@@ -5,9 +5,9 @@ import org.osgi.service.indexer.impl.util.Tag;
 
 public class TypedAttribute {
 
-	private final String name;
-	private final Type type;
-	private final Object value;
+	private final String	name;
+	private final Type		type;
+	private final Object	value;
 
 	public TypedAttribute(String name, Type type, Object value) {
 		this.name = name;

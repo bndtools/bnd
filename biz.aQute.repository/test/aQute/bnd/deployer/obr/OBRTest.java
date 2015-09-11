@@ -15,12 +15,12 @@ import aQute.lib.io.*;
 
 public class OBRTest extends TestCase {
 
-	private static final String obrSrc = "testdata/fullobr.xml";
-	private static final String obrDst = "testdata/fullobr.tmp.xml";
+	private static final String	obrSrc	= "testdata/fullobr.xml";
+	private static final String	obrDst	= "testdata/fullobr.tmp.xml";
 	private static OBR			obr;
 	private static NanoHTTPD	httpd;
 	private static int			httpdPort;
-	private static Processor reporter;
+	private static Processor	reporter;
 
 	@Override
 	protected void setUp() throws Exception {
@@ -39,7 +39,7 @@ public class OBRTest extends TestCase {
 
 		obr.setProperties(config);
 		obr.setCacheDirectory(cacheDir);
-		
+
 		reporter = new Processor();
 		obr.setReporter(reporter);
 
@@ -186,7 +186,7 @@ public class OBRTest extends TestCase {
 		assertEquals("http://www.example.com/bundles/dummybundle.jar,file:/Users/neil/bundles/dummy.jar",
 				obr2.getName());
 	}
-	
+
 	public static void testProcessFilter1() {
 		String filter = "(&(name=foo)(version<1.0.0))";
 		String expected = "(&(name=foo)(!(version>=1.0.0)))";
@@ -198,7 +198,7 @@ public class OBRTest extends TestCase {
 		String expected = "(&(name=foo)(!(version<=1.0.0)))";
 		assertEquals(expected, ObrUtil.processFilter(filter, null));
 	}
-	
+
 	public static void testProcessFilter3() {
 		String filter = "(name=foo)(mandatory:<*hello)(version>=1.0.0)(foo<*bar)";
 		String expected = "(name=foo)(version>=1.0.0)";

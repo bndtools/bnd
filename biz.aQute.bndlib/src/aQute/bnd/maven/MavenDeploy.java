@@ -13,10 +13,10 @@ import aQute.service.reporter.*;
 
 public class MavenDeploy implements Deploy, Plugin {
 
-	String		repository;
-	String		url;
-	String		homedir;
-	String		keyname;
+	String	repository;
+	String	url;
+	String	homedir;
+	String	keyname;
 
 	String		passphrase;
 	Reporter	reporter;
@@ -69,8 +69,8 @@ public class MavenDeploy implements Deploy, Plugin {
 				Jar src = new Jar("src");
 				try {
 					split(original, main, src);
-					Parameters exports = project.parseHeader(manifest.getMainAttributes().getValue(
-							Constants.EXPORT_PACKAGE));
+					Parameters exports = project
+							.parseHeader(manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
 					File jdoc = new File(tmp, "jdoc");
 					jdoc.mkdirs();
 					project.progress("Generating Javadoc for: " + exports.keySet());
@@ -141,8 +141,8 @@ public class MavenDeploy implements Deploy, Plugin {
 
 		int result = command.execute(stdout, stderr);
 		if (result != 0) {
-			b.error("Maven deploy to %s failed to sign and transfer %s because %s", repository, file, "" + stdout
-					+ stderr);
+			b.error("Maven deploy to %s failed to sign and transfer %s because %s", repository, file,
+					"" + stdout + stderr);
 		}
 	}
 

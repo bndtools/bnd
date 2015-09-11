@@ -46,7 +46,7 @@ public abstract class WriteResource implements Resource {
 	}
 
 	static class CountingOutputStream extends OutputStream {
-		long	size;
+		long size;
 
 		@Override
 		public void write(int var0) throws IOException {

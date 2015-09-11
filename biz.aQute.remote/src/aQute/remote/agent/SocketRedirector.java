@@ -14,7 +14,7 @@ public class SocketRedirector implements Redirector {
 	// socket is registered on
 	//
 
-	private static final String	OSGI_SHELL_TELNET_IP	= "osgi.shell.telnet.ip";
+	private static final String OSGI_SHELL_TELNET_IP = "osgi.shell.telnet.ip";
 
 	//
 	// Telnet sends some options in the beginning that need to be
@@ -22,19 +22,15 @@ public class SocketRedirector implements Redirector {
 	// by some commands.
 	//
 
-	private static final int	IAC						= 255;
+	private static final int	IAC	= 255;
 	private Socket				socket;
 	private PrintStream			in;
 	private Thread				out;
 	private boolean				quit;
 
 	/**
-	 * Constructor
-	 * 
-	 * @param agentServer
-	 *            the agent we're working for
-	 * @param port
-	 *            the shell port
+	 * Constructor @param agentServer the agent we're working for @param port
+	 * the shell port
 	 */
 	public SocketRedirector(final AgentServer agentServer, final int port) throws Exception {
 

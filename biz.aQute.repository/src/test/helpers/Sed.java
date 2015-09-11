@@ -39,8 +39,8 @@ public class Sed {
 
 	public static void gzFile2GzFile(String filenameIn, String searchPattern, String replacementPattern,
 			String filenameOut) throws Exception {
-		BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(
-				filenameIn))));
+		BufferedReader reader = new BufferedReader(
+				new InputStreamReader(new GZIPInputStream(new FileInputStream(filenameIn))));
 		BufferedOutputStream out = new BufferedOutputStream(new GZIPOutputStream(new FileOutputStream(filenameOut)));
 
 		processObrFileInternal(reader, searchPattern, replacementPattern, out);

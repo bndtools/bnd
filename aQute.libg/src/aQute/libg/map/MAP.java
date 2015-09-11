@@ -8,7 +8,7 @@ import java.util.*;
 public class MAP {
 
 	static public class MAPX<K, V> extends LinkedHashMap<K,V> {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		public MAPX<K,V> $(K key, V value) {
 			put(key, value);

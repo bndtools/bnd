@@ -20,14 +20,14 @@ import org.osgi.service.indexer.Resource;
 
 public class JarResource implements Resource {
 
-	private final File file;
-	private final JarFile jarFile;
-	private final String location;
+	private final File		file;
+	private final JarFile	jarFile;
+	private final String	location;
 
-	private final Dictionary<String, Object> properties = new Hashtable<String, Object>();
+	private final Dictionary<String,Object> properties = new Hashtable<String,Object>();
 
-	private final Map<String, List<JarEntry>> prefixMap = new HashMap<String, List<JarEntry>>();
-	private final Map<String, JarEntry> paths = new HashMap<String, JarEntry>();
+	private final Map<String,List<JarEntry>>	prefixMap	= new HashMap<String,List<JarEntry>>();
+	private final Map<String,JarEntry>			paths		= new HashMap<String,JarEntry>();
 
 	private Manifest manifest;
 
@@ -85,7 +85,7 @@ public class JarResource implements Resource {
 		return location;
 	}
 
-	public Dictionary<String, Object> getProperties() {
+	public Dictionary<String,Object> getProperties() {
 		return properties;
 	}
 
@@ -104,7 +104,8 @@ public class JarResource implements Resource {
 				if (manifestResource != null) {
 					try {
 						manifest = new Manifest(manifestResource.getStream());
-					} finally {
+					}
+					finally {
 						manifestResource.close();
 					}
 				}
@@ -138,7 +139,8 @@ public class JarResource implements Resource {
 	public void close() {
 		try {
 			jarFile.close();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			// Don't care
 		}
 	}

@@ -6,19 +6,19 @@ import java.util.Map;
 
 public class SymbolicName {
 
-	private final String name;
-	private final Map<String, String> attributes;
+	private final String				name;
+	private final Map<String,String>	attributes;
 
-	public SymbolicName(String name, Map<String, String> attributes) {
+	public SymbolicName(String name, Map<String,String> attributes) {
 		this.name = name;
-		this.attributes = new HashMap<String, String>(attributes);
+		this.attributes = new HashMap<String,String>(attributes);
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public Map<String, String> getAttributes() {
+	public Map<String,String> getAttributes() {
 		return Collections.unmodifiableMap(attributes);
 	}
 

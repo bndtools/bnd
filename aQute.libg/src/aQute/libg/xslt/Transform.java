@@ -9,9 +9,9 @@ import javax.xml.transform.*;
 import javax.xml.transform.stream.*;
 
 public class Transform {
-	static TransformerFactory	transformerFactory	= TransformerFactory.newInstance();
+	static TransformerFactory transformerFactory = TransformerFactory.newInstance();
 
-	static Map<URI,Templates>	cache				= new ConcurrentHashMap<URI,Templates>();
+	static Map<URI,Templates> cache = new ConcurrentHashMap<URI,Templates>();
 
 	public static void transform(TransformerFactory transformerFactory, URL xslt, InputStream in, OutputStream out)
 			throws Exception {

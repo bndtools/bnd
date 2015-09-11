@@ -36,9 +36,7 @@ import aQute.bnd.version.Version;
  * packages. A package is identified by a PackageRef (and a type by a TypeRef).
  * The namespace is maintained by {@link Descriptors}, which here is owned by
  * {@link Analyzer}. A special class, {@link Packages} maintains the attributes
- * that are found in the code.
- * 
- * @version $Revision: 1.2 $
+ * that are found in the code. @version $Revision: 1.2 $
  */
 public class About {
 	public static Version	_2_3	= new Version(2, 3, 0);
@@ -51,8 +49,7 @@ public class About {
 			"Added bnd command bnd resolve validate <index.xml> to validate that a repository file is complete",
 			"Extended the resource package with many functions to work easily with resources, capabilities and requirements",
 			"Properly handles optionals in resolve", "Handles SCR Release 6",
-			"Added knowledge about OSGi R6 Core to OSGi ",
-			"Build path can now handle wildcards for bsn",
+			"Added knowledge about OSGi R6 Core to OSGi ", "Build path can now handle wildcards for bsn",
 			"Added a -augment instruction to add capabilities and requirements to resources during bnd resolves",
 			"In places where a bundle returns a boolean words like not set, empty string, false, not, off are interpreted as false, "
 					+ "otherwise the expression is true. As a slight addition, you can start it with ! to invert the remaining part.",
@@ -72,8 +69,7 @@ public class About {
 			"Additional conversions in converter; Dictionary, URI/L cleanup",
 			"Force the current working directory to be the project base during launching",
 			"Version mismatch between pacakge(-)info(.java) and manifest are now not taking qualifier into account ",
-			"Missing bundles on -runbundles are now errors",
-			"${isdir} and ${env} now return empty (false) if no value",
+			"Missing bundles on -runbundles are now errors", "${isdir} and ${env} now return empty (false) if no value",
 			"Additional checks for non-existent imports or empty imports", "-runkeep does now work",
 			"${versionmask} macro to use when ${version} is used for other purposes",
 			"Added annotation attributes by treating manifest annotations as meta annotations",

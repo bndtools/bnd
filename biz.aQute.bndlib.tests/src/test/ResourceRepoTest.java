@@ -44,27 +44,27 @@ public class ResourceRepoTest extends TestCase {
 
 		SearchableRepository.ResourceDescriptor osgi = create("jar/osgi.jar");
 		assertNull(repoImpl.getResource(osgi.id));
-		
+
 		// Add it
 		boolean add = repoImpl.add("x", osgi);
 		assertNotNull(repoImpl.getResource(osgi.id));
 		assertEquals(1, repoImpl.filter(null, null).size());
 		assertEquals(1, repoImpl.filter("x", null).size());
 		assertEquals(0, repoImpl.filter("y", null).size());
-		
+
 		repoImpl.delete("y", osgi.id);
 		assertEquals(1, repoImpl.filter("x", null).size());
-		
+
 		repoImpl.add("y", osgi);
 		assertEquals(1, repoImpl.filter("x", null).size());
 		assertEquals(1, repoImpl.filter("y", null).size());
 		assertEquals(1, repoImpl.filter(null, null).size());
-		
+
 		repoImpl.delete("y", osgi.id);
 		assertEquals(1, repoImpl.filter("x", null).size());
 		assertEquals(0, repoImpl.filter("y", null).size());
 		assertEquals(1, repoImpl.filter(null, null).size());
-		
+
 		repoImpl.delete("x", osgi.id);
 		assertEquals(0, repoImpl.filter("x", null).size());
 		assertEquals(0, repoImpl.filter("y", null).size());
@@ -146,7 +146,7 @@ public class ResourceRepoTest extends TestCase {
 		s.acquire();
 		assertTrue(success.get());
 
-		repoImpl.delete(null,t.id);
+		repoImpl.delete(null, t.id);
 		assertEquals(0, repoImpl.filter(null, null).size());
 
 	}
@@ -192,7 +192,7 @@ public class ResourceRepoTest extends TestCase {
 		repoImpl.add("x", rd);
 		assertEquals(1, adds.get());
 		assertEquals(0, removes.get());
-		repoImpl.delete(null,rd.id);
+		repoImpl.delete(null, rd.id);
 		;
 		assertEquals(1, adds.get());
 		assertEquals(1, removes.get());

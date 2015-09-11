@@ -10,7 +10,7 @@ import org.osgi.util.tracker.ServiceTracker;
 
 class PidTracker<C> extends ServiceTracker {
 
-	private final Map<String, C> map = new HashMap<String, C>();
+	private final Map<String,C> map = new HashMap<String,C>();
 
 	PidTracker(BundleContext context, Class<C> clazz) {
 		super(context, clazz.getName(), null);

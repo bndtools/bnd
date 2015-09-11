@@ -110,9 +110,7 @@ public class ProjectBuilder extends Builder {
 	}
 
 	/**
-	 * Compare this builder's JAR with a baseline
-	 * 
-	 * @throws Exception
+	 * Compare this builder's JAR with a baseline @throws Exception
 	 */
 	@Override
 	public void doBaseline(Jar dot) throws Exception {
@@ -265,25 +263,15 @@ public class ProjectBuilder extends Builder {
 	 * This method attempts to find the baseline jar for the current project. It
 	 * reads the -baseline property and treats it as instructions. These
 	 * instructions are matched against the bsns of the jars (think sub
-	 * builders!). If they match, the sub builder is selected.
-	 * <p>
-	 * The instruction can then specify the following options:
-	 * 
-	 * <pre>
-	 * 	version : baseline version from repository
-	 * 	file    : a file path
-	 * </pre>
-	 * 
-	 * If neither is specified, the current version is used to find the highest
-	 * version (without qualifier) that is below the current version. If a
-	 * version is specified, we take the highest version with the same base
-	 * version.
-	 * <p>
+	 * builders!). If they match, the sub builder is selected. <p> The
+	 * instruction can then specify the following options: <pre> version :
+	 * baseline version from repository file : a file path </pre> If neither is
+	 * specified, the current version is used to find the highest version
+	 * (without qualifier) that is below the current version. If a version is
+	 * specified, we take the highest version with the same base version. <p>
 	 * Since baselining is expensive and easily generates errors you must enable
 	 * it. The easiest solution is to {@code -baseline: *}. This will match all
-	 * sub builders and will calculate the version.
-	 * 
-	 * @return a Jar or null
+	 * sub builders and will calculate the version. @return a Jar or null
 	 */
 	public Jar getBaselineJar() throws Exception {
 		String bl = getProperty(Constants.BASELINE);
@@ -366,8 +354,8 @@ public class ProjectBuilder extends Builder {
 				// Fetch the revision
 
 				if (target.getWithoutQualifier().compareTo(version.getWithoutQualifier()) > 0) {
-					error("The baseline version %s is higher than the current version %s for %s in %s", target,
-							version, bsn, repo);
+					error("The baseline version %s is higher than the current version %s for %s in %s", target, version,
+							bsn, repo);
 					return null;
 				}
 				if (target.getWithoutQualifier().compareTo(version.getWithoutQualifier()) == 0) {
@@ -391,12 +379,8 @@ public class ProjectBuilder extends Builder {
 	}
 
 	/**
-	 * Remove any staging versions that have a variant with a higher qualifier.
-	 * 
-	 * @param versions
-	 * @param repo
-	 * @return
-	 * @throws Exception
+	 * Remove any staging versions that have a variant with a higher
+	 * qualifier. @param versions @param repo @return @throws Exception
 	 */
 	private SortedSet<Version> removeStagedAndFilter(SortedSet<Version> versions, RepositoryPlugin repo, String bsn)
 			throws Exception {
@@ -436,13 +420,8 @@ public class ProjectBuilder extends Builder {
 	}
 
 	/**
-	 * Check if we have a master phase.
-	 * 
-	 * @param repo
-	 * @param bsn
-	 * @param v
-	 * @return
-	 * @throws Exception
+	 * Check if we have a master phase. @param repo @param bsn @param
+	 * v @return @throws Exception
 	 */
 	private boolean isMaster(InfoRepository repo, String bsn, Version v) throws Exception {
 		ResourceDescriptor descriptor = repo.getDescriptor(bsn, v);
@@ -491,9 +470,7 @@ public class ProjectBuilder extends Builder {
 	}
 
 	/**
-	 * Create a report of the settings
-	 * 
-	 * @throws Exception
+	 * Create a report of the settings @throws Exception
 	 */
 
 	public void report(Map<String,Object> table) throws Exception {
@@ -507,9 +484,7 @@ public class ProjectBuilder extends Builder {
 	}
 
 	/**
-	 * Return the bndrun files that need to be exported
-	 * 
-	 * @throws Exception
+	 * Return the bndrun files that need to be exported @throws Exception
 	 */
 	public List<Run> getExportedRuns() throws Exception {
 		Instructions runspec = new Instructions(getProperty(EXPORT));
@@ -536,25 +511,24 @@ public class ProjectBuilder extends Builder {
 		project.exportedPackages.clear();
 		project.importedPackages.clear();
 		project.containedPackages.clear();
-		
+
 		Jar[] jars = super.builds();
 		if (isOk()) {
 			for (Run export : getExportedRuns()) {
 				addClose(export);
-				if ( export.getProperty(BUNDLE_SYMBOLICNAME) == null) {
+				if (export.getProperty(BUNDLE_SYMBOLICNAME) == null) {
 					export.setProperty(BUNDLE_SYMBOLICNAME, getBsn() + ".run");
 				}
 				Jar pack = export.pack(getProperty(PROFILE));
 				getInfo(export);
-				if ( pack != null) {
-					jars = concat(Jar.class,jars, pack);
+				if (pack != null) {
+					jars = concat(Jar.class, jars, pack);
 					addClose(pack);
 				}
 			}
 		}
 		return jars;
 	}
-
 
 	/**
 	 * Called when we start to build a builder. We reset our map of bsn ->
@@ -563,10 +537,10 @@ public class ProjectBuilder extends Builder {
 	protected void startBuild(Builder builder) {
 		project.versionMap.clear();
 	}
-	
+
 	/**
-	 * Called when we 're done with a builder. In this case
-	 * we retrieve package information from 
+	 * Called when we 're done with a builder. In this case we retrieve package
+	 * information from
 	 */
 	protected void doneBuild(Builder builder) {
 		project.exportedPackages.putAll(builder.getExports());
@@ -585,11 +559,7 @@ public class ProjectBuilder extends Builder {
 	}
 
 	/**
-	 * Find the source file for this type
-	 * 
-	 * @param type
-	 * @return
-	 * @throws Exception
+	 * Find the source file for this type @param type @return @throws Exception
 	 */
 	@Override
 	public String getSourceFileFor(TypeRef type) throws Exception {

@@ -4,7 +4,7 @@ import java.io.*;
 import java.security.*;
 
 public class SHA256 extends Digest {
-	public final static String	ALGORITHM	= "SHA-256";
+	public final static String ALGORITHM = "SHA-256";
 
 	public static Digester<SHA256> getDigester(OutputStream... out) throws NoSuchAlgorithmException {
 		MessageDigest md = MessageDigest.getInstance(ALGORITHM);
@@ -35,14 +35,14 @@ public class SHA256 extends Digest {
 		return ALGORITHM;
 	}
 
-
-	public static SHA256 digest(byte [] data) throws Exception {
+	public static SHA256 digest(byte[] data) throws Exception {
 		return getDigester().from(data);
 	}
 
 	public static SHA256 digest(File f) throws NoSuchAlgorithmException, Exception {
 		return getDigester().from(f);
 	}
+
 	public static SHA256 digest(InputStream f) throws NoSuchAlgorithmException, Exception {
 		return getDigester().from(f);
 	}

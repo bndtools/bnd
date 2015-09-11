@@ -31,10 +31,10 @@ import java.util.Vector;
  * objects or other Tag objects.
  */
 public class Tag {
-	Tag parent;
-	String name;
-	Map<String, String> attributes = new TreeMap<String, String>();
-	Vector<Object> content = new Vector<Object>();
+	Tag					parent;
+	String				name;
+	Map<String,String>	attributes	= new TreeMap<String,String>();
+	Vector<Object>		content		= new Vector<Object>();
 	Vector<String>		comments	= new Vector<String>();
 
 	static SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
@@ -49,7 +49,7 @@ public class Tag {
 	/**
 	 * Construct a new Tag with a name.
 	 */
-	public Tag(String name, Map<String, String> attributes) {
+	public Tag(String name, Map<String,String> attributes) {
 		this.name = name;
 		this.attributes = attributes;
 	}
@@ -150,7 +150,7 @@ public class Tag {
 	/**
 	 * Answer the attributes as a Dictionary object.
 	 */
-	public Map<String, String> getAttributes() {
+	public Map<String,String> getAttributes() {
 		return attributes;
 	}
 
@@ -232,7 +232,7 @@ public class Tag {
 		pw.print(name);
 
 		String quote = "\"";
-		for (Map.Entry<String, String> e : attributes.entrySet()) {
+		for (Map.Entry<String,String> e : attributes.entrySet()) {
 			String key = e.getKey();
 			String value = escape(e.getValue());
 			pw.print(' ');
@@ -293,22 +293,22 @@ public class Tag {
 				pos = 0;
 			}
 			switch (c) {
-			case '<':
-				pw.print("&lt;");
-				pos += 4;
-				break;
-			case '>':
-				pw.print("&gt;");
-				pos += 4;
-				break;
-			case '&':
-				pw.print("&amp;");
-				pos += 5;
-				break;
-			default:
-				pw.print(c);
-				pos++;
-				break;
+				case '<' :
+					pw.print("&lt;");
+					pos += 4;
+					break;
+				case '>' :
+					pw.print("&gt;");
+					pos += 4;
+					break;
+				case '&' :
+					pw.print("&amp;");
+					pos += 5;
+					break;
+				default :
+					pw.print(c);
+					pos++;
+					break;
 			}
 
 		}
@@ -325,18 +325,18 @@ public class Tag {
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
 			switch (c) {
-			case '<':
-				sb.append("&lt;");
-				break;
-			case '>':
-				sb.append("&gt;");
-				break;
-			case '&':
-				sb.append("&amp;");
-				break;
-			default:
-				sb.append(c);
-				break;
+				case '<' :
+					sb.append("&lt;");
+					break;
+				case '>' :
+					sb.append("&gt;");
+					break;
+				case '&' :
+					sb.append("&amp;");
+					break;
+				default :
+					sb.append(c);
+					break;
 			}
 		}
 		return sb.toString();
@@ -427,7 +427,8 @@ public class Tag {
 			return (tn == null && sn == null) || (sn != null && sn.equals(tn));
 		} else {
 			String suri = sn == null ? mapping.getAttribute("xmlns") : mapping.getAttribute("xmlns:" + sn);
-			String turi = tn == null ? child.findRecursiveAttribute("xmlns") : child.findRecursiveAttribute("xmlns:" + tn);
+			String turi = tn == null ? child.findRecursiveAttribute("xmlns")
+					: child.findRecursiveAttribute("xmlns:" + tn);
 			return turi == suri || (turi != null && suri != null && turi.equals(suri));
 		}
 	}
@@ -499,8 +500,8 @@ public class Tag {
 		name = string;
 	}
 
-	public static void convert(Collection<Map<String, String>> c, String type, Tag parent) {
-		for (Map<String, String> map : c) {
+	public static void convert(Collection<Map<String,String>> c, String type, Tag parent) {
+		for (Map<String,String> map : c) {
 			parent.addContent(new Tag(type, map));
 		}
 	}

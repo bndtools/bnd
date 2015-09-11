@@ -13,14 +13,13 @@ import aQute.lib.io.*;
 @SuppressWarnings("restriction")
 public class AetherRepsitoryTests extends TestCase {
 
-	private static NanoHTTPD httpd;
-	private static int httpdPort;
+	private static NanoHTTPD	httpd;
+	private static int			httpdPort;
 
 	private static DownloadListener listener = new DownloadListener() {
 
 		@Override
-		public void failure(File file, String reason) throws Exception {
-		}
+		public void failure(File file, String reason) throws Exception {}
 
 		@Override
 		public boolean progress(File file, int percentage) throws Exception {
@@ -28,15 +27,14 @@ public class AetherRepsitoryTests extends TestCase {
 		}
 
 		@Override
-		public void success(File file) throws Exception {
-		}
+		public void success(File file) throws Exception {}
 	};
 
 	private AetherRepository createRepo() throws Exception {
 		AetherRepository repo = new AetherRepository();
 
-		Map<String, String> props = new HashMap<String, String>();
-		props.put(AetherRepository.PROP_MAIN_URL, "http://127.0.0.1:"+httpdPort);
+		Map<String,String> props = new HashMap<String,String>();
+		props.put(AetherRepository.PROP_MAIN_URL, "http://127.0.0.1:" + httpdPort);
 		repo.setProperties(props);
 
 		return repo;
@@ -73,24 +71,24 @@ public class AetherRepsitoryTests extends TestCase {
 	public void testStrategyExactVersion() throws Exception {
 		RepositoryPlugin repo = createRepo();
 
-		Map<String, String> attrs = new HashMap<String, String>();
+		Map<String,String> attrs = new HashMap<String,String>();
 		attrs.put("version", "2.5");
 		attrs.put("strategy", "exact");
 
-		File file = repo.get("javax.servlet:servlet-api", new Version(2, 5, 0), attrs , listener);
+		File file = repo.get("javax.servlet:servlet-api", new Version(2, 5, 0), attrs, listener);
 
 		assertNotNull(file);
-		assertEquals( "servlet-api-2.5.jar", file.getName());
+		assertEquals("servlet-api-2.5.jar", file.getName());
 	}
 
 	public void testStrategyExactVersionBadGAV() throws Exception {
 		RepositoryPlugin repo = createRepo();
 
-		Map<String, String> attrs = new HashMap<String, String>();
+		Map<String,String> attrs = new HashMap<String,String>();
 		attrs.put("version", "1.0");
 		attrs.put("strategy", "exact");
 
-		File file = repo.get("foo.bar:foobar-api", new Version(1, 0, 0), attrs , listener);
+		File file = repo.get("foo.bar:foobar-api", new Version(1, 0, 0), attrs, listener);
 
 		assertNull(file);
 	}
@@ -98,11 +96,11 @@ public class AetherRepsitoryTests extends TestCase {
 	public void testSourceLookup() throws Exception {
 		RepositoryPlugin repo = createRepo();
 
-		Map<String, String> attrs = new HashMap<String, String>();
+		Map<String,String> attrs = new HashMap<String,String>();
 		attrs.put("version", "2.5");
 		attrs.put("bsn", "javax.servlet:servlet-api");
 
-		File file = repo.get("servlet-api.source", new Version(2, 5, 0), attrs , listener);
+		File file = repo.get("servlet-api.source", new Version(2, 5, 0), attrs, listener);
 
 		assertTrue(file.exists());
 		assertEquals("servlet-api-2.5-sources.jar", file.getName());

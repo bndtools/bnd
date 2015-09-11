@@ -5,8 +5,8 @@ import javax.security.auth.callback.CallbackHandler;
 
 @SuppressWarnings("unused")
 public class UsesField {
-	
-	public CallbackHandler config;
-	private Subject subject;
+
+	public CallbackHandler	config;
+	private Subject			subject;
 
 }

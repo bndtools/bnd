@@ -35,7 +35,7 @@ public class ResourceBuilder {
 	private final List<Capability>	capabilities	= new LinkedList<Capability>();
 	private final List<Requirement>	requirements	= new LinkedList<Requirement>();
 
-	private boolean					built			= false;
+	private boolean built = false;
 
 	public ResourceBuilder(Resource source) throws Exception {
 		addCapabilities(source.getCapabilities(null));
@@ -94,11 +94,8 @@ public class ResourceBuilder {
 	}
 
 	/**
-	 * Parse the manifest and turn them into requirements & capabilities
-	 * 
-	 * @param manifest
-	 *            The manifest to parse
-	 * @throws Exception
+	 * Parse the manifest and turn them into requirements & capabilities @param
+	 * manifest The manifest to parse @throws Exception
 	 */
 	public void addManifest(Domain manifest) throws Exception {
 
@@ -160,7 +157,6 @@ public class ResourceBuilder {
 			addCapability(identity.buildCapability());
 		}
 
-
 		//
 		// Handle Require Bundle
 		//
@@ -204,9 +200,7 @@ public class ResourceBuilder {
 	}
 
 	/**
-	 * Add the Require-Bundle header
-	 * 
-	 * @throws Exception
+	 * Add the Require-Bundle header @throws Exception
 	 */
 
 	public void addRequireBundles(Parameters requireBundle) throws Exception {
@@ -291,9 +285,7 @@ public class ResourceBuilder {
 	}
 
 	/**
-	 * Add Exported Packages
-	 * 
-	 * @throws Exception
+	 * Add Exported Packages @throws Exception
 	 */
 	public void addExportPackages(Parameters exports) throws Exception {
 		for (Entry<String,Attrs> clause : exports.entrySet()) {
@@ -321,9 +313,7 @@ public class ResourceBuilder {
 	}
 
 	/**
-	 * Add imported packages
-	 * 
-	 * @throws Exception
+	 * Add imported packages @throws Exception
 	 */
 	public void addImportPackages(Parameters imports) throws Exception {
 		for (Entry<String,Attrs> clause : imports.entrySet()) {
@@ -347,7 +337,6 @@ public class ResourceBuilder {
 	// BREE J2SE-1.4 ==> osgi.ee=JavaSE, version:Version=1.4
 	// See bug 329, https://github.com/bndtools/bnd/issues/329
 	public void addExecutionEnvironment(EE ee) throws Exception {
-
 
 		CapReqBuilder builder = new CapReqBuilder(resource,
 				ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
@@ -423,11 +412,11 @@ public class ResourceBuilder {
 	}
 
 	public Map<Capability,Capability> from(Resource bundle) throws Exception {
-		Map<Capability,Capability>	mapping  = new HashMap<Capability,Capability>();
-		
+		Map<Capability,Capability> mapping = new HashMap<Capability,Capability>();
+
 		addRequirements(bundle.getRequirements(null));
-		
-		for ( Capability c : bundle.getCapabilities(null)) {
+
+		for (Capability c : bundle.getCapabilities(null)) {
 			CapReqBuilder clone = CapReqBuilder.clone(c);
 			Capability addedCapability = addCapability0(clone);
 			mapping.put(c, addedCapability);

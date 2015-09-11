@@ -67,9 +67,9 @@ public class RepoIndex implements ResourceIndexer {
 	 * the list of analyzer/filter pairs. The filter determines which resources
 	 * can be analyzed
 	 */
-	private final List<Pair<ResourceAnalyzer, Filter>> analyzers = new LinkedList<Pair<ResourceAnalyzer, Filter>>();
+	private final List<Pair<ResourceAnalyzer,Filter>> analyzers = new LinkedList<Pair<ResourceAnalyzer,Filter>>();
 
-	private URLResolver									resolver;
+	private URLResolver resolver;
 
 	/**
 	 * Construct a default instance that uses a console logger.
@@ -79,10 +79,7 @@ public class RepoIndex implements ResourceIndexer {
 	}
 
 	/**
-	 * Constructor
-	 * 
-	 * @param log
-	 *            the log service to use
+	 * Constructor @param log the log service to use
 	 */
 	public RepoIndex(LogService log) {
 		this.log = log;
@@ -99,16 +96,15 @@ public class RepoIndex implements ResourceIndexer {
 			addAnalyzer(frameworkAnalyzer, allFilter);
 			addAnalyzer(scrAnalyzer, allFilter);
 			addAnalyzer(blueprintAnalyzer, allFilter);
-		} catch (InvalidSyntaxException e) {
+		}
+		catch (InvalidSyntaxException e) {
 			throw new ExceptionInInitializerError("Unexpected internal error compiling filter");
 		}
 	}
 
 	/**
-	 * @param analyzer
-	 *            the analyzer to add
-	 * @param filter
-	 *            the filter that determines which resources can be analyzed
+	 * @param analyzer the analyzer to add @param filter the filter that
+	 * determines which resources can be analyzed
 	 */
 	public final void addAnalyzer(ResourceAnalyzer analyzer, Filter filter) {
 		synchronized (analyzers) {
@@ -117,10 +113,8 @@ public class RepoIndex implements ResourceIndexer {
 	}
 
 	/**
-	 * @param analyzer
-	 *            the analyzer to add
-	 * @param filter
-	 *            the filter that determines which resources can be analyzed
+	 * @param analyzer the analyzer to add @param filter the filter that
+	 * determines which resources can be analyzed
 	 */
 	public final void removeAnalyzer(ResourceAnalyzer analyzer, Filter filter) {
 		synchronized (analyzers) {
@@ -131,9 +125,9 @@ public class RepoIndex implements ResourceIndexer {
 	/*
 	 * See ResourceIndexer interface
 	 */
-	public void index(Set<File> files, OutputStream out, Map<String, String> config) throws Exception {
+	public void index(Set<File> files, OutputStream out, Map<String,String> config) throws Exception {
 		if (config == null)
-			config = new HashMap<String, String>(0);
+			config = new HashMap<String,String>(0);
 
 		Set<File> filesToIndex = new TreeSet<File>();
 		if (files != null && !files.isEmpty()) {
@@ -146,23 +140,18 @@ public class RepoIndex implements ResourceIndexer {
 			String prettySetting = config.get(ResourceIndexer.PRETTY);
 			String compressedSetting = config.get(ResourceIndexer.COMPRESSED);
 			/**
-			 * <pre>
-			 * pretty   compressed         out-pretty     out-compressed
-			 *   null         null        Indent.NONE               true*
-			 *   null        false        Indent.NONE              false
-			 *   null         true        Indent.NONE               true
-			 *  false         null      Indent.PRETTY              false*
-			 *  false        false        Indent.NONE              false
-			 *  false         true        Indent.NONE               true
-			 *   true         null      Indent.PRETTY              false*
-			 *   true        false      Indent.PRETTY              false
-			 *   true         true      Indent.PRETTY               true
-			 *   
-			 *   * = original behaviour, before compressed was introduced
-			 * </pre>
+			 * <pre> pretty compressed out-pretty out-compressed null null
+			 * Indent.NONE true* null false Indent.NONE false null true
+			 * Indent.NONE true false null Indent.PRETTY false* false false
+			 * Indent.NONE false false true Indent.NONE true true null
+			 * Indent.PRETTY false* true false Indent.PRETTY false true true
+			 * Indent.PRETTY true * = original behaviour, before compressed was
+			 * introduced </pre>
 			 */
-			indent = (prettySetting == null || (!Boolean.parseBoolean(prettySetting) && compressedSetting != null)) ? Indent.NONE : Indent.PRETTY;
-			boolean compressed = (prettySetting == null && compressedSetting == null) || Boolean.parseBoolean(compressedSetting);
+			indent = (prettySetting == null || (!Boolean.parseBoolean(prettySetting) && compressedSetting != null))
+					? Indent.NONE : Indent.PRETTY;
+			boolean compressed = (prettySetting == null && compressedSetting == null)
+					|| Boolean.parseBoolean(compressedSetting);
 			if (!compressed) {
 				pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
 			} else {
@@ -189,12 +178,15 @@ public class RepoIndex implements ResourceIndexer {
 				try {
 					Tag resourceTag = generateResource(file, config);
 					resourceTag.print(indent.next(), pw);
-				} catch (Exception e) {
-					log(LogService.LOG_WARNING, MessageFormat.format("Could not index {0}, skipped ({1}).", file, e.getMessage()), null);
+				}
+				catch (Exception e) {
+					log(LogService.LOG_WARNING,
+							MessageFormat.format("Could not index {0}, skipped ({1}).", file, e.getMessage()), null);
 				}
 			}
 			repoTag.printClose(indent, pw);
-		} finally {
+		}
+		finally {
 			if (pw != null) {
 				pw.flush();
 				pw.close();
@@ -216,7 +208,7 @@ public class RepoIndex implements ResourceIndexer {
 		}
 	}
 
-	public void indexFragment(Set<File> files, Writer out, Map<String, String> config) throws Exception {
+	public void indexFragment(Set<File> files, Writer out, Map<String,String> config) throws Exception {
 		PrintWriter pw;
 		if (out instanceof PrintWriter)
 			pw = (PrintWriter) out;
@@ -227,13 +219,15 @@ public class RepoIndex implements ResourceIndexer {
 			try {
 				Tag resourceTag = generateResource(file, config);
 				resourceTag.print(Indent.PRETTY, pw);
-			} catch (Exception e) {
-				log(LogService.LOG_WARNING, MessageFormat.format("Could not index {0}, skipped ({1}).", file, e.getMessage()), null);
+			}
+			catch (Exception e) {
+				log(LogService.LOG_WARNING,
+						MessageFormat.format("Could not index {0}, skipped ({1}).", file, e.getMessage()), null);
 			}
 		}
 	}
 
-	private Tag generateResource(File file, Map<String, String> config) throws Exception {
+	private Tag generateResource(File file, Map<String,String> config) throws Exception {
 
 		JarResource resource = new JarResource(file);
 		List<Capability> caps = new AddOnlyList<Capability>(new LinkedList<Capability>());
@@ -263,16 +257,19 @@ public class RepoIndex implements ResourceIndexer {
 			// Iterate over the analyzers
 			try {
 				synchronized (analyzers) {
-					for (Pair<ResourceAnalyzer, Filter> entry : analyzers) {
+					for (Pair<ResourceAnalyzer,Filter> entry : analyzers) {
 						ResourceAnalyzer analyzer = entry.getFirst();
 						Filter filter = entry.getSecond();
 
 						if (filter == null || filter.match(resource.getProperties())) {
 							try {
 								analyzer.analyzeResource(resource, caps, reqs);
-							} catch (Exception e) {
+							}
+							catch (Exception e) {
 								log(LogService.LOG_ERROR,
-										MessageFormat.format("Error calling analyzer \"{0}\" on resource {1}.", analyzer.getClass().getName(), resource.getLocation()), e);
+										MessageFormat.format("Error calling analyzer \"{0}\" on resource {1}.",
+												analyzer.getClass().getName(), resource.getLocation()),
+										e);
 
 								StringWriter writer = new StringWriter();
 								Formatter comment = new Formatter(writer);
@@ -287,10 +284,12 @@ public class RepoIndex implements ResourceIndexer {
 						}
 					}
 				}
-			} finally {
+			}
+			finally {
 				bundleAnalyzer.setStateLocal(null);
 			}
-		} finally {
+		}
+		finally {
 			resource.close();
 		}
 
@@ -339,8 +338,9 @@ public class RepoIndex implements ResourceIndexer {
 		}
 	}
 
-	private static void appendAttributeAndDirectiveTags(Tag parentTag, Map<String, Object> attribs, Map<String, String> directives) {
-		for (Entry<String, Object> attribEntry : attribs.entrySet()) {
+	private static void appendAttributeAndDirectiveTags(Tag parentTag, Map<String,Object> attribs,
+			Map<String,String> directives) {
+		for (Entry<String,Object> attribEntry : attribs.entrySet()) {
 			Tag attribTag = new Tag(Schema.ELEM_ATTRIBUTE);
 			attribTag.addAttribute(Schema.ATTR_NAME, attribEntry.getKey());
 
@@ -348,7 +348,7 @@ public class RepoIndex implements ResourceIndexer {
 			parentTag.addContent(typedAttrib.toXML());
 		}
 
-		for (Entry<String, String> directiveEntry : directives.entrySet()) {
+		for (Entry<String,String> directiveEntry : directives.entrySet()) {
 			Tag directiveTag = new Tag(Schema.ELEM_DIRECTIVE);
 			directiveTag.addAttribute(Schema.ATTR_NAME, directiveEntry.getKey());
 			directiveTag.addAttribute(Schema.ATTR_VALUE, directiveEntry.getValue());
@@ -362,7 +362,7 @@ public class RepoIndex implements ResourceIndexer {
 
 	public List<ResourceAnalyzer> getAnalyzers() {
 		List<ResourceAnalyzer> list = new ArrayList<ResourceAnalyzer>();
-		for (Pair<ResourceAnalyzer, Filter> entry : analyzers) {
+		for (Pair<ResourceAnalyzer,Filter> entry : analyzers) {
 			list.add(entry.getFirst());
 		}
 		return list;
@@ -378,7 +378,7 @@ public class RepoIndex implements ResourceIndexer {
 		result.resource = new JarResource(file);
 		result.signature = getSignature();
 		synchronized (analyzers) {
-			for (Pair<ResourceAnalyzer, Filter> entry : analyzers) {
+			for (Pair<ResourceAnalyzer,Filter> entry : analyzers) {
 				ResourceAnalyzer analyzer = entry.getFirst();
 				Filter filter = entry.getSecond();
 
@@ -392,7 +392,7 @@ public class RepoIndex implements ResourceIndexer {
 
 	private long getSignature() {
 		long value = 97;
-		for (Pair<ResourceAnalyzer, Filter> ra : analyzers) {
+		for (Pair<ResourceAnalyzer,Filter> ra : analyzers) {
 			value *= 997 * ra.getFirst().getClass().getName().hashCode() + 13;
 		}
 		return value;

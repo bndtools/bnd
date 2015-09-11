@@ -13,16 +13,13 @@ import aQute.service.reporter.Report.Location;
 
 /**
  * OSGi Contracts are first defined in OSGi Enterprise Release 5.0.0. A Contract
- * is a namespace to control the versioning of a set of packages.
- * 
- * @author aqute
+ * is a namespace to control the versioning of a set of packages. @author aqute
  */
 class Contracts {
 
 	private Analyzer									analyzer;
 	private final MultiMap<PackageRef,Contract>			contracted				= new MultiMap<PackageRef,Contract>(
-																						PackageRef.class,
-																						Contract.class, true);
+			PackageRef.class, Contract.class, true);
 	private MultiMap<Collection<Contract>,PackageRef>	overlappingContracts	= new MultiMap<Collection<Contract>,PackageRef>();
 	private Instructions								instructions;
 	private final Set<Contract>							contracts				= new HashSet<Contract>();
@@ -123,10 +120,8 @@ class Contracts {
 
 	/**
 	 * Find out if a package is contracted. If there are multiple contracts for
-	 * a package we remember this so we can generate a single error.
-	 * 
-	 * @param packageRef
-	 * @return
+	 * a package we remember this so we can generate a single error. @param
+	 * packageRef @return
 	 */
 	boolean isContracted(PackageRef packageRef) {
 		List<Contract> list = contracted.get(packageRef);
@@ -149,9 +144,7 @@ class Contracts {
 
 	/**
 	 * Called before we print the manifest. Should add any contracts that were
-	 * actually used to the requirements.
-	 * 
-	 * @param requirements
+	 * actually used to the requirements. @param requirements
 	 */
 	void addToRequirements(Parameters requirements) {
 		for (Contract c : contracts) {
@@ -180,10 +173,9 @@ class Contracts {
 		}
 
 		for (Entry<Collection<Contract>,List<PackageRef>> oc : overlappingContracts.entrySet()) {
-			Location location = analyzer
-					.error("Contracts %s declare the same packages in their uses: directive: %s. "
-							+ "Contracts are found in declaring bundles (see their 'from' field), it is possible to control the finding"
-							+ "with the -contract instruction", oc.getKey(), oc.getValue()).location();
+			Location location = analyzer.error("Contracts %s declare the same packages in their uses: directive: %s. "
+					+ "Contracts are found in declaring bundles (see their 'from' field), it is possible to control the finding"
+					+ "with the -contract instruction", oc.getKey(), oc.getValue()).location();
 			location.header = Constants.CONTRACT;
 		}
 	}

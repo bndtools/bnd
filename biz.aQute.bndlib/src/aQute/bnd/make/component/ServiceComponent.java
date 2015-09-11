@@ -37,7 +37,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 	}
 
 	private static class ComponentMaker extends Processor {
-		Analyzer	analyzer;
+		Analyzer analyzer;
 
 		ComponentMaker(Analyzer analyzer) {
 			super(analyzer);
@@ -45,16 +45,11 @@ public class ServiceComponent implements AnalyzerPlugin {
 		}
 
 		/**
-		 * Iterate over the Service Component entries. There are two cases:
-		 * <ol>
-		 * <li>An XML file reference</li>
-		 * <li>A FQN/wildcard with a set of attributes</li>
-		 * </ol>
-		 * An XML reference is immediately expanded, an FQN/wildcard is more
-		 * complicated and is delegated to
-		 * {@link #componentEntry(Map, String, Map)}.
-		 * 
-		 * @throws Exception
+		 * Iterate over the Service Component entries. There are two cases: <ol>
+		 * <li>An XML file reference</li> <li>A FQN/wildcard with a set of
+		 * attributes</li> </ol> An XML reference is immediately expanded, an
+		 * FQN/wildcard is more complicated and is delegated to {@link
+		 * #componentEntry(Map, String, Map)}. @throws Exception
 		 */
 		Map<String,Map<String,String>> doServiceComponent() throws Exception {
 			Map<String,Map<String,String>> serviceComponents = newMap();
@@ -84,28 +79,20 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 		/**
 		 * Parse an entry in the Service-Component header. This header supports
-		 * the following types:
-		 * <ol>
-		 * <li>An FQN + attributes describing a component</li>
-		 * <li>A wildcard expression for finding annotated components.</li>
-		 * </ol>
-		 * The problem is the distinction between an FQN and a wildcard because
-		 * an FQN can also be used as a wildcard. If the info specifies
-		 * {@link Constants#NOANNOTATIONS} then wildcards are an error and the
-		 * component must be fully described by the info. Otherwise the
-		 * FQN/wildcard is expanded into a list of classes with annotations. If
-		 * this list is empty, the FQN case is interpreted as a complete
-		 * component definition. For the wildcard case, it is checked if any
-		 * matching classes for the wildcard have been compiled for a class file
-		 * format that does not support annotations, this can be a problem with
-		 * JSR14 who silently ignores annotations. An error is reported in such
-		 * a case.
-		 * 
-		 * @param serviceComponents
-		 * @param name
-		 * @param info
-		 * @throws Exception
-		 * @throws IOException
+		 * the following types: <ol> <li>An FQN + attributes describing a
+		 * component</li> <li>A wildcard expression for finding annotated
+		 * components.</li> </ol> The problem is the distinction between an FQN
+		 * and a wildcard because an FQN can also be used as a wildcard. If the
+		 * info specifies {@link Constants#NOANNOTATIONS} then wildcards are an
+		 * error and the component must be fully described by the info.
+		 * Otherwise the FQN/wildcard is expanded into a list of classes with
+		 * annotations. If this list is empty, the FQN case is interpreted as a
+		 * complete component definition. For the wildcard case, it is checked
+		 * if any matching classes for the wildcard have been compiled for a
+		 * class file format that does not support annotations, this can be a
+		 * problem with JSR14 who silently ignores annotations. An error is
+		 * reported in such a case. @param serviceComponents @param name @param
+		 * info @throws Exception @throws IOException
 		 */
 		private void componentEntry(Map<String,Map<String,String>> serviceComponents, String name,
 				Map<String,String> info) throws Exception, IOException {
@@ -120,7 +107,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 				Collection<Clazz> annotatedComponents = analyzer.getClasses("", QUERY.ANNOTATED.toString(),
 						Component.class.getName(), //
 						QUERY.NAMED.toString(), name //
-						);
+				);
 
 				if (fqn) {
 					if (annotatedComponents.isEmpty()) {
@@ -160,15 +147,12 @@ public class ServiceComponent implements AnalyzerPlugin {
 		/**
 		 * Check if annotations are actually feasible looking at the class
 		 * format. If the class format does not provide annotations then it is
-		 * no use specifying annotated components.
-		 * 
-		 * @param name
-		 * @return
-		 * @throws Exception
+		 * no use specifying annotated components. @param name @return @throws
+		 * Exception
 		 */
 		private Collection<Clazz> checkAnnotationsFeasible(String name) throws Exception {
 			Collection<Clazz> not = analyzer.getClasses("", QUERY.NAMED.toString(), name //
-					);
+			);
 
 			if (not.isEmpty()) {
 				if ("*".equals(name))
@@ -234,7 +218,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 			// We have a definition, so make an XML resources
 			Resource resource = createComponentResource(name, impl, info);
-			
+
 			String pathSegment = analyzer.validResourcePath(name, "Invalid component name");
 			analyzer.getJar().putResource("OSGI-INF/" + pathSegment + ".xml", resource);
 
@@ -244,11 +228,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 		/**
 		 * Create a Metatype and Designate record out of the given
-		 * configurations.
-		 * 
-		 * @param name
-		 * @param config
-		 * @throws Exception 
+		 * configurations. @param name @param config @throws Exception
 		 */
 		private boolean designate(String name, String config, boolean factory) throws Exception {
 			if (config == null)
@@ -272,15 +252,10 @@ public class ServiceComponent implements AnalyzerPlugin {
 		}
 
 		/**
-		 * Create the resource for a DS component.
-		 * 
-		 * @param list
-		 * @param name
-		 * @param info
-		 * @throws UnsupportedEncodingException
+		 * Create the resource for a DS component. @param list @param
+		 * name @param info @throws UnsupportedEncodingException
 		 */
-		Resource createComponentResource(String name, String impl, Map<String, String> info)
-				throws Exception {
+		Resource createComponentResource(String name, String impl, Map<String,String> info) throws Exception {
 			HeaderReader hr = new HeaderReader(analyzer);
 			Tag tag = hr.createComponentTag(name, impl, info);
 			hr.close();

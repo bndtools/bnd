@@ -14,9 +14,9 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 
 public class XMLAttributeFinder extends ClassDataCollector {
 
-	private final Analyzer			analyzer;
+	private final Analyzer analyzer;
 
-	Map<TypeRef,XMLAttribute>	annoCache	= new HashMap<TypeRef,XMLAttribute>();
+	Map<TypeRef,XMLAttribute>		annoCache		= new HashMap<TypeRef,XMLAttribute>();
 	Map<TypeRef,Map<String,String>>	defaultsCache	= new HashMap<TypeRef,Map<String,String>>();
 
 	public XMLAttributeFinder(Analyzer analyzer) {
@@ -37,7 +37,7 @@ public class XMLAttributeFinder extends ClassDataCollector {
 		return null;
 	}
 
-	XMLAttribute	xmlAttr;
+	XMLAttribute xmlAttr;
 
 	@Override
 	public void annotation(Annotation annotation) throws Exception {
@@ -76,8 +76,8 @@ public class XMLAttributeFinder extends ClassDataCollector {
 							try {
 								Clazz r = analyzer.findClass(type);
 								if (r.isAnnotation()) {
-									analyzer.warning("Nested annotation type found in field % s, %s",
-											defined.getName(), type.getFQN());
+									analyzer.warning("Nested annotation type found in field % s, %s", defined.getName(),
+											type.getFQN());
 									return;
 								}
 							}

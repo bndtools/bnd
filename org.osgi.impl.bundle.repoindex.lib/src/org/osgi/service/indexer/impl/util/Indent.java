@@ -29,14 +29,9 @@ public class Indent {
 	public static final Indent PRETTY = new Indent(true, 0, 2);
 
 	/**
-	 * Constructor
-	 * 
-	 * @param newLine
-	 *            true when a newline must be printed before the indent
-	 * @param level
-	 *            the level of the indent
-	 * @param increment
-	 *            the increment for the next indent
+	 * Constructor @param newLine true when a newline must be printed before the
+	 * indent @param level the level of the indent @param increment the
+	 * increment for the next indent
 	 */
 	private Indent(boolean newLine, int level, int increment) {
 		this.newLine = newLine;
@@ -47,10 +42,7 @@ public class Indent {
 	}
 
 	/**
-	 * Print the indent
-	 * 
-	 * @param pw
-	 *            the writer to print to
+	 * Print the indent @param pw the writer to print to
 	 */
 	public void print(PrintWriter pw) {
 		if (newLine)
@@ -60,7 +52,7 @@ public class Indent {
 
 	/**
 	 * @return the next indent when the increment is larger than zero, this
-	 *         indent otherwise
+	 * indent otherwise
 	 */
 	public Indent next() {
 		return (increment <= 0) ? this : new Indent(newLine, level + increment, increment);

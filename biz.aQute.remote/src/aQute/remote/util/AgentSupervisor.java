@@ -20,12 +20,8 @@ import aQute.libg.cryptography.SHA1;
 /**
  * This is a base class that provides the basic functionality of a supervisor.
  * In general an actual supervisor extends this class to provide the
- * functionality to use on the client side.
- * 
- * @param <Supervisor>
- *            The supervisor type
- * @param <Agent>
- *            The agent type
+ * functionality to use on the client side. @param <Supervisor> The supervisor
+ * type @param <Agent> The agent type
  */
 public class AgentSupervisor<Supervisor, Agent> {
 	private static final Map<File,Info>				fileInfo	= new ConcurrentHashMap<File,AgentSupervisor.Info>();

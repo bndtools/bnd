@@ -20,10 +20,10 @@ import aQute.bnd.testing.TestingLog.*;
 @Component(designate = Config.class)
 @SuppressWarnings("rawtypes")
 public class TestingLog implements LogService {
-	boolean			stacktrace;
-	boolean			direct;
-	int				level;
-	long			start	= System.currentTimeMillis();
+	boolean	stacktrace;
+	boolean	direct;
+	int		level;
+	long	start	= System.currentTimeMillis();
 
 	List<LogEntry>	entries	= new ArrayList<LogEntry>();
 	List<Pattern>	filters	= new ArrayList<Pattern>();
@@ -38,7 +38,7 @@ public class TestingLog implements LogService {
 		String[] filters();
 	}
 
-	Config	config;
+	Config config;
 
 	@Activate
 	void activate(Map<String,Object> props) {
@@ -115,8 +115,8 @@ public class TestingLog implements LogService {
 				Formatter f = new Formatter(sb);
 				try {
 					f.format("%6s %-4s %s %s", (now - start + 500) / 1000,
-							(sr == null ? "" : sr.getProperty("service.id")), message, (exception == null ? ""
-									: exception.getMessage()));
+							(sr == null ? "" : sr.getProperty("service.id")), message,
+							(exception == null ? "" : exception.getMessage()));
 					return sb.toString();
 				}
 				finally {

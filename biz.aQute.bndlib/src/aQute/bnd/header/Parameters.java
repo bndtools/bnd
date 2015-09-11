@@ -28,12 +28,12 @@ public class Parameters implements Map<String,Attrs> {
 		map.clear();
 	}
 
-	
 	public void add(String key, Attrs attrs) {
-		while ( containsKey(key))
+		while (containsKey(key))
 			key += "~";
-		put(key,attrs);
+		put(key, attrs);
 	}
+
 	public boolean containsKey(final String name) {
 		if (map == null)
 			return false;
@@ -229,12 +229,11 @@ public class Parameters implements Map<String,Attrs> {
 	 * Merge all attributes of the given parameters with this
 	 */
 	public void mergeWith(Parameters other, boolean override) {
-		for ( Map.Entry<String,Attrs> e : other.entrySet()) {
+		for (Map.Entry<String,Attrs> e : other.entrySet()) {
 			Attrs existing = get(e.getKey());
-			if ( existing == null) {
+			if (existing == null) {
 				put(e.getKey(), new Attrs(e.getValue()));
-			}
-			else
+			} else
 				existing.mergeWith(e.getValue(), override);
 		}
 	}

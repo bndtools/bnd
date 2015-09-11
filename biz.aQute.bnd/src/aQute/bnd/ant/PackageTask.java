@@ -9,7 +9,7 @@ import aQute.bnd.build.*;
 public class PackageTask extends BaseTask {
 	String	runFilePath	= null;
 	File	output		= null;
-	boolean keep        = false;
+	boolean	keep		= false;
 
 	@Override
 	public void execute() throws BuildException {

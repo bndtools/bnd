@@ -19,10 +19,7 @@ public class ConsoleRedirector implements Redirector {
 	volatile boolean									quit	= false;
 
 	/**
-	 * Constructor.
-	 * 
-	 * @param agent
-	 *            the agent we're redirecting for
+	 * Constructor. @param agent the agent we're redirecting for
 	 */
 	public ConsoleRedirector(AgentServer agent) throws IOException {
 		synchronized (agents) {

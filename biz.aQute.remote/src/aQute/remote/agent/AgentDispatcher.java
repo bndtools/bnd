@@ -21,7 +21,7 @@ public class AgentDispatcher {
 	//
 	// We keep a descriptor for each created framework by its name.
 	//
-	static List<Descriptor>	descriptors	= new CopyOnWriteArrayList<Descriptor>();
+	static List<Descriptor> descriptors = new CopyOnWriteArrayList<Descriptor>();
 
 	static class Descriptor implements Closeable {
 		AtomicBoolean					closed		= new AtomicBoolean(false);
@@ -137,7 +137,6 @@ public class AgentDispatcher {
 					e.printStackTrace();
 				}
 		}
-
 
 		return d;
 	}

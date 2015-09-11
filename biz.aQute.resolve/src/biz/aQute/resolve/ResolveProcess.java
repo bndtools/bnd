@@ -44,7 +44,7 @@ public class ResolveProcess {
 	private Map<Resource,List<Wire>>	required;
 	private Map<Resource,List<Wire>>	optional;
 
-	private ResolutionException			resolutionException;
+	private ResolutionException resolutionException;
 
 	public Map<Resource,List<Wire>> resolveRequired(BndEditModel inputModel, Registry plugins, Resolver resolver,
 			Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
@@ -58,11 +58,10 @@ public class ResolveProcess {
 	}
 
 	public Map<Resource,List<Wire>> resolveRequired(Processor properties, Project project, Registry plugins,
-			Resolver resolver,
-			Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
+			Resolver resolver, Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
 		required = new HashMap<Resource,List<Wire>>();
 		optional = new HashMap<Resource,List<Wire>>();
-		
+
 		BndrunResolveContext rc = new BndrunResolveContext(properties, project, plugins, log);
 		rc.addCallbacks(callbacks);
 		// 1. Resolve initial requirements
@@ -85,8 +84,8 @@ public class ResolveProcess {
 					for (Resource found : wirings.keySet()) {
 						String filterStr = req.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
 						try {
-							org.osgi.framework.Filter filter = filterStr != null ? org.osgi.framework.FrameworkUtil
-									.createFilter(filterStr) : null;
+							org.osgi.framework.Filter filter = filterStr != null
+									? org.osgi.framework.FrameworkUtil.createFilter(filterStr) : null;
 
 							for (Capability c : found.getCapabilities(req.getNamespace())) {
 								if (filter != null && filter.matches(c.getAttributes())) {
@@ -347,7 +346,8 @@ public class ResolveProcess {
 	 * capRequirements.add(req); } } } } }
 	 */
 
-	private static void removeFrameworkAndInputResources(Map<Resource,List<Wire>> resourceMap, AbstractResolveContext rc) {
+	private static void removeFrameworkAndInputResources(Map<Resource,List<Wire>> resourceMap,
+			AbstractResolveContext rc) {
 		for (Iterator<Resource> iter = resourceMap.keySet().iterator(); iter.hasNext();) {
 			Resource resource = iter.next();
 			if (rc.isSystemResource(resource))

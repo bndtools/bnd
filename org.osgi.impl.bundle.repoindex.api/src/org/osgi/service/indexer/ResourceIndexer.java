@@ -60,13 +60,9 @@ public interface ResourceIndexer {
 
 	/**
 	 * Name of the configuration variable for the template for the URLs in the
-	 * XML representation. A template can contain the following symbols:
-	 * <ul>
-	 * <li>%s is the symbolic name</li>
-	 * <li>%v is the version number</li>
-	 * <li>%f is the filename</li>
-	 * <li>%p is the directory path</li>
-	 * </ul>
+	 * XML representation. A template can contain the following symbols: <ul>
+	 * <li>%s is the symbolic name</li> <li>%v is the version number</li> <li>%f
+	 * is the filename</li> <li>%p is the directory path</li> </ul>
 	 */
 	public static final String URL_TEMPLATE = "url.template";
 
@@ -86,60 +82,36 @@ public interface ResourceIndexer {
 
 	/**
 	 * Index a set of input files and write the Repository XML representation to
-	 * the stream
-	 * 
-	 * @param files
-	 *            a set of input files
-	 * @param out
-	 *            the stream to write the XML representation to
-	 * @param config
-	 *            a set of optional parameters (use the interface constants as
-	 *            keys)
-	 * @throws Exception
-	 *             in case of an error
+	 * the stream @param files a set of input files @param out the stream to
+	 * write the XML representation to @param config a set of optional
+	 * parameters (use the interface constants as keys) @throws Exception in
+	 * case of an error
 	 */
-	void index(Set<File> files, OutputStream out, Map<String, String> config) throws Exception;
+	void index(Set<File> files, OutputStream out, Map<String,String> config) throws Exception;
 
 	/**
-	 * <p>
-	 * Index a set of input files and write a Repository XML fragment to the
-	 * given writer.
-	 * </p>
-	 * <p>
-	 * Note that the result will be one or more XML <code>resource</code>
-	 * elements <em>without</em> a top-level surrounding <code>repository</code>
-	 * element. The resulting XML is therefore not well-formed.
-	 * </p>
-	 * <p>
-	 * This method may be useful for repository managers that wish to (re-)index
-	 * individual resources and assemble the XML fragments into a complete
-	 * repository document later.
-	 * </p>
-	 * 
-	 * @param files
-	 *            a set of input files
-	 * @param out
-	 *            the writer to write the Repository XML representation to
-	 * @param config
-	 *            a set of optional parameter (use the interface constants as
-	 *            keys)
-	 * @throws Exception
-	 *             in case of an error
+	 * <p> Index a set of input files and write a Repository XML fragment to the
+	 * given writer. </p> <p> Note that the result will be one or more XML
+	 * <code>resource</code> elements <em>without</em> a top-level surrounding
+	 * <code>repository</code> element. The resulting XML is therefore not
+	 * well-formed. </p> <p> This method may be useful for repository managers
+	 * that wish to (re-)index individual resources and assemble the XML
+	 * fragments into a complete repository document later. </p> @param files a
+	 * set of input files @param out the writer to write the Repository XML
+	 * representation to @param config a set of optional parameter (use the
+	 * interface constants as keys) @throws Exception in case of an error
 	 */
-	void indexFragment(Set<File> files, Writer out, Map<String, String> config) throws Exception;
+	void indexFragment(Set<File> files, Writer out, Map<String,String> config) throws Exception;
 
 	/**
-	 * Return a Resource from a file
-	 * 
-	 * @param file
-	 *            a bundle to index
-	 * @return The resource, caps, and reqs for that file
+	 * Return a Resource from a file @param file a bundle to index @return The
+	 * resource, caps, and reqs for that file
 	 */
 
 	class IndexResult {
-		public Resource resource;
-		public List<Capability> capabilities = new ArrayList<Capability>();
-		public List<Requirement> requirements = new ArrayList<Requirement>();
+		public Resource				resource;
+		public List<Capability>		capabilities	= new ArrayList<Capability>();
+		public List<Requirement>	requirements	= new ArrayList<Requirement>();
 
 		/**
 		 * A unique signature for this indexer. It should be some kind of hash

@@ -50,12 +50,12 @@ public enum EE {
 
 	UNKNOWN("Unknown", "unknown", new Version(0));
 
-	private final String			eeName;
-	private final String			capabilityName;
-	private final Version			capabilityVersion;
-	private final EE[]				compatible;
-	private transient EnumSet<EE>	compatibleSet;
-	private transient Parameters	packages	= null;
+	private final String eeName;
+	private final String capabilityName;
+	private final Version capabilityVersion;
+	private final EE[] compatible;
+	private transient EnumSet<EE> compatibleSet;
+	private transient Parameters packages = null;
 
 	EE(String name, String capabilityName, Version capabilityVersion, EE... compatible) {
 		this.eeName = name;
@@ -70,7 +70,7 @@ public enum EE {
 
 	/**
 	 * @return An array of EEs that this EE implicitly offers, through backwards
-	 *         compatibility.
+	 * compatibility.
 	 */
 	public EE[] getCompatible() {
 		EnumSet<EE> set = getCompatibleSet();
@@ -108,10 +108,7 @@ public enum EE {
 	}
 
 	/**
-	 * Return the list of packages
-	 * 
-	 * @return
-	 * @throws IOException
+	 * Return the list of packages @return @throws IOException
 	 */
 	public Parameters getPackages() throws IOException {
 		if (packages == null) {

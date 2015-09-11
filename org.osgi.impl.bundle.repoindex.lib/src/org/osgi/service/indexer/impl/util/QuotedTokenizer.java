@@ -3,13 +3,13 @@ package org.osgi.service.indexer.impl.util;
 import java.util.List;
 
 public class QuotedTokenizer {
-	String string;
-	int index = 0;
-	String separators;
-	boolean returnTokens;
-	boolean ignoreWhiteSpace = true;
-	String peek;
-	char separator;
+	String	string;
+	int		index				= 0;
+	String	separators;
+	boolean	returnTokens;
+	boolean	ignoreWhiteSpace	= true;
+	String	peek;
+	char	separator;
 
 	public QuotedTokenizer(String string, String separators, boolean returnTokens) {
 		if (string == null)
@@ -57,13 +57,13 @@ public class QuotedTokenizer {
 			}
 
 			switch (c) {
-			case '"':
-			case '\'':
-				quotedString(sb, c);
-				break;
+				case '"' :
+				case '\'' :
+					quotedString(sb, c);
+					break;
 
-			default:
-				sb.append(c);
+				default :
+					sb.append(c);
 			}
 		}
 		String result = sb.toString().trim();

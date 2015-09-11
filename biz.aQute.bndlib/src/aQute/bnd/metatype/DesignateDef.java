@@ -7,11 +7,11 @@ import aQute.bnd.xmlattribute.XMLAttributeFinder;
 import aQute.lib.tag.Tag;
 
 class DesignateDef extends ExtensionDef {
-	
-	String ocdRef;
-	String pid;
-	boolean factory;
-	
+
+	String	ocdRef;
+	String	pid;
+	boolean	factory;
+
 	public DesignateDef(XMLAttributeFinder finder) {
 		super(finder);
 	}
@@ -24,23 +24,23 @@ class DesignateDef extends ExtensionDef {
 	}
 
 	public void prepare(Analyzer analyzer) {
-		
+
 	}
 
 	Tag getOuterTag() {
-		Tag metadata = new Tag("metatype:MetaData").addAttribute("xmlns:metatype", MetatypeVersion.VERSION_1_3.getNamespace());
+		Tag metadata = new Tag("metatype:MetaData").addAttribute("xmlns:metatype",
+				MetatypeVersion.VERSION_1_3.getNamespace());
 		Namespaces namespaces = new Namespaces();
 		String xmlns = MetatypeVersion.VERSION_1_3.getNamespace();
 		namespaces.registerNamespace("metatype", xmlns);
 		addNamespaces(namespaces, xmlns);
 
 		namespaces.addNamespaces(metadata);
-		
-		
+
 		metadata.addContent(getInnerTag(namespaces));
 
 		return metadata;
-		
+
 	}
 
 	Tag getInnerTag(Namespaces namespaces) {

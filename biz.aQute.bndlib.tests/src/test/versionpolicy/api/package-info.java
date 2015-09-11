@@ -3,4 +3,3 @@
 package test.versionpolicy.api;
 
 import aQute.bnd.annotation.*;
-

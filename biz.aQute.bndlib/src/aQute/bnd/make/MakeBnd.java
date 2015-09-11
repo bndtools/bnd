@@ -8,7 +8,7 @@ import aQute.bnd.osgi.*;
 import aQute.bnd.service.*;
 
 public class MakeBnd implements MakePlugin, Constants {
-	final static Pattern	JARFILE	= Pattern.compile("(.+)\\.(jar|ipa)");
+	final static Pattern JARFILE = Pattern.compile("(.+)\\.(jar|ipa)");
 
 	public Resource make(Builder builder, String destination, Map<String,String> argumentsOnMake) throws Exception {
 		String type = argumentsOnMake.get("type");

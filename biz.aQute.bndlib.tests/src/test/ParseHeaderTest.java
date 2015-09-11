@@ -11,9 +11,8 @@ import aQute.bnd.version.*;
 public class ParseHeaderTest extends TestCase {
 
 	public void testTyped() {
-		Parameters p = new Parameters(
-				"a;a:Long=1;b:Double=3.2;c:String=abc;d:Version=1"
-						+ ";e:List<Long>='1,2,3';f:List<Double>='1.0,1.1,1.2';g:List<String>='abc,def,ghi';h:List<Version>='1.0.1,1.0.2'");
+		Parameters p = new Parameters("a;a:Long=1;b:Double=3.2;c:String=abc;d:Version=1"
+				+ ";e:List<Long>='1,2,3';f:List<Double>='1.0,1.1,1.2';g:List<String>='abc,def,ghi';h:List<Version>='1.0.1,1.0.2'");
 
 		String s = p.toString();
 		System.out.println(s);
@@ -118,10 +117,10 @@ public class ParseHeaderTest extends TestCase {
 				"a", "b"
 		});
 		assertNames(",,a,,", new String[] {
-			"a"
+				"a"
 		}, null, "Empty clause, usually caused by repeating");
 		assertNames(",a", new String[] {
-			"a"
+				"a"
 		}, null, "Empty clause, usually caused");
 		assertNames(",a,b,c,", new String[] {
 				"a", "b", "c"

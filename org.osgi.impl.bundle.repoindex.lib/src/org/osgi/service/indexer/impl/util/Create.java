@@ -12,12 +12,12 @@ import java.util.Set;
 
 class Create {
 
-	public static <K, V> Map<K, V> map() {
-		return new LinkedHashMap<K, V>();
+	public static <K, V> Map<K,V> map() {
+		return new LinkedHashMap<K,V>();
 	}
 
-	public static <K, V> Map<K, V> map(Class<K> key, Class<V> value) {
-		return Collections.checkedMap(new LinkedHashMap<K, V>(), key, value);
+	public static <K, V> Map<K,V> map(Class<K> key, Class<V> value) {
+		return Collections.checkedMap(new LinkedHashMap<K,V>(), key, value);
 	}
 
 	public static <T> List<T> list() {
@@ -44,8 +44,8 @@ class Create {
 		return new HashSet<T>(Arrays.asList(source));
 	}
 
-	public static <K, V> Map<K, V> copy(Map<K, V> source) {
-		return new LinkedHashMap<K, V>(source);
+	public static <K, V> Map<K,V> copy(Map<K,V> source) {
+		return new LinkedHashMap<K,V>(source);
 	}
 
 	public static <T> List<T> copy(List<T> source) {

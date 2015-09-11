@@ -13,11 +13,11 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 
 public class XMLType {
 
-	Transformer		transformer;
-	Pattern			paths;
-	String			root;
+	Transformer	transformer;
+	Pattern		paths;
+	String		root;
 
-	static Pattern	QN	= Pattern.compile("[_A-Za-z$][_A-Za-z0-9$]*(\\.[_A-Za-z$][_A-Za-z0-9$]*)*");
+	static Pattern QN = Pattern.compile("[_A-Za-z$][_A-Za-z0-9$]*(\\.[_A-Za-z$][_A-Za-z0-9$]*)*");
 
 	public XMLType(URL source, String root, String paths) throws Exception {
 		transformer = getTransformer(source);
@@ -46,7 +46,7 @@ public class XMLType {
 				for (int i = 0; i < parts.length; i++) {
 					String pack = toPackage(parts[i]);
 					if (pack != null)
-						refers.add( pack );
+						refers.add(pack);
 				}
 			}
 			line = br.readLine();
@@ -57,15 +57,15 @@ public class XMLType {
 
 	static String toPackage(String fqn) {
 		int n = fqn.lastIndexOf('.');
-		if ( n < 0 || n + 1 >= fqn.length())
+		if (n < 0 || n + 1 >= fqn.length())
 			return null;
 
-		char c = fqn.charAt(n+1);
-		if ( Character.isJavaIdentifierStart(c) && Character.isUpperCase(c) ) {
+		char c = fqn.charAt(n + 1);
+		if (Character.isJavaIdentifierStart(c) && Character.isUpperCase(c)) {
 			String other = fqn.substring(0, n);
 			return toPackage(other);
 		}
-		
+
 		return fqn;
 	}
 

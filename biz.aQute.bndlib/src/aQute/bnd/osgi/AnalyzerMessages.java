@@ -8,6 +8,5 @@ import aQute.service.reporter.*;
 public interface AnalyzerMessages extends Messages {
 
 	WARNING Export_Has_PrivateReferences_(PackageRef exported, int count, Collection<PackageRef> local);
-/**/
+	/**/
 }
-

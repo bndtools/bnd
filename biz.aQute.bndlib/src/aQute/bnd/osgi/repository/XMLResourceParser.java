@@ -52,7 +52,7 @@ public class XMLResourceParser extends Processor {
 	@SuppressWarnings("unused")
 	final private URI				url;
 
-	private int						depth;
+	private int depth;
 
 	public XMLResourceParser(URI url) throws Exception {
 		this(url.toURL().openStream(), url.toString(), url);

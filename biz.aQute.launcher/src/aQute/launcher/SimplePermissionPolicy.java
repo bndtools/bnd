@@ -9,24 +9,14 @@ import org.osgi.service.permissionadmin.*;
 
 /**
  * Implements a permissionpolicy. It will tried to read a resource from the
- * bundle. This resource should have the following format:
- * 
- * <pre>
- * 
- * 
- *    '(' permission-class [ '&quot;' name-parameter '&quot;' [ '&quot;' action [ ',' action ] ... '&quot;' ] ] ')'
- *   Or
- *    '#' *
- * 
- * 
- * </pre>
- * 
- * Each valid line is translated into a PermissionInfo object and these objects
- * together form the permissions for a specific bundle. The class will also
- * attempt to read a file called "default.perm" from the current bundle that
- * will have the same format. This is used for the default permissions.
- * <p>
- * If there is no permission admin service, this class does nothing relevant.
+ * bundle. This resource should have the following format: <pre> '('
+ * permission-class [ '&quot;' name-parameter '&quot;' [ '&quot;' action [ ','
+ * action ] ... '&quot;' ] ] ')' Or '#' * </pre> Each valid line is translated
+ * into a PermissionInfo object and these objects together form the permissions
+ * for a specific bundle. The class will also attempt to read a file called
+ * "default.perm" from the current bundle that will have the same format. This
+ * is used for the default permissions. <p> If there is no permission admin
+ * service, this class does nothing relevant.
  */
 public class SimplePermissionPolicy implements SynchronousBundleListener {
 	static final String	DEFAULT_PERMISSION_RESOURCE	= "default.perm";
@@ -45,7 +35,7 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 		bundles = new ArrayList<Bundle>();
 		context.addBundleListener(this);
 		PermissionAdmin permissionAdmin = getPermissionAdmin();
-		if (permissionAdmin == null) /* no permission admin service */{
+		if (permissionAdmin == null) /* no permission admin service */ {
 			launcher.trace("no permission admin available => ! security");
 			return;
 		}
@@ -76,7 +66,7 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 	 */
 	public void setPermissions(Bundle bundle) {
 		PermissionAdmin permissionAdmin = getPermissionAdmin();
-		if (permissionAdmin == null) /* no permission admin service */{
+		if (permissionAdmin == null) /* no permission admin service */ {
 			return;
 		}
 		PermissionInfo[] info = getPermissions(bundle);

@@ -4,11 +4,10 @@ import org.osgi.framework.*;
 
 public class EE {
 
-	private String name;
-	private String version;
+	private String	name;
+	private String	version;
 
-	private EE() {
-	}
+	private EE() {}
 
 	public static final EE parseBREE(String bree) {
 		EE ee = new EE();
@@ -26,7 +25,8 @@ public class EE {
 					ee.name = segment1.name + "/" + segment2.name;
 					ee.version = segment1.version;
 				} else {
-					StringBuilder builder = new StringBuilder().append(segment1.name).append('-').append(segment1.version).append('/').append(segment2.name);
+					StringBuilder builder = new StringBuilder().append(segment1.name).append('-')
+							.append(segment1.version).append('/').append(segment2.name);
 					if (segment2.version != null)
 						builder.append('-').append(segment2.version);
 					ee.name = builder.toString();
@@ -64,7 +64,8 @@ public class EE {
 				new Version(versionStr);
 				result.name = name;
 				result.version = versionStr;
-			} catch (IllegalArgumentException e) {
+			}
+			catch (IllegalArgumentException e) {
 				result.name = input;
 				result.version = null;
 			}

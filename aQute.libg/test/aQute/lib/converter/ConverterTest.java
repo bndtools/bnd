@@ -17,7 +17,7 @@ import aQute.libg.map.*;
 		"unchecked", "rawtypes"
 })
 public class ConverterTest extends TestCase {
-	Converter	converter	= new Converter();
+	Converter converter = new Converter();
 
 	interface M {
 		String a();
@@ -102,9 +102,7 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Digests as byte[]
-	 * 
-	 * @throws Exception
+	 * Digests as byte[] @throws Exception
 	 */
 
 	public void testDigest() throws Exception {
@@ -139,9 +137,7 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test string to primitives
-	 * 
-	 * @throws Exception
+	 * Test string to primitives @throws Exception
 	 */
 
 	public void testStringtoPrimitives() throws Exception {
@@ -168,9 +164,7 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test the wrappers
-	 * 
-	 * @throws Exception
+	 * Test the wrappers @throws Exception
 	 */
 	public void testWrappers() throws Exception {
 		Object[] types = {
@@ -184,9 +178,8 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Create an array and see if we can convert a single number
-	 * 
-	 * @throws Exception
+	 * Create an array and see if we can convert a single number @throws
+	 * Exception
 	 */
 	public void testPrimitives() throws Exception {
 		assertPrimitives1(1);
@@ -204,10 +197,7 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test enums
-	 * 
-	 * @param source
-	 * @throws Exception
+	 * Test enums @param source @throws Exception
 	 */
 	public enum X {
 		A, B, C;
@@ -219,10 +209,7 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test collections
-	 * 
-	 * @param source
-	 * @throws Exception
+	 * Test collections @param source @throws Exception
 	 */
 	static class XX {
 		public ArrayList<String>				al;
@@ -254,10 +241,7 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test generic collections
-	 * 
-	 * @param source
-	 * @throws Exception
+	 * Test generic collections @param source @throws Exception
 	 */
 	static class GC {
 		public Collection<String>				strings;
@@ -287,10 +271,7 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test generic maps
-	 * 
-	 * @param source
-	 * @throws Exception
+	 * Test generic maps @param source @throws Exception
 	 */
 	public static class GM {
 		public Map<String,Integer>					strings;
@@ -326,8 +307,7 @@ public class ConverterTest extends TestCase {
 		assertEquals("{a=1, b=2}", new TreeMap(gSemiMap.strings).toString());
 	}
 
-	void assertPrimitives(@SuppressWarnings("unused")
-	Object source) throws Exception {
+	void assertPrimitives(@SuppressWarnings("unused") Object source) throws Exception {
 		Class[] types = {
 				byte.class, boolean.class, char.class, short.class, int.class, long.class, float.class, double.class
 		};
@@ -350,10 +330,7 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test constructor
-	 * 
-	 * @param source
-	 * @throws Exception
+	 * Test constructor @param source @throws Exception
 	 */
 
 	public void testConstructor() throws Exception {
@@ -364,10 +341,7 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test valueOf
-	 * 
-	 * @param source
-	 * @throws Exception
+	 * Test valueOf @param source @throws Exception
 	 */
 
 	public void testValueOf() throws Exception {
@@ -407,54 +381,56 @@ public class ConverterTest extends TestCase {
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, 1L));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, 1D));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, 1f));
-		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new String[]{"1"}));
-		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, Arrays.asList((byte)1)));
-		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, Arrays.asList((short)1)));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new String[] {
+				"1"
+		}));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, Arrays.asList((byte) 1)));
+		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, Arrays.asList((short) 1)));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, Arrays.asList(1)));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, Arrays.asList(1L)));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, Arrays.asList(1D)));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, Arrays.asList(1L)));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new BigDecimal(1)));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new BigInteger(new byte[] {
-			1
+				1
 		})));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new byte[] {
-			1
+				1
 		}));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new short[] {
-			1
+				1
 		}));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new char[] {
-			1
+				1
 		}));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new long[] {
-			1
+				1
 		}));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new float[] {
-			1
+				1
 		}));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new double[] {
-			1
+				1
 		}));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new BigInteger[] {
 				new BigInteger(new byte[] {
-					1
+						1
 				})
-			}));
+		}));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new BigDecimal[] {
 				new BigDecimal(1)
-			}));
+		}));
 	}
 
 	public void testURIs() throws Exception {
 		URI expected = new URI("https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0");
-		assertEquals(expected,
-			Converter.cnv(URI.class,"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0"));
-		assertEquals(expected,
-			Converter.cnv(URI.class,"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0\n"));
-		assertEquals(expected,
-			Converter.cnv(URI.class,"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0\n1.3.1"));
-		assertEquals(expected,
-			Converter.cnv(URI.class,"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0\r\n1.3.1"));
+		assertEquals(expected, Converter.cnv(URI.class,
+				"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0"));
+		assertEquals(expected, Converter.cnv(URI.class,
+				"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0\n"));
+		assertEquals(expected, Converter.cnv(URI.class,
+				"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0\n1.3.1"));
+		assertEquals(expected, Converter.cnv(URI.class,
+				"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0\r\n1.3.1"));
 	}
 }

@@ -102,8 +102,8 @@ public class FileRepo {
 		if (!dir.exists() && !dir.mkdirs()) {
 			throw new IOException("Could not create directory " + dir);
 		}
-		File file = new File(dir, bsn + "-" + version.getMajor() + "." + version.getMinor() + "." + version.getMicro()
-				+ ".jar");
+		File file = new File(dir,
+				bsn + "-" + version.getMajor() + "." + version.getMinor() + "." + version.getMicro() + ".jar");
 		return file;
 	}
 

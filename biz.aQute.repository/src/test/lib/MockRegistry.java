@@ -6,7 +6,7 @@ import aQute.bnd.service.*;
 
 public class MockRegistry implements Registry {
 
-	private final Set<Object>	plugins	= new HashSet<Object>();
+	private final Set<Object> plugins = new HashSet<Object>();
 
 	public void addPlugin(Object plugin) {
 		plugins.add(plugin);

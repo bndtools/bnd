@@ -51,10 +51,7 @@ public class MavenTest extends TestCase {
 	Maven					maven		= new Maven(executor);
 
 	/**
-	 * A test against maven 2
-	 * 
-	 * @throws Exception
-	 * @throws URISyntaxException
+	 * A test against maven 2 @throws Exception @throws URISyntaxException
 	 */
 	public void testRemote() throws URISyntaxException, Exception {
 		URI repo = new URI("http://repo1.maven.org/maven2");
@@ -69,9 +66,7 @@ public class MavenTest extends TestCase {
 	}
 
 	/**
-	 * Check if we get the correct bundles for a project
-	 * 
-	 * @throws Exception
+	 * Check if we get the correct bundles for a project @throws Exception
 	 */
 
 	public void testProjectBundles() throws Exception {
@@ -89,8 +84,7 @@ public class MavenTest extends TestCase {
 	}
 
 	/**
-	 * @return
-	 * @throws Exception
+	 * @return @throws Exception
 	 */
 	protected static Project getProject(String name) throws Exception {
 		File wsf = IO.getFile(cwd, "testresources/ws");
@@ -104,9 +98,7 @@ public class MavenTest extends TestCase {
 	}
 
 	/**
-	 * See if we can create a maven repostory as a plugin
-	 * 
-	 * @throws Exception
+	 * See if we can create a maven repostory as a plugin @throws Exception
 	 */
 
 	public static void testMavenRepo() throws Exception {
@@ -150,9 +142,7 @@ public class MavenTest extends TestCase {
 	}
 
 	/**
-	 * Test parsing a project pom
-	 * 
-	 * @throws Exception
+	 * Test parsing a project pom @throws Exception
 	 */
 
 	public static void testProjectPom() throws Exception {
@@ -226,20 +216,21 @@ public class MavenTest extends TestCase {
 		me.remove();
 
 		mr.setRepositories(new URI[] {
-			IO.getFile(new File("").getAbsoluteFile(), "testresources/ws/maven1/m2").toURI()
+				IO.getFile(new File("").getAbsoluteFile(), "testresources/ws/maven1/m2").toURI()
 		});
 
 		Map<String,String> map = new HashMap<String,String>();
 		map.put("scope", "compile");
-		File file = mr.get("org.apache.commons+com.springsource.org.apache.commons.beanutils", "1.6.1",
-				Strategy.LOWEST, map);
+		File file = mr.get("org.apache.commons+com.springsource.org.apache.commons.beanutils", "1.6.1", Strategy.LOWEST,
+				map);
 
 		assertNotNull(file);
 		assertTrue(file.isFile());
 
-		assertEquals("org.apache.commons+com.springsource.org.apache.commons.beanutils;version=\"1.6.1\"\n"
-				+ "org.apache.commons+com.springsource.org.apache.commons.collections;version=\"2.1.1\"\n"
-				+ "org.apache.commons+com.springsource.org.apache.commons.logging;version=\"1.0.4\"\n",
+		assertEquals(
+				"org.apache.commons+com.springsource.org.apache.commons.beanutils;version=\"1.6.1\"\n"
+						+ "org.apache.commons+com.springsource.org.apache.commons.collections;version=\"2.1.1\"\n"
+						+ "org.apache.commons+com.springsource.org.apache.commons.logging;version=\"1.0.4\"\n",
 				IO.collect(file));
 
 		file = mr.get("org.apache.commons+com.springsource.org.apache.commons.beanutils", "1.6.1", Strategy.LOWEST,
@@ -249,9 +240,9 @@ public class MavenTest extends TestCase {
 
 	public static void testMavenx() throws Exception {
 		Maven maven = new Maven(null);
-		CachedPom pom = maven.getPom("javax.xml.bind", "com.springsource.javax.xml.bind", "2.2.0", new URI(
-				"http://repository.springsource.com/maven/bundles/release"), new URI(
-				"http://repository.springsource.com/maven/bundles/external"));
+		CachedPom pom = maven.getPom("javax.xml.bind", "com.springsource.javax.xml.bind", "2.2.0",
+				new URI("http://repository.springsource.com/maven/bundles/release"),
+				new URI("http://repository.springsource.com/maven/bundles/external"));
 		// Pom pom = maven.getPom("javax.xml.ws",
 		// "com.springsource.javax.xml.ws", "2.1.1", new
 		// URL("http://repository.springsource.com/maven/bundles/release"), new
@@ -266,9 +257,7 @@ public class MavenTest extends TestCase {
 
 	/**
 	 * Test the pom parser which will turn the pom into a set of properties,
-	 * which will make it actually readable according to some.
-	 * 
-	 * @throws Exception
+	 * which will make it actually readable according to some. @throws Exception
 	 */
 
 	@SuppressWarnings("restriction")
@@ -347,7 +336,8 @@ public class MavenTest extends TestCase {
 	// Processor processor = new Processor();
 	// processor
 	// .setProperty("-plugin",
-	// "aQute.bnd.maven.MavenGroup; groupId=org.apache.felix, aQute.bnd.maven.MavenRepository");
+	// "aQute.bnd.maven.MavenGroup; groupId=org.apache.felix,
+	// aQute.bnd.maven.MavenRepository");
 	// MavenRepository maven = new MavenRepository();
 	// maven.setReporter(processor);
 	// Map<String, String> map = new HashMap<String, String>();
@@ -363,33 +353,25 @@ public class MavenTest extends TestCase {
 
 	public void testPomResource() throws Exception {
 
-		testPom("pom.xml",
-				"true",
-				"com.example.foo",
-				"1.2.3.qualifier",
-				"com.example",
-				"foo",
-				"1.2.3.qualifier",
+		testPom("pom.xml", "true", "com.example.foo", "1.2.3.qualifier", "com.example", "foo", "1.2.3.qualifier",
 				"url=http://github.com/bndtools,connection=scm:git:https://github.com/bndtools/bnd,developerConnection=scm:git:git@github.com/bndtools/bnd",
 				"Peter.Kriens@aQute.biz;name=\"Peter Kriens\";organization=aQute;roles=\"programmer,gopher\"");
 		testPom("pom.xml", "true", "com.example.foo", "1.2.3.qualifier", "com.example", "foo", "1.2.3.qualifier", null,
 				null);
 		testPom("pom.xml", "true", "uvw.xyz", "1.2.3", "uvw", "xyz", "1.2.3", null, null);
 		testPom("META-INF/maven/abc.def.ghi/jkl/pom.xml", "groupid=abc.def.ghi,artifactid=jkl", "uvw.xyz", "1.2.3",
-				"abc.def.ghi", "jkl", "1.2.3",
-				null, null);
+				"abc.def.ghi", "jkl", "1.2.3", null, null);
 		testPom("META-INF/maven/abc.def.ghi/uvw.xyz/pom.xml", "groupid=abc.def.ghi", "uvw.xyz", "1.2.3", "abc.def.ghi",
 				"uvw.xyz", "1.2.3", null, null);
 		testPom("META-INF/maven/abc.def.ghi/uvw.xyz/pom.xml", "groupid=abc.def.ghi,version=2.6.8", "uvw.xyz", "1.2.3",
-				"abc.def.ghi", "uvw.xyz", "2.6.8",
-				null, null);
+				"abc.def.ghi", "uvw.xyz", "2.6.8", null, null);
 		testPom("META-INF/maven/pom.xml", "groupid=abc.def.ghi,version=2.6.8,where=META-INF/maven/pom.xml", "uvw.xyz",
 				"1.2.3", "abc.def.ghi", "uvw.xyz", "2.6.8", null, null);
 	}
 
 	void testPom(String where, String pom, String bsn, String version, String groupId, String artifactId,
-			String mversion, String scm, String developers) throws IOException, SAXException,
-			ParserConfigurationException, Exception {
+			String mversion, String scm, String developers)
+					throws IOException, SAXException, ParserConfigurationException, Exception {
 		Builder b = new Builder();
 		b.setProperty("-pom", pom);
 		b.setBundleSymbolicName(bsn);

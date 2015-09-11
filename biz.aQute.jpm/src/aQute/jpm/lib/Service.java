@@ -13,7 +13,7 @@ import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 
 public class Service {
-	static final int				BUFFER_SIZE	= IOConstants.PAGE_SIZE * 16;
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
 
 	final ServiceData				data;
 	final JustAnotherPackageManager	jpm;

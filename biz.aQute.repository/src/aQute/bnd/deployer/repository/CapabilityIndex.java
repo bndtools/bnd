@@ -5,10 +5,9 @@ import java.util.*;
 import org.osgi.framework.*;
 import org.osgi.resource.*;
 
-
 public class CapabilityIndex {
 
-	private final Map<String,List<Capability>>	capabilityMap	= new HashMap<String,List<Capability>>();
+	private final Map<String,List<Capability>> capabilityMap = new HashMap<String,List<Capability>>();
 
 	public void clear() {
 		capabilityMap.clear();
@@ -23,7 +22,7 @@ public class CapabilityIndex {
 			addCapability(cap);
 		}
 	}
-	
+
 	public void addCapability(Capability cap) {
 		List<Capability> list = capabilityMap.get(cap.getNamespace());
 		if (list == null) {

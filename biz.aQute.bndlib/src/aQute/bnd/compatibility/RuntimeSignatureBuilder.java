@@ -3,7 +3,7 @@ package aQute.bnd.compatibility;
 import java.lang.reflect.*;
 
 public class RuntimeSignatureBuilder {
-	final Scope	root;
+	final Scope root;
 
 	public RuntimeSignatureBuilder(Scope root) {
 		this.root = root;

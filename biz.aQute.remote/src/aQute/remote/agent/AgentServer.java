@@ -57,9 +57,9 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	// Constant so we do not have to repeat it
 	//
 
-	private static final TypeReference<Map<String,String>>	MAP_STRING_STRING_T	= new TypeReference<Map<String,String>>() {};
+	private static final TypeReference<Map<String,String>> MAP_STRING_STRING_T = new TypeReference<Map<String,String>>() {};
 
-	private static final long[]								EMPTY				= new long[0];
+	private static final long[] EMPTY = new long[0];
 
 	//
 	// Known keys in the framework properties since we cannot
@@ -67,7 +67,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	//
 
 	@SuppressWarnings("deprecation")
-	static String											keys[]				= {
+	static String keys[] = {
 			Constants.FRAMEWORK_BEGINNING_STARTLEVEL, Constants.FRAMEWORK_BOOTDELEGATION,
 			Constants.FRAMEWORK_BSNVERSION, Constants.FRAMEWORK_BUNDLE_PARENT, Constants.FRAMEWORK_TRUST_REPOSITORIES,
 			Constants.FRAMEWORK_COMMAND_ABSPATH, Constants.FRAMEWORK_EXECPERMISSION,
@@ -77,29 +77,23 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			Constants.FRAMEWORK_SYSTEMCAPABILITIES, Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA,
 			Constants.FRAMEWORK_SYSTEMPACKAGES, Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, Constants.FRAMEWORK_UUID,
 			Constants.FRAMEWORK_VENDOR, Constants.FRAMEWORK_VERSION, Constants.FRAMEWORK_WINDOWSYSTEM,
-																				};
+	};
 
-	private Supervisor										remote;
-	private BundleContext									context;
-	private final ShaCache									cache;
-	private ShaSource										source;
-	private final Map<String,String>						installed			= new HashMap<String,String>();
-	volatile boolean										quit;
-	private static Map<String,AgentDispatcher>				instances			= new HashMap<String,AgentDispatcher>();
-	private Redirector										redirector			= new NullRedirector();
-	private Link<Agent,Supervisor>							link;
-	private CountDownLatch									refresh				= new CountDownLatch(0);
+	private Supervisor							remote;
+	private BundleContext						context;
+	private final ShaCache						cache;
+	private ShaSource							source;
+	private final Map<String,String>			installed	= new HashMap<String,String>();
+	volatile boolean							quit;
+	private static Map<String,AgentDispatcher>	instances	= new HashMap<String,AgentDispatcher>();
+	private Redirector							redirector	= new NullRedirector();
+	private Link<Agent,Supervisor>				link;
+	private CountDownLatch						refresh		= new CountDownLatch(0);
 
 	/**
 	 * An agent server is based on a context and takes a name and cache
-	 * directory
-	 * 
-	 * @param name
-	 *            the name of the agent's framework
-	 * @param context
-	 *            a bundle context of the framework
-	 * @param cache
-	 *            the directory for caching
+	 * directory @param name the name of the agent's framework @param context a
+	 * bundle context of the framework @param cache the directory for caching
 	 */
 	public AgentServer(String name, BundleContext context, File cache) {
 		this.context = context;
@@ -621,7 +615,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		brd.version = resource.getVersion().toString();
 
 		brd.requirements = new ArrayList<RequirementDTO>();
-		
+
 		for (Requirement r : resource.getRequirements(null)) {
 			brd.requirements.add(toDTO(brd.id, r));
 		}
@@ -630,7 +624,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		for (Capability c : resource.getCapabilities(null)) {
 			brd.capabilities.add(toDTO(brd.id, c));
 		}
-		
+
 		return brd;
 	}
 

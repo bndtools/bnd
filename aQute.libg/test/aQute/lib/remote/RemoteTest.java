@@ -10,8 +10,8 @@ import aQute.libg.remote.sink.RemoteSink;
 import aQute.libg.remote.source.RemoteSource;
 
 public class RemoteTest extends TestCase {
-	File	sinkDir;
-	File	sourceDir;
+	File					sinkDir;
+	File					sourceDir;
 	private RemoteSource	source;
 	private RemoteSink		sink;
 

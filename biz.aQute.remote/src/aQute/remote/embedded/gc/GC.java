@@ -45,7 +45,6 @@ public class GC implements BundleActivator {
 	}
 
 	@Override
-	public void stop(BundleContext context) throws Exception {
-	}
+	public void stop(BundleContext context) throws Exception {}
 
 }

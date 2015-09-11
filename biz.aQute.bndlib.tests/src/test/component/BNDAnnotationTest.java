@@ -52,7 +52,9 @@ import aQute.bnd.test.BndTestCase;
 /**
  * Test for use of DS components specified using bnd proprietary annotations.
  */
-@SuppressWarnings({"resource", "unused", "rawtypes"})
+@SuppressWarnings({
+		"resource", "unused", "rawtypes"
+})
 public class BNDAnnotationTest extends BndTestCase {
 	static final DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
 	static final XPathFactory			xpathf	= XPathFactory.newInstance();
@@ -105,7 +107,7 @@ public class BNDAnnotationTest extends BndTestCase {
 		Builder b = new Builder();
 		b.setExceptions(true);
 		b.setClasspath(new File[] {
-			new File("bin")
+				new File("bin")
 		});
 		b.setProperty("Service-Component", spec);
 		b.setProperty("Private-Package", "test.component");
@@ -146,25 +148,20 @@ public class BNDAnnotationTest extends BndTestCase {
 
 	/**
 	 * Can we order the references? References are ordered by their name as Java
-	 * does not define the order of the methods.
-	 * 
-	 * @throws Exception
+	 * does not define the order of the methods. @throws Exception
 	 */
 
 	@Component
 	static class TestReferenceOrdering {
 
 		@Reference(service = LogService.class)
-		void setA(@SuppressWarnings("unused")
-		ServiceReference<?> ref) {}
+		void setA(@SuppressWarnings("unused") ServiceReference< ? > ref) {}
 
 		@Reference
-		void setC(@SuppressWarnings("unused")
-		LogService log) {}
+		void setC(@SuppressWarnings("unused") LogService log) {}
 
 		@Reference(service = LogService.class)
-		void setB(@SuppressWarnings("unused")
-		Map<String,Object> map) {}
+		void setB(@SuppressWarnings("unused") Map<String,Object> map) {}
 	}
 
 	public void testAnnotationReferenceOrdering() throws Exception {
@@ -231,8 +228,8 @@ public class BNDAnnotationTest extends BndTestCase {
 					xpath.evaluate("//scr:component/@name", d, XPathConstants.STRING));
 		}
 		{
-			Resource mr2 = b.getJar().getResource(
-					"OSGI-INF/metatype/test.component.BNDAnnotationTest$MetatypeConfig2.xml");
+			Resource mr2 = b.getJar()
+					.getResource("OSGI-INF/metatype/test.component.BNDAnnotationTest$MetatypeConfig2.xml");
 			mr2.write(System.err);
 			Document d = db.parse(mr2.openInputStream());
 			assertEquals("test.component.BNDAnnotationTest$MetatypeConfig2",
@@ -255,8 +252,7 @@ public class BNDAnnotationTest extends BndTestCase {
 	}, designate = Config.class, designateFactory = Config.class)
 	static class PropertiesAndConfig {
 		@Activate
-		protected void activate(@SuppressWarnings("unused")
-		ComponentContext c) {}
+		protected void activate(@SuppressWarnings("unused") ComponentContext c) {}
 	}
 
 	public void testPropertiesAndConfig() throws Exception {
@@ -282,15 +278,13 @@ public class BNDAnnotationTest extends BndTestCase {
 	@Component(name = "protected")
 	static class PackageProtectedActivateMethod {
 		@Activate
-		protected void activatex(@SuppressWarnings("unused")
-		ComponentContext c) {}
+		protected void activatex(@SuppressWarnings("unused") ComponentContext c) {}
 	}
 
 	@Component(name = "packageprivate")
 	static class PackagePrivateActivateMethod {
 		@Activate
-		void activatex(@SuppressWarnings("unused")
-		ComponentContext c) {}
+		void activatex(@SuppressWarnings("unused") ComponentContext c) {}
 	}
 
 	@Component(name = "private")
@@ -310,15 +304,13 @@ public class BNDAnnotationTest extends BndTestCase {
 	@Component(name = "default-protected")
 	static class DefaultProtectedActivateMethod {
 		@Activate
-		protected void activate(@SuppressWarnings("unused")
-		ComponentContext c) {}
+		protected void activate(@SuppressWarnings("unused") ComponentContext c) {}
 	}
 
 	@Component(name = "public")
 	static class PublicActivateMethod {
 		@Activate
-		public void activatex(@SuppressWarnings("unused")
-		ComponentContext c) {}
+		public void activatex(@SuppressWarnings("unused") ComponentContext c) {}
 	}
 
 	public void testPackagePrivateActivateMethodBndAnnos() throws Exception {
@@ -372,8 +364,7 @@ public class BNDAnnotationTest extends BndTestCase {
 	static class Annotated {
 
 		@Reference
-		protected void setLog(@SuppressWarnings("unused")
-		LogService log) {}
+		protected void setLog(@SuppressWarnings("unused") LogService log) {}
 
 	}
 
@@ -388,9 +379,7 @@ public class BNDAnnotationTest extends BndTestCase {
 
 	/**
 	 * Imported default package because JSR14 seems to do something weird with
-	 * annotations.
-	 * 
-	 * @throws Exception
+	 * annotations. @throws Exception
 	 */
 	public void testJSR14ComponentAnnotations() throws Exception {
 		Builder b = new Builder();
@@ -414,8 +403,7 @@ public class BNDAnnotationTest extends BndTestCase {
 	static class NoUnbind {
 
 		@Reference
-		protected void setLog(@SuppressWarnings("unused")
-		LogService log) {}
+		protected void setLog(@SuppressWarnings("unused") LogService log) {}
 
 	}
 
@@ -431,8 +419,7 @@ public class BNDAnnotationTest extends BndTestCase {
 	static class NoUnbindDynamic {
 
 		@Reference(dynamic = true)
-		protected void setLog(@SuppressWarnings("unused")
-		LogService log) {}
+		protected void setLog(@SuppressWarnings("unused") LogService log) {}
 	}
 
 	public void testNoUnbindDynamic() throws Exception {
@@ -445,8 +432,7 @@ public class BNDAnnotationTest extends BndTestCase {
 	static class ExplicitUnbind {
 
 		@Reference(unbind = "killLog")
-		protected void setLog(@SuppressWarnings("unused")
-		LogService log) {}
+		protected void setLog(@SuppressWarnings("unused") LogService log) {}
 
 	}
 
@@ -467,8 +453,7 @@ public class BNDAnnotationTest extends BndTestCase {
 	static class NewActivateVersion {
 
 		@Activate
-		protected void activate(@SuppressWarnings("unused")
-		ComponentContext context) {}
+		protected void activate(@SuppressWarnings("unused") ComponentContext context) {}
 
 	}
 
@@ -484,9 +469,7 @@ public class BNDAnnotationTest extends BndTestCase {
 
 		@SuppressWarnings("rawtypes")
 		@Reference
-		protected void bind(
-		ServiceReference ref,
-		Map<String,Object> map) {}
+		protected void bind(ServiceReference ref, Map<String,Object> map) {}
 
 	}
 
@@ -512,14 +495,12 @@ public class BNDAnnotationTest extends BndTestCase {
 	static class SameRefName {
 
 		@Reference
-		protected void bind(@SuppressWarnings("unused")
-		LogService log) {
+		protected void bind(@SuppressWarnings("unused") LogService log) {
 
 		}
 
 		@Reference
-		protected void bind(@SuppressWarnings("unused")
-		EventAdmin event) {
+		protected void bind(@SuppressWarnings("unused") EventAdmin event) {
 
 		}
 	}
@@ -547,8 +528,8 @@ public class BNDAnnotationTest extends BndTestCase {
 		Document doc = doc(b, "cpcomp");
 		assertEquals("java.io.Serializable",
 				doc.getElementsByTagName("provide").item(0).getAttributes().getNamedItem("interface").getTextContent());
-		assertEquals("org.osgi.service.event.EventAdmin", doc.getElementsByTagName("provide").item(1).getAttributes()
-				.getNamedItem("interface").getTextContent());
+		assertEquals("org.osgi.service.event.EventAdmin",
+				doc.getElementsByTagName("provide").item(1).getAttributes().getNamedItem("interface").getTextContent());
 
 	}
 
@@ -560,16 +541,13 @@ public class BNDAnnotationTest extends BndTestCase {
 	static class OldVersion {
 
 		@Activate
-		protected void activate(@SuppressWarnings("unused")
-		ComponentContext cc) {}
+		protected void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-		protected void deactivate(@SuppressWarnings("unused")
-		ComponentContext cc) {}
+		protected void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Reference
-		protected void bindLog(@SuppressWarnings("unused")
-		LogService log) {
+		protected void bindLog(@SuppressWarnings("unused") LogService log) {
 
 		}
 	}
@@ -583,8 +561,7 @@ public class BNDAnnotationTest extends BndTestCase {
 
 		@Activate
 		// Is not allowed, must give an error
-		protected void whatever(@SuppressWarnings("unused")
-		String x) {}
+		protected void whatever(@SuppressWarnings("unused") String x) {}
 
 	}
 
@@ -608,11 +585,9 @@ public class BNDAnnotationTest extends BndTestCase {
 	static class ActivateWithMultipleArguments {
 
 		@Activate
-		protected void whatever(@SuppressWarnings("unused")
-		Map< ? , ? > map, @SuppressWarnings("unused")
-		ComponentContext cc, @SuppressWarnings("unused")
-		BundleContext bc, @SuppressWarnings("unused")
-		Map< ? , ? > x) {}
+		protected void whatever(@SuppressWarnings("unused") Map< ? , ? > map,
+				@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") BundleContext bc,
+				@SuppressWarnings("unused") Map< ? , ? > x) {}
 
 	}
 
@@ -630,9 +605,8 @@ public class BNDAnnotationTest extends BndTestCase {
 	static class MultipleArguments {
 
 		@Reference
-		protected void bindWithMap(@SuppressWarnings("unused")
-		LogService log, @SuppressWarnings("unused")
-		Map< ? , ? > map) {}
+		protected void bindWithMap(@SuppressWarnings("unused") LogService log,
+				@SuppressWarnings("unused") Map< ? , ? > map) {}
 
 	}
 
@@ -640,8 +614,7 @@ public class BNDAnnotationTest extends BndTestCase {
 	static class ReferenceArgument {
 
 		@Reference(service = LogService.class)
-		protected void bindReference(@SuppressWarnings("unused")
-		ServiceReference ref) {}
+		protected void bindReference(@SuppressWarnings("unused") ServiceReference ref) {}
 
 	}
 
@@ -664,18 +637,14 @@ public class BNDAnnotationTest extends BndTestCase {
 	static class TypeVersusDetailed {
 
 		@Reference(type = '*')
-		protected void bind(@SuppressWarnings("unused")
-		LogService log) {}
+		protected void bind(@SuppressWarnings("unused") LogService log) {}
 
-		protected void unbind(@SuppressWarnings("unused")
-		LogService log) {}
+		protected void unbind(@SuppressWarnings("unused") LogService log) {}
 
 		@Reference(multiple = true, optional = true, dynamic = true)
-		protected void bind2(@SuppressWarnings("unused")
-		LogService log) {}
+		protected void bind2(@SuppressWarnings("unused") LogService log) {}
 
-		protected void unbind2(@SuppressWarnings("unused")
-		LogService log) {}
+		protected void unbind2(@SuppressWarnings("unused") LogService log) {}
 	}
 
 	public void testTypeVersusDetailed() throws Exception {
@@ -713,8 +682,7 @@ public class BNDAnnotationTest extends BndTestCase {
 	@Component(name = "acomp", configurationPolicy = ConfigurationPolicy.require)
 	static class MyComponent2 {
 		@Reference
-		protected void addLogMultiple(@SuppressWarnings("unused")
-		LogService log) {
+		protected void addLogMultiple(@SuppressWarnings("unused") LogService log) {
 
 		}
 	}
@@ -737,8 +705,7 @@ public class BNDAnnotationTest extends BndTestCase {
 	@Component(name = "acomp", configurationPolicy = ConfigurationPolicy.ignore)
 	static class MyComponent3 {
 		@Reference(unbind = "destroyX")
-		protected void putX(@SuppressWarnings("unused")
-		LogService log) {
+		protected void putX(@SuppressWarnings("unused") LogService log) {
 
 		}
 	}
@@ -753,9 +720,7 @@ public class BNDAnnotationTest extends BndTestCase {
 	}
 
 	/**
-	 * Test some more components
-	 * 
-	 * @author aqute
+	 * Test some more components @author aqute
 	 */
 	@Component(name = "acomp", enabled = true, factory = "abc", immediate = false, provide = LogService.class, servicefactory = true, configurationPolicy = ConfigurationPolicy.optional)
 	static class MyComponent implements Serializable {
@@ -776,8 +741,7 @@ public class BNDAnnotationTest extends BndTestCase {
 			this.log = log;
 		}
 
-		protected void unsetLog(@SuppressWarnings("unused")
-		LogService log) {
+		protected void unsetLog(@SuppressWarnings("unused") LogService log) {
 			this.log = null;
 		}
 

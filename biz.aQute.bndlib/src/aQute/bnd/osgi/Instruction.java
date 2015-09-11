@@ -1,7 +1,9 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
-import java.util.regex.*;
+import java.io.File;
+import java.io.FileFilter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Instruction {
 
@@ -44,12 +46,12 @@ public class Instruction {
 	transient Pattern	pattern;
 	transient boolean	optional;
 
-	final String		input;
-	final String		match;
-	final boolean		negated;
-	final boolean		duplicate;
-	final boolean		literal;
-	final boolean		any;
+	final String	input;
+	final String	match;
+	final boolean	negated;
+	final boolean	duplicate;
+	final boolean	literal;
+	final boolean	any;
 	final boolean	caseInsensitive;
 
 	public Instruction(String input) {
@@ -64,12 +66,12 @@ public class Instruction {
 		} else
 			negated = false;
 
-		if ( s.endsWith(":i")) {
+		if (s.endsWith(":i")) {
 			caseInsensitive = true;
-			s = s.substring(0, s.length()-2);
+			s = s.substring(0, s.length() - 2);
 		} else
 			caseInsensitive = false;
-		
+
 		if (input.equals("*")) {
 			any = true;
 			literal = false;
@@ -160,7 +162,7 @@ public class Instruction {
 	public Matcher getMatcher(String value) {
 		if (pattern == null) {
 			String m = match == null ? ".*" : match;
-			if ( !caseInsensitive)
+			if (!caseInsensitive)
 				pattern = Pattern.compile(m);
 			else
 				pattern = Pattern.compile(m, Pattern.CASE_INSENSITIVE);

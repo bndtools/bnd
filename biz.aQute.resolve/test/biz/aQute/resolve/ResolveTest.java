@@ -90,9 +90,7 @@ public class ResolveTest extends TestCase {
 	}
 
 	/**
-	 * Test if we can augment
-	 * 
-	 * @throws Exception
+	 * Test if we can augment @throws Exception
 	 */
 
 	public static void testResolveWithAugments() throws Exception {
@@ -157,10 +155,8 @@ public class ResolveTest extends TestCase {
 	}
 
 	/**
-	 * Test minimal setup
-	 * 
-	 * @throws URISyntaxException
-	 * @throws MalformedURLException
+	 * Test minimal setup @throws URISyntaxException @throws
+	 * MalformedURLException
 	 */
 	public static void testMinimalSetup() throws MalformedURLException, URISyntaxException {
 		File index = IO.getFile("testdata/repo3.index.xml");
@@ -191,9 +187,7 @@ public class ResolveTest extends TestCase {
 	}
 
 	/**
-	 * Test if we can resolve with a distro
-	 * 
-	 * @throws ResolutionException
+	 * Test if we can resolve with a distro @throws ResolutionException
 	 */
 	public static void testResolveWithDistro() throws ResolutionException {
 
@@ -220,9 +214,9 @@ public class ResolveTest extends TestCase {
 	}
 
 	/**
-	 * This is a basic test of resolving. This test is paired with
-	 * {@link #testResolveWithProfile()}. If you change the resources, make sure
-	 * this is done in the same way. The {@link #testResolveWithProfile()} has a
+	 * This is a basic test of resolving. This test is paired with {@link
+	 * #testResolveWithProfile()}. If you change the resources, make sure this
+	 * is done in the same way. The {@link #testResolveWithProfile()} has a
 	 * negative check while this one checks positive.
 	 */
 	public static void testSimpleResolve() {
@@ -352,9 +346,7 @@ public class ResolveTest extends TestCase {
 	}
 
 	/**
-	 * Simple test that resolves a requirement
-	 * 
-	 * @throws ResolutionException
+	 * Simple test that resolves a requirement @throws ResolutionException
 	 */
 	public static void testMultipleOptionsNotDuplicated() throws ResolutionException {
 

@@ -1,8 +1,10 @@
 package aQute.bnd.annotation.headers;
 
 import java.lang.annotation.*;
+
 /**
- * The Bundle-Copyright header contains the copyright specification for this bundle.
+ * The Bundle-Copyright header contains the copyright specification for this
+ * bundle.
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({
@@ -10,7 +12,8 @@ import java.lang.annotation.*;
 })
 public @interface BundleCopyright {
 	/**
-	 * The Bundle-Copyright header contains the copyright specification for this bundle.
+	 * The Bundle-Copyright header contains the copyright specification for this
+	 * bundle.
 	 */
 	String value();
 }

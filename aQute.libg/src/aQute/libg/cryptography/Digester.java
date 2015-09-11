@@ -53,6 +53,7 @@ public abstract class Digester<T extends Digest> extends OutputStream {
 		IO.copy(f, this);
 		return digest();
 	}
+
 	public T from(byte[] f) throws Exception {
 		IO.copy(f, this);
 		return digest();

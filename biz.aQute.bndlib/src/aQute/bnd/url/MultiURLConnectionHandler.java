@@ -11,7 +11,7 @@ import aQute.bnd.service.url.*;
  */
 public class MultiURLConnectionHandler implements URLConnectionHandler {
 
-	private Registry	registry;
+	private Registry registry;
 
 	public MultiURLConnectionHandler(Registry registry) {
 		this.registry = registry;

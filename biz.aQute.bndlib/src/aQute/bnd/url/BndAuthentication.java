@@ -17,37 +17,33 @@ import aQute.lib.settings.*;
 /**
  * bnd has a builtin delegated authentication mechanism, see {@link Settings}.
  * This URL Connection Handler plugin will use this information to add signing
- * information to the URL.
- * <p>
- * We add a {@link #X_A_QUTE_AUTHORIZATION} header with a formatted string that
- * contains the email of the user, the machine name (for documentation), the
- * public key, and a signed date header (SHA1WithRSA). This information can be
- * parameterized with the following plugin properties or the default settings
- * can be used.
- * <ul>
- * <li>{@link URLConnectionHandler#MATCH} — URL matcher
- * <li>email — Email address of the account holder
- * <li>privateKey — Hex private RSA key
- * <li>publicKey — Hex public RSA key
- * <li>machine — Machine name (default the internet name of this machine
- * </ul>
- * T
+ * information to the URL. <p> We add a {@link #X_A_QUTE_AUTHORIZATION} header
+ * with a formatted string that contains the email of the user, the machine name
+ * (for documentation), the public key, and a signed date header (SHA1WithRSA).
+ * This information can be parameterized with the following plugin properties or
+ * the default settings can be used. <ul> <li>{@link URLConnectionHandler#MATCH}
+ * — URL matcher <li>email — Email address of the account holder <li>privateKey
+ * — Hex private RSA key <li>publicKey — Hex public RSA key <li>machine —
+ * Machine name (default the internet name of this machine </ul> T
  */
-@aQute.bnd.annotation.plugin.BndPlugin(name="url.bnd.authentication", parameters=BndAuthentication.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name = "url.bnd.authentication", parameters = BndAuthentication.Config.class)
 public class BndAuthentication extends DefaultURLConnectionHandler {
-	
+
 	interface Config extends DefaultURLConnectionHandler.Config {
 		String machine();
+
 		byte[] privateKey();
+
 		byte[] publicKey();
+
 		String email();
 	}
-	
+
 	private static final String		MACHINE					= "machine";
 	private static final String		PRIVATE_KEY				= "privateKey";
 	private static final String		PUBLIC_KEY				= "publicKey";
 	private static final String		EMAIL					= "email";
-	private static SimpleDateFormat httpFormat				= new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+	private static SimpleDateFormat	httpFormat				= new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
 	private static final String		X_A_QUTE_AUTHORIZATION	= "X-aQute-Authorization";
 	private String					identity;
 	private String					email;
@@ -139,8 +135,8 @@ public class BndAuthentication extends DefaultURLConnectionHandler {
 		machine = map.get(MACHINE);
 	}
 
-	private void credentials(String email, byte[] publicKey, byte[] privateKey) throws InvalidKeySpecException,
-			NoSuchAlgorithmException {
+	private void credentials(String email, byte[] publicKey, byte[] privateKey)
+			throws InvalidKeySpecException, NoSuchAlgorithmException {
 		this.email = email;
 		if (publicKey != null && privateKey != null) {
 			PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKey);

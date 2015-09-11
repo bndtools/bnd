@@ -6,7 +6,7 @@ import aQute.bnd.service.action.*;
 import aQute.lib.converter.*;
 
 public class ReflectAction implements Action {
-	String	what;
+	String what;
 
 	public ReflectAction(String what) {
 		this.what = what;

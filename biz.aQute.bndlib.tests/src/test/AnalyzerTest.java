@@ -40,12 +40,10 @@ class T3 extends T2 {}
 
 @SuppressWarnings("resource")
 public class AnalyzerTest extends BndTestCase {
-	static File	cwd	= new File(System.getProperty("user.dir"));
+	static File cwd = new File(System.getProperty("user.dir"));
 
 	/**
-	 * Test BND_REQUIREE
-	 * 
-	 * @throws Exception
+	 * Test BND_REQUIREE @throws Exception
 	 */
 
 	public void testBndRequire() throws Exception {
@@ -96,31 +94,35 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	/**
-	 * For the following annotation class in an OSGi bundle
-	 * 
-	 * @Retention(RetentionPolicy.RUNTIME)
-	 * @Target({ ElementType.TYPE, ElementType.METHOD }) public @interface
-	 *           Transactional {
-	 * @Nonbinding Class<? extends Annotation>[] qualifier() default Any.class;
-	 *             } maven-bundle-plugin fails to generate the package import
-	 *             for javax.enterprise.inject.Any, the default value of the
-	 *             annotation method. At runtime, this leads to a
-	 *             non-descriptive exception
-	 * 
-	 *             <pre>
-	 * Caused by: java.lang.ArrayStoreException: sun.reflect.annotation.TypeNotPresentExceptionProxy 
-	 *         at sun.reflect.annotation.AnnotationParser.parseClassArray(AnnotationParser.java:673) ~[na:1.7.0_04] 
-	 *         at sun.reflect.annotation.AnnotationParser.parseArray(AnnotationParser.java:480) ~[na:1.7.0_04] 
-	 *         at sun.reflect.annotation.AnnotationParser.parseMemberValue(AnnotationParser.java:306) ~[na:1.7.0_04] 
-	 *         at java.lang.reflect.Method.getDefaultValue(Method.java:726) ~[na:1.7.0_04] 
-	 *         at sun.reflect.annotation.AnnotationType.<init>(AnnotationType.java:117) ~[na:1.7.0_04] 
-	 *         at sun.reflect.annotation.AnnotationType.getInstance(AnnotationType.java:84) ~[na:1.7.0_04] 
-	 *         at sun.reflect.annotation.AnnotationParser.parseAnnotation(AnnotationParser.java:221) ~[na:1.7.0_04] 
-	 *         at sun.reflect.annotation.AnnotationParser.parseAnnotations2(AnnotationParser.java:88) ~[na:1.7.0_04] 
-	 *         at sun.reflect.annotation.AnnotationParser.parseAnnotations(AnnotationParser.java:70) ~[na:1.7.0_04] 
-	 *         at java.lang.Class.initAnnotationsIfNecessary(Class.java:3089) ~[na:1.7.0_04] 
-	 *         at java.lang.Class.getDeclaredAnnotations(Class.java:3077) ~[na:1.7.0_04]
-	 * </pre>
+	 * For the following annotation class in an OSGi
+	 * bundle @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE,
+	 * ElementType.METHOD }) public @interface Transactional { @Nonbinding
+	 * Class<? extends Annotation>[] qualifier() default Any.class; }
+	 * maven-bundle-plugin fails to generate the package import for
+	 * javax.enterprise.inject.Any, the default value of the annotation method.
+	 * At runtime, this leads to a non-descriptive exception <pre> Caused by:
+	 * java.lang.ArrayStoreException:
+	 * sun.reflect.annotation.TypeNotPresentExceptionProxy at
+	 * sun.reflect.annotation.AnnotationParser.parseClassArray(AnnotationParser.
+	 * java:673) ~[na:1.7.0_04] at
+	 * sun.reflect.annotation.AnnotationParser.parseArray(AnnotationParser.java:
+	 * 480) ~[na:1.7.0_04] at
+	 * sun.reflect.annotation.AnnotationParser.parseMemberValue(AnnotationParser
+	 * .java:306) ~[na:1.7.0_04] at
+	 * java.lang.reflect.Method.getDefaultValue(Method.java:726) ~[na:1.7.0_04]
+	 * at sun.reflect.annotation.AnnotationType.<init>(AnnotationType.java:117)
+	 * ~[na:1.7.0_04] at
+	 * sun.reflect.annotation.AnnotationType.getInstance(AnnotationType.java:84)
+	 * ~[na:1.7.0_04] at
+	 * sun.reflect.annotation.AnnotationParser.parseAnnotation(AnnotationParser.
+	 * java:221) ~[na:1.7.0_04] at
+	 * sun.reflect.annotation.AnnotationParser.parseAnnotations2(
+	 * AnnotationParser.java:88) ~[na:1.7.0_04] at
+	 * sun.reflect.annotation.AnnotationParser.parseAnnotations(AnnotationParser
+	 * .java:70) ~[na:1.7.0_04] at
+	 * java.lang.Class.initAnnotationsIfNecessary(Class.java:3089)
+	 * ~[na:1.7.0_04] at java.lang.Class.getDeclaredAnnotations(Class.java:3077)
+	 * ~[na:1.7.0_04] </pre>
 	 */
 	public void testAnnotationWithDefaultClass() throws Exception {
 		Builder b = new Builder();
@@ -157,8 +159,8 @@ public class AnalyzerTest extends BndTestCase {
 					Arrays.asList(b.getPackageRef("aQute.libg.tuple")), Modifier.PUBLIC + Modifier.PROTECTED);
 
 			for (Clazz.Def def : xRef.keySet())
-				System.out.println(def.getOwnerType() + " " + def.getName() + " " + def.getType() + " : "
-						+ xRef.get(def));
+				System.out.println(
+						def.getOwnerType() + " " + def.getName() + " " + def.getType() + " : " + xRef.get(def));
 
 			assertEquals(5, xRef.size());
 		}
@@ -209,8 +211,8 @@ public class AnalyzerTest extends BndTestCase {
 			b.setExportPackage("test.referApi"); // refers to Event Admin
 			b.setConditionalPackage("org.osgi.service.*");
 			Jar jar = b.build();
-			assertTrue(b
-					.check("((, )?(org.osgi.service.event|org.osgi.service.component|org.osgi.service.http|org.osgi.service.log|org.osgi.service.condpermadmin|org.osgi.service.wireadmin|org.osgi.service.device)){7,7}"));
+			assertTrue(b.check(
+					"((, )?(org.osgi.service.event|org.osgi.service.component|org.osgi.service.http|org.osgi.service.log|org.osgi.service.condpermadmin|org.osgi.service.wireadmin|org.osgi.service.device)){7,7}"));
 		}
 		finally {
 			b.close();
@@ -259,9 +261,7 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	/**
-	 * Fastest way to create a manifest
-	 * 
-	 * @throws Exception
+	 * Fastest way to create a manifest @throws Exception
 	 */
 
 	public static void testGenerateManifest() throws Exception {
@@ -314,9 +314,8 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	/**
-	 * Uses constraints must be filtered by imports or exports.
-	 * 
-	 * @throws Exception
+	 * Uses constraints must be filtered by imports or exports. @throws
+	 * Exception
 	 */
 
 	public static void testUsesFiltering() throws Exception {
@@ -353,9 +352,7 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	/**
-	 * Test if require works
-	 * 
-	 * @throws Exception
+	 * Test if require works @throws Exception
 	 */
 
 	public static void testRequire() throws Exception {
@@ -436,8 +433,9 @@ public class AnalyzerTest extends BndTestCase {
 			String result = a._classes("cmd", "named", "org.osgi.service.http.*", "abstract");
 			TreeSet<String> r = new TreeSet<String>(Processor.split(result));
 			assertEquals(
-					new TreeSet<String>(Arrays.asList("org.osgi.service.http.HttpContext",
-							"org.osgi.service.http.HttpService")), r);
+					new TreeSet<String>(
+							Arrays.asList("org.osgi.service.http.HttpContext", "org.osgi.service.http.HttpService")),
+					r);
 		}
 		finally {
 			a.close();
@@ -445,9 +443,7 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	/**
-	 * Use a private activator, check it is not imported.
-	 * 
-	 * @throws Exception
+	 * Use a private activator, check it is not imported. @throws Exception
 	 */
 	public static void testEmptyHeader() throws Exception {
 		Builder a = new Builder();
@@ -517,7 +513,7 @@ public class AnalyzerTest extends BndTestCase {
 			p.put("Import-Package", "*");
 			p.put("Private-Package", "org.apache.mina.management.*");
 			a.setClasspath(new Jar[] {
-				new Jar(IO.getFile("jar/mandatorynoversion.jar"))
+					new Jar(IO.getFile("jar/mandatorynoversion.jar"))
 			});
 			a.setProperties(p);
 			Jar jar = a.build();
@@ -534,9 +530,7 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	/**
-	 * Use a private activator, check it is not imported.
-	 * 
-	 * @throws Exception
+	 * Use a private activator, check it is not imported. @throws Exception
 	 */
 	public static void testPrivataBundleActivatorNotImported() throws Exception {
 		Builder a = new Builder();
@@ -563,9 +557,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * Use an activator that is not in the bundle but do not allow it to be
-	 * imported, this should generate an error.
-	 * 
-	 * @throws Exception
+	 * imported, this should generate an error. @throws Exception
 	 */
 	public static void testBundleActivatorNotImported() throws Exception {
 		Builder a = new Builder();
@@ -591,9 +583,8 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	/**
-	 * Use an activator that is on the class path but that is not in the bundle.
-	 * 
-	 * @throws Exception
+	 * Use an activator that is on the class path but that is not in the
+	 * bundle. @throws Exception
 	 */
 	public static void testBundleActivatorImport() throws Exception {
 		Builder a = new Builder();
@@ -610,7 +601,8 @@ public class AnalyzerTest extends BndTestCase {
 
 			assertEquals(0, a.getErrors().size());
 			assertEquals(1, a.getWarnings().size());
-			assertTrue(a.check("Bundle-Activator org.osgi.framework.BundleActivator is being imported into the bundle"));
+			assertTrue(
+					a.check("Bundle-Activator org.osgi.framework.BundleActivator is being imported into the bundle"));
 
 			String imports = manifest.getMainAttributes().getValue("Import-Package");
 			assertNotNull(imports);
@@ -622,9 +614,8 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	/**
-	 * Use an activator that abstract, and so cannot be instantiated.
-	 * 
-	 * @throws Exception
+	 * Use an activator that abstract, and so cannot be instantiated. @throws
+	 * Exception
 	 */
 	public static void testBundleActivatorAbstract() throws Exception {
 		Builder a = new Builder();
@@ -647,9 +638,8 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	/**
-	 * Use an activator that is an interface, and so cannot be instantiated.
-	 * 
-	 * @throws Exception
+	 * Use an activator that is an interface, and so cannot be
+	 * instantiated. @throws Exception
 	 */
 	public static void testBundleActivatorInterface() throws Exception {
 		Builder a = new Builder();
@@ -673,9 +663,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * Use an activator that has no default constructor, and so cannot be
-	 * instantiated.
-	 * 
-	 * @throws Exception
+	 * instantiated. @throws Exception
 	 */
 	public static void testBundleActivatorNoDefaultConstructor() throws Exception {
 		Builder a = new Builder();
@@ -690,8 +678,8 @@ public class AnalyzerTest extends BndTestCase {
 
 			assertEquals(1, a.getErrors().size());
 			assertEquals(0, a.getWarnings().size());
-			assertTrue(a
-					.check("Bundle Activator classes must have a public zero-argument constructor and test.activator.MissingNoArgsConstructorActivator does not"));
+			assertTrue(a.check(
+					"Bundle Activator classes must have a public zero-argument constructor and test.activator.MissingNoArgsConstructorActivator does not"));
 		}
 		finally {
 			a.close();
@@ -699,9 +687,8 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	/**
-	 * Use an activator that is not public, and so cannot be instantiated.
-	 * 
-	 * @throws Exception
+	 * Use an activator that is not public, and so cannot be
+	 * instantiated. @throws Exception
 	 */
 	public static void testBundleActivatorNotPublic() throws Exception {
 		Builder a = new Builder();
@@ -716,9 +703,9 @@ public class AnalyzerTest extends BndTestCase {
 
 			assertEquals(2, a.getErrors().size());
 			assertEquals(0, a.getWarnings().size());
-			assertTrue(a
-					.check("Bundle Activator classes must be public, and test.activator.DefaultVisibilityActivator is not",
-							"Bundle Activator classes must have a public zero-argument constructor and test.activator.DefaultVisibilityActivator does not"));
+			assertTrue(a.check(
+					"Bundle Activator classes must be public, and test.activator.DefaultVisibilityActivator is not",
+					"Bundle Activator classes must have a public zero-argument constructor and test.activator.DefaultVisibilityActivator does not"));
 		}
 		finally {
 			a.close();
@@ -727,9 +714,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	/**
 	 * Use an activator that is not an instance of BundleActivator, and so
-	 * cannot be used.
-	 * 
-	 * @throws Exception
+	 * cannot be used. @throws Exception
 	 */
 	public static void testNotABundleActivator() throws Exception {
 		Builder a = new Builder();
@@ -744,7 +729,8 @@ public class AnalyzerTest extends BndTestCase {
 
 			assertEquals(1, a.getErrors().size());
 			assertEquals(0, a.getWarnings().size());
-			assertTrue(a.check("The Bundle Activator test.activator.NotAnActivator does not implement BundleActivator"));
+			assertTrue(
+					a.check("The Bundle Activator test.activator.NotAnActivator does not implement BundleActivator"));
 		}
 		finally {
 			a.close();
@@ -775,9 +761,7 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	/**
-	 * There was an export generated for a jar file.
-	 * 
-	 * @throws Exception
+	 * There was an export generated for a jar file. @throws Exception
 	 */
 	public static void testExportForJar() throws Exception {
 		Jar jar = new Jar("dot");
@@ -801,9 +785,7 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	/**
-	 * Test if version works
-	 * 
-	 * @throws IOException
+	 * Test if version works @throws IOException
 	 */
 
 	public static void testVersion() throws IOException {
@@ -846,9 +828,7 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	/**
-	 * See if we set attributes on export
-	 * 
-	 * @throws IOException
+	 * See if we set attributes on export @throws IOException
 	 */
 	public static void testAsm2() throws Exception {
 		Properties base = new Properties();
@@ -863,8 +843,8 @@ public class AnalyzerTest extends BndTestCase {
 			Packages exports = h.getExports();
 			assertTrue(exports.getByFQN("org.objectweb.asm.signature") != null);
 			assertTrue(exports.getByFQN("org.objectweb.asm") != null);
-			assertTrue(Arrays.asList("org.objectweb.asm", "org.objectweb.asm.signature").removeAll(
-					h.getImports().keySet()) == false);
+			assertTrue(Arrays.asList("org.objectweb.asm", "org.objectweb.asm.signature")
+					.removeAll(h.getImports().keySet()) == false);
 			assertEquals("Expected size", 2, h.getExports().size());
 			assertEquals("short", get(h.getExports(), h.getPackageRef("org.objectweb.asm"), "name"));
 			assertEquals("long", get(h.getExports(), h.getPackageRef("org.objectweb.asm.signature"), "name"));
@@ -885,14 +865,14 @@ public class AnalyzerTest extends BndTestCase {
 			analyzer.setProperties(base);
 			analyzer.calcManifest().write(System.err);
 			assertTrue(analyzer.check());
-			assertPresent(analyzer.getImports().keySet(), "org.osgi.service.packageadmin, "
-					+ "org.xml.sax, org.osgi.service.log," + " javax.xml.parsers," + " org.xml.sax.helpers,"
-					+ " org.osgi.framework," + " org.eclipse.osgi.util," + " org.osgi.util.tracker, "
-					+ "org.osgi.service.component, " + "org.osgi.service.cm");
-			assertPresent(analyzer.getExports().keySet(), "org.eclipse.equinox.ds.parser, "
-					+ "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
-					+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
-					+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
+			assertPresent(analyzer.getImports().keySet(),
+					"org.osgi.service.packageadmin, " + "org.xml.sax, org.osgi.service.log," + " javax.xml.parsers,"
+							+ " org.xml.sax.helpers," + " org.osgi.framework," + " org.eclipse.osgi.util,"
+							+ " org.osgi.util.tracker, " + "org.osgi.service.component, " + "org.osgi.service.cm");
+			assertPresent(analyzer.getExports().keySet(),
+					"org.eclipse.equinox.ds.parser, " + "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
+							+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
+							+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
 		}
 		finally {
 			analyzer.close();
@@ -909,17 +889,17 @@ public class AnalyzerTest extends BndTestCase {
 			h.setJar(tmp);
 			h.setProperties(base);
 			h.calcManifest().write(System.err);
-			assertPresent(h.getImports().keySet(), "org.xml.sax, " + " javax.xml.parsers," + " org.xml.sax.helpers,"
-					+ " org.eclipse.osgi.util");
+			assertPresent(h.getImports().keySet(),
+					"org.xml.sax, " + " javax.xml.parsers," + " org.xml.sax.helpers," + " org.eclipse.osgi.util");
 
 			System.err.println("IMports " + h.getImports());
-			assertNotPresent(h.getImports().keySet(), "org.osgi.service.packageadmin, " + "org.osgi.service.log,"
-					+ " org.osgi.framework," + " org.osgi.util.tracker, " + "org.osgi.service.component, "
-					+ "org.osgi.service.cm");
-			assertPresent(h.getExports().keySet(), "org.eclipse.equinox.ds.parser, "
-					+ "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
-					+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
-					+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
+			assertNotPresent(h.getImports().keySet(),
+					"org.osgi.service.packageadmin, " + "org.osgi.service.log," + " org.osgi.framework,"
+							+ " org.osgi.util.tracker, " + "org.osgi.service.component, " + "org.osgi.service.cm");
+			assertPresent(h.getExports().keySet(),
+					"org.eclipse.equinox.ds.parser, " + "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
+							+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
+							+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
 		}
 		finally {
 			h.close();
@@ -936,14 +916,14 @@ public class AnalyzerTest extends BndTestCase {
 			h.setJar(tmp);
 			h.setProperties(base);
 			h.calcManifest().write(System.err);
-			assertPresent(h.getImports().keySet(), "org.osgi.service.packageadmin, "
-					+ "org.xml.sax, org.osgi.service.log," + " javax.xml.parsers," + " org.xml.sax.helpers,"
-					+ " org.osgi.framework," + " org.eclipse.osgi.util," + " org.osgi.util.tracker, "
-					+ "org.osgi.service.component, " + "org.osgi.service.cm");
-			assertNotPresent(h.getExports().keySet(), "org.eclipse.equinox.ds.parser, "
-					+ "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
-					+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
-					+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
+			assertPresent(h.getImports().keySet(),
+					"org.osgi.service.packageadmin, " + "org.xml.sax, org.osgi.service.log," + " javax.xml.parsers,"
+							+ " org.xml.sax.helpers," + " org.osgi.framework," + " org.eclipse.osgi.util,"
+							+ " org.osgi.util.tracker, " + "org.osgi.service.component, " + "org.osgi.service.cm");
+			assertNotPresent(h.getExports().keySet(),
+					"org.eclipse.equinox.ds.parser, " + "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
+							+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
+							+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
 			System.err.println(h.getUnreachable());
 		}
 		finally {
@@ -962,7 +942,7 @@ public class AnalyzerTest extends BndTestCase {
 			h.setJar(tmp);
 			h.setProperties(base);
 			h.setClasspath(new File[] {
-				osgi
+					osgi
 			});
 			h.calcManifest().write(System.err);
 			assertEquals("Version from osgi.jar", "[1.2,2)",
@@ -981,9 +961,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * are never used. This usually indicates a misunderstanding or a change in
 	 * the underlying classpath. These are reflected as warnings. If there is an
 	 * extra import, and it contains no wildcards, then it is treated as a
-	 * wildcard
-	 * 
-	 * @throws IOException
+	 * wildcard @throws IOException
 	 */
 	public static void testSuperfluous() throws Exception {
 		Properties base = new Properties();

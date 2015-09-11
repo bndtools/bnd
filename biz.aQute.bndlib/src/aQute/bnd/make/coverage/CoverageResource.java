@@ -61,7 +61,7 @@ public class CoverageResource extends WriteResource {
 				currentClass = className;
 			}
 			Tag method = doMethod(new Tag("method"), m.getKey());
-			if ( classTag != null)
+			if (classTag != null)
 				classTag.addContent(method);
 			for (MethodDef r : m.getValue()) {
 				Tag ref = doMethod(new Tag("ref"), r);

@@ -6,11 +6,12 @@ import junit.framework.*;
 import aQute.bnd.differ.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.service.diff.*;
+
 @SuppressWarnings("resource")
 
 public class UsesOrderingTest extends TestCase {
 
-	static DiffPluginImpl	differ	= new DiffPluginImpl();
+	static DiffPluginImpl differ = new DiffPluginImpl();
 
 	public static void testOrdering() throws Exception {
 		Builder builder = new Builder();
@@ -19,7 +20,7 @@ public class UsesOrderingTest extends TestCase {
 		Jar a = builder.build();
 
 		String exa = (String) a.getManifest().getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
-		
+
 		builder = new Builder();
 		builder.addClasspath(new File("bin"));
 		builder.setProperty(Constants.EXPORT_PACKAGE, "test.diff;uses:=\"d,b,a,c\"");
@@ -33,7 +34,7 @@ public class UsesOrderingTest extends TestCase {
 		Diff diff = newer.diff(older);
 
 		show(diff, 0);
-		
+
 		assertEquals(Delta.UNCHANGED, diff.getDelta());
 	}
 

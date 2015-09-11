@@ -116,13 +116,9 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	}
 
 	/**
-	 * Traverses a string to find a macro. It can handle nested brackets.
-	 * 
-	 * @param line
-	 *            The line with the macro
-	 * @param index
-	 *            Points to the character after the '$'
-	 * @return the end position
+	 * Traverses a string to find a macro. It can handle nested brackets. @param
+	 * line The line with the macro @param index Points to the character after
+	 * the '$' @return the end position
 	 */
 	public int findMacro(CharSequence line, int index) {
 		if (index >= line.length() || line.charAt(index) != '$')
@@ -297,12 +293,9 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	/**
 	 * Parse the key as a command. A command consist of parameters separated by
-	 * ':'.
-	 * 
-	 * @param key
-	 * @return
+	 * ':'. @param key @return
 	 */
-	static Pattern	commands	= Pattern.compile("(?<!\\\\);");
+	static Pattern commands = Pattern.compile("(?<!\\\\);");
 
 	private String doCommands(String key, Link source) {
 		String[] args = commands.split(key);
@@ -348,10 +341,10 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 			String cname = "_" + method.replaceAll("-", "_");
 			try {
 				Method m = target.getClass().getMethod(cname, new Class[] {
-					String[].class
+						String[].class
 				});
 				return "" + m.invoke(target, new Object[] {
-					args
+						args
 				});
 			}
 			catch (NoSuchMethodException e) {
@@ -375,12 +368,10 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	}
 
 	/**
-	 * Return a unique list where the duplicates are removed.
-	 * 
-	 * @param args
-	 * @return
+	 * Return a unique list where the duplicates are removed. @param
+	 * args @return
 	 */
-	static String	_uniqHelp	= "${uniq;<list> ...}";
+	static String _uniqHelp = "${uniq;<list> ...}";
 
 	public String _uniq(String args[]) {
 		verifyCommand(args, _uniqHelp, null, 1, Integer.MAX_VALUE);
@@ -410,7 +401,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	}
 
-	static String	_filterHelp	= "${%s;<list>;<regex>}";
+	static String _filterHelp = "${%s;<list>;<regex>}";
 
 	String filter(String[] args, boolean include) {
 		verifyCommand(args, String.format(_filterHelp, args[0]), null, 3, 3);
@@ -425,7 +416,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		return list.join();
 	}
 
-	static String	_sortHelp	= "${sort;<list>...}";
+	static String _sortHelp = "${sort;<list>...}";
 
 	public String _sort(String args[]) {
 		verifyCommand(args, _sortHelp, null, 2, Integer.MAX_VALUE);
@@ -438,7 +429,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		return result.join();
 	}
 
-	static String	_nsortHelp	= "${nsort;<list>...}";
+	static String _nsortHelp = "${nsort;<list>...}";
 
 	public String _nsort(String args[]) {
 		verifyCommand(args, _nsortHelp, null, 2, Integer.MAX_VALUE);
@@ -468,7 +459,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		return result.join();
 	}
 
-	static String	_joinHelp	= "${join;<list>...}";
+	static String _joinHelp = "${join;<list>...}";
 
 	public String _join(String args[]) {
 
@@ -481,7 +472,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		return result.join();
 	}
 
-	static String	_ifHelp	= "${if;<condition>;<iftrue> [;<iffalse>] }";
+	static String _ifHelp = "${if;<condition>;<iftrue> [;<iffalse>] }";
 
 	public String _if(String args[]) {
 		verifyCommand(args, _ifHelp, null, 3, 4);
@@ -499,7 +490,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		return new Date().toString();
 	}
 
-	public final static String	_fmodifiedHelp	= "${fmodified;<list of filenames>...}, return latest modification date";
+	public final static String _fmodifiedHelp = "${fmodified;<list of filenames>...}, return latest modification date";
 
 	public String _fmodified(String args[]) throws Exception {
 		verifyCommand(args, _fmodifiedHelp, null, 2, Integer.MAX_VALUE);
@@ -545,10 +536,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	}
 
 	/**
-	 * replace ; <list> ; regex ; replace
-	 * 
-	 * @param args
-	 * @return
+	 * replace ; <list> ; regex ; replace @param args @return
 	 */
 	public String _replace(String args[]) {
 		if (args.length != 4) {
@@ -586,12 +574,9 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	}
 
 	/**
-	 * toclassname ; <path>.class ( , <path>.class ) *
-	 * 
-	 * @param args
-	 * @return
+	 * toclassname ; <path>.class ( , <path>.class ) * @param args @return
 	 */
-	static String	_toclassnameHelp	= "${classname;<list of class names>}, convert class paths to FQN class names ";
+	static String _toclassnameHelp = "${classname;<list of class names>}, convert class paths to FQN class names ";
 
 	public String _toclassname(String args[]) {
 		verifyCommand(args, _toclassnameHelp, null, 2, 2);
@@ -613,13 +598,10 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	}
 
 	/**
-	 * toclassname ; <path>.class ( , <path>.class ) *
-	 * 
-	 * @param args
-	 * @return
+	 * toclassname ; <path>.class ( , <path>.class ) * @param args @return
 	 */
 
-	static String	_toclasspathHelp	= "${toclasspath;<list>[;boolean]}, convert a list of class names to paths";
+	static String _toclasspathHelp = "${toclasspath;<list>[;boolean]}, convert a list of class names to paths";
 
 	public String _toclasspath(String args[]) {
 		verifyCommand(args, _toclasspathHelp, null, 2, 3);
@@ -729,9 +711,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	/**
 	 * Wildcard a directory. The lists can contain Instruction that are matched
 	 * against the given directory ${lsr;<dir>;<list>(;<list>)*}
-	 * ${lsa;<dir>;<list>(;<list>)*}
-	 * 
-	 * @author aqute
+	 * ${lsa;<dir>;<list>(;<list>)*} @author aqute
 	 */
 
 	public String _lsr(String args[]) {
@@ -776,17 +756,13 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	}
 
 	/**
-	 * System command. Execute a command and insert the result.
-	 * 
-	 * @param args
-	 * @param help
-	 * @param patterns
-	 * @param low
-	 * @param high
+	 * System command. Execute a command and insert the result. @param
+	 * args @param help @param patterns @param low @param high
 	 */
 	public String system_internal(boolean allowFail, String args[]) throws Exception {
-		verifyCommand(args, "${" + (allowFail ? "system-allow-fail" : "system")
-				+ ";<command>[;<in>]}, execute a system command", null, 2, 3);
+		verifyCommand(args,
+				"${" + (allowFail ? "system-allow-fail" : "system") + ";<command>[;<in>]}, execute a system command",
+				null, 2, 3);
 		String command = args[1];
 		String input = null;
 
@@ -845,11 +821,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	}
 
 	/**
-	 * Get the contents of a file.
-	 * 
-	 * @param in
-	 * @return
-	 * @throws IOException
+	 * Get the contents of a file. @param in @return @throws IOException
 	 */
 
 	public String _cat(String args[]) throws IOException {
@@ -945,9 +917,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	 * Take all the properties and translate them to actual values. This method
 	 * takes the set properties and traverse them over all entries, including
 	 * the default properties for that properties. The values no longer contain
-	 * macros.
-	 * 
-	 * @return A new Properties with the flattened values
+	 * macros. @return A new Properties with the flattened values
 	 */
 	public Map<String,String> getFlattenedProperties() {
 		// Some macros only work in a lower Domain, so we
@@ -970,7 +940,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		}
 	}
 
-	public final static String	_fileHelp	= "${file;<base>;<paths>...}, create correct OS dependent path";
+	public final static String _fileHelp = "${file;<base>;<paths>...}, create correct OS dependent path";
 
 	public String _osfile(String args[]) {
 		verifyCommand(args, _fileHelp, null, 3, 3);
@@ -1107,7 +1077,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		}
 		return sb.toString();
 	}
-	
+
 	/**
 	 * Format bytes
 	 */
@@ -1116,8 +1086,9 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		Formatter sb = new Formatter();
 		for (int i = 0; i < args.length; i++) {
 			long l = Long.parseLong(args[1]);
-			bytes(sb, l, 0, new String[] { "b", "Kb", "Mb", "Gb", "Tb", "Pb", "Eb", "Zb", "Yb", "Bb",
-					"Geopbyte" });
+			bytes(sb, l, 0, new String[] {
+					"b", "Kb", "Mb", "Gb", "Tb", "Pb", "Eb", "Zb", "Yb", "Bb", "Geopbyte"
+			});
 		}
 		return sb.toString();
 	}

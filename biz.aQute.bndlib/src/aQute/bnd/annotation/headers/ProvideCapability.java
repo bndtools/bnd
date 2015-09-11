@@ -3,24 +3,13 @@ package aQute.bnd.annotation.headers;
 import java.lang.annotation.*;
 
 /**
- * Define a Provide Capability clause in the manifest.
- * <p>
- * Since this annotation can only be applied once, it is possible to create an annotation
- * that models a specific capability. For example:
- * <pre>
- * interface Webserver {
- * 		@ProvideCapability(ns="osgi.extender", name="aQute.webserver", version = "${@version}")
- * 	 	@interface Provide {}
- * 
- * 		@RequireCapability(ns="osgi.extender", filter="(&(osgi.extender=aQute.webserver)${frange;${@version}})")
- * 	 	@interface Require {}
- * }
- * 
- * Webserver.@Provide
- * public class MyWebserver {
- * }
- * </pre>
- * 
+ * Define a Provide Capability clause in the manifest. <p> Since this annotation
+ * can only be applied once, it is possible to create an annotation that models
+ * a specific capability. For example: <pre> interface Webserver
+ * { @ProvideCapability(ns="osgi.extender", name="aQute.webserver", version =
+ * "${@version}") @interface Provide {} @RequireCapability(ns="osgi.extender",
+ * filter="(&(osgi.extender=aQute.webserver)${frange;${@version}})") @interface
+ * Require {} } Webserver.@Provide public class MyWebserver { } </pre>
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({
@@ -64,11 +53,11 @@ public @interface ProvideCapability {
 	 * The uses directive lists package names that are used by this Capability.
 	 * This information is intended to be used for <em>uses constraints</em>,
 	 */
-	String[] uses() default {};
+	String[]uses() default {};
 
 	/**
 	 * Mandatory attributes. Forces the resolver to only satisfy filters that
 	 * refer to all listed attributes.
 	 */
-	String[] mandatory() default {};
+	String[]mandatory() default {};
 }

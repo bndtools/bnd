@@ -54,8 +54,8 @@ public class ZipResource implements Resource {
 			return zip;
 		}
 		catch (ZipException ze) {
-			throw new ZipException("The JAR/ZIP file (" + file.getAbsolutePath() + ") seems corrupted, error: "
-					+ ze.getMessage());
+			throw new ZipException(
+					"The JAR/ZIP file (" + file.getAbsolutePath() + ") seems corrupted, error: " + ze.getMessage());
 		}
 		catch (FileNotFoundException e) {
 			throw new IllegalArgumentException("Problem opening JAR: " + file.getAbsolutePath());

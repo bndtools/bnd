@@ -23,7 +23,7 @@ public class HttpRedirectionTest extends TestCase {
 				if ("/foo".equals(uri)) {
 					r = new Response("302 Found", "text/plain", "over there");
 					r.header.put("Location", "/bar");
-				} else if("/bar".equals(uri)) {
+				} else if ("/bar".equals(uri)) {
 					r = new Response(NanoHTTPD.HTTP_OK, "text/plain", "got it");
 				} else {
 					r = new Response(NanoHTTPD.HTTP_BADREQUEST, "text/plain", "sod off");
@@ -40,11 +40,11 @@ public class HttpRedirectionTest extends TestCase {
 
 		InputStream stream = connector.connect(new URL(originalUrl));
 		String result = IO.collect(stream);
-		
+
 		assertEquals("got it", result);
 		verify(reporter).warning("HTTP address redirected from %s to %s", originalUrl, redirectUrl);
 	}
-	
+
 	public void testDetectRedirectLoop() throws Exception {
 		final NanoHTTPD httpd = new NanoHTTPD(0, new File(".")) {
 			@Override
@@ -53,7 +53,7 @@ public class HttpRedirectionTest extends TestCase {
 				if ("/foo".equals(uri)) {
 					r = new Response("302 Found", "text/plain", "over there");
 					r.header.put("Location", "/bar");
-				} else if("/bar".equals(uri)) {
+				} else if ("/bar".equals(uri)) {
 					r = new Response("302 Found", "text/plain", "go back");
 					r.header.put("Location", "/foo");
 				} else {
@@ -62,8 +62,9 @@ public class HttpRedirectionTest extends TestCase {
 				return r;
 			}
 		};
-		
-		// Use a future to ensure we timeout after 1s if the redirect does actually loop forever
+
+		// Use a future to ensure we timeout after 1s if the redirect does
+		// actually loop forever
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		Future< ? > future = executor.submit(new Runnable() {
 			public void run() {
@@ -79,7 +80,8 @@ public class HttpRedirectionTest extends TestCase {
 		});
 		try {
 			future.get(1, TimeUnit.SECONDS);
-		} finally {
+		}
+		finally {
 			future.cancel(true);
 			executor.shutdownNow();
 		}

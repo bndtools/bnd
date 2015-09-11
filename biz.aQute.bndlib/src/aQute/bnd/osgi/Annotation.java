@@ -68,10 +68,8 @@ public class Annotation {
 			Class<T> c = (Class<T>) getClass().getClassLoader().loadClass(cname);
 			return getAnnotation(c);
 		}
-		catch (ClassNotFoundException e) {
-		}
-		catch (NoClassDefFoundError e) {
-		}
+		catch (ClassNotFoundException e) {}
+		catch (NoClassDefFoundError e) {}
 		return null;
 	}
 
@@ -79,15 +77,16 @@ public class Annotation {
 		String cname = name.getFQN();
 		if (!c.getName().equals(cname))
 			return null;
-		return Configurable.createConfigurable(c, elements == null ? elements=new LinkedHashMap<String,Object>() : elements);
+		return Configurable.createConfigurable(c,
+				elements == null ? elements = new LinkedHashMap<String,Object>() : elements);
 	}
 
 	public void merge(Annotation annotation) {
-		if ( annotation.elements == null)
+		if (annotation.elements == null)
 			return;
-		
-		for ( Map.Entry<String,Object> e : annotation.elements.entrySet()) {
-			if ( !elements.containsKey(e.getKey()))
+
+		for (Map.Entry<String,Object> e : annotation.elements.entrySet()) {
+			if (!elements.containsKey(e.getKey()))
 				elements.put(e.getKey(), e.getValue());
 		}
 	}

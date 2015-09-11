@@ -11,10 +11,10 @@ import aQute.lib.utf8properties.*;
 import aQute.service.reporter.*;
 
 public class KnownBundleAnalyzerPlugin extends KnownBundleAnalyzer implements ResourceAnalyzer, Plugin {
-	
-	private static final String	PROP_DATA	= "data";
 
-	Reporter	reporter;
+	private static final String PROP_DATA = "data";
+
+	Reporter reporter;
 
 	public KnownBundleAnalyzerPlugin() {
 		super(new UTF8Properties());
@@ -23,10 +23,12 @@ public class KnownBundleAnalyzerPlugin extends KnownBundleAnalyzer implements Re
 	public void setProperties(Map<String,String> config) {
 		String fileName = config.get(PROP_DATA);
 		if (fileName == null)
-			throw new IllegalArgumentException(String.format("Property name '%s' must be set on KnownBundleAnalyzerPlugin", PROP_DATA));
+			throw new IllegalArgumentException(
+					String.format("Property name '%s' must be set on KnownBundleAnalyzerPlugin", PROP_DATA));
 		File file = new File(fileName);
 		if (!file.isFile())
-			throw new IllegalArgumentException(String.format("Data file does not exist, or is not a plain file: %s", file));
+			throw new IllegalArgumentException(
+					String.format("Data file does not exist, or is not a plain file: %s", file));
 
 		FileInputStream stream = null;
 		try {
@@ -34,10 +36,16 @@ public class KnownBundleAnalyzerPlugin extends KnownBundleAnalyzer implements Re
 			Properties props = new UTF8Properties();
 			props.load(stream);
 			setKnownBundlesExtra(props);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			throw new IllegalArgumentException(String.format("Unable to read data file: %s", file), e);
-		} finally {
-			try { if (stream != null) stream.close(); } catch (IOException e) {}
+		}
+		finally {
+			try {
+				if (stream != null)
+					stream.close();
+			}
+			catch (IOException e) {}
 		}
 	}
 

@@ -96,10 +96,7 @@ public class Workspace extends Processor {
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
-	 * an existing project)
-	 * 
-	 * @param projectDir
-	 * @return
+	 * an existing project) @param projectDir @return
 	 */
 	public static Project getProject(File projectDir) throws Exception {
 		projectDir = projectDir.getAbsoluteFile();
@@ -336,10 +333,8 @@ public class Workspace extends Processor {
 	}
 
 	/**
-	 * Inform any listeners that we changed a file (created/deleted/changed).
-	 * 
-	 * @param f
-	 *            The changed file
+	 * Inform any listeners that we changed a file
+	 * (created/deleted/changed). @param f The changed file
 	 */
 	public void changedFile(File f) {
 		List<BndListener> listeners = getPlugins(BndListener.class);
@@ -561,10 +556,7 @@ public class Workspace extends Processor {
 	}
 
 	/**
-	 * Add any extensions listed
-	 * 
-	 * @param list
-	 * @param rri
+	 * Add any extensions listed @param list @param rri
 	 */
 	@Override
 	protected void addExtensions(Set<Object> list) {
@@ -650,9 +642,7 @@ public class Workspace extends Processor {
 	/**
 	 * Return if we're in offline mode. Offline mode is defined as an
 	 * environment where nobody tells us the resources are out of date (refresh
-	 * or changed). This is currently defined as having bndlisteners.
-	 * 
-	 * @return
+	 * or changed). This is currently defined as having bndlisteners. @return
 	 */
 	public boolean isOffline() {
 		return offline;
@@ -664,10 +654,8 @@ public class Workspace extends Processor {
 	}
 
 	/**
-	 * Provide access to the global settings of this machine.
-	 * 
-	 * @throws Exception
-	 * @throws UnknownHostException
+	 * Provide access to the global settings of this machine. @throws
+	 * Exception @throws UnknownHostException
 	 */
 
 	public String _global(String[] args) throws Exception {
@@ -896,9 +884,7 @@ public class Workspace extends Processor {
 	}
 
 	/**
-	 * The macro to access the gestalt
-	 * <p>
-	 * {@code $ gestalt;part[;key[;value]]}
+	 * The macro to access the gestalt <p> {@code $ gestalt;part[;key[;value]]}
 	 */
 
 	public String _gestalt(String args[]) {
@@ -968,11 +954,7 @@ public class Workspace extends Processor {
 	}
 
 	/**
-	 * Create a new Workspace
-	 * 
-	 * @param opts
-	 * @param wsdir
-	 * @throws Exception
+	 * Create a new Workspace @param opts @param wsdir @throws Exception
 	 */
 	public static Workspace createWorkspace(File wsdir) throws Exception {
 		if (wsdir.exists())
@@ -991,10 +973,7 @@ public class Workspace extends Processor {
 	}
 
 	/**
-	 * Add a plugin
-	 * 
-	 * @param plugin
-	 * @throws Exception
+	 * Add a plugin @param plugin @throws Exception
 	 */
 
 	public boolean addPlugin(Class< ? > plugin, String alias, Map<String,String> parameters, boolean force)
@@ -1090,10 +1069,8 @@ public class Workspace extends Processor {
 	}
 
 	/**
-	 * Create a workspace that does not inherit from a cnf directory etc.
-	 * 
-	 * @param run
-	 * @return
+	 * Create a workspace that does not inherit from a cnf directory etc. @param
+	 * run @return
 	 */
 	public static Workspace createStandaloneWorkspace(Properties run) {
 		Workspace ws = new Workspace();

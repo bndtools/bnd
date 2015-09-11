@@ -16,10 +16,9 @@ class PackageInfo {
 	private static final String		PACKAGE_INFO_JAVA	= "package-info.java";
 	private static final String		PACKAGEINFO			= "packageinfo";
 	private final static Pattern	MODERN_P			= Pattern
-																.compile("@\\s*[a-zA-Z0-9_$.]*\\s*Version\\((?:\\s*value\\s*=\\s*)?\"("
-																		+ Verifier.VERSION_S + ")\"\\)");
-	private final static Pattern	CLASSIC_P			= Pattern.compile("\\s*version\\s*(?:\\s|:|=)\\s*("
-																+ Verifier.VERSION_S + ")");
+			.compile("@\\s*[a-zA-Z0-9_$.]*\\s*Version\\((?:\\s*value\\s*=\\s*)?\"(" + Verifier.VERSION_S + ")\"\\)");
+	private final static Pattern	CLASSIC_P			= Pattern
+			.compile("\\s*version\\s*(?:\\s|:|=)\\s*(" + Verifier.VERSION_S + ")");
 	private final static Pattern	MODERN_PACKAGE_P	= Pattern.compile("package[^;]*;");
 	private final Project			project;
 
@@ -29,11 +28,8 @@ class PackageInfo {
 
 	/**
 	 * Get the version for a package name. This traverse the source paths and
-	 * will stop at the first source directory that has a packageinfo or
-	 * 
-	 * @param packageName
-	 * @return
-	 * @throws Exception
+	 * will stop at the first source directory that has a packageinfo or @param
+	 * packageName @return @throws Exception
 	 */
 	public Version getPackageInfo(String packageName) throws Exception {
 		File target = getFile(packageName);
@@ -55,13 +51,8 @@ class PackageInfo {
 	 * exists then we use that one, otherwise we try the packageinfo file. If
 	 * neither exists, we create a package-info.java file. You can set the
 	 * annotation to use. Default is bnd. setting it to 'osgi' sets it to the
-	 * OSGi annotations.
-	 *
-	 * @param packageName
-	 *            The package name
-	 * @param version
-	 *            The new package version
-	 * @throws Exception
+	 * OSGi annotations. @param packageName The package name @param version The
+	 * new package version @throws Exception
 	 */
 	public boolean setPackageInfo(String packageName, Version version) throws Exception {
 
@@ -119,16 +110,10 @@ class PackageInfo {
 	}
 
 	/**
-	 * Check what version annotation to use for new content:
-	 * <ul>
-	 * <li>not set -> use packageinfo
-	 * <li>osgi -> use the OSGi Version ann.
-	 * <li>bnd -> use the bnd version ann.
-	 * <li>other -> use the content as the version annotation, must have the
-	 * same prototype as the bnd/osgi ann.
-	 * </ul>
-	 * 
-	 * @return
+	 * Check what version annotation to use for new content: <ul> <li>not set ->
+	 * use packageinfo <li>osgi -> use the OSGi Version ann. <li>bnd -> use the
+	 * bnd version ann. <li>other -> use the content as the version annotation,
+	 * must have the same prototype as the bnd/osgi ann. </ul> @return
 	 */
 	private String getVersionAnnotation() {
 		String versionAnnotation = project.getProperty(Constants.PACKAGEINFOTYPE);

@@ -7,7 +7,7 @@ import aQute.service.reporter.*;
 
 public class ReporterLogService implements LogService {
 
-	private final Reporter	reporter;
+	private final Reporter reporter;
 
 	public ReporterLogService(Reporter reporter) {
 		this.reporter = reporter;
@@ -31,11 +31,11 @@ public class ReporterLogService implements LogService {
 
 		if (reporter != null) {
 			if (level <= LOG_ERROR)
-				reporter.error("%s",message);
+				reporter.error("%s", message);
 			else if (level == LOG_WARNING)
-				reporter.warning("%s",message);
+				reporter.warning("%s", message);
 			else if (level == LOG_INFO || level == LOG_DEBUG)
-				reporter.trace("%s",message);
+				reporter.trace("%s", message);
 		}
 	}
 

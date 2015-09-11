@@ -66,15 +66,16 @@ public class Command {
 		if (reporter != null) {
 			reporter.trace("executing cmd: %s", arguments);
 		}
-		
+
 		ProcessBuilder p;
 		if (fullCommand != null) {
 			// TODO do proper splitting
 			p = new ProcessBuilder(fullCommand.split("\\s+"));
 		} else {
-			//[cs] Arguments on windows aren't processed correctly. Thus the below junk
+			// [cs] Arguments on windows aren't processed correctly. Thus the
+			// below junk
 			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6511002
-			
+
 			if (System.getProperty("os.name").startsWith("Windows")) {
 				List<String> adjustedStrings = new LinkedList<String>();
 				for (String a : arguments) {
@@ -85,12 +86,12 @@ public class Command {
 				p = new ProcessBuilder(arguments);
 			}
 		}
-		
-		Map<String, String> env = p.environment();
+
+		Map<String,String> env = p.environment();
 		for (Entry<String,String> s : variables.entrySet()) {
 			env.put(s.getKey(), s.getValue());
 		}
-		
+
 		p.directory(cwd);
 		process = p.start();
 
@@ -108,7 +109,8 @@ public class Command {
 
 		if (timeout != 0) {
 			timer = new TimerTask() {
-				//@Override TODO why did this not work? TimerTask implements Runnable
+				// @Override TODO why did this not work? TimerTask implements
+				// Runnable
 				public void run() {
 					timedout = true;
 					process.destroy();
@@ -163,7 +165,7 @@ public class Command {
 						rdInThread.setDaemon(true);
 						rdInThread.start();
 					} else {
-						
+
 						IO.copy(in, stdin);
 						stdin.close();
 					}

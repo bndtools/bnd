@@ -4,6 +4,7 @@ import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Outer {
-	Inner[] value();
-	int[] x();
+	Inner[]value();
+
+	int[]x();
 }

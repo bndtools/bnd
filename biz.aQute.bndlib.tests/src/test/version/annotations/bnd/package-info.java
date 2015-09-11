@@ -2,5 +2,3 @@
 package test.version.annotations.bnd;
 
 import aQute.bnd.annotation.*;
-
-

@@ -32,7 +32,8 @@ public class TestBundleAnalyzer extends TestCase {
 
 		Capability content = caps.get(1);
 		assertEquals("osgi.content", content.getNamespace());
-		assertEquals("64f661eea43334dc5d38d7f16dbcacd02c799e68332b40e72da8021828e3329c", content.getAttributes().get("osgi.content"));
+		assertEquals("64f661eea43334dc5d38d7f16dbcacd02c799e68332b40e72da8021828e3329c",
+				content.getAttributes().get("osgi.content"));
 		assertEquals("testdata/01-bsn+version.jar", content.getAttributes().get("url"));
 		assertEquals("application/vnd.osgi.bundle", content.getAttributes().get("mime"));
 		assertEquals(1104L, content.getAttributes().get("size"));
@@ -95,7 +96,8 @@ public class TestBundleAnalyzer extends TestCase {
 		a.analyzeResource(new JarResource(new File("testdata/05-import.jar")), caps, reqs);
 
 		Requirement pkgImport = findReqs("osgi.wiring.package", reqs).get(0);
-		assertEquals("(&(osgi.wiring.package=org.example.a)(version>=1.0.0)(!(version>=2.0.0)))", pkgImport.getDirectives().get("filter"));
+		assertEquals("(&(osgi.wiring.package=org.example.a)(version>=1.0.0)(!(version>=2.0.0)))",
+				pkgImport.getDirectives().get("filter"));
 	}
 
 	public void testRequireBundle() throws Exception {
@@ -107,7 +109,8 @@ public class TestBundleAnalyzer extends TestCase {
 
 		List<Requirement> requires = findReqs("osgi.wiring.bundle", reqs);
 		assertEquals(1, requires.size());
-		assertEquals("(&(osgi.wiring.bundle=org.example.a)(bundle-version>=3.0.0)(!(bundle-version>=4.0.0)))", requires.get(0).getDirectives().get("filter"));
+		assertEquals("(&(osgi.wiring.bundle=org.example.a)(bundle-version>=3.0.0)(!(bundle-version>=4.0.0)))",
+				requires.get(0).getDirectives().get("filter"));
 	}
 
 	public void testPackageImportOptional() throws Exception {
@@ -118,7 +121,8 @@ public class TestBundleAnalyzer extends TestCase {
 		a.analyzeResource(new JarResource(new File("testdata/07-optionalimport.jar")), caps, reqs);
 
 		Requirement pkgImport = findReqs("osgi.wiring.package", reqs).get(0);
-		assertEquals("(&(osgi.wiring.package=org.example.a)(version>=1.0.0)(!(version>=2.0.0)))", pkgImport.getDirectives().get("filter"));
+		assertEquals("(&(osgi.wiring.package=org.example.a)(version>=1.0.0)(!(version>=2.0.0)))",
+				pkgImport.getDirectives().get("filter"));
 		assertEquals("optional", pkgImport.getDirectives().get("resolution"));
 	}
 

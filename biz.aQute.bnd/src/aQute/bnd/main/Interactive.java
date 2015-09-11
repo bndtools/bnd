@@ -6,7 +6,7 @@ import java.util.*;
 public class Interactive {
 
 	public Interactive(PrintStream out, InputStream in, Map<String,String> parameters) {
-		
+
 	}
 
 	public boolean go() {

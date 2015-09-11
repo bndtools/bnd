@@ -44,10 +44,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 	private boolean					prepared;
 
 	/**
-	 * The well defined launcher
-	 * 
-	 * @param project
-	 *            the project or Run
+	 * The well defined launcher @param project the project or Run
 	 */
 	public RemoteProjectLauncherPlugin(Project project) throws Exception {
 		super(project);

@@ -24,20 +24,20 @@ public class ConsoleLogSvc implements LogService {
 
 		StringBuilder builder = new StringBuilder();
 		switch (level) {
-		case LOG_DEBUG:
-			builder.append("DEBUG");
-			break;
-		case LOG_INFO:
-			builder.append("INFO");
-			break;
-		case LOG_WARNING:
-			builder.append("WARNING");
-			break;
-		case LOG_ERROR:
-			builder.append("ERROR");
-			break;
-		default:
-			builder.append("<<unknown>>");
+			case LOG_DEBUG :
+				builder.append("DEBUG");
+				break;
+			case LOG_INFO :
+				builder.append("INFO");
+				break;
+			case LOG_WARNING :
+				builder.append("WARNING");
+				break;
+			case LOG_ERROR :
+				builder.append("ERROR");
+				break;
+			default :
+				builder.append("<<unknown>>");
 		}
 		builder.append(": ");
 		builder.append(message);

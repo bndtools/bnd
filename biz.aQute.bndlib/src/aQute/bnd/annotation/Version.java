@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 @Documented
 @Retention(RetentionPolicy.CLASS)
 @Target({
-	ElementType.PACKAGE
+		ElementType.PACKAGE
 })
 public @interface Version {
 	String value();

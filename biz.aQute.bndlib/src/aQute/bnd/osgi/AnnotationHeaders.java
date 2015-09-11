@@ -39,25 +39,15 @@ import aQute.lib.strings.Strings;
  * track of what other annotations are applied to these classes. After all the
  * classes have been parsed, we look at any of the annotations that was applied
  * to one of the contained classes. These annotations are also parsed then to
- * check if they have header annotations applied to them.
- * <p>
- * This may sound a bit bizarre, so let me explain. The idea is that you can
- * create a custom annotation for a specific resource.
- * 
- * <pre>
- * &#064;RequireCapability(&quot;osgi.webresource;filter:='(&amp;(osgi.webresource=/google/angular)(version&gt;=${@version}))&quot;)
- * &#064;interface Angular {}
- * </pre>
- * 
- * Now all a user has to do is apply the @Angular annotation. It will then
- * automatically create a Require-Capability, with the version of the package.
- * 
- * <pre>
- * @Angular
- * public class MySpace {...}
- * </pre>
- * 
- * {@link About} provides some more information.
+ * check if they have header annotations applied to them. <p> This may sound a
+ * bit bizarre, so let me explain. The idea is that you can create a custom
+ * annotation for a specific resource. <pre>
+ * &#064;RequireCapability(&quot;osgi.webresource;filter:='(&amp;(osgi.
+ * webresource=/google/angular)(version&gt;=${@version}))&quot;) &#064;interface
+ * Angular {} </pre> Now all a user has to do is apply the @Angular annotation.
+ * It will then automatically create a Require-Capability, with the version of
+ * the package. <pre> @Angular public class MySpace {...} </pre> {@link About}
+ * provides some more information.
  */
 class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
@@ -72,20 +62,20 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	// fixed names for faster comparison
 	//
 
-	final TypeRef					bundleLicenseRef;
-	final TypeRef					requireCapabilityRef;
-	final TypeRef					provideCapabilityRef;
-	final TypeRef					bundleCategoryRef;
-	final TypeRef					bundleDocURLRef;
-	final TypeRef					bundleDeveloperRef;
-	final TypeRef					bundleContributorRef;
-	final TypeRef					bundleCopyrightRef;
+	final TypeRef	bundleLicenseRef;
+	final TypeRef	requireCapabilityRef;
+	final TypeRef	provideCapabilityRef;
+	final TypeRef	bundleCategoryRef;
+	final TypeRef	bundleDocURLRef;
+	final TypeRef	bundleDeveloperRef;
+	final TypeRef	bundleContributorRef;
+	final TypeRef	bundleCopyrightRef;
 
 	// Class we're currently processing
-	Clazz							current;
+	Clazz current;
 
 	// we parse the annotations seperately at the ed
-	boolean							finalizing;
+	boolean finalizing;
 
 	/*
 	 * Initialize
@@ -130,9 +120,9 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		annotation = tryMerge(annotation);
 		if (annotation == null)
 			return;
-		
+
 		TypeRef name = annotation.getName();
-		
+
 		if (name == bundleLicenseRef)
 			doLicense(annotation);
 		else if (name == requireCapabilityRef)
@@ -184,7 +174,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			return null;
 
 		if (parent.size() > 1)
-			analyzer.error("Found that manifest annotated annotation %s has more than one parent", annotation.getName());
+			analyzer.error("Found that manifest annotated annotation %s has more than one parent",
+					annotation.getName());
 
 		Annotation root = parent.get(0);
 		root.merge(annotation);
@@ -293,16 +284,16 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	 */
 	private void doProvideCapability(Annotation a) throws Exception {
 		ProvideCapability annotation = a.getAnnotation(ProvideCapability.class);
-		
+
 		Parameters p = new Parameters();
 		Attrs attrs = getAttributes(a, "ns");
 		directivesAndVersion(attrs, "uses", "mandatory", "effective");
 		p.put(annotation.ns(), attrs);
-		
+
 		String value = attrs.remove("name");
-		if ( value !=null)
+		if (value != null)
 			attrs.put(annotation.ns(), value);
-		
+
 		value = attrs.remove("value");
 
 		String s = p.toString();
@@ -373,11 +364,11 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		add(Constants.BUNDLE_LICENSE, p.toString());
 	}
 
-	private void directivesAndVersion(Attrs attrs, String ... directives) {
-		for ( String directive : directives ) {
+	private void directivesAndVersion(Attrs attrs, String... directives) {
+		for (String directive : directives) {
 			String s = attrs.remove(directive);
-			if ( s != null) {
-				attrs.put(directive+":", s);
+			if (s != null) {
+				attrs.put(directive + ":", s);
 			}
 		}
 
@@ -387,12 +378,12 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 	}
 
-	private Attrs getAttributes(Annotation a, String ... ignores) {
+	private Attrs getAttributes(Annotation a, String... ignores) {
 		Attrs attrs = new Attrs();
-		outer: for ( String key : a.keySet()) {
-			
-			for ( String ignore:ignores  ) {
-				if ( key.equals(ignore))
+		outer: for (String key : a.keySet()) {
+
+			for (String ignore : ignores) {
+				if (key.equals(ignore))
 					continue outer;
 			}
 
@@ -474,11 +465,11 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 	private void escape(StringBuilder app, String s[]) throws IOException {
 		String joined = Strings.join(s);
-		escape(app,joined);
+		escape(app, joined);
 	}
+
 	private void escape(StringBuilder app, String s) throws IOException {
 		Processor.quote(app, s);
 	}
-
 
 }

@@ -14,7 +14,7 @@ import aQute.libg.glob.*;
 
 public class Profiles extends Processor {
 
-	private bnd	bnd;
+	private bnd bnd;
 
 	// private ProfileOptions options;
 
@@ -63,14 +63,14 @@ public class Profiles extends Processor {
 		Parameters packages = new Parameters();
 		Parameters capabilities = new Parameters();
 
-		Collection<String> paths = new ArrayList<String>(new Parameters( b.getProperty("-paths")).keySet());
+		Collection<String> paths = new ArrayList<String>(new Parameters(b.getProperty("-paths")).keySet());
 		if (paths.isEmpty())
 			paths = options._arguments();
-		
+
 		trace("input %s", paths);
 
 		ResourceBuilder pb = new ResourceBuilder();
-		
+
 		for (String root : paths) {
 			File f = bnd.getFile(root);
 			if (!f.exists()) {

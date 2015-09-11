@@ -15,7 +15,7 @@ import aQute.lib.io.*;
  * 'trusted' property on this plugin must contain a list of issuer certificates
  * that are trusted. If none are specified the verification is NOT done.
  */
-@aQute.bnd.annotation.plugin.BndPlugin(name="url.https.verification", parameters=HttpsVerification.Config.class)
+@aQute.bnd.annotation.plugin.BndPlugin(name = "url.https.verification", parameters = HttpsVerification.Config.class)
 public class HttpsVerification extends DefaultURLConnectionHandler {
 	private SSLSocketFactory			factory;
 	private HostnameVerifier			verifier;
@@ -24,28 +24,27 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 	interface Config {
 		String trusted();
 	}
+
 	/**
-	 * Initialize the SSL Context, factory and verifier.
-	 * 
-	 * @throws NoSuchAlgorithmException
-	 * @throws KeyManagementException
+	 * Initialize the SSL Context, factory and verifier. @throws
+	 * NoSuchAlgorithmException @throws KeyManagementException
 	 */
 	private synchronized void init() throws NoSuchAlgorithmException, KeyManagementException {
 		if (factory == null) {
 			final X509Certificate trusted[] = certificates.toArray(new X509Certificate[certificates.size()]);
 
 			TrustManager[] trustAllCerts = new TrustManager[] {
-				new X509TrustManager() {
-					public X509Certificate[] getAcceptedIssuers() {
-						return trusted;
+					new X509TrustManager() {
+						public X509Certificate[] getAcceptedIssuers() {
+							return trusted;
+						}
+
+						public void checkServerTrusted(X509Certificate[] certs, String authType)
+								throws CertificateException {}
+
+						public void checkClientTrusted(X509Certificate[] certs, String authType)
+								throws CertificateException {}
 					}
-
-					public void checkServerTrusted(X509Certificate[] certs, String authType)
-							throws CertificateException {}
-
-					public void checkClientTrusted(X509Certificate[] certs, String authType)
-							throws CertificateException {}
-				}
 			};
 			SSLContext context = SSLContext.getInstance("TLS");
 			context.init(null, trustAllCerts, new SecureRandom());
@@ -70,9 +69,9 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 
 		if (connection instanceof HttpsURLConnection && matches(connection)) {
 			init();
-			if ( certificates.isEmpty())
+			if (certificates.isEmpty())
 				trace("Https verification for %s is DISABLED", connection.getURL());
-			
+
 			HttpsURLConnection https = (HttpsURLConnection) connection;
 			https.setSSLSocketFactory(factory);
 			https.setHostnameVerifier(verifier);

@@ -10,16 +10,17 @@ public class HexTest extends TestCase {
 	static final char	ns[]	= {
 			' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'A', 'B', 'C',
 			'D', 'E', 'F', 'G', '_'
-								};
+									};
 	static final int	nsr[]	= {
 			-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, -1, 10, 11, 12, 13, 14, 15, -1, -1
-								};
+									};
 
 	public static void testNibble() {
-		for (int i = 0; i<ns.length;i++) {
+		for (int i = 0; i < ns.length; i++) {
 			try {
 				assertEquals(nsr[i], Hex.nibble(ns[i]));
-			} catch (IllegalArgumentException e) {
+			}
+			catch (IllegalArgumentException e) {
 				assertEquals("Did not get an exception for nibble \"" + ns[i] + "\"", -1, nsr[i]);
 			}
 		}
@@ -47,7 +48,7 @@ public class HexTest extends TestCase {
 	public static void testBase64() {
 		assertEquals("", Base64.encodeBase64(new byte[] {}));
 		assertEquals("MQ==", Base64.encodeBase64(new byte[] {
-			'1'
+				'1'
 		}));
 		assertEquals("MTI=", Base64.encodeBase64(new byte[] {
 				'1', '2'
@@ -82,7 +83,7 @@ public class HexTest extends TestCase {
 
 		assertTrue(Arrays.equals(new byte[0], Base64.decodeBase64("")));
 		assertTrue(Arrays.equals(new byte[] {
-			'1'
+				'1'
 		}, Base64.decodeBase64("MQ==")));
 		assertTrue(Arrays.equals(new byte[] {
 				'1', '2', '3', '4', '5', '6', '7'

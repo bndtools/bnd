@@ -37,10 +37,11 @@ import java.util.Set;
 import aQute.libg.glob.Glob;
 
 public class IO {
-	static final int			BUFFER_SIZE	= IOConstants.PAGE_SIZE * 16;
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
 
-	static final public File	work		= new File(System.getProperty("user.dir"));
+	static final public File	work	= new File(System.getProperty("user.dir"));
 	static final public File	home;
+
 	static {
 		File tmp = null;
 		try {
@@ -338,25 +339,16 @@ public class IO {
 	}
 
 	/**
-	 * Create a temporary file.
-	 * 
-	 * @param directory
-	 *            the directory in which to create the file. Can be null, in
-	 *            which case the system TMP directory is used
-	 * @param pattern
-	 *            the filename prefix pattern. Must be at least 3 characters
-	 *            long
-	 * @param suffix
-	 *            the filename suffix. Can be null, in which case (system)
-	 *            default suffix is used
-	 * @return
-	 * @throws IllegalArgumentException
-	 *             when pattern is null or too short
-	 * @throws IOException
-	 *             when the specified (non-null) directory is not a directory
+	 * Create a temporary file. @param directory the directory in which to
+	 * create the file. Can be null, in which case the system TMP directory is
+	 * used @param pattern the filename prefix pattern. Must be at least 3
+	 * characters long @param suffix the filename suffix. Can be null, in which
+	 * case (system) default suffix is used @return @throws
+	 * IllegalArgumentException when pattern is null or too short @throws
+	 * IOException when the specified (non-null) directory is not a directory
 	 */
-	public static File createTempFile(File directory, String pattern, String suffix) throws IllegalArgumentException,
-			IOException {
+	public static File createTempFile(File directory, String pattern, String suffix)
+			throws IllegalArgumentException, IOException {
 		if ((pattern == null) || (pattern.length() < 3)) {
 			throw new IllegalArgumentException("Pattern must be at least 3 characters long, got "
 					+ ((pattern == null) ? "null" : pattern.length()));
@@ -410,11 +402,9 @@ public class IO {
 	}
 
 	/**
-	 * Deletes the specified file. Folders are recursively deleted.<br>
-	 * If file(s) cannot be deleted, no feedback is provided (fail silently).
-	 * 
-	 * @param f
-	 *            file to be deleted
+	 * Deletes the specified file. Folders are recursively deleted.<br> If
+	 * file(s) cannot be deleted, no feedback is provided (fail
+	 * silently). @param f file to be deleted
 	 */
 	public static void delete(File f) {
 		try {
@@ -426,13 +416,10 @@ public class IO {
 	}
 
 	/**
-	 * Deletes the specified file. Folders are recursively deleted.<br>
-	 * Throws exception if any of the files could not be deleted.
-	 * 
-	 * @param f
-	 *            file to be deleted
-	 * @throws IOException
-	 *             if the file (or contents of a folder) could not be deleted
+	 * Deletes the specified file. Folders are recursively deleted.<br> Throws
+	 * exception if any of the files could not be deleted. @param f file to be
+	 * deleted @throws IOException if the file (or contents of a folder) could
+	 * not be deleted
 	 */
 	public static void deleteWithException(File f) throws IOException {
 		f = f.getAbsoluteFile();
@@ -467,15 +454,9 @@ public class IO {
 
 	/**
 	 * Deletes <code>to</code> file if it exists, and renames <code>from</code>
-	 * file to <code>to</code>.<br>
-	 * Throws exception the rename operation fails.
-	 * 
-	 * @param from
-	 *            source file
-	 * @param to
-	 *            destination file
-	 * @throws IOException
-	 *             if the rename operation fails
+	 * file to <code>to</code>.<br> Throws exception the rename operation
+	 * fails. @param from source file @param to destination file @throws
+	 * IOException if the rename operation fails
 	 */
 	public static void rename(File from, File to) throws IOException {
 		IO.deleteWithException(to);
@@ -649,44 +630,40 @@ public class IO {
 
 	static public OutputStream	nullStream	= new OutputStream() {
 
-												@Override
-												public void write(int var0) throws IOException {}
+		@Override
+		public void write(int var0) throws IOException {}
 
-												@Override
-												public void write(byte[] var0) throws IOException {}
+		@Override
+		public void write(byte[] var0) throws IOException {}
 
-												@Override
-												public void write(byte[] var0, int from, int l) throws IOException {}
-											};
+		@Override
+		public void write(byte[] var0, int from, int l) throws IOException {}
+	};
 	static public Writer		nullWriter	= new Writer() {
-												public java.io.Writer append(char var0) throws java.io.IOException {
-													return null;
-												}
+		public java.io.Writer append(char var0) throws java.io.IOException {
+			return null;
+		}
 
-												public java.io.Writer append(java.lang.CharSequence var0)
-														throws java.io.IOException {
-													return null;
-												}
+		public java.io.Writer append(java.lang.CharSequence var0) throws java.io.IOException {
+			return null;
+		}
 
-												public java.io.Writer append(java.lang.CharSequence var0, int var1,
-														int var2) throws java.io.IOException {
-													return null;
-												}
+		public java.io.Writer append(java.lang.CharSequence var0, int var1, int var2) throws java.io.IOException {
+			return null;
+		}
 
-												public void write(int var0) throws java.io.IOException {}
+		public void write(int var0) throws java.io.IOException {}
 
-												public void write(java.lang.String var0) throws java.io.IOException {}
+		public void write(java.lang.String var0) throws java.io.IOException {}
 
-												public void write(java.lang.String var0, int var1, int var2)
-														throws java.io.IOException {}
+		public void write(java.lang.String var0, int var1, int var2) throws java.io.IOException {}
 
-												public void write(char[] var0) throws java.io.IOException {}
+		public void write(char[] var0) throws java.io.IOException {}
 
-												public void write(char[] var0, int var1, int var2)
-														throws java.io.IOException {}
+		public void write(char[] var0, int var1, int var2) throws java.io.IOException {}
 
-												public void close() throws IOException {}
+		public void close() throws IOException {}
 
-												public void flush() throws IOException {}
-											};
+		public void flush() throws IOException {}
+	};
 }

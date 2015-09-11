@@ -51,9 +51,7 @@ import aQute.libg.generics.Create;
 /**
  * Include-Resource: ( [name '=' ] file )+ Private-Package: package-decl ( ','
  * package-decl )* Export-Package: package-decl ( ',' package-decl )*
- * Import-Package: package-decl ( ',' package-decl )*
- *
- * @version $Revision: 1.27 $
+ * Import-Package: package-decl ( ',' package-decl )* @version $Revision: 1.27 $
  */
 public class Builder extends Analyzer {
 	static Pattern					IR_PATTERN					= Pattern.compile("[{]?-?@?(?:[^=]+=)?\\s*([^}!]+).*");
@@ -176,10 +174,7 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * Check if we need to calculate any checksums.
-	 *
-	 * @param dot
-	 * @throws Exception
+	 * Check if we need to calculate any checksums. @param dot @throws Exception
 	 */
 	private void doDigests(Jar dot) throws Exception {
 		Parameters ps = OSGiHeader.parseHeader(getProperty(DIGESTS));
@@ -199,18 +194,15 @@ public class Builder extends Analyzer {
 
 		// Check if we have sensible setup
 
-		if (getClasspath().size() == 0
-				&& (getProperty(EXPORT_PACKAGE) != null || getProperty(EXPORT_PACKAGE) != null
-						|| getProperty(PRIVATE_PACKAGE) != null || getProperty(PRIVATEPACKAGE) != null))
+		if (getClasspath().size() == 0 && (getProperty(EXPORT_PACKAGE) != null || getProperty(EXPORT_PACKAGE) != null
+				|| getProperty(PRIVATE_PACKAGE) != null || getProperty(PRIVATEPACKAGE) != null))
 			warning("Classpath is empty. " + Constants.PRIVATE_PACKAGE + " (-privatepackage) and " + EXPORT_PACKAGE
 					+ " can only expand from the classpath when there is one");
 
 	}
 
 	/**
-	 * Turn this normal bundle in a web and add any resources.
-	 *
-	 * @throws Exception
+	 * Turn this normal bundle in a web and add any resources. @throws Exception
 	 */
 	private Jar doWab(Jar dot) throws Exception {
 		String wab = getProperty(WAB);
@@ -240,9 +232,7 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * Add a wab lib to the jar.
-	 *
-	 * @param f
+	 * Add a wab lib to the jar. @param f
 	 */
 	private void addWabLib(Jar dot, File f) throws Exception {
 		if (f.exists()) {
@@ -275,9 +265,8 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * Get the manifest and write it out separately if -savemanifest is set
-	 *
-	 * @param dot
+	 * Get the manifest and write it out separately if -savemanifest is
+	 * set @param dot
 	 */
 	private void doSaveManifest(Jar dot) throws Exception {
 		String output = getProperty(SAVEMANIFEST);
@@ -307,9 +296,8 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Sign the jar file. -sign : <alias> [ ';' 'password:=' <password> ] [ ';'
-	 * 'keystore:=' <keystore> ] [ ';' 'sign-password:=' <pw> ] ( ',' ... )*
-	 *
-	 * @return
+	 * 'keystore:=' <keystore> ] [ ';' 'sign-password:=' <pw> ] ( ',' ...
+	 * )* @return
 	 */
 
 	void sign(@SuppressWarnings("unused") Jar jar) throws Exception {
@@ -416,8 +404,8 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-     *
-     */
+	 *
+	 */
 	private void addSources(Jar dot) {
 		if (!hasSources())
 			return;
@@ -539,10 +527,9 @@ public class Builder extends Analyzer {
 			Set<Instruction> unused = doExpand(dot, packages, privateFilter);
 
 			if (!unused.isEmpty()) {
-				warning(
-						"Unused " + Constants.PRIVATE_PACKAGE
-								+ " instructions, no such package(s) on the class path: %s", unused).header(
-						Constants.PRIVATE_PACKAGE).context(unused.iterator().next().input);
+				warning("Unused " + Constants.PRIVATE_PACKAGE
+						+ " instructions, no such package(s) on the class path: %s", unused)
+								.header(Constants.PRIVATE_PACKAGE).context(unused.iterator().next().input);
 			}
 		}
 
@@ -561,12 +548,8 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Destructively filter the packages from the build up index. This index is
-	 * used by the Export Package as well as the Private Package
-	 *
-	 * @param jar
-	 * @param name
-	 * @param instructions
-	 * @throws Exception
+	 * used by the Export Package as well as the Private Package @param
+	 * jar @param name @param instructions @throws Exception
 	 */
 	private Set<Instruction> doExpand(Jar jar, MultiMap<String,Jar> index, Instructions filter) throws Exception {
 		Set<Instruction> unused = Create.set();
@@ -629,8 +612,7 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * @param from
-	 * @return
+	 * @param from @return
 	 */
 	private List<Jar> filterFrom(Instruction from, List<Jar> providers) {
 		if (from.isAny())
@@ -647,12 +629,9 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * Copy the package from the providers based on the split package strategy.
-	 *
-	 * @param dest
-	 * @param providers
-	 * @param directory
-	 * @param splitStrategy
+	 * Copy the package from the providers based on the split package
+	 * strategy. @param dest @param providers @param directory @param
+	 * splitStrategy
 	 */
 	private void copyPackage(Jar dest, List<Jar> providers, String path, int splitStrategy) {
 		switch (splitStrategy) {
@@ -687,12 +666,7 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * Cop
-	 *
-	 * @param dest
-	 * @param srce
-	 * @param path
-	 * @param overwriteResource
+	 * Cop @param dest @param srce @param path @param overwriteResource
 	 */
 	private void copy(Jar dest, Jar srce, String path, boolean overwrite) {
 		trace("copy d=" + dest + " s=" + srce + " p=" + path);
@@ -717,17 +691,12 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * Analyze the classpath for a split package
-	 *
-	 * @param pack
-	 * @param classpath
-	 * @param source
-	 * @return
+	 * Analyze the classpath for a split package @param pack @param
+	 * classpath @param source @return
 	 */
 	private String diagnostic(String pack, List<Jar> culprits) {
 		// Default is like merge-first, but with a warning
-		return "Split package, multiple jars provide the same package:"
-				+ pack
+		return "Split package, multiple jars provide the same package:" + pack
 				+ "\nUse Import/Export Package directive -split-package:=(merge-first|merge-last|error|first) to get rid of this warning\n"
 				+ "Package found in   " + culprits + "\n" //
 				+ "Class path         " + getClasspath();
@@ -754,18 +723,11 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * Matches the instructions against a package.
-	 *
-	 * @param instructions
-	 *            The list of instructions
-	 * @param pack
-	 *            The name of the package
-	 * @param unused
-	 *            The total list of patterns, matched patterns are removed
-	 * @param source
-	 *            The name of the source container, can be filtered upon with
-	 *            the from: directive.
-	 * @return
+	 * Matches the instructions against a package. @param instructions The list
+	 * of instructions @param pack The name of the package @param unused The
+	 * total list of patterns, matched patterns are removed @param source The
+	 * name of the source container, can be filtered upon with the from:
+	 * directive. @return
 	 */
 	private Instruction matches(Instructions instructions, String pack, Set<Instruction> unused, String source) {
 		for (Entry<Instruction,Attrs> entry : instructions.entrySet()) {
@@ -796,10 +758,8 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Parse the Bundle-Includes header. Files in the bundles Include header are
-	 * included in the jar. The source can be a directory or a file.
-	 *
-	 * @throws IOException
-	 * @throws FileNotFoundException
+	 * included in the jar. The source can be a directory or a file. @throws
+	 * IOException @throws FileNotFoundException
 	 */
 	private void doIncludeResources(Jar jar) throws Exception {
 		String includes = getProperty("Bundle-Includes");
@@ -825,8 +785,8 @@ public class Builder extends Analyzer {
 		}
 	}
 
-	private void doIncludeResource(Jar jar, String name, Map<String,String> extra) throws ZipException, IOException,
-			Exception {
+	private void doIncludeResource(Jar jar, String name, Map<String,String> extra)
+			throws ZipException, IOException, Exception {
 
 		Instructions preprocess = null;
 		boolean absentIsOk = false;
@@ -921,15 +881,8 @@ public class Builder extends Analyzer {
 	 * be used to replace the current item. If no {@code for} is given, the
 	 * source is used as the only item. If the destination contains a macro,
 	 * each iteration will create a new file, otherwise the destination name is
-	 * used.
-	 *
-	 * @param jar
-	 * @param source
-	 * @param destination
-	 * @param extra
-	 * @param preprocess
-	 * @param absentIsOk
-	 * @throws Exception
+	 * used. @param jar @param source @param destination @param extra @param
+	 * preprocess @param absentIsOk @throws Exception
 	 */
 	private void doCommand(Jar jar, String source, String destination, Map<String,String> extra,
 			Instructions preprocess, boolean absentIsOk) throws Exception {
@@ -1025,11 +978,8 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * Check if a file or directory is older than the given time.
-	 *
-	 * @param file
-	 * @param lastModified
-	 * @return
+	 * Check if a file or directory is older than the given time. @param
+	 * file @param lastModified @return
 	 */
 	private long findLastModifiedWhileOlder(File file, long lastModified) {
 		if (file.isDirectory()) {
@@ -1105,8 +1055,8 @@ public class Builder extends Analyzer {
 		}
 	}
 
-	private void noSuchFile(Jar jar, @SuppressWarnings("unused") String clause, Map<String,String> extra,
-			String source, String destinationPath) throws Exception {
+	private void noSuchFile(Jar jar, @SuppressWarnings("unused") String clause, Map<String,String> extra, String source,
+			String destinationPath) throws Exception {
 		Jar src = getJarFromName(source, Constants.INCLUDE_RESOURCE + " " + source);
 		if (src != null) {
 			// Do not touch the manifest so this also
@@ -1128,16 +1078,11 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Extra resources from a Jar and add them to the given jar. The clause is
-	 * the
-	 *
-	 * @param jar
-	 * @param clauses
-	 * @param i
-	 * @throws ZipException
-	 * @throws IOException
+	 * the @param jar @param clauses @param i @throws ZipException @throws
+	 * IOException
 	 */
-	private void extractFromJar(Jar jar, String source, String destination, boolean absentIsOk) throws ZipException,
-			IOException {
+	private void extractFromJar(Jar jar, String source, String destination, boolean absentIsOk)
+			throws ZipException, IOException {
 		// Inline all resources and classes from another jar
 		// optionally appended with a modified regular expression
 		// like @zip.jar!/META-INF/MANIFEST.MF
@@ -1166,24 +1111,18 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * Add all the resources in the given jar that match the given filter.
-	 *
-	 * @param sub
-	 *            the jar
-	 * @param filter
-	 *            a pattern that should match the resoures in sub to be added
+	 * Add all the resources in the given jar that match the given
+	 * filter. @param sub the jar @param filter a pattern that should match the
+	 * resoures in sub to be added
 	 */
 	public boolean addAll(Jar to, Jar sub, Instruction filter) {
 		return addAll(to, sub, filter, "");
 	}
 
 	/**
-	 * Add all the resources in the given jar that match the given filter.
-	 *
-	 * @param sub
-	 *            the jar
-	 * @param filter
-	 *            a pattern that should match the resoures in sub to be added
+	 * Add all the resources in the given jar that match the given
+	 * filter. @param sub the jar @param filter a pattern that should match the
+	 * resoures in sub to be added
 	 */
 	public boolean addAll(Jar to, Jar sub, Instruction filter, String destination) {
 		boolean dupl = false;
@@ -1246,10 +1185,7 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Build Multiple jars. If the -sub command is set, we filter the file with
-	 * the given patterns.
-	 *
-	 * @return
-	 * @throws Exception
+	 * the given patterns. @return @throws Exception
 	 */
 	public Jar[] builds() throws Exception {
 		begin();
@@ -1315,10 +1251,8 @@ public class Builder extends Analyzer {
 	 * specified in -sub. This list can be empty. These builders represents to
 	 * be created artifacts and are each scoped to such an artifacts. The
 	 * builders can be used to build the bundles or they can be used to find out
-	 * information about the to be generated bundles.
-	 *
-	 * @return List of 0..n builders representing artifacts.
-	 * @throws Exception
+	 * information about the to be generated bundles. @return List of 0..n
+	 * builders representing artifacts. @throws Exception
 	 */
 	public List<Builder> getSubBuilders() throws Exception {
 		String sub = getProperty(SUB);
@@ -1413,8 +1347,8 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-     *
-     */
+	 *
+	 */
 	public void removeBundleSpecificHeaders() {
 		Set<String> set = new HashSet<String>(Arrays.asList(BUNDLE_SPECIFIC_HEADERS));
 		setForceLocal(set);
@@ -1424,10 +1358,7 @@ public class Builder extends Analyzer {
 	 * Check if the given resource is in scope of this bundle. That is, it
 	 * checks if the Include-Resource includes this resource or if it is a class
 	 * file it is on the class path and the Export-Package or Private-Package
-	 * include this resource.
-	 *
-	 * @param f
-	 * @return
+	 * include this resource. @param f @return
 	 */
 	public boolean isInScope(Collection<File> resources) throws Exception {
 		Parameters clauses = parseHeader(mergeProperties(Constants.EXPORT_PACKAGE));
@@ -1468,9 +1399,7 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Extra the paths for the directories and files that are used in the
-	 * Include-Resource header.
-	 *
-	 * @return
+	 * Include-Resource header. @return
 	 */
 	private Collection<String> getIncludedResourcePrefixes() {
 		List<String> prefixes = new ArrayList<String>();
@@ -1491,13 +1420,9 @@ public class Builder extends Analyzer {
 	/**
 	 * Answer the string of the resource that it has in the container. It is
 	 * possible that the resource is a classpath entry. In that case an empty
-	 * string is returned.
-	 *
-	 * @param resource
-	 *            The resource to look for
-	 * @return A suffix on the classpath or "" if the resource is a class path
-	 *         entry
-	 * @throws Exception
+	 * string is returned. @param resource The resource to look for @return A
+	 * suffix on the classpath or "" if the resource is a class path
+	 * entry @throws Exception
 	 */
 	public String getClasspathEntrySuffix(File resource) throws Exception {
 		for (Jar jar : getClasspath()) {
@@ -1569,9 +1494,8 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * Diff this bundle to another bundle for the given packages.
-	 *
-	 * @throws Exception
+	 * Diff this bundle to another bundle for the given packages. @throws
+	 * Exception
 	 */
 
 	public void doDiff(@SuppressWarnings("unused") Jar dot) throws Exception {
@@ -1612,11 +1536,11 @@ public class Builder extends Analyzer {
 								error("Differ %s", p).header("-diff").context(path);
 						else {
 							if (warning)
-								warning("Diff found a difference in %s for packages %s", file, instructions).header(
-										"-diff").context(path);
+								warning("Diff found a difference in %s for packages %s", file, instructions)
+										.header("-diff").context(path);
 							else
-								error("Diff found a difference in %s for packages %s", file, instructions).header(
-										"-diff").context(path);
+								error("Diff found a difference in %s for packages %s", file, instructions)
+										.header("-diff").context(path);
 							show(p, "", warning);
 						}
 					}
@@ -1626,10 +1550,7 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * Show the diff recursively
-	 *
-	 * @param p
-	 * @param i
+	 * Show the diff recursively @param p @param i
 	 */
 	private void show(Diff p, String indent, boolean warning) {
 		Delta d = p.getDelta();
@@ -1664,9 +1585,7 @@ public class Builder extends Analyzer {
 
 	/**
 	 * Base line against a previous version. Should be overridden in the
-	 * ProjectBuilder where we have access to the repos
-	 *
-	 * @throws Exception
+	 * ProjectBuilder where we have access to the repos @throws Exception
 	 */
 
 	protected void doBaseline(Jar dot) throws Exception {}
@@ -1674,13 +1593,11 @@ public class Builder extends Analyzer {
 	/**
 	 * #388 Manifest header to get GIT head Get the head commit number. Look for
 	 * a .git/HEAD file, going up in the file hierarchy. Then get this file, and
-	 * resolve any symbolic reference.
-	 *
-	 * @throws IOException
+	 * resolve any symbolic reference. @throws IOException
 	 */
-	static Pattern	GITREF_P		= Pattern.compile("ref:\\s*(refs/(heads|tags|remotes)/([^\\s]+))\\s*");
+	static Pattern GITREF_P = Pattern.compile("ref:\\s*(refs/(heads|tags|remotes)/([^\\s]+))\\s*");
 
-	static String	_githeadHelp	= "${githead}, provide the SHA for the current git head";
+	static String _githeadHelp = "${githead}, provide the SHA for the current git head";
 
 	public String _githead(String[] args) throws IOException {
 		Macro.verifyCommand(args, _githeadHelp, null, 1, 1);
@@ -1712,7 +1629,8 @@ public class Builder extends Analyzer {
 							file = IO.getFile(rover, ".git/packed-refs");
 							if (file.isFile()) {
 								String refs = IO.collect(file);
-								Pattern packedReferenceLinePattern = Pattern.compile("([a-fA-F0-9]{40,40})\\s+" + reference + "\\s*\n");
+								Pattern packedReferenceLinePattern = Pattern
+										.compile("([a-fA-F0-9]{40,40})\\s+" + reference + "\\s*\n");
 								Matcher packedReferenceMatcher = packedReferenceLinePattern.matcher(refs);
 								if (packedReferenceMatcher.find()) {
 									head = packedReferenceMatcher.group(1);
@@ -1737,9 +1655,7 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 * Create a report of the settings
-	 * 
-	 * @throws Exception
+	 * Create a report of the settings @throws Exception
 	 */
 
 	public void report(Map<String,Object> table) throws Exception {
@@ -1747,7 +1663,7 @@ public class Builder extends Analyzer {
 		super.report(table);
 		table.put("Do Not Copy", getDoNotCopy());
 		table.put("Git head", _githead(new String[] {
-			"githead"
+				"githead"
 		}));
 	}
 

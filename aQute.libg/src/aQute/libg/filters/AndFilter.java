@@ -4,9 +4,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 public final class AndFilter extends Filter {
-	
+
 	private final List<Filter> children = new LinkedList<Filter>();
-	
+
 	public AndFilter addChild(Filter child) {
 		if (child instanceof AndFilter)
 			children.addAll(((AndFilter) child).children);
@@ -19,7 +19,7 @@ public final class AndFilter extends Filter {
 	public void append(StringBuilder builder) {
 		if (children.isEmpty())
 			return;
-		
+
 		builder.append("(&");
 		for (Filter child : children) {
 			child.append(builder);

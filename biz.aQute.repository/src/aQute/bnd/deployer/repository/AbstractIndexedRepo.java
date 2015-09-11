@@ -28,56 +28,53 @@ import aQute.libg.gzip.*;
 import aQute.service.reporter.*;
 
 /**
- * Abstract base class for indexed repositories.
- * <p>
- * The repository implementation is read-only by default. To implement a
- * writable repository, subclasses should override {@link #canWrite()} and
- * {@link #put(Jar)}.
- * 
- * @author Neil Bartlett
+ * Abstract base class for indexed repositories. <p> The repository
+ * implementation is read-only by default. To implement a writable repository,
+ * subclasses should override {@link #canWrite()} and {@link #put(Jar)}. @author
+ * Neil Bartlett
  */
 @SuppressWarnings("synthetic-access")
-public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, RemoteRepositoryPlugin, IndexProvider, Repository, Refreshable {
+public abstract class AbstractIndexedRepo
+		implements RegistryPlugin, Plugin, RemoteRepositoryPlugin, IndexProvider, Repository, Refreshable {
 
-	public static final String									PROP_NAME						= "name";
-	public static final String									PROP_REPO_TYPE					= "type";
-	public static final String									PROP_RESOLUTION_PHASE			= "phase";
-	public static final String									PROP_RESOLUTION_PHASE_ANY		= "any";
+	public static final String	PROP_NAME					= "name";
+	public static final String	PROP_REPO_TYPE				= "type";
+	public static final String	PROP_RESOLUTION_PHASE		= "phase";
+	public static final String	PROP_RESOLUTION_PHASE_ANY	= "any";
 
-	public static final String									REPO_TYPE_R5					= R5RepoContentProvider.NAME;
-	public static final String									REPO_TYPE_OBR					= ObrContentProvider.NAME;
-	public static final String									REPO_INDEX_SHA_EXTENSION		= ".sha";
-	public static final String									PROP_CACHE_TIMEOUT				= "timeout";
-	public static final String									PROP_ONLINE						= "online";
-	
+	public static final String	REPO_TYPE_R5				= R5RepoContentProvider.NAME;
+	public static final String	REPO_TYPE_OBR				= ObrContentProvider.NAME;
+	public static final String	REPO_INDEX_SHA_EXTENSION	= ".sha";
+	public static final String	PROP_CACHE_TIMEOUT			= "timeout";
+	public static final String	PROP_ONLINE					= "online";
+
 	private final static int DEFAULT_CACHE_TIMEOUT = 5;
 
-	
-	private final BundleIndexer								obrIndexer						= new BundleIndexerImpl();
-	
+	private final BundleIndexer obrIndexer = new BundleIndexerImpl();
+
 	/**
 	 * Make sure the content providers are always processed in the same order.
 	 */
-	protected final Map<String,IRepositoryContentProvider>	allContentProviders				= new TreeMap<String,IRepositoryContentProvider>();
-	
-	protected final List<IRepositoryContentProvider>		generatingProviders				= new LinkedList<IRepositoryContentProvider>();
+	protected final Map<String,IRepositoryContentProvider> allContentProviders = new TreeMap<String,IRepositoryContentProvider>();
 
-	protected Registry											registry;
-	protected Reporter											reporter;
-	protected LogService										logService						= new NullLogService();
-	protected String											name							= this.getClass().getName();
-	protected Set<ResolutionPhase>								supportedPhases					= EnumSet.allOf(ResolutionPhase.class);
+	protected final List<IRepositoryContentProvider> generatingProviders = new LinkedList<IRepositoryContentProvider>();
 
-	private List<URI>											indexLocations;
+	protected Registry				registry;
+	protected Reporter				reporter;
+	protected LogService			logService		= new NullLogService();
+	protected String				name			= this.getClass().getName();
+	protected Set<ResolutionPhase>	supportedPhases	= EnumSet.allOf(ResolutionPhase.class);
 
-	private String												requestedContentProviderList	= null;
+	private List<URI> indexLocations;
 
-	private boolean												initialised						= false;
+	private String requestedContentProviderList = null;
 
-	private final CapabilityIndex							capabilityIndex					= new CapabilityIndex();
-	private final VersionedResourceIndex					identityMap						= new VersionedResourceIndex();
-	private int cacheTimeoutSeconds = DEFAULT_CACHE_TIMEOUT;
-	private boolean online = true;
+	private boolean initialised = false;
+
+	private final CapabilityIndex			capabilityIndex		= new CapabilityIndex();
+	private final VersionedResourceIndex	identityMap			= new VersionedResourceIndex();
+	private int								cacheTimeoutSeconds	= DEFAULT_CACHE_TIMEOUT;
+	private boolean							online				= true;
 
 	protected AbstractIndexedRepo() {
 		allContentProviders.put(REPO_TYPE_R5, new R5RepoContentProvider());
@@ -147,7 +144,8 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 					}
 				}
 				if (generatingProviders.isEmpty()) {
-					warning("No valid repository index generators were found, requested list was: [%s]", requestedContentProviderList);
+					warning("No valid repository index generators were found, requested list was: [%s]",
+							requestedContentProviderList);
 				}
 			}
 
@@ -167,17 +165,22 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 					try {
 						URI indexLocation = new URI(referral.getUrl());
 						try {
-							CachingUriResourceHandle indexHandle = new CachingUriResourceHandle(indexLocation, getCacheDirectory(), connector, (String) null);
+							CachingUriResourceHandle indexHandle = new CachingUriResourceHandle(indexLocation,
+									getCacheDirectory(), connector, (String) null);
 							indexHandle.setReporter(reporter);
-							readIndex(indexLocation.getPath(), indexLocation, new FileInputStream(indexHandle.request()), allContentProviders.values(), this, logService);
+							readIndex(indexLocation.getPath(), indexLocation,
+									new FileInputStream(indexHandle.request()), allContentProviders.values(), this,
+									logService);
 						}
 						catch (Exception e) {
-							warning("Unable to read referral index at URL '%s' from parent index '%s': %s", indexLocation, parentUri, e);
+							warning("Unable to read referral index at URL '%s' from parent index '%s': %s",
+									indexLocation, parentUri, e);
 						}
 
 					}
 					catch (URISyntaxException e) {
-						warning("Invalid referral URL '%s' from parent index '%s': %s", referral.getUrl(), parentUri, e);
+						warning("Invalid referral URL '%s' from parent index '%s': %s", referral.getUrl(), parentUri,
+								e);
 					}
 				}
 
@@ -186,14 +189,15 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 			// Parse the indexes
 			for (URI indexLocation : indexLocations) {
 				try {
-					CachingUriResourceHandle indexHandle = new CachingUriResourceHandle(indexLocation, getCacheDirectory(), connector, (String) null);
+					CachingUriResourceHandle indexHandle = new CachingUriResourceHandle(indexLocation,
+							getCacheDirectory(), connector, (String) null);
 					// If there is a cachedFile, then just use it IF
 					// 1) the cachedFile is within the timeout period
 					// OR 2) online is false
-					if (indexHandle.cachedFile != null
-							&& !ignoreCachedFile
-							&& ((System.currentTimeMillis() - indexHandle.cachedFile.lastModified() < this.cacheTimeoutSeconds * 1000)
-							|| !this.online)) {
+					if (indexHandle.cachedFile != null && !ignoreCachedFile
+							&& ((System.currentTimeMillis()
+									- indexHandle.cachedFile.lastModified() < this.cacheTimeoutSeconds * 1000)
+									|| !this.online)) {
 						indexHandle.sha = indexHandle.getCachedSHA();
 						if (indexHandle.sha != null && !this.online) {
 							System.out.println(String.format("Offline. Using cached %s.", indexLocation));
@@ -202,7 +206,8 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 					indexHandle.setReporter(reporter);
 					File indexFile = indexHandle.request();
 					InputStream indexStream = GZipUtils.detectCompression(new FileInputStream(indexFile));
-					readIndex(indexFile.getName(), indexLocation, indexStream, allContentProviders.values(), processor, logService);
+					readIndex(indexFile.getName(), indexLocation, indexStream, allContentProviders.values(), processor,
+							logService);
 				}
 				catch (Exception e) {
 					error("Unable to read index at URL '%s': %s", indexLocation, e);
@@ -220,8 +225,8 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 
 	/**
 	 * @return the class to use for URL connections. It's retrieved from the
-	 *         registry under the URLConnector class, or it will be the
-	 *         DefaultURLConnector if the former was not found.
+	 * registry under the URLConnector class, or it will be the
+	 * DefaultURLConnector if the former was not found.
 	 */
 	private URLConnector getConnector() {
 		URLConnector connector;
@@ -261,7 +266,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 				}
 			}
 		}
-		
+
 		if (map.containsKey(PROP_CACHE_TIMEOUT)) {
 			try {
 				this.cacheTimeoutSeconds = Integer.parseInt(map.get(PROP_CACHE_TIMEOUT));
@@ -274,7 +279,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		if (map.containsKey(PROP_ONLINE)) {
 			this.online = Boolean.parseBoolean(map.get(PROP_ONLINE));
 		}
-		
+
 		requestedContentProviderList = map.get(PROP_REPO_TYPE);
 	}
 
@@ -361,7 +366,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	public synchronized String getName() {
 		return name;
 	}
-	
+
 	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
 		try {
 			init();
@@ -369,7 +374,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		
+
 		Map<Requirement,Collection<Capability>> result = new HashMap<Requirement,Collection<Capability>>();
 		for (Requirement requirement : requirements) {
 			List<Capability> matches = new LinkedList<Capability>();
@@ -380,7 +385,8 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		return result;
 	}
 
-	static List<Resource> narrowVersionsByFilter(String pkgName, SortedMap<Version,Resource> versionMap, Filter filter) {
+	static List<Resource> narrowVersionsByFilter(String pkgName, SortedMap<Version,Resource> versionMap,
+			Filter filter) {
 		List<Resource> result = new ArrayList<Resource>(versionMap.size());
 
 		Dictionary<String,String> dict = new Hashtable<String,String>();
@@ -413,7 +419,8 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		CachingUriResourceHandle handle;
 		try {
 			String contentSha = getContentSha(resource);
-			handle = new CachingUriResourceHandle(getContentUrl(resource), getCacheDirectory(), getConnector(), contentSha);
+			handle = new CachingUriResourceHandle(getContentUrl(resource), getCacheDirectory(), getConnector(),
+					contentSha);
 			if (contentSha == null) {
 				handle.sha = handle.getCachedSHA();
 			}
@@ -475,13 +482,9 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	}
 
 	/**
-	 * Utility function for parsing lists of URLs.
-	 * 
-	 * @param locationsStr
-	 *            Comma-separated list of URLs
-	 * @return a list of URIs
-	 * @throws MalformedURLException
-	 * @throws URISyntaxException
+	 * Utility function for parsing lists of URLs. @param locationsStr
+	 * Comma-separated list of URLs @return a list of URIs @throws
+	 * MalformedURLException @throws URISyntaxException
 	 */
 	protected static List<URI> parseLocations(String locationsStr) throws MalformedURLException, URISyntaxException {
 		StringTokenizer tok = new StringTokenizer(locationsStr, ",");
@@ -505,7 +508,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 	/**
 	 * This can be optimized to use the download technique with the listeners.
 	 * Now just a quick hack to make it work. I actually think these classes
-	 * should extend FileRepo. TODO 
+	 * should extend FileRepo. TODO
 	 */
 	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
 			throws Exception {
@@ -528,7 +531,7 @@ public abstract class AbstractIndexedRepo implements RegistryPlugin, Plugin, Rem
 		}
 		return f;
 	}
-	
+
 	private void error(String format, Object... args) {
 		if (reporter != null)
 			reporter.error(format, args);

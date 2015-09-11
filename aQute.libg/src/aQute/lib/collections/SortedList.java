@@ -15,36 +15,34 @@ import java.util.*;
  * important reason, is that sometimes you do not know what collection you have
  * or it is not available in a sort ordering (MultiMap for example) ... I found
  * myself sorting these things over and over again and decided to just make an
- * immutable SortedList that is easy to slice and dice
- * 
- * @param <T>
+ * immutable SortedList that is easy to slice and dice @param <T>
  */
 @SuppressWarnings("unchecked")
 public class SortedList<T> implements SortedSet<T>, List<T> {
-	static SortedList< ? >		empty		= new SortedList<Object>();
+	static SortedList< ? > empty = new SortedList<Object>();
 
 	final T[]					list;
 	final int					start;
 	final int					end;
 	final Comparator<T>			cmp;
 	Class< ? >					type;
-	static Comparator<Object>	comparator	= //
+	static Comparator<Object>	comparator	=															//
 
-											new Comparator<Object>() {
-												public int compare(Object o1, Object o2) {
+												new Comparator<Object>() {
+													public int compare(Object o1, Object o2) {
 
-													if (o1 == o2)
-														return 0;
+														if (o1 == o2)
+															return 0;
 
-													if (o1.equals(o2))
-														return 0;
+														if (o1.equals(o2))
+															return 0;
 
-													return ((Comparable<Object>) o1).compareTo(o2);
-												}
-											};
+														return ((Comparable<Object>) o1).compareTo(o2);
+													}
+												};
 
 	class It implements ListIterator<T> {
-		int	n;
+		int n;
 
 		It(int n) {
 			this.n = n;
@@ -183,10 +181,10 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	}
 
 	public Object[] toArray() {
-		if(list == null) {
+		if (list == null) {
 			return new Object[0];
 		}
-		
+
 		if (start == 0 && end == list.length)
 			return list.clone();
 
@@ -294,10 +292,9 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	}
 
 	/**
-	 * Find the first element that is equal or bigger than the given element
-	 * 
-	 * @param toElement
-	 * @return absolute index (not relative!), returns end if not found
+	 * Find the first element that is equal or bigger than the given
+	 * element @param toElement @return absolute index (not relative!), returns
+	 * end if not found
 	 */
 	private int find(T toElement) {
 		int i = start;
@@ -330,7 +327,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	public T last() {
 		if (isEmpty())
 			throw new NoSuchElementException("last");
-		return get(size()-1);
+		return get(size() - 1);
 	}
 
 	@Deprecated
@@ -451,7 +448,6 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		}
 		return false;
 	}
-
 
 	public static <T extends Comparable< ? >> SortedList<T> fromIterator(Iterator<T> it) {
 		IteratorList<T> l = new IteratorList<T>(it);

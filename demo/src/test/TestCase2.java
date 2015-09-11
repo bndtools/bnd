@@ -4,30 +4,32 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 public class TestCase2 {
-	static int cntr=0;
-	
+	static int cntr = 0;
+
 	@BeforeClass
 	public static void beforeClass() {
 		cntr++;
 		assertEquals(1, cntr);
 	}
+
 	@AfterClass
 	public static void afterClass() {
 		cntr--;
 		assertEquals(0, cntr);
 	}
-	
+
 	@Before
 	public void before() {
-		cntr+=2;
+		cntr += 2;
 		assertEquals(3, cntr);
 	}
+
 	@After
 	public void after() {
-		cntr-=2;
+		cntr -= 2;
 		assertEquals(1, cntr);
 	}
-	
+
 	@Test
 	public void m1() {
 		System.err.println("All ok");

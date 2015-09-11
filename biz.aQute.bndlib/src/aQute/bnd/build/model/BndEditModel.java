@@ -62,9 +62,7 @@ import aQute.libg.tuple.Pair;
 /**
  * A model for a Bnd file. In the first iteration, use a simple Properties
  * object; this will need to be enhanced to additionally record formatting, e.g.
- * line breaks and empty lines, and comments.
- *
- * @author Neil Bartlett
+ * line breaks and empty lines, and comments. @author Neil Bartlett
  */
 public class BndEditModel {
 
@@ -1018,9 +1016,8 @@ public class BndEditModel {
 	/**
 	 * Return a processor for this model. This processor is based on the parent
 	 * project or the bndrun file. It will contain the properties of the project
-	 * file and the changes from the model.
-	 * 
-	 * @return a processor that reflects the actual project or bndrun file setup
+	 * file and the changes from the model. @return a processor that reflects
+	 * the actual project or bndrun file setup
 	 */
 	public Processor getProperties() throws Exception {
 		Processor parent = null;

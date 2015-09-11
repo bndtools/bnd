@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class ExtList<T> extends ArrayList<T> {
-	private static final long	serialVersionUID	= 1L;
+	private static final long serialVersionUID = 1L;
 
 	// @SafeVarargs
 	public ExtList(T... ts) {
@@ -31,6 +31,7 @@ public class ExtList<T> extends ArrayList<T> {
 		// TODO make sure no \ before comma
 		return from(s, "\\s*,\\s*");
 	}
+
 	public static ExtList<String> from(String s, String delimeter) {
 		ExtList<String> result = new ExtList<String>();
 		String[] parts = s.split(delimeter);

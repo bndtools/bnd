@@ -29,13 +29,13 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 	final static String	STOREFILE		= "store.cafs";
 	final static String	ALGORITHM		= "SHA-1";
 	final static int	KEYLENGTH		= 20;
-	final static int	HEADERLENGTH	= 4 // CAFS
-												+ 4 // flags
-												+ 4 // compressed length
-												+ 4 // uncompressed length
-												+ KEYLENGTH // key
-												+ 2 // header checksum
-										;
+	final static int	HEADERLENGTH	= 4				// CAFS
+			+ 4											// flags
+			+ 4											// compressed length
+			+ 4											// uncompressed length
+			+ KEYLENGTH									// key
+			+ 2											// header checksum
+			;
 
 	final File			home;
 	Index				index;
@@ -44,19 +44,17 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 
 	static {
 		try {
-		CAFS = "CAFS".getBytes("UTF-8");
-		CAFE = "CAFE".getBytes("UTF-8");
-		} catch (Throwable e) {
+			CAFS = "CAFS".getBytes("UTF-8");
+			CAFE = "CAFE".getBytes("UTF-8");
+		}
+		catch (Throwable e) {
 			throw new ExceptionInInitializerError(e);
 		}
 	}
 
 	/**
-	 * Constructor for a Content Addressable File Store
-	 * 
-	 * @param home
-	 * @param create
-	 * @throws Exception
+	 * Constructor for a Content Addressable File Store @param home @param
+	 * create @throws Exception
 	 */
 	public CAFS(File home, boolean create) throws Exception {
 		this.home = home;
@@ -93,13 +91,8 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 
 	/**
 	 * Store an input stream in the CAFS while calculating and returning the
-	 * SHA-1 code.
-	 * 
-	 * @param in
-	 *            The input stream to store.
-	 * @return The SHA-1 code.
-	 * @throws Exception
-	 *             if anything goes wrong
+	 * SHA-1 code. @param in The input stream to store. @return The SHA-1
+	 * code. @throws Exception if anything goes wrong
 	 */
 	public SHA1 write(InputStream in) throws Exception {
 
@@ -157,12 +150,8 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 	}
 
 	/**
-	 * Read the contents of a sha 1 key.
-	 * 
-	 * @param sha1
-	 *            The key
-	 * @return An Input Stream on the content or null of key not found
-	 * @throws Exception
+	 * Read the contents of a sha 1 key. @param sha1 The key @return An Input
+	 * Stream on the content or null of key not found @throws Exception
 	 */
 	public InputStream read(final SHA1 sha1) throws Exception {
 		synchronized (store) {
@@ -279,9 +268,9 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 	private InputStream getSha1Stream(final SHA1 sha1, byte[] buffer, final int total) throws NoSuchAlgorithmException {
 		ByteArrayInputStream in = new ByteArrayInputStream(buffer);
 		InflaterInputStream iin = new InflaterInputStream(in) {
-			int					count		= 0;
-			final MessageDigest	digestx		= MessageDigest.getInstance(ALGORITHM);
-			final AtomicBoolean	calculated	= new AtomicBoolean();
+			int count = 0;
+			final MessageDigest digestx = MessageDigest.getInstance(ALGORITHM);
+			final AtomicBoolean calculated = new AtomicBoolean();
 
 			@Override
 			public int read(byte[] data, int offset, int length) throws IOException {
@@ -312,13 +301,13 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 					return;
 
 				if (count != total)
-					throw new IOException("Counts do not match. Expected to read: " + total + " Actually read: "
-							+ count);
+					throw new IOException(
+							"Counts do not match. Expected to read: " + total + " Actually read: " + count);
 
 				SHA1 calculatedSha1 = new SHA1(digestx.digest());
 				if (!sha1.equals(calculatedSha1))
-					throw (new IOException("SHA1 caclulated and asked mismatch, asked: " + sha1 + ", \nfound: "
-							+ calculatedSha1));
+					throw (new IOException(
+							"SHA1 caclulated and asked mismatch, asked: " + sha1 + ", \nfound: " + calculatedSha1));
 			}
 
 			@Override
@@ -332,16 +321,9 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 
 	/**
 	 * Update a record in the store, assuming the store is at the right
-	 * position.
-	 * 
-	 * @param sha1
-	 *            The checksum
-	 * @param compressed
-	 *            The compressed length
-	 * @param totalLength
-	 *            The uncompressed length
-	 * @throws IOException
-	 *             The exception
+	 * position. @param sha1 The checksum @param compressed The compressed
+	 * length @param totalLength The uncompressed length @throws IOException The
+	 * exception
 	 */
 	private void update(byte[] sha1, byte[] compressed, int totalLength) throws IOException {
 		// System.err.println("pos: " + store.getFilePointer());
@@ -376,7 +358,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 	public Iterator<SHA1> iterator() {
 
 		return new Iterator<SHA1>() {
-			long	position	= 0x100;
+			long position = 0x100;
 
 			public boolean hasNext() {
 				synchronized (store) {

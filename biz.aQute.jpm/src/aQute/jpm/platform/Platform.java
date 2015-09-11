@@ -25,11 +25,7 @@ public abstract class Platform {
 	JustAnotherPackageManager	jpm;
 
 	/**
-	 * Get the current platform manager.
-	 * 
-	 * @param reporter
-	 * @param jpmx
-	 * @return
+	 * Get the current platform manager. @param reporter @param jpmx @return
 	 */
 	public static Platform getPlatform(Reporter reporter, Type type) {
 		if (platform == null) {
@@ -68,18 +64,13 @@ public abstract class Platform {
 
 	/**
 	 * Return the place where we place the jpm home directory for global access.
-	 * E.g. /var/jpm
-	 * 
-	 * @return
-	 * @throws Exception
+	 * E.g. /var/jpm @return @throws Exception
 	 */
 	public abstract File getGlobal();
 
 	/**
 	 * Return the place where we place the jpm home directory for user/local
-	 * access. E.g. ~/.jpm
-	 * 
-	 * @return
+	 * access. E.g. ~/.jpm @return
 	 */
 	public abstract File getLocal();
 
@@ -257,10 +248,8 @@ public abstract class Platform {
 	}
 
 	/**
-	 * Is called to initialize the platform if necessary.
-	 * 
-	 * @throws IOException
-	 * @throws Exception
+	 * Is called to initialize the platform if necessary. @throws
+	 * IOException @throws Exception
 	 */
 	public void init() throws Exception {
 		// can be overridden by the subclasses
@@ -278,21 +267,20 @@ public abstract class Platform {
 		// do nothing
 	}
 
-	abstract public  void getVMs(Collection<JVM> vms) throws Exception;
+	abstract public void getVMs(Collection<JVM> vms) throws Exception;
 
 	public String verifyVM(File f) {
-		if ( !f.isDirectory())
+		if (!f.isDirectory())
 			return "Not a directory";
-		
+
 		File bin = new File(f, "bin");
-		if ( !bin.isDirectory())
+		if (!bin.isDirectory())
 			return "No bin directory %s for a VM's executables";
 
-		
 		File lib = new File(f, "lib");
-		if ( !lib.isDirectory())
+		if (!lib.isDirectory())
 			return "No lib directory %s for a VM's libraries and certificates";
-		
+
 		return null;
 	}
 

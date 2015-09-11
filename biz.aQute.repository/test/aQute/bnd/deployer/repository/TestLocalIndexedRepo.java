@@ -53,7 +53,8 @@ public class TestLocalIndexedRepo extends TestCase {
 		LocalIndexedRepo repo = new LocalIndexedRepo();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("local", outputDir.getAbsolutePath());
-		config.put("locations", "http://localhost:" + httpdPort + "/index1.xml,http://localhost:" + httpdPort + "/index2.xml");
+		config.put("locations",
+				"http://localhost:" + httpdPort + "/index1.xml,http://localhost:" + httpdPort + "/index2.xml");
 		repo.setProperties(config);
 		repo.setReporter(reporter);
 

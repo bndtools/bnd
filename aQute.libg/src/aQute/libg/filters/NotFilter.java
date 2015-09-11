@@ -2,7 +2,7 @@ package aQute.libg.filters;
 
 public final class NotFilter extends Filter {
 
-	private final Filter	child;
+	private final Filter child;
 
 	public NotFilter(Filter child) {
 		this.child = child;
@@ -14,6 +14,5 @@ public final class NotFilter extends Filter {
 		child.append(builder);
 		builder.append(")");
 	}
-	
-	
+
 }

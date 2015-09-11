@@ -15,7 +15,7 @@ import aQute.lib.io.*;
 @BndPlugin(name = "git")
 public class GitPlugin extends LifeCyclePlugin {
 
-	private static final String	GITIGNORE	= ".gitignore";
+	private static final String GITIGNORE = ".gitignore";
 
 	@Override
 	public void created(Project p) throws Exception {

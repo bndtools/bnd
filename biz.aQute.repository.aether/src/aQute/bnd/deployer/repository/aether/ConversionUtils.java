@@ -11,7 +11,7 @@ import aQute.bnd.version.Version;
 final class ConversionUtils {
 
 	public static final String JAR_EXTENSION = "jar";
-	
+
 	private ConversionUtils() {}
 
 	public static final Artifact fromBundleJar(Jar jar) throws Exception {
@@ -33,12 +33,13 @@ final class ConversionUtils {
 		} else {
 			int lastDot = bsn.lastIndexOf('.');
 			if (lastDot < 0)
-				throw new IllegalArgumentException(String.format("Cannot split symbolic name '%s' into group ID and artifact ID", bsn));
+				throw new IllegalArgumentException(
+						String.format("Cannot split symbolic name '%s' into group ID and artifact ID", bsn));
 			if (lastDot == 0)
 				throw new IllegalArgumentException("Group ID appears to be empty");
-			if (lastDot >= bsn.length() -1)
+			if (lastDot >= bsn.length() - 1)
 				throw new IllegalArgumentException("Artifact ID appear to be empty");
-			
+
 			groupId = bsn.substring(0, lastDot);
 			artifactId = bsn.substring(lastDot + 1);
 		}
@@ -49,7 +50,7 @@ final class ConversionUtils {
 		else if (!Verifier.isVersion(versionString))
 			throw new IllegalArgumentException("Invalid version " + versionString);
 		Version version = Version.parseVersion(versionString);
-		
+
 		return new DefaultArtifact(groupId, artifactId, JAR_EXTENSION, new MavenVersion(version).toString());
 	}
 
@@ -60,11 +61,13 @@ final class ConversionUtils {
 			// No colons, it's just a plain old bsn
 			return coords;
 		if (colonPos == 0)
-			throw new IllegalArgumentException(String.format("Cannot convert Maven coordinates to BSN, group ID appears to be empty: '%s'", coords));
+			throw new IllegalArgumentException(String
+					.format("Cannot convert Maven coordinates to BSN, group ID appears to be empty: '%s'", coords));
 
 		int artifactIdStart = colonPos + 1;
 		if (artifactIdStart >= coords.length())
-			throw new IllegalArgumentException(String.format("Cannot convert Maven coordinates to BSN, artifact ID appears to be empty: '%s'", coords));
+			throw new IllegalArgumentException(String
+					.format("Cannot convert Maven coordinates to BSN, artifact ID appears to be empty: '%s'", coords));
 
 		return String.format("%s.%s", coords.substring(0, colonPos), coords.substring(artifactIdStart));
 	}
@@ -76,7 +79,9 @@ final class ConversionUtils {
 		String groupId = bsn.substring(0, dotIndex);
 		String artifactId = bsn.substring(dotIndex + 1);
 
-		return new String[] { groupId, artifactId };
+		return new String[] {
+				groupId, artifactId
+		};
 	}
 
 }

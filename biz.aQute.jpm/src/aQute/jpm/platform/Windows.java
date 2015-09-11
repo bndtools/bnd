@@ -21,12 +21,10 @@ import aQute.lib.strings.*;
  * up the same path, but then with the .exe replaced with .ini. This ini file
  * then describes what Java code to start. For JPM, we copy the base exe (either
  * console and/or 64 bit arch) and then create the ini file from the jpm command
- * data.
- * <p>
- * TODO services (fortunately, winrun4j has extensive support)
+ * data. <p> TODO services (fortunately, winrun4j has extensive support)
  */
 public class Windows extends Platform {
-	static boolean	IS64	= System.getProperty("os.arch").contains("64");
+	static boolean IS64 = System.getProperty("os.arch").contains("64");
 
 	static File		javahome;
 	private File	misc;
@@ -153,9 +151,7 @@ public class Windows extends Platform {
 	}
 
 	/**
-	 * Where we store our miscellaneous stuff.
-	 * 
-	 * @return
+	 * Where we store our miscellaneous stuff. @return
 	 */
 	private File getMisc() {
 		if (misc == null) {
@@ -165,10 +161,7 @@ public class Windows extends Platform {
 	}
 
 	/**
-	 * Return the File to the exe file.
-	 * 
-	 * @param data
-	 * @return
+	 * Return the File to the exe file. @param data @return
 	 */
 	protected String getExecutable(CommandData data) {
 		return new File(jpm.getBinDir(), data.name + ".exe").getAbsolutePath();
@@ -231,23 +224,17 @@ public class Windows extends Platform {
 	}
 
 	/**
-	 * Provide as much detail about the jpm environment as possible.
-	 * 
-	 * @throws IOException
-	 * @throws InvocationTargetException
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
+	 * Provide as much detail about the jpm environment as possible. @throws
+	 * IOException @throws InvocationTargetException @throws
+	 * IllegalAccessException @throws IllegalArgumentException
 	 */
 
 	public void report(Formatter f) throws Exception {}
 
 	/**
-	 * Initialize the directories for windows.
-	 * 
-	 * @throws IOException
-	 * @throws InvocationTargetException
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
+	 * Initialize the directories for windows. @throws IOException @throws
+	 * InvocationTargetException @throws IllegalAccessException @throws
+	 * IllegalArgumentException
 	 */
 
 	public void init() throws Exception {
@@ -314,8 +301,8 @@ public class Windows extends Platform {
 		}
 
 		for (int i = 0; i < parts.length; i++) {
-			System.out.printf("%2d:%s %s %s%n", i, parts[i].toLowerCase().contains("jpm") ? "*" : " ", new File(
-					parts[i]).isDirectory() ? " " : "!", parts[i]);
+			System.out.printf("%2d:%s %s %s%n", i, parts[i].toLowerCase().contains("jpm") ? "*" : " ",
+					new File(parts[i]).isDirectory() ? " " : "!", parts[i]);
 		}
 
 		if (options.remove()) {
@@ -342,7 +329,7 @@ public class Windows extends Platform {
 	@Override
 	public void getVMs(Collection<JVM> vms) throws Exception {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override

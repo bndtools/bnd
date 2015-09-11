@@ -8,7 +8,7 @@ import aQute.lib.utf8properties.UTF8Properties;
 
 public class PomPropertiesResource extends WriteResource {
 	private final UTF8Properties	pomProperties;
-	private final String		where;
+	private final String			where;
 
 	public PomPropertiesResource(PomResource pomResource) {
 		pomProperties = new UTF8Properties();

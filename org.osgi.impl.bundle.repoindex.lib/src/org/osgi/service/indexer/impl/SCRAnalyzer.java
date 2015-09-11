@@ -17,12 +17,12 @@ import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
 public class SCRAnalyzer implements ResourceAnalyzer {
-	static final Pattern		URI_VERSION_P		= Pattern.compile("/scr/v(\\d+\\.\\d+\\.\\d+)$");
-	public static final String	NS_1_0				= Namespaces.NS_OSGI + "/scr/v1.0.0";
-	public static final String	NS_1_1				= Namespaces.NS_OSGI + "/scr/v1.1.0";
-	public static final String	NS_1_2				= Namespaces.NS_OSGI + "/scr/v1.2.0";
-	public static final String	NS_1_2_1			= Namespaces.NS_OSGI + "/scr/v1.2.1";
-	public static final String	NS_1_3				= Namespaces.NS_OSGI + "/scr/v1.3.0";
+	static final Pattern		URI_VERSION_P	= Pattern.compile("/scr/v(\\d+\\.\\d+\\.\\d+)$");
+	public static final String	NS_1_0			= Namespaces.NS_OSGI + "/scr/v1.0.0";
+	public static final String	NS_1_1			= Namespaces.NS_OSGI + "/scr/v1.1.0";
+	public static final String	NS_1_2			= Namespaces.NS_OSGI + "/scr/v1.2.0";
+	public static final String	NS_1_2_1		= Namespaces.NS_OSGI + "/scr/v1.2.1";
+	public static final String	NS_1_3			= Namespaces.NS_OSGI + "/scr/v1.3.0";
 
 	public static final String	ELEMENT_COMPONENT	= "component";
 	public static final String	ELEMENT_SERVICE		= "service";
@@ -37,7 +37,7 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 	public static final String	ATTRIB_VALUE		= "value";
 	public static final String	ATTRIB_TARGET		= "target";
 
-	private LogService			log;
+	private LogService log;
 
 	public SCRAnalyzer(LogService log) {
 		this.log = log;
@@ -77,9 +77,9 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 		if (childResource == null) {
 			if (log != null)
 				log.log(LogService.LOG_WARNING,
-						MessageFormat
-								.format("Cannot analyse SCR requirement version: resource {0} does not contain path {1} referred from Service-Component header.",
-										resource.getLocation(), path));
+						MessageFormat.format(
+								"Cannot analyse SCR requirement version: resource {0} does not contain path {1} referred from Service-Component header.",
+								resource.getLocation(), path));
 			return null;
 		}
 
@@ -95,9 +95,10 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 		}
 		catch (Exception e) {
 			if (log != null)
-				log.log(LogService.LOG_ERROR, MessageFormat.format(
-						"Processing error: failed to parse child resource {0} in resource {1}.", path,
-						resource.getLocation()), e);
+				log.log(LogService.LOG_ERROR,
+						MessageFormat.format("Processing error: failed to parse child resource {0} in resource {1}.",
+								path, resource.getLocation()),
+						e);
 			return null;
 		}
 	}
@@ -112,8 +113,8 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 		Util.addVersionFilter(filter, range, VersionKey.PackageVersion);
 		filter.append(')');
 
-		builder.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString()).addDirective(
-				Namespaces.DIRECTIVE_EFFECTIVE, Namespaces.EFFECTIVE_ACTIVE);
+		builder.addDirective(Namespaces.DIRECTIVE_FILTER, filter.toString())
+				.addDirective(Namespaces.DIRECTIVE_EFFECTIVE, Namespaces.EFFECTIVE_ACTIVE);
 		Requirement requirement = builder.buildRequirement();
 		return requirement;
 	}
@@ -122,10 +123,10 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 		private List<Capability>	caps;
 		private List<Requirement>	reqs;
 
-		Version						highest					= null;
+		Version highest = null;
 
-		private List<String>		provides				= null;
-		private List<Requirement>	references				= null;
+		private List<String>		provides	= null;
+		private List<Requirement>	references	= null;
 
 		private Map<String,Object>	properties				= null;
 		private String				currentPropertyName		= null;
@@ -277,10 +278,12 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 
 			String filter;
 
-			// #770 https://github.com/bndtools/bnd/issues/770 
+			// #770 https://github.com/bndtools/bnd/issues/770
 			//
-			// We should not include any target properties since this is more a runtime 
-			// filter that is often overridden by config admin. Since this is handled in
+			// We should not include any target properties since this is more a
+			// runtime
+			// filter that is often overridden by config admin. Since this is
+			// handled in
 			// runtime anyway, we should be able to ignore it easily.
 			// @formatter:off
 			//			String target = attribs.getValue(ATTRIB_TARGET);
@@ -288,7 +291,7 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 			//				filter = String.format("(&(%s=%s)%s)", Constants.OBJECTCLASS, interfaceClass, target);
 			//			else
 			// @formatter:on
-			
+
 			filter = String.format("(%s=%s)", Constants.OBJECTCLASS, interfaceClass);
 			builder.addDirective(Namespaces.DIRECTIVE_FILTER, filter);
 

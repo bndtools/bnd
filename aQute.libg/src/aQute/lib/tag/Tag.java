@@ -17,7 +17,7 @@ import java.util.Map;
  * objects or other Tag objects.
  */
 public class Tag {
-	Tag								parent;													// Parent
+	Tag								parent;														// Parent
 	String							name;														// Name
 	final Map<String,String>		attributes	= new LinkedHashMap<String,String>();
 	final List<Object>				content		= new ArrayList<Object>();						// Content

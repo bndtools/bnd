@@ -31,18 +31,18 @@ public class VerifierTest extends TestCase {
 		assertTrue(b.check("The Require-Capability with namespace \\+\\+\\+ is not a symbolic name",
 				"The Provide-Capability with namespace === is not a symbolic name"));
 	}
-	
+
 	/**
-	 * Verify that the Meta-Persistence header is correctly verified
-	 * @throws Exception 
+	 * Verify that the Meta-Persistence header is correctly verified @throws
+	 * Exception
 	 */
-	
+
 	public void verifyMetaPersistence() throws Exception {
 		Builder b = new Builder();
 		b.setIncludeResource("foo.xml;literal='I exist'");
 		Jar inner = b.build();
-		assertTrue( b.check());
-		
+		assertTrue(b.check());
+
 		Jar outer = new Jar("x");
 		outer.putResource("foo.jar", new JarResource(inner));
 		Manifest m = new Manifest();
@@ -52,12 +52,9 @@ public class VerifierTest extends TestCase {
 		v.verifyMetaPersistence();
 		assertTrue(v.check("Meta-Persistence refers to resources not in the bundle: \\[absent.xml\\]"));
 	}
-	
-	
+
 	/**
-	 * Check for reserved file names (INVALIDFILENAMES)
-	 * 
-	 * @throws Exception
+	 * Check for reserved file names (INVALIDFILENAMES) @throws Exception
 	 */
 	public void testInvalidFileNames() throws Exception {
 		testFileName("0ABC", null, true);
@@ -90,7 +87,7 @@ public class VerifierTest extends TestCase {
 				b.setProperty(Constants.INVALIDFILENAMES, pattern);
 
 			b.build();
-			if ( good )
+			if (good)
 				assertTrue(b.check());
 			else
 				assertTrue(b.check("Invalid file/directory"));
@@ -101,17 +98,14 @@ public class VerifierTest extends TestCase {
 	}
 
 	/**
-	 * Create a require capality filter verification test
-	 * 
-	 * @throws Exception
+	 * Create a require capality filter verification test @throws Exception
 	 */
 
 	public void testInvalidFilterOnRequirement() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.setExportPackage("org.osgi.framework");
-		b.setProperty(
-				"Require-Capability",
+		b.setProperty("Require-Capability",
 				"test; filter:=\"(&(test=aName)(version>=1.1.0))\", "
 						+ " test; filter:=\"(&(version>=1.1)(string~=astring))\", "
 						+ " test; filter:=\"(&(version>=1.1)(long>=99))\", "
@@ -127,30 +121,22 @@ public class VerifierTest extends TestCase {
 		b.build();
 		assertTrue(b.check());
 	}
-    
-    /**
-     * Create a require capality directive test
-     *
-     * @throws Exception
-     */
-    
-    public void testValidDirectivesOnRequirement() throws Exception {
-        Builder b = new Builder();
-        b.addClasspath(IO.getFile("jar/osgi.jar"));
-        b.setExportPackage("org.osgi.framework");
-        b.setProperty(
-                      "Require-Capability",
-                      "test; resolution:=mandatory, "
-                      + " test; resolution:=optional, "
-                      + " test; cardinality:=single, "
-                      + " test; cardinality:=multiple, "
-                      + " test; effective:=foo, "
-                      + " test; filter:=\"(&(version>=1.1)(long.list=1)(long.list=2))\", "
-                      + " test; x-custom:=bar, ");
-        
-        b.build();
-        assertTrue(b.check());
-    }
+
+	/**
+	 * Create a require capality directive test @throws Exception
+	 */
+
+	public void testValidDirectivesOnRequirement() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
+		b.setExportPackage("org.osgi.framework");
+		b.setProperty("Require-Capability", "test; resolution:=mandatory, " + " test; resolution:=optional, "
+				+ " test; cardinality:=single, " + " test; cardinality:=multiple, " + " test; effective:=foo, "
+				+ " test; filter:=\"(&(version>=1.1)(long.list=1)(long.list=2))\", " + " test; x-custom:=bar, ");
+
+		b.build();
+		assertTrue(b.check());
+	}
 
 	/**
 	 * Test the strict flag
@@ -159,29 +145,28 @@ public class VerifierTest extends TestCase {
 		Builder bmaker = new Builder();
 		bmaker.addClasspath(IO.getFile("jar/osgi.jar"));
 		bmaker.addClasspath(new File("bin"));
-		bmaker.setProperty(
-				"Export-Package",
+		bmaker.setProperty("Export-Package",
 				"org.osgi.service.eventadmin;version='[1,2)',org.osgi.framework;version=x13,test;-remove-attribute:=version,test.lib;specification-version=12,test.split");
 		bmaker.setProperty("Import-Package",
 				"foo;version=1,bar;version='[1,x2)',baz;version='[2,1)',baz2;version='(1,1)',*");
 		bmaker.setProperty("-strict", "true");
 		Jar jar = bmaker.build();
-		assertTrue(bmaker
-				.check("\\QExport-Package or -exportcontents refers to missing package 'org.osgi.service.eventadmin'\\E",
-						"Import Package clauses without version range \\(excluding javax\\.\\*\\):",
-						"Import Package bar has an invalid version range syntax \\[1,x2\\)",
-						"Import Package baz2 has an empty version range syntax \\(1,1\\), likely want to use \\[1.0.0,1.0.0\\]",
-						"Import Package baz has an invalid version range syntax \\[2,1\\):Low Range is higher than High Range: 2.0.0-1.0.0",
-						"Import Package clauses which use a version instead of a version range. This imports EVERY later package and not as many expect until the next major number: \\[foo\\]",
-						"Export Package org.osgi.framework version has invalid syntax: x13",
-						"Export Package test.lib uses deprecated specification-version instead of version",
-						"Export Package org.osgi.service.eventadmin version is a range: \\[1,2\\); Exports do not allow for ranges."));
+		assertTrue(bmaker.check(
+				"\\QExport-Package or -exportcontents refers to missing package 'org.osgi.service.eventadmin'\\E",
+				"Import Package clauses without version range \\(excluding javax\\.\\*\\):",
+				"Import Package bar has an invalid version range syntax \\[1,x2\\)",
+				"Import Package baz2 has an empty version range syntax \\(1,1\\), likely want to use \\[1.0.0,1.0.0\\]",
+				"Import Package baz has an invalid version range syntax \\[2,1\\):Low Range is higher than High Range: 2.0.0-1.0.0",
+				"Import Package clauses which use a version instead of a version range. This imports EVERY later package and not as many expect until the next major number: \\[foo\\]",
+				"Export Package org.osgi.framework version has invalid syntax: x13",
+				"Export Package test.lib uses deprecated specification-version instead of version",
+				"Export Package org.osgi.service.eventadmin version is a range: \\[1,2\\); Exports do not allow for ranges."));
 	}
 
 	public static void testCapability() throws Exception {
 
-		Parameters h = OSGiHeader
-				.parseHeader("test; version.list:List < Version > = \"1.0, 1.1, 1.2\"; effective:=\"resolve\"; test =\"aName\";version : Version=\"1.0\"; long :Long=\"100\"; "
+		Parameters h = OSGiHeader.parseHeader(
+				"test; version.list:List < Version > = \"1.0, 1.1, 1.2\"; effective:=\"resolve\"; test =\"aName\";version : Version=\"1.0\"; long :Long=\"100\"; "
 						+ "double: Double=\"1.001\"; string:String =\"aString\";   "
 						+ "long.list : List <Long >=\"1, 2, 3, 4\";double.list: List< Double>= \"1.001, 1.002, 1.003\"; "
 						+ "string.list :List<String >= \"aString,bString,cString\"");

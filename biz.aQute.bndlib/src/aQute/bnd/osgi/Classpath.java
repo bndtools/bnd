@@ -37,10 +37,7 @@ public class Classpath {
 	}
 
 	/**
-	 * Visit each class on the class path.
-	 * 
-	 * @param visitor
-	 *            the visitor
+	 * Visit each class on the class path. @param visitor the visitor
 	 */
 	public void visit(ClassVisitor visitor) throws Exception {
 		Analyzer analyzer = new Analyzer();

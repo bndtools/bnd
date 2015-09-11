@@ -26,8 +26,8 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 			@SuppressWarnings({
 					"unchecked", "rawtypes"
 			})
-			Enumeration<String> enumeration = (Enumeration) Collections.enumeration(manifest
-					.getMainAttributes().values());
+			Enumeration<String> enumeration = (Enumeration) Collections
+					.enumeration(manifest.getMainAttributes().values());
 			return enumeration;
 		}
 
@@ -71,7 +71,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 
 	public Context(MiniFramework fw, ClassLoader parent, int id, String location) throws Exception {
 		super(new URL[] {
-			new File(location).toURI().toURL()
+				new File(location).toURI().toURL()
 		}, parent);
 		this.fw = fw;
 		this.id = id;
@@ -287,12 +287,11 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		return fw.getProperty(key);
 	}
 
-
-	public ServiceReference<?> getServiceReference(String clazz) {
+	public ServiceReference< ? > getServiceReference(String clazz) {
 		return null;
 	}
 
-	public ServiceReference<?>[] getServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
+	public ServiceReference< ? >[] getServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
 		return null;
 	}
 
@@ -303,7 +302,6 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 	public Bundle installBundle(String location, InputStream input) throws BundleException {
 		return fw.installBundle(location, input);
 	}
-
 
 	public void removeBundleListener(BundleListener listener) {
 		throw new UnsupportedOperationException();
@@ -327,7 +325,8 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		return 0;
 	}
 
-	public ServiceRegistration< ? > registerService(String[] clazzes, Object service, Dictionary<String, ? > properties) {
+	public ServiceRegistration< ? > registerService(String[] clazzes, Object service,
+			Dictionary<String, ? > properties) {
 		// TODO Auto-generated method stub
 		return null;
 	}

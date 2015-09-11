@@ -4,7 +4,7 @@ import org.xml.sax.*;
 
 public class ContentFilterImpl implements ContentFilter {
 
-	private ContentHandler	parent;
+	private ContentHandler parent;
 
 	public void setParent(ContentHandler parent) {
 		this.parent = parent;

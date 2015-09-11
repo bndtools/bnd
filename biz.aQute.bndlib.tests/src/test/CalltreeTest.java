@@ -85,7 +85,8 @@ public class CalltreeTest extends TestCase {
 	// Resource.class.getName(),
 	// "write", "(Ljava/io/OutputStream;)V"));
 	//
-	// assertNotNull("The write(OutputStream) method is implemented by Resource",
+	// assertNotNull("The write(OutputStream) method is implemented by
+	// Resource",
 	// xref);
 	//
 	// assertTrue("We must have at least one reference", refs.size() > 0);

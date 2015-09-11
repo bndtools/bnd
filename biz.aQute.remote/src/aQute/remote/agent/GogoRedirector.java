@@ -11,12 +11,10 @@ import org.osgi.util.tracker.*;
 /**
  * Create a new Gogo Shell Command Session if there is a Gogo Command Processor
  * service present. If no Command Processor is present we will idle (a service
- * tracker is used that will handle multiple and switches).
- * <p>
- * There is a bit of a class space problem since the agent can be started on the
- * framework side of the class path. For this reason, we carry a copy of the
- * Gogo API classes and we will use proxies to use them. This leaves the Gogo
- * API unconstrained.
+ * tracker is used that will handle multiple and switches). <p> There is a bit
+ * of a class space problem since the agent can be started on the framework side
+ * of the class path. For this reason, we carry a copy of the Gogo API classes
+ * and we will use proxies to use them. This leaves the Gogo API unconstrained.
  */
 public class GogoRedirector implements Redirector {
 
@@ -28,16 +26,13 @@ public class GogoRedirector implements Redirector {
 	private RedirectOutput										stdout;
 
 	/**
-	 * Create a redirector
-	 * 
-	 * @param agentServer
-	 *            the server
-	 * @param context
-	 *            the context, needed to get the
+	 * Create a redirector @param agentServer the server @param context the
+	 * context, needed to get the
 	 */
 	public GogoRedirector(AgentServer agentServer, BundleContext context) {
 		this.agentServer = agentServer;
-		tracker = new ServiceTracker<CommandProcessor,CommandProcessor>(context, CommandProcessor.class.getName(), null) {
+		tracker = new ServiceTracker<CommandProcessor,CommandProcessor>(context, CommandProcessor.class.getName(),
+				null) {
 
 			@Override
 			public CommandProcessor addingService(ServiceReference<CommandProcessor> reference) {
@@ -99,7 +94,7 @@ public class GogoRedirector implements Redirector {
 			return clazz.cast(target);
 
 		return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class< ? >[] {
-			clazz
+				clazz
 		}, new InvocationHandler() {
 
 			@Override

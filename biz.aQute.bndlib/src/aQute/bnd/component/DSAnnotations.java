@@ -57,7 +57,6 @@ public class DSAnnotations implements AnalyzerPlugin {
 		if (Processor.isTrue(analyzer.getProperty("-ds-felix-extensions")))
 			options.add(Options.felixExtensions);
 
-
 		Instructions instructions = new Instructions(header);
 		Collection<Clazz> list = analyzer.getClassspace().values();
 		String sc = analyzer.getProperty(Constants.SERVICE_COMPONENT);
@@ -109,8 +108,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 				}
 			}
 		}
-		if (options.contains(Options.extender)
-				|| maxVersion.compareTo(AnnotationReader.V1_3) >= 0) {
+		if (options.contains(Options.extender) || maxVersion.compareTo(AnnotationReader.V1_3) >= 0) {
 			maxVersion = ComponentDef.max(maxVersion, AnnotationReader.V1_3);
 			addExtenderRequirement(requires, maxVersion);
 		}
@@ -153,8 +151,8 @@ public class DSAnnotations implements AnalyzerPlugin {
 		Version next = new Version(version.getMajor() + 1);
 		Parameters p = new Parameters();
 		Attrs a = new Attrs();
-		a.put(Constants.FILTER_DIRECTIVE, "\"(&(osgi.extender=osgi.component)(version>=" + version + ")(!(version>="
-				+ next + ")))\"");
+		a.put(Constants.FILTER_DIRECTIVE,
+				"\"(&(osgi.extender=osgi.component)(version>=" + version + ")(!(version>=" + next + ")))\"");
 		p.put("osgi.extender", a);
 		String s = p.toString();
 		requires.add(s);
@@ -162,13 +160,8 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 	/**
 	 * Updates specified header, sorting and removing duplicates. Destroys
-	 * contents of set parameter.
-	 * 
-	 * @param analyzer
-	 * @param name
-	 *            header name
-	 * @param set
-	 *            values to add to header; contents are not preserved.
+	 * contents of set parameter. @param analyzer @param name header name @param
+	 * set values to add to header; contents are not preserved.
 	 */
 	private void updateHeader(Analyzer analyzer, String name, TreeSet<String> set) {
 		if (!set.isEmpty()) {
@@ -188,7 +181,6 @@ public class DSAnnotations implements AnalyzerPlugin {
 			analyzer.setProperty(name, header);
 		}
 	}
-
 
 	@Override
 	public String toString() {

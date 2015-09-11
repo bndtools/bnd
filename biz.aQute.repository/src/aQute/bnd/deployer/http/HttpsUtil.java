@@ -8,7 +8,7 @@ import javax.net.ssl.*;
 
 public class HttpsUtil {
 
-	public static final String	PROP_DISABLE_SERVER_CERT_VERIFY	= "disableServerVerify";
+	public static final String PROP_DISABLE_SERVER_CERT_VERIFY = "disableServerVerify";
 
 	static void disableServerVerification(URLConnection connection) throws GeneralSecurityException {
 		if (!(connection instanceof HttpsURLConnection))
@@ -16,15 +16,17 @@ public class HttpsUtil {
 
 		HttpsURLConnection httpsConnection = (HttpsURLConnection) connection;
 		TrustManager[] trustAllCerts = new TrustManager[] {
-			new X509TrustManager() {
-				public X509Certificate[] getAcceptedIssuers() {
-					return null;
+				new X509TrustManager() {
+					public X509Certificate[] getAcceptedIssuers() {
+						return null;
+					}
+
+					public void checkServerTrusted(X509Certificate[] certs, String authType)
+							throws CertificateException {}
+
+					public void checkClientTrusted(X509Certificate[] certs, String authType)
+							throws CertificateException {}
 				}
-
-				public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {}
-
-				public void checkClientTrusted(X509Certificate[] certs, String authType) throws CertificateException {}
-			}
 		};
 
 		SSLContext sslContext = SSLContext.getInstance("TLS");

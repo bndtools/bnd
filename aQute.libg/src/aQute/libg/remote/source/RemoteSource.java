@@ -55,9 +55,7 @@ public class RemoteSource implements Source {
 	}
 
 	/**
-	 * Close
-	 * 
-	 * @throws IOException
+	 * Close @throws IOException
 	 */
 	public void close() throws IOException {}
 

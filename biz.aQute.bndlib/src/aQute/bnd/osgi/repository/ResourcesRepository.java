@@ -40,7 +40,6 @@ public class ResourcesRepository implements org.osgi.service.repository.Reposito
 		return (Map) result;
 	}
 
-
 	public List<Capability> findProvider(Requirement requirement) {
 		List<Capability> result = new ArrayList<Capability>();
 		String namespace = requirement.getNamespace();

@@ -12,7 +12,8 @@ import org.osgi.service.indexer.ResourceAnalyzer;
 @Ignore
 public class WibbleAnalyzer implements ResourceAnalyzer {
 
-	public void analyzeResource(Resource resource, List<Capability> capabilities, List<Requirement> requirements) throws Exception {
+	public void analyzeResource(Resource resource, List<Capability> capabilities, List<Requirement> requirements)
+			throws Exception {
 		capabilities.add(new Builder().setNamespace("wibble").buildCapability());
 	}
 

@@ -81,10 +81,10 @@ public class JUnitEclipseReport implements TestReporter {
 		message("%TESTS  ", test);
 		try {
 			Method m = test.getClass().getMethod("setBundleContext", new Class[] {
-				BundleContext.class
+					BundleContext.class
 			});
 			m.invoke(test, new Object[] {
-				targetBundle.getBundleContext()
+					targetBundle.getBundleContext()
 			});
 		}
 		catch (Exception e) {

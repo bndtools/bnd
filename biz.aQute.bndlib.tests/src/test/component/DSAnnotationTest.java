@@ -56,14 +56,14 @@ import aQute.bnd.test.XmlTester;
 })
 public class DSAnnotationTest extends BndTestCase {
 
-	public static final String	FELIX_1_2				= "http://felix.apache.org/xmlns/scr/v1.2.0-felix";
+	public static final String FELIX_1_2 = "http://felix.apache.org/xmlns/scr/v1.2.0-felix";
 
 	private static String[]	SERIALIZABLE_RUNNABLE	= {
 			Serializable.class.getName(), Runnable.class.getName()
-													};
+														};
 	private static String[]	OBJECT					= {
-														Object.class.getName()
-													};
+			Object.class.getName()
+														};
 
 	/**
 	 * Property test
@@ -98,8 +98,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 * Property test
 	 */
 
-	@Component(xmlns= "http://www.osgi.org/xmlns/scr/v1.1.0", 
-			property = {
+	@Component(xmlns = "http://www.osgi.org/xmlns/scr/v1.1.0", property = {
 			"x:Integer=3.0", "a=1", "a=2", "b=1", "boolean:Boolean=true", "byte:Byte=1", "char:Character=1",
 			"short:Short=3", "integer:Integer=3", "long:Long=3", "float:Float=3.0", "double:Double=3e7",
 			"string:String=%", "wrongInteger:Integer=blabla", "\n\r\t \u0343\u0344\u0345\u0346\n:Integer=3"
@@ -144,18 +143,18 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	/**
-	 * Check that a DS 1.0 compotible class with annotations ends up with the DS 1.0 (no) namespace
-	 *
+	 * Check that a DS 1.0 compotible class with annotations ends up with the DS
+	 * 1.0 (no) namespace
 	 */
 	@Component()
 	public static class DS10_basic implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		protected void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+		protected void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-		protected void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		protected void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Reference
 		protected void xsetLogService(@SuppressWarnings("unused") LogService log) {
@@ -174,18 +173,18 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	/**
-	 * Check that a DS 1.1 compotible class ends up with the DS 1.1 namespace and appropriate activate/deactivate attributes
-	 *
+	 * Check that a DS 1.1 compotible class ends up with the DS 1.1 namespace
+	 * and appropriate activate/deactivate attributes
 	 */
 	@Component()
 	public static class DS11_basic implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") BundleContext ctx) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") int cause) {}
 
 		@Reference
 		void xsetLogService(@SuppressWarnings("unused") LogService log) {
@@ -205,22 +204,21 @@ public class DSAnnotationTest extends BndTestCase {
 
 	/**
 	 * Check that a DS 1.1 bind method causes a DS 1.1 namespace
-	 *
 	 */
 	@Component()
 	public static class DS11_ref1_basic implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Reference
 		void xsetLogService(@SuppressWarnings("unused") LogService log, @SuppressWarnings({
 				"unused", "rawtypes"
-		})  Map map) {
+		}) Map map) {
 
 		}
 
@@ -237,24 +235,24 @@ public class DSAnnotationTest extends BndTestCase {
 
 	/**
 	 * Check that a DS 1.1 unbind method causes a DS 1.1 namespace
-	 *
 	 */
 	@Component()
 	public static class DS11_ref2_basic implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Reference
 		void xsetLogService(@SuppressWarnings("unused") LogService log) {
 
 		}
 
-		void unxsetLogService(@SuppressWarnings("unused") LogService log, @SuppressWarnings("unused")  Map< ? , ? > map) {
+		void unxsetLogService(@SuppressWarnings("unused") LogService log,
+				@SuppressWarnings("unused") Map< ? , ? > map) {
 
 		}
 
@@ -267,12 +265,13 @@ public class DSAnnotationTest extends BndTestCase {
 
 	/**
 	 * The basic test. This test will take an all default component and a
-	 * component that has all values set.  Since the activate/deactivate methods have non-default names
-	 * and there is a modified methods, this is a DS 1.1 component.
+	 * component that has all values set. Since the activate/deactivate methods
+	 * have non-default names and there is a modified methods, this is a DS 1.1
+	 * component.
 	 */
 	@Component()
 	public static class Defaults_basic implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
 		void open() {}
@@ -307,7 +306,7 @@ public class DSAnnotationTest extends BndTestCase {
 			"a=1", "a=2", "b=3"
 	}, properties = "resource.props", servicefactory = false, configurationPid = "configuration-pid", xmlns = "xmlns")
 	public static class Explicit_basic implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
 		void open() {}
@@ -453,7 +452,8 @@ public class DSAnnotationTest extends BndTestCase {
 																												// http://www.osgi.org/xmlns/scr/1.1.0
 
 			// Test the defaults
-			xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref1_basic", "scr:component/implementation/@class");
+			xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref1_basic",
+					"scr:component/implementation/@class");
 
 			// Default must be the implementation class
 			xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref1_basic", "scr:component/@name");
@@ -496,7 +496,8 @@ public class DSAnnotationTest extends BndTestCase {
 																												// http://www.osgi.org/xmlns/scr/1.1.0
 
 			// Test the defaults
-			xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref2_basic", "scr:component/implementation/@class");
+			xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref2_basic",
+					"scr:component/implementation/@class");
 
 			// Default must be the implementation class
 			xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref2_basic", "scr:component/@name");
@@ -619,25 +620,26 @@ public class DSAnnotationTest extends BndTestCase {
 		// one is plain, other has cardinality multiple.
 		checkRequires(a, true, LogService.class.getName(), LogService.class.getName());
 	}
-	
+
 	/**
-	 * Check that a Felix 1.2 compotible class ends up with the Felix 1.2 namespace and appropriate activate/deactivate attributes
-	 *
+	 * Check that a Felix 1.2 compotible class ends up with the Felix 1.2
+	 * namespace and appropriate activate/deactivate attributes
 	 */
 	@Component(xmlns = FELIX_1_2)
 	public static class activate_basicFelix12 implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		Map<String, Object> activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {
+		Map<String,Object> activate(@SuppressWarnings("unused") ComponentContext cc,
+				@SuppressWarnings("unused") BundleContext ctx) {
 			return null;
 		}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") int cause) {}
 
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Reference
 		void setLogService(@SuppressWarnings("unused") LogService log) {}
@@ -655,18 +657,19 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@Component(xmlns = FELIX_1_2)
 	public static class deactivate_basicFelix12 implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") BundleContext ctx) {}
 
 		@Deactivate
-		Map<String, Object> deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {
+		Map<String,Object> deactivate(@SuppressWarnings("unused") ComponentContext cc,
+				@SuppressWarnings("unused") int cause) {
 			return null;
 		}
-		
+
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Reference
 		void setLogService(@SuppressWarnings("unused") LogService log) {}
@@ -684,16 +687,16 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@Component(xmlns = FELIX_1_2)
 	public static class modified_basicFelix12 implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") BundleContext ctx) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {}
-		
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") int cause) {}
+
 		@Modified
-		Map<String, Object> modified(@SuppressWarnings("unused")ComponentContext cc) {
+		Map<String,Object> modified(@SuppressWarnings("unused") ComponentContext cc) {
 			return null;
 		}
 
@@ -713,19 +716,19 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@Component(xmlns = FELIX_1_2)
 	public static class bind_basicFelix12 implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") BundleContext ctx) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {}
-		
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") int cause) {}
+
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Reference
-		Map<String, Object> setLogService(@SuppressWarnings("unused") LogService log) {
+		Map<String,Object> setLogService(@SuppressWarnings("unused") LogService log) {
 			return null;
 		}
 
@@ -742,24 +745,24 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@Component(xmlns = FELIX_1_2)
 	public static class unbind_basicFelix12 implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") BundleContext ctx) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {}
-		
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") int cause) {}
+
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Reference
 		void setLogService(@SuppressWarnings("unused") LogService log) {}
 
-		Map<String, Object> unsetLogService(@SuppressWarnings("unused") LogService log) {
+		Map<String,Object> unsetLogService(@SuppressWarnings("unused") LogService log) {
 			return null;
 		}
-		
+
 		void updatedLogService(@SuppressWarnings("unused") LogService log) {}
 
 		@Override
@@ -771,23 +774,23 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@Component(xmlns = FELIX_1_2)
 	public static class updated_basicFelix12 implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")BundleContext ctx) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") BundleContext ctx) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")int cause) {}
-		
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") int cause) {}
+
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Reference
 		void setLogService(@SuppressWarnings("unused") LogService log) {}
 
 		void unsetLogService(@SuppressWarnings("unused") LogService log) {}
 
-		Map<String, Object> updatedLogService(@SuppressWarnings("unused") LogService log) {
+		Map<String,Object> updatedLogService(@SuppressWarnings("unused") LogService log) {
 			return null;
 		}
 
@@ -811,17 +814,17 @@ public class DSAnnotationTest extends BndTestCase {
 		checkProvides(a, SERIALIZABLE_RUNNABLE);
 		checkRequires(a, false, LogService.class.getName());
 
-		// Test Felix12 activate gives Felix 1.2 namespace 
+		// Test Felix12 activate gives Felix 1.2 namespace
 		checkDSFelix12(jar, "test.component.DSAnnotationTest$activate_basicFelix12");
-		// Test Felix12 deactivate gives Felix 1.2 namespace 
+		// Test Felix12 deactivate gives Felix 1.2 namespace
 		checkDSFelix12(jar, "test.component.DSAnnotationTest$deactivate_basicFelix12");
-		// Test Felix12 modified gives Felix 1.2 namespace 
+		// Test Felix12 modified gives Felix 1.2 namespace
 		checkDSFelix12(jar, "test.component.DSAnnotationTest$modified_basicFelix12");
-		// Test Felix12 bind gives Felix 1.2 namespace 
+		// Test Felix12 bind gives Felix 1.2 namespace
 		checkDSFelix12(jar, "test.component.DSAnnotationTest$bind_basicFelix12");
-		// Test Felix12 bind gives Felix 1.2 namespace 
+		// Test Felix12 bind gives Felix 1.2 namespace
 		checkDSFelix12(jar, "test.component.DSAnnotationTest$unbind_basicFelix12");
-		// Test Felix12 updated gives Felix 1.2 namespace 
+		// Test Felix12 updated gives Felix 1.2 namespace
 		checkDSFelix12(jar, "test.component.DSAnnotationTest$updated_basicFelix12");
 	}
 
@@ -874,10 +877,12 @@ public class DSAnnotationTest extends BndTestCase {
 
 		@Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY)
 		void setB(@SuppressWarnings("unused") LogService l) {}
+
 		void unsetB(@SuppressWarnings("unused") LogService l) {}
 
 		@Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.RELUCTANT)
 		void setE(@SuppressWarnings("unused") LogService l) {}
+
 		void unsetE(@SuppressWarnings("unused") LogService l) {}
 
 		@Reference(cardinality = ReferenceCardinality.MANDATORY, policy = ReferencePolicy.STATIC, policyOption = ReferencePolicyOption.RELUCTANT)
@@ -885,6 +890,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		@Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY)
 		void setD(@SuppressWarnings("unused") LogService l) {}
+
 		void unsetD(@SuppressWarnings("unused") LogService l) {}
 
 	}
@@ -1017,7 +1023,7 @@ public class DSAnnotationTest extends BndTestCase {
 		@Reference
 		void setLogService(@SuppressWarnings("unused") LogService l) {}
 
-		void updatedLogService(@SuppressWarnings("unused") ServiceReference<?> ref) {
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference< ? > ref) {
 
 		}
 
@@ -1027,18 +1033,19 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 
 		@SuppressWarnings("unused")
-		private void updatedPrivateLogService(ServiceReference<?> ref) {
+		private void updatedPrivateLogService(ServiceReference< ? > ref) {
 
 		}
 	}
 
 	@Component(name = "bottom")
 	public static class Bottom extends Top {
-		void unsetLogService(@SuppressWarnings("unused") LogService l, @SuppressWarnings("unused") Map<Object,Object> map) {
+		void unsetLogService(@SuppressWarnings("unused") LogService l,
+				@SuppressWarnings("unused") Map<Object,Object> map) {
 
 		}
 
-		void unsetPrivateLogService(@SuppressWarnings("unused") ServiceReference<?> ref) {
+		void unsetPrivateLogService(@SuppressWarnings("unused") ServiceReference< ? > ref) {
 
 		}
 	}
@@ -1085,7 +1092,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("", "scr:component/reference[2]/@updated");
 
 	}
-	
+
 	public void testBadFlag() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Bottom");
@@ -1124,11 +1131,12 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 
-		protected void unsetLogService(@SuppressWarnings("unused") LogService l, @SuppressWarnings("unused") Map<Object,Object> map) {
+		protected void unsetLogService(@SuppressWarnings("unused") LogService l,
+				@SuppressWarnings("unused") Map<Object,Object> map) {
 
 		}
 
-		void updatedLogService(@SuppressWarnings("unused") ServiceReference<?> ref) {
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference< ? > ref) {
 
 		}
 
@@ -1184,11 +1192,12 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 
-		protected void unbindLogService(@SuppressWarnings("unused") LogService l, @SuppressWarnings("unused") Map<Object,Object> map) {
+		protected void unbindLogService(@SuppressWarnings("unused") LogService l,
+				@SuppressWarnings("unused") Map<Object,Object> map) {
 
 		}
 
-		void updatedLogService(@SuppressWarnings("unused") ServiceReference<?> ref) {
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference< ? > ref) {
 
 		}
 
@@ -1227,7 +1236,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("updatedLogService", "scr:component/reference[1]/@updated");
 
 	}
-	
+
 	@Component
 	public static class CheckBinds13 {
 
@@ -1315,10 +1324,9 @@ public class DSAnnotationTest extends BndTestCase {
 	public static class NoUnbindDynamic {
 		@SuppressWarnings("unused")
 		@Reference(policy = ReferencePolicy.DYNAMIC)
-		private void bindLogService(LogService l) {
-		}
+		private void bindLogService(LogService l) {}
 	}
-	
+
 	public void testNoUnbindDynamic() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*NoUnbindDynamic");
@@ -1329,11 +1337,10 @@ public class DSAnnotationTest extends BndTestCase {
 		assertEquals(1, b.getErrors().size());
 		assertTrue(b.getErrors().get(0).endsWith("dynamic but has no unbind method."));
 	}
-	
-	
-	@Component(name="testConfigPolicy", configurationPolicy=ConfigurationPolicy.IGNORE)
+
+	@Component(name = "testConfigPolicy", configurationPolicy = ConfigurationPolicy.IGNORE)
 	public static class TestConfigPolicy {}
-	
+
 	public void testConfigPolicySetsNamespace() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*TestConfigPolicy");
@@ -1355,12 +1362,14 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@Component()
 	public static class issue347 implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		/*
-		 * #347 - When using DS 1.2 annotations @Reference on private methods and no @Activate/@Deactivate annotations then bnd generates component.xml without namespace (1.0) 
+		 * #347 - When using DS 1.2 annotations @Reference on private methods
+		 * and no @Activate/@Deactivate annotations then bnd generates
+		 * component.xml without namespace (1.0)
 		 */
-		
+
 		@SuppressWarnings("unused")
 		@Reference
 		private void setLogService(LogService log) {}
@@ -1408,45 +1417,34 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 	}
-	
-	@Component(reference={@Reference(name="log", service=LogService.class, cardinality=ReferenceCardinality.AT_LEAST_ONE,
-			policy=ReferencePolicy.DYNAMIC,
-			policyOption=ReferencePolicyOption.GREEDY,
-			target="(service.id=1)"),
-			@Reference(name="logField", service=LogService.class, cardinality=ReferenceCardinality.AT_LEAST_ONE,
-			policy=ReferencePolicy.DYNAMIC,
-			policyOption=ReferencePolicyOption.GREEDY,
-			target="(service.id=1)",
-			field="logField",
-			fieldOption=FieldOption.REPLACE),
-			@Reference(name="logMethod", service=LogService.class, cardinality=ReferenceCardinality.MANDATORY,
-			policy=ReferencePolicy.DYNAMIC,
-			policyOption=ReferencePolicyOption.GREEDY,
-			target="(service.id=1)",
-			bind="setLogMethod",
-			unbind="unsetLogMethod",
-			updated="updatedLogMethod"),
+
+	@Component(reference = {
+			@Reference(name = "log", service = LogService.class, cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY, target = "(service.id=1)"),
+			@Reference(name = "logField", service = LogService.class, cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY, target = "(service.id=1)", field = "logField", fieldOption = FieldOption.REPLACE),
+			@Reference(name = "logMethod", service = LogService.class, cardinality = ReferenceCardinality.MANDATORY, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY, target = "(service.id=1)", bind = "setLogMethod", unbind = "unsetLogMethod", updated = "updatedLogMethod"),
 	})
 	public static class ref_on_comp implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
-		
+		private static final long serialVersionUID = 1L;
+
 		@SuppressWarnings("unused")
 		private List<LogService> logField;
-		
+
 		protected void setLogMethod(LogService logService) {};
+
 		protected void updatedLogMethod(LogService logService) {};
+
 		protected void unsetLogMethod(LogService logService) {}
 
 		@Activate
-	    void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-	    void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Override
 		public void run() {}
 	}
-	
+
 	public void testReferenceInComponent() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*ref_on_comp");
@@ -1475,7 +1473,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[2]/@interface");
 		xt.assertAttribute("1..n", "scr:component/reference[2]/@cardinality");
 		xt.assertAttribute("replace", "scr:component/reference[2]/@field-option");
-		//TODO field-component-type
+		// TODO field-component-type
 
 		xt.assertAttribute("logMethod", "scr:component/reference[3]/@name");
 		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[3]/@interface");
@@ -1489,24 +1487,25 @@ public class DSAnnotationTest extends BndTestCase {
 	public @interface NoDefaults {
 		String string();
 	}
+
 	/**
 	 * Check that a DS 1.3 activate method causes a DS 1.3 namespace
 	 */
 	@Component()
 	public static class DS13_activate_basic implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused") NoDefaults anno) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") NoDefaults anno) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
 
-		@Reference(service=LogService.class)
-		void setLogService(@SuppressWarnings("unused")  ServiceReference<LogService> sr) {
+		@Reference(service = LogService.class)
+		void setLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
 
 		}
 
@@ -1530,19 +1529,19 @@ public class DSAnnotationTest extends BndTestCase {
 	 */
 	@Component()
 	public static class DS13_deactivate_basic implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused") NoDefaults anno) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") NoDefaults anno) {}
 
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
 
-		@Reference(service=LogService.class)
-		void setLogService(@SuppressWarnings("unused")  ServiceReference<LogService> sr) {
+		@Reference(service = LogService.class)
+		void setLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
 
 		}
 
@@ -1566,19 +1565,19 @@ public class DSAnnotationTest extends BndTestCase {
 	 */
 	@Component()
 	public static class DS13_modified_basic implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused") NoDefaults anno) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") NoDefaults anno) {}
 
-		@Reference(service=LogService.class)
-		void setLogService(@SuppressWarnings("unused")  ServiceReference<LogService> sr) {
+		@Reference(service = LogService.class)
+		void setLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
 
 		}
 
@@ -1602,19 +1601,19 @@ public class DSAnnotationTest extends BndTestCase {
 	 */
 	@Component()
 	public static class DS13_ref_bind_basic implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
 
-		@Reference(service=LogService.class)
-		void setLogService(@SuppressWarnings("unused")  Map<String, Object> map) {
+		@Reference(service = LogService.class)
+		void setLogService(@SuppressWarnings("unused") Map<String,Object> map) {
 
 		}
 
@@ -1638,23 +1637,23 @@ public class DSAnnotationTest extends BndTestCase {
 	 */
 	@Component()
 	public static class DS13_ref_unbind_basic implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
 
-		@Reference(service=LogService.class)
-		void setLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr)  {
+		@Reference(service = LogService.class)
+		void setLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
 
 		}
 
-		void unsetLogService(@SuppressWarnings("unused") Map<String, Object> map) {
+		void unsetLogService(@SuppressWarnings("unused") Map<String,Object> map) {
 
 		}
 
@@ -1674,19 +1673,19 @@ public class DSAnnotationTest extends BndTestCase {
 	 */
 	@Component()
 	public static class DS13_ref_updated_basic implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
 
-		@Reference(service=LogService.class)
-		void setLogService(@SuppressWarnings("unused")  ServiceReference<LogService> sr) {
+		@Reference(service = LogService.class)
+		void setLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
 
 		}
 
@@ -1694,7 +1693,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 
-		void updatedLogService(@SuppressWarnings("unused") Map<String, Object> map) {
+		void updatedLogService(@SuppressWarnings("unused") Map<String,Object> map) {
 
 		}
 
@@ -1704,26 +1703,25 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 	}
-	
 
 	/**
 	 * Check that a DS 1.3 prototype scope causes a DS 1.3 namespace
 	 */
 	@Component(scope = ServiceScope.PROTOTYPE)
 	public static class DS13_scope_basic implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
 
-		@Reference(service=LogService.class)
-		void setLogService(@SuppressWarnings("unused")  ServiceReference<LogService> sr) {
+		@Reference(service = LogService.class)
+		void setLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
 
 		}
 
@@ -1741,25 +1739,27 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 	}
-	
+
 	/**
 	 * Check that multiple configuration pids causes a DS 1.3 namespace
 	 */
-	@Component(configurationPid={"pid1", "pid2"})
+	@Component(configurationPid = {
+			"pid1", "pid2"
+	})
 	public static class DS13_pids_basic implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
 
-		@Reference(service=LogService.class)
-		void setLogService(@SuppressWarnings("unused")  ServiceReference<LogService> sr) {
+		@Reference(service = LogService.class)
+		void setLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
 
 		}
 
@@ -1777,25 +1777,28 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 	}
-	
+
 	/**
-	 * Check that '$' placeholder is translated to component name and causes a DS 1.3 namespace
+	 * Check that '$' placeholder is translated to component name and causes a
+	 * DS 1.3 namespace
 	 */
-	@Component(configurationPid={"$", "pid2"})
+	@Component(configurationPid = {
+			"$", "pid2"
+	})
 	public static class DS13_dollar_pids_basic implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
 
-		@Reference(service=LogService.class)
-		void setLogService(@SuppressWarnings("unused")  ServiceReference<LogService> sr) {
+		@Reference(service = LogService.class)
+		void setLogService(@SuppressWarnings("unused") ServiceReference<LogService> sr) {
 
 		}
 
@@ -1826,7 +1829,7 @@ public class DSAnnotationTest extends BndTestCase {
 		checkProvides(a, SERIALIZABLE_RUNNABLE);
 		checkRequires(a, true, LogService.class.getName());
 
-		// Test 1.3 signature methods give 1.3 namespace 
+		// Test 1.3 signature methods give 1.3 namespace
 		checkDS13(jar, "test.component.DSAnnotationTest$DS13_activate_basic", "", "");
 		checkDS13(jar, "test.component.DSAnnotationTest$DS13_deactivate_basic", "", "");
 		checkDS13(jar, "test.component.DSAnnotationTest$DS13_modified_basic", "", "");
@@ -1844,7 +1847,7 @@ public class DSAnnotationTest extends BndTestCase {
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr","http://www.osgi.org/xmlns/scr/v1.3.0"); 
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 		// Test the defaults
 		xt.assertAttribute(name, "scr:component/implementation/@class");
 
@@ -1894,37 +1897,61 @@ public class DSAnnotationTest extends BndTestCase {
 		checkRequires(a, true, LogService.class.getName());
 	}
 
-	public enum Foo {A, B}
-	
+	public enum Foo {
+		A, B
+	}
+
 	public @interface ConfigTypes {
 		String myString() default "foo";
-		String[] myStringArray() default {"foo", "bar"};
+
+		String[]myStringArray() default {
+				"foo", "bar"
+		};
+
 		int myInt() default 1;
-		int[] myIntArray() default {2, 3};
-		Class<?> myClass() default ConfigTypes.class;
-		Class<?>[] myClassArray() default {ConfigTypes.class, ConfigTypes.class};
+
+		int[]myIntArray() default {
+				2, 3
+		};
+
+		Class< ? >myClass() default ConfigTypes.class;
+
+		Class< ? >[]myClassArray() default {
+				ConfigTypes.class, ConfigTypes.class
+		};
+
 		Foo myEnum() default Foo.A;
-		Foo[] myEnumArray() default {Foo.A, Foo.B};
+
+		Foo[]myEnumArray() default {
+				Foo.A, Foo.B
+		};
+
 		float myFloat() default 1.0f;
+
 		char myChar() default 'a';
+
 		byte myByte() default 2;
+
 		short myShort() default 298;
+
 		double myDouble() default 2.1D;
+
 		long myLong() default 9876543210L;
 	}
 
 	@Component()
 	public static class DS13anno_configTypes_activate implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigTypes config1) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc,
+				@SuppressWarnings("unused") ConfigTypes config1) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Override
 		public void run() {
@@ -1935,16 +1962,17 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@Component()
 	public static class DS13anno_configTypes_modified implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigTypes config1) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc,
+				@SuppressWarnings("unused") ConfigTypes config1) {}
 
 		@Override
 		public void run() {
@@ -1955,16 +1983,17 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@Component()
 	public static class DS13anno_configTypes_deactivate implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigTypes config1) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc,
+				@SuppressWarnings("unused") ConfigTypes config1) {}
 
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Override
 		public void run() {
@@ -1985,18 +2014,18 @@ public class DSAnnotationTest extends BndTestCase {
 		checkProvides(a, SERIALIZABLE_RUNNABLE);
 		checkRequires(a, true);
 
-//		// Test 1.3 signature methods give 1.3 namespace 
+		// // Test 1.3 signature methods give 1.3 namespace
 		checkDS13Anno(jar, DS13anno_configTypes_activate.class.getName(), "");
 		checkDS13Anno(jar, DS13anno_configTypes_deactivate.class.getName(), "");
 		checkDS13Anno(jar, DS13anno_configTypes_modified.class.getName(), "");
 	}
-	
+
 	private void checkDS13Anno(Jar jar, String name, String pids) throws Exception, XPathExpressionException {
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr","http://www.osgi.org/xmlns/scr/v1.3.0"); 
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 		// Test the defaults
 		xt.assertAttribute(name, "scr:component/implementation/@class");
 
@@ -2020,31 +2049,34 @@ public class DSAnnotationTest extends BndTestCase {
 
 		xt.assertAttribute("foo", "scr:component/property[@name='myString']/@value");
 		xt.assertAttribute("String", "scr:component/property[@name='myString']/@type");
-		
+
 		xt.assertTrimmedAttribute("foo\\nbar", "scr:component/property[@name='myStringArray']");
 		xt.assertAttribute("String", "scr:component/property[@name='myStringArray']/@type");
-		
+
 		xt.assertAttribute("1", "scr:component/property[@name='myInt']/@value");
 		xt.assertAttribute("Integer", "scr:component/property[@name='myInt']/@type");
-		
+
 		xt.assertTrimmedAttribute("2\\n3", "scr:component/property[@name='myIntArray']");
 		xt.assertAttribute("Integer", "scr:component/property[@name='myIntArray']/@type");
-		
-		xt.assertAttribute("test.component.DSAnnotationTest$ConfigTypes", "scr:component/property[@name='myClass']/@value");
+
+		xt.assertAttribute("test.component.DSAnnotationTest$ConfigTypes",
+				"scr:component/property[@name='myClass']/@value");
 		xt.assertAttribute("String", "scr:component/property[@name='myClass']/@type");
-		
-		xt.assertTrimmedAttribute("test.component.DSAnnotationTest$ConfigTypes\\ntest.component.DSAnnotationTest$ConfigTypes", "scr:component/property[@name='myClassArray']");
+
+		xt.assertTrimmedAttribute(
+				"test.component.DSAnnotationTest$ConfigTypes\\ntest.component.DSAnnotationTest$ConfigTypes",
+				"scr:component/property[@name='myClassArray']");
 		xt.assertAttribute("String", "scr:component/property[@name='myClassArray']/@type");
-		
+
 		xt.assertAttribute("A", "scr:component/property[@name='myEnum']/@value");
 		xt.assertAttribute("String", "scr:component/property[@name='myEnum']/@type");
-		
+
 		xt.assertTrimmedAttribute("A\\nB", "scr:component/property[@name='myEnumArray']");
 		xt.assertAttribute("String", "scr:component/property[@name='myEnumArray']/@type");
-		
+
 		xt.assertAttribute("1.0", "scr:component/property[@name='myFloat']/@value");
 		xt.assertAttribute("Float", "scr:component/property[@name='myFloat']/@type");
-		
+
 		xt.assertAttribute("97", "scr:component/property[@name='myChar']/@value");
 		xt.assertAttribute("Character", "scr:component/property[@name='myChar']/@type");
 
@@ -2064,23 +2096,34 @@ public class DSAnnotationTest extends BndTestCase {
 
 	public @interface ConfigNames {
 		String myString1() default "foo";
+
 		String my$String2() default "foo";
+
 		String my$$String3() default "foo";
+
 		String my_String4() default "foo";
+
 		String my__String5() default "foo";
+
 		String my$$__String6() default "foo";
+
 		String my$_$String7() default "foo";
 	}
 
 	@Component()
 	public static class DS13annoNames_config implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
+
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigNames configNames) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc,
+				@SuppressWarnings("unused") ConfigNames configNames) {}
+
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
+
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
+
 		@Override
 		public void run() {}
 	}
@@ -2099,13 +2142,13 @@ public class DSAnnotationTest extends BndTestCase {
 
 		checkDS13AnnoConfigNames(jar, DS13annoNames_config.class.getName());
 	}
-	
+
 	private void checkDS13AnnoConfigNames(Jar jar, String name) throws Exception, XPathExpressionException {
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr","http://www.osgi.org/xmlns/scr/v1.3.0"); 
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 		// Test the defaults
 		xt.assertAttribute(name, "scr:component/implementation/@class");
 
@@ -2148,66 +2191,94 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("String", "scr:component/property[@name='my.String7']/@type");
 
 	}
-	
+
 	public @interface ConfigA {
 		String a() default "a";
+
 		String one() default "a";
+
 		String two() default "a";
 	}
-	
+
 	public @interface ConfigB {
 		String b() default "b";
+
 		String one() default "b";
 	}
 
-	@Component(property = {"two:String=c"})
+	@Component(property = {
+			"two:String=c"
+	})
 	public static class DS13annoOverride_a_a implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
+
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigA a,  @SuppressWarnings("unused")ConfigB b) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a,
+				@SuppressWarnings("unused") ConfigB b) {}
+
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
+
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
+
 		@Override
 		public void run() {}
 	}
 
-	@Component(property = {"two:String=c"})
+	@Component(property = {
+			"two:String=c"
+	})
 	public static class DS13annoOverride_a_d implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
+
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigA a) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a) {}
+
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigB b) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigB b) {}
+
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
+
 		@Override
 		public void run() {}
 	}
 
-	@Component(property = {"two:String=c"})
+	@Component(property = {
+			"two:String=c"
+	})
 	public static class DS13annoOverride_a_m implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
+
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigA a) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a) {}
+
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
+
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigB b) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigB b) {}
+
 		@Override
 		public void run() {}
 	}
 
-	@Component(property = {"two:String=c"})
+	@Component(property = {
+			"two:String=c"
+	})
 	public static class DS13annoOverride_d_m implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
+
 		@Activate
-		void activate(@SuppressWarnings("unused")ComponentContext cc) {}
+		void activate(@SuppressWarnings("unused") ComponentContext cc) {}
+
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigA a) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a) {}
+
 		@Modified
-		void modified(@SuppressWarnings("unused")ComponentContext cc, @SuppressWarnings("unused")ConfigB b) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigB b) {}
+
 		@Override
 		public void run() {}
 	}
@@ -2229,13 +2300,13 @@ public class DSAnnotationTest extends BndTestCase {
 		checkDS13AnnoOverride(jar, DS13annoOverride_a_m.class.getName());
 		checkDS13AnnoOverride(jar, DS13annoOverride_d_m.class.getName());
 	}
-	
+
 	private void checkDS13AnnoOverride(Jar jar, String name) throws Exception, XPathExpressionException {
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr","http://www.osgi.org/xmlns/scr/v1.3.0"); 
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 		// Test the defaults
 		xt.assertAttribute(name, "scr:component/implementation/@class");
 
@@ -2272,19 +2343,19 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component
 	public static class TestFieldInjection {
 		@Reference
-		private LogService									serviceField;
+		private LogService serviceField;
 
 		@Reference
-		private ServiceReference<LogService>				srField;
+		private ServiceReference<LogService> srField;
 
 		@Reference
-		private ComponentServiceObjects<LogService>			soField;
+		private ComponentServiceObjects<LogService> soField;
 
 		@Reference(service = LogService.class)
-		private Map<String,Object>							propsField;
+		private Map<String,Object> propsField;
 
 		@Reference
-		private Map.Entry<Map<String,Object>,LogService>	tupleField;
+		private Map.Entry<Map<String,Object>,LogService> tupleField;
 
 	}
 
@@ -2329,30 +2400,30 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@Component
 	public static class TestFieldCollectionType implements Serializable, Runnable {
-		private static final long										serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Reference
 		// (service = LogService.class)
 		private Collection<ServiceReference<LogService>> srField;
-		
+
 		@Reference
 		// (service=LogService.class)
-		private Collection<ComponentServiceObjects<LogService>>			soField;
-		
+		private Collection<ComponentServiceObjects<LogService>> soField;
+
 		@Reference(service = LogService.class)
-		private Collection<Map<String, Object>> propsField;
-		
+		private Collection<Map<String,Object>> propsField;
+
 		@Reference
 		// (service=LogService.class)
 		private Collection<LogService> serviceField;
-		
+
 		@Reference
 		// (service = LogService.class)
-		private Collection<Map.Entry<Map<String, Object>, LogService>> tupleField;
-		
+		private Collection<Map.Entry<Map<String,Object>,LogService>> tupleField;
+
 		public void run() {}
 	}
-	
+
 	public void testFieldCollectionType() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*TestFieldCollectionType");
@@ -2512,8 +2583,7 @@ public class DSAnnotationTest extends BndTestCase {
 		checkConfigurationPolicy(jar, DesignateFactoryOptional.class, "optional");
 	}
 
-	void checkConfigurationPolicy(Jar jar, Class< ? > clazz, String option) throws Exception,
-			XPathExpressionException {
+	void checkConfigurationPolicy(Jar jar, Class< ? > clazz, String option) throws Exception, XPathExpressionException {
 		Resource r = jar.getResource("OSGI-INF/" + clazz.getName() + ".xml");
 		assertNotNull(r);
 		r.write(System.err);
@@ -2526,7 +2596,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@XMLAttribute(namespace = "org.foo.extensions.v1", prefix = "foo", embedIn = "*")
 	@Retention(RetentionPolicy.CLASS)
 	@Target({
-		ElementType.TYPE
+			ElementType.TYPE
 	})
 	@interface TestExtensions {
 		boolean booleanAttr() default true;
@@ -2552,7 +2622,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@TestExtensions(stringAttr = "bar", fooAttr = Foo.A)
 	@Component
 	public static class ExtraAttributes implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
 		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a,
@@ -2567,7 +2637,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		@TestRefExtensions(stringAttr2 = "baz", fooAttr2 = Foo.B, booleanAttr2 = false)
 		@Reference
-		protected LogService	lsa;
+		protected LogService lsa;
 
 		@TestRefExtensions(stringAttr2 = "bax", fooAttr2 = Foo.A)
 		@Reference
@@ -2624,7 +2694,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@XMLAttribute(namespace = "org.foo.extensions.v2", prefix = "foo")
 	@Retention(RetentionPolicy.CLASS)
 	@Target({
-		ElementType.TYPE
+			ElementType.TYPE
 	})
 	@interface TestExtensions3 {
 		boolean booleanAttr3() default false;
@@ -2638,7 +2708,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@TestExtensions3(stringAttr3 = "bar3", fooAttr3 = Foo.B)
 	@Component
 	public static class PrefixCollisionExtraAttributes implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
 		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a,
@@ -2653,7 +2723,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		@TestRefExtensions(stringAttr2 = "baz", fooAttr2 = Foo.B, booleanAttr2 = false)
 		@Reference
-		protected LogService	lsa;
+		protected LogService lsa;
 
 		@TestRefExtensions(stringAttr2 = "bax", fooAttr2 = Foo.A)
 		@Reference
@@ -2713,7 +2783,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@XMLAttribute(namespace = "org.foo.extensions.v4")
 	@Retention(RetentionPolicy.CLASS)
 	@Target({
-		ElementType.TYPE
+			ElementType.TYPE
 	})
 	@interface TestExtensions4 {
 		boolean booleanAttr4() default true;
@@ -2726,7 +2796,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@XMLAttribute(namespace = "org.foo.extensions.v5")
 	@Retention(RetentionPolicy.CLASS)
 	@Target({
-		ElementType.TYPE
+			ElementType.TYPE
 	})
 	@interface TestExtensions5 {
 		boolean booleanAttr5() default true;
@@ -2740,7 +2810,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@TestExtensions5(stringAttr5 = "bar3", fooAttr5 = Foo.B)
 	@Component
 	public static class DefaultPrefixCollisionExtraAttributes implements Serializable, Runnable {
-		private static final long	serialVersionUID	= 1L;
+		private static final long serialVersionUID = 1L;
 
 		@Activate
 		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a,
@@ -2759,7 +2829,8 @@ public class DSAnnotationTest extends BndTestCase {
 
 	public void testPrefixCollisionExtraAttributesDefaultPrefix() throws Exception {
 		Builder b = new Builder();
-		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DefaultPrefixCollisionExtraAttributes*");
+		b.setProperty(Constants.DSANNOTATIONS,
+				"test.component.DSAnnotationTest$DefaultPrefixCollisionExtraAttributes*");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
@@ -2871,10 +2942,10 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component
 	static class FinalDynamicCollectionField {
 		@Reference(policy = ReferencePolicy.DYNAMIC)
-		private final List<LogService>	logs1	= new CopyOnWriteArrayList<LogService>();
+		private final List<LogService> logs1 = new CopyOnWriteArrayList<LogService>();
 
 		@Reference
-		private final List<LogService>	logs2	= new CopyOnWriteArrayList<LogService>();
+		private final List<LogService> logs2 = new CopyOnWriteArrayList<LogService>();
 
 	}
 

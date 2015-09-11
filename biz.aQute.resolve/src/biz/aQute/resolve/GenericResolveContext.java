@@ -12,13 +12,13 @@ import aQute.bnd.version.VersionRange;
  */
 public class GenericResolveContext extends AbstractResolveContext {
 
-	protected static final String					CONTRACT_OSGI_FRAMEWORK		= "OSGiFramework";
-	protected static final String					IDENTITY_INITIAL_RESOURCE	= "<<INITIAL>>";
-	protected static final String					IDENTITY_SYSTEM_RESOURCE	= "<<SYSTEM>>";
+	protected static final String	CONTRACT_OSGI_FRAMEWORK		= "OSGiFramework";
+	protected static final String	IDENTITY_INITIAL_RESOURCE	= "<<INITIAL>>";
+	protected static final String	IDENTITY_SYSTEM_RESOURCE	= "<<SYSTEM>>";
 
-	private boolean									initialised					= false;
-	private ResourceBuilder			system						= new ResourceBuilder();
-	private ResourceBuilder			input						= new ResourceBuilder();
+	private boolean			initialised	= false;
+	private ResourceBuilder	system		= new ResourceBuilder();
+	private ResourceBuilder	input		= new ResourceBuilder();
 
 	public GenericResolveContext(LogService log) {
 		super(log);

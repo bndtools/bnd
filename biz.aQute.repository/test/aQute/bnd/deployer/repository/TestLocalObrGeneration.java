@@ -53,13 +53,17 @@ public class TestLocalObrGeneration extends TestCase {
 	}
 
 	public void testDeployBundle() throws Exception {
-		PutResult r = repo.put(new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")), new RepositoryPlugin.PutOptions());
+		PutResult r = repo.put(
+				new BufferedInputStream(
+						new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
+				new RepositoryPlugin.PutOptions());
 		File deployedFile = new File(r.artifact);
 
 		assertEquals(
 				IO.getFile(outputDir, "name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
-			.getAbsolutePath(), deployedFile.getAbsolutePath());
-		
+						.getAbsolutePath(),
+				deployedFile.getAbsolutePath());
+
 		File indexFile = IO.getFile(outputDir, "repository.xml");
 		assertTrue(indexFile.exists());
 		assertTrue(IO.collect(indexFile).length() > 0);

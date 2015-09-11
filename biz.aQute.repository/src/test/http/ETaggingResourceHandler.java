@@ -13,7 +13,7 @@ import org.eclipse.jetty.util.resource.*;
 
 public class ETaggingResourceHandler extends ResourceHandler {
 
-	MimeTypes	_mimeTypes	= new MimeTypes();
+	MimeTypes _mimeTypes = new MimeTypes();
 
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, ServletException {

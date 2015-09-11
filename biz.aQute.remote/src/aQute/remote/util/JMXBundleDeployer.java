@@ -23,7 +23,7 @@ import org.osgi.framework.dto.*;
  */
 public class JMXBundleDeployer {
 
-	private final static String		OBJECTNAME		= "osgi.core";
+	private final static String OBJECTNAME = "osgi.core";
 
 	private MBeanServerConnection mBeanServerConnection;
 
@@ -38,26 +38,21 @@ public class JMXBundleDeployer {
 	public JMXBundleDeployer(String serviceURL) {
 		try {
 			final JMXServiceURL jmxServiceUrl = new JMXServiceURL(serviceURL);
-			final JMXConnector jmxConnector = JMXConnectorFactory.connect(
-				jmxServiceUrl, null);
+			final JMXConnector jmxConnector = JMXConnectorFactory.connect(jmxServiceUrl, null);
 
 			mBeanServerConnection = jmxConnector.getMBeanServerConnection();
-		} catch (Exception e) {
-			throw new IllegalArgumentException(
-				"Unable to get JMX connection", e);
+		}
+		catch (Exception e) {
+			throw new IllegalArgumentException("Unable to get JMX connection", e);
 		}
 	}
 
 	/**
 	 * Gets the current list of installed bsns, compares it to the bsn provided.
-	 * If bsn doesn't exist, then install it. If it does exist then update it.
-	 *
-	 * @param bsn
-	 *            Bundle-SymbolicName of bundle you are wanting to deploy
-	 * @param bundle
-	 *            the bundle
-	 * @return the id of the updated or installed bundle
-	 * @throws Exception
+	 * If bsn doesn't exist, then install it. If it does exist then update
+	 * it. @param bsn Bundle-SymbolicName of bundle you are wanting to
+	 * deploy @param bundle the bundle @return the id of the updated or
+	 * installed bundle @throws Exception
 	 */
 	public long deploy(String bsn, File bundle) throws Exception {
 		final ObjectName framework = getFramework(mBeanServerConnection);
@@ -74,30 +69,38 @@ public class JMXBundleDeployer {
 		// TODO serve bundle url over http so it works for non file:// urls
 
 		if (bundleId > -1) {
-			mBeanServerConnection.invoke(framework, "stopBundle",
-					new Object[] { bundleId }, new String[] { "long" });
+			mBeanServerConnection.invoke(framework, "stopBundle", new Object[] {
+					bundleId
+			}, new String[] {
+					"long"
+			});
 
-			mBeanServerConnection.invoke(framework, "updateBundleFromURL",
-					new Object[] { bundleId,
-					bundle.toURI().toURL().toExternalForm() },
-					new String[] { "long", String.class.getName() });
+			mBeanServerConnection.invoke(framework, "updateBundleFromURL", new Object[] {
+					bundleId, bundle.toURI().toURL().toExternalForm()
+			}, new String[] {
+					"long", String.class.getName()
+			});
 
-			mBeanServerConnection.invoke(framework, "refreshBundle",
-					new Object[] { bundleId }, new String[] { "long" });
+			mBeanServerConnection.invoke(framework, "refreshBundle", new Object[] {
+					bundleId
+			}, new String[] {
+					"long"
+			});
 		} else {
-			Object installed = mBeanServerConnection.invoke(
-					framework,
-					"installBundleFromURL",
-					new Object[] { bundle.getAbsolutePath(),
-							bundle.toURI().toURL().toExternalForm() },
-					new String[] { String.class.getName(),
-							String.class.getName() });
+			Object installed = mBeanServerConnection.invoke(framework, "installBundleFromURL", new Object[] {
+					bundle.getAbsolutePath(), bundle.toURI().toURL().toExternalForm()
+			}, new String[] {
+					String.class.getName(), String.class.getName()
+			});
 
 			bundleId = Long.parseLong(installed.toString());
 		}
 
-		mBeanServerConnection.invoke(framework, "startBundle",
-			new Object[] { bundleId }, new String[] { "long" });
+		mBeanServerConnection.invoke(framework, "startBundle", new Object[] {
+				bundleId
+		}, new String[] {
+				"long"
+		});
 
 		return bundleId;
 	}
@@ -121,11 +124,9 @@ public class JMXBundleDeployer {
 		return null;
 	}
 
-
 	/**
-	 * Calls osgi.core bundleState MBean listBundles operation
-	 *
-	 * @return array of bundles in framework
+	 * Calls osgi.core bundleState MBean listBundles operation @return array of
+	 * bundles in framework
 	 */
 	public BundleDTO[] listBundles() {
 		final List<BundleDTO> retval = new ArrayList<BundleDTO>();
@@ -134,13 +135,13 @@ public class JMXBundleDeployer {
 			final ObjectName bundleState = getBundleState();
 
 			final Object[] params = new Object[] {
-				new String[] {
-						"Identifier", "SymbolicName", "State", "Version",
-				}
+					new String[] {
+							"Identifier", "SymbolicName", "State", "Version",
+					}
 			};
 
 			final String[] signature = new String[] {
-				String[].class.getName()
+					String[].class.getName()
 			};
 
 			final TabularData data = (TabularData) mBeanServerConnection.invoke(bundleState, "listBundles", params,
@@ -192,11 +193,8 @@ public class JMXBundleDeployer {
 
 	/**
 	 * Uninstall a bundle by passing in its Bundle-SymbolicName. If bundle
-	 * doesn't exist, this is a NOP.
-	 *
-	 * @param bsn
-	 *            bundle symbolic name
-	 * @throws Exception
+	 * doesn't exist, this is a NOP. @param bsn bundle symbolic name @throws
+	 * Exception
 	 */
 	public void uninstall(String bsn) throws Exception {
 		for (BundleDTO osgiBundle : listBundles()) {
@@ -212,21 +210,17 @@ public class JMXBundleDeployer {
 
 	/**
 	 * Calls through directly to the OSGi frameworks MBean uninstallBundle
-	 * operation
-	 *
-	 * @param id
-	 *            id of bundle to uninstall
-	 * @throws Exception
+	 * operation @param id id of bundle to uninstall @throws Exception
 	 */
 	public void uninstall(long id) throws Exception {
 		final ObjectName framework = getFramework(mBeanServerConnection);
 
 		Object[] objects = new Object[] {
-			id
+				id
 		};
 
 		String[] params = new String[] {
-			"long"
+				"long"
 		};
 
 		mBeanServerConnection.invoke(framework, "uninstallBundle", objects, params);
@@ -236,9 +230,7 @@ public class JMXBundleDeployer {
 	 * Uses Oracle JDK's Attach API to try to search VMs on this machine looking
 	 * for the osgi.core MBeans. This will stop searching for VMs once the
 	 * MBeans are found. Beware if you have multiple JVMs with osgi.core MBeans
-	 * published.
-	 *
-	 * @return
+	 * published. @return
 	 */
 	@SuppressWarnings("unchecked")
 	static String getLocalConnectorAddress() {
@@ -363,7 +355,7 @@ public class JMXBundleDeployer {
 			}
 
 			URL[] urls = new URL[] {
-				toolsUrl
+					toolsUrl
 			};
 
 			return new URLClassLoader(urls, parent);
