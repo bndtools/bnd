@@ -1,0 +1,38 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<parent>
+		<groupId>biz.aQute.bnd</groupId>
+		<artifactId>bnd-plugins-parent</artifactId>
+		<version>3.1.0</version>
+	</parent>
+
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>bnd-indexer-maven-plugin</artifactId>
+	<description>This maven plugin is used to make OSGi indexes from lists of maven dependencies.</description>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<packaging>maven-plugin</packaging>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-core</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-plugin-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.plugin-tools</groupId>
+			<artifactId>maven-plugin-annotations</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>biz.aQute.bnd</groupId>
+			<artifactId>org.osgi.impl.bundle.repoindex.cli</artifactId>
+			<version>${bnd.version}</version>
+		</dependency>
+	</dependencies>
+</project>
