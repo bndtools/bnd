@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>biz.aQute.bnd</groupId>
 	<artifactId>bnd-maven-plugin</artifactId>
-	<version>3.0.0</version>
+	<version>3.0.1</version>
 	<description>This maven plugin is used to build OSGi bundles using the bnd tool for generating MANIFEST.MF and other OSGi-specific artifacts.</description>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<packaging>maven-plugin</packaging>
