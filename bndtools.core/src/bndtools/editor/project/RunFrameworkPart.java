@@ -28,7 +28,6 @@ import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.build.model.EE;
 import bndtools.BndConstants;
-import bndtools.central.Central;
 import bndtools.utils.ModificationLock;
 import bndtools.editor.common.BndEditorPart;
 
@@ -95,8 +94,10 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
 
         // Listeners
         cmbFramework.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 lock.ifNotModifying(new Runnable() {
+                    @Override
                     public void run() {
                         markDirty();
                         selectedFramework = cmbFramework.getText();
@@ -105,8 +106,10 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
             }
         });
         frameworkViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 lock.ifNotModifying(new Runnable() {
+                    @Override
                     public void run() {
                         markDirty();
                         Object element = ((IStructuredSelection) frameworkViewer.getSelection()).getFirstElement();
@@ -119,8 +122,10 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
             }
         });
         eeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(final SelectionChangedEvent event) {
                 lock.ifNotModifying(new Runnable() {
+                    @Override
                     public void run() {
                         markDirty();
                         selectedEE = (EE) ((IStructuredSelection) event.getSelection()).getFirstElement();
@@ -155,11 +160,12 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
     @Override
     protected void refreshFromModel() {
         lock.modifyOperation(new Runnable() {
+            @Override
             public void run() {
                 IMessageManager messages = getManagedForm().getMessageManager();
                 messages.removeMessage(MESSAGE_KEY, cmbFramework);
                 try {
-                    frameworkViewer.setInput(Central.getWorkspace());
+                    frameworkViewer.setInput(model.getWorkspace());
                 } catch (Exception e) {
                     messages.addMessage(MESSAGE_KEY, "Unable to load OSGi Framework list. " + e.getMessage(), null, IMessageProvider.ERROR, cmbFramework);
                 }

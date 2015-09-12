@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -20,16 +21,21 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
 import bndtools.BndConstants;
@@ -52,6 +58,7 @@ public class AvailableBundlesPart extends BndEditorPart {
     private final RepositoryTreeContentProvider contentProvider = new RepositoryTreeContentProvider(ResolutionPhase.runtime);
     private Text txtSearch;
     private TreeViewer viewer;
+    private ToolItem layoutIndicator;
 
     private Set<String> includedRepos;
 
@@ -96,6 +103,9 @@ public class AvailableBundlesPart extends BndEditorPart {
         }
     };
 
+    private Image bndLayoutIcon;
+    private Image standaloneLayoutIcon;
+
     public AvailableBundlesPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
         Section section = getSection();
@@ -104,7 +114,14 @@ public class AvailableBundlesPart extends BndEditorPart {
     }
 
     private void createClient(Section section, FormToolkit toolkit) {
-        section.setText("Available Bundles");
+        section.setText("Browse Repos");
+
+        // Create toolbar
+        ToolBar toolbar = new ToolBar(section, SWT.FLAT);
+        section.setTextClient(toolbar);
+        layoutIndicator = new ToolItem(toolbar, SWT.PUSH);
+        bndLayoutIcon = Icons.desc("bnd.workspace.bndlayout").createImage();
+        standaloneLayoutIcon = Icons.desc("bnd.workspace.standalone").createImage();
 
         // Create contents
         Composite container = toolkit.createComposite(section);
@@ -167,6 +184,13 @@ public class AvailableBundlesPart extends BndEditorPart {
         });
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+        bndLayoutIcon.dispose();
+        standaloneLayoutIcon.dispose();
+    }
+
     private void updatedFilter(String filterString) {
         contentProvider.setFilter(filterString);
         viewer.refresh(true);
@@ -175,7 +199,7 @@ public class AvailableBundlesPart extends BndEditorPart {
     @Override
     protected String[] getProperties() {
         return new String[] {
-                BndConstants.RUNREPOS
+                BndConstants.RUNREPOS, BndEditModel.PROP_WORKSPACE
         };
     }
 
@@ -183,14 +207,27 @@ public class AvailableBundlesPart extends BndEditorPart {
     protected void refreshFromModel() {
         List<String> tmp = model.getRunRepos();
         includedRepos = (tmp == null) ? null : new HashSet<String>(tmp);
+        Workspace workspace = model.getWorkspace();
 
         List<RepositoryPlugin> repos;
         try {
-            repos = RepositoryUtils.listRepositories(getLocalWorkspace(), true);
+            repos = RepositoryUtils.listRepositories(workspace, true);
         } catch (Exception e) {
             repos = Collections.emptyList();
         }
         viewer.setInput(repos);
+
+        switch (workspace.getLayout()) {
+        case BND :
+            layoutIndicator.setImage(bndLayoutIcon);
+            layoutIndicator.setToolTipText(String.format("Connected to the bnd workspace at: %s.", workspace.getBase()));
+            break;
+        case STANDALONE :
+            layoutIndicator.setImage(standaloneLayoutIcon);
+            layoutIndicator.setToolTipText("Standalone mode.");
+            break;
+        default :
+        }
     }
 
     @Override

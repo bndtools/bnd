@@ -11,9 +11,7 @@ import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 
-import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
-import bndtools.central.Central;
 
 public abstract class BndEditorPart extends SectionPart implements PropertyChangeListener {
 
@@ -71,10 +69,6 @@ public abstract class BndEditorPart extends SectionPart implements PropertyChang
         } else {
             markStale();
         }
-    }
-
-    protected Workspace getLocalWorkspace() {
-        return Central.getWorkspaceIfPresent();
     }
 
 }

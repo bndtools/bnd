@@ -3,7 +3,6 @@ package bndtools.editor.pages;
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -55,6 +54,7 @@ public class ExportAction extends Action {
             if (MessageDialog.openConfirm(parentShell, "Export", "The editor content must be saved before exporting. Save now?")) {
                 try {
                     editor.getSite().getWorkbenchWindow().run(false, false, new IRunnableWithProgress() {
+                        @Override
                         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                             editor.doSave(monitor);
                         }
@@ -76,7 +76,7 @@ public class ExportAction extends Action {
             WizardDialog dialog = new WizardDialog(parentShell, wizard);
             dialog.open();
 
-        } catch (CoreException e) {
+        } catch (Exception e) {
             ErrorDialog.openError(parentShell, "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error deriving Bnd project.", e));
         }
 
