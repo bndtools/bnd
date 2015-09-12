@@ -1,1 +1,1 @@
--standalone: testdata/larger-repo.xml;name=foo
+-standalone: http://example.org/index.xml; name=foo

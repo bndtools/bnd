@@ -1,6 +1,7 @@
 package aQute.bnd.build;
 
 import java.io.File;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -21,15 +22,15 @@ public class Run extends Project {
 			if (standalone == null)
 				return null;
 
-			return createStandaloneRun(run.getProperties());
+			return createStandaloneRun(run.getProperties(), file.toURI());
 		}
 	}
 
 	/**
 	 * Create a stand alone Run based on properties.
 	 */
-	public static Run createStandaloneRun(Properties template) throws Exception {
-		Workspace standaloneWorkspace = Workspace.createStandaloneWorkspace(template);
+	public static Run createStandaloneRun(Properties template, URI base) throws Exception {
+		Workspace standaloneWorkspace = Workspace.createStandaloneWorkspace(template, base);
 		Run run = new Run(standaloneWorkspace, null);
 		run.getProperties().putAll(template);
 		return run;
@@ -51,7 +52,7 @@ public class Run extends Project {
 
 			return new Run(workspace, file);
 		} else
-			return createStandaloneRun(run.getProperties());
+			return createStandaloneRun(run.getProperties(), file.toURI());
 	}
 
 	public Run(Workspace workspace, File projectDir, File propertiesFile) throws Exception {
