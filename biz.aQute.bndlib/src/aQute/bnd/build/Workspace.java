@@ -96,6 +96,8 @@ public class Workspace extends Processor {
 
 	private String driver;
 
+	private final WorkspaceLayout layout;
+
 	/**
 	 * This static method finds the workspace and creates a project (or returns
 	 * an existing project) @param projectDir @return
@@ -199,6 +201,7 @@ public class Workspace extends Processor {
 
 	public Workspace(File dir, String bndDir) throws Exception {
 		super(getDefaults());
+		this.layout = WorkspaceLayout.BND;
 		dir = dir.getAbsoluteFile();
 		if (!dir.exists() && !dir.mkdirs()) {
 			throw new IOException("Could not create directory " + dir);
@@ -232,8 +235,9 @@ public class Workspace extends Processor {
 
 	}
 
-	Workspace() {
+	Workspace(WorkspaceLayout layout) {
 		super(getDefaults());
+		this.layout = layout;
 		this.buildDir = IO.getFile("~/.bnd/default-ws");
 		this.buildDir.mkdirs();
 	}
@@ -887,6 +891,13 @@ public class Workspace extends Processor {
 	}
 
 	/**
+	 * Get the layout style of the workspace.
+	 */
+	public WorkspaceLayout getLayout() {
+		return layout;
+	}
+
+	/**
 	 * The macro to access the gestalt <p> {@code $ gestalt;part[;key[;value]]}
 	 */
 
@@ -1076,7 +1087,7 @@ public class Workspace extends Processor {
 	 * run @return
 	 */
 	public static Workspace createStandaloneWorkspace(Properties run, URI base) {
-		Workspace ws = new Workspace();
+		Workspace ws = new Workspace(WorkspaceLayout.STANDALONE);
 
 		Parameters standalone = new Parameters(run.getProperty("-standalone"));
 
