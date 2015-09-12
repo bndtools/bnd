@@ -17,7 +17,7 @@
       provider-name="Bndtools"
       plugin="bndtools.core">
 
-   <description url="http://bndtools-updates.s3.amazonaws.com/">
+   <description url="https://dl.bintray.com/bndtools/bndtools/@base-version@/">
       OSGi Development Tools for Eclipse based on bnd.
    </description>
 
@@ -105,7 +105,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
    </license>
 
    <url>
-      <update label="Bndtools Update Site" url="http://bndtools-updates.s3.amazonaws.com/"/>
+      <update label="Bndtools Update Site" url="https://dl.bintray.com/bndtools/bndtools/@base-version@/"/>
    </url>
 
    <plugin
