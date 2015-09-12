@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.maven.RepositoryUtils;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -23,6 +25,7 @@ import org.apache.maven.project.DependencyResolutionException;
 import org.apache.maven.project.DependencyResolutionRequest;
 import org.apache.maven.project.DependencyResolutionResult;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -64,6 +67,9 @@ public class IndexerMojo extends AbstractMojo {
 
     @Component
     private ProjectDependenciesResolver resolver;
+    
+    @Component
+    private MavenProjectHelper projectHelper;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
 
@@ -109,10 +115,11 @@ public class IndexerMojo extends AbstractMojo {
         Map<String, String> config = new HashMap<String, String>();
         config.put(ResourceIndexer.PRETTY, "true");
 
+        File outputFile = new File(targetDir, "index.xml");
         OutputStream output;
         try {
         	targetDir.mkdirs();
-            output = new FileOutputStream(new File(targetDir, "index.xml"));
+			output = new FileOutputStream(outputFile);
         } catch (FileNotFoundException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
@@ -122,6 +129,12 @@ public class IndexerMojo extends AbstractMojo {
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
+        
+        DefaultArtifact defaultArtifact = new DefaultArtifact(project.getGroupId(), 
+        		project.getArtifactId(), project.getVersion(), null, "xml", null, 
+        		new DefaultArtifactHandler("xml"));
+        defaultArtifact.setFile(outputFile);
+		project.addAttachedArtifact(defaultArtifact);
     }
 
     class MavenURLResolver implements URLResolver {
