@@ -6,9 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -72,6 +72,8 @@ public class Workspace extends Processor {
 	public static final String	CNFDIR		= "cnf";
 	public static final String	BNDDIR		= "bnd";
 	public static final String	CACHEDIR	= "cache";
+
+	public static final String STANDALONE_REPO_CLASS = "aQute.bnd.deployer.repository.FixedIndexedRepo";
 
 	static Map<File,WeakReference<Workspace>>	cache			= newHashMap();
 	static Processor							defaults		= null;
@@ -1072,21 +1074,29 @@ public class Workspace extends Processor {
 	 * Create a workspace that does not inherit from a cnf directory etc. @param
 	 * run @return
 	 */
-	public static Workspace createStandaloneWorkspace(Properties run) {
+	public static Workspace createStandaloneWorkspace(Properties run, URI base) {
 		Workspace ws = new Workspace();
 
 		Parameters standalone = new Parameters(run.getProperty("-standalone"));
-		int n = 1;
 
+		int counter = 1;
 		for (Map.Entry<String,Attrs> e : standalone.entrySet()) {
+			String locationStr = e.getKey();
+			URI resolvedLocation = base.resolve(locationStr);
+
 			try (Formatter f = new Formatter();) {
-				f.format("aQute.bnd.deployer.repository.FixedIndexedRepo; name=_%s; locations='%s'", n, e.getKey());
-				for (Map.Entry<String,String> a : e.getValue().entrySet()) {
-					f.format(";%s='%s'", e.getKey(), e.getValue());
+				String name = e.getValue().get("name");
+				if (name == null)
+					name = "_" + counter;
+				f.format("%s; name=%s; locations='%s'", STANDALONE_REPO_CLASS, name, resolvedLocation);
+				for (Map.Entry<String,String> attribEntry : e.getValue().entrySet()) {
+					if (!"name".equals(attribEntry.getKey()))
+						f.format(";%s='%s'", attribEntry.getKey(), attribEntry.getValue());
 				}
 				f.format("\n");
-				ws.setProperty("-plugin._" + n, f.toString());
+				ws.setProperty("-plugin._" + counter, f.toString());
 			}
+			counter++;
 		}
 
 		return ws;

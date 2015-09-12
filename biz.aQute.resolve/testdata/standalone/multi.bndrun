@@ -1,0 +1,3 @@
+-standalone:\
+	http://example.org/index1.xml,\
+	http://example.org/index2.xml; name=second

@@ -1,0 +1,1 @@
+-standalone: http://example.org/index.xml; name=foo; cache=${user.home}/.custom_cache_dir
