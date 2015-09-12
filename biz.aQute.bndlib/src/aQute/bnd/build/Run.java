@@ -1,7 +1,6 @@
 package aQute.bnd.build;
 
 import java.io.File;
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -13,46 +12,39 @@ import aQute.bnd.service.export.Exporter;
 public class Run extends Project {
 
 	/**
-	 * Create a stand alone Run without a workspace. @throws Exception
-	 */
-	public static Run createStandaloneRun(File file) throws Exception {
-		try (Processor run = new Processor();) {
-			run.setProperties(file);
-			String standalone = run.getProperty("-standalone");
-			if (standalone == null)
-				return null;
-
-			return createStandaloneRun(run.getProperties(), file.toURI());
-		}
-	}
-
-	/**
-	 * Create a stand alone Run based on properties.
-	 */
-	public static Run createStandaloneRun(Properties template, URI base) throws Exception {
-		Workspace standaloneWorkspace = Workspace.createStandaloneWorkspace(template, base);
-		Run run = new Run(standaloneWorkspace, null);
-		run.getProperties().putAll(template);
-		return run;
-	}
-
-	/**
 	 * Create a Run that will be stand alone if it contains -standalone. In that
 	 * case the given workspace is ignored. Otherwise, the workspace must be a
 	 * valid workspace.
 	 */
 	@SuppressWarnings("resource")
 	public static Run createRun(Workspace workspace, File file) throws Exception {
-		Processor run = new Processor();
-		run.setProperties(file);
-		String standalone = run.getProperty("-standalone");
-		if (standalone == null) {
-			if (workspace == null)
-				throw new IllegalArgumentException("The bndrun file is not standalone and no workspace is passed");
+		Properties parsed = null;
 
-			return new Run(workspace, file);
-		} else
-			return createStandaloneRun(run.getProperties(), file.toURI());
+		if (workspace != null) {
+			// Assume we are not standalone until we discover otherwise
+			Run run = new Run(workspace, file);
+
+			String standalone = run.getProperty("-standalone");
+			if (standalone == null)
+				return run;
+
+			// Actually we are standalone and the previously created Run should
+			// be thrown away
+			parsed = run.getProperties();
+		}
+
+		if (parsed == null) {
+			Processor processor = new Processor();
+			processor.setProperties(file);
+			parsed = processor.getProperties();
+		}
+
+		if (!parsed.containsKey("-standalone"))
+			throw new IllegalArgumentException("No workspace exists and the bnd file does not declare -standalone.");
+
+		Workspace standaloneWorkspace = Workspace.createStandaloneWorkspace(parsed, file.toURI());
+		Run run = new Run(standaloneWorkspace, file);
+		return run;
 	}
 
 	public Run(Workspace workspace, File projectDir, File propertiesFile) throws Exception {

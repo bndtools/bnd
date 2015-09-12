@@ -233,6 +233,7 @@ public class Workspace extends Processor {
 	}
 
 	Workspace() {
+		super(getDefaults());
 		this.buildDir = IO.getFile("~/.bnd/default-ws");
 		this.buildDir.mkdirs();
 	}
