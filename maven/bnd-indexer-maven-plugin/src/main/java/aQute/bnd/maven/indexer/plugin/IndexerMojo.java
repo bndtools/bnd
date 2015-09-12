@@ -1,15 +1,23 @@
 package aQute.bnd.maven.indexer.plugin;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.maven.RepositoryUtils;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -22,6 +30,7 @@ import org.apache.maven.project.DependencyResolutionException;
 import org.apache.maven.project.DependencyResolutionRequest;
 import org.apache.maven.project.DependencyResolutionResult;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -29,6 +38,7 @@ import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.util.filter.ScopeDependencyFilter;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
@@ -53,17 +63,29 @@ public class IndexerMojo extends AbstractMojo {
 
     @Parameter( property = "bnd.indexer.allowLocal", defaultValue = "false", readonly = true )
     private boolean allowLocal;
+
+    @Parameter( property = "bnd.indexer.scopes", readonly = true, required=false )
+    private List<String> scopes;
     
     @Component
     private RepositorySystem system;
 
     @Component
     private ProjectDependenciesResolver resolver;
+    
+    @Component
+    private MavenProjectHelper projectHelper;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
 
+    	if(scopes == null || scopes.isEmpty()) {
+    		scopes = Arrays.asList("compile", "runtime");
+    	}
+    	
         DependencyResolutionRequest request = new DefaultDependencyResolutionRequest(project, session);
 
+        request.setResolutionFilter(new ScopeDependencyFilter(scopes, null));
+        
         DependencyResolutionResult result;
         try {
             result = resolver.resolve(request);
@@ -98,10 +120,11 @@ public class IndexerMojo extends AbstractMojo {
         Map<String, String> config = new HashMap<String, String>();
         config.put(ResourceIndexer.PRETTY, "true");
 
+        File outputFile = new File(targetDir, "index.xml");
         OutputStream output;
         try {
         	targetDir.mkdirs();
-            output = new FileOutputStream(new File(targetDir, "index.xml"));
+			output = new FileOutputStream(outputFile);
         } catch (FileNotFoundException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
@@ -111,6 +134,30 @@ public class IndexerMojo extends AbstractMojo {
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
+        
+		File gzipOutputFile = new File(outputFile.getPath() + ".gz");
+		
+		try (InputStream is = new BufferedInputStream(new FileInputStream(outputFile));
+			 OutputStream gos = new GZIPOutputStream(new FileOutputStream(gzipOutputFile))) {
+			byte[] bytes = new byte[4096];
+			int read;
+			while((read = is.read(bytes)) != -1) {
+				gos.write(bytes, 0, read);
+			}
+		} catch (IOException ioe) {
+			throw new MojoExecutionException("Unable to create the gzipped output file");
+		}
+		
+		attach(outputFile, "xml", "xml");
+		attach(gzipOutputFile, "xml", "xml.gz");
+    }
+    
+    private void attach(File file, String type, String extension) {
+    	DefaultArtifact artifact = new DefaultArtifact(project.getGroupId(), 
+        		project.getArtifactId(), project.getVersion(), null, type, null, 
+        		new DefaultArtifactHandler(extension));
+        artifact.setFile(file);
+		project.addAttachedArtifact(artifact);
     }
 
     class MavenURLResolver implements URLResolver {
