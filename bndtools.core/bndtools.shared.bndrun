@@ -36,11 +36,8 @@ help.bundles: \
 	javax.servlet,\
 	javax.servlet.jsp,\
 	org.apache.commons.logging,\
-	org.apache.lucene,\
 	org.apache.lucene.analysis,\
 	org.apache.lucene.core,\
-	org.apache.lucene.misc,\
-	org.apache.lucene.queries,\
 	org.eclipse.ant.core,\
 	org.eclipse.equinox.http.jetty,\
 	org.eclipse.equinox.http.registry,\
@@ -90,7 +87,6 @@ crossplatform.bundles: \
 	org.eclipse.core.net,\
 	org.eclipse.core.resources,\
 	org.eclipse.core.runtime,\
-	org.eclipse.core.runtime.compatibility.auth,\
 	org.eclipse.core.variables,\
 	org.eclipse.debug.core,\
 	org.eclipse.debug.ui,\
@@ -181,6 +177,7 @@ crossplatform.bundles: \
 	org.junit,\
 	org.osgi.impl.bundle.bindex;version=latest,\
 	org.w3c.css.sac,\
+	org.w3c.dom.events,\
 	org.w3c.dom.smil,\
 	org.w3c.dom.svg
 

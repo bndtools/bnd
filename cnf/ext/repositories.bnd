@@ -1,7 +1,7 @@
 #
-# Eclipse Repository. Eclipse 4.3.2
+# Eclipse Repository. Eclipse 4.4.2
 #
-eclipse-repo: aQute.bnd.deployer.repository.FixedIndexedRepo; name="Eclipse IDE for Java Developers 4.3.2"; locations=https://dl.bintray.com/bndtools/eclipse-repo/4.3.2/index.xml.gz
+eclipse-repo: aQute.bnd.deployer.repository.FixedIndexedRepo; name="Eclipse IDE for Eclipse Committers 4.4.2"; locations=https://dl.bintray.com/bndtools/eclipse-repo/4.4.2/index.xml.gz
 
 #
 # Bnd Repository. See ${workspace}/gradle.properties for the bnd_repourl property.

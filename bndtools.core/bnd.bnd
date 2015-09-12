@@ -56,6 +56,7 @@ eclipse.deps: \
 	org.eclipse.swt,\
 	org.eclipse.text,\
 	org.eclipse.ui.workbench,\
+	org.eclipse.e4.ui.workbench,\
 	org.eclipse.ui.ide,\
 	org.eclipse.core.jobs,\
 	org.eclipse.equinox.registry,\
