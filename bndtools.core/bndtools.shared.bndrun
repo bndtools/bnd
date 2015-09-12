@@ -2,7 +2,7 @@
 
 # Do not run this, use the platform-specific bndrun files (which "-include" this)
 
--runfw: org.eclipse.osgi
+-runfw: org.eclipse.osgi; version=3.10
 
 workspace.bundles: \
 	bndtools.api;version=snapshot,\
@@ -52,6 +52,11 @@ help.bundles: \
 	org.eclipse.search,\
 	org.eclipse.ui.cheatsheets,\
 	org.eclipse.ui.net
+	
+gogo.bundles:\
+	org.apache.felix.gogo.command,\
+	org.apache.felix.gogo.shell,\
+	org.apache.felix.gogo.runtime
 
 # TODO: separate this morass into more coherent libs!
 crossplatform.bundles: \
@@ -61,6 +66,7 @@ crossplatform.bundles: \
 	${help.bundles},\
 	${p2.bundles},\
 	${workspace.bundles},\
+	${gogo.bundles},\
 	bndtools.runtime.eclipse.applaunch,\
 	com.ibm.icu,\
 	javax.annotation,\
@@ -117,6 +123,7 @@ crossplatform.bundles: \
 	org.eclipse.emf.ecore.change,\
 	org.eclipse.emf.ecore.xmi,\
 	org.eclipse.equinox.app,\
+	org.eclipse.equinox.console,\
 	org.eclipse.equinox.bidi,\
 	org.eclipse.equinox.common,\
 	org.eclipse.equinox.ds,\
@@ -188,4 +195,5 @@ crossplatform.runprops: \
 	eclipse.consoleLog=,\
 	eclipse.product=org.eclipse.sdk.ide,\
 	osgi.console=,\
-	osgi.instance.area.default=../bndtools.test/workspace
+	osgi.instance.area.default=../bndtools.test/workspace,\
+	osgi.console.enable.builtin=false
