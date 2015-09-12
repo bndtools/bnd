@@ -1087,6 +1087,7 @@ public class Workspace extends Processor {
 				f.format("\n");
 				ws.setProperty("-plugin._" + n, f.toString());
 			}
+			n++;
 		}
 
 		return ws;
