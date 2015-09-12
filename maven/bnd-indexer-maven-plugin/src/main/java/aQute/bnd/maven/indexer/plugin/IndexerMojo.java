@@ -1,14 +1,19 @@
 package aQute.bnd.maven.indexer.plugin;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.DefaultArtifact;
@@ -130,11 +135,29 @@ public class IndexerMojo extends AbstractMojo {
             throw new MojoExecutionException(e.getMessage(), e);
         }
         
-        DefaultArtifact defaultArtifact = new DefaultArtifact(project.getGroupId(), 
-        		project.getArtifactId(), project.getVersion(), null, "xml", null, 
-        		new DefaultArtifactHandler("xml"));
-        defaultArtifact.setFile(outputFile);
-		project.addAttachedArtifact(defaultArtifact);
+		File gzipOutputFile = new File(outputFile.getPath() + ".gz");
+		
+		try (InputStream is = new BufferedInputStream(new FileInputStream(outputFile));
+			 OutputStream gos = new GZIPOutputStream(new FileOutputStream(gzipOutputFile))) {
+			byte[] bytes = new byte[4096];
+			int read;
+			while((read = is.read(bytes)) != -1) {
+				gos.write(bytes, 0, read);
+			}
+		} catch (IOException ioe) {
+			throw new MojoExecutionException("Unable to create the gzipped output file");
+		}
+		
+		attach(outputFile, "xml", "xml");
+		attach(gzipOutputFile, "xml", "xml.gz");
+    }
+    
+    private void attach(File file, String type, String extension) {
+    	DefaultArtifact artifact = new DefaultArtifact(project.getGroupId(), 
+        		project.getArtifactId(), project.getVersion(), null, type, null, 
+        		new DefaultArtifactHandler(extension));
+        artifact.setFile(file);
+		project.addAttachedArtifact(artifact);
     }
 
     class MavenURLResolver implements URLResolver {
