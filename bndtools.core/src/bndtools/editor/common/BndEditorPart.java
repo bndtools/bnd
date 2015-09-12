@@ -17,7 +17,7 @@ public abstract class BndEditorPart extends SectionPart implements PropertyChang
 
     protected BndEditModel model;
 
-    private List<String> subscribedProps = new LinkedList<String>();
+    private final List<String> subscribedProps = new LinkedList<String>();
 
     public BndEditorPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
@@ -50,17 +50,18 @@ public abstract class BndEditorPart extends SectionPart implements PropertyChang
     }
 
     @Override
-    public void refresh() {
+    public final void refresh() {
         refreshFromModel();
         super.refresh();
     }
 
     @Override
-    public void commit(boolean onSave) {
+    public final void commit(boolean onSave) {
         super.commit(onSave);
         commitToModel(onSave);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         IFormPage page = (IFormPage) getManagedForm().getContainer();
         if (page.isActive()) {

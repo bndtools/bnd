@@ -10,6 +10,7 @@
  *******************************************************************************/
 package bndtools.editor;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,6 +68,7 @@ import org.eclipse.ui.texteditor.IElementStateListener;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.properties.BadLocationException;
@@ -101,46 +103,15 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     public static final String BNDRUN_PAGE = "__bndrun_page";
     public static final String TEST_SUITES_PAGE = "__test_suites_page";
 
-    private final Map<String,IFormPageFactory> pageFactories = new LinkedHashMap<String,IFormPageFactory>();
+    private final BndEditModel model = new BndEditModel();
 
-    private final BndEditModel model;
-    private final BndSourceEditorPage sourcePage;
+    private final Map<String,IFormPageFactory> pageFactories = new LinkedHashMap<String,IFormPageFactory>();
 
     private final Image buildFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bndtools-logo-16x16.png").createImage();
 
-    public BndEditor() {
-        BndEditModel model2;
-        try {
-            model2 = new BndEditModel(Central.getWorkspace());
-        } catch (Exception e) {
-            System.err.println("Unable to create BndEditModel with Workspace, defaulting to without Workspace");
-            model2 = new BndEditModel();
-        }
-        model = model2;
+    private BndSourceEditorPage sourcePage;
 
-        sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
-
-        pageFactories.put(WORKSPACE_PAGE, WorkspacePage.MAIN_FACTORY);
-        pageFactories.put(WORKSPACE_EXT_PAGE, WorkspacePage.EXT_FACTORY);
-        pageFactories.put(CONTENT_PAGE, BundleContentPage.FACTORY);
-        pageFactories.put(DESCRIPTION_PAGE, BundleDescriptionPage.FACTORY);
-        pageFactories.put(BUILD_PAGE, ProjectBuildPage.FACTORY);
-        pageFactories.put(PROJECT_RUN_PAGE, ProjectRunPage.FACTORY_PROJECT);
-        pageFactories.put(BNDRUN_PAGE, ProjectRunPage.FACTORY_BNDRUN);
-        pageFactories.put(TEST_SUITES_PAGE, TestSuitesPage.FACTORY);
-
-        IConfigurationElement[] configElems = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "editorPages");
-        if (configElems != null)
-            for (IConfigurationElement configElem : configElems) {
-                String id = configElem.getAttribute("id");
-                if (id != null) {
-                    if (pageFactories.containsKey(id))
-                        logger.logError("Duplicate form page ID: " + id, null);
-                    else
-                        pageFactories.put(id, new DelayedPageFactory(configElem));
-                }
-            }
-    }
+    private File inputFile;
 
     static Pair<String,String> getFileAndProject(IEditorInput input) {
         String path;
@@ -156,7 +127,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         return Pair.newInstance(path, projectName);
     }
 
-    void updatePages() {
+    private void updateIncludedPages() {
         List<String> requiredPageIds = new LinkedList<String>();
 
         // Need to know the file and project names.
@@ -248,8 +219,6 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
     @Override
     public void doSave(IProgressMonitor monitor) {
-        final Shell shell = getEditorSite().getShell();
-
         // Commit dirty pages
         if (sourcePage.isActive() && sourcePage.isDirty()) {
             sourcePage.commit(true);
@@ -262,60 +231,83 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
         // If auto resolve, then resolve and save in background thread.
         if (resolveMode == ResolveMode.auto && !PlatformUI.getWorkbench().isClosing()) {
-            final IFile file = ResourceUtil.getFile(getEditorInput());
-            if (file == null) {
-                MessageDialog.openError(shell, "Resolution Error", "Unable to run resolution because the file is not in the workspace. NB.: the file will still be saved.");
-                reallySave(monitor);
-                return;
-            }
-
-            // Create resolver job and pre-validate
-            final ResolveJob job = new ResolveJob(model);
-            IStatus validation = job.validateBeforeRun();
-            if (!validation.isOK()) {
-                String message = "Unable to run the resolver. NB.: the file will still be saved.";
-                ErrorDialog.openError(shell, "Resolution Validation Problem", message, validation, IStatus.ERROR | IStatus.WARNING);
-                reallySave(monitor);
-                return;
-            }
-
-            // Add operation to perform at the end of resolution (i.e. display
-            // results and actually save the file)
-            final UIJob completionJob = new UIJob(shell.getDisplay(), "Display Resolution Results") {
-                @Override
-                public IStatus runInUIThread(IProgressMonitor monitor) {
-                    ResolutionResult result = job.getResolutionResult();
-                    ResolutionWizard wizard = new ResolutionWizard(model, file, result);
-                    if (result.getOutcome() != ResolutionResult.Outcome.Resolved /*|| !result.getResolve().getOptionalResources().isEmpty() */) {
-                        WizardDialog dialog = new WizardDialog(shell, wizard);
-                        if (dialog.open() != Window.OK) {
-                            if (!wizard.performFinish()) {
-                                MessageDialog.openError(shell, "Error", "Unable to store resolution results into Run Bundles list.");
-                            }
-                        }
-                    } else {
-                        if (!wizard.performFinish()) {
-                            MessageDialog.openError(shell, "Error", "Unable to store resolution results into Run Bundles list.");
-                        }
-                    }
-                    reallySave(monitor);
-                    return Status.OK_STATUS;
-                }
-            };
-            job.addJobChangeListener(new JobChangeAdapter() {
-                @Override
-                public void done(IJobChangeEvent event) {
-                    completionJob.schedule();
-                }
-            });
-
-            // Start job
-            job.setUser(true);
-            job.schedule();
+            doAutoResolveOnSave(monitor);
         } else {
             // Not auto-resolving, just save
             reallySave(monitor);
         }
+    }
+
+    private void reallySave(IProgressMonitor monitor) {
+        // Actually save, via the source editor
+        try {
+            boolean saveLocked = this.saving.compareAndSet(false, true);
+            if (!saveLocked) {
+                logger.logError("Tried to save while already saving", null);
+                return;
+            }
+            sourcePage.doSave(monitor);
+            loadEditModel();
+            updateIncludedPages();
+        } catch (Exception e) {
+            ErrorDialog.openError(getEditorSite().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to reload bnd edit model", e));
+        } finally {
+            this.saving.set(false);
+        }
+    }
+
+    private void doAutoResolveOnSave(IProgressMonitor monitor) {
+        final Shell shell = getEditorSite().getShell();
+        final IFile file = ResourceUtil.getFile(getEditorInput());
+        if (file == null) {
+            MessageDialog.openError(shell, "Resolution Error", "Unable to run resolution because the file is not in the workspace. NB.: the file will still be saved.");
+            reallySave(monitor);
+            return;
+        }
+
+        // Create resolver job and pre-validate
+        final ResolveJob job = new ResolveJob(model);
+        IStatus validation = job.validateBeforeRun();
+        if (!validation.isOK()) {
+            String message = "Unable to run the resolver. NB.: the file will still be saved.";
+            ErrorDialog.openError(shell, "Resolution Validation Problem", message, validation, IStatus.ERROR | IStatus.WARNING);
+            reallySave(monitor);
+            return;
+        }
+
+        // Add operation to perform at the end of resolution (i.e. display
+        // results and actually save the file)
+        final UIJob completionJob = new UIJob(shell.getDisplay(), "Display Resolution Results") {
+            @Override
+            public IStatus runInUIThread(IProgressMonitor monitor) {
+                ResolutionResult result = job.getResolutionResult();
+                ResolutionWizard wizard = new ResolutionWizard(model, file, result);
+                if (result.getOutcome() != ResolutionResult.Outcome.Resolved /*|| !result.getResolve().getOptionalResources().isEmpty() */) {
+                    WizardDialog dialog = new WizardDialog(shell, wizard);
+                    if (dialog.open() != Window.OK) {
+                        if (!wizard.performFinish()) {
+                            MessageDialog.openError(shell, "Error", "Unable to store resolution results into Run Bundles list.");
+                        }
+                    }
+                } else {
+                    if (!wizard.performFinish()) {
+                        MessageDialog.openError(shell, "Error", "Unable to store resolution results into Run Bundles list.");
+                    }
+                }
+                reallySave(monitor);
+                return Status.OK_STATUS;
+            }
+        };
+        job.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(IJobChangeEvent event) {
+                completionJob.schedule();
+            }
+        });
+
+        // Start job
+        job.setUser(true);
+        job.schedule();
     }
 
     private ResolveMode getResolveMode() {
@@ -328,21 +320,6 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             logger.logError("Error parsing '-resolve' header.", e);
         }
         return resolveMode;
-    }
-
-    private void reallySave(IProgressMonitor monitor) {
-        // Actually save, via the source editor
-        try {
-            boolean saveLocked = this.saving.compareAndSet(false, true);
-            if (!saveLocked) {
-                logger.logError("Tried to save while already saving", null);
-                return;
-            }
-            sourcePage.doSave(monitor);
-            updatePages();
-        } finally {
-            this.saving.set(false);
-        }
     }
 
     protected void ensurePageExists(String pageId, IFormPage page, int index) {
@@ -379,7 +356,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
     @Override
     protected void addPages() {
-        updatePages();
+        updateIncludedPages();
 
         showHighestPriorityPage();
     }
@@ -441,17 +418,14 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         super.init(site, input);
-        sourcePage.init(site, input);
 
-        setSourcePage(sourcePage);
-
-        setPartNameForInput(input);
-
-        IResource resource = ResourceUtil.getResource(input);
-        String resourceName;
-        if (resource != null) {
-            resource.getWorkspace().addResourceChangeListener(this);
-            resourceName = resource.getName();
+        // Work out our input file and subscribe to resource changes
+        final String resourceName;
+        IResource inputResource = ResourceUtil.getResource(input);
+        if (inputResource != null) {
+            inputResource.getWorkspace().addResourceChangeListener(this);
+            resourceName = inputResource.getName();
+            inputFile = inputResource.getLocation().toFile();
         } else {
             IStorage storage = (IStorage) input.getAdapter(IStorage.class);
             if (storage != null) {
@@ -459,74 +433,61 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             } else {
                 resourceName = input.getName();
             }
+            inputFile = null;
         }
+        model.setBndResourceName(resourceName);
 
-        final IDocumentProvider docProvider = sourcePage.getDocumentProvider();
-        IDocument document = docProvider.getDocument(input);
+        // Initialise pages and title
+        initPages(site, input);
+        setSourcePage(sourcePage);
+        setPartNameForInput(input);
+        sourcePage.getDocumentProvider().addElementStateListener(new ElementStateListener());
+
         try {
-            model.loadFrom(new IDocumentWrapper(document));
-            model.setBndResourceName(resourceName);
-
-            if (resource != null) {
-                model.setBndResource(resource.getLocation().toFile());
-            }
-            // model.addPropertyChangeListener(modelListener);
-        } catch (IOException e) {
-            throw new PartInitException("Error reading editor input.", e);
+            loadEditModel();
+        } catch (Exception e) {
+            throw new PartInitException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading bnd edit model", e));
         }
+    }
 
-        // Ensure the field values are updated if the file content is replaced
-        docProvider.addElementStateListener(new IElementStateListener() {
+    private void loadEditModel() throws Exception {
+        // Create the bnd edit model and workspace
+        Workspace ws = Central.getWorkspaceIfPresent();
+        Project bndProject = Run.createRun(ws, inputFile);
+        model.setWorkspace(bndProject.getWorkspace());
+        model.setProject(bndProject);
 
-            String savedString = null;
+        // Load content into the edit model
+        IDocument document = sourcePage.getDocumentProvider().getDocument(getEditorInput());
+        model.loadFrom(new IDocumentWrapper(document));
+        model.setBndResource(inputFile);
+    }
 
-            @Override
-            public void elementMoved(Object originalElement, Object movedElement) {}
+    private void initPages(IEditorSite site, IEditorInput input) throws PartInitException {
+        // Initialise pages
+        sourcePage = new BndSourceEditorPage(SOURCE_PAGE, this);
+        pageFactories.put(WORKSPACE_PAGE, WorkspacePage.MAIN_FACTORY);
+        pageFactories.put(WORKSPACE_EXT_PAGE, WorkspacePage.EXT_FACTORY);
+        pageFactories.put(CONTENT_PAGE, BundleContentPage.FACTORY);
+        pageFactories.put(DESCRIPTION_PAGE, BundleDescriptionPage.FACTORY);
+        pageFactories.put(BUILD_PAGE, ProjectBuildPage.FACTORY);
+        pageFactories.put(PROJECT_RUN_PAGE, ProjectRunPage.FACTORY_PROJECT);
+        pageFactories.put(BNDRUN_PAGE, ProjectRunPage.FACTORY_BNDRUN);
+        pageFactories.put(TEST_SUITES_PAGE, TestSuitesPage.FACTORY);
 
-            @Override
-            public void elementDirtyStateChanged(Object element, boolean isDirty) {}
-
-            @Override
-            public void elementDeleted(Object element) {}
-
-            @Override
-            public void elementContentReplaced(Object element) {
-                try {
-                    IDocumentWrapper idoc = new IDocumentWrapper(docProvider.getDocument(element));
-                    if (!saving.get()) {
-                        model.loadFrom(idoc);
-                    } else {
-                        if (savedString != null) {
-                            logger.logInfo("Putting back content that we almost lost!", null);
-                            try {
-                                idoc.replace(0, idoc.getLength(), savedString);
-                            } catch (BadLocationException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                } catch (IOException e) {
-                    logger.logError("Error loading model from document.", e);
-                } finally {
-                    savedString = null;
+        IConfigurationElement[] configElems = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "editorPages");
+        if (configElems != null)
+            for (IConfigurationElement configElem : configElems) {
+                String id = configElem.getAttribute("id");
+                if (id != null) {
+                    if (pageFactories.containsKey(id))
+                        logger.logError("Duplicate form page ID: " + id, null);
+                    else
+                        pageFactories.put(id, new DelayedPageFactory(configElem));
                 }
             }
-
-            @Override
-            public void elementContentAboutToBeReplaced(Object element) {
-                // [cs] This check is here to attempt to save content that would be thrown away by a (misbehaving?) version control plugin.
-                // Scenario: File is checked out by Perforce plugin.
-                // This causes elementContentAboutToBeReplaced and elementContentReplaced callbacks to be fired.
-                // However -- by the time that elementContentReplaced is called, the content inside of the IDocumentWrapper
-                // is already replaced with the contents of the perforce file being checked out.
-                // To avoid losing changes, we need to save the content here, then put that content BACK on to the document
-                // in elementContentReplaced
-                if (saving.get()) {
-                    logger.logInfo("Content about to be replaced... Save it.", null);
-                    savedString = new IDocumentWrapper(docProvider.getDocument(element)).get();
-                }
-            }
-        });
+        sourcePage.init(site, input);
+        sourcePage.initialize(this);
     }
 
     private void setPartNameForInput(IEditorInput input) {
@@ -619,7 +580,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                     public void run() {
                         try {
                             model.loadFrom(new IDocumentWrapper(document));
-                            updatePages();
+                            updateIncludedPages();
                         } catch (IOException e) {
                             logger.logError("Failed to reload document", e);
                         }
@@ -635,5 +596,61 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             return new BndEditorContentOutlinePage(this, model);
         }
         return super.getAdapter(adapter);
+    }
+
+    /**
+     * Ensures the field values are updated if the file content is replaced
+     */
+    private class ElementStateListener implements IElementStateListener {
+
+        String savedString = null;
+
+        @Override
+        public void elementMoved(Object originalElement, Object movedElement) {}
+
+        @Override
+        public void elementDirtyStateChanged(Object element, boolean isDirty) {}
+
+        @Override
+        public void elementDeleted(Object element) {}
+
+        @Override
+        public void elementContentReplaced(Object element) {
+            try {
+                IDocumentProvider docProvider = sourcePage.getDocumentProvider();
+                IDocumentWrapper idoc = new IDocumentWrapper(docProvider.getDocument(element));
+                if (!saving.get()) {
+                    model.loadFrom(idoc);
+                } else {
+                    if (savedString != null) {
+                        logger.logInfo("Putting back content that we almost lost!", null);
+                        try {
+                            idoc.replace(0, idoc.getLength(), savedString);
+                        } catch (BadLocationException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                logger.logError("Error loading model from document.", e);
+            } finally {
+                savedString = null;
+            }
+        }
+
+        @Override
+        public void elementContentAboutToBeReplaced(Object element) {
+            // [cs] This check is here to attempt to save content that would be thrown away by a (misbehaving?) version control plugin.
+            // Scenario: File is checked out by Perforce plugin.
+            // This causes elementContentAboutToBeReplaced and elementContentReplaced callbacks to be fired.
+            // However -- by the time that elementContentReplaced is called, the content inside of the IDocumentWrapper
+            // is already replaced with the contents of the perforce file being checked out.
+            // To avoid losing changes, we need to save the content here, then put that content BACK on to the document
+            // in elementContentReplaced
+            if (saving.get()) {
+                logger.logInfo("Content about to be replaced... Save it.", null);
+                savedString = new IDocumentWrapper(sourcePage.getDocumentProvider().getDocument(element)).get();
+            }
+        }
     }
 }

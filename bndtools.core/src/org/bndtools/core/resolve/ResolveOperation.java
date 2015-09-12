@@ -1,6 +1,5 @@
 package org.bndtools.core.resolve;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,8 +20,6 @@ import org.osgi.service.coordinator.Coordination;
 import org.osgi.service.coordinator.Coordinator;
 import org.osgi.service.resolver.ResolutionException;
 
-import aQute.bnd.build.Project;
-import aQute.bnd.build.Run;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.deployer.repository.ReporterLogService;
 import biz.aQute.resolve.BndResolver;
@@ -30,7 +27,6 @@ import biz.aQute.resolve.ResolutionCallback;
 import biz.aQute.resolve.ResolveProcess;
 import biz.aQute.resolve.ResolverLogger;
 import bndtools.Plugin;
-import bndtools.central.Central;
 
 public class ResolveOperation implements IRunnableWithProgress {
 
@@ -65,28 +61,8 @@ public class ResolveOperation implements IRunnableWithProgress {
         try {
             BndResolver bndResolver = new BndResolver(logger);
 
-            //
-            // Make sure we do macro expansion properly
-            //
-
-            File resource = model.getBndResource();
-            if (model.isProjectFile()) {
-                Project project = Central.getProject(resource.getParentFile());
-                //
-                // run's in projects are based on the project
-                // and implicitly the ws
-                //
-                model.setProject(project);
-            } else {
-                //
-                // run's in bndrun files are the bndrun + workspace
-                //
-                Run run = new Run(Central.getWorkspace(), resource.getParentFile(), resource);
-                model.setProject(run);
-            }
-
-            ReporterLogService log = new ReporterLogService(Central.getWorkspace());
-            Map<Resource,List<Wire>> wirings = resolve.resolveRequired(model, Central.getWorkspace(), bndResolver, callbacks, log);
+            ReporterLogService log = new ReporterLogService(model.getWorkspace());
+            Map<Resource,List<Wire>> wirings = resolve.resolveRequired(model, model.getWorkspace(), bndResolver, callbacks, log);
 
             Map<Resource,List<Wire>> optionalResources = new HashMap<Resource,List<Wire>>(resolve.getOptionalResources().size());
 

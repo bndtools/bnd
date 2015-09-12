@@ -66,9 +66,9 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
         List<ISourceContainer> result = new LinkedList<ISourceContainer>();
 
         ILaunchConfiguration config = getLaunchConfiguration();
-        Project project = LaunchUtils.getBndProject(config);
-        if (project != null) {
-            try {
+        try {
+            Project project = LaunchUtils.getBndProject(config);
+            if (project != null) {
                 Collection<Container> runbundles = project.getRunbundles();
                 for (Container runbundle : runbundles) {
                     if (runbundle.getType() == TYPE.PROJECT) {
@@ -89,9 +89,9 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
                         }
                     }
                 }
-            } catch (Exception e) {
-                logger.logError("Error querying Bnd Dependency source containers.", e);
             }
+        } catch (Exception e) {
+            logger.logError("Error querying bnd dependency source containers.", e);
         }
 
         return result.toArray(new ISourceContainer[result.size()]);

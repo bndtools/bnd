@@ -2,7 +2,6 @@ package bndtools.editor.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -20,8 +19,6 @@ import org.bndtools.core.ui.resource.RequirementLabelProvider;
 import org.bndtools.utils.dnd.AbstractViewerDropAdapter;
 import org.bndtools.utils.dnd.SupportedTransfer;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -54,8 +51,6 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IFormPart;
-import org.eclipse.ui.forms.IManagedForm;
-import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
@@ -65,8 +60,7 @@ import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 
-import aQute.bnd.build.Project;
-import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.resource.CapReqBuilder;
@@ -80,22 +74,26 @@ import aQute.libg.filters.SimpleFilter;
 import aQute.libg.qtokens.QuotedTokenizer;
 import bndtools.BndConstants;
 import bndtools.Plugin;
-import bndtools.central.Central;
+import bndtools.editor.common.BndEditorPart;
 import bndtools.model.repo.DependencyPhase;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
-public class RunRequirementsPart extends SectionPart implements PropertyChangeListener {
+public class RunRequirementsPart extends BndEditorPart implements PropertyChangeListener {
+
     @SuppressWarnings("deprecation")
     private static final String RUNREQUIRE = BndConstants.RUNREQUIRE;
     private static final ILogger logger = Logger.getLogger(RunRequirementsPart.class);
 
+    private static final String[] SUBSCRIBE_PROPS = new String[] {
+            RUNREQUIRE, BndConstants.RUNREQUIRES, BndConstants.RESOLVE_MODE
+    };
+
     private Table table;
     private TableViewer viewer;
     private Button btnAutoResolve;
-    private BndEditModel model;
 
     private List<Requirement> requires;
     private ResolveMode resolveMode;
@@ -111,6 +109,11 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
     public RunRequirementsPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
         createSection(getSection(), toolkit);
+    }
+
+    @Override
+    protected String[] getProperties() {
+        return SUBSCRIBE_PROPS;
     }
 
     private void createSection(Section section, FormToolkit tk) {
@@ -246,9 +249,8 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
 
     private void doAddBundle() {
         try {
-            Project project = getProject();
-
-            RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(project, new ArrayList<VersionedClause>(), DependencyPhase.Run);
+            Workspace workspace = model.getWorkspace();
+            RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(workspace, new ArrayList<VersionedClause>(), DependencyPhase.Run);
             wizard.setSelectionPageTitle("Add Bundle Requirement");
             WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
 
@@ -352,30 +354,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
     }
 
     @Override
-    public void initialize(IManagedForm form) {
-        super.initialize(form);
-
-        model = (BndEditModel) form.getInput();
-
-        model.addPropertyChangeListener(RUNREQUIRE, this);
-        model.addPropertyChangeListener(BndConstants.RUNREQUIRES, this);
-        model.addPropertyChangeListener(BndConstants.RESOLVE_MODE, this);
-    }
-
-    @Override
-    public void dispose() {
-        model.removePropertyChangeListener(RUNREQUIRE, this);
-        model.removePropertyChangeListener(BndConstants.RUNREQUIRES, this);
-        model.removePropertyChangeListener(BndConstants.RESOLVE_MODE, this);
-
-        super.dispose();
-
-        resolveIcon.dispose();
-    }
-
-    @Override
-    public void commit(boolean onSave) {
-        super.commit(onSave);
+    public void commitToModel(boolean onSave) {
         try {
             committing = true;
             model.setRunRequires(requires);
@@ -387,7 +366,7 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
     }
 
     @Override
-    public void refresh() {
+    public void refreshFromModel() {
         List<Requirement> tmp = model.getRunRequires();
         if (tmp == null) {
             String legacyReqStr = (String) model.genericGet(RUNREQUIRE);
@@ -402,8 +381,6 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
         resolveMode = getResolveMode();
         btnAutoResolve.setSelection(resolveMode == ResolveMode.auto);
         updateButtonStates();
-
-        super.refresh();
     }
 
     private void setResolveMode() {
@@ -496,25 +473,6 @@ public class RunRequirementsPart extends SectionPart implements PropertyChangeLi
             }
             return false;
         }
-    }
-
-    Project getProject() {
-        Project project = null;
-        try {
-            BndEditModel model = (BndEditModel) getManagedForm().getInput();
-            File bndFile = model.getBndResource();
-            IPath path = Central.toPath(bndFile);
-            IFile resource = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
-            File projectDir = resource.getProject().getLocation().toFile();
-            if (Project.BNDFILE.equals(resource.getName())) {
-                project = Central.getProject(projectDir);
-            } else {
-                project = new Project(Central.getWorkspace(), projectDir, resource.getLocation().toFile());
-            }
-        } catch (Exception e) {
-            logger.logError("Error getting project from editor model", e);
-        }
-        return project;
     }
 
 }

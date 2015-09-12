@@ -48,8 +48,8 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         BndPreferences prefs = new BndPreferences();
         boolean result = !prefs.getBuildBeforeLaunch() || super.buildForLaunch(configuration, mode, monitor);
 
-        model = LaunchUtils.getBndProject(configuration);
         try {
+            model = LaunchUtils.getBndProject(configuration);
             initialiseBndLauncher(configuration, model);
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error initialising bnd launcher", e));

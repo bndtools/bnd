@@ -1,0 +1,7 @@
+{
+ "revisionRefs":[{
+  "artifactId":"org.eclipse.osgi","baseline":"3.10.0","bsn":"org.eclipse.osgi","created":1403858334000,"description":"OSGi System Bundle","groupId":"osgi","md5":"8283D9F7B491513A172E363A18A51754","name":"OSGi System Bundle","phase":"MASTER","qualifier":"v20140606-1445","revision":"931C03F9566B3A5B6C02C0981CC5720AAB9D1835","size":1264040,"urls":["http://repo1.maven.org/maven2/org/eclipse/tycho/org.eclipse.osgi/3.10.0.v20140606-1445/org.eclipse.osgi-3.10.0.v20140606-1445.jar"],"version":"3.10.0.v20140606-1445"
+ },{
+  "artifactId":"osgi","baseline":"3.9.1","bsn":"org.eclipse.osgi","created":1394042194000,"description":"OSGi System Bundle","groupId":"org.eclipse","md5":"9B057AA150511F538719869483756C4F","name":"OSGi System Bundle","phase":"MASTER","qualifier":"v20140110-1610","revision":"4499D6104182D349F0EC59D6D166123AA5F09174","size":1394033,"urls":["http://repo1.maven.org/maven2/org/eclipse/osgi/3.9.1-v20140110-1610/osgi-3.9.1-v20140110-1610.jar"],"version":"3.9.1-v20140110-1610"
+ }]
+}

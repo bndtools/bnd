@@ -31,6 +31,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
+import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.properties.IDocument;
 import bndtools.Plugin;
 import bndtools.editor.completion.BndSourceViewerConfiguration;
@@ -41,9 +42,11 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
 
     private final Image icon;
 
-    private final BndEditor formEditor;
     private final String id;
+    private final FormEditor editor;
+
     private String lastLoaded;
+    private BndEditModel editModel;
 
     private int index;
 
@@ -57,17 +60,16 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
 
     private Control control;
 
-    public BndSourceEditorPage(String id, BndEditor formEditor) {
+    public BndSourceEditorPage(String id, FormEditor editor) {
         this.id = id;
-        this.formEditor = formEditor;
-        formEditor.getEditModel().addPropertyChangeListener(propChangeListener);
+        this.editor = editor;
         ImageDescriptor iconDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/page_white_text.png");
         icon = iconDescriptor.createImage();
     }
 
     @Override
     public void dispose() {
-        this.formEditor.getEditModel().removePropertyChangeListener(propChangeListener);
+        editModel.removePropertyChangeListener(propChangeListener);
         super.dispose();
         icon.dispose();
     }
@@ -79,7 +81,7 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
 
     @Override
     public FormEditor getEditor() {
-        return formEditor;
+        return editor;
     }
 
     @Override
@@ -116,7 +118,11 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
     }
 
     @Override
-    public void initialize(FormEditor formEditor) {}
+    public void initialize(FormEditor formEditor) {
+        BndEditor bndEditor = (BndEditor) formEditor;
+        editModel = bndEditor.getEditModel();
+        editModel.addPropertyChangeListener(propChangeListener);
+    }
 
     @Override
     protected void initializeEditor() {
@@ -128,7 +134,7 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
 
     @Override
     public boolean isActive() {
-        return this.equals(formEditor.getActivePageInstance());
+        return this.equals(editor.getActivePageInstance());
     }
 
     @Override
@@ -162,7 +168,7 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
             IDocument doc = getDocument();
             String currentContent = doc.get();
             if (!currentContent.equals(lastLoaded))
-                formEditor.getEditModel().loadFrom(getDocument());
+                editModel.loadFrom(getDocument());
         } catch (IOException e) {
             logger.logError("Error loading model from document.", e);
         }
@@ -170,7 +176,7 @@ public class BndSourceEditorPage extends TextEditor implements IFormPage {
 
     void refresh() {
         IDocument document = getDocument();
-        formEditor.getEditModel().saveChangesTo(document);
+        editModel.saveChangesTo(document);
     }
 
     private IDocument getDocument() {

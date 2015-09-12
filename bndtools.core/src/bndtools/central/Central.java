@@ -254,6 +254,16 @@ public class Central implements IStartupParticipant {
         return workspaceRepo;
     }
 
+    public synchronized static Workspace getWorkspaceIfPresent() {
+        try {
+            return getWorkspace();
+        } catch (IllegalStateException e) {
+            throw e;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public synchronized static Workspace getWorkspace() throws Exception {
         if (instance == null)
             throw new IllegalStateException("Central has not been initialised");
