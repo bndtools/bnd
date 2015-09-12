@@ -123,7 +123,7 @@ task p2FeaturesTree(type: Copy) {
                        bnd('Git-SHA'))
   from    'feature'
   into    "$buildDir/features"
-  filter(ReplaceTokens, tokens: ['master-version' : masterVersion])
+  filter(ReplaceTokens, tokens: ['master-version' : masterVersion, 'base-version' : bnd('base-version')])
   include '**/category.xml'
   include '**/feature.xml'
 }
