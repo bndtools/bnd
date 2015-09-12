@@ -87,6 +87,8 @@ public class BndEditModel {
 			Constants.BUNDLE_BLUEPRINT, Constants.INCLUDE_RESOURCE
 	};
 
+	public static final String PROP_WORKSPACE = "_workspace";
+
 	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
 
 	private final Map<String,Converter< ? extends Object,String>>	converters	= new HashMap<String,Converter< ? extends Object,String>>();
@@ -300,13 +302,14 @@ public class BndEditModel {
 	public BndEditModel(BndEditModel model) {
 		this();
 		this.bndResource = model.bndResource;
+		this.workspace = model.workspace;
 		this.properties.putAll(model.properties);
 		this.changesToSave.putAll(model.changesToSave);
 	}
 
-	public BndEditModel(Workspace ws) {
+	public BndEditModel(Workspace workspace) {
 		this();
-		this.workspace = ws;
+		this.workspace = workspace;
 	}
 
 	public void loadFrom(IDocument document) throws IOException {
@@ -1003,6 +1006,16 @@ public class BndEditModel {
 
 	public Project getProject() {
 		return project;
+	}
+
+	public Workspace getWorkspace() {
+		return workspace;
+	}
+
+	public void setWorkspace(Workspace workspace) {
+		Workspace old = this.workspace;
+		this.workspace = workspace;
+		propChangeSupport.firePropertyChange(PROP_WORKSPACE, old, workspace);
 	}
 
 	public String getGenericString(String name) {

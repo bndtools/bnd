@@ -14,7 +14,7 @@ public class StandaloneTest extends TestCase {
 
 	public void testStandalone() throws Exception {
 		File f = IO.getFile("testdata/standalone/simple.bndrun");
-		Run run = Run.createStandaloneRun(f);
+		Run run = Run.createRun(null, f);
 
 		List<Repository> repositories = run.getWorkspace().getPlugins(Repository.class);
 		assertEquals(1, repositories.size());
@@ -27,7 +27,7 @@ public class StandaloneTest extends TestCase {
 
 	public void testMultipleUrls() throws Exception {
 		File f = IO.getFile("testdata/standalone/multi.bndrun");
-		Run run = Run.createStandaloneRun(f);
+		Run run = Run.createRun(null, f);
 
 		List<Repository> repositories = run.getWorkspace().getPlugins(Repository.class);
 		assertEquals(2, repositories.size());
@@ -45,7 +45,7 @@ public class StandaloneTest extends TestCase {
 
 	public void testRelativeUrl() throws Exception {
 		File f = IO.getFile("testdata/standalone/relative_url.bndrun");
-		Run run = Run.createStandaloneRun(f);
+		Run run = Run.createRun(null, f);
 
 		List<Repository> repositories = run.getWorkspace().getPlugins(Repository.class);
 		assertEquals(2, repositories.size());
@@ -64,7 +64,7 @@ public class StandaloneTest extends TestCase {
 
 	public void testExtraAttribs() throws Exception {
 		File f = IO.getFile("testdata/standalone/attribs.bndrun");
-		Run run = Run.createStandaloneRun(f);
+		Run run = Run.createRun(null, f);
 
 		List<Repository> repositories = run.getWorkspace().getPlugins(Repository.class);
 		assertEquals(1, repositories.size());

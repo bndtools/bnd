@@ -170,7 +170,10 @@ public class Project extends Processor {
 	}
 
 	public synchronized boolean isValid() {
-		return getBase().isDirectory() && getPropertiesFile().isFile();
+		if (getBase() == null || !getBase().isDirectory())
+			return false;
+
+		return getPropertiesFile() == null || getPropertiesFile().isFile();
 	}
 
 	/**
