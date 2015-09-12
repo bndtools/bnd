@@ -1,6 +1,7 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
+
 jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	lib/jetty-continuation-7.6.3.v20120416.jar;version=file,\
 	lib/jetty-http-7.6.3.v20120416.jar;version=file,\
@@ -22,6 +23,9 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 -testpath: \
 	junit.osgi,\
 	org.mockito.mockito-all
+	
+bndlib-range: [${version;==;${build.version}},${version;=+;${build.version}})
+Fragment-Host: biz.aQute.bndlib; bundle-version="${bndlib-range}"
 
 Bnd-Plugins:
 	aQute.bnd.deployer.repository.FixedIndexedRepo,\
@@ -29,20 +33,6 @@ Bnd-Plugins:
 	aQute.bnd.deployer.deployer.obr.OBR,\
 	aQute.bnd.deployer.deployer.obr.LocalOBR,\
 	aQute.bnd.deployer.deployer.http.HttpBasicAuthURLConnector
-
-Export-Package: \
-	aQute.bnd.service.progress,\
-	aQute.bnd.deployer.http;bnd-plugins=true,\
-	aQute.bnd.deployer.obr;bnd-plugins=true,\
-	aQute.bnd.deployer.repository;bnd-plugins=true,\
-	aQute.bnd.deployer.repository.api,\
-	aQute.bnd.deployer.repository.providers;bnd-plugins=true,\
-	org.osgi.service.indexer;provide:=true;bnd-plugins=true,\
-	org.osgi.service.bindex;version=1.0;provide:=true;bnd-plugins=true,\
-	org.osgi.service.coordinator;-split-package:=merge-first,\
-	org.osgi.service.log;provide:=true;-split-package:=merge-first,\
-	aQute.bnd.deployer.repository.wrapper;bnd-plugins=true,\
-	aQute.bnd.jpm;bnd-plugins=true
 
 bindex-pkgs: \
 	org.osgi.service.obr,\
@@ -57,11 +47,24 @@ repoindex-pkgs: \
 	org.osgi.service.indexer.impl.util,\
 	aQute.bnd.osgi.resource,\
 	org.osgi.resource;-split-package:=first
+	
+Export-Package:\
+	aQute.bnd.deployer.repository,\
+	aQute.bnd.deployer.repository.api,\
+	aQute.bnd.deployer.repository.providers,\
+	org.osgi.service.coordinator;-split-package:=merge-first,\
+	org.osgi.service.indexer
 
 # NB: `org.osgi.framework` API is included in Private-Package for running outside of OSGi.
 Private-Package:  \
 	${bindex-pkgs},\
 	${repoindex-pkgs},\
+	aQute.bnd.deployer.http,\
+	aQute.bnd.deployer.obr,\
+	org.osgi.service.bindex;version=1.0,\
+	org.osgi.service.log;provide:=true;-split-package:=merge-first,\
+	aQute.bnd.deployer.repository.wrapper,\
+	aQute.bnd.jpm,\
 	org.osgi.framework;-split-package:=first,\
 	aQute.bnd.jpm,\
 	aQute.jpm.facade.repo,\
@@ -70,6 +73,8 @@ Private-Package:  \
 	aQute.service.library,\
 	aQute.jsonrpc.domain,\
 	aQute.struct
+	
+
 Conditional-Package:\
 	aQute.lib.*;-split-package:=first,\
 	aQute.libg.*;-split-package:=first
@@ -82,6 +87,7 @@ Import-Package:\
 	org.osgi.resource,\
 	org.osgi.service.log,\
 	aQute.bnd.osgi.resource,\
+	org.osgi.service.coordinator; resolution:=optional,\
 	*
 
 -fixupmessages: "Export aQute.bnd.deployer.*.impl"
