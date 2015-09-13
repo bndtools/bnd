@@ -33,13 +33,17 @@ public class RepositoryUtils {
         return listRepositories(workspace, hideCache);
     }
 
-    public static List<RepositoryPlugin> listRepositories(Workspace workspace, boolean hideCache) {
+    public static List<RepositoryPlugin> listRepositories(Workspace localWorkspace, boolean hideCache) {
         try {
-            List<RepositoryPlugin> plugins = workspace.getPlugins(RepositoryPlugin.class);
+            List<RepositoryPlugin> plugins = localWorkspace.getPlugins(RepositoryPlugin.class);
             List<RepositoryPlugin> repos = new ArrayList<RepositoryPlugin>(plugins.size() + 1);
 
-            repos.add(Central.getWorkspaceRepository());
+            // Add the workspace repo if the provided workspace == the global bnd workspace
+            Workspace bndWorkspace = Central.getWorkspaceIfPresent();
+            if (bndWorkspace == localWorkspace)
+                repos.add(Central.getWorkspaceRepository());
 
+            // Add the repos from the provided workspace
             for (RepositoryPlugin plugin : plugins) {
                 if (!hideCache || !CACHE_REPO.equals(plugin.getName()))
                     repos.add(plugin);
