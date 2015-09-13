@@ -77,4 +77,18 @@ public class StandaloneTest extends TestCase {
 		File cacheDir = IO.getFile(System.getProperty("user.home") + "/.custom_cache_dir");
 		assertEquals(cacheDir, f0.getCacheDirectory());
 	}
+
+	public void testMacroExpansion() throws Exception {
+		File f = IO.getFile("testdata/standalone/macro.bndrun");
+		Run run = Run.createRun(null, f);
+
+		List<Repository> repositories = run.getWorkspace().getPlugins(Repository.class);
+		assertEquals(1, repositories.size());
+		assertTrue(repositories.get(0) instanceof FixedIndexedRepo);
+
+		FixedIndexedRepo f0 = (FixedIndexedRepo) repositories.get(0);
+		assertEquals(System.getProperty("user.name") + " M2", f0.getName());
+		File indexFile = IO.getFile(System.getProperty("user.home") + "/.m2/repository/repository.xml");
+		assertEquals(indexFile.toURI().toString(), f0.getIndexLocations().get(0).toString());
+	}
 }

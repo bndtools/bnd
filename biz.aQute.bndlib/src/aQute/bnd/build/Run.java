@@ -3,7 +3,6 @@ package aQute.bnd.build;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
@@ -18,7 +17,7 @@ public class Run extends Project {
 	 */
 	@SuppressWarnings("resource")
 	public static Run createRun(Workspace workspace, File file) throws Exception {
-		Properties parsed = null;
+		Processor parsed = null;
 
 		if (workspace != null) {
 			// Assume we are not standalone until we discover otherwise
@@ -30,13 +29,13 @@ public class Run extends Project {
 
 			// Actually we are standalone and the previously created Run should
 			// be thrown away
-			parsed = run.getProperties();
+			parsed = run;
 		}
 
 		if (parsed == null) {
 			Processor processor = new Processor();
 			processor.setProperties(file);
-			parsed = processor.getProperties();
+			parsed = processor;
 		}
 
 		Workspace standaloneWorkspace = Workspace.createStandaloneWorkspace(parsed, file.toURI());

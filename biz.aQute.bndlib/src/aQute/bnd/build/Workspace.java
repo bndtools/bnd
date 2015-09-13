@@ -18,7 +18,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
@@ -61,6 +60,7 @@ import aQute.lib.settings.Settings;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.lib.zip.ZipUtil;
+import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter;
 
 public class Workspace extends Processor {
@@ -1086,7 +1086,7 @@ public class Workspace extends Processor {
 	 * Create a workspace that does not inherit from a cnf directory etc. @param
 	 * run @return
 	 */
-	public static Workspace createStandaloneWorkspace(Properties run, URI base) {
+	public static Workspace createStandaloneWorkspace(Processor run, URI base) throws Exception {
 		Workspace ws = new Workspace(WorkspaceLayout.STANDALONE);
 
 		Parameters standalone = new Parameters(run.getProperty("-standalone", ""));
@@ -1094,7 +1094,7 @@ public class Workspace extends Processor {
 		int counter = 1;
 		for (Map.Entry<String,Attrs> e : standalone.entrySet()) {
 			String locationStr = e.getKey();
-			URI resolvedLocation = base.resolve(locationStr);
+			URI resolvedLocation = URIUtil.resolve(base, locationStr);
 
 			try (Formatter f = new Formatter();) {
 				String name = e.getValue().get("name");
