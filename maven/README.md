@@ -1,4 +1,4 @@
-# bnd-plugins-parent
+# bnd-plugin-parent
 =======================
 
 This project builds the various maven plugins provided by the bnd project,
