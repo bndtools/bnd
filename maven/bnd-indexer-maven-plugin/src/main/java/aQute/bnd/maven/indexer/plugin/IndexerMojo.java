@@ -66,6 +66,9 @@ public class IndexerMojo extends AbstractMojo {
 
     @Parameter( property = "bnd.indexer.allowLocal", defaultValue = "false", readonly = true )
     private boolean allowLocal;
+    
+    @Parameter( property = "bnd.indexer.includeTransitive", defaultValue = "true", readonly = true )
+    private boolean includeTransitive;
 
     @Parameter( property = "bnd.indexer.scopes", readonly = true, required=false )
     private List<String> scopes;
@@ -86,6 +89,8 @@ public class IndexerMojo extends AbstractMojo {
     	}
     	
     	getLog().debug("Indexing dependencies with scopes: " + scopes);
+    	getLog().debug("Including Transitive dependencies: " + includeTransitive);
+    	getLog().debug("Local file URLs permitted: " + allowLocal);
     	
         DependencyResolutionRequest request = new DefaultDependencyResolutionRequest(project, session);
 
@@ -216,8 +221,11 @@ public class IndexerMojo extends AbstractMojo {
 			} catch (ArtifactResolutionException e) {
 				throw new MojoExecutionException("Failed to resolve the dependency " + node.getArtifact().toString(), e);
 			}
-            
-            discoverArtifacts(files, node.getChildren(), node.getRequestContext());
+            if(includeTransitive) {
+				discoverArtifacts(files, node.getChildren(), node.getRequestContext());
+			} else {
+				getLog().debug("Ignoring transitive dependencies of " + node.getDependency());
+			}
         }
     }
 
