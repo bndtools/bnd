@@ -1,16 +1,27 @@
 version: '{build}'
 
-clone_depth: 10
+clone_depth: 50
 
 environment:
   JAVA_HOME: C:\Program Files\Java\jdk1.7.0
   TERM: dumb
 
 install:
+  - choco install maven --version 3.2.5
+  - set PATH=%PATH%;C:\bin\apache-maven-3.2.5\bin
+  - echo %PATH%
+
+before_build:
   - gradlew.bat --version
+  - mvn --version
 
 build_script:
   - gradlew.bat --continue
+  - mvn --batch-mode --quiet -Dmaven.repo.local=maven/target/m2 -Dfile=dist/bundles/org.osgi.impl.bundle.repoindex.cli/org.osgi.impl.bundle.repoindex.cli-latest.jar org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file
+  - mvn --batch-mode --quiet -Dmaven.repo.local=maven/target/m2 -Dfile=dist/bundles/biz.aQute.bndlib/biz.aQute.bndlib-latest.jar org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file
+  - mvn -f maven --batch-mode --quiet -Dmaven.repo.local=maven/target/m2 install
 
 cache:
   - C:\Users\appveyor\.gradle -> .gradle-wrapper\gradle-wrapper.properties
+  - C:\ProgramData\chocolatey\lib -> appveyor.yml
+  - C:\bin\apache-maven-3.2.5\ -> appveyor.yml
