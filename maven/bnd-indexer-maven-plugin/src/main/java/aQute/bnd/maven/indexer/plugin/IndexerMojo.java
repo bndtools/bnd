@@ -1,5 +1,8 @@
 package aQute.bnd.maven.indexer.plugin;
 
+import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
+import static org.apache.maven.plugins.annotations.ResolutionScope.TEST;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,11 +37,11 @@ import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
-import org.eclipse.aether.util.filter.ScopeDependencyFilter;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
@@ -50,7 +53,7 @@ import org.osgi.service.indexer.impl.URLResolver;
 /**
  * Exports project dependencies to OSGi R5 index format.
  */
-@Mojo(name = "index")
+@Mojo(name = "index", defaultPhase = PACKAGE, requiresDependencyResolution = TEST)
 public class IndexerMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
@@ -82,9 +85,19 @@ public class IndexerMojo extends AbstractMojo {
     		scopes = Arrays.asList("compile", "runtime");
     	}
     	
+    	getLog().debug("Indexing dependencies with scopes: " + scopes);
+    	
         DependencyResolutionRequest request = new DefaultDependencyResolutionRequest(project, session);
 
-        request.setResolutionFilter(new ScopeDependencyFilter(scopes, null));
+        request.setResolutionFilter(new DependencyFilter(){
+			@Override
+			public boolean accept(DependencyNode node, List<DependencyNode> parents) {
+				if(node.getDependency() != null) {
+					return scopes.contains(node.getDependency().getScope());
+				}
+				return false;
+			}
+        });
         
         DependencyResolutionResult result;
         try {
@@ -129,6 +142,7 @@ public class IndexerMojo extends AbstractMojo {
             throw new MojoExecutionException(e.getMessage(), e);
         }
 
+        getLog().debug("Indexing artifacts: " + dependencies.keySet());
         try {
             indexer.index(dependencies.keySet(), output, config);
         } catch (Exception e) {
@@ -197,6 +211,7 @@ public class IndexerMojo extends AbstractMojo {
             try {
 				ArtifactResult resolvedArtifact = system.resolveArtifact(session, new ArtifactRequest(node.getArtifact(), 
 						project.getRemoteProjectRepositories(), parent));
+				getLog().debug("Located file: " + resolvedArtifact.getArtifact().getFile() + " for artifact " + resolvedArtifact);
 				files.put(resolvedArtifact.getArtifact().getFile(), resolvedArtifact);
 			} catch (ArtifactResolutionException e) {
 				throw new MojoExecutionException("Failed to resolve the dependency " + node.getArtifact().toString(), e);
