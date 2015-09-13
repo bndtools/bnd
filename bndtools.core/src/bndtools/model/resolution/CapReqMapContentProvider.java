@@ -1,11 +1,14 @@
 package bndtools.model.resolution;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -18,6 +21,20 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
 
     private static final Object[] EMPTY = new Object[0];
 
+    private static final String[] NAMESPACE_ORDER = new String[] {
+            BundleNamespace.BUNDLE_NAMESPACE, IdentityNamespace.IDENTITY_NAMESPACE, HostNamespace.HOST_NAMESPACE, PackageNamespace.PACKAGE_NAMESPACE
+    };
+
+    private static final Set<String> NAMESPACES;
+
+    private final Comparator<Object> comparator = new CapReqComparator();
+
+    static {
+        NAMESPACES = new HashSet<>();
+        for (String s : NAMESPACE_ORDER)
+            NAMESPACES.add(s);
+    }
+
     @Override
     public void dispose() {}
 
@@ -26,29 +43,51 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
 
     @Override
     public Object[] getElements(Object input) {
-        List<Object> result = new LinkedList<Object>();
+        List<Object[]> arrays = new LinkedList<>();
 
         @SuppressWarnings("unchecked")
-        Map<String,List<Object>> originalMap = (Map<String,List<Object>>) input;
+        Map<String,List<Object>> map = (Map<String,List<Object>>) input;
 
-        // Take a copy so we can order entries explicitly
-        HashMap<String,List<Object>> map = new HashMap<String,List<Object>>(originalMap);
-        append(result, map.remove(BundleNamespace.BUNDLE_NAMESPACE));
-        append(result, map.remove(IdentityNamespace.IDENTITY_NAMESPACE));
-        append(result, map.remove(HostNamespace.HOST_NAMESPACE));
-        append(result, map.remove(PackageNamespace.PACKAGE_NAMESPACE));
+        // Add entries for our preferred ordering of namespaces
+        for (String namespace : NAMESPACE_ORDER) {
+            List<Object> listForNs = map.get(namespace);
+            if (listForNs != null) {
+                Object[] array = listForNs.toArray(new Object[listForNs.size()]);
+                Arrays.sort(array, comparator);
+                arrays.add(array);
+            }
+        }
 
         // Now the rest in any order
-        for (Entry<String,List<Object>> entry : map.entrySet())
-            append(result, entry.getValue());
+        for (Entry<String,List<Object>> entry : map.entrySet()) {
+            // Skip if namespace is a member of the namespaces we have already added.
+            if (NAMESPACES.contains(entry.getKey()))
+                continue;
 
-        return result.toArray(new Object[result.size()]);
+            List<Object> listForNs = entry.getValue();
+            Object[] array = listForNs.toArray(new Object[listForNs.size()]);
+            Arrays.sort(array, comparator);
+            arrays.add(array);
+        }
+
+        return flatten(arrays);
     }
 
-    private static void append(List<Object> mainList, List< ? > newEntries) {
-        assert mainList != null;
-        if (newEntries != null)
-            mainList.addAll(newEntries);
+    private Object[] flatten(List<Object[]> arrays) {
+        // Iterate over once to count the lengths
+        int length = 0;
+        for (Object[] array : arrays) {
+            length += array.length;
+        }
+        Object[] result = new Object[length];
+
+        // Iterate again to flatten out the arrays
+        int position = 0;
+        for (Object[] array : arrays) {
+            System.arraycopy(array, 0, result, position, array.length);
+            position += array.length;
+        }
+        return result;
     }
 
     @Override
