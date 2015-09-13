@@ -1,10 +1,9 @@
 # bnd-indexer-maven-plugin
-=============================
 
 The `bnd-indexer-maven-plugin` is a bnd based plugin that creates OSGi 
 indexes of bundles.
 
-# What does the `bnd-indexer-maven-plugin` do?
+## What does the `bnd-indexer-maven-plugin` do?
 
 This plugin creates an OSGi repository index (suitable for use in resolving 
 and provisioning) from a set of maven project dependencies. 
@@ -17,7 +16,7 @@ The output is an XML file, and a parallel gzipped version of the XML. When
 deployed to a remote repository these can be used to efficiently host an
 OSGi repository system.
 
-# How do I use the `bnd-indexer-maven-plugin` in my project?
+## How do I use the `bnd-indexer-maven-plugin` in my project?
 
 Normally you will create a module specifically to build your index file.
 The easiest way do this is to create a simple module with a `pom` packaging
@@ -38,7 +37,7 @@ type. Including the bnd-indexer-maven-plugin in your module is very easy:
         </executions>
     </plugin>
     
-## Running the `bnd-indexer-maven-plugin`
+### Running the `bnd-indexer-maven-plugin`
 
 The only goal of the `bnd-indexer-maven-plugin` is `index` which generates the
 OSGi index output files. By default the `bnd-indexer-maven-plugin` binds to the 
@@ -47,27 +46,40 @@ package phase of your build.
 The outputs of the `bnd-indexer-maven-plugin` are `target/index.xml` and
 `target/index.xml.gz`. 
 
-# Configuring the `bnd-indexer-maven-plugin`
+### Configuring the `bnd-indexer-maven-plugin`
 
 The `bnd-indexer-maven-plugin` may be configured in several ways
 
-## Allowing local file locations
+#### Allowing local file locations
 
 By default the `bnd-indexer-maven-plugin` will fail the build if it cannot 
 determine a remote repository from which a dependency can be downloaded.
 Sometimes (for example during local development) some dependencies are not
-yet deployed to a remote repository, even as a snapshot. The 
-`bnd-indexer-maven-plugin` can be configured to use these local URLs as
-follows:
+yet deployed to a remote repository, even as a snapshot, and this should
+not fail the build. It is also sometimes the case that local URLs are
+specifically required for local testing.
+
+The `bnd-indexer-maven-plugin` can be configured to use local URLs by 
+setting the localURLs property to one of three values:
+
+* FORBIDDEN - The default value. This will cause the build to fail if
+no remote URL can be found
+* ALLOWED - Where a remote URL can be found it will be use. If one cannot
+be found then the local URL will be used instead
+* REQUIRED - No remote URLs will be used. All URLs in the index will be
+local.
+
+Setting the localURLs property is very easy:
 
     <configuration>
-        <allowLocal>true</allowLocal>
+        <localURLs>true</localURLs>
     </configuration>
 
-N.B. If local URLs are used then the index *should not be deployed* to a 
-remote repository. The local URLs will not be valid on another machine. 
+N.B. If local URLs are used in the index then it *should not be deployed* 
+to a remote repository. The local URLs are only valid on the machine that
+created them. 
 
-## Excluding transitive dependencies
+#### Excluding transitive dependencies
 
 By default the `bnd-indexer-maven-plugin` will include the full transitive
 dependency tree of the module in the index that it generates. If this
@@ -77,7 +89,7 @@ behaviour is not desired then it can be disabled as follows:
         <includeTransitive>false</includeTransitive>
     </configuration>
     
-## Restricting dependency scopes
+#### Restricting dependency scopes
 
 By default the `bnd-indexer-maven-plugin` will include dependencies with 
 `compile` and `runtime` scope. Different scopes may be selected as follows:

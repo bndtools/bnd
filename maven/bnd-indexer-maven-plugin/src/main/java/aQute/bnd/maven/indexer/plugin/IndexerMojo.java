@@ -1,5 +1,7 @@
 package aQute.bnd.maven.indexer.plugin;
 
+import static aQute.bnd.maven.indexer.plugin.LocalURLs.ALLOWED;
+import static aQute.bnd.maven.indexer.plugin.LocalURLs.REQUIRED;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 import static org.apache.maven.plugins.annotations.ResolutionScope.TEST;
 
@@ -64,8 +66,8 @@ public class IndexerMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.build.directory}", readonly = true)
 	private File targetDir;
 
-    @Parameter( property = "bnd.indexer.allowLocal", defaultValue = "false", readonly = true )
-    private boolean allowLocal;
+    @Parameter( property = "bnd.indexer.localURLs", defaultValue = "FORBIDDEN", readonly = true )
+    private LocalURLs localURLs;
     
     @Parameter( property = "bnd.indexer.includeTransitive", defaultValue = "true", readonly = true )
     private boolean includeTransitive;
@@ -90,7 +92,7 @@ public class IndexerMojo extends AbstractMojo {
     	
     	getLog().debug("Indexing dependencies with scopes: " + scopes);
     	getLog().debug("Including Transitive dependencies: " + includeTransitive);
-    	getLog().debug("Local file URLs permitted: " + allowLocal);
+    	getLog().debug("Local file URLs permitted: " + localURLs);
     	
         DependencyResolutionRequest request = new DefaultDependencyResolutionRequest(project, session);
 
@@ -195,9 +197,13 @@ public class IndexerMojo extends AbstractMojo {
 				throw new FileNotFoundException("The file " + file.getCanonicalPath() + " is not known to this resolver");
 			}
 			
+			if(localURLs == REQUIRED) {
+				return file.toURI();
+			}
+			
 			ArtifactRepository repo = repositories.get(artifact.getRepository().getId());
 			if(repo == null) {
-				if(allowLocal) {
+				if(localURLs == ALLOWED) {
 					getLog().info("The Artifact " + artifact.getArtifact().toString() + 
 							" could not be found in any repository, returning the local location");
 					return file.toURI();

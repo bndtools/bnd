@@ -10,6 +10,7 @@
 		<module>non-transitive</module>
 		<module>transitive</module>
 		<module>scoped</module>
+		<module>require-local</module>
 	</modules>
 
 	<dependencyManagement>
