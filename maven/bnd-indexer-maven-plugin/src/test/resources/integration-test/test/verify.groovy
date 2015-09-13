@@ -46,3 +46,4 @@ println "mavenVersion ${mavenVersion}"
 
 check("${basedir}/transitive/target/index.xml", "${basedir}/transitive/target/index.xml.gz", 21)
 check("${basedir}/non-transitive/target/index.xml", "${basedir}/non-transitive/target/index.xml.gz", 3)
+check("${basedir}/scoped/target/index.xml", "${basedir}/scoped/target/index.xml.gz", 24)

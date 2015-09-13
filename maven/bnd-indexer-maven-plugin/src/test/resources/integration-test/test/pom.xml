@@ -9,6 +9,7 @@
 	<modules>
 		<module>non-transitive</module>
 		<module>transitive</module>
+		<module>scoped</module>
 	</modules>
 
 	<dependencyManagement>
