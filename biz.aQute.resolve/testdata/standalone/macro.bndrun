@@ -1,0 +1,1 @@
+-standalone: ${user.home}/.m2/repository/repository.xml; name=${user.name} M2 
