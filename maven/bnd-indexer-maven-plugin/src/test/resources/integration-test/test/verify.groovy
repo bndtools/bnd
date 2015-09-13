@@ -4,7 +4,7 @@ import java.util.*;
 import org.osgi.resource.*;
 import org.osgi.service.repository.*;
 
-public void check(String xmlFile, String gzipFile, int size) {
+public void check(String xmlFile, String gzipFile, int size, boolean localURL) {
 	// Check the bundles exist!
 	File xml = new File(xmlFile);
 	assert xml.isFile();
@@ -36,7 +36,7 @@ public void check(String xmlFile, String gzipFile, int size) {
 						ResourceUtils.getIdentityCapability(res).getAttributes().get("osgi.identity");
 	
 	String location = ResourceUtils.getContentCapability(res).getAttributes().get("url").toString();
-	assert !location.contains("file:");
+	assert localURL == location.contains("file:");
 }
 
 println "TODO: Need to write some test code for the generated index!"
@@ -44,5 +44,7 @@ println "basedir ${basedir}"
 println "localRepositoryPath ${localRepositoryPath}"
 println "mavenVersion ${mavenVersion}"
 
-check("${basedir}/transitive/target/index.xml", "${basedir}/transitive/target/index.xml.gz", 21)
-check("${basedir}/non-transitive/target/index.xml", "${basedir}/non-transitive/target/index.xml.gz", 3)
+check("${basedir}/transitive/target/index.xml", "${basedir}/transitive/target/index.xml.gz", 21, false)
+check("${basedir}/non-transitive/target/index.xml", "${basedir}/non-transitive/target/index.xml.gz", 3, false)
+check("${basedir}/scoped/target/index.xml", "${basedir}/scoped/target/index.xml.gz", 24, false)
+check("${basedir}/require-local/target/index.xml", "${basedir}/require-local/target/index.xml.gz", 21, true)
