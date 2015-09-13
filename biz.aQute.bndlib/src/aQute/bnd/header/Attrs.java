@@ -490,7 +490,7 @@ public class Attrs implements Map<String,String> {
 
 		Type type = toType(t);
 		if (type == null)
-			return null;
+			return s;
 
 		return convert(type, s);
 	}
