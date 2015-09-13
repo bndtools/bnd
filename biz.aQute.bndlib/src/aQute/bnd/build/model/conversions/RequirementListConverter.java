@@ -4,20 +4,19 @@ import java.util.Map.Entry;
 
 import org.osgi.resource.Requirement;
 
-import aQute.bnd.header.Attrs;
+import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.osgi.resource.CapReqBuilder;
-import aQute.libg.tuple.Pair;
 
-public class RequirementListConverter extends ClauseListConverter<Requirement> {
+public class RequirementListConverter extends HeaderClauseListConverter<Requirement> {
 
 	public RequirementListConverter() {
-		super(new Converter<Requirement,Pair<String,Attrs>>() {
-			public Requirement convert(Pair<String,Attrs> input) {
+		super(new Converter<Requirement,HeaderClause>() {
+			public Requirement convert(HeaderClause input) {
 				if (input == null)
 					return null;
-				String namespace = input.getFirst();
+				String namespace = input.getName();
 				CapReqBuilder builder = new CapReqBuilder(namespace);
-				for (Entry<String,String> entry : input.getSecond().entrySet()) {
+				for (Entry<String,String> entry : input.getAttribs().entrySet()) {
 					String key = entry.getKey();
 					if (key.endsWith(":")) {
 						key = key.substring(0, key.length() - 1);
