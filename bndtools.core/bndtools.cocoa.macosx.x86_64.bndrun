@@ -2,6 +2,7 @@
 
 -runbundles: ${crossplatform.bundles},\
 	org.eclipse.swt.cocoa.macosx.x86_64,\
+	org.eclipse.e4.ui.workbench.renderers.swt.cocoa,\
 	org.eclipse.equinox.security.macosx,\
 	org.eclipse.jdt.launching.ui.macosx,\
 	org.eclipse.core.filesystem.macosx,\
