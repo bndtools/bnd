@@ -5,10 +5,10 @@
 
 Bundle-Description: Embedded Repo for bnd workspace.
 -includeresource: \
-	biz.aQute.launcher/biz.aQute.launcher-latest.jar=${repo;biz.aQute.launcher;snapshot}, \
-	biz.aQute.remote.launcher/biz.aQute.remote.launcher-latest.jar=${repo;biz.aQute.remote.launcher;snapshot}, \
-	biz.aQute.junit/biz.aQute.junit-latest.jar=${repo;biz.aQute.junit;snapshot}, \
-	biz.aQute.tester/biz.aQute.tester-latest.jar=${repo;biz.aQute.tester;snapshot}
+	biz.aQute.launcher/biz.aQute.launcher-${base.version}.jar=${repo;biz.aQute.launcher;snapshot}, \
+	biz.aQute.remote.launcher/biz.aQute.remote.launcher-${base.version}.jar=${repo;biz.aQute.remote.launcher;snapshot}, \
+	biz.aQute.junit/biz.aQute.junit-${base.version}.jar=${repo;biz.aQute.junit;snapshot}, \
+	biz.aQute.tester/biz.aQute.tester-${base.version}.jar=${repo;biz.aQute.tester;snapshot}
 	
 
 -dependson: \
