@@ -24,3 +24,4 @@ build_script:
 cache:
   - C:\Users\appveyor\.gradle -> .gradle-wrapper\gradle-wrapper.properties
   - C:\ProgramData\chocolatey\lib -> appveyor.yml
+  - C:\bin\apache-maven-3.2.5\ -> appveyor.yml
