@@ -39,9 +39,6 @@ public class Run extends Project {
 			parsed = processor.getProperties();
 		}
 
-		if (!parsed.containsKey("-standalone"))
-			throw new IllegalArgumentException("No workspace exists and the bnd file does not declare -standalone.");
-
 		Workspace standaloneWorkspace = Workspace.createStandaloneWorkspace(parsed, file.toURI());
 		Run run = new Run(standaloneWorkspace, file);
 		return run;

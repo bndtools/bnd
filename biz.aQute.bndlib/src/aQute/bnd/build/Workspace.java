@@ -1089,7 +1089,7 @@ public class Workspace extends Processor {
 	public static Workspace createStandaloneWorkspace(Properties run, URI base) {
 		Workspace ws = new Workspace(WorkspaceLayout.STANDALONE);
 
-		Parameters standalone = new Parameters(run.getProperty("-standalone"));
+		Parameters standalone = new Parameters(run.getProperty("-standalone", ""));
 
 		int counter = 1;
 		for (Map.Entry<String,Attrs> e : standalone.entrySet()) {
