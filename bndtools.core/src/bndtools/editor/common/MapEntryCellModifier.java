@@ -36,17 +36,22 @@ public class MapEntryCellModifier<K, V> implements ICellModifier {
     private static final String[] LABELS = new String[] {
             "Name", "Value"
     };
+    private static final int[] WIDTHS = new int[] {
+            120, 200
+    };
 
-    private TableViewer viewer;
+    private final TableViewer viewer;
 
     public MapEntryCellModifier(TableViewer viewer) {
         this.viewer = viewer;
     }
 
+    @Override
     public boolean canModify(Object element, String property) {
         return PROP_NAME.equals(property) || PROP_VALUE.equals(property);
     }
 
+    @Override
     public Object getValue(Object element, String property) {
         Object result = null;
 
@@ -64,6 +69,7 @@ public class MapEntryCellModifier<K, V> implements ICellModifier {
         return result;
     }
 
+    @Override
     public void modify(Object element, String property, Object editResult) {
         @SuppressWarnings("unchecked")
         Map<K,V> map = (Map<K,V>) viewer.getInput();
@@ -103,10 +109,10 @@ public class MapEntryCellModifier<K, V> implements ICellModifier {
     public void addColumnsToTable() {
         Table table = viewer.getTable();
 
-        for (String label : LABELS) {
+        for (int i = 0; i < LABELS.length; i++) {
             TableColumn col = new TableColumn(table, SWT.NONE);
-            col.setText(label);
-            col.setWidth(120);
+            col.setText(LABELS[i]);
+            col.setWidth(WIDTHS[i]);
         }
     }
 
