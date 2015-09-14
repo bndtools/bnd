@@ -18,6 +18,8 @@ package aQute.bnd.maven.plugin;
 
 import static aQute.lib.io.IO.getFile;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,6 +40,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Builder;
@@ -71,7 +74,10 @@ public class BndMavenPlugin extends AbstractMojo {
 	
 	@Parameter(defaultValue = "${project}", required = true, readonly = true)
 	private MavenProject project;
-	
+
+	@Parameter(defaultValue = "${settings}", readonly = true)
+	private Settings settings;
+
 	public void execute() throws MojoExecutionException {
 		Log log = getLog();
 
@@ -84,6 +90,7 @@ public class BndMavenPlugin extends AbstractMojo {
 		
 		Properties beanProperties = new BeanProperties();
 		beanProperties.put("project", project);
+		beanProperties.put("settings", settings);
 		Properties mavenProperties = new Properties(beanProperties);
 		mavenProperties.putAll(project.getProperties());
 
@@ -262,10 +269,20 @@ public class BndMavenPlugin extends AbstractMojo {
 		private Object getField(Object target, String key) {
 			final int i = key.indexOf('.');
 			final String fieldName = (i > 0) ? key.substring(0, i) : key;
+			final String getterSuffix = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
 			Object value = null;
 			try {
-				final String getterName = "get" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
-				value = target.getClass().getMethod(getterName, (Class<?>) null).invoke(target, (Object[]) null);
+				Class targetClass = target.getClass();
+				while (!Modifier.isPublic(targetClass.getModifiers())) {
+					targetClass = targetClass.getSuperclass();
+				}
+				Method getter;
+				try {
+					getter = targetClass.getMethod("get" + getterSuffix);
+				} catch (NoSuchMethodException nsme) {
+					getter = targetClass.getMethod("is" + getterSuffix);
+				}
+				value = getter.invoke(target);
 			} catch (Exception e) {
 				getLog().debug("Could not find getter method for field: " + fieldName, e);
 			}
