@@ -28,6 +28,7 @@ Export-Package: \
 	aQute.bnd.properties;-noimport:=true,\
 	aQute.bnd.build.model;-noimport:=true,\
 	aQute.bnd.build.model.clauses;-noimport:=true,\
+	aQute.bnd.build.model.conversions;-noimport:=true,\
 	aQute.service.reporter;-noimport:=true,\
 	aQute.bnd.testing;-noimport:=true,\
 	aQute.bnd.osgi.repository;-noimport:=true,\

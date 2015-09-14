@@ -1,14 +1,13 @@
 package aQute.bnd.build.model.conversions;
 
-import aQute.bnd.build.model.clauses.*;
-import aQute.bnd.header.*;
-import aQute.libg.tuple.*;
+import aQute.bnd.build.model.clauses.HeaderClause;
+import aQute.bnd.build.model.clauses.VersionedClause;
 
-public class VersionedClauseConverter implements Converter<VersionedClause,Pair<String,Attrs>> {
-	public VersionedClause convert(Pair<String,Attrs> input) throws IllegalArgumentException {
+public class VersionedClauseConverter implements Converter<VersionedClause,HeaderClause> {
+	public VersionedClause convert(HeaderClause input) throws IllegalArgumentException {
 		if (input == null)
 			return null;
-		return new VersionedClause(input.getFirst(), input.getSecond());
+		return new VersionedClause(input.getName(), input.getAttribs());
 	}
 
 	@Override

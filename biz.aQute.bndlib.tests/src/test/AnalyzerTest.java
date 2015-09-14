@@ -2,11 +2,9 @@ package test;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -19,9 +17,7 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Clazz;
-import aQute.bnd.osgi.Clazz.Def;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
@@ -143,31 +139,6 @@ public class AnalyzerTest extends BndTestCase {
 	/**
 	 * Check the cross references
 	 */
-
-	public static void testCrossReference() throws Exception {
-		Builder b = new Builder();
-		try {
-			b.addClasspath(IO.getFile(cwd, "bin"));
-			b.addClasspath(IO.getFile(cwd, "../aQute.libg/bin"));
-			b.addClasspath(IO.getFile(cwd, "../biz.aQute.bndlib/bin"));
-			b.setExportPackage("aQute.bnd.build.model.conversions");
-			b.setConditionalPackage("aQute.lib*");
-			Jar jar = b.build();
-			assertTrue(b.check("((, )?(aQute.libg.tuple)){1,1}"));
-
-			Map<Def,List<TypeRef>> xRef = b.getXRef(b.getPackageRef("aQute.bnd.build.model.conversions"),
-					Arrays.asList(b.getPackageRef("aQute.libg.tuple")), Modifier.PUBLIC + Modifier.PROTECTED);
-
-			for (Clazz.Def def : xRef.keySet())
-				System.out.println(
-						def.getOwnerType() + " " + def.getName() + " " + def.getType() + " : " + xRef.get(def));
-
-			assertEquals(5, xRef.size());
-		}
-		finally {
-			b.close();
-		}
-	}
 
 	/**
 	 * The -removeheaders header can be used as a whitelist.

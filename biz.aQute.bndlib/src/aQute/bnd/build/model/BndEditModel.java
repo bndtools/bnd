@@ -29,7 +29,6 @@ import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.build.model.clauses.ImportPattern;
 import aQute.bnd.build.model.clauses.ServiceComponent;
 import aQute.bnd.build.model.clauses.VersionedClause;
-import aQute.bnd.build.model.conversions.ClauseListConverter;
 import aQute.bnd.build.model.conversions.CollectionFormatter;
 import aQute.bnd.build.model.conversions.Converter;
 import aQute.bnd.build.model.conversions.DefaultBooleanFormatter;
@@ -47,7 +46,6 @@ import aQute.bnd.build.model.conversions.RequirementFormatter;
 import aQute.bnd.build.model.conversions.RequirementListConverter;
 import aQute.bnd.build.model.conversions.SimpleListConverter;
 import aQute.bnd.build.model.conversions.VersionedClauseConverter;
-import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.properties.IDocument;
@@ -57,7 +55,6 @@ import aQute.bnd.properties.PropertiesLineReader;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
-import aQute.libg.tuple.Pair;
 
 /**
  * A model for a Bnd file. In the first iteration, use a simple Properties
@@ -84,7 +81,7 @@ public class BndEditModel {
 			// BndConstants.TESTSUITES,
 			aQute.bnd.osgi.Constants.TESTCASES, aQute.bnd.osgi.Constants.PLUGIN, aQute.bnd.osgi.Constants.PLUGINPATH,
 			aQute.bnd.osgi.Constants.RUNREPOS, aQute.bnd.osgi.Constants.RUNREQUIRES, aQute.bnd.osgi.Constants.RUNEE,
-			Constants.BUNDLE_BLUEPRINT, Constants.INCLUDE_RESOURCE
+			Constants.BUNDLE_BLUEPRINT, Constants.INCLUDE_RESOURCE, "-standalone"
 	};
 
 	public static final String PROP_WORKSPACE = "_workspace";
@@ -105,12 +102,12 @@ public class BndEditModel {
 	private Project						project;
 
 	// CONVERTERS
-	private Converter<List<VersionedClause>,String>		buildPathConverter			= new ClauseListConverter<VersionedClause>(
-			new Converter<VersionedClause,Pair<String,Attrs>>() {
-				public VersionedClause convert(Pair<String,Attrs> input) throws IllegalArgumentException {
+	private Converter<List<VersionedClause>,String>	buildPathConverter			= new HeaderClauseListConverter<VersionedClause>(
+			new Converter<VersionedClause,HeaderClause>() {
+				public VersionedClause convert(HeaderClause input) throws IllegalArgumentException {
 					if (input == null)
 						return null;
-					return new VersionedClause(input.getFirst(), input.getSecond());
+					return new VersionedClause(input.getName(), input.getAttribs());
 				}
 
 				@Override
@@ -118,12 +115,12 @@ public class BndEditModel {
 					return null;
 				}
 			});
-	private Converter<List<VersionedClause>,String>		buildPackagesConverter		= new ClauseListConverter<VersionedClause>(
-			new Converter<VersionedClause,Pair<String,Attrs>>() {
-				public VersionedClause convert(Pair<String,Attrs> input) throws IllegalArgumentException {
+	private Converter<List<VersionedClause>,String>	buildPackagesConverter		= new HeaderClauseListConverter<VersionedClause>(
+			new Converter<VersionedClause,HeaderClause>() {
+				public VersionedClause convert(HeaderClause input) throws IllegalArgumentException {
 					if (input == null)
 						return null;
-					return new VersionedClause(input.getFirst(), input.getSecond());
+					return new VersionedClause(input.getName(), input.getAttribs());
 				}
 
 				@Override
@@ -131,7 +128,7 @@ public class BndEditModel {
 					return VersionedClause.error(msg);
 				}
 			});
-	private Converter<List<VersionedClause>,String>		clauseListConverter			= new ClauseListConverter<VersionedClause>(
+	private Converter<List<VersionedClause>,String>	clauseListConverter			= new HeaderClauseListConverter<VersionedClause>(
 			new VersionedClauseConverter());
 	private Converter<String,String>					stringConverter				= new NoopConverter<String>();
 	private Converter<Boolean,String>					includedSourcesConverter	= new Converter<Boolean,String>() {
@@ -145,13 +142,16 @@ public class BndEditModel {
 		}
 	};
 	private Converter<List<String>,String>				listConverter				= SimpleListConverter.create();
-	private Converter<List<HeaderClause>,String>		headerClauseListConverter	= new HeaderClauseListConverter();
-	private ClauseListConverter<ExportedPackage>		exportPackageConverter		= new ClauseListConverter<ExportedPackage>(
-			new Converter<ExportedPackage,Pair<String,Attrs>>() {
-				public ExportedPackage convert(Pair<String,Attrs> input) {
+
+	private Converter<List<HeaderClause>,String>		headerClauseListConverter	= new HeaderClauseListConverter<>(
+			new NoopConverter<HeaderClause>());
+
+	private Converter<List<ExportedPackage>,String> exportPackageConverter = new HeaderClauseListConverter<>(
+			new Converter<ExportedPackage,HeaderClause>() {
+				public ExportedPackage convert(HeaderClause input) {
 					if (input == null)
 						return null;
-					return new ExportedPackage(input.getFirst(), input.getSecond());
+					return new ExportedPackage(input.getName(), input.getAttribs());
 				}
 
 				@Override
@@ -159,12 +159,13 @@ public class BndEditModel {
 					return ExportedPackage.error(msg);
 				}
 			});
-	private Converter<List<ServiceComponent>,String>	serviceComponentConverter	= new ClauseListConverter<ServiceComponent>(
-			new Converter<ServiceComponent,Pair<String,Attrs>>() {
-				public ServiceComponent convert(Pair<String,Attrs> input) throws IllegalArgumentException {
+
+	private Converter<List<ServiceComponent>,String>	serviceComponentConverter	= new HeaderClauseListConverter<ServiceComponent>(
+			new Converter<ServiceComponent,HeaderClause>() {
+				public ServiceComponent convert(HeaderClause input) throws IllegalArgumentException {
 					if (input == null)
 						return null;
-					return new ServiceComponent(input.getFirst(), input.getSecond());
+					return new ServiceComponent(input.getName(), input.getAttribs());
 				}
 
 				@Override
@@ -172,12 +173,12 @@ public class BndEditModel {
 					return ServiceComponent.error(msg);
 				}
 			});
-	private Converter<List<ImportPattern>,String>		importPatternConverter		= new ClauseListConverter<ImportPattern>(
-			new Converter<ImportPattern,Pair<String,Attrs>>() {
-				public ImportPattern convert(Pair<String,Attrs> input) throws IllegalArgumentException {
+	private Converter<List<ImportPattern>,String>		importPatternConverter		= new HeaderClauseListConverter<ImportPattern>(
+			new Converter<ImportPattern,HeaderClause>() {
+				public ImportPattern convert(HeaderClause input) throws IllegalArgumentException {
 					if (input == null)
 						return null;
-					return new ImportPattern(input.getFirst(), input.getSecond());
+					return new ImportPattern(input.getName(), input.getAttribs());
 				}
 
 				@Override
@@ -207,6 +208,9 @@ public class BndEditModel {
 
 	private Converter<String,Collection< ? extends Requirement>> requirementListFormatter = new CollectionFormatter<Requirement>(
 			LIST_SEPARATOR, new RequirementFormatter(), null);
+
+	private Converter<String,Collection< ? extends HeaderClause>> standaloneLinkListFormatter = new CollectionFormatter<>(
+			LIST_SEPARATOR, new HeaderClauseFormatter(), "");
 
 	private Converter<String,EE>							eeFormatter			= new EEFormatter();
 	private Converter<String,Collection< ? extends String>>	runReposFormatter	= new CollectionFormatter<String>(
@@ -257,6 +261,7 @@ public class BndEditModel {
 		// converters.put(BndConstants.RESOLVE_MODE, resolveModeConverter);
 		converters.put(Constants.BUNDLE_BLUEPRINT, headerClauseListConverter);
 		converters.put(Constants.INCLUDE_RESOURCE, listConverter);
+		converters.put("-standalone", headerClauseListConverter);
 
 		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_LICENSE, newlineEscapeFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_CATEGORY, newlineEscapeFormatter);
@@ -297,6 +302,7 @@ public class BndEditModel {
 		// formatters.put(BndConstants.RESOLVE_MODE, resolveModeFormatter);
 		formatters.put(Constants.BUNDLE_BLUEPRINT, headerClauseListFormatter);
 		formatters.put(Constants.INCLUDE_RESOURCE, stringListFormatter);
+		formatters.put("-standalone", standaloneLinkListFormatter);
 	}
 
 	public BndEditModel(BndEditModel model) {
@@ -455,6 +461,18 @@ public class BndEditModel {
 			result.add(names.nextElement());
 		}
 		return result;
+	}
+
+	public Converter<Object,String> lookupConverter(String propertyName) {
+		@SuppressWarnings("unchecked")
+		Converter<Object,String> converter = (Converter<Object,String>) converters.get(propertyName);
+		return converter;
+	}
+
+	public Converter<String,Object> lookupFormatter(String propertyName) {
+		@SuppressWarnings("unchecked")
+		Converter<String,Object> formatter = (Converter<String,Object>) formatters.get(propertyName);
+		return formatter;
 	}
 
 	public Object genericGet(String propertyName) {
@@ -886,6 +904,15 @@ public class BndEditModel {
 	public void setRunBlacklist(List<Requirement> requires) {
 		List<Requirement> oldValue = getRunBlacklist();
 		doSetObject(aQute.bnd.osgi.Constants.RUNBLACKLIST, oldValue, requires, requirementListFormatter);
+	}
+
+	public List<HeaderClause> getStandaloneLinks() {
+		return doGetObject("-standalone", headerClauseListConverter);
+	}
+
+	public void setStandaloneLinks(List<HeaderClause> headers) {
+		List<HeaderClause> old = getStandaloneLinks();
+		doSetObject("-standalone", old, headers, standaloneLinkListFormatter);
 	}
 
 	private <R> R doGetObject(String name, Converter< ? extends R, ? super String> converter) {
