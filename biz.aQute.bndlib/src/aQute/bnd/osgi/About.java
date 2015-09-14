@@ -4,8 +4,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
-import aQute.bnd.header.Attrs;
-import aQute.bnd.header.Parameters;
 import aQute.bnd.version.Version;
 
 /**
@@ -42,8 +40,12 @@ public class About {
 	public static Version	_2_3	= new Version(2, 3, 0);
 	public static Version	_2_4	= new Version(2, 4, 0);
 	public static Version	_3_0	= new Version(3, 0, 0);
-	public static Version	CURRENT	= _3_0;
+	public static Version	_3_1	= new Version(3, 1, 0);
+	public static Version	CURRENT	= _3_1;
 
+	public static String[]	CHANGES_3_1	= {
+			"The embedded repo is expanded into cnf/cache/<bnd-version> folder to avoid potential conflicts."
+											};
 	public static String[] CHANGES_3_0 = {
 			"No longer analyzes the packages on the classpath, only information in manifest is used to find out package information",
 			"Added bnd command bnd resolve validate <index.xml> to validate that a repository file is complete",
@@ -160,6 +162,7 @@ public class About {
 	public static Map<Version,String[]> CHANGES = new TreeMap<Version,String[]>(Collections.reverseOrder());
 
 	static {
+		CHANGES.put(_3_1, CHANGES_3_1);
 		CHANGES.put(_3_0, CHANGES_3_0);
 		CHANGES.put(_2_4, CHANGES_2_4);
 		CHANGES.put(_2_3, CHANGES_2_3);

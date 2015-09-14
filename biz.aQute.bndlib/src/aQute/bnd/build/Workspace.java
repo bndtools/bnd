@@ -37,6 +37,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.maven.support.Maven;
+import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
@@ -71,7 +72,7 @@ public class Workspace extends Processor {
 	public static final String	BUILDFILE	= "build.bnd";
 	public static final String	CNFDIR		= "cnf";
 	public static final String	BNDDIR		= "bnd";
-	public static final String	CACHEDIR	= "cache";
+	public static final String	CACHEDIR	= "cache/" + About.CURRENT;
 
 	public static final String STANDALONE_REPO_CLASS = "aQute.bnd.deployer.repository.FixedIndexedRepo";
 
