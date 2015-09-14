@@ -11,14 +11,19 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
@@ -62,7 +67,7 @@ public class RunPropertiesPart extends BndEditorPart {
     private void createSection(Section section, FormToolkit toolkit) {
         section.setText("Runtime Properties");
 
-        Composite composite = toolkit.createComposite(section);
+        final Composite composite = toolkit.createComposite(section);
         section.setClient(composite);
 
         // Create controls: Run Properties
@@ -72,8 +77,12 @@ public class RunPropertiesPart extends BndEditorPart {
         runPropertiesModifier = new MapEntryCellModifier<>(viewRunProperties);
 
         tblRunProperties.setHeaderVisible(true);
-        tblRunProperties.setLinesVisible(true);
-        runPropertiesModifier.addColumnsToTable();
+        final TableColumn tblRunPropsCol1 = new TableColumn(tblRunProperties, SWT.NONE);
+        tblRunPropsCol1.setText("Name");
+        tblRunPropsCol1.setWidth(100);
+        final TableColumn tblRunPropsCol2 = new TableColumn(tblRunProperties, SWT.NONE);
+        tblRunPropsCol1.setText("Value");
+        tblRunPropsCol1.setWidth(100);
 
         viewRunProperties.setUseHashlookup(true);
         viewRunProperties.setColumnProperties(MapEntryCellModifier.getColumnProperties());
@@ -185,6 +194,36 @@ public class RunPropertiesPart extends BndEditorPart {
                             vmArgs = null;
                     }
                 });
+            }
+        });
+        composite.addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e) {
+                Rectangle area = composite.getClientArea();
+                Point preferredSize = tblRunProperties.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                int width = area.width - 2 * tblRunProperties.getBorderWidth();
+                if (preferredSize.y > area.height + tblRunProperties.getHeaderHeight()) {
+                    // Subtract the scrollbar width from the total column width
+                    // if a vertical scrollbar will be required
+                    Point vBarSize = tblRunProperties.getVerticalBar().getSize();
+                    width -= vBarSize.x;
+                }
+                Point oldSize = tblRunProperties.getSize();
+                if (oldSize.x > area.width) {
+                    // table is getting smaller so make the columns
+                    // smaller first and then resize the table to
+                    // match the client area width
+                    tblRunPropsCol1.setWidth(width / 3);
+                    tblRunPropsCol2.setWidth(width - tblRunPropsCol1.getWidth());
+                    tblRunProperties.setSize(area.width, area.height);
+                } else {
+                    // table is getting bigger so make the table
+                    // bigger first and then make the columns wider
+                    // to match the client area width
+                    tblRunProperties.setSize(area.width, area.height);
+                    tblRunPropsCol1.setWidth(width / 3);
+                    tblRunPropsCol2.setWidth(width - tblRunPropsCol1.getWidth());
+                }
             }
         });
     }

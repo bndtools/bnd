@@ -18,10 +18,7 @@ import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TextCellEditor;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Item;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 
 public class MapEntryCellModifier<K, V> implements ICellModifier {
 
@@ -104,16 +101,6 @@ public class MapEntryCellModifier<K, V> implements ICellModifier {
 
         if (changed)
             propertySupport.firePropertyChange(property, null, editResult);
-    }
-
-    public void addColumnsToTable() {
-        Table table = viewer.getTable();
-
-        for (int i = 0; i < LABELS.length; i++) {
-            TableColumn col = new TableColumn(table, SWT.NONE);
-            col.setText(LABELS[i]);
-            col.setWidth(WIDTHS[i]);
-        }
     }
 
     public static String[] getColumnProperties() {
