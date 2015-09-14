@@ -26,9 +26,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
@@ -58,7 +57,7 @@ public class AvailableBundlesPart extends BndEditorPart {
     private final RepositoryTreeContentProvider contentProvider = new RepositoryTreeContentProvider(ResolutionPhase.runtime);
     private Text txtSearch;
     private TreeViewer viewer;
-    private ToolItem layoutIndicator;
+    private Label lblLayout;
 
     private Set<String> includedRepos;
 
@@ -117,9 +116,8 @@ public class AvailableBundlesPart extends BndEditorPart {
         section.setText("Browse Repos");
 
         // Create toolbar
-        ToolBar toolbar = new ToolBar(section, SWT.FLAT);
-        section.setTextClient(toolbar);
-        layoutIndicator = new ToolItem(toolbar, SWT.PUSH);
+        lblLayout = new Label(section, SWT.NONE);
+        section.setTextClient(lblLayout);
         bndLayoutIcon = Icons.desc("bnd.workspace.bndlayout").createImage();
         standaloneLayoutIcon = Icons.desc("bnd.workspace.standalone").createImage();
 
@@ -219,12 +217,12 @@ public class AvailableBundlesPart extends BndEditorPart {
 
         switch (workspace.getLayout()) {
         case BND :
-            layoutIndicator.setImage(bndLayoutIcon);
-            layoutIndicator.setToolTipText(String.format("Connected to the bnd workspace at: %s.", workspace.getBase()));
+            lblLayout.setImage(bndLayoutIcon);
+            lblLayout.setToolTipText(String.format("Connected to the bnd workspace at: %s.", workspace.getBase()));
             break;
         case STANDALONE :
-            layoutIndicator.setImage(standaloneLayoutIcon);
-            layoutIndicator.setToolTipText("Standalone mode.");
+            lblLayout.setImage(standaloneLayoutIcon);
+            lblLayout.setToolTipText("Standalone mode.");
             break;
         default :
         }

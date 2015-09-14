@@ -21,6 +21,7 @@ import aQute.bnd.build.model.BndEditModel;
 import bndtools.Plugin;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.project.AvailableBundlesPart;
+import bndtools.editor.project.RepositorySelectionPart;
 import bndtools.editor.project.RunBundlesPart;
 import bndtools.editor.project.RunFrameworkPart;
 import bndtools.editor.project.RunProgramArgsPart;
@@ -128,14 +129,12 @@ public class ProjectRunPage extends FormPage {
         right.setLayout(gl);
 
         // First column
-        /*
-        RepositorySelectionPart reposPart = new RepositorySelectionPart(left, tk, Section.TITLE_BAR | Section.TWISTIE | Section.DESCRIPTION);
+        RepositorySelectionPart reposPart = new RepositorySelectionPart(getEditor(), left, tk, Section.TITLE_BAR | Section.TWISTIE);
         managedForm.addPart(reposPart);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 50;
         gd.heightHint = 50;
         reposPart.getSection().setLayoutData(PageLayoutUtils.createCollapsed());
-        */
 
         AvailableBundlesPart availableBundlesPart = new AvailableBundlesPart(left, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
         managedForm.addPart(availableBundlesPart);
