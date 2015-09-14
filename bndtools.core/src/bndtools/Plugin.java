@@ -35,7 +35,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.bindex.BundleIndexer;
 import org.osgi.service.indexer.ResourceIndexer;
 import org.osgi.service.url.URLConstants;
 import org.osgi.service.url.URLStreamHandlerService;
@@ -66,7 +65,6 @@ public class Plugin extends AbstractUIPlugin {
 
     private volatile ServiceTracker<IWorkspace,IWorkspace> workspaceTracker;
     private volatile ServiceRegistration<URLStreamHandlerService> urlHandlerReg;
-    private volatile IndexerTracker indexerTracker;
     private volatile ResourceIndexerTracker resourceIndexerTracker;
     private volatile HeadlessBuildManagerTracker headlessBuildManager;
     private volatile VersionControlIgnoresManagerTracker versionControlIgnoresManager;
@@ -84,9 +82,6 @@ public class Plugin extends AbstractUIPlugin {
 
         bndActivator = new Activator();
         bndActivator.start(context);
-
-        indexerTracker = new IndexerTracker(context);
-        indexerTracker.open();
 
         resourceIndexerTracker = new ResourceIndexerTracker(context, 1000);
         resourceIndexerTracker.open();
@@ -115,7 +110,7 @@ public class Plugin extends AbstractUIPlugin {
 
         Dictionary<String,Object> props = new Hashtable<String,Object>();
         props.put(URLConstants.URL_HANDLER_PROTOCOL, new String[] {
-            WorkspaceURLStreamHandlerService.PROTOCOL
+                WorkspaceURLStreamHandlerService.PROTOCOL
         });
         urlHandlerReg = context.registerService(URLStreamHandlerService.class, new WorkspaceURLStreamHandlerService(workspaceTracker), props);
     }
@@ -163,7 +158,6 @@ public class Plugin extends AbstractUIPlugin {
         headlessBuildManager.close();
         versionControlIgnoresManager.close();
         resourceIndexerTracker.close();
-        indexerTracker.close();
         this.bundleContext = null;
         plugin = null;
         super.stop(context);
@@ -202,6 +196,7 @@ public class Plugin extends AbstractUIPlugin {
             reporter.clear();
 
             async(new Runnable() {
+                @Override
                 public void run() {
                     ErrorDialog.openError(null, title, title + "\n" + extra, s);
                 }
@@ -214,6 +209,7 @@ public class Plugin extends AbstractUIPlugin {
 
     public static void message(final String msg) {
         async(new Runnable() {
+            @Override
             public void run() {
                 MessageDialog.openInformation(null, "Bnd", msg);
             }
@@ -235,6 +231,7 @@ public class Plugin extends AbstractUIPlugin {
         }
 
         async(new Runnable() {
+            @Override
             public void run() {
                 Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
                 ErrorDialog.openError(null, "Errors during bundle generation", sb.toString(), s);
@@ -248,6 +245,7 @@ public class Plugin extends AbstractUIPlugin {
         Status s = new Status(Status.ERROR, PLUGIN_ID, 0, msg, t);
         getLog().log(s);
         async(new Runnable() {
+            @Override
             public void run() {
                 if (!busy.compareAndSet(false, true)) {
                     Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
@@ -266,6 +264,7 @@ public class Plugin extends AbstractUIPlugin {
             sb.append("\n");
         }
         async(new Runnable() {
+            @Override
             public void run() {
                 Status s = new Status(Status.WARNING, PLUGIN_ID, 0, "", null);
                 ErrorDialog.openError(null, "Warnings during bundle generation", sb.toString(), s);
@@ -275,10 +274,6 @@ public class Plugin extends AbstractUIPlugin {
 
     public static ImageDescriptor imageDescriptorFromPlugin(String imageFilePath) {
         return AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, imageFilePath);
-    }
-
-    public BundleIndexer getBundleIndexer() {
-        return indexerTracker;
     }
 
     public ResourceIndexer getResourceIndexer() {
