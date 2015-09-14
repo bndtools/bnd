@@ -1,9 +1,14 @@
 package bndtools.editor.pages;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
+import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -17,6 +22,7 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.Plugin;
 import bndtools.editor.common.MDSashForm;
@@ -31,6 +37,9 @@ import bndtools.utils.MessageHyperlinkAdapter;
 public class ProjectRunPage extends FormPage {
 
     private final BndEditModel model;
+
+    private final Image imgBndLayout = Icons.desc("bnd.workspace.bndlayout").createImage();
+    private final Image imgStandaloneLayout = Icons.desc("bnd.workspace.standalone").createImage();
 
     public static final IFormPageFactory FACTORY_PROJECT = new IFormPageFactory() {
         @Override
@@ -75,7 +84,9 @@ public class ProjectRunPage extends FormPage {
 
         FormToolkit tk = managedForm.getToolkit();
         final ScrolledForm form = managedForm.getForm();
-        form.setText("Run");
+        form.setText("Resolve/Run");
+        updateFormImage(form);
+
         tk.decorateFormHeading(form.getForm());
         form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 
@@ -134,7 +145,7 @@ public class ProjectRunPage extends FormPage {
         gd.heightHint = 50;
         reposPart.getSection().setLayoutData(PageLayoutUtils.createCollapsed());
 
-        AvailableBundlesPart availableBundlesPart = new AvailableBundlesPart(left, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+        AvailableBundlesPart availableBundlesPart = new AvailableBundlesPart(left, tk, Section.TITLE_BAR | Section.EXPANDED);
         managedForm.addPart(availableBundlesPart);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 50;
@@ -169,10 +180,38 @@ public class ProjectRunPage extends FormPage {
             runBundlesPart.getSection().addExpansionListener(new ResizeExpansionAdapter(runBundlesPart.getSection()));
         }
 
+        // Listeners
+        model.addPropertyChangeListener(BndEditModel.PROP_WORKSPACE, new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                updateFormImage(form);
+            }
+        });
+
         sashForm.setWeights(new int[] {
                 1, 1
         });
         sashForm.hookResizeListener();
         body.setLayout(new FillLayout());
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        imgBndLayout.dispose();
+        imgStandaloneLayout.dispose();
+    }
+
+    private void updateFormImage(final ScrolledForm form) {
+        Workspace ws = model.getWorkspace();
+        switch (ws.getLayout()) {
+        case BND :
+            form.setImage(imgBndLayout);
+            break;
+        case STANDALONE :
+            form.setImage(imgStandaloneLayout);
+            break;
+        default :
+        }
     }
 }

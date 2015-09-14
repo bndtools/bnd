@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.bndtools.core.ui.icons.Icons;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -21,12 +20,10 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.forms.widgets.FormToolkit;
@@ -57,7 +54,6 @@ public class AvailableBundlesPart extends BndEditorPart {
     private final RepositoryTreeContentProvider contentProvider = new RepositoryTreeContentProvider(ResolutionPhase.runtime);
     private Text txtSearch;
     private TreeViewer viewer;
-    private Label lblLayout;
 
     private Set<String> includedRepos;
 
@@ -102,24 +98,14 @@ public class AvailableBundlesPart extends BndEditorPart {
         }
     };
 
-    private Image bndLayoutIcon;
-    private Image standaloneLayoutIcon;
-
     public AvailableBundlesPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
         Section section = getSection();
-        section.setDescription("Available bundles. These can be dragged to the Run Requirements list to the right.");
         createClient(section, toolkit);
     }
 
     private void createClient(Section section, FormToolkit toolkit) {
         section.setText("Browse Repos");
-
-        // Create toolbar
-        lblLayout = new Label(section, SWT.NONE);
-        section.setTextClient(lblLayout);
-        bndLayoutIcon = Icons.desc("bnd.workspace.bndlayout").createImage();
-        standaloneLayoutIcon = Icons.desc("bnd.workspace.standalone").createImage();
 
         // Create contents
         Composite container = toolkit.createComposite(section);
@@ -182,13 +168,6 @@ public class AvailableBundlesPart extends BndEditorPart {
         });
     }
 
-    @Override
-    public void dispose() {
-        super.dispose();
-        bndLayoutIcon.dispose();
-        standaloneLayoutIcon.dispose();
-    }
-
     private void updatedFilter(String filterString) {
         contentProvider.setFilter(filterString);
         viewer.refresh(true);
@@ -214,18 +193,6 @@ public class AvailableBundlesPart extends BndEditorPart {
             repos = Collections.emptyList();
         }
         viewer.setInput(repos);
-
-        switch (workspace.getLayout()) {
-        case BND :
-            lblLayout.setImage(bndLayoutIcon);
-            lblLayout.setToolTipText(String.format("Connected to the bnd workspace at: %s.", workspace.getBase()));
-            break;
-        case STANDALONE :
-            lblLayout.setImage(standaloneLayoutIcon);
-            lblLayout.setToolTipText("Standalone mode.");
-            break;
-        default :
-        }
     }
 
     @Override

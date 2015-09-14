@@ -177,7 +177,7 @@ public class RepositorySelectionPart extends BndEditorPart {
         stackLayout.marginWidth = 0;
         cmpStackContainer.setLayout(stackLayout);
         gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-        gd.heightHint = 140;
+        gd.heightHint = 100;
         cmpStackContainer.setLayoutData(gd);
 
         // Create contents for the "save to refresh" control
@@ -217,6 +217,7 @@ public class RepositorySelectionPart extends BndEditorPart {
         Table tblStandaloneLinks = toolkit.createTable(cmpStandalone, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 50;
+        gd.heightHint = 100;
         tblStandaloneLinks.setLayoutData(gd);
 
         standaloneLinksViewer = new TableViewer(tblStandaloneLinks);
