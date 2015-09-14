@@ -13,7 +13,6 @@ Bundle-Description: A library to be statically linked. Contains many small utili
 
 
 
--baselinerepo: Main
 -baseline: *
 -sources= true
 

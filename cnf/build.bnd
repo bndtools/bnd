@@ -58,12 +58,10 @@ Git-SHA:                ${system-allow-fail;git rev-list -1 HEAD}
 # Custom Settings
 #
 
-repo:                   ${workspace}/cnf/repo
-releaserepo:            ${workspace}/dist/bundles
-
 copyright:              Copyright (c) aQute SARL (2000, ${tstamp;yyyy}) and others. All Rights Reserved.
 copyright.html:         Copyright &copy; aQute SARL (2000, ${tstamp;yyyy}) and others. All Rights Reserved.
 
+baseline.version:       3.0.0
 base.version:           3.1.0
 build.version:          ${base.version}.${tstamp}
 -outputmask:            ${@bsn}-${version;===;${@version}}.jar
@@ -95,9 +93,6 @@ Bundle-Developers: \
 #   -consumer-policy =  ${range;[==,+)}
 
 -make:                  (*).(jar);type=bnd; recipe="bnd/$1.bnd"
-
--releaserepo:  Release
--baselinerepo: Main
 
 -removeheaders:         Include-Resource
 
