@@ -1,6 +1,8 @@
 package bndtools.editor.project;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -8,7 +10,6 @@ import java.util.Map.Entry;
 
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.Function;
-import org.bndtools.utils.collections.CollectionUtils;
 import org.bndtools.utils.jface.StrikeoutStyler;
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -34,10 +35,17 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.viewers.ViewerDropAdapter;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.dnd.TransferData;
+import org.eclipse.swt.dnd.URLTransfer;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -46,9 +54,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IMessageManager;
@@ -66,12 +73,17 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.build.model.conversions.Converter;
+import aQute.bnd.header.Attrs;
 import bndtools.BndConstants;
 import bndtools.Plugin;
 import bndtools.UIConstants;
 import bndtools.central.Central;
 import bndtools.central.WorkspaceR5Repository;
 import bndtools.editor.common.BndEditorPart;
+import bndtools.editor.common.UpDownButtonBarPart;
+import bndtools.editor.common.UpDownButtonBarPart.UpDownListener;
+import bndtools.editor.common.AddRemoveButtonBarPart;
+import bndtools.editor.common.AddRemoveButtonBarPart.AddRemoveListener;
 
 public class RepositorySelectionPart extends BndEditorPart {
 
@@ -94,6 +106,7 @@ public class RepositorySelectionPart extends BndEditorPart {
     private final Object MESSAGE_KEY = new Object();
 
     private final EditorPart editor;
+    private final AddRemoveButtonBarPart addRemoveStandaloneLinksPart = new AddRemoveButtonBarPart();
 
     private Composite cmpMainContainer;
     private Button btnStandaloneCheckbox;
@@ -103,12 +116,13 @@ public class RepositorySelectionPart extends BndEditorPart {
     private Control saveToRefreshControl;
 
     private Composite cmpStandalone;
+    private Table tblStandaloneLinks;
     private TableViewer standaloneLinksViewer;
+    private UpDownButtonBarPart upDownLinksPart;
 
     private Composite cmpBndLayout;
     private CheckboxTableViewer runReposViewer;
-    private ToolItem btnMoveUp;
-    private ToolItem btnMoveDown;
+    private UpDownButtonBarPart upDownReposPart;
 
     private boolean needsSave = false;
     private List<HeaderClause> standaloneLinks = null;
@@ -209,16 +223,31 @@ public class RepositorySelectionPart extends BndEditorPart {
 
         // Create contents for the standalone layout workspace
         cmpStandalone = toolkit.createComposite(cmpStackContainer);
-        gl = new GridLayout(1, false);
+        gl = new GridLayout(2, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         cmpStandalone.setLayout(gl);
 
-        Table tblStandaloneLinks = toolkit.createTable(cmpStandalone, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL);
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        tblStandaloneLinks = toolkit.createTable(cmpStandalone, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3);
         gd.widthHint = 50;
         gd.heightHint = 100;
         tblStandaloneLinks.setLayoutData(gd);
+
+        Control addRemoveControl = addRemoveStandaloneLinksPart.createControl(cmpStandalone, SWT.FLAT | SWT.VERTICAL);
+        addRemoveControl.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+        addRemoveStandaloneLinksPart.setRemoveEnabled(false);
+        addRemoveStandaloneLinksPart.addListener(new AddRemoveListener() {
+            @Override
+            public void addSelected() {
+                doAddStandaloneLink();
+            }
+
+            @Override
+            public void removeSelected() {
+                doRemoveStandaloneLink();
+            }
+        });
 
         standaloneLinksViewer = new TableViewer(tblStandaloneLinks);
         standaloneLinksViewer.setContentProvider(ArrayContentProvider.getInstance());
@@ -243,10 +272,83 @@ public class RepositorySelectionPart extends BndEditorPart {
                 cell.setStyleRanges(label.getStyleRanges());
             }
         });
+        Label lblSpacer = new Label(cmpStandalone, SWT.NONE);
+        lblSpacer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
+        upDownLinksPart = new UpDownButtonBarPart(standaloneLinksViewer);
+        Control upDownLinksControl = upDownLinksPart.createControl(cmpStandalone, SWT.FLAT | SWT.VERTICAL);
+        upDownLinksControl.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, false, false));
+        upDownLinksPart.setEnabledUp(false);
+        upDownLinksPart.setEnabledDown(false);
+        upDownLinksPart.addListener(new UpDownListener() {
+            @Override
+            public void changed() {
+                markDirty();
+            }
+        });
+        standaloneLinksViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                updateStandaloneLinkButtons();
+                markDirty();
+            }
+        });
+        tblStandaloneLinks.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.keyCode == SWT.DEL || e.stateMask == 0) {
+                    doRemoveStandaloneLink();
+                }
+            }
+        });
+        ViewerDropAdapter linkDropAdapter = new ViewerDropAdapter(standaloneLinksViewer) {
+            @Override
+            public boolean validateDrop(Object target, int operation, TransferData transferType) {
+                if (URLTransfer.getInstance().isSupportedType(transferType))
+                    return true;
+                return false;
+            }
+
+            @Override
+            public boolean performDrop(Object data) {
+                if (URLTransfer.getInstance().isSupportedType(getCurrentEvent().currentDataType)) {
+                    try {
+                        String uriStr = (String) URLTransfer.getInstance().nativeToJava(getCurrentEvent().currentDataType);
+                        URI uri = new URI(uriStr);
+
+                        int targetIndex;
+                        if (getCurrentLocation() == LOCATION_NONE) {
+                            targetIndex = -1;
+                        } else {
+                            Object targetObj = getCurrentTarget();
+                            targetIndex = targetObj != null ? standaloneLinks.indexOf(targetObj) : -1;
+                            if (getCurrentLocation() == LOCATION_AFTER)
+                                targetIndex += 1;
+                        }
+
+                        HeaderClause clause = new HeaderClause(uri.toASCIIString(), new Attrs());
+                        if (targetIndex == -1) {
+                            standaloneLinks.add(clause);
+                            standaloneLinksViewer.add(clause);
+                        } else {
+                            standaloneLinks.add(targetIndex, clause);
+                            standaloneLinksViewer.insert(clause, targetIndex);
+                        }
+                        markDirty();
+                        return true;
+                    } catch (URISyntaxException e) {
+                        ErrorDialog.openError(getSection().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unable to add repository URL: invalid syntax.", e));
+                    }
+                }
+                return false;
+            }
+        };
+        standaloneLinksViewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
+                URLTransfer.getInstance()
+        }, linkDropAdapter);
 
         // Create contents for bnd layout workspace
         cmpBndLayout = toolkit.createComposite(cmpStackContainer);
-        gl = new GridLayout(1, false);
+        gl = new GridLayout(2, false);
         gl.marginWidth = 0;
         gl.marginHeight = 0;
         cmpBndLayout.setLayout(gl);
@@ -270,18 +372,18 @@ public class RepositorySelectionPart extends BndEditorPart {
             }
         });
 
-        ToolBar toolbar = new ToolBar(cmpBndLayout, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-        toolbar.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-
-        btnMoveUp = new ToolItem(toolbar, SWT.PUSH);
-        btnMoveUp.setText("Up");
-        btnMoveUp.setImage(imgUp);
-        btnMoveUp.setEnabled(false);
-
-        btnMoveDown = new ToolItem(toolbar, SWT.PUSH);
-        btnMoveDown.setText("Down");
-        btnMoveDown.setImage(imgDown);
-        btnMoveDown.setEnabled(false);
+        upDownReposPart = new UpDownButtonBarPart(runReposViewer);
+        Control upDownReposControl = upDownReposPart.createControl(cmpBndLayout, SWT.FLAT | SWT.VERTICAL);
+        upDownReposControl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+        upDownReposPart.setEnabledUp(false);
+        upDownReposPart.setEnabledDown(false);
+        upDownReposPart.addListener(new UpDownListener() {
+            @Override
+            public void changed() {
+                updateButtons();
+                markDirty();
+            }
+        });
 
         final Styler strikeoutStyler = new StrikeoutStyler(StyledString.QUALIFIER_STYLER, JFaceResources.getColorRegistry().get(JFacePreferences.QUALIFIER_COLOR));
 
@@ -362,20 +464,14 @@ public class RepositorySelectionPart extends BndEditorPart {
             }
         });
 
-        btnMoveUp.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                doMoveUp();
-            }
-        });
-        btnMoveDown.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                doMoveDown();
-            }
-        });
-
         ColumnViewerToolTipSupport.enableFor(runReposViewer, ToolTip.NO_RECREATE);
+    }
+
+    void updateStandaloneLinkButtons() {
+        boolean enable = !standaloneLinksViewer.getSelection().isEmpty();
+        addRemoveStandaloneLinksPart.setRemoveEnabled(enable);
+        upDownLinksPart.setEnabledUp(enable);
+        upDownLinksPart.setEnabledDown(enable);
     }
 
     void updateButtons() {
@@ -388,8 +484,8 @@ public class RepositorySelectionPart extends BndEditorPart {
             }
         }
 
-        btnMoveUp.setEnabled(enable);
-        btnMoveDown.setEnabled(enable);
+        upDownReposPart.setEnabledUp(enable);
+        upDownReposPart.setEnabledDown(enable);
     }
 
     boolean isIncludedRepo(Object repo) {
@@ -449,35 +545,19 @@ public class RepositorySelectionPart extends BndEditorPart {
         updateButtons();
     }
 
-    void doMoveUp() {
-        int[] selectedIndexes = findSelectedIndexes();
-        if (CollectionUtils.moveUp(includedRepos, selectedIndexes)) {
-            runReposViewer.refresh();
-            updateButtons();
+    private void doAddStandaloneLink() {}
 
-            markDirty();
+    private void doRemoveStandaloneLink() {
+        int[] selectedIndexes = tblStandaloneLinks.getSelectionIndices();
+        if (selectedIndexes == null)
+            return;
+        List<Object> selected = new ArrayList<>(selectedIndexes.length);
+        for (int index : selectedIndexes) {
+            selected.add(standaloneLinks.get(index));
         }
-    }
-
-    void doMoveDown() {
-        int[] selectedIndexes = findSelectedIndexes();
-        if (CollectionUtils.moveDown(includedRepos, selectedIndexes)) {
-            runReposViewer.refresh();
-            updateButtons();
-            markDirty();
-        }
-    }
-
-    int[] findSelectedIndexes() {
-        lazyInitIncludedRepos();
-        Object[] selection = ((IStructuredSelection) runReposViewer.getSelection()).toArray();
-        int[] selectionIndexes = new int[selection.length];
-
-        for (int i = 0; i < selection.length; i++) {
-            Object item = selection[i];
-            selectionIndexes[i] = includedRepos.indexOf(item.toString());
-        }
-        return selectionIndexes;
+        standaloneLinks.removeAll(selected);
+        standaloneLinksViewer.remove(selected.toArray(new Object[selected.size()]));
+        markDirty();
     }
 
     private void saveStandaloneLinksToBackup() {
@@ -515,6 +595,7 @@ public class RepositorySelectionPart extends BndEditorPart {
 
         updateStack();
         updateButtons();
+        updateStandaloneLinkButtons();
     }
 
     private void updateStack() {

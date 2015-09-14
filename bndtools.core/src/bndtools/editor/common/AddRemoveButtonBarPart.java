@@ -13,15 +13,15 @@ import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 
-public class CreateRemoveButtonBarPart {
+public class AddRemoveButtonBarPart {
 
-    public static interface CreateRemoveListener {
+    public static interface AddRemoveListener {
         void addSelected();
 
         void removeSelected();
     }
 
-    private final List<CreateRemoveListener> listeners = new ArrayList<>();
+    private final List<AddRemoveListener> listeners = new ArrayList<>();
 
     private ToolBar toolbar;
 
@@ -36,7 +36,7 @@ public class CreateRemoveButtonBarPart {
         btnAdd.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                for (CreateRemoveListener l : listeners) {
+                for (AddRemoveListener l : listeners) {
                     l.addSelected();
                 }
             }
@@ -50,7 +50,7 @@ public class CreateRemoveButtonBarPart {
         btnRemove.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                for (CreateRemoveListener l : listeners) {
+                for (AddRemoveListener l : listeners) {
                     l.removeSelected();
                 }
             }
@@ -67,11 +67,11 @@ public class CreateRemoveButtonBarPart {
         btnRemove.setEnabled(enable);
     }
 
-    public void addListener(CreateRemoveListener l) {
+    public void addListener(AddRemoveListener l) {
         listeners.add(l);
     }
 
-    public void removeListener(CreateRemoveListener l) {
+    public void removeListener(AddRemoveListener l) {
         listeners.remove(l);
     }
 

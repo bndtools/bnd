@@ -30,11 +30,11 @@ import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.osgi.Constants;
 import bndtools.editor.common.BndEditorPart;
-import bndtools.editor.common.CreateRemoveButtonBarPart;
+import bndtools.editor.common.AddRemoveButtonBarPart;
 import bndtools.editor.common.MapContentProvider;
 import bndtools.editor.common.MapEntryCellModifier;
 import bndtools.editor.common.PropertiesTableLabelProvider;
-import bndtools.editor.common.CreateRemoveButtonBarPart.CreateRemoveListener;
+import bndtools.editor.common.AddRemoveButtonBarPart.AddRemoveListener;
 import bndtools.editor.utils.ToolTips;
 import bndtools.utils.ModificationLock;
 
@@ -46,7 +46,7 @@ public class RunPropertiesPart extends BndEditorPart {
     private String programArgs = null;
     private String vmArgs = null;
 
-    private final CreateRemoveButtonBarPart createRemovePropsPart = new CreateRemoveButtonBarPart();
+    private final AddRemoveButtonBarPart createRemovePropsPart = new AddRemoveButtonBarPart();
 
     private Table tblRunProperties;
     private TableViewer viewRunProperties;
@@ -141,7 +141,7 @@ public class RunPropertiesPart extends BndEditorPart {
                 createRemovePropsPart.setRemoveEnabled(!viewRunProperties.getSelection().isEmpty());
             }
         });
-        createRemovePropsPart.addListener(new CreateRemoveListener() {
+        createRemovePropsPart.addListener(new AddRemoveListener() {
             @Override
             public void addSelected() {
                 runProperties.put("name", "");
