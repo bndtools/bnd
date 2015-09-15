@@ -34,7 +34,7 @@
 		<dependency>
 			<groupId>biz.aQute.bnd</groupId>
 			<artifactId>org.osgi.impl.bundle.repoindex.cli</artifactId>
-			<version>${bnd.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 	
@@ -46,7 +46,7 @@
 					<dependency>
 						<groupId>biz.aQute.bnd</groupId>
 						<artifactId>biz.aQute.bndlib</artifactId>
-						<version>${bnd.version}</version>
+						<version>${project.version}</version>
 						<scope>runtime</scope>
 					</dependency>
 					<dependency>
@@ -63,9 +63,6 @@
 					<settingsFile>src/test/resources/integration-test/settings.xml</settingsFile>
 					<localRepositoryPath>${project.build.directory}/integration-test/repo</localRepositoryPath>
 					<postBuildHookScript>verify.groovy</postBuildHookScript>
-                    <properties>
-                        <bnd.version>${bnd.version}</bnd.version>
-                    </properties>
 					<goals>
 						<goal>package</goal>
 					</goals>
