@@ -1,7 +1,8 @@
--dsannotations: *
--metatypeannotations: *
 Project-Build-SourceEncoding: ${project.build.sourceEncoding}
-Project-GroupId-ArtifactId: ${project.groupId}.${project.artifactId}
+Project-GroupId-ArtifactId: ${project.groupId}:${project.artifactId}
 Project-Build-OutputDirectory: ${project.build.outputDirectory}
 Project-NoSuchProperty: ${project.nosuchproperty}
 Project: ${project}
+Settings-InteractiveMode: ${settings.interactiveMode}
+Settings-LocalRepository: ${settings.localRepository}
+SomeVar: ${someVar}
