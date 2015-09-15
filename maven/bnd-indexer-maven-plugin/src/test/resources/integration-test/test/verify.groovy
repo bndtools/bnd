@@ -4,7 +4,7 @@ import java.util.*;
 import org.osgi.resource.*;
 import org.osgi.service.repository.*;
 
-public void check(String xmlFile, String gzipFile, int size, boolean localURL) {
+public Repository check(String xmlFile, String gzipFile, int size, boolean localURL) {
 	// Check the bundles exist!
 	File xml = new File(xmlFile);
 	assert xml.isFile();
@@ -21,8 +21,15 @@ public void check(String xmlFile, String gzipFile, int size, boolean localURL) {
 	
 	ResourcesRepository repo = new ResourcesRepository(resources);
 	
-	Requirement requirement = new RequirementBuilder("osgi.extender")
-						.addDirective("filter", "(osgi.extender=osgi.component)")
+	check(repo, "osgi.extender", "(osgi.extender=osgi.component)", "org.apache.felix.scr", localURL);
+	
+	return repo;
+}
+
+public String check(Repository repo, String namespace, String filter, String identity, boolean localURL) {
+	
+	Requirement requirement = new RequirementBuilder(namespace)
+						.addDirective("filter", filter)
 						.buildSyntheticRequirement();
 	
 	Map<Requirement,Collection<Capability>> caps = repo
@@ -32,11 +39,17 @@ public void check(String xmlFile, String gzipFile, int size, boolean localURL) {
 	
 	Resource res = caps.get(requirement).iterator().next().getResource();
 	
-	assert "org.apache.felix.scr" ==
-						ResourceUtils.getIdentityCapability(res).getAttributes().get("osgi.identity");
+	assert identity == ResourceUtils.getIdentityCapability(res).getAttributes().get("osgi.identity");
 	
 	String location = ResourceUtils.getContentCapability(res).getAttributes().get("url").toString();
-	assert localURL == location.contains("file:");
+
+	if(localURL) {
+		assert location.startsWith("file:") ? new File(URI.create(location)).isFile() : 
+				new File(location).isFile();	
+	} else {
+		assert null != URI.create(location).getScheme();
+		assert "file" != URI.create(location).getScheme();
+	}
 }
 
 println "TODO: Need to write some test code for the generated index!"
@@ -44,7 +57,10 @@ println "basedir ${basedir}"
 println "localRepositoryPath ${localRepositoryPath}"
 println "mavenVersion ${mavenVersion}"
 
-check("${basedir}/transitive/target/index.xml", "${basedir}/transitive/target/index.xml.gz", 21, false)
-check("${basedir}/non-transitive/target/index.xml", "${basedir}/non-transitive/target/index.xml.gz", 3, false)
-check("${basedir}/scoped/target/index.xml", "${basedir}/scoped/target/index.xml.gz", 24, false)
-check("${basedir}/require-local/target/index.xml", "${basedir}/require-local/target/index.xml.gz", 21, true)
+check("${basedir}/transitive/target/index.xml", "${basedir}/transitive/target/index.xml.gz", 21, false);
+check("${basedir}/non-transitive/target/index.xml", "${basedir}/non-transitive/target/index.xml.gz", 3, false);
+check("${basedir}/scoped/target/index.xml", "${basedir}/scoped/target/index.xml.gz", 24, false);
+check("${basedir}/require-local/target/index.xml", "${basedir}/require-local/target/index.xml.gz", 21, true);
+
+Repository repo = check("${basedir}/in-build/target/index.xml", "${basedir}/in-build/target/index.xml.gz", 3, false);
+check(repo, "osgi.identity", "(osgi.identity=biz.aQute.bnd)", "biz.aQute.bnd", false);

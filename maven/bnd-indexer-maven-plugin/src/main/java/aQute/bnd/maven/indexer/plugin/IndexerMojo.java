@@ -201,7 +201,20 @@ public class IndexerMojo extends AbstractMojo {
 				return file.toURI();
 			}
 			
-			ArtifactRepository repo = repositories.get(artifact.getRepository().getId());
+			
+			String id = artifact.getRepository().getId();
+
+			if("workspace".equals(id) || "local".equals(id)) {
+				for (ArtifactRepository repository : project.getRemoteArtifactRepositories()) {
+					if(repository.find(RepositoryUtils.toArtifact(artifact.getArtifact())) != null) {
+						id = repository.getId();
+						break;
+					}
+				}
+			}
+			
+			ArtifactRepository repo = repositories.get(id);
+			
 			if(repo == null) {
 				if(localURLs == ALLOWED) {
 					getLog().info("The Artifact " + artifact.getArtifact().toString() + 

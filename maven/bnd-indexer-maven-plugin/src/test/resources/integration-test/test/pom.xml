@@ -11,6 +11,8 @@
 		<module>transitive</module>
 		<module>scoped</module>
 		<module>require-local</module>
+		<module>test-bnd</module>
+		<module>in-build</module>
 	</modules>
 
 	<dependencyManagement>
