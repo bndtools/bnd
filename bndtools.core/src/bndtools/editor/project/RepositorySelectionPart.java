@@ -38,6 +38,7 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerDropAdapter;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.window.ToolTip;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.dnd.DND;
@@ -295,7 +296,7 @@ public class RepositorySelectionPart extends BndEditorPart {
         tblStandaloneLinks.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.keyCode == SWT.DEL || e.stateMask == 0) {
+                if (e.keyCode == SWT.DEL && e.stateMask == 0) {
                     doRemoveStandaloneLink();
                 }
             }
@@ -325,7 +326,7 @@ public class RepositorySelectionPart extends BndEditorPart {
                                 targetIndex += 1;
                         }
 
-                        HeaderClause clause = new HeaderClause(uri.toASCIIString(), new Attrs());
+                        HeaderClause clause = new HeaderClause(String.format("\"%s\"", uri), new Attrs());
                         if (targetIndex == -1) {
                             standaloneLinks.add(clause);
                             standaloneLinksViewer.add(clause);
@@ -545,7 +546,21 @@ public class RepositorySelectionPart extends BndEditorPart {
         updateButtons();
     }
 
-    private void doAddStandaloneLink() {}
+    private void doAddStandaloneLink() {
+        StandaloneLinkDialog dialog = new StandaloneLinkDialog(editor.getSite().getShell());
+        if (dialog.open() == Window.OK) {
+            URI location = dialog.getLocation();
+
+            Attrs attrs = new Attrs();
+            if (dialog.getName() != null)
+                attrs.put("name", dialog.getName());
+
+            HeaderClause clause = new HeaderClause(String.format("\"%s\"", location), attrs);
+            standaloneLinks.add(clause);
+            standaloneLinksViewer.add(clause);
+            markDirty();
+        }
+    }
 
     private void doRemoveStandaloneLink() {
         int[] selectedIndexes = tblStandaloneLinks.getSelectionIndices();
