@@ -1,9 +1,17 @@
 package aQute.bnd.build.model.clauses;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
 
-import aQute.bnd.header.*;
+import aQute.bnd.header.Attrs;
 
 public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 
@@ -68,7 +76,12 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 
 	public void formatTo(StringBuilder buffer, Comparator<Entry<String,String>> sorter) {
 		String separator = newlinesBetweenAttributes() ? INTERNAL_LIST_SEPARATOR_NEWLINES : INTERNAL_LIST_SEPARATOR;
-		buffer.append(name);
+		// If the name contains a comma, then quote the whole thing
+		String tmpName = name;
+		if (tmpName.indexOf(',') > -1)
+			tmpName = "'" + tmpName + "'";
+		buffer.append(tmpName);
+
 		if (attribs != null) {
 			Set<Entry<String,String>> set;
 			if (sorter != null) {
