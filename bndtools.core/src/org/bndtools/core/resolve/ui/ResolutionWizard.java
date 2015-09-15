@@ -24,14 +24,12 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.io.IO;
 import bndtools.BndConstants;
-import bndtools.central.Central;
 
 public class ResolutionWizard extends Wizard {
 
@@ -81,17 +79,13 @@ public class ResolutionWizard extends Wizard {
         try {
             File targetDir;
 
-            File projectDir = file.getProject().getLocation().toFile();
-            Project project = Central.getProject(projectDir);
-            if (project != null)
-                targetDir = project.getTarget();
-            else {
-                String targetName = Workspace.getDefaults().get("target", "generated");
-                targetDir = new File(projectDir, targetName);
-            }
+            Project bndProject = model.getProject();
+            targetDir = bndProject.getTargetDir();
+            if (targetDir == null)
+                targetDir = file.getLocation().toFile().getParentFile();
 
             if (!targetDir.exists() && !targetDir.mkdirs()) {
-                throw new IOException("Could not create directory " + targetDir);
+                throw new IOException("Could not create target directory " + targetDir);
             }
 
             File pathsFile = new File(targetDir, file.getName() + RESOLVED_PATHS_EXTENSION);
