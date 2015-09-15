@@ -290,7 +290,6 @@ public class RepositorySelectionPart extends BndEditorPart {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 updateStandaloneLinkButtons();
-                markDirty();
             }
         });
         tblStandaloneLinks.addKeyListener(new KeyAdapter() {
@@ -326,7 +325,7 @@ public class RepositorySelectionPart extends BndEditorPart {
                                 targetIndex += 1;
                         }
 
-                        HeaderClause clause = new HeaderClause(String.format("\"%s\"", uri), new Attrs());
+                        HeaderClause clause = new HeaderClause(uri.toString(), new Attrs());
                         if (targetIndex == -1) {
                             standaloneLinks.add(clause);
                             standaloneLinksViewer.add(clause);
@@ -555,7 +554,7 @@ public class RepositorySelectionPart extends BndEditorPart {
             if (dialog.getName() != null)
                 attrs.put("name", dialog.getName());
 
-            HeaderClause clause = new HeaderClause(String.format("\"%s\"", location), attrs);
+            HeaderClause clause = new HeaderClause(location.toString(), attrs);
             standaloneLinks.add(clause);
             standaloneLinksViewer.add(clause);
             markDirty();
@@ -586,6 +585,8 @@ public class RepositorySelectionPart extends BndEditorPart {
             List<HeaderClause> restored = (List<HeaderClause>) converter.convert(backupStandaloneLinks);
             standaloneLinks = restored;
             backupStandaloneLinks = null;
+        } else {
+            standaloneLinks = new LinkedList<>();
         }
     }
 
