@@ -2,8 +2,11 @@ package aQute.bnd.maven.indexer.plugin;
 
 import static aQute.bnd.maven.indexer.plugin.LocalURLs.ALLOWED;
 import static aQute.bnd.maven.indexer.plugin.LocalURLs.REQUIRED;
+import static java.util.Collections.singletonList;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 import static org.apache.maven.plugins.annotations.ResolutionScope.TEST;
+import static org.eclipse.aether.metadata.Metadata.Nature.RELEASE;
+import static org.eclipse.aether.metadata.Metadata.Nature.SNAPSHOT;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -24,6 +27,9 @@ import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.repository.metadata.Metadata;
+import org.apache.maven.artifact.repository.metadata.Versioning;
+import org.apache.maven.artifact.repository.metadata.io.MetadataReader;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -37,13 +43,19 @@ import org.apache.maven.project.DependencyResolutionResult;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.project.ProjectDependenciesResolver;
+import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.graph.DependencyNode;
+import org.eclipse.aether.metadata.DefaultMetadata;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.resolution.MetadataRequest;
+import org.eclipse.aether.resolution.MetadataResult;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
@@ -80,6 +92,9 @@ public class IndexerMojo extends AbstractMojo {
 
     @Component
     private ProjectDependenciesResolver resolver;
+    
+    @Component
+    private MetadataReader metadataReader;
     
     @Component
     private MavenProjectHelper projectHelper;
@@ -148,7 +163,7 @@ public class IndexerMojo extends AbstractMojo {
         } catch (FileNotFoundException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
-
+        
         getLog().debug("Indexing artifacts: " + dependencies.keySet());
         try {
             indexer.index(dependencies.keySet(), output, config);
@@ -192,8 +207,10 @@ public class IndexerMojo extends AbstractMojo {
         }
 
 		public URI resolver(File file) throws Exception {
-			ArtifactResult artifact = dependencies.get(file);
-			if(artifact == null) {
+			
+			ArtifactResult artifactResult = dependencies.get(file);
+
+			if(artifactResult == null) {
 				throw new FileNotFoundException("The file " + file.getCanonicalPath() + " is not known to this resolver");
 			}
 			
@@ -201,31 +218,21 @@ public class IndexerMojo extends AbstractMojo {
 				return file.toURI();
 			}
 			
+			Artifact artifact = artifactResult.getArtifact();
 			
-			String id = artifact.getRepository().getId();
-
-			if("workspace".equals(id) || "local".equals(id)) {
-				for (ArtifactRepository repository : project.getRemoteArtifactRepositories()) {
-					if(repository.find(RepositoryUtils.toArtifact(artifact.getArtifact())) != null) {
-						id = repository.getId();
-						break;
-					}
-				}
-			}
-			
-			ArtifactRepository repo = repositories.get(id);
+			ArtifactRepository repo = repositories.get(artifactResult.getRepository().getId());
 			
 			if(repo == null) {
 				if(localURLs == ALLOWED) {
-					getLog().info("The Artifact " + artifact.getArtifact().toString() + 
+					getLog().info("The Artifact " + artifact.toString() + 
 							" could not be found in any repository, returning the local location");
 					return file.toURI();
 				}
-				throw new FileNotFoundException("The repository " + artifact.getRepository().getId() + " is not known to this resolver");
+				throw new FileNotFoundException("The repository " + artifactResult.getRepository().getId() + " is not known to this resolver");
 			}
 			
-			return URI.create(repo.getUrl() + "/" + 
-					repo.getLayout().pathOf(RepositoryUtils.toArtifact(artifact.getArtifact())));
+			return URI.create(repo.getUrl()).resolve(
+					repo.getLayout().pathOf(RepositoryUtils.toArtifact(artifact)));
         }
     }
 
@@ -233,9 +240,10 @@ public class IndexerMojo extends AbstractMojo {
         for ( DependencyNode node : nodes) {
             //Ensure that the file is downloaded so we can index it
             try {
-				ArtifactResult resolvedArtifact = system.resolveArtifact(session, new ArtifactRequest(node.getArtifact(), 
-						project.getRemoteProjectRepositories(), parent));
+				ArtifactResult resolvedArtifact = postProcessResult(system.resolveArtifact(session, new ArtifactRequest(node.getArtifact(), 
+						project.getRemoteProjectRepositories(), parent)));
 				getLog().debug("Located file: " + resolvedArtifact.getArtifact().getFile() + " for artifact " + resolvedArtifact);
+				
 				files.put(resolvedArtifact.getArtifact().getFile(), resolvedArtifact);
 			} catch (ArtifactResolutionException e) {
 				throw new MojoExecutionException("Failed to resolve the dependency " + node.getArtifact().toString(), e);
@@ -247,5 +255,153 @@ public class IndexerMojo extends AbstractMojo {
 			}
         }
     }
+
+	private ArtifactResult postProcessResult(ArtifactResult resolvedArtifact) throws MojoExecutionException {
+		
+		if(localURLs == REQUIRED) {
+			//Skip the search as we will use the local file anyway
+			return resolvedArtifact;
+		}
+		
+		String repoId = resolvedArtifact.getRepository().getId();
+		Artifact artifact = resolvedArtifact.getArtifact();
+		if("workspace".equals(repoId) || "local".equals(repoId)) {
+			getLog().debug("Post processing " + artifact + " to determine a remote source");
+			ArtifactResult postProcessed;
+			if(artifact.isSnapshot()) {
+				postProcessed = postProcessSnapshot(resolvedArtifact.getRequest(), artifact);
+			} else {
+				postProcessed = postProcessRelease(resolvedArtifact.getRequest(), artifact);
+			}
+			if(postProcessed != null) {
+				return postProcessed;
+			}
+		}
+		return resolvedArtifact;
+	}
+	
+	private ArtifactResult postProcessSnapshot(ArtifactRequest request, Artifact artifact) throws MojoExecutionException {
+		
+		for (ArtifactRepository repository : project.getRemoteArtifactRepositories()) {
+			if(!repository.getSnapshots().isEnabled()) {
+				//Skip the repo if it isn't enabled for snapshots
+				continue;
+			}
+			   
+			RemoteRepository aetherRepo = RepositoryUtils.toRepo(repository);
+			
+			//Remove the workspace from the session so that we don't use it
+			DefaultRepositorySystemSession newSession = new DefaultRepositorySystemSession(session);
+			newSession.setWorkspaceReader(null);
+			
+			//Find the snapshot metadata for the module
+			MetadataRequest mr = new MetadataRequest()
+					.setRepository(aetherRepo)
+					.setMetadata(new DefaultMetadata(artifact.getGroupId(), artifact.getArtifactId(),
+							artifact.getVersion(), "maven-metadata.xml", SNAPSHOT));
+			
+			for (MetadataResult metadataResult : system.resolveMetadata(newSession, singletonList(mr))) {
+				if(metadataResult.isResolved()) {
+					String version;
+					try {
+						Metadata read = metadataReader.read(metadataResult.getMetadata().getFile(), null);
+						Versioning versioning = read.getVersioning();
+						if(versioning == null || versioning.getSnapshotVersions() == null 
+								|| versioning.getSnapshotVersions().isEmpty()) {
+							continue;
+						} else {
+							version = versioning.getSnapshotVersions().get(0).getVersion();
+						}
+					} catch (Exception e) {
+						throw new MojoExecutionException("Unable to read project metadata for " + artifact, e);
+					}
+					Artifact fullVersionArtifact = new org.eclipse.aether.artifact.DefaultArtifact(
+							artifact.getGroupId(), artifact.getArtifactId(), 
+							artifact.getClassifier(), artifact.getExtension(), version);
+					try {
+						ArtifactResult result = system.resolveArtifact(newSession, new ArtifactRequest()
+								.setArtifact(fullVersionArtifact)
+								.addRepository(aetherRepo));
+						if(result.isResolved()) { 
+							File toUse = new File(session.getLocalRepository().getBasedir(), 
+									session.getLocalRepositoryManager().getPathForRemoteArtifact(fullVersionArtifact, aetherRepo, artifact.toString()));
+							if(!toUse.exists()) {
+								getLog().warn("The resolved artifact " + fullVersionArtifact + " does not exist at " + toUse);
+								continue;
+							} else {
+								getLog().debug("Located snapshot file " + toUse + " for artifact " + artifact);
+							}
+							result.getArtifact().setFile(toUse);
+							return result;
+						}
+					} catch (ArtifactResolutionException e) {
+						getLog().debug("Unable to locate the artifact " + fullVersionArtifact, e);
+					}
+				}
+			}
+		}
+		
+		getLog().debug("Unable to resolve a remote repository containing " + artifact);
+		
+		return null;
+	}
+
+	private ArtifactResult postProcessRelease(ArtifactRequest request, Artifact artifact) throws MojoExecutionException {
+		
+		for (ArtifactRepository repository : project.getRemoteArtifactRepositories()) {
+			if(!repository.getReleases().isEnabled()) {
+				//Skip the repo if it isn't enabled for releases
+				continue;
+			}
+			
+			RemoteRepository aetherRepo = RepositoryUtils.toRepo(repository);
+			
+			//Remove the workspace from the session so that we don't use it
+			DefaultRepositorySystemSession newSession = new DefaultRepositorySystemSession(session);
+			newSession.setWorkspaceReader(null);
+			
+			//Find the snapshot metadata for the module
+			MetadataRequest mr = new MetadataRequest()
+					.setRepository(aetherRepo)
+					.setMetadata(new DefaultMetadata(artifact.getGroupId(), artifact.getArtifactId(),
+							null, "maven-metadata.xml", RELEASE));
+			
+			for (MetadataResult metadataResult : system.resolveMetadata(newSession, singletonList(mr))) {
+				if(metadataResult.isResolved()) {
+					try {
+						Metadata read = metadataReader.read(metadataResult.getMetadata().getFile(), null);
+						Versioning versioning = read.getVersioning();
+						if(versioning == null || versioning.getVersions() == null 
+								|| versioning.getVersions().isEmpty()) {
+							continue;
+						} else if(versioning.getVersions().contains(artifact.getVersion())) {
+							
+							ArtifactResult result = system.resolveArtifact(newSession, new ArtifactRequest()
+									.setArtifact(artifact)
+									.addRepository(aetherRepo));
+							if(result.isResolved()) { 
+								File toUse = new File(session.getLocalRepository().getBasedir(), 
+										session.getLocalRepositoryManager().getPathForLocalArtifact(artifact));
+								if(!toUse.exists()) {
+									getLog().warn("The resolved artifact " + artifact + " does not exist at " + toUse);
+									continue;
+								} else {
+									getLog().debug("Located snapshot file " + toUse + " for artifact " + artifact);
+								}
+								result.getArtifact().setFile(toUse);
+								return result;
+							}
+						}
+					} catch (Exception e) {
+						throw new MojoExecutionException("Unable to read project metadata for " + artifact, e);
+					}
+				}
+			}
+		}
+		
+		getLog().debug("Unable to resolve a remote repository containing " + artifact);
+		
+		return null;
+	}
 
 }
