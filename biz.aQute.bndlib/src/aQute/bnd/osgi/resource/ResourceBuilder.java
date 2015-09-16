@@ -308,6 +308,9 @@ public class ResourceBuilder {
 	public void addExportPackage(String packageName, Attrs attrs) throws Exception {
 		CapReqBuilder capb = new CapReqBuilder(resource, PackageNamespace.PACKAGE_NAMESPACE);
 		capb.addAttributesOrDirectives(attrs);
+		if (!attrs.containsKey(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE)) {
+			capb.addAttribute(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, Version.emptyVersion);
+		}
 		capb.addAttribute(PackageNamespace.PACKAGE_NAMESPACE, packageName);
 		addCapability(capb);
 	}
