@@ -1,5 +1,6 @@
-# Only extra bundles that are needed for the main feature are mentioned here
-Include-Resource:\
+# Only extra bundles that are needed for the feature are mentioned here
+-resourceonly: true
+-includeresource: \
     ${repo;biz.aQute.bndlib;${bnd-version-base}},\
     ${repo;biz.aQute.repository;${bnd-version-base}},\
     ${repo;biz.aQute.resolve;${bnd-version-base}},\

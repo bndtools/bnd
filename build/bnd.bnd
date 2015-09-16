@@ -6,7 +6,7 @@
 -releaserepo:
 
 # Main p2 feature
-p2_main = bndtools.api, \
+p2 = bndtools.api, \
     bndtools.builder, \
     bndtools.core, \
     bndtools.jareditor, \
@@ -20,9 +20,4 @@ p2_main = bndtools.api, \
     org.bndtools.versioncontrol.ignores.manager, \
     org.bndtools.versioncontrol.ignores.plugin.git
 
-# Extras p2 feature
-p2_extras = bndtools.repository.amdatu, \
-    bndtools.template.amdatu, \
-    bndtools.template.dm
-
--dependson: ${p2_main}, ${p2_extras}
+-dependson: ${p2}

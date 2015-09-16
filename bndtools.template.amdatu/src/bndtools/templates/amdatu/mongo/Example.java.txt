@@ -1,7 +1,0 @@
-package @package@;
-
-import java.util.List;
-
-public interface Example {
-    List<ExampleDocument> list();
-}
