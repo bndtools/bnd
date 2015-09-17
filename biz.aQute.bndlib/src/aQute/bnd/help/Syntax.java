@@ -394,8 +394,11 @@ public class Syntax implements Constants {
 			new Syntax(RUNVM,
 					"Additional arguments for the VM invocation. Keys that start with a - are added as options, otherwise they are treated as -D properties for the VM.",
 					RUNVM + "=-Xmax=30, secondOption=secondValue", null, null),
-			new Syntax(RUNPROGRAMARGS, "Additional arguments for the program invokation.",
+			new Syntax(RUNPROGRAMARGS, "Additional arguments for the program invocation.",
 					RUNPROGRAMARGS + "=/some/file /another/file some_argument", null, null),
+			new Syntax(STANDALONE,
+					"Used in bndrun files. Disconnects the bndrun file from the workspace and defines its own Capabilities repositories.",
+					STANDALONE + "=index.html;name=..., ...", null, null),
 			new Syntax(PACKAGE, "Defines the options for packaging", PACKAGE + "=" + PACKAGE_JPM, null, null),
 			new Syntax(UPTO, "Limit bnd's behavior like it was up to the given version", "-upto: 2.3.1", null,
 					Version.VERSION)
