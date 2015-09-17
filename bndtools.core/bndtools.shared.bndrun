@@ -63,6 +63,7 @@ crossplatform.bundles: \
 	${aQute-repository},\
 	${aQute-resolve},\
 	${bndlib},\
+	org.osgi.impl.bundle.repoindex.lib,\
 	${help.bundles},\
 	${p2.bundles},\
 	${workspace.bundles},\
