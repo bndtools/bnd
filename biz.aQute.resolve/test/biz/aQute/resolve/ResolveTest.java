@@ -26,6 +26,7 @@ import org.osgi.service.repository.Repository;
 import org.osgi.service.resolver.ResolutionException;
 import org.osgi.service.resolver.Resolver;
 
+import aQute.bnd.build.Run;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ExportedPackage;
@@ -45,6 +46,21 @@ import test.lib.MockRegistry;
 public class ResolveTest extends TestCase {
 
 	private static final LogService log = new LogReporter(new ReporterAdapter(System.out));
+
+	/**
+	 * Missing default version
+	 */
+
+	public void testDefaultVersionsForJava() throws Exception {
+		Run run = Run.createRun(null, IO.getFile("testdata/defltversions/run.bndrun"));
+		try (ProjectResolver pr = new ProjectResolver(run);) {
+			Map<Resource,List<Wire>> resolve = pr.resolve();
+			assertTrue(pr.check());
+			assertNotNull(resolve);
+			assertTrue(resolve.size() > 0);
+			System.out.println(resolve);
+		}
+	}
 
 	/**
 	 * The enRoute base guard resolved but is missing bundles, the runbundles do
@@ -214,9 +230,9 @@ public class ResolveTest extends TestCase {
 	}
 
 	/**
-	 * This is a basic test of resolving. This test is paired with {@link
-	 * #testResolveWithProfile()}. If you change the resources, make sure this
-	 * is done in the same way. The {@link #testResolveWithProfile()} has a
+	 * This is a basic test of resolving. This test is paired with
+	 * {@link #testResolveWithProfile()}. If you change the resources, make sure
+	 * this is done in the same way. The {@link #testResolveWithProfile()} has a
 	 * negative check while this one checks positive.
 	 */
 	public static void testSimpleResolve() {
