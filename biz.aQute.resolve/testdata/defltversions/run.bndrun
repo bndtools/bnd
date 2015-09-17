@@ -1,5 +1,6 @@
 -standalone: index.xml
--include: packages-1.7.bnd
+#-include: packages-1.7.bnd
+#-include: packages-1.8.bnd
 -runfw: org.apache.felix.framework;version=5
 -runee: JavaSE-1.8
 
