@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="utf-8"?>
+<repository increment="1442339140000" name="Local2" xmlns="http://www.osgi.org/xmlns/repository/v1.0.0">
+  <resource>
+    <capability namespace="osgi.identity">
+      <attribute name="osgi.identity" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="type" value="osgi.bundle"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+    </capability>
+    <capability namespace="osgi.content">
+      <attribute name="osgi.content" value="307bc7bbd89d16d6bc487c77825e89f4225b0914fc6b3d3b91772162eee3e0c0"/>
+      <attribute name="url" value="http://repository.springsource.com.s3.amazonaws.com/maven/bundles/external/org/apache/ant/com.springsource.org.apache.tools.ant.launch/1.8.1/com.springsource.org.apache.tools.ant.launch-1.8.1.jar"/>
+      <attribute name="size" type="Long" value="1336253"/>
+      <attribute name="mime" value="application/vnd.osgi.bundle"/>
+    </capability>
+    <capability namespace="osgi.wiring.bundle">
+      <attribute name="osgi.wiring.bundle" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+    </capability>
+    <capability namespace="osgi.wiring.host">
+      <attribute name="osgi.wiring.host" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="images"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="javax.xml.parsers,org.apache.tools.ant.input,org.apache.tools.ant.launch,org.apache.tools.ant.types,org.apache.tools.ant.types.selectors,org.w3c.dom,org.xml.sax"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.dispatch"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.filters"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant,org.apache.tools.ant.types,org.apache.tools.ant.util"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.filters.util"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.helper"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant,org.apache.tools.ant.util,org.xml.sax,org.xml.sax.helpers"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.input"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.listener"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.loader"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.taskdefs"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant,org.apache.tools.ant.filters,org.apache.tools.ant.input,org.apache.tools.ant.taskdefs.condition,org.apache.tools.ant.taskdefs.email,org.apache.tools.ant.types,org.apache.tools.ant.types.resources,org.apache.tools.ant.types.resources.selectors,org.apache.tools.ant.types.selectors,org.apache.tools.ant.types.selectors.modifiedselector,org.apache.tools.ant.types.spi,org.apache.tools.ant.util,org.apache.tools.ant.util.facade,org.apache.tools.tar,org.apache.tools.zip,org.w3c.dom,org.xml.sax"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.taskdefs.compilers"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant,org.apache.tools.ant.taskdefs,org.apache.tools.ant.types"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.taskdefs.condition"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant,org.apache.tools.ant.taskdefs,org.apache.tools.ant.types,org.apache.tools.ant.types.selectors"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.taskdefs.cvslib"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant,org.apache.tools.ant.taskdefs,org.apache.tools.ant.types,org.apache.tools.ant.util"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.taskdefs.email"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant,org.apache.tools.ant.types"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.taskdefs.rmic"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant,org.apache.tools.ant.taskdefs,org.apache.tools.ant.types,org.apache.tools.ant.util"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.types"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="javax.xml.transform,org.apache.tools.ant,org.apache.tools.ant.filters,org.apache.tools.ant.taskdefs,org.apache.tools.ant.types.selectors,org.apache.tools.ant.types.selectors.modifiedselector,org.apache.tools.ant.util,org.apache.tools.ant.util.regexp,org.xml.sax"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.types.conditions"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.types.mappers"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant.types,org.apache.tools.ant.util"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.types.resources"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant,org.apache.tools.ant.types,org.apache.tools.ant.types.resources.comparators,org.apache.tools.ant.types.resources.selectors,org.apache.tools.ant.types.selectors,org.apache.tools.ant.util,org.apache.tools.tar,org.apache.tools.zip"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.types.resources.comparators"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant,org.apache.tools.ant.types"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.types.resources.selectors"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant,org.apache.tools.ant.types,org.apache.tools.ant.types.resources.comparators"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.types.selectors"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant,org.apache.tools.ant.types,org.apache.tools.ant.types.resources.selectors,org.apache.tools.ant.types.selectors.modifiedselector"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.types.selectors.modifiedselector"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant,org.apache.tools.ant.types,org.apache.tools.ant.types.resources.selectors,org.apache.tools.ant.types.selectors"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.types.spi"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.util"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="javax.xml.parsers,org.apache.tools.ant,org.apache.tools.ant.types,org.apache.tools.ant.types.resources,org.apache.tools.ant.types.resources.selectors,org.w3c.dom,org.xml.sax"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.util.facade"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant.types"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.ant.util.regexp"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+      <directive name="uses" value="org.apache.tools.ant"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.bzip2"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.mail"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.tar"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.apache.tools.zip"/>
+      <attribute name="version" type="Version" value="1.8.1"/>
+      <attribute name="bundle-symbolic-name" value="com.springsource.org.apache.tools.ant"/>
+      <attribute name="bundle-version" type="Version" value="1.8.1"/>
+    </capability>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=javax.xml.parsers)(version&gt;=0.0.0))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=javax.xml.transform)(version&gt;=0.0.0))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=javax.xml.transform.sax)(version&gt;=0.0.0))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.apache.tools.ant.launch)(version&gt;=1.8.1)(!(version&gt;=2.0.0)))"/>
+      <directive name="resolution" value="optional"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.w3c.dom)(version&gt;=0.0.0))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.xml.sax)(version&gt;=0.0.0))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.xml.sax.helpers)(version&gt;=0.0.0))"/>
+    </requirement>
+  </resource>
+  <resource>
+    <capability namespace="osgi.identity">
+      <attribute name="osgi.identity" value="org.apache.felix.framework"/>
+      <attribute name="type" value="osgi.bundle"/>
+      <attribute name="version" type="Version" value="5.0.1"/>
+    </capability>
+    <capability namespace="osgi.content">
+      <attribute name="osgi.content" value="b4c23349d770e5d94591187801083dae366d730c52f04166805f44eebeb33a71"/>
+      <attribute name="url" value="http://repo1.maven.org/maven2/org/apache/felix/org.apache.felix.framework/5.0.1/org.apache.felix.framework-5.0.1.jar"/>
+      <attribute name="size" type="Long" value="601333"/>
+      <attribute name="mime" value="application/vnd.osgi.bundle"/>
+    </capability>
+    <capability namespace="osgi.wiring.bundle">
+      <attribute name="osgi.wiring.bundle" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+    </capability>
+    <capability namespace="osgi.wiring.host">
+      <attribute name="osgi.wiring.host" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.framework"/>
+      <attribute name="version" type="Version" value="1.8.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.framework.dto"/>
+      <attribute name="version" type="Version" value="1.8.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+      <directive name="uses" value="org.osgi.dto"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.framework.hooks.bundle"/>
+      <attribute name="version" type="Version" value="1.1.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+      <directive name="uses" value="org.osgi.framework"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.framework.hooks.resolver"/>
+      <attribute name="version" type="Version" value="1.0.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+      <directive name="uses" value="org.osgi.framework.wiring"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.framework.hooks.service"/>
+      <attribute name="version" type="Version" value="1.1.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+      <directive name="uses" value="org.osgi.framework"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.framework.hooks.weaving"/>
+      <attribute name="version" type="Version" value="1.1.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+      <directive name="uses" value="org.osgi.framework.wiring"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.framework.launch"/>
+      <attribute name="version" type="Version" value="1.2.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+      <directive name="uses" value="org.osgi.framework"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.framework.namespace"/>
+      <attribute name="version" type="Version" value="1.1.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+      <directive name="uses" value="org.osgi.resource"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.framework.startlevel"/>
+      <attribute name="version" type="Version" value="1.0.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+      <directive name="uses" value="org.osgi.framework"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.framework.startlevel.dto"/>
+      <attribute name="version" type="Version" value="1.0.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+      <directive name="uses" value="org.osgi.dto"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.framework.wiring"/>
+      <attribute name="version" type="Version" value="1.2.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+      <directive name="uses" value="org.osgi.framework,org.osgi.resource"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.framework.wiring.dto"/>
+      <attribute name="version" type="Version" value="1.2.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+      <directive name="uses" value="org.osgi.dto,org.osgi.resource.dto"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.resource"/>
+      <attribute name="version" type="Version" value="1.0.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.resource.dto"/>
+      <attribute name="version" type="Version" value="1.0.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+      <directive name="uses" value="org.osgi.dto"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.service.packageadmin"/>
+      <attribute name="version" type="Version" value="1.2.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+      <directive name="uses" value="org.osgi.framework"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.service.startlevel"/>
+      <attribute name="version" type="Version" value="1.1.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+      <directive name="uses" value="org.osgi.framework"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.service.url"/>
+      <attribute name="version" type="Version" value="1.0.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.service.resolver"/>
+      <attribute name="version" type="Version" value="1.0.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+      <directive name="uses" value="org.osgi.resource"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.util.tracker"/>
+      <attribute name="version" type="Version" value="1.5.1"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+      <directive name="uses" value="org.osgi.framework"/>
+    </capability>
+    <capability namespace="osgi.wiring.package">
+      <attribute name="osgi.wiring.package" value="org.osgi.dto"/>
+      <attribute name="version" type="Version" value="1.0.0"/>
+      <attribute name="bundle-symbolic-name" value="org.apache.felix.framework"/>
+      <attribute name="bundle-version" type="Version" value="5.0.1"/>
+    </capability>
+    <capability namespace="osgi.contract">
+      <attribute name="osgi.contract" value="OSGiFramework"/>
+      <directive name="uses" value="org.osgi.framework,org.osgi.framework.dto,org.osgi.framework.hooks.bundle,org.osgi.framework.hooks.resolver,org.osgi.framework.hooks.service,org.osgi.framework.hooks.weaving,org.osgi.framework.launch,org.osgi.framework.namespace,org.osgi.framework.startlevel,org.osgi.framework.startlevel.dto,org.osgi.framework.wiring,org.osgi.framework.wiring.dto,org.osgi.resource,org.osgi.resource.dto,org.osgi.service.packageadmin,org.osgi.service.startlevel,org.osgi.service.url,org.osgi.service.resolver,org.osgi.util.tracker,org.osgi.dto"/>
+    </capability>
+    <requirement namespace="osgi.ee">
+      <directive name="filter" value="(&amp;(osgi.ee=JavaSE)(version=1.5))"/>
+    </requirement>
+  </resource>
+</repository>

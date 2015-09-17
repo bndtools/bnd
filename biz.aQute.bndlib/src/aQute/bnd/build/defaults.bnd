@@ -36,3 +36,4 @@ javac.debug:  on
 -sources:       true
 -sourcepath:    ${project}/${src}
 -outputmask:	${@bsn}.jar
+-groupid:		${basename;${workspace}}

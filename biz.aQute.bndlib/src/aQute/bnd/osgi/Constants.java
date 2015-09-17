@@ -14,7 +14,7 @@ public interface Constants {
 	 */
 	/**
 	 * @syntax Bundle-ActivationPolicy ::= policy ( ’;’ directive )* policy ::=
-	 * ’lazy’
+	 *         ’lazy’
 	 */
 	String	BND_ADDXMLTOTEST					= "Bnd-AddXMLToTest";
 	String	BUNDLE_ACTIVATIONPOLICY				= "Bundle-ActivationPolicy";
@@ -126,7 +126,7 @@ public interface Constants {
 	String	GESTALT_CI			= "ci";
 	String	GESTALT_OFFLINE		= "offline";
 	String	GESTALT_SHELL		= "shell";
-
+	String	GROUPID				= "-groupid";
 	String	INCLUDE				= "-include";
 	String	INCLUDERESOURCE		= "-includeresource";
 	String	INVALIDFILENAMES	= "-invalidfilenames";
@@ -193,7 +193,7 @@ public interface Constants {
 
 	/**
 	 * @deprecated This is for support of the legacy OBR requirement format, use
-	 * {@link #RUNREQUIRES} for new format.
+	 *             {@link #RUNREQUIRES} for new format.
 	 */
 	@Deprecated
 	String RUNREQUIRE = "-runrequire";
@@ -220,6 +220,7 @@ public interface Constants {
 	String	RUNFRAMEWORK_NONE		= "none";
 	String	REPORTNEWER				= "-reportnewer";
 	String	SIGN					= "-sign";
+	String	STANDALONE				= "-standalone";
 	String	TESTPACKAGES			= "-testpackages";
 	String	TESTPATH				= "-testpath";
 	String	TESTCONTINUOUS			= "-testcontinuous";
@@ -250,7 +251,8 @@ public interface Constants {
 			INVALIDFILENAMES, FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE, NOEE, OUTPUTMASK, TESTUNRESOLVED,
 			RUNJDB, RUNENV, RUNEE, EEPROFILE, RUNREQUIRES, EXPORT, GESTALT, BNDDRIVER, CHECK, DISTRO,
 			METATYPE_ANNOTATIONS, METATYPE_ANNOTATIONS_OPTIONS, PACKAGEINFOTYPE, JAVAC_SOURCE, JAVAC_TARGET,
-			JAVAC_PROFILE, JAVAC, JAVA, JAVA_DEBUG, EXPORTTYPE, RUNREMOTE, TESTER, AUGMENT, REQUIRE_BND
+			JAVAC_PROFILE, JAVAC, JAVA, JAVA_DEBUG, EXPORTTYPE, RUNREMOTE, TESTER, AUGMENT, REQUIRE_BND, GROUPID,
+			STANDALONE
 
 	};
 
