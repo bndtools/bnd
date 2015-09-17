@@ -123,6 +123,15 @@
             project="false">
       </wizard>
       <wizard
+            id="bndtools.newIndexWizard"
+            category="bndtools.wizardCategory"
+            class="org.bndtools.core.ui.wizards.index.NewIndexWizard"
+            icon="icons/repoindex.png"
+            name="OSGi Repository Index"
+            project="false"
+            >
+      </wizard>
+      <wizard
             name="OSGi Declarative Services Component"
             icon="${icons.component}"
             category="bndtools.wizardCategory"
@@ -213,6 +222,10 @@
          name="Refresh Repositories"
          description=""
       />
+      <command
+         id="bnd.wizard.generateIndex"
+         name="Generate OSGi Repo. Index"
+      />
    </extension>
    <extension point="org.eclipse.ui.commandImages">
       <image
@@ -226,6 +239,10 @@
       <image
          commandId="bndtools.workspace.refreshRepos"
          icon="icons/arrow_refresh.png"
+      />
+      <image
+         commandId="bnd.wizard.generateIndex"
+         icon="icons/repoindex.png"
       />
    </extension>
    <extension point="org.eclipse.ui.handlers">
@@ -249,6 +266,18 @@
           commandId="bndtools.workspace.refreshRepos"
           class="bndtools.RefreshReposHandler"
        />
+       <handler
+          commandId="bnd.wizard.generateIndex"
+          class="org.bndtools.core.ui.wizards.index.GenerateIndexCommandHandler">
+          <enabledWhen>
+             <with variable="selection">
+                 <count value="1"/>
+                 <iterate operator="and">
+	                 <adapt type="org.eclipse.core.resources.IContainer"/>
+                 </iterate>
+             </with>
+          </enabledWhen>
+       </handler>
    </extension>
 
    <extension point="org.eclipse.ui.menus">
@@ -281,6 +310,12 @@
                visible="false"
             />
          </menu>
+      </menuContribution>
+
+      <menuContribution locationURI="popup:org.eclipse.ui.popup.any">
+          <command commandId="bnd.wizard.generateIndex">
+               <visibleWhen checkEnabled="true"/>
+          </command>
       </menuContribution>
    </extension>
 
@@ -922,7 +957,6 @@
             </objectState>
          </visibility>
       </objectContribution>
-
    </extension>
 
    <extension point="org.eclipse.ui.commands">
