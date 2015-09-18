@@ -62,22 +62,66 @@ specifically required for local testing.
 The `bnd-indexer-maven-plugin` can be configured to use local URLs by 
 setting the localURLs property to one of three values:
 
-* FORBIDDEN - The default value. This will cause the build to fail if
+* `FORBIDDEN` - The default value. This will cause the build to fail if
 no remote URL can be found
-* ALLOWED - Where a remote URL can be found it will be use. If one cannot
+* `ALLOWED` - Where a remote URL can be found it will be use. If one cannot
 be found then the local URL will be used instead
-* REQUIRED - No remote URLs will be used. All URLs in the index will be
+* `REQUIRED` - No remote URLs will be used. All URLs in the index will be
 local.
 
 Setting the localURLs property is very easy:
 
     <configuration>
-        <localURLs>true</localURLs>
+        <localURLs>ALLOWED</localURLs>
     </configuration>
 
 N.B. If local URLs are used in the index then it *should not be deployed* 
 to a remote repository. The local URLs are only valid on the machine that
-created them. 
+created them. For this reason it is recommended that CI servers use a 
+`FORBIDDEN` policy
+
+##### Using indexes at development time
+
+You may want to use generated indexes at development time, indexing your 
+recently built snapshots and doing local testing. This model works really
+well if you set up profiles for your build 
+[(see the maven docs for more info)](https://maven.apache.org/guides/introduction/introduction-to-profiles.html).
+
+A recommended setup is as follows:
+
+*POM configuration data*
+    
+    <!-- Properties configuration -->
+    <properties>
+        <local.url.policy>REQUIRED</local.url.policy>
+    </properties>
+    ...
+    <!-- Profile configuration -->
+    <profiles>
+        <profile>
+            <id>RunningInCI</id>
+            <activation>
+                <property>
+                    <name>in.ci</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <local.url.policy>FORBIDDEN</local.url.policy>
+            </properties>
+        </profile>
+    </profiles>
+    ...
+    <!-- Indexer plugin configuration -->
+    <configuration>
+        <localURLs>${local.url.policy}</localURLs>
+    </configuration>
+    ...
+
+This configuration means that when a developer runs a build on their local
+machine they will generate an index using only local URLs suitable for rapid
+deployment and testing. When run on a CI server (specifying the `in.ci`
+environment property) then an index with full remote URLs will be created.
 
 #### Excluding transitive dependencies
 
