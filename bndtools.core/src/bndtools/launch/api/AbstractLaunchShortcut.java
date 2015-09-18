@@ -8,7 +8,6 @@ import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
@@ -25,7 +24,6 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.ISelection;
@@ -37,7 +35,6 @@ import org.eclipse.ui.ide.ResourceUtil;
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.launch.LaunchConstants;
-import bndtools.launch.util.LaunchUtils;
 
 public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
     private static final ILogger logger = Logger.getLogger(AbstractLaunchShortcut.class);
@@ -48,6 +45,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         this.launchId = launchId;
     }
 
+    @Override
     public void launch(ISelection selection, String mode) {
         IStructuredSelection is = (IStructuredSelection) selection;
         if (is.getFirstElement() != null) {
@@ -82,6 +80,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         }
     }
 
+    @Override
     public void launch(IEditorPart editor, String mode) {
         IEditorInput input = editor.getEditorInput();
         IJavaElement element = (IJavaElement) input.getAdapter(IJavaElement.class);
@@ -158,11 +157,6 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         wc.setAttribute(LaunchConstants.ATTR_CLEAN, LaunchConstants.DEFAULT_CLEAN);
         wc.setAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, LaunchConstants.DEFAULT_DYNAMIC_BUNDLES);
 
-        IResource targetResource = ResourcesPlugin.getWorkspace().getRoot().findMember(targetPath);
-        if (targetResource != null && targetResource.exists()) {
-            wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, LaunchUtils.getLaunchProjectName(targetResource));
-        }
-
         return wc;
     }
 
@@ -185,6 +179,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         return resource != null ? resource.getProject() : null;
     }
 
+    @Override
     public ILaunchConfiguration[] getLaunchConfigurations(ISelection selection) {
         IProject project = getProject(selection);
         return project != null ? getLaunchConfigsForProject(project) : null;
@@ -205,11 +200,13 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         }
     }
 
+    @Override
     public ILaunchConfiguration[] getLaunchConfigurations(IEditorPart editorPart) {
         IProject project = getProject(editorPart);
         return project != null ? getLaunchConfigsForProject(project) : null;
     }
 
+    @Override
     public IResource getLaunchableResource(ISelection selection) {
         if (selection instanceof IStructuredSelection) {
             IStructuredSelection structSel = (IStructuredSelection) selection;
@@ -226,6 +223,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         return null;
     }
 
+    @Override
     public IResource getLaunchableResource(IEditorPart editorPart) {
         ITypeRoot element = JavaUI.getEditorInputTypeRoot(editorPart.getEditorInput());
         if (element != null) {
