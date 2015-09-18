@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 
+import org.bndtools.core.ui.util.SWTUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -27,7 +28,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
@@ -44,7 +44,6 @@ public class ProjectLocationGroup {
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
     private final IPath workspaceLocation;
-    private final String title;
 
     private boolean useBndWorkspace = true;
     private String projectName;
@@ -53,15 +52,15 @@ public class ProjectLocationGroup {
     private boolean programmaticChange;
     private IStatus status = Status.OK_STATUS;
 
-    private Group group;
+    private Composite container;
     private Button btnUseBndWorkspace;
+    private Label lblOtherLocation;
     private Text txtLocation;
-    private Label lblWorkspaceLocation;
+    private Button btnBrowse;
 
-    public ProjectLocationGroup(String title) {
+    public ProjectLocationGroup(@SuppressWarnings("unused") String title) {
         this.workspaceLocation = findWorkspaceLocation();
         this.location = workspaceLocation;
-        this.title = title;
     }
 
     private static IPath findWorkspaceLocation() {
@@ -104,26 +103,23 @@ public class ProjectLocationGroup {
      * @wbp.parser.entryPoint
      */
     public Control createControl(Composite parent) {
-        group = new Group(parent, SWT.NONE);
-        group.setText(title);
-        group.setLayout(new GridLayout(4, false));
+        container = new Composite(parent, SWT.NONE);
+        container.setLayout(new GridLayout(3, false));
 
-        btnUseBndWorkspace = new Button(group, SWT.CHECK);
-        btnUseBndWorkspace.setText("Use bnd workspace location:");
-        btnUseBndWorkspace.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 4, 1));
+        btnUseBndWorkspace = new Button(container, SWT.CHECK);
+        btnUseBndWorkspace.setText("Use bnd workspace location");
+        btnUseBndWorkspace.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
 
-        lblWorkspaceLocation = new Label(group, SWT.WRAP);
-        lblWorkspaceLocation.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 4, 1));
-        lblWorkspaceLocation.setText("[WorkspaceLocation]");
+        lblOtherLocation = new Label(container, SWT.NONE);
+        lblOtherLocation.setText("Location:");
 
-        Label lblOtherLocation = new Label(group, SWT.NONE);
-        lblOtherLocation.setText("Other location:");
-
-        txtLocation = new Text(group, SWT.BORDER);
+        txtLocation = new Text(container, SWT.BORDER);
         txtLocation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        txtLocation.setText("[WorkspaceLocation]");
 
-        Button btnBrowse = new Button(group, SWT.NONE);
+        btnBrowse = new Button(container, SWT.NONE);
         btnBrowse.setText("Browse...");
+        btnBrowse.setLayoutData(getButtonLayoutData(btnBrowse));
 
         updateUI();
 
@@ -131,8 +127,9 @@ public class ProjectLocationGroup {
             @Override
             public void modifyText(ModifyEvent e) {
                 IPath oldValue = getLocation();
-
-                externalPath = txtLocation.getText();
+                if (!useBndWorkspace) {
+                    externalPath = txtLocation.getText();
+                }
                 IPath newValue = getLocation();
                 if (!programmaticChange) {
                     propSupport.firePropertyChange(PROP_LOCATION, oldValue, newValue);
@@ -156,7 +153,7 @@ public class ProjectLocationGroup {
         btnBrowse.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                DirectoryDialog dialog = new DirectoryDialog(group.getShell());
+                DirectoryDialog dialog = new DirectoryDialog(container.getShell());
                 dialog.setMessage("Choose a directory for the project contents:");
                 String directoryName = txtLocation.getText().trim();
                 if (directoryName == null || directoryName.length() == 0) {
@@ -165,7 +162,7 @@ public class ProjectLocationGroup {
                         directoryName = previous;
                 }
 
-                assert (directoryName != null);
+                assert(directoryName != null);
 
                 if (directoryName.length() > 0) {
                     File path = new File(directoryName);
@@ -183,7 +180,13 @@ public class ProjectLocationGroup {
             }
         });
 
-        return group;
+        return container;
+    }
+
+    private Object getButtonLayoutData(Button button) {
+        GridData gd = new GridData();
+        gd.widthHint = SWTUtil.getButtonWidthHint(button);
+        return gd;
     }
 
     private IStatus checkStatus() {
@@ -271,12 +274,10 @@ public class ProjectLocationGroup {
     private void updateUI() {
         if (btnUseBndWorkspace != null && !btnUseBndWorkspace.isDisposed()) {
             btnUseBndWorkspace.setSelection(useBndWorkspace);
-            lblWorkspaceLocation.setText(location.toOSString());
-            group.layout(true);
-
+            lblOtherLocation.setEnabled(!useBndWorkspace);
             txtLocation.setEnabled(!useBndWorkspace);
-            txtLocation.setText(externalPath != null ? externalPath : "");
-            group.layout(true);
+            txtLocation.setText(useBndWorkspace ? location.toOSString() : externalPath == null ? "" : externalPath);
+            btnBrowse.setEnabled(!useBndWorkspace);
         }
     }
 
