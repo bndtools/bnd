@@ -197,7 +197,7 @@ public class ProjectLocationGroup {
             if (loc == null || loc.isEmpty())
                 return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Project location invalid or not specified.", null);
 
-            if (!loc.lastSegment().equals(projectName))
+            if (loc.lastSegment() == null || !loc.lastSegment().equals(projectName))
                 return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Project location must end with specified project name", null);
         }
 
