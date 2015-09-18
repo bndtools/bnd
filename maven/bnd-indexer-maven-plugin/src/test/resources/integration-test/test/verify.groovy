@@ -26,7 +26,7 @@ public Repository check(String xmlFile, String gzipFile, int size, boolean local
 	return repo;
 }
 
-public String check(Repository repo, String namespace, String filter, String identity, boolean localURL) {
+public Capability check(Repository repo, String namespace, String filter, String identity, boolean localURL) {
 	
 	Requirement requirement = new RequirementBuilder(namespace)
 						.addDirective("filter", filter)
@@ -41,7 +41,9 @@ public String check(Repository repo, String namespace, String filter, String ide
 	
 	assert identity == ResourceUtils.getIdentityCapability(res).getAttributes().get("osgi.identity");
 	
-	String location = ResourceUtils.getContentCapability(res).getAttributes().get("url").toString();
+	Capability content = ResourceUtils.getContentCapability(res);
+	
+	String location = content.getAttributes().get("url").toString();
 
 	if(localURL) {
 		assert location.startsWith("file:") ? new File(URI.create(location)).isFile() : 
@@ -50,6 +52,7 @@ public String check(Repository repo, String namespace, String filter, String ide
 		assert null != URI.create(location).getScheme();
 		assert "file" != URI.create(location).getScheme();
 	}
+	return content;
 }
 
 println "TODO: Need to write some test code for the generated index!"
@@ -62,5 +65,16 @@ check("${basedir}/non-transitive/target/index.xml", "${basedir}/non-transitive/t
 check("${basedir}/scoped/target/index.xml", "${basedir}/scoped/target/index.xml.gz", 24, false);
 check("${basedir}/require-local/target/index.xml", "${basedir}/require-local/target/index.xml.gz", 21, true);
 
-Repository repo = check("${basedir}/in-build/target/index.xml", "${basedir}/in-build/target/index.xml.gz", 3, false);
-check(repo, "osgi.identity", "(osgi.identity=biz.aQute.bnd)", "biz.aQute.bnd", false);
+Repository repo = check("${basedir}/in-build/target/index.xml", "${basedir}/in-build/target/index.xml.gz", 4, false);
+
+Capability content = check(repo, "osgi.identity", "(osgi.identity=biz.aQute.bnd)", "biz.aQute.bnd", false);
+
+assert 828249 == content.getAttributes().get("size");
+
+
+content = check(repo, "osgi.identity", "(osgi.identity=org.apache.aries.async)", "org.apache.aries.async", false);
+
+assert 300000 < content.getAttributes().get("size");
+String url = content.getAttributes().get("url").toString();
+assert !(url.substring(url.lastIndexOf('/')).contains("SNAPSHOT"))
+

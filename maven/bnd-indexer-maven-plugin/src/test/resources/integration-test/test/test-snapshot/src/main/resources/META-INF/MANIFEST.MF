@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.apache.aries.async
+Bundle-Version: 0.0.1.SNAPSHOT

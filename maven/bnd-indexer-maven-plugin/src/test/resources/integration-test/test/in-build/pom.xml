@@ -11,6 +11,19 @@
 	<artifactId>in-build</artifactId>
 	<packaging>pom</packaging>
 
+	<repositories>
+		<repository>
+			<id>Apache Snapshots</id>
+			<url>https://repository.apache.org/content/groups/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.felix</groupId>
@@ -20,6 +33,11 @@
 			<groupId>biz.aQute</groupId>
 			<artifactId>bnd</artifactId>
 			<version>1.50.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.aries.async</groupId>
+			<artifactId>org.apache.aries.async</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
