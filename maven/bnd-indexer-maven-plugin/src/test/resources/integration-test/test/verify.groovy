@@ -1,5 +1,6 @@
 import aQute.bnd.osgi.repository.*;
 import aQute.bnd.osgi.resource.*;
+import java.net.*;
 import java.util.*;
 import org.osgi.resource.*;
 import org.osgi.service.repository.*;
@@ -49,8 +50,17 @@ public Capability check(Repository repo, String namespace, String filter, String
 		assert location.startsWith("file:") ? new File(URI.create(location)).isFile() : 
 				new File(location).isFile();	
 	} else {
-		assert null != URI.create(location).getScheme();
-		assert "file" != URI.create(location).getScheme();
+		URI uri = URI.create(location);
+		assert null != uri.getScheme();
+		assert "file" != uri.getScheme();
+		
+		if(uri.getScheme().startsWith("http")) {
+			HttpURLConnection con = (HttpURLConnection) uri.toURL().openConnection();
+			con.setRequestMethod("HEAD");
+			con.connect();
+			assert 2 == (con.getResponseCode() / 100);
+		}
+		
 	}
 	return content;
 }
