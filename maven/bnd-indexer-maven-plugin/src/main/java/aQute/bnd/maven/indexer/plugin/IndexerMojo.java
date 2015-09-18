@@ -231,8 +231,8 @@ public class IndexerMojo extends AbstractMojo {
 				throw new FileNotFoundException("The repository " + artifactResult.getRepository().getId() + " is not known to this resolver");
 			}
 			
-			return URI.create(repo.getUrl()).resolve(
-					repo.getLayout().pathOf(RepositoryUtils.toArtifact(artifact)));
+			return URI.create(repo.getUrl() + repo.getBasedir() +
+					repo.getLayout().pathOf(RepositoryUtils.toArtifact(artifact))).normalize();
         }
     }
 
