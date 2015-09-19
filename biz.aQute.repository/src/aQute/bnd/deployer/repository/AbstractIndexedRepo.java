@@ -1,31 +1,72 @@
 package aQute.bnd.deployer.repository;
 
-import static aQute.bnd.deployer.repository.RepoResourceUtils.*;
+import static aQute.bnd.deployer.repository.RepoResourceUtils.getContentSha;
+import static aQute.bnd.deployer.repository.RepoResourceUtils.getContentUrl;
+import static aQute.bnd.deployer.repository.RepoResourceUtils.getIdentityCapability;
+import static aQute.bnd.deployer.repository.RepoResourceUtils.readIndex;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Dictionary;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
 
-import org.osgi.impl.bundle.bindex.*;
-import org.osgi.resource.*;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.impl.bundle.bindex.BundleIndexerImpl;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
-import org.osgi.service.bindex.*;
-import org.osgi.service.log.*;
-import org.osgi.service.repository.*;
+import org.osgi.service.bindex.BundleIndexer;
+import org.osgi.service.log.LogService;
+import org.osgi.service.repository.ContentNamespace;
+import org.osgi.service.repository.Repository;
 
-import aQute.bnd.deployer.http.*;
-import aQute.bnd.deployer.repository.api.*;
-import aQute.bnd.deployer.repository.providers.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
+import aQute.bnd.deployer.http.DefaultURLConnector;
+import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
+import aQute.bnd.deployer.repository.api.IRepositoryIndexProcessor;
+import aQute.bnd.deployer.repository.api.Referral;
+import aQute.bnd.deployer.repository.providers.ObrContentProvider;
+import aQute.bnd.deployer.repository.providers.R5RepoContentProvider;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.service.IndexProvider;
+import aQute.bnd.service.Plugin;
+import aQute.bnd.service.Refreshable;
+import aQute.bnd.service.Registry;
+import aQute.bnd.service.RegistryPlugin;
+import aQute.bnd.service.RemoteRepositoryPlugin;
+import aQute.bnd.service.ResolutionPhase;
+import aQute.bnd.service.ResourceHandle;
 import aQute.bnd.service.ResourceHandle.Location;
-import aQute.bnd.service.url.*;
-import aQute.bnd.version.*;
-import aQute.lib.filter.*;
-import aQute.libg.glob.*;
-import aQute.libg.gzip.*;
-import aQute.service.reporter.*;
+import aQute.bnd.service.Strategy;
+import aQute.bnd.service.url.URLConnector;
+import aQute.bnd.version.Version;
+import aQute.bnd.version.VersionRange;
+import aQute.lib.filter.Filter;
+import aQute.libg.glob.Glob;
+import aQute.libg.gzip.GZipUtils;
+import aQute.service.reporter.Reporter;
 
 /**
  * Abstract base class for indexed repositories. <p> The repository
@@ -37,6 +78,8 @@ import aQute.service.reporter.*;
 public abstract class AbstractIndexedRepo
 		implements RegistryPlugin, Plugin, RemoteRepositoryPlugin, IndexProvider, Repository, Refreshable {
 
+	private static final String SHA_256 = "SHA-256";
+
 	public static final String	PROP_NAME					= "name";
 	public static final String	PROP_REPO_TYPE				= "type";
 	public static final String	PROP_RESOLUTION_PHASE		= "phase";
@@ -47,6 +90,9 @@ public abstract class AbstractIndexedRepo
 	public static final String	REPO_INDEX_SHA_EXTENSION	= ".sha";
 	public static final String	PROP_CACHE_TIMEOUT			= "timeout";
 	public static final String	PROP_ONLINE					= "online";
+	public static final String	PROP_VERSION_KEY			= "version";
+	public static final String	PROP_VERSION_HASH			= "hash";
+	public static final String	PROP_CHECK_BSN				= "bsn";
 
 	private final static int DEFAULT_CACHE_TIMEOUT = 5;
 
@@ -330,7 +376,7 @@ public abstract class AbstractIndexedRepo
 		init();
 		ResourceHandle result;
 		if (bsn != null)
-			result = resolveBundle(bsn, range, strategy);
+			result = resolveBundle(bsn, range, strategy, properties);
 		else {
 			throw new IllegalArgumentException("Cannot resolve bundle: bundle symbolic name not specified.");
 		}
@@ -434,9 +480,14 @@ public abstract class AbstractIndexedRepo
 		return result;
 	}
 
-	ResourceHandle resolveBundle(String bsn, String rangeStr, Strategy strategy) throws Exception {
+	ResourceHandle resolveBundle(String bsn, String rangeStr, Strategy strategy, Map<String,String> properties)
+			throws Exception {
 		if (rangeStr == null)
 			rangeStr = "0.0.0";
+
+		if (PROP_VERSION_HASH.equals(rangeStr)) {
+			return findByHash(bsn, properties);
+		}
 
 		if (strategy == Strategy.EXACT) {
 			return findExactMatch(bsn, rangeStr);
@@ -481,6 +532,50 @@ public abstract class AbstractIndexedRepo
 		return mapResourceToHandle(resource);
 	}
 
+	ResourceHandle findByHash(String bsn, Map<String,String> properties) throws Exception {
+		if (bsn == null)
+			throw new IllegalArgumentException("Bundle symbolic name must be specified");
+
+		// Get the hash string
+		String hashStr = properties.get("hash");
+		if (hashStr == null)
+			throw new IllegalArgumentException(
+					"Content hash must be provided (using hash=<algo>:<hash>) when version=hash is specified");
+
+		// Parse into algo and hash
+		String algo = SHA_256;
+		int colonIndex = hashStr.indexOf(':');
+		if (colonIndex > -1) {
+			algo = hashStr.substring(0, colonIndex);
+			int afterColon = colonIndex + 1;
+			hashStr = (colonIndex < hashStr.length()) ? hashStr.substring(afterColon) : "";
+		}
+
+		// R5 indexes are always SHA-256
+		if (!SHA_256.equalsIgnoreCase(algo))
+			return null;
+
+		String contentFilter = String.format("(%s=%s)", ContentNamespace.CONTENT_NAMESPACE, hashStr);
+		Requirement contentReq = new CapReqBuilder(ContentNamespace.CONTENT_NAMESPACE).filter(contentFilter)
+				.buildSyntheticRequirement();
+
+		List<Capability> caps = new LinkedList<>();
+		capabilityIndex.appendMatchingCapabilities(contentReq, caps);
+
+		if (caps.isEmpty())
+			return null;
+
+		Resource resource = caps.get(0).getResource();
+
+		Capability identityCap = getIdentityCapability(resource);
+		Object id = identityCap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+		if (!bsn.equals(id))
+			throw new IllegalArgumentException(
+					String.format("Resource with requested hash does not match ID '%s' [hash: %s]", bsn, hashStr));
+
+		return mapResourceToHandle(resource);
+	}
+
 	/**
 	 * Utility function for parsing lists of URLs. @param locationsStr
 	 * Comma-separated list of URLs @return a list of URIs @throws
@@ -513,7 +608,13 @@ public abstract class AbstractIndexedRepo
 	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
 			throws Exception {
 		init();
-		ResourceHandle handle = resolveBundle(bsn, version.toString(), Strategy.EXACT);
+
+		String versionStr;
+		if (version != null)
+			versionStr = version.toString();
+		else
+			versionStr = properties.get(PROP_VERSION_KEY);
+		ResourceHandle handle = resolveBundle(bsn, versionStr, Strategy.EXACT, properties);
 		if (handle == null)
 			return null;
 

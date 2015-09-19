@@ -422,6 +422,7 @@ public interface Constants {
 	String	VERSION_ATTR_LATEST		= "latest";
 	String	VERSION_ATTR_SNAPSHOT	= "snapshot";
 	String	VERSION_ATTR_PROJECT	= "project";
+	String	VERSION_ATTR_HASH		= "hash";
 
 	/**
 	 * List of standard matchers for preprocessing
