@@ -1,0 +1,1 @@
+Private-Package: $projectName$
