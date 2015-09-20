@@ -17,7 +17,8 @@ workspace.bundles: \
 	org.bndtools.headless.build.plugin.ant;version=snapshot,\
 	org.bndtools.headless.build.plugin.gradle;version=snapshot,\
 	org.bndtools.versioncontrol.ignores.manager;version=snapshot,\
-	org.bndtools.versioncontrol.ignores.plugin.git;version=snapshot
+	org.bndtools.versioncontrol.ignores.plugin.git;version=snapshot,\
+	org.bndtools.templating; version=snapshot
 
 p2.bundles: \
 	org.eclipse.equinox.p2.core,\

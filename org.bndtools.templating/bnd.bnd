@@ -1,0 +1,16 @@
+-buildpath:\
+	osgi.core; version=${osgi.core.version},\
+	osgi.cmpn; version=${osgi.cmpn.version},\
+	${bndlib},\
+	${aQute-repository},\
+	ST4-4.0.8-complete.jar; version=file,\
+	junit; version=4.0,\
+	hamcrest-core; version=1.3
+
+
+Export-Package: \
+	org.bndtools.templating,\
+	org.bndtools.templating.engine,\
+	org.bndtools.templating.load
+
+Conditional-Package: org.stringtemplate.*, st4hidden.*
