@@ -1,6 +1,7 @@
 package aQute.bnd.osgi;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
@@ -8,6 +9,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,8 +39,10 @@ import javax.script.ScriptEngineManager;
 
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
+import aQute.lib.base64.Base64;
 import aQute.lib.collections.ExtList;
 import aQute.lib.collections.SortedList;
+import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 
@@ -1002,6 +1008,35 @@ public class Macro {
 			}
 			return null;
 		}
+	}
+
+	/**
+	 * Get the Base64 encoding of a file.
+	 * 
+	 * @throws IOException
+	 */
+	public String _base64(String... args) throws IOException {
+		verifyCommand(args, "${base64;<in>}, get the Base64 encoding of a file", null, 2, 2);
+		File f = domain.getFile(args[1]);
+		byte[] bytes = IO.read(f);
+		return Base64.encodeBase64(bytes);
+	}
+
+	/**
+	 * Get a digest of a file.
+	 * 
+	 * @throws NoSuchAlgorithmException
+	 * @throws IOException
+	 */
+	public String _digest(String... args) throws NoSuchAlgorithmException, IOException {
+		verifyCommand(args, "${digest;<algo>;<in>}, get a digest (e.g. MD5, SHA-256) of a file", null, 3, 3);
+
+		MessageDigest digester = MessageDigest.getInstance(args[1]);
+		File f = domain.getFile(args[2]);
+		DigestInputStream in = new DigestInputStream(new FileInputStream(f), digester);
+		IO.drain(in);
+		byte[] digest = digester.digest();
+		return Hex.toHexString(digest);
 	}
 
 	public static void verifyCommand(String args[], String help, Pattern[] patterns, int low, int high) {

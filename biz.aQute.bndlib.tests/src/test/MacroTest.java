@@ -1133,4 +1133,20 @@ public class MacroTest extends TestCase {
 		assertEquals("test.packageinfo.notannotated", b.getProperty("Named"));
 	}
 
+	public void testBase64() {
+		Processor b = new Processor();
+		b.setProperty("b64", "${base64;testresources/macro/base64-test.gif}");
+		String b64 = "R0lGODlhBwAIAKIAANhCT91bZuN3gOeIkOiQl+ygp////////yH5BAEAAAcALAAAAAAHAAgAAAMXCLoqFUWoYogpKlgS8u4AZWGAAw0MkwAAOw==";
+		assertEquals(b64, b.getProperty("b64"));
+	}
+
+	public void testDigest() {
+		Processor b = new Processor();
+		b.setProperty("a", "${digest;SHA-256;testresources/macro/digest-test.jar}");
+		b.setProperty("b", "${digest;MD5;testresources/macro/digest-test.jar}");
+
+		assertEquals("3B21F1450430C0AFF57E12A338EF6AA1A2E0EE318B8883DD196048450C2FC1FC", b.getProperty("a"));
+		assertEquals("F31BAC7F1F70E5D8705B98CC0FBCFF5E", b.getProperty("b"));
+	}
+
 }
