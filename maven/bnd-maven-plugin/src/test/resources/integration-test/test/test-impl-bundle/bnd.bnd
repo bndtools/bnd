@@ -6,3 +6,4 @@ Project: ${project}
 Settings-InteractiveMode: ${settings.interactiveMode}
 Settings-LocalRepository: ${settings.localRepository}
 SomeVar: ${someVar}
+SomeParentVar: ${someParentVar}
