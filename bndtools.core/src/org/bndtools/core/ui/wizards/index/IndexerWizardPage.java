@@ -277,6 +277,7 @@ public class IndexerWizardPage extends WizardPage {
             updateInputFilesJob.cancel();
         }
         inputPaths = Collections.emptyList();
+        setPageComplete(false);
         vwrInputs.setInput(inputPaths);
         lblInputCount.setText(String.format("%d resources found", inputPaths.size()));
         lblInputCount.getParent().layout(new Control[] {
@@ -307,6 +308,7 @@ public class IndexerWizardPage extends WizardPage {
                         lblInputCount.getParent().layout(new Control[] {
                                 lblInputCount
                         });
+                        validate();
                     }
                 });
             }
@@ -378,7 +380,7 @@ public class IndexerWizardPage extends WizardPage {
 
         setErrorMessage(null);
         setMessage(warning, WARNING);
-        setPageComplete(true);
+        setPageComplete(inputPaths != null && !inputPaths.isEmpty());
     }
 
     public void setBaseDir(File baseDir) {
