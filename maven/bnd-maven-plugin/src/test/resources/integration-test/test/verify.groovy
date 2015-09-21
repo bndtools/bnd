@@ -42,6 +42,7 @@ assert '${project.nosuchproperty}' == impl_manifest.getValue('Project-NoSuchProp
 assert localRepositoryPath.absolutePath == impl_manifest.getValue('Settings-LocalRepository')
 assert 'false' == impl_manifest.getValue('Settings-InteractiveMode')
 assert 'value' == impl_manifest.getValue('SomeVar')
+assert 'parentValue' == impl_manifest.getValue('SomeParentVar')
 
 // Check contents
 assert null != api_jar.getEntry('org/example/api/')
