@@ -88,7 +88,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
     };
 
     private static enum ComponentChoice {
-        None("None/Undefined"), Bnd("Bnd Annotations"), DS("DS 1.2 Annotations");
+        None("None/Undefined"), Bnd("Bnd Annotations"), DS("OSGi DS Annotations");
 
         private final String label;
 
