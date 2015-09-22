@@ -1,10 +1,8 @@
 package org.bndtools.templating.load;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +19,6 @@ import org.osgi.service.repository.ContentNamespace;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.base64.Base64;
 import aQute.lib.io.IO;
 
 public class CapabilityBasedTemplate implements Template {
@@ -35,10 +32,9 @@ public class CapabilityBasedTemplate implements Template {
 	private final String category;
 	
 	private final String dir;
+	private final URI iconUri;
 	
-	private final byte[] imageData;
-	
-	private File bundleFile = null;
+	private File _bundleFile = null;
 	
 	public CapabilityBasedTemplate(Capability capability, Workspace workspace) {
 		this.capability = capability;
@@ -63,11 +59,7 @@ public class CapabilityBasedTemplate implements Template {
 		}
 		
 		Object iconObj = attrs.get("icon");
-		if (iconObj instanceof String) {
-			imageData = Base64.decodeBase64((String) iconObj);
-		} else {
-			imageData = null;
-		}
+		iconUri = iconObj instanceof String ? URI.create((String) iconObj) : null;
 	}
 
 	@Override
@@ -98,7 +90,7 @@ public class CapabilityBasedTemplate implements Template {
 
 	@Override
 	public ResourceMap getInputSources() throws IOException {
-		fetchBundle();
+		File bundleFile = fetchBundle();
 		
 		ResourceMap map = new ResourceMap();
 		try (JarInputStream in = new JarInputStream(new FileInputStream(bundleFile))) {
@@ -121,13 +113,13 @@ public class CapabilityBasedTemplate implements Template {
 	}
 	
 	@Override
-	public InputStream getIconData() throws IOException {
-		return imageData != null ? new ByteArrayInputStream(imageData) : null;
+	public URI getIcon() {
+		return iconUri;
 	}
 
-	private void fetchBundle() throws IOException {
-		if (bundleFile != null)
-			return;
+	private synchronized File fetchBundle() throws IOException {
+		if (_bundleFile != null)
+			return _bundleFile;
 
 		Capability idCap = capability.getResource().getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE).get(0);
 		String id = (String) idCap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
@@ -143,8 +135,8 @@ public class CapabilityBasedTemplate implements Template {
 			throw new IOException("Template repository entry is missing url attribute");
 
 		if ("file".equals(location.getScheme())) {
-			bundleFile = IO.getFile(location.getPath());
-			return;
+			_bundleFile = IO.getFile(location.getPath());
+			return _bundleFile;
 		}
 		
 		String hashStr = (String) contentCap.getAttributes().get(ContentNamespace.CONTENT_NAMESPACE);
@@ -158,8 +150,8 @@ public class CapabilityBasedTemplate implements Template {
 			try {
 				File file = plugin.get(id, null, searchProps);
 				if (file != null) {
-					this.bundleFile = file;
-					return;
+					this._bundleFile = file;
+					return _bundleFile;
 				}
 			} catch (Exception e) {
 				// ignore

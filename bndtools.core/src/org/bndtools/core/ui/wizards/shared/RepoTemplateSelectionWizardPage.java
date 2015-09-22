@@ -3,7 +3,10 @@ package org.bndtools.core.ui.wizards.shared;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.InvocationTargetException;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.bndtools.templating.Template;
 import org.bndtools.templating.load.WorkspaceTemplateLoader;
@@ -13,13 +16,17 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -38,6 +45,8 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
 
     protected final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     private final String templateType;
+
+    private final Map<Template,Image> loadedImages = new IdentityHashMap<>();
 
     private Tree tree;
     private TreeViewer viewer;
@@ -105,7 +114,7 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
         viewer = new TreeViewer(tree);
         contentProvider = new RepoTemplateContentProvider(false);
         viewer.setContentProvider(contentProvider);
-        viewer.setLabelProvider(new RepoTemplateLabelProvider());
+        viewer.setLabelProvider(new RepoTemplateLabelProvider(loadedImages));
 
         new Label(composite, SWT.NONE).setText("Description:");
 
@@ -140,6 +149,17 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
                 getContainer().updateButtons();
             }
         });
+        viewer.addOpenListener(new IOpenListener() {
+            @Override
+            public void open(OpenEvent event) {
+                Object element = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+                setTemplate(element instanceof Template ? (Template) element : null);
+                getContainer().updateButtons();
+                IWizardPage nextPage = getNextPage();
+                if (nextPage != null)
+                    getContainer().showPage(nextPage);
+            }
+        });
     }
 
     protected void loadTemplates() {
@@ -158,6 +178,10 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
 
                             Template first = contentProvider.getFirstTemplate();
                             viewer.setSelection(first != null ? new StructuredSelection(first) : StructuredSelection.EMPTY, true);
+
+                            IconLoaderJob iconLoaderJob = new IconLoaderJob(templates, viewer, loadedImages, 5);
+                            iconLoaderJob.setSystem(true);
+                            iconLoaderJob.schedule(0);
                         }
                     });
                 } catch (Exception e) {
@@ -175,6 +199,17 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
         }
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+
+        for (Entry<Template,Image> entry : loadedImages.entrySet()) {
+            Image img = entry.getValue();
+            if (!img.isDisposed())
+                img.dispose();
+        }
+    }
+
     public void setTemplate(Template template) {
         Template old = this.selected;
         this.selected = template;
@@ -184,4 +219,5 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
     public Template getTemplate() {
         return selected;
     }
+
 }
