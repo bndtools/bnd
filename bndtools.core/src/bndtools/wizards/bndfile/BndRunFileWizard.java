@@ -37,6 +37,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.dialogs.WizardNewFileCreationPage;
 import org.eclipse.ui.ide.IDE;
+
 import bndtools.Plugin;
 
 public class BndRunFileWizard extends Wizard implements INewWizard {

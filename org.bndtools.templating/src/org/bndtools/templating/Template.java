@@ -1,6 +1,7 @@
 package org.bndtools.templating;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 public interface Template extends Comparable<Template> {
 
@@ -11,5 +12,7 @@ public interface Template extends Comparable<Template> {
 	int getRanking();
 	
 	ResourceMap getInputSources() throws IOException;
+	
+	InputStream getIconData() throws IOException;
 
 }

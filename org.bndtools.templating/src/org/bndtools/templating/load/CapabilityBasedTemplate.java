@@ -1,8 +1,10 @@
 package org.bndtools.templating.load;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +21,7 @@ import org.osgi.service.repository.ContentNamespace;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.base64.Base64;
 import aQute.lib.io.IO;
 
 public class CapabilityBasedTemplate implements Template {
@@ -32,6 +35,8 @@ public class CapabilityBasedTemplate implements Template {
 	private final String category;
 	
 	private final String dir;
+	
+	private final byte[] imageData;
 	
 	private File bundleFile = null;
 	
@@ -55,6 +60,13 @@ public class CapabilityBasedTemplate implements Template {
 			this.dir = dirStr;
 		} else {
 			this.dir = DEFAULT_DIR;
+		}
+		
+		Object iconObj = attrs.get("icon");
+		if (iconObj instanceof String) {
+			imageData = Base64.decodeBase64((String) iconObj);
+		} else {
+			imageData = null;
 		}
 	}
 
@@ -106,6 +118,11 @@ public class CapabilityBasedTemplate implements Template {
 			}
 		}
 		return map;
+	}
+	
+	@Override
+	public InputStream getIconData() throws IOException {
+		return imageData != null ? new ByteArrayInputStream(imageData) : null;
 	}
 
 	private void fetchBundle() throws IOException {

@@ -42,7 +42,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.dialogs.ErrorDialog;
 
-import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.editor.model.BndProject;
 
@@ -154,7 +153,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
                 }
             }
         } catch (Exception e) {
-            ErrorDialog.openError(getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error setting paths in Bnd project descriptor file ({0}).", Project.BNDFILE), e));
+            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error generating project contents from template \"{0}\".", template.getName()), e));
         }
     }
 

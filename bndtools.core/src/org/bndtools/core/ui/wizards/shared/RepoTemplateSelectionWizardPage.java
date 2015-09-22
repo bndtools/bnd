@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -25,6 +26,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.forms.widgets.FormText;
+import org.eclipse.ui.forms.widgets.ScrolledFormText;
 
 import bndtools.Plugin;
 import bndtools.central.Central;
@@ -39,6 +42,7 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
     private Tree tree;
     private TreeViewer viewer;
     private RepoTemplateContentProvider contentProvider;
+    private ScrolledFormText txtDescription;
 
     private Template selected = null;
 
@@ -102,6 +106,31 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
         contentProvider = new RepoTemplateContentProvider(false);
         viewer.setContentProvider(contentProvider);
         viewer.setLabelProvider(new RepoTemplateLabelProvider());
+
+        new Label(composite, SWT.NONE).setText("Description:");
+
+        Composite cmpDescription = new Composite(composite, SWT.BORDER);
+        cmpDescription.setBackground(tree.getBackground());
+
+        txtDescription = new ScrolledFormText(cmpDescription, SWT.V_SCROLL | SWT.H_SCROLL, false);
+        FormText formText = new FormText(txtDescription, SWT.NO_FOCUS);
+        txtDescription.setFormText(formText);
+        txtDescription.setBackground(tree.getBackground());
+        formText.setBackground(tree.getBackground());
+        formText.setForeground(tree.getForeground());
+        formText.setFont("fixed", JFaceResources.getTextFont());
+        formText.setFont("italic", JFaceResources.getFontRegistry().getItalic(""));
+
+        GridData gd_cmpDescription = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd_cmpDescription.heightHint = 100;
+        cmpDescription.setLayoutData(gd_cmpDescription);
+
+        GridLayout layout_cmpDescription = new GridLayout(1, false);
+        cmpDescription.setLayout(layout_cmpDescription);
+
+        GridData gd_txtDescription = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gd_txtDescription.heightHint = 100;
+        txtDescription.setLayoutData(gd_txtDescription);
 
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
