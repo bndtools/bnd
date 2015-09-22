@@ -1140,6 +1140,15 @@ public class MacroTest extends TestCase {
 		assertEquals(b64, b.getProperty("b64"));
 	}
 
+	public void testBase64TooBig() {
+		Processor b = new Processor();
+		b.setProperty("b64", "${base64;testresources/macro/base64-test.gif;100}");
+		b.getProperty("b64");
+		assertEquals(1, b.getErrors().size());
+		assertTrue("wrong error message",
+				b.getErrors().get(0).startsWith("base64 encoding exceeds size limit of 100 chars"));
+	}
+
 	public void testDigest() {
 		Processor b = new Processor();
 		b.setProperty("a", "${digest;SHA-256;testresources/macro/digest-test.jar}");
