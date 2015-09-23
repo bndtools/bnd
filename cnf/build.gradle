@@ -5,9 +5,11 @@
 task('clean') {
   /* clean bnd cache */
   doLast {
-    file('cache').eachDir {
-      project.delete(it)
+    ['cache', 'bndcache'].each { cache ->
+      file(cache).eachDir {
+        project.delete(it)
+      }
+      project.delete(fileTree(cache).exclude('.git*'))
     }
-    project.delete(fileTree('cache').exclude('.git*'))
   }
 }
