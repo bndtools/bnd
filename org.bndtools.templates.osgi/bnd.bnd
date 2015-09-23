@@ -1,0 +1,26 @@
+-includeresource: resources
+-removeheaders: Private-Package
+
+category: OSGi Standard Templates
+
+Provide-Capability: \
+	org.bndtools.template; org.bndtools.template=project;\
+		name=Component Development;\
+		category=${category};\
+		dir=templates/ds;\
+		icon="${component-icon}";\
+		help=comp-help.xml,\
+	org.bndtools.template; org.bndtools.template=project;\
+		name=API Project;\
+		category=${category};\
+		dir=templates/api;\
+		icon="${api-icon}";\
+		help=api-help.xml
+
+dataurl: data:image/gif;base64
+api-icon: ${dataurl},${cat;icons/script.base64.txt}
+component-icon: ${dataurl},${cat;icons/cog.base64.txt}
+
+## NB: bnd 3.1 supports the base64 macro as follows:
+#api-icon: ${dataurl},${base64;icons/script.png}
+#component-icon: ${dataurl},${base64;icons/cog.gif}

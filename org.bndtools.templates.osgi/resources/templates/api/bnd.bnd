@@ -1,0 +1,5 @@
+-buildpath: osgi.annotation; version=6.0.1
+-baseline: *
+
+Bundle-Version: 1.0.0.\${tstamp}
+Export-Package: $projectName$

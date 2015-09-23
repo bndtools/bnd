@@ -1,0 +1,11 @@
+-buildpath: \
+	osgi.annotation; version=6.0.1,\
+	osgi.core; version=5.0,\
+	osgi.cmpn; version=5.0
+
+-testpath: \
+	junit; version=4,\
+	hamcrest-core; version=1.3
+
+Bundle-Version: 0.0.0.\${tstamp}
+Private-Package: $projectName$
