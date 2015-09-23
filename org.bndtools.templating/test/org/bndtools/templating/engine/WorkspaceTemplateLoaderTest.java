@@ -139,5 +139,31 @@ public class WorkspaceTemplateLoaderTest {
 		assertEquals("example.html", entry.getKey());
 		assertEquals("My name is <i>Homer Simpson</i>!", IO.collect(entry.getValue().getContent()));
 	}
+	
+	@Test
+	public void testExtendUnprocessedPatternAndIgnore() throws Exception {
+		List<Template> templates = loader.findTemplates("test4");
+		assertEquals(1, templates.size());
+		Template template = templates.get(0);
+
+		Map<String, List<Object>> parameters = new HashMap<>();
+		parameters.put("projectName", Collections.<Object> singletonList("org.example.foo"));
+		
+		ResourceMap inputs = template.getInputSources();
+		TemplateEngine engine = new StringTemplateEngine();
+		ResourceMap outputs = engine.generateOutputs(inputs, parameters);
+
+		assertEquals(1, outputs.size());
+
+		Entry<String,Resource> entry;
+		Iterator<Entry<String,Resource>> iter = outputs.entries().iterator();
+		entry = iter.next();
+		assertEquals("pic.xxx", entry.getKey());
+		// Check the digest of the pic to ensure it didn't get damaged by the templating engine
+		DigestInputStream digestStream = new DigestInputStream(entry.getValue().getContent(), MessageDigest.getInstance("SHA-256"));
+		IO.drain(digestStream);
+		byte[] digest = digestStream.getMessageDigest().digest();
+		assertEquals("ea5d770bc2deddb1f9a20df3ad337bdc1490ba7b35fa41c33aa4e9a534e82ada", Hex.toHexString(digest).toLowerCase());
+	}
 
 }

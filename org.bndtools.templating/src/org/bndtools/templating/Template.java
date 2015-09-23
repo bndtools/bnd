@@ -14,5 +14,7 @@ public interface Template extends Comparable<Template> {
 	ResourceMap getInputSources() throws IOException;
 
 	URI getIcon();
+	
+	URI getDescriptionText();
 
 }

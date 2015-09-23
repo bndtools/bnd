@@ -43,7 +43,7 @@ import bndtools.Plugin;
 public class BndRunFileWizard extends Wizard implements INewWizard {
     private static final ILogger logger = Logger.getLogger(BndRunFileWizard.class);
 
-    protected final RepoTemplateSelectionWizardPage templatePage = new RepoTemplateSelectionWizardPage("runTemplateSelection", "bndrun");
+    protected RepoTemplateSelectionWizardPage templatePage;
 
     protected IStructuredSelection selection;
     protected IWorkbench workbench;
@@ -52,20 +52,6 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
 
     @Override
     public void addPages() {
-        mainPage = new WizardNewFileCreationPage("newFilePage", selection) {
-            @Override
-            protected InputStream getInitialContents() {
-                try {
-                    return getTemplateContents(getFileName());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        };
-        mainPage.setTitle("New Bnd Run Descriptor");
-        mainPage.setFileExtension("bndrun"); //$NON-NLS-1$
-        mainPage.setAllowExistingResources(false);
-
         addPage(mainPage);
         addPage(templatePage);
     }
@@ -100,6 +86,23 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.workbench = workbench;
         this.selection = selection;
+
+        mainPage = new WizardNewFileCreationPage("newFilePage", selection) {
+            @Override
+            protected InputStream getInitialContents() {
+                try {
+                    return getTemplateContents(getFileName());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+        mainPage.setTitle("New Bnd Run Descriptor");
+        mainPage.setFileExtension("bndrun"); //$NON-NLS-1$
+        mainPage.setAllowExistingResources(false);
+
+        templatePage = new RepoTemplateSelectionWizardPage("runTemplateSelection", "bndrun", workbench);
+        templatePage.setTitle("Select Run Descriptor Template");
     }
 
     private InputStream getTemplateContents(String fileName) throws IOException {

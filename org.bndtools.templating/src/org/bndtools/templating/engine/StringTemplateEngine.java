@@ -1,6 +1,5 @@
 package org.bndtools.templating.engine;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -8,7 +7,6 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -21,13 +19,13 @@ import org.bndtools.templating.StringResource;
 import org.bndtools.templating.TemplateEngine;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
+import org.stringtemplate.v4.compiler.CompiledST;
 import org.stringtemplate.v4.compiler.Compiler;
 import org.stringtemplate.v4.compiler.STLexer;
-import org.stringtemplate.v4.compiler.CompiledST;
 import org.stringtemplate.v4.misc.ErrorBuffer;
-import org.stringtemplate.v4.misc.Misc;
 
-import aQute.lib.io.IO;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Instructions;
 import st4hidden.org.antlr.runtime.ANTLRInputStream;
 import st4hidden.org.antlr.runtime.CommonToken;
 
@@ -35,17 +33,29 @@ public class StringTemplateEngine implements TemplateEngine {
 	
 	private static final String TEMPLATE_PROPERTIES = "_template.properties";
 	private static final String TEMPLATE_DEFS_PREFIX = "_defs/";
-	private static final String EXTENSION_ST = ".st";
 	
 	static class TemplateSettings {
 		char leftDelim = '$';
 		char rightDelim = '$';
+		Instructions preprocessMatch = new Instructions("*");
+		Instructions ignore = null;
+		
+		private TemplateSettings() {}
 		
 		static TemplateSettings readFrom(Properties props) {
 			TemplateSettings settings = new TemplateSettings();
 			if (props != null) {
 				settings.leftDelim = readSingleChar(props, "leftDelim", settings.leftDelim);
 				settings.rightDelim = readSingleChar(props, "rightDelim", settings.rightDelim);
+				
+				String match = props.getProperty("match", Constants.DEFAULT_PREPROCESSS_MATCHERS);
+				String matchExtra = props.getProperty("match-extra", null);
+				if (matchExtra != null)
+					match = matchExtra + ", " + match;
+				settings.preprocessMatch = new Instructions(match);
+				
+				String ignore = props.getProperty("ignore", null);
+				settings.ignore = ignore != null? new Instructions(ignore) : null;
 			}
 			return settings;
 		}
@@ -84,7 +94,7 @@ public class StringTemplateEngine implements TemplateEngine {
 				loadTemplate(stg, inputPathRelative, resource.getContent(), resource.getTextEncoding());
 			} else {
 				// Mapping to output file
-				String outputPath = removeSTExtension(inputPath);
+				String outputPath = inputPath;
 				String escapedSourcePath = escapeDelimiters(inputPath, settings);
 				
 				bufPrint.printf("%s=%s%n", outputPath, escapedSourcePath);
@@ -109,13 +119,18 @@ public class StringTemplateEngine implements TemplateEngine {
 			if (source == null)
 				throw new RuntimeException(String.format("Internal error in template engine: could not find input resource '%s'", sourceName));
 			Resource output;
-			if (isTemplate(sourceName)) {
-				String rendered = compileAndRender(stg, sourceName, source, parameters, settings);
-				output = new StringResource(rendered);
-			} else {
-				output = source;
+			
+			if (settings.ignore == null || !settings.ignore.matches(sourceName)) {
+				if (settings.preprocessMatch.matches(sourceName)) {
+					// This file is a candidate for preprocessing with ST
+					String rendered = compileAndRender(stg, sourceName, source, parameters, settings);
+					output = new StringResource(rendered);
+				} else {
+					// This file should be directly copied
+					output = source;
+				}
+				outputs.put(outputName, output);
 			}
-			outputs.put(outputName, output);
 		}
 
 		return outputs;
@@ -162,19 +177,6 @@ public class StringTemplateEngine implements TemplateEngine {
 			}
 		}
 		return st.render();
-	}
-
-
-
-	private static boolean isTemplate(String path) {
-		return path.endsWith(EXTENSION_ST);
-	}
-
-	private static String removeSTExtension(String path) {
-		String result = path;
-		if (isTemplate(path))
-			result = result.substring(0, result.length() - EXTENSION_ST.length());
-		return result;
 	}
 
 	static String escapeDelimiters(String string, TemplateSettings settings) {

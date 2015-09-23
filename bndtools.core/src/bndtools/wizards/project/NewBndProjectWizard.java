@@ -10,8 +10,6 @@
  *******************************************************************************/
 package bndtools.wizards.project;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -41,6 +39,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IWorkbench;
 
 import bndtools.Plugin;
 import bndtools.editor.model.BndProject;
@@ -49,19 +49,19 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
     public static final String DEFAULT_BUNDLE_VERSION = "0.0.0.${tstamp}";
 
-    private final RepoTemplateSelectionWizardPage templatePage = new RepoTemplateSelectionWizardPage("projectTemplateSelection", "project");
+    private RepoTemplateSelectionWizardPage templatePage;
 
     NewBndProjectWizard(final NewBndProjectWizardPageOne pageOne, final NewJavaProjectWizardPageTwo pageTwo) {
         super(pageOne, pageTwo);
 
-        templatePage.setTitle("Project Templates");
-        templatePage.addPropertyChangeListener(TemplateSelectionWizardPage.PROP_TEMPLATE, new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                // TODO
-                // pageOne.setProjectTemplate((IProjectTemplate) evt.getNewValue());
-            }
-        });
+    }
+
+    @Override
+    public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
+        super.init(workbench, currentSelection);
+
+        templatePage = new RepoTemplateSelectionWizardPage("projectTemplateSelection", "project", workbench);
+        templatePage.setTitle("Select Project Template");
     }
 
     @Override

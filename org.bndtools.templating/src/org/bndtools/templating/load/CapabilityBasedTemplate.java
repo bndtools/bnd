@@ -34,6 +34,8 @@ public class CapabilityBasedTemplate implements Template {
 	private final String dir;
 	private final URI iconUri;
 	
+	private final String helpPath;
+	
 	private File _bundleFile = null;
 	
 	public CapabilityBasedTemplate(Capability capability, Workspace workspace) {
@@ -60,6 +62,9 @@ public class CapabilityBasedTemplate implements Template {
 		
 		Object iconObj = attrs.get("icon");
 		iconUri = iconObj instanceof String ? URI.create((String) iconObj) : null;
+		
+		Object helpObj = attrs.get("help");
+		helpPath = (String) (helpObj instanceof String ? helpObj : null);
 	}
 
 	@Override
@@ -115,6 +120,20 @@ public class CapabilityBasedTemplate implements Template {
 	@Override
 	public URI getIcon() {
 		return iconUri;
+	}
+	
+	@Override
+	public URI getDescriptionText() {
+		URI uri = null;
+		if (helpPath != null) {
+			try {
+				File f = fetchBundle();
+				uri = new URI("jar:" + f.toURI().toURL() + "!/" + helpPath);
+			} catch (Exception e) {
+				// ignore
+			}
+		}
+		return uri;
 	}
 
 	private synchronized File fetchBundle() throws IOException {

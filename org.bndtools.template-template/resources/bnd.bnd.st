@@ -4,9 +4,9 @@
 
 Provide-Capability: \
 	org.bndtools.template;\
-		org.bndtools.template = project; \
-		name = <projectName>; \
-		category = Examples; \
+		org.bndtools.template=project; \
+		name=<projectName>; \
+		category=Examples; \
 		ranking:Double = 0
 
 -includeresource: template=template

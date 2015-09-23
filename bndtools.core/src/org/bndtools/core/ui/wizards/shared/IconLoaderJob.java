@@ -1,7 +1,6 @@
 package org.bndtools.core.ui.wizards.shared;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
@@ -63,7 +62,7 @@ public class IconLoaderJob extends Job {
                         processBatch(batch);
                         batch = new IdentityHashMap<>();
                     }
-                } catch (IOException e) {
+                } catch (Exception e) {
                     log.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error reading icon for template '" + template.getName() + "'", e));
                 }
             }
