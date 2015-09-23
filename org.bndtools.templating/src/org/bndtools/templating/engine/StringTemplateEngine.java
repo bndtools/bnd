@@ -1,10 +1,14 @@
 package org.bndtools.templating.engine;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -17,13 +21,20 @@ import org.bndtools.templating.StringResource;
 import org.bndtools.templating.TemplateEngine;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
+import org.stringtemplate.v4.compiler.Compiler;
+import org.stringtemplate.v4.compiler.STLexer;
+import org.stringtemplate.v4.compiler.CompiledST;
 import org.stringtemplate.v4.misc.ErrorBuffer;
+import org.stringtemplate.v4.misc.Misc;
 
 import aQute.lib.io.IO;
+import st4hidden.org.antlr.runtime.ANTLRInputStream;
+import st4hidden.org.antlr.runtime.CommonToken;
 
 public class StringTemplateEngine implements TemplateEngine {
 	
 	private static final String TEMPLATE_PROPERTIES = "_template.properties";
+	private static final String TEMPLATE_DEFS_PREFIX = "_defs/";
 	private static final String EXTENSION_ST = ".st";
 	
 	static class TemplateSettings {
@@ -47,25 +58,6 @@ public class StringTemplateEngine implements TemplateEngine {
 		}
 	}
 	
-	private String compileAndRender(STGroup group, String name, String template, Map<String, List<Object>> params, TemplateSettings settings) throws Exception {
-		ErrorBuffer errors = new ErrorBuffer();
-		group.setListener(errors);
-
-		ST st;
-		try {
-			st = new ST(group, template);
-		} catch (Exception e) {
-			// Wrap the ST exception, which gives us no detail in its message
-			throw new IllegalArgumentException(String.format("Failed to compile template '%s': %s", name, errors.toString()));
-		}
-		for (Entry<String, List<Object>> entry : params.entrySet()) {
-			for (Object value : entry.getValue()) {
-				st.add(entry.getKey(), value);
-			}
-		}
-		return st.render();
-	}
-
 	@Override
 	public ResourceMap generateOutputs(ResourceMap inputs, Map<String, List<Object>> parameters) throws Exception {
 		// Load general template settings
@@ -84,14 +76,23 @@ public class StringTemplateEngine implements TemplateEngine {
 		StringWriter buf = new StringWriter();
 		PrintWriter bufPrint = new PrintWriter(buf);
 		for (String inputPath : inputs.getPaths()) {
-			String outputPath = removeSTExtension(inputPath);
-			String escapedSourcePath = escapeDelimiters(inputPath, settings);
-			
-			bufPrint.printf("%s=%s%n", outputPath, escapedSourcePath);
+			if (inputPath.startsWith(TEMPLATE_DEFS_PREFIX)) {
+				// Definition... load into StringTemplate group and don't generate output
+				String inputPathRelative = inputPath.substring(TEMPLATE_DEFS_PREFIX.length());
+				
+				Resource resource = inputs.get(inputPath);
+				loadTemplate(stg, inputPathRelative, resource.getContent(), resource.getTextEncoding());
+			} else {
+				// Mapping to output file
+				String outputPath = removeSTExtension(inputPath);
+				String escapedSourcePath = escapeDelimiters(inputPath, settings);
+				
+				bufPrint.printf("%s=%s%n", outputPath, escapedSourcePath);
+			}
 		}
 		bufPrint.close();
 		String mappingTemplate = buf.toString();
-		String renderedMapping = compileAndRender(stg, "content mapping", mappingTemplate, parameters, settings);
+		String renderedMapping = compileAndRender(stg, "_mapping", new StringResource(mappingTemplate), parameters, settings);
 		
 		Properties contentProps = new Properties();
 		contentProps.load(new StringReader(renderedMapping));
@@ -109,8 +110,7 @@ public class StringTemplateEngine implements TemplateEngine {
 				throw new RuntimeException(String.format("Internal error in template engine: could not find input resource '%s'", sourceName));
 			Resource output;
 			if (isTemplate(sourceName)) {
-				String sourceTemplate = IO.collect(source.getContent(), source.getTextEncoding());
-				String rendered = compileAndRender(stg, sourceName, sourceTemplate, parameters, settings);
+				String rendered = compileAndRender(stg, sourceName, source, parameters, settings);
 				output = new StringResource(rendered);
 			} else {
 				output = source;
@@ -120,6 +120,51 @@ public class StringTemplateEngine implements TemplateEngine {
 
 		return outputs;
 	}
+
+	private void loadTemplate(STGroup stg, String fileName, InputStream is, String encoding) throws IOException {
+		ANTLRInputStream charStream = new ANTLRInputStream(is, encoding);
+		charStream.name = fileName;
+		stg.loadTemplateFile("/", fileName, charStream);
+	}
+	
+	private CompiledST loadRawTemplate(STGroup stg, String name, Resource resource) throws IOException {
+		try (InputStream is = resource.getContent()) {
+			ANTLRInputStream templateStream = new ANTLRInputStream(is, resource.getTextEncoding());
+			String template = templateStream.substring(0, templateStream.size() - 1);
+			CompiledST impl = new Compiler(stg).compile(name, template);
+			CommonToken nameT = new CommonToken(STLexer.SEMI);
+			nameT.setInputStream(templateStream);
+			stg.rawDefineTemplate("/" + name, impl, nameT);
+			impl.defineImplicitlyDefinedTemplates(stg);
+			return impl;
+		}
+	}
+	
+	private String compileAndRender(STGroup group, String name, Resource resource, Map<String, List<Object>> params, TemplateSettings settings) throws Exception {
+		ErrorBuffer errors = new ErrorBuffer();
+		group.setListener(errors);
+
+		ST st;
+		try {
+			loadRawTemplate(group, name, resource);
+			st = group.getInstanceOf(name);
+		} catch (Exception e) {
+			// Wrap the ST exception, which gives us no detail in its message
+			throw new IllegalArgumentException(String.format("Failed to compile template '%s': %s", name, errors.toString()));
+		}
+
+		if (st == null)
+			throw new Exception("Template name not loaded: " + name);
+
+		for (Entry<String, List<Object>> entry : params.entrySet()) {
+			for (Object value : entry.getValue()) {
+				st.add(entry.getKey(), value);
+			}
+		}
+		return st.render();
+	}
+
+
 
 	private static boolean isTemplate(String path) {
 		return path.endsWith(EXTENSION_ST);

@@ -117,5 +117,27 @@ public class WorkspaceTemplateLoaderTest {
 		assertEquals("bnd.bnd", entry.getKey());
 		assertEquals("Bundle-SymbolicName: org.example.foo", IO.collect(entry.getValue().getContent()));
 	}
+	
+	@Test
+	public void testReferTemplateDefinitions() throws Exception {
+		List<Template> templates = loader.findTemplates("test3");
+		assertEquals(1, templates.size());
+		Template template = templates.get(0);
+
+		Map<String, List<Object>> parameters = new HashMap<>();
+		parameters.put("name", Collections.<Object> singletonList("Homer Simpson"));
+
+		ResourceMap inputs = template.getInputSources();
+		TemplateEngine engine = new StringTemplateEngine();
+		ResourceMap outputs = engine.generateOutputs(inputs, parameters);
+		assertEquals(1, outputs.size());
+
+		Iterator<Entry<String,Resource>> iter = outputs.entries().iterator();
+		Entry<String,Resource> entry;
+		
+		entry = iter.next();
+		assertEquals("example.html", entry.getKey());
+		assertEquals("My name is <i>Homer Simpson</i>!", IO.collect(entry.getValue().getContent()));
+	}
 
 }

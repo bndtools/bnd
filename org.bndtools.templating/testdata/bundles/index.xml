@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<repository increment="1442837131631" name="Untitled" xmlns="http://www.osgi.org/xmlns/repository/v1.0.0">
+<repository increment="1442999962882" name="Untitled" xmlns="http://www.osgi.org/xmlns/repository/v1.0.0">
   <resource>
     <capability namespace="osgi.identity">
       <attribute name="osgi.identity" value="org.example.templates.1"/>
       <attribute name="type" value="osgi.bundle"/>
-      <attribute name="version" type="Version" value="3.1.0.201509211153"/>
+      <attribute name="version" type="Version" value="3.1.0.201509222357"/>
     </capability>
     <capability namespace="osgi.content">
-      <attribute name="osgi.content" value="7423b332f318c385a67e9dbbc9c6afd4bbefb7bc52ac4da9cf649dccd61086b8"/>
+      <attribute name="osgi.content" value="0449e709fd12d5de24eeccea037c0e58cd806f113afa999b592c21c72f755e02"/>
       <attribute name="url" value="org.example.templates.1.jar"/>
-      <attribute name="size" type="Long" value="68837"/>
+      <attribute name="size" type="Long" value="68835"/>
       <attribute name="mime" value="application/vnd.osgi.bundle"/>
     </capability>
     <capability namespace="osgi.wiring.bundle">
       <attribute name="osgi.wiring.bundle" value="org.example.templates.1"/>
-      <attribute name="bundle-version" type="Version" value="3.1.0.201509211153"/>
+      <attribute name="bundle-version" type="Version" value="3.1.0.201509222357"/>
     </capability>
     <capability namespace="osgi.wiring.host">
       <attribute name="osgi.wiring.host" value="org.example.templates.1"/>
-      <attribute name="bundle-version" type="Version" value="3.1.0.201509211153"/>
+      <attribute name="bundle-version" type="Version" value="3.1.0.201509222357"/>
     </capability>
     <capability namespace="org.bndtools.template">
       <attribute name="org.bndtools.template" value="test1"/>
@@ -30,24 +30,50 @@
     <capability namespace="osgi.identity">
       <attribute name="osgi.identity" value="org.example.templates.2"/>
       <attribute name="type" value="osgi.bundle"/>
-      <attribute name="version" type="Version" value="3.1.0.201509211153"/>
+      <attribute name="version" type="Version" value="3.1.0.201509222357"/>
     </capability>
     <capability namespace="osgi.content">
-      <attribute name="osgi.content" value="3c2df383c912c77de7228c04f081d5bee4c82ab3d34cdd6578dcd53fa00efa04"/>
+      <attribute name="osgi.content" value="434f80ab74e8698b30b3c401e0f5a3dfc17499c25e7ac3bea27de2e0d57f8256"/>
       <attribute name="url" value="org.example.templates.2.jar"/>
-      <attribute name="size" type="Long" value="68994"/>
+      <attribute name="size" type="Long" value="68993"/>
       <attribute name="mime" value="application/vnd.osgi.bundle"/>
     </capability>
     <capability namespace="osgi.wiring.bundle">
       <attribute name="osgi.wiring.bundle" value="org.example.templates.2"/>
-      <attribute name="bundle-version" type="Version" value="3.1.0.201509211153"/>
+      <attribute name="bundle-version" type="Version" value="3.1.0.201509222357"/>
     </capability>
     <capability namespace="osgi.wiring.host">
       <attribute name="osgi.wiring.host" value="org.example.templates.2"/>
-      <attribute name="bundle-version" type="Version" value="3.1.0.201509211153"/>
+      <attribute name="bundle-version" type="Version" value="3.1.0.201509222357"/>
     </capability>
     <capability namespace="org.bndtools.template">
       <attribute name="org.bndtools.template" value="test2"/>
+      <attribute name="name" value="Hello"/>
+      <attribute name="dir" value="st"/>
+    </capability>
+  </resource>
+  <resource>
+    <capability namespace="osgi.identity">
+      <attribute name="osgi.identity" value="org.example.templates.3"/>
+      <attribute name="type" value="osgi.bundle"/>
+      <attribute name="version" type="Version" value="3.1.0.201509230919"/>
+    </capability>
+    <capability namespace="osgi.content">
+      <attribute name="osgi.content" value="2593a89d8c299fd5bf5e4bed2a8ab642ff41a6e5cb57517e6b0fc2adb2cee9f5"/>
+      <attribute name="url" value="org.example.templates.3.jar"/>
+      <attribute name="size" type="Long" value="1219"/>
+      <attribute name="mime" value="application/vnd.osgi.bundle"/>
+    </capability>
+    <capability namespace="osgi.wiring.bundle">
+      <attribute name="osgi.wiring.bundle" value="org.example.templates.3"/>
+      <attribute name="bundle-version" type="Version" value="3.1.0.201509230919"/>
+    </capability>
+    <capability namespace="osgi.wiring.host">
+      <attribute name="osgi.wiring.host" value="org.example.templates.3"/>
+      <attribute name="bundle-version" type="Version" value="3.1.0.201509230919"/>
+    </capability>
+    <capability namespace="org.bndtools.template">
+      <attribute name="org.bndtools.template" value="test3"/>
       <attribute name="name" value="Hello"/>
       <attribute name="dir" value="st"/>
     </capability>
