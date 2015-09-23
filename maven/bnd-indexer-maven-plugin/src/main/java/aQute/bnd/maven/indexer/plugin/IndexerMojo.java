@@ -184,14 +184,15 @@ public class IndexerMojo extends AbstractMojo {
 			throw new MojoExecutionException("Unable to create the gzipped output file");
 		}
 		
-		attach(outputFile, "xml", "xml");
-		attach(gzipOutputFile, "xml", "xml.gz");
+		attach(outputFile, "osgi-index", "xml");
+		attach(gzipOutputFile, "osgi-index", "xml.gz");
     }
     
     private void attach(File file, String type, String extension) {
-    	DefaultArtifact artifact = new DefaultArtifact(project.getGroupId(), 
-        		project.getArtifactId(), project.getVersion(), null, type, null, 
-        		new DefaultArtifactHandler(extension));
+    	DefaultArtifactHandler handler = new DefaultArtifactHandler(type);
+    	handler.setExtension(extension);
+		DefaultArtifact artifact = new DefaultArtifact(project.getGroupId(), 
+        		project.getArtifactId(), project.getVersion(), null, type, null, handler);
         artifact.setFile(file);
 		project.addAttachedArtifact(artifact);
     }
