@@ -6,6 +6,8 @@ import java.net.URI;
 public interface Template extends Comparable<Template> {
 
 	String getName();
+	
+	String getDescription();
 
 	String getCategory();
 
@@ -15,6 +17,6 @@ public interface Template extends Comparable<Template> {
 
 	URI getIcon();
 	
-	URI getDescriptionText();
+	URI getHelpContent();
 
 }

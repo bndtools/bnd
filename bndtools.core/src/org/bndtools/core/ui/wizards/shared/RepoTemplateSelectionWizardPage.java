@@ -270,16 +270,16 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
 
         @Override
         protected IStatus run(IProgressMonitor monitor) {
-            String tmp = "<form>No description available</form>";
+            String tmp = "<form>No help content available</form>";
             if (template != null) {
-                URI uri = template.getDescriptionText();
+                URI uri = template.getHelpContent();
                 if (uri != null) {
                     try {
                         URLConnection conn = uri.toURL().openConnection();
                         conn.setUseCaches(false);
                         tmp = IO.collect(conn.getInputStream());
                     } catch (IOException e) {
-                        log.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading template description text.", e));
+                        log.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading template help content.", e));
                     }
                 }
             }

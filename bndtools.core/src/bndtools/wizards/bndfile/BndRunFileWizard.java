@@ -10,7 +10,6 @@
  *******************************************************************************/
 package bndtools.wizards.bndfile;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,6 +24,9 @@ import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
 import org.bndtools.templating.engine.StringTemplateEngine;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -49,6 +51,18 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
     protected IWorkbench workbench;
 
     protected WizardNewFileCreationPage mainPage;
+
+    private static class WrappingException extends RuntimeException {
+        private final Exception e;
+
+        public WrappingException(Exception e) {
+            this.e = e;
+        }
+
+        public Exception getWrapped() {
+            return e;
+        }
+    }
 
     @Override
     public void addPages() {
@@ -76,8 +90,8 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
         } catch (PartInitException e) {
             ErrorDialog.openError(getShell(), "New Bnd Run File", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error opening editor", e));
             return true;
-        } catch (RuntimeException e) {
-            ErrorDialog.openError(getShell(), "New Bnd Run File", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error generating file", e));
+        } catch (WrappingException e) {
+            ErrorDialog.openError(getShell(), "New Bnd Run File", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error generating file", e.getWrapped()));
             return false;
         }
     }
@@ -92,8 +106,8 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
             protected InputStream getInitialContents() {
                 try {
                     return getTemplateContents(getFileName());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                } catch (Exception e) {
+                    throw new WrappingException(e);
                 }
             }
         };
@@ -105,24 +119,41 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
         templatePage.setTitle("Select Run Descriptor Template");
     }
 
-    private InputStream getTemplateContents(String fileName) throws IOException {
-        Template template = templatePage.getTemplate();
-        StringTemplateEngine templateEngine = new StringTemplateEngine();
+    private String baseName(String fileName) {
+        int lastDot = fileName.lastIndexOf('.');
+        String base = lastDot >= 0 ? fileName.substring(0, lastDot) : fileName;
+        int lastSlash = base.lastIndexOf('/');
+        base = lastSlash >= 0 ? base.substring(lastSlash + 1) : base;
+        return base;
+    }
 
+    private InputStream getTemplateContents(String fileName) throws Exception {
+        // Load properties
         Map<String,List<Object>> params = new HashMap<>();
         params.put("fileName", Collections.<Object> singletonList(fileName));
+        params.put("fileBaseName", Collections.<Object> singletonList(baseName(fileName)));
+
+        IPath containerPath = mainPage.getContainerFullPath();
+        if (containerPath != null) {
+            IResource container = ResourcesPlugin.getWorkspace().getRoot().findMember(containerPath);
+            if (container != null) {
+                String projectName = container.getProject().getName();
+                params.put("projectName", Collections.<Object> singletonList(projectName));
+            }
+        }
+
+        // Run the template processor
+        Template template = templatePage.getTemplate();
+        StringTemplateEngine templateEngine = new StringTemplateEngine();
         ResourceMap inputs = template.getInputSources();
         ResourceMap outputs;
-        try {
-            outputs = templateEngine.generateOutputs(inputs, params);
-        } catch (Exception e) {
-            throw new IOException("Error generating template outputs", e);
-        }
+        outputs = templateEngine.generateOutputs(inputs, params);
         Resource output = outputs.get(fileName);
 
         if (output == null)
             throw new IllegalArgumentException("File not found in template outputs: " + fileName);
 
+        // Pull the generated content
         return output.getContent();
     }
 }

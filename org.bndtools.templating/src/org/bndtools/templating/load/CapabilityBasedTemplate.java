@@ -18,6 +18,7 @@ import org.osgi.resource.Capability;
 import org.osgi.service.repository.ContentNamespace;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
 
@@ -30,6 +31,7 @@ public class CapabilityBasedTemplate implements Template {
 
 	private final String name;
 	private final String category;
+	private final String description;
 	
 	private final String dir;
 	private final URI iconUri;
@@ -37,6 +39,7 @@ public class CapabilityBasedTemplate implements Template {
 	private final String helpPath;
 	
 	private File _bundleFile = null;
+
 	
 	public CapabilityBasedTemplate(Capability capability, Workspace workspace) {
 		this.capability = capability;
@@ -46,6 +49,8 @@ public class CapabilityBasedTemplate implements Template {
 
 		Object nameObj = attrs.get("name");
 		this.name = nameObj instanceof String ? (String) nameObj : "<<unknown>>";
+		
+		this.description = "from " + ResourceUtils.getIdentityCapability(capability.getResource()).osgi_identity();
 
 		Object categoryObj = attrs.get("category");
 		category = categoryObj instanceof String ? (String) categoryObj : null;
@@ -71,10 +76,15 @@ public class CapabilityBasedTemplate implements Template {
 	public String getName() {
 		return name;
 	}
-
+	
 	@Override
 	public String getCategory() {
 		return category;
+	}
+	
+	@Override
+	public String getDescription() {
+		return description;
 	}
 
 	@Override
@@ -123,7 +133,7 @@ public class CapabilityBasedTemplate implements Template {
 	}
 	
 	@Override
-	public URI getDescriptionText() {
+	public URI getHelpContent() {
 		URI uri = null;
 		if (helpPath != null) {
 			try {

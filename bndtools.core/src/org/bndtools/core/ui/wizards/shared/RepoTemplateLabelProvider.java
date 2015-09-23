@@ -35,6 +35,7 @@ public class RepoTemplateLabelProvider extends StyledCellLabelProvider {
             Template template = (Template) element;
 
             StyledString label = new StyledString(template.getName(), UIConstants.BOLD_STYLER);
+            label.append(" \u2014 [", StyledString.QUALIFIER_STYLER).append(template.getDescription(), StyledString.QUALIFIER_STYLER).append("]", StyledString.QUALIFIER_STYLER);
 
             cell.setText(label.toString());
             cell.setStyleRanges(label.getStyleRanges());
