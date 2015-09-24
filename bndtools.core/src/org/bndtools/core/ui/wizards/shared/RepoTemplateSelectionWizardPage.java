@@ -147,14 +147,14 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
         formText.setFont("fixed", JFaceResources.getTextFont());
         formText.setFont("italic", JFaceResources.getFontRegistry().getItalic(""));
 
-        GridData gd_cmpDescription = new GridData(SWT.FILL, SWT.FILL, true, false);
+        GridData gd_cmpDescription = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd_cmpDescription.heightHint = 100;
         cmpDescription.setLayoutData(gd_cmpDescription);
 
         GridLayout layout_cmpDescription = new GridLayout(1, false);
         cmpDescription.setLayout(layout_cmpDescription);
 
-        GridData gd_txtDescription = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+        GridData gd_txtDescription = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         gd_txtDescription.heightHint = 100;
         txtDescription.setLayoutData(gd_txtDescription);
 

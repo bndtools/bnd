@@ -66,8 +66,8 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
 
     @Override
     public void addPages() {
-        addPage(mainPage);
         addPage(templatePage);
+        addPage(mainPage);
     }
 
     @Override

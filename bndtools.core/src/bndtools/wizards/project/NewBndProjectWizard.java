@@ -66,8 +66,8 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
     @Override
     public void addPages() {
-        addPage(pageOne);
         addPage(templatePage);
+        addPage(pageOne);
         addPage(pageTwo);
     }
 
