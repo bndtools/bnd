@@ -13,4 +13,4 @@ Export-Package: \
 	org.bndtools.templating.engine,\
 	org.bndtools.templating.load
 
-Conditional-Package: org.stringtemplate.*, st4hidden.*
+Conditional-Package: org.stringtemplate.*, st4hidden.*, aQute.lib.*
