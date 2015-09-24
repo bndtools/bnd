@@ -17,17 +17,8 @@ Export-Package:  \
 	org.osgi.service.log;-split-package:=first,\
 	org.osgi.service.resolver;-split-package:=first
 
-#
-# We include the DTO packages so we do not force
-# Eclipse to run the latest & greatest OSGi
-# and we do not use these classes for interchange
-#
-
 Private-Package: \
 	biz.aQute.resolve.*,\
 	org.apache.felix.resolver.*
-	org.osgi.resource.dto,\
-	org.osgi.dto
 
 Conditional-Package: aQute.lib*
-
