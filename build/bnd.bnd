@@ -18,6 +18,7 @@ p2 = bndtools.api, \
     org.bndtools.headless.build.plugin.ant, \
     org.bndtools.headless.build.plugin.gradle, \
     org.bndtools.versioncontrol.ignores.manager, \
-    org.bndtools.versioncontrol.ignores.plugin.git
+    org.bndtools.versioncontrol.ignores.plugin.git, \
+    org.bndtools.templating
 
 -dependson: ${p2}
