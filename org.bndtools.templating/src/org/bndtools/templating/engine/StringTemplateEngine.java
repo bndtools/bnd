@@ -48,8 +48,8 @@ public class StringTemplateEngine implements TemplateEngine {
 				settings.leftDelim = readSingleChar(props, "leftDelim", settings.leftDelim);
 				settings.rightDelim = readSingleChar(props, "rightDelim", settings.rightDelim);
 				
-				String match = props.getProperty("match", Constants.DEFAULT_PREPROCESSS_MATCHERS);
-				String matchExtra = props.getProperty("match-extra", null);
+				String match = props.getProperty("process", Constants.DEFAULT_PREPROCESSS_MATCHERS);
+				String matchExtra = props.getProperty("process.extra", null);
 				if (matchExtra != null)
 					match = matchExtra + ", " + match;
 				settings.preprocessMatch = new Instructions(match);
