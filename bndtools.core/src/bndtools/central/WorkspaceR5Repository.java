@@ -52,6 +52,7 @@ public class WorkspaceR5Repository implements Repository {
     void init() throws Exception {
         Central.onWorkspaceInit(new Function<Workspace,Void>() {
 
+            @Override
             public Void run(Workspace a) {
                 try {
                     setupProjects();
@@ -98,10 +99,12 @@ public class WorkspaceR5Repository implements Repository {
                 cleanProject(project);
 
                 IRepositoryIndexProcessor processor = new IRepositoryIndexProcessor() {
+                    @Override
                     public void processResource(Resource resource) {
                         addResource(project, resource);
                     }
 
+                    @Override
                     public void processReferral(URI parentUri, Referral referral, int maxDepth, int currentDepth) {
                         // ignore: we don't create any referrals
                     }
@@ -130,6 +133,7 @@ public class WorkspaceR5Repository implements Repository {
         index.addResource(resource);
     }
 
+    @Override
     public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
         Map<Requirement,Collection<Capability>> result = new HashMap<Requirement,Collection<Capability>>();
         for (Requirement requirement : requirements) {
@@ -137,8 +141,11 @@ public class WorkspaceR5Repository implements Repository {
             result.put(requirement, matches);
 
             for (Entry<IProject,CapabilityIndex> entry : projectMap.entrySet()) {
-                CapabilityIndex capabilityIndex = entry.getValue();
-                capabilityIndex.appendMatchingCapabilities(requirement, matches);
+                IProject project = entry.getKey();
+                if (project.exists() && project.isOpen()) {
+                    CapabilityIndex capabilityIndex = entry.getValue();
+                    capabilityIndex.appendMatchingCapabilities(requirement, matches);
+                }
             }
         }
         return result;
