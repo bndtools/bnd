@@ -7,7 +7,7 @@
 	ee.j2se;version=${javac.compliance}
 
 -testpath: \
-	junit.osgi;version=3.8.2
+	${junit}
 	
 	
 Launcher-Plugin: aQute.launcher.plugin.ProjectLauncherImpl

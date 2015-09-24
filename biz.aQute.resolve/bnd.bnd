@@ -9,8 +9,8 @@
 	org.apache.felix.resolver;version=1.4;packages=org.apache.felix.resolver.*
 	
 -testpath: \
-	junit.osgi,\
-	org.mockito.mockito-all
+	${junit},\
+	${mockito}
 
 Export-Package:  \
 	biz.aQute.resolve,\

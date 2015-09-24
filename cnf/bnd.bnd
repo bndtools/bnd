@@ -13,4 +13,3 @@
 	org.apache.felix.gogo.command
 
 -runtrace: true
--runpath: 

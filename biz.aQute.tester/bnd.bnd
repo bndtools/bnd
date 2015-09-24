@@ -10,7 +10,7 @@ Bundle-Description: \
 # are not necessary
 Import-Package: \
 	aQute.*;resolution:=optional, \
-	junit.framework;version='[3.8,5)',\
+	junit.*;version="[3.8,5)",\
 	*
 
 Bundle-Activator: \
@@ -34,7 +34,7 @@ Conditional-Package: aQute.lib*
 
 -buildpath: \
 	biz.aQute.junit;version=latest;packages=aQute.junit.*, \
-	com.springsource.org.junit;version='[4.11,5)',\
+	${junit},\
 	osgi.core;version=4.3.1,\
 	biz.aQute.bndlib;version=latest,\
 	ee.j2se;version=${javac.compliance}

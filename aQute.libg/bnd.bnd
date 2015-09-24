@@ -5,7 +5,7 @@
 	ee.j2se;version=${javac.compliance}
 
 -testpath: \
-    com.springsource.junit
+    ${junit}
 
 Export-Package: aQute.lib.*, aQute.libg.*, aQute.configurable, aQute.service.*
 Bundle-Description: A library to be statically linked. Contains many small utilities. This bundle \
