@@ -9,44 +9,43 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-public class Category {
+public final class Category implements Comparable<Category> {
 
 	private final String name;
 	private final SortedSet<Template> templates = new TreeSet<>();
+	private final String prefix;
 
 	public static List<Category> categorise(Collection<Template> templates) {
-		SortedMap<String, Category> categories = new TreeMap<>();
+		SortedMap<Category, Category> cats = new TreeMap<>();
 
-		Category uncategorised = new Category(null);
 		for (Template template : templates) {
-			String categoryName = template.getCategory();
-			if (categoryName == null)
-				uncategorised.add(template);
-			else {
-				Category category = categories.get(categoryName);
-				if (category == null) {
-					category = new Category(categoryName);
-					categories.put(categoryName, category);
-				}
-				category.add(template);
+			Category tmp = new Category(template.getCategory());
+			Category category = cats.get(tmp);
+			if (category == null) {
+				category = tmp;
+				cats.put(category, category);
 			}
+			category.add(template);
 		}
 
-		List<Category> rootList = new ArrayList<>(categories.size());
-		// add the special category "Core" first
-		Category coreCategory = categories.remove("Core");
-		if (coreCategory != null)
-			rootList.add(coreCategory);
-		// add the rest in alphabetical order
-		rootList.addAll(categories.values());
-		// lastly add the uncategorised stuff
-		if (!uncategorised.getTemplates().isEmpty())
-			rootList.add(uncategorised);
+		List<Category> rootList = new ArrayList<>(cats.size());
+		rootList.addAll(cats.keySet());
 		return rootList;
 	}
 
-	public Category(String name) {
-		this.name = name;
+	public Category(String fullName) {
+		int slashIndex = fullName.indexOf('/');
+		if (slashIndex >= 0) {
+			this.prefix = fullName.substring(0, slashIndex);
+			this.name = fullName.substring(slashIndex+1);
+		} else {
+			this.prefix = null;
+			this.name = fullName;
+		}
+	}
+
+	public String getPrefix() {
+		return prefix;
 	}
 
 	public String getName() {
@@ -60,5 +59,50 @@ public class Category {
 	public void add(Template template) {
 		templates.add(template);
 	}
+	
+	@Override
+	public int compareTo(Category o) {
+		int diff;
+		if (this.prefix == null)
+			diff = o.prefix == null ? 0 : 1;
+		else if (o.prefix == null)
+			diff = -1;
+		else
+			diff = o.name.compareTo(this.name);
+		return diff;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((prefix == null) ? 0 : prefix.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Category other = (Category) obj;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (prefix == null) {
+			if (other.prefix != null)
+				return false;
+		} else if (!prefix.equals(other.prefix))
+			return false;
+		return true;
+	}
+	
+	
 
 }

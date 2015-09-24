@@ -28,8 +28,7 @@ public class RepoTemplateLabelProvider extends StyledCellLabelProvider {
 
         if (element instanceof Category) {
             Category cat = (Category) element;
-            String name = cat.getName();
-            cell.setText(name != null ? name : "Uncategorised");
+            cell.setText(cat.getName());
             cell.setImage(IMG_FOLDER);
         } else if (element instanceof Template) {
             Template template = (Template) element;
