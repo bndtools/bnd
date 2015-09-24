@@ -1,18 +1,20 @@
 -includeresource: resources
 -removeheaders: Private-Package
 
-category: OSGi Standard Templates
+category: bbb/OSGi Standard Templates
 
 Provide-Capability: \
 	org.bndtools.template; org.bndtools.template=project;\
 		name=Component Development;\
 		category=${category};\
+		ranking:Double=1001;\
 		dir=templates/ds;\
 		icon="${component-icon}";\
 		help=comp-help.xml,\
 	org.bndtools.template; org.bndtools.template=project;\
 		name=API Project;\
 		category=${category};\
+		ranking:Double=1000;\
 		dir=templates/api;\
 		icon="${api-icon}";\
 		help=api-help.xml
