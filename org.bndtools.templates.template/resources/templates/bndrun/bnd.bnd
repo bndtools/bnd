@@ -1,0 +1,11 @@
+# Example Run Template
+# Make sure to edit the name and category.
+
+Provide-Capability: \
+	org.bndtools.template;\
+		org.bndtools.template=bndrun; \
+		name=<projectName>; \
+		category=Examples; \
+		ranking:Double = 0
+
+-includeresource: template=template

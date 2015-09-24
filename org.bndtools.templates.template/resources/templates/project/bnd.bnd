@@ -1,6 +1,5 @@
-##########################
-# Example Template Project
-##########################
+# Example Project Template
+# Make sure to edit the name and category.
 
 Provide-Capability: \
 	org.bndtools.template;\

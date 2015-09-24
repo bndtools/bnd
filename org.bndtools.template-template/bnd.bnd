@@ -1,9 +1,0 @@
-Bundle-Version: 0.0.0.${tstamp}
-
-Provide-Capability: \
-	org.bndtools.template; \
-		org.bndtools.template = project; \
-		name = Template Project; \
-		category = bnd
-
--includeresource: template=resources

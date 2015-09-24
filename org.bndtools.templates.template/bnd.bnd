@@ -1,0 +1,32 @@
+# Template inception... templates for generating template projects!
+
+-includeresource: \
+	resources, \
+	templates/bndrun/=shared, \
+	templates/project/=shared
+
+-removeheaders: Private-Package
+
+Bundle-Version: 0.0.0.${tstamp}
+
+icon: data:image/gif;base64,${cat;icons/templates.base64.txt}
+## base64 macro available in bnd 3.1...
+#icon: data:image/gif;base64,${base64;icons/templates.gif}
+
+category: mmm/Bndtools
+
+Provide-Capability: \
+	org.bndtools.template; \
+		org.bndtools.template=project; \
+		name=Project Template Project; \
+		category=${category};\
+		dir=templates/project;\
+		icon="${icon}";\
+		help=project.help.xml,\
+	org.bndtools.template; \
+		org.bndtools.template=project; \
+		name=Run Template Project; \
+		category=${category};\
+		dir=templates/bndrun;\
+		icon="${icon}";\
+		help=bndrun.help.xml
