@@ -1,7 +1,7 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
--buildpath: com.springsource.org.junit;version='[4.11,5)',\
+-buildpath: ${junit},\
 	osgi.cmpn;version=4.3.1,\
 	biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
@@ -11,18 +11,21 @@
 Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
 
 
-Private-Package: aQute.junit.*,\
-	junit.*,\
-	org.junit.*
-	
-Export-Package: junit.*; version=3.8.2;-nouses=true,\
-				org.junit.*;version=4.11, \
-				org.hamcrest.*;version=4.11.0
+Private-Package: aQute.junit.*
+
+Export-Package: junit.*;version="3.8.2", \
+				org.junit.*, \
+				org.hamcrest.*
+-fixupmessages: Version for package junit.*3.8.2
 
 # The dependency on aQute packages is only for the 
 # master side. When launched, those dependencies
 # are not necessary
-Import-Package: aQute.*;resolution:=optional,*
+Import-Package: \
+    aQute.*;resolution:=optional, \
+    junit.*;version="[3.8,5)",\
+    *
+
 Bundle-Activator: aQute.junit.Activator
 Embedded-Activator: aQute.junit.Activator
 Bundle-Release: Use main thread for testing, optionally allowing old separate thread model

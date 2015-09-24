@@ -6,8 +6,8 @@
 	osgi.core;version=4.3.1,\
 	osgi.cmpn;version=4.3.1
 -testpath: \
-	org.mockito.mockito-all;version=1.9,\
-	com.springsource.org.junit;version=4.10.0
+	${junit},\
+	${mockito}
 
 Bundle-Name: BIndex2: Repository Index Generator
 Bundle-Activator: org.osgi.service.indexer.osgi.Activator

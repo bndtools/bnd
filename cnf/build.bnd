@@ -99,10 +99,6 @@ Bundle-Developers: \
 
 -removeheaders:         Include-Resource
 
--runpath:\
-	org.eclipse.osgi;version=3.5,\
-	com.springsource.junit;export="junit.framework;version=3.8"
-
 -runproperties.testlauncher0: in.workspace=workspace
 -runproperties.testlauncher1: in.project=workspace
 -runproperties.testlauncher2: in.bndrun=workspace

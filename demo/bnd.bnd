@@ -16,7 +16,7 @@ Bundle-SymbolicName: demo
 
 -runbundles: org.apache.felix.scr,\
 	org.apache.felix.configadmin, \
-	com.springsource.org.junit; version=4.11
+	${junit}
 
 Bundle-Activator: test.TestActivator
 
@@ -27,7 +27,7 @@ Import-Package: \
 -buildpath: \
 	osgi.core;version=@5,\
 	biz.aQute.bnd.annotation;version=latest,\
-	com.springsource.org.junit
+	${junit}
 
 -runtrace: true
 -runvm: 

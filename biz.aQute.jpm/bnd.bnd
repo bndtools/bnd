@@ -26,8 +26,8 @@ Conditional-Package: 			aQute.libg.*, aQute.lib.*
 	aQute.jpm.clnt;version=2.1,\
 	lib/WinRun4J.jar;version=file
 -testpath: \
-	com.springsource.junit,\
-	org.mockito.mockito-all;version=1.9.0
+	${junit},\
+	${mockito}
 	
 
 -digests: MD5, SHA1

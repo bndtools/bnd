@@ -21,8 +21,8 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	${jetty.libs},\
 	aQute.jpm.bndrepo;version=1.0;packages=*
 -testpath: \
-	junit.osgi,\
-	org.mockito.mockito-all
+	${junit},\
+	${mockito}
 
 Bnd-Plugins:
 	aQute.bnd.deployer.repository.FixedIndexedRepo,\
