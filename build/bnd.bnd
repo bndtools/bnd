@@ -19,6 +19,8 @@ p2 = bndtools.api, \
     org.bndtools.headless.build.plugin.gradle, \
     org.bndtools.versioncontrol.ignores.manager, \
     org.bndtools.versioncontrol.ignores.plugin.git, \
-    org.bndtools.templating
+    org.bndtools.templating, \
+    org.bndtools.templates.osgi, \
+    org.bndtools.templates.template
 
 -dependson: ${p2}
