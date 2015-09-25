@@ -13,6 +13,7 @@ import java.util.jar.JarInputStream;
 import org.bndtools.templating.BytesResource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
+import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.service.repository.ContentNamespace;
@@ -32,6 +33,7 @@ public class CapabilityBasedTemplate implements Template {
 	private final String name;
 	private final String category;
 	private final String description;
+	private final Version version;
 	
 	private final String dir;
 	private final URI iconUri;
@@ -39,7 +41,6 @@ public class CapabilityBasedTemplate implements Template {
 	private final String helpPath;
 	
 	private File _bundleFile = null;
-
 	
 	public CapabilityBasedTemplate(Capability capability, Workspace workspace) {
 		this.capability = capability;
@@ -54,6 +55,17 @@ public class CapabilityBasedTemplate implements Template {
 
 		Object categoryObj = attrs.get("category");
 		category = categoryObj instanceof String ? (String) categoryObj : null;
+		
+		// Get version from the capability if found, otherwise it comes from the bundle
+		Object versionObj = attrs.get("version");
+		if (versionObj instanceof Version)
+			this.version = (Version) versionObj;
+		else if (versionObj instanceof String)
+			this.version = Version.parseVersion((String) versionObj);
+		else {
+			String v = ResourceUtils.getIdentityVersion(capability.getResource());
+			this.version = v != null ? Version.parseVersion(v) : Version.emptyVersion;
+		}
 
 		Object dirObj = attrs.get("dir");
 		if (dirObj instanceof String) {
@@ -83,18 +95,13 @@ public class CapabilityBasedTemplate implements Template {
 	}
 	
 	@Override
-	public String getDescription() {
+	public String getShortDescription() {
 		return description;
 	}
-
+	
 	@Override
-	public int compareTo(Template o) {
-		// The ranking is intentionally backwars, so we get the highest ranked templates first in the list
-		int diff = o.getRanking() - this.getRanking();
-		if (diff != 0) return diff;
-		
-		// Fall back to alphanumeric sort
-		return this.getName().compareTo(o.getName());
+	public Version getVersion() {
+		return version;
 	}
 
 	@Override
@@ -189,5 +196,32 @@ public class CapabilityBasedTemplate implements Template {
 
 		throw new IOException("Unable to fetch bundle for template: " + getName());
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((capability == null) ? 0 : capability.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		CapabilityBasedTemplate other = (CapabilityBasedTemplate) obj;
+		if (capability == null) {
+			if (other.capability != null)
+				return false;
+		} else if (!capability.equals(other.capability))
+			return false;
+		return true;
+	}
+	
+	
 	
 }

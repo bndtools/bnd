@@ -33,9 +33,12 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
@@ -67,6 +70,8 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
     private Tree tree;
     private TreeViewer viewer;
     private RepoTemplateContentProvider contentProvider;
+    private final LatestTemplateFilter latestFilter = new LatestTemplateFilter();
+    private Button btnLatestOnly;
     private ScrolledFormText txtDescription;
 
     private Template selected = null;
@@ -132,6 +137,12 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
         contentProvider = new RepoTemplateContentProvider(false);
         viewer.setContentProvider(contentProvider);
         viewer.setLabelProvider(new RepoTemplateLabelProvider(loadedImages));
+        viewer.addFilter(latestFilter);
+
+        btnLatestOnly = new Button(composite, SWT.CHECK);
+        btnLatestOnly.setText("Show latest versions only");
+        btnLatestOnly.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
+        btnLatestOnly.setSelection(true);
 
         new Label(composite, SWT.NONE).setText("Description:");
 
@@ -181,6 +192,16 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
                 IWizardPage nextPage = getNextPage();
                 if (nextPage != null)
                     getContainer().showPage(nextPage);
+            }
+        });
+        btnLatestOnly.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean latestOnly = btnLatestOnly.getSelection();
+                if (latestOnly)
+                    viewer.addFilter(latestFilter);
+                else
+                    viewer.removeFilter(latestFilter);
             }
         });
         linkRetina.addHyperlinkListener(new HyperlinkAdapter() {

@@ -10,6 +10,8 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.osgi.framework.Version;
+
 import bndtools.UIConstants;
 
 public class RepoTemplateLabelProvider extends StyledCellLabelProvider {
@@ -33,8 +35,16 @@ public class RepoTemplateLabelProvider extends StyledCellLabelProvider {
         } else if (element instanceof Template) {
             Template template = (Template) element;
 
+            // Name
             StyledString label = new StyledString(template.getName(), UIConstants.BOLD_STYLER);
-            label.append(" \u2014 [", StyledString.QUALIFIER_STYLER).append(template.getDescription(), StyledString.QUALIFIER_STYLER).append("]", StyledString.QUALIFIER_STYLER);
+            label.append(" ");
+
+            // Version, with all segments except qualifier in bold
+            Version version = template.getVersion() != null ? template.getVersion() : Version.emptyVersion;
+            label.append(String.format("%d.%d.%d", version.getMajor(), version.getMinor(), version.getMicro()), UIConstants.BOLD_COUNTER_STYLER);
+            label.append("." + version.getQualifier(), StyledString.COUNTER_STYLER);
+
+            label.append(" \u2014 [", StyledString.QUALIFIER_STYLER).append(template.getShortDescription(), StyledString.QUALIFIER_STYLER).append("]", StyledString.QUALIFIER_STYLER);
 
             cell.setText(label.toString());
             cell.setStyleRanges(label.getStyleRanges());

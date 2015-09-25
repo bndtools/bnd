@@ -16,6 +16,8 @@ public class RepoTemplateContentProvider implements ITreeContentProvider {
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
     private final boolean flat;
+
+    private Object input;
     private Object[] roots;
 
     public RepoTemplateContentProvider(boolean flat) {
@@ -26,13 +28,12 @@ public class RepoTemplateContentProvider implements ITreeContentProvider {
     public void dispose() {}
 
     @SuppressWarnings("unchecked")
-    @Override
-    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+    private void recalculateRoots() {
         Collection<Template> templates;
-        if (newInput instanceof Object[]) {
-            templates = Arrays.asList((Template[]) newInput);
-        } else if (newInput instanceof Collection) {
-            templates = (Collection<Template>) newInput;
+        if (input instanceof Object[]) {
+            templates = Arrays.asList((Template[]) input);
+        } else if (input instanceof Collection) {
+            templates = (Collection<Template>) input;
         } else {
             templates = Collections.emptyList();
         }
@@ -43,6 +44,16 @@ public class RepoTemplateContentProvider implements ITreeContentProvider {
             List<Category> categories = Category.categorise(templates);
             roots = categories.toArray(new Object[categories.size()]);
         }
+    }
+
+    @Override
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+        this.input = newInput;
+        recalculateRoots();
+    }
+
+    public boolean isFlat() {
+        return flat;
     }
 
     @Override
