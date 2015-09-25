@@ -1,6 +1,5 @@
 
 -buildpath: \
-	ee.j2se;version=1.6,\
 	biz.aQute.bndlib;version=latest;packages=*, \
 	osgi.core;version=@6
 
