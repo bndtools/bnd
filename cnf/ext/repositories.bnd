@@ -20,10 +20,27 @@ jpm:\
 		index=${workspace}/cnf/jpm4j.json
 
 -plugin:\
-	aQute.bnd.deployer.repository.LocalIndexedRepo; name=Release; local=${build}/releaserepo;pretty=true,\
-	aQute.lib.deployer.FileRepo;                    name=Build;   location=${build}/buildrepo;latest=false,\
-	aQute.bnd.deployer.repository.FixedIndexedRepo; name=bnd;     locations=${bndRepo};cache=${build}/bndcache,\
+	aQute.bnd.deployer.repository.LocalIndexedRepo; \
+		name=Baseline; \
+		local=${build}/baselinerepo; \
+		pretty=true; \
+	,\
+	aQute.lib.deployer.FileRepo; \
+		name=Build; \
+		location=${build}/buildrepo; \
+		latest=false; \
+	,\
+	aQute.bnd.deployer.repository.FixedIndexedRepo; \
+		name=bnd; \
+		locations=${bndRepo}; \
+		cache=${build}/bndcache;\
+	,\
 	${jpm},\
-	${eclipse-repo}
-
+	${eclipse-repo},\
+	aQute.bnd.deployer.repository.LocalIndexedRepo; \
+		name=Release; \
+		local=${workspace}/build/releaserepo; \
+		pretty=true
+	
+-baselinerepo: Baseline
 -releaserepo: Release
