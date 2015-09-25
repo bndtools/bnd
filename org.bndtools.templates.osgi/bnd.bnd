@@ -1,5 +1,7 @@
 -includeresource: resources
--removeheaders: Private-Package
+-resourceonly
+
+Bundle-Version: 0.0.0.${tstamp}
 
 category: bbb/OSGi Standard Templates
 

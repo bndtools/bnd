@@ -1,11 +1,11 @@
 # Template inception... templates for generating template projects!
 
+-resourceonly
+
 -includeresource: \
 	resources, \
 	templates/bndrun/=shared, \
 	templates/project/=shared
-
--removeheaders: Private-Package
 
 Bundle-Version: 0.0.0.${tstamp}
 

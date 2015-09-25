@@ -8,4 +8,5 @@ Provide-Capability: \
 		category=Examples; \
 		ranking:Double = 0
 
+-resourceonly
 -includeresource: template=template
