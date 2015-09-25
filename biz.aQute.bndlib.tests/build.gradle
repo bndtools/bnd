@@ -1,5 +1,5 @@
 test {
   // set heap size for the test JVM(s)
-  minHeapSize = "512m"
-  maxHeapSize = "1024m"
+  minHeapSize = "1024m"
+  maxHeapSize = "2048m"
 }
