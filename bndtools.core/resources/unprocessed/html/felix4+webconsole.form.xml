@@ -1,8 +1,0 @@
-<form>Apache Felix 4 plus the following bundles:
-<li><a href="http://felix.apache.org/site/apache-felix-gogo.html">Felix Gogo</a> Shell, Commands and Runtime</li>
-<li><a href="http://felix.apache.org/site/apache-felix-web-console.html">Web Console</a></li>
-<li>Configuration Admin</li>
-<li>Metatype Service</li>
-<li>Declarative Services runtime</li>
-<li>OSGi Compendium 4.2 or above</li>
-</form>

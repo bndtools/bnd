@@ -1,7 +1,0 @@
--runfw: org.eclipse.osgi;version='[3.7,4)'
--runee: JavaSE-1.7
--runsystemcapabilities: ${native_capability}
-
--resolve.effective: active;skip:="osgi.service"
-
--runvm: -Dosgi.console

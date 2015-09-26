@@ -22,7 +22,6 @@ import java.util.Observable;
 import java.util.Observer;
 
 import org.bndtools.api.BndtoolsConstants;
-import org.bndtools.api.IProjectTemplate;
 import org.bndtools.api.ProjectLayout;
 import org.bndtools.api.ProjectPaths;
 import org.eclipse.core.filesystem.URIUtil;
@@ -47,8 +46,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
 public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
-
-    private IProjectTemplate projectTemplate;
 
     private final ProjectNameGroup nameGroup = new ProjectNameGroup();
     private final ProjectLocationGroup locationGroup = new ProjectLocationGroup("Location");
@@ -158,9 +155,6 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
         List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(2);
         newEntries.add(JavaCore.newSourceEntry(projectPath.append(projectPaths.getSrc()), null, projectPath.append(projectPaths.getBin())));
 
-        if (projectTemplate == null || projectTemplate.enableTestSourceFolder())
-            newEntries.add(JavaCore.newSourceEntry(projectPath.append(projectPaths.getTestSrc()), null, projectPath.append(projectPaths.getTestBin())));
-
         return newEntries.toArray(new IClasspathEntry[newEntries.size()]);
     }
 
@@ -171,10 +165,6 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
     public ProjectLayout getProjectLayout() {
         return layoutGroup.getProjectLayout();
-    }
-
-    public void setProjectTemplate(IProjectTemplate projectTemplate) {
-        this.projectTemplate = projectTemplate;
     }
 
     /**

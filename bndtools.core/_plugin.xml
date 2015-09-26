@@ -7,14 +7,6 @@
       name="Workspace Configuration Templates"
       schema="schema/cnfTemplates.exsd"
    />
-   <extension-point id="launchTemplates"
-      name="Launch Templates"
-      schema="schema/launchTemplates.exsd"
-   />
-   <extension-point id="projectTemplates"
-      name="Project Templates"
-      schema="schema/projectTemplates.exsd"
-   />
    <extension-point id="bndtoolsStartupParticipant"
       name="Bndtools Start-up Participant"
       schema="schema/bndtoolsStartupParticipant.exsd"
@@ -709,37 +701,6 @@
          <contexts file="contexthelp.xml"/>
     </extension>
 
-   <extension point="bndtools.core.launchTemplates">
-      <template
-         name="Apache Felix 4 with Gogo Shell"
-         path="launchTemplates/felix4+shell.bndrun"
-         doc="html/felix4+shell.form.xml"
-         icon="icons/felix.gif"/>
-      <template
-         name="Apache Felix 4 with Web Console and Gogo"
-         path="launchTemplates/felix4+webconsole.bndrun"
-         doc="html/felix4+webconsole.form.xml"
-         icon="icons/felix.gif"/>
-      <template
-         name="Apache Felix 4 (Empty)"
-         path="launchTemplates/felix4.bndrun"
-         doc="html/felix4.form.xml"
-         icon="icons/felix.gif"/>
-      <template
-         name="Eclipse Equinox 3.7 with Built-in Console"
-         path="launchTemplates/equinox37+console.bndrun"
-         doc="html/equinox37+console.form.xml"
-         icon="icons/equinox.gif"/>
-      <template
-         name="Eclipse Equinox 3.7 with Gogo and DS"
-         path="launchTemplates/equinox37+gogo+ds.bndrun"
-         doc="html/equinox37+gogo+ds.form.xml"
-         icon="icons/equinox.gif"/>
-      <template
-         name="«Empty»"
-         path="launchTemplates/empty.bndrun"
-         doc="html/empty.form.xml"/>
-   </extension>
 
    <extension point="org.eclipse.ltk.core.refactoring.renameParticipants">
       <renameParticipant
@@ -826,59 +787,6 @@
       </plugin>
 
    </extension>
-
-	<extension point="bndtools.core.projectTemplates">
-		<template name="Component Development (OSGi Declarative Services)"
-			priority="500" category="AAA/Bnd Templates"
-			class="org.bndtools.core.templates.project.ComponentTemplate" doc="html/componentTemplate.xml"
-			icon="icons/cog.png" />
-	</extension>
-
-	<extension point="bndtools.core.projectTemplates">
-		<template name="Integration Testing" priority="200" category="AAA/Bnd Templates"
-			class="org.bndtools.core.templates.project.IntegrationTestingTemplate"
-			doc="html/integrationTestTemplate.xml" icon="icons/junit.gif" />
-	</extension>
-
-	<extension point="bndtools.core.projectTemplates">
-		<template name="API Project" priority="400" category="AAA/Bnd Templates"
-			class="org.bndtools.core.templates.project.APITemplate" doc="html/apiProjectTemplate.xml" />
-	</extension>
-	
-	<!-- Standard Templates -->
-	
-	<extension point="bndtools.core.projectTemplates">
-		<template
-			name="Empty Project"
-			category="AA/OSGi Standard Templates"
-			priority="-1000"
-			class="org.bndtools.api.EmptyTemplate"
-			doc="html/emptyTemplate.html"
-			icon="icons/template_empty.gif"
-		/>
-	</extension>
-
-	<extension point="bndtools.core.projectTemplates">
-		<template
-			name="API Project"
-			category="AA/OSGi Standard Templates"
-			class="org.bndtools.core.templates.project.standard.OSGiSpecAPITemplate"
-			doc="html/standard/apiProjectTemplate.xml"
-		/>
-	</extension>
-	
-	<extension point="bndtools.core.projectTemplates">
-		<template
-			name="Component Development"
-			category="AA/OSGi Standard Templates"
-			priority="500"
-			class="org.bndtools.core.templates.project.standard.OSGiSpecComponentTemplate"
-			doc="html/standard/componentTemplate.xml"
-			icon="icons/cog.png"
-		/>
-	</extension>
-
-	
 
    <extension point="org.eclipse.ui.intro.configExtension">
       <configExtension configId="org.eclipse.ui.intro.universalConfig" content="/intro/whatsnewExtensionContent.xml" />

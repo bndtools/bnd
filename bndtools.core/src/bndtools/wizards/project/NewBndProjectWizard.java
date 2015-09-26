@@ -18,12 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.bndtools.api.IProjectTemplate;
 import org.bndtools.api.ProjectLayout;
 import org.bndtools.api.ProjectPaths;
+import org.bndtools.core.ui.wizards.shared.BuiltInTemplate;
 import org.bndtools.core.ui.wizards.shared.RepoTemplateSelectionWizardPage;
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
+import org.bndtools.templating.StringResource;
 import org.bndtools.templating.Template;
 import org.bndtools.templating.engine.StringTemplateEngine;
 import org.bndtools.utils.javaproject.JavaProjectUtils;
@@ -43,7 +44,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbench;
 
 import bndtools.Plugin;
-import bndtools.editor.model.BndProject;
 
 class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
@@ -60,7 +60,11 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
     public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
         super.init(workbench, currentSelection);
 
-        templatePage = new RepoTemplateSelectionWizardPage("projectTemplateSelection", "project", workbench);
+        BuiltInTemplate baseTemplate = new BuiltInTemplate("\u00abEmpty\u00bb");
+        baseTemplate.addResource("bnd.bnd", new StringResource(""));
+        baseTemplate.setHelpPath("docs/empty_project.xml");
+
+        templatePage = new RepoTemplateSelectionWizardPage("projectTemplateSelection", "project", workbench, baseTemplate);
         templatePage.setTitle("Select Project Template");
     }
 
@@ -173,25 +177,6 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
         } else {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Can only create plain Folder parent containers.", null));
         }
-    }
-
-    /**
-     * Allows for an IProjectTemplate to modify the new Bnd project
-     *
-     * @param monitor
-     */
-    @Override
-    protected BndProject generateBndProject(IProject project, IProgressMonitor monitor) {
-        BndProject proj = super.generateBndProject(project, monitor);
-
-        ProjectPaths projectPaths = ProjectPaths.get(pageOne.getProjectLayout());
-        IProjectTemplate template = null; //templatePage.getTemplate();
-        if (template != null) {
-            String name = pageTwo.getJavaProject().getProject().getName();
-            template.modifyInitialBndProject(proj, name, projectPaths);
-        }
-
-        return proj;
     }
 
 }

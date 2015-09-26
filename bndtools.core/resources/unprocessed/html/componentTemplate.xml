@@ -1,7 +1,0 @@
-<form>Creates a project for developing Components with Declarative Services. The following dependencies are added to the build path:
-<li>OSGi Core</li>
-<li>OSGi Compendium</li>
-<li><a href="http://www.aqute.biz/Bnd/Components">Bnd Annotations Library</a></li>
-<li>JUnit</li>
-<li>Hamcrest Core</li>
-</form>

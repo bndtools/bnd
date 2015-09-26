@@ -16,8 +16,8 @@ public final class Category implements Comparable<Category> {
 	private final SortedSet<Template> templates = new TreeSet<>(new Comparator<Template>() {
 		@Override
 		public int compare(Template t1, Template t2) {
-			// The ranking is intentionally backwards, so we get the highest ranked templates first in the list
-			int diff = t1.getRanking() - t2.getRanking();
+			// First sort on ranking
+			int diff = t2.getRanking() - t1.getRanking();
 			if (diff != 0) return diff;
 			
 			// Sort on name

@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,7 @@ import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.ScrolledFormText;
 
+import aQute.bnd.build.Workspace;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.Central;
@@ -64,6 +66,7 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
     protected final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     private final String templateType;
     private final IWorkbench workbench;
+    private final Template emptyTemplate;
 
     private final Map<Template,Image> loadedImages = new IdentityHashMap<>();
 
@@ -78,10 +81,11 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
 
     private boolean shown = false;
 
-    public RepoTemplateSelectionWizardPage(String pageName, String templateType, IWorkbench workbench) {
+    public RepoTemplateSelectionWizardPage(String pageName, String templateType, IWorkbench workbench, Template emptyTemplate) {
         super(pageName);
         this.templateType = templateType;
         this.workbench = workbench;
+        this.emptyTemplate = emptyTemplate;
     }
 
     @Override
@@ -223,8 +227,13 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
             @Override
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 try {
-                    WorkspaceTemplateLoader templateLoader = new WorkspaceTemplateLoader(Central.getWorkspace());
-                    final List<Template> templates = templateLoader.findTemplates(templateType);
+                    final List<Template> templates = new ArrayList<>();
+                    Workspace ws = Central.getWorkspaceIfPresent();
+                    if (ws != null) {
+                        WorkspaceTemplateLoader templateLoader = new WorkspaceTemplateLoader(ws);
+                        templates.addAll(templateLoader.findTemplates(templateType));
+                    }
+                    templates.add(emptyTemplate);
                     display.asyncExec(new Runnable() {
                         @Override
                         public void run() {

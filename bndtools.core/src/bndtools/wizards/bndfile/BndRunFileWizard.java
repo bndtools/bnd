@@ -18,9 +18,11 @@ import java.util.Map;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.core.ui.wizards.shared.BuiltInTemplate;
 import org.bndtools.core.ui.wizards.shared.RepoTemplateSelectionWizardPage;
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
+import org.bndtools.templating.StringResource;
 import org.bndtools.templating.Template;
 import org.bndtools.templating.engine.StringTemplateEngine;
 import org.eclipse.core.resources.IFile;
@@ -115,7 +117,11 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
         mainPage.setFileExtension("bndrun"); //$NON-NLS-1$
         mainPage.setAllowExistingResources(false);
 
-        templatePage = new RepoTemplateSelectionWizardPage("runTemplateSelection", "bndrun", workbench);
+        BuiltInTemplate baseTemplate = new BuiltInTemplate("\u00abEmpty\u00bb");
+        baseTemplate.addResource("$fileName$", new StringResource(""));
+        baseTemplate.setHelpPath("docs/empty_run.xml");
+
+        templatePage = new RepoTemplateSelectionWizardPage("runTemplateSelection", "bndrun", workbench, baseTemplate);
         templatePage.setTitle("Select Run Descriptor Template");
     }
 
