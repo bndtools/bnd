@@ -6,7 +6,10 @@ Provide-Capability: \
 		org.bndtools.template=project; \
 		name=<projectName>; \
 		category=Examples; \
-		ranking:Double = 0
+		dir=template; \
+		icon="${icondata}"
+
+icondata: data:image/png;base64,${base64;icon.png}
 
 -resourceonly
--includeresource: template=template
+-includeresource: resources

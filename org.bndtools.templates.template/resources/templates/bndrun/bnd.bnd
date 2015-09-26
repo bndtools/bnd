@@ -1,12 +1,15 @@
 # Example Run Template
-# Make sure to edit the name and category.
 
+# Make sure to edit the name and category.
 Provide-Capability: \
 	org.bndtools.template;\
 		org.bndtools.template=bndrun; \
 		name=<projectName>; \
 		category=Examples; \
-		ranking:Double = 0
+		dir=template; \
+		icon="${icondata}"
+
+icondata: data:image/gif;base64,${base64;icon.gif}
 
 -resourceonly
--includeresource: template=template
+-includeresource: resources
