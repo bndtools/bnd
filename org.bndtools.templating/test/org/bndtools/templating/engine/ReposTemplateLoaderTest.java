@@ -16,22 +16,27 @@ import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
 import org.bndtools.templating.TemplateEngine;
-import org.bndtools.templating.load.WorkspaceTemplateLoader;
+import org.bndtools.templating.load.RepoPluginsBundleLocator;
+import org.bndtools.templating.load.ReposTemplateLoader;
 import org.junit.Before;
 import org.junit.Test;
+import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Run;
+import aQute.bnd.build.Workspace;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 
-public class WorkspaceTemplateLoaderTest {
+public class ReposTemplateLoaderTest {
 
-	private WorkspaceTemplateLoader loader;
+	private ReposTemplateLoader loader;
 
 	@Before
 	public void setup() throws Exception {
 		Run project = Run.createRun(null, IO.getFile("testdata/ws.bndrun"));
-		loader = new WorkspaceTemplateLoader(project.getWorkspace());
+		Workspace ws = project.getWorkspace();
+		RepoPluginsBundleLocator locator = new RepoPluginsBundleLocator(ws.getRepositories());
+		loader = new ReposTemplateLoader(ws.getPlugins(Repository.class), locator);
 	}
 
 	@Test

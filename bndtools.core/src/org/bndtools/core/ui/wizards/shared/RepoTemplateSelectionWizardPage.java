@@ -3,25 +3,27 @@ package org.bndtools.core.ui.wizards.shared;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.bndtools.templating.Template;
-import org.bndtools.templating.load.WorkspaceTemplateLoader;
+import org.bndtools.templating.load.RepoPluginsBundleLocator;
+import org.bndtools.templating.load.ReposTemplateLoader;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.IOpenListener;
@@ -41,8 +43,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
@@ -51,11 +54,15 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.ScrolledFormText;
+import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.deployer.repository.FixedIndexedRepo;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.Central;
+import bndtools.preferences.BndPreferences;
 
 public class RepoTemplateSelectionWizardPage extends WizardPage {
 
@@ -142,6 +149,7 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
         viewer.setContentProvider(contentProvider);
         viewer.setLabelProvider(new RepoTemplateLabelProvider(loadedImages));
         viewer.addFilter(latestFilter);
+        setTemplates(Collections.singletonList(emptyTemplate));
 
         btnLatestOnly = new Button(composite, SWT.CHECK);
         btnLatestOnly.setText("Show latest versions only");
@@ -221,46 +229,83 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
         });
     }
 
-    protected void loadTemplates() {
-        final Display display = getContainer().getShell().getDisplay();
-        IRunnableWithProgress searchRunnable = new IRunnableWithProgress() {
-            @Override
-            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+    private class LoadTemplatesJob extends Job {
+
+        public LoadTemplatesJob() {
+            super("Load Templates");
+        }
+
+        @Override
+        protected IStatus run(IProgressMonitor monitor) {
+            final List<Template> templates = new ArrayList<>();
+
+            // Load from workspace, if one exists
+            Workspace ws = Central.getWorkspaceIfPresent();
+            if (ws != null) {
+                List<Repository> repos = ws.getPlugins(Repository.class);
+                RepoPluginsBundleLocator locator = new RepoPluginsBundleLocator(ws.getRepositories());
+                templates.addAll(new ReposTemplateLoader(repos, locator).findTemplates(templateType));
+            }
+
+            // Load from the preferences-configured template repository
+            BndPreferences bndPrefs = new BndPreferences();
+            if (bndPrefs.getEnableTemplateRepo()) {
                 try {
-                    final List<Template> templates = new ArrayList<>();
-                    Workspace ws = Central.getWorkspaceIfPresent();
-                    if (ws != null) {
-                        WorkspaceTemplateLoader templateLoader = new WorkspaceTemplateLoader(ws);
-                        templates.addAll(templateLoader.findTemplates(templateType));
-                    }
-                    templates.add(emptyTemplate);
-                    display.asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            viewer.setInput(templates);
-                            viewer.expandAll();
-
-                            Template first = contentProvider.getFirstTemplate();
-                            viewer.setSelection(first != null ? new StructuredSelection(first) : StructuredSelection.EMPTY, true);
-
-                            IconLoaderJob iconLoaderJob = new IconLoaderJob(templates, viewer, loadedImages, 5);
-                            iconLoaderJob.setSystem(true);
-                            iconLoaderJob.schedule(0);
-                        }
-                    });
+                    FixedIndexedRepo repo = loadRepo(bndPrefs.getTemplateRepoUri());
+                    RepoPluginsBundleLocator locator = new RepoPluginsBundleLocator(Collections.<RepositoryPlugin> singletonList(repo));
+                    ReposTemplateLoader loader = new ReposTemplateLoader(Collections.<Repository> singletonList(repo), locator);
+                    templates.addAll(loader.findTemplates(templateType));
                 } catch (Exception e) {
-                    throw new InvocationTargetException(e);
+                    return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading from template repository.", e);
                 }
             }
-        };
-        try {
-            getContainer().run(true, true, searchRunnable);
-        } catch (InterruptedException e) {
-            // runnable cancelled, clear tree
-            viewer.setInput(new Object[0]);
-        } catch (InvocationTargetException e) {
-            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to load templates", e));
+
+            // Add the build-in empty template
+            templates.add(emptyTemplate);
+
+            // Display results
+            Control control = viewer.getControl();
+            if (control != null && !control.isDisposed()) {
+                control.getDisplay().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        setTemplates(templates);
+                        IconLoaderJob iconLoaderJob = new IconLoaderJob(templates, viewer, loadedImages, 5);
+                        iconLoaderJob.setSystem(true);
+                        iconLoaderJob.schedule(0);
+                    }
+                });
+            }
+
+            return Status.OK_STATUS;
         }
+
+        private FixedIndexedRepo loadRepo(String uri) throws IOException, URISyntaxException {
+            FixedIndexedRepo repo = new FixedIndexedRepo();
+            repo.setLocations(uri);
+            return repo;
+        }
+    }
+
+    protected void loadTemplates() {
+        final String oldMessage = getMessage();
+        final Shell shell = getShell();
+        setMessage("Loading templates...");
+
+        LoadTemplatesJob job = new LoadTemplatesJob();
+        job.schedule();
+        job.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(IJobChangeEvent event) {
+                if (!shell.isDisposed())
+                    shell.getDisplay().asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            setMessage(oldMessage);
+                        }
+                    });
+            }
+        });
     }
 
     @Override
@@ -272,6 +317,14 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
             if (!img.isDisposed())
                 img.dispose();
         }
+    }
+
+    private void setTemplates(final List<Template> templates) {
+        viewer.setInput(templates);
+        viewer.expandAll();
+
+        Template first = contentProvider.getFirstTemplate();
+        viewer.setSelection(first != null ? new StructuredSelection(first) : StructuredSelection.EMPTY, true);
     }
 
     public void setTemplate(final Template template) {

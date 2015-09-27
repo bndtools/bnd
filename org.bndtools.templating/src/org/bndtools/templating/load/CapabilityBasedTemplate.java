@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
@@ -18,9 +16,7 @@ import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.service.repository.ContentNamespace;
 
-import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.resource.ResourceUtils;
-import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
 
 public class CapabilityBasedTemplate implements Template {
@@ -28,12 +24,12 @@ public class CapabilityBasedTemplate implements Template {
 	private static final String DEFAULT_DIR = "template/";
 
 	private final Capability capability;
-	private final Workspace workspace;
 
 	private final String name;
 	private final String category;
 	private final String description;
 	private final Version version;
+	private final BundleLocator locator;
 	
 	private final String dir;
 	private final URI iconUri;
@@ -41,10 +37,11 @@ public class CapabilityBasedTemplate implements Template {
 	private final String helpPath;
 	
 	private File _bundleFile = null;
+
 	
-	public CapabilityBasedTemplate(Capability capability, Workspace workspace) {
+	public CapabilityBasedTemplate(Capability capability, BundleLocator locator) {
 		this.capability = capability;
-		this.workspace = workspace;
+		this.locator = locator;
 		
 		Map<String, Object> attrs = capability.getAttributes();
 
@@ -174,25 +171,16 @@ public class CapabilityBasedTemplate implements Template {
 			_bundleFile = IO.getFile(location.getPath());
 			return _bundleFile;
 		}
-		
+
 		String hashStr = (String) contentCap.getAttributes().get(ContentNamespace.CONTENT_NAMESPACE);
-		
-		Map<String, String> searchProps = new HashMap<>();
-		searchProps.put("version", "hash");
-		searchProps.put("hash", "SHA-256:" + hashStr);
-		
-		List<RepositoryPlugin> repoPlugins = workspace.getPlugins(RepositoryPlugin.class);
-		for (RepositoryPlugin plugin : repoPlugins) {
-			try {
-				File file = plugin.get(id, null, searchProps);
-				if (file != null) {
-					this._bundleFile = file;
-					return _bundleFile;
-				}
-			} catch (Exception e) {
-				// ignore
-			}
+		try {
+			_bundleFile = locator.locate(id, hashStr, "SHA-256");
+			if (_bundleFile != null)
+				return _bundleFile;
+		} catch (Exception e) {
+			throw new IOException("Unable to fetch bundle for template: " + getName());
 		}
+		
 
 		throw new IOException("Unable to fetch bundle for template: " + getName());
 	}

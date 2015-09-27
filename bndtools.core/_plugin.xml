@@ -654,6 +654,11 @@
              name="Build">
        </page>
        <page
+             class="bndtools.preferences.ui.ReposPreferencePage"
+             id="bndtools.prefPages.repos"
+             category="bndtools.prefPages.basic"
+             name="Repositories"/>
+       <page
              class="bndtools.preferences.ui.GeneratedResourcesPreferencePage"
              id="bndtools.prefPages.generatedResources"
              category="bndtools.prefPages.basic"

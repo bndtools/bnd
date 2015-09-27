@@ -33,6 +33,8 @@ public class BndPreferences {
     private static final String PREF_VCS_IGNORES_CREATE = "versionControlIgnoresCreate";
     private static final String PREF_VCS_IGNORES_PLUGINS = "versionControlIgnoresPlugins";
     private static final String PREF_BUILDBEFORELAUNCH = "buildBeforeLaunch";
+    private static final String PREF_ENABLE_TEMPLATE_REPO = "enableTemplateRepo";
+    private static final String PREF_TEMPLATE_REPO_URI = "templateRepoUri";
 
     private final IPreferenceStore store;
 
@@ -46,6 +48,8 @@ public class BndPreferences {
         store.setDefault(PREF_HEADLESS_BUILD_PLUGINS, "");
         store.setDefault(PREF_VCS_IGNORES_CREATE, true);
         store.setDefault(PREF_VCS_IGNORES_PLUGINS, "");
+        store.setDefault(PREF_ENABLE_TEMPLATE_REPO, true);
+        store.setDefault(PREF_TEMPLATE_REPO_URI, "https://raw.githubusercontent.com/bndtools/bundle-hub/master/index.xml.gz");
     }
 
     private String mapToPreference(Map<String,Boolean> names) {
@@ -151,6 +155,22 @@ public class BndPreferences {
 
     public boolean getHideWarningExternalFile() {
         return store.getBoolean(PREF_HIDE_WARNING_EXTERNAL_FILE);
+    }
+
+    public boolean getEnableTemplateRepo() {
+        return store.getBoolean(PREF_ENABLE_TEMPLATE_REPO);
+    }
+
+    public void setEnableTemplateRepo(boolean enable) {
+        store.setValue(PREF_ENABLE_TEMPLATE_REPO, enable);
+    }
+
+    public String getTemplateRepoUri() {
+        return store.getString(PREF_TEMPLATE_REPO_URI);
+    }
+
+    public void setTemplateRepoUri(String uri) {
+        store.setValue(PREF_TEMPLATE_REPO_URI, uri);
     }
 
     public IPreferenceStore getStore() {
