@@ -78,11 +78,11 @@ public class FileUtils {
     public static void writeFully(String text, IFile file, boolean createIfAbsent) throws CoreException {
         ByteArrayInputStream inputStream;
         try {
-			String charset = file.getCharset(true);
-			if (charset == null) {
-				charset = Charset.defaultCharset().name();
-			}
-			inputStream = new ByteArrayInputStream(text.getBytes(charset));
+            String charset = file.getCharset(true);
+            if (charset == null) {
+                charset = Charset.defaultCharset().name();
+            }
+            inputStream = new ByteArrayInputStream(text.getBytes(charset));
         } catch (UnsupportedEncodingException e) {
             return;
         }
@@ -174,4 +174,23 @@ public class FileUtils {
             dumpResourceDelta(child, out, indent + "   ");
         }
     }
+
+    public static void mkdirs(IContainer container, IProgressMonitor monitor) throws CoreException {
+        SubMonitor progress = SubMonitor.convert(monitor, 2);
+
+        if (container.exists())
+            return;
+
+        IContainer parent = container.getParent();
+        if (parent != null)
+            mkdirs(parent, progress.newChild(1));
+
+        if (container.getType() == IResource.FOLDER) {
+            IFolder folder = (IFolder) container;
+            folder.create(false, true, progress.newChild(1));
+        } else {
+            throw new CoreException(new Status(IStatus.ERROR, "bndtools.utils", 0, "Can only create plain Folder parent containers.", null));
+        }
+    }
+
 }

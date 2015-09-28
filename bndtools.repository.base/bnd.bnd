@@ -7,9 +7,7 @@ bundlehub-template: templates/cnfs/bundlehub
 bundlehub-template-resources: \
 	${bundlehub-template}=templates/unprocessed/bundlehub,\
 	${bundlehub-template}=templates/unprocessed/common,\
-	${bundlehub-template}/buildrepo/=templates/repos/buildrepo,\
-	${bundlehub-template}/buildrepo/biz.aQute.junit/=${repo;biz.aQute.junit;latest},\
-	${bundlehub-template}/buildrepo/biz.aQute.launcher/=${repo;biz.aQute.launcher;latest},\
+	${bundlehub-template}/nonosgi-repo/=templates/repos/nonosgi-repo,\
 	${bundlehub-template}/localrepo/=templates/repos/localrepo,\
 	${bundlehub-template}/releaserepo/=templates/repos/releaserepo,\
 	${bundlehub-template}/plugins/biz.aQute.repository/biz.aQute.repository.jar=${repo;biz.aQute.repository;${bnd-version-base}}

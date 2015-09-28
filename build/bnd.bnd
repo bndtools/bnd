@@ -12,7 +12,6 @@ p2 = bndtools.api, \
     bndtools.jareditor, \
     bndtools.release, \
     bndtools.repository.base, \
-    bndtools.repository.maven, \
     org.bndtools.embeddedrepo, \
     org.bndtools.headless.build.manager, \
     org.bndtools.headless.build.plugin.ant, \

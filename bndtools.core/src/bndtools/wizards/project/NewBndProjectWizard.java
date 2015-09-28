@@ -28,12 +28,9 @@ import org.bndtools.templating.StringResource;
 import org.bndtools.templating.Template;
 import org.bndtools.templating.engine.StringTemplateEngine;
 import org.bndtools.utils.javaproject.JavaProjectUtils;
-import org.eclipse.core.resources.IContainer;
+import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -64,7 +61,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
         baseTemplate.addResource("bnd.bnd", new StringResource(""));
         baseTemplate.setHelpPath("docs/empty_project.xml");
 
-        templatePage = new RepoTemplateSelectionWizardPage("projectTemplateSelection", "project", workbench, baseTemplate);
+        templatePage = new RepoTemplateSelectionWizardPage("projectTemplateSelection", "project", baseTemplate);
         templatePage.setTitle("Select Project Template");
     }
 
@@ -150,7 +147,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
             for (Entry<String,Resource> outputEntry : outputs.entries()) {
                 String path = outputEntry.getKey();
                 IFile file = project.getFile(path);
-                mkdirs(file.getParent(), progress.newChild(1, SubMonitor.SUPPRESS_ALL_LABELS));
+                FileUtils.mkdirs(file.getParent(), progress.newChild(1, SubMonitor.SUPPRESS_ALL_LABELS));
                 try (InputStream in = outputEntry.getValue().getContent()) {
                     file.create(in, 0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
                     file.setCharset(outputEntry.getValue().getTextEncoding(), progress.newChild(1));
@@ -158,24 +155,6 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
             }
         } catch (Exception e) {
             ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error generating project contents from template \"{0}\".", template.getName()), e));
-        }
-    }
-
-    private void mkdirs(IContainer container, IProgressMonitor monitor) throws CoreException {
-        SubMonitor progress = SubMonitor.convert(monitor, 2);
-
-        if (container.exists())
-            return;
-
-        IContainer parent = container.getParent();
-        if (parent != null)
-            mkdirs(parent, progress.newChild(1));
-
-        if (container.getType() == IResource.FOLDER) {
-            IFolder folder = (IFolder) container;
-            folder.create(false, true, progress.newChild(1));
-        } else {
-            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Can only create plain Folder parent containers.", null));
         }
     }
 

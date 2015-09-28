@@ -47,7 +47,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
@@ -72,7 +72,6 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
 
     protected final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     private final String templateType;
-    private final IWorkbench workbench;
     private final Template emptyTemplate;
 
     private final Map<Template,Image> loadedImages = new IdentityHashMap<>();
@@ -88,10 +87,9 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
 
     private boolean shown = false;
 
-    public RepoTemplateSelectionWizardPage(String pageName, String templateType, IWorkbench workbench, Template emptyTemplate) {
+    public RepoTemplateSelectionWizardPage(String pageName, String templateType, Template emptyTemplate) {
         super(pageName);
         this.templateType = templateType;
-        this.workbench = workbench;
         this.emptyTemplate = emptyTemplate;
     }
 
@@ -220,7 +218,7 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
             @Override
             public void linkActivated(HyperlinkEvent ev) {
                 try {
-                    IWorkbenchBrowserSupport browser = workbench.getBrowserSupport();
+                    IWorkbenchBrowserSupport browser = PlatformUI.getWorkbench().getBrowserSupport();
                     browser.getExternalBrowser().openURL(new URL("https://github.com/bndtools/bndtools/wiki/Blurry-Form-Text-on-High-Resolution-Displays"));
                 } catch (Exception e) {
                     log.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Browser open error", e));
@@ -260,8 +258,9 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
                 }
             }
 
-            // Add the build-in empty template
-            templates.add(emptyTemplate);
+            // Add the build-in empty template if provided
+            if (emptyTemplate != null)
+                templates.add(emptyTemplate);
 
             // Display results
             Control control = viewer.getControl();
