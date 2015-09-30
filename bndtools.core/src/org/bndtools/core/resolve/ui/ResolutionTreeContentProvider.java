@@ -27,12 +27,15 @@ public class ResolutionTreeContentProvider implements ITreeContentProvider {
         this.resolution = resolution;
     }
 
+    @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
 
+    @Override
     public Object[] getElements(Object input) {
         return getChildren(input);
     }
 
+    @Override
     public Object[] getChildren(Object parent) {
         Object[] result;
 
@@ -61,24 +64,28 @@ public class ResolutionTreeContentProvider implements ITreeContentProvider {
     }
 
     private static void processWires(Collection<Wire> wires, Map<Capability,ResolutionTreeItem> items) {
-        for (Wire wire : wires) {
-            ResolutionTreeItem item = items.get(wire.getCapability());
-            if (item == null) {
-                item = new ResolutionTreeItem(wire.getCapability());
-                items.put(wire.getCapability(), item);
+        if (wires == null)
+            for (Wire wire : wires) {
+                ResolutionTreeItem item = items.get(wire.getCapability());
+                if (item == null) {
+                    item = new ResolutionTreeItem(wire.getCapability());
+                    items.put(wire.getCapability(), item);
+                }
+                item.addWire(wire);
             }
-            item.addWire(wire);
-        }
     }
 
+    @Override
     public Object getParent(Object object) {
         return null;
     }
 
+    @Override
     public boolean hasChildren(Object object) {
         return true;
     }
 
+    @Override
     public void dispose() {}
 
 }
