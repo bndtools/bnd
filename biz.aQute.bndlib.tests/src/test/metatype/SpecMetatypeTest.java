@@ -1395,6 +1395,100 @@ public class SpecMetatypeTest extends TestCase {
 
 	}
 
+	@XMLAttribute(namespace = "org.foo.extensions.v1", prefix = "foo", embedIn = "*", mapping = {
+		"value=simple"
+	})
+	@Retention(RetentionPolicy.CLASS)
+	@Target({
+			ElementType.TYPE, ElementType.METHOD
+	})
+	@interface Simple {
+		String value() default "default";
+	}
+
+	@Simple
+	@ObjectClassDefinition
+	@interface SimpleConfig {
+		@Simple("value")
+		@AttributeDefinition
+		String[] property();
+	}
+
+	public void testSimpleExtensions() throws Exception {
+		MetatypeVersion version = MetatypeVersion.VERSION_1_3;
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setProperty("Export-Package", "test.metatype");
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, SimpleConfig.class.getName());
+		b.build();
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$SimpleConfig.xml");
+		assertEquals(0, b.getErrors().size());
+		assertEquals("warnings: " + b.getWarnings(), 0, b.getWarnings().size());
+
+		System.err.println(b.getJar().getResources().keySet());
+		assertNotNull(r);
+		IO.copy(r.openInputStream(), System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "metatype", version.getNamespace(), "foo",
+				"org.foo.extensions.v1");
+		xt.assertNamespace(version.getNamespace());
+		xt.assertExactAttribute("test.metatype.SpecMetatypeTest$SimpleConfig", "metatype:MetaData/OCD/@id");
+
+		xt.assertCount(4, "metatype:MetaData/OCD/@*");
+		xt.assertExactAttribute("default", "metatype:MetaData/OCD/@foo:simple");
+
+		xt.assertCount(5, "metatype:MetaData/OCD/AD[@id='property']/@*");
+		xt.assertExactAttribute("value", "metatype:MetaData/OCD/AD[@id='property']/@foo:simple");
+	}
+
+	@XMLAttribute(namespace = "org.foo.extensions.v1", prefix = "foo", embedIn = "*", mapping = {
+			"a=first", "b=second"
+	})
+	@Retention(RetentionPolicy.CLASS)
+	@Target({
+			ElementType.TYPE, ElementType.METHOD
+	})
+	@interface Mapping {
+		String a() default "A";
+
+		String b() default "B";
+	}
+
+	@Mapping
+	@ObjectClassDefinition
+	@interface MappingConfig {
+		@Mapping(a = "one", b = "two")
+		@AttributeDefinition
+		String[] property();
+	}
+
+	public void testMappingExtensions() throws Exception {
+		MetatypeVersion version = MetatypeVersion.VERSION_1_3;
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setProperty("Export-Package", "test.metatype");
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, MappingConfig.class.getName());
+		b.build();
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$MappingConfig.xml");
+		assertEquals(0, b.getErrors().size());
+		assertEquals("warnings: " + b.getWarnings(), 0, b.getWarnings().size());
+
+		System.err.println(b.getJar().getResources().keySet());
+		assertNotNull(r);
+		IO.copy(r.openInputStream(), System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "metatype", version.getNamespace(), "foo",
+				"org.foo.extensions.v1");
+		xt.assertNamespace(version.getNamespace());
+		xt.assertExactAttribute("test.metatype.SpecMetatypeTest$MappingConfig", "metatype:MetaData/OCD/@id");
+
+		xt.assertCount(5, "metatype:MetaData/OCD/@*");
+		xt.assertExactAttribute("A", "metatype:MetaData/OCD/@foo:first");
+		xt.assertExactAttribute("B", "metatype:MetaData/OCD/@foo:second");
+
+		xt.assertCount(6, "metatype:MetaData/OCD/AD[@id='property']/@*");
+		xt.assertExactAttribute("one", "metatype:MetaData/OCD/AD[@id='property']/@foo:first");
+		xt.assertExactAttribute("two", "metatype:MetaData/OCD/AD[@id='property']/@foo:second");
+	}
+
 	@ObjectClassDefinition
 	@interface Escapes {
 		@AttributeDefinition(defaultValue = {

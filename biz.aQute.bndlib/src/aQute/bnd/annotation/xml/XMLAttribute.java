@@ -1,6 +1,9 @@
 package aQute.bnd.annotation.xml;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Define an xml attribute extension annotation. In cooperation with an
@@ -32,12 +35,39 @@ import java.lang.annotation.*;
 })
 public @interface XMLAttribute {
 
+	/**
+	 * xml namespace for the emitted attritrbutes
+	 * 
+	 * @return xml namespace for the emitted attritrbutes
+	 */
 	String namespace();
 
+	/**
+	 * Suggested prefix for the specified namespace. This will be modified as
+	 * necessary to avoid conflicts.
+	 * 
+	 * @return suggested prefix for the specified namespace.
+	 */
 	String prefix() default "ns";
 
-	String[]embedIn() default {
+	/**
+	 * Array of document namespaces this annotation should embed attributes in.
+	 * 
+	 * @return array of applicable xml namespaces
+	 */
+	String[] embedIn() default {
 			"*"
 	};
+
+	/**
+	 * Array of Strings of the form key=value where the key is the name of a
+	 * member and the value is the xml attribute name to use for that member's
+	 * value. For instance, "value=simple" causes @Simple("foo") to emit
+	 * ns:simple="foo".
+	 * 
+	 * @return Array of member-name to xml-attribute-name mappings.
+	 * @since 1.1
+	 */
+	String[] mapping() default {};
 
 }

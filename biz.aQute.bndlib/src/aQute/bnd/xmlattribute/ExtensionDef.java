@@ -77,8 +77,18 @@ public class ExtensionDef {
 					}
 					props.put(key, value);
 				}
-				for (Map.Entry<String,String> prop : props.entrySet())
-					tag.addAttribute(prefix + ":" + prop.getKey(), prop.getValue());
+				String[] mapping = entry.getKey().mapping();
+				for (Map.Entry<String,String> prop : props.entrySet()) {
+					String key = prop.getKey();
+					if (mapping != null && mapping.length > 0) {
+						String match = key + "=";
+						for (String map : mapping) {
+							if (map.startsWith(match))
+								key = map.substring(match.length());
+						}
+					}
+					tag.addAttribute(prefix + ":" + key, prop.getValue());
+				}
 			}
 		}
 	}
