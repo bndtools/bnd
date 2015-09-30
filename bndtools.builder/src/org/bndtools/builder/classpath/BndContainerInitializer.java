@@ -2,6 +2,7 @@ package org.bndtools.builder.classpath;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,6 +39,8 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JavaModelManager;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import aQute.bnd.build.CircularDependencyException;
 import aQute.bnd.build.Container;
@@ -57,6 +60,7 @@ import bndtools.preferences.BndPreferences;
  * Used in the .classpath file of bnd project to couple the bnd -buildpath into the Eclipse IDE.
  */
 public class BndContainerInitializer extends ClasspathContainerInitializer implements ModelListener {
+
     static final ILogger logger = Logger.getLogger(BndContainerInitializer.class);
 
     public BndContainerInitializer() {
@@ -155,6 +159,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     }
 
     private static class Updater {
+
+        private final Bundle bundle = FrameworkUtil.getBundle(Updater.class);
+
         private static final IClasspathEntry[] EMPTY_ENTRIES = new IClasspathEntry[0];
         private static final IAccessRule DISCOURAGED = JavaCore.newAccessRule(new Path("**"), IAccessRule.K_DISCOURAGED | IAccessRule.IGNORE_IF_BETTER);
         private static final Pattern packagePattern = Pattern.compile("(?<=^|\\.)\\*(?=\\.|$)|\\.");
@@ -265,9 +272,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
         private void setClasspathEntries(IClasspathEntry[] entries) throws JavaModelException {
             JavaCore.setClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, new IJavaProject[] {
-                javaProject
+                    javaProject
             }, new IClasspathContainer[] {
-                new BndContainer(entries, lastModified)
+                    new BndContainer(entries, lastModified)
             }, null);
 
             BndPreferences prefs = new BndPreferences();
@@ -450,6 +457,13 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             attrs.add(JavaCore.newClasspathAttribute("bsn", c.getBundleSymbolicName()));
             attrs.add(JavaCore.newClasspathAttribute("type", c.getType().name()));
             attrs.add(JavaCore.newClasspathAttribute("project", c.getProject().getName()));
+
+            if (c.getType() == Container.TYPE.PROJECT) {
+                // Supply an empty index for the generated JAR of a workspace project dependency.
+                // This prevents the non-editable generated class files from appearing in the Open Type dialog.
+                URL emptyIndex = bundle.getEntry("empty.index");
+                attrs.add(JavaCore.newClasspathAttribute(IClasspathAttribute.INDEX_LOCATION_ATTRIBUTE_NAME, emptyIndex.toString()));
+            }
 
             String version = c.getAttributes().get(Constants.VERSION_ATTRIBUTE);
             if (version != null) {
