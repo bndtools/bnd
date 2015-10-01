@@ -2,7 +2,6 @@ package org.bndtools.builder.classpath;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,6 +20,7 @@ import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ModelListener;
+import org.bndtools.builder.BndtoolsBuilder;
 import org.bndtools.builder.BuildLogger;
 import org.bndtools.builder.BuilderPlugin;
 import org.bndtools.utils.jar.PseudoJar;
@@ -39,9 +39,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JavaModelManager;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.FrameworkUtil;
-
 import aQute.bnd.build.CircularDependencyException;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
@@ -159,11 +156,10 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     }
 
     private static class Updater {
-
-        private final Bundle bundle = FrameworkUtil.getBundle(Updater.class);
-
         private static final IClasspathEntry[] EMPTY_ENTRIES = new IClasspathEntry[0];
         private static final IAccessRule DISCOURAGED = JavaCore.newAccessRule(new Path("**"), IAccessRule.K_DISCOURAGED | IAccessRule.IGNORE_IF_BETTER);
+        private static final IClasspathAttribute EMPTY_INDEX = JavaCore.newClasspathAttribute(IClasspathAttribute.INDEX_LOCATION_ATTRIBUTE_NAME,
+                "platform:/plugin/" + BndtoolsBuilder.PLUGIN_ID + "/org/bndtools/builder/classpath/empty.index");
         private static final Pattern packagePattern = Pattern.compile("(?<=^|\\.)\\*(?=\\.|$)|\\.");
         private static final Map<File,JarInfo> jarInfo = Collections.synchronizedMap(new WeakHashMap<File,JarInfo>());
 
@@ -358,7 +354,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                     continue;
                 }
 
-                IClasspathAttribute[] extraAttrs = calculateContainerAttributes(c);
+                List<IClasspathAttribute> extraAttrs = calculateContainerAttributes(c);
                 List<IAccessRule> accessRules = calculateContainerAccessRules(c);
 
                 switch (c.getType()) {
@@ -366,6 +362,10 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                     IPath projectPath = root.getFile(path).getProject().getFullPath();
                     addProjectEntry(classpath, projectPath, accessRules, extraAttrs);
                     if (!isVersionProject(c)) { // if not version=project, add entry for generated jar
+                        /* Supply an empty index for the generated JAR of a workspace project dependency.
+                         * This prevents the non-editable source files in the generated jar from appearing
+                         * in the Open Type dialog. */
+                        extraAttrs.add(EMPTY_INDEX);
                         addLibraryEntry(classpath, path, file, accessRules, extraAttrs);
                     }
                     break;
@@ -376,7 +376,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             }
         }
 
-        private void addProjectEntry(List<IClasspathEntry> classpath, IPath path, List<IAccessRule> accessRules, IClasspathAttribute[] extraAttrs) {
+        private void addProjectEntry(List<IClasspathEntry> classpath, IPath path, List<IAccessRule> accessRules, List<IClasspathAttribute> extraAttrs) {
             for (int i = 0; i < classpath.size(); i++) {
                 IClasspathEntry entry = classpath.get(i);
                 if (entry.getEntryKind() != IClasspathEntry.CPE_PROJECT) {
@@ -404,7 +404,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 return;
             }
             // Add a new project entry for the project
-            classpath.add(JavaCore.newProjectEntry(path, toAccessRulesArray(accessRules), false, extraAttrs, false));
+            classpath.add(JavaCore.newProjectEntry(path, toAccessRulesArray(accessRules), false, toClasspathAttributesArray(extraAttrs), false));
         }
 
         private IPath calculateSourceAttachmentPath(IPath path, File file) {
@@ -446,24 +446,17 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             return info;
         }
 
-        private void addLibraryEntry(List<IClasspathEntry> classpath, IPath path, File file, List<IAccessRule> accessRules, IClasspathAttribute[] extraAttrs) {
+        private void addLibraryEntry(List<IClasspathEntry> classpath, IPath path, File file, List<IAccessRule> accessRules, List<IClasspathAttribute> extraAttrs) {
             IPath sourceAttachmentPath = calculateSourceAttachmentPath(path, file);
-            classpath.add(JavaCore.newLibraryEntry(path, sourceAttachmentPath, null, toAccessRulesArray(accessRules), extraAttrs, false));
+            classpath.add(JavaCore.newLibraryEntry(path, sourceAttachmentPath, null, toAccessRulesArray(accessRules), toClasspathAttributesArray(extraAttrs), false));
             updateLastModified(file.lastModified());
         }
 
-        private IClasspathAttribute[] calculateContainerAttributes(Container c) {
+        private List<IClasspathAttribute> calculateContainerAttributes(Container c) {
             List<IClasspathAttribute> attrs = new ArrayList<IClasspathAttribute>();
             attrs.add(JavaCore.newClasspathAttribute("bsn", c.getBundleSymbolicName()));
             attrs.add(JavaCore.newClasspathAttribute("type", c.getType().name()));
             attrs.add(JavaCore.newClasspathAttribute("project", c.getProject().getName()));
-
-            if (c.getType() == Container.TYPE.PROJECT) {
-                // Supply an empty index for the generated JAR of a workspace project dependency.
-                // This prevents the non-editable generated class files from appearing in the Open Type dialog.
-                URL emptyIndex = bundle.getEntry("empty.index");
-                attrs.add(JavaCore.newClasspathAttribute(IClasspathAttribute.INDEX_LOCATION_ATTRIBUTE_NAME, emptyIndex.toString()));
-            }
 
             String version = c.getAttributes().get(Constants.VERSION_ATTRIBUTE);
             if (version != null) {
@@ -475,7 +468,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 attrs.add(JavaCore.newClasspathAttribute("packages", packages));
             }
 
-            return attrs.toArray(new IClasspathAttribute[attrs.size()]);
+            return attrs;
         }
 
         private List<IAccessRule> calculateContainerAccessRules(Container c) {
@@ -584,6 +577,15 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             IAccessRule[] accessRules = rules.toArray(new IAccessRule[size + 1]);
             accessRules[size] = DISCOURAGED;
             return accessRules;
+        }
+
+        private IClasspathAttribute[] toClasspathAttributesArray(List<IClasspathAttribute> attrs) {
+            if (attrs == null) {
+                return null;
+            }
+            final int size = attrs.size();
+            IClasspathAttribute[] attrsArray = attrs.toArray(new IClasspathAttribute[size]);
+            return attrsArray;
         }
 
         private IPath fileToPath(File file) throws Exception {
