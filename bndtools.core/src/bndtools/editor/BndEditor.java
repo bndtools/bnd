@@ -369,16 +369,16 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         if (prefs.getEditorOpenSourceTab()) {
             selected = SOURCE_PAGE;
             selectedPrio = 0;
-        }
-
-        for (Object pageObj : pages) {
-            IFormPage page = (IFormPage) pageObj;
-            int priority = 0;
-            if (page instanceof IPriority)
-                priority = ((IPriority) page).getPriority();
-            if (priority > selectedPrio) {
-                selected = page.getId();
-                selectedPrio = priority;
+        } else {
+            for (Object pageObj : pages) {
+                IFormPage page = (IFormPage) pageObj;
+                int priority = 0;
+                if (page instanceof IPriority)
+                    priority = ((IPriority) page).getPriority();
+                if (priority > selectedPrio) {
+                    selected = page.getId();
+                    selectedPrio = priority;
+                }
             }
         }
 
