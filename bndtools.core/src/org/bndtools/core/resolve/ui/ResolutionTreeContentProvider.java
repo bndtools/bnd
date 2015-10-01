@@ -64,7 +64,7 @@ public class ResolutionTreeContentProvider implements ITreeContentProvider {
     }
 
     private static void processWires(Collection<Wire> wires, Map<Capability,ResolutionTreeItem> items) {
-        if (wires == null)
+        if (wires != null) {
             for (Wire wire : wires) {
                 ResolutionTreeItem item = items.get(wire.getCapability());
                 if (item == null) {
@@ -73,6 +73,7 @@ public class ResolutionTreeContentProvider implements ITreeContentProvider {
                 }
                 item.addWire(wire);
             }
+        }
     }
 
     @Override
