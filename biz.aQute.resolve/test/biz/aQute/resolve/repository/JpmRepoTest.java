@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.apache.felix.resolver.ResolverImpl;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -21,7 +19,6 @@ import org.osgi.service.repository.Repository;
 import org.osgi.service.resolver.ResolutionException;
 import org.osgi.service.resolver.Resolver;
 
-import test.lib.NullLogService;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.resource.CapReqBuilder;
@@ -29,8 +26,12 @@ import aQute.bnd.service.repository.InfoRepository;
 import aQute.lib.io.IO;
 import biz.aQute.resolve.BndrunResolveContext;
 import biz.aQute.resolve.ResolveProcess;
+import junit.framework.TestCase;
+import test.lib.NullLogService;
 
-@SuppressWarnings("restriction")
+@SuppressWarnings({
+		"restriction", "deprecation"
+})
 public class JpmRepoTest extends TestCase {
 	File							tmp	= new File("tmp");
 	private Workspace				ws;

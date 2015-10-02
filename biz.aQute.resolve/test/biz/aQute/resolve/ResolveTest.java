@@ -42,7 +42,9 @@ import aQute.libg.reporter.ReporterAdapter;
 import junit.framework.TestCase;
 import test.lib.MockRegistry;
 
-@SuppressWarnings("restriction")
+@SuppressWarnings({
+		"restriction", "deprecation"
+})
 public class ResolveTest extends TestCase {
 
 	private static final LogService log = new LogReporter(new ReporterAdapter(System.out));

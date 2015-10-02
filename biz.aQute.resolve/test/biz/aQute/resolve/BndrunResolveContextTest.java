@@ -28,12 +28,13 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.lib.io.IO;
-import biz.aQute.resolve.BndrunResolveContext;
 import junit.framework.TestCase;
 import test.lib.MockRegistry;
 import test.lib.NullLogService;
 
-@SuppressWarnings("restriction")
+@SuppressWarnings({
+		"restriction", "deprecation"
+})
 public class BndrunResolveContextTest extends TestCase {
 
 	private static final LogService log = new NullLogService();
