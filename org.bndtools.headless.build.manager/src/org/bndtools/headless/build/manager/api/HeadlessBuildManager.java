@@ -2,6 +2,7 @@ package org.bndtools.headless.build.manager.api;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.bndtools.api.NamedPlugin;
@@ -25,7 +26,7 @@ public interface HeadlessBuildManager {
 
     /**
      * Setup/remove files enabling headless build of a project.
-     * 
+     *
      * @param plugins
      *            the plugins to involve in adding/removing the headless build of a project. Usually only the plugins
      *            that are enabled through the preferences should be involved: it is strongly advised to get these
@@ -40,5 +41,9 @@ public interface HeadlessBuildManager {
      * @param enabledIgnorePlugins
      *            set with enabled version control ignore plugins
      */
+    public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins, List<String> warnings);
+
+    @Deprecated
     public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins);
+
 }

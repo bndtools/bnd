@@ -3,6 +3,8 @@ package org.bndtools.headless.build.manager;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -53,13 +55,20 @@ public class HeadlessBuildManagerImpl implements HeadlessBuildManager {
      * HeadlessBuildManager
      */
 
+    @Override
     public Collection<NamedPlugin> getAllPluginsInformation() {
         synchronized (plugins) {
             return Collections.unmodifiableCollection(pluginsInformation.values());
         }
     }
 
+    @Override
     public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins) {
+        setup(plugins, cnf, projectDir, add, enabledIgnorePlugins, new LinkedList<String>());
+    }
+
+    @Override
+    public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins, List<String> warnings) {
         if (plugins == null || plugins.isEmpty()) {
             return;
         }
@@ -74,7 +83,7 @@ public class HeadlessBuildManagerImpl implements HeadlessBuildManager {
             }
 
             try {
-                plugin.setup(cnf, projectDir, add, enabledIgnorePlugins);
+                plugin.setup(cnf, projectDir, add, enabledIgnorePlugins, warnings);
             } catch (Throwable e) {
                 logger.logError(String.format("Unable to %s headless build file(s) for the %sproject in %s", add ? "add" : "remove", cnf ? "cnf " : "", projectDir.getAbsolutePath()), e);
             }

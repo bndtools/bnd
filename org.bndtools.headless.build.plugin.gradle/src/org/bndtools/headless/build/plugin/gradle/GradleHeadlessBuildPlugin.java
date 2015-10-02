@@ -2,6 +2,7 @@ package org.bndtools.headless.build.plugin.gradle;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -10,6 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.bndtools.api.NamedPlugin;
 import org.bndtools.headless.build.manager.api.HeadlessBuildPlugin;
 import org.bndtools.utils.copy.bundleresource.BundleResourceCopier;
+import org.bndtools.utils.copy.bundleresource.CopyMode;
 import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 import org.osgi.framework.BundleContext;
 
@@ -56,6 +58,11 @@ public class GradleHeadlessBuildPlugin implements HeadlessBuildPlugin {
 
     @Override
     public void setup(boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins) throws IOException {
+        setup(cnf, projectDir, add, enabledIgnorePlugins, new LinkedList<String>());
+    }
+
+    @Override
+    public void setup(boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins, List<String> warnings) throws IOException {
         if (!cnf) {
             return;
         }
@@ -65,7 +72,17 @@ public class GradleHeadlessBuildPlugin implements HeadlessBuildPlugin {
         File workspaceRoot = projectDir.getParentFile();
 
         String baseDir = "templates/root/";
-        copier.addOrRemoveDirectory(workspaceRoot, baseDir, "/", add);
+        copier.addOrRemoveDirectory(workspaceRoot, baseDir, "/", add ? CopyMode.ADD : CopyMode.REMOVE);
+
+        Collection<File> files = copier.addOrRemoveDirectory(projectDir, baseDir, "/", add ? CopyMode.ADD : CopyMode.CHECK);
+        for (File file : files) {
+            String warning;
+            if (add)
+                warning = String.format("Not overwriting existing Gradle build file: %s", file);
+            else
+                warning = String.format("Gradle build file may need to be removed: %s", file);
+            warnings.add(warning);
+        }
 
         VersionControlIgnoresManager ignoresManager = versionControlIgnoresManager.get();
         if (ignoresManager != null) {

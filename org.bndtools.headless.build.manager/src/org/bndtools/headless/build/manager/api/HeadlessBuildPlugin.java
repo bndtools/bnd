@@ -2,6 +2,7 @@ package org.bndtools.headless.build.manager.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 import org.bndtools.api.NamedPlugin;
@@ -26,7 +27,7 @@ public interface HeadlessBuildPlugin {
 
     /**
      * Setup/remove files enabling headless build of a project.
-     * 
+     *
      * @param cnf
      *            true when the project directory is that of the cnf project
      * @param projectDir
@@ -38,7 +39,10 @@ public interface HeadlessBuildPlugin {
      * @throws IOException
      *             upon error(s)
      */
+    @Deprecated
     void setup(boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins) throws IOException;
+
+    void setup(boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins, List<String> warnings) throws IOException;
 
     // Future expansion of the interface: automatic management of template files
     //

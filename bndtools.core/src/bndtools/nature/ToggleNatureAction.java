@@ -11,7 +11,10 @@
 package bndtools.nature;
 
 import java.io.ByteArrayInputStream;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import org.bndtools.api.BndtoolsConstants;
@@ -23,14 +26,17 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
-
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.preferences.BndPreferences;
@@ -38,11 +44,13 @@ import bndtools.preferences.BndPreferences;
 public class ToggleNatureAction implements IObjectActionDelegate {
 
     private ISelection selection;
+    private IWorkbenchPart targetPart;
 
     /*
      * (non-Javadoc)
      * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
      */
+    @Override
     public void run(IAction action) {
         if (selection instanceof IStructuredSelection) {
             for (Iterator< ? > it = ((IStructuredSelection) selection).iterator(); it.hasNext();) {
@@ -61,7 +69,9 @@ public class ToggleNatureAction implements IObjectActionDelegate {
                         /* swallow */
                     }
                     if (isJavaProject) {
-                        toggleNature(JavaCore.create(project));
+                        IStatus status = toggleNature(JavaCore.create(project));
+                        if (!status.isOK())
+                            ErrorDialog.openError(targetPart.getSite().getShell(), "Toggle Bnd Nature", null, status);
                     }
                 }
             }
@@ -73,6 +83,7 @@ public class ToggleNatureAction implements IObjectActionDelegate {
      * @see org.eclipse.ui.IActionDelegate#selectionChanged(org.eclipse.jface.action .IAction,
      * org.eclipse.jface.viewers.ISelection)
      */
+    @Override
     public void selectionChanged(IAction action, ISelection selection) {
         this.selection = selection;
     }
@@ -82,7 +93,10 @@ public class ToggleNatureAction implements IObjectActionDelegate {
      * @see org.eclipse.ui.IObjectActionDelegate#setActivePart(org.eclipse.jface. action.IAction,
      * org.eclipse.ui.IWorkbenchPart)
      */
-    public void setActivePart(IAction action, IWorkbenchPart targetPart) {}
+    @Override
+    public void setActivePart(IAction action, IWorkbenchPart targetPart) {
+        this.targetPart = targetPart;
+    }
 
     private static void ensureBndBndExists(IProject project) throws CoreException {
         IFile bndfile = project.getFile(Project.BNDFILE);
@@ -92,11 +106,11 @@ public class ToggleNatureAction implements IObjectActionDelegate {
 
     /**
      * Toggles sample nature on a project
-     * 
+     *
      * @param project
      *            to have sample nature added or removed
      */
-    private static void toggleNature(IJavaProject project) {
+    private static IStatus toggleNature(IJavaProject project) {
         try {
             /* Version control ignores */
             VersionControlIgnoresManager versionControlIgnoresManager = Plugin.getDefault().getVersionControlIgnoresManager();
@@ -110,6 +124,8 @@ public class ToggleNatureAction implements IObjectActionDelegate {
             IProjectDescription description = iProject.getDescription();
             String[] natures = description.getNatureIds();
 
+            List<String> headlessBuildWarnings = new LinkedList<>();
+
             for (int i = 0; i < natures.length; ++i) {
                 if (BndtoolsConstants.NATURE_ID.equals(natures[i])) {
                     // Remove the nature
@@ -120,17 +136,17 @@ public class ToggleNatureAction implements IObjectActionDelegate {
                     iProject.setDescription(description, null);
 
                     /* Remove the headless build files */
-                    headlessBuildManager.setup(enabledPlugins, false, iProject.getLocation().toFile(), false, enabledIgnorePlugins);
+                    headlessBuildManager.setup(enabledPlugins, false, iProject.getLocation().toFile(), false, enabledIgnorePlugins, headlessBuildWarnings);
 
                     /* refresh the project; files were created outside of Eclipse API */
                     iProject.refreshLocal(IResource.DEPTH_INFINITE, null);
 
-                    return;
+                    return createStatus("Obsolete build files may remain in the project. Please review the messages below.", Collections.<String> emptyList(), headlessBuildWarnings);
                 }
             }
 
             /* Add the headless build files */
-            headlessBuildManager.setup(enabledPlugins, false, iProject.getLocation().toFile(), true, enabledIgnorePlugins);
+            headlessBuildManager.setup(enabledPlugins, false, iProject.getLocation().toFile(), true, enabledIgnorePlugins, headlessBuildWarnings);
 
             // Add the nature
             ensureBndBndExists(iProject);
@@ -143,7 +159,20 @@ public class ToggleNatureAction implements IObjectActionDelegate {
             /* refresh the project; files were created outside of Eclipse API */
             iProject.refreshLocal(IResource.DEPTH_INFINITE, null);
 
-            return;
-        } catch (CoreException e) {}
+            return createStatus("Some build files could not be generated. Please review the messages below.", Collections.<String> emptyList(), headlessBuildWarnings);
+        } catch (CoreException e) {
+            return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error occurred while toggling bnd project nature", e);
+        }
+    }
+
+    private static IStatus createStatus(String message, List<String> errors, List<String> warnings) {
+        MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, message, null);
+
+        for (String error : errors)
+            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, error, null));
+        for (String warning : warnings)
+            status.add(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, warning, null));
+
+        return status;
     }
 }

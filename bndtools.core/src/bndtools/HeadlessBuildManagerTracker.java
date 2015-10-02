@@ -3,6 +3,7 @@ package bndtools;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -12,7 +13,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 
-public class HeadlessBuildManagerTracker extends ServiceTracker<HeadlessBuildManager,HeadlessBuildManager> implements HeadlessBuildManager {
+public class HeadlessBuildManagerTracker extends ServiceTracker<HeadlessBuildManager,HeadlessBuildManager>implements HeadlessBuildManager {
     private final AtomicReference<ServiceReference<HeadlessBuildManager>> managerReference = new AtomicReference<ServiceReference<HeadlessBuildManager>>();
     private final AtomicReference<HeadlessBuildManager> manager = new AtomicReference<HeadlessBuildManager>();
 
@@ -62,6 +63,16 @@ public class HeadlessBuildManagerTracker extends ServiceTracker<HeadlessBuildMan
         return manager.getAllPluginsInformation();
     }
 
+    @Override
+    public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins, List<String> warnings) {
+        HeadlessBuildManager manager = this.manager.get();
+        if (manager == null) {
+            return;
+        }
+        manager.setup(plugins, cnf, projectDir, add, enabledIgnorePlugins, warnings);
+    }
+
+    @SuppressWarnings("deprecation")
     @Override
     public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins) {
         HeadlessBuildManager manager = this.manager.get();
