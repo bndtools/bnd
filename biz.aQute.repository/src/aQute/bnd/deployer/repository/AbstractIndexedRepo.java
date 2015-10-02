@@ -48,7 +48,6 @@ import aQute.bnd.deployer.repository.api.Referral;
 import aQute.bnd.deployer.repository.providers.ObrContentProvider;
 import aQute.bnd.deployer.repository.providers.R5RepoContentProvider;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.Plugin;

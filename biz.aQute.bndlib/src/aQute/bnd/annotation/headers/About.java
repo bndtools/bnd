@@ -1,7 +1,5 @@
 package aQute.bnd.annotation.headers;
 
-import aQute.bnd.annotation.licenses.*;
-
 /**
  * This package contains a number of annotations that create or append headers
  * in the manifest. These annotations simplify maintaining these headers: <ul>
