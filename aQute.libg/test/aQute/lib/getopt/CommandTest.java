@@ -1,12 +1,13 @@
 package aQute.lib.getopt;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
 
-import junit.framework.*;
-import aQute.lib.collections.*;
-import aQute.lib.justif.*;
-import aQute.libg.reporter.*;
+import aQute.lib.collections.ExtList;
+import aQute.lib.justif.Justif;
+import aQute.libg.reporter.ReporterAdapter;
+import junit.framework.TestCase;
 
 public class CommandTest extends TestCase {
 	ReporterAdapter rp = new ReporterAdapter(System.err);
@@ -58,7 +59,8 @@ public class CommandTest extends TestCase {
 
 	}
 
-	public static class C1 extends Assert {
+	@SuppressWarnings("deprecation")
+	public static class C1 extends junit.framework.Assert {
 		public static String _c1(c1options x) {
 
 			assertEquals(true, x.flag());

@@ -300,7 +300,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		Map<Requirement,Collection<Capability>> map = repo.findProviders(Collections.singleton(requirement));
 
 		if (map.isEmpty())
-			return Collections.EMPTY_SET;
+			return Collections.emptySet();
 
 		Collection<Capability> caps = map.get(requirement);
 

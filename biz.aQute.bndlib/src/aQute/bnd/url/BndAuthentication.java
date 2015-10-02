@@ -1,18 +1,27 @@
 package aQute.bnd.url;
 
-import java.net.*;
-import java.security.*;
-import java.security.spec.*;
-import java.text.*;
-import java.util.*;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.URLConnection;
+import java.net.UnknownHostException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Map;
 
-import javax.net.ssl.*;
+import javax.net.ssl.HttpsURLConnection;
 
-import aQute.bnd.build.*;
-import aQute.bnd.service.url.*;
+import aQute.bnd.build.Workspace;
 import aQute.lib.base64.Base64;
-import aQute.lib.hex.*;
-import aQute.lib.settings.*;
+import aQute.lib.hex.Hex;
+import aQute.lib.settings.Settings;
 
 /**
  * bnd has a builtin delegated authentication mechanism, see {@link Settings}.

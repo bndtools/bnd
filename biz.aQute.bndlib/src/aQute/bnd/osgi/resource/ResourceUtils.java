@@ -343,7 +343,7 @@ public class ResourceUtils {
 
 	public static Set<Resource> getResources(Collection< ? extends Capability> providers) {
 		if (providers == null || providers.isEmpty())
-			return Collections.EMPTY_SET;
+			return Collections.emptySet();
 
 		Set<Resource> resources = new TreeSet<Resource>(RESOURCE_COMPARATOR);
 

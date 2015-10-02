@@ -396,7 +396,7 @@ public class ResourceBuilder {
 
 	public List<Capability> findCapabilities(String ns, String filter) {
 		if (filter == null || capabilities.isEmpty())
-			return Collections.EMPTY_LIST;
+			return Collections.emptyList();
 
 		List<Capability> capabilities = new ArrayList<Capability>();
 		Filter f = new Filter(filter);

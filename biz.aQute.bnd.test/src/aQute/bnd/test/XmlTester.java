@@ -1,5 +1,8 @@
 package aQute.bnd.test;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -12,8 +15,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-
-import junit.framework.Assert;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -71,46 +72,46 @@ public class XmlTester {
 	public void assertExactAttribute(String value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
-		Assert.assertNotNull(o);
-		Assert.assertEquals(value, o);
+		assertNotNull(o);
+		assertEquals(value, o);
 	}
 
 	@SuppressWarnings("deprecation")
 	public void assertAttribute(String value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
-		Assert.assertNotNull(o);
-		Assert.assertEquals(value, o.trim());
+		assertNotNull(o);
+		assertEquals(value, o.trim());
 	}
 
 	@SuppressWarnings("deprecation")
 	public void assertTrimmedAttribute(String value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
-		Assert.assertNotNull(o);
-		Assert.assertEquals(value, o.trim().replaceAll("\n", "\\\\n"));
+		assertNotNull(o);
+		assertEquals(value, o.trim().replaceAll("\n", "\\\\n"));
 	}
 
 	@SuppressWarnings("deprecation")
 	public void assertNoAttribute(String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
-		Assert.assertEquals("", o);
+		assertEquals("", o);
 	}
 
 	@SuppressWarnings("deprecation")
 	public void assertNamespace(String namespace) {
 		Element element = document.getDocumentElement();
 		String xmlns = element.getNamespaceURI();
-		Assert.assertEquals(namespace, xmlns);
+		assertEquals(namespace, xmlns);
 	}
 
 	@SuppressWarnings("deprecation")
 	public void assertNumber(Double value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		Double o = (Double) xpath.evaluate(expr, document, XPathConstants.NUMBER);
-		Assert.assertNotNull(o);
-		Assert.assertEquals(value, o);
+		assertNotNull(o);
+		assertEquals(value, o);
 	}
 
 	public void assertCount(int value, String expr) throws XPathExpressionException {

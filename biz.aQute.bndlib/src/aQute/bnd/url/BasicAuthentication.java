@@ -1,14 +1,13 @@
 package aQute.bnd.url;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
+import java.util.Map;
 
-import javax.net.ssl.*;
+import javax.net.ssl.HttpsURLConnection;
 
-import aQute.bnd.service.url.*;
 import aQute.lib.base64.Base64;
-import aQute.libg.glob.*;
 
 /**
  * Provide Http Basic Authentication. This URL Connection Handler plugin will
