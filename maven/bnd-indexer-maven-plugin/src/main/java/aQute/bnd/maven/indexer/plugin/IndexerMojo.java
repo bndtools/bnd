@@ -98,6 +98,8 @@ public class IndexerMojo extends AbstractMojo {
     
     @Component
     private MavenProjectHelper projectHelper;
+    
+    private boolean fail;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
 
@@ -170,6 +172,9 @@ public class IndexerMojo extends AbstractMojo {
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
+        if(fail) {
+        	throw new MojoExecutionException("One or more URI lookups failed");
+        }
         
 		File gzipOutputFile = new File(outputFile.getPath() + ".gz");
 		
@@ -208,32 +213,37 @@ public class IndexerMojo extends AbstractMojo {
         }
 
 		public URI resolver(File file) throws Exception {
-			
-			ArtifactResult artifactResult = dependencies.get(file);
-
-			if(artifactResult == null) {
-				throw new FileNotFoundException("The file " + file.getCanonicalPath() + " is not known to this resolver");
-			}
-			
-			if(localURLs == REQUIRED) {
-				return file.toURI();
-			}
-			
-			Artifact artifact = artifactResult.getArtifact();
-			
-			ArtifactRepository repo = repositories.get(artifactResult.getRepository().getId());
-			
-			if(repo == null) {
-				if(localURLs == ALLOWED) {
-					getLog().info("The Artifact " + artifact.toString() + 
-							" could not be found in any repository, returning the local location");
+			try {
+				ArtifactResult artifactResult = dependencies.get(file);
+	
+				if(artifactResult == null) {
+					throw new FileNotFoundException("The file " + file.getCanonicalPath() + " is not known to this resolver");
+				}
+				
+				if(localURLs == REQUIRED) {
 					return file.toURI();
 				}
-				throw new FileNotFoundException("The repository " + artifactResult.getRepository().getId() + " is not known to this resolver");
+				
+				Artifact artifact = artifactResult.getArtifact();
+				
+				ArtifactRepository repo = repositories.get(artifactResult.getRepository().getId());
+				
+				if(repo == null) {
+					if(localURLs == ALLOWED) {
+						getLog().info("The Artifact " + artifact.toString() + 
+								" could not be found in any repository, returning the local location");
+						return file.toURI();
+					}
+					throw new FileNotFoundException("The repository " + artifactResult.getRepository().getId() + " is not known to this resolver");
+				}
+				
+				return URI.create(repo.getUrl() + repo.getBasedir() +
+						repo.getLayout().pathOf(RepositoryUtils.toArtifact(artifact))).normalize();
+			} catch (Exception e) {
+				fail = true;
+				getLog().error("Failed to determine the artifact URI", e);
+				throw e;
 			}
-			
-			return URI.create(repo.getUrl() + repo.getBasedir() +
-					repo.getLayout().pathOf(RepositoryUtils.toArtifact(artifact))).normalize();
         }
     }
 
