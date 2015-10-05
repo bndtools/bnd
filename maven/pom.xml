@@ -19,6 +19,7 @@
 	<modules>
 		<module>bnd-maven-plugin</module>
 		<module>bnd-indexer-maven-plugin</module>
+		<module>bnd-baseline-maven-plugin</module>
 	</modules>
 
 	<url>http://bnd.bndtools.org/</url>
