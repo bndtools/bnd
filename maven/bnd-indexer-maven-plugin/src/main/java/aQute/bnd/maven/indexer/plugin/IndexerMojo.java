@@ -47,6 +47,7 @@ import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.ArtifactProperties;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.metadata.DefaultMetadata;
@@ -84,6 +85,9 @@ public class IndexerMojo extends AbstractMojo {
     @Parameter( property = "bnd.indexer.includeTransitive", defaultValue = "true", readonly = true )
     private boolean includeTransitive;
 
+    @Parameter( property = "bnd.indexer.add.mvn.urls", defaultValue = "false", readonly = true )
+    private boolean addMvnURLs;
+
     @Parameter( property = "bnd.indexer.scopes", readonly = true, required=false )
     private List<String> scopes;
     
@@ -110,6 +114,7 @@ public class IndexerMojo extends AbstractMojo {
     	getLog().debug("Indexing dependencies with scopes: " + scopes);
     	getLog().debug("Including Transitive dependencies: " + includeTransitive);
     	getLog().debug("Local file URLs permitted: " + localURLs);
+    	getLog().debug("Adding mvn: URLs as alternative content: " + addMvnURLs);
     	
         DependencyResolutionRequest request = new DefaultDependencyResolutionRequest(project, session);
 
@@ -151,8 +156,11 @@ public class IndexerMojo extends AbstractMojo {
         }
         indexer.addAnalyzer(new KnownBundleAnalyzer(), filter);
         
-        URLResolver resolver = new MavenURLResolver(dependencies, repositories);
-        indexer.setURLResolver(resolver);
+        indexer.addURLResolver(new RepositoryURLResolver(dependencies, repositories));
+       
+        if(addMvnURLs) {
+        	indexer.addURLResolver(new MavenURLResolver(dependencies));
+        }
         
         Map<String, String> config = new HashMap<String, String>();
         config.put(ResourceIndexer.PRETTY, "true");
@@ -205,11 +213,9 @@ public class IndexerMojo extends AbstractMojo {
     class MavenURLResolver implements URLResolver {
 
         private final Map<File, ArtifactResult> dependencies;
-		private final Map<String, ArtifactRepository> repositories;
 
-		public MavenURLResolver(Map<File, ArtifactResult> dependencies, Map<String, ArtifactRepository> repositories) {
+		public MavenURLResolver(Map<File, ArtifactResult> dependencies) {
 			this.dependencies = dependencies;
-			this.repositories = repositories;
         }
 
 		public URI resolver(File file) throws Exception {
@@ -220,31 +226,84 @@ public class IndexerMojo extends AbstractMojo {
 					throw new FileNotFoundException("The file " + file.getCanonicalPath() + " is not known to this resolver");
 				}
 				
-				if(localURLs == REQUIRED) {
-					return file.toURI();
-				}
-				
 				Artifact artifact = artifactResult.getArtifact();
 				
-				ArtifactRepository repo = repositories.get(artifactResult.getRepository().getId());
+				StringBuilder sb = new StringBuilder("mvn://");
 				
-				if(repo == null) {
-					if(localURLs == ALLOWED) {
-						getLog().info("The Artifact " + artifact.toString() + 
-								" could not be found in any repository, returning the local location");
-						return file.toURI();
-					}
-					throw new FileNotFoundException("The repository " + artifactResult.getRepository().getId() + " is not known to this resolver");
+				sb.append(artifact.getGroupId())
+					.append("/")
+					.append(artifact.getArtifactId())
+					.append("/");
+				
+				if(artifact.getVersion() != null) {
+					sb.append(artifact.getVersion());
 				}
 				
-				return URI.create(repo.getUrl() + repo.getBasedir() +
-						repo.getLayout().pathOf(RepositoryUtils.toArtifact(artifact))).normalize();
+				sb.append("/");
+				
+				String type =  artifact.getProperty(ArtifactProperties.TYPE, artifact.getExtension());
+				if(type != null) {
+					sb.append(type);
+				}
+
+				sb.append("/");
+				
+				if(artifact.getClassifier() != null) {
+					sb.append(artifact.getClassifier());
+				}
+				
+				return URI.create(sb.toString()).normalize();
 			} catch (Exception e) {
 				fail = true;
 				getLog().error("Failed to determine the artifact URI", e);
 				throw e;
 			}
         }
+    }
+
+    class RepositoryURLResolver implements URLResolver {
+    	
+    	private final Map<File, ArtifactResult> dependencies;
+    	private final Map<String, ArtifactRepository> repositories;
+    	
+    	public RepositoryURLResolver(Map<File, ArtifactResult> dependencies, Map<String, ArtifactRepository> repositories) {
+    		this.dependencies = dependencies;
+    		this.repositories = repositories;
+    	}
+    	
+    	public URI resolver(File file) throws Exception {
+    		try {
+    			ArtifactResult artifactResult = dependencies.get(file);
+    			
+    			if(artifactResult == null) {
+    				throw new FileNotFoundException("The file " + file.getCanonicalPath() + " is not known to this resolver");
+    			}
+    			
+    			if(localURLs == REQUIRED) {
+    				return file.toURI();
+    			}
+    			
+    			Artifact artifact = artifactResult.getArtifact();
+    			
+    			ArtifactRepository repo = repositories.get(artifactResult.getRepository().getId());
+    			
+    			if(repo == null) {
+    				if(localURLs == ALLOWED) {
+    					getLog().info("The Artifact " + artifact.toString() + 
+    							" could not be found in any repository, returning the local location");
+    					return file.toURI();
+    				}
+    				throw new FileNotFoundException("The repository " + artifactResult.getRepository().getId() + " is not known to this resolver");
+    			}
+    			
+    			return URI.create(repo.getUrl() + repo.getBasedir() +
+    					repo.getLayout().pathOf(RepositoryUtils.toArtifact(artifact))).normalize();
+    		} catch (Exception e) {
+    			fail = true;
+    			getLog().error("Failed to determine the artifact URI", e);
+    			throw e;
+    		}
+    	}
     }
 
     private void discoverArtifacts(Map<File, ArtifactResult> files, List<DependencyNode> nodes, String parent) throws MojoExecutionException {

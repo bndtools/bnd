@@ -2,14 +2,15 @@ package org.osgi.service.indexer.impl;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 class GeneratorState {
 
 	private final URI		rootUrl;
 	private final String	urlTemplate;
-	private URLResolver		resolver;
+	private List<URLResolver>	resolver;
 
-	public GeneratorState(URI rootUrl, String urlTemplate, URLResolver resolver) throws URISyntaxException {
+	public GeneratorState(URI rootUrl, String urlTemplate, List<URLResolver> resolver) throws URISyntaxException {
 		this.rootUrl = rootUrl;
 		this.urlTemplate = urlTemplate;
 		this.resolver = resolver;
@@ -59,7 +60,7 @@ class GeneratorState {
 		return "GeneratorState [rootUrl=" + rootUrl + ", urlTemplate=" + urlTemplate + "]";
 	}
 
-	public URLResolver getResolver() {
+	public List<URLResolver> getResolvers() {
 		return resolver;
 	}
 }
