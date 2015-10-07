@@ -57,13 +57,41 @@ public final class ResourceUtils {
         return getVersion(getIdentityCapability(resource));
     }
 
+    @SuppressWarnings("unused")
     public static Capability getContentCapability(Resource resource) throws IllegalArgumentException {
         List<Capability> caps = resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE);
-        if (caps == null || caps.isEmpty())
+
+        if (caps == null)
             throw new IllegalArgumentException("Resource has no content");
-        if (caps.size() > 1)
-            throw new IllegalArgumentException("Resource is schizophrenic");
-        return caps.get(0);
+
+        //A resource may have multiple capabilities and this is acceptable according to the specification
+        //to us, we should pick
+        //the first one with a URL that we understand, or the first URL if we understand none of them
+        Capability firstCap = null;
+        for (Capability c : caps) {
+
+            if (firstCap == null)
+                firstCap = c;
+
+            Object url = c.getAttributes().get("url");
+
+            if (url == null)
+                continue;
+
+            String urlString = String.valueOf(url);
+
+            try {
+                new URL(urlString);
+                return c;
+            } catch (MalformedURLException mue) {
+                // Oh well, just try the next one
+            }
+        }
+
+        if (firstCap == null)
+            throw new IllegalArgumentException("Resource has no content");
+
+        return firstCap;
     }
 
     public static URI getURI(Capability contentCapability) {
