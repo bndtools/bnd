@@ -69,7 +69,7 @@ public class RepoIndex implements ResourceIndexer {
 	 */
 	private final List<Pair<ResourceAnalyzer,Filter>> analyzers = new LinkedList<Pair<ResourceAnalyzer,Filter>>();
 
-	private URLResolver resolver;
+	private final List<URLResolver> resolvers = new ArrayList<>();
 
 	/**
 	 * Construct a default instance that uses a console logger.
@@ -249,7 +249,7 @@ public class RepoIndex implements ResourceIndexer {
 					rootURL = new File(System.getProperty("user.dir")).toURI().toURL();
 
 				String urlTemplate = config.get(ResourceIndexer.URL_TEMPLATE);
-				bundleAnalyzer.setStateLocal(new GeneratorState(rootURL.toURI().normalize(), urlTemplate, resolver));
+				bundleAnalyzer.setStateLocal(new GeneratorState(rootURL.toURI().normalize(), urlTemplate, resolvers));
 			} else {
 				bundleAnalyzer.setStateLocal(null);
 			}
@@ -399,11 +399,28 @@ public class RepoIndex implements ResourceIndexer {
 	}
 
 	/**
-	 * Set a URL resolver that calculates the reference to the file
+	 * Set a URL resolver that calculates the reference to the file This method
+	 * is deprecated as it forcibly sets the first resolver, overwriting the
+	 * previous one. This is to maintain backward compatibility with previous
+	 * versions
 	 */
-
+	@Deprecated
 	public void setURLResolver(URLResolver resolver) {
-		this.resolver = resolver;
+		if (resolvers.isEmpty()) {
+			addURLResolver(resolver);
+		} else {
+			this.resolvers.set(0, resolver);
+		}
+	}
+
+	/**
+	 * Set a URL resolver that calculates the reference to the file This method
+	 * allows multiple resolvers to be added, each resolver will be called, and
+	 * will result in a separate content capability being created for the
+	 * resource
+	 */
+	public void addURLResolver(URLResolver resolver) {
+		this.resolvers.add(resolver);
 	}
 
 }

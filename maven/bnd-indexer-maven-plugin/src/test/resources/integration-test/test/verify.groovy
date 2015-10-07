@@ -52,15 +52,12 @@ public Capability check(Repository repo, String namespace, String filter, String
 	} else {
 		URI uri = URI.create(location);
 		assert null != uri.getScheme();
-		assert "file" != uri.getScheme();
-		
-		if(uri.getScheme().startsWith("http")) {
-			HttpURLConnection con = (HttpURLConnection) uri.toURL().openConnection();
-			con.setRequestMethod("HEAD");
-			con.connect();
-			assert 2 == (con.getResponseCode() / 100);
-		}
-		
+		assert "http" == uri.getScheme() || "https" == uri.getScheme();
+
+		HttpURLConnection con = (HttpURLConnection) uri.toURL().openConnection();
+		con.setRequestMethod("HEAD");
+		con.connect();
+		assert 2 == (con.getResponseCode() / 100);
 	}
 	return content;
 }
@@ -75,6 +72,8 @@ check("${basedir}/non-transitive/target/index.xml", "${basedir}/non-transitive/t
 check("${basedir}/scoped/target/index.xml", "${basedir}/scoped/target/index.xml.gz", 24, false);
 check("${basedir}/require-local/target/index.xml", "${basedir}/require-local/target/index.xml.gz", 21, true);
 
+// The in-build needs to check that the snapshot points at the real repo
+
 Repository repo = check("${basedir}/in-build/target/index.xml", "${basedir}/in-build/target/index.xml.gz", 4, false);
 
 Capability content = check(repo, "osgi.identity", "(osgi.identity=biz.aQute.bnd)", "biz.aQute.bnd", false);
@@ -88,3 +87,17 @@ assert 300000 < content.getAttributes().get("size");
 String url = content.getAttributes().get("url").toString();
 assert !(url.substring(url.lastIndexOf('/')).contains("SNAPSHOT"))
 
+// The add-mvn needs to check that the mvn: URLs are added as well
+
+repo = check("${basedir}/add-mvn/target/index.xml", "${basedir}/non-transitive/target/index.xml.gz", 3, false);
+
+Requirement requirement = new RequirementBuilder("osgi.content")
+						.addDirective("filter", "(url=mvn*)")
+						.buildSyntheticRequirement();
+	
+Map<Requirement,Collection<Capability>> caps = repo
+						.findProviders(Collections.singleton(requirement));
+						
+// All three resources should have a mvn: URL	
+assert 3 == caps.get(requirement).size();
+	

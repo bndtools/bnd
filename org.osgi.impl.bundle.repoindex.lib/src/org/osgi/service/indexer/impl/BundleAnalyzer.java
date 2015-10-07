@@ -1,5 +1,7 @@
 package org.osgi.service.indexer.impl;
 
+import static java.util.Collections.singletonList;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +10,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -149,21 +152,24 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 
 	private void doContent(Resource resource, MimeType mimeType, List< ? super Capability> capabilities)
 			throws Exception {
-		Builder builder = new Builder().setNamespace(Namespaces.NS_CONTENT);
-
 		String sha = calculateSHA(resource);
-		builder.addAttribute(Namespaces.NS_CONTENT, sha);
+		List<String> locations = calculateLocation(resource);
 
-		String location = calculateLocation(resource);
-		builder.addAttribute(Namespaces.ATTR_CONTENT_URL, location);
+		for (String location : locations) {
+			Builder builder = new Builder().setNamespace(Namespaces.NS_CONTENT);
 
-		long size = resource.getSize();
-		if (size > 0L)
-			builder.addAttribute(Namespaces.ATTR_CONTENT_SIZE, size);
+			builder.addAttribute(Namespaces.NS_CONTENT, sha);
 
-		builder.addAttribute(Namespaces.ATTR_CONTENT_MIME, mimeType.toString());
+			builder.addAttribute(Namespaces.ATTR_CONTENT_URL, location);
 
-		capabilities.add(builder.buildCapability());
+			long size = resource.getSize();
+			if (size > 0L)
+				builder.addAttribute(Namespaces.ATTR_CONTENT_SIZE, size);
+
+			builder.addAttribute(Namespaces.ATTR_CONTENT_MIME, mimeType.toString());
+
+			capabilities.add(builder.buildCapability());
+		}
 	}
 
 	private String calculateSHA(Resource resource) throws IOException, NoSuchAlgorithmException {
@@ -189,14 +195,14 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		return Hex.toHexString(digest.digest());
 	}
 
-	private String calculateLocation(Resource resource) throws IOException, URISyntaxException {
+	private List<String> calculateLocation(Resource resource) throws IOException, URISyntaxException {
 		File file = new File(resource.getLocation()).getAbsoluteFile();
 		URI normalizedUri = file.toURI().normalize();
 		File normalizedFile = Paths.get(normalizedUri).toFile();
 
 		GeneratorState state = getStateLocal();
 		if (state == null) {
-			return cwd.relativize(normalizedUri).toString();
+			return singletonList(cwd.relativize(normalizedUri).toString());
 		} else {
 
 			//
@@ -205,17 +211,28 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			// and template calculation
 			//
 
-			URLResolver resolver = state.getResolver();
-			if (resolver != null) {
-				try {
-					URI uri = resolver.resolver(file);
-					if (uri != null)
-						return uri.toString();
+			List<URLResolver> resolvers = state.getResolvers();
+			if (resolvers != null && !resolvers.isEmpty()) {
+				List<String> uris = new ArrayList<>();
+				for (URLResolver resolver : resolvers) {
+					try {
+						URI uri = resolver.resolver(file);
+						if (uri != null) {
+							uris.add(uri.toString());
+						} else {
+							log.log(LogService.LOG_DEBUG,
+									"Resolver " + resolver + " had no output for " + normalizedUri);
+						}
+					}
+					catch (Exception e) {
+						if (log != null)
+							log.log(LogService.LOG_ERROR, "Resolver " + resolver + " failed on " + normalizedUri);
+					}
 				}
-				catch (Exception e) {
-					if (log != null)
-						log.log(LogService.LOG_ERROR,
-								"Resolver failed on " + normalizedUri + ", falling back to old method");
+				if (uris.isEmpty()) {
+					log.log(LogService.LOG_INFO, "No URIs found by URI resolvers, falling back to old method");
+				} else {
+					return uris;
 				}
 			}
 
@@ -235,9 +252,9 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 				Version version = (urlTemplate.indexOf("%v") == -1) ? Version.emptyVersion : Util.getVersion(resource);
 				urlTemplate = urlTemplate.replaceAll("%s", "%1\\$s").replaceAll("%f", "%2\\$s")
 						.replaceAll("%p", "%3\\$s").replaceAll("%v", "%4\\$s");
-				return String.format(urlTemplate, bsn, fileName, relativeDir.toString(), version);
+				return singletonList(String.format(urlTemplate, bsn, fileName, relativeDir.toString(), version));
 			} else {
-				return relativeDir.resolve(fileName).toString();
+				return singletonList(relativeDir.resolve(fileName).toString());
 			}
 		}
 	}
