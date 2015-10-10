@@ -151,6 +151,12 @@ public class bnd extends Processor {
 	private Workspace			ws;
 	private char[]				password;
 
+	private static final ThreadLocal<Boolean>	noExit		= new ThreadLocal<Boolean>() {
+																protected Boolean initialValue() {
+																	return false;
+																};
+															};
+
 	static Pattern JARCOMMANDS = Pattern.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
 	static Pattern	COMMAND	= Pattern.compile("\\w[\\w\\d]+");
@@ -198,7 +204,15 @@ public class bnd extends Processor {
 		finally {
 			main.close();
 		}
-		System.exit(0);
+		exitWithCode(0);
+	}
+
+	/**
+	 * For testing
+	 */
+	static void mainNoExit(String args[]) throws Exception {
+		noExit.set(true);
+		main(args);
 	}
 
 	public void start(String args[]) throws Exception {
@@ -363,7 +377,7 @@ public class bnd extends Processor {
 			System.err.flush();
 			System.err.flush();
 			Thread.sleep(1000);
-			System.exit(getErrors().size());
+			exitWithCode(getErrors().size());
 		}
 	}
 
@@ -4177,6 +4191,12 @@ public class bnd extends Processor {
 					IO.copy(result.getValue().openInputStream(), output);
 				}
 			}
+		}
+	}
+
+	private static void exitWithCode(int code) {
+		if (!noExit.get()) {
+			System.exit(code);
 		}
 	}
 }
