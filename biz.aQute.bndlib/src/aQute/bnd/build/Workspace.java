@@ -1,6 +1,7 @@
 package aQute.bnd.build;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -75,6 +77,9 @@ public class Workspace extends Processor {
 	public static final String	CACHEDIR	= "cache/" + About.CURRENT;
 
 	public static final String STANDALONE_REPO_CLASS = "aQute.bnd.deployer.repository.FixedIndexedRepo";
+
+	private final Pattern						EMBEDDED_REPO_TESTING_PATTERN	= Pattern
+			.compile(".*biz\\.aQute\\.bnd\\.embedded-repo-(.*)\\.jar");
 
 	static Map<File,WeakReference<Workspace>>	cache			= newHashMap();
 	static Processor							defaults		= null;
@@ -437,12 +442,21 @@ public class Workspace extends Processor {
 					if (in != null)
 						unzip(in, root);
 					else {
-						if (root.isDirectory() && root.list().length >= 2) {
-							trace("Assuming I am in a bnd test ...  the embedded repo is missig but it exists on the file system");
-							return true;
+						// We may be in unit test, look for
+						// biz.aQute.bnd.embedded-repo-<version>.jar on the
+						// classpath
+						StringTokenizer classPathTokenizer = new StringTokenizer(
+								System.getProperty("java.class.path", ""), File.pathSeparator);
+						while (classPathTokenizer.hasMoreTokens()) {
+							String classPathEntry = classPathTokenizer.nextToken().trim();
+							if (EMBEDDED_REPO_TESTING_PATTERN.matcher(classPathEntry).matches()) {
+								in = new FileInputStream(classPathEntry);
+								unzip(in, root);
+								return true;
+							}
 						}
-
-						error("Couldn't find embedded-repo.jar in bundle ");
+						error("Couldn't find biz.aQute.bnd.embedded-repo on the classpath");
+						return false;
 					}
 					return true;
 				} else
