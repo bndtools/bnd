@@ -1,0 +1,4 @@
+-standalone: repo/index.xml
+-runfw: org.apache.felix.framework
+-runee: JavaSE-1.7
+-runbundles: printAndExit

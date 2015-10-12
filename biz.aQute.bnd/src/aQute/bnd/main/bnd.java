@@ -954,10 +954,16 @@ public class bnd extends Processor {
 			}
 		} else {
 			File f = getFile(args.get(0));
-			run = Workspace.getRun(f);
-			if (run == null) {
-				messages.NoRunFile(f);
-				return;
+
+			File dir = f.getParentFile();
+			File wsdir = dir.getParentFile();
+
+			if (wsdir == null) {
+				// We are in the filesystem root?? Create a standalone run.
+				run = Run.createRun(null, f);
+			} else {
+				Workspace workspace = Workspace.getWorkspaceWithoutException(wsdir);
+				run = Run.createRun(workspace, f);
 			}
 		}
 		verifyDependencies(run, verify, false);
