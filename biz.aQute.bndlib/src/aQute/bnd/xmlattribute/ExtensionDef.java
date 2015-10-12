@@ -58,6 +58,8 @@ public class ExtensionDef {
 		if (namespaces != null) {
 			for (Map.Entry<XMLAttribute,Annotation> entry : attributes.entrySet()) {
 				String prefix = namespaces.getPrefix(entry.getKey().namespace());
+				if (prefix.length() > 0)
+					prefix = prefix + ":";
 				Annotation a = entry.getValue();
 				Map<String,String> props = finder.getDefaults(a);
 				for (String key : entry.getValue().keySet()) {
@@ -87,7 +89,7 @@ public class ExtensionDef {
 								key = map.substring(match.length());
 						}
 					}
-					tag.addAttribute(prefix + ":" + key, prop.getValue());
+					tag.addAttribute(prefix + key, prop.getValue());
 				}
 			}
 		}

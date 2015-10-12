@@ -267,6 +267,9 @@ public class AnnotationReader extends ClassDataCollector {
 	}
 
 	private void doXmlAttribute(Annotation annotation, XMLAttribute xmlAttr) {
+		// make sure doc is namespace aware, since we are adding namespaced
+		// attributes.
+		component.updateVersion(V1_1);
 		if (member == null)
 			component.addExtensionAttribute(xmlAttr, annotation);
 		else {
