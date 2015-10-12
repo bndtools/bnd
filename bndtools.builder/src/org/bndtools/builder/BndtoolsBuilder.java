@@ -339,7 +339,29 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             if (model == null)
                 return;
 
-            model.clean();
+            boolean interrupted = Thread.interrupted();
+            try {
+                // We must hold the lock before using non-thread safe bndlib.
+                final ReentrantLock bndLock = Central.getBndLock();
+                if (bndLock.tryLock(5, TimeUnit.SECONDS)) {
+                    try {
+                        model.clean();
+                    } finally {
+                        bndLock.unlock();
+                    }
+                } else {
+                    logger.logWarning("Unable to acquire lock to clean project " + myProject.getName(), null);
+                    return;
+                }
+            } catch (InterruptedException e) {
+                logger.logWarning("Unable to acquire lock to clean project " + myProject.getName(), e);
+                interrupted = true;
+                return;
+            } finally {
+                if (interrupted) {
+                    Thread.currentThread().interrupt();
+                }
+            }
 
             // Tell Eclipse what we did...
             IFolder targetFolder = myProject.getFolder(calculateTargetDirPath(model));
