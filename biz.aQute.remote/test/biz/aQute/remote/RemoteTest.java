@@ -2,9 +2,14 @@ package biz.aQute.remote;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+
+import junit.framework.TestCase;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -19,7 +24,6 @@ import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.remote.api.Agent;
 import aQute.remote.plugin.LauncherSupervisor;
-import junit.framework.TestCase;
 
 public class RemoteTest extends TestCase {
 	private int						random;
@@ -185,6 +189,40 @@ public class RemoteTest extends TestCase {
 		supervisor.getAgent().update(null);
 		assertNull(context.getBundle(t1.getAbsolutePath()));
 		assertNull(context.getBundle(t2.getAbsolutePath()));
+	}
+
+	public void testUpdateOrder() throws Exception {
+		LauncherSupervisor supervisor = new LauncherSupervisor();
+		supervisor.connect("localhost", Agent.DEFAULT_PORT);
+
+		List<String> bundles = new ArrayList<String>();
+		LinkedHashMap<String,String> update = new LinkedHashMap<String,String>();
+
+		for (int i = 0; i < 50; i++) {
+			String name = UUID.randomUUID().toString();
+			File f = create(name, new Version(1, 0, 0));
+			assertTrue(f.isFile());
+
+			String sha = supervisor.addFile(f);
+
+			update.put(f.getAbsolutePath(), sha);
+			bundles.add(name);
+		}
+
+		String errors = supervisor.getAgent().update(update);
+		assertNull(errors);
+
+		//
+		// Now check installed bundle order
+		//
+		Bundle[] installed = context.getBundles();
+		for (int i = 2; i < installed.length; i++) {
+			Bundle b = installed[i];
+			assertTrue(b.getLocation().endsWith(bundles.get(i - 2) + "-1.0.0.jar"));
+		}
+
+		// delete
+		supervisor.getAgent().update(null);
 	}
 
 	private File create(String bsn, Version v) throws Exception {
