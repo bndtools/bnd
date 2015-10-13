@@ -100,7 +100,7 @@ public class AnnotationReader extends ClassDataCollector {
 	FieldDef				member;
 	TypeRef					className;
 	Analyzer				analyzer;
-	MultiMap<String,String>	methods		= new MultiMap<String,String>();
+	MultiMap<String,Clazz.MethodDef>						methods						= new MultiMap<String,Clazz.MethodDef>();
 	TypeRef					extendsClass;
 	boolean					baseclass	= true;
 	final EnumSet<Options>	options;
@@ -179,10 +179,13 @@ public class AnnotationReader extends ClassDataCollector {
 			return null;
 
 		if (methods.containsKey(value)) {
-			for (String descriptor : methods.get(value)) {
-				String service = determineReferenceType(descriptor, rdef, rdef.service, null);
-				if (service != null)
+			for (Clazz.MethodDef method : methods.get(value)) {
+				String service = determineReferenceType(method.getDescriptor().toString(), rdef, rdef.service, null);
+				if (service != null) {
+					if (!method.isProtected())
+						component.updateVersion(V1_1);
 					return value;
+				}
 			}
 			analyzer.warning(
 					"None of the methods related to '%s' in the class '%s' named '%s' for service type '%s' have an acceptable signature. The descriptors found are:",
@@ -191,8 +194,8 @@ public class AnnotationReader extends ClassDataCollector {
 			// until we know that there was no match
 			// We need to include the method name in the warning or it may be
 			// ignored as duplicate (from another non-match)
-			for (String descriptor : methods.get(value)) {
-				analyzer.warning("  methodname: %s descriptor: %s", value, descriptor)
+			for (Clazz.MethodDef method : methods.get(value)) {
+				analyzer.warning("  methodname: %s descriptor: %s", value, method.getDescriptor().toString())
 						.details(getDetails(rdef, ErrorType.UNSET_OR_MODIFY_WITH_WRONG_SIGNATURE));
 			}
 		}
@@ -267,6 +270,9 @@ public class AnnotationReader extends ClassDataCollector {
 	}
 
 	private void doXmlAttribute(Annotation annotation, XMLAttribute xmlAttr) {
+		// make sure doc is namespace aware, since we are adding namespaced
+		// attributes.
+		component.updateVersion(V1_1);
 		if (member == null)
 			component.addExtensionAttribute(xmlAttr, annotation);
 		else {
@@ -300,6 +306,8 @@ public class AnnotationReader extends ClassDataCollector {
 		if ("activate".equals(member.getName()) && m.matches()) {
 			component.activate = member.getName();
 			hasMapReturnType = m.group(3) != null;
+			if (!member.isProtected())
+				component.updateVersion(V1_1);
 		} else {
 			m = LIFECYCLEDESCRIPTORDS11.matcher(methodDescriptor);
 			if (m.matches()) {
@@ -339,6 +347,8 @@ public class AnnotationReader extends ClassDataCollector {
 		if ("deactivate".equals(member.getName()) && m.matches()) {
 			component.deactivate = member.getName();
 			hasMapReturnType = m.group(3) != null;
+			if (!member.isProtected())
+				component.updateVersion(V1_1);
 		} else {
 			m = DEACTIVATEDESCRIPTORDS11.matcher(methodDescriptor);
 			if (m.matches()) {
@@ -549,7 +559,7 @@ public class AnnotationReader extends ClassDataCollector {
 		if (member != null) {
 			if (member instanceof MethodDef) {
 				def.bindDescriptor = member.getDescriptor().toString();
-				if (!(member.isProtected() || member.isPublic()))
+				if (!member.isProtected())
 					def.updateVersion(V1_1);
 				def.bind = member.getName();
 				if (def.name == null) {
@@ -996,7 +1006,7 @@ public class AnnotationReader extends ClassDataCollector {
 			return;
 
 		this.member = method;
-		methods.add(method.getName(), method.getDescriptor().toString());
+		methods.add(method.getName(), method);
 	}
 
 	@Override

@@ -172,6 +172,126 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 	}
 
+	@Component
+	public static class DS11_1_very_basic {
+
+		@Activate
+		void activate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Deactivate
+		protected void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Reference
+		protected void setLogService(@SuppressWarnings("unused") LogService log) {}
+
+		protected void unsetLogService(@SuppressWarnings("unused") LogService log) {}
+	}
+
+	@Component
+	public static class DS11_2_very_basic {
+
+		@Activate
+		protected void activate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Deactivate
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Reference
+		protected void setLogService(@SuppressWarnings("unused") LogService log) {}
+
+		protected void unsetLogService(@SuppressWarnings("unused") LogService log) {}
+	}
+
+	@Component
+	public static class DS11_3_very_basic {
+
+		@Activate
+		protected void activate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Deactivate
+		protected void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Reference
+		void setLogService(@SuppressWarnings("unused") LogService log) {}
+
+		protected void unsetLogService(@SuppressWarnings("unused") LogService log) {}
+	}
+
+	@Component
+	public static class DS11_4_very_basic {
+
+		@Activate
+		protected void activate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Deactivate
+		protected void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Reference
+		protected void setLogService(@SuppressWarnings("unused") LogService log) {}
+
+		void unsetLogService(@SuppressWarnings("unused") LogService log) {}
+	}
+
+	@Component
+	public static class DS11_5_very_basic {
+
+		@Activate
+		public void activate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Deactivate
+		protected void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Reference
+		protected void setLogService(@SuppressWarnings("unused") LogService log) {}
+
+		protected void unsetLogService(@SuppressWarnings("unused") LogService log) {}
+	}
+
+	@Component
+	public static class DS11_6_very_basic {
+
+		@Activate
+		protected void activate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Deactivate
+		public void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Reference
+		protected void setLogService(@SuppressWarnings("unused") LogService log) {}
+
+		protected void unsetLogService(@SuppressWarnings("unused") LogService log) {}
+	}
+
+	@Component
+	public static class DS11_7_very_basic {
+
+		@Activate
+		protected void activate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Deactivate
+		protected void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Reference
+		public void setLogService(@SuppressWarnings("unused") LogService log) {}
+
+		protected void unsetLogService(@SuppressWarnings("unused") LogService log) {}
+	}
+
+	@Component
+	public static class DS11_8_very_basic {
+
+		@Activate
+		protected void activate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Deactivate
+		protected void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@Reference
+		protected void setLogService(@SuppressWarnings("unused") LogService log) {}
+
+		public void unsetLogService(@SuppressWarnings("unused") LogService log) {}
+	}
+
 	/**
 	 * Check that a DS 1.1 compotible class ends up with the DS 1.1 namespace
 	 * and appropriate activate/deactivate attributes
@@ -397,6 +517,19 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 		{
 			//
+			// Test package methods >> DS 1.1
+			//
+			verifyDS11VeryBasic(jar, DS11_1_very_basic.class);
+			verifyDS11VeryBasic(jar, DS11_2_very_basic.class);
+			verifyDS11VeryBasic(jar, DS11_3_very_basic.class);
+			verifyDS11VeryBasic(jar, DS11_4_very_basic.class);
+			verifyDS11VeryBasic(jar, DS11_5_very_basic.class);
+			verifyDS11VeryBasic(jar, DS11_6_very_basic.class);
+			verifyDS11VeryBasic(jar, DS11_7_very_basic.class);
+			verifyDS11VeryBasic(jar, DS11_8_very_basic.class);
+		}
+		{
+			//
 			// Test the DS 1.1 defaults
 			//
 
@@ -619,6 +752,47 @@ public class DSAnnotationTest extends BndTestCase {
 		// we'll need to update this test.
 		// one is plain, other has cardinality multiple.
 		checkRequires(a, true, LogService.class.getName(), LogService.class.getName());
+	}
+
+	private void verifyDS11VeryBasic(Jar jar, Class< ? > clazz) throws Exception, XPathExpressionException {
+		String className = clazz.getName();
+
+		Resource r = jar.getResource("OSGI-INF/" + className + ".xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0"); // #136
+																											// was
+																											// http://www.osgi.org/xmlns/scr/1.1.0
+
+		// Test the defaults
+		xt.assertAttribute(className,
+				"scr:component/implementation/@class");
+
+		// Default must be the implementation class
+		xt.assertAttribute(className, "scr:component/@name");
+
+		xt.assertAttribute("", "scr:component/@configuration-policy");
+		xt.assertAttribute("", "scr:component/@immediate");
+		xt.assertAttribute("", "scr:component/@enabled");
+		xt.assertAttribute("", "scr:component/@factory");
+		xt.assertAttribute("", "scr:component/service/@servicefactory");
+		xt.assertAttribute("", "scr:component/@configuration-pid");
+		xt.assertAttribute("activate", "scr:component/@activate");
+		xt.assertAttribute("deactivate", "scr:component/@deactivate");
+		xt.assertAttribute("", "scr:component/@modified");
+
+		xt.assertAttribute("0", "count(scr:component/properties)");
+		xt.assertAttribute("0", "count(scr:component/property)");
+
+		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
+		xt.assertAttribute("", "scr:component/reference[1]/@target");
+		xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
+		xt.assertAttribute("unsetLogService", "scr:component/reference[1]/@unbind");
+		xt.assertAttribute("", "scr:component/reference[1]/@cardinality");
+		xt.assertAttribute("", "scr:component/reference[1]/@policy");
+		xt.assertAttribute("", "scr:component/reference[1]/@target");
+		xt.assertAttribute("", "scr:component/reference[1]/@policy-option");
 	}
 
 	/**
@@ -2689,6 +2863,47 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("baz", "scr:component/reference[3]/@foo:stringAttr2");
 		xt.assertAttribute("B", "scr:component/reference[3]/@foo:fooAttr2");
 		xt.assertAttribute("false", "scr:component/reference[3]/@foo:booleanAttr2");
+	}
+
+	@TestExtensions(stringAttr = "bar", fooAttr = Foo.A)
+	@Component
+	public static class ExtraAttributes10 {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		protected void activate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+		@TestRefExtensions(stringAttr2 = "ignore", fooAttr2 = Foo.A)
+		@Deactivate
+		protected void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
+
+	}
+
+	/**
+	 * test that an extension attribute will ensure at least a 1.1 namespace, so
+	 * the extension namespace is meaningful
+	 * 
+	 * @throws Exception
+	 */
+	public void testExtraAttributes10() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$ExtraAttributes*");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+
+		String name = ExtraAttributes10.class.getName();
+		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0", "foo",
+				"org.foo.extensions.v1");
+		// This wll check that the spec namespace is 1.1
+		xt.assertAttribute(name, "scr:component/implementation/@class");
+
 	}
 
 	@XMLAttribute(namespace = "org.foo.extensions.v2", prefix = "foo")
