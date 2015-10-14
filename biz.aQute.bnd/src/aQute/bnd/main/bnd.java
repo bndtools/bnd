@@ -1069,12 +1069,6 @@ public class bnd extends Processor {
 
 	@Description("Package a bnd or bndrun file into a single jar that executes with java -jar <>.jar")
 	public void _package(packageOptions opts) throws Exception {
-		Project project = getProject(); // default project
-		if (project == null) {
-			error("Packaging only works inside a project directory (needs bnd.bnd file)");
-			return;
-		}
-
 		List<String> cmdline = opts._arguments();
 		File output = null;
 
@@ -1095,36 +1089,38 @@ public class bnd extends Processor {
 		}
 
 		String profile = opts.profile() == null ? "exec" : opts.profile();
-		if (opts.jpm())
-			project.setProperty(Constants.PACKAGE, "jpm");
-
-		// TODO Not sure if we need a project actually?
-		project.build();
 
 		if (cmdline.isEmpty())
 			cmdline.add(Project.BNDFILE); // default project itself
 
 		for (String path : cmdline) {
-
 			File file = getFile(path);
 			if (!file.isFile()) {
 				messages.NoSuchFile_(file);
 			} else {
+				Run run;
+
+				File dir = file.getParentFile();
+				File workspaceDir = dir.getParentFile();
+				if (workspaceDir == null) {
+					// We are in the filesystem root?? Create a standalone run.
+					run = Run.createRun(null, file);
+				} else {
+					Workspace ws = Workspace.getWorkspaceWithoutException(workspaceDir);
+					run = Run.createRun(ws, file);
+				}
 
 				// Tricky because we can be run inside the context of a
 				// project (in which case
 				// we need to inherit from the project or outside.
 
-				Workspace ws = project.getWorkspace();
-				project = new Project(ws, getBase(), file);
-				project.setProperty(PROFILE, profile);
-				project.use(this);
-				if (opts.jpm()) {
-					project.setProperty(Constants.PACKAGE, Constants.PACKAGE_JPM);
-				}
+				run.setProperty(PROFILE, profile);
+				run.use(this);
+				if (opts.jpm())
+					run.setProperty(Constants.PACKAGE, Constants.PACKAGE_JPM);
 
 				try {
-					Jar jar = project.pack(profile);
+					Jar jar = run.pack(profile);
 					path = path.replaceAll(".bnd(run)?$", "") + ".jar";
 					File out = output;
 					if (output.isDirectory())
@@ -1133,9 +1129,9 @@ public class bnd extends Processor {
 					jar.close();
 				}
 				catch (Exception e) {
-					messages.ForProject_File_FailedToCreateExecutableException_(project, path, e);
+					messages.ForProject_File_FailedToCreateExecutableException_(run, path, e);
 				}
-				getInfo(project);
+				getInfo(run);
 			}
 		}
 	}

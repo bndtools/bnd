@@ -1,8 +1,10 @@
 package aQute.bnd.main;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 
+import aQute.bnd.osgi.Jar;
 import junit.framework.TestCase;
 
 public class TestBndMain extends TestCase {
@@ -55,6 +57,20 @@ public class TestBndMain extends TestCase {
 		});
 		expectNoError();
 		expectOutput("Gesundheit!");
+	}
+
+	public void testPackageBndrun() throws Exception {
+		bnd.mainNoExit(new String[] {
+				"package", "-o", "generated/export.jar", "testdata/standalone/standalone.bndrun"
+		});
+
+		// validate exported jar content
+		try (Jar result = new Jar(new File("generated/export.jar"))) {
+			assertNotNull("missing entry in jar", result.getResource("jar/biz.aQute.launcher-3.1.0.jar"));
+			assertNotNull("missing entry in jar", result.getResource("jar/org.apache.felix.framework-5.2.0.jar"));
+			assertNotNull("missing entry in jar", result.getResource("jar/printAndExit-1.0.0.jar"));
+		}
+		expectNoError();
 	}
 
 	private void expectOutput(String expected) {
