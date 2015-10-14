@@ -1,46 +1,82 @@
 package aQute.bnd.deployer.repository;
 
-import java.io.*;
-import java.net.*;
-import java.security.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.osgi.service.coordinator.*;
-import org.osgi.service.log.*;
+import org.osgi.service.coordinator.Coordination;
+import org.osgi.service.coordinator.Coordinator;
+import org.osgi.service.coordinator.Participant;
+import org.osgi.service.log.LogService;
 
-import aQute.bnd.deployer.repository.api.*;
-import aQute.bnd.filerepo.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
+import aQute.bnd.filerepo.FileRepo;
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Verifier;
-import aQute.bnd.service.*;
+import aQute.bnd.service.Actionable;
+import aQute.bnd.service.Refreshable;
+import aQute.bnd.service.RepositoryListenerPlugin;
+import aQute.bnd.service.ResourceHandle;
 import aQute.bnd.service.ResourceHandle.Location;
-import aQute.bnd.version.*;
-import aQute.lib.hex.*;
-import aQute.lib.io.*;
-import aQute.libg.cryptography.*;
+import aQute.bnd.version.Version;
+import aQute.bnd.version.VersionRange;
+import aQute.lib.hex.Hex;
+import aQute.lib.io.IO;
+import aQute.libg.cryptography.SHA1;
+import aQute.libg.cryptography.SHA256;
 
 public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, Participant, Actionable {
+	private final String		UPWARDS_ARROW				= " \u2191";
+	private final String		DOWNWARDS_ARROW				= " \u2193";
+	private static final String	CACHE_PATH					= ".cache";
+	public static final String	PROP_LOCAL_DIR				= "local";
+	public static final String	PROP_READONLY				= "readonly";
+	public static final String	PROP_PRETTY					= "pretty";
+	public static final String	PROP_OVERWRITE				= "overwrite";
+	public static final String	PROP_ONLYDIRS				= "onlydirs";
+	public static final String	PROP_FILE_INCLUDE_POLICY	= "file.include.policy";
 
-	private final String							UPWARDS_ARROW					= " \u2191";
-	private final String							DOWNWARDS_ARROW					= " \u2193";
-	Pattern	REPO_FILE	= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+)(-[-a-zA-z0-9_]+)?\\.(jar|lib)");
-	private static final String			CACHE_PATH				= ".cache";
-	public static final String			PROP_LOCAL_DIR			= "local";
-	public static final String			PROP_READONLY			= "readonly";
-	public static final String			PROP_PRETTY				= "pretty";
-	public static final String			PROP_OVERWRITE			= "overwrite";
-	public static final String			PROP_ONLYDIRS			= "onlydirs";
-	
+	static final String	VERSIONED_BUNDLE_PATTERN	= "([-a-zA-z0-9_\\.]+)-([0-9\\.]+)(-[-a-zA-z0-9_]+)?\\.(jar|lib)";
+	static final String	ALL_JARS_PATTERN			= ".*jar$";
+	static final String	ALL_JARS_AND_LIBS_PATTERN	= ".*(jar|lib)$";
+
+	public enum FileIncludePolicy {
+		VERSIONED_BUNDLE(VERSIONED_BUNDLE_PATTERN), ALL_JARS(ALL_JARS_PATTERN), ALL_JARS_AND_LIBS(
+				ALL_JARS_AND_LIBS_PATTERN);
+
+		private Pattern pattern;
+
+		FileIncludePolicy(String p_regexp) {
+			this.pattern = Pattern.compile(p_regexp);
+		}
+	}
+
 	@SuppressWarnings("deprecation")
-	private boolean						readOnly;
-	private boolean						pretty					= false;
-	private boolean						overwrite				= true;
-	private File						storageDir;
-	private String				onlydirs				= null;
+	private boolean	readOnly;
+	private boolean	pretty		= false;
+	private boolean	overwrite	= true;
+	private File	storageDir;
+	private String	onlydirs	= null;
+	private Pattern	includePolicy;
 
 	// @GuardedBy("newFilesInCoordination")
-	private final List<URI>				newFilesInCoordination	= new LinkedList<URI>();
+	private final List<URI> newFilesInCoordination = new LinkedList<URI>();
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -69,6 +105,30 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			throw new IllegalArgumentException(String.format(
 					"Cannot create repository cache: '%s' already exists but is not directory.",
 					cacheDir.getAbsolutePath()));
+
+		setIncludePolicy(map);
+	}
+
+	private void setIncludePolicy(Map<String,String> props) {
+		String policy = props.get(PROP_FILE_INCLUDE_POLICY);
+		if (policy != null && !policy.isEmpty()) {
+			try {
+				FileIncludePolicy spec = FileIncludePolicy.valueOf(policy);
+				includePolicy = spec.pattern;
+			}
+			// this means the policy was not recognized, so try to interpret it
+			// as a regex
+			catch (IllegalArgumentException e) {
+				includePolicy = Pattern.compile(policy);
+			}
+			// use the default
+		} else {
+			includePolicy = FileIncludePolicy.VERSIONED_BUNDLE.pattern;
+		}
+	}
+
+	Pattern includePolicy() {
+		return this.includePolicy;
 	}
 
 	@Override
@@ -89,9 +149,10 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 				}
 			}
 			catch (Exception e) {
-				logService.log(LogService.LOG_ERROR, String.format(
-						"Unable to load/generate index file '%s' for repository type %s", indexFile,
-						contentProvider.getName()), e);
+				logService.log(LogService.LOG_ERROR,
+						String.format("Unable to load/generate index file '%s' for repository type %s", indexFile,
+								contentProvider.getName()),
+						e);
 			}
 		}
 
@@ -100,8 +161,14 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	}
 
 	/**
-	 * @param contentProvider the repository content provider
-	 * @return the filename of the index on local storage
+	 * <<<<<<< HEAD
+	 * 
+	 * @param contentProvider
+	 *            the repository content provider
+	 * @return the filename of the index on local storage =======
+	 * @param contentProvider
+	 *            the repository content provider @return the filename of the
+	 *            index on local storage >>>>>>> stash
 	 */
 	private File getIndexFile(IRepositoryContentProvider contentProvider) {
 		String indexFileName = contentProvider.getDefaultIndexName(pretty);
@@ -121,8 +188,9 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 				generateIndex(indexFile, provider);
 			}
 			catch (Exception e) {
-				logService.log(LogService.LOG_ERROR, String.format(
-						"Unable to regenerate index file '%s' for repository type %s", indexFile, provider.getName()),
+				logService.log(LogService.LOG_ERROR,
+						String.format("Unable to regenerate index file '%s' for repository type %s", indexFile,
+								provider.getName()),
 						e);
 			}
 		}
@@ -168,7 +236,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	}
 
 	@SuppressWarnings("deprecation")
-	private void gatherFiles(Set<File> allFiles) throws Exception {
+	void gatherFiles(Set<File> allFiles) throws Exception {
 		if (!storageDir.isDirectory())
 			return;
 
@@ -182,7 +250,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			}
 		}
 
-		listRecurse(REPO_FILE, onlydirsFiles, storageDir, storageDir, files);
+		listRecurse(includePolicy, onlydirsFiles, storageDir, storageDir, files);
 
 		allFiles.addAll(files);
 	}
@@ -264,8 +332,8 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	}
 
 	protected File putArtifact(File tmpFile) throws Exception {
-		assert (tmpFile != null);
-		assert (tmpFile.isFile());
+		assert(tmpFile != null);
+		assert(tmpFile.isFile());
 
 		init();
 
@@ -277,8 +345,8 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 			File dir = new File(storageDir, bsn);
 			if (dir.exists() && !dir.isDirectory())
-				throw new IllegalArgumentException("Path already exists but is not a directory: "
-						+ dir.getAbsolutePath());
+				throw new IllegalArgumentException(
+						"Path already exists but is not a directory: " + dir.getAbsolutePath());
 			if (!dir.exists() && !dir.mkdirs()) {
 				throw new IOException("Could not create directory " + dir);
 			}
@@ -427,21 +495,21 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			public void run() {
 				regenerateAllIndexes();
 			}
-			
+
 		});
-		if ( target.length == 3 ) {
+		if (target.length == 3) {
 			String bsn = (String) target[1];
 			String version = (String) target[2];
-			
+
 			@SuppressWarnings("deprecation")
 			FileRepo storageRepo = new FileRepo(storageDir);
 			@SuppressWarnings("deprecation")
-			final File f = storageRepo.get(bsn, new VersionRange(version, version),0);
-			if ( f != null) {
+			final File f = storageRepo.get(bsn, new VersionRange(version, version), 0);
+			if (f != null) {
 				map.put("Delete", new Runnable() {
 
 					public void run() {
-						deleteEntry(f);						
+						deleteEntry(f);
 						regenerateAllIndexes();
 					}
 
@@ -449,36 +517,36 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 						File parent = f.getParentFile();
 						f.delete();
 						File[] listFiles = parent.listFiles();
-						if ( listFiles.length == 1 && listFiles[0].getName().endsWith("-latest.jar"))
+						if (listFiles.length == 1 && listFiles[0].getName().endsWith("-latest.jar"))
 							listFiles[0].delete();
-						
+
 						listFiles = parent.listFiles();
-						if ( listFiles.length == 0) 
+						if (listFiles.length == 0)
 							IO.delete(parent);
 					}
-					
+
 				});
 			}
-			
+
 		}
 		return map;
 	}
 
 	public String tooltip(Object... target) throws Exception {
-		if ( target == null || target.length==0)
-			return "LocalIndexedRepo @ " + getLocation(); 
-		
-		if ( target.length==2) {
+		if (target == null || target.length == 0)
+			return "LocalIndexedRepo @ " + getLocation();
+
+		if (target.length == 2) {
 			ResourceHandle h = getHandle(target);
-			if ( h == null) {
+			if (h == null) {
 				regenerateAllIndexes();
 				refresh();
 				return null;
 			}
-			if ( h.getLocation() == Location.remote) {
+			if (h.getLocation() == Location.remote) {
 				return h.getName() + " (remote, not yet cached)";
 			}
-			
+
 			return h.request().getAbsolutePath() + "\n" + SHA1.digest(h.request()).asHex() + "\n" + h.getLocation();
 		}
 		return null;
@@ -487,9 +555,9 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	private ResourceHandle getHandle(Object... target) throws Exception {
 		String bsn = (String) target[0];
 		Version v = (Version) target[1];
-		VersionRange r = new VersionRange("["+v.getWithoutQualifier()+","+v.getWithoutQualifier()+"]");
-		ResourceHandle[] handles = getHandles(bsn,r.toString());
-		if ( handles==null || handles.length==0) {
+		VersionRange r = new VersionRange("[" + v.getWithoutQualifier() + "," + v.getWithoutQualifier() + "]");
+		ResourceHandle[] handles = getHandles(bsn, r.toString());
+		if (handles == null || handles.length == 0) {
 			return null;
 		}
 		ResourceHandle h = handles[0];
@@ -497,34 +565,34 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	}
 
 	public String title(Object... target) throws Exception {
-		if ( target == null)
+		if (target == null)
 			return null;
-		
-		if ( target.length==2) {
+
+		if (target.length == 2) {
 			ResourceHandle handle = getHandle(target);
-			if ( handle != null) {
+			if (handle != null) {
 				String where = "";
-				switch( handle.getLocation()) {
+				switch (handle.getLocation()) {
 					case local :
 						where = "";
 						break;
-						
+
 					case remote :
 						where = UPWARDS_ARROW;
 						break;
-						
+
 					case remote_cached :
 						where = DOWNWARDS_ARROW;
 						break;
 					default :
 						where = "?";
 						break;
-					
+
 				}
 				return target[1] + " " + where;
 			}
 		}
-		
+
 		return null;
 	}
 }
