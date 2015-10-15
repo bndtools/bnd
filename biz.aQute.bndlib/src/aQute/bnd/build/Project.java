@@ -1623,6 +1623,8 @@ public class Project extends Processor {
 		if (isNoBundles())
 			return null;
 
+		versionMap.clear();
+
 		//
 		// #761 tstamp can vary between invocations in one build
 		// Macro can handle a @tstamp time so we freeze the time at
