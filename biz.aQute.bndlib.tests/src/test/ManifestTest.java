@@ -1,14 +1,24 @@
 package test;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
-import java.util.regex.*;
-import java.util.zip.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.jar.Attributes;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
+import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class ManifestTest extends TestCase {
@@ -122,10 +132,10 @@ public class ManifestTest extends TestCase {
 		assertEquals(69, m.getMainAttributes().getValue("H69").length());
 
 		assertTrue(Pattern.compile("H65: \\d{65}\r\n").matcher(ms).find());
-		assertTrue(Pattern.compile("H66: \\d{66}\r\n").matcher(ms).find());
-		assertTrue(Pattern.compile("H67: \\d{67}\r\n").matcher(ms).find());
-		assertTrue(Pattern.compile("H68: \\d{67}\r\n 7\r\n").matcher(ms).find());
-		assertTrue(Pattern.compile("H69: \\d{67}\r\n 78\r\n").matcher(ms).find());
+		assertTrue(Pattern.compile("H66: \\d{65}\r\n \\d{1}\r\n").matcher(ms).find());
+		assertTrue(Pattern.compile("H67: \\d{65}\r\n \\d{2}\r\n").matcher(ms).find());
+		assertTrue(Pattern.compile("H68: \\d{65}\r\n \\d{3}\r\n").matcher(ms).find());
+		assertTrue(Pattern.compile("H69: \\d{65}\r\n \\d{4}\r\n").matcher(ms).find());
 	}
 
 	public static void testNoManifest() throws Exception {

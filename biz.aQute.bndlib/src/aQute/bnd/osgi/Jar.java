@@ -436,9 +436,12 @@ public class Jar implements Closeable {
 	 * (! this is where the manifest screwed up as well when 16 bit unicodes
 	 * were used). <p> As a bonus, we can now sort the manifest!
 	 */
-	static byte[] CONTINUE = new byte[] {
-			'\r', '\n', ' '
-	};
+	private final static byte[]	EOL			= new byte[] {
+													'\r', '\n'
+												};
+	private final static byte[]	SEPARATOR	= new byte[] {
+													':', ' '
+												};
 
 	/**
 	 * Main function to output a manifest properly in UTF-8. @param manifest The
@@ -454,7 +457,7 @@ public class Jar implements Closeable {
 			keys.add(o.toString());
 
 		for (String key : keys) {
-			write(out, 0, "\r\n");
+			out.write(EOL);
 			writeEntry(out, "Name", key);
 			attributes(manifest.getAttributes(key), out);
 		}
@@ -465,20 +468,21 @@ public class Jar implements Closeable {
 	 * Write out an entry, handling proper unicode and line length constraints
 	 */
 	private static void writeEntry(OutputStream out, String name, String value) throws IOException {
-		int n = write(out, 0, name + ": ");
-		write(out, n, value);
-		write(out, 0, "\r\n");
+		int width = write(out, 0, name);
+		width = write(out, width, SEPARATOR);
+		write(out, width, value);
+		out.write(EOL);
 	}
 
 	/**
-	 * Convert a string to bytes with UTF8 and then output in max 72
-	 * bytes @param out the output string @param i the current width @param s
-	 * the string to output @return the new width @throws IOException when
+	 * Convert a string to bytes with UTF-8 and then output in max 72
+	 * bytes @param out the output string @param width the current width @param
+	 * s the string to output @return the new width @throws IOException when
 	 * something fails
 	 */
-	private static int write(OutputStream out, int i, String s) throws IOException {
-		byte[] bytes = s.getBytes("UTF8");
-		return write(out, i, bytes);
+	private static int write(OutputStream out, int width, String s) throws IOException {
+		byte[] bytes = s.getBytes("UTF-8");
+		return write(out, width, bytes);
 	}
 
 	/**
@@ -492,8 +496,9 @@ public class Jar implements Closeable {
 	private static int write(OutputStream out, int width, byte[] bytes) throws IOException {
 		int w = width;
 		for (int i = 0; i < bytes.length; i++) {
-			if (w >= 72) { // we need to add the \n\r!
-				out.write(CONTINUE);
+			if (w >= 72 - EOL.length) { // we need to add the EOL!
+				out.write(EOL);
+				out.write(' ');
 				w = 1;
 			}
 			out.write(bytes[i]);
@@ -784,7 +789,7 @@ public class Jar implements Closeable {
 		}
 	}
 
-	static Pattern BSN = Pattern.compile("\\s*([-\\w\\d\\._]+)\\s*;?.*");
+	final static Pattern BSN = Pattern.compile("\\s*([-\\w\\d\\._]+)\\s*;?.*");
 
 	/**
 	 * Get the jar bsn from the {@link Constants#BUNDLE_SYMBOLICNAME} manifest
