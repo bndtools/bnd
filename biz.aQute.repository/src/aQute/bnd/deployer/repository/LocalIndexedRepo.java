@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.cryptography.SHA256;
 
@@ -50,30 +52,54 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	public static final String	PROP_PRETTY					= "pretty";
 	public static final String	PROP_OVERWRITE				= "overwrite";
 	public static final String	PROP_ONLYDIRS				= "onlydirs";
-	public static final String	PROP_FILE_INCLUDE_POLICY	= "file.include.policy";
+	public static final String	PROP_FILE_INCLUDE_POLICY	= "include";
 
-	static final String	VERSIONED_BUNDLE_PATTERN	= "([-a-zA-z0-9_\\.]+)-([0-9\\.]+)(-[-a-zA-z0-9_]+)?\\.(jar|lib)";
-	static final String	ALL_JARS_PATTERN			= ".*jar$";
-	static final String	ALL_JARS_AND_LIBS_PATTERN	= ".*(jar|lib)$";
+	static final String VERSIONED_JARS_PATTERN = "([-a-zA-z0-9_\\.]+)-([0-9\\.]+)(-[-a-zA-z0-9_]+)?\\.(jar|lib)";
 
+	static final String	ALL_JARS_NAME		= "jars";
+	static final String	ALL_JARS_PATTERN	= ".*jar$";
+	static final String	ALL_LIBS_NAME		= "libs";
+	static final String	ALL_LIBS_PATTERN	= ".*lib$";
+
+	/**
+	 * Represents the the different policies used to determine whether a file is
+	 * included in the repository index.
+	 */
 	public enum FileIncludePolicy {
-		VERSIONED_BUNDLE(VERSIONED_BUNDLE_PATTERN), ALL_JARS(ALL_JARS_PATTERN), ALL_JARS_AND_LIBS(
-				ALL_JARS_AND_LIBS_PATTERN);
+		VERSIONED_JARS("versionedJars", VERSIONED_JARS_PATTERN), JARS("jars", ".*jar$"), LIBS("libs", ".*lib$");
 
-		private Pattern pattern;
+		private final String name;
+		private final Pattern pattern;
 
-		FileIncludePolicy(String p_regexp) {
-			this.pattern = Pattern.compile(p_regexp);
+		FileIncludePolicy(String name, String regex) {
+			this.name = name;
+			this.pattern = Pattern.compile(regex);
+		}
+
+		static FileIncludePolicy fromString(String name) {
+			for (FileIncludePolicy policy : FileIncludePolicy.values()) {
+				if (policy.name.equals(name)) {
+					return policy;
+				}
+			}
+			return null;
+		}
+
+		static List<String> names() {
+			List<String> names = new ArrayList<>();
+			for (FileIncludePolicy policy : FileIncludePolicy.values()) {
+				names.add(policy.name);
+			}
+			return names;
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	private boolean	readOnly;
 	private boolean	pretty		= false;
 	private boolean	overwrite	= true;
 	private File	storageDir;
 	private String	onlydirs	= null;
-	private Pattern	includePolicy;
+	private Set<FileIncludePolicy>	includePolicies;
 
 	// @GuardedBy("newFilesInCoordination")
 	private final List<URI> newFilesInCoordination = new LinkedList<URI>();
@@ -86,13 +112,13 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		// Load essential properties
 		String localDirPath = map.get(PROP_LOCAL_DIR);
 		if (localDirPath == null)
-			throw new IllegalArgumentException(String.format("Attribute '%s' must be set on %s plugin.",
-					PROP_LOCAL_DIR, getClass().getName()));
+			throw new IllegalArgumentException(
+					String.format("Attribute '%s' must be set on %s plugin.", PROP_LOCAL_DIR, getClass().getName()));
 
 		storageDir = new File(localDirPath);
 		if (storageDir.exists() && !storageDir.isDirectory())
-			throw new IllegalArgumentException(String.format("Local path '%s' exists and is not a directory.",
-					localDirPath));
+			throw new IllegalArgumentException(
+					String.format("Local path '%s' exists and is not a directory.", localDirPath));
 
 		readOnly = Boolean.parseBoolean(map.get(PROP_READONLY));
 		pretty = Boolean.parseBoolean(map.get(PROP_PRETTY));
@@ -102,33 +128,50 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		// Set the local index and cache directory locations
 		cacheDir = new File(storageDir, CACHE_PATH);
 		if (cacheDir.exists() && !cacheDir.isDirectory())
-			throw new IllegalArgumentException(String.format(
-					"Cannot create repository cache: '%s' already exists but is not directory.",
-					cacheDir.getAbsolutePath()));
+			throw new IllegalArgumentException(
+					String.format("Cannot create repository cache: '%s' already exists but is not directory.",
+							cacheDir.getAbsolutePath()));
 
-		setIncludePolicy(map);
+		String policies = map.get(PROP_FILE_INCLUDE_POLICY);
+		setIncludePolicies(policies);
 	}
 
-	private void setIncludePolicy(Map<String,String> props) {
-		String policy = props.get(PROP_FILE_INCLUDE_POLICY);
-		if (policy != null && !policy.isEmpty()) {
-			try {
-				FileIncludePolicy spec = FileIncludePolicy.valueOf(policy);
-				includePolicy = spec.pattern;
-			}
-			// this means the policy was not recognized, so try to interpret it
-			// as a regex
-			catch (IllegalArgumentException e) {
-				includePolicy = Pattern.compile(policy);
-			}
-			// use the default
+	private void setIncludePolicies(String policies) {
+		if (policies != null && !policies.isEmpty()) {
+			this.includePolicies = parsePolicies(policies);
 		} else {
-			includePolicy = FileIncludePolicy.VERSIONED_BUNDLE.pattern;
+			// handle the default policy
+			this.includePolicies = new LinkedHashSet<>();
+			this.includePolicies.add(FileIncludePolicy.VERSIONED_JARS);
 		}
 	}
 
-	Pattern includePolicy() {
-		return this.includePolicy;
+	/**
+	 * Parses the value of the 'include' property
+	 * 
+	 * @param policies
+	 *            the comma separated set of policies
+	 * @return the parsed policies
+	 */
+	private Set<FileIncludePolicy> parsePolicies(String policies) {
+
+		String[] tokens = policies.split(",");
+		Set<FileIncludePolicy> policyList = new LinkedHashSet<FileIncludePolicy>();
+		for (String token : tokens)
+		{
+			FileIncludePolicy policy = FileIncludePolicy.fromString(token);
+			if (policy == null) {
+				reporter.error("File include policy '%s' was unrecognised. Supported values are '%s'", token,
+						Strings.join(FileIncludePolicy.names()));
+			} else {
+				policyList.add(policy);
+			}
+		}
+		return policyList;
+	}
+
+	Set<FileIncludePolicy> includePolicies() {
+		return this.includePolicies;
 	}
 
 	@Override
@@ -161,14 +204,12 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	}
 
 	/**
-	 * <<<<<<< HEAD
-	 * 
 	 * @param contentProvider
 	 *            the repository content provider
-	 * @return the filename of the index on local storage =======
+	 * @return the filename of the index on local storage
 	 * @param contentProvider
-	 *            the repository content provider @return the filename of the
-	 *            index on local storage >>>>>>> stash
+	 *            the repository content provider
+	 * @return the filename of the index on local storage
 	 */
 	private File getIndexFile(IRepositoryContentProvider contentProvider) {
 		String indexFileName = contentProvider.getDefaultIndexName(pretty);
@@ -235,7 +276,6 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	void gatherFiles(Set<File> allFiles) throws Exception {
 		if (!storageDir.isDirectory())
 			return;
@@ -250,12 +290,12 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			}
 		}
 
-		listRecurse(includePolicy, onlydirsFiles, storageDir, storageDir, files);
+		listRecurse(onlydirsFiles, storageDir, storageDir, files);
 
 		allFiles.addAll(files);
 	}
 
-	private void listRecurse(final Pattern pattern, final String[] onlydirsFiles, File root, File dir,
+	private void listRecurse(final String[] onlydirsFiles, File root, File dir,
 			LinkedList<File> files) {
 		final LinkedList<File> dirs = new LinkedList<File>();
 		File[] moreFiles = dir.listFiles(new FileFilter() {
@@ -277,8 +317,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 						dirs.add(f);
 					}
 				} else if (f.isFile()) {
-					Matcher matcher = pattern.matcher(f.getName());
-					return matcher.matches();
+					return includeFile(f);
 				}
 				return false;
 			}
@@ -288,8 +327,26 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 		// keep recursing
 		for (File d : dirs) {
-			listRecurse(pattern, onlydirsFiles, root, d, files);
+			listRecurse(onlydirsFiles, root, d, files);
 		}
+	}
+
+	/**
+	 * Determine whether the specified file should be included in the index
+	 * based on the file inclusion policies.
+	 * 
+	 * @param file
+	 * @return true if the file should be included, otherwise false
+	 */
+	private boolean includeFile(File file) {
+		for (FileIncludePolicy policy : includePolicies) {
+			Matcher matcher = policy.pattern.matcher(file.getName());
+			boolean matches = matcher.matches();
+			if (matches) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

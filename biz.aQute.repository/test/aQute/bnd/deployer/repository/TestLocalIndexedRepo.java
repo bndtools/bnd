@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
+import aQute.bnd.deployer.repository.LocalIndexedRepo.FileIncludePolicy;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
 import junit.framework.TestCase;
@@ -43,52 +43,59 @@ public class TestLocalIndexedRepo extends TestCase {
 		config.put("local", outputDir.getAbsolutePath());
 		repo.setProperties(config);
 
-		Pattern policy = repo.includePolicy();
-		assertEquals(policy.toString(), LocalIndexedRepo.VERSIONED_BUNDLE_PATTERN);
+		Set<FileIncludePolicy> policies = repo.includePolicies();
+		assertTrue(policies.contains(FileIncludePolicy.VERSIONED_JARS));
+		assertEquals(policies.size(), 1);
 	}
 
 	public void testInlcudePolicy_AllJars() {
 		LocalIndexedRepo repo = new LocalIndexedRepo();
 		HashMap<String,String> config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
-		config.put(LocalIndexedRepo.PROP_FILE_INCLUDE_POLICY, "ALL_JARS");
+		config.put(LocalIndexedRepo.PROP_FILE_INCLUDE_POLICY, "jars");
 		repo.setProperties(config);
 
-		Pattern policy = repo.includePolicy();
-		assertEquals(policy.toString(), LocalIndexedRepo.ALL_JARS_PATTERN);
+		Set<FileIncludePolicy> policies = repo.includePolicies();
+		assertTrue(policies.contains(FileIncludePolicy.JARS));
+		assertEquals(policies.size(), 1);
 	}
 
 	public void testInlcudePolicy_AllJarsAndLibs() {
 		LocalIndexedRepo repo = new LocalIndexedRepo();
 		HashMap<String,String> config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
-		config.put(LocalIndexedRepo.PROP_FILE_INCLUDE_POLICY, "ALL_JARS_AND_LIBS");
+		config.put(LocalIndexedRepo.PROP_FILE_INCLUDE_POLICY, "jars,libs");
 		repo.setProperties(config);
 
-		Pattern policy = repo.includePolicy();
-		assertEquals(policy.toString(), LocalIndexedRepo.ALL_JARS_AND_LIBS_PATTERN);
+		Set<FileIncludePolicy> policies = repo.includePolicies();
+		assertTrue(policies.contains(FileIncludePolicy.JARS));
+		assertTrue(policies.contains(FileIncludePolicy.LIBS));
+		assertEquals(policies.size(), 2);
 	}
 
 	public void testInlcudePolicy_VersionedBundle() {
 		LocalIndexedRepo repo = new LocalIndexedRepo();
 		HashMap<String,String> config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
-		config.put(LocalIndexedRepo.PROP_FILE_INCLUDE_POLICY, "VERSIONED_BUNDLE");
+		config.put(LocalIndexedRepo.PROP_FILE_INCLUDE_POLICY, "versionedJars");
 		repo.setProperties(config);
 
-		Pattern policy = repo.includePolicy();
-		assertEquals(policy.toString(), LocalIndexedRepo.VERSIONED_BUNDLE_PATTERN);
+		Set<FileIncludePolicy> policies = repo.includePolicies();
+		assertTrue(policies.contains(FileIncludePolicy.VERSIONED_JARS));
+		assertEquals(policies.size(), 1);
 	}
 
-	public void testInlcudePolicy_Regex() {
+	public void testUnrecognisedIncludePolicy() {
+		Processor reporter = new Processor();
 		LocalIndexedRepo repo = new LocalIndexedRepo();
+		repo.setReporter(reporter);
+
 		HashMap<String,String> config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
-		config.put(LocalIndexedRepo.PROP_FILE_INCLUDE_POLICY, ".*(foo|bar)$");
+		config.put(LocalIndexedRepo.PROP_FILE_INCLUDE_POLICY, "foo");
 		repo.setProperties(config);
 
-		Pattern policy = repo.includePolicy();
-		assertEquals(policy.toString(), ".*(foo|bar)$");
+		assertEquals(reporter.getErrors().size(), 1);
 	}
 
 	public void testIncludePolicy_AllJars_ListFiles() throws Exception {
@@ -97,7 +104,7 @@ public class TestLocalIndexedRepo extends TestCase {
 
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("local", file.getAbsolutePath());
-		config.put(LocalIndexedRepo.PROP_FILE_INCLUDE_POLICY, "ALL_JARS");
+		config.put(LocalIndexedRepo.PROP_FILE_INCLUDE_POLICY, "jars");
 
 		repo.setProperties(config);
 
@@ -117,7 +124,7 @@ public class TestLocalIndexedRepo extends TestCase {
 
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("local", file.getAbsolutePath());
-		config.put(LocalIndexedRepo.PROP_FILE_INCLUDE_POLICY, "ALL_JARS_AND_LIBS");
+		config.put(LocalIndexedRepo.PROP_FILE_INCLUDE_POLICY, "jars,libs");
 
 		repo.setProperties(config);
 
@@ -133,34 +140,6 @@ public class TestLocalIndexedRepo extends TestCase {
 		assertTrue(files.contains(aLib));
 		assertTrue(files.contains(bLib));
 		assertEquals(files.size(), 4);
-	}
-
-	public void testIncludePolicy_Regex_ListFiles() throws Exception {
-		File file = IO.getFile("testdata/LocalIndexedRepo");
-		LocalIndexedRepo repo = new LocalIndexedRepo();
-
-		Map<String,String> config = new HashMap<String,String>();
-		config.put("local", file.getAbsolutePath());
-		config.put(LocalIndexedRepo.PROP_FILE_INCLUDE_POLICY, ".*");
-
-		repo.setProperties(config);
-
-		Set<File> files = new HashSet<>();
-		repo.gatherFiles(files);
-
-		File aJar = IO.getFile("testdata/LocalIndexedRepo/a.jar");
-		File bJar = IO.getFile("testdata/LocalIndexedRepo/b.jar");
-		File aLib = IO.getFile("testdata/LocalIndexedRepo/a.lib");
-		File bLib = IO.getFile("testdata/LocalIndexedRepo/b.lib");
-		File aProp = IO.getFile("testdata/LocalIndexedRepo/a.props");
-		File bProp = IO.getFile("testdata/LocalIndexedRepo/b.props");
-		assertTrue(files.contains(aJar));
-		assertTrue(files.contains(bJar));
-		assertTrue(files.contains(aLib));
-		assertTrue(files.contains(bLib));
-		assertTrue(files.contains(aProp));
-		assertTrue(files.contains(bProp));
-		assertEquals(files.size(), 6);
 	}
 
 	public void testLocalIndexLocation() throws Exception {
