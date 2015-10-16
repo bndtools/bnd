@@ -14,6 +14,7 @@ import java.net.URI;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -376,7 +377,7 @@ public class Jar implements Closeable {
 		String[] algs = algorithms;
 		algorithms = null;
 		try {
-			File f = File.createTempFile(getName(), ".jar");
+			File f = File.createTempFile(padString(getName(), 3, '_'), ".jar");
 			write(f);
 			Jar tmp = new Jar(f);
 			try {
@@ -391,6 +392,19 @@ public class Jar implements Closeable {
 		finally {
 			algorithms = algs;
 		}
+	}
+
+	private String padString(String s, int length, char pad) {
+		if (s == null)
+			s = "";
+		if (s.length() >= length)
+			return s;
+		char[] cs = new char[length];
+		Arrays.fill(cs, pad);
+
+		char[] orig = s.toCharArray();
+		System.arraycopy(orig, 0, cs, 0, orig.length);
+		return new String(cs);
 	}
 
 	private void doManifest(Set<String> done, ZipOutputStream jout) throws Exception {

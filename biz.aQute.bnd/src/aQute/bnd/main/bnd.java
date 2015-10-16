@@ -1094,45 +1094,49 @@ public class bnd extends Processor {
 			cmdline.add(Project.BNDFILE); // default project itself
 
 		for (String path : cmdline) {
+			Run run;
+
 			File file = getFile(path);
+			if (file.isDirectory())
+				file = new File(file, Project.BNDFILE);
+
 			if (!file.isFile()) {
 				messages.NoSuchFile_(file);
-			} else {
-				Run run;
-
-				File dir = file.getParentFile();
-				File workspaceDir = dir.getParentFile();
-				if (workspaceDir == null) {
-					// We are in the filesystem root?? Create a standalone run.
-					run = Run.createRun(null, file);
-				} else {
-					Workspace ws = Workspace.getWorkspaceWithoutException(workspaceDir);
-					run = Run.createRun(ws, file);
-				}
-
-				// Tricky because we can be run inside the context of a
-				// project (in which case
-				// we need to inherit from the project or outside.
-
-				run.setProperty(PROFILE, profile);
-				run.use(this);
-				if (opts.jpm())
-					run.setProperty(Constants.PACKAGE, Constants.PACKAGE_JPM);
-
-				try {
-					Jar jar = run.pack(profile);
-					path = path.replaceAll(".bnd(run)?$", "") + ".jar";
-					File out = output;
-					if (output.isDirectory())
-						out = new File(output, path);
-					jar.write(out);
-					jar.close();
-				}
-				catch (Exception e) {
-					messages.ForProject_File_FailedToCreateExecutableException_(run, path, e);
-				}
-				getInfo(run);
+				continue;
 			}
+
+			File dir = file.getParentFile();
+			File workspaceDir = dir.getParentFile();
+			if (workspaceDir == null) {
+				// We are in the filesystem root?? Create a standalone run.
+				run = Run.createRun(null, file);
+			} else {
+				Workspace ws = Workspace.getWorkspaceWithoutException(workspaceDir);
+				run = Run.createRun(ws, file);
+			}
+
+			// Tricky because we can be run inside the context of a
+			// project (in which case
+			// we need to inherit from the project or outside.
+
+			run.setProperty(PROFILE, profile);
+			run.use(this);
+			if (opts.jpm())
+				run.setProperty(Constants.PACKAGE, Constants.PACKAGE_JPM);
+
+			try {
+				Jar jar = run.pack(profile);
+				path = path.replaceAll(".bnd(run)?$", "") + ".jar";
+				File out = output;
+				if (output.isDirectory())
+					out = new File(output, path);
+				jar.write(out);
+				jar.close();
+			}
+			catch (Exception e) {
+				messages.ForProject_File_FailedToCreateExecutableException_(run, path, e);
+			}
+			getInfo(run);
 		}
 	}
 
