@@ -1,0 +1,6 @@
+-runfw: org.apache.felix.framework
+-runee: JavaSE-1.7
+
+Bundle-Version: 1.0.0
+-resourceonly
+-fixupmessages: The JAR is empty
