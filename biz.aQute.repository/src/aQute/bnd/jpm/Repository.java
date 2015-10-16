@@ -271,10 +271,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			}
 		}
 
-		if (!isConnected()) {
-			failure(listeners, file, "Not online");
-		}
-
 		if (file.isFile()) {
 			if (file.length() == size) {
 				// Already exists, done
@@ -285,6 +281,10 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			reporter.error("found file but of different length %s, will refetch", file);
 		} else {
 			reporter.trace("not in cache %s", file + " " + queues);
+		}
+
+		if (!isConnected()) {
+			failure(listeners, file, "Not online");
 		}
 
 		// Check if we need synchronous
