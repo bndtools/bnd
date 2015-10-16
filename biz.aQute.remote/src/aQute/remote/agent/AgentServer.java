@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -188,7 +189,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		Set<String> toBeDeleted = new HashSet<String>(installed.keySet());
 		toBeDeleted.removeAll(bundles.keySet());
 
-		Set<String> toBeInstalled = new HashSet<String>(bundles.keySet());
+		LinkedHashSet<String> toBeInstalled = new LinkedHashSet<String>(bundles.keySet());
 		toBeInstalled.removeAll(installed.keySet());
 
 		Map<String,String> changed = new HashMap<String,String>(bundles);
@@ -198,7 +199,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		Set<String> affected = new HashSet<String>(toBeDeleted);
 		affected.addAll(changed.keySet());
 
-		Set<Bundle> toBeStarted = new HashSet<Bundle>();
+		LinkedHashSet<Bundle> toBeStarted = new LinkedHashSet<Bundle>();
 
 		for (String location : affected) {
 			Bundle b = getBundle(location);
