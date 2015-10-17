@@ -26,6 +26,7 @@ import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.osgi.service.metatype.annotations.Option;
 
+import aQute.bnd.annotation.metatype.Meta;
 import aQute.bnd.annotation.xml.XMLAttribute;
 import aQute.bnd.metatype.MetatypeVersion;
 import aQute.bnd.osgi.Builder;
@@ -1515,6 +1516,26 @@ public class SpecMetatypeTest extends TestCase {
 		assertAD(xt, "escapes", "Escapes", null, null, "\\ \\,\\ \\\\,a\\,b,c\\,d,'apostrophe',\"quote\"&amp;",
 				2147483647, "String", null, null, null);
 
+	}
+
+	@Mapping
+	@Meta.OCD
+	static interface C {
+		@Meta.AD(required = false)
+		Integer port();
+	}
+
+	// cf issue 1130
+	public void testBndAnnoCompatible() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setProperty("Export-Package", "test.metatype");
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, C.class.getName());
+		b.build();
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$C.xml");
+		assertEquals(0, b.getErrors().size());
+		assertEquals(0, b.getWarnings().size());
+		assertNull(r);
 	}
 
 }

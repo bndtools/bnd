@@ -68,7 +68,7 @@ public class OCDReader extends ClassDataCollector {
 
 			doMethods();
 		}
-		return ocd;
+		return ocd == null || ocd.id == null ? null : ocd;
 	}
 
 	private void parseExtends(Clazz clazz) {
