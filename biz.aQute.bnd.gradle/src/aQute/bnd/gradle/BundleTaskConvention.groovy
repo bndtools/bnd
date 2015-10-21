@@ -19,6 +19,8 @@
 
 package aQute.bnd.gradle
 
+import java.util.jar.Manifest
+
 import aQute.bnd.osgi.Builder
 import aQute.bnd.osgi.Constants
 import aQute.bnd.osgi.Jar
@@ -126,11 +128,11 @@ class BundleTaskConvention {
           from archivePath
           into temporaryDir
         }
-        def File jar = new File(temporaryDir, archiveName)
+        def File temporaryFile = new File(temporaryDir, archiveName)
 
         // set builder classpath
         def Set<File> artifacts = new LinkedHashSet<File>(configuration.resolvedConfiguration.resolvedArtifacts*.file)
-        artifacts.add(jar)
+        artifacts.add(temporaryFile)
         builder.setClasspath(artifacts.toArray(new File[artifacts.size()]))
         logger.debug 'builder classpath: {}', builder.getClasspath()*.getSource()
 
@@ -142,14 +144,9 @@ class BundleTaskConvention {
         }
 
         // Include entire contents of Jar task generated jar except the manifest
-        def String jarInclude = "\"@${jar.absolutePath.replaceAll(/"/, /\\"/)}!/!META-INF/MANIFEST.MF\""
-        def String includes = builder.getProperty(Constants.INCLUDERESOURCE)
-        if (isEmpty(includes)) {
-          includes = jarInclude
-        } else {
-          includes = "${jarInclude},${includes}"
-        }
-        builder.setProperty(Constants.INCLUDERESOURCE, includes)
+        def Jar temporaryJar = new Jar(archiveName, temporaryFile)
+        temporaryJar.setManifest(new Manifest())
+        builder.setJar(temporaryJar)
 
         // set bundle symbolic name from tasks's baseName property if necessary
         def String bundleSymbolicName = builder.getProperty(Constants.BUNDLE_SYMBOLICNAME)
@@ -167,7 +164,6 @@ class BundleTaskConvention {
 
         // Build bundle
         def Jar bundleJar = builder.build()
-        bundleJar.updateModified(jar.lastModified(), 'time of Jar task generated jar')
         if (!builder.isOk()) {
           // if we already have an error; fail now
           builder.getWarnings().each {
@@ -180,6 +176,7 @@ class BundleTaskConvention {
         }
 
         // Write out the bundle
+        bundleJar.updateModified(temporaryFile.lastModified(), 'time of Jar task generated jar')
         try {
           bundleJar.write(archivePath)
         } catch (Exception e) {
