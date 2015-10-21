@@ -80,7 +80,11 @@ public class Builder extends Analyzer {
 		if (getProperty(CONDUIT) != null)
 			error("Specified " + CONDUIT + " but calls build() instead of builds() (might be a programmer error");
 
-		Jar dot = new Jar("dot");
+		Jar dot = getJar();
+		if (dot == null) {
+			dot = new Jar("dot");
+			setJar(dot);
+		}
 		try {
 			long modified = Long.parseLong(getProperty("base.modified"));
 			dot.updateModified(modified, "Base modified");
@@ -88,7 +92,6 @@ public class Builder extends Analyzer {
 		catch (Exception e) {
 			// Ignore
 		}
-		setJar(dot);
 
 		doExpand(dot);
 		doIncludeResources(dot);

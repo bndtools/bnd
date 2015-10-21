@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.jar.Manifest;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
@@ -129,13 +130,9 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			// Include local project packages automatically
 			if (classesDir.isDirectory()) {
-				String includes = builder.getProperty(Constants.INCLUDERESOURCE);
-				StringBuilder newIncludes = new StringBuilder().append('"').append(classesDir.getAbsolutePath().replaceAll("\"", "\\\\\"")).append('"');
-				if (includes == null || includes.trim().isEmpty())
-					includes = newIncludes.toString();
-				else
-					includes = newIncludes.append(',').append(includes).toString();
-				builder.setProperty(Constants.INCLUDERESOURCE, includes);
+				Jar classesDirJar = new Jar(project.getName(), classesDir);
+				classesDirJar.setManifest(new Manifest());
+				builder.setJar(classesDirJar);
 			}
 
 			// Set Bundle-Version
@@ -216,8 +213,8 @@ public class BndMavenPlugin extends AbstractMojo {
 				throw new IOException("Could not create directory " + outDir);
 			}
 
-			// Skip the copy if the source and target file are the same
 			Resource resource = entry.getValue();
+			// Skip the copy if the source and target file are the same
 			if (resource instanceof FileResource) {
 				@SuppressWarnings("resource")
 				FileResource fr = (FileResource) resource;
@@ -225,7 +222,7 @@ public class BndMavenPlugin extends AbstractMojo {
 					continue;
 			}
 
-			IO.copy(entry.getValue().openInputStream(), outFile);
+			IO.copy(resource.openInputStream(), outFile);
 		}
 	}
 
