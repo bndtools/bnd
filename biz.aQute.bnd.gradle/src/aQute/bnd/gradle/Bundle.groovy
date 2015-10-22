@@ -46,6 +46,7 @@ public class Bundle extends Jar {
    * to transform the Jar task built jar into a bundle.
    */
   @TaskAction
+  @Override
   protected void copy() {
     super.copy()
     buildBundle()
