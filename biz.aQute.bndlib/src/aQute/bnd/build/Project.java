@@ -133,6 +133,7 @@ public class Project extends Processor {
 	final Packages				importedPackages		= new Packages();
 	final Packages				containedPackages		= new Packages();
 	final PackageInfo			packageInfo				= new PackageInfo(this);
+	private Makefile			makefile;
 
 	public Project(Workspace workspace, File unused, File buildFile) throws Exception {
 		super(workspace);
@@ -1624,6 +1625,7 @@ public class Project extends Processor {
 			return null;
 
 		versionMap.clear();
+		getMakefile().make();
 
 		//
 		// #761 tstamp can vary between invocations in one build
@@ -1815,6 +1817,7 @@ public class Project extends Processor {
 		super.propertiesChanged();
 		preparedPaths = false;
 		files = null;
+		makefile = null;
 		versionMap.clear();
 
 	}
@@ -1960,6 +1963,14 @@ public class Project extends Processor {
 
 	public File[] build() throws Exception {
 		return build(false);
+	}
+
+
+	private Makefile getMakefile() {
+		if (makefile == null) {
+			makefile = new Makefile(this);
+		}
+		return makefile;
 	}
 
 	public void run() throws Exception {
