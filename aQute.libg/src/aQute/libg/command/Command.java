@@ -1,13 +1,25 @@
 package aQute.libg.command;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import aQute.lib.io.*;
-import aQute.service.reporter.*;
+import aQute.lib.io.IO;
+import aQute.service.reporter.Reporter;
 
 public class Command {
 
@@ -320,5 +332,11 @@ public class Command {
 
 	public void setUseThreadForInput(boolean useThreadForInput) {
 		this.useThreadForInput = useThreadForInput;
+	}
+
+	public void var(Map<String,String> env) {
+		for (Map.Entry<String,String> e : env.entrySet()) {
+			var(e.getKey(), e.getValue());
+		}
 	}
 }
