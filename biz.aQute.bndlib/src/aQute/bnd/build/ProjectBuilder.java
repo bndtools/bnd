@@ -535,7 +535,7 @@ public class ProjectBuilder extends Builder {
 	 * version.
 	 */
 	protected void startBuild(Builder builder) {
-		project.versionMap.clear();
+		project.versionMap.remove(builder.getBsn());
 	}
 
 	/**
