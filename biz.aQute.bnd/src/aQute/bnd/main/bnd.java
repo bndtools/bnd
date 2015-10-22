@@ -421,10 +421,17 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Create jar file <pre> jar c[v0M]f jarfile [-C dir] inputfiles [-Joption]
+	 * Create jar file
+	 * 
+	 * <pre>
+	 *  jar c[v0M]f jarfile [-C dir] inputfiles [-Joption]
 	 * jar c[v0]mf manifest jarfile [-C dir] inputfiles [-Joption] jar c[v0M]
 	 * [-C dir] inputfiles [-Joption] jar c[v0]m manifest [-C dir] inputfiles
-	 * [-Joption] </pre> @param options @throws Exception
+	 * [-Joption]
+	 * </pre>
+	 * 
+	 * @param options
+	 * 			@throws Exception
 	 */
 	@Description("Create jar, used to support backward compatible java jar commands")
 	public void _create(createOptions options) throws Exception {
@@ -1815,13 +1822,17 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Manage the repo. <pre> out.println(&quot; bnd repo [--repo|-r ('maven'|
+	 * Manage the repo.
+	 * 
+	 * <pre>
+	 *  out.println(&quot; bnd repo [--repo|-r ('maven'|
 	 * &lt;dir&gt;)]*&quot;); out.println(&quot; repos # list the
 	 * repositories&quot;); out.println(&quot; list # list all content (not
 	 * always possible)&quot;); out.println(&quot; get &lt;bsn&gt;
 	 * &lt;version&gt; &lt;file&gt;? # get an artifact&quot;);
 	 * out.println(&quot; put &lt;file&gt;+ # put in artifacts&quot;);
-	 * out.println(&quot; help&quot;); </pre>
+	 * out.println(&quot; help&quot;);
+	 * </pre>
 	 */
 
 	@Description("Manage the repositories")
@@ -2237,7 +2248,8 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * @param msg @param ports
+	 * @param msg
+	 * @param ports
 	 */
 
 	private void print(String msg, Map< ? , ? extends Map< ? , ? >> ports) {
@@ -4197,6 +4209,109 @@ public class bnd extends Processor {
 					IO.copy(result.getValue().openInputStream(), output);
 				}
 			}
+		}
+	}
+
+	/**
+	 * Flatten a jar
+	 */
+
+	@Arguments(arg = {
+			"input", "output"
+	})
+	@Description("Flatten a bundle by expanding all entries on the Bundle-ClassPath")
+	interface FlattenOptions extends Options {}
+
+	@Description("Flatten a bundle by expanding all entries on the Bundle-ClassPath")
+	public void _flatten(FlattenOptions opts) throws Exception {
+
+		List<String> inputs = opts._arguments();
+
+		String inputPath = inputs.remove(0);
+		String outputPath = inputs.remove(0);
+
+		File source = getFile(inputPath);
+		if (!source.isFile()) {
+			error("Not a source file %s", source);
+			return;
+		}
+
+		File destination = getFile(outputPath);
+		destination.getParentFile().mkdirs();
+
+		if (!destination.getParentFile().isDirectory()) {
+			error("Could not create directory for output file %s", outputPath);
+		}
+
+		Jar input = new Jar(source);
+		addClose(input);
+
+		Manifest manifest = input.getManifest();
+
+		Domain domain = Domain.domain(manifest);
+		List<String> bundleClassPath = new ArrayList<>(domain.getBundleClasspath().keySet());
+
+		if (bundleClassPath.isEmpty()) {
+			warning("%s has no bundle class path", source);
+			return;
+		}
+
+		Collections.reverse(bundleClassPath);
+
+		Jar output = new Jar(source.getName());
+
+		for (String path : bundleClassPath) {
+			trace("bcp entry %s", path);
+			Resource r = input.getResource(path);
+			if (r == null) {
+
+				trace("Is directory %s", path);
+
+				if (path.equals(".")) {
+					addAll(output, input, "", bundleClassPath);
+				} else
+					addAll(output, input, path, null);
+
+			} else {
+
+				trace("Is jar %s", path);
+
+				Jar sub = new Jar(path, r.openInputStream());
+				addClose(sub);
+				addAll(output, sub, "", null);
+			}
+		}
+
+		domain.setBundleClasspath(".");
+		output.setManifest(manifest);
+		output.stripSignatures();
+		output.write(destination);
+	}
+
+	private void addAll(Jar output, Jar sub, String prefix, List<String> bundleClassPath) {
+		if (prefix.length() > 0 && !prefix.endsWith("/"))
+			prefix += "/";
+
+		for (Map.Entry<String,Resource> e : sub.getResources().entrySet()) {
+			String path = e.getKey();
+
+			if (bundleClassPath != null && bundleClassPath.contains(path))
+				continue;
+
+			trace("Add %s", path);
+
+			if (path.equals("META-INF/MANIFEST.MF"))
+				continue;
+
+			Resource r = e.getValue();
+
+			if (path.startsWith(prefix)) {
+				trace("Add %s", path);
+				path = path.substring(prefix.length());
+				output.putResource(path, r);
+			} else
+				trace("Ignore %s because it does not start with prefix %s", path, prefix);
+
 		}
 	}
 
