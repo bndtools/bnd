@@ -979,9 +979,12 @@ public class Jar implements Closeable {
 	static Pattern SIGNER_FILES_P = Pattern.compile("(.+\\.(SF|DSA|RSA))|(.*/SIG-.*)", Pattern.CASE_INSENSITIVE);
 
 	public void stripSignatures() {
-		for (String file : new HashSet<>(getDirectories().get("META-INF").keySet())) {
-			if (SIGNER_FILES_P.matcher(file).matches())
-				remove(file);
+		Map<String,Resource> map = getDirectories().get("META-INF");
+		if (map != null) {
+			for (String file : new HashSet<>(map.keySet())) {
+				if (SIGNER_FILES_P.matcher(file).matches())
+					remove(file);
+			}
 		}
 	}
 }
