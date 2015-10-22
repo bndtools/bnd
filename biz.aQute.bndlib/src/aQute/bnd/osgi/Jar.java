@@ -428,6 +428,7 @@ public class Jar implements Closeable {
 
 	public void writeManifest(OutputStream out) throws Exception {
 		check();
+		stripSignatures();
 		writeManifest(getManifest(), out);
 	}
 
@@ -443,18 +444,25 @@ public class Jar implements Closeable {
 	 * Unfortunately we have to write our own manifest :-( because of a stupid
 	 * bug in the manifest code. It tries to handle UTF-8 but the way it does it
 	 * it makes the bytes platform dependent. So the following code outputs the
-	 * manifest. A Manifest consists of <pre> 'Manifest-Version: 1.0\r\n'
+	 * manifest. A Manifest consists of
+	 * 
+	 * <pre>
+	 *  'Manifest-Version: 1.0\r\n'
 	 * main-attributes * \r\n name-section main-attributes ::= attributes
 	 * attributes ::= key ': ' value '\r\n' name-section ::= 'Name: ' name
-	 * '\r\n' attributes </pre> Lines in the manifest should not exceed 72 bytes
-	 * (! this is where the manifest screwed up as well when 16 bit unicodes
-	 * were used). <p> As a bonus, we can now sort the manifest!
+	 * '\r\n' attributes
+	 * </pre>
+	 * 
+	 * Lines in the manifest should not exceed 72 bytes (! this is where the
+	 * manifest screwed up as well when 16 bit unicodes were used).
+	 * <p>
+	 * As a bonus, we can now sort the manifest!
 	 */
 	private final static byte[]	EOL			= new byte[] {
-													'\r', '\n'
+			'\r', '\n'
 												};
 	private final static byte[]	SEPARATOR	= new byte[] {
-													':', ' '
+			':', ' '
 												};
 
 	/**
@@ -966,5 +974,17 @@ public class Jar implements Closeable {
 			}
 		}
 		return md.digest();
+	}
+
+	static Pattern SIGNER_FILES_P = Pattern.compile("(.+\\.(SF|DSA|RSA))|(.*/SIG-.*)", Pattern.CASE_INSENSITIVE);
+
+	public void stripSignatures() {
+		Map<String,Resource> map = getDirectories().get("META-INF");
+		if (map != null) {
+			for (String file : new HashSet<>(map.keySet())) {
+				if (SIGNER_FILES_P.matcher(file).matches())
+					remove(file);
+			}
+		}
 	}
 }
