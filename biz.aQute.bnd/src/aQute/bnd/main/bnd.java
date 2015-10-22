@@ -2619,6 +2619,7 @@ public class bnd extends Processor {
 			output = getFile(opts.output());
 
 		Jar bin = new Jar(jarFile);
+		bin.setDoNotTouchManifest();
 		File tmp = File.createTempFile("tmp", ".jar", jarFile.getParentFile());
 		tmp.deleteOnExit();
 		try {
