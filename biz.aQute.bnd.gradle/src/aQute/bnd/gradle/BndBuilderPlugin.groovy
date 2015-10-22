@@ -22,7 +22,8 @@ public class BndBuilderPlugin implements Plugin<Project> {
   /**
    * Apply the {@code biz.aQute.bnd.builder} plugin to the specified project.
    */
-  void apply(Project p) {
+  @Override
+  public void apply(Project p) {
     p.configure(p) { project ->
       if (plugins.hasPlugin(BndPlugin.PLUGINID)) {
           throw new GradleException("Project already has '${BndPlugin.PLUGINID}' plugin applied.")
