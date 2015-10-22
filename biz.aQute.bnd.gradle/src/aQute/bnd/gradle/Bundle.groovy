@@ -23,6 +23,7 @@
 
 package aQute.bnd.gradle
 
+import groovy.transform.CompileStatic
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.bundling.Jar
 
@@ -48,7 +49,20 @@ public class Bundle extends Jar {
   @TaskAction
   @Override
   protected void copy() {
-    super.copy()
+    supercopy()
     buildBundle()
+  }
+
+  /**
+   * Private method to call super.copy().
+   *
+   * <p>
+   * We need to compile the call to super.copy() with @CompileStatic to
+   * avoid a Groovy 2.4 error where the super.copy() call instead results in
+   * calling this.copy() causing a StackOverflowError.
+   */
+  @CompileStatic
+  private void supercopy() {
+    super.copy()
   }
 }

@@ -97,7 +97,7 @@ class BundleTaskConvention {
     this.sourceSet = sourceSet
   }
 
-  private void buildBundle() {
+  void buildBundle() {
     task.configure {
       // create Builder and set trace level from gradle
       def Builder builder = new Builder()
