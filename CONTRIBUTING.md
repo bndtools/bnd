@@ -18,7 +18,7 @@ This information will help us review and fix your issue faster.
 The only thing you need to build bnd is Java. We use Java 7 but most
 projects only require Java 6. We use Gradle to build and the repo 
 includes `gradlew`. You can use your system `gradle` but we require 
-at least version 2.3.
+at least version 2.8.
 
 `./gradlew`              - Assembles, tests and releases the projects into dist/bundles  
 `./gradlew :dist:build`  - Assembles and tests the projects  

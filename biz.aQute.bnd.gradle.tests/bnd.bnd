@@ -1,0 +1,6 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
+-nobundles: true
+-buildpath: \
+  biz.aQute.bnd.gradle;version=latest
