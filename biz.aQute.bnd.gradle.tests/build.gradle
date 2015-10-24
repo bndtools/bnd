@@ -1,0 +1,36 @@
+apply plugin: 'groovy'
+
+repositories {
+  jcenter()
+}
+
+dependencies {
+    compile localGroovy()
+    compile gradleApi()
+    testCompile gradleTestKit()
+    testCompile('org.spockframework:spock-core:1.0-groovy-2.4')  {
+        exclude module: 'groovy-all'
+    }
+}
+
+sourceSets {
+    main {
+        groovy.srcDirs = java.srcDirs
+    }
+    test {
+        groovy.srcDirs = java.srcDirs
+    }
+}
+
+test {
+    def source = file('testresources')
+    def target = file("${buildDir}/testresources")
+    inputs.dir source
+    doFirst { // copy test resources into build dir
+        project.delete(target)
+        copy {
+            from source
+            into target
+        }
+    }
+}
