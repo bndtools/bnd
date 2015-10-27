@@ -19,6 +19,7 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.FieldOption;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferenceScope;
 import org.osgi.service.component.annotations.ServiceScope;
@@ -625,19 +626,21 @@ public class AnnotationReader extends ClassDataCollector {
 					}
 				}
 				if (isCollection) {
+					if (def.cardinality == null)
+						def.cardinality = ReferenceCardinality.MULTIPLE;
 					def.fieldCollectionType = fieldCollectionType;
-					if (def.policy == ReferencePolicy.DYNAMIC && member.isFinal()) {
-						if (def.fieldOption == FieldOption.REPLACE)
-							analyzer.error(
-									"In component %s, collection type field: %s is final and dynamic but marked with 'replace' fieldOption. Changing this to 'update'.",
-									className, def.field)
-									.details(getDetails(def, ErrorType.DYNAMIC_FINAL_FIELD_WITH_REPLACE));
-						def.fieldOption = FieldOption.UPDATE;
-					}
+				}
+				if (def.policy == ReferencePolicy.DYNAMIC && (def.cardinality == ReferenceCardinality.MULTIPLE
+						|| def.cardinality == ReferenceCardinality.AT_LEAST_ONE) && member.isFinal()) {
+					if (def.fieldOption == FieldOption.REPLACE)
+						analyzer.error(
+								"In component %s, collection type field: %s is final and dynamic but marked with 'replace' fieldOption. Changing this to 'update'.",
+								className, def.field)
+								.details(getDetails(def, ErrorType.DYNAMIC_FINAL_FIELD_WITH_REPLACE));
+					def.fieldOption = FieldOption.UPDATE;
 				}
 				if (annoService == null && index <= sigs.length) {
 					annoService = sigs[index].substring(1).replace('/', '.');
-
 				}
 				def.service = annoService;
 				if (def.service == null)

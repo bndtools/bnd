@@ -3197,6 +3197,49 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component
+	static class FieldCardinality {
+		@Reference
+		private List<LogService>	log1;
+		@Reference
+		private Collection<LogService>	log2;
+		@Reference
+		private LogService				log3;
+	}
+
+	public void testFieldCardinality() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*FieldCardinality");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+		Attributes a = getAttr(jar);
+		checkRequires(a, true, LogService.class.getName());
+
+		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$FieldCardinality.xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+		// Test the defaults
+		xt.assertAttribute("test.component.DSAnnotationTest$FieldCardinality",
+				"scr:component/implementation/@class");
+
+		xt.assertAttribute("log1", "scr:component/reference[1]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[1]/@interface");
+		xt.assertAttribute("0..n", "scr:component/reference[1]/@cardinality");
+
+		xt.assertAttribute("log2", "scr:component/reference[2]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[2]/@interface");
+		xt.assertAttribute("0..n", "scr:component/reference[2]/@cardinality");
+
+		xt.assertAttribute("log3", "scr:component/reference[3]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[3]/@interface");
+		xt.assertNoAttribute("scr:component/reference[3]/@cardinality");
+	}
+
+	@Component
 	static class MismatchedUnbind {
 		@Reference
 		void setLogService10(LogService ls) {}
