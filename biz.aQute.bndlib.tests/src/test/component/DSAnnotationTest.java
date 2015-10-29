@@ -3199,11 +3199,15 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component
 	static class FieldCardinality {
 		@Reference
-		private List<LogService>	log1;
+		private List<LogService>				log1;
 		@Reference
-		private Collection<LogService>	log2;
+		private volatile Collection<LogService>	log2;
 		@Reference
-		private LogService				log3;
+		private LogService						log3;
+		@Reference
+		private volatile LogService				log4;
+		@Reference(policy = ReferencePolicy.DYNAMIC)
+		private final List<LogService>			log5	= new CopyOnWriteArrayList<>();
 	}
 
 	public void testFieldCardinality() throws Exception {
@@ -3229,14 +3233,32 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("log1", "scr:component/reference[1]/@name");
 		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[1]/@interface");
 		xt.assertAttribute("0..n", "scr:component/reference[1]/@cardinality");
+		xt.assertNoAttribute("scr:component/reference[1]/@policy");
+		xt.assertNoAttribute("scr:component/reference[1]/@field-option");
 
 		xt.assertAttribute("log2", "scr:component/reference[2]/@name");
 		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[2]/@interface");
 		xt.assertAttribute("0..n", "scr:component/reference[2]/@cardinality");
+		xt.assertAttribute("dynamic", "scr:component/reference[2]/@policy");
+		xt.assertNoAttribute("scr:component/reference[2]/@field-option");
 
 		xt.assertAttribute("log3", "scr:component/reference[3]/@name");
 		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[3]/@interface");
 		xt.assertNoAttribute("scr:component/reference[3]/@cardinality");
+		xt.assertNoAttribute("scr:component/reference[3]/@policy");
+		xt.assertNoAttribute("scr:component/reference[3]/@field-option");
+
+		xt.assertAttribute("log4", "scr:component/reference[4]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[4]/@interface");
+		xt.assertNoAttribute("scr:component/reference[4]/@cardinality");
+		xt.assertAttribute("dynamic", "scr:component/reference[4]/@policy");
+		xt.assertNoAttribute("scr:component/reference[4]/@field-option");
+
+		xt.assertAttribute("log5", "scr:component/reference[5]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[5]/@interface");
+		xt.assertAttribute("0..n", "scr:component/reference[5]/@cardinality");
+		xt.assertAttribute("dynamic", "scr:component/reference[5]/@policy");
+		xt.assertAttribute("update", "scr:component/reference[5]/@field-option");
 	}
 
 	@Component
