@@ -1,11 +1,26 @@
 package aQute.bnd.build;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
 
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.service.Strategy;
 
 public class Container {
 	public enum TYPE {
@@ -23,6 +38,9 @@ public class Container {
 	volatile Map<String,String>	attributes;
 	private long				manifestTime;
 	private Manifest			manifest;
+
+	/** provides access to expanded 'Bundle-ClassPath' entries */
+	private BundleClasspathCache	cache;
 
 	Container(Project project, String bsn, String version, TYPE type, File source, String error,
 			Map<String,String> attributes, DownloadBlocker db) {
@@ -184,10 +202,63 @@ public class Container {
 					in.close();
 				}
 			}
-		} else
+		}
+		// If this container is a bundle using the 'Bundle-ClassPath' header,
+		// then we need to add the associated entries to the build path
+		else if ((getType() == TYPE.EXTERNAL || getType() == TYPE.REPO) && hasBundleClasspath()) {
 			result.add(this);
+			result.addAll(getBundleClasspathEntries());
+		}
+		else {
+			result.add(this);
+		}
 
 		return result;
+	}
+
+	private List<Container> getBundleClasspathEntries() throws Exception {
+		List<Container> entries = new ArrayList<>();
+
+		BundleClasspathCache bcpCache = getCache();
+
+		// handles expanding entries specified using 'Bundle-ClassPath'
+		Parameters bcp = getBundleClasspath();
+		Jar jar = new Jar(file);
+		try {
+			for (String path : bcp.keySet()) {
+				Resource resource = jar.getResource(path);
+
+				if (resource != null) {
+					File bcpFile = bcpCache.getEntry(this, resource, path);
+					Container embedded = new Container(this.project, path, getVersion(), getType(), bcpFile, null,
+							getAttributes(), this.db);
+					entries.add(embedded);
+				}
+			}
+		}
+		finally {
+			jar.close();
+		}
+
+		return entries;
+	}
+
+	private Parameters getBundleClasspath() throws Exception {
+		Domain manifest = Domain.domain(file);
+		return manifest.getParameters(Constants.BUNDLE_CLASSPATH);
+	}
+
+	private boolean hasBundleClasspath() throws Exception {
+		return !getBundleClasspath().isEmpty();
+	}
+
+	private BundleClasspathCache getCache() {
+		if (cache == null) {
+			cache = new BundleClasspathCache();
+			File cacheDir = project.getWorkspace().getCache("bundle_classpath_cache");
+			cache.init(cacheDir);
+		}
+		return cache;
 	}
 
 	/**
