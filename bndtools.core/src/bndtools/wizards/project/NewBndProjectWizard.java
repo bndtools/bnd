@@ -12,8 +12,8 @@ package bndtools.wizards.project;
 
 import java.io.InputStream;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -72,39 +72,30 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
         addPage(pageTwo);
     }
 
-    private static void addTemplateParam(Map<String,List<Object>> params, String name, Object value) {
-        List<Object> list = params.get(name);
-        if (list == null) {
-            list = new LinkedList<>();
-            params.put(name, list);
-        }
-        list.add(value);
-    }
-
-    /**
-     * Generate the new Bnd model for the project. This implementation simply returns an empty Bnd model.
-     *
-     * @param monitor
-     */
     @Override
-    protected void generateProjectContent(IProject project, IProgressMonitor monitor) {
+    protected Map<String,String> getProjectTemplateParams() {
+        String projectName = pageOne.getProjectName();
+        String packageName = pageOne.getPackageName();
+        String packageDir = packageName.replace('.', '/');
+
+        Map<String,String> params = new HashMap<>();
+        params.put("projectName", projectName);
+        params.put("basePackageName", packageName);
+        params.put("basePackageDir", packageDir);
+
         ProjectPaths bndPaths = ProjectPaths.get(ProjectLayout.BND);
         ProjectPaths projectPaths = ProjectPaths.get(pageOne.getProjectLayout());
 
-        Map<String,List<Object>> templateParams = new HashMap<>();
-        addTemplateParam(templateParams, "projectName", project.getName());
-        addTemplateParam(templateParams, "basePackageDir", project.getName().replace('.', '/'));
-
         String projectTargetDir = projectPaths.getTargetDir();
         if (!bndPaths.getTargetDir().equals(projectTargetDir)) {
-            addTemplateParam(templateParams, "targetDir", projectTargetDir);
+            params.put("targetDir", projectTargetDir);
         }
 
         if (ProjectLayout.MAVEN == projectPaths.getLayout()) {
-            addTemplateParam(templateParams, "version", "1.0.0.SNAPSHOT");
-            addTemplateParam(templateParams, "outputmask", "${@bsn}-${version;===S;${@version}}.jar");
+            params.put("version", "1.0.0.SNAPSHOT");
+            params.put("outputmask", "${@bsn}-${version;===S;${@version}}.jar");
         } else {
-            addTemplateParam(templateParams, "version", DEFAULT_BUNDLE_VERSION);
+            params.put("version", DEFAULT_BUNDLE_VERSION);
         }
 
         Map<String,String> sourceOutputLocations = JavaProjectUtils.getSourceOutputLocations(pageTwo.getJavaProject());
@@ -114,12 +105,12 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
             String bin = entry.getValue();
 
             if (nr == 1) {
-                addTemplateParam(templateParams, "srcDir", src);
-                addTemplateParam(templateParams, "binDir", bin);
+                params.put("srcDir", src);
+                params.put("binDir", bin);
                 nr = 2;
             } else if (nr == 2) {
-                addTemplateParam(templateParams, "testSrcDir", src);
-                addTemplateParam(templateParams, "testBinDir", bin);
+                params.put("testSrcDir", src);
+                params.put("testBinDir", bin);
                 nr = 2;
             } else {
                 // if for some crazy reason we end up with more than 2 paths, we log them in
@@ -131,6 +122,21 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
                 // model.genericSet("X-WARN-" + nr, "Ignoring source path " + src + " -> " + bin);
                 nr++;
             }
+        }
+
+        return params;
+    }
+
+    /**
+     * Generate the new Bnd model for the project. This implementation simply returns an empty Bnd model.
+     *
+     * @param monitor
+     */
+    @Override
+    protected void generateProjectContent(IProject project, IProgressMonitor monitor, Map<String,String> params) {
+        Map<String,List<Object>> templateParams = new HashMap<>();
+        for (Entry<String,String> param : params.entrySet()) {
+            templateParams.put(param.getKey(), Collections.<Object> singletonList(param.getValue()));
         }
 
         Template template = templatePage.getTemplate();
@@ -154,7 +160,8 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
                 }
             }
         } catch (Exception e) {
-            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error generating project contents from template \"{0}\".", template.getName()), e));
+            String message = MessageFormat.format("Error generating project contents from template \"{0}\".", template != null ? template.getName() : "<null>");
+            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, e));
         }
     }
 

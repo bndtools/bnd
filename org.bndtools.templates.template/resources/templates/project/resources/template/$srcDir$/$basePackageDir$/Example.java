@@ -1,4 +1,4 @@
-package $projectName$;
+package $basePackageName$;
 
 public class Example {
 

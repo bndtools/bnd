@@ -61,6 +61,9 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
         nameGroup.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
+                IStatus status = nameGroup.getStatus();
+                setPageComplete(status.isOK());
+                setErrorMessage(status.isOK() ? null : status.getMessage());
                 locationGroup.setProjectName(nameGroup.getProjectName());
             }
         });
@@ -82,6 +85,10 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
     @Override
     public String getProjectName() {
         return nameGroup.getProjectName();
+    }
+
+    public String getPackageName() {
+        return nameGroup.getPackageName();
     }
 
     @Override
@@ -223,6 +230,8 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
                 }
 
             }
+
+            // check whether the base Java package name is legal
 
             final String location = null;// fLocationGroup.getLocation().toOSString();
 

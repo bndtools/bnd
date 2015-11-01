@@ -1,4 +1,4 @@
-package $projectName$;
+package $basePackageName$;
 
 import org.osgi.annotation.versioning.ConsumerType;
 

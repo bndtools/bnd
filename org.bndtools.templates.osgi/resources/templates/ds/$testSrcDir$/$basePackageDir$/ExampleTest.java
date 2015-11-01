@@ -1,4 +1,4 @@
-package $projectName$;
+package $basePackageName$;
 
 import static org.junit.Assert.*;
 

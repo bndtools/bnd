@@ -163,9 +163,12 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         }
     }
 
-    protected void generateProjectContent(IProject project, IProgressMonitor monitor) throws IOException {
+    @SuppressWarnings("unused")
+    protected void generateProjectContent(IProject project, IProgressMonitor monitor, Map<String,String> templateParams) throws IOException {
         // this implementation does nothing.
     }
+
+    protected abstract Map<String,String> getProjectTemplateParams();
 
     @Override
     public boolean performFinish() {
@@ -173,6 +176,8 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         if (result) {
             final IJavaProject javaProj = (IJavaProject) getCreatedElement();
             final IProject project = javaProj.getProject();
+            final Map<String,String> templateParams = getProjectTemplateParams();
+
             try {
                 // Run using the progress bar from the wizard dialog
                 getContainer().run(false, false, new IRunnableWithProgress() {
@@ -184,12 +189,10 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
                                 @Override
                                 public void run(IProgressMonitor monitor) throws CoreException {
                                     try {
-                                        generateProjectContent(project, monitor);
+                                        generateProjectContent(project, monitor, templateParams);
                                     } catch (IOException e) {
                                         throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error generating project content from template.", e));
                                     }
-                                    // TODO
-                                    // processGeneratedProject(ProjectPaths.get(pageOne.getProjectLayout()), bndModel, javaProj, monitor);
                                 }
                             };
                             javaProj.getProject().getWorkspace().run(op, monitor);

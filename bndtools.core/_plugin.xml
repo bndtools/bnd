@@ -154,18 +154,6 @@
             name="Bndtools OSGi Project"
             project="true">
       </wizard>
-      <!-- Disable until we fix it
-      <wizard
-            id="bndtools.newWrapProjWiz"
-            category="bndtools.wizardCategory"
-            class="bndtools.wizards.project.NewWrappingBndProjectWizardFactory"
-            finalPerspective="bndtools.perspective"
-            preferredPerspectives="bndtools.perspective"
-            icon="icons/wrap.png"
-            name="Wrap JAR as OSGi Bundle Project"
-            project="true">
-      </wizard>
-       -->
    </extension>
    <extension
          point="org.eclipse.ui.views">

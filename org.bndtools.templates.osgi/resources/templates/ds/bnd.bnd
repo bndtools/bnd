@@ -8,4 +8,4 @@
 	hamcrest-core; version=1.3
 
 Bundle-Version: 0.0.0.\${tstamp}
-Private-Package: $projectName$
+Private-Package: $basePackageName$

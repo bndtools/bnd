@@ -67,7 +67,8 @@ Project templates can use any of the following parameter names:
 	projectName -- name of the project
 	version -- version of the project
 	srcDir -- Java source directory
-	basePackageDir -- base package name (projectName, with dots replaced by slashes)
+	basePackageName -- base Java package name
+	basePackageDir -- base package dir (=basePackageName, with dots replaced by slashes)
 	binDir -- output classes directory
 	testSrcDir -- Java source directory for tests
 	testBinDir -- output classes directory for tests
