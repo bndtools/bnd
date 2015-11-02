@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -24,6 +25,9 @@ import java.util.Observer;
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ProjectLayout;
 import org.bndtools.api.ProjectPaths;
+import org.bndtools.templating.ResourceMap;
+import org.bndtools.templating.Template;
+import org.bndtools.templating.engine.StringTemplateEngine;
 import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -33,6 +37,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.corext.util.Messages;
@@ -45,6 +50,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
+import bndtools.Plugin;
+
 public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
     private final ProjectNameGroup nameGroup = new ProjectNameGroup();
@@ -52,6 +59,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
     private final ProjectLayoutGroup layoutGroup = new ProjectLayoutGroup("Project Layout");
     @SuppressWarnings("unused")
     private final Validator fValidator;
+    private Template template;
 
     NewBndProjectWizardPageOne() {
         setTitle("Create a Bnd OSGi Project");
@@ -161,6 +169,22 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
         List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(2);
         newEntries.add(JavaCore.newSourceEntry(projectPath.append(projectPaths.getSrc()), null, projectPath.append(projectPaths.getBin())));
+
+        boolean enableTestSrcDir;
+        try {
+            if (template == null)
+                enableTestSrcDir = true;
+            else {
+                ResourceMap inputs = template.getInputSources();
+                Collection<String> templateParamNames = new StringTemplateEngine().getTemplateParameterNames(inputs);
+                enableTestSrcDir = templateParamNames.contains(ProjectTemplateParam.TEST_SRC_DIR.getString());
+            }
+        } catch (Exception e) {
+            Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error accessing template parameters", e));
+            enableTestSrcDir = true;
+        }
+        if (enableTestSrcDir)
+            newEntries.add(JavaCore.newSourceEntry(projectPath.append(projectPaths.getTestSrc()), null, projectPath.append(projectPaths.getTestBin())));
 
         return newEntries.toArray(new IClasspathEntry[newEntries.size()]);
     }
@@ -309,6 +333,10 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
         //
         // return file.canWrite();
         // }
+    }
+
+    public void setTemplate(Template template) {
+        this.template = template;
     }
 
 }

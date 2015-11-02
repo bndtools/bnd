@@ -10,6 +10,8 @@
  *******************************************************************************/
 package bndtools.wizards.project;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.Collections;
@@ -63,6 +65,13 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
         templatePage = new RepoTemplateSelectionWizardPage("projectTemplateSelection", "project", baseTemplate);
         templatePage.setTitle("Select Project Template");
+
+        templatePage.addPropertyChangeListener(RepoTemplateSelectionWizardPage.PROP_TEMPLATE, new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                pageOne.setTemplate(templatePage.getTemplate());
+            }
+        });
     }
 
     @Override
@@ -74,28 +83,26 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
     @Override
     protected Map<String,String> getProjectTemplateParams() {
-        String projectName = pageOne.getProjectName();
+        Map<ProjectTemplateParam,String> params = new HashMap<>();
+        params.put(ProjectTemplateParam.PROJECT_NAME, pageOne.getProjectName());
         String packageName = pageOne.getPackageName();
+        params.put(ProjectTemplateParam.BASE_PACKAGE_NAME, packageName);
         String packageDir = packageName.replace('.', '/');
-
-        Map<String,String> params = new HashMap<>();
-        params.put("projectName", projectName);
-        params.put("basePackageName", packageName);
-        params.put("basePackageDir", packageDir);
+        params.put(ProjectTemplateParam.BASE_PACKAGE_DIR, packageDir);
 
         ProjectPaths bndPaths = ProjectPaths.get(ProjectLayout.BND);
         ProjectPaths projectPaths = ProjectPaths.get(pageOne.getProjectLayout());
 
         String projectTargetDir = projectPaths.getTargetDir();
         if (!bndPaths.getTargetDir().equals(projectTargetDir)) {
-            params.put("targetDir", projectTargetDir);
+            params.put(ProjectTemplateParam.TARGET_DIR, projectTargetDir);
         }
 
         if (ProjectLayout.MAVEN == projectPaths.getLayout()) {
-            params.put("version", "1.0.0.SNAPSHOT");
-            params.put("outputmask", "${@bsn}-${version;===S;${@version}}.jar");
+            params.put(ProjectTemplateParam.VERSION, "1.0.0.SNAPSHOT");
+            params.put(ProjectTemplateParam.VERSION_OUTPUTMASK, "${@bsn}-${version;===S;${@version}}.jar");
         } else {
-            params.put("version", DEFAULT_BUNDLE_VERSION);
+            params.put(ProjectTemplateParam.VERSION, DEFAULT_BUNDLE_VERSION);
         }
 
         Map<String,String> sourceOutputLocations = JavaProjectUtils.getSourceOutputLocations(pageTwo.getJavaProject());
@@ -105,12 +112,12 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
             String bin = entry.getValue();
 
             if (nr == 1) {
-                params.put("srcDir", src);
-                params.put("binDir", bin);
+                params.put(ProjectTemplateParam.SRC_DIR, src);
+                params.put(ProjectTemplateParam.BIN_DIR, bin);
                 nr = 2;
             } else if (nr == 2) {
-                params.put("testSrcDir", src);
-                params.put("testBinDir", bin);
+                params.put(ProjectTemplateParam.TEST_SRC_DIR, src);
+                params.put(ProjectTemplateParam.TEST_BIN_DIR, bin);
                 nr = 2;
             } else {
                 // if for some crazy reason we end up with more than 2 paths, we log them in
@@ -124,7 +131,10 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
             }
         }
 
-        return params;
+        Map<String,String> params_ = new HashMap<>();
+        for (Entry<ProjectTemplateParam,String> entry : params.entrySet())
+            params_.put(entry.getKey().getString(), entry.getValue());
+        return params_;
     }
 
     /**
