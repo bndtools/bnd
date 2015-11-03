@@ -41,6 +41,26 @@ import aQute.service.reporter.Report.Location;
 @SuppressWarnings("resource")
 public class BuilderTest extends BndTestCase {
 
+    /*
+     * #1172 a warning being generated when a package is split between two
+     * jar files that are both in the bundle classpath, and so part of the
+     * same bundle.
+     */
+    public void test1172SplitPackageWarningsInBundleClasspath() throws Exception {
+		Builder A = new Builder();
+        try {
+            A.addClasspath(new Jar(new File("jar/sp-tc-jar1.jar")));
+            A.addClasspath(new Jar(new File("jar/sp-tc-jar1.jar")));
+            A.setBundleClasspath("sp-tc-jar1.jar,sp-tc-jar2.jar");
+            A.setExportPackage("org.apache.felix.tc");
+            A.setIncludeResource("sp-tc-jar1.jar=jar/sp-tc-jar1.jar,sp-tc-jar2.jar=jar/sp-tc-jar2.jar");
+            A.build();
+            assertTrue(A.check());
+        } finally {
+            A.close();
+        }
+    }
+
 	/**
 	 * #1017 Wrong import version range being generated On one project I depend
 	 * on bundle A and bundle B. Both only export packages in version 1.0. No
