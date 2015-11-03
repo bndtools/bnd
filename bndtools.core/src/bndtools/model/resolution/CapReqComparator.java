@@ -55,8 +55,8 @@ public class CapReqComparator implements Comparator<Object> {
 
         // Compare the main attribute
         String attribName = R5LabelFormatter.getMainAttributeName(ns1);
-        String attrib1 = (String) c1.getAttributes().get(attribName);
-        String attrib2 = (String) c2.getAttributes().get(attribName);
+        String attrib1 = c1.getAttributes().get(attribName).toString();
+        String attrib2 = c2.getAttributes().get(attribName).toString();
         int attribDiff = attrib1.compareTo(attrib2);
         if (attribDiff != 0)
             return attribDiff;
