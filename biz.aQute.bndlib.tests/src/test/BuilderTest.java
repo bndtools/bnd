@@ -50,7 +50,7 @@ public class BuilderTest extends BndTestCase {
 		Builder A = new Builder();
         try {
             A.addClasspath(new Jar(new File("jar/sp-tc-jar1.jar")));
-            A.addClasspath(new Jar(new File("jar/sp-tc-jar1.jar")));
+            A.addClasspath(new Jar(new File("jar/sp-tc-jar2.jar")));
             A.setBundleClasspath("sp-tc-jar1.jar,sp-tc-jar2.jar");
             A.setExportPackage("org.apache.felix.tc");
             A.setIncludeResource("sp-tc-jar1.jar=jar/sp-tc-jar1.jar,sp-tc-jar2.jar=jar/sp-tc-jar2.jar");
