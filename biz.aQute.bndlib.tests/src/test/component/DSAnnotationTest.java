@@ -2868,8 +2868,6 @@ public class DSAnnotationTest extends BndTestCase {
 	@TestExtensions(stringAttr = "bar", fooAttr = Foo.A)
 	@Component
 	public static class ExtraAttributes10 {
-		private static final long	serialVersionUID	= 1L;
-
 		@Activate
 		protected void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
