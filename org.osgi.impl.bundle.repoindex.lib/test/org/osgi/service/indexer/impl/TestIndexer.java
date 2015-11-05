@@ -42,6 +42,7 @@ public class TestIndexer extends TestCase {
 	/**
 	 * Test if the resolver is not affected if we use a dummy resolver
 	 */
+	@SuppressWarnings("deprecation")
 	public void testResolverUnaffected() throws Exception {
 
 		RepoIndex indexer = new RepoIndex();
@@ -76,6 +77,7 @@ public class TestIndexer extends TestCase {
 	/**
 	 * Test if the resolver can change the URLs
 	 */
+	@SuppressWarnings("deprecation")
 	public void testResolverEffect() throws Exception {
 
 		RepoIndex indexer = new RepoIndex();
