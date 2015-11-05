@@ -403,7 +403,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			if (hasIndex)
 				index.put(bsn + "-" + version.getWithoutQualifier(),
-						buildDescriptor(file, tmpJar, digest, bsn, version));
+						buildDescriptor(file, new Jar(file), digest, bsn, version));
 
 			dirty = true;
 
