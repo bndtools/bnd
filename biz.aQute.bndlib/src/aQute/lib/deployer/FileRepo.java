@@ -397,14 +397,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			reporter.trace("updating %s ", file.getAbsolutePath());
 
+			// An open jar on file will fail rename on windows
+			tmpJar.close();
 			IO.rename(tmpFile, file);
 
 			if (hasIndex)
 				index.put(bsn + "-" + version.getWithoutQualifier(),
 						buildDescriptor(file, tmpJar, digest, bsn, version));
-
-			// An open jar on file will fail rename on windows
-			tmpJar.close();
 
 			dirty = true;
 
