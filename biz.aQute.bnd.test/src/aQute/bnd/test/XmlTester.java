@@ -1,7 +1,7 @@
 package aQute.bnd.test;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -68,7 +68,6 @@ public class XmlTester {
 		document = db.parse(in);
 	}
 
-	@SuppressWarnings("deprecation")
 	public void assertExactAttribute(String value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
@@ -76,7 +75,6 @@ public class XmlTester {
 		assertEquals(value, o);
 	}
 
-	@SuppressWarnings("deprecation")
 	public void assertAttribute(String value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
@@ -84,7 +82,6 @@ public class XmlTester {
 		assertEquals(value, o.trim());
 	}
 
-	@SuppressWarnings("deprecation")
 	public void assertTrimmedAttribute(String value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
@@ -92,21 +89,18 @@ public class XmlTester {
 		assertEquals(value, o.trim().replaceAll("\n", "\\\\n"));
 	}
 
-	@SuppressWarnings("deprecation")
 	public void assertNoAttribute(String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
 		assertEquals("", o);
 	}
 
-	@SuppressWarnings("deprecation")
 	public void assertNamespace(String namespace) {
 		Element element = document.getDocumentElement();
 		String xmlns = element.getNamespaceURI();
 		assertEquals(namespace, xmlns);
 	}
 
-	@SuppressWarnings("deprecation")
 	public void assertNumber(Double value, String expr) throws XPathExpressionException {
 		System.err.println(expr);
 		Double o = (Double) xpath.evaluate(expr, document, XPathConstants.NUMBER);

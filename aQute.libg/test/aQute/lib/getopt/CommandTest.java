@@ -59,8 +59,7 @@ public class CommandTest extends TestCase {
 
 	}
 
-	@SuppressWarnings("deprecation")
-	public static class C1 extends junit.framework.Assert {
+	public static class C1 {
 		public static String _c1(c1options x) {
 
 			assertEquals(true, x.flag());
