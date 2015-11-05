@@ -1,31 +1,52 @@
 package aQute.bnd.deployer.repository;
 
-import java.io.*;
-import java.net.*;
-import java.security.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.osgi.service.coordinator.*;
-import org.osgi.service.log.*;
+import org.osgi.service.coordinator.Coordination;
+import org.osgi.service.coordinator.Coordinator;
+import org.osgi.service.coordinator.Participant;
+import org.osgi.service.log.LogService;
 
-import aQute.bnd.deployer.repository.api.*;
-import aQute.bnd.filerepo.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
+import aQute.bnd.filerepo.FileRepo;
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Verifier;
-import aQute.bnd.service.*;
+import aQute.bnd.service.Actionable;
+import aQute.bnd.service.Refreshable;
+import aQute.bnd.service.RepositoryListenerPlugin;
+import aQute.bnd.service.ResourceHandle;
 import aQute.bnd.service.ResourceHandle.Location;
-import aQute.bnd.version.*;
-import aQute.lib.hex.*;
-import aQute.lib.io.*;
-import aQute.libg.cryptography.*;
+import aQute.bnd.version.Version;
+import aQute.bnd.version.VersionRange;
+import aQute.lib.hex.Hex;
+import aQute.lib.io.IO;
+import aQute.libg.cryptography.SHA1;
+import aQute.libg.cryptography.SHA256;
 
 public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, Participant, Actionable {
 
 	private final String		UPWARDS_ARROW	= " \u2191";
 	private final String		DOWNWARDS_ARROW	= " \u2193";
-	Pattern						REPO_FILE		= Pattern
-			.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+)(-[-a-zA-z0-9_]+)?\\.(jar|lib)");
+	Pattern						REPO_FILE				= Pattern
+																.compile("([-a-zA-z0-9_\\.]+)(-|_)([0-9\\.]+)(-[-a-zA-z0-9_]+)?\\.(jar|lib)");
 	private static final String	CACHE_PATH		= ".cache";
 	public static final String	PROP_LOCAL_DIR	= "local";
 	public static final String	PROP_READONLY	= "readonly";
