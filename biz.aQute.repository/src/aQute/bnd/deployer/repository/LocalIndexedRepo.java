@@ -26,7 +26,6 @@ import org.osgi.service.coordinator.Participant;
 import org.osgi.service.log.LogService;
 
 import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
-import aQute.bnd.filerepo.FileRepo;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.Actionable;
@@ -458,7 +457,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			String version = (String) target[2];
 
 			@SuppressWarnings("deprecation")
-			FileRepo storageRepo = new FileRepo(storageDir);
+			aQute.bnd.filerepo.FileRepo storageRepo = new aQute.bnd.filerepo.FileRepo(storageDir);
 			@SuppressWarnings("deprecation")
 			final File f = storageRepo.get(bsn, new VersionRange(version, version), 0);
 			if (f != null) {
