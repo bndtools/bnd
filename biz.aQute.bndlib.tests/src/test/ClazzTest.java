@@ -4,6 +4,9 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 
+import aQute.bnd.component.AnnotationReader;
+import aQute.bnd.component.DSAnnotations;
+import aQute.bnd.xmlattribute.XMLAttributeFinder;
 import junit.framework.*;
 
 import org.xml.sax.*;
@@ -147,5 +150,19 @@ public class ClazzTest extends TestCase {
 				new ClassDataCollector() {});
 		Set<PackageRef> referred = c.getReferred();
 		System.out.println(referred);
+	}
+
+	public @interface RecursiveAnno {
+		@RecursiveAnno("recursive")
+		String value() default "";
+	}
+
+	public void testRecursiveAnnotation() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$RecursiveAnno.class");
+		Analyzer analyzer = new Analyzer();
+		Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+		clazz.parseClassFile();
+		analyzer.getClassspace().put(clazz.getClassName(), clazz);
+		AnnotationReader.getDefinition(clazz, analyzer, EnumSet.noneOf(DSAnnotations.Options.class), new XMLAttributeFinder(analyzer));
 	}
 }
