@@ -51,7 +51,7 @@ public class LauncherTest extends TestCase {
 		repo.put(new FileInputStream(t2), null);
 		t1 = repo.get("bsn-1", new Version(1, 0, 0), null);
 		t2 = repo.get("bsn-2", new Version(1, 0, 0), null);
-		repo.put(new FileInputStream(IO.getFile("generated/biz.aQute.remote.launcher-3.0.0.jar")), null);
+		repo.put(new FileInputStream(IO.getFile("generated/biz.aQute.remote.launcher.jar")), null);
 
 		workspace.getPlugins().add(repo);
 
@@ -68,7 +68,7 @@ public class LauncherTest extends TestCase {
 		framework.init();
 		framework.start();
 		context = framework.getBundleContext();
-		location = "reference:" + IO.getFile("generated/biz.aQute.remote.agent-3.0.0.jar").toURI().toString();
+		location = "reference:" + IO.getFile("generated/biz.aQute.remote.agent.jar").toURI().toString();
 		agent = context.installBundle(location);
 		agent.start();
 
