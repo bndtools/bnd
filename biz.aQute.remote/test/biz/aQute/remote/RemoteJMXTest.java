@@ -35,7 +35,7 @@ public class RemoteJMXTest extends TestCase {
 		String[] bundles = {
 				"../cnf/repo/osgi.cmpn/osgi.cmpn-4.3.1.jar", "testdata/slf4j-simple-1.7.12.jar",
 				"testdata/slf4j-api-1.7.12.jar", "testdata/org.apache.aries.util-1.1.0.jar",
-				"testdata/org.apache.aries.jmx-1.1.1.jar", "generated/biz.aQute.remote.test.jmx-3.0.0.jar"
+				"testdata/org.apache.aries.jmx-1.1.1.jar", "generated/biz.aQute.remote.test.jmx.jar"
 		};
 
 		for (String bundle : bundles) {
@@ -61,7 +61,7 @@ public class RemoteJMXTest extends TestCase {
 		JMXBundleDeployer jmxBundleDeployer = new JMXBundleDeployer();
 
 		long bundleId = jmxBundleDeployer.deploy("biz.aQute.remote.agent",
-				IO.getFile("generated/biz.aQute.remote.agent-3.0.0.jar"));
+				IO.getFile("generated/biz.aQute.remote.agent.jar"));
 
 		assertTrue(bundleId > 0);
 
