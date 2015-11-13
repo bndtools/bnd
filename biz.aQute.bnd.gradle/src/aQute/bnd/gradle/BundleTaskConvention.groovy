@@ -132,7 +132,6 @@ class BundleTaskConvention {
 
         // set builder classpath
         def Set<File> artifacts = new LinkedHashSet<File>(configuration.resolvedConfiguration.resolvedArtifacts*.file)
-        artifacts.add(temporaryFile)
         builder.setClasspath(artifacts.toArray(new File[artifacts.size()]))
         logger.debug 'builder classpath: {}', builder.getClasspath()*.getSource()
 
