@@ -131,7 +131,7 @@ class BundleTaskConvention {
         def File temporaryFile = new File(temporaryDir, archiveName)
 
         // set builder classpath
-        builder.setClasspath(configuration.resolvedConfiguration.resolvedArtifacts*.file as File[])
+        builder.setClasspath(configuration.resolvedConfiguration.resolvedArtifacts.findAll{it.type == 'jar'}*.file as File[])
         logger.debug 'builder classpath: {}', builder.getClasspath()*.getSource()
 
         // set builder sourcepath if -sources=true
