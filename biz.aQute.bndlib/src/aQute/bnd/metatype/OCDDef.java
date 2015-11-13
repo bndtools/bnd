@@ -21,15 +21,19 @@ public class OCDDef extends ExtensionDef {
 	String	name;
 	String	localization;
 	String	description;
+	MetatypeVersion				version		= MetatypeVersion.VERSION_1_2;
 
 	public OCDDef(XMLAttributeFinder finder) {
 		super(finder);
 	}
 
 	void prepare(Analyzer analyzer) {
+		if (attributes.isEmpty()) {
+			updateVersion(MetatypeVersion.VERSION_1_3);
+		}
 		Set<String> adIds = new HashSet<String>();
 		for (ADDef ad : attributes) {
-			ad.prepare();
+			ad.prepare(this);
 			if (!adIds.add(ad.id)) {
 				analyzer.error("OCD for %s.%s has duplicate AD id %s due to colliding munged element names", id, name,
 						ad.id);
@@ -43,7 +47,7 @@ public class OCDDef extends ExtensionDef {
 		// .addAttribute("xmlns:metatype",
 		// MetatypeVersion.VERSION_1_3.getNamespace());
 		Namespaces namespaces = new Namespaces();
-		String xmlns = MetatypeVersion.VERSION_1_3.getNamespace();
+		String xmlns = version.getNamespace();
 		namespaces.registerNamespace("metatype", xmlns);
 		addNamespaces(namespaces, xmlns);
 		for (ADDef ad : attributes)
@@ -83,6 +87,17 @@ public class OCDDef extends ExtensionDef {
 		}
 
 		return metadata;
+	}
+
+	void updateVersion(MetatypeVersion version) {
+		this.version = max(this.version, version);
+	}
+
+	static <T extends Comparable<T>> T max(T a, T b) {
+		int n = a.compareTo(b);
+		if (n >= 0)
+			return a;
+		return b;
 	}
 
 }

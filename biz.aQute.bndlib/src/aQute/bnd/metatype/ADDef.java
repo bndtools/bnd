@@ -34,8 +34,12 @@ public class ADDef extends ExtensionDef {
 		super(finder);
 	}
 
-	public void prepare() {
-		typeString = (type == null) ? "*INVALID*" : type.toString();
+	public void prepare(OCDDef ocdDef) {
+		if (type == AttributeType.CHARACTER && ocdDef.version == MetatypeVersion.VERSION_1_2) {
+			typeString = "Char";
+		} else {
+			typeString = (type == null) ? "*INVALID*" : type.toString();
+		}
 	}
 
 	Tag getTag(Namespaces namespaces) {
