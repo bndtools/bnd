@@ -1163,7 +1163,7 @@ public class Builder extends Analyzer {
 				jar.putResource(path, resource);
 
 				if (isTrue(extra.get(LIB_DIRECTIVE))) {
-					setProperty(BUNDLE_CLASSPATH, append(getProperty(BUNDLE_CLASSPATH), path));
+					setProperty(BUNDLE_CLASSPATH, append(getProperty(BUNDLE_CLASSPATH, "."), path));
 				}
 			} else if (from.getName().equals(Constants.EMPTY_HEADER)) {
 				jar.putResource(path, new EmbeddedResource(new byte[0], 0));
