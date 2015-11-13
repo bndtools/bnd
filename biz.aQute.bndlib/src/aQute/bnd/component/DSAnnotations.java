@@ -31,7 +31,7 @@ import aQute.lib.strings.Strings;
  */
 public class DSAnnotations implements AnalyzerPlugin {
 
-	enum Options {
+	public enum Options {
 		inherit, felixExtensions, extender
 	};
 

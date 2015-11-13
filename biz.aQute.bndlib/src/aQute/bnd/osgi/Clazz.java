@@ -11,10 +11,12 @@ import java.nio.ByteOrder;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -436,6 +438,9 @@ public class Clazz {
 	boolean	hasClassAnnotations;
 	boolean	hasDefaultConstructor;
 
+	int						depth		= 0;
+	Deque<ClassDataCollector> cds		= new LinkedList<>();
+
 	TypeRef				className;
 	Object				pool[];
 	int					intPool[];
@@ -489,16 +494,20 @@ public class Clazz {
 	public Set<TypeRef> parseClassFile(InputStream in, ClassDataCollector cd) throws Exception {
 		DataInputStream din = new DataInputStream(in);
 		try {
+			cds.push(this.cd);
 			this.cd = cd;
 			return parseClassFile(din);
 		}
 		finally {
-			cd = null;
+			this.cd = cds.pop();
 			din.close();
 		}
 	}
 
 	Set<TypeRef> parseClassFile(DataInputStream in) throws Exception {
+		analyzer.trace("parseClassFile(): path=%s resource=%s", path, resource);
+
+		++depth;
 		xref = new HashSet<TypeRef>();
 
 		boolean crawl = cd != null; // Crawl the byte code if we have a
@@ -1682,9 +1691,11 @@ public class Clazz {
 	 */
 
 	public void reset() {
-		pool = null;
-		intPool = null;
-		xref = null;
+		if (--depth == 0) {
+			pool = null;
+			intPool = null;
+			xref = null;
+		}
 	}
 
 	public boolean is(QUERY query, Instruction instr, Analyzer analyzer) throws Exception {
