@@ -23,6 +23,7 @@ import java.lang.reflect.Modifier;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -36,12 +37,14 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Builder;
@@ -78,6 +81,9 @@ public class BndMavenPlugin extends AbstractMojo {
 
 	@Parameter(defaultValue = "${settings}", readonly = true)
 	private Settings settings;
+	
+	@Component
+	private BuildContext buildContext;
 
 	public void execute() throws MojoExecutionException {
 		Log log = getLog();
@@ -95,11 +101,10 @@ public class BndMavenPlugin extends AbstractMojo {
 		Properties mavenProperties = new Properties(beanProperties);
 		mavenProperties.putAll(project.getProperties());
 
-		Builder builder = new Builder(new Processor(mavenProperties, false));
-		builder.setTrace(log.isDebugEnabled());
-		
-		File bndFile = new File(project.getBasedir(), Project.BNDFILE);
-		try {
+		try (Builder builder = new Builder(new Processor(mavenProperties, false))) {
+			builder.setTrace(log.isDebugEnabled());
+			File bndFile = new File(project.getBasedir(), Project.BNDFILE);
+
 			builder.setBase(project.getBasedir());
 			loadProjectProperties(builder, project);
 			
@@ -145,11 +150,9 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			// Output manifest to <classes>/META-INF/MANIFEST.MF
 			Files.createDirectories(manifestPath.toPath().getParent());
-			FileOutputStream manifestOut = new FileOutputStream(manifestPath);
-			try {
+
+			try (OutputStream manifestOut = buildContext.newFileOutputStream(manifestPath)) {
 				bndJar.writeManifest(manifestOut);
-			} finally {
-				manifestOut.close();
 			}
 
 			// Expand Jar into target/classes
@@ -160,8 +163,6 @@ public class BndMavenPlugin extends AbstractMojo {
 
 		} catch (Exception e) {
 			throw new MojoExecutionException("bnd error", e);
-		} finally {
-			IO.close(builder);
 		}
 	}
 
@@ -197,7 +198,7 @@ public class BndMavenPlugin extends AbstractMojo {
 		}
 	}
 	
-	private static void expandJar(Jar jar, File dir) throws Exception {
+	private void expandJar(Jar jar, File dir) throws Exception {
 		dir = dir.getAbsoluteFile();
 		if (!dir.exists() && !dir.mkdirs()) {
 			throw new IOException("Could not create directory " + dir);
@@ -222,7 +223,9 @@ public class BndMavenPlugin extends AbstractMojo {
 					continue;
 			}
 
-			IO.copy(resource.openInputStream(), outFile);
+			try (OutputStream out = buildContext.newFileOutputStream(outFile)) {
+				IO.copy(resource.openInputStream(), out);
+			}
 		}
 	}
 
