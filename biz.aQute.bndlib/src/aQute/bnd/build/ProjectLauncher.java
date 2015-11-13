@@ -1,18 +1,30 @@
 package aQute.bnd.build;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.*;
-import java.util.jar.*;
-import java.util.regex.*;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
-import aQute.libg.command.*;
-import aQute.libg.generics.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.Strategy;
+import aQute.libg.command.Command;
+import aQute.libg.generics.Create;
 
 /**
  * A Project Launcher is a base class to be extended by launchers. Launchers are
@@ -87,7 +99,7 @@ public abstract class ProjectLauncher extends Processor {
 			if (file != null && (file.isFile() || file.isDirectory())) {
 				runbundles.add(file.getAbsolutePath());
 			} else {
-				error("Bundle file \"%s\" does not exist, given error is %s", file, container.getError());
+				project.error("Bundle file \"%s\" does not exist, given error is %s", file, container.getError());
 			}
 		}
 
