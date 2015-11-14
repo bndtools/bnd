@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,7 +35,7 @@ public class BndPreferences {
     private static final String PREF_VCS_IGNORES_PLUGINS = "versionControlIgnoresPlugins";
     private static final String PREF_BUILDBEFORELAUNCH = "buildBeforeLaunch";
     private static final String PREF_ENABLE_TEMPLATE_REPO = "enableTemplateRepo";
-    private static final String PREF_TEMPLATE_REPO_URI = "templateRepoUri";
+    private static final String PREF_TEMPLATE_REPO_URI_LIST = "templateRepoUriList";
 
     private final IPreferenceStore store;
 
@@ -49,7 +50,7 @@ public class BndPreferences {
         store.setDefault(PREF_VCS_IGNORES_CREATE, true);
         store.setDefault(PREF_VCS_IGNORES_PLUGINS, "");
         store.setDefault(PREF_ENABLE_TEMPLATE_REPO, true);
-        store.setDefault(PREF_TEMPLATE_REPO_URI, "https://raw.githubusercontent.com/bndtools/bundle-hub/master/index.xml.gz");
+        store.setDefault(PREF_TEMPLATE_REPO_URI_LIST, "https://raw.githubusercontent.com/bndtools/bundle-hub/master/index.xml.gz");
     }
 
     private String mapToPreference(Map<String,Boolean> names) {
@@ -165,12 +166,19 @@ public class BndPreferences {
         store.setValue(PREF_ENABLE_TEMPLATE_REPO, enable);
     }
 
-    public String getTemplateRepoUri() {
-        return store.getString(PREF_TEMPLATE_REPO_URI);
+    public List<String> getTemplateRepoUriList() {
+        String urisStr = store.getString(PREF_TEMPLATE_REPO_URI_LIST);
+        return Arrays.asList(urisStr.split("\\s"));
     }
 
-    public void setTemplateRepoUri(String uri) {
-        store.setValue(PREF_TEMPLATE_REPO_URI, uri);
+    public void setTemplateRepoUriList(List<String> uris) {
+        StringBuilder sb = new StringBuilder();
+        for (Iterator<String> i = uris.iterator(); i.hasNext();) {
+            sb.append(i.next());
+            if (i.hasNext())
+                sb.append(' ');
+        }
+        store.setValue(PREF_TEMPLATE_REPO_URI_LIST, sb.toString());
     }
 
     public IPreferenceStore getStore() {

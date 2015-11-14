@@ -10,6 +10,7 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -249,7 +250,7 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
             BndPreferences bndPrefs = new BndPreferences();
             if (bndPrefs.getEnableTemplateRepo()) {
                 try {
-                    FixedIndexedRepo repo = loadRepo(bndPrefs.getTemplateRepoUri());
+                    FixedIndexedRepo repo = loadRepo(bndPrefs.getTemplateRepoUriList());
                     RepoPluginsBundleLocator locator = new RepoPluginsBundleLocator(Collections.<RepositoryPlugin> singletonList(repo));
                     ReposTemplateLoader loader = new ReposTemplateLoader(Collections.<Repository> singletonList(repo), locator);
                     templates.addAll(loader.findTemplates(templateType));
@@ -279,9 +280,15 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
             return Status.OK_STATUS;
         }
 
-        private FixedIndexedRepo loadRepo(String uri) throws IOException, URISyntaxException {
+        private FixedIndexedRepo loadRepo(List<String> uris) throws IOException, URISyntaxException {
             FixedIndexedRepo repo = new FixedIndexedRepo();
-            repo.setLocations(uri);
+            StringBuilder sb = new StringBuilder();
+            for (Iterator<String> iter = uris.iterator(); iter.hasNext();) {
+                sb.append(iter.next());
+                if (iter.hasNext())
+                    sb.append(',');
+            }
+            repo.setLocations(sb.toString());
             return repo;
         }
     }

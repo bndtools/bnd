@@ -1,4 +1,4 @@
-package bndtools.editor.project;
+package bndtools.shared;
 
 import java.io.File;
 import java.net.URI;
@@ -20,20 +20,28 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-public class StandaloneLinkDialog extends TitleAreaDialog {
+public class URLDialog extends TitleAreaDialog {
 
     private String locationStr = null;
     private URI location = null;
     private String name = null;
+    private final String title;
+    private final boolean named;
 
-    public StandaloneLinkDialog(Shell parentShell) {
+    public URLDialog(Shell parentShell, String title) {
+        this(parentShell, title, true);
+    }
+
+    public URLDialog(Shell parentShell, String title, boolean named) {
         super(parentShell);
+        this.title = title;
+        this.named = named;
         setShellStyle(getShellStyle() | SWT.RESIZE);
     }
 
     @Override
     protected Control createDialogArea(Composite parent) {
-        setTitle("Add repository URL");
+        setTitle(title);
 
         Composite area = (Composite) super.createDialogArea(parent);
         Composite container = new Composite(area, SWT.NONE);
@@ -47,17 +55,6 @@ public class StandaloneLinkDialog extends TitleAreaDialog {
 
         final Text txtUrl = new Text(container, SWT.BORDER);
         txtUrl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-
-        Button btnBrowseFile = new Button(container, SWT.PUSH);
-        btnBrowseFile.setText("Local File");
-
-        new Label(container, SWT.NONE).setText("Name:");
-        final Text txtName = new Text(container, SWT.BORDER);
-        txtName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-        @SuppressWarnings("unused")
-        Label lblSpacer1 = new Label(container, SWT.NONE); // spacer
-
-        // Listeners
         txtUrl.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent ev) {
@@ -65,12 +62,9 @@ public class StandaloneLinkDialog extends TitleAreaDialog {
                 updateFromInput();
             }
         });
-        txtName.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent ev) {
-                name = txtName.getText();
-            }
-        });
+
+        Button btnBrowseFile = new Button(container, SWT.PUSH);
+        btnBrowseFile.setText("Local File");
         btnBrowseFile.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -84,6 +78,22 @@ public class StandaloneLinkDialog extends TitleAreaDialog {
             }
         });
 
+        if (named) {
+            new Label(container, SWT.NONE).setText("Name:");
+            final Text txtName = new Text(container, SWT.BORDER);
+            txtName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+            @SuppressWarnings("unused")
+            Label lblSpacer1 = new Label(container, SWT.NONE); // spacer
+
+            txtName.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent ev) {
+                    name = txtName.getText();
+                }
+            });
+        }
+
+        // Listeners
         // Load from state
         if (location != null)
             txtUrl.setText(location.toString());

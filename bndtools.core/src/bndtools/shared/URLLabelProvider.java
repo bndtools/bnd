@@ -14,7 +14,7 @@ public class URLLabelProvider extends StyledCellLabelProvider {
     private final Image linkImg;
 
     public URLLabelProvider(Device device) {
-        linkImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/link.png").createImage(device);
+        linkImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/link.png").createImage(device);
     }
 
     @Override
