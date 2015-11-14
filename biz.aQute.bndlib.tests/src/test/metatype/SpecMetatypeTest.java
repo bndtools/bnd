@@ -158,7 +158,7 @@ public class SpecMetatypeTest extends TestCase {
 
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$Naming.xml");
 		IO.copy(r.openInputStream(), System.err);
-		XmlTester xt = xmlTester13(r);
+		XmlTester xt = xmlTester12(r);
 
 		assertAD(xt, "secret", "Secret");
 		assertAD(xt, ".secret", "Secret");
@@ -494,7 +494,7 @@ public class SpecMetatypeTest extends TestCase {
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
-		XmlTester xt = xmlTester13(r);
+		XmlTester xt = xmlTester12(r);
 
 		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='collection']/@cardinality");
 		xt.assertExactAttribute("-2147483648", "metatype:MetaData/OCD/AD[@id='list']/@cardinality");
@@ -546,7 +546,7 @@ public class SpecMetatypeTest extends TestCase {
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$Enums.xml");
 		IO.copy(r.openInputStream(), System.err);
 
-		XmlTester xt = xmlTester13(r);
+		XmlTester xt = xmlTester12(r);
 
 		assertAD(xt, "r", "R", optionLabels, optionValues);
 		assertAD(xt, "i", "I", optionLabels, optionValues);
@@ -736,7 +736,7 @@ public class SpecMetatypeTest extends TestCase {
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
-		XmlTester xt = xmlTester13(r);
+		XmlTester xt = xmlTester12(r);
 
 		assertAD(xt, "noSettings", "No settings", null, null, null, 0, "String", null, null, null);
 		assertAD(xt, "withId", "id", null, null, null, 0, "String", null, null, null);
@@ -761,6 +761,10 @@ public class SpecMetatypeTest extends TestCase {
 		}, new String[] {
 				"A", "B"
 		});
+	}
+
+	private XmlTester xmlTester12(Resource r) throws Exception {
+		return xmlTester(r, MetatypeVersion.VERSION_1_2);
 	}
 
 	private XmlTester xmlTester13(Resource r) throws Exception {
@@ -814,7 +818,7 @@ public class SpecMetatypeTest extends TestCase {
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
-		XmlTester xt = xmlTester13(r);
+		XmlTester xt = xmlTester12(r);
 
 		assertAD(xt, "fromChild", "From child", null, null, null, 0, "String", null, null, null);
 		assertAD(xt, "fromSuperOne", "From super one", null, null, null, 0, "String", null, null, null);
@@ -967,11 +971,11 @@ public class SpecMetatypeTest extends TestCase {
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
-		XmlTester xt = xmlTester13(r);
+		XmlTester xt = xmlTester12(r);
 		// Primitives
 		xt.assertExactAttribute("Boolean", "metatype:MetaData/OCD/AD[@id='rpBoolean']/@type");
 		xt.assertExactAttribute("Byte", "metatype:MetaData/OCD/AD[@id='rpByte']/@type");
-		xt.assertExactAttribute("Character", "metatype:MetaData/OCD/AD[@id='rpCharacter']/@type");
+		xt.assertExactAttribute("Char", "metatype:MetaData/OCD/AD[@id='rpCharacter']/@type");
 		xt.assertExactAttribute("Short", "metatype:MetaData/OCD/AD[@id='rpShort']/@type");
 		xt.assertExactAttribute("Integer", "metatype:MetaData/OCD/AD[@id='rpInt']/@type");
 		xt.assertExactAttribute("Long", "metatype:MetaData/OCD/AD[@id='rpLong']/@type");
@@ -981,7 +985,7 @@ public class SpecMetatypeTest extends TestCase {
 		// Primitive Wrappers
 		xt.assertExactAttribute("Boolean", "metatype:MetaData/OCD/AD[@id='rBoolean']/@type");
 		xt.assertExactAttribute("Byte", "metatype:MetaData/OCD/AD[@id='rByte']/@type");
-		xt.assertExactAttribute("Character", "metatype:MetaData/OCD/AD[@id='rCharacter']/@type");
+		xt.assertExactAttribute("Char", "metatype:MetaData/OCD/AD[@id='rCharacter']/@type");
 		xt.assertExactAttribute("Short", "metatype:MetaData/OCD/AD[@id='rShort']/@type");
 		xt.assertExactAttribute("Integer", "metatype:MetaData/OCD/AD[@id='rInt']/@type");
 		xt.assertExactAttribute("Long", "metatype:MetaData/OCD/AD[@id='rLong']/@type");
@@ -991,7 +995,7 @@ public class SpecMetatypeTest extends TestCase {
 		// Primitive Arrays
 		xt.assertExactAttribute("Boolean", "metatype:MetaData/OCD/AD[@id='rpaBoolean']/@type");
 		xt.assertExactAttribute("Byte", "metatype:MetaData/OCD/AD[@id='rpaByte']/@type");
-		xt.assertExactAttribute("Character", "metatype:MetaData/OCD/AD[@id='rpaCharacter']/@type");
+		xt.assertExactAttribute("Char", "metatype:MetaData/OCD/AD[@id='rpaCharacter']/@type");
 		xt.assertExactAttribute("Short", "metatype:MetaData/OCD/AD[@id='rpaShort']/@type");
 		xt.assertExactAttribute("Integer", "metatype:MetaData/OCD/AD[@id='rpaInt']/@type");
 		xt.assertExactAttribute("Long", "metatype:MetaData/OCD/AD[@id='rpaLong']/@type");
@@ -1010,7 +1014,7 @@ public class SpecMetatypeTest extends TestCase {
 		// Wrapper + Object arrays
 		xt.assertExactAttribute("Boolean", "metatype:MetaData/OCD/AD[@id='raBoolean']/@type");
 		xt.assertExactAttribute("Byte", "metatype:MetaData/OCD/AD[@id='raByte']/@type");
-		xt.assertExactAttribute("Character", "metatype:MetaData/OCD/AD[@id='raCharacter']/@type");
+		xt.assertExactAttribute("Char", "metatype:MetaData/OCD/AD[@id='raCharacter']/@type");
 		xt.assertExactAttribute("Short", "metatype:MetaData/OCD/AD[@id='raShort']/@type");
 		xt.assertExactAttribute("Integer", "metatype:MetaData/OCD/AD[@id='raInt']/@type");
 		xt.assertExactAttribute("Long", "metatype:MetaData/OCD/AD[@id='raLong']/@type");
@@ -1033,7 +1037,7 @@ public class SpecMetatypeTest extends TestCase {
 		// Wrapper + Object collections
 		xt.assertExactAttribute("Boolean", "metatype:MetaData/OCD/AD[@id='rBooleans']/@type");
 		xt.assertExactAttribute("Byte", "metatype:MetaData/OCD/AD[@id='rBytes']/@type");
-		xt.assertExactAttribute("Character", "metatype:MetaData/OCD/AD[@id='rCharacter']/@type");
+		xt.assertExactAttribute("Char", "metatype:MetaData/OCD/AD[@id='rCharacter']/@type");
 		xt.assertExactAttribute("Short", "metatype:MetaData/OCD/AD[@id='rShorts']/@type");
 		xt.assertExactAttribute("Integer", "metatype:MetaData/OCD/AD[@id='rInts']/@type");
 		xt.assertExactAttribute("Long", "metatype:MetaData/OCD/AD[@id='rLongs']/@type");
@@ -1076,7 +1080,6 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	public void testSimple() throws Exception {
-		MetatypeVersion version = MetatypeVersion.VERSION_1_3;
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -1093,7 +1096,7 @@ public class SpecMetatypeTest extends TestCase {
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
-		XmlTester xt = xmlTester(r, version);
+		XmlTester xt = xmlTester12(r);
 
 		xt.assertExactAttribute("TestSimple", "metatype:MetaData/OCD/@name");
 		xt.assertExactAttribute("simple", "metatype:MetaData/OCD/@description");
@@ -1161,7 +1164,7 @@ public class SpecMetatypeTest extends TestCase {
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
-		XmlTester xt = xmlTester13(r);
+		XmlTester xt = xmlTester12(r);
 		xt.assertExactAttribute("1", "metatype:MetaData/OCD/AD[@id='integer']/@default");
 		xt.assertExactAttribute("2,3", "metatype:MetaData/OCD/AD[@id='integers']/@default");
 
@@ -1232,7 +1235,7 @@ public class SpecMetatypeTest extends TestCase {
 			assertNotNull(r);
 			IO.copy(r.openInputStream(), System.err);
 
-			XmlTester xt = xmlTester13(r);
+			XmlTester xt = xmlTester12(r);
 			xt.assertExactAttribute("String", "metatype:MetaData/OCD/AD[@id='inner']/@type");
 		}
 	}
@@ -1347,7 +1350,7 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	public void testExtensions() throws Exception {
-		MetatypeVersion version = MetatypeVersion.VERSION_1_3;
+		MetatypeVersion version = MetatypeVersion.VERSION_1_2;
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -1416,7 +1419,7 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	public void testSimpleExtensions() throws Exception {
-		MetatypeVersion version = MetatypeVersion.VERSION_1_3;
+		MetatypeVersion version = MetatypeVersion.VERSION_1_2;
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -1463,7 +1466,7 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	public void testMappingExtensions() throws Exception {
-		MetatypeVersion version = MetatypeVersion.VERSION_1_3;
+		MetatypeVersion version = MetatypeVersion.VERSION_1_2;
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
@@ -1511,7 +1514,7 @@ public class SpecMetatypeTest extends TestCase {
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
-		XmlTester xt = xmlTester13(r);
+		XmlTester xt = xmlTester12(r);
 
 		assertAD(xt, "escapes", "Escapes", null, null, "\\ \\,\\ \\\\,a\\,b,c\\,d,'apostrophe',\"quote\"&amp;",
 				2147483647, "String", null, null, null);
