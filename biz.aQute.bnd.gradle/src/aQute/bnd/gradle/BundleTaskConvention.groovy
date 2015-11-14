@@ -131,15 +131,12 @@ class BundleTaskConvention {
         def File temporaryFile = new File(temporaryDir, archiveName)
 
         // set builder classpath
-        def Set<File> artifacts = new LinkedHashSet<File>(configuration.resolvedConfiguration.resolvedArtifacts*.file)
-        artifacts.add(temporaryFile)
-        builder.setClasspath(artifacts.toArray(new File[artifacts.size()]))
+        builder.setClasspath(configuration.resolvedConfiguration.resolvedArtifacts.findAll{it.type == 'jar'}*.file as File[])
         logger.debug 'builder classpath: {}', builder.getClasspath()*.getSource()
 
         // set builder sourcepath if -sources=true
         if (builder.hasSources()) {
-          def Set<File> srcDirs = new LinkedHashSet<File>(sourceSet.java.srcDirs)
-          builder.setSourcepath(srcDirs.toArray(new File[srcDirs.size()]))
+          builder.setSourcepath(sourceSet.java.srcDirs as File[])
           logger.debug 'builder sourcepath: {}', builder.getSourcePath()
         }
 

@@ -63,6 +63,7 @@ class TestBundlePlugin extends Specification {
           jartask_jar.getInputStream(jartask_jar.getEntry('foo.txt')).text =~ /Hi!/
           jartask_jar.getEntry('bar.txt')
           jartask_jar.getInputStream(jartask_jar.getEntry('bar.txt')).text =~ /Some more TEXT/
+          !jartask_jar.getEntry('test.txt')
 
           bundletask_manifest.getValue('Bundle-SymbolicName') == "${testProject}_bundle"
           bundletask_manifest.getValue('Bundle-Version') == '1.1.0'
@@ -72,6 +73,8 @@ class TestBundlePlugin extends Specification {
           !bundletask_jar.getEntry('doubler/impl/DoublerImpl.class')
           bundletask_jar.getEntry('doubler/impl/DoublerImplTest.class')
           bundletask_jar.getEntry('OSGI-OPT/src/')
+          !bundletask_jar.getEntry('foo.txt')
+          !bundletask_jar.getEntry('bar.txt')
           bundletask_jar.getEntry('test.txt')
           bundletask_jar.getInputStream(bundletask_jar.getEntry('test.txt')).text =~ /This is a test resource/
     }
