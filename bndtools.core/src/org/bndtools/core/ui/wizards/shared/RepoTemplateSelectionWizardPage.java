@@ -16,8 +16,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.bndtools.templating.Template;
-import org.bndtools.templating.load.RepoPluginsBundleLocator;
-import org.bndtools.templating.load.ReposTemplateLoader;
+import org.bndtools.templating.repobased.RepoPluginsBundleLocator;
+import org.bndtools.templating.repobased.ReposTemplateLoader;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;

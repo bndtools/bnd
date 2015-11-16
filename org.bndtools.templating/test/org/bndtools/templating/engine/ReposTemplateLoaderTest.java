@@ -15,9 +15,8 @@ import java.util.Map.Entry;
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
-import org.bndtools.templating.TemplateEngine;
-import org.bndtools.templating.load.RepoPluginsBundleLocator;
-import org.bndtools.templating.load.ReposTemplateLoader;
+import org.bndtools.templating.repobased.RepoPluginsBundleLocator;
+import org.bndtools.templating.repobased.ReposTemplateLoader;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.service.repository.Repository;
@@ -60,9 +59,7 @@ public class ReposTemplateLoaderTest {
 		parameters.put("srcDir", Collections.<Object> singletonList("src/main/java"));
 		parameters.put("basePackageDir", Collections.<Object> singletonList("org/example/foo"));
 		
-		ResourceMap inputs = template.getInputSources();
-		TemplateEngine engine = new StringTemplateEngine();
-		ResourceMap outputs = engine.generateOutputs(inputs, parameters);
+		ResourceMap outputs = template.generateOutputs(parameters);
 
 		assertEquals(3, outputs.size());
 
@@ -97,9 +94,7 @@ public class ReposTemplateLoaderTest {
 		parameters.put("srcDir", Collections.<Object> singletonList("src/main/java"));
 		parameters.put("basePackageDir", Collections.<Object> singletonList("org/example/foo"));
 		
-		ResourceMap inputs = template.getInputSources();
-		TemplateEngine engine = new StringTemplateEngine();
-		ResourceMap outputs = engine.generateOutputs(inputs, parameters);
+		ResourceMap outputs = template.generateOutputs(parameters);
 
 		assertEquals(3, outputs.size());
 
@@ -132,9 +127,7 @@ public class ReposTemplateLoaderTest {
 		Map<String, List<Object>> parameters = new HashMap<>();
 		parameters.put("name", Collections.<Object> singletonList("Homer Simpson"));
 
-		ResourceMap inputs = template.getInputSources();
-		TemplateEngine engine = new StringTemplateEngine();
-		ResourceMap outputs = engine.generateOutputs(inputs, parameters);
+		ResourceMap outputs = template.generateOutputs(parameters);
 		assertEquals(1, outputs.size());
 
 		Iterator<Entry<String,Resource>> iter = outputs.entries().iterator();
@@ -154,9 +147,7 @@ public class ReposTemplateLoaderTest {
 		Map<String, List<Object>> parameters = new HashMap<>();
 		parameters.put("projectName", Collections.<Object> singletonList("org.example.foo"));
 		
-		ResourceMap inputs = template.getInputSources();
-		TemplateEngine engine = new StringTemplateEngine();
-		ResourceMap outputs = engine.generateOutputs(inputs, parameters);
+		ResourceMap outputs = template.generateOutputs(parameters);
 
 		assertEquals(1, outputs.size());
 

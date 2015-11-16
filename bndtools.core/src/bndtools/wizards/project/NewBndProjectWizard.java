@@ -28,7 +28,6 @@ import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.StringResource;
 import org.bndtools.templating.Template;
-import org.bndtools.templating.engine.StringTemplateEngine;
 import org.bndtools.utils.javaproject.JavaProjectUtils;
 import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.resources.IFile;
@@ -60,7 +59,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
         super.init(workbench, currentSelection);
 
         BuiltInTemplate baseTemplate = new BuiltInTemplate("\u00abEmpty\u00bb");
-        baseTemplate.addResource("bnd.bnd", new StringResource(""));
+        baseTemplate.addInputResource("bnd.bnd", new StringResource(""));
         baseTemplate.setHelpPath("docs/empty_project.xml");
 
         templatePage = new RepoTemplateSelectionWizardPage("projectTemplateSelection", "project", baseTemplate);
@@ -153,8 +152,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
         try {
             ResourceMap outputs;
             if (template != null) {
-                ResourceMap templateInputs = template.getInputSources();
-                outputs = new StringTemplateEngine().generateOutputs(templateInputs, templateParams);
+                outputs = template.generateOutputs(templateParams);
             } else {
                 outputs = new ResourceMap(); // empty
             }

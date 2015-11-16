@@ -1,4 +1,4 @@
-package org.bndtools.templating.load;
+package org.bndtools.templating.repobased;
 
 import java.io.File;
 import java.util.HashMap;

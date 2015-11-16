@@ -1,9 +1,11 @@
-package org.bndtools.templating.load;
+package org.bndtools.templating.repobased;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
@@ -11,9 +13,13 @@ import java.util.jar.JarInputStream;
 import org.bndtools.templating.BytesResource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
+import org.bndtools.templating.util.AttributeDefinitionImpl;
+import org.bndtools.templating.util.ObjectClassDefinitionImpl;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
+import org.osgi.service.metatype.AttributeDefinition;
+import org.osgi.service.metatype.ObjectClassDefinition;
 import org.osgi.service.repository.ContentNamespace;
 
 import aQute.bnd.osgi.resource.ResourceUtils;
@@ -37,7 +43,7 @@ public class CapabilityBasedTemplate implements Template {
 	private final String helpPath;
 	
 	private File _bundleFile = null;
-
+	private ResourceMap _inputResources = null;
 	
 	public CapabilityBasedTemplate(Capability capability, BundleLocator locator) {
 		this.capability = capability;
@@ -106,36 +112,27 @@ public class CapabilityBasedTemplate implements Template {
 		Object rankingObj = capability.getAttributes().get("ranking");
 		return rankingObj instanceof Number ? ((Number) rankingObj).intValue() : 0;
 	}
-
+	
 	@Override
-	public ResourceMap getInputSources() throws IOException {
-		File bundleFile = fetchBundle();
-		
-		ResourceMap map = new ResourceMap();
-		try (JarInputStream in = new JarInputStream(new FileInputStream(bundleFile))) {
-			JarEntry jarEntry = in.getNextJarEntry();
-			while (jarEntry != null) {
-				String entryPath = jarEntry.getName();
-				if (!entryPath.endsWith("/")) { //ignore directory entries
-					if (entryPath.startsWith(dir)) {
-						String relativePath = entryPath.substring(dir.length());
+	public ObjectClassDefinition getMetadata() throws Exception {
+		ObjectClassDefinitionImpl ocd = new ObjectClassDefinitionImpl(name, description, iconUri);
 
-						// cannot use IO.collect() because it closes the whole JarInputStream
-						BytesResource resource = BytesResource.loadFrom(in);
-						map.put(relativePath, resource);
-					}
-				}
-				jarEntry = in.getNextJarEntry();
-			}
+		ResourceMap inputs = getInputSources();
+		Collection<String> names = new StringTemplateEngine().getTemplateParameterNames(inputs);
+		for (String name : names) {
+			AttributeDefinitionImpl ad = new AttributeDefinitionImpl(name, name, 0, AttributeDefinition.STRING);
+			ocd.addAttribute(ad, true);
 		}
-		return map;
+
+		return ocd;
 	}
 	
 	@Override
-	public URI getIcon() {
-		return iconUri;
+	public ResourceMap generateOutputs(Map<String, List<Object>> parameters) throws Exception {
+		ResourceMap inputs = getInputSources();
+		return new StringTemplateEngine().generateOutputs(inputs, parameters);
 	}
-	
+
 	@Override
 	public URI getHelpContent() {
 		URI uri = null;
@@ -149,7 +146,33 @@ public class CapabilityBasedTemplate implements Template {
 		}
 		return uri;
 	}
-
+	
+	private synchronized ResourceMap getInputSources() throws IOException {
+		if (_inputResources != null)
+			return _inputResources;
+					
+		File bundleFile = fetchBundle();
+		
+		_inputResources = new ResourceMap();
+		try (JarInputStream in = new JarInputStream(new FileInputStream(bundleFile))) {
+			JarEntry jarEntry = in.getNextJarEntry();
+			while (jarEntry != null) {
+				String entryPath = jarEntry.getName();
+				if (!entryPath.endsWith("/")) { //ignore directory entries
+					if (entryPath.startsWith(dir)) {
+						String relativePath = entryPath.substring(dir.length());
+						
+						// cannot use IO.collect() because it closes the whole JarInputStream
+						BytesResource resource = BytesResource.loadFrom(in);
+						_inputResources.put(relativePath, resource);
+					}
+				}
+				jarEntry = in.getNextJarEntry();
+			}
+		}
+		return _inputResources;
+	}
+	
 	private synchronized File fetchBundle() throws IOException {
 		if (_bundleFile != null)
 			return _bundleFile;

@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -25,9 +24,7 @@ import java.util.Observer;
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ProjectLayout;
 import org.bndtools.api.ProjectPaths;
-import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
-import org.bndtools.templating.engine.StringTemplateEngine;
 import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -49,6 +46,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.osgi.service.metatype.AttributeDefinition;
+import org.osgi.service.metatype.ObjectClassDefinition;
 
 import bndtools.Plugin;
 
@@ -175,9 +174,8 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
             if (template == null)
                 enableTestSrcDir = true;
             else {
-                ResourceMap inputs = template.getInputSources();
-                Collection<String> templateParamNames = new StringTemplateEngine().getTemplateParameterNames(inputs);
-                enableTestSrcDir = templateParamNames.contains(ProjectTemplateParam.TEST_SRC_DIR.getString());
+                ObjectClassDefinition templateMeta = template.getMetadata();
+                enableTestSrcDir = findAttribute(templateMeta, ProjectTemplateParam.TEST_SRC_DIR.getString()) != null;
             }
         } catch (Exception e) {
             Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error accessing template parameters", e));
@@ -187,6 +185,19 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
             newEntries.add(JavaCore.newSourceEntry(projectPath.append(projectPaths.getTestSrc()), null, projectPath.append(projectPaths.getTestBin())));
 
         return newEntries.toArray(new IClasspathEntry[newEntries.size()]);
+    }
+
+    private AttributeDefinition findAttribute(ObjectClassDefinition ocd, String name) {
+        AttributeDefinition[] attDefs = ocd.getAttributeDefinitions(ObjectClassDefinition.ALL);
+
+        if (attDefs == null)
+            return null;
+
+        for (AttributeDefinition attDef : attDefs) {
+            if (name.equals(attDef.getName()))
+                return attDef;
+        }
+        return null;
     }
 
     @Override

@@ -150,8 +150,18 @@
             class="bndtools.wizards.project.NewBndProjectWizardFactory"
             finalPerspective="bndtools.perspective"
             preferredPerspectives="bndtools.perspective"
-            icon="icons/bricks.png"
-            name="Bndtools OSGi Project"
+            icon="icons/bndtools-logo-16x16.png"
+            name="Bndtools Project"
+            project="true">
+      </wizard>
+      <wizard
+            id="enroute.newProjWiz"
+            category="bndtools.wizardCategory"
+            class="bndtools.wizards.project.NewBndProjectWizardFactory"
+            finalPerspective="bndtools.perspective"
+            preferredPerspectives="bndtools.perspective"
+            icon="icons/enroute.png"
+            name="OSGi enRoute Project"
             project="true">
       </wizard>
    </extension>

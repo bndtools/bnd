@@ -24,7 +24,6 @@ import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.StringResource;
 import org.bndtools.templating.Template;
-import org.bndtools.templating.engine.StringTemplateEngine;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -118,7 +117,7 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
         mainPage.setAllowExistingResources(false);
 
         BuiltInTemplate baseTemplate = new BuiltInTemplate("\u00abEmpty\u00bb");
-        baseTemplate.addResource("$fileName$", new StringResource(""));
+        baseTemplate.addInputResource("$fileName$", new StringResource(""));
         baseTemplate.setHelpPath("docs/empty_run.xml");
 
         templatePage = new RepoTemplateSelectionWizardPage("runTemplateSelection", "bndrun", baseTemplate);
@@ -150,10 +149,8 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
 
         // Run the template processor
         Template template = templatePage.getTemplate();
-        StringTemplateEngine templateEngine = new StringTemplateEngine();
-        ResourceMap inputs = template.getInputSources();
         ResourceMap outputs;
-        outputs = templateEngine.generateOutputs(inputs, params);
+        outputs = template.generateOutputs(params);
         Resource output = outputs.get(fileName);
 
         if (output == null)

@@ -1,9 +1,11 @@
 package org.bndtools.templating;
 
-import java.io.IOException;
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 
 import org.osgi.framework.Version;
+import org.osgi.service.metatype.ObjectClassDefinition;
 
 public interface Template {
 
@@ -34,18 +36,17 @@ public interface Template {
 	 * The version of this template.
 	 */
 	Version getVersion();
-
-	/**
-	 * A map of the source files provided by the template.
-	 * @throws IOException
-	 */
-	ResourceMap getInputSources() throws IOException;
-
-	/**
-	 * A URL to an icon for the template. May be null.
-	 */
-	URI getIcon();
 	
+	/**
+	 * Get the definition of required and optional parameters.
+	 */
+	ObjectClassDefinition getMetadata() throws Exception;
+
+	/**
+	 * Generate the output resources.
+	 */
+	ResourceMap generateOutputs(Map<String, List<Object>> parameters) throws Exception;
+
 	/**
 	 * A URL to a help document for the template. May be null.
 	 */

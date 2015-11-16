@@ -1,16 +1,20 @@
 package org.bndtools.core.ui.wizards.shared;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
+import org.bndtools.templating.repobased.StringTemplateEngine;
+import org.bndtools.templating.util.ObjectClassDefinitionImpl;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.Version;
+import org.osgi.service.metatype.ObjectClassDefinition;
 
 /**
  * Used as a bare-bones template for scenarios where no repository or workspace is available to load real templates.
@@ -20,7 +24,7 @@ public class BuiltInTemplate implements Template {
     private final Bundle bundle = FrameworkUtil.getBundle(BuiltInTemplate.class);
 
     private final String name;
-    private final ResourceMap resources = new ResourceMap();
+    private final ResourceMap inputResources = new ResourceMap();
     private URI helpUri = null;
 
     public BuiltInTemplate(String name) {
@@ -52,18 +56,19 @@ public class BuiltInTemplate implements Template {
         return Version.emptyVersion;
     }
 
-    public void addResource(String path, Resource resource) {
-        resources.put(path, resource);
+    @Override
+    public ObjectClassDefinition getMetadata() throws Exception {
+        URI iconUri = getResourceURI("icons/template_empty.gif");
+        return new ObjectClassDefinitionImpl(name, getShortDescription(), iconUri);
     }
 
     @Override
-    public ResourceMap getInputSources() throws IOException {
-        return resources;
+    public ResourceMap generateOutputs(Map<String,List<Object>> parameters) throws Exception {
+        return new StringTemplateEngine().generateOutputs(inputResources, parameters);
     }
 
-    @Override
-    public URI getIcon() {
-        return getResourceURI("icons/template_empty.gif");
+    public void addInputResource(String path, Resource resource) {
+        inputResources.put(path, resource);
     }
 
     public void setHelpPath(String path) {

@@ -8,9 +8,7 @@
 	hamcrest-core; version=1.3
 
 
-Export-Package: \
-	org.bndtools.templating,\
-	org.bndtools.templating.engine,\
-	org.bndtools.templating.load
+Private-Package: org.bndtools.templating.*
+Export-Package: ${packages;ANNOTATED;aQute.bnd.annotation.Version}
 
 Conditional-Package: org.stringtemplate.*, st4hidden.*, aQute.lib.*, aQute.libg.*
