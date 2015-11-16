@@ -940,7 +940,15 @@ public class AnnotationReader extends ClassDataCollector {
 			// We have explicit interfaces set
 			component.service = new TypeRef[x.length];
 			for (int i = 0; i < x.length; i++) {
-				component.service[i] = (TypeRef) x[i];
+				TypeRef typeRef = (TypeRef) x[i];
+				Clazz service = analyzer.findClass(typeRef);
+				if (assignable(clazz, service) == Boolean.FALSE) {
+					analyzer.error("Class %s is not assignable to specified service %s", clazz.getFQN(),
+							typeRef.getFQN()).details(
+							new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
+									ErrorType.INCOMPATIBLE_SERVICE));
+				}
+				component.service[i] = typeRef;
 			}
 		}
 

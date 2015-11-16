@@ -3314,4 +3314,18 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertNoAttribute("scr:component/reference[3]/@unbind");
 
 	}
+
+	@Component(service = Map.class)
+	static class NotAMap {}
+
+	public void testNotImplementedService() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*NotAMap");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b, 1, 0);
+
+	}
 }
