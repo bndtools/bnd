@@ -143,6 +143,7 @@ public class AnnotationReader extends ClassDataCollector {
 							clazz.getClassName())
 							.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
 									ErrorType.UNABLE_TO_LOCATE_SUPER_CLASS));
+					break;
 				} else {
 					ec.parseClassFileWithCollector(this);
 				}
