@@ -23,6 +23,7 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.PrimitiveType;
 import org.eclipse.jdt.core.dom.PrimitiveType.Code;
 import org.eclipse.jdt.core.dom.QualifiedType;
@@ -219,6 +220,10 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
                         }
                         //We still need to add the array component type, which might be primitive or a reference
                         rovingType = type.getElementType();
+                    }
+                    // Type erasure means that we should ignore parameters
+                    if (rovingType.isParameterizedType()) {
+                        rovingType = ((ParameterizedType) rovingType).getType();
                     }
 
                     if (rovingType.isPrimitiveType()) {
