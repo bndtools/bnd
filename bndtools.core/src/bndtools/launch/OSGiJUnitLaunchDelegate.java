@@ -33,10 +33,11 @@ import bndtools.launch.util.LaunchUtils;
 
 public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
     static String JNAME_S = "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*";
-    static Pattern FAILURES_P = Pattern.compile("^(" + JNAME_S + ")   # method name\n" //
-            + "\\(" //
-            + "     (" + JNAME_S + "(?:\\." + JNAME_S + ")*)          # fqn class name\n" //
-            + "\\)$                                                   # close\n", //
+    static Pattern FAILURES_P = Pattern.compile(
+            "^(" + JNAME_S + ")   # method name\n" //
+                    + "\\(" //
+                    + "     (" + JNAME_S + "(?:\\." + JNAME_S + ")*)          # fqn class name\n" //
+                    + "\\)$                                                   # close\n", //
             Pattern.UNIX_LINES + Pattern.MULTILINE + Pattern.COMMENTS);
     public static final String ORG_BNDTOOLS_TESTNAMES = "org.bndtools.testnames";
     private static final String JDT_JUNIT_BSN = "org.eclipse.jdt.junit";
@@ -157,12 +158,13 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
             if (testMethod != null)
                 testName += ":" + testMethod;
             bndTester.addTest(testName);
-        }
-
-        String tests = configuration.getAttribute(ORG_BNDTOOLS_TESTNAMES, (String) null);
-        if (tests != null && !tests.trim().isEmpty()) {
-            for (String test : tests.trim().split("\\s+")) {
-                bndTester.addTest(test);
+        } else {
+            //We're not being asked to run a specific class and/or method, so use
+            String tests = configuration.getAttribute(ORG_BNDTOOLS_TESTNAMES, (String) null);
+            if (tests != null && !tests.trim().isEmpty()) {
+                for (String test : tests.trim().split("\\s+")) {
+                    bndTester.addTest(test);
+                }
             }
         }
 
