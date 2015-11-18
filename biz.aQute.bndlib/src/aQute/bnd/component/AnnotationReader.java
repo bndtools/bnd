@@ -806,8 +806,24 @@ public class AnnotationReader extends ClassDataCollector {
 			}
 		}
 		TypeRef[] intfs = annoServiceClazz.getInterfaces();
-		if (intfs == null)
+		if (intfs == null) {
+			TypeRef superType = annoServiceClazz.getSuper();
+			if (superType != null) {
+				try {
+					Clazz zuper = analyzer.findClass(superType);
+					if (zuper != null)
+						return assignable(zuper, inferredServiceClazz);
+					// cannot analyze super class
+					return true;
+				}
+				catch (Exception e) {
+					// cannot analyze super class
+					return true;
+				}
+			}
+			// no more superclasses, not assignable.
 			return false;
+		}
 		boolean indeterminate = false;
 		for (TypeRef intf : intfs) {
 			try {

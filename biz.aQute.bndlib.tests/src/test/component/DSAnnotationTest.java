@@ -1,6 +1,7 @@
 package test.component;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -10,13 +11,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import javax.xml.xpath.XPathExpressionException;
+
+import junit.framework.AssertionFailedError;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -3316,16 +3322,110 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component(service = Map.class)
-	static class NotAMap {}
+	static class NotAMap1 {}
+
+	@Component(service = HashMap.class)
+	static class NotAMap2 {}
+
+	@Component(service = HashMap.class)
+	static class NotAMap3 extends TreeMap {}
 
 	public void testNotImplementedService() throws Exception {
+		checkClass(NotAMap1.class, 1);
+		checkClass(NotAMap2.class, 1);
+		checkClass(NotAMap3.class, 1);
+	}
+
+	@Component(service = Map.class)
+	static class IsAMap1 extends HashMap<String,String> {}
+
+	static class MyHashMap1<K, V> extends HashMap<K,V> {}
+
+	@Component(service = HashMap.class)
+	static class IsAMap2 extends MyHashMap1<String,String> {}
+
+	static interface MyMap<K, V> extends Map<K,V> {};
+
+	static class MyHashMap2<K, V> extends HashMap<K,V> implements MyMap<K,V> {}
+
+	@Component(service = Map.class)
+	static class IsAMap3 extends MyHashMap2<String,String> {}
+
+	@Component(service = Map.class)
+	static class IsAMap4 implements MyMap<String,String> {
+
+		@Override
+		public int size() {
+			return 0;
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return false;
+		}
+
+		@Override
+		public boolean containsKey(Object key) {
+			return false;
+		}
+
+		@Override
+		public boolean containsValue(Object value) {
+			return false;
+		}
+
+		@Override
+		public String get(Object key) {
+			return null;
+		}
+
+		@Override
+		public String put(String key, String value) {
+			return null;
+		}
+
+		@Override
+		public String remove(Object key) {
+			return null;
+		}
+
+		@Override
+		public void putAll(Map< ? extends String, ? extends String> m) {}
+
+		@Override
+		public void clear() {}
+
+		@Override
+		public Set<String> keySet() {
+			return null;
+		}
+
+		@Override
+		public Collection<String> values() {
+			return null;
+		}
+
+		@Override
+		public Set<java.util.Map.Entry<String,String>> entrySet() {
+			return null;
+		}
+	}
+
+	public void testIndirectlyImplementedService() throws Exception {
+		checkClass(IsAMap1.class, 0);
+		checkClass(IsAMap2.class, 0);
+		checkClass(IsAMap3.class, 0);
+		checkClass(IsAMap4.class, 0);
+	}
+
+	private void checkClass(Class< ? > c, int i) throws IOException, Exception, AssertionFailedError {
 		Builder b = new Builder();
-		b.setProperty(Constants.DSANNOTATIONS, "test.component.*NotAMap");
+		b.setProperty(Constants.DSANNOTATIONS, c.getName());
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
-		assertOk(b, 1, 0);
-
+		assertOk(b, i, 0);
 	}
+
 }
