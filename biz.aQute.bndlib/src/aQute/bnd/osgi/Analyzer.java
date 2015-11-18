@@ -1040,13 +1040,13 @@ public class Analyzer extends Processor {
 	 * will be the header Implementation-Title in the org/osgi/service/event
 	 * named section. @param manifest @param header
 	 */
-	private void doNameSection(Manifest manifest, String header) {
+	void doNameSection(Manifest manifest, String header) {
 		String path = header.replace('@', '/');
 		int n = path.lastIndexOf('/');
 		// Must succeed because we start with @
 		String name = path.substring(n + 1);
 		// Skip first /
-		path = path.substring(1, n);
+		path = path.substring(1, n == 0 ? 1 : n);
 		if (name.length() != 0 && path.length() != 0) {
 			Attributes attrs = manifest.getAttributes(path);
 			if (attrs == null) {
