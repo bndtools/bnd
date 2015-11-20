@@ -12,6 +12,10 @@ assert fileContents.contains("[WARNING] No previous version of biz.aQute.bnd-tes
 // With previous-same
 assert fileContents.contains("[INFO] Baselining check succeeded checking biz.aQute.bnd-test:valid-with-previous-same:jar:0.0.2 against biz.aQute.bnd-test:valid-no-previous:jar:0.0.1")
 
+// With previous-provider
+assert fileContents.contains("[INFO] Baselining check succeeded checking biz.aQute.bnd-test:valid-with-provider:jar:0.0.2 against biz.aQute.bnd-test:valid-no-previous:jar:0.0.1")
+
+
 // With provider
 assert fileContents.contains("[ERROR] Baseline mismatch for package bnd.test, MINOR change. Current is 1.0.0, repo is 1.0.0, suggest 1.1.0 or -\n" +
 "\n" +

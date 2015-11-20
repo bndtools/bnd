@@ -16,6 +16,7 @@
 	<modules>
 		<module>valid-no-previous</module>
 		<module>valid-with-previous-same</module>
+		<module>valid-with-provider</module>
 		<module>invalid-with-provider</module>
 		<module>invalid-with-consumer</module>
 	</modules>
