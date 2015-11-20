@@ -1,14 +1,19 @@
 package aQute.bnd.osgi;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Formatter;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
-import org.osgi.namespace.contract.*;
+import org.osgi.namespace.contract.ContractNamespace;
 
-import aQute.bnd.header.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Descriptors.PackageRef;
-import aQute.bnd.version.*;
-import aQute.lib.collections.*;
+import aQute.bnd.version.Version;
+import aQute.lib.collections.MultiMap;
 import aQute.service.reporter.Report.Location;
 
 /**
@@ -150,16 +155,13 @@ class Contracts {
 		for (Contract c : contracts) {
 			Attrs attrs = new Attrs(c.decorators);
 			attrs.put(ContractNamespace.CONTRACT_NAMESPACE, c.name);
-			String range = analyzer.applyVersionPolicy(c.version.toString(), c.decorators.getVersion(), false);
 			String name = ContractNamespace.CONTRACT_NAMESPACE;
 			while (requirements.containsKey(name))
 				name += "~";
 
-			VersionRange r = new VersionRange(range);
-
 			Formatter f = new Formatter();
 			try {
-				f.format("(&(%s=%s)%s)", ContractNamespace.CONTRACT_NAMESPACE, c.name, r.toFilter());
+				f.format("(&(%s=%s)(version=%s))", ContractNamespace.CONTRACT_NAMESPACE, c.name, c.version);
 
 				// TODO : shall we also assert the attributes?
 
