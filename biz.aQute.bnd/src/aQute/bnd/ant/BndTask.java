@@ -274,8 +274,13 @@ public class BndTask extends BaseTask {
 			addAll(classpath, value, File.pathSeparator + ",");
 		else {
 			String[] path = p.list();
-			for (int i = 0; i < path.length; i++)
-				classpath.add(new File(path[i]));
+			for (int i = 0; i < path.length; i++) {
+				File f = new File(path[i]);
+				if (f.exists())
+					classpath.add(f);
+				else
+					messages.NoSuchFile_(f.getAbsoluteFile());
+			}
 		}
 		classpathDirectlySet = true;
 	}
@@ -392,7 +397,11 @@ public class BndTask extends BaseTask {
 
 	private void addFilesFrom(Path path, List<File> files) {
 		for (String fileName : path.list()) {
-			files.add(new File(fileName.replace('\\', '/')));
+		  File f = new File(fileName.replace('\\', '/'));
+		  if (f.exists())
+		    files.add(f);
+		  else
+		    messages.NoSuchFile_(f.getAbsoluteFile());
 		}
 	}
 }
