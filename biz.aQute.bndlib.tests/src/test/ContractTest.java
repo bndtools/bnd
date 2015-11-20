@@ -1,12 +1,18 @@
 package test;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Formatter;
 
-import junit.framework.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Packages;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class ContractTest extends TestCase {
 
@@ -104,7 +110,7 @@ public class ContractTest extends TestCase {
 		Attrs attrs = p.get("osgi.contract");
 		String alpha = attrs.get("alpha");
 		assertEquals("1", alpha);
-		assertEquals("(&(osgi.contract=atest)(&(version>=2.5.0)(!(version>=3.0.0))))", attrs.get("filter:"));
+		assertEquals("(&(osgi.contract=atest)(version=2.5.0))", attrs.get("filter:"));
 	}
 
 	/**
