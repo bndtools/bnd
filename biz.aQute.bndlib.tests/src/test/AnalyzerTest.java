@@ -39,19 +39,6 @@ public class AnalyzerTest extends BndTestCase {
 	static File cwd = new File(System.getProperty("user.dir"));
 
 	/**
-	 * Test BND_REQUIREE @throws Exception
-	 */
-
-	public void testBndRequire() throws Exception {
-		try (Builder b = new Builder();) {
-			b.setProperty(Constants.REQUIRE_BND, "'(version=${Bundle-Version})'");
-			b.setIncludeResource("notempty;literal=''");
-			b.build();
-			assertTrue(b.check("No translation found for macro: Bundle-Version"));
-		}
-	}
-
-	/**
 	 * #525 Test if exceptions are imported
 	 */
 
