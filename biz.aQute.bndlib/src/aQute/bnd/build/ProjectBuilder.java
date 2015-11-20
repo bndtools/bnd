@@ -75,6 +75,7 @@ public class ProjectBuilder extends Builder {
 		try {
 			if (!initialized) {
 				initialized = true;
+				doRequireBnd();
 				for (Container file : project.getClasspath()) {
 					addClasspath(file.getFile());
 				}

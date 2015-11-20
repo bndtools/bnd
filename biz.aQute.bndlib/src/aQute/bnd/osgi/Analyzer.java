@@ -1229,6 +1229,11 @@ public class Analyzer extends Processor {
 						in.close();
 					}
 				}
+
+				String v = bndInfoLocal.getProperty("version");
+				if (!Version.isVersion(v)) {
+					bndInfoLocal.put("version", About.CURRENT.toString());
+				}
 				bndInfo = bndInfoLocal;
 			}
 			catch (Exception e) {
@@ -2621,7 +2626,7 @@ public class Analyzer extends Processor {
 	/**
 	 * Ensure that we are running on the correct bnd.
 	 */
-	void doRequireBnd() {
+	protected void doRequireBnd() {
 		Attrs require = OSGiHeader.parseProperties(getProperty(REQUIRE_BND));
 		if (require == null || require.isEmpty())
 			return;
