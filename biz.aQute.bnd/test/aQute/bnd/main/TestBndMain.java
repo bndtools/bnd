@@ -35,14 +35,6 @@ public class TestBndMain extends TestCase {
 		super.tearDown();
 	}
 
-	public void testBndVersion() throws Exception {
-		bnd.mainNoExit(new String[] {
-				"version"
-		});
-		expectNoError();
-		expectOutput("${Bundle-Version}");
-	}
-
 	public void testRunStandalone() throws Exception {
 		bnd.mainNoExit(new String[] {
 				"run", "testdata/standalone/standalone.bndrun"

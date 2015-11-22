@@ -40,6 +40,19 @@ public class ProjectTest extends TestCase {
 	}
 
 	/**
+	 * Test require bnd
+	 */
+	public void testRequireBnd() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+		Project top = ws.getProject("p1");
+		top.setProperty("-resourceonly", "true");
+		top.setProperty("-includeresource", "a;literal=''");
+		top.setProperty("-require-bnd", "100000.0");
+		top.build();
+		assertTrue(top.check("-require-bnd fails for filter  values=\\{version="));
+	}
+
+	/**
 	 * Test linked canonical name
 	 */
 	public void testCanonicalName() throws Exception {
