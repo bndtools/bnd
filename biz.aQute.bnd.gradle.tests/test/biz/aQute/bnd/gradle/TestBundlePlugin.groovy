@@ -53,6 +53,8 @@ class TestBundlePlugin extends Specification {
           jartask_manifest.getValue('Implementation-Version') == '1.0.0'
           jartask_manifest.getValue('My-Header') == 'my-value'
           jartask_manifest.getValue('Export-Package') =~ /doubler/
+          jartask_manifest.getValue('X-SomeProperty') == 'Included via -include in jar task manifest'
+          jartask_manifest.getValue('Override') == 'Override the jar task manifest'
           jartask_jar.getEntry('doubler/Doubler.class')
           jartask_jar.getEntry('doubler/impl/DoublerImpl.class')
           !jartask_jar.getEntry('doubler/impl/DoublerImplTest.class')
@@ -69,6 +71,8 @@ class TestBundlePlugin extends Specification {
           bundletask_manifest.getValue('Bundle-Version') == '1.1.0'
           bundletask_manifest.getValue('My-Header') == 'my-value'
           bundletask_manifest.getValue('Export-Package') =~ /doubler/
+          !bundletask_manifest.getValue('X-SomeProperty')
+          bundletask_manifest.getValue('Override') == 'Override the jar task manifest'
           !bundletask_jar.getEntry('doubler/Doubler.class')
           !bundletask_jar.getEntry('doubler/impl/DoublerImpl.class')
           bundletask_jar.getEntry('doubler/impl/DoublerImplTest.class')

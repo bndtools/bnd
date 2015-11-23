@@ -24,7 +24,9 @@ jar {
     manifest {
         attributes('Implementation-Title': baseName,
                    'Implementation-Version': version,
-                   '-includeresource': '{bar.txt}', 
+                   '-includeresource': '{bar.txt}',
+                   '-include': 'other.bnd',
+                   'Override': 'This should be overridden by the bnd file'
                    )
     }
 }
