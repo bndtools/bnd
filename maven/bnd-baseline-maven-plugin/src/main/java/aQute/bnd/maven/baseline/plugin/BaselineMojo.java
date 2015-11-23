@@ -54,6 +54,9 @@ public class BaselineMojo extends AbstractMojo {
 	@Parameter(property = "bnd.baseline.full.report", defaultValue = "false", readonly = true)
 	private boolean fullReport;
 
+	@Parameter(property = "bnd.baseline.continue.on.error", defaultValue = "false", readonly = true)
+	private boolean continueOnError;
+
 	@Parameter(readonly = true, required = false)
 	private Base base;
 
@@ -73,7 +76,7 @@ public class BaselineMojo extends AbstractMojo {
 	    		searchForBaseVersion(artifact, aetherRepos);
 	    	}
 	    	
-	    	if(base.getVersion() != null || base.getVersion().isEmpty()) {
+	    	if(base.getVersion() != null && !base.getVersion().isEmpty()) {
 	    		
 	    		ArtifactResult artifactResult = locateBaseJar(aetherRepos);
 	    		
@@ -88,17 +91,26 @@ public class BaselineMojo extends AbstractMojo {
 	    		Baseline baseline = new Baseline(reporter, new DiffPluginImpl());
 	
 	    		if(checkFailures(artifact, artifactResult, baseline)) {
-					throw new MojoExecutionException("The baselining plugin detected versioning errors");
+	    			if(continueOnError) {
+	    				getLog().warn("The baselining check failed when checking " + artifact + " against " 
+	    						+ artifactResult.getArtifact() + " but the bnd-baseline-maven-plugin is configured not to fail the build.");
+	    			} else {
+	    				throw new MojoExecutionException("The baselining plugin detected versioning errors");
+	    			}
 				} else {
 					getLog().info("Baselining check succeeded checking " + artifact + " against " + artifactResult.getArtifact());
 				}
-	    	} else if (failOnMissing) {
-	    		throw new MojoExecutionException("Unable to locate a previous version of the artifact");
+	    	} else {
+	    		if (failOnMissing) {
+	    			throw new MojoExecutionException("Unable to locate a previous version of the artifact");
+	    		} else {
+	    			getLog().warn("No previous version of " + artifact + " could be found to baseline against");
+	    		}
 	    	}
     	} catch (RepositoryException re) {
     		throw new MojoExecutionException("Unable to locate a previous version of the artifact", re);
     	} catch (Exception e) {
-    		throw new MojoExecutionException("An error occurred while calculating the baseline");
+    		throw new MojoExecutionException("An error occurred while calculating the baseline", e);
     	}
     }
 
@@ -120,6 +132,7 @@ public class BaselineMojo extends AbstractMojo {
 			
 			aetherRepos.add(0, releaseDistroRepo);
 		}
+		
 		return aetherRepos;
 	}
 
@@ -145,13 +158,19 @@ public class BaselineMojo extends AbstractMojo {
 
 	protected void searchForBaseVersion(Artifact artifact, List<RemoteRepository> aetherRepos)
 			throws VersionRangeResolutionException {
-		getLog().info("Automatically determining the baseline version for "+ artifact);
+		getLog().info("Automatically determining the baseline version for " + artifact +
+				" using repositories " + aetherRepos);
 		
-		Artifact toCheck = artifact.setVersion("(," + artifact.getVersion() + ")");
+		Artifact toFind = new DefaultArtifact(base.getGroupId(), base.getArtifactId(), 
+				base.getClassifier(), base.getExtension(), base.getVersion());
+		
+		Artifact toCheck = toFind.setVersion("(," + artifact.getVersion() + ")");
 		
 		VersionRangeRequest request = new VersionRangeRequest(toCheck, aetherRepos, "baseline");
 		
 		VersionRangeResult versions = system.resolveVersionRange(session, request);
+		
+		getLog().debug("Found versions " + String.valueOf(versions.getVersions()));
 		
 		base.setVersion(versions.getHighestVersion() != null ? 
 				versions.getHighestVersion().toString() : null);

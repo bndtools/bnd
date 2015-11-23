@@ -1,25 +1,39 @@
 package test.baseline;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static aQute.bnd.osgi.Constants.BUNDLE_SYMBOLICNAME;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.File;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
 
-import junit.framework.*;
-import aQute.bnd.build.*;
-import aQute.bnd.differ.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.differ.Baseline.Info;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
-import aQute.bnd.service.diff.*;
-import aQute.bnd.version.*;
-import aQute.lib.collections.*;
-import aQute.lib.io.*;
-import aQute.libg.reporter.*;
+import aQute.bnd.differ.DiffPluginImpl;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Verifier;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.diff.Delta;
+import aQute.bnd.service.diff.Diff;
+import aQute.bnd.service.diff.Tree;
+import aQute.bnd.version.Version;
+import aQute.lib.collections.SortedList;
+import aQute.lib.io.IO;
+import aQute.libg.reporter.ReporterAdapter;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class BaselineTest extends TestCase {
@@ -385,5 +399,43 @@ public class BaselineTest extends TestCase {
 		assertTrue(info.mismatch);
 		assertEquals("dummy.api", info.packageName);
 		assertEquals("2.0.0", info.suggestedVersion.toString());
+	}
+
+	// Adding a method to a ProviderType produces a MINOR bump (1.0.0 -> 1.1.0)
+	public void testBundleVersionBump() throws Exception {
+		Processor processor = new Processor();
+
+		DiffPluginImpl differ = new DiffPluginImpl();
+		Baseline baseline = new Baseline(processor, differ);
+
+		Jar older = new Jar(IO.getFile("testresources/api-orig.jar"));
+		Jar newer = new Jar(IO.getFile("testresources/api-providerbump.jar"));
+
+		baseline.baseline(newer, older, null);
+
+		BundleInfo bundleInfo = baseline.getBundleInfo();
+
+		assertTrue(bundleInfo.mismatch);
+		assertEquals("1.1.0", bundleInfo.suggestedVersion.toString());
+	}
+
+	// Adding a method to a ProviderType produces a MINOR bump (1.0.0 -> 1.1.0)
+	public void testBundleVersionBumpDifferentSymbolicNames() throws Exception {
+		Processor processor = new Processor();
+
+		DiffPluginImpl differ = new DiffPluginImpl();
+		Baseline baseline = new Baseline(processor, differ);
+
+		Jar older = new Jar(IO.getFile("testresources/api-orig.jar"));
+		Jar newer = new Jar(IO.getFile("testresources/api-providerbump.jar"));
+
+		newer.getManifest().getMainAttributes().putValue(BUNDLE_SYMBOLICNAME, "a.different.name");
+
+		baseline.baseline(newer, older, null);
+
+		BundleInfo bundleInfo = baseline.getBundleInfo();
+
+		assertFalse(bundleInfo.mismatch);
+		assertEquals(newer.getVersion(), bundleInfo.suggestedVersion.toString());
 	}
 }

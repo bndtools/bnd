@@ -1,0 +1,80 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>biz.aQute.bnd-test</groupId>
+	<artifactId>test</artifactId>
+	<version>0.0.1</version>
+	<packaging>pom</packaging>
+
+	<distributionManagement>
+		<repository>
+			<id>Test Repo</id>
+			<url>file:@project.build.directory@/integration-test/test-repo</url>
+		</repository>
+	</distributionManagement>
+
+	<modules>
+		<module>valid-no-previous</module>
+		<module>valid-with-previous-same</module>
+		<module>valid-with-provider</module>
+		<module>invalid-with-provider</module>
+		<module>invalid-with-consumer</module>
+	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.osgi</groupId>
+				<artifactId>osgi.annotation</artifactId>
+				<version>6.0.1</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>biz.aQute.bnd</groupId>
+					<artifactId>bnd-baseline-maven-plugin</artifactId>
+					<version>@project.version@</version>
+					<executions>
+						<execution>
+							<id>baseline</id>
+							<goals>
+								<goal>baseline</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>biz.aQute.bnd</groupId>
+					<artifactId>bnd-maven-plugin</artifactId>
+					<version>@project.version@</version>
+					<executions>
+						<execution>
+							<id>default-bnd-process</id>
+							<goals>
+								<goal>bnd-process</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
+				<!-- The following configuration is required because bnd-maven-plugin 
+					generates the manifest to target/classes/META-INF/MANIFEST.MF but the normal 
+					maven-jar-plugin does not use it. If the jar-plugin is patched to pick up 
+					the manifest from this location, then the following config is not needed. -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<configuration>
+						<useDefaultManifestFile>
+							true
+						</useDefaultManifestFile>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+</project>

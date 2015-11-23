@@ -1,16 +1,28 @@
 package aQute.bnd.differ;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.jar.Manifest;
 
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.diff.*;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Descriptors;
+import aQute.bnd.osgi.Instructions;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.diff.Delta;
+import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Diff.Ignore;
-import aQute.bnd.version.*;
-import aQute.libg.generics.*;
-import aQute.service.reporter.*;
+import aQute.bnd.service.diff.Differ;
+import aQute.bnd.service.diff.Tree;
+import aQute.bnd.service.diff.Type;
+import aQute.bnd.version.Version;
+import aQute.libg.generics.Create;
+import aQute.service.reporter.Reporter;
 
 /**
  * This class maintains
@@ -193,7 +205,11 @@ public class Baseline {
 				highestDelta = pdiff.getDelta();
 			}
 		}
-		if (firstRelease) {
+		// If this is a first release, or the base has a different symbolic name,
+		// then the newer version must be ok. Otherwise the version bump for
+		// bundles with the same symbolic name should be at least as big as the
+		// biggest semantic change
+		if (firstRelease || !bsn.equals(getBsn(o))) {
 			suggestedVersion = newerVersion;
 		} else {
 			suggestedVersion = bumpBundle(highestDelta, olderVersion, 1, 0);
