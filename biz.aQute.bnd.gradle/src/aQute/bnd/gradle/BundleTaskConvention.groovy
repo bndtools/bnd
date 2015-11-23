@@ -105,6 +105,8 @@ class BundleTaskConvention {
       try {
         // load any task manifest entries into the builder
         builder.addProperties(manifest.effectiveManifest.attributes)
+        // force includes to be processed
+        builder.setProperties(project.projectDir, builder.getProperties())
 
         // if the bnd file exists, set it as the builder properties
         if (bndfile.isFile()) {

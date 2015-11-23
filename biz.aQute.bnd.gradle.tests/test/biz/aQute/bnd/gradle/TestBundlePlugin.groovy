@@ -53,6 +53,7 @@ class TestBundlePlugin extends Specification {
           jartask_manifest.getValue('Implementation-Version') == '1.0.0'
           jartask_manifest.getValue('My-Header') == 'my-value'
           jartask_manifest.getValue('Export-Package') =~ /doubler/
+          jartask_manifest.getValue('X-SomeProperty') == 'test'
           jartask_jar.getEntry('doubler/Doubler.class')
           jartask_jar.getEntry('doubler/impl/DoublerImpl.class')
           !jartask_jar.getEntry('doubler/impl/DoublerImplTest.class')
