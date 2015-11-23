@@ -19,12 +19,14 @@
 
 package aQute.bnd.gradle
 
+import java.util.Properties
 import java.util.jar.Manifest
 
 import aQute.bnd.osgi.Builder
 import aQute.bnd.osgi.Constants
 import aQute.bnd.osgi.Jar
 import aQute.bnd.version.MavenVersion
+import aQute.lib.utf8properties.UTF8Properties
 import org.gradle.api.GradleException
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.SourceSet
@@ -103,15 +105,18 @@ class BundleTaskConvention {
       def Builder builder = new Builder()
       builder.setTrace(logger.isDebugEnabled())
       try {
-        // load any task manifest entries into the builder
-        builder.addProperties(manifest.effectiveManifest.attributes)
-
-        // if the bnd file exists, set it as the builder properties
-        if (bndfile.isFile()) {
-          builder.setProperties(bndfile, project.projectDir)
-        } else {
-          builder.setBase(project.projectDir)
+        builder.setBase(project.projectDir)
+        Properties properties = new UTF8Properties()
+        // load any task manifest entries into the properties
+        manifest.effectiveManifest.attributes.each { key, value ->
+          properties.setProperty(key, value.toString())
         }
+
+        // if the bnd file exists, add it to the properties
+        if (bndfile.isFile()) {
+          properties.putAll(builder.loadProperties(bndfile))
+        }
+        builder.setProperties(properties)
 
         // If no bundle to be built, we have nothing to do
         if (Builder.isTrue(builder.getProperty(Constants.NOBUNDLES))) {

@@ -2,3 +2,4 @@ Export-Package: doubler
 -sources: true
 My-Header: my-value
 text: TEXT
+Override: Override the jar task manifest
