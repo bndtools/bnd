@@ -3,6 +3,7 @@ package aQute.bnd.main;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -163,20 +164,20 @@ class RemoteCommand extends Processor {
 	}
 
 	public void _distro(DistroOptions opts) throws Exception {
-		List<String> arts = opts._arguments();
+		List<String> args = opts._arguments();
 		String bsn;
 		String version;
 
-		bsn = arts.remove(0);
+		bsn = args.remove(0);
 
 		if (!Verifier.isBsn(bsn)) {
 			error("Not a bundle symbolic name %s", bsn);
 		}
 
-		if (arts.isEmpty())
+		if (args.isEmpty())
 			version = "0";
 		else {
-			version = arts.remove(0);
+			version = args.remove(0);
 			if (!Version.isVersion(version)) {
 				error("Invalid version %s", version);
 			}
@@ -197,12 +198,11 @@ class RemoteCommand extends Processor {
 		trace("Found %s bundle revisions", bundleRevisons.size());
 
 		Parameters packages = new Parameters();
-		Parameters provided = new Parameters();
+		List<Parameters> provided = new ArrayList<>();
 
 		for (BundleRevisionDTO brd : bundleRevisons) {
-			trace("Found %s bundle revisions", bundleRevisons.size());
 			for (CapabilityDTO c : brd.capabilities) {
-				CapabilityBuilder crb = new CapabilityBuilder(c.namespace);
+				CapabilityBuilder cb = new CapabilityBuilder(c.namespace);
 
 				//
 				// We need to fixup versions :-(
@@ -221,13 +221,13 @@ class RemoteCommand extends Processor {
 						else
 							value = new Version((String) value);
 					}
-					crb.addAttribute(key, value);
+					cb.addAttribute(key, value);
 				}
-				crb.addDirectives(c.directives);
+				cb.addDirectives(c.directives);
 
-				Attrs attrs = crb.toAttrs();
+				Attrs attrs = cb.toAttrs();
 
-				if (crb.isPackage()) {
+				if (cb.isPackage()) {
 					attrs.remove(Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE);
 					attrs.remove(Constants.BUNDLE_VERSION_ATTRIBUTE);
 					String pname = attrs.remove(PackageNamespace.PACKAGE_NAMESPACE);
@@ -238,7 +238,9 @@ class RemoteCommand extends Processor {
 					trace("P: %s;%s", pname, attrs);
 				} else if (!IGNORED_NAMESPACES.contains(c.namespace)) {
 					trace("C %s;%s", c.namespace, attrs);
-					provided.put(c.namespace, attrs);
+					Parameters p = new Parameters();
+					p.put(c.namespace, attrs);
+					provided.add(p);
 				}
 			}
 		}
@@ -253,7 +255,17 @@ class RemoteCommand extends Processor {
 			main.putValue(Constants.BUNDLE_VERSION, version);
 
 			main.putValue(Constants.EXPORT_PACKAGE, packages.toString());
-			main.putValue(Constants.PROVIDE_CAPABILITY, provided.toString());
+
+			StringBuilder sb = new StringBuilder();
+
+			for (Parameters parameter : provided) {
+				sb.append(parameter.toString());
+				sb.append(",");
+			}
+
+			String capabilities = sb.toString().substring(0, sb.length() - 1);
+
+			main.putValue(Constants.PROVIDE_CAPABILITY, capabilities);
 
 			if (opts.description() != null)
 				main.putValue(Constants.BUNDLE_DESCRIPTION, opts.description());
