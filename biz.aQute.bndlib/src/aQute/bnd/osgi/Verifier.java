@@ -20,6 +20,7 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.service.verifier.VerifierPlugin;
 import aQute.bnd.util.dto.DTO;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
@@ -531,6 +532,26 @@ public class Verifier extends Processor {
 		verifyCapabilities();
 		verifyMetaPersistence();
 		verifyPathNames();
+
+		doVerifierPlugins();
+	}
+
+	private void doVerifierPlugins() {
+		for (VerifierPlugin plugin : getPlugins(VerifierPlugin.class)) {
+			try {
+				Processor previous = beginHandleErrors(plugin.toString());
+				try {
+					plugin.verify(analyzer);
+				}
+				finally {
+					endHandleErrors(previous);
+				}
+			}
+			catch (Exception e) {
+				e.printStackTrace(System.err);
+				error("Verifier Plugin %s failed %s", plugin, e);
+			}
+		}
 	}
 
 	/**
