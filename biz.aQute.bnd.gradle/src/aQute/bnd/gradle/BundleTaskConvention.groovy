@@ -139,11 +139,9 @@ class BundleTaskConvention {
         builder.setClasspath(configuration.resolvedConfiguration.resolvedArtifacts.findAll{it.type == 'jar'}*.file as File[])
         logger.debug 'builder classpath: {}', builder.getClasspath()*.getSource()
 
-        // set builder sourcepath if -sources=true
-        if (builder.hasSources()) {
-          builder.setSourcepath(sourceSet.java.srcDirs as File[])
-          logger.debug 'builder sourcepath: {}', builder.getSourcePath()
-        }
+        // set builder sourcepath
+        builder.setSourcepath(sourceSet.allSource.srcDirs as File[])
+        logger.debug 'builder sourcepath: {}', builder.getSourcePath()
 
         // Include entire contents of Jar task generated jar except the manifest
         def Jar temporaryJar = new Jar(archiveName, temporaryFile)
