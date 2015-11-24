@@ -90,6 +90,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
                 Object element = cell.getElement();
 
                 if (element instanceof Builder) {
+                    @SuppressWarnings("resource")
                     Builder builder = (Builder) element;
                     StyledString label = new StyledString(builder.getBsn(), StyledString.QUALIFIER_STYLER);
                     cell.setText(label.getString());

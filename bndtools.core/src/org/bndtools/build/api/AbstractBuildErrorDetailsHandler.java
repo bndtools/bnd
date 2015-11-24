@@ -90,6 +90,7 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
         if (cunit == null)
             return null; // not a source type
 
+        @SuppressWarnings("deprecation")
         ASTParser parser = ASTParser.newParser(AST.JLS4);
         parser.setKind(ASTParser.K_COMPILATION_UNIT);
         parser.setSource(cunit);
@@ -326,7 +327,8 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
                 return false;
             }
 
-            private boolean matches(CompilationUnit ast, FieldDeclaration fieldDecl, String fieldName) {
+            private boolean matches(@SuppressWarnings("unused") CompilationUnit ast, FieldDeclaration fieldDecl, String fieldName) {
+                @SuppressWarnings("unchecked")
                 List<VariableDeclarationFragment> list = (List<VariableDeclarationFragment>) fieldDecl.getStructuralProperty(FieldDeclaration.FRAGMENTS_PROPERTY);
                 for (VariableDeclarationFragment vdf : list) {
                     if (fieldName.equals(vdf.getName().toString())) {

@@ -13,7 +13,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 
-public class HeadlessBuildManagerTracker extends ServiceTracker<HeadlessBuildManager,HeadlessBuildManager>implements HeadlessBuildManager {
+public class HeadlessBuildManagerTracker extends ServiceTracker<HeadlessBuildManager,HeadlessBuildManager> implements HeadlessBuildManager {
     private final AtomicReference<ServiceReference<HeadlessBuildManager>> managerReference = new AtomicReference<ServiceReference<HeadlessBuildManager>>();
     private final AtomicReference<HeadlessBuildManager> manager = new AtomicReference<HeadlessBuildManager>();
 
@@ -72,8 +72,8 @@ public class HeadlessBuildManagerTracker extends ServiceTracker<HeadlessBuildMan
         manager.setup(plugins, cnf, projectDir, add, enabledIgnorePlugins, warnings);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
+    @Deprecated
     public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins) {
         HeadlessBuildManager manager = this.manager.get();
         if (manager == null) {

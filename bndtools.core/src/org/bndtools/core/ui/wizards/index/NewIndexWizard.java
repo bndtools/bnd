@@ -20,14 +20,8 @@ public class NewIndexWizard extends Wizard implements INewWizard {
 
     private final IndexerWizardPage indexPage = new IndexerWizardPage();
 
-    private IWorkbench workbench;
-    private IStructuredSelection selection;
-
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        this.workbench = workbench;
-        this.selection = selection;
-
         Object firstSelElem = selection.getFirstElement();
         if (firstSelElem instanceof IFolder) {
             File dir = ((IFolder) firstSelElem).getLocation().toFile();
