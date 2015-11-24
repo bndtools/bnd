@@ -3351,6 +3351,11 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component(service = Map.class)
 	static class IsAMap3 extends MyHashMap2<String,String> {}
 
+	static interface Marker {}
+
+	@Component(service = Map.class)
+	static class IsAMap3a extends MyHashMap2<String,String> implements Marker {}
+
 	@Component(service = Map.class)
 	static class IsAMap4 implements MyMap<String,String> {
 
@@ -3415,6 +3420,7 @@ public class DSAnnotationTest extends BndTestCase {
 		checkClass(IsAMap1.class, 0);
 		checkClass(IsAMap2.class, 0);
 		checkClass(IsAMap3.class, 0);
+		checkClass(IsAMap3a.class, 0);
 		checkClass(IsAMap4.class, 0);
 	}
 
