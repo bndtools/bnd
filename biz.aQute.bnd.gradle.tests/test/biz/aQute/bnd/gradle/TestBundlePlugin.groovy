@@ -30,6 +30,7 @@ class TestBundlePlugin extends Specification {
             .withProjectDir(testProjectDir)
             .withArguments('build')
             .withPluginClasspath(pluginClasspath)
+            .forwardOutput()
             .build()
 
         then:
