@@ -424,22 +424,21 @@ public class Builder extends Analyzer {
 					"packageinfo", "package.html", "module-info.java", "package-info.java"
 			};
 
-			for (Iterator<File> i = getSourcePath().iterator(); i.hasNext();) {
-				File root = i.next();
-
-				// TODO should use bcp?
-
+			for (File root : getSourcePath()) {
 				File f = getFile(root, sourcePath);
 				if (f.exists()) {
 					found = true;
 					if (!packages.contains(packageRef)) {
 						packages.add(packageRef);
-						File bdir = getFile(root, packagePath);
 						for (int j = 0; j < fixed.length; j++) {
-							File ff = getFile(bdir, fixed[j]);
-							if (ff.isFile()) {
-								String name = "OSGI-OPT/src/" + packagePath + "/" + fixed[j];
-								dot.putResource(name, new FileResource(ff));
+							for (File sp : getSourcePath()) {
+								File bdir = getFile(sp, packagePath);
+								File ff = getFile(bdir, fixed[j]);
+								if (ff.isFile()) {
+									String name = "OSGI-OPT/src/" + packagePath + "/" + fixed[j];
+									dot.putResource(name, new FileResource(ff));
+									break;
+								}
 							}
 						}
 					}
