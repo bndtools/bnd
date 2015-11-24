@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
-import org.bndtools.api.ILogger;
-import org.bndtools.api.Logger;
 import org.bndtools.core.ui.wizards.jpm.AddJpmDependenciesWizard;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
@@ -78,8 +76,6 @@ import bndtools.wizards.repo.RepoBundleSelectionWizard;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 
 public abstract class RepositoryBundleSelectionPart extends BndEditorPart implements PropertyChangeListener {
-    private static final ILogger logger = Logger.getLogger(RepositoryBundleSelectionPart.class);
-
     private final String propertyName;
     private final DependencyPhase phase;
 

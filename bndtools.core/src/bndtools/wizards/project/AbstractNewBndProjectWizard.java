@@ -16,6 +16,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -147,7 +148,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         /* Headless build files */
         HeadlessBuildManager headlessBuildManager = Plugin.getDefault().getHeadlessBuildManager();
         Set<String> enabledPlugins = new BndPreferences().getHeadlessBuildPluginsEnabled(headlessBuildManager, null);
-        headlessBuildManager.setup(enabledPlugins, false, project.getProject().getLocation().toFile(), true, enabledIgnorePlugins);
+        headlessBuildManager.setup(enabledPlugins, false, project.getProject().getLocation().toFile(), true, enabledIgnorePlugins, new LinkedList<String>());
 
         /* refresh the project; files were created outside of Eclipse API */
         project.getProject().refreshLocal(IResource.DEPTH_INFINITE, progress);

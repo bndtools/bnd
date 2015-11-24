@@ -6,19 +6,13 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.utils.Function;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.BndListener;
 import aQute.service.reporter.Reporter;
 
 public final class WorkspaceListener extends BndListener {
     private static final ILogger logger = Logger.getLogger(WorkspaceListener.class);
 
-    private final Workspace workspace;
-    private final Processor errorProcessor = new Processor();
-
-    public WorkspaceListener(Workspace workspace) {
-        this.workspace = workspace;
-    }
+    public WorkspaceListener(@SuppressWarnings("unused") Workspace workspace) {}
 
     @Override
     public void changed(final File file) {

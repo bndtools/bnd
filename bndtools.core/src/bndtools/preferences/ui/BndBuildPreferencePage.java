@@ -29,7 +29,6 @@ public class BndBuildPreferencePage extends PreferencePage implements IWorkbench
     @Override
     protected Control createContents(Composite parent) {
         GridLayout layout;
-        GridData gd;
 
         Composite composite = new Composite(parent, SWT.NONE);
         layout = new GridLayout(2, false);

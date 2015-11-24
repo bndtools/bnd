@@ -57,6 +57,7 @@ public class GradleHeadlessBuildPlugin implements HeadlessBuildPlugin {
     }
 
     @Override
+    @Deprecated
     public void setup(boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins) throws IOException {
         setup(cnf, projectDir, add, enabledIgnorePlugins, new LinkedList<String>());
     }

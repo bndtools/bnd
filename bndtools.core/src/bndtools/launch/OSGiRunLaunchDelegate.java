@@ -212,9 +212,8 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying bnd.bnd file location", e));
         }
 
-        final IPath targetPath;
         try {
-            targetPath = Central.toPath(project.getTarget());
+            Central.toPath(project.getTarget());
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying project output folder", e));
         }

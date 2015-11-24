@@ -19,8 +19,6 @@ public class GenerateIndexCommandHandler extends AbstractHandler {
             IStructuredSelection structSel = (IStructuredSelection) selection;
             Object element = structSel.getFirstElement();
             if (element != null && element instanceof IContainer) {
-                IContainer container = (IContainer) element;
-
                 NewIndexWizard wizard = new NewIndexWizard();
                 IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
                 wizard.init(workbenchWindow.getWorkbench(), structSel);

@@ -63,6 +63,7 @@ public class HeadlessBuildManagerImpl implements HeadlessBuildManager {
     }
 
     @Override
+    @Deprecated
     public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins) {
         setup(plugins, cnf, projectDir, add, enabledIgnorePlugins, new LinkedList<String>());
     }

@@ -30,12 +30,6 @@ public class MapEntryCellModifier<K, V> implements ICellModifier {
     private static final String[] PROPS = new String[] {
             PROP_NAME, PROP_VALUE
     };
-    private static final String[] LABELS = new String[] {
-            "Name", "Value"
-    };
-    private static final int[] WIDTHS = new int[] {
-            120, 200
-    };
 
     private final TableViewer viewer;
 

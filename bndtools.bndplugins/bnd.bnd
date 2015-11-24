@@ -6,7 +6,7 @@
 	${aQute-repository},\
 	com.jcraft.jsch,\
 	org.eclipse.jgit,\
-	org.osgi.impl.bundle.bindex
+	org.osgi.impl.bundle.bindex;packages=org.osgi.impl.bundle.bindex
 	
 -testpath: \
 	${junit}

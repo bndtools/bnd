@@ -30,26 +30,23 @@ import bndtools.jareditor.internal.utils.SWTConcurrencyUtil;
 public class JAREditor extends FormEditor implements IResourceChangeListener {
 
     JARContentPage contentPage = new JARContentPage(this, "contentPage", "Content");
-    JARPrintPage   printPage   = new JARPrintPage(this, "printPage", "Print");
+    JARPrintPage printPage = new JARPrintPage(this, "printPage", "Print");
 
     @Override
     protected void addPages() {
         try {
             addPage(contentPage);
             addPage(printPage);
-        }
-        catch (PartInitException e) {
+        } catch (PartInitException e) {
             e.printStackTrace();
         }
     }
 
     @Override
-    public void doSave(final IProgressMonitor monitor) {
-    }
+    public void doSave(final IProgressMonitor monitor) {}
 
     @Override
-    public void doSaveAs() {
-    }
+    public void doSaveAs() {}
 
     @Override
     public boolean isSaveAsAllowed() {
@@ -72,8 +69,7 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
         String name = "unknown";
         if (input instanceof IFileEditorInput) {
             name = ((IFileEditorInput) input).getFile().getName();
-        }
-        else if (input instanceof IURIEditorInput) {
+        } else if (input instanceof IURIEditorInput) {
             name = ((IURIEditorInput) input).getName();
         }
         setPartName(name);
@@ -83,27 +79,26 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
         });
     }
 
-    protected void updateContent(final IEditorInput input) {
+    protected void updateContent(@SuppressWarnings("unused") final IEditorInput input) {
         Runnable update = new Runnable() {
             @Override
             public void run() {
                 Control c = (contentPage == null) ? null : contentPage.getPartControl();
-                if ( (c != null) && !c.isDisposed()) {
+                if ((c != null) && !c.isDisposed()) {
                     String[] selectedPath = contentPage.getSelectedPath();
                     contentPage.getManagedForm().refresh();
                     contentPage.setSelectedPath(selectedPath);
                 }
 
                 c = (printPage == null) ? null : printPage.getPartControl();
-                if ( (c != null) && !c.isDisposed()) {
+                if ((c != null) && !c.isDisposed()) {
                     printPage.refresh();
                 }
             }
         };
         try {
             SWTConcurrencyUtil.execForDisplay(contentPage.getPartControl().getDisplay(), update);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -136,8 +131,7 @@ public class JAREditor extends FormEditor implements IResourceChangeListener {
 
         if (delta.getKind() == IResourceDelta.REMOVED) {
             close(false);
-        }
-        else if (delta.getKind() == IResourceDelta.CHANGED) {
+        } else if (delta.getKind() == IResourceDelta.CHANGED) {
             updateContent(getEditorInput());
         }
     }

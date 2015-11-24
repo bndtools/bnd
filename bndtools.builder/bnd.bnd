@@ -5,7 +5,7 @@
 	osgi.core;version=${osgi.core.version},\
 	osgi.cmpn;version=${osgi.cmpn.version},\
 	${bndlib};packages=*,\
-	${aQute-repository},\
+	${aQute-repository};packages=*,\
 	javax.xml,\
 	org.eclipse.osgi,\
 	org.eclipse.equinox.common,\
