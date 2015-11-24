@@ -21,6 +21,7 @@ class TestBndPlugin extends Specification {
           def result = GradleRunner.create()
             .withProjectDir(testProjectDir)
             .withArguments('build', 'release')
+            .forwardOutput()
             .build()
 
         then:

@@ -30,6 +30,7 @@ class TestBundlePlugin extends Specification {
             .withProjectDir(testProjectDir)
             .withArguments('build')
             .withPluginClasspath(pluginClasspath)
+            .forwardOutput()
             .build()
 
         then:
@@ -56,11 +57,17 @@ class TestBundlePlugin extends Specification {
           jartask_manifest.getValue('X-SomeProperty') == 'Included via -include in jar task manifest'
           jartask_manifest.getValue('Override') == 'Override the jar task manifest'
           jartask_jar.getEntry('doubler/Doubler.class')
+          jartask_jar.getEntry('doubler/packageinfo')
           jartask_jar.getEntry('doubler/impl/DoublerImpl.class')
+          jartask_jar.getEntry('doubler/impl/packageinfo')
           !jartask_jar.getEntry('doubler/impl/DoublerImplTest.class')
           jartask_jar.getEntry('META-INF/services/foo.properties')
           jartask_jar.getInputStream(jartask_jar.getEntry('META-INF/services/foo.properties')).text =~ /key=value/
           jartask_jar.getEntry('OSGI-OPT/src/')
+          jartask_jar.getEntry('OSGI-OPT/src/doubler/packageinfo')
+          jartask_jar.getEntry('OSGI-OPT/src/doubler/impl/packageinfo')
+          jartask_jar.getInputStream(jartask_jar.getEntry('OSGI-OPT/src/doubler/packageinfo')).text =~ /version 1\.0/
+          jartask_jar.getInputStream(jartask_jar.getEntry('OSGI-OPT/src/doubler/impl/packageinfo')).text =~ /version 1\.2/
           jartask_jar.getEntry('foo.txt')
           jartask_jar.getInputStream(jartask_jar.getEntry('foo.txt')).text =~ /Hi!/
           jartask_jar.getEntry('bar.txt')
