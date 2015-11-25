@@ -26,7 +26,6 @@ import aQute.bnd.osgi.Builder
 import aQute.bnd.osgi.Constants
 import aQute.bnd.osgi.Jar
 import aQute.bnd.version.MavenVersion
-import aQute.lib.utf8properties.UTF8Properties
 import org.gradle.api.GradleException
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.SourceSet
@@ -104,19 +103,25 @@ class BundleTaskConvention {
       // create Builder and set trace level from gradle
       def Builder builder = new Builder()
       builder.setTrace(logger.isDebugEnabled())
-      try {
-        builder.setBase(project.projectDir)
-        Properties properties = new UTF8Properties()
-        // load any task manifest entries into the properties
-        manifest.effectiveManifest.attributes.each { key, value ->
-          properties.setProperty(key, value.toString())
-        }
 
-        // if the bnd file exists, add it to the properties
-        if (bndfile.isFile()) {
-          properties.putAll(builder.loadProperties(bndfile))
+      try {
+        // load bnd properties
+        def File temporaryBndFile = new File(temporaryDir, 'bnd.bnd')
+        temporaryBndFile.withWriter('UTF-8') { writer ->
+          // write any task manifest entries into the tmp bnd file
+          manifest.effectiveManifest.attributes.inject(new Properties()) { properties, key, value ->
+            if (key != 'Manifest-Version') {
+              properties.setProperty(key, value.toString())
+            }
+            return properties
+          }.store(writer, null)
+
+          // if the bnd file exists, add its contents to the tmp bnd file
+          if (bndfile.isFile()) {
+            builder.loadProperties(bndfile).store(writer, null)
+          }
         }
-        builder.setProperties(properties)
+        builder.setProperties(temporaryBndFile, project.projectDir)
 
         // If no bundle to be built, we have nothing to do
         if (Builder.isTrue(builder.getProperty(Constants.NOBUNDLES))) {
@@ -124,7 +129,7 @@ class BundleTaskConvention {
         }
 
         // Reject sub-bundle projects
-        if ((builder.getSubBuilders().size() != 1) || ((builder.getPropertiesFile() != null) && !bndfile.equals(builder.getPropertiesFile()))) {
+        if (builder.getSubBuilders() != [builder]) {
           throw new GradleException('Sub-bundles are not supported by this task')
         }
 
