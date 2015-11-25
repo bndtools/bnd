@@ -121,7 +121,9 @@ class BundleTaskConvention {
             builder.loadProperties(bndfile).store(writer, null)
           }
         }
-        builder.setProperties(temporaryBndFile, project.projectDir)
+        builder.setProperties(temporaryBndFile, project.projectDir) // this will cause project.dir property to be set
+        builder.setProperty('project.name', project.name)
+        builder.setProperty('project.output', project.buildDir.canonicalPath)
 
         // If no bundle to be built, we have nothing to do
         if (Builder.isTrue(builder.getProperty(Constants.NOBUNDLES))) {
@@ -133,25 +135,28 @@ class BundleTaskConvention {
           throw new GradleException('Sub-bundles are not supported by this task')
         }
 
-        // copy Jar task generated jar to temporaryDir
+        // Include entire contents of Jar task generated jar (except the manifest)
         project.copy {
           from archivePath
           into temporaryDir
         }
         def File temporaryFile = new File(temporaryDir, archiveName)
-
-        // set builder classpath
-        builder.setClasspath(configuration.resolvedConfiguration.resolvedArtifacts.findAll{it.type == 'jar'}*.file as File[])
-        logger.debug 'builder classpath: {}', builder.getClasspath()*.getSource()
-
-        // set builder sourcepath
-        builder.setSourcepath(sourceSet.allSource.srcDirs as File[])
-        logger.debug 'builder sourcepath: {}', builder.getSourcePath()
-
-        // Include entire contents of Jar task generated jar except the manifest
         def Jar temporaryJar = new Jar(archiveName, temporaryFile)
         temporaryJar.setManifest(new Manifest())
         builder.setJar(temporaryJar)
+
+        // set builder classpath
+        def buildpath = project.files(configuration.resolvedConfiguration.resolvedArtifacts.findAll{it.type == 'jar'}*.file)
+        builder.setProperty('project.buildpath', buildpath.asPath)
+        builder.setClasspath(buildpath as File[])
+        logger.debug 'builder classpath: {}', builder.getClasspath()*.getSource()
+
+        // set builder sourcepath
+        def sourcepath = project.files(sourceSet.allSource.srcDirs.findAll{it.exists()})
+        builder.setProperty('project.sourcepath', sourcepath.asPath)
+        builder.setSourcepath(sourcepath as File[])
+        logger.debug 'builder sourcepath: {}', builder.getSourcePath()
+
 
         // set bundle symbolic name from tasks's baseName property if necessary
         def String bundleSymbolicName = builder.getProperty(Constants.BUNDLE_SYMBOLICNAME)
