@@ -81,7 +81,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		LauncherConstants lc = getConstants(getRunBundles(), false);
 
 		Method mainMethod = main.getMethod("main", args.getClass(), Properties.class);
-		Object o = mainMethod.invoke(null, (Object) args, lc.getProperties(new UTF8Properties()));
+		Object o = mainMethod.invoke(null, args, lc.getProperties(new UTF8Properties()));
 		if (o == null)
 			return 0;
 
@@ -161,7 +161,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 		if (!exported && !getNotificationListeners().isEmpty()) {
 			if (listenerComms == null) {
-				listenerComms = new DatagramSocket(new InetSocketAddress(InetAddress.getLocalHost(), 0));
+				listenerComms = new DatagramSocket(new InetSocketAddress(InetAddress.getByName(null), 0));
 				new Thread(new Runnable() {
 					public void run() {
 						DatagramSocket socket = listenerComms;
