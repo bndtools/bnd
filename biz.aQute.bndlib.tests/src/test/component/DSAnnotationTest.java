@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
@@ -3432,6 +3433,109 @@ public class DSAnnotationTest extends BndTestCase {
 
 		Jar jar = b.build();
 		assertOk(b, i, 0);
+	}
+
+	public static interface GenericMarker<K> extends Marker {}
+
+	@Component
+	public static class RefType {
+
+		@Reference(service = Marker.class)
+		void setMarker1(ServiceReference< ? > ref) {}
+
+		@Reference(service = Marker.class)
+		void setMarker2(ComponentServiceObjects< ? > ref) {}
+
+		@Reference
+		void setMarker3(ServiceReference<Marker> ref) {}
+
+		@Reference
+		void setMarker4(ComponentServiceObjects<Marker> ref) {}
+
+		@Reference(service = GenericMarker.class)
+		void setMarker5(ServiceReference<Marker> ref) {}
+
+		@Reference(service = GenericMarker.class)
+		void setMarker6(ComponentServiceObjects<Marker> ref) {}
+
+		@Reference
+		void setMarker7(ServiceReference<GenericMarker< ? >> ref) {}
+
+		@Reference
+		void setMarker8(ComponentServiceObjects<GenericMarker< ? >> ref) {}
+
+		@Reference
+		void setMarker9(ServiceReference<GenericMarker<Marker>> ref) {}
+
+		@Reference
+		void setMarker10(ComponentServiceObjects<GenericMarker<Marker>> ref) {}
+
+		@Reference
+		void setMarker11(ServiceReference<GenericMarker< ? extends Marker>> ref) {}
+
+		@Reference
+		void setMarker12(ComponentServiceObjects<GenericMarker< ? super Marker>> ref) {}
+
+		@Reference
+		void setMarker13(ServiceReference< ? extends GenericMarker< ? extends Marker>> ref) {}
+
+		@Reference
+		void setMarker14(ComponentServiceObjects< ? super GenericMarker< ? super Marker>> ref) {}
+
+		@Reference(service = Marker.class)
+		void setMarker15(ComponentServiceObjects< ? super GenericMarker< ? super Marker>> ref) {}
+
+	}
+
+	private List<String>	indices	= new ArrayList<String>();
+	public void testReferenceType() throws Exception {
+
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*RefType");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b, 0, 0);
+		Attributes a = getAttr(jar);
+		checkRequires(a, false, Marker.class.getName(), GenericMarker.class.getName(), Object.class.getName());
+
+		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$RefType.xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+
+		Collection<String> indices = new TreeSet<String>();
+		for (int i = 1; i < 16; i++)
+			indices.add(Integer.toString(i));
+		this.indices.addAll(indices);
+
+		checkMarkerReference(xt, 1, Marker.class);
+		checkMarkerReference(xt, 2, Marker.class);
+		checkMarkerReference(xt, 3, Marker.class);
+		checkMarkerReference(xt, 4, Marker.class);
+		checkMarkerReference(xt, 5, GenericMarker.class);
+		checkMarkerReference(xt, 6, GenericMarker.class);
+		checkMarkerReference(xt, 7, GenericMarker.class);
+		checkMarkerReference(xt, 8, GenericMarker.class);
+		checkMarkerReference(xt, 9, GenericMarker.class);
+		checkMarkerReference(xt, 10, GenericMarker.class);
+		checkMarkerReference(xt, 11, GenericMarker.class);
+		checkMarkerReference(xt, 12, GenericMarker.class);
+		checkMarkerReference(xt, 13, GenericMarker.class);
+		checkMarkerReference(xt, 14, Object.class);
+		checkMarkerReference(xt, 15, Marker.class);
+
+	}
+
+	private void checkMarkerReference(XmlTester xt, int count, Class< ? > cl) throws XPathExpressionException {
+		String index = Integer.toString(indices.indexOf(Integer.toString(count)) + 1);
+		xt.assertAttribute("Marker" + count, "scr:component/reference[" + index + "]/@name");
+		xt.assertAttribute(cl.getName(), "scr:component/reference[" + index + "]/@interface");
+		xt.assertAttribute("setMarker" + count, "scr:component/reference[" + index + "]/@bind");
+		xt.assertNoAttribute("scr:component/reference[" + index + "]/@unbind");
+		xt.assertNoAttribute("scr:component/reference[" + index + "]/@updated");
 	}
 
 }

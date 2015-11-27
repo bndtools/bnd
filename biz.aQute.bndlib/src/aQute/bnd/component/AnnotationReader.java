@@ -577,7 +577,7 @@ public class AnnotationReader extends ClassDataCollector {
 
 				if (def.service == null)
 					analyzer.error("In component %s, method %s,  cannot recognize the signature of the descriptor: %s",
-							component.name, def.name, member.getDescriptor());
+							component.effectiveName(), def.name, member.getDescriptor());
 
 			} else if (member instanceof FieldDef) {
 				def.updateVersion(V1_3);
@@ -646,7 +646,7 @@ public class AnnotationReader extends ClassDataCollector {
 				def.service = annoService;
 				if (def.service == null)
 					analyzer.error("In component %s, method %s,  cannot recognize the signature of the descriptor: %s",
-							component.name, def.name, member.getDescriptor()).details(details);
+							component.effectiveName(), def.name, member.getDescriptor()).details(details);
 
 			} // end field
 		} else {// not a member
@@ -674,7 +674,7 @@ public class AnnotationReader extends ClassDataCollector {
 		if (index + 1 > sigLength) {
 			analyzer.error(
 					"In component %s, method %s,  signature: %s does not have sufficient generic type information",
-					component.name, def.name, sig);
+					component.effectiveName(), def.name, sig);
 			return false;
 		}
 		return true;
@@ -755,7 +755,13 @@ public class AnnotationReader extends ClassDataCollector {
 				start += plainType.length();
 				String[] sigs = signature.substring(start).split("[<;>]");
 				if (sigs.length > 0) {
-					inferredService = sigs[0].substring(1).replace('/', '.');
+					String sig = sigs[0];
+					if (sig.startsWith("-")) {
+						inferredService = Object.class.getName();
+					} else {
+						int index = sig.startsWith("+") ? 2 : 1;
+						inferredService = sig.substring(index).replace('/', '.');
+					}
 				}
 			}
 		}
@@ -773,7 +779,8 @@ public class AnnotationReader extends ClassDataCollector {
 	}
 
 	private boolean assignable(String annoService, String inferredService) {
-		if (Object.class.getName().equals(inferredService))
+		if (annoService == null || annoService.isEmpty() || inferredService == null || inferredService.isEmpty()
+				|| Object.class.getName().equals(inferredService))
 			return true;
 		try {
 			Clazz annoServiceClazz = analyzer.findClass(analyzer.getTypeRefFromFQN(annoService));
@@ -787,7 +794,8 @@ public class AnnotationReader extends ClassDataCollector {
 
 	private boolean assignable(Clazz annoServiceClazz, Clazz inferredServiceClazz) {
 		if (annoServiceClazz == null || inferredServiceClazz == null)
-			return false;
+			// we don't know what one of the classes is, assume assignable.
+			return true;
 		if (annoServiceClazz.equals(inferredServiceClazz))
 			return true;
 		if (!inferredServiceClazz.isInterface()) {

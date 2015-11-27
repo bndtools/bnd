@@ -414,7 +414,8 @@ public class HeaderReader extends Processor {
 					if (bindCalculated)
 						bind = null;
 					else
-						error("In component %s, the bind method %s for %s not defined", cd.name, bind, referenceName);
+						error("In component %s, the bind method %s for %s not defined", cd.effectiveName(), bind,
+								referenceName);
 
 				// Check if the unbind method exists
 				if (!descriptors.containsKey(unbind)) {
@@ -422,7 +423,7 @@ public class HeaderReader extends Processor {
 						// remove it
 						unbind = null;
 					else
-						error("In component %s, the unbind method %s for %s not defined", cd.name, unbind,
+						error("In component %s, the unbind method %s for %s not defined", cd.effectiveName(), unbind,
 								referenceName);
 				}
 				if (!descriptors.containsKey(updated)) {
@@ -430,7 +431,8 @@ public class HeaderReader extends Processor {
 						// remove it
 						updated = null;
 					else
-						error("In component %s, the updated method %s for %s is not defined", cd.name, updated,
+						error("In component %s, the updated method %s for %s is not defined", cd.effectiveName(),
+								updated,
 								referenceName);
 				}
 			}
@@ -487,7 +489,8 @@ public class HeaderReader extends Processor {
 			if (dynamic.contains(referenceName)) {
 				rd.policy = ReferencePolicy.DYNAMIC;
 				if (rd.unbind == null)
-					error("In component %s, reference %s is dynamic but has no unbind method.", cd.name, rd.name)
+					error("In component %s, reference %s is dynamic but has no unbind method.", cd.effectiveName(),
+							rd.name)
 							.details(new DeclarativeServicesAnnotationError(cd.implementation.getFQN(), null, null,
 									ErrorType.DYNAMIC_REFERENCE_WITHOUT_UNBIND));
 			}
