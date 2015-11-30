@@ -57,6 +57,14 @@ class ComponentDef extends ExtensionDef {
 		super(finder);
 	}
 
+	String effectiveName() {
+		if (name != null)
+			return name;
+		if (implementation != null)
+			return implementation.getFQN();
+		return "<name not yet determined>";
+	}
+
 	/**
 	 * Called to prepare. If will look for any errors or inconsistencies in the
 	 * setup. @param analyzer the analyzer to report errors and create
