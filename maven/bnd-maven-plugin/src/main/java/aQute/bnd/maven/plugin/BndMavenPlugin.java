@@ -103,18 +103,15 @@ public class BndMavenPlugin extends AbstractMojo {
 
 		try (Builder builder = new Builder(new Processor(mavenProperties, false))) {
 			builder.setTrace(log.isDebugEnabled());
-			File bndFile = new File(project.getBasedir(), Project.BNDFILE);
 
 			builder.setBase(project.getBasedir());
 			loadProjectProperties(builder, project);
 			
 			// Reject sub-bundle projects
-			Collection<? extends Builder> subs = builder.getSubBuilders();
-			if (subs.size() != 1)
+			List<Builder> subs = builder.getSubBuilders();
+			if ((subs.size() != 1) && !builder.equals(subs.get(0))) {
 				throw new MojoExecutionException("Sub-bundles not permitted in a maven build");
-			File builderFile = builder.getPropertiesFile();
-			if (builderFile != null && !bndFile.equals(builderFile))
-				throw new MojoExecutionException("Sub-bundles not permitted in a maven build");
+			}
 
 			// Set bnd classpath
 			List<File> classpath = new LinkedList<File>();
