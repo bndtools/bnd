@@ -34,6 +34,12 @@ assert 'it worked' == api_manifest.getValue('X-ParentProjectProperty')
 assert 'it worked' == impl_manifest.getValue('X-ParentProjectProperty')
 assert 'overridden' == wrapper_manifest.getValue('X-ParentProjectProperty')
 
+// Check -include of bnd files
+assert api_manifest.getValue('X-IncludedParentProjectProperty') == 'Included via -include in parent bnd.bnd file'
+assert impl_manifest.getValue('X-IncludedParentProjectProperty') == 'Included via -include in parent bnd.bnd file'
+assert wrapper_manifest.getValue('X-IncludedParentProjectProperty') == 'Included via -include in parent bnd.bnd file'
+assert impl_manifest.getValue('X-IncludedProjectProperty') == 'Included via -include in project bnd.bnd file'
+
 // Check POM properties
 assert new File(basedir, 'test-impl-bundle/target/classes').absolutePath == impl_manifest.getValue('Project-Build-OutputDirectory')
 assert 'UTF-8' == impl_manifest.getValue('Project-Build-SourceEncoding')

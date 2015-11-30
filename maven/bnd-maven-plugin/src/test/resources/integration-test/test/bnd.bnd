@@ -1,1 +1,2 @@
 X-ParentProjectProperty: it worked
+-include: other.bnd
