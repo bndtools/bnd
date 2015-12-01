@@ -34,6 +34,12 @@ assert 'it worked' == api_manifest.getValue('X-ParentProjectProperty')
 assert 'it worked' == impl_manifest.getValue('X-ParentProjectProperty')
 assert 'overridden' == wrapper_manifest.getValue('X-ParentProjectProperty')
 
+// Check -include of bnd files
+assert api_manifest.getValue('X-IncludedParentProjectProperty') == 'Included via -include in parent bnd.bnd file'
+assert impl_manifest.getValue('X-IncludedParentProjectProperty') == 'Included via -include in parent bnd.bnd file'
+assert wrapper_manifest.getValue('X-IncludedParentProjectProperty') == 'Included via -include in parent bnd.bnd file'
+assert impl_manifest.getValue('X-IncludedProjectProperty') == 'Included via -include in project bnd.bnd file'
+
 // Check POM properties
 assert new File(basedir, 'test-impl-bundle/target/classes').absolutePath == impl_manifest.getValue('Project-Build-OutputDirectory')
 assert 'UTF-8' == impl_manifest.getValue('Project-Build-SourceEncoding')
@@ -43,6 +49,23 @@ assert localRepositoryPath.absolutePath == impl_manifest.getValue('Settings-Loca
 assert 'false' == impl_manifest.getValue('Settings-InteractiveMode')
 assert 'value' == impl_manifest.getValue('SomeVar')
 assert 'parentValue' == impl_manifest.getValue('SomeParentVar')
+
+// Check bnd properties
+assert api_manifest.getValue('Project-Name') == 'test-api-bundle'
+assert impl_manifest.getValue('Project-Name') == 'test-impl-bundle'
+assert wrapper_manifest.getValue('Project-Name') == 'test-wrapper-bundle'
+assert api_manifest.getValue('Project-Dir') == new File(basedir, 'test-api-bundle').absolutePath
+assert impl_manifest.getValue('Project-Dir') == new File(basedir, 'test-impl-bundle').absolutePath
+assert wrapper_manifest.getValue('Project-Dir') == new File(basedir, 'test-wrapper-bundle').absolutePath
+assert api_manifest.getValue('Project-Output') == new File(basedir, 'test-api-bundle/target').absolutePath
+assert impl_manifest.getValue('Project-Output') == new File(basedir, 'test-impl-bundle/target').absolutePath
+assert wrapper_manifest.getValue('Project-Output') == new File(basedir, 'test-wrapper-bundle/target').absolutePath
+assert api_manifest.getValue('Project-Buildpath')
+assert impl_manifest.getValue('Project-Buildpath')
+assert wrapper_manifest.getValue('Project-Buildpath')
+assert api_manifest.getValue('Project-Sourcepath')
+assert impl_manifest.getValue('Project-Sourcepath')
+assert !wrapper_manifest.getValue('Project-Sourcepath')
 
 // Check contents
 assert null != api_jar.getEntry('org/example/api/')
