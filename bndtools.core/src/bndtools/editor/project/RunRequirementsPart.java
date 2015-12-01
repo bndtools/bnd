@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -48,6 +49,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IFormPart;
@@ -304,12 +306,13 @@ public class RunRequirementsPart extends BndEditorPart implements PropertyChange
         for (IFormPart part : parts) {
             if (part.isDirty())
                 part.commit(false);
+
         }
 
-        IFormPage page = (IFormPage) getManagedForm().getContainer();
-        IEditorInput input = page.getEditorInput();
+        final IFormPage page = (IFormPage) getManagedForm().getContainer();
+        final IEditorInput input = page.getEditorInput();
+        final IEditorPart editor = page.getEditor();
         final IFile file = ResourceUtil.getFile(input);
-
         final Shell parentShell = page.getEditor().getSite().getShell();
 
         // Create the wizard and pre-validate
@@ -337,7 +340,12 @@ public class RunRequirementsPart extends BndEditorPart implements PropertyChange
             public void run() {
                 ResolutionWizard wizard = new ResolutionWizard(model, file, job.getResolutionResult());
                 WizardDialog dialog = new WizardDialog(parentShell, wizard);
-                dialog.open();
+                boolean dirtyBeforeResolve = editor.isDirty();
+                if (dialog.open() == Dialog.OK && !dirtyBeforeResolve) {
+                    // only save the editor, when no unsaved changes happened before resolution
+                    editor.getEditorSite().getPage().saveEditor(editor, false);
+                }
+
             }
         };
         job.addJobChangeListener(new JobChangeAdapter() {
