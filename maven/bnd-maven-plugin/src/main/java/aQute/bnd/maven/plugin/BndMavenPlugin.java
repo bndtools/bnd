@@ -126,9 +126,9 @@ public class BndMavenPlugin extends AbstractMojo {
 			Set<Artifact> artifacts = project.getArtifacts();
 			List<File> buildpath = new ArrayList<File>(artifacts.size());
 			for (Artifact artifact : artifacts) {
-				if (artifact.getFile() == null) {
-					continue;
-				}
+                if (!artifact.getType().equals("jar")) {
+                    continue;
+                }
 				buildpath.add(artifact.getFile().getCanonicalFile());
 			}
 			builder.setProperty("project.buildpath", Strings.join(File.pathSeparator, buildpath));
