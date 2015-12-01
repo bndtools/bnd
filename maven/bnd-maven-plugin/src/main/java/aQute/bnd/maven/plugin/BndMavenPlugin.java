@@ -25,8 +25,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -56,6 +56,7 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 
 @Mojo(name = "bnd-process", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class BndMavenPlugin extends AbstractMojo {
@@ -106,29 +107,13 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			builder.setBase(project.getBasedir());
 			loadProjectProperties(builder, project);
+	        builder.setProperty("project.output", targetDir.getCanonicalPath());
 			
 			// Reject sub-bundle projects
 			List<Builder> subs = builder.getSubBuilders();
 			if ((subs.size() != 1) && !builder.equals(subs.get(0))) {
 				throw new MojoExecutionException("Sub-bundles not permitted in a maven build");
 			}
-
-			// Set bnd classpath
-			List<File> classpath = new LinkedList<File>();
-			Set<Artifact> artifacts = project.getArtifacts();
-			for (Artifact artifact : artifacts) {
-				File artifactFile = artifact.getFile();
-				if (artifactFile != null)
-					classpath.add(artifactFile);
-			}
-			if (classesDir.isDirectory()) {
-				classpath.add(classesDir);
-			}
-			builder.setClasspath(classpath.toArray(new File[classpath.size()]));
-			
-			// Set bnd sourcepath
-			if (builder.hasSources() && sourceDir.isDirectory())
-				builder.setSourcepath(new File[] { sourceDir });
 
 			// Include local project packages automatically
 			if (classesDir.isDirectory()) {
@@ -137,10 +122,40 @@ public class BndMavenPlugin extends AbstractMojo {
 				builder.setJar(classesDirJar);
 			}
 
+			// Set bnd classpath
+			Set<Artifact> artifacts = project.getArtifacts();
+			List<File> buildpath = new ArrayList<File>(artifacts.size());
+			for (Artifact artifact : artifacts) {
+				if (artifact.getFile() == null) {
+					continue;
+				}
+				buildpath.add(artifact.getFile().getCanonicalFile());
+			}
+			builder.setProperty("project.buildpath", Strings.join(File.pathSeparator, buildpath));
+			builder.setClasspath(buildpath.toArray(new File[buildpath.size()]));
+			if (log.isDebugEnabled()) {
+				log.debug("builder classpath: " + builder.getProperty("project.buildpath"));
+			}
+
+			// Set bnd sourcepath
+			List<File> sourcepath = new ArrayList<File>();
+			if (sourceDir.exists()) {
+				sourcepath.add(sourceDir.getCanonicalFile());
+			}
+			builder.setProperty("project.sourcepath", Strings.join(File.pathSeparator, sourcepath));
+			builder.setSourcepath(sourcepath.toArray(new File[sourcepath.size()]));
+			if (log.isDebugEnabled()) {
+				log.debug("builder sourcepath: " + builder.getProperty("project.sourcepath"));
+			}
+
 			// Set Bundle-Version
 			Version version = MavenVersion.parseString(project.getVersion()).getOSGiVersion();
 			version = replaceSNAPSHOT(version);
 			builder.setProperty(Constants.BUNDLE_VERSION, version.toString());
+
+			if (log.isDebugEnabled()) {
+				log.debug("builder properties: " + builder.getProperties());
+			}
 
 			// Build bnd Jar (in memory)
 			Jar bndJar = builder.build();
