@@ -111,7 +111,7 @@ public class BndMavenPlugin extends AbstractMojo {
 			
 			// Reject sub-bundle projects
 			List<Builder> subs = builder.getSubBuilders();
-			if ((subs.size() != 1) && !builder.equals(subs.get(0))) {
+			if ((subs.size() != 1) || !builder.equals(subs.get(0))) {
 				throw new MojoExecutionException("Sub-bundles not permitted in a maven build");
 			}
 
