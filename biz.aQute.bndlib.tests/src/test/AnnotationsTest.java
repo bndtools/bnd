@@ -1,18 +1,31 @@
 package test;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.Serializable;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.RetentionPolicy;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 
-import junit.framework.*;
+import org.osgi.service.log.LogService;
+import org.osgi.service.packageadmin.PackageAdmin;
 
-import org.osgi.service.log.*;
-import org.osgi.service.packageadmin.*;
-
-import aQute.bnd.annotation.component.*;
-import aQute.bnd.make.component.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.annotation.component.Activate;
+import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.Deactivate;
+import aQute.bnd.annotation.component.Modified;
+import aQute.bnd.annotation.component.Reference;
+import aQute.bnd.annotation.metatype.Configurable;
+import aQute.bnd.make.component.ComponentAnnotationReader;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Annotation;
+import aQute.bnd.osgi.ClassDataCollector;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.FileResource;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class AnnotationsTest extends TestCase {
 
@@ -106,7 +119,34 @@ public class AnnotationsTest extends TestCase {
 
 		clazz.parseClassFile(getClass().getResourceAsStream("Target.class"), cd);
 	}
+
+	@SuppressWarnings({
+			"rawtypes", "unchecked"
+	})
+	public static void testNestedAnnotations() throws Exception {
+		try (Analyzer analyzer = new Analyzer();) {
+			TypeRef typeref = analyzer.getTypeRefFromFQN(ActualAnnotation.class.getName());
+			Map<String,Object> annMap = (Map) Collections.singletonMap("a", 5);
+			Annotation annotation = new Annotation(typeref, annMap, ElementType.FIELD, RetentionPolicy.RUNTIME);
+
+			Map<String,Object> properties = (Map) Collections.singletonMap("ann", annotation);
+			ConfigurableInterface a = Configurable.createConfigurable(ConfigurableInterface.class, properties);
+
+			assertNotNull(a);
+			assertNotNull(a.ann());
+			assertEquals(5, a.ann().a());
+		}
+	}
 }
+
+@interface ActualAnnotation {
+	int a() default 1;
+}
+
+interface ConfigurableInterface {
+	ActualAnnotation ann();
+}
+
 
 @Component
 class Target implements Serializable {
