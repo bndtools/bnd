@@ -1,14 +1,39 @@
 package aQute.bnd.annotation.metatype;
 
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.regex.*;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 @SuppressWarnings({
 		"unchecked", "rawtypes"
 })
 public class Configurable<T> {
 	public static Pattern SPLITTER_P = Pattern.compile("(?<!\\\\)\\|");
+	private static final String	BND_ANNOTATION_CLASS_NAME	= "aQute.bnd.osgi.Annotation";
+	private static final String	BND_ANNOTATION_METHOD_NAME	= "getAnnotation";
 
 	public static <T> T createConfigurable(Class<T> c, Map< ? , ? > properties) {
 		Object o = Proxy.newProxyInstance(c.getClassLoader(), new Class< ? >[] {
@@ -150,8 +175,9 @@ public class Configurable<T> {
 				if (resultType == Pattern.class) {
 					return Pattern.compile(input);
 				}
-			} else if (resultType.isAnnotation() && actualType == aQute.bnd.osgi.Annotation.class) {
-				java.lang.annotation.Annotation a = ((aQute.bnd.osgi.Annotation) o).getAnnotation();
+			} else if (resultType.isAnnotation() && actualType.getName().equals(BND_ANNOTATION_CLASS_NAME)) {
+				Method m = actualType.getMethod(BND_ANNOTATION_METHOD_NAME);
+				java.lang.annotation.Annotation a = (Annotation) m.invoke(o);
 				if (resultType.isAssignableFrom(a.getClass())) {
 					return a;
 				}

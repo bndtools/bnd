@@ -1,11 +1,19 @@
 package aQute.bnd.osgi;
 
-import java.lang.annotation.*;
-import java.util.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.RetentionPolicy;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
-import aQute.bnd.annotation.metatype.*;
+import aQute.bnd.annotation.metatype.Configurable;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 
+/*
+ * This class is referenced in aQute.bnd.annotation.metatype.Configurable in constant
+ * BND_ANNOTATION_CLASS_NAME
+ */
 public class Annotation {
 	private TypeRef				name;
 	private Map<String,Object>	elements;
