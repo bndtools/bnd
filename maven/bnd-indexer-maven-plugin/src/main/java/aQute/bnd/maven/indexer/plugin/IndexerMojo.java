@@ -296,8 +296,13 @@ public class IndexerMojo extends AbstractMojo {
     				throw new FileNotFoundException("The repository " + artifactResult.getRepository().getId() + " is not known to this resolver");
     			}
     			
-    			// The base URL must always point to a directory
     			String baseUrl = repo.getUrl();
+    			if(baseUrl.startsWith("file:")) {
+    				//File URLs on Windows are nasty, so send them via a file
+    				baseUrl = new File(baseUrl.substring(5)).toURI().normalize().toString();
+    			}
+    			
+    			// The base URL must always point to a directory
     			if(!baseUrl.endsWith("/")) {
     				baseUrl = baseUrl + "/";
     			}
