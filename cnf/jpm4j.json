@@ -1,9 +1,5 @@
 {
  "revisionRefs":[{
-  "artifactId":"aQute.jpm.bndrepo","baseline":"1.1.0","bsn":"aQute.jpm.bndrepo","created":1406106266232,"groupId":"osgi","md5":"B561345F62ECDE2424B7B52F88B79F85","name":"aQute.jpm.bndrepo","phase":"STAGING","qualifier":"201407230904","revision":"9FC48846222B4F117811A9DD4D0A3E8DB5BA7B0A","size":361684,"urls":["http://repo.jpm4j.org/rest/bundle/51C83986E4B06EF1574B84F7/9FC48846222B4F117811A9DD4D0A3E8DB5BA7B0A"],"version":"1.1.0.201407230904"
- },{
-  "artifactId":"aQute.jpm.clnt","baseline":"2.2.0","bsn":"aQute.jpm.clnt","created":1401385269369,"groupId":"osgi","md5":"D8CCDB82A41D2E30228F6A8E141C36DE","name":"aQute.jpm.clnt","phase":"MASTER","qualifier":"201405291741","revision":"700F8F2532366ED7282F24A59108E7A3D19C9C28","size":219768,"urls":["http://repo.jpm4j.org/rest/bundle/51C83986E4B06EF1574B84F7/700F8F2532366ED7282F24A59108E7A3D19C9C28"],"version":"2.2.0.201405291741"
- },{
   "artifactId":"snakeyaml","baseline":"1.15.0","bsn":"org.yaml.snakeyaml","created":1424352310155,"description":"YAML 1.1 parser and emitter for Java","groupId":"org.yaml","md5":"C6502713FF649A557B767B990830C786","name":"SnakeYAML","phase":"MASTER","revision":"3B132BEA69E8EE099F416044970997BDE80F4EA6","size":269295,"urls":["http://repo1.maven.org/maven2/org/yaml/snakeyaml/1.15/snakeyaml-1.15.jar"],"version":"1.15"
  }]
 }
