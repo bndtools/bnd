@@ -58,7 +58,7 @@ import junit.framework.AssertionFailedError;
  * Test for use of DS components specified using spec DS annotations.
  */
 @SuppressWarnings({
-		"resource", "restriction"
+		"resource", "restriction", "serial"
 })
 public class DSAnnotationTest extends BndTestCase {
 
