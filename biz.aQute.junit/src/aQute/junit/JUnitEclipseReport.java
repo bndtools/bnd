@@ -1,13 +1,22 @@
 package aQute.junit;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
+import java.net.ConnectException;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.List;
 
-import junit.framework.*;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 
-import org.osgi.framework.*;
+import junit.framework.AssertionFailedError;
+import junit.framework.JUnit4TestAdapter;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 public class JUnitEclipseReport implements TestReporter {
 	BufferedReader	in;
@@ -20,16 +29,18 @@ public class JUnitEclipseReport implements TestReporter {
 
 	public JUnitEclipseReport(int port) throws Exception {
 		Socket socket = null;
-		for (int i = 0; socket == null && i < 10; i++) {
+		ConnectException e = null;
+		for (int i = 0; socket == null && i < 30; i++) {
 			try {
-				socket = new Socket("127.0.0.1", port);
+				socket = new Socket(InetAddress.getLocalHost(), port);
 			}
 			catch (ConnectException ce) {
+				e = ce;
 				Thread.sleep(i * 100);
 			}
 		}
 		if (socket == null) {
-			System.err.println("Cannot open the JUnit Port: " + port);
+			System.err.println("Cannot open the JUnit Port: " + port + " " + e);
 			System.exit(-2);
 			return;
 		}
