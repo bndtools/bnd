@@ -30,8 +30,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -65,7 +65,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	static Pattern PACKAGES_IGNORED = Pattern.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
 	static ThreadLocal<Processor>	current			= new ThreadLocal<Processor>();
-	static ExecutorService			executor		= Executors.newCachedThreadPool();
+	static ScheduledExecutorService	executor		= Executors.newScheduledThreadPool(1);
 	static Random					random			= new Random();
 	// TODO handle include files out of date
 	// TODO make splitter skip eagerly whitespace so trim is not necessary
