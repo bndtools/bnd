@@ -1,7 +1,11 @@
 package aQute.remote.agent;
 
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 /**
  * A redirector that will open a connection to a socket, assuming there is a
@@ -140,7 +144,7 @@ public class SocketRedirector implements Redirector {
 			// but the Gogo shell delivers at 127.0.0.1
 			//
 
-			InetAddress oldStyle = InetAddress.getByName("127.0.0.1");
+			InetAddress oldStyle = InetAddress.getByName(null);
 			return new Socket(oldStyle, port);
 		}
 		catch (Exception e) {

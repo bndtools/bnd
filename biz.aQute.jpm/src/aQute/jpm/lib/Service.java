@@ -99,9 +99,7 @@ public class Service {
 			return "Invalid port";
 
 		byte data[] = m.getBytes("UTF-8");
-		DatagramPacket p = new DatagramPacket(data, 0, data.length, InetAddress.getByAddress(new byte[] {
-				127, 0, 0, 1
-		}), port);
+		DatagramPacket p = new DatagramPacket(data, 0, data.length, InetAddress.getLoopbackAddress(), port);
 		DatagramSocket dsocket = new DatagramSocket();
 		dsocket.setReceiveBufferSize(5000);
 		dsocket.setSoTimeout(5000);
