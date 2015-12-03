@@ -198,6 +198,26 @@ public class AnalyzerTest extends BndTestCase {
 
 	}
 
+	public static void testBundleClasspathWithVersionedExports() throws Exception {
+		Builder b = new Builder();
+		try {
+			b.setBundleClasspath("foo");
+			b.setIncludeResource("foo/test/refer_versioned=bin/test/refer_versioned");
+			b.setProperty(Constants.EXPORT_CONTENTS, "${packages;ANNOTATED;org.osgi.annotation.versioning.Version}");
+			Jar jar = b.build();
+			Manifest m = jar.getManifest();
+			assertTrue(b.check());
+			Packages exports = b.getExports();
+			String version = exports.getByFQN("test.refer_versioned").getVersion();
+			assertEquals("3.5.7", version);
+			m.write(System.err);
+		}
+		finally {
+			b.close();
+		}
+
+	}
+
 	/**
 	 * Very basic sanity test
 	 */
