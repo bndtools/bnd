@@ -296,8 +296,21 @@ public class IndexerMojo extends AbstractMojo {
     				throw new FileNotFoundException("The repository " + artifactResult.getRepository().getId() + " is not known to this resolver");
     			}
     			
-    			return URI.create(repo.getUrl() + repo.getBasedir() +
-    					repo.getLayout().pathOf(RepositoryUtils.toArtifact(artifact))).normalize();
+    			// The base URL must always point to a directory
+    			String baseUrl = repo.getUrl();
+    			if(!baseUrl.endsWith("/")) {
+    				baseUrl = baseUrl + "/";
+    			}
+    			
+    			String artifactPath = repo.getLayout().pathOf(RepositoryUtils.toArtifact(artifact));
+    			
+    			// The artifact path should never be absolute, it is always relative to the repo URL
+    			while(artifactPath.startsWith("/")) {
+    				artifactPath = artifactPath.substring(1);
+    			}
+    			
+    			// As we have sorted the trailing and leading / characters resolve should do the rest! 	
+				return URI.create(baseUrl).resolve(artifactPath).normalize();
     		} catch (Exception e) {
     			fail = true;
     			getLog().error("Failed to determine the artifact URI", e);
