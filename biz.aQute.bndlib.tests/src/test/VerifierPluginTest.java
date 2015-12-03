@@ -33,14 +33,15 @@ public class VerifierPluginTest extends TestCase {
 
 		};
 
-		Builder b = new Builder();
-		b.setProperty("Bundle-SymbolicName", "p1");
-		b.setProperty("Bundle-Version", "1.2.3");
-		b.setExportPackage("test.activator");
-		b.addClasspath(new File("bin"));
-		b.getPlugins().add(analyzerPlugin);
+		try (Builder b = new Builder()) {
+			b.setProperty("Bundle-SymbolicName", "p1");
+			b.setProperty("Bundle-Version", "1.2.3");
+			b.setExportPackage("test.activator");
+			b.addClasspath(new File("bin"));
+			b.getPlugins().add(analyzerPlugin);
 
-		Jar jar = b.build();
+			Jar jar = b.build();
+		}
 		assertTrue(executedCheck.get());
 	}
 
@@ -64,14 +65,15 @@ public class VerifierPluginTest extends TestCase {
 
 		};
 
-		Builder b = new Builder();
-		b.setProperty("Bundle-SymbolicName", "p1");
-		b.setProperty("Bundle-Version", "1.2.3");
-		b.setExportPackage("test.activator");
-		b.addClasspath(new File("bin"));
-		b.getPlugins().add(verifier);
+		try (Builder b = new Builder()) {
+			b.setProperty("Bundle-SymbolicName", "p1");
+			b.setProperty("Bundle-Version", "1.2.3");
+			b.setExportPackage("test.activator");
+			b.addClasspath(new File("bin"));
+			b.getPlugins().add(verifier);
 
-		Jar jar = b.build();
+			Jar jar = b.build();
+		}
 		assertTrue(executedCheck.get());
 	}
 

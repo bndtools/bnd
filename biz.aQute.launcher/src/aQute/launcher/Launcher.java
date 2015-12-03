@@ -63,7 +63,6 @@ import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
-import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.permissionadmin.PermissionInfo;
 
 import aQute.launcher.agent.LauncherAgent;
@@ -88,7 +87,7 @@ public class Launcher implements ServiceListener {
 	private SimplePermissionPolicy		policy;
 	private Callable<Integer>			mainThread;
 	@SuppressWarnings("deprecation")
-	private PackageAdmin				padmin;
+	private org.osgi.service.packageadmin.PackageAdmin	padmin;
 	private final List<BundleActivator>	embedded			= new ArrayList<BundleActivator>();
 	private final Map<Bundle,Throwable>	errors				= new HashMap<Bundle,Throwable>();
 	private final Map<File,Bundle>		installedBundles	= new LinkedHashMap<File,Bundle>();
@@ -348,7 +347,6 @@ public class Launcher implements ServiceListener {
 		return list;
 	}
 
-	@SuppressWarnings("deprecation")
 	public int activate() throws Exception {
 		active.set(true);
 		Policy.setPolicy(new AllPolicy());
@@ -366,7 +364,9 @@ public class Launcher implements ServiceListener {
 		trace("system bundle started ok");
 
 		BundleContext systemContext = systemBundle.getBundleContext();
-		ServiceReference<PackageAdmin> ref = systemContext.getServiceReference(PackageAdmin.class);
+		@SuppressWarnings("deprecation")
+		ServiceReference<org.osgi.service.packageadmin.PackageAdmin> ref = systemContext
+				.getServiceReference(org.osgi.service.packageadmin.PackageAdmin.class);
 		if (ref != null) {
 			padmin = systemContext.getService(ref);
 		} else
@@ -768,7 +768,8 @@ public class Launcher implements ServiceListener {
 
 	@SuppressWarnings("deprecation")
 	private boolean isFragment(Bundle b) {
-		return padmin != null && padmin.getBundleType(b) == PackageAdmin.BUNDLE_TYPE_FRAGMENT;
+		return padmin != null
+				&& padmin.getBundleType(b) == org.osgi.service.packageadmin.PackageAdmin.BUNDLE_TYPE_FRAGMENT;
 	}
 
 	public void deactivate() throws Exception {

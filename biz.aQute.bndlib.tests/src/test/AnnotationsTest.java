@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.osgi.service.log.LogService;
-import org.osgi.service.packageadmin.PackageAdmin;
 
 import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
@@ -53,7 +52,7 @@ public class AnnotationsTest extends TestCase {
 		@Reference(type = '1')
 		protected void setPackageAdmin(@SuppressWarnings({
 				"unused", "deprecation"
-		}) PackageAdmin pa) {}
+		}) org.osgi.service.packageadmin.PackageAdmin pa) {}
 
 		protected void unsetLog(@SuppressWarnings("unused") LogService log) {
 			this.log = null;

@@ -23,8 +23,6 @@ import java.util.jar.Manifest;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import junit.framework.AssertionFailedError;
-
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
@@ -54,6 +52,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.test.BndTestCase;
 import aQute.bnd.test.XmlTester;
+import junit.framework.AssertionFailedError;
 
 /**
  * Test for use of DS components specified using spec DS annotations.
@@ -3328,8 +3327,9 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component(service = HashMap.class)
 	static class NotAMap2 {}
 
+	@SuppressWarnings("serial")
 	@Component(service = HashMap.class)
-	static class NotAMap3 extends TreeMap {}
+	static class NotAMap3 extends TreeMap<String,String> {}
 
 	public void testNotImplementedService() throws Exception {
 		checkClass(NotAMap1.class, 1);
@@ -3337,23 +3337,29 @@ public class DSAnnotationTest extends BndTestCase {
 		checkClass(NotAMap3.class, 1);
 	}
 
+	@SuppressWarnings("serial")
 	@Component(service = Map.class)
 	static class IsAMap1 extends HashMap<String,String> {}
 
+	@SuppressWarnings("serial")
 	static class MyHashMap1<K, V> extends HashMap<K,V> {}
 
+	@SuppressWarnings("serial")
 	@Component(service = HashMap.class)
 	static class IsAMap2 extends MyHashMap1<String,String> {}
 
 	static interface MyMap<K, V> extends Map<K,V> {};
 
+	@SuppressWarnings("serial")
 	static class MyHashMap2<K, V> extends HashMap<K,V> implements MyMap<K,V> {}
 
+	@SuppressWarnings("serial")
 	@Component(service = Map.class)
 	static class IsAMap3 extends MyHashMap2<String,String> {}
 
 	static interface Marker {}
 
+	@SuppressWarnings("serial")
 	@Component(service = Map.class)
 	static class IsAMap3a extends MyHashMap2<String,String> implements Marker {}
 
