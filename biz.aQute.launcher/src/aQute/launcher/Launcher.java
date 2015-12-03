@@ -1,27 +1,74 @@
 package aQute.launcher;
 
-import static aQute.launcher.constants.LauncherConstants.*;
+import static aQute.launcher.constants.LauncherConstants.CANCELED;
+import static aQute.launcher.constants.LauncherConstants.DEFAULT_LAUNCHER_PROPERTIES;
+import static aQute.launcher.constants.LauncherConstants.ERROR;
+import static aQute.launcher.constants.LauncherConstants.UPDATE_NEEDED;
+import static aQute.launcher.constants.LauncherConstants.WARNING;
 
-import java.io.*;
-import java.lang.instrument.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.security.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.URL;
+import java.security.AllPermission;
+import java.security.CodeSource;
+import java.security.Permission;
+import java.security.PermissionCollection;
+import java.security.Policy;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
-import java.util.jar.*;
-import java.util.regex.*;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.Vector;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.osgi.framework.*;
-import org.osgi.framework.launch.*;
-import org.osgi.service.packageadmin.*;
-import org.osgi.service.permissionadmin.*;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.Constants;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.ServiceEvent;
+import org.osgi.framework.ServiceListener;
+import org.osgi.framework.ServiceReference;
+import org.osgi.framework.launch.Framework;
+import org.osgi.framework.launch.FrameworkFactory;
+import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.service.permissionadmin.PermissionInfo;
 
-import aQute.launcher.agent.*;
-import aQute.launcher.constants.*;
-import aQute.launcher.minifw.*;
+import aQute.launcher.agent.LauncherAgent;
+import aQute.launcher.constants.LauncherConstants;
+import aQute.launcher.minifw.MiniFramework;
 
 /**
  * This is the primary bnd launcher. It implements a launcher that runs on Java
@@ -213,8 +260,8 @@ public class Launcher implements ServiceListener {
 			} else {
 				DatagramSocket newSocket;
 				try {
-					newSocket = new DatagramSocket(new InetSocketAddress(InetAddress.getLocalHost(), 0));
-					newSocket.connect(new InetSocketAddress(InetAddress.getLocalHost(), parms.notificationPort));
+					newSocket = new DatagramSocket(new InetSocketAddress(InetAddress.getByName(null), 0));
+					newSocket.connect(new InetSocketAddress(InetAddress.getByName(null), parms.notificationPort));
 
 				}
 				catch (IOException ioe) {

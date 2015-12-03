@@ -1,11 +1,16 @@
 package biz.aQute.remote;
 
-import java.io.*;
-import java.net.*;
-import java.util.concurrent.atomic.*;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.*;
-import aQute.remote.util.*;
+import aQute.remote.util.Link;
+import junit.framework.TestCase;
 
 public class LinkTest extends TestCase {
 	private ServerSocket	server;
@@ -18,7 +23,7 @@ public class LinkTest extends TestCase {
 
 	public void setUp() throws IOException {
 		server = new ServerSocket(4567);
-		remoteSocket = new Socket(InetAddress.getLocalHost(), server.getLocalPort());
+		remoteSocket = new Socket(InetAddress.getByName(null), server.getLocalPort());
 		remoteSocket.setSoTimeout(500);
 		localSocket = server.accept();
 		localSocket.setSoTimeout(500);

@@ -32,7 +32,7 @@ public class JUnitEclipseReport implements TestReporter {
 		ConnectException e = null;
 		for (int i = 0; socket == null && i < 30; i++) {
 			try {
-				socket = new Socket(InetAddress.getLocalHost(), port);
+				socket = new Socket(InetAddress.getByName(null), port);
 			}
 			catch (ConnectException ce) {
 				e = ce;
