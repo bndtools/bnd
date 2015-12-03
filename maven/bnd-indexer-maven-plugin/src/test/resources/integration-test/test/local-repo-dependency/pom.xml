@@ -1,0 +1,47 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>biz.aQute.bnd-test</groupId>
+		<artifactId>test</artifactId>
+		<version>0.0.1</version>
+	</parent>
+
+	<artifactId>local-repo-dependency</artifactId>
+	<packaging>pom</packaging>
+
+	<repositories>
+		<repository>
+			<id>Local Repository</id>
+			<url>file://${basedir}/../localfilerepo</url>
+		</repository>
+		<repository>
+			<id>central</id>
+			<url>https://repo1.maven.apache.org/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.felix</groupId>
+			<artifactId>org.apache.felix.scr.annotations</artifactId>
+			<version>1.7.0</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>bnd-indexer-maven-plugin</artifactId>
+				<configuration>
+					<includeTransitive>false</includeTransitive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

@@ -5,7 +5,7 @@ import java.util.*;
 import org.osgi.resource.*;
 import org.osgi.service.repository.*;
 
-public Repository check(String xmlFile, String gzipFile, int size, boolean localURL) {
+public Repository check(String xmlFile, String gzipFile, int size, boolean localURL, boolean doCheck) {
 	// Check the bundles exist!
 	File xml = new File(xmlFile);
 	assert xml.isFile();
@@ -22,7 +22,9 @@ public Repository check(String xmlFile, String gzipFile, int size, boolean local
 	
 	ResourcesRepository repo = new ResourcesRepository(resources);
 	
-	check(repo, "osgi.extender", "(osgi.extender=osgi.component)", "org.apache.felix.scr", localURL);
+	if(doCheck) {
+		check(repo, "osgi.extender", "(osgi.extender=osgi.component)", "org.apache.felix.scr", localURL);
+	}
 	
 	return repo;
 }
@@ -67,14 +69,14 @@ println "basedir ${basedir}"
 println "localRepositoryPath ${localRepositoryPath}"
 println "mavenVersion ${mavenVersion}"
 
-check("${basedir}/transitive/target/index.xml", "${basedir}/transitive/target/index.xml.gz", 21, false);
-check("${basedir}/non-transitive/target/index.xml", "${basedir}/non-transitive/target/index.xml.gz", 3, false);
-check("${basedir}/scoped/target/index.xml", "${basedir}/scoped/target/index.xml.gz", 24, false);
-check("${basedir}/require-local/target/index.xml", "${basedir}/require-local/target/index.xml.gz", 21, true);
+check("${basedir}/transitive/target/index.xml", "${basedir}/transitive/target/index.xml.gz", 21, false, true);
+check("${basedir}/non-transitive/target/index.xml", "${basedir}/non-transitive/target/index.xml.gz", 3, false, true);
+check("${basedir}/scoped/target/index.xml", "${basedir}/scoped/target/index.xml.gz", 24, false, true);
+check("${basedir}/require-local/target/index.xml", "${basedir}/require-local/target/index.xml.gz", 21, true, true);
 
 // The in-build needs to check that the snapshot points at the real repo
 
-Repository repo = check("${basedir}/in-build/target/index.xml", "${basedir}/in-build/target/index.xml.gz", 4, false);
+Repository repo = check("${basedir}/in-build/target/index.xml", "${basedir}/in-build/target/index.xml.gz", 4, false, true);
 
 Capability content = check(repo, "osgi.identity", "(osgi.identity=biz.aQute.bnd)", "biz.aQute.bnd", false);
 
@@ -89,7 +91,7 @@ assert !(url.substring(url.lastIndexOf('/')).contains("SNAPSHOT"))
 
 // The add-mvn needs to check that the mvn: URLs are added as well
 
-repo = check("${basedir}/add-mvn/target/index.xml", "${basedir}/non-transitive/target/index.xml.gz", 3, false);
+repo = check("${basedir}/add-mvn/target/index.xml", "${basedir}/non-transitive/target/index.xml.gz", 3, false, true);
 
 Requirement requirement = new RequirementBuilder("osgi.content")
 						.addDirective("filter", "(url=mvn*)")
@@ -100,4 +102,10 @@ Map<Requirement,Collection<Capability>> caps = repo
 						
 // All three resources should have a mvn: URL	
 assert 3 == caps.get(requirement).size();
-	
+
+//Test using a local repository
+
+repo = check("${basedir}/local-repo-dependency/target/index.xml", "${basedir}/local-repo-dependency/target/index.xml.gz", 1, false, false);
+content = check(repo, "osgi.identity", "(osgi.identity=org.apache.felix.scr.annotations)", "org.apache.felix.scr.annotations", true);
+
+return;
