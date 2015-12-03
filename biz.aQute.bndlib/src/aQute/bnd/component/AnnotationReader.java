@@ -767,7 +767,7 @@ public class AnnotationReader extends ClassDataCollector {
 		}
 		// if the type is specified it may still not match as it could
 		// be a superclass of the specified service.
-		if (!assignable(annoService, inferredService)) {
+		if (!analyzer.assignable(annoService, inferredService)) {
 			return null;
 		}
 		if (service == null)
@@ -776,70 +776,6 @@ public class AnnotationReader extends ClassDataCollector {
 		if (minVersion != null)
 			def.updateVersion(minVersion);
 		return service;
-	}
-
-	private boolean assignable(String annoService, String inferredService) {
-		if (annoService == null || annoService.isEmpty() || inferredService == null || inferredService.isEmpty()
-				|| Object.class.getName().equals(inferredService))
-			return true;
-		try {
-			Clazz annoServiceClazz = analyzer.findClass(analyzer.getTypeRefFromFQN(annoService));
-			Clazz inferredServiceClazz = analyzer.findClass(analyzer.getTypeRefFromFQN(inferredService));
-			return assignable(annoServiceClazz, inferredServiceClazz);
-		}
-		catch (Exception e) {}
-		// we couldn't determine
-		return true;
-	}
-
-	private boolean assignable(Clazz annoServiceClazz, Clazz inferredServiceClazz) {
-		if (annoServiceClazz == null || inferredServiceClazz == null)
-			// we don't know what one of the classes is, assume assignable.
-			return true;
-		if (annoServiceClazz.equals(inferredServiceClazz))
-			return true;
-		if (!inferredServiceClazz.isInterface()) {
-			if (annoServiceClazz.isInterface())
-				return false;
-			TypeRef zuper = annoServiceClazz.getSuper();
-			if (zuper == null)
-				return false;
-			try {
-				return assignable(analyzer.findClass(zuper), inferredServiceClazz);
-			}
-			catch (Exception e) {
-				// can't tell
-				return true;
-			}
-		}
-		TypeRef[] intfs = annoServiceClazz.getInterfaces();
-		if (intfs != null) {
-			for (TypeRef intf : intfs) {
-				try {
-					if (assignable(analyzer.findClass(intf), inferredServiceClazz))
-						return true;
-				}
-				catch (Exception e) {
-					return true;
-				}
-			}
-		}
-		TypeRef superType = annoServiceClazz.getSuper();
-		if (superType != null) {
-			try {
-				Clazz zuper = analyzer.findClass(superType);
-				if (zuper != null)
-					return assignable(zuper, inferredServiceClazz);
-				// cannot analyze super class
-				return true;
-			}
-			catch (Exception e) {
-				// cannot analyze super class
-				return true;
-			}
-		}
-		// no more superclasses, not assignable.
-		return false;
 	}
 
 	private void checkMapReturnType(boolean hasMapReturnType, DeclarativeServicesAnnotationError details) {
@@ -964,7 +900,7 @@ public class AnnotationReader extends ClassDataCollector {
 			for (int i = 0; i < x.length; i++) {
 				TypeRef typeRef = (TypeRef) x[i];
 				Clazz service = analyzer.findClass(typeRef);
-				if (!assignable(clazz, service)) {
+				if (!analyzer.assignable(clazz, service)) {
 					analyzer.error("Class %s is not assignable to specified service %s", clazz.getFQN(),
 							typeRef.getFQN()).details(
 							new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
