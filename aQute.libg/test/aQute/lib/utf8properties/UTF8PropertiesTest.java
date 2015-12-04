@@ -23,6 +23,23 @@ public class UTF8PropertiesTest extends TestCase {
 			+ "\u00E0\u00E1\u00E2\u00E3\u00E4\u00E5\u00E6\u00E7\u00E8\u00E9\u00EA\u00EB\u00EC\u00ED\u00EE\u00EF"
 			+ "\u00F0\u00F1\u00F2\u00F3\u00F4\u00F5\u00F6\u00F7\u00F8\u00F9\u00FA\u00FB\u00FC\u00FD\u00FE\u00FF";
 
+	public void testEmptyContinuations() throws IOException {
+		UTF8Properties p = new UTF8Properties();
+		ReporterAdapter ra = new ReporterAdapter();
+		p.load("-plugin: \\\n\\\n\\\nabc", null, ra);
+		assertEquals("abc", p.get("-plugin"));
+		assertEquals(1, p.size());
+
+	}
+	public void testEmptyKey() throws IOException {
+		UTF8Properties p = new UTF8Properties();
+		ReporterAdapter ra = new ReporterAdapter();
+		p.load("	-runvm: \n" //
+				+ "#\"-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=1044\"", null, ra);
+		assertEquals("", p.get("-runvm"));
+		assertEquals(1, p.size());
+
+	}
 
 	public void testEmptySpace() throws IOException {
 		UTF8Properties p = new UTF8Properties();
@@ -32,6 +49,7 @@ public class UTF8PropertiesTest extends TestCase {
 		assertEquals(1, p.size());
 
 	}
+
 	public void testNewlineCr() throws IOException {
 		UTF8Properties p = new UTF8Properties();
 		ReporterAdapter ra = new ReporterAdapter();
@@ -41,6 +59,7 @@ public class UTF8PropertiesTest extends TestCase {
 		assertEquals(2, p.size());
 
 	}
+
 	public void testEscapedNewlinEmpty() throws IOException {
 		UTF8Properties p = new UTF8Properties();
 		ReporterAdapter ra = new ReporterAdapter();
@@ -49,6 +68,7 @@ public class UTF8PropertiesTest extends TestCase {
 		assertEquals(1, p.size());
 
 	}
+
 	public void testPackageinfo() throws IOException {
 		UTF8Properties p = new UTF8Properties();
 		ReporterAdapter ra = new ReporterAdapter();
@@ -66,6 +86,7 @@ public class UTF8PropertiesTest extends TestCase {
 		assertEquals(1, p.size());
 
 	}
+
 	public void testErrorsInParsing() throws IOException {
 		assertError("\n\n\n\n\n\n\n" //
 				+ "a;b=9", "a;b", 7, "Invalid property key: `a;b`:");
@@ -79,7 +100,7 @@ public class UTF8PropertiesTest extends TestCase {
 		ReporterAdapter ra = new ReporterAdapter();
 		UTF8Properties up = new UTF8Properties();
 		up.load(string, IO.getFile("foo"), ra);
-		assertNotNull("No '"+key+"' property found", up.getProperty(key));
+		assertNotNull("No '" + key + "' property found", up.getProperty(key));
 		assertTrue(ra.getErrors().size() > 0);
 		Location location = ra.getLocation(ra.getErrors().get(0));
 		assertEquals("Faulty line number", line, location.line);

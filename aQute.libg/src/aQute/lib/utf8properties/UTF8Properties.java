@@ -49,6 +49,7 @@ public class UTF8Properties extends Properties {
 	}
 
 	public void load(String source, File file, Reporter reporter) throws IOException {
+
 		PropertiesParser parser = new PropertiesParser(source, file == null ? null : file.getAbsolutePath(), reporter,
 				this);
 		parser.parse();

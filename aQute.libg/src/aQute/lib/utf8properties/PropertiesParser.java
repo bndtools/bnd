@@ -8,18 +8,34 @@ import aQute.lib.hex.Hex;
 import aQute.service.reporter.Reporter;
 import aQute.service.reporter.Reporter.SetLocation;
 
-class PropertiesParser {
-	private final static Pattern	VALID_KEY_P	= Pattern.compile("[^\n,;!#\\()]+");
+final class PropertiesParser {
+	private final static Pattern	VALID_KEY_P		= Pattern.compile("[^\n,;!#\\()]+");
 	private final String			source;
 	private final int				length;
 	private final Reporter			reporter;
 	private final String			file;
-	private int						n			= 0;
-	private int						line		= 0;
-	private int						pos			= -1;
-	private int						marker		= 0;
-	private char					current;
-	private Properties				properties;
+	private static final char		MIN_DELIMETER	= '\t';
+	private static final char		MAX_DELIMETER	= '=';
+	private final static byte[]		INFO			= new byte[MAX_DELIMETER + 1];
+	private final static byte		WS				= 1;
+	private final static byte		KEY				= 2;
+	private final static byte		LINE			= 4;
+
+	static {
+		INFO['\t'] = KEY + WS;
+		INFO['\n'] = KEY + LINE;
+		INFO['\f'] = KEY + WS;
+		INFO[' '] = KEY + WS;
+		INFO[':'] = KEY;
+		INFO['='] = KEY;
+	}
+
+	private int			n		= 0;
+	private int			line	= 0;
+	private int			pos		= -1;
+	private int			marker	= 0;
+	private char		current;
+	private Properties	properties;
 
 	PropertiesParser(String source, String file, Reporter reporter, Properties properties) {
 		this.source = source;
@@ -40,11 +56,20 @@ class PropertiesParser {
 		current = source.charAt(n++);
 		try {
 			switch (current) {
+				case '\\' :
+					if (peek() == '\n') {
+						next(); // current == newline
+						next(); // first character on new line
+						skipWhitespace();
+						return current;
+					}
+					return '\\';
 				case '\r' :
-					if (peek() == '\n' || pos == 0)
+					if (pos == 0)
 						return next();
-					else
-						return '\n';
+					if (peek() == '\n')
+						return next();
+					return '\n';
 
 				case '\n' :
 					line++;
@@ -68,7 +93,7 @@ class PropertiesParser {
 		}
 	}
 
-	void skip(String delimeters) {
+	void skip(byte delimeters) {
 		while (isIn(delimeters)) {
 			next();
 		}
@@ -93,7 +118,7 @@ class PropertiesParser {
 				continue;
 			}
 
-			String key = token(" \t\f:=\n");
+			String key = token(KEY);
 
 			if (!isValidKey(key)) {
 				error("Invalid property key: `%s`", key);
@@ -104,11 +129,15 @@ class PropertiesParser {
 			if (current == ':' || current == '=') {
 				next();
 				skipWhitespace();
+				if (current == '\n') {
+					properties.put(key, "");
+					continue;
+				}
 			}
 
 			if (current != '\n') {
 
-				String value = token("\n");
+				String value = token(LINE);
 				properties.put(key, value);
 
 			} else {
@@ -130,7 +159,7 @@ class PropertiesParser {
 	}
 
 	private void skipWhitespace() {
-		skip(" \t\f");
+		skip(WS);
 	}
 
 	public boolean isEmptyOrComment(char c) {
@@ -138,11 +167,11 @@ class PropertiesParser {
 	}
 
 	public void skipLine() {
-		while (!isIn("\n"))
+		while (!isIn(LINE))
 			next();
 	}
 
-	private String token(String delimeters) {
+	private final String token(byte delimeters) {
 		StringBuilder sb = new StringBuilder();
 		while (!isIn(delimeters)) {
 			char tmp = current;
@@ -158,25 +187,16 @@ class PropertiesParser {
 		return sb.toString();
 	}
 
-	public boolean isIn(String delimeters) {
-		return current < 0x7F && delimeters.indexOf(current) >= 0;
+	private final boolean isIn(byte delimeters) {
+		return current <= MAX_DELIMETER && current >= MIN_DELIMETER && (INFO[current] & delimeters) != 0;
 	}
 
-	public char backslash() {
+	private final char backslash() {
 		char c;
 		c = next();
 		switch (c) {
 			case '\n' :
-				next(); // \n
-				skipWhitespace();
-
-				// we hit \\n\n
-				// which means we have nothing to return!
-
-				if (current == '\n')
-					return 0;
-
-				return current;
+				return 0;
 
 			case 'u' :
 				StringBuilder sb = new StringBuilder();
@@ -236,6 +256,5 @@ class PropertiesParser {
 			loc++;
 		return source.substring(marker, loc);
 	}
-
 
 }
