@@ -1,33 +1,40 @@
 package aQute.lib.utf8properties;
 
 import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import aQute.lib.hex.Hex;
 import aQute.service.reporter.Reporter;
 import aQute.service.reporter.Reporter.SetLocation;
 
 final class PropertiesParser {
-	private final static Pattern	VALID_KEY_P		= Pattern.compile("[^\n,;!#\\()]+");
-	private final String			source;
-	private final int				length;
-	private final Reporter			reporter;
-	private final String			file;
-	private static final char		MIN_DELIMETER	= '\t';
-	private static final char		MAX_DELIMETER	= '=';
-	private final static byte[]		INFO			= new byte[MAX_DELIMETER + 1];
-	private final static byte		WS				= 1;
-	private final static byte		KEY				= 2;
-	private final static byte		LINE			= 4;
+	private final char[]		source;
+	private final int			length;
+	private final Reporter		reporter;
+	private final String		file;
+	private static final char	MIN_DELIMETER	= '\t';
+	private static final char	MAX_DELIMETER	= '\\';
+	private final static byte[]	INFO			= new byte[MAX_DELIMETER + 1];
+	private final static byte	WS				= 1;
+	private final static byte	KEY				= 2;
+	private final static byte	LINE			= 4;
+	private final static byte	NOKEY			= 8;
 
 	static {
 		INFO['\t'] = KEY + WS;
 		INFO['\n'] = KEY + LINE;
 		INFO['\f'] = KEY + WS;
 		INFO[' '] = KEY + WS;
+		INFO[','] = NOKEY;
+		INFO[';'] = NOKEY;
+		INFO['!'] = NOKEY;
+		INFO['\''] = NOKEY;
+		INFO['"'] = NOKEY;
+		INFO['#'] = NOKEY;
+		INFO['('] = NOKEY;
+		INFO[')'] = NOKEY;
 		INFO[':'] = KEY;
 		INFO['='] = KEY;
+		INFO['\\'] = NOKEY;
 	}
 
 	private int			n		= 0;
@@ -36,12 +43,13 @@ final class PropertiesParser {
 	private int			marker	= 0;
 	private char		current;
 	private Properties	properties;
+	private boolean		validKey;
 
 	PropertiesParser(String source, String file, Reporter reporter, Properties properties) {
-		this.source = source;
+		this.source = source.toCharArray();
 		this.file = file;
 		this.reporter = reporter;
-		this.length = source.length();
+		this.length = this.source.length;
 		this.properties = properties;
 	}
 
@@ -53,7 +61,7 @@ final class PropertiesParser {
 		if (n >= length)
 			return current = '\n';
 
-		current = source.charAt(n++);
+		current = source[n++];
 		try {
 			switch (current) {
 				case '\\' :
@@ -101,7 +109,7 @@ final class PropertiesParser {
 
 	char peek() {
 		if (hasNext())
-			return source.charAt(n);
+			return source[n];
 		else
 			return '\n';
 	}
@@ -118,9 +126,10 @@ final class PropertiesParser {
 				continue;
 			}
 
-			String key = token(KEY);
+			this.validKey = true;
+			String key = key();
 
-			if (!isValidKey(key)) {
+			if (!validKey) {
 				error("Invalid property key: `%s`", key);
 			}
 
@@ -153,11 +162,6 @@ final class PropertiesParser {
 
 	}
 
-	private boolean isValidKey(String key) {
-		Matcher matcher = VALID_KEY_P.matcher(key);
-		return matcher.matches();
-	}
-
 	private void skipWhitespace() {
 		skip(WS);
 	}
@@ -187,8 +191,29 @@ final class PropertiesParser {
 		return sb.toString();
 	}
 
+	private final String key() {
+		StringBuilder sb = new StringBuilder();
+		while (!isIn(KEY)) {
+			if (isIn(NOKEY))
+				validKey = false;
+
+			char tmp = current;
+			if (tmp == '\\') {
+				tmp = backslash();
+
+				if (tmp == 0) // we hit \\n\n
+					break;
+			}
+			sb.append(tmp);
+			next();
+		}
+		return sb.toString();
+	}
+
 	private final boolean isIn(byte delimeters) {
-		return current <= MAX_DELIMETER && current >= MIN_DELIMETER && (INFO[current] & delimeters) != 0;
+		if (current < MIN_DELIMETER || current > MAX_DELIMETER)
+			return false;
+		return (INFO[current] & delimeters) != 0;
 	}
 
 	private final char backslash() {
@@ -252,9 +277,9 @@ final class PropertiesParser {
 
 	private String context() {
 		int loc = n;
-		while (loc < length && source.charAt(loc) != '\n')
+		while (loc < length && source[loc] != '\n')
 			loc++;
-		return source.substring(marker, loc);
+		return new String(source, marker, loc - marker);
 	}
 
 }
