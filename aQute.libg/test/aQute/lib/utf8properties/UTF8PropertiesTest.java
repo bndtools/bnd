@@ -7,6 +7,9 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Properties;
 
+import aQute.lib.io.IO;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.service.reporter.Report.Location;
 import junit.framework.TestCase;
 
 /**
@@ -19,6 +22,69 @@ public class UTF8PropertiesTest extends TestCase {
 			+ "\u00D0\u00D1\u00D2\u00D3\u00D4\u00D5\u00D6\u00D7\u00D8\u00D9\u00DA\u00DB\u00DC\u00DD\u00DE\u00DF"
 			+ "\u00E0\u00E1\u00E2\u00E3\u00E4\u00E5\u00E6\u00E7\u00E8\u00E9\u00EA\u00EB\u00EC\u00ED\u00EE\u00EF"
 			+ "\u00F0\u00F1\u00F2\u00F3\u00F4\u00F5\u00F6\u00F7\u00F8\u00F9\u00FA\u00FB\u00FC\u00FD\u00FE\u00FF";
+
+
+	public void testEmptySpace() throws IOException {
+		UTF8Properties p = new UTF8Properties();
+		ReporterAdapter ra = new ReporterAdapter();
+		p.load("version 1.1\n ", null, ra);
+		assertEquals("1.1", p.get("version"));
+		assertEquals(1, p.size());
+
+	}
+	public void testNewlineCr() throws IOException {
+		UTF8Properties p = new UTF8Properties();
+		ReporterAdapter ra = new ReporterAdapter();
+		p.load("a=2\n\rb=3\n\r", null, ra);
+		assertEquals("2", p.get("a"));
+		assertEquals("3", p.get("b"));
+		assertEquals(2, p.size());
+
+	}
+	public void testEscapedNewlinEmpty() throws IOException {
+		UTF8Properties p = new UTF8Properties();
+		ReporterAdapter ra = new ReporterAdapter();
+		p.load("a=x\\\n\n", null, ra);
+		assertEquals("x", p.get("a"));
+		assertEquals(1, p.size());
+
+	}
+	public void testPackageinfo() throws IOException {
+		UTF8Properties p = new UTF8Properties();
+		ReporterAdapter ra = new ReporterAdapter();
+		p.load("version 1.0.1", null, ra);
+		assertEquals("1.0.1", p.get("version"));
+		assertEquals(1, p.size());
+
+	}
+
+	public void testPackageinfoWithCrLf() throws IOException {
+		UTF8Properties p = new UTF8Properties();
+		ReporterAdapter ra = new ReporterAdapter();
+		p.load("version 1.0.1\r\n", null, ra);
+		assertEquals("1.0.1", p.get("version"));
+		assertEquals(1, p.size());
+
+	}
+	public void testErrorsInParsing() throws IOException {
+		assertError("\n\n\n\n\n\n\n" //
+				+ "a;b=9", "a;b", 7, "Invalid property key: `a;b`:");
+		assertError("\n" //
+				+ "a=\\ \n     a;v=4", "a", 1, "Found \\\\<whitespace>", "Invalid property key: `a;v`");
+		assertError("\n\n\n\n\n\n\n" //
+				+ "a", "a", 7, "No value specified for key");
+	}
+
+	private void assertError(String string, String key, int line, String... check) throws IOException {
+		ReporterAdapter ra = new ReporterAdapter();
+		UTF8Properties up = new UTF8Properties();
+		up.load(string, IO.getFile("foo"), ra);
+		assertNotNull("No '"+key+"' property found", up.getProperty(key));
+		assertTrue(ra.getErrors().size() > 0);
+		Location location = ra.getLocation(ra.getErrors().get(0));
+		assertEquals("Faulty line number", line, location.line);
+		assertTrue(ra.check(check));
+	}
 
 	public void testBackslashEncodingWithReader() throws IOException {
 		Properties p = new UTF8Properties();
@@ -48,6 +114,12 @@ public class UTF8PropertiesTest extends TestCase {
 		Properties p = new Properties();
 		p.load(new StringReader("x=abc \\ def\n"));
 		assertEquals("abc  def", p.get("x"));
+	}
+
+	public void testContinuation() throws IOException {
+		Properties p = new Properties();
+		p.load(new StringReader("x=abc \\\n        def\n"));
+		assertEquals("abc def", p.get("x"));
 	}
 
 	public void testWriteWithoutComment() throws IOException {
