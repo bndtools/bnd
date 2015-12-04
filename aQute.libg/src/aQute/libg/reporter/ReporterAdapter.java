@@ -1,11 +1,17 @@
 package aQute.libg.reporter;
 
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.regex.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Formatter;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
-import aQute.libg.generics.*;
-import aQute.service.reporter.*;
+import aQute.libg.generics.Create;
+import aQute.service.reporter.Report;
+import aQute.service.reporter.Reporter;
 
 /**
  * Mainly used for testing where reporters are needed.
@@ -18,7 +24,7 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 	static class LocationImpl extends Location implements SetLocation {
 
 		public LocationImpl(String e) {
-			// TODO Auto-generated constructor stub
+			this.message = e;
 		}
 
 		public SetLocation file(String file) {
