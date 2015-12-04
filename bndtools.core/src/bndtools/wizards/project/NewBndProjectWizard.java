@@ -62,7 +62,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
         baseTemplate.addInputResource("bnd.bnd", new StringResource(""));
         baseTemplate.setHelpPath("docs/empty_project.xml");
 
-        templatePage = new RepoTemplateSelectionWizardPage("projectTemplateSelection", "project", baseTemplate);
+        templatePage = new RepoTemplateSelectionWizardPage("projectTemplateSelection", "project", "projectTemplates", baseTemplate);
         templatePage.setTitle("Select Project Template");
 
         templatePage.addPropertyChangeListener(RepoTemplateSelectionWizardPage.PROP_TEMPLATE, new PropertyChangeListener() {
@@ -163,7 +163,10 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
                 IFile file = project.getFile(path);
                 FileUtils.mkdirs(file.getParent(), progress.newChild(1, SubMonitor.SUPPRESS_ALL_LABELS));
                 try (InputStream in = outputEntry.getValue().getContent()) {
-                    file.create(in, 0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+                    if (file.exists())
+                        file.setContents(in, 0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+                    else
+                        file.create(in, 0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
                     file.setCharset(outputEntry.getValue().getTextEncoding(), progress.newChild(1));
                 }
             }

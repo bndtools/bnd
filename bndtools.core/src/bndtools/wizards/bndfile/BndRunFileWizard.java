@@ -120,7 +120,7 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
         baseTemplate.addInputResource("$fileName$", new StringResource(""));
         baseTemplate.setHelpPath("docs/empty_run.xml");
 
-        templatePage = new RepoTemplateSelectionWizardPage("runTemplateSelection", "bndrun", baseTemplate);
+        templatePage = new RepoTemplateSelectionWizardPage("runTemplateSelection", "bndrun", null, baseTemplate);
         templatePage.setTitle("Select Run Descriptor Template");
     }
 

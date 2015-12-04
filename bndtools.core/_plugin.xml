@@ -7,6 +7,16 @@
       name="Workspace Configuration Templates"
       schema="schema/cnfTemplates.exsd"
    />
+   <!-- DEPRECATED -->
+   <extension-point id="launchTemplates"
+      name="Launch Templates"
+      schema="schema/launchTemplates.exsd"
+   />
+   <extension-point id="projectTemplates"
+      name="Project Templates"
+      schema="schema/projectTemplates.exsd"
+   />
+   <!-- END DEPRECATION -->
    <extension-point id="bndtoolsStartupParticipant"
       name="Bndtools Start-up Participant"
       schema="schema/bndtoolsStartupParticipant.exsd"
@@ -152,16 +162,6 @@
             preferredPerspectives="bndtools.perspective"
             icon="icons/bndtools-logo-16x16.png"
             name="Bndtools Project"
-            project="true">
-      </wizard>
-      <wizard
-            id="enroute.newProjWiz"
-            category="bndtools.wizardCategory"
-            class="bndtools.wizards.project.NewBndProjectWizardFactory"
-            finalPerspective="bndtools.perspective"
-            preferredPerspectives="bndtools.perspective"
-            icon="icons/enroute.png"
-            name="OSGi enRoute Project"
             project="true">
       </wizard>
    </extension>
@@ -704,6 +704,39 @@
          <contexts file="contexthelp.xml"/>
     </extension>
 
+   <!-- DEPRECATED -->
+   <extension point="bndtools.core.launchTemplates">
+      <template
+         name="Apache Felix 4 with Gogo Shell"
+         path="launchTemplates/felix4+shell.bndrun"
+         doc="html/felix4+shell.form.xml"
+         icon="icons/felix.gif"/>
+      <template
+         name="Apache Felix 4 with Web Console and Gogo"
+         path="launchTemplates/felix4+webconsole.bndrun"
+         doc="html/felix4+webconsole.form.xml"
+         icon="icons/felix.gif"/>
+      <template
+         name="Apache Felix 4 (Empty)"
+         path="launchTemplates/felix4.bndrun"
+         doc="html/felix4.form.xml"
+         icon="icons/felix.gif"/>
+      <template
+         name="Eclipse Equinox 3.7 with Built-in Console"
+         path="launchTemplates/equinox37+console.bndrun"
+         doc="html/equinox37+console.form.xml"
+         icon="icons/equinox.gif"/>
+      <template
+         name="Eclipse Equinox 3.7 with Gogo and DS"
+         path="launchTemplates/equinox37+gogo+ds.bndrun"
+         doc="html/equinox37+gogo+ds.form.xml"
+         icon="icons/equinox.gif"/>
+      <template
+         name="«Empty»"
+         path="launchTemplates/empty.bndrun"
+         doc="html/empty.form.xml"/>
+   </extension>
+   <!-- END DEPRECATION -->
 
    <extension point="org.eclipse.ltk.core.refactoring.renameParticipants">
       <renameParticipant

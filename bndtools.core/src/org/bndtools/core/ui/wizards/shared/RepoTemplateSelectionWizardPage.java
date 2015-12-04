@@ -18,9 +18,13 @@ import java.util.Map.Entry;
 import org.bndtools.templating.Template;
 import org.bndtools.templating.repobased.RepoPluginsBundleLocator;
 import org.bndtools.templating.repobased.ReposTemplateLoader;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IContributor;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -73,6 +77,7 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
 
     protected final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     private final String templateType;
+    private final String templateExtPoint;
     private final Template emptyTemplate;
 
     private final Map<Template,Image> loadedImages = new IdentityHashMap<>();
@@ -88,9 +93,10 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
 
     private boolean shown = false;
 
-    public RepoTemplateSelectionWizardPage(String pageName, String templateType, Template emptyTemplate) {
+    public RepoTemplateSelectionWizardPage(String pageName, String templateType, String templateExtPoint, Template emptyTemplate) {
         super(pageName);
         this.templateType = templateType;
+        this.templateExtPoint = templateExtPoint;
         this.emptyTemplate = emptyTemplate;
     }
 
@@ -262,6 +268,22 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
             // Add the build-in empty template if provided
             if (emptyTemplate != null)
                 templates.add(emptyTemplate);
+
+            // Load from extension registry
+            if (templateExtPoint != null) {
+                IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, templateExtPoint);
+                if (elements != null)
+                    for (IConfigurationElement element : elements) {
+                        String elementName = element.getName();
+                        IContributor contributor = element.getContributor();
+                        try {
+                            Template extTemplate = (Template) element.createExecutableExtension("class");
+                            templates.add(extTemplate);
+                        } catch (CoreException e) {
+                            Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Error loading template '%s' from bundle %s", elementName, contributor.getName()), e));
+                        }
+                    }
+            }
 
             // Display results
             Control control = viewer.getControl();
