@@ -70,7 +70,7 @@ public class EnrouteProjectTemplate implements Template, IExecutableExtension {
     @Override
     public void setInitializationData(IConfigurationElement config, String propertyName, Object data) throws CoreException {
         name = config.getAttribute("name");
-        description = config.getAttribute("description");
+        description = String.format("from %s (installed plug-in)", config.getContributor().getName());
 
         RegistryContributor contributor = (RegistryContributor) config.getContributor();
         long bundleId = Long.parseLong(contributor.getActualId());
