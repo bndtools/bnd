@@ -189,7 +189,7 @@ public class Analyzer extends Processor {
 				Manifest m = current.getManifest();
 				if (m == null)
 					for (String dir : current.getDirectories().keySet()) {
-						learnPackage(current, getPackageRef(dir), classpathExports);
+						learnPackage(current, "", getPackageRef(dir), classpathExports);
 					}
 			}
 
@@ -366,7 +366,7 @@ public class Analyzer extends Processor {
 	 * This method will only learn a package once, so this method an be called
 	 * for every class. It will also ignore any metadata or java packages.
 	 */
-	private void learnPackage(Jar jar, PackageRef packageRef, Packages map) throws Exception {
+	private void learnPackage(Jar jar, String prefix, PackageRef packageRef, Packages map) throws Exception {
 		if (packageRef.isMetaData() || packageRef.isJava() || packageRef.isPrimitivePackage())
 			return;
 
@@ -375,7 +375,7 @@ public class Analyzer extends Processor {
 		// not take the package slot. See #708
 		//
 
-		Map<String,Resource> dir = jar.getDirectories().get(packageRef.getBinary());
+		Map<String,Resource> dir = jar.getDirectories().get(prefix + packageRef.getBinary());
 		if (dir == null || dir.size() == 0)
 			return;
 
@@ -403,7 +403,7 @@ public class Analyzer extends Processor {
 		// it.
 		//
 		if (map != classpathExports || since(About._2_3)) {
-			Resource resource = jar.getResource(packageRef.getBinary() + "/package-info.class");
+			Resource resource = jar.getResource(prefix + packageRef.getBinary() + "/package-info.class");
 			if (resource != null) {
 				Attrs info = parsePackageInfoClass(resource);
 				if (info != null && info.containsKey(VERSION_ATTRIBUTE)) {
@@ -415,7 +415,7 @@ public class Analyzer extends Processor {
 			}
 		}
 
-		String path = packageRef.getBinary() + "/packageinfo";
+		String path = prefix + packageRef.getBinary() + "/packageinfo";
 		Resource resource = jar.getResource(path);
 		if (resource != null) {
 			Attrs info = parsePackageinfo(packageRef, resource);
@@ -2207,7 +2207,7 @@ public class Analyzer extends Processor {
 					String relativeDir = relativePath.substring(0, n);
 
 					PackageRef packageRef = getPackageRef(relativeDir);
-					learnPackage(jar, packageRef, contained);
+					learnPackage(jar, prefix, packageRef, contained);
 				}
 
 				// Check class resources, we need to analyze them
@@ -2239,7 +2239,7 @@ public class Analyzer extends Processor {
 					} else {
 						classspace.put(clazz.getClassName(), clazz);
 						PackageRef packageRef = clazz.getClassName().getPackageRef();
-						learnPackage(jar, packageRef, contained);
+						learnPackage(jar, prefix, packageRef, contained);
 
 						// Look at the referred packages
 						// and copy them to our baseline
