@@ -1,0 +1,10 @@
+Export-Package: doubler
+-sources: true
+My-Header: my-value
+text: TEXT
+Override: Override the jar task manifest
+Project-Name: ${project.name}
+Project-Dir: ${project.dir}
+Project-Output: ${project.output}
+Project-Sourcepath: ${project.sourcepath}
+Project-Buildpath: ${project.buildpath}
