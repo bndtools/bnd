@@ -101,12 +101,10 @@ class BundleTaskConvention {
   void buildBundle() {
     task.configure {
       // create Builder and set trace level from gradle
-      def Builder builder = new Builder()
-      builder.setTrace(logger.isDebugEnabled())
-
-      try {
+      new Builder().withCloseable { builder ->
+        builder.setTrace(logger.isDebugEnabled())
         // load bnd properties
-        def File temporaryBndFile = new File(temporaryDir, 'bnd.bnd')
+        File temporaryBndFile = new File(temporaryDir, 'bnd.bnd')
         temporaryBndFile.withWriter('UTF-8') { writer ->
           // write any task manifest entries into the tmp bnd file
           manifest.effectiveManifest.attributes.inject(new Properties()) { properties, key, value ->
@@ -140,8 +138,8 @@ class BundleTaskConvention {
           from archivePath
           into temporaryDir
         }
-        def File temporaryFile = new File(temporaryDir, archiveName)
-        def Jar temporaryJar = new Jar(archiveName, temporaryFile)
+        File temporaryFile = new File(temporaryDir, archiveName)
+        Jar temporaryJar = new Jar(archiveName, temporaryFile)
         temporaryJar.setManifest(new Manifest())
         builder.setJar(temporaryJar)
 
@@ -159,13 +157,13 @@ class BundleTaskConvention {
 
 
         // set bundle symbolic name from tasks's baseName property if necessary
-        def String bundleSymbolicName = builder.getProperty(Constants.BUNDLE_SYMBOLICNAME)
+        String bundleSymbolicName = builder.getProperty(Constants.BUNDLE_SYMBOLICNAME)
         if (isEmpty(bundleSymbolicName)) {
           builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, baseName)
         }
 
         // set bundle version from task's version if necessary
-        def String bundleVersion = builder.getProperty(Constants.BUNDLE_VERSION)
+        String bundleVersion = builder.getProperty(Constants.BUNDLE_VERSION)
         if (isEmpty(bundleVersion)) {
           builder.setProperty(Constants.BUNDLE_VERSION, MavenVersion.parseString(version).getOSGiVersion().toString())
         }
@@ -173,7 +171,7 @@ class BundleTaskConvention {
         logger.debug 'builder properties: {}', builder.getProperties()
 
         // Build bundle
-        def Jar bundleJar = builder.build()
+        Jar bundleJar = builder.build()
         if (!builder.isOk()) {
           // if we already have an error; fail now
           builder.getWarnings().each {
@@ -204,8 +202,6 @@ class BundleTaskConvention {
         if (!builder.isOk()) {
           failBuild("Bundle ${archiveName} has errors")
         }
-      } finally {
-        builder.close()
       }
     }
   }
