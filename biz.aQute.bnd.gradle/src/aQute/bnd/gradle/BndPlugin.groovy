@@ -488,8 +488,8 @@ public class BndPlugin implements Plugin<Project> {
 
   private void checkErrors(Logger logger) {
     bndProject.getInfo(bndProject.getWorkspace(), "${bndProject.getWorkspace().getBase().name} :")
-    def boolean failed = !bndProject.isOk()
-    def int errorCount = bndProject.getErrors().size()
+    boolean failed = !bndProject.isOk()
+    int errorCount = bndProject.getErrors().size()
     bndProject.getWarnings().each {
       logger.warn 'Warning: {}', it
     }

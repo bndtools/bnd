@@ -13,8 +13,8 @@ class TestBndPlugin extends Specification {
 
     def "Simple Bnd Workspace Plugin Test"() {
         given:
-          def String testProject = 'workspaceplugin1'
-          def File testProjectDir = new File(testResources, testProject)
+          String testProject = 'workspaceplugin1'
+          File testProjectDir = new File(testResources, testProject)
           assert testProjectDir.isDirectory()
 
         when:
@@ -30,11 +30,11 @@ class TestBndPlugin extends Specification {
           result.task(":test.simple:build").outcome == SUCCESS
           result.task(":test.simple:release").outcome == SUCCESS
 
-          def File simple_bundle = new File(testProjectDir, 'test.simple/generated/test.simple.jar')
+          File simple_bundle = new File(testProjectDir, 'test.simple/generated/test.simple.jar')
           simple_bundle.isFile()
 
-          def JarFile simple_jar = new JarFile(simple_bundle)
-          def Attributes simple_manifest = simple_jar.getManifest().getMainAttributes()
+          JarFile simple_jar = new JarFile(simple_bundle)
+          Attributes simple_manifest = simple_jar.getManifest().getMainAttributes()
           simple_manifest.getValue('Bundle-SymbolicName') == 'test.simple'
           simple_manifest.getValue('Bundle-Version') =~ /0\.0\.0\./
           simple_manifest.getValue('Foo') == 'foo'
@@ -47,7 +47,7 @@ class TestBndPlugin extends Specification {
           simple_jar.getEntry('test/simple/test.txt')
           simple_jar.getInputStream(simple_jar.getEntry('test/simple/test.txt')).text =~ /This is a test resource/
 
-          def File release_jar = new File(testProjectDir, 'cnf/repo/test.simple/test.simple-0.0.0.jar')
+          File release_jar = new File(testProjectDir, 'cnf/repo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
     }
 }

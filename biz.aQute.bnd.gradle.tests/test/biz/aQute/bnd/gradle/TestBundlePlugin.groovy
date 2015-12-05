@@ -13,17 +13,17 @@ class TestBundlePlugin extends Specification {
     List<File> pluginClasspath
 
     def setup() {
-      def File plugin = new File('../biz.aQute.bnd.gradle/generated/biz.aQute.bnd.gradle.jar').getCanonicalFile()
+      File plugin = new File('../biz.aQute.bnd.gradle/generated/biz.aQute.bnd.gradle.jar').getCanonicalFile()
       assert plugin.isFile()
       pluginClasspath = Collections.singletonList(plugin)
     }
 
     def "Simple Bnd Builder Plugin Test"() {
         given:
-          def String testProject = 'builderplugin1'
-          def File testProjectDir = new File(testResources, testProject).canonicalFile
+          String testProject = 'builderplugin1'
+          File testProjectDir = new File(testResources, testProject).canonicalFile
           assert testProjectDir.isDirectory()
-          def File testProjectBuildDir = new File(testProjectDir, 'build').canonicalFile
+          File testProjectBuildDir = new File(testProjectDir, 'build').canonicalFile
 
         when:
           def result = GradleRunner.create()
@@ -39,14 +39,14 @@ class TestBundlePlugin extends Specification {
 
           testProjectBuildDir.isDirectory()
 
-          def File jartask_bundle = new File(testProjectBuildDir, "libs/${testProject}-1.0.0.jar")
+          File jartask_bundle = new File(testProjectBuildDir, "libs/${testProject}-1.0.0.jar")
           jartask_bundle.isFile()
-          def JarFile jartask_jar = new JarFile(jartask_bundle)
-          def Attributes jartask_manifest = jartask_jar.getManifest().getMainAttributes()
-          def File bundletask_bundle = new File(testProjectBuildDir, "libs/${testProject}_bundle-1.1.0.jar")
+          JarFile jartask_jar = new JarFile(jartask_bundle)
+          Attributes jartask_manifest = jartask_jar.getManifest().getMainAttributes()
+          File bundletask_bundle = new File(testProjectBuildDir, "libs/${testProject}_bundle-1.1.0.jar")
           bundletask_bundle.isFile()
-          def JarFile bundletask_jar = new JarFile(bundletask_bundle)
-          def Attributes bundletask_manifest = bundletask_jar.getManifest().getMainAttributes()
+          JarFile bundletask_jar = new JarFile(bundletask_bundle)
+          Attributes bundletask_manifest = bundletask_jar.getManifest().getMainAttributes()
 
           jartask_manifest.getValue('Bundle-SymbolicName') == "${testProject}"
           jartask_manifest.getValue('Bundle-Version') == '1.0.0'

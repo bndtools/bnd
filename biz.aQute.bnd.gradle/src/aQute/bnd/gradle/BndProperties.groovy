@@ -14,7 +14,7 @@ class BndProperties {
     this.bndProject = bndProject
   }
   String get(String name) {
-    def String value = bndProject.getProperty(name)
+    String value = bndProject.getProperty(name)
     if (value instanceof String) {
       value = value.trim()
     }
@@ -31,7 +31,7 @@ class BndProperties {
     return value
   }
   String propertyMissing(String name) {
-    def String value = get(name)
+    String value = get(name)
     if (value == null) {
       value = get(name.replace('_', '.'))
     }
