@@ -153,8 +153,9 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
         outputs = template.generateOutputs(params);
         Resource output = outputs.get(fileName);
 
-        if (output == null)
-            throw new IllegalArgumentException("File not found in template outputs: " + fileName);
+        if (output == null) {
+            throw new IllegalArgumentException(String.format("Template error: file '%s' not found in outputs. Available names: %s", fileName, outputs.getPaths()));
+        }
 
         // Pull the generated content
         return output.getContent();

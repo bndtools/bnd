@@ -4,7 +4,7 @@
 
 -include: bnd.bnd
 
-Bundle-Version:						1.0.0.{tstamp}
+Bundle-Version:						1.0.0.\${tstamp}
 Bundle-Description:	\
 	_PROJECT_ Application
 
@@ -13,4 +13,4 @@ JPM-Command:						<cmd>
 -runrequires: \
 
 
--runbundles: ${error;You must resolve this bndrun file before you can run/debug it}
+-runbundles: \${error;You must resolve this bndrun file before you can run/debug it}
