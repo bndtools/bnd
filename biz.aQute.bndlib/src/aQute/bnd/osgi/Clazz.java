@@ -467,6 +467,8 @@ public class Clazz {
 
 	private boolean detectLdc;
 
+	private Map<String,Object> defaults;
+
 	public Clazz(Analyzer analyzer, String path, Resource resource) {
 		this.path = path;
 		this.resource = resource;
@@ -940,7 +942,7 @@ public class Clazz {
 			Object value = doElementValue(in, member, RetentionPolicy.RUNTIME, cd != null, access_flags);
 			if (last instanceof MethodDef) {
 				((MethodDef) last).constant = value;
-				cd.annotationDefault((MethodDef) last);
+				cd.annotationDefault((MethodDef) last, value);
 			}
 		} else if ("Exceptions".equals(attributeName))
 			doExceptions(in, access_flags);
@@ -1996,4 +1998,20 @@ public class Clazz {
 	public String getClassSignature() {
 		return classSignature;
 	}
+
+	public Map<String,Object> getDefaults() throws Exception {
+		if (defaults == null) {
+			defaults = new HashMap<String,Object>();
+
+			class DefaultReader extends ClassDataCollector {
+				@Override
+				public void annotationDefault(MethodDef last, Object value) {
+					defaults.put(last.name, value);
+				}
+			}
+			this.parseClassFileWithCollector(new DefaultReader());
+		}
+		return defaults;
+	}
+
 }
