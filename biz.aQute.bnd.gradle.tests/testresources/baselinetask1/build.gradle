@@ -1,0 +1,54 @@
+/*
+ *
+ */
+
+import aQute.bnd.gradle.Baseline
+
+plugins {
+    id 'biz.aQute.bnd.builder'
+}
+
+version = '1.1.0'
+
+repositories {
+    mavenCentral()
+}
+configurations {
+    baseline
+}
+
+dependencies {
+    compile 'commons-codec:commons-codec:1.5'
+    compile 'commons-lang:commons-lang:2.6'
+    testCompile 'junit:junit:4.9'
+    baseline files("baseline/${project.name}-1.0.0.jar")
+}
+
+jar {
+    manifest {
+        attributes('Implementation-Title': baseName,
+                   'Implementation-Version': version,
+                   '-includeresource': '{bar.txt}',
+                   '-include': 'other.bnd',
+                   'Override': 'This should be overridden by the bnd file'
+                   )
+    }
+}
+
+task baseline(type: Baseline) {
+   description 'Baseline'
+   group 'build'
+   bundle jar
+   baseline configurations.baseline
+   ignoreFailures = true
+}
+
+task baselineSelf(type: Baseline) {
+   description 'Baseline Self'
+   group 'build'
+   dependsOn jar
+   bundle jar.archivePath
+   baseline jar.archivePath
+   ignoreFailures = false
+   baselineReportDirName = name
+}
