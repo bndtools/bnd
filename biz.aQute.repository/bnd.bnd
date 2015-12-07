@@ -25,13 +25,6 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	${junit},\
 	${mockito}
 
-Bnd-Plugins:
-	aQute.bnd.deployer.repository.FixedIndexedRepo,\
-	aQute.bnd.deployer.repository.LocalIndexedRepo,\
-	aQute.bnd.deployer.deployer.obr.OBR,\
-	aQute.bnd.deployer.deployer.obr.LocalOBR,\
-	aQute.bnd.deployer.deployer.http.HttpBasicAuthURLConnector
-
 bindex-pkgs: \
 	org.osgi.service.obr,\
 	org.osgi.service.bindex,\
