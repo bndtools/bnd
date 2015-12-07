@@ -9,9 +9,13 @@ import aQute.bnd.osgi.Constants
 
 /* Add bnd gradle plugin as a script dependency */
 buildscript {
+  URI repouri = new URI(bnd_repourl)
+  if (!repouri.absolute || repouri.scheme == 'file') {
+    repouri = new File('').toURI().resolve(repouri.schemeSpecificPart)
+  }
   repositories {
     ivy { /* Configure the repository as an "ivy" repository */
-      url bnd_repourl
+      url repouri
       layout 'pattern', {
             artifact '[module]/[artifact]-[revision].[ext]' /* OSGi repo pattern */
             artifact '[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier])(.[ext])' /* maven pattern */

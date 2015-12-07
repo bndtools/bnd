@@ -279,13 +279,7 @@ public class BndPlugin implements Plugin<Project> {
       test {
         enabled !parseBoolean(bnd(Constants.NOJUNIT, 'false')) && !parseBoolean(bnd('no.junit', 'false'))
         doFirst {
-          try {
-            checkErrors(logger)
-          } catch (Exception e) {
-            if (!ignoreFailures) {
-              throw e
-            }
-          }
+          checkErrors(logger, ignoreFailures)
         }
       }
 
@@ -300,13 +294,7 @@ public class BndPlugin implements Plugin<Project> {
             } catch (Exception e) {
               throw new GradleException("Project ${bndProject.getName()} failed to test", e)
             }
-            try {
-              checkErrors(logger)
-            } catch (Exception e) {
-              if (!ignoreFailures) {
-                throw e
-              }
-            }
+            checkErrors(logger, ignoreFailures)
           }
         }
       }
@@ -486,9 +474,9 @@ public class BndPlugin implements Plugin<Project> {
     return project.files(bndProject.getTestOutput())
   }
 
-  private void checkErrors(Logger logger) {
+  private void checkErrors(Logger logger, boolean ignoreFailures = false) {
     bndProject.getInfo(bndProject.getWorkspace(), "${bndProject.getWorkspace().getBase().name} :")
-    boolean failed = !bndProject.isOk()
+    boolean failed = !ignoreFailures && !bndProject.isOk()
     int errorCount = bndProject.getErrors().size()
     bndProject.getWarnings().each {
       logger.warn 'Warning: {}', it
