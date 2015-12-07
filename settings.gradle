@@ -11,7 +11,7 @@ import aQute.bnd.osgi.Constants
 buildscript {
   repositories {
     ivy { /* Configure the repository as an "ivy" repository */
-      url bnd_repourl
+      url uri(bnd_repourl)
       layout 'pattern', {
             artifact '[module]/[artifact]-[revision].[ext]' /* OSGi repo pattern */
             artifact '[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier])(.[ext])' /* maven pattern */
@@ -44,6 +44,7 @@ def workspace = new Workspace(rootDir, bnd_cnf)
 if (workspace == null) {
   throw new GradleException("Unable to load workspace ${rootDir}/${bnd_cnf}")
 }
+workspace.setProperty('bnd_repourl', uri(bnd_repourl).toString())
 
 /* Add cnf project to the graph */
 include bnd_cnf
