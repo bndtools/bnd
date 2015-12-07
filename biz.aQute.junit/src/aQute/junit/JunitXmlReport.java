@@ -14,6 +14,8 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.junit.runner.Describable;
+import org.junit.runner.Description;
 import org.osgi.framework.Bundle;
 
 import junit.framework.AssertionFailedError;
@@ -134,10 +136,17 @@ public class JunitXmlReport implements TestReporter {
 		String name = nameAndClass;
 		String clazz = test.getClass().getName();
 
-		Matcher m = NAMEANDCLASS.matcher(nameAndClass);
-		if (m.matches()) {
-			name = m.group(1);
-			clazz = m.group(2);
+		if (test instanceof Describable) {
+			Description description = ((Describable) test).getDescription();
+			clazz = description.getClassName();
+			if (description.getMethodName() != null)
+				name = description.getMethodName();
+		} else {
+			Matcher m = NAMEANDCLASS.matcher(nameAndClass);
+			if (m.matches()) {
+				name = m.group(1);
+				clazz = m.group(2);
+			}
 		}
 
 		testcase = new Tag("testcase");
