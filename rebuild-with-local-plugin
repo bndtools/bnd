@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+##############################################################################
+##
+## Rebuild using the locally built bnd gradle plugin
+##
+## Since this will use the gradle plugin in dist/bundles, your gradle tasks
+## must not include :biz.aQute.bnd.gradle:release which will attempt to
+## overwrite the plugin being used for the build.
+##
+##############################################################################
+REPO=$(dirname ${BASH_SOURCE[0]})
+ARGS="$@"
+if [ -z "$ARGS" ]; then
+  ARGS="--rerun-tasks :dist:checkNeeded"
+fi
+
+echo $REPO/gradlew --no-daemon -Pbnd_repourl=$REPO/dist/bundles $ARGS
+$REPO/gradlew --no-daemon -Pbnd_repourl=$REPO/dist/bundles $ARGS
