@@ -3,11 +3,9 @@ package bndtools.central;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
@@ -70,6 +68,8 @@ public class Central implements IStartupParticipant {
 
     private RepositoryListenerPluginTracker repoListenerTracker;
 
+    private static WorkspaceRepositoryChangeDetector workspaceRepositoryChangeDetector;
+
     static {
         try {
             BundleContext context = FrameworkUtil.getBundle(Central.class).getBundleContext();
@@ -97,6 +97,7 @@ public class Central implements IStartupParticipant {
 
         repoListenerTracker = new RepositoryListenerPluginTracker(bundleContext);
         repoListenerTracker.open();
+
     }
 
     @Override
@@ -106,6 +107,8 @@ public class Central implements IStartupParticipant {
         synchronized (Central.class) {
             instance = null;
         }
+
+        workspace.close();
 
         if (auxiliary != null)
             try {
@@ -144,83 +147,6 @@ public class Central implements IStartupParticipant {
         } catch (Exception e) {
             // TODO do something more useful here
             throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Implementation of the resource changed interface. We are checking in the POST_CHANGE phase if one of our tracked
-     * models needs to be updated.
-     */
-    public synchronized void resourceChanged(IResourceChangeEvent event) {
-        if (event.getType() != IResourceChangeEvent.POST_CHANGE)
-            return;
-
-        IResourceDelta rootDelta = event.getDelta();
-        try {
-            final Set<Project> changed = new HashSet<Project>();
-            rootDelta.accept(new IResourceDeltaVisitor() {
-                @Override
-                public boolean visit(IResourceDelta delta) throws CoreException {
-                    try {
-
-                        IPath location = delta.getResource().getLocation();
-                        if (location == null) {
-                            System.out.println("Cannot convert resource to file: " + delta.getResource());
-                        } else {
-                            File file = location.toFile();
-                            File parent = file.getParentFile();
-                            boolean parentIsWorkspace = parent.equals(getWorkspace().getBase());
-
-                            // file
-                            // /development/osgi/svn/build/org.osgi.test.cases.distribution/bnd.bnd
-                            // parent
-                            // /development/osgi/svn/build/org.osgi.test.cases.distribution
-                            // workspace /development/amf/workspaces/osgi
-                            // false
-
-                            if (parentIsWorkspace) {
-                                // We now are on project level, we do not go
-                                // deeper
-                                // because projects/workspaces should check for
-                                // any
-                                // changes.
-                                // We are careful not to create unnecessary
-                                // projects
-                                // here.
-                                if (file.getName().equals(Workspace.CNFDIR)) {
-                                    if (workspace.refresh()) {
-                                        changed.addAll(workspace.getCurrentProjects());
-                                    }
-                                    return false;
-                                }
-                                if (workspace.isPresent(file.getName())) {
-                                    Project project = workspace.getProject(file.getName());
-                                    changed.add(project);
-                                } else {
-                                    // Project not created yet, so we
-                                    // have
-                                    // no cached results
-
-                                }
-                                return false;
-                            }
-                        }
-                        return true;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        throw new CoreException(new Status(Status.ERROR, BndtoolsConstants.CORE_PLUGIN_ID, "During checking project changes", e));
-                    }
-                }
-
-            });
-
-            for (Project p : changed) {
-                p.refresh();
-                changed(p);
-
-            }
-        } catch (CoreException e) {
-            logger.logError("While handling changes", e);
         }
     }
 
@@ -291,6 +217,8 @@ public class Central implements IStartupParticipant {
 
             // The workspace has been initialized fully, set the field now
             workspace = newWorkspace;
+
+            workspaceRepositoryChangeDetector = new WorkspaceRepositoryChangeDetector(workspace);
 
             // Call the queued workspace init callbacks
             while (!workspaceInitCallbackQueue.isEmpty()) {
