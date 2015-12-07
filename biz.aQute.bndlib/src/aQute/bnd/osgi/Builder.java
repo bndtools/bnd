@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1026,7 +1027,7 @@ public class Builder extends Analyzer {
 	private void resolveFiles(File dir, FileFilter filter, boolean recursive, String path, Map<String,File> files,
 			boolean flatten) {
 
-		if (doNotCopy(dir.getName())) {
+		if (doNotCopy(dir)) {
 			return;
 		}
 
@@ -1139,7 +1140,7 @@ public class Builder extends Analyzer {
 
 	private void copy(Jar jar, String path, File from, Instructions preprocess, Map<String,String> extra)
 			throws Exception {
-		if (doNotCopy(from.getName()))
+		if (doNotCopy(from))
 			return;
 
 		if (from.isDirectory()) {
@@ -1456,6 +1457,20 @@ public class Builder extends Analyzer {
 
 	public boolean doNotCopy(String v) {
 		return getDoNotCopy().matcher(v).matches();
+	}
+
+	public boolean doNotCopy(File from) {
+		if (doNotCopy(from.getName())) {
+			return true;
+		}
+
+		if (!since(About._3_1)) {
+			return false;
+		}
+
+		URI uri = getBaseURI().relativize(from.toURI());
+
+		return doNotCopy(uri.getPath());
 	}
 
 	public Pattern getDoNotCopy() {
