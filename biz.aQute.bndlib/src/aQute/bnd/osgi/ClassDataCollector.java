@@ -73,4 +73,6 @@ public class ClassDataCollector {
 
 	public void annotationDefault(Clazz.MethodDef last) {}
 
+	public void annotationDefault(Clazz.MethodDef last, Object value) {}
+
 }

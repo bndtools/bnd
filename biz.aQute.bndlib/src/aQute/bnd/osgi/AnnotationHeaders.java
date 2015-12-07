@@ -74,7 +74,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	// Class we're currently processing
 	Clazz current;
 
-	// we parse the annotations seperately at the ed
+	// we parse the annotations separately at the end
 	boolean finalizing;
 
 	/*
@@ -179,6 +179,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 		Annotation root = parent.get(0);
 		root.merge(annotation);
+		root.addDefaults(c);
 		return root;
 	}
 

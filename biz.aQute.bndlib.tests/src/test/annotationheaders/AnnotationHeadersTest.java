@@ -22,10 +22,57 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
+import aQute.lib.io.IO;
 import junit.framework.TestCase;
 
 public class AnnotationHeadersTest extends TestCase {
+
+	/**
+	 * Default values of annotation attributes not included for customized
+	 * webresource annotations #976
+	 * <p>
+	 * When I add a customized webresource annotation to a type definition, the
+	 * default attributes are not included in the Require-Capability header. For
+	 * example with the Jsonrpc webresource annotation this leads to the
+	 * following Require-Capability in the manifest:
+	 * osgi.enroute.webresource;filter:=
+	 * "(&(osgi.enroute.webresource=/osgi/enroute/jsonrpc)(&(version>=1.1.1)(!(version>=2.0.0))))".
+	 * Only when I explicitly add resource={"jsonrpc.js"} this is reflected in
+	 * the manifest: osgi.enroute.webresource;resource:List
+	 * <String>="jsonrpc.js";filter:=
+	 * "(&(osgi.enroute.webresource=/osgi/enroute/jsonrpc)(&(version>=1.1.1)(!(version>=2.0.0))))",
+	 * although jsonrpc.js is set as default for the resource attribute.
+	 */
+
+	public void testDefaultAttrs() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin"));
+			b.setPrivatePackage("test.annotationheaders.attrs.defaults");
+			b.build();
+			assertTrue(b.check());
+			b.getJar().getManifest().write(System.out);
+
+			Domain d = Domain.domain(b.getJar().getManifest());
+
+			Parameters rc = d.getRequireCapability();
+			assertNotNull(rc);
+			assertEquals(2, rc.size());
+
+			Attrs attrs = rc.get("default-attrs");
+			assertEquals("42", attrs.get("foo"));
+
+			Parameters pc = d.getProvideCapability();
+			assertNotNull(pc);
+			assertEquals(1, pc.size());
+
+			attrs = pc.get("default-attrs");
+			assertEquals("42", attrs.get("foo"));
+
+
+		}
+	}
 
 	public void testWithAttrs() throws Exception {
 		Builder b = new Builder();

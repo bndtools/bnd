@@ -98,4 +98,16 @@ public class Annotation {
 				elements.put(e.getKey(), e.getValue());
 		}
 	}
+
+	public void addDefaults(Clazz c) throws Exception {
+		Map<String,Object> defaults = c.getDefaults();
+		if ( defaults == null || defaults.isEmpty())
+			return;
+		
+		for (Map.Entry<String,Object> e : defaults.entrySet()) {
+			if (elements == null || !elements.containsKey(e.getKey())) {
+				put(e.getKey(), e.getValue());
+			}
+		}
+	}
 }
