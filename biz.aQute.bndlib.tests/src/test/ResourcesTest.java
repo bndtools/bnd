@@ -240,6 +240,59 @@ public class ResourcesTest extends TestCase {
 
 	}
 
+	public static void testIncludeResourceDoNotCopyPath() throws Exception {
+		Builder b = new Builder();
+
+		// Use Properties file otherwise -donotcopy is not picked up
+		Properties p = new Properties();
+		p.put("-donotcopy", ".*/more/.*");
+		p.put("Include-Resource", "TargetFolder=testresources/ws/p2/Resources");
+		p.put("-resourceonly", "true");
+		p.put("-upto", "3.0");
+		b.setProperties(p);
+
+		Jar jar = b.build();
+		Resource r = jar.getResource("TargetFolder/resource3.txt");
+		assertNotNull(r);
+		r = jar.getResource("TargetFolder/resource4.txt");
+		assertNotNull(r);
+		r = jar.getResource("TargetFolder/more/resource6.txt");
+		assertNotNull(r);
+		r = jar.getResource("TargetFolder/more/resource7.txt");
+		assertNotNull(r);
+		r = jar.getResource("TargetFolder/stuff/resource9.res");
+		assertNotNull(r);
+		r = jar.getResource("TargetFolder/text.txt");
+		assertNotNull(r);
+
+	}
+
+	public static void testIncludeResourceDoNotCopyPath_Since_3_1() throws Exception {
+		Builder b = new Builder();
+
+		// Use Properties file otherwise -donotcopy is not picked up
+		Properties p = new Properties();
+		p.put("-donotcopy", ".*/more/.*");
+		p.put("Include-Resource", "TargetFolder=testresources/ws/p2/Resources");
+		p.put("-resourceonly", "true");
+		b.setProperties(p);
+
+		Jar jar = b.build();
+		Resource r = jar.getResource("TargetFolder/resource3.txt");
+		assertNotNull(r);
+		r = jar.getResource("TargetFolder/resource4.txt");
+		assertNotNull(r);
+		r = jar.getResource("TargetFolder/more/resource6.txt");
+		assertNull(r);
+		r = jar.getResource("TargetFolder/more/resource7.txt");
+		assertNull(r);
+		r = jar.getResource("TargetFolder/stuff/resource9.res");
+		assertNotNull(r);
+		r = jar.getResource("TargetFolder/text.txt");
+		assertNotNull(r);
+
+	}
+
 	public static void testIncludeResourceDirectivesFilterRecursive() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource", "TargetFolder=testresources/ws/p2/Resources;filter:=re*.txt");

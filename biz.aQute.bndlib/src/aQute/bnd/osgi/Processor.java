@@ -10,6 +10,7 @@ import java.io.PrintStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
@@ -82,6 +83,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	boolean	fileMustExist	= true;
 
 	private File base = new File("").getAbsoluteFile();
+	private URI						baseURI				= base.toURI();
 
 	Properties		properties;
 	String			profile;
@@ -732,8 +734,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return base;
 	}
 
+	public URI getBaseURI() {
+		return baseURI;
+	}
+
 	public void setBase(File base) {
 		this.base = base;
+		baseURI = base.toURI();
 	}
 
 	public void clear() {
@@ -1044,7 +1051,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	public void forceRefresh() {
 		included = null;
