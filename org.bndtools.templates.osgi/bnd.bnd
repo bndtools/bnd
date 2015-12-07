@@ -4,8 +4,6 @@
 -includeresource: resources
 -resourceonly: true
 
-Bundle-Version: 0.0.0.${tstamp}
-
 category: bbb/OSGi Standard Templates
 category-enroute: ccc/OSGi enRoute
 
