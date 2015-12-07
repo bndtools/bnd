@@ -3,16 +3,20 @@ package org.bndtools.templating.repobased;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.bndtools.templating.Template;
+import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 
 public class ReposTemplateLoader {
 
@@ -26,8 +30,11 @@ public class ReposTemplateLoader {
 		this.repos = repos;
 		this.locator = locator;
 	}
-	
 	public List<Template> findTemplates(String templateType) {
+		return findTemplates(templateType, new LinkedList<String>());
+	}
+	
+	public List<Template> findTemplates(String templateType, List<String> errors) {
 		String filterStr = String.format("(%s=%s)", NS_TEMPLATE, templateType);
 		Requirement requirement = new CapReqBuilder(NS_TEMPLATE)
 				.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filterStr)
@@ -39,7 +46,14 @@ public class ReposTemplateLoader {
 				Collection<Capability> candidates = providerMap.get(requirement);
 				if (candidates != null) {
 					for (Capability cap : candidates) {
-						templates.add(new CapabilityBasedTemplate(cap, locator));
+						try {
+							templates.add(new CapabilityBasedTemplate(cap, locator));
+						} catch (Exception e) {
+							IdentityCapability idcap = ResourceUtils.getIdentityCapability(cap.getResource());
+							Object id = idcap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+							Object ver = idcap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+							errors.add(String.format("Error loading template from resource '%s' version %s: %s", id, ver, e.getMessage()));
+						}
 					}
 				}
 			}

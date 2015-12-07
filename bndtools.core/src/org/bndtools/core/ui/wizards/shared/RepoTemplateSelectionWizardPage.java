@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -243,13 +244,14 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
         @Override
         protected IStatus run(IProgressMonitor monitor) {
             final List<Template> templates = new ArrayList<>();
+            final List<String> errors = new LinkedList<>();
 
             // Load from workspace, if one exists
             Workspace ws = Central.getWorkspaceIfPresent();
             if (ws != null) {
                 List<Repository> repos = ws.getPlugins(Repository.class);
                 RepoPluginsBundleLocator locator = new RepoPluginsBundleLocator(ws.getRepositories());
-                templates.addAll(new ReposTemplateLoader(repos, locator).findTemplates(templateType));
+                templates.addAll(new ReposTemplateLoader(repos, locator).findTemplates(templateType, errors));
             }
 
             // Load from the preferences-configured template repository
@@ -259,10 +261,15 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
                     FixedIndexedRepo repo = loadRepo(bndPrefs.getTemplateRepoUriList());
                     RepoPluginsBundleLocator locator = new RepoPluginsBundleLocator(Collections.<RepositoryPlugin> singletonList(repo));
                     ReposTemplateLoader loader = new ReposTemplateLoader(Collections.<Repository> singletonList(repo), locator);
-                    templates.addAll(loader.findTemplates(templateType));
+                    templates.addAll(loader.findTemplates(templateType, errors));
                 } catch (Exception e) {
                     return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading from template repository.", e);
                 }
+            }
+
+            // Log errors
+            for (String error : errors) {
+                Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, error, null));
             }
 
             // Add the build-in empty template if provided
