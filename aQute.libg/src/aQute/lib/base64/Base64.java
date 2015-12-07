@@ -1,14 +1,25 @@
 package aQute.lib.base64;
 
-import java.io.*;
-import java.util.regex.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.regex.Pattern;
 
 /*
  * Base 64 converter.
  * 
- * TODO Implement string to byte[]
  */
 public class Base64 {
+	private static final int DEFAULT_MAX_INPUT_LENGTH = 65000;
+
 	byte[] data;
 
 	static final String	alphabet	= "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -31,18 +42,70 @@ public class Base64 {
 	}
 
 	public final static byte[] decodeBase64(String string) {
-		ByteArrayOutputStream bout = new ByteArrayOutputStream(string.length() * 2 / 3);
-		StringReader rdr = new StringReader(string.trim());
 		try {
-			decode(rdr, bout);
+			return decodeBase64(new StringReader(string));
 		}
-		catch (Exception e) {
-			// cannot happen
+		catch (IOException e) {
+			// cannot get IO exceptions on String
+			return null;
 		}
-		return bout.toByteArray();
 	}
 
-	public final static void decode(Reader rdr, OutputStream out) throws Exception {
+	public static byte[] decodeBase64(Reader rdr) throws IOException {
+		return decodeBase64(rdr, 65000);
+	}
+
+	public static byte[] decodeBase64(Reader rdr, int maxLength) throws IOException {
+		try {
+			ByteArrayOutputStream bout = new ByteArrayOutputStream(maxLength);
+			decode(rdr, bout, maxLength);
+			return bout.toByteArray();
+		}
+		finally {
+			rdr.close();
+		}
+	}
+
+	public static byte[] decodeBase64(InputStream in) throws IOException {
+		try {
+			return decodeBase64(in, DEFAULT_MAX_INPUT_LENGTH);
+		}
+		finally {
+			in.close();
+		}
+	}
+
+	public static byte[] decodeBase64(InputStream in, int maxLength) throws IOException {
+		InputStreamReader ir = new InputStreamReader(in, "US-ASCII");
+		try {
+			return decodeBase64(ir, maxLength);
+		}
+		finally {
+			ir.close();
+		}
+	}
+
+	public final static byte[] decodeBase64(File file) throws IOException {
+		FileInputStream fin = new FileInputStream(file);
+		try {
+			if (file.length() > Integer.MAX_VALUE)
+				throw new IllegalArgumentException("File " + file + " is >4Gb for base 64 decoding");
+
+			return decodeBase64(fin, (int) file.length() * 2 / 3);
+		}
+		catch (IllegalArgumentException iae) {
+			throw new IllegalArgumentException(iae.getMessage() + ": " + file);
+		}
+		finally {
+			fin.close();
+		}
+	}
+
+	public final static void decode(Reader rdr, OutputStream out) throws IOException {
+		decode(rdr, out, DEFAULT_MAX_INPUT_LENGTH);
+	}
+
+	public final static void decode(Reader rdr, OutputStream out, int maxLength) throws IOException {
 		int register = 0;
 		int i = 0;
 		int pads = 0;
@@ -50,6 +113,13 @@ public class Base64 {
 		byte test[] = new byte[3];
 		int c;
 		while ((c = rdr.read()) >= 0) {
+
+			maxLength--;
+			if (maxLength < 0)
+				throw new IllegalArgumentException("Input stream for base64 decoding is too large");
+
+			if (Character.isWhitespace(c) || c == '\r' || c == '\n')
+				continue;
 
 			if (c > 0x7F)
 				throw new IllegalArgumentException("Invalid base64 character in " + rdr + ", character value > 128 ");
@@ -105,6 +175,18 @@ public class Base64 {
 		return encodeBase64(data);
 	}
 
+	public static String encodeBase64(InputStream in) throws IOException {
+		StringWriter sw = new StringWriter();
+		encode(in, sw);
+		return sw.toString();
+	}
+
+	public static String encodeBase64(File in) throws IOException {
+		StringWriter sw = new StringWriter();
+		encode(new FileInputStream(in), sw);
+		return sw.toString();
+	}
+
 	public static String encodeBase64(byte data[]) {
 		StringWriter sw = new StringWriter();
 		ByteArrayInputStream bin = new ByteArrayInputStream(data);
@@ -121,36 +203,56 @@ public class Base64 {
 		return data;
 	}
 
+	public static void encode(File in, Appendable sb) throws IOException {
+		if (in.length() > Integer.MAX_VALUE)
+			throw new IllegalArgumentException("File > 4Gb " + in);
+
+		encode(new FileInputStream(in), sb, (int) in.length());
+	}
+
 	public static void encode(InputStream in, Appendable sb) throws IOException {
-		// StringBuilder sb = new StringBuilder();
-		int buf = 0;
-		int bits = 0;
-		int out = 0;
+		encode(in, sb, DEFAULT_MAX_INPUT_LENGTH);
+	}
 
-		while (true) {
-			if (bits >= 6) {
-				bits -= 6;
-				int v = 0x3F & (buf >> bits);
-				sb.append(alphabet.charAt(v));
+	public static void encode(InputStream in, Appendable sb, int maxLength) throws IOException {
+		try {
+			// StringBuilder sb = new StringBuilder();
+			int buf = 0;
+			int bits = 0;
+			int out = 0;
+
+			while (true) {
+				if (bits >= 6) {
+					bits -= 6;
+					int v = 0x3F & (buf >> bits);
+					sb.append(alphabet.charAt(v));
+					out++;
+				} else {
+					int c = in.read();
+					if (c < 0)
+						break;
+
+					maxLength--;
+					if (maxLength < 0)
+						throw new IllegalArgumentException("Length (" + maxLength + ") for base 64 encode exceeded");
+
+					buf <<= 8;
+					buf |= 0xFF & c;
+					bits += 8;
+				}
+			}
+			if (bits != 0) {// must be less than 7
+				sb.append(alphabet.charAt(0x3F & (buf << (6 - bits))));
 				out++;
-			} else {
-				int c = in.read();
-				if (c < 0)
-					break;
-
-				buf <<= 8;
-				buf |= 0xFF & c;
-				bits += 8;
+			}
+			int mod = 4 - (out % 4);
+			if (mod != 4) {
+				for (int i = 0; i < mod; i++)
+					sb.append('=');
 			}
 		}
-		if (bits != 0) {// must be less than 7
-			sb.append(alphabet.charAt(0x3F & (buf << (6 - bits))));
-			out++;
-		}
-		int mod = 4 - (out % 4);
-		if (mod != 4) {
-			for (int i = 0; i < mod; i++)
-				sb.append('=');
+		finally {
+			in.close();
 		}
 	}
 
