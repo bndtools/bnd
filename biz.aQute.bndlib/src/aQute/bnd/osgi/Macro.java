@@ -1016,10 +1016,16 @@ public class Macro {
 	 * @throws IOException
 	 */
 	public String _base64(String... args) throws IOException {
-		verifyCommand(args, "${base64;<in>}, get the Base64 encoding of a file", null, 2, 2);
+		verifyCommand(args, "${base64;<in>;<limit>}, get the Base64 encoding of a file", null, 2, 3);
 		File f = domain.getFile(args[1]);
+		int limit = Integer.MAX_VALUE;
+		if (args.length == 3)
+			limit = Integer.parseInt(args[2]);
 		byte[] bytes = IO.read(f);
-		return Base64.encodeBase64(bytes);
+		String encoding = Base64.encodeBase64(bytes);
+		if (encoding.length() > limit)
+			throw new IllegalArgumentException(String.format("base64 encoding exceeds size limit of %d chars", limit));
+		return encoding;
 	}
 
 	/**
