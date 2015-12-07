@@ -2,6 +2,7 @@
 *.auth crlf=input
 *.awk crlf=input
 *.bnd crlf=input
+*.bndrun crlf=input
 *.c crlf=input ident
 *.conf crlf=input
 *.cpp crlf=input ident
