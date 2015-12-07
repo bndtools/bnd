@@ -1,20 +1,28 @@
 package test;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.lang.reflect.Modifier;
+import java.util.EnumSet;
+import java.util.Set;
+
+import org.xml.sax.SAXException;
 
 import aQute.bnd.component.AnnotationReader;
 import aQute.bnd.component.DSAnnotations;
-import aQute.bnd.xmlattribute.XMLAttributeFinder;
-import junit.framework.*;
-
-import org.xml.sax.*;
-
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.ClassDataCollector;
+import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Descriptors.PackageRef;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.FileResource;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.xmlattribute.XMLAttributeFinder;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
+@SuppressWarnings("restriction")
 public class ClazzTest extends TestCase {
 
 	/**

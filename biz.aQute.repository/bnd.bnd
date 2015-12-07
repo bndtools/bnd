@@ -19,7 +19,8 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	osgi.cmpn;version=@5,\
 	lib/javax.xml.stream-1.0.1.jar;version=file,\
 	${jetty.libs},\
-	aQute.jpm.bndrepo;version=1.0;packages=*
+	aQute.jpm.clnt;version=1.0;packages=*
+	
 -testpath: \
 	${junit},\
 	${mockito}

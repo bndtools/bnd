@@ -26,6 +26,9 @@ import aQute.bnd.osgi.FileResource;
 import aQute.lib.io.IO;
 import junit.framework.TestCase;
 
+@SuppressWarnings({
+		"deprecation", "restriction"
+})
 public class AnnotationsTest extends TestCase {
 
 	@Component(name = "mycomp", enabled = true, factory = "abc", immediate = false, provide = LogService.class, servicefactory = true, properties = {

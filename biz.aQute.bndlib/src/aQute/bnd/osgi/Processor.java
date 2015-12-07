@@ -576,10 +576,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Add the @link {@link Constants#PLUGINPATH} entries (which are file names)
-	 * to the class loader. If this file does not exist, and there is a {@link
-	 * Constants#PLUGINPATH_URL_ATTR} attribute then we download it first from
-	 * that url. You can then also specify a {@link
-	 * Constants#PLUGINPATH_SHA1_ATTR} attribute to verify the file. @see
+	 * to the class loader. If this file does not exist, and there is a
+	 * {@link Constants#PLUGINPATH_URL_ATTR} attribute then we download it first
+	 * from that url. You can then also specify a
+	 * {@link Constants#PLUGINPATH_SHA1_ATTR} attribute to verify the file. @see
 	 * PLUGINPATH @param pluginPath the clauses for the plugin path @param
 	 * loader The class loader to extend
 	 */
@@ -871,6 +871,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void setProperties(Properties properties) {
 		doIncludes(getBase(), properties);
 		this.properties.putAll(properties);
+		mergeProperties(Constants.INIT); // execute macros in -init
+		this.properties.remove(Constants.INIT);
 	}
 
 	public void setProperties(File base, Properties properties) {
@@ -977,31 +979,27 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		} else {
 			addIncluded(file);
 			updateModified(file.lastModified(), file.toString());
-			InputStream in = new FileInputStream(file);
-			try {
-				Properties sub;
-				if (file.getName().toLowerCase().endsWith(".mf")) {
+			Properties sub;
+			if (file.getName().toLowerCase().endsWith(".mf")) {
+				try (InputStream in = new FileInputStream(file);) {
 					sub = getManifestAsProperties(in);
-				} else
-					sub = loadProperties(in, file.getAbsolutePath());
-
-				doIncludes(file.getParentFile(), sub);
-				// make sure we do not override properties
-				for (Map.Entry< ? , ? > entry : sub.entrySet()) {
-					String key = (String) entry.getKey();
-					String value = (String) entry.getValue();
-
-					if (overwrite || !target.containsKey(key)) {
-						target.setProperty(key, value);
-					} else if (extensionName != null) {
-						String extensionKey = extensionName + "." + key;
-						if (!target.containsKey(extensionKey))
-							target.setProperty(extensionKey, value);
-					}
 				}
-			}
-			finally {
-				IO.close(in);
+			} else
+				sub = loadProperties(file);
+
+			doIncludes(file.getParentFile(), sub);
+			// make sure we do not override properties
+			for (Map.Entry< ? , ? > entry : sub.entrySet()) {
+				String key = (String) entry.getKey();
+				String value = (String) entry.getValue();
+
+				if (overwrite || !target.containsKey(key)) {
+					target.setProperty(key, value);
+				} else if (extensionName != null) {
+					String extensionKey = extensionName + "." + key;
+					if (!target.containsKey(extensionKey))
+						target.setProperty(extensionKey, value);
+				}
 			}
 		}
 	}
@@ -1208,15 +1206,18 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * IOException
 	 */
 	public Properties loadProperties(File file) throws IOException {
+
 		updateModified(file.lastModified(), "Properties file: " + file);
 		InputStream in = new FileInputStream(file);
 		try {
-			Properties p = loadProperties(in, file.getAbsolutePath());
+
+			UTF8Properties p = loadProperties0(in, file);
 			return p;
 		}
 		finally {
 			in.close();
 		}
+
 	}
 
 	/**
@@ -1226,7 +1227,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * to load from @param name The name of the file for doc reasons @return a
 	 * Properties @throws IOException
 	 */
-	Properties loadProperties(InputStream in, String name) throws IOException {
+	UTF8Properties loadProperties0(InputStream in, File file) throws IOException {
+
+		String name = file.getAbsoluteFile().toURI().getPath();
 		int n = name.lastIndexOf('/');
 		if (n > 0)
 			name = name.substring(0, n);
@@ -1234,9 +1237,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			name = ".";
 
 		try {
-			Properties p = new UTF8Properties();
-			p.load(in);
-			return replaceAll(p, "\\$\\{\\.\\}", name);
+			UTF8Properties p = new UTF8Properties();
+			p.load(in, file, this);
+			return replaceAll0(p, "\\$\\{\\.\\}", name);
 		}
 		catch (Exception e) {
 			error("Error during loading properties file: " + name + ", error:" + e);
@@ -1249,9 +1252,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * preassign variables that change. I.e. the base directory ${.} for a
 	 * loaded properties
 	 */
-
-	public static Properties replaceAll(Properties p, String pattern, String replacement) {
-		Properties result = new UTF8Properties();
+	private static UTF8Properties replaceAll0(Properties p, String pattern, String replacement) {
+		UTF8Properties result = new UTF8Properties();
 		for (Iterator<Map.Entry<Object,Object>> i = p.entrySet().iterator(); i.hasNext();) {
 			Map.Entry<Object,Object> entry = i.next();
 			String key = (String) entry.getKey();
@@ -1260,6 +1262,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			result.put(key, value);
 		}
 		return result;
+	}
+
+	public static Properties replaceAll(Properties p, String pattern, String replacement) {
+		return replaceAll0(p, pattern, replacement);
 	}
 
 	/**

@@ -1,11 +1,11 @@
 package aQute.lib.utf8properties;
 
-import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.ByteBuffer;
@@ -17,6 +17,7 @@ import java.nio.charset.CoderResult;
 import java.util.Properties;
 
 import aQute.lib.io.IO;
+import aQute.service.reporter.Reporter;
 
 /**
  * Properties were by default read as ISO-8859-1 characters. However, in the
@@ -26,14 +27,10 @@ import aQute.lib.io.IO;
  * we want to do this right. So in bnd we generally use this UTF-8 Properties
  * class. This class always writes UTF-8. However, it will try to read UTF-8
  * first. If this fails, it will try ISO-8859-1, and the last attempt is the
- * platform default. <p> An additional problem is backslash encoding. When
- * reading properties, the Properties class skips backslashes that have no
- * correct next character. This is not a real problem if it was not for bndtools
- * where it turned out to be real tricky to get the UI to understand this since
- * text widgets read from the properties (backslash removed) while the main text
- * is just, well, the main text and has the backslash present. Since we strife
- * to fidelity, we actually fixup the <p> This class can (and probably should)
- * be used anywhere a Properties class is used.
+ * platform default.
+ * <p>
+ * This class can (and probably should) be used anywhere a Properties class is
+ * used.
  */
 public class UTF8Properties extends Properties {
 	private static final long	serialVersionUID	= 1L;
@@ -46,62 +43,75 @@ public class UTF8Properties extends Properties {
 
 	public UTF8Properties() {}
 
+	public void load(InputStream in, File file, Reporter reporter) throws IOException {
+		String source = read(in);
+		load(source, file, reporter);
+	}
+
+	public void load(String source, File file, Reporter reporter) throws IOException {
+
+		PropertiesParser parser = new PropertiesParser(source, file == null ? null : file.getAbsolutePath(), reporter,
+				this);
+		parser.parse();
+	}
+
+	public void load(File file, Reporter reporter) throws Exception {
+		FileInputStream fin = new FileInputStream(file);
+		try {
+			load(fin, file, reporter);
+		}
+		finally {
+			fin.close();
+		}
+	}
+
 	@Override
 	public void load(InputStream in) throws IOException {
+		load(in, null, null);
+	}
+
+	@Override
+	public void load(Reader r) throws IOException {
+		String s = IO.collect(r);
+		PropertiesParser parser = new PropertiesParser(s, null, null, this);
+		parser.parse();
+	}
+
+	String read(InputStream in) throws IOException {
 
 		byte[] buffer = IO.read(in);
 		try {
 			try {
-				convert(buffer, UTF8);
-				return;
+				return convert(buffer, UTF8);
 			}
 			catch (CharacterCodingException e) {
 				// Ok, not good, fallback to old encoding
 			}
 
 			try {
-				convert(buffer, ISO8859_1);
-				return;
+				return convert(buffer, ISO8859_1);
 			}
 			catch (CharacterCodingException e) {
 				// Ok, not good, fallback to platform encoding
 			}
 
-			super.load(new ByteArrayInputStream(buffer));
+			return new String(buffer);
 		}
 		finally {
 			// System.out.println("UTF8Props: " + this);
 		}
 	}
 
-	private void convert(byte[] buffer, Charset charset) throws IOException {
+	private String convert(byte[] buffer, Charset charset) throws IOException {
 		CharBuffer decode = charset.decode(ByteBuffer.wrap(buffer));
 		CharsetDecoder decoder = charset.newDecoder();
 		ByteBuffer bb = ByteBuffer.wrap(buffer);
 		CharBuffer cb = CharBuffer.allocate(buffer.length * 4);
 		CoderResult result = decoder.decode(bb, cb, true);
 		if (!result.isError()) {
-
-			String s = new String(cb.array(), 0, cb.position());
-			s = doBackslashEncoding(s);
-
-			super.load(new StringReader(s));
-			return;
+			return new String(cb.array(), 0, cb.position());
 		}
 		throw new CharacterCodingException();
-	}
-
-	private String doBackslashEncoding(String s) {
-		// if (s.indexOf('\\') >= 0) {
-		// s = s.replaceAll("\\\\(?!u|\\r|\\n|n|r|t|\\\\)", "\\\\\\\\");
-		// }
-		return s;
-	}
-
-	@Override
-	public void load(Reader r) throws IOException {
-		String s = doBackslashEncoding(IO.collect(r));
-		super.load(new StringReader(s));
 	}
 
 	@Override

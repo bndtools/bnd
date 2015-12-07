@@ -130,6 +130,7 @@ public interface Constants {
 	String	INCLUDE				= "-include";
 	String	INCLUDERESOURCE		= "-includeresource";
 	String	INVALIDFILENAMES	= "-invalidfilenames";
+	String	INIT				= "-init";
 	String	JAVAAGENT			= "-javaagent";
 	String	JAVAC_SOURCE		= "javac.source";
 	String	JAVAC_TARGET		= "javac.target";
@@ -252,7 +253,7 @@ public interface Constants {
 			RUNJDB, RUNENV, RUNEE, EEPROFILE, RUNREQUIRES, EXPORT, GESTALT, BNDDRIVER, CHECK, DISTRO,
 			METATYPE_ANNOTATIONS, METATYPE_ANNOTATIONS_OPTIONS, PACKAGEINFOTYPE, JAVAC_SOURCE, JAVAC_TARGET,
 			JAVAC_PROFILE, JAVAC, JAVA, JAVA_DEBUG, EXPORTTYPE, RUNREMOTE, TESTER, AUGMENT, REQUIRE_BND, GROUPID,
-			STANDALONE
+			STANDALONE, INIT
 
 	};
 
