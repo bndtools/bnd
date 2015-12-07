@@ -99,6 +99,7 @@ eclipse.deps: \
 	bndtools.api;version=latest,\
 	org.bndtools.headless.build.manager;version=latest,\
 	org.bndtools.versioncontrol.ignores.manager;version=latest,\
+	org.bndtools.templating; version=latest,\
 	bndtools.utils;version=project;packages=*,\
 	bndtools.repository.base;version=latest
 	

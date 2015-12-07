@@ -1,4 +1,0 @@
--plugin:\
-	aQute.bnd.deployer.repository.FixedIndexedRepo; name=Maven Local;  locations=file:///${user.home}/.m2/repository/repository.xml,\
-	aQute.bnd.deployer.repository.FixedIndexedRepo; name=Bndtools Hub; locations=https://raw.githubusercontent.com/bndtools/bundle-hub/master/index.xml.gz,\
-	aQute.lib.deployer.FileRepo;                    name=Build;        location=${workspace}/cnf/buildrepo;latest=false

@@ -7,6 +7,7 @@
       name="Workspace Configuration Templates"
       schema="schema/cnfTemplates.exsd"
    />
+   <!-- DEPRECATED -->
    <extension-point id="launchTemplates"
       name="Launch Templates"
       schema="schema/launchTemplates.exsd"
@@ -15,6 +16,7 @@
       name="Project Templates"
       schema="schema/projectTemplates.exsd"
    />
+   <!-- END DEPRECATION -->
    <extension-point id="bndtoolsStartupParticipant"
       name="Bndtools Start-up Participant"
       schema="schema/bndtoolsStartupParticipant.exsd"
@@ -158,22 +160,10 @@
             class="bndtools.wizards.project.NewBndProjectWizardFactory"
             finalPerspective="bndtools.perspective"
             preferredPerspectives="bndtools.perspective"
-            icon="icons/bricks.png"
-            name="Bndtools OSGi Project"
+            icon="icons/bndtools-logo-16x16.png"
+            name="Bndtools Project"
             project="true">
       </wizard>
-      <!-- Disable until we fix it
-      <wizard
-            id="bndtools.newWrapProjWiz"
-            category="bndtools.wizardCategory"
-            class="bndtools.wizards.project.NewWrappingBndProjectWizardFactory"
-            finalPerspective="bndtools.perspective"
-            preferredPerspectives="bndtools.perspective"
-            icon="icons/wrap.png"
-            name="Wrap JAR as OSGi Bundle Project"
-            project="true">
-      </wizard>
-       -->
    </extension>
    <extension
          point="org.eclipse.ui.views">
@@ -662,6 +652,11 @@
              name="Build">
        </page>
        <page
+             class="bndtools.preferences.ui.ReposPreferencePage"
+             id="bndtools.prefPages.repos"
+             category="bndtools.prefPages.basic"
+             name="Repositories"/>
+       <page
              class="bndtools.preferences.ui.GeneratedResourcesPreferencePage"
              id="bndtools.prefPages.generatedResources"
              category="bndtools.prefPages.basic"
@@ -709,6 +704,7 @@
          <contexts file="contexthelp.xml"/>
     </extension>
 
+   <!-- DEPRECATED -->
    <extension point="bndtools.core.launchTemplates">
       <template
          name="Apache Felix 4 with Gogo Shell"
@@ -740,6 +736,7 @@
          path="launchTemplates/empty.bndrun"
          doc="html/empty.form.xml"/>
    </extension>
+   <!-- END DEPRECATION -->
 
    <extension point="org.eclipse.ltk.core.refactoring.renameParticipants">
       <renameParticipant
@@ -826,59 +823,6 @@
       </plugin>
 
    </extension>
-
-	<extension point="bndtools.core.projectTemplates">
-		<template name="Component Development (OSGi Declarative Services)"
-			priority="500" category="AAA/Bnd Templates"
-			class="org.bndtools.core.templates.project.ComponentTemplate" doc="html/componentTemplate.xml"
-			icon="icons/cog.png" />
-	</extension>
-
-	<extension point="bndtools.core.projectTemplates">
-		<template name="Integration Testing" priority="200" category="AAA/Bnd Templates"
-			class="org.bndtools.core.templates.project.IntegrationTestingTemplate"
-			doc="html/integrationTestTemplate.xml" icon="icons/junit.gif" />
-	</extension>
-
-	<extension point="bndtools.core.projectTemplates">
-		<template name="API Project" priority="400" category="AAA/Bnd Templates"
-			class="org.bndtools.core.templates.project.APITemplate" doc="html/apiProjectTemplate.xml" />
-	</extension>
-	
-	<!-- Standard Templates -->
-	
-	<extension point="bndtools.core.projectTemplates">
-		<template
-			name="Empty Project"
-			category="AA/OSGi Standard Templates"
-			priority="-1000"
-			class="org.bndtools.api.EmptyTemplate"
-			doc="html/emptyTemplate.html"
-			icon="icons/template_empty.gif"
-		/>
-	</extension>
-
-	<extension point="bndtools.core.projectTemplates">
-		<template
-			name="API Project"
-			category="AA/OSGi Standard Templates"
-			class="org.bndtools.core.templates.project.standard.OSGiSpecAPITemplate"
-			doc="html/standard/apiProjectTemplate.xml"
-		/>
-	</extension>
-	
-	<extension point="bndtools.core.projectTemplates">
-		<template
-			name="Component Development"
-			category="AA/OSGi Standard Templates"
-			priority="500"
-			class="org.bndtools.core.templates.project.standard.OSGiSpecComponentTemplate"
-			doc="html/standard/componentTemplate.xml"
-			icon="icons/cog.png"
-		/>
-	</extension>
-
-	
 
    <extension point="org.eclipse.ui.intro.configExtension">
       <configExtension configId="org.eclipse.ui.intro.universalConfig" content="/intro/whatsnewExtensionContent.xml" />

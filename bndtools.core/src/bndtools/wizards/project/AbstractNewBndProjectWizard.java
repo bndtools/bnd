@@ -75,11 +75,6 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         addPage(pageTwo);
     }
 
-    /**
-     * Generate the new Bnd model for the project. This implementation simply returns an empty Bnd model.
-     *
-     * @param monitor
-     */
     @SuppressWarnings({
             "static-method", "unused"
     })
@@ -168,30 +163,39 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         }
     }
 
+    @SuppressWarnings("unused")
+    protected void generateProjectContent(IProject project, IProgressMonitor monitor, Map<String,String> templateParams) throws IOException {
+        // this implementation does nothing.
+    }
+
+    protected abstract Map<String,String> getProjectTemplateParams();
+
     @Override
     public boolean performFinish() {
         boolean result = super.performFinish();
         if (result) {
             final IJavaProject javaProj = (IJavaProject) getCreatedElement();
+            final IProject project = javaProj.getProject();
+            final Map<String,String> templateParams = getProjectTemplateParams();
+
             try {
                 // Run using the progress bar from the wizard dialog
                 getContainer().run(false, false, new IRunnableWithProgress() {
                     @Override
                     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         try {
-                            SubMonitor progress = SubMonitor.convert(monitor, 3);
-
-                            // Generate the Bnd model
-                            final BndEditModel bndModel = generateBndModel(progress.newChild(1));
-
                             // Make changes to the project
                             final IWorkspaceRunnable op = new IWorkspaceRunnable() {
                                 @Override
                                 public void run(IProgressMonitor monitor) throws CoreException {
-                                    processGeneratedProject(ProjectPaths.get(pageOne.getProjectLayout()), bndModel, javaProj, monitor);
+                                    try {
+                                        generateProjectContent(project, monitor, templateParams);
+                                    } catch (IOException e) {
+                                        throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error generating project content from template.", e));
+                                    }
                                 }
                             };
-                            javaProj.getProject().getWorkspace().run(op, progress.newChild(2));
+                            javaProj.getProject().getWorkspace().run(op, monitor);
                         } catch (CoreException e) {
                             throw new InvocationTargetException(e);
                         }
@@ -209,7 +213,8 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
             // Open the bnd.bnd file in the editor
             IFile bndFile = javaProj.getProject().getFile(Project.BNDFILE);
             try {
-                IDE.openEditor(getWorkbench().getActiveWorkbenchWindow().getActivePage(), bndFile);
+                if (bndFile.exists())
+                    IDE.openEditor(getWorkbench().getActiveWorkbenchWindow().getActivePage(), bndFile);
             } catch (PartInitException e) {
                 ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to open project descriptor file {0} in the editor.", bndFile.getFullPath().toString()), e));
             }

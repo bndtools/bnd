@@ -22,9 +22,9 @@ import java.util.Observable;
 import java.util.Observer;
 
 import org.bndtools.api.BndtoolsConstants;
-import org.bndtools.api.IProjectTemplate;
 import org.bndtools.api.ProjectLayout;
 import org.bndtools.api.ProjectPaths;
+import org.bndtools.templating.Template;
 import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -34,6 +34,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.corext.util.Messages;
@@ -45,16 +46,19 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.osgi.service.metatype.AttributeDefinition;
+import org.osgi.service.metatype.ObjectClassDefinition;
+
+import bndtools.Plugin;
 
 public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
-
-    private IProjectTemplate projectTemplate;
 
     private final ProjectNameGroup nameGroup = new ProjectNameGroup();
     private final ProjectLocationGroup locationGroup = new ProjectLocationGroup("Location");
     private final ProjectLayoutGroup layoutGroup = new ProjectLayoutGroup("Project Layout");
     @SuppressWarnings("unused")
     private final Validator fValidator;
+    private Template template;
 
     NewBndProjectWizardPageOne() {
         setTitle("Create a Bnd OSGi Project");
@@ -64,6 +68,9 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
         nameGroup.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
+                IStatus status = nameGroup.getStatus();
+                setPageComplete(status.isOK());
+                setErrorMessage(status.isOK() ? null : status.getMessage());
                 locationGroup.setProjectName(nameGroup.getProjectName());
             }
         });
@@ -85,6 +92,10 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
     @Override
     public String getProjectName() {
         return nameGroup.getProjectName();
+    }
+
+    public String getPackageName() {
+        return nameGroup.getPackageName();
     }
 
     @Override
@@ -158,10 +169,35 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
         List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(2);
         newEntries.add(JavaCore.newSourceEntry(projectPath.append(projectPaths.getSrc()), null, projectPath.append(projectPaths.getBin())));
 
-        if (projectTemplate == null || projectTemplate.enableTestSourceFolder())
+        boolean enableTestSrcDir;
+        try {
+            if (template == null)
+                enableTestSrcDir = true;
+            else {
+                ObjectClassDefinition templateMeta = template.getMetadata();
+                enableTestSrcDir = findAttribute(templateMeta, ProjectTemplateParam.TEST_SRC_DIR.getString()) != null;
+            }
+        } catch (Exception e) {
+            Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error accessing template parameters", e));
+            enableTestSrcDir = true;
+        }
+        if (enableTestSrcDir)
             newEntries.add(JavaCore.newSourceEntry(projectPath.append(projectPaths.getTestSrc()), null, projectPath.append(projectPaths.getTestBin())));
 
         return newEntries.toArray(new IClasspathEntry[newEntries.size()]);
+    }
+
+    private AttributeDefinition findAttribute(ObjectClassDefinition ocd, String name) {
+        AttributeDefinition[] attDefs = ocd.getAttributeDefinitions(ObjectClassDefinition.ALL);
+
+        if (attDefs == null)
+            return null;
+
+        for (AttributeDefinition attDef : attDefs) {
+            if (name.equals(attDef.getName()))
+                return attDef;
+        }
+        return null;
     }
 
     @Override
@@ -171,10 +207,6 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
     public ProjectLayout getProjectLayout() {
         return layoutGroup.getProjectLayout();
-    }
-
-    public void setProjectTemplate(IProjectTemplate projectTemplate) {
-        this.projectTemplate = projectTemplate;
     }
 
     /**
@@ -233,6 +265,8 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
                 }
 
             }
+
+            // check whether the base Java package name is legal
 
             final String location = null;// fLocationGroup.getLocation().toOSString();
 
@@ -310,6 +344,10 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
         //
         // return file.canWrite();
         // }
+    }
+
+    public void setTemplate(Template template) {
+        this.template = template;
     }
 
 }

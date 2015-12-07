@@ -12,48 +12,128 @@ package bndtools.wizards.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.InputStream;
 import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import org.bndtools.api.IProjectTemplate;
 import org.bndtools.api.ProjectLayout;
 import org.bndtools.api.ProjectPaths;
+import org.bndtools.core.ui.wizards.shared.BuiltInTemplate;
+import org.bndtools.core.ui.wizards.shared.RepoTemplateSelectionWizardPage;
+import org.bndtools.templating.Resource;
+import org.bndtools.templating.ResourceMap;
+import org.bndtools.templating.StringResource;
+import org.bndtools.templating.Template;
 import org.bndtools.utils.javaproject.JavaProjectUtils;
+import org.bndtools.utils.workspace.FileUtils;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IWorkbench;
 
-import aQute.bnd.build.Project;
-import aQute.bnd.build.model.BndEditModel;
-import aQute.bnd.osgi.Constants;
 import bndtools.Plugin;
-import bndtools.editor.model.BndProject;
 
 class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
     public static final String DEFAULT_BUNDLE_VERSION = "0.0.0.${tstamp}";
 
-    private final TemplateSelectionWizardPage templatePage = new TemplateSelectionWizardPage();
+    private RepoTemplateSelectionWizardPage templatePage;
 
     NewBndProjectWizard(final NewBndProjectWizardPageOne pageOne, final NewJavaProjectWizardPageTwo pageTwo) {
         super(pageOne, pageTwo);
 
-        templatePage.addPropertyChangeListener(TemplateSelectionWizardPage.PROP_TEMPLATE, new PropertyChangeListener() {
+    }
+
+    @Override
+    public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
+        super.init(workbench, currentSelection);
+
+        BuiltInTemplate baseTemplate = new BuiltInTemplate("\u00abEmpty\u00bb");
+        baseTemplate.addInputResource("bnd.bnd", new StringResource(""));
+        baseTemplate.setHelpPath("docs/empty_project.xml");
+
+        templatePage = new RepoTemplateSelectionWizardPage("projectTemplateSelection", "project", "projectTemplates", baseTemplate);
+        templatePage.setTitle("Select Project Template");
+
+        templatePage.addPropertyChangeListener(RepoTemplateSelectionWizardPage.PROP_TEMPLATE, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                pageOne.setProjectTemplate((IProjectTemplate) evt.getNewValue());
+                pageOne.setTemplate(templatePage.getTemplate());
             }
         });
     }
 
     @Override
     public void addPages() {
-        addPage(pageOne);
         addPage(templatePage);
+        addPage(pageOne);
         addPage(pageTwo);
+    }
+
+    @Override
+    protected Map<String,String> getProjectTemplateParams() {
+        Map<ProjectTemplateParam,String> params = new HashMap<>();
+        params.put(ProjectTemplateParam.PROJECT_NAME, pageOne.getProjectName());
+        String packageName = pageOne.getPackageName();
+        params.put(ProjectTemplateParam.BASE_PACKAGE_NAME, packageName);
+        String packageDir = packageName.replace('.', '/');
+        params.put(ProjectTemplateParam.BASE_PACKAGE_DIR, packageDir);
+
+        ProjectPaths bndPaths = ProjectPaths.get(ProjectLayout.BND);
+        ProjectPaths projectPaths = ProjectPaths.get(pageOne.getProjectLayout());
+
+        String projectTargetDir = projectPaths.getTargetDir();
+        if (!bndPaths.getTargetDir().equals(projectTargetDir)) {
+            params.put(ProjectTemplateParam.TARGET_DIR, projectTargetDir);
+        }
+
+        if (ProjectLayout.MAVEN == projectPaths.getLayout()) {
+            params.put(ProjectTemplateParam.VERSION, "1.0.0.SNAPSHOT");
+            params.put(ProjectTemplateParam.VERSION_OUTPUTMASK, "${@bsn}-${version;===S;${@version}}.jar");
+        } else {
+            params.put(ProjectTemplateParam.VERSION, DEFAULT_BUNDLE_VERSION);
+        }
+
+        Map<String,String> sourceOutputLocations = JavaProjectUtils.getSourceOutputLocations(pageTwo.getJavaProject());
+        int nr = 1;
+        for (Map.Entry<String,String> entry : sourceOutputLocations.entrySet()) {
+            String src = entry.getKey();
+            String bin = entry.getValue();
+
+            if (nr == 1) {
+                params.put(ProjectTemplateParam.SRC_DIR, src);
+                params.put(ProjectTemplateParam.BIN_DIR, bin);
+                nr = 2;
+            } else if (nr == 2) {
+                params.put(ProjectTemplateParam.TEST_SRC_DIR, src);
+                params.put(ProjectTemplateParam.TEST_BIN_DIR, bin);
+                nr = 2;
+            } else {
+                // if for some crazy reason we end up with more than 2 paths, we log them in
+                // extension properties (we cannot write comments) but this should never happen
+                // anyway since the second page will not complete if there are not exactly 2 paths
+                // so this could only happen if someone adds another page (that changes them again)
+
+                // TODO
+                // model.genericSet("X-WARN-" + nr, "Ignoring source path " + src + " -> " + bin);
+                nr++;
+            }
+        }
+
+        Map<String,String> params_ = new HashMap<>();
+        for (Entry<ProjectTemplateParam,String> entry : params.entrySet())
+            params_.put(entry.getKey().getString(), entry.getValue());
+        return params_;
     }
 
     /**
@@ -62,84 +142,38 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
      * @param monitor
      */
     @Override
-    protected BndEditModel generateBndModel(IProgressMonitor monitor) {
-        ProjectPaths bndPaths = ProjectPaths.get(ProjectLayout.BND);
-        BndEditModel model = super.generateBndModel(monitor);
-
-        ProjectPaths projectPaths = ProjectPaths.get(pageOne.getProjectLayout());
-
-        IProjectTemplate template = templatePage.getTemplate();
-        if (template != null) {
-            String name = pageTwo.getJavaProject().getProject().getName();
-            model.setBundleVersion(DEFAULT_BUNDLE_VERSION);
-            template.modifyInitialBndModel(model, name, projectPaths);
+    protected void generateProjectContent(IProject project, IProgressMonitor monitor, Map<String,String> params) {
+        Map<String,List<Object>> templateParams = new HashMap<>();
+        for (Entry<String,String> param : params.entrySet()) {
+            templateParams.put(param.getKey(), Collections.<Object> singletonList(param.getValue()));
         }
-        try {
-            Map<String,String> sourceOutputLocations = JavaProjectUtils.getSourceOutputLocations(pageTwo.getJavaProject());
-            int nr = 1;
-            for (Map.Entry<String,String> entry : sourceOutputLocations.entrySet()) {
-                String src = entry.getKey();
-                String bin = entry.getValue();
 
-                if (nr == 1) {
-                    if (!bndPaths.getSrc().equals(src)) {
-                        model.genericSet(Constants.DEFAULT_PROP_SRC_DIR, src);
-                    }
-                    if (!bndPaths.getBin().equals(bin)) {
-                        model.genericSet(Constants.DEFAULT_PROP_BIN_DIR, bin);
-                    }
-                    nr = 2;
-                } else if (nr == 2) {
-                    if (!bndPaths.getTestSrc().equals(src)) {
-                        model.genericSet(Constants.DEFAULT_PROP_TESTSRC_DIR, src);
-                    }
-                    if (!bndPaths.getTestBin().equals(bin)) {
-                        model.genericSet(Constants.DEFAULT_PROP_TESTBIN_DIR, bin);
-                    }
-                    nr = 2;
-                } else {
-                    // if for some crazy reason we end up with more than 2 paths, we log them in
-                    // extension properties (we cannot write comments) but this should never happen
-                    // anyway since the second page will not complete if there are not exactly 2 paths
-                    // so this could only happen if someone adds another page (that changes them again)
-                    model.genericSet("X-WARN-" + nr, "Ignoring source path " + src + " -> " + bin);
-                    nr++;
+        Template template = templatePage.getTemplate();
+        try {
+            ResourceMap outputs;
+            if (template != null) {
+                outputs = template.generateOutputs(templateParams);
+            } else {
+                outputs = new ResourceMap(); // empty
+            }
+
+            SubMonitor progress = SubMonitor.convert(monitor, outputs.size() * 3);
+            for (Entry<String,Resource> outputEntry : outputs.entries()) {
+                String path = outputEntry.getKey();
+                IFile file = project.getFile(path);
+                FileUtils.mkdirs(file.getParent(), progress.newChild(1, SubMonitor.SUPPRESS_ALL_LABELS));
+                try (InputStream in = outputEntry.getValue().getContent()) {
+                    if (file.exists())
+                        file.setContents(in, 0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+                    else
+                        file.create(in, 0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+                    file.setCharset(outputEntry.getValue().getTextEncoding(), progress.newChild(1));
                 }
             }
-
-            String projectTargetDir = projectPaths.getTargetDir();
-            if (!bndPaths.getTargetDir().equals(projectTargetDir)) {
-                model.genericSet(Constants.DEFAULT_PROP_TARGET_DIR, projectTargetDir);
-            }
-
-            if (ProjectLayout.MAVEN == projectPaths.getLayout()) {
-                model.setBundleVersion("1.0.0.SNAPSHOT");
-                model.genericSet(Constants.OUTPUTMASK, "${@bsn}-${version;===S;${@version}}.jar");
-            }
         } catch (Exception e) {
-            ErrorDialog.openError(getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error setting paths in Bnd project descriptor file ({0}).", Project.BNDFILE), e));
+            String message = MessageFormat.format("Error generating project contents from template \"{0}\".", template != null ? template.getName() : "<null>");
+            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, e));
         }
-
-        return model;
-    }
-
-    /**
-     * Allows for an IProjectTemplate to modify the new Bnd project
-     *
-     * @param monitor
-     */
-    @Override
-    protected BndProject generateBndProject(IProject project, IProgressMonitor monitor) {
-        BndProject proj = super.generateBndProject(project, monitor);
-
-        ProjectPaths projectPaths = ProjectPaths.get(pageOne.getProjectLayout());
-        IProjectTemplate template = templatePage.getTemplate();
-        if (template != null) {
-            String name = pageTwo.getJavaProject().getProject().getName();
-            template.modifyInitialBndProject(proj, name, projectPaths);
-        }
-
-        return proj;
     }
 
 }

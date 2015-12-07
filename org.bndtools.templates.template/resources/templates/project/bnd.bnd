@@ -1,0 +1,15 @@
+# Example Project Template
+# Make sure to edit the name and category.
+
+Provide-Capability: \
+	org.bndtools.template;\
+		org.bndtools.template=project; \
+		name=<projectName>; \
+		category=Examples; \
+		dir=template; \
+		icon="${icondata}"
+
+icondata: data:image/png;base64,${base64;icon.png}
+
+-resourceonly
+-includeresource: resources

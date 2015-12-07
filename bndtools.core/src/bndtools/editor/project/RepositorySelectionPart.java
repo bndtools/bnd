@@ -83,6 +83,7 @@ import bndtools.central.WorkspaceR5Repository;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.editor.common.UpDownButtonBarPart;
 import bndtools.editor.common.UpDownButtonBarPart.UpDownListener;
+import bndtools.shared.URLDialog;
 import bndtools.editor.common.AddRemoveButtonBarPart;
 import bndtools.editor.common.AddRemoveButtonBarPart.AddRemoveListener;
 
@@ -546,7 +547,7 @@ public class RepositorySelectionPart extends BndEditorPart {
     }
 
     private void doAddStandaloneLink() {
-        StandaloneLinkDialog dialog = new StandaloneLinkDialog(editor.getSite().getShell());
+        URLDialog dialog = new URLDialog(editor.getSite().getShell(), "Add repository URL");
         if (dialog.open() == Window.OK) {
             URI location = dialog.getLocation();
 

@@ -10,15 +10,24 @@
  *******************************************************************************/
 package bndtools.wizards.bndfile;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
-import org.bndtools.utils.osgi.BundleUtils;
+import org.bndtools.core.ui.wizards.shared.BuiltInTemplate;
+import org.bndtools.core.ui.wizards.shared.RepoTemplateSelectionWizardPage;
+import org.bndtools.templating.Resource;
+import org.bndtools.templating.ResourceMap;
+import org.bndtools.templating.StringResource;
+import org.bndtools.templating.Template;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -31,81 +40,124 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.dialogs.WizardNewFileCreationPage;
 import org.eclipse.ui.ide.IDE;
-import org.osgi.framework.Bundle;
 
 import bndtools.Plugin;
 
 public class BndRunFileWizard extends Wizard implements INewWizard {
     private static final ILogger logger = Logger.getLogger(BndRunFileWizard.class);
 
+    protected RepoTemplateSelectionWizardPage templatePage;
+
     protected IStructuredSelection selection;
     protected IWorkbench workbench;
 
     protected WizardNewFileCreationPage mainPage;
-    private final LaunchTemplateSelectionPage templatePage = new LaunchTemplateSelectionPage();
+
+    private static class WrappingException extends RuntimeException {
+        private final Exception e;
+
+        public WrappingException(Exception e) {
+            this.e = e;
+        }
+
+        public Exception getWrapped() {
+            return e;
+        }
+    }
 
     @Override
     public void addPages() {
-        mainPage = new WizardNewFileCreationPage("newFilePage", selection) {
-            @Override
-            protected InputStream getInitialContents() {
-                return getTemplateContents();
-            }
-        };
-        mainPage.setTitle("New Bnd Run Descriptor");
-        mainPage.setFileExtension("bndrun"); //$NON-NLS-1$
-        mainPage.setAllowExistingResources(false);
-
-        addPage(mainPage);
         addPage(templatePage);
+        addPage(mainPage);
     }
 
     @Override
     public boolean performFinish() {
-        IFile file = mainPage.createNewFile();
-        if (file == null) {
-            return false;
-        }
-
-        // Open editor on new file.
-        IWorkbenchWindow dw = workbench.getActiveWorkbenchWindow();
         try {
+            IFile file = mainPage.createNewFile();
+            if (file == null) {
+                return false;
+            }
+
+            // Open editor on new file.
+            IWorkbenchWindow dw = workbench.getActiveWorkbenchWindow();
             if (dw != null) {
                 IWorkbenchPage page = dw.getActivePage();
                 if (page != null) {
                     IDE.openEditor(page, file, true);
                 }
             }
+            return true;
         } catch (PartInitException e) {
             ErrorDialog.openError(getShell(), "New Bnd Run File", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error opening editor", e));
+            return true;
+        } catch (WrappingException e) {
+            ErrorDialog.openError(getShell(), "New Bnd Run File", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error generating file", e.getWrapped()));
+            return false;
         }
-
-        return true;
     }
 
+    @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.workbench = workbench;
         this.selection = selection;
+
+        mainPage = new WizardNewFileCreationPage("newFilePage", selection) {
+            @Override
+            protected InputStream getInitialContents() {
+                try {
+                    return getTemplateContents(getFileName());
+                } catch (Exception e) {
+                    throw new WrappingException(e);
+                }
+            }
+        };
+        mainPage.setTitle("New Bnd Run Descriptor");
+        mainPage.setFileExtension("bndrun"); //$NON-NLS-1$
+        mainPage.setAllowExistingResources(false);
+
+        BuiltInTemplate baseTemplate = new BuiltInTemplate("\u00abEmpty\u00bb");
+        baseTemplate.addInputResource("$fileName$", new StringResource(""));
+        baseTemplate.setHelpPath("docs/empty_run.xml");
+
+        templatePage = new RepoTemplateSelectionWizardPage("runTemplateSelection", "bndrun", null, baseTemplate);
+        templatePage.setTitle("Select Run Descriptor Template");
     }
 
-    private InputStream getTemplateContents() throws IllegalArgumentException {
-        IConfigurationElement configElem = templatePage.getSelectedElement();
-        String bsn = configElem.getContributor().getName();
+    private String baseName(String fileName) {
+        int lastDot = fileName.lastIndexOf('.');
+        String base = lastDot >= 0 ? fileName.substring(0, lastDot) : fileName;
+        int lastSlash = base.lastIndexOf('/');
+        base = lastSlash >= 0 ? base.substring(lastSlash + 1) : base;
+        return base;
+    }
 
-        String path = configElem.getAttribute("path");
-        if (path == null)
-            throw new IllegalArgumentException("Missing 'path' attribute.");
+    private InputStream getTemplateContents(String fileName) throws Exception {
+        // Load properties
+        Map<String,List<Object>> params = new HashMap<>();
+        params.put("fileName", Collections.<Object> singletonList(fileName));
+        params.put("fileBaseName", Collections.<Object> singletonList(baseName(fileName)));
 
-        Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), bsn, null);
-        if (bundle == null)
-            throw new IllegalArgumentException(String.format("Cannot find bundle %s.", bsn));
-
-        try {
-            URL entry = bundle.getEntry(path);
-            return entry != null ? entry.openStream() : null;
-        } catch (IOException e) {
-            logger.logError(String.format("Unable to open template entry: %s in bundle %s", path, bsn), e);
-            return null;
+        IPath containerPath = mainPage.getContainerFullPath();
+        if (containerPath != null) {
+            IResource container = ResourcesPlugin.getWorkspace().getRoot().findMember(containerPath);
+            if (container != null) {
+                String projectName = container.getProject().getName();
+                params.put("projectName", Collections.<Object> singletonList(projectName));
+            }
         }
+
+        // Run the template processor
+        Template template = templatePage.getTemplate();
+        ResourceMap outputs;
+        outputs = template.generateOutputs(params);
+        Resource output = outputs.get(fileName);
+
+        if (output == null) {
+            throw new IllegalArgumentException(String.format("Template error: file '%s' not found in outputs. Available names: %s", fileName, outputs.getPaths()));
+        }
+
+        // Pull the generated content
+        return output.getContent();
     }
 }

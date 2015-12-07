@@ -1,4 +1,0 @@
-<form>
-	<p>Creates a project for defining an API. The following dependencies are added to the build path:</p>
-	<li><a href="http://www.aqute.biz/Bnd/Components">Bnd Annotations Library</a> — for the <span font="fixed">@ProviderType</span> and <span font="fixed">@ConsumerType</span> annotations.</li>
-</form>

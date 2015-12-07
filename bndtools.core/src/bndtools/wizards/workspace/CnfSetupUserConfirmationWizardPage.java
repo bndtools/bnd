@@ -52,6 +52,7 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
         setImageDescriptor(Plugin.imageDescriptorFromPlugin("icons/bndtools-wizban.png")); //$NON-NLS-1$
     }
 
+    @Override
     public void createControl(Composite parent) {
         Composite p = new Composite(parent, SWT.NONE);
         setControl(p);
@@ -122,6 +123,7 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
         btnNever.addSelectionListener(listener);
 
         Listener locationListener = new Listener() {
+            @Override
             public void handleEvent(Event event) {
                 boolean oldCreateIn = createInEclipseWorkspace;
                 String oldExtLoc = externalLocation;
