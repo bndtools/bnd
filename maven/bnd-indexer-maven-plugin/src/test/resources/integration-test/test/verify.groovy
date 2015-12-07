@@ -106,6 +106,6 @@ assert 3 == caps.get(requirement).size();
 //Test using a local repository
 
 repo = check("${basedir}/local-repo-dependency/target/index.xml", "${basedir}/local-repo-dependency/target/index.xml.gz", 1, false, false);
-content = check(repo, "osgi.identity", "(osgi.identity=org.apache.felix.scr.annotations)", "org.apache.felix.scr.annotations", true);
+content = check(repo, "osgi.identity", "(osgi.identity=helloworld-for-indexer-testing)", "helloworld-for-indexer-testing", true);
 
 return;

@@ -16,20 +16,13 @@
 			<id>Local Repository</id>
 			<url>file://${basedir}/../localfilerepo</url>
 		</repository>
-		<repository>
-			<id>central</id>
-			<url>https://repo1.maven.apache.org/</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-		</repository>
 	</repositories>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.apache.felix.scr.annotations</artifactId>
-			<version>1.7.0</version>
+			<groupId>biz.aQute.bnd</groupId>
+			<artifactId>helloworld-for-indexer-testing</artifactId>
+			<version>0.0.1</version>
 		</dependency>
 	</dependencies>
 
