@@ -1,5 +1,8 @@
 # Template inception... templates for generating template projects!
 
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 -resourceonly: true
 
 -includeresource: \
