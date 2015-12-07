@@ -104,4 +104,4 @@ eclipse.deps: \
 	bndtools.repository.base;version=latest
 	
 -testpath: \
-	${junit3}
+	${junit}
