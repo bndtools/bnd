@@ -16,8 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bndtools.api.ILogger;
-import org.bndtools.api.Logger;
 import org.bndtools.core.ui.wizards.shared.BuiltInTemplate;
 import org.bndtools.core.ui.wizards.shared.RepoTemplateSelectionWizardPage;
 import org.bndtools.templating.Resource;
@@ -44,7 +42,6 @@ import org.eclipse.ui.ide.IDE;
 import bndtools.Plugin;
 
 public class BndRunFileWizard extends Wizard implements INewWizard {
-    private static final ILogger logger = Logger.getLogger(BndRunFileWizard.class);
 
     protected RepoTemplateSelectionWizardPage templatePage;
 
@@ -54,6 +51,7 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
     protected WizardNewFileCreationPage mainPage;
 
     private static class WrappingException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
         private final Exception e;
 
         public WrappingException(Exception e) {

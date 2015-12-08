@@ -138,6 +138,7 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 
     public void addViewer(TreeViewer viewer, RefreshModel model) {
         this.viewers.put(viewer, model);
+        viewer.setInput(model.getRepositories());
     }
 
     public void removeViewer(TreeViewer viewer) {
