@@ -60,6 +60,12 @@ public interface Agent {
 	boolean isEnvoy();
 
 	/**
+	 * Get the Bundles for the given ids. If no ids are given, all bundles are
+	 * returned.
+	 */
+	List<BundleDTO> getBundles(long... bundleId) throws Exception;
+
+	/**
 	 * Get the Bundle Revisions for the given ids. If no ids are given, the
 	 * revisions for all bundles must be returned.
 	 */
@@ -78,6 +84,22 @@ public interface Agent {
 	 * JAR @return A Bundle DTO
 	 */
 	BundleDTO install(String location, String sha) throws Exception;
+
+	/**
+	 * Install a new bundle at the given location using a url to get the stream.
+	 * <p>
+	 * <b>NOTICE:</b> this method makes assumptions about the target e.g. that
+	 * it will be able to use out-of-band communication to read from the URL and
+	 * have the necessary url handlers to open the URL stream.
+	 * </p>
+	 *
+	 * @param location
+	 *            the bundle location
+	 * @param url
+	 *            url of the bundle that can retrived using url.openStream()
+	 * @return A bundle DTO
+	 */
+	BundleDTO installFromURL(String location, String url) throws Exception;
 
 	/**
 	 * Start a number of bundles @param id the bundle ids @return any errors
@@ -109,9 +131,37 @@ public interface Agent {
 	String update(Map<String,String> bundles) throws Exception;
 
 	/**
-	 * Redirect I/O from port. Port can be {@link #CONSOLE}, {@link
-	 * #COMMAND_SESSION}, {@link #NONE}, or a TCP Telnet port. @param port the
-	 * port to redirect from @return if the redirection was changed
+	 * Updates a single bundle by id in the framework. The SHA identifies the
+	 * file and should be retrievable through {@link Supervisor#getFile(String)}
+	 *
+	 * @param location
+	 *            the bundle location
+	 * @param sha
+	 *            the sha of the bundle
+	 * @return any errors that occurred
+	 */
+	String update(long id, String sha) throws Exception;
+
+	/**
+	 * Updates a single bundle from a url
+	 * <p>
+	 * <b>NOTICE:</b> this method makes assumptions about the target e.g. that
+	 * it will be able to use out-of-band communication to read from the URL and
+	 * have the necessary url handlers to open the URL stream.
+	 * </p>
+	 *
+	 * @param id
+	 *            bundle to update
+	 * @param url
+	 *            location of bundle contents
+	 * @return any errors that occurred
+	 */
+	String updateFromURL(long id, String url) throws Exception;
+
+	/**
+	 * Redirect I/O from port. Port can be {@link #CONSOLE},
+	 * {@link #COMMAND_SESSION}, {@link #NONE}, or a TCP Telnet port. @param
+	 * port the port to redirect from @return if the redirection was changed
 	 */
 	boolean redirect(int port) throws Exception;
 
