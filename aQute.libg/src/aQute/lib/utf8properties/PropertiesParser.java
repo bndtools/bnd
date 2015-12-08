@@ -65,21 +65,28 @@ final class PropertiesParser {
 		try {
 			switch (current) {
 				case '\\' :
-					if (peek() == '\n') {
-						next(); // current == newline
+					if (peek() == '\r' || peek() == '\n') {
+						next(); // skip line ending
 						next(); // first character on new line
 						skipWhitespace();
 						return current;
-					}
-					return '\\';
+					} else
+						return '\\';
+
 				case '\r' :
-					if (pos == 0)
-						return next();
-					if (peek() == '\n')
-						return next();
-					return '\n';
+					current = '\n';
+					if (peek() == '\n') {
+						n++;
+					}
+					line++;
+					pos = -1;
+					return current;
 
 				case '\n' :
+					if (peek() == '\r') {
+						// a bit weird, catches \n\r
+						n++;
+					}
 					line++;
 					pos = -1;
 					return current;
@@ -99,6 +106,10 @@ final class PropertiesParser {
 		finally {
 			pos++;
 		}
+	}
+
+	private void doEndOfLine() {
+
 	}
 
 	void skip(byte delimeters) {
