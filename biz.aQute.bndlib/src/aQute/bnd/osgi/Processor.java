@@ -740,7 +740,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public void setBase(File base) {
 		this.base = base;
-		baseURI = base.toURI();
+		baseURI = (base == null) ? null : base.toURI();
 	}
 
 	public void clear() {
