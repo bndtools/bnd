@@ -6,7 +6,7 @@ eclipse-repo: aQute.bnd.deployer.repository.FixedIndexedRepo; name="Eclipse IDE 
 #
 # Bnd Repository. See ${workspace}/gradle.properties for the bnd_repourl property.
 #
-bndRepo: ${bnd_repourl}/index.xml.gz
+bndRepo: ${uri;${bnd_repourl}}/index.xml.gz
 
 #
 # Don't touch below

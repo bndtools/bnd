@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+##############################################################################
+##
+## Rebuild using the locally built bnd gradle plugin from ../bnd
+##
+##############################################################################
+REPO=$(dirname ${BASH_SOURCE[0]})
+BND=../bnd
+ARGS="$@"
+if [ -z "$ARGS" ]; then
+  ARGS="--rerun-tasks"
+fi
+
+echo $REPO/gradlew --no-daemon -Pbnd_repourl=$REPO/$BND/dist/bundles $ARGS
+$REPO/gradlew --no-daemon -Pbnd_repourl=$REPO/$BND/dist/bundles $ARGS
