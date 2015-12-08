@@ -36,6 +36,8 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
 import bndtools.BndConstants;
 import bndtools.Plugin;
+import bndtools.central.Central;
+import bndtools.central.RepositoriesViewRefresher;
 import bndtools.central.RepositoryUtils;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.model.repo.RepositoryBundle;
@@ -43,7 +45,7 @@ import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
 import bndtools.utils.SelectionDragAdapter;
 
-public class AvailableBundlesPart extends BndEditorPart {
+public class AvailableBundlesPart extends BndEditorPart implements RepositoriesViewRefresher.RefreshModel {
 
     // Number of millis to wait for the user to stop typing in the filter box
     private static final long SEARCH_DELAY = 1000;
@@ -129,6 +131,7 @@ public class AvailableBundlesPart extends BndEditorPart {
         viewer.setFilters(new ViewerFilter[] {
                 includedRepoFilter
         });
+        Central.addRepositoriesViewer(viewer, this);
 
         txtSearch.addModifyListener(new ModifyListener() {
             @Override
@@ -182,6 +185,11 @@ public class AvailableBundlesPart extends BndEditorPart {
 
     @Override
     protected void refreshFromModel() {
+        viewer.setInput(getRepositories());
+    }
+
+    @Override
+    public List<RepositoryPlugin> getRepositories() {
         List<String> tmp = model.getRunRepos();
         includedRepos = (tmp == null) ? null : new HashSet<String>(tmp);
         Workspace workspace = model.getWorkspace();
@@ -192,12 +200,18 @@ public class AvailableBundlesPart extends BndEditorPart {
         } catch (Exception e) {
             repos = Collections.emptyList();
         }
-        viewer.setInput(repos);
+        return repos;
     }
 
     @Override
     protected void commitToModel(boolean onSave) {
         // Nothing to do
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        Central.removeRepositoriesViewer(viewer, this);
     }
 
 }
