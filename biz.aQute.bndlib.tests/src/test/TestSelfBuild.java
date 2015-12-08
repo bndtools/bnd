@@ -1,9 +1,12 @@
 package test;
 
-import java.io.*;
+import java.io.File;
+import java.util.Collection;
 
-import junit.framework.*;
-import aQute.bnd.build.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Builder;
+import junit.framework.TestCase;
 
 public class TestSelfBuild extends TestCase {
 
@@ -12,9 +15,11 @@ public class TestSelfBuild extends TestCase {
 				.getProject("biz.aQute.bndlib");
 		project.setPedantic(true);
 
-		File files[] = project.build();
-		assertTrue(project.check("Imports that lack version ranges: \\[javax"));
-		assertNotNull(files);
-		assertEquals(1, files.length);
+		Collection< ? extends Builder> subBuilders = project.getSubBuilders();
+		assertEquals(1, subBuilders.size());
+
+		Builder b = subBuilders.iterator().next();
+		b.build();
+		assertTrue(b.check("Imports that lack version ranges: \\[javax"));
 	}
 }

@@ -108,10 +108,6 @@ final class PropertiesParser {
 		}
 	}
 
-	private void doEndOfLine() {
-
-	}
-
 	void skip(byte delimeters) {
 		while (isIn(delimeters)) {
 			next();
