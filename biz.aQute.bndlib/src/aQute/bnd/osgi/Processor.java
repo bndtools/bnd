@@ -832,6 +832,27 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return pf.getParentFile().getAbsolutePath();
 	}
 
+	static String _uri = "${uri;<uri>[;<baseuri>]}, Resolve the uri against the baseuri. baseuri defaults to the processor base.";
+
+	public String _uri(String args[]) throws Exception {
+		Macro.verifyCommand(args, _uri, null, 2, 3);
+
+		URI uri = new URI(args[1]);
+		if (!uri.isAbsolute() || uri.getScheme().equals("file")) {
+			URI base;
+			if (args.length > 2) {
+				base = new URI(args[2]);
+			} else {
+				base = getBaseURI();
+				if (base == null) {
+					throw new IllegalArgumentException("No base dir set");
+				}
+			}
+			uri = base.resolve(uri.getSchemeSpecificPart());
+		}
+		return uri.toString();
+	}
+
 	/**
 	 * Property handling ... @return
 	 */
