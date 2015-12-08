@@ -12,6 +12,7 @@ configure(rootProject) {
   task build {
     dependsOn ":${buildProject.name}:build"
     dependsOn ":${buildProject.name}:checkNeeded"
+    dependsOn ":${buildProject.name}:releaseNeeded"
     dependsOn ":${buildProject.name}:dist"
     description "Assembles and packages the ${buildProject.name} project."
     group 'build'
@@ -140,7 +141,7 @@ task p2Feature(type: Zip) {
  * Setup tasks (p2 plugins)
  */
 task p2Plugins(type: Copy) {
-  dependsOn buildNeeded
+  dependsOn releaseNeeded
   from    zipTree("${buildDir}/${project.name}.main.jar")
   into    "${buildDir}/plugins"
   include '*.jar'
