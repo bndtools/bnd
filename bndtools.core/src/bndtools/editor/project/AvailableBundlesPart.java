@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
@@ -106,6 +107,12 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
         createClient(section, toolkit);
     }
 
+    @Override
+    public void initialize(IManagedForm form) {
+        super.initialize(form);
+        Central.addRepositoriesViewer(viewer, this);
+    }
+
     private void createClient(Section section, FormToolkit toolkit) {
         section.setText("Browse Repos");
 
@@ -131,7 +138,6 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
         viewer.setFilters(new ViewerFilter[] {
                 includedRepoFilter
         });
-        Central.addRepositoriesViewer(viewer, this);
 
         txtSearch.addModifyListener(new ModifyListener() {
             @Override
@@ -185,7 +191,7 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
 
     @Override
     protected void refreshFromModel() {
-        viewer.setInput(getRepositories());
+        //viewer.setInput(getRepositories());
     }
 
     @Override
