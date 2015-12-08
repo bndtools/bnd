@@ -1,0 +1,3 @@
+-include ~include.bndrun
+-resolve.effective = active;skip:=top
+foo=1

@@ -1,0 +1,3 @@
+-include ~include.bndrun
+
+foo=1

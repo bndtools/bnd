@@ -954,4 +954,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		}
 		setInputResource(rb.build());
 	}
+
+	public Map<String,Set<String>> getEffectiveSet() {
+		return effectiveSet;
+	}
 }

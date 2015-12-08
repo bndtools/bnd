@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.felix.resolver.ResolverImpl;
+import org.mockito.Mockito;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -27,6 +28,7 @@ import org.osgi.service.resolver.ResolutionException;
 import org.osgi.service.resolver.Resolver;
 
 import aQute.bnd.build.Run;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ExportedPackage;
@@ -48,6 +50,43 @@ import test.lib.MockRegistry;
 public class ResolveTest extends TestCase {
 
 	private static final LogService log = new LogReporter(new ReporterAdapter(System.out));
+
+	/**
+	 * Observed at the OSGi Community Event. When specifying the following:
+	 * -resolve.effective: active;skip:="osgi.service" OSGi service capabilities
+	 * are skipped but other active-time requirements are used. This is correct,
+	 * but it only works if the property is defined directly inside the bndrun
+	 * being resolved. If the property is inherited from a parent bndrun then it
+	 * no longer applies...
+	 * <p>
+	 * Tried this but seems to work in all combinations as expected
+	 */
+	public void testIncludeBndrun() throws Exception {
+		assertInclude("intop.bndrun", "top");
+		assertInclude("ininclude.bndrun", "include");
+		assertInclude("inworkspace.bndrun", "workspace");
+	}
+
+	/*
+	 * Create a BndrunResolveContext with a skip of 'workspace' in the
+	 * workspace, and then use different files that get -resolve.effective from
+	 * the include file or the bndrun file.
+	 */
+	private void assertInclude(String file, String value) throws Exception {
+		LogService log = Mockito.mock(LogService.class);
+		File f = IO.getFile("testdata/resolve/includebndrun/" + file);
+		File wsf = IO.getFile("testdata/ws");
+
+		Workspace ws = Workspace.getWorkspace(wsf);
+		ws.setProperty("-resolve.effective", "active;skip:='workspace'");
+
+		Run run = Run.createRun(ws, f);
+		BndrunResolveContext context = new BndrunResolveContext(run, run, ws, log);
+		context.init();
+		Map<String,Set<String>> effectiveSet = context.getEffectiveSet();
+		assertNotNull(effectiveSet.get("active"));
+		assertTrue(effectiveSet.get("active").contains(value));
+	}
 
 	/**
 	 * Missing default version
