@@ -43,6 +43,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -215,11 +216,21 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
                 if (URLTransfer.getInstance().isSupportedType(getCurrentEvent().currentDataType)) {
                     try {
                         URL url = new URL((String) URLTransfer.getInstance().nativeToJava(getCurrentEvent().currentDataType));
-                        File tmp = File.createTempFile("dwnl", ".jar");
-                        IO.copy(url, tmp);
-                        copied = addFilesToRepository((RepositoryPlugin) getCurrentTarget(), new File[] {
-                                tmp
-                        });
+                        if (url.getPath().endsWith(".jar")) {
+                            File tmp = File.createTempFile("dwnl", ".jar");
+                            IO.copy(url, tmp);
+                            copied = addFilesToRepository((RepositoryPlugin) getCurrentTarget(), new File[] {
+                                    tmp
+                            });
+                        } else {
+                            String uris = url.toString();
+                            if (uris.contains("#!/p/sha/"))
+                                MessageDialog.openWarning(null, "Dropped URL is a JPM Revision Identifier, not a JAR",
+                                        "The dropped URL is a JPM identifier, can only be dropped on a JPM repository. You can also select the revision on JPM and drag the 'jar' link of the revision to any of the other repositories.");
+                            else
+                                MessageDialog.openWarning(null, "Unrecognized URL", "The dropped URL is not recognized as a remote JAR file (expected to end in '.jar'): " + url.toString());
+
+                        }
                     } catch (Exception e) {
                         return false;
                     }
