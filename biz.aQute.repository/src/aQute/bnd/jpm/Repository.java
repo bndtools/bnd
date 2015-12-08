@@ -1958,33 +1958,27 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	 */
 	// @Override
 	public Set<ResourceDescriptor> getResources(URI url, boolean includeDependencies) throws Exception {
-		try {
-			Matcher m = JPM_REVISION_URL_PATTERN.matcher(url.toString());
-			if (!m.matches()) {
-				return null;
-			}
+		Matcher m = JPM_REVISION_URL_PATTERN.matcher(url.toString());
+		if (!m.matches()) {
+			return null;
+		}
 
-			Set<ResourceDescriptor> resources = new HashSet<ResourceDescriptor>();
-			Revision revision = getRevision(new Coordinate(m.group(1), m.group(2), m.group(3), m.group(4)));
+		Set<ResourceDescriptor> resources = new HashSet<ResourceDescriptor>();
+		Revision revision = getRevision(new Coordinate(m.group(1), m.group(2), m.group(3), m.group(4)));
 
-			if (revision != null) {
-				ResourceDescriptor rd = createResourceDescriptor(new RevisionRef(revision));
-				resources.add(rd);
-				if (includeDependencies) {
-					for (RevisionRef dependency : library.getClosure(revision._id, false)) {
-						ResourceDescriptor dep = createResourceDescriptor(dependency);
-						dep.dependency = true;
-						resources.add(dep);
-					}
+		if (revision != null) {
+			ResourceDescriptor rd = createResourceDescriptor(new RevisionRef(revision));
+			resources.add(rd);
+			if (includeDependencies) {
+				for (RevisionRef dependency : library.getClosure(revision._id, false)) {
+					ResourceDescriptor dep = createResourceDescriptor(dependency);
+					dep.dependency = true;
+					resources.add(dep);
 				}
 			}
+		}
 
-			return resources;
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-			return Collections.emptySet();
-		}
+		return resources;
 	}
 
 	private ResourceDescriptor createResourceDescriptor(RevisionRef ref) throws Exception {
@@ -1998,7 +1992,10 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		rd.url = ref.urls.isEmpty() ? null : ref.urls.iterator().next();
 
 		File f = get(rd.bsn, rd.version, null);
-		rd.sha256 = SHA256.digest(f).digest();
+		if (f != null)
+			rd.sha256 = SHA256.digest(f).digest();
+		else
+			rd.sha256 = SHA256.digest(new byte[0]).digest();
 		return rd;
 	}
 
