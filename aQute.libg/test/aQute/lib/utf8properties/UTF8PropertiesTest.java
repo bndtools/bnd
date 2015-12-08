@@ -23,14 +23,112 @@ public class UTF8PropertiesTest extends TestCase {
 			+ "\u00E0\u00E1\u00E2\u00E3\u00E4\u00E5\u00E6\u00E7\u00E8\u00E9\u00EA\u00EB\u00EC\u00ED\u00EE\u00EF"
 			+ "\u00F0\u00F1\u00F2\u00F3\u00F4\u00F5\u00F6\u00F7\u00F8\u00F9\u00FA\u00FB\u00FC\u00FD\u00FE\u00FF";
 
-	public void testEmptyContinuations() throws IOException {
-		UTF8Properties p = new UTF8Properties();
-		ReporterAdapter ra = new ReporterAdapter();
-		p.load("-plugin: \\\n\\\n\\\nabc", null, ra);
-		assertEquals("abc", p.get("-plugin"));
-		assertEquals(1, p.size());
+	/*
+	 * Entries are generally expected to be a single line of the form, one of
+	 * the following: propertyName=propertyValue propertyName:propertyValue}
+	 */
+	public void testSpecificationAssignment() throws IOException {
+		testProperty("propertyName=propertyValue\n", "propertyName", "propertyValue");
+		testProperty("propertyName:propertyValue\n", "propertyName", "propertyValue");
+		testProperty("propertyName propertyValue\n", "propertyName", "propertyValue");
+	}
+
+	/*
+	 * White space that appears between the property name and property value is
+	 * ignored, so the following are equivalent.
+	 */
+	public void testSpecificationValueSpaces() throws IOException {
+		testProperty("name=Stephen\n", "name", "Stephen");
+		testProperty("name = Stephen\n", "name", "Stephen");
+		testProperty("name=Stephen", "name", "Stephen");
+		testProperty("name = Stephen", "name", "Stephen");
+	}
+
+	/*
+	 * White space at the beginning of the line is also ignored.
+	 */
+	public void testSpecificationKeySpaces() throws IOException {
+		testProperty("    name = Stephen\n", "name", "Stephen");
+		testProperty("    name = Stephen", "name", "Stephen");
+	}
+
+	/*
+	 * Lines that start with the comment characters ! or # are ignored. Blank
+	 * lines are also ignored.
+	 */
+	public void testSpecificationComments() throws IOException {
+		testProperty("\n\n# comment\n!comment\n\nfoo=bar", "foo", "bar");
+		testProperty("foo=bar\n# comment", "foo", "bar");
+		testProperty("foo=bar\n! comment", "foo", "bar");
+		testProperty("# comment\nfoo=bar\n# comment", "foo", "bar");
+		testProperty("! comment\nfoo=bar\n! comment", "foo", "bar");
+		testProperty("# comment\nfoo=bar\n# comment\n", "foo", "bar");
+		testProperty("! comment\nfoo=bar\n! comment\n", "foo", "bar");
+	}
+
+	/*
+	 * The property value is generally terminated by the end of the line. White
+	 * space following the property value is not ignored, and is treated as part
+	 * of the property value.
+	 */
+	public void testSpecificationWhitespaceValue() throws IOException {
+		testProperty("foo=bar ", "foo", "bar ");
+		testProperty("foo=bar \n", "foo", "bar ");
+	}
+
+	/*
+	 * A property value can span several lines if each line is terminated by a
+	 * backslash (‘\’) character. For example:
+	 */
+	public void testSpecificationContinutation() throws IOException {
+		testProperty("targetCities=\\\n" //
+				+ "        Detroit,\\\n" //
+				+ "        Chicago,\\\n" //
+				+ "        Los Angeles\n", "targetCities", "Detroit,Chicago,Los Angeles");
 
 	}
+
+	/*
+	 * The characters newline, carriage return, and tab can be inserted with
+	 * characters \n, \r, and \t, respectively.
+	 */
+	public void testSpecificationControlCharacters() throws IOException {
+		testProperty("control= \\t\\n\\r\n", "control", "\t\n\r");
+	}
+
+	/*
+	 * The backslash character must be escaped as a double backslash. For
+	 * example:
+	 */
+	public void testSpecificationBackslashes() throws IOException {
+		testProperty("path=c:\\\\docs\\\\doc1", "path", "c:\\docs\\doc1");
+	}
+
+	/*
+	 * UNICODE characters can be entered as they are in a Java program, using
+	 * the \\u prefix. For example, \u002c.
+	 */
+	public void testSpecificationUnicode() throws IOException {
+		testProperty("unicode=\\u002c\n", "unicode", ",");
+		testProperty("unicode=\\uFEF0\n", "unicode", "\uFEF0");
+	}
+
+	/*
+	 * You can have control characters in keys
+	 */
+	public void testControlCharactersInKeys() throws IOException {
+		testProperty("key\\ key = value\n", "key key", "value", "Found |Invalid");
+		testProperty("key\\u002Ckey = value\n", "key,key", "value", "Found |Invalid");
+		testProperty("key\\:key = value\n", "key:key", "value", "Found |Invalid");
+	}
+
+	public void testEmptyContinuations() throws IOException {
+		testProperty("-plugin: \\\n\\\n\\\nabc", "-plugin", "abc");
+		testProperty("-plugin: \\\n\\\n\\\nabc\n", "-plugin", "abc");
+		testProperty("-plugin: \\\n\\\n\\\n    abc\n", "-plugin", "abc");
+		testProperty("-plugin: \\\n  \\\n  \\\n    abc\n", "-plugin", "abc");
+	}
+
 	public void testEmptyKey() throws IOException {
 		UTF8Properties p = new UTF8Properties();
 		ReporterAdapter ra = new ReporterAdapter();
@@ -168,4 +266,33 @@ public class UTF8PropertiesTest extends TestCase {
 		assertEquals(p, p1);
 	}
 
+	private void testProperty(String content, String key, String value) throws IOException {
+		testProperty(content, key, value, null);
+	}
+
+	private void testProperty(String content, String key, String value, String check) throws IOException {
+		testProperty0(content, key, value, check);
+		testProperty0(content.replaceAll("\n", "\r\n"), key, value, check);
+		testProperty0(content.replaceAll("\n", "\r"), key, value, check);
+	}
+
+	private void testProperty0(String content, String key, String value, String check) throws IOException {
+		UTF8Properties p = new UTF8Properties();
+		ReporterAdapter ra = new ReporterAdapter();
+		p.load(content, null, ra);
+
+		if (check == null)
+			assertTrue(ra.check());
+		else
+			assertTrue(ra.check(check));
+
+		assertEquals(value, p.get(key));
+		assertEquals(1, p.size());
+
+		Properties pp = new Properties();
+		pp.load(new StringReader(content));
+		assertEquals(value, pp.get(key));
+		assertEquals(1, pp.size());
+		assertEquals(pp, p);
+	}
 }
