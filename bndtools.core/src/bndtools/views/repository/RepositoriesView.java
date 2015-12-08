@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.core.ui.icons.Icons;
+import org.bndtools.utils.Function;
 import org.bndtools.utils.collections.IdentityHashSet;
 import org.bndtools.utils.swt.FilterPanelPart;
 import org.bndtools.utils.swt.SWTUtil;
@@ -82,6 +83,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.resource.Requirement;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RemoteRepositoryPlugin;
@@ -133,7 +135,6 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         ColumnViewerToolTipSupport.enableFor(viewer);
 
         viewer.setLabelProvider(new RepositoryTreeLabelProvider(false));
-        Central.addRepositoriesViewer(viewer, this);
         getViewSite().setSelectionProvider(viewer);
 
         JpmPreferences jpmPrefs = new JpmPreferences();
@@ -321,6 +322,13 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         });
 
         createContextMenu();
+        Central.onWorkspaceInit(new Function<Workspace,Void>() {
+            @Override
+            public Void run(Workspace a) {
+                Central.addRepositoriesViewer(viewer, RepositoriesView.this);
+                return null;
+            }
+        });
 
         // LAYOUT
         GridLayout layout = new GridLayout(1, false);
