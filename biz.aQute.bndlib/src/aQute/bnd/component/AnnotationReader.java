@@ -651,6 +651,12 @@ public class AnnotationReader extends ClassDataCollector {
 			} // end field
 		} else {// not a member
 			def.service = annoService;
+			if (def.name == null) {
+				analyzer.error(
+						"Name must be supplied for a @Reference specified in the @Component annotation. Service: %s",
+						def.service).details(getDetails(def, ErrorType.MISSING_REFERENCE_NAME));
+				return;
+			}
 		}
 
 		if (component.references.containsKey(def.name))

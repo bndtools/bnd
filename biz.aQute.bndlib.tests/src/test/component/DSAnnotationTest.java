@@ -23,6 +23,8 @@ import java.util.jar.Manifest;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import junit.framework.AssertionFailedError;
+
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
@@ -52,7 +54,6 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.test.BndTestCase;
 import aQute.bnd.test.XmlTester;
-import junit.framework.AssertionFailedError;
 
 /**
  * Test for use of DS components specified using spec DS annotations.
@@ -3542,6 +3543,40 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("setMarker" + count, "scr:component/reference[" + index + "]/@bind");
 		xt.assertNoAttribute("scr:component/reference[" + index + "]/@unbind");
 		xt.assertNoAttribute("scr:component/reference[" + index + "]/@updated");
+	}
+
+	@Component(reference = @Reference(name = "LogService", service = LogService.class))
+	public static class ComponentReferenceGood {}
+
+	@Component(reference = @Reference(service = LogService.class))
+	public static class ComponentReferenceBad {}
+
+	public void testComponentReference() throws Exception {
+
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*ComponentReference*");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b, 1, 0);
+
+		{
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$ComponentReferenceGood.xml");
+			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream());
+			xt.assertAttribute(LogService.class.getName(), "component/reference[1]/@interface");
+		}
+		{
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$ComponentReferenceBad.xml");
+			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream());
+			xt.assertCount(0, "component/reference");
+		}
 	}
 
 }
