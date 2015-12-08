@@ -33,6 +33,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -45,6 +46,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
+import bndtools.central.RepositoriesViewRefresher.RefreshModel;
 
 public class Central implements IStartupParticipant {
 
@@ -68,7 +70,10 @@ public class Central implements IStartupParticipant {
 
     private RepositoryListenerPluginTracker repoListenerTracker;
 
+    @SuppressWarnings("unused")
     private static WorkspaceRepositoryChangeDetector workspaceRepositoryChangeDetector;
+
+    private static RepositoriesViewRefresher repositoriesViewRefresher = new RepositoriesViewRefresher();
 
     static {
         try {
@@ -494,7 +499,9 @@ public class Central implements IStartupParticipant {
         return path;
     }
 
-    public void close() {}
+    public void close() {
+        repositoriesViewRefresher.close();
+    }
 
     public static void invalidateIndex() {
         indexValid.set(false);
@@ -566,4 +573,22 @@ public class Central implements IStartupParticipant {
                 array, message, null);
     }
 
+    /**
+     * Register a viewer with repositories
+     */
+
+    public static void addRepositoriesViewer(TreeViewer viewer, RepositoriesViewRefresher.RefreshModel model) {
+        repositoriesViewRefresher.addViewer(viewer, model);
+    }
+
+    /**
+     * Unregister a viewer with repositories
+     */
+    public static void removeRepositoriesViewer(TreeViewer viewer, RepositoriesViewRefresher.RefreshModel model) {
+        repositoriesViewRefresher.addViewer(viewer, model);
+    }
+
+    public static void setRepositories(TreeViewer viewer, RefreshModel model) {
+        repositoriesViewRefresher.setRepositories(viewer, model);
+    }
 }

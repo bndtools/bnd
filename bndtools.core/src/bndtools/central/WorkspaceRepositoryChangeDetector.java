@@ -123,7 +123,6 @@ public class WorkspaceRepositoryChangeDetector implements Closeable, IResourceCh
                                     e.printStackTrace();
                                 }
                             monitor.done();
-                            ;
                             return Status.OK_STATUS;
                         }
                     };

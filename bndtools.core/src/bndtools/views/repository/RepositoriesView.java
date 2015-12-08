@@ -9,7 +9,6 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -21,10 +20,8 @@ import java.util.regex.Pattern;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.core.ui.icons.Icons;
-import org.bndtools.utils.Function;
 import org.bndtools.utils.collections.IdentityHashSet;
 import org.bndtools.utils.swt.FilterPanelPart;
-import org.bndtools.utils.swt.SWTConcurrencyUtil;
 import org.bndtools.utils.swt.SWTUtil;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
@@ -35,6 +32,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
@@ -82,20 +80,17 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.osgi.framework.ServiceRegistration;
 import org.osgi.resource.Requirement;
-import aQute.bnd.build.Workspace;
-import aQute.bnd.osgi.Jar;
+
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RemoteRepositoryPlugin;
-import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
-import bndtools.Activator;
 import bndtools.Plugin;
 import bndtools.central.Central;
+import bndtools.central.RepositoriesViewRefresher;
 import bndtools.central.RepositoryUtils;
 import bndtools.model.repo.ContinueSearchElement;
 import bndtools.model.repo.RepositoryBundle;
@@ -107,7 +102,7 @@ import bndtools.preferences.JpmPreferences;
 import bndtools.utils.SelectionDragAdapter;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 
-public class RepositoriesView extends ViewPart implements RepositoryListenerPlugin {
+public class RepositoriesView extends ViewPart implements RepositoriesViewRefresher.RefreshModel {
     final static Pattern LABEL_PATTERN = Pattern.compile("(-)?(!)?([^{}]+)(?:\\{([^}]+)\\})?");
     private static final String DROP_TARGET = "dropTarget";
 
@@ -123,12 +118,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
     private Action addBundlesAction;
     private Action advancedSearchAction;
     private Action downloadAction;
-
     private String advancedSearchState;
-
-    private ServiceRegistration<RepositoryListenerPlugin> registration;
-
-    private Set<String> expandedRepoNames = null;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -143,6 +133,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         ColumnViewerToolTipSupport.enableFor(viewer);
 
         viewer.setLabelProvider(new RepositoryTreeLabelProvider(false));
+        Central.addRepositoriesViewer(viewer, this);
         getViewSite().setSelectionProvider(viewer);
 
         JpmPreferences jpmPrefs = new JpmPreferences();
@@ -331,21 +322,6 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
 
         createContextMenu();
 
-        // LOAD
-        Central.onWorkspaceInit(new Function<Workspace,Void>() {
-            @Override
-            public Void run(Workspace a) {
-                final List<RepositoryPlugin> repositories = RepositoryUtils.listRepositories(true);
-                SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
-                    @Override
-                    public void run() {
-                        viewer.setInput(repositories);
-                    }
-                });
-                return null;
-            }
-        });
-
         // LAYOUT
         GridLayout layout = new GridLayout(1, false);
         layout.horizontalSpacing = 0;
@@ -361,8 +337,6 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         createActions();
         fillToolBar(getViewSite().getActionBars().getToolBarManager());
 
-        // Register as repository listener
-        registration = Activator.getDefault().getBundleContext().registerService(RepositoryListenerPlugin.class, this, null);
     }
 
     @Override
@@ -400,7 +374,7 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
 
     @Override
     public void dispose() {
-        registration.unregister();
+        Central.removeRepositoriesViewer(viewer, this);
         super.dispose();
     }
 
@@ -433,7 +407,23 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         refreshAction = new Action() {
             @Override
             public void run() {
-                doRefresh();
+                new WorkspaceJob("Refresh repositories") {
+
+                    @Override
+                    public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+                        if (monitor == null)
+                            monitor = new NullProgressMonitor();
+
+                        monitor.subTask("Refresh all repositories");
+
+                        try {
+                            Central.refreshPlugins();
+                        } catch (Exception e) {
+                            return new Status(Status.ERROR, Plugin.PLUGIN_ID, "Failed to refresh plugins");
+                        }
+                        return Status.OK_STATUS;
+                    }
+                }.schedule();
             }
         };
         refreshAction.setText("Refresh");
@@ -653,69 +643,6 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         });
     }
 
-    private void doRefresh() {
-        // [cs] If a refresh is already happening, skip this one.
-        if (expandedRepoNames != null) {
-            return;
-        }
-
-        // Remember names of expanded repositories
-        expandedRepoNames = new HashSet<String>();
-        Object[] expandedElems = viewer.getExpandedElements();
-        for (Object expandedElem : expandedElems) {
-            if (expandedElem instanceof RepositoryPlugin) {
-                expandedRepoNames.add(((RepositoryPlugin) expandedElem).getName());
-            }
-        }
-
-        // kick off background thread for part 2.
-        new DoRefresh2().schedule();
-    }
-
-    private class DoRefresh2 extends WorkspaceJob {
-
-        public DoRefresh2() {
-            super("Refresh repositories");
-        }
-
-        @Override
-        public IStatus runInWorkspace(IProgressMonitor arg0) throws CoreException {
-            //[cs] The refreshPlugins portion of doRefresh, doRefresh2, doRefresh3
-            // was broken off to a background thread since this one executing on
-            // the UI thread and freezing eclipse during some remote repository
-            // downloads
-            try {
-                Central.refreshPlugins();
-            } catch (Exception e) {
-                logger.logError("While refreshing plugins", e);
-            }
-            SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
-                @Override
-                public void run() {
-                    doRefresh3();
-                }
-            });
-            return Status.OK_STATUS;
-        }
-    }
-
-    private void doRefresh3() {
-        // Reload repositories
-        List<RepositoryPlugin> repos = RepositoryUtils.listRepositories(true);
-        viewer.setInput(repos);
-
-        // Expand any repos that have the same name as a repository that
-        // was expanded before the reload.
-        for (RepositoryPlugin repo : repos) {
-            if (expandedRepoNames.contains(repo.getName())) {
-                viewer.setExpandedState(repo, true);
-            }
-        }
-
-        //[cs] Enable another refresh to happen
-        expandedRepoNames = null;
-    }
-
     private void fillToolBar(IToolBarManager toolBar) {
         toolBar.add(advancedSearchAction);
         toolBar.add(downloadAction);
@@ -724,50 +651,6 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
         toolBar.add(collapseAllAction);
         toolBar.add(addBundlesAction);
         toolBar.add(new Separator());
-    }
-
-    @Override
-    public void bundleAdded(final RepositoryPlugin repository, Jar jar, File file) {
-        if (viewer != null)
-            SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
-                @Override
-                public void run() {
-                    viewer.refresh(repository);
-                }
-            });
-    }
-
-    @Override
-    public void bundleRemoved(final RepositoryPlugin repository, Jar jar, File file) {
-        if (viewer != null)
-            SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
-                @Override
-                public void run() {
-                    viewer.refresh(repository);
-                }
-            });
-    }
-
-    @Override
-    public void repositoryRefreshed(final RepositoryPlugin repository) {
-        if (viewer != null)
-            SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
-                @Override
-                public void run() {
-                    viewer.refresh(repository);
-                }
-            });
-    }
-
-    @Override
-    public void repositoriesRefreshed() {
-        if (viewer != null && expandedRepoNames == null)
-            SWTConcurrencyUtil.execForControl(viewer.getControl(), true, new Runnable() {
-                @Override
-                public void run() {
-                    doRefresh();
-                }
-            });
     }
 
     /**
@@ -889,5 +772,10 @@ public class RepositoriesView extends ViewPart implements RepositoryListenerPlug
             return ((RepositoryBundleVersion) element).getParentBundle().getRepo();
 
         return null;
+    }
+
+    @Override
+    public List<RepositoryPlugin> getRepositories() {
+        return RepositoryUtils.listRepositories(true);
     }
 }
