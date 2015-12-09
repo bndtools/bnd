@@ -18,6 +18,7 @@ import aQute.libg.sed.Domain;
 import aQute.libg.sed.Replacer;
 import aQute.libg.sed.ReplacerAdapter;
 
+@SuppressWarnings("deprecation")
 public class Env extends ReporterAdapter implements Replacer, Domain {
 	final Properties		properties;
 	final ReplacerAdapter	replacer	= new ReplacerAdapter(this);
