@@ -182,6 +182,7 @@ public class ProcessorTest extends TestCase {
 			p.setProperty("uri8", "${uri;file:/dist/bundles;" + otherURI + "}");
 			p.setProperty("uri9", "${uri;http://foo.com/dist/bundles}");
 			p.setProperty("uri10", "${uri;http://foo.com/dist/bundles;" + otherURI + "}");
+			p.setProperty("uri11", "${uri;.}");
 			String uri1 = p.getProperty("uri1");
 			String uri2 = p.getProperty("uri2");
 			String uri3 = p.getProperty("uri3");
@@ -192,6 +193,7 @@ public class ProcessorTest extends TestCase {
 			String uri8 = p.getProperty("uri8");
 			String uri9 = p.getProperty("uri9");
 			String uri10 = p.getProperty("uri10");
+			String uri11 = p.getProperty("uri11");
 			assertEquals(baseURI + "dist/bundles", uri1);
 			assertEquals("file:/dist/bundles", uri2);
 			assertEquals(baseURI + "dist/bundles", uri3);
@@ -202,6 +204,7 @@ public class ProcessorTest extends TestCase {
 			assertEquals("file:/dist/bundles", uri8);
 			assertEquals("http://foo.com/dist/bundles", uri9);
 			assertEquals("http://foo.com/dist/bundles", uri10);
+			assertEquals(baseURI, uri11);
 			assertTrue(p.check());
 		}
 	}
