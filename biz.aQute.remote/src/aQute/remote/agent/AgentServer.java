@@ -5,6 +5,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -124,6 +125,14 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 
 		Bundle b = context.installBundle(location, in);
 		installed.put(b.getLocation(), sha);
+		return toDTO(b);
+	}
+
+	@Override
+	public BundleDTO installFromURL(String location, String url) throws Exception {
+		InputStream is = new URL(url).openStream();
+		Bundle b = context.installBundle(location, is);
+		installed.put(b.getLocation(), url);
 		return toDTO(b);
 	}
 
@@ -307,6 +316,41 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		}
 
 		return result;
+	}
+
+	public String update(long id, String sha) throws Exception {
+		InputStream in = cache.getStream(sha, source);
+		if (in == null)
+			return null;
+
+		StringBuilder sb = new StringBuilder();
+
+		try {
+			Bundle bundle = context.getBundle(id);
+			bundle.update(in);
+			refresh(true);
+		}
+		catch (Exception e) {
+			sb.append(e.getMessage()).append("\n");
+		}
+
+		return sb.length() == 0 ? null : sb.toString();
+	}
+
+	public String updateFromURL(long id, String url) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		InputStream is = new URL(url).openStream();
+
+		try {
+			Bundle bundle = context.getBundle(id);
+			bundle.update(is);
+			refresh(true);
+		}
+		catch (Exception e) {
+			sb.append(e.getMessage()).append("\n");
+		}
+
+		return sb.length() == 0 ? null : sb.toString();
 	}
 
 	private Bundle getBundle(String location) {
@@ -573,6 +617,29 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 
 			refresh.await();
 		}
+	}
+
+	@Override
+	public List<BundleDTO> getBundles(long... bundleId) throws Exception {
+
+		Bundle[] bundles;
+		if (bundleId.length == 0) {
+			bundles = context.getBundles();
+		} else {
+			bundles = new Bundle[bundleId.length];
+			for (int i = 0; i < bundleId.length; i++) {
+				bundles[i] = context.getBundle(bundleId[i]);
+			}
+		}
+
+		List<BundleDTO> bundleDTOs = new ArrayList<BundleDTO>(bundles.length);
+
+		for (Bundle b : bundles) {
+			BundleDTO dto = toDTO(b);
+			bundleDTOs.add(dto);
+		}
+
+		return bundleDTOs;
 	}
 
 	/**
