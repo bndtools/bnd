@@ -1,18 +1,22 @@
 package aQute.lib.env;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.*;
+import java.util.Properties;
+import java.util.regex.Pattern;
 
-import aQute.lib.converter.*;
-import aQute.lib.io.*;
-import aQute.lib.properties.*;
-import aQute.lib.utf8properties.*;
-import aQute.libg.reporter.*;
-import aQute.libg.sed.*;
+import aQute.lib.converter.Converter;
+import aQute.lib.io.IO;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.libg.sed.Domain;
+import aQute.libg.sed.Replacer;
+import aQute.libg.sed.ReplacerAdapter;
 
 public class Env extends ReporterAdapter implements Replacer, Domain {
 	final Properties		properties;
@@ -111,39 +115,30 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 	}
 
 	public void setProperties(File file) throws Exception {
-
 		if (!file.isFile())
 			error("No such file %s", file);
 		else {
-			setProperties(file.toURI());
+			UTF8Properties props = new UTF8Properties();
+			props.load(file, this);
+			putAll(props);
 		}
 	}
 
 	public void addProperties(File file, Pattern matching) throws Exception {
-
-		if (!file.isFile())
-			error("No such file %s", file);
+		if (!file.isDirectory())
+			setProperties(file);
 		else {
-			if (file.isFile())
-				setProperties(file.toURI());
-			else {
-				for (File sub : file.listFiles()) {
-					if (matching == null || matching.matcher(sub.getName()).matches()) {
-						addProperties(file, matching);
-					}
+			for (File sub : file.listFiles()) {
+				if (matching == null || matching.matcher(sub.getName()).matches()) {
+					addProperties(file, matching);
 				}
 			}
 		}
 	}
 
 	public void setProperties(URI uri) throws Exception {
-		Properties props = PropertiesParser.parse(uri);
-		String errors = (String) props.remove(PropertiesParser.$$$ERRORS);
-		if (errors != null) {
-			for (String error : errors.split("\n")) {
-				error("%s: %s", uri.toString(), error);
-			}
-		}
+		UTF8Properties props = new UTF8Properties();
+		props.load(uri.toURL().openStream(), null, this);
 		putAll(props);
 	}
 

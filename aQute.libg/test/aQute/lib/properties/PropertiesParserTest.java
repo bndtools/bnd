@@ -1,11 +1,12 @@
 package aQute.lib.properties;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.StringReader;
+import java.net.URI;
+import java.util.Properties;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
+@Deprecated
 public class PropertiesParserTest extends TestCase {
 
 	static String t1 = "abc=1\n" + "def:2    \t\n" + "ghi 3\n" + "jkl = 4                 \t\n" + "mno {5}\n"
