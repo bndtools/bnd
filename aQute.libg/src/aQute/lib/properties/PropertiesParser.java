@@ -1,15 +1,18 @@
 package aQute.lib.properties;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.Reader;
+import java.net.URI;
+import java.util.Enumeration;
+import java.util.Properties;
 
-import aQute.lib.hex.*;
-import aQute.lib.io.*;
+import aQute.lib.hex.Hex;
+import aQute.lib.io.IO;
 
 /**
  * Parses properties files
  */
+@Deprecated
 public class PropertiesParser {
 
 	public static final String $$$ERRORS = "$$$ERRORS";
