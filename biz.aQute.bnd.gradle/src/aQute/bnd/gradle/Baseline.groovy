@@ -13,7 +13,7 @@
  *   baseline
  * }
  * dependencies {
- *     baseline('group': group, 'name': archivesBaseName, 'version': "(,${version})") {
+ *     baseline('group': group, 'name': jar.baseName, 'version': "(,${jar.version})") {
  *       transitive false
  *     }
  *   }
@@ -23,6 +23,23 @@
  *   baseline configurations.baseline
  * }
  * </pre>
+ *
+ * <p>
+ * Properties:
+ * <ul>
+ * <li>ignoreFailures - If true the build will not fail due to baseline
+ * problems; instead an error message will be logged. Otherwise, the
+ * build will fail. The default is false.</li>
+ * <li>baselineReportDirName - This is the name of the baseline reports
+ * directory. Can be a name or a path relative to ReportingExtension.getBaseDir().
+ * The default name is 'baseline'.</li>
+ * <li>bundle - This is the bundle to be baselined. It can either be a
+ * File or a task that produces a bundle. This property must be set.</li>
+ * <li>baseline - This is the baseline bundle. It can either be a File
+ * or a Configuration. If a Configuration is specified, it must contain
+ * a single file; otherwise an exception will fail the build. This property
+ * must be set.</li>
+ * </ul>
  */
 
 package aQute.bnd.gradle
@@ -42,7 +59,9 @@ import org.gradle.api.tasks.bundling.AbstractArchiveTask
 
 public class Baseline extends DefaultTask {
   private File bundle
+  private AbstractArchiveTask bundleTask
   private File baseline
+  private Configuration baselineConfiguration
 
   /**
    * Whether baseline failures should be ignored.
@@ -56,7 +75,7 @@ public class Baseline extends DefaultTask {
   boolean ignoreFailures
 
   /**
-   * The name of the baseline reports directory. 
+   * The name of the baseline reports directory.
    *
    * <p>
    * Can be a name or a path relative to <code>ReportingExtension.getBaseDir()</code>.
@@ -73,6 +92,9 @@ public class Baseline extends DefaultTask {
     super()
     ignoreFailures = false
     baselineReportDirName = 'baseline'
+    dependsOn {
+      bundleTask
+    }
   }
 
   /**
@@ -80,6 +102,7 @@ public class Baseline extends DefaultTask {
    */
   public void setBundle(File file) {
     bundle = file
+    bundleTask = null
   }
 
   /**
@@ -90,8 +113,8 @@ public class Baseline extends DefaultTask {
    * of the task. This task will also dependOn the specified task.
    */
   public void setBundle(AbstractArchiveTask archive) {
-    dependsOn archive
-    bundle = archive.archivePath
+    bundleTask = archive
+    bundle = null
   }
 
   /**
@@ -99,7 +122,18 @@ public class Baseline extends DefaultTask {
    */
   @InputFile
   public File getBundle() {
-    return bundle
+    return (bundleTask != null) ? bundleTask.archivePath : bundle
+  }
+
+  /**
+   * Return the archive task whose bundle is to be baselined.
+   *
+   * <p>
+   * This will be null if the bundle to be baselined was not
+   * set with a task.
+   */
+  public AbstractArchiveTask getBundleTask() {
+    return bundleTask
   }
 
   /**
@@ -107,25 +141,39 @@ public class Baseline extends DefaultTask {
    */
   public void setBaseline(File file) {
     baseline = file
+    baselineConfiguration = null
   }
 
   /**
    * Set the baseline bundle from a configuration.
-   *
-   * <p>
-   * The specified configuration must contain only a single
-   * file otherwise an exception will be thrown.
    */
   public void setBaseline(Configuration configuration) {
-    baseline = configuration.singleFile
+    baselineConfiguration = configuration
+    baseline = null
   }
 
   /**
    * Get the baseline bundle File.
+   *
+   * <p>
+   * If the baseline was specified as a configuration,
+   * an exception will be thrown if the configuration does
+   * not contain a single file.
    */
   @InputFile
   public File getBaseline() {
-    return baseline
+    return (baselineConfiguration != null) ? baselineConfiguration.singleFile : baseline
+  }
+
+  /**
+   * Return the baseline configuration.
+   *
+   * <p>
+   * This will be null if the bundle is not to be baselined
+   * with a configuration.
+   */
+  public Configuration getBaselineConfiguration() {
+    return baselineConfiguration
   }
 
   /**
@@ -133,10 +181,7 @@ public class Baseline extends DefaultTask {
    */
   public File getBaselineReportDir() {
     File dir = new File(baselineReportDirName)
-    if (dir.absolute) {
-      return dir
-    }
-    return new File(project.reporting.baseDir, dir.path)
+    return dir.absolute ? dir : new File(project.reporting.baseDir, dir.path)
   }
 
   /**
