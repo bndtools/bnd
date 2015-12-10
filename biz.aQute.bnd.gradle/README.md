@@ -203,9 +203,8 @@ Configuration does not exist.
 
 This is the SourceSet object to use as the sourcepath for the Bnd
 builder. The default value is the `project.sourceSets.main` SourceSet.
-You will only need to specify this property if you use `-sources: true`
-in your Bnd instructions and you want to use a different SourceSet for
-the sourcepath or the default SourceSet does not exist.
+You will only need to specify this property if you want to use a different
+SourceSet for the sourcepath or the default SourceSet does not exist.
 
 ### Example
 
@@ -316,7 +315,7 @@ For full details on what the bnd Gradle plugin does, check out the
 [8]: ../biz.aQute.bndlib/src/aQute/bnd/build/Workspace.java
 [9]: ../biz.aQute.bndlib/src/aQute/bnd/build/Project.java
 [10]: src/aQute/bnd/gradle
-[11]: https://github.com/bndtools/bndtools/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/unprocessed/root/gradle.properties
+[11]: https://github.com/bndtools/bndtools/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/filter/root/gradle.properties
 [12]: https://github.com/bndtools/bndtools/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/unprocessed/root/settings.gradle
 [13]: https://github.com/bndtools/bndtools/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/unprocessed/root/build.gradle
 [14]: http://gradle.org/docs/current/userguide/plugins.html#sec:plugins_block
