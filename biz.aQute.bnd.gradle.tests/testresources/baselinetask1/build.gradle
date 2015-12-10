@@ -13,9 +13,6 @@ version = '1.1.0'
 repositories {
     mavenCentral()
 }
-configurations {
-    baseline
-}
 
 dependencies {
     compile 'commons-codec:commons-codec:1.5'
@@ -35,11 +32,9 @@ jar {
     }
 }
 
-task baseline(type: Baseline) {
+baseline {
    description 'Baseline'
    group 'build'
-   bundle jar
-   baseline configurations.baseline
    ignoreFailures = true
 }
 

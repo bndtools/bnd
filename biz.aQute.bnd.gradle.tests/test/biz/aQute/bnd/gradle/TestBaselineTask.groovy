@@ -29,7 +29,7 @@ class TestBaselineTask extends Specification {
         when:
           def result = GradleRunner.create()
             .withProjectDir(testProjectDir)
-            .withArguments('baseline', 'baselineSelf')
+            .withArguments('--stacktrace', 'baseline', 'baselineSelf')
             .withPluginClasspath(pluginClasspath)
             .forwardOutput()
             .build()
@@ -45,7 +45,27 @@ class TestBaselineTask extends Specification {
           File baselineSelf = new File(testProjectReportsDir, 'baselineSelf/baselineSelf.txt')
           baselineSelf.isFile()
 
-          String baselineFile = Pattern.quote(baseline.absolutePath)
-          result.getOutput() =~ /Baseline problems detected\. See the report in ${baselineFile}/
+          result.getOutput() =~ Pattern.quote("Baseline problems detected. See the report in ${baseline.absolutePath}")
+    }
+
+    def "Bnd Baseline Configuration Test"() {
+        given:
+          String testProject = 'baselinetask2'
+          File testProjectDir = new File(testResources, testProject).canonicalFile
+          assert testProjectDir.isDirectory()
+
+        when:
+          def result = GradleRunner.create()
+            .withProjectDir(testProjectDir)
+            .withArguments('--stacktrace', 'echo')
+            .withPluginClasspath(pluginClasspath)
+            .forwardOutput()
+            .build()
+
+        then:
+          result.task(":echo").outcome == SUCCESS
+
+          result.getOutput() =~ Pattern.quote('Bundle-SymbolicName: biz.aQute.bnd')
+          result.getOutput() =~ Pattern.quote('Bundle-Version: 2.4.1')
     }
 }

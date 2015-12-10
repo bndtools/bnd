@@ -6,8 +6,26 @@
  *
  * <p>
  * This plugin applies the java plugin to a project and modifies the jar
- * task by adding the properties from the BundleTaskConvention and building
- * the jar file as a bundle.
+ * task by adding the properties from the {@link BundleTaskConvention}
+ * and building the jar file as a bundle.
+ * <p>
+ * This plugin also defines a 'baseline' configuration and a baseline task
+ * of type {@link Baseline}. The baseline task will be set up with the
+ * default of baselining the output of the jar task using the baseline
+ * configuration. If the baseline configuration is not otherwise
+ * setup and the baseline task is configured to baseline a task, the
+ * baseline configuration will be set as follows:
+ *
+ * <pre>
+ * dependencies {
+ *     baseline('group': project.group, 
+ *              'name': baseline.bundleTask.baseName, 
+ *              'version': "(,${baseline.bundleTask.version})") {
+ *       transitive false
+ *     }
+ *   }
+ * }
+ * </pre>
  */
 
 package aQute.bnd.gradle
@@ -35,6 +53,27 @@ public class BndBuilderPlugin implements Plugin<Project> {
         convention.plugins.bundle = new BundleTaskConvention(jar)
         doLast {
           buildBundle()
+        }
+      }
+
+      configurations {
+        baseline
+      }
+
+      task ('baseline', type: Baseline) {
+        description 'Baseline the project bundle.'
+        group 'release'
+        bundle jar
+        baseline configurations.baseline
+      }
+
+      afterEvaluate {
+        if (baseline.bundleTask && (baseline.baselineConfiguration == configurations.baseline) && configurations.baseline.dependencies.empty) {
+          dependencies {
+            baseline('group': group, 'name': baseline.bundleTask.baseName, 'version': "(,${baseline.bundleTask.version})") {
+              transitive false
+            }
+          }
         }
       }
     }
