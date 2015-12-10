@@ -192,6 +192,10 @@ public class UTF8PropertiesTest extends TestCase {
 				+ "a=\\ \n     a;v=4", "a", 1, "Found \\\\<whitespace>", "Invalid property key: `a;v`");
 		assertError("\n\n\n\n\n\n\n" //
 				+ "a", "a", 7, "No value specified for key");
+		assertError("\npropertyName=property\0Value\n", "propertyName", 1,
+				"Invalid character in properties: 0 at pos 21:");
+		assertError("\nproperty\0Name=propertyValue\n", "property?Name", 1,
+				"Invalid character in properties: 0 at pos 8:");
 	}
 
 	private void assertError(String string, String key, int line, String... check) throws IOException {

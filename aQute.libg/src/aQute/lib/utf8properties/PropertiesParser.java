@@ -97,10 +97,10 @@ final class PropertiesParser {
 
 				default :
 					if (current < ' ') {
-						error("Invalid character in properties: %x at pos %s", current, pos);
+						error("Invalid character in properties: %x at pos %s", Integer.valueOf(current), pos);
 						return current = '?';
-					} else
-						return current;
+					}
+					return current;
 			}
 		}
 		finally {
