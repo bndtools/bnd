@@ -1,5 +1,5 @@
 # Example Project Template
-# Make sure to edit the name and category.
+# Make sure to edit the name, category and help document.
 
 Provide-Capability: \
 	org.bndtools.template;\
@@ -7,9 +7,10 @@ Provide-Capability: \
 		name=<projectName>; \
 		category=Examples; \
 		dir=template; \
-		icon="${icondata}"
+		icon="${icondata}"; \
+		help=help.xml
 
 icondata: data:image/png;base64,${base64;icon.png}
 
--resourceonly
+-resourceonly: true
 -includeresource: resources
