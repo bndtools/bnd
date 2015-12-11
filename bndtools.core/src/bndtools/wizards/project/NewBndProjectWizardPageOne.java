@@ -13,23 +13,15 @@ package bndtools.wizards.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
-
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ProjectLayout;
 import org.bndtools.api.ProjectPaths;
 import org.bndtools.templating.Template;
 import org.eclipse.core.filesystem.URIUtil;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
@@ -37,9 +29,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.internal.corext.util.Messages;
-import org.eclipse.jdt.internal.ui.JavaPlugin;
-import org.eclipse.jdt.internal.ui.viewsupport.BasicElementLabels;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -57,21 +46,23 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
     private final ProjectLocationGroup locationGroup = new ProjectLocationGroup("Location");
     private final ProjectLayoutGroup layoutGroup = new ProjectLayoutGroup("Project Layout");
     @SuppressWarnings("unused")
-    private final Validator fValidator;
     private Template template;
 
     NewBndProjectWizardPageOne() {
         setTitle("Create a Bnd OSGi Project");
 
-        fValidator = new Validator();
-
         nameGroup.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
                 IStatus status = nameGroup.getStatus();
-                setPageComplete(status.isOK());
-                setErrorMessage(status.isOK() ? null : status.getMessage());
-                locationGroup.setProjectName(nameGroup.getProjectName());
+                if (status.isOK()) {
+                    setPageComplete(true);
+                    setErrorMessage(null);
+                    locationGroup.setProjectName(nameGroup.getProjectName());
+                } else {
+                    setPageComplete(false);
+                    setErrorMessage(status.getMessage());
+                }
             }
         });
 
@@ -207,143 +198,6 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
     public ProjectLayout getProjectLayout() {
         return layoutGroup.getProjectLayout();
-    }
-
-    /**
-     * Validate this page and show appropriate warnings and error NewWizardMessages.
-     */
-    private final class Validator implements Observer {
-
-        @Override
-        public void update(Observable o, Object arg) {
-
-            final IWorkspace workspace = JavaPlugin.getWorkspace();
-
-            final String name = null;// fNameGroup.getName();
-
-            // check whether the project name field is empty
-            if ((name == null) || (name.length() == 0)) {
-                setErrorMessage(null);
-                setMessage("Enter a project name.");
-                setPageComplete(false);
-                return;
-            }
-
-            // check whether the project name is valid
-            @SuppressWarnings("unused")
-            final IStatus nameStatus = workspace.validateName(name, IResource.PROJECT);
-            if (!nameStatus.isOK()) {
-                setErrorMessage(nameStatus.getMessage());
-                setPageComplete(false);
-                return;
-            }
-
-            // check whether project already exists
-            final IProject handle = workspace.getRoot().getProject(name);
-            if (handle.exists()) {
-                setErrorMessage("A project with this name already exists.");
-                setPageComplete(false);
-                return;
-            }
-
-            IPath projectLocation = ResourcesPlugin.getWorkspace().getRoot().getLocation().append(name);
-            if (projectLocation.toFile().exists()) {
-                try {
-                    // correct casing
-                    String canonicalPath = projectLocation.toFile().getCanonicalPath();
-                    projectLocation = new Path(canonicalPath);
-                } catch (IOException e) {
-                    JavaPlugin.log(e);
-                }
-
-                String existingName = projectLocation.lastSegment();
-                String newName = null; // fNameGroup.getName();
-                if (!existingName.equals(newName)) {
-                    setErrorMessage(Messages.format("The name of the new project must be ''{0}''", BasicElementLabels.getResourceName(existingName)));
-                    setPageComplete(false);
-                    return;
-                }
-
-            }
-
-            // check whether the base Java package name is legal
-
-            final String location = null;// fLocationGroup.getLocation().toOSString();
-
-            // check whether location is empty
-            if ((location == null) || (location.length() == 0)) {
-                setErrorMessage(null);
-                setMessage("Enter a location for the project.");
-                setPageComplete(false);
-                return;
-            }
-
-            // check whether the location is a syntactically correct path
-            if (!Path.EMPTY.isValidPath(location)) {
-                setErrorMessage("Invalid project contents directory");
-                setPageComplete(false);
-                return;
-            }
-
-            IPath projectPath = Path.fromOSString(location);
-
-            // if (fLocationGroup.isWorkspaceRadioSelected())
-            // projectPath= projectPath.append(fNameGroup.getName());
-
-            if (projectPath.toFile().exists()) {// create from existing source
-                if (Platform.getLocation().isPrefixOf(projectPath)) { // create
-                                                                      // from
-                                                                      // existing
-                                                                      // source
-                                                                      // in
-                                                                      // workspace
-                    if (!Platform.getLocation().equals(projectPath.removeLastSegments(1))) {
-                        setErrorMessage("Projects located in the workspace folder must be direct sub folders of the workspace folder");
-                        setPageComplete(false);
-                        return;
-                    }
-
-                    if (!projectPath.toFile().exists()) {
-                        setErrorMessage("The selected existing source location in the workspace root does not exist");
-                        setPageComplete(false);
-                        return;
-                    }
-                }
-                // } else if (!fLocationGroup.isWorkspaceRadioSelected())
-                // {//create at non existing external location
-                // if (!canCreate(projectPath.toFile())) {
-                // setErrorMessage(NewWizardMessages.NewJavaProjectWizardPageOne_Message_cannotCreateAtExternalLocation);
-                // setPageComplete(false);
-                // return;
-                // }
-                //
-                // // If we do not place the contents in the workspace validate
-                // the
-                // // location.
-                // final IStatus locationStatus=
-                // workspace.validateProjectLocation(handle, projectPath);
-                // if (!locationStatus.isOK()) {
-                // setErrorMessage(locationStatus.getMessage());
-                // setPageComplete(false);
-                // return;
-                // }
-            }
-
-            setPageComplete(true);
-
-            setErrorMessage(null);
-            setMessage(null);
-        }
-
-        // private boolean canCreate(File file) {
-        // while (!file.exists()) {
-        // file= file.getParentFile();
-        // if (file == null)
-        // return false;
-        // }
-        //
-        // return file.canWrite();
-        // }
     }
 
     public void setTemplate(Template template) {
