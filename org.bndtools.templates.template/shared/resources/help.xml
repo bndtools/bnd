@@ -1,0 +1,4 @@
+<form>
+<p>This document will be shown in the selection dialog when your template is highlighted. It must be written using XML and the tags defined by the <a href="http://help.eclipse.org/juno/topic/org.eclipse.platform.doc.isv/reference/api/org/eclipse/ui/forms/widgets/FormText.html">Eclipse FormText control</a>.</p>
+<p>Full HTML syntax is <b>not</b> supported.</p>
+</form>
