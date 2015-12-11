@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
+import aQute.bnd.header.Attrs;
 import aQute.bnd.version.Version;
 
 /**
@@ -44,9 +45,21 @@ public class About {
 	public static Version	CURRENT	= _3_1;
 
 	public static String[]	CHANGES_3_1	= {
-			"The embedded repo is expanded into cnf/cache/<bnd-version> folder to avoid potential conflicts."
+			"The embedded repo is expanded into cnf/cache/<bnd-version> folder to avoid potential conflicts.",
+			"${uri;<uri>[;<base>]}: Add new uri macro that uses the Processor base as base URI",
+			"New properties parser that reports common errors and is faster",
+			"Allow donotcopy to match on path as well as on name",
+			"Require/Provide Capabilities now allow the use of defaults (They were ignored)",
+			"Added an instruction -init, the contents of this instruction will be expanded when the properties are first read",
+			"Improved handling of packages with the use of Bundle-ClassPath",
+			"Ensure the use of loopback when applicable over localhost",
+			"Added a service to prompt, display a message, and/or show error/warnings in the host",
+			"-bnd-require now works",
+			"Added -prepare instruction that can build external 'things' in the build, e.g. typescript or coffeescript",
+			"Added FileSet to libg", "Stand alone bdnrun files", "New macros: base64 and digest for files",
+			"Updated Java 8 compact profiles"
 											};
-	public static String[] CHANGES_3_0 = {
+	public static String[]	CHANGES_3_0	= {
 			"No longer analyzes the packages on the classpath, only information in manifest is used to find out package information",
 			"Added bnd command bnd resolve validate <index.xml> to validate that a repository file is complete",
 			"Extended the resource package with many functions to work easily with resources, capabilities and requirements",
@@ -81,7 +94,7 @@ public class About {
 			"-pom now accepts artifactid, groupid, where, and version properties. General better support for generating POMs",
 			"Added a ${stem;<string>} macro that returns the stem (before the extension) of a file name",
 			"Added a ${thisfile} macro that returns the name of the properties file of the current processor if it exists."
-	};
+											};
 
 	public static String[]	CHANGES_2_4	= {
 			"Added checks for imports from private packages and exports of empty packages. These checks are enabled by -check ALL | (EXPORTS|IMPORTS)*. All is recommended but might break builds",
