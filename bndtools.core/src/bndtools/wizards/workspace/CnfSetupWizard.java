@@ -5,6 +5,11 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectNature;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
@@ -17,6 +22,7 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Display;
 
+import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import bndtools.Plugin;
 import bndtools.preferences.BndPreferences;
@@ -37,7 +43,11 @@ public class CnfSetupWizard extends Wizard {
         setForcePreviousAndNextButtons(true);
         setNeedsProgressMonitor(true);
 
-        confirmPage = new CnfSetupUserConfirmationWizardPage(decision);
+        IPath workspaceLoc = findExistingBndWorkspace();
+        if (workspaceLoc != null)
+            operation = determineNecessaryOperation(workspaceLoc);
+
+        confirmPage = new CnfSetupUserConfirmationWizardPage(workspaceLoc);
         importPage = new CnfImportOrOpenWizardPage();
 
         addPage(confirmPage);
@@ -46,30 +56,62 @@ public class CnfSetupWizard extends Wizard {
         importPage.setWizard(this);
         importPage.setOperation(operation);
 
-        confirmPage.addPropertyChangeListener(new PropertyChangeListener() {
+        confirmPage.addPropertyChangeListener(CnfSetupUserConfirmationWizardPage.PROP_LOCATION, new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 decision = confirmPage.getDecision();
 
-                if (confirmPage.isCreateInEclipseWorkspace())
+                LocationSelection workspaceLoc = confirmPage.getLocation();
+                if (workspaceLoc.eclipseWorkspace)
                     operation = determineNecessaryOperation(true);
                 else
-                    operation = determineNecessaryOperation(new Path(confirmPage.getExternalLocation()));
-
+                    operation = determineNecessaryOperation(new Path(workspaceLoc.externalPath));
                 importPage.setOperation(operation);
                 updateUi();
             }
         });
         importPage.addPropertyChangeListener(CnfImportOrOpenWizardPage.PROP_OPERATION, new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 operation = importPage.getOperation();
                 updateUi();
             }
         });
         templatePage.addPropertyChangeListener(CnfTemplateSelectionWizardPage.PROP_ELEMENT, new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 updateUi();
             }
         });
+    }
+
+    /**
+     * If there are existing bnd projects (defined as having the Bndtools project nature) then return the path to the
+     * cnf folder we should create.
+     */
+    private IPath findExistingBndWorkspace() {
+        IWorkspace ws = ResourcesPlugin.getWorkspace();
+        IProject[] projects = ws.getRoot().getProjects(0); // 0 = ignore hidden projects
+        for (IProject project : projects) {
+            try {
+                IProjectNature nature = project.getNature(Plugin.BNDTOOLS_NATURE);
+                if (nature != null) {
+                    // Found a bnd project!
+                    IPath path = project.getLocation();
+
+                    // Sometimes a project exists but Eclipse doesn't know the path... not much help
+                    if (path != null) {
+                        IPath parent = path.removeLastSegments(1);
+                        return parent.append(Project.BNDCNF);
+                    }
+                }
+            } catch (CoreException e) {
+                Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to query nature for project '" + project.getName() + "'", e));
+            }
+        }
+
+        // No bnd projects found
+        return null;
     }
 
     private void updateUi() {
@@ -110,7 +152,7 @@ public class CnfSetupWizard extends Wizard {
     /**
      * Show the wizard if it needs to be shown (i.e. the cnf project does not exist and the preference to show the
      * wizard has not been disabled). This method is safe to call from a non-UI thread.
-     * 
+     *
      * @param overridePreference
      *            If this parameter is {@code true} then the dialog will be shown irrespective of the workspace
      *            preference.

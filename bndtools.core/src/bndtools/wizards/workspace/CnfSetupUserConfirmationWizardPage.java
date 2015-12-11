@@ -6,7 +6,6 @@ import java.io.File;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.wizard.WizardPage;
@@ -24,32 +23,35 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
-import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import bndtools.Plugin;
 
 public class CnfSetupUserConfirmationWizardPage extends WizardPage {
 
-    public final String PROP_DECISION = "decision";
-    public final String PROP_CREATE_IN_ECLIPSE_WORKSPACE = "createInEclipseWorkspace";
-    public final String PROP_EXTERNAL_LOCATION = "externalLocation";
+    public static final String PROP_DECISION = "decision";
+    public static final String PROP_LOCATION = "location";
 
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
-    private CnfSetupDecision decision;
-    private boolean createInEclipseWorkspace = true;
-    private String externalLocation = "";
+    private CnfSetupDecision decision = CnfSetupDecision.SETUP;
+    private LocationSelection location;
+
     private boolean valid = false;
 
     private Text txtExternalLocation;
     private Button btnBrowseExternalLocation;
 
-    public CnfSetupUserConfirmationWizardPage(CnfSetupDecision decision) {
+    public CnfSetupUserConfirmationWizardPage(IPath existingWorkspace) {
         super(CnfSetupUserConfirmationWizardPage.class.getSimpleName());
-        this.decision = decision;
 
         setMessage(Messages.CnfSetupUserConfirmationWizardPage_this_message);
         setImageDescriptor(Plugin.imageDescriptorFromPlugin("icons/bndtools-wizban.png")); //$NON-NLS-1$
+
+        if (existingWorkspace != null) {
+            location = new LocationSelection(false, existingWorkspace.toString());
+        } else {
+            location = LocationSelection.WORKSPACE;
+        }
     }
 
     @Override
@@ -91,9 +93,9 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
         btnSkip.setSelection(decision == CnfSetupDecision.SKIP);
         btnNever.setSelection(decision == CnfSetupDecision.NEVER);
 
-        btnCreateInEclipseWorkspace.setSelection(createInEclipseWorkspace);
-        btnCreateExternal.setSelection(!createInEclipseWorkspace);
-        txtExternalLocation.setText(externalLocation != null ? externalLocation : "");
+        btnCreateInEclipseWorkspace.setSelection(location.eclipseWorkspace);
+        btnCreateExternal.setSelection(!location.eclipseWorkspace);
+        txtExternalLocation.setText(location.externalPath != null ? location.externalPath : "");
 
         updateEnablement();
         validate();
@@ -125,18 +127,14 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
         Listener locationListener = new Listener() {
             @Override
             public void handleEvent(Event event) {
-                boolean oldCreateIn = createInEclipseWorkspace;
-                String oldExtLoc = externalLocation;
-
-                createInEclipseWorkspace = btnCreateInEclipseWorkspace.getSelection();
-                externalLocation = txtExternalLocation.getText();
+                LocationSelection oldLocation = location;
+                location = new LocationSelection(btnCreateInEclipseWorkspace.getSelection(), txtExternalLocation.getText());
 
                 updateEnablement();
                 validate();
                 getContainer().updateButtons();
 
-                propSupport.firePropertyChange(PROP_CREATE_IN_ECLIPSE_WORKSPACE, oldCreateIn, createInEclipseWorkspace);
-                propSupport.firePropertyChange(PROP_EXTERNAL_LOCATION, oldExtLoc, externalLocation);
+                propSupport.firePropertyChange(PROP_LOCATION, oldLocation, location);
             }
         };
         btnCreateExternal.addListener(SWT.Selection, locationListener);
@@ -180,34 +178,14 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
     }
 
     private void updateEnablement() {
-        txtExternalLocation.setEnabled(!createInEclipseWorkspace);
-        btnBrowseExternalLocation.setEnabled(!createInEclipseWorkspace);
+        txtExternalLocation.setEnabled(!location.eclipseWorkspace);
+        btnBrowseExternalLocation.setEnabled(!location.eclipseWorkspace);
     }
 
     private void validate() {
-        String error = null;
-        String warning = null;
-
-        if (!createInEclipseWorkspace) {
-            if (externalLocation == null || externalLocation.length() == 0)
-                error = "Location must be specified.";
-            else if (!Path.EMPTY.isValidPath(externalLocation))
-                error = "Invalid location.";
-            else {
-                IPath path = new Path(externalLocation);
-                if (!Project.BNDCNF.equals(path.lastSegment())) {
-                    error = "Last path segment must be '" + Project.BNDCNF + "'";
-                } else {
-                    File dir = new File(externalLocation);
-                    if (dir.exists() && !dir.isDirectory())
-                        error = "Location already exists and is not a directory.";
-                }
-            }
-        }
-
+        String error = location.validate();
         valid = error == null;
         setErrorMessage(error);
-        setMessage(warning, WARNING);
     }
 
     @Override
@@ -219,20 +197,24 @@ public class CnfSetupUserConfirmationWizardPage extends WizardPage {
         return decision;
     }
 
-    public boolean isCreateInEclipseWorkspace() {
-        return createInEclipseWorkspace;
+    public LocationSelection getLocation() {
+        return location;
     }
 
-    public String getExternalLocation() {
-        return externalLocation;
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propSupport.addPropertyChangeListener(listener);
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener var0) {
-        propSupport.addPropertyChangeListener(var0);
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propSupport.removePropertyChangeListener(listener);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener var0) {
-        propSupport.removePropertyChangeListener(var0);
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        propSupport.addPropertyChangeListener(propertyName, listener);
+    }
+
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        propSupport.removePropertyChangeListener(propertyName, listener);
     }
 
 }
