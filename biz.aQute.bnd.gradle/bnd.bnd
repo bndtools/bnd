@@ -23,7 +23,6 @@ Bundle-Description: The bnd gradle plugin.
   embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}
 
 #
-# The groovy compiler should handle the compilation ...
+# The groovy compiler must be run from the gradle build
 #
-
- -fixupmessages: "Unused Private*aQute.bnd.gradle" 
+-fixupmessages.groovy: "Unused Private*aQute.bnd.gradle";replace:="The groovy classes must be compiled with the gradle build."
