@@ -134,10 +134,8 @@ public interface Agent {
 	 * Updates a single bundle by id in the framework. The SHA identifies the
 	 * file and should be retrievable through {@link Supervisor#getFile(String)}
 	 *
-	 * @param location
-	 *            the bundle location
-	 * @param sha
-	 *            the sha of the bundle
+	 * @param id the bundle id
+	 * @param sha the sha of the bundle
 	 * @return any errors that occurred
 	 */
 	String update(long id, String sha) throws Exception;
