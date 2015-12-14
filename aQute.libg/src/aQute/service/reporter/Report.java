@@ -1,6 +1,6 @@
 package aQute.service.reporter;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * A base interface to represent the state of a work in progress.
@@ -18,7 +18,7 @@ public interface Report {
 		public String	reference;
 		public String	methodName;
 		/**
-		 * @see SetLocation#details(Object)
+		 * @see Reporter.SetLocation#details(Object)
 		 */
 		public Object	details;
 		public int		length;
