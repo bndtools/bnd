@@ -21,14 +21,16 @@ package aQute.bnd.annotation.headers;
  * system commands, for obvious reason they are excluded). As a convenience, a
  * number of local macros are set from the context:
  * <ul>
- * <li><code>${@package}</code> – The package name
- * <li><code>${@class}</code> – The class name to which this macro is applied to
- * <li><code>${@class-short}</code> – The short class name to which this macro
- * is applied to
- * <li><code>${@version}</code> – The package version if set
- * <li><code>${@frange;version[;isProvider]}</code> – A macro to create a filter
- * expression on a version based on the semantic versioning rules. Default is
- * consumer, specify true for the isProvider to get provider semantics.
+ * <li><code>${&#64;package}</code> – The package name
+ * <li><code>${&#64;class}</code> – The class name to which this macro is
+ * applied to
+ * <li><code>${&#64;class-short}</code> – The short class name to which this
+ * macro is applied to
+ * <li><code>${&#64;version}</code> – The package version if set
+ * <li><code>${&#64;frange;version[;isProvider]}</code> – A macro to create a
+ * filter expression on a version based on the semantic versioning rules.
+ * Default is consumer, specify true for the isProvider to get provider
+ * semantics.
  * </ul>
  * <h2>Coloring</h2> Annotations can only be applied once, making it impossible
  * to add for example two Provide-Capability headers on the same type. It also
@@ -44,9 +46,9 @@ package aQute.bnd.annotation.headers;
  * 
  * <pre>
  * public class Webserver {
- *   &#64;RequireCapability(ns="osgi.extender", name="webserver", version="${@version}")
+ *   &#64;RequireCapability(ns="osgi.extender", name="webserver", version="${&#64;version}")
  *   &#64;interface Require {}
- *   &#64;ProvideCapability(ns="osgi.extender", filter="(&(osgi.extender=webserver)${frange;${@version}))")
+ *   &#64;ProvideCapability(ns="osgi.extender", filter="(&(osgi.extender=webserver)${&#64;frange;${&#64;version}}))")
  *   &#64;interface Provide {}
  *   ...
  * }
