@@ -16,7 +16,7 @@ public final class URIUtil {
 	 * 
 	 * @param baseURI
 	 * @param reference
-	 * @return
+	 * @return the resolved {@code URI}
 	 * @throws URISyntaxException
 	 */
 	public static URI resolve(URI baseURI, String reference) throws URISyntaxException {

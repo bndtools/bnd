@@ -26,14 +26,23 @@ import aQute.lib.settings.Settings;
 /**
  * bnd has a builtin delegated authentication mechanism, see {@link Settings}.
  * This URL Connection Handler plugin will use this information to add signing
- * information to the URL. <p> We add a {@link #X_A_QUTE_AUTHORIZATION} header
- * with a formatted string that contains the email of the user, the machine name
- * (for documentation), the public key, and a signed date header (SHA1WithRSA).
- * This information can be parameterized with the following plugin properties or
- * the default settings can be used. <ul> <li>{@link URLConnectionHandler#MATCH}
- * — URL matcher <li>email — Email address of the account holder <li>privateKey
- * — Hex private RSA key <li>publicKey — Hex public RSA key <li>machine —
- * Machine name (default the internet name of this machine </ul> T
+ * information to the URL.
+ * <p>
+ * We add a {@link #X_A_QUTE_AUTHORIZATION} header with a formatted string that
+ * contains the email of the user, the machine name (for documentation), the
+ * public key, and a signed date header (SHA1WithRSA). This information can be
+ * parameterized with the following plugin properties or the default settings
+ * can be used.
+ * <ul>
+ * <li>{@link aQute.bnd.service.url.URLConnectionHandler#MATCH MATCH} — URL
+ * matcher
+ * <li>{@code email} — Email address of the account holder
+ * <li>{@code privateKey} — Hex private RSA key
+ * <li>{@code publicKey} — Hex public RSA key
+ * <li>{@code machine} — Machine name (defaults to the internet name of this
+ * machine as returned by invoking {@link InetAddress#getHostName()} on the
+ * {@code InetAddress} returned by {@link InetAddress#getLocalHost()})
+ * </ul>
  */
 @aQute.bnd.annotation.plugin.BndPlugin(name = "url.bnd.authentication", parameters = BndAuthentication.Config.class)
 public class BndAuthentication extends DefaultURLConnectionHandler {

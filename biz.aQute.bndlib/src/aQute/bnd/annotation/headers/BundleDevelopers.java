@@ -1,19 +1,30 @@
 package aQute.bnd.annotation.headers;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Maven defines developers and developers in the POM. This annotation will
- * generate a (not standardized by OSGi) Bundle-Developers header. <p> A deve
- * <p> This annotation can be used directly on a type or it can 'color' an
+ * Maven defines developers in the POM. This annotation will generate a (not
+ * standardized by OSGi) Bundle-Developers header.
+ * <p>
+ * This annotation can be used directly on a type or it can 'color' an
  * annotation. This coloring allows custom annotations that define a specific
  * developer. For example:
- * <pre> @BundleContributor("Peter.Kriens@aQute.biz") @interface pkriens
- * {} @pkriens public class MyFoo { ... } </pre> Duplicates are removed before
- * the header is generated and the coloring does not create an entry in the
- * header, only an annotation on an actual type is counted. This makes it
- * possible to make a library of developers without then adding them all to the
- * header. <p> {@see https://maven.apache.org/pom.html#Developers}
+ * 
+ * <pre>
+ *  &#64;BundleContributor("Peter.Kriens@aQute.biz") @interface pkriens
+ * {} @pkriens public class MyFoo { ... }
+ * </pre>
+ * 
+ * Duplicates are removed before the header is generated and the coloring does
+ * not create an entry in the header, only an annotation on an actual type is
+ * counted. This makes it possible to make a library of developers without then
+ * adding them all to the header.
+ * <p>
+ * See <a href="https://maven.apache.org/pom.html#Developers">the Maven
+ * documentation</a> for more information.
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({

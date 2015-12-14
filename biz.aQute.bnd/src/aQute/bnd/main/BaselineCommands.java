@@ -483,7 +483,9 @@ public class BaselineCommands {
 	}
 
 	/**
-	 * @param exports @param out @throws IOException
+	 * @param infos
+	 * @param out
+	 * @throws IOException
 	 */
 	public void doExportPackage(Info[] infos, PrintStream out) throws IOException {
 

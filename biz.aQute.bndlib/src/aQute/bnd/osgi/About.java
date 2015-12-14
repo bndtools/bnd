@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
-import aQute.bnd.header.Attrs;
 import aQute.bnd.version.Version;
 
 /**
@@ -23,9 +22,10 @@ import aQute.bnd.version.Version;
  * the work during build up so that it is cheap to use. The Resource's can be
  * used to iterate over the names and later read the resources when needed.
  * Clazz, provides a parser for the class files. This will be used to define the
- * imports and exports. Headers are translated to {@link Parameters} that
- * contains all headers (the order is maintained). The attribute of each header
- * are maintained in an {@link Attrs}. Each additional file in a header
+ * imports and exports. Headers are translated to
+ * {@link aQute.bnd.header.Parameters Parameter} that contains all headers (the
+ * order is maintained). The attribute of each header are maintained in an
+ * {@link aQute.bnd.header.Attrs Attrs}. Each additional file in a header
  * definition will have its own entry (only native code does not work this way).
  * The ':' of directives is considered part of the name. This allows attributes
  * and directives to be maintained in the Attributes map. An important aspect of
@@ -80,7 +80,7 @@ public class About {
 			"Performance improvements", "SearchableRepo now provides the browse URL", "Bindex now supports DS > 1.2",
 			"Allowing embedded activators to start before the bundles are started (they normally started after all bundles were started)",
 			"Dropping URLs to JPM from Linux failed due to mucky URLs (newlines!!)",
-			"No longer a warning when you import from yourself and there is no export metadata (we’re building it!)",
+															"No longer a warning when you import from yourself and there is no export metadata (we’re building it!)",
 			"Additional conversions in converter; Dictionary, URI/L cleanup",
 			"Force the current working directory to be the project base during launching",
 			"Version mismatch between pacakge(-)info(.java) and manifest are now not taking qualifier into account ",

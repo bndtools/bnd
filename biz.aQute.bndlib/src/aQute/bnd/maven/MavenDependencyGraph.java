@@ -1,12 +1,22 @@
 package aQute.bnd.maven;
 
-import java.net.*;
-import java.util.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import javax.xml.parsers.*;
-import javax.xml.xpath.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class MavenDependencyGraph {
 	final static DocumentBuilderFactory	docFactory		= DocumentBuilderFactory.newInstance();
@@ -77,10 +87,6 @@ public class MavenDependencyGraph {
 	public void addRepository(URL repository) {
 		repositories.add(repository);
 	}
-
-	/**
-	 * @param xp @param node @param d @throws XPathExpressionException
-	 */
 
 	public Artifact getArtifact(String groupId, String artifactId, String version) {
 		for (URL repository : repositories) {

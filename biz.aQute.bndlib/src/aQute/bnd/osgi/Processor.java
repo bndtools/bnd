@@ -2087,9 +2087,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Set the current command thread. This must be balanced with the {@link
-	 * #end(Processor)} method. The method returns the previous command owner or
-	 * null. The command owner will receive all warnings and error reports.
+	 * Set the current command thread. This must be balanced with the
+	 * {@link #endHandleErrors(Processor)} method. The method returns the
+	 * previous command owner or null. The command owner will receive all
+	 * warnings and error reports.
 	 */
 
 	protected Processor beginHandleErrors(String message) {

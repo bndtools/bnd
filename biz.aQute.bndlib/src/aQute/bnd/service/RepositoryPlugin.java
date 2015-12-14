@@ -1,10 +1,13 @@
 package aQute.bnd.service;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
 
-import aQute.bnd.version.*;
+import aQute.bnd.version.Version;
 
 /**
  * A Repository Plugin abstract a bnd repository. This interface allows bnd to
@@ -24,8 +27,10 @@ public interface RepositoryPlugin {
 		 * The <b>SHA1</b> digest of the artifact to put into the repository.
 		 * When specified the digest of the <b>fetched</b> artifact will be
 		 * calculated and verified against this digest, <b>before</b> putting
-		 * the artifact into the repository. </p> An exception is thrown if the
-		 * specified digest and the calculated digest do not match.
+		 * the artifact into the repository.
+		 * </p>
+		 * An exception is thrown if the specified digest and the calculated
+		 * digest do not match.
 		 */
 		public byte[] digest = null;
 
@@ -70,21 +75,24 @@ public interface RepositoryPlugin {
 	}
 
 	/**
-	 * Put an artifact (from the InputStream) into the repository.<br/> <br/>
-	 * There is NO guarantee that the artifact on the input stream has not been
-	 * modified after it's been put in the repository since that is dependent on
-	 * the implementation of the repository (see {@link
-	 * RepositoryPlugin.PutOptions#allowArtifactChange}). @param stream The
-	 * input stream with the artifact @param options The put options. See {@link
-	 * RepositoryPlugin.PutOptions}, can be {@code null}, which will then take
-	 * the default options like new PutOptions(). @return The result of the put,
-	 * never null. See {@link RepositoryPlugin.PutResult} @throws Exception When
-	 * the repository root directory doesn't exist, when the repository is
-	 * read-only, when the specified checksum doesn't match the checksum of the
-	 * fetched artifact (see {@link RepositoryPlugin.PutOptions#digest}), when
-	 * the implementation wants to modify the artifact but isn't allowed (see
-	 * {@link RepositoryPlugin.PutOptions#allowArtifactChange} ), or when
-	 * another error has occurred.
+	 * Put an artifact (from the InputStream) into the repository.<br/>
+	 * <br/>
+	 * There is <b>no guarantee</b> that the artifact on the input stream has
+	 * not been modified after it's been put in the repository since that is
+	 * dependent on the implementation of the repository.
+	 * 
+	 * @param stream The input stream with the artifact
+	 * @param options The put options. See {@link RepositoryPlugin.PutOptions},
+	 *            can be {@code null}, which will then take the default options
+	 *            like new PutOptions().
+	 * @return The result of the put, never null. See
+	 *         {@link RepositoryPlugin.PutResult}
+	 * @throws Exception When the repository root directory doesn't exist, when
+	 *             the repository is read-only, when the specified checksum
+	 *             doesn't match the checksum of the fetched artifact (see
+	 *             {@link RepositoryPlugin.PutOptions#digest}), when the
+	 *             implementation wants to modify the artifact but isn't
+	 *             allowed, or when another error has occurred.
 	 */
 	PutResult put(InputStream stream, PutOptions options) throws Exception;
 

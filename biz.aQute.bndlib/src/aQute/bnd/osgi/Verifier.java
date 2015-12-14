@@ -1000,8 +1000,9 @@ public class Verifier extends Processor {
 	}
 
 	/**
-	 * @param name
-	 * @return
+	 * @param name the {@code String} to test
+	 * @return {@code true} if the given {@code name} matches a Bundle Symbolic
+	 *         Name, otherwise {@code false}
 	 */
 	public static boolean isBsn(String name) {
 		return SYMBOLICNAME.matcher(name).matches();
@@ -1031,9 +1032,10 @@ public class Verifier extends Processor {
 	 *         value ::= &lt;see text&gt;
 	 * </pre>
 	 * 
-	 * @param expr
-	 * @param index
-	 * @return
+	 * @param expr the {@code String} to test
+	 * @param index the index within {@code expr} to start with
+	 * @return the index of the last character within {@code expr} that was
+	 *         evaluated
 	 */
 
 	public static int verifyFilter(String expr, int index) {
@@ -1225,12 +1227,10 @@ public class Verifier extends Processor {
 	/**
 	 * Verify the checksums from the manifest against the real thing.
 	 * 
-	 * @param all
-	 *            if each resources must be digested
-	 * @return true if ok
+	 * @param all {@code true} if each resource must be digested, otherwise
+	 *            {@code false}
 	 * @throws Exception
 	 */
-
 	public void verifyChecksums(boolean all) throws Exception {
 		Manifest m = dot.getManifest();
 		if (m == null || m.getEntries().isEmpty()) {
@@ -1270,8 +1270,9 @@ public class Verifier extends Processor {
 	/**
 	 * Verify the EXTENDED_S syntax
 	 * 
-	 * @param key
-	 * @return
+	 * @param key the {@code String} to test
+	 * @return {@code true} if the given {@code String} matches the EXTENDED_S
+	 *         syntax, otherwise {@code false}
 	 */
 	public static boolean isExtended(String key) {
 		if (key == null)
@@ -1283,8 +1284,9 @@ public class Verifier extends Processor {
 	/**
 	 * Verify the ARGUMENT_S syntax
 	 * 
-	 * @param key
-	 * @return
+	 * @param arg the {@code String} to test
+	 * @return {@code true} if the given {@code String} matches the ARGUMENT_S
+	 *         syntax, otherwise {@code false}
 	 */
 	public static boolean isArgument(String arg) {
 		return arg != null && ARGUMENT_P.matcher(arg).matches();
@@ -1293,13 +1295,21 @@ public class Verifier extends Processor {
 	/**
 	 * Verify the QUOTEDSTRING syntax
 	 * 
-	 * @param key
-	 * @return
+	 * @param s the {@code String} to test
+	 * @return {@code true} if the given {@code String} matches the QUOTEDSTRING
+	 *         syntax, otherwise {@code false}
 	 */
 	public static boolean isQuotedString(String s) {
 		return s != null && QUOTEDSTRING_P.matcher(s).matches();
 	}
 
+	/**
+	 * Verify the VERSION_RANGE_S syntax
+	 * 
+	 * @param range the {@code String} to test
+	 * @return {@code true} if the given {@code String} matches the
+	 *         VERSION_RANGE_S syntax, otherwise {@code false}
+	 */
 	public static boolean isVersionRange(String range) {
 		return range != null && VERSIONRANGE_P.matcher(range).matches();
 	}

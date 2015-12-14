@@ -668,7 +668,8 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * @return
+	 * @return {@code true} if the {@code -resourceonly} instruction is set,
+	 *         {@code false} otherwise
 	 */
 	boolean isResourceOnly() {
 		return isTrue(getProperty(RESOURCEONLY));
@@ -1869,7 +1870,10 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * @param packageName @param exports @param uses @param imports
+	 * @param packageRef
+	 * @param exports
+	 * @param uses
+	 * @param imports
 	 */
 	protected void doUses(PackageRef packageRef, Packages exports, Map<PackageRef,List<PackageRef>> uses,
 			Packages imports) {
