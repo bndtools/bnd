@@ -668,7 +668,8 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * @return
+	 * @return {@code true} if the {@code -resourceonly} instruction is set,
+	 *         {@code false} otherwise
 	 */
 	boolean isResourceOnly() {
 		return isTrue(getProperty(RESOURCEONLY));
