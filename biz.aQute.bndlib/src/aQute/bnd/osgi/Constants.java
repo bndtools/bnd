@@ -13,8 +13,10 @@ public interface Constants {
 	 * Defined in OSGi
 	 */
 	/**
-	 * @syntax Bundle-ActivationPolicy ::= policy ( ’;’ directive )* policy ::=
-	 *         ’lazy’
+	 * <pre>
+	 * Bundle-ActivationPolicy ::= policy ( ’;’ directive )*
+	 * policy ::= ’lazy’
+	 * </pre>
 	 */
 	String	BND_ADDXMLTOTEST					= "Bnd-AddXMLToTest";
 	String	BUNDLE_ACTIVATIONPOLICY				= "Bundle-ActivationPolicy";
