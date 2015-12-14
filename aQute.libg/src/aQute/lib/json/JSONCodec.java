@@ -25,20 +25,29 @@ import java.util.regex.Pattern;
  * This is a simple JSON Coder and Encoder that uses the Java type system to
  * convert data objects to JSON and JSON to (type safe) Java objects. The
  * conversion is very much driven by classes and their public fields. Generic
- * information, when present is taken into account. </p> Usage patterns to
- * encode: <pre> JSONCoder codec = new JSONCodec(); // assert "1".equals(
+ * information, when present is taken into account.
+ * </p>
+ * Usage patterns to encode:
+ * 
+ * <pre>
+ *  JSONCoder codec = new JSONCodec(); // assert "1".equals(
  * codec.enc().to().put(1).toString()); assert "[1,2,3]".equals(
  * codec.enc().to().put(Arrays.asList(1,2,3).toString()); Map m = new HashMap();
  * m.put("a", "A"); assert "{\"a\":\"A\"}".equals(
  * codec.enc().to().put(m).toString()); static class D { public int a; } D d =
  * new D(); d.a = 41; assert "{\"a\":41}".equals(
- * codec.enc().to().put(d).toString()); </pre> It is possible to redirect the
- * encoder to another output (default is a string). See {@link
- * Encoder#to()},{@link Encoder#to(File))}, {@link Encoder#to(OutputStream)},
- * {@link Encoder#to(Appendable))}. To reset the string output call {@link
- * Encoder#to()}. <p/> This Codec class can be used in a concurrent environment.
- * The Decoders and Encoders, however, must only be used in a single thread.
- * <p/> Will now use hex for encoding byte arrays
+ * codec.enc().to().put(d).toString());
+ * </pre>
+ * 
+ * It is possible to redirect the encoder to another output (default is a
+ * string). See {@link Encoder#to()},{@link Encoder#to(File)},
+ * {@link Encoder#to(OutputStream)}, {@link Encoder#to(Appendable)}. To reset
+ * the string output call {@link Encoder#to()}.
+ * <p/>
+ * This Codec class can be used in a concurrent environment. The Decoders and
+ * Encoders, however, must only be used in a single thread.
+ * <p/>
+ * Will now use hex for encoding byte arrays
  */
 public class JSONCodec {
 	final static String START_CHARACTERS = "[{\"-0123456789tfn";
@@ -99,11 +108,12 @@ public class JSONCodec {
 		h.encode(app, object, visited);
 	}
 
-	/*
+	/**
 	 * This method figures out which handler should handle the type specific
 	 * stuff. It returns a handler for each type. If no appropriate handler
 	 * exists, it will create one for the given type. There are actually quite a
 	 * lot of handlers since Java is not very object oriented.
+	 * 
 	 * @param type
 	 * @return
 	 * @throws Exception
