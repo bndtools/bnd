@@ -6,6 +6,7 @@
 
 category: bbb/OSGi Standard Templates
 category-enroute: ccc/OSGi enRoute
+category-bndtools: mmm/Bndtools
 
 project-template-component:\
 	org.bndtools.template; org.bndtools.template=project;\
@@ -24,6 +25,15 @@ project-template-api:\
 		dir=templates/api;\
 		icon="${api-icon}";\
 		help=api-help.xml
+
+project-template-integration-test:\
+	org.bndtools.template; org.bndtools.template=project;\
+		name=Integration Testing;\
+		category=${category-bndtools};\
+		ranking:Double=999;\
+		dir=templates/integration-test;\
+		help=integration-test-help.xml;\
+		icon="${integration-test-icon}"
 
 launch-template-felix:\
 	org.bndtools.template; org.bndtools.template=bndrun;\
@@ -64,14 +74,17 @@ launch-template-enroute-jpm:\
 Provide-Capability: \
 	${project-template-component},\
 	${project-template-api},\
+	${project-template-integration-test},\
 	${launch-template-felix},\
 	${launch-template-enroute-base},\
 	${launch-template-enroute-debug},\
 	${launch-template-enroute-jpm}
 
 dataurl: data:image/gif;base64
+
 api-icon: ${dataurl},${cat;icons/script.base64.txt}
 component-icon: ${dataurl},${cat;icons/cog.base64.txt}
+integration-test-icon: ${dataurl},${cat;icons/junit.base64.txt}
 enroute-icon: ${dataurl},${cat;icons/enroute-bw-16x16.base64.txt}
 felix-icon: ${dataurl},${cat;icons/felix.base64.txt}
 
