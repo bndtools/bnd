@@ -68,10 +68,13 @@ import aQute.libg.gzip.GZipUtils;
 import aQute.service.reporter.Reporter;
 
 /**
- * Abstract base class for indexed repositories. <p> The repository
- * implementation is read-only by default. To implement a writable repository,
- * subclasses should override {@link #canWrite()} and {@link #put(Jar)}. @author
- * Neil Bartlett
+ * Abstract base class for indexed repositories.
+ * <p>
+ * The repository implementation is read-only by default. To implement a
+ * writable repository, subclasses should override {@link #canWrite()} and
+ * {@link #put(InputStream, aQute.bnd.service.RepositoryPlugin.PutOptions)}.
+ * 
+ * @author Neil Bartlett
  */
 @SuppressWarnings("synthetic-access")
 public abstract class AbstractIndexedRepo
