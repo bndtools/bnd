@@ -115,7 +115,7 @@ public class JSONCodec {
 	 * lot of handlers since Java is not very object oriented.
 	 * 
 	 * @param type
-	 * @return
+	 * @return a {@code Handler} appropriate for {@code type}
 	 * @throws Exception
 	 */
 	Handler getHandler(Type type, Class< ? > actual) throws Exception {
