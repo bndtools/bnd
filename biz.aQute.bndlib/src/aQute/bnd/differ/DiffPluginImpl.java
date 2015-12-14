@@ -1,28 +1,48 @@
 package aQute.bnd.differ;
 
-import static aQute.bnd.service.diff.Delta.*;
+import static aQute.bnd.service.diff.Delta.CHANGED;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
-import java.util.regex.*;
+import java.io.File;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.About;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.bnd.service.diff.*;
+import aQute.bnd.osgi.Instructions;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.service.diff.Differ;
+import aQute.bnd.service.diff.Tree;
 import aQute.bnd.service.diff.Tree.Data;
-import aQute.bnd.version.*;
-import aQute.lib.collections.*;
-import aQute.lib.hex.*;
-import aQute.lib.io.*;
-import aQute.libg.cryptography.*;
+import aQute.bnd.service.diff.Type;
+import aQute.bnd.version.Version;
+import aQute.lib.collections.ExtList;
+import aQute.lib.hex.Hex;
+import aQute.lib.io.IO;
+import aQute.libg.cryptography.Digester;
+import aQute.libg.cryptography.SHA1;
 
 /**
  * This Diff Plugin Implementation will compare JARs for their API (based on the
  * Bundle Class Path and exported packages), the Manifest, and the resources.
- * The Differences are represented in a {@link Diff} tree.
+ * The differences are represented in a {@link aQute.bnd.service.diff.Diff Diff}
+ * tree.
  */
 public class DiffPluginImpl implements Differ {
 
@@ -65,8 +85,7 @@ public class DiffPluginImpl implements Differ {
 	Instructions localIgnore = null;
 
 	/**
-	 * @see aQute.bnd.service.diff.Differ#diff(aQute.lib.resource.Jar,
-	 * aQute.lib.resource.Jar)
+	 * @see aQute.bnd.service.diff.Differ#tree(aQute.bnd.osgi.Jar)
 	 */
 	public Tree tree(File newer) throws Exception {
 		Jar jnewer = new Jar(newer);
@@ -79,8 +98,7 @@ public class DiffPluginImpl implements Differ {
 	}
 
 	/**
-	 * @see aQute.bnd.service.diff.Differ#diff(aQute.lib.resource.Jar,
-	 * aQute.lib.resource.Jar)
+	 * @see aQute.bnd.service.diff.Differ#tree(aQute.bnd.osgi.Jar)
 	 */
 	public Tree tree(Jar newer) throws Exception {
 		Analyzer anewer = new Analyzer();
@@ -99,9 +117,12 @@ public class DiffPluginImpl implements Differ {
 	}
 
 	/**
-	 * Create an element representing a bundle from the Jar. @param infos @param
-	 * jar The Jar to be analyzed @return the elements that should be
-	 * compared @throws Exception
+	 * Create an element representing a bundle from the Jar.
+	 * 
+	 * @param infos
+	 * @param jar The Jar to be analyzed
+	 * @return the elements that should be compared
+	 * @throws Exception
 	 */
 	private Element bundleElement(Analyzer analyzer) throws Exception {
 		List<Element> result = new ArrayList<Element>();
@@ -117,8 +138,11 @@ public class DiffPluginImpl implements Differ {
 	}
 
 	/**
-	 * Create an element representing all resources in the JAR @param
-	 * jar @return @throws Exception
+	 * Create an element representing all resources in the JAR
+	 * 
+	 * @param jar
+	 * @return the created {@code Element}
+	 * @throws Exception
 	 */
 	static Pattern META_INF_P = Pattern.compile("META-INF/([^/]+\\.(MF|SF|DSA|RSA))|(SIG-.*)");
 
@@ -186,9 +210,12 @@ public class DiffPluginImpl implements Differ {
 	}
 
 	/**
-	 * Create an element for each manifest header. There are {@link
-	 * #IGNORE_HEADERS} and {@link #MAJOR_HEADERS} that will be treated
-	 * differently. @param manifest @return
+	 * Create an element for each manifest header. There are
+	 * {@link #IGNORE_HEADERS} and {@link #MAJOR_HEADERS} that will be treated
+	 * differently.
+	 * 
+	 * @param manifest
+	 * @return the created {@code Element}
 	 */
 
 	private Element manifestElement(Manifest manifest) {
