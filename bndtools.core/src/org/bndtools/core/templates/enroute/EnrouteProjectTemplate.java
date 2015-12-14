@@ -60,6 +60,7 @@ public class EnrouteProjectTemplate implements Template, IExecutableExtension {
     }
 
     private String name;
+    private String category;
     private String description;
     private int priority = 0;
 
@@ -70,6 +71,9 @@ public class EnrouteProjectTemplate implements Template, IExecutableExtension {
     @Override
     public void setInitializationData(IConfigurationElement config, String propertyName, Object data) throws CoreException {
         name = config.getAttribute("name");
+        category = config.getAttribute("category");
+        if (category == null)
+            category = "Uncategorised";
         description = String.format("from %s (installed plug-in)", config.getContributor().getName());
 
         RegistryContributor contributor = (RegistryContributor) config.getContributor();
@@ -110,7 +114,7 @@ public class EnrouteProjectTemplate implements Template, IExecutableExtension {
 
     @Override
     public String getCategory() {
-        return "ccc/OSGi enRoute";
+        return category;
     }
 
     @Override
