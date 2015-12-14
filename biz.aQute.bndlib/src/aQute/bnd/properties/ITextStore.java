@@ -1,10 +1,17 @@
 package aQute.bnd.properties;
 
 /**
- * Interface for storing and managing text. <p> Provides access to the stored
- * text and allows to manipulate it. </p> <p> Clients may implement this
- * interface or use {@link org.eclipse.jface.text.GapTextStore} or {@link
- * org.eclipse.jface.text.CopyOnWriteTextStore}. </p>
+ * Interface for storing and managing text.
+ * <p>
+ * Provides access to the stored text and allows to manipulate it.
+ * </p>
+ * <p>
+ * Clients may implement this interface or use <a href=
+ * "http://help.eclipse.org/luna/rtopic/org.eclipse.platform.doc.isv/reference/api/org/eclipse/jface/text/GapTextStore.html">
+ * {@code GapTextStore}</a> or <a href=
+ * "http://help.eclipse.org/luna/rtopic/org.eclipse.platform.doc.isv/reference/api/org/eclipse/jface/text/CopyOnWriteTextStore.html">
+ * {@code CopyOnWriteTextStore}</a>.
+ * </p>
  */
 public interface ITextStore {
 
