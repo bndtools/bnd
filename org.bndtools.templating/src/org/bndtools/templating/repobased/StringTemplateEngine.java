@@ -100,12 +100,16 @@ public class StringTemplateEngine implements TemplateEngine {
             if (settings.ignore == null || !settings.ignore.matches(sourcePath)) {
                 if (settings.preprocessMatch.matches(sourcePath)) {
                     Resource resource = inputs.get(sourcePath);
-                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getContent(), resource.getTextEncoding()))) {
-                        String line = reader.readLine();
-                        while (line != null) {
-                            collectTemplateParamNames(names, line, settings);
-                            line = reader.readLine();
+                    if (resource != null) {
+                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getContent(), resource.getTextEncoding()))) {
+                            String line = reader.readLine();
+                            while (line != null) {
+                                collectTemplateParamNames(names, line, settings);
+                                line = reader.readLine();
+                            }
                         }
+                    } else {
+                        System.out.println("NULL resource for sourcePath=" + sourcePath);
                     }
                 }
             }

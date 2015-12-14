@@ -154,7 +154,7 @@ public class CapabilityBasedTemplate implements Template {
         try (JarInputStream in = new JarInputStream(new FileInputStream(bundleFile))) {
             JarEntry jarEntry = in.getNextJarEntry();
             while (jarEntry != null) {
-                String entryPath = jarEntry.getName();
+                String entryPath = jarEntry.getName().trim();
                 if (!entryPath.endsWith("/")) { //ignore directory entries
                     if (entryPath.startsWith(dir)) {
                         String relativePath = entryPath.substring(dir.length());
