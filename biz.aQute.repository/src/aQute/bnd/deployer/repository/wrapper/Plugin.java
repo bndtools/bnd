@@ -1,5 +1,6 @@
 package aQute.bnd.deployer.repository.wrapper;
 
+import java.io.Closeable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,7 +24,7 @@ import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
-public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, RegistryDonePlugin, Repository {
+public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, RegistryDonePlugin, Repository, Closeable {
 
 	private Registry				registry;
 	private Config					config;
@@ -126,6 +127,13 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 			e.printStackTrace();
 			throw e;
 		}
+	}
+
+	public void close() throws java.io.IOException {
+		if (this.wrapper == null) {
+			return;
+		}
+		this.wrapper.close();
 	}
 
 	FilterParser fp = new FilterParser();
