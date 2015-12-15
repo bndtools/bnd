@@ -45,7 +45,6 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
     private final ProjectNameGroup nameGroup = new ProjectNameGroup();
     private final ProjectLocationGroup locationGroup = new ProjectLocationGroup("Location");
     private final ProjectLayoutGroup layoutGroup = new ProjectLayoutGroup("Project Layout");
-    @SuppressWarnings("unused")
     private Template template;
 
     NewBndProjectWizardPageOne() {
