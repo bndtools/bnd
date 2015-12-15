@@ -84,12 +84,12 @@ git push origin master a.b.c.REL
 for the build to finish and be successful.
 * Lock the Cloudbees build so that it is kept forever, and set the build information to
 `Bndtools a.b.c.REL`
-* Download a ZIP file with the relevant archived artifacts from
-https://bndtools.ci.cloudbees.com/job/bndtools.master/lastSuccessfulBuild/artifact/build/generated/bndtools-latest.zip
+* Download the ZIP file [bndtools-latest.zip][5] from Cloudbees.
 * Create a new a.b.c version in [Bintray][1].
 * Unpack the ZIP file and store the contents in the a.b.c version at [Bintray][1].
 * Also update the latest version at [Bintray][1] with the content of the ZIP file.
-* Add the `org.bndtools.templates.*` bundles from the ZIP file to [Bundle-hub][3].
+* Add the `org.bndtools.templates.*` bundles from the [release repo][4] on Cloudbees
+to [Bundle-hub][3].
 
 * Update the versions for the next development cycle in the file `cnf/build.bnd`:
 
@@ -111,3 +111,5 @@ git push origin master a.d.0.DEV
 [1]: https://bintray.com/bndtools/bndtools/update/view
 [2]: https://bndtools.ci.cloudbees.com/
 [3]: https://github.com/bndtools/bundle-hub
+[4]: https://bndtools.ci.cloudbees.com/job/bndtools.master/lastSuccessfulBuild/artifact/build/releaserepo/
+[5]: https://bndtools.ci.cloudbees.com/job/bndtools.master/lastSuccessfulBuild/artifact/build/generated/bndtools-latest.zip
