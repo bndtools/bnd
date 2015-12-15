@@ -18,8 +18,11 @@ p2 = bndtools.api, \
     org.bndtools.headless.build.plugin.gradle, \
     org.bndtools.versioncontrol.ignores.manager, \
     org.bndtools.versioncontrol.ignores.plugin.git, \
-    org.bndtools.templating, \
+    org.bndtools.templating
+
+# Template projects which are not part of the p2 feature
+templates = \
     org.bndtools.templates.osgi, \
     org.bndtools.templates.template
 
--dependson: ${p2}
+-dependson: ${p2}, ${templates}
