@@ -1,24 +1,49 @@
 package aQute.lib.deployer;
 
-import java.io.*;
-import java.security.*;
-import java.util.*;
-import java.util.jar.*;
-import java.util.regex.*;
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Instruction;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.Actionable;
+import aQute.bnd.service.Plugin;
+import aQute.bnd.service.Refreshable;
+import aQute.bnd.service.Registry;
+import aQute.bnd.service.RegistryPlugin;
+import aQute.bnd.service.RepositoryListenerPlugin;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
-import aQute.bnd.version.*;
-import aQute.lib.collections.*;
-import aQute.lib.hex.*;
-import aQute.lib.io.*;
-import aQute.lib.json.*;
-import aQute.lib.persistentmap.*;
-import aQute.libg.command.*;
-import aQute.libg.cryptography.*;
-import aQute.libg.reporter.*;
-import aQute.service.reporter.*;
+import aQute.bnd.version.Version;
+import aQute.lib.collections.SortedList;
+import aQute.lib.hex.Hex;
+import aQute.lib.io.IO;
+import aQute.lib.json.JSONCodec;
+import aQute.lib.persistentmap.PersistentMap;
+import aQute.libg.command.Command;
+import aQute.libg.cryptography.SHA1;
+import aQute.libg.cryptography.SHA256;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.service.reporter.Reporter;
 
 /**
  * A FileRepo is the primary and example implementation of a repository based on
@@ -751,8 +776,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	}
 
 	public void close() throws IOException {
-		if (inited)
+		if (inited) {
 			exec(close, root.getAbsolutePath());
+			if (hasIndex)
+				index.close();
+		}
 	}
 
 	protected void open() {
