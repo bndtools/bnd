@@ -584,8 +584,8 @@ public class Central implements IStartupParticipant {
     /**
      * Unregister a viewer with repositories
      */
-    public static void removeRepositoriesViewer(TreeViewer viewer, RepositoriesViewRefresher.RefreshModel model) {
-        repositoriesViewRefresher.addViewer(viewer, model);
+    public static void removeRepositoriesViewer(TreeViewer viewer) {
+        repositoriesViewRefresher.removeViewer(viewer);
     }
 
     public static void setRepositories(TreeViewer viewer, RefreshModel model) {
