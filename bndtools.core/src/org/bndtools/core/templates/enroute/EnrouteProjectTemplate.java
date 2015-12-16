@@ -118,6 +118,11 @@ public class EnrouteProjectTemplate implements Template, IExecutableExtension {
     }
 
     @Override
+    public URI getIcon() {
+        return iconUri;
+    }
+
+    @Override
     public URI getHelpContent() {
         return docUri;
     }

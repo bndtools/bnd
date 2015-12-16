@@ -10,7 +10,7 @@ Provide-Capability: \
 		icon="${icondata}"; \
 		help=help.xml
 
-icondata: data:image/png;base64,${base64;icon.png}
+icondata: data:image/gif;base64,${base64;icon.gif}
 
 -resourceonly: true
 -includeresource: resources

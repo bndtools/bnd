@@ -11,6 +11,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
 import org.bndtools.templating.BytesResource;
+import org.bndtools.templating.FolderResource;
+import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
 import org.bndtools.templating.util.AttributeDefinitionImpl;
@@ -115,7 +117,7 @@ public class CapabilityBasedTemplate implements Template {
 
     @Override
     public ObjectClassDefinition getMetadata() throws Exception {
-        ObjectClassDefinitionImpl ocd = new ObjectClassDefinitionImpl(name, description, iconUri);
+        ObjectClassDefinitionImpl ocd = new ObjectClassDefinitionImpl(name, description, null);
 
         ResourceMap inputs = getInputSources();
         Collection<String> names = new StringTemplateEngine().getTemplateParameterNames(inputs);
@@ -131,6 +133,11 @@ public class CapabilityBasedTemplate implements Template {
     public ResourceMap generateOutputs(Map<String,List<Object>> parameters) throws Exception {
         ResourceMap inputs = getInputSources();
         return new StringTemplateEngine().generateOutputs(inputs, parameters);
+    }
+
+    @Override
+    public URI getIcon() {
+        return iconUri;
     }
 
     @Override
@@ -155,14 +162,21 @@ public class CapabilityBasedTemplate implements Template {
             JarEntry jarEntry = in.getNextJarEntry();
             while (jarEntry != null) {
                 String entryPath = jarEntry.getName().trim();
-                if (!entryPath.endsWith("/")) { //ignore directory entries
-                    if (entryPath.startsWith(dir)) {
-                        String relativePath = entryPath.substring(dir.length());
-
-                        // cannot use IO.collect() because it closes the whole JarInputStream
-                        BytesResource resource = BytesResource.loadFrom(in);
+                if (entryPath.startsWith(dir)) {
+                    String relativePath = entryPath.substring(dir.length());
+                    if (!relativePath.isEmpty()) { // skip the root folder
+                        Resource resource;
+                        if (relativePath.endsWith("/")) {
+                            // strip the trailing slash
+                            relativePath.substring(0, relativePath.length());
+                            resource = new FolderResource();
+                        } else {
+                            // cannot use IO.collect() because it closes the whole JarInputStream
+                            resource = BytesResource.loadFrom(in);
+                        }
                         _inputResources.put(relativePath, resource);
                     }
+
                 }
                 jarEntry = in.getNextJarEntry();
             }

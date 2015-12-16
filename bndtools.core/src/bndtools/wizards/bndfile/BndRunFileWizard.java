@@ -63,6 +63,10 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
         }
     }
 
+    public BndRunFileWizard() {
+        setNeedsProgressMonitor(true);
+    }
+
     @Override
     public void addPages() {
         addPage(templatePage);

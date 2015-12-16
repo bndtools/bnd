@@ -20,6 +20,7 @@ import java.util.Set;
 
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
+import org.bndtools.templating.ResourceType;
 import org.bndtools.templating.StringResource;
 import org.bndtools.templating.TemplateEngine;
 import org.stringtemplate.v4.ST;
@@ -100,7 +101,7 @@ public class StringTemplateEngine implements TemplateEngine {
             if (settings.ignore == null || !settings.ignore.matches(sourcePath)) {
                 if (settings.preprocessMatch.matches(sourcePath)) {
                     Resource resource = inputs.get(sourcePath);
-                    if (resource != null) {
+                    if (resource != null && resource.getType() == ResourceType.File) {
                         try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getContent(), resource.getTextEncoding()))) {
                             String line = reader.readLine();
                             while (line != null) {
@@ -108,8 +109,6 @@ public class StringTemplateEngine implements TemplateEngine {
                                 line = reader.readLine();
                             }
                         }
-                    } else {
-                        System.out.println("NULL resource for sourcePath=" + sourcePath);
                     }
                 }
             }
@@ -179,7 +178,9 @@ public class StringTemplateEngine implements TemplateEngine {
             Resource output;
 
             if (settings.ignore == null || !settings.ignore.matches(sourceName)) {
-                if (settings.preprocessMatch.matches(sourceName)) {
+                if (source.getType() == ResourceType.Folder) {
+                    output = source;
+                } else if (settings.preprocessMatch.matches(sourceName)) {
                     // This file is a candidate for preprocessing with ST
                     String rendered = compileAndRender(stg, sourceName, source, parameters);
                     output = new StringResource(rendered);
@@ -203,7 +204,8 @@ public class StringTemplateEngine implements TemplateEngine {
                 String inputPathRelative = inputPath.substring(TEMPLATE_DEFS_PREFIX.length());
 
                 Resource resource = inputs.get(inputPath);
-                loadTemplate(stg, inputPathRelative, resource.getContent(), resource.getTextEncoding());
+                if (resource != null && resource.getType() == ResourceType.File)
+                    loadTemplate(stg, inputPathRelative, resource.getContent(), resource.getTextEncoding());
             } else {
                 // Mapping to output file
                 String outputPath = inputPath;
@@ -221,6 +223,8 @@ public class StringTemplateEngine implements TemplateEngine {
         Properties settingsProp = new Properties();
         Resource settingsResource = inputs.remove(TEMPLATE_PROPERTIES);
         if (settingsResource != null) {
+            if (settingsResource.getType() != ResourceType.File)
+                throw new IllegalArgumentException(String.format("Template settings resource %s must be a file; found resource type %s.", TEMPLATE_PROPERTIES, settingsResource.getType()));
             try (Reader reader = new InputStreamReader(settingsResource.getContent(), settingsResource.getTextEncoding())) {
                 settingsProp.load(reader);
             }
@@ -236,6 +240,8 @@ public class StringTemplateEngine implements TemplateEngine {
     }
 
     private CompiledST loadRawTemplate(STGroup stg, String name, Resource resource) throws IOException {
+        if (resource.getType() != ResourceType.File)
+            throw new IllegalArgumentException(String.format("Cannot build resource from resource of type %s (name='%s').", resource.getType(), name));
         try (InputStream is = resource.getContent()) {
             ANTLRInputStream templateStream = new ANTLRInputStream(is, resource.getTextEncoding());
             String template = templateStream.substring(0, templateStream.size() - 1);
