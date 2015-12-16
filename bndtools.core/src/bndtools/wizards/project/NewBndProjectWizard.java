@@ -31,6 +31,7 @@ import org.bndtools.templating.Template;
 import org.bndtools.utils.javaproject.JavaProjectUtils;
 import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -160,14 +161,26 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
             SubMonitor progress = SubMonitor.convert(monitor, outputs.size() * 3);
             for (Entry<String,Resource> outputEntry : outputs.entries()) {
                 String path = outputEntry.getKey();
-                IFile file = project.getFile(path);
-                FileUtils.mkdirs(file.getParent(), progress.newChild(1, SubMonitor.SUPPRESS_ALL_LABELS));
-                try (InputStream in = outputEntry.getValue().getContent()) {
-                    if (file.exists())
-                        file.setContents(in, 0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-                    else
-                        file.create(in, 0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-                    file.setCharset(outputEntry.getValue().getTextEncoding(), progress.newChild(1));
+                Resource resource = outputEntry.getValue();
+
+                switch (resource.getType()) {
+                case Folder :
+                    IFolder folder = project.getFolder(path);
+                    FileUtils.mkdirs(folder, progress.newChild(1, SubMonitor.SUPPRESS_ALL_LABELS));
+                    break;
+                case File :
+                    IFile file = project.getFile(path);
+                    FileUtils.mkdirs(file.getParent(), progress.newChild(1, SubMonitor.SUPPRESS_ALL_LABELS));
+                    try (InputStream in = resource.getContent()) {
+                        if (file.exists())
+                            file.setContents(in, 0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+                        else
+                            file.create(in, 0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+                        file.setCharset(resource.getTextEncoding(), progress.newChild(1));
+                    }
+                    break;
+                default :
+                    throw new IllegalArgumentException("Unknown resource type " + resource.getType());
                 }
             }
         } catch (Exception e) {

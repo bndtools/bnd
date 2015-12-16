@@ -5,21 +5,26 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class StringResource implements Resource {
-	
-	private final String content;
 
-	public StringResource(String content) {
-		this.content = content;
-	}
+    private final String content;
 
-	@Override
-	public InputStream getContent() throws IOException {
-		return new ByteArrayInputStream(content.getBytes("UTF-8"));
-	}
+    public StringResource(String content) {
+        this.content = content;
+    }
 
-	@Override
-	public String getTextEncoding() {
-		return "UTF-8";
-	}
+    @Override
+    public ResourceType getType() {
+        return ResourceType.File;
+    }
+
+    @Override
+    public InputStream getContent() throws IOException {
+        return new ByteArrayInputStream(content.getBytes("UTF-8"));
+    }
+
+    @Override
+    public String getTextEncoding() {
+        return "UTF-8";
+    }
 
 }

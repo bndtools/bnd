@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.Map;
 
 import org.bndtools.templating.Resource;
+import org.bndtools.templating.ResourceType;
 import org.bndtools.utils.copy.ResourceReplacer;
 
 public class RegexReplacingResource implements Resource {
@@ -18,6 +19,11 @@ public class RegexReplacingResource implements Resource {
         this.replaceRegularExpressions = replaceRegularExpressions;
         this.url = url;
         this.encoding = encoding;
+    }
+
+    @Override
+    public ResourceType getType() {
+        return ResourceType.File;
     }
 
     @Override

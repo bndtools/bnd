@@ -28,138 +28,150 @@ import aQute.lib.io.IO;
 
 public class ReposTemplateLoaderTest {
 
-	private ReposTemplateLoader loader;
+    private ReposTemplateLoader loader;
 
-	@Before
-	public void setup() throws Exception {
-		Run project = Run.createRun(null, IO.getFile("testdata/ws.bndrun"));
-		Workspace ws = project.getWorkspace();
-		RepoPluginsBundleLocator locator = new RepoPluginsBundleLocator(ws.getRepositories());
-		loader = new ReposTemplateLoader(ws.getPlugins(Repository.class), locator);
-	}
+    @Before
+    public void setup() throws Exception {
+        Run project = Run.createRun(null, IO.getFile("testdata/ws.bndrun"));
+        Workspace ws = project.getWorkspace();
+        RepoPluginsBundleLocator locator = new RepoPluginsBundleLocator(ws.getRepositories());
+        loader = new ReposTemplateLoader(ws.getPlugins(Repository.class), locator);
+    }
 
-	@Test
-	public void testLoad() throws Exception {
-		List<Template> templates = loader.findTemplates("test1");
-		assertEquals(1, templates.size());
-		Template template = templates.get(0);
-		assertEquals("Hello", template.getName());
-		assertEquals(0, template.getRanking());
-		assertNull(template.getCategory());
-	}
+    @Test
+    public void testLoad() throws Exception {
+        List<Template> templates = loader.findTemplates("test1");
+        assertEquals(1, templates.size());
+        Template template = templates.get(0);
+        assertEquals("Hello", template.getName());
+        assertEquals(0, template.getRanking());
+        assertNull(template.getCategory());
+    }
 
-	@Test
-	public void testProcessTemplate() throws Exception {
-		List<Template> templates = loader.findTemplates("test1");
-		assertEquals(1, templates.size());
-		Template template = templates.get(0);
+    @Test
+    public void testProcessTemplate() throws Exception {
+        List<Template> templates = loader.findTemplates("test1");
+        assertEquals(1, templates.size());
+        Template template = templates.get(0);
 
-		Map<String, List<Object>> parameters = new HashMap<>();
-		parameters.put("projectName", Collections.<Object> singletonList("org.example.foo"));
-		parameters.put("srcDir", Collections.<Object> singletonList("src/main/java"));
-		parameters.put("basePackageDir", Collections.<Object> singletonList("org/example/foo"));
-		
-		ResourceMap outputs = template.generateOutputs(parameters);
+        Map<String,List<Object>> parameters = new HashMap<>();
+        parameters.put("projectName", Collections.<Object> singletonList("org.example.foo"));
+        parameters.put("srcDir", Collections.<Object> singletonList("src/main/java"));
+        parameters.put("basePackageDir", Collections.<Object> singletonList("org/example/foo"));
 
-		assertEquals(3, outputs.size());
+        ResourceMap outputs = template.generateOutputs(parameters);
 
-		Entry<String,Resource> entry;
+        assertEquals(5, outputs.size());
 
-		Iterator<Entry<String,Resource>> iter = outputs.entries().iterator();
-		entry = iter.next();
-		assertEquals("src/main/java/org/example/foo/Activator.java", entry.getKey());
-		assertEquals("package org.example.foo; public class Activator {}", IO.collect(entry.getValue().getContent()));
-		
-		entry = iter.next();
-		assertEquals("pic.jpg", entry.getKey());
-		// Check the digest of the pic to ensure it didn't get damaged by the templating engine
-		DigestInputStream digestStream = new DigestInputStream(entry.getValue().getContent(), MessageDigest.getInstance("SHA-256"));
-		IO.drain(digestStream);
-		byte[] digest = digestStream.getMessageDigest().digest();
-		assertEquals("ea5d770bc2deddb1f9a20df3ad337bdc1490ba7b35fa41c33aa4e9a534e82ada", Hex.toHexString(digest).toLowerCase());
+        Entry<String,Resource> entry;
 
-		entry = iter.next();
-		assertEquals("bnd.bnd", entry.getKey());
-		assertEquals("Bundle-SymbolicName: org.example.foo", IO.collect(entry.getValue().getContent()));
-	}
-	
-	@Test
-	public void testAlternateDelimiters() throws Exception {
-		List<Template> templates = loader.findTemplates("test2");
-		assertEquals(1, templates.size());
-		Template template = templates.get(0);
+        Iterator<Entry<String,Resource>> iter = outputs.entries().iterator();
+        entry = iter.next();
+        assertEquals("src/main/java/org/example/foo/Activator.java", entry.getKey());
+        assertEquals("package org.example.foo; public class Activator {}", IO.collect(entry.getValue().getContent()));
 
-		Map<String, List<Object>> parameters = new HashMap<>();
-		parameters.put("projectName", Collections.<Object> singletonList("org.example.foo"));
-		parameters.put("srcDir", Collections.<Object> singletonList("src/main/java"));
-		parameters.put("basePackageDir", Collections.<Object> singletonList("org/example/foo"));
-		
-		ResourceMap outputs = template.generateOutputs(parameters);
+        entry = iter.next();
+        assertEquals("pic.jpg", entry.getKey());
+        // Check the digest of the pic to ensure it didn't get damaged by the templating engine
+        DigestInputStream digestStream = new DigestInputStream(entry.getValue().getContent(), MessageDigest.getInstance("SHA-256"));
+        IO.drain(digestStream);
+        byte[] digest = digestStream.getMessageDigest().digest();
+        assertEquals("ea5d770bc2deddb1f9a20df3ad337bdc1490ba7b35fa41c33aa4e9a534e82ada", Hex.toHexString(digest).toLowerCase());
 
-		assertEquals(3, outputs.size());
+        entry = iter.next();
+        assertEquals("src/main/java/", entry.getKey());
 
-		Iterator<Entry<String,Resource>> iter = outputs.entries().iterator();
-		Entry<String,Resource> entry;
-		
-		entry = iter.next();
-		assertEquals("src/main/java/org/example/foo/Activator.java", entry.getKey());
-		assertEquals("package org.example.foo; public class Activator {}", IO.collect(entry.getValue().getContent()));
+        entry = iter.next();
+        assertEquals("src/main/java/org/example/foo/", entry.getKey());
 
-		entry = iter.next();
-		assertEquals("pic.jpg", entry.getKey());
-		// Check the digest of the pic to ensure it didn't get damaged by the templating engine
-		DigestInputStream digestStream = new DigestInputStream(entry.getValue().getContent(), MessageDigest.getInstance("SHA-256"));
-		IO.drain(digestStream);
-		byte[] digest = digestStream.getMessageDigest().digest();
-		assertEquals("ea5d770bc2deddb1f9a20df3ad337bdc1490ba7b35fa41c33aa4e9a534e82ada", Hex.toHexString(digest).toLowerCase());
-		
-		entry = iter.next();
-		assertEquals("bnd.bnd", entry.getKey());
-		assertEquals("Bundle-SymbolicName: org.example.foo", IO.collect(entry.getValue().getContent()));
-	}
-	
-	@Test
-	public void testReferTemplateDefinitions() throws Exception {
-		List<Template> templates = loader.findTemplates("test3");
-		assertEquals(1, templates.size());
-		Template template = templates.get(0);
+        entry = iter.next();
+        assertEquals("bnd.bnd", entry.getKey());
+        assertEquals("Bundle-SymbolicName: org.example.foo", IO.collect(entry.getValue().getContent()));
+    }
 
-		Map<String, List<Object>> parameters = new HashMap<>();
-		parameters.put("name", Collections.<Object> singletonList("Homer Simpson"));
+    @Test
+    public void testAlternateDelimiters() throws Exception {
+        List<Template> templates = loader.findTemplates("test2");
+        assertEquals(1, templates.size());
+        Template template = templates.get(0);
 
-		ResourceMap outputs = template.generateOutputs(parameters);
-		assertEquals(1, outputs.size());
+        Map<String,List<Object>> parameters = new HashMap<>();
+        parameters.put("projectName", Collections.<Object> singletonList("org.example.foo"));
+        parameters.put("srcDir", Collections.<Object> singletonList("src/main/java"));
+        parameters.put("basePackageDir", Collections.<Object> singletonList("org/example/foo"));
 
-		Iterator<Entry<String,Resource>> iter = outputs.entries().iterator();
-		Entry<String,Resource> entry;
-		
-		entry = iter.next();
-		assertEquals("example.html", entry.getKey());
-		assertEquals("My name is <i>Homer Simpson</i>!", IO.collect(entry.getValue().getContent()));
-	}
-	
-	@Test
-	public void testExtendUnprocessedPatternAndIgnore() throws Exception {
-		List<Template> templates = loader.findTemplates("test4");
-		assertEquals(1, templates.size());
-		Template template = templates.get(0);
+        ResourceMap outputs = template.generateOutputs(parameters);
 
-		Map<String, List<Object>> parameters = new HashMap<>();
-		parameters.put("projectName", Collections.<Object> singletonList("org.example.foo"));
-		
-		ResourceMap outputs = template.generateOutputs(parameters);
+        assertEquals(5, outputs.size());
 
-		assertEquals(1, outputs.size());
+        Iterator<Entry<String,Resource>> iter = outputs.entries().iterator();
+        Entry<String,Resource> entry;
 
-		Entry<String,Resource> entry;
-		Iterator<Entry<String,Resource>> iter = outputs.entries().iterator();
-		entry = iter.next();
-		assertEquals("pic.xxx", entry.getKey());
-		// Check the digest of the pic to ensure it didn't get damaged by the templating engine
-		DigestInputStream digestStream = new DigestInputStream(entry.getValue().getContent(), MessageDigest.getInstance("SHA-256"));
-		IO.drain(digestStream);
-		byte[] digest = digestStream.getMessageDigest().digest();
-		assertEquals("ea5d770bc2deddb1f9a20df3ad337bdc1490ba7b35fa41c33aa4e9a534e82ada", Hex.toHexString(digest).toLowerCase());
-	}
+        entry = iter.next();
+        assertEquals("src/main/java/org/example/foo/Activator.java", entry.getKey());
+        assertEquals("package org.example.foo; public class Activator {}", IO.collect(entry.getValue().getContent()));
+
+        entry = iter.next();
+        assertEquals("pic.jpg", entry.getKey());
+        // Check the digest of the pic to ensure it didn't get damaged by the templating engine
+        DigestInputStream digestStream = new DigestInputStream(entry.getValue().getContent(), MessageDigest.getInstance("SHA-256"));
+        IO.drain(digestStream);
+        byte[] digest = digestStream.getMessageDigest().digest();
+        assertEquals("ea5d770bc2deddb1f9a20df3ad337bdc1490ba7b35fa41c33aa4e9a534e82ada", Hex.toHexString(digest).toLowerCase());
+
+        entry = iter.next();
+        assertEquals("src/main/java/", entry.getKey());
+
+        entry = iter.next();
+        assertEquals("src/main/java/org/example/foo/", entry.getKey());
+
+        entry = iter.next();
+        assertEquals("bnd.bnd", entry.getKey());
+        assertEquals("Bundle-SymbolicName: org.example.foo", IO.collect(entry.getValue().getContent()));
+    }
+
+    @Test
+    public void testReferTemplateDefinitions() throws Exception {
+        List<Template> templates = loader.findTemplates("test3");
+        assertEquals(1, templates.size());
+        Template template = templates.get(0);
+
+        Map<String,List<Object>> parameters = new HashMap<>();
+        parameters.put("name", Collections.<Object> singletonList("Homer Simpson"));
+
+        ResourceMap outputs = template.generateOutputs(parameters);
+        assertEquals(1, outputs.size());
+
+        Iterator<Entry<String,Resource>> iter = outputs.entries().iterator();
+        Entry<String,Resource> entry;
+
+        entry = iter.next();
+        assertEquals("example.html", entry.getKey());
+        assertEquals("My name is <i>Homer Simpson</i>!", IO.collect(entry.getValue().getContent()));
+    }
+
+    @Test
+    public void testExtendUnprocessedPatternAndIgnore() throws Exception {
+        List<Template> templates = loader.findTemplates("test4");
+        assertEquals(1, templates.size());
+        Template template = templates.get(0);
+
+        Map<String,List<Object>> parameters = new HashMap<>();
+        parameters.put("projectName", Collections.<Object> singletonList("org.example.foo"));
+
+        ResourceMap outputs = template.generateOutputs(parameters);
+
+        assertEquals(1, outputs.size());
+
+        Entry<String,Resource> entry;
+        Iterator<Entry<String,Resource>> iter = outputs.entries().iterator();
+        entry = iter.next();
+        assertEquals("pic.xxx", entry.getKey());
+        // Check the digest of the pic to ensure it didn't get damaged by the templating engine
+        DigestInputStream digestStream = new DigestInputStream(entry.getValue().getContent(), MessageDigest.getInstance("SHA-256"));
+        IO.drain(digestStream);
+        byte[] digest = digestStream.getMessageDigest().digest();
+        assertEquals("ea5d770bc2deddb1f9a20df3ad337bdc1490ba7b35fa41c33aa4e9a534e82ada", Hex.toHexString(digest).toLowerCase());
+    }
 
 }
