@@ -72,7 +72,7 @@ baseline.version:         3.0.0
 # base-version           = a valid major.minor.micro version
 # base-version-qualifier = DEV|Mx|RCx|REL, with x a number
 base-version:             3.1.0
-base-version-qualifier:   RC2
+base-version-qualifier:   RC3
 
 
 # Version of bnd/bndlib to use consistently throughout the build
