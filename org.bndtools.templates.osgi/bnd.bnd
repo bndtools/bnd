@@ -6,7 +6,6 @@
 
 category: bbb/OSGi Standard Templates
 category-enroute: ccc/OSGi enRoute
-category-bndtools: mmm/Bndtools
 
 project-template-component:\
 	org.bndtools.template; org.bndtools.template=project;\
@@ -29,7 +28,7 @@ project-template-api:\
 project-template-integration-test:\
 	org.bndtools.template; org.bndtools.template=project;\
 		name=Integration Testing;\
-		category=${category-bndtools};\
+		category=${category};\
 		ranking:Double=999;\
 		dir=templates/integration-test;\
 		help=integration-test-help.xml;\
