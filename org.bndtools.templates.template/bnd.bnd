@@ -10,9 +10,7 @@
 	{templates/bndrun/=shared}, \
 	{templates/project/=shared}
 
-icon: data:image/gif;base64,${cat;icons/templates.base64.txt}
-## base64 macro available in bnd 3.1...
-#icon: data:image/gif;base64,${base64;icons/templates.gif}
+icon: data:image/gif;base64,${base64;icons/templates.gif}
 
 category: mmm/Bndtools
 

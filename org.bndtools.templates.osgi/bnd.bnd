@@ -81,12 +81,8 @@ Provide-Capability: \
 
 dataurl: data:image/gif;base64
 
-api-icon: ${dataurl},${cat;icons/script.base64.txt}
-component-icon: ${dataurl},${cat;icons/cog.base64.txt}
-integration-test-icon: ${dataurl},${cat;icons/junit.base64.txt}
-enroute-icon: ${dataurl},${cat;icons/enroute-bw-16x16.base64.txt}
-felix-icon: ${dataurl},${cat;icons/felix.base64.txt}
-
-## NB: bnd 3.1 supports the base64 macro as follows:
-#api-icon: ${dataurl},${base64;icons/script.png}
-#component-icon: ${dataurl},${base64;icons/cog.gif}
+api-icon: ${dataurl},${base64;icons/script.png}
+component-icon: ${dataurl},${base64;icons/cog.gif}
+integration-test-icon: ${dataurl},${base64;icons/junit.gif}
+enroute-icon: ${dataurl},${base64;icons/enroute-bw-16x16.gif}
+felix-icon: ${dataurl},${base64;icons/felix.gif}
