@@ -27,8 +27,8 @@ plugin-dir:   ${build}/plugins
 # Java Compiler Options
 java:         java
 javac:        javac
-javac.source: 1.5
-javac.target: 1.5
+javac.source: ${def;java.specification.version;1.8}
+javac.target: ${def;java.specification.version;1.8}
 javac.profile:
 javac.debug:  on
 

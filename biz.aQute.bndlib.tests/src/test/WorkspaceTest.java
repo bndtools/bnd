@@ -110,4 +110,12 @@ public class WorkspaceTest extends TestCase {
 			assertEquals(false, invalidWs.isValid());
 		}
 	}
+
+	public void testJavacDefaults() throws Exception {
+		String version = System.getProperty("java.specification.version", "1.8");
+		try (Workspace w = new Workspace(tmp)) {
+			assertEquals(version, w.getProperty("javac.source"));
+			assertEquals(version, w.getProperty("javac.target"));
+		}
+	}
 }
