@@ -52,7 +52,6 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
     NewBndProjectWizard(final NewBndProjectWizardPageOne pageOne, final NewJavaProjectWizardPageTwo pageTwo) {
         super(pageOne, pageTwo);
-
     }
 
     @Override

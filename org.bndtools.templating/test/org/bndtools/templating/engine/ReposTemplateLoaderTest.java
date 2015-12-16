@@ -17,6 +17,7 @@ import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
 import org.bndtools.templating.repobased.RepoPluginsBundleLocator;
 import org.bndtools.templating.repobased.ReposTemplateLoader;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.service.repository.Repository;
@@ -40,7 +41,7 @@ public class ReposTemplateLoaderTest {
 
     @Test
     public void testLoad() throws Exception {
-        List<Template> templates = loader.findTemplates("test1");
+        List<Template> templates = loader.findTemplates("test1", new NullProgressMonitor());
         assertEquals(1, templates.size());
         Template template = templates.get(0);
         assertEquals("Hello", template.getName());
@@ -50,7 +51,7 @@ public class ReposTemplateLoaderTest {
 
     @Test
     public void testProcessTemplate() throws Exception {
-        List<Template> templates = loader.findTemplates("test1");
+        List<Template> templates = loader.findTemplates("test1", new NullProgressMonitor());
         assertEquals(1, templates.size());
         Template template = templates.get(0);
 
@@ -91,7 +92,7 @@ public class ReposTemplateLoaderTest {
 
     @Test
     public void testAlternateDelimiters() throws Exception {
-        List<Template> templates = loader.findTemplates("test2");
+        List<Template> templates = loader.findTemplates("test2", new NullProgressMonitor());
         assertEquals(1, templates.size());
         Template template = templates.get(0);
 
@@ -132,7 +133,7 @@ public class ReposTemplateLoaderTest {
 
     @Test
     public void testReferTemplateDefinitions() throws Exception {
-        List<Template> templates = loader.findTemplates("test3");
+        List<Template> templates = loader.findTemplates("test3", new NullProgressMonitor());
         assertEquals(1, templates.size());
         Template template = templates.get(0);
 
@@ -152,7 +153,7 @@ public class ReposTemplateLoaderTest {
 
     @Test
     public void testExtendUnprocessedPatternAndIgnore() throws Exception {
-        List<Template> templates = loader.findTemplates("test4");
+        List<Template> templates = loader.findTemplates("test4", new NullProgressMonitor());
         assertEquals(1, templates.size());
         Template template = templates.get(0);
 

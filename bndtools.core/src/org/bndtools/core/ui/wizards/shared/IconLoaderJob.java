@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,13 +32,13 @@ public class IconLoaderJob extends Job {
 
     private final ILog log = Plugin.getDefault().getLog();
 
-    private final List<Template> templates;
+    private final Collection<Template> templates;
     private final int batchLimit;
     private final StructuredViewer viewer;
 
     private final Map<Template,Image> loadedImageMap;
 
-    public IconLoaderJob(List<Template> templates, StructuredViewer viewer, Map<Template,Image> loadedImageMap, int batchLimit) {
+    public IconLoaderJob(Collection<Template> templates, StructuredViewer viewer, Map<Template,Image> loadedImageMap, int batchLimit) {
         super("load template icons");
         this.templates = templates;
         this.viewer = viewer;

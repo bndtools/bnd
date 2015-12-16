@@ -3,18 +3,21 @@ package org.bndtools.core.ui.wizards.shared;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.bndtools.templating.Template;
 import org.bndtools.templating.repobased.RepoPluginsBundleLocator;
@@ -27,9 +30,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.IOpenListener;
@@ -237,51 +241,61 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
         });
     }
 
-    private class LoadTemplatesJob extends Job {
+    private class LoadTemplatesJob implements IRunnableWithProgress {
 
-        public LoadTemplatesJob() {
-            super("Load Templates");
+        private final Shell shell;
+        private final String originalMessage;
+
+        public LoadTemplatesJob(Shell shell, String originalMessage) {
+            this.shell = shell;
+            this.originalMessage = originalMessage;
         }
 
         @Override
-        protected IStatus run(IProgressMonitor monitor) {
-            final List<Template> templates = new ArrayList<>();
-            final List<String> errors = new LinkedList<>();
+        public void run(IProgressMonitor progress) throws InvocationTargetException {
+            SubMonitor monitor = SubMonitor.convert(progress, 3);
+            monitor.setTaskName("Loading Templates...");
+            try {
+                final Set<Template> templates = new LinkedHashSet<>();
+                final List<String> errors = new LinkedList<>();
 
-            // Load from workspace, if one exists
-            Workspace ws = Central.getWorkspaceIfPresent();
-            if (ws != null) {
-                List<Repository> repos = ws.getPlugins(Repository.class);
-                RepoPluginsBundleLocator locator = new RepoPluginsBundleLocator(ws.getRepositories());
-                templates.addAll(new ReposTemplateLoader(repos, locator).findTemplates(templateType, errors));
-            }
-
-            // Load from the preferences-configured template repository
-            BndPreferences bndPrefs = new BndPreferences();
-            if (bndPrefs.getEnableTemplateRepo()) {
-                try {
-                    FixedIndexedRepo repo = loadRepo(bndPrefs.getTemplateRepoUriList());
-                    RepoPluginsBundleLocator locator = new RepoPluginsBundleLocator(Collections.<RepositoryPlugin> singletonList(repo));
-                    ReposTemplateLoader loader = new ReposTemplateLoader(Collections.<Repository> singletonList(repo), locator);
-                    templates.addAll(loader.findTemplates(templateType, errors));
-                } catch (Exception e) {
-                    return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading from template repository.", e);
+                // Load from workspace, if one exists
+                Workspace ws = Central.getWorkspaceIfPresent();
+                if (ws != null) {
+                    List<Repository> repos = ws.getPlugins(Repository.class);
+                    RepoPluginsBundleLocator locator = new RepoPluginsBundleLocator(ws.getRepositories());
+                    templates.addAll(new ReposTemplateLoader(repos, locator).findTemplates(templateType, errors, monitor.newChild(1, SubMonitor.SUPPRESS_NONE)));
                 }
-            }
 
-            // Log errors
-            for (String error : errors) {
-                Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, error, null));
-            }
+                // Load from the preferences-configured template repository
+                BndPreferences bndPrefs = new BndPreferences();
+                if (bndPrefs.getEnableTemplateRepo()) {
+                    try {
+                        FixedIndexedRepo repo = loadRepo(bndPrefs.getTemplateRepoUriList());
+                        RepoPluginsBundleLocator locator = new RepoPluginsBundleLocator(Collections.<RepositoryPlugin> singletonList(repo));
+                        ReposTemplateLoader loader = new ReposTemplateLoader(Collections.<Repository> singletonList(repo), locator);
+                        templates.addAll(loader.findTemplates(templateType, errors, monitor.newChild(1, SubMonitor.SUPPRESS_NONE)));
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
 
-            // Add the build-in empty template if provided
-            if (emptyTemplate != null)
-                templates.add(emptyTemplate);
+                // Log errors
+                for (String error : errors) {
+                    Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, error, null));
+                }
 
-            // Load from extension registry
-            if (templateExtPoint != null) {
-                IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, templateExtPoint);
-                if (elements != null)
+                // Add the build-in empty template if provided
+                if (emptyTemplate != null)
+                    templates.add(emptyTemplate);
+
+                // Load from extension registry
+                if (templateExtPoint != null) {
+                    IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, templateExtPoint);
+                    if (elements == null)
+                        elements = new IConfigurationElement[0];
+                    monitor.setWorkRemaining(elements.length);
+
                     for (IConfigurationElement element : elements) {
                         String elementName = element.getName();
                         IContributor contributor = element.getContributor();
@@ -290,25 +304,37 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
                             templates.add(extTemplate);
                         } catch (CoreException e) {
                             Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Error loading template '%s' from bundle %s", elementName, contributor.getName()), e));
+                        } finally {
+                            monitor.worked(1);
                         }
                     }
-            }
+                }
 
-            // Display results
-            Control control = viewer.getControl();
-            if (control != null && !control.isDisposed()) {
-                control.getDisplay().asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        setTemplates(templates);
-                        IconLoaderJob iconLoaderJob = new IconLoaderJob(templates, viewer, loadedImages, 5);
-                        iconLoaderJob.setSystem(true);
-                        iconLoaderJob.schedule(0);
-                    }
-                });
-            }
+                // Display results
+                Control control = viewer.getControl();
+                if (control != null && !control.isDisposed()) {
+                    control.getDisplay().asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            setTemplates(templates);
+                            IconLoaderJob iconLoaderJob = new IconLoaderJob(templates, viewer, loadedImages, 5);
+                            iconLoaderJob.setSystem(true);
+                            iconLoaderJob.schedule(0);
+                        }
+                    });
+                }
 
-            return Status.OK_STATUS;
+            } finally {
+                monitor.done();
+                // Restore the original message to the page
+                if (!shell.isDisposed())
+                    shell.getDisplay().asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            setMessage(originalMessage);
+                        }
+                    });
+            }
         }
 
         private FixedIndexedRepo loadRepo(List<String> uris) throws IOException, URISyntaxException {
@@ -327,22 +353,16 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
     protected void loadTemplates() {
         final String oldMessage = getMessage();
         final Shell shell = getShell();
-        setMessage("Loading templates...");
 
-        LoadTemplatesJob job = new LoadTemplatesJob();
-        job.schedule();
-        job.addJobChangeListener(new JobChangeAdapter() {
-            @Override
-            public void done(IJobChangeEvent event) {
-                if (!shell.isDisposed())
-                    shell.getDisplay().asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            setMessage(oldMessage);
-                        }
-                    });
-            }
-        });
+        setMessage("Loading templates...");
+        try {
+            getContainer().run(true, true, new LoadTemplatesJob(shell, oldMessage));
+        } catch (InterruptedException e) {
+            // ignore
+        } catch (InvocationTargetException e) {
+            Throwable exception = e.getTargetException();
+            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading templates.", exception));
+        }
     }
 
     @Override
@@ -356,7 +376,7 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
         }
     }
 
-    private void setTemplates(final List<Template> templates) {
+    private void setTemplates(final Collection<Template> templates) {
         viewer.setInput(templates);
         viewer.expandAll();
 
