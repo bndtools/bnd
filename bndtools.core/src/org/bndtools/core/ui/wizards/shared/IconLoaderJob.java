@@ -2,6 +2,7 @@ package org.bndtools.core.ui.wizards.shared;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -53,13 +54,16 @@ public class IconLoaderJob extends Job {
         for (Template template : templates) {
             InputStream iconStream = null;
             try {
-                iconStream = template.getMetadata().getIcon(16);
-                byte[] bytes = IO.read(iconStream);
-                batch.put(template, bytes);
+                URI iconUri = template.getIcon();
+                if (iconUri != null) {
+                    iconStream = iconUri.toURL().openStream();
+                    byte[] bytes = IO.read(iconStream);
+                    batch.put(template, bytes);
 
-                if (batch.size() >= batchLimit) {
-                    processBatch(batch);
-                    batch = new IdentityHashMap<>();
+                    if (batch.size() >= batchLimit) {
+                        processBatch(batch);
+                        batch = new IdentityHashMap<>();
+                    }
                 }
             } catch (Exception e) {
                 log.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error reading icon for template '" + template.getName() + "'", e));

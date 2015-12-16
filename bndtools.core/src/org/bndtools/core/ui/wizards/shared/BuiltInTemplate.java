@@ -58,8 +58,7 @@ public class BuiltInTemplate implements Template {
 
     @Override
     public ObjectClassDefinition getMetadata() throws Exception {
-        URI iconUri = getResourceURI("icons/template_empty.gif");
-        return new ObjectClassDefinitionImpl(name, getShortDescription(), iconUri);
+        return new ObjectClassDefinitionImpl(name, getShortDescription(), null);
     }
 
     @Override
@@ -73,6 +72,11 @@ public class BuiltInTemplate implements Template {
 
     public void setHelpPath(String path) {
         this.helpUri = getResourceURI(path);
+    }
+
+    @Override
+    public URI getIcon() {
+        return getResourceURI("icons/template_empty.gif");
     }
 
     @Override

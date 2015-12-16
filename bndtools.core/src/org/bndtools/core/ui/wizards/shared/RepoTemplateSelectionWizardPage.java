@@ -74,9 +74,11 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
 
     public static final String PROP_TEMPLATE = "template";
 
-    private final static ILog log = Plugin.getDefault().getLog();
+    private static final String NO_HELP_CONTENT = "<form>No help content available</form>";
 
-    protected final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
+    private final ILog log = Plugin.getDefault().getLog();
+
+    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     private final String templateType;
     private final String templateExtPoint;
     private final Template emptyTemplate;
@@ -367,16 +369,21 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
         this.selected = template;
         propSupport.firePropertyChange(PROP_TEMPLATE, old, template);
 
-        Job updateDescJob = new UpdateDescriptionJob(template, txtDescription);
-        updateDescJob.setSystem(true);
-        updateDescJob.schedule();
+        if (template != null) {
+            txtDescription.setText(String.format("<form>Loading help content for template '%s'...</form>", template.getName()));
+            Job updateDescJob = new UpdateDescriptionJob(template, txtDescription);
+            updateDescJob.setSystem(true);
+            updateDescJob.schedule();
+        } else {
+            txtDescription.setText(NO_HELP_CONTENT);
+        }
     }
 
     public Template getTemplate() {
         return selected;
     }
 
-    private static final class UpdateDescriptionJob extends Job {
+    private final class UpdateDescriptionJob extends Job {
         private final Template template;
         private final ScrolledFormText control;
 
@@ -388,7 +395,7 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
 
         @Override
         protected IStatus run(IProgressMonitor monitor) {
-            String tmp = "<form>No help content available</form>";
+            String tmp = NO_HELP_CONTENT;
             if (template != null) {
                 URI uri = template.getHelpContent();
                 if (uri != null) {

@@ -117,7 +117,7 @@ public class CapabilityBasedTemplate implements Template {
 
     @Override
     public ObjectClassDefinition getMetadata() throws Exception {
-        ObjectClassDefinitionImpl ocd = new ObjectClassDefinitionImpl(name, description, iconUri);
+        ObjectClassDefinitionImpl ocd = new ObjectClassDefinitionImpl(name, description, null);
 
         ResourceMap inputs = getInputSources();
         Collection<String> names = new StringTemplateEngine().getTemplateParameterNames(inputs);
@@ -133,6 +133,11 @@ public class CapabilityBasedTemplate implements Template {
     public ResourceMap generateOutputs(Map<String,List<Object>> parameters) throws Exception {
         ResourceMap inputs = getInputSources();
         return new StringTemplateEngine().generateOutputs(inputs, parameters);
+    }
+
+    @Override
+    public URI getIcon() {
+        return iconUri;
     }
 
     @Override
