@@ -371,7 +371,7 @@ public class Central implements IStartupParticipant {
                 if (ij != null && ij.exists()) {
                     return ij;
                 }
-                // current project is not a Java project
+                break; // current project is not a Java project
             }
         }
         return null;
