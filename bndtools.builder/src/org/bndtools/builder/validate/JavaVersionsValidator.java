@@ -24,6 +24,10 @@ public class JavaVersionsValidator implements IValidator, IProjectValidator {
     @Override
     public void validateProject(Project model) throws Exception {
         IJavaProject javaProject = Central.getJavaProject(model);
+        if (javaProject == null) {
+            model.error("Eclipse: The project in %s is not linked with a Java project.", model.getBase());
+            return;
+        }
 
         @SuppressWarnings("unchecked")
         Map<String,String> options = javaProject.getOptions(true);

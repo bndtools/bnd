@@ -73,6 +73,9 @@ public class CnfSetupBuildListener extends AbstractBuildListener {
             SubMonitor progress = SubMonitor.convert(monitor, projects.size());
             for (Project project : projects) {
                 IJavaProject eclipseProject = Central.getJavaProject(project);
+                if (eclipseProject == null) {
+                    continue; // This can happen early in setting up a new Eclipse workspace
+                }
                 eclipseProject.getProject().build(IncrementalProjectBuilder.FULL_BUILD, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
             }
             return Status.OK_STATUS;
