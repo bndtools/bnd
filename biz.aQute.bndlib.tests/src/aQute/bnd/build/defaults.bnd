@@ -10,3 +10,7 @@ target-dir:   generated
 myprop1: defaults
 myprop2: defaults
 myprop3: defaults
+
+# These properties must have the same values as biz.aQute.bndlib/src/aQute/bnd/build/defaults.bnd
+javac.source: ${def;java.specification.version;1.8}
+javac.target: ${def;java.specification.version;1.8}

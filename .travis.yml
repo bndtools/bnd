@@ -6,9 +6,6 @@ jdk:
   - oraclejdk7
   - oraclejdk8
 
-env:
-  - TERM=dumb
-
 install:
   - ./gradlew --version
   - mvn --version
@@ -18,6 +15,9 @@ script:
   - mvn --batch-mode --quiet -Dmaven.repo.local=maven/target/m2 -Dfile=dist/bundles/org.osgi.impl.bundle.repoindex.cli/org.osgi.impl.bundle.repoindex.cli-latest.jar org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file
   - mvn --batch-mode --quiet -Dmaven.repo.local=maven/target/m2 -Dfile=dist/bundles/biz.aQute.bndlib/biz.aQute.bndlib-latest.jar org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file
   - mvn -f maven --batch-mode --quiet -Dmaven.repo.local=maven/target/m2 install
+
+after_success:
+  - git status
 
 cache:
   directories:
