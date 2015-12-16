@@ -191,7 +191,7 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
 
     @Override
     protected void refreshFromModel() {
-        //viewer.setInput(getRepositories());
+        // Nothing to do
     }
 
     @Override
@@ -216,8 +216,8 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
 
     @Override
     public void dispose() {
+        Central.removeRepositoriesViewer(viewer);
         super.dispose();
-        Central.removeRepositoriesViewer(viewer, this);
     }
 
 }

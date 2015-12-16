@@ -377,7 +377,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
     @Override
     public void dispose() {
-        Central.removeRepositoriesViewer(viewer, this);
+        Central.removeRepositoriesViewer(viewer);
         super.dispose();
     }
 
