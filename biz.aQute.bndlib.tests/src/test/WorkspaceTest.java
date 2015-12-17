@@ -106,7 +106,7 @@ public class WorkspaceTest extends TestCase {
 			assertEquals(true, ws.isValid());
 		}
 
-		try (Workspace invalidWs = new Workspace(IO.getFile("testresource/not a workspace"))) {
+		try (Workspace invalidWs = new Workspace(IO.getFile("testresources/not a workspace"))) {
 			assertEquals(false, invalidWs.isValid());
 		}
 	}
