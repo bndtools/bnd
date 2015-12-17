@@ -1782,7 +1782,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			//
 
 			String restrict = attrs.get(FIXUPMESSAGES_RESTRICT_DIRECTIVE);
-			if (restrict != null && !FIXUPMESSAGES_IS_ERROR.equals(restrict))
+			if (restrict != null && !restrict.equals(type))
 				continue;
 
 			//
