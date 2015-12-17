@@ -1204,12 +1204,27 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		// Use the key as is first, if found ok
 
 		if (filter != null && filter.contains(key)) {
-			value = (String) getProperties().get(key);
+			Object raw = getProperties().get(key);
+			if (raw != null) {
+				if (raw instanceof String) {
+					value = (String) raw;
+				} else {
+					warning("Key '%s' has a non-String value: %s:%s", key, raw == null ? "" : raw.getClass().getName(),
+							raw);
+				}
+			}
 		} else {
 			while (source != null) {
-				value = (String) source.getProperties().get(key);
-				if (value != null)
+				Object raw = source.getProperties().get(key);
+				if (raw != null) {
+					if (raw instanceof String) {
+						value = (String) raw;
+					} else {
+						warning("Key '%s' has a non-String value: %s:%s", key,
+								raw == null ? "" : raw.getClass().getName(), raw);
+					}
 					break;
+				}
 
 				source = source.getParent();
 			}

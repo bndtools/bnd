@@ -93,6 +93,9 @@ public class Macro {
 	}
 
 	int process(CharSequence org, int index, char begin, char end, StringBuilder result, Link link) {
+		if (org == null) { // treat null like empty string
+			return index;
+		}
 		StringBuilder line = new StringBuilder(org);
 		int nesting = 1;
 
@@ -1145,11 +1148,19 @@ public class Macro {
 			Properties source = domain.getProperties();
 			for (Enumeration< ? > e = source.propertyNames(); e.hasMoreElements();) {
 				String key = (String) e.nextElement();
-				if (!key.startsWith("_"))
-					if (ignoreInstructions && key.startsWith("-"))
-						flattened.put(key, source.getProperty(key));
-					else
-						flattened.put(key, process(source.getProperty(key)));
+				if (!key.startsWith("_")) {
+					String value = source.getProperty(key);
+					if (value == null) {
+						Object raw = source.get(key);
+						domain.warning("Key '%s' has a non-String value: %s:%s", key,
+								raw == null ? "" : raw.getClass().getName(), raw);
+					} else {
+						if (ignoreInstructions && key.startsWith("-"))
+							flattened.put(key, value);
+						else
+							flattened.put(key, process(value));
+					}
+				}
 			}
 			return flattened;
 		}
