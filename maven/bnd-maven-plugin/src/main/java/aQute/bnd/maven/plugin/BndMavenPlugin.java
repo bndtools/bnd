@@ -18,15 +18,13 @@ package aQute.bnd.maven.plugin;
 
 import static aQute.lib.io.IO.getFile;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -60,31 +58,31 @@ import aQute.lib.strings.Strings;
 
 @Mojo(name = "bnd-process", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class BndMavenPlugin extends AbstractMojo {
-	
-	private static final String PACKAGING_POM = "pom";
-	private static final String SNAPSHOT = "SNAPSHOT";
-	private static final String TSTAMP = "${tstamp}";
+
+	private static final String	PACKAGING_POM	= "pom";
+	private static final String	SNAPSHOT		= "SNAPSHOT";
+	private static final String	TSTAMP			= "${tstamp}";
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
-	private File targetDir;
+	private File				targetDir;
 
 	@Parameter(defaultValue = "${project.build.sourceDirectory}", readonly = true)
-	private File sourceDir;
+	private File				sourceDir;
 
 	@Parameter(defaultValue = "${project.build.outputDirectory}", readonly = true)
-	private File classesDir;
-	
+	private File				classesDir;
+
 	@Parameter(defaultValue = "${project.build.outputDirectory}/META-INF/MANIFEST.MF", readonly = true)
-	private File manifestPath;
-	
+	private File				manifestPath;
+
 	@Parameter(defaultValue = "${project}", required = true, readonly = true)
-	private MavenProject project;
+	private MavenProject		project;
 
 	@Parameter(defaultValue = "${settings}", readonly = true)
-	private Settings settings;
-	
+	private Settings			settings;
+
 	@Component
-	private BuildContext buildContext;
+	private BuildContext		buildContext;
 
 	public void execute() throws MojoExecutionException {
 		Log log = getLog();
@@ -95,7 +93,7 @@ public class BndMavenPlugin extends AbstractMojo {
 			log.info("skip project with packaging=pom");
 			return;
 		}
-		
+
 		Properties beanProperties = new BeanProperties();
 		beanProperties.put("project", project);
 		beanProperties.put("settings", settings);
@@ -107,8 +105,8 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			builder.setBase(project.getBasedir());
 			loadProjectProperties(builder, project);
-	        builder.setProperty("project.output", targetDir.getCanonicalPath());
-			
+			builder.setProperty("project.output", targetDir.getCanonicalPath());
+
 			// Reject sub-bundle projects
 			List<Builder> subs = builder.getSubBuilders();
 			if ((subs.size() != 1) || !builder.equals(subs.get(0))) {
@@ -126,9 +124,9 @@ public class BndMavenPlugin extends AbstractMojo {
 			Set<Artifact> artifacts = project.getArtifacts();
 			List<File> buildpath = new ArrayList<File>(artifacts.size());
 			for (Artifact artifact : artifacts) {
-                if (!artifact.getType().equals("jar")) {
-                    continue;
-                }
+				if (!artifact.getType().equals("jar")) {
+					continue;
+				}
 				buildpath.add(artifact.getFile().getCanonicalFile());
 			}
 			builder.setProperty("project.buildpath", Strings.join(File.pathSeparator, buildpath));
@@ -184,7 +182,7 @@ public class BndMavenPlugin extends AbstractMojo {
 		if (parentProject != null) {
 			loadProjectProperties(builder, parentProject);
 		}
-		
+
 		// Merge in current project properties
 		File baseDir = project.getBasedir();
 		File bndFile = new File(baseDir, Project.BNDFILE);
@@ -211,7 +209,7 @@ public class BndMavenPlugin extends AbstractMojo {
 				throw new MojoExecutionException("Errors in bnd processing, see log for details.");
 		}
 	}
-	
+
 	private void expandJar(Jar jar, File dir) throws Exception {
 		dir = dir.getAbsoluteFile();
 		if (!dir.exists() && !dir.mkdirs()) {
@@ -248,11 +246,10 @@ public class BndMavenPlugin extends AbstractMojo {
 		if (qualifier != null) {
 			int i = qualifier.indexOf(SNAPSHOT);
 			if (i >= 0) {
-				qualifier = new StringBuilder()
-					.append(qualifier.substring(0, i))
-					.append(TSTAMP)
-					.append(qualifier.substring(i + SNAPSHOT.length()))
-					.toString();
+				qualifier = new StringBuilder().append(qualifier.substring(0, i))
+						.append(TSTAMP)
+						.append(qualifier.substring(i + SNAPSHOT.length()))
+						.toString();
 				version = new Version(version.getMajor(), version.getMinor(), version.getMicro(), qualifier);
 			}
 		}
@@ -265,7 +262,7 @@ public class BndMavenPlugin extends AbstractMojo {
 		BeanProperties() {
 			super();
 		}
-		
+
 		@Override
 		public String getProperty(String key) {
 			final int i = key.indexOf('.');
@@ -279,14 +276,14 @@ public class BndMavenPlugin extends AbstractMojo {
 			}
 			return value.toString();
 		}
-		
+
 		private Object getField(Object target, String key) {
 			final int i = key.indexOf('.');
 			final String fieldName = (i > 0) ? key.substring(0, i) : key;
 			final String getterSuffix = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
 			Object value = null;
 			try {
-				Class targetClass = target.getClass();
+				Class< ? > targetClass = target.getClass();
 				while (!Modifier.isPublic(targetClass.getModifiers())) {
 					targetClass = targetClass.getSuperclass();
 				}

@@ -2,5 +2,5 @@
 -runee: JavaSE-1.7
 
 Bundle-Version: 1.0.0
--resourceonly
+-resourceonly: true
 -fixupmessages: The JAR is empty
