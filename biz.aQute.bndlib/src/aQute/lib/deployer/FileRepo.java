@@ -397,15 +397,15 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			reporter.trace("updating %s ", file.getAbsolutePath());
 
-			if (hasIndex)
-				index.put(bsn + "-" + version.getWithoutQualifier(),
-						buildDescriptor(tmpFile, tmpJar, digest, bsn, version));
-
 			// An open jar on file will fail rename on windows
 			tmpJar.close();
+			IO.rename(tmpFile, file);
+
+			if (hasIndex)
+				index.put(bsn + "-" + version.getWithoutQualifier(),
+						buildDescriptor(file, new Jar(file), digest, bsn, version));
 
 			dirty = true;
-			IO.rename(tmpFile, file);
 
 			fireBundleAdded(file);
 			afterPut(file, bsn, version, Hex.toHexString(digest));
