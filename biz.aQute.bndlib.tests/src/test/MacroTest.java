@@ -1149,4 +1149,39 @@ public class MacroTest extends TestCase {
 		assertEquals("F31BAC7F1F70E5D8705B98CC0FBCFF5E", b.getProperty("b"));
 	}
 
+	public void testProcessNullValue() throws Exception {
+		try (Processor b = new Processor()) {
+			Macro m = b.getReplacer();
+			String tst = m.process(null);
+			assertEquals("", tst);
+			assertTrue(b.check());
+		}
+	}
+
+	public void testNonStringValue() throws Exception {
+		try (Processor b = new Processor()) {
+			// getProperty will return null for non-String value
+			b.getProperties().put("tst", new StringBuilder("foo"));
+			b.getProperties().put("num", 2);
+			String tst = b.getProperty("tst");
+			assertNull(tst);
+			String num = b.getProperty("num");
+			assertNull(num);
+			assertTrue(b.check("Key 'tst' has a non-String value", "Key 'num' has a non-String value"));
+		}
+	}
+
+	public void testNonStringFlattenedValue() throws Exception {
+		try (Processor b = new Processor()) {
+			// getProperty will return null for non-String value
+			b.getProperties().put("tst", new StringBuilder("foo"));
+			b.getProperties().put("num", 2);
+			Properties f = b.getFlattenedProperties();
+			String tst = f.getProperty("tst");
+			assertNull(tst);
+			String num = f.getProperty("num");
+			assertNull(num);
+			assertTrue(b.check("Key 'tst' has a non-String value", "Key 'num' has a non-String value"));
+		}
+	}
 }
