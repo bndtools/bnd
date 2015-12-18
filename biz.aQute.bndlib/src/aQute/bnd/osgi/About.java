@@ -42,8 +42,10 @@ public class About {
 	public static Version	_2_4	= new Version(2, 4, 0);
 	public static Version	_3_0	= new Version(3, 0, 0);
 	public static Version	_3_1	= new Version(3, 1, 0);
-	public static Version	CURRENT	= _3_1;
+	public static Version				_3_2		= new Version(3, 2, 0);
+	public static Version				CURRENT		= _3_2;
 
+	public static String[]				CHANGES_3_2	= {};
 	public static String[]	CHANGES_3_1	= {
 			"The embedded repo is expanded into cnf/cache/<bnd-version> folder to avoid potential conflicts.",
 			"${uri;<uri>[;<base>]}: Add new uri macro that uses the Processor base as base URI",

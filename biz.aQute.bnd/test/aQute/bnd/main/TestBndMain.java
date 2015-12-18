@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 
+import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Jar;
 import junit.framework.TestCase;
 
@@ -14,10 +15,12 @@ public class TestBndMain extends TestCase {
 
 	private final ByteArrayOutputStream	capturedStdErr	= new ByteArrayOutputStream();
 	private PrintStream					originalStdErr;
+	private String						version;
 
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
+		version = About.CURRENT.getWithoutQualifier().toString();
 
 		capturedStdOut.reset();
 		originalStdOut = System.out;
@@ -59,7 +62,7 @@ public class TestBndMain extends TestCase {
 
 		// validate exported jar content
 		try (Jar result = new Jar(new File("generated/export-standalone.jar"))) {
-			expectJarEntry(result, "jar/biz.aQute.launcher-3.1.0.jar");
+			expectJarEntry(result, "jar/biz.aQute.launcher-" + version + ".jar");
 			expectJarEntry(result, "jar/org.apache.felix.framework-5.2.0.jar");
 			expectJarEntry(result, "jar/printAndExit-1.0.0.jar");
 		}
@@ -74,7 +77,7 @@ public class TestBndMain extends TestCase {
 		// validate exported jar content
 		try (Jar result = new Jar(new File("generated/export-workspace.jar"))) {
 
-			expectJarEntry(result, "jar/biz.aQute.launcher-3.1.0.jar");
+			expectJarEntry(result, "jar/biz.aQute.launcher-" + version + ".jar");
 			expectJarEntry(result, "jar/org.apache.felix.framework-5.2.0.jar");
 			expectJarEntry(result, "jar/printAndExit-1.0.0.jar");
 		}
@@ -88,7 +91,7 @@ public class TestBndMain extends TestCase {
 
 		// validate exported jar content
 		try (Jar result = new Jar(new File("generated/export-workspace-project.jar"))) {
-			expectJarEntry(result, "jar/biz.aQute.launcher-3.1.0.jar");
+			expectJarEntry(result, "jar/biz.aQute.launcher-" + version + ".jar");
 			expectJarEntry(result, "jar/org.apache.felix.framework-5.2.0.jar");
 			expectJarEntry(result, "jar/p2.jar");
 		}
