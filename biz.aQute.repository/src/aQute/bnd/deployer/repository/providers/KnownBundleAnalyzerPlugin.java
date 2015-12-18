@@ -1,14 +1,17 @@
 package aQute.bnd.deployer.repository.providers;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Properties;
 
-import org.osgi.service.indexer.*;
-import org.osgi.service.indexer.impl.*;
+import org.osgi.service.indexer.ResourceAnalyzer;
+import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
 
-import aQute.bnd.service.*;
-import aQute.lib.utf8properties.*;
-import aQute.service.reporter.*;
+import aQute.bnd.service.Plugin;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.service.reporter.Reporter;
 
 public class KnownBundleAnalyzerPlugin extends KnownBundleAnalyzer implements ResourceAnalyzer, Plugin {
 

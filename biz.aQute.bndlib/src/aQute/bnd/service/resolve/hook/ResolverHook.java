@@ -1,8 +1,9 @@
 package aQute.bnd.service.resolve.hook;
 
-import java.util.*;
+import java.util.List;
 
-import org.osgi.resource.*;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 
 public interface ResolverHook {
 

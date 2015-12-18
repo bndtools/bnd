@@ -1,8 +1,8 @@
 package aQute.bnd.service;
 
-import java.util.*;
+import java.util.Map;
 
-import aQute.service.reporter.*;
+import aQute.service.reporter.Reporter;
 
 /**
  * An optional interface for plugins. If a plugin implements this interface then

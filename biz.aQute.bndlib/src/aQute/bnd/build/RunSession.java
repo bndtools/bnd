@@ -1,7 +1,7 @@
 package aQute.bnd.build;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Map;
+import java.util.concurrent.Callable;
 
 public interface RunSession {
 

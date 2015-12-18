@@ -1,8 +1,8 @@
 package aQute.lib.putjar;
 
-import java.io.*;
+import java.io.IOException;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
 public class TestDirectoryInputStream extends TestCase {
 

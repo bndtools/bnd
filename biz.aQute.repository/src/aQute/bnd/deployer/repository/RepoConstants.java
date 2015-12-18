@@ -1,6 +1,6 @@
 package aQute.bnd.deployer.repository;
 
-import java.io.*;
+import java.io.File;
 
 public interface RepoConstants {
 

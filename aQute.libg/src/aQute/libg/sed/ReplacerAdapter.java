@@ -1,17 +1,38 @@
 package aQute.libg.sed;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.text.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Formatter;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.lib.collections.*;
-import aQute.lib.io.*;
-import aQute.libg.glob.*;
-import aQute.libg.reporter.*;
-import aQute.service.reporter.*;
+import aQute.lib.collections.ExtList;
+import aQute.lib.collections.SortedList;
+import aQute.lib.io.IO;
+import aQute.libg.glob.Glob;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.service.reporter.Reporter;
 
 /**
  * Provide a macro Domain. This Domain can replace variables in strings based on

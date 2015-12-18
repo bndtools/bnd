@@ -1,18 +1,27 @@
 package aQute.bnd.ant;
 
-import java.io.*;
-import java.nio.channels.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.channels.FileChannel;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
 
-import org.apache.tools.ant.*;
+import org.apache.tools.ant.BuildException;
 
-import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
-import aQute.bnd.build.model.*;
-import aQute.bnd.build.model.clauses.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
-import aQute.bnd.version.*;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.clauses.VersionedClause;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.version.Version;
+import aQute.bnd.version.VersionRange;
 
 public class RunconfigToDistributionTask extends BaseTask {
 

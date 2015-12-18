@@ -1,6 +1,6 @@
 package aQute.bnd.service.remotelaunch;
 
-import java.util.*;
+import java.util.List;
 
 public interface Slave {
 	void sync(String localId, byte[] sha1) throws Exception;

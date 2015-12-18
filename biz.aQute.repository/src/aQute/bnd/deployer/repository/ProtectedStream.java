@@ -1,6 +1,7 @@
 package aQute.bnd.deployer.repository;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * This is used to prevent content providers with interfering with the state of

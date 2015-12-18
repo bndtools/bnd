@@ -1,15 +1,32 @@
 package aQute.remote.main;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.osgi.framework.*;
+import org.osgi.framework.Constants;
 
-import aQute.libg.shacache.*;
-import aQute.remote.util.*;
-import aQute.service.reporter.*;
+import aQute.libg.shacache.ShaCache;
+import aQute.libg.shacache.ShaSource;
+import aQute.remote.util.Link;
+import aQute.service.reporter.Reporter;
 
 /**
  * Creates a framework and through that framework's class loader it will create

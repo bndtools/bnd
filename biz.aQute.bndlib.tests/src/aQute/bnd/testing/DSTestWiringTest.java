@@ -1,14 +1,20 @@
 package aQute.bnd.testing;
 
-import java.util.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import junit.framework.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
-import org.osgi.framework.*;
-import org.osgi.service.log.*;
+import org.osgi.framework.BundleActivator;
+import org.osgi.service.log.LogService;
 
-import aQute.bnd.annotation.component.*;
-import static org.mockito.Mockito.*;
+import aQute.bnd.annotation.component.Activate;
+import aQute.bnd.annotation.component.Reference;
+import junit.framework.TestCase;
 
 public class DSTestWiringTest extends TestCase {
 

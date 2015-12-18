@@ -1,7 +1,10 @@
 package aQute.bnd.compatibility;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class Scope {
 	final Map<String,Scope> children = new LinkedHashMap<String,Scope>();

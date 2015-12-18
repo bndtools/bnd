@@ -1,8 +1,9 @@
 package test;
 
-import junit.framework.*;
-import aQute.bnd.build.*;
-import aQute.lib.io.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 /**
  * Tests if it is possible to depend on workspace bundles (not released) using a

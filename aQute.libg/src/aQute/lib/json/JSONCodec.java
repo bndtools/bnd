@@ -2,6 +2,7 @@ package aQute.lib.json;
 
 import java.io.EOFException;
 import java.io.File;
+import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.GenericArrayType;

@@ -1,6 +1,6 @@
 package aQute.bnd.service;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * A registry for objects.

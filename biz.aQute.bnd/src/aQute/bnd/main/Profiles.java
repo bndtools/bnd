@@ -1,16 +1,23 @@
 package aQute.bnd.main;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 
-import aQute.bnd.header.*;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.main.bnd.ProfileOptions;
-import aQute.bnd.osgi.*;
-import aQute.bnd.osgi.resource.*;
-import aQute.bnd.version.*;
-import aQute.lib.getopt.*;
-import aQute.lib.io.*;
-import aQute.libg.glob.*;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.Instruction;
+import aQute.bnd.osgi.Instructions;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.version.Version;
+import aQute.lib.getopt.Options;
+import aQute.lib.io.IO;
+import aQute.libg.glob.Glob;
 
 public class Profiles extends Processor {
 

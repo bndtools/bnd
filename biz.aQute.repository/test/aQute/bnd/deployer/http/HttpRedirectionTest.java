@@ -1,15 +1,21 @@
 package aQute.bnd.deployer.http;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
-import aQute.lib.io.*;
-import aQute.service.reporter.*;
-import test.lib.*;
-import junit.framework.*;
-import static org.mockito.Mockito.*;
+import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import aQute.lib.io.IO;
+import aQute.service.reporter.Reporter;
+import junit.framework.TestCase;
+import test.lib.NanoHTTPD;
 
 public class HttpRedirectionTest extends TestCase {
 

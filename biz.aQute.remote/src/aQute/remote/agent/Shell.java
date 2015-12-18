@@ -1,8 +1,10 @@
 package aQute.remote.agent;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintStream;
 
-import org.apache.felix.service.command.*;
+import org.apache.felix.service.command.CommandSession;
+import org.apache.felix.service.command.Converter;
 
 /**
  * A redirector that redirects the input of a Gogo Command Processor

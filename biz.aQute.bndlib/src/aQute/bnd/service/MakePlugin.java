@@ -1,8 +1,9 @@
 package aQute.bnd.service;
 
-import java.util.*;
+import java.util.Map;
 
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Resource;
 
 public interface MakePlugin {
 

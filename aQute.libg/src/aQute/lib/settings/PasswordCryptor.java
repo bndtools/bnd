@@ -1,9 +1,15 @@
 package aQute.lib.settings;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-import javax.crypto.*;
-import javax.crypto.spec.*;
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.PBEParameterSpec;
 
 public class PasswordCryptor {
 

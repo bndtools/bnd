@@ -1,9 +1,12 @@
 package aQute.libg.tarjan;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 
-import junit.framework.*;
-import aQute.lib.collections.*;
+import aQute.lib.collections.MultiMap;
+import junit.framework.TestCase;
 
 public class TestTarjan extends TestCase {
 

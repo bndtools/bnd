@@ -1,9 +1,9 @@
 package aQute.bnd.ant;
 
-import org.apache.tools.ant.*;
+import org.apache.tools.ant.BuildException;
 
-import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 
 /**
  * <p> ANT task to release into a repository, equivalent to: <code>&lt;bnd

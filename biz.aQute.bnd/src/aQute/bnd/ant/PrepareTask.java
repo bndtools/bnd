@@ -4,15 +4,16 @@ package aQute.bnd.ant;
  * The idea of this task is to read all the properties as if bnd has read them.
  * This makes it easier to use bnd standalone on the same data.
  */
+import java.io.File;
+import java.util.Enumeration;
+import java.util.Properties;
 
-import java.io.*;
-import java.util.*;
+import org.apache.tools.ant.BuildException;
 
-import org.apache.tools.ant.*;
-
-import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
-import aQute.bnd.osgi.*;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
 
 public class PrepareTask extends BaseTask {
 	File	basedir;

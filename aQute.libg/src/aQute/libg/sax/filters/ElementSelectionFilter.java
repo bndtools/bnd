@@ -1,8 +1,9 @@
 package aQute.libg.sax.filters;
 
-import org.xml.sax.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 
-import aQute.libg.sax.*;
+import aQute.libg.sax.ContentFilterImpl;
 
 public abstract class ElementSelectionFilter extends ContentFilterImpl {
 

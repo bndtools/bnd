@@ -1,18 +1,35 @@
 package aQute.bnd.jpm;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Formatter;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
-import aQute.bnd.version.*;
-import aQute.lib.converter.*;
-import aQute.lib.io.*;
-import aQute.lib.json.*;
-import aQute.libg.reporter.*;
-import aQute.service.library.*;
+import aQute.bnd.version.Version;
+import aQute.lib.converter.TypeReference;
+import aQute.lib.io.IO;
+import aQute.lib.json.Decoder;
+import aQute.lib.json.JSONCodec;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.service.library.Library;
 import aQute.service.library.Library.RevisionRef;
-import aQute.service.reporter.*;
-import aQute.struct.*;
+import aQute.service.library.Revisions;
+import aQute.service.reporter.Reporter;
+import aQute.struct.struct;
 
 public class Index {
 	Reporter reporter = new ReporterAdapter(System.out);

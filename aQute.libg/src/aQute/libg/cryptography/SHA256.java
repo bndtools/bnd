@@ -1,7 +1,10 @@
 package aQute.libg.cryptography;
 
-import java.io.*;
-import java.security.*;
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class SHA256 extends Digest {
 	public final static String ALGORITHM = "SHA-256";

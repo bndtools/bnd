@@ -1,12 +1,12 @@
 package aQute.bnd.service.repository;
 
-import java.net.*;
-import java.util.*;
+import java.net.URI;
+import java.util.Set;
 
-import org.osgi.resource.*;
+import org.osgi.resource.Requirement;
 
 import aQute.bnd.annotation.ProviderType;
-import aQute.bnd.version.*;
+import aQute.bnd.version.Version;
 
 /**
  * A Searchable Repository is backed by a search engine that holds more

@@ -1,7 +1,10 @@
 package test;
 
-import junit.framework.*;
-import test.component.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import test.component.BNDAnnotationTest;
+import test.component.ComponentTest;
+import test.component.DSAnnotationTest;
 
 public class ComponentTests {
 

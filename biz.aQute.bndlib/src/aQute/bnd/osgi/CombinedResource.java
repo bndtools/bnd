@@ -1,7 +1,10 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
-import java.util.*;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CombinedResource extends WriteResource {
 	final List<Resource>	resources		= new ArrayList<Resource>();

@@ -1,10 +1,12 @@
 package aQute.bnd.differ;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import aQute.bnd.service.*;
-import aQute.bnd.service.diff.*;
-import aQute.bnd.version.*;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.diff.Delta;
+import aQute.bnd.service.diff.Type;
+import aQute.bnd.version.Version;
 
 public class RepositoryElement {
 

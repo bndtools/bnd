@@ -1,7 +1,8 @@
 package aQute.remote.api;
 
-import org.osgi.dto.*;
-import org.osgi.framework.dto.*;
+import org.osgi.dto.DTO;
+import org.osgi.framework.dto.BundleDTO;
+import org.osgi.framework.dto.ServiceReferenceDTO;
 
 /**
  * An event sent from the agent to the supervisor.

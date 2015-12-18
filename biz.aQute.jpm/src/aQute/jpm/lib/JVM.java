@@ -1,8 +1,10 @@
 package aQute.jpm.lib;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
-import aQute.struct.*;
+import aQute.struct.struct;
 
 public class JVM extends struct {
 	public static Comparator<JVM> comparator = new Comparator<JVM>() {

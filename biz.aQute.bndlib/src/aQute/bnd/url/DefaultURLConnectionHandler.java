@@ -1,12 +1,18 @@
 package aQute.bnd.url;
 
-import java.net.*;
-import java.util.*;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import aQute.bnd.service.*;
-import aQute.bnd.service.url.*;
-import aQute.libg.glob.*;
-import aQute.service.reporter.*;
+import aQute.bnd.service.Plugin;
+import aQute.bnd.service.Registry;
+import aQute.bnd.service.RegistryPlugin;
+import aQute.bnd.service.url.URLConnectionHandler;
+import aQute.libg.glob.Glob;
+import aQute.service.reporter.Reporter;
 
 /**
  * Base class for the URL Connection handlers. This class implements some

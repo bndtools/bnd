@@ -1,14 +1,14 @@
 package test.referApi;
 
-import java.util.concurrent.atomic.*;
+import java.util.concurrent.atomic.AtomicReference;
 
-import org.osgi.service.blueprint.reflect.*;
-import org.osgi.service.cm.*;
-import org.osgi.service.device.*;
-import org.osgi.service.event.*;
-import org.osgi.service.http.*;
-import org.osgi.service.log.*;
-import org.osgi.service.wireadmin.*;
+import org.osgi.service.blueprint.reflect.BeanArgument;
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.device.Device;
+import org.osgi.service.event.EventAdmin;
+import org.osgi.service.http.HttpService;
+import org.osgi.service.log.LogService;
+import org.osgi.service.wireadmin.Wire;
 
 // 000: Export test.referApi,  has private references [org.osgi.service.http, org.osgi.service.component, org.osgi.service.condpermadmin, org.osgi.service.wireadmin, org.osgi.service.event, org.osgi.service.log, org.osgi.service.device], 
 

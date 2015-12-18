@@ -1,8 +1,12 @@
 package aQute.bnd.differ;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
 
-import aQute.bnd.service.diff.*;
+import aQute.bnd.service.diff.Delta;
+import aQute.bnd.service.diff.Diff;
+import aQute.bnd.service.diff.Tree;
+import aQute.bnd.service.diff.Type;
 
 /**
  * An element can be compared to another element of the same type. Elements with

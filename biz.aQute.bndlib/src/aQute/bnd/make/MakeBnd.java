@@ -1,11 +1,16 @@
 package aQute.bnd.make;
 
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.File;
+import java.util.Map;
+import java.util.regex.Pattern;
 
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.JarResource;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.service.MakePlugin;
 
 public class MakeBnd implements MakePlugin, Constants {
 	final static Pattern JARFILE = Pattern.compile("(.+)\\.(jar|ipa)");

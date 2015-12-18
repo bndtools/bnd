@@ -681,8 +681,9 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * FELIX-3407 Utterly confusing example that states that generic references
-	 * are not picked up. The classes under test are in {@link A},{@link B}, and
-	 * {@link C}.
+	 * are not picked up. The classes under test are in
+	 * {@link test.genericinterf.a.A}, {@link test.genericinterf.b.B}, and
+	 * {@link test.genericinterf.c.C}.
 	 */
 	public static void testGenericPickup() throws Exception {
 		Builder b = new Builder();

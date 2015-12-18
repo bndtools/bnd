@@ -1,16 +1,31 @@
 package aQute.lib.json;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.text.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
-import junit.framework.*;
-import aQute.lib.collections.*;
-import aQute.lib.converter.*;
-import aQute.lib.io.*;
-import aQute.libg.map.*;
+import aQute.lib.collections.MultiMap;
+import aQute.lib.converter.TypeReference;
+import aQute.lib.io.IO;
+import aQute.libg.map.MAP;
+import junit.framework.TestCase;
 
 public class JSONTest extends TestCase {
 	JSONCodec codec = new JSONCodec();

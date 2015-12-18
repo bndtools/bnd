@@ -1,25 +1,37 @@
 package test.deployer;
 
-import static aQute.lib.io.IO.*;
+import static aQute.lib.io.IO.collect;
+import static aQute.lib.io.IO.copy;
+import static aQute.lib.io.IO.delete;
+import static aQute.lib.io.IO.getFile;
+import static aQute.lib.io.IO.stream;
 
-import java.io.*;
-import java.security.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.security.MessageDigest;
+import java.util.Arrays;
+import java.util.Formatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
 
-import junit.framework.*;
+import org.mockito.Mockito;
 
-import org.mockito.*;
-
-import aQute.bnd.service.*;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
 import aQute.bnd.service.RepositoryPlugin.PutOptions;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
-import aQute.bnd.version.*;
-import aQute.lib.deployer.*;
-import aQute.lib.io.*;
-import aQute.libg.cryptography.*;
-import aQute.libg.map.*;
+import aQute.bnd.version.Version;
+import aQute.lib.deployer.FileRepo;
+import aQute.lib.io.IO;
+import aQute.libg.cryptography.SHA1;
+import aQute.libg.cryptography.SHA256;
+import aQute.libg.map.MAP;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class FileRepoTest extends TestCase {

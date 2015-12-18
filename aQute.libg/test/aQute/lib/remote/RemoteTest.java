@@ -4,10 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Formatter;
 
-import junit.framework.TestCase;
 import aQute.lib.io.IO;
 import aQute.libg.remote.sink.RemoteSink;
 import aQute.libg.remote.source.RemoteSource;
+import junit.framework.TestCase;
 
 public class RemoteTest extends TestCase {
 	File					sinkDir;

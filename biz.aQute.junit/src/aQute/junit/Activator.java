@@ -18,12 +18,6 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
-import junit.framework.JUnit4TestAdapter;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestResult;
-import junit.framework.TestSuite;
-
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.NoTestsRemainException;
 import org.osgi.framework.Bundle;
@@ -35,6 +29,11 @@ import org.osgi.framework.SynchronousBundleListener;
 import org.osgi.framework.Version;
 
 import aQute.junit.constants.TesterConstants;
+import junit.framework.JUnit4TestAdapter;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestResult;
+import junit.framework.TestSuite;
 
 public class Activator implements BundleActivator, TesterConstants, Runnable {
 	BundleContext		context;

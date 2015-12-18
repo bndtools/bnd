@@ -1,6 +1,6 @@
 package aQute.bnd.service;
 
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Builder;
 
 public interface SignerPlugin {
 	/**

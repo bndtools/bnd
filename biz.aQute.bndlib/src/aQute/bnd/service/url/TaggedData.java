@@ -1,6 +1,6 @@
 package aQute.bnd.service.url;
 
-import java.io.*;
+import java.io.InputStream;
 
 /**
  * Represents a data stream that has a tag associated with it; the primary

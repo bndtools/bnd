@@ -3,16 +3,28 @@ package aQute.jpm.platform;
 /**
  * http://support.microsoft.com/kb/814596
  */
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Formatter;
+import java.util.List;
+import java.util.Map;
 
-import org.boris.winrun4j.*;
+import org.boris.winrun4j.RegistryKey;
 
-import aQute.bnd.osgi.*;
-import aQute.jpm.lib.*;
-import aQute.lib.getopt.*;
-import aQute.lib.io.*;
-import aQute.lib.strings.*;
+import aQute.bnd.osgi.Instructions;
+import aQute.jpm.lib.ArtifactData;
+import aQute.jpm.lib.CommandData;
+import aQute.jpm.lib.JVM;
+import aQute.jpm.lib.ServiceData;
+import aQute.lib.getopt.Arguments;
+import aQute.lib.getopt.Description;
+import aQute.lib.getopt.Options;
+import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 
 /**
  * The Windows platform uses an open source library <a

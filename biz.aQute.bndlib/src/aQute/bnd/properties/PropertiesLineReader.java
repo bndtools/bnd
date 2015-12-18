@@ -1,6 +1,9 @@
 package aQute.bnd.properties;
 
-import static aQute.bnd.properties.LineType.*;
+import static aQute.bnd.properties.LineType.blank;
+import static aQute.bnd.properties.LineType.comment;
+import static aQute.bnd.properties.LineType.entry;
+import static aQute.bnd.properties.LineType.eof;
 
 public class PropertiesLineReader {
 

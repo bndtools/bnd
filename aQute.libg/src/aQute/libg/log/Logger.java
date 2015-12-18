@@ -1,6 +1,6 @@
 package aQute.libg.log;
 
-import java.util.*;
+import java.util.List;
 
 public interface Logger {
 	void error(String s, Object... args);

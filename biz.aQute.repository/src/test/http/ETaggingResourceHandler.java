@@ -1,15 +1,21 @@
 package test.http;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-import org.eclipse.jetty.http.*;
-import org.eclipse.jetty.io.*;
-import org.eclipse.jetty.server.*;
-import org.eclipse.jetty.server.handler.*;
-import org.eclipse.jetty.util.resource.*;
+import org.eclipse.jetty.http.HttpHeaders;
+import org.eclipse.jetty.http.HttpMethods;
+import org.eclipse.jetty.http.HttpStatus;
+import org.eclipse.jetty.http.MimeTypes;
+import org.eclipse.jetty.io.Buffer;
+import org.eclipse.jetty.io.WriterOutputStream;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.util.resource.Resource;
 
 public class ETaggingResourceHandler extends ResourceHandler {
 

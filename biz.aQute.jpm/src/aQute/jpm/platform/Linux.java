@@ -1,9 +1,10 @@
 package aQute.jpm.platform;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
 
-import aQute.jpm.lib.*;
+import aQute.jpm.lib.JVM;
 
 class Linux extends Unix {
 

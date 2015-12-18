@@ -1,22 +1,24 @@
 package test;
 
-import java.io.*;
-import java.security.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import java.io.File;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.*;
-import aQute.bnd.resource.repository.*;
+import aQute.bnd.resource.repository.ResourceRepositoryImpl;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
 import aQute.bnd.service.repository.ResourceRepository.Listener;
 import aQute.bnd.service.repository.ResourceRepository.ResourceRepositoryEvent;
 import aQute.bnd.service.repository.ResourceRepository.TYPE;
-import aQute.bnd.service.repository.*;
+import aQute.bnd.service.repository.SearchableRepository;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
-import aQute.bnd.version.*;
-import aQute.lib.io.*;
-import aQute.libg.cryptography.*;
+import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
+import aQute.libg.cryptography.SHA1;
+import junit.framework.TestCase;
 
 @SuppressWarnings("restriction")
 public class ResourceRepoTest extends TestCase {

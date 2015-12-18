@@ -1,11 +1,15 @@
 package test;
 
-import java.io.*;
-import java.util.jar.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.jar.Manifest;
 
-import junit.framework.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.Jar;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class UsesTest extends TestCase {

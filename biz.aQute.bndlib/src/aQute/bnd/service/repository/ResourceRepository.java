@@ -1,11 +1,12 @@
 package aQute.bnd.service.repository;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.List;
+import java.util.SortedSet;
 
-import aQute.bnd.service.*;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
-import aQute.bnd.version.*;
+import aQute.bnd.version.VersionRange;
 
 /**
  * A Resource Repository represents a repository local to the workspace. A

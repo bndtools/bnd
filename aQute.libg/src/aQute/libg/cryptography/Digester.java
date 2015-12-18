@@ -1,9 +1,12 @@
 package aQute.libg.cryptography;
 
-import java.io.*;
-import java.security.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.security.MessageDigest;
 
-import aQute.lib.io.*;
+import aQute.lib.io.IO;
 
 public abstract class Digester<T extends Digest> extends OutputStream {
 	protected MessageDigest	md;

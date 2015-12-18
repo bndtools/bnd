@@ -1,10 +1,12 @@
 package aQute.libg.sax;
 
-import javax.xml.parsers.*;
-import javax.xml.transform.*;
-import javax.xml.transform.sax.*;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.Result;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
 
-import org.xml.sax.*;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.XMLReader;
 
 public class SAXUtil {
 

@@ -1,16 +1,17 @@
 package biz.aQute.remote;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
-import junit.framework.*;
+import org.osgi.framework.Constants;
+import org.osgi.framework.dto.FrameworkDTO;
 
-import org.osgi.framework.*;
-import org.osgi.framework.dto.*;
-
-import aQute.lib.io.*;
-import aQute.remote.api.*;
-import aQute.remote.main.*;
-import aQute.remote.plugin.*;
+import aQute.lib.io.IO;
+import aQute.remote.api.Agent;
+import aQute.remote.main.Main;
+import aQute.remote.plugin.LauncherSupervisor;
+import junit.framework.TestCase;
 
 /**
  * Start the main program which will wait for requests to create a framework.

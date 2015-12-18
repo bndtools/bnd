@@ -1,7 +1,13 @@
 package test.helpers;
 
-import java.io.*;
-import java.util.zip.*;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public class Sed {
 	private static void processObrFileInternal(BufferedReader reader, String searchPattern, String replacementPattern,

@@ -1,8 +1,8 @@
 package aQute.lib.getopt;
 
-import java.util.*;
+import java.util.List;
 
-import aQute.service.reporter.*;
+import aQute.service.reporter.Messages;
 
 public interface CommandLineMessages extends Messages {
 

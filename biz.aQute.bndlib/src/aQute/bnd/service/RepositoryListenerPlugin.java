@@ -1,9 +1,9 @@
 package aQute.bnd.service;
 
-import java.io.*;
+import java.io.File;
 
-import aQute.bnd.annotation.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.annotation.ConsumerType;
+import aQute.bnd.osgi.Jar;
 
 @ConsumerType
 public interface RepositoryListenerPlugin {

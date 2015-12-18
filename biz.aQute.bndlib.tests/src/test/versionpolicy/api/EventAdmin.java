@@ -1,6 +1,6 @@
 package test.versionpolicy.api;
 
-import aQute.bnd.annotation.*;
+import aQute.bnd.annotation.ProviderType;
 
 @ProviderType
 public interface EventAdmin {

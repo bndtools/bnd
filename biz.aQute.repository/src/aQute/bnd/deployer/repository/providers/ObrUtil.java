@@ -1,8 +1,9 @@
 package aQute.bnd.deployer.repository.providers;
 
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.osgi.service.log.*;
+import org.osgi.service.log.LogService;
 
 public class ObrUtil {
 

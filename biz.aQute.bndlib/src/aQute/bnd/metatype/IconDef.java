@@ -1,6 +1,6 @@
 package aQute.bnd.metatype;
 
-import aQute.lib.tag.*;
+import aQute.lib.tag.Tag;
 
 public class IconDef {
 

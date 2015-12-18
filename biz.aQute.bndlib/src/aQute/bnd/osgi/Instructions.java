@@ -1,10 +1,19 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import aQute.bnd.header.*;
-import aQute.lib.io.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.lib.io.IO;
 
 public class Instructions implements Map<Instruction,Attrs> {
 	private LinkedHashMap<Instruction,Attrs>	map;

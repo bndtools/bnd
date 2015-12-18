@@ -1,6 +1,6 @@
 package org.osgi.service.indexer.impl;
 
-import org.osgi.framework.*;
+import org.osgi.framework.Version;
 
 public class EE {
 

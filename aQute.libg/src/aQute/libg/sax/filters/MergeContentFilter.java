@@ -1,10 +1,14 @@
 package aQute.libg.sax.filters;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
-import org.xml.sax.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 
-import aQute.libg.sax.*;
+import aQute.libg.sax.ContentFilterImpl;
+import aQute.libg.sax.SAXElement;
 
 public class MergeContentFilter extends ContentFilterImpl {
 

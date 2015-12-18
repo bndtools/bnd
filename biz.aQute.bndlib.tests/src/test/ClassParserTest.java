@@ -1,16 +1,31 @@
 package test;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.GenericDeclaration;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.ClassDataCollector;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Descriptors.PackageRef;
-import aQute.bnd.service.*;
-import aQute.lib.io.*;
-import aQute.service.reporter.*;
+import aQute.bnd.osgi.FileResource;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.service.Plugin;
+import aQute.lib.io.IO;
+import aQute.service.reporter.Reporter;
+import junit.framework.TestCase;
 
 class ConstantValues {
 	public static final boolean	f		= false;

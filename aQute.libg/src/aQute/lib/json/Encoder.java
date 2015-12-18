@@ -1,10 +1,19 @@
 package aQute.lib.json;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.security.*;
-import java.util.*;
-import java.util.zip.*;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.Flushable;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.lang.reflect.Type;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.zip.DeflaterOutputStream;
 
 public class Encoder implements Appendable, Closeable, Flushable {
 	final JSONCodec	codec;

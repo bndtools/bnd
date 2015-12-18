@@ -1,11 +1,22 @@
 package aQute.bnd.build;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
 
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.Strategy;
 
 public class Container {
 	public enum TYPE {

@@ -1,6 +1,9 @@
 package aQute.libg.asn1;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Date;
+import java.util.Iterator;
 
 public class PDU implements Types, Iterable<PDU> {
 	final int		identifier;

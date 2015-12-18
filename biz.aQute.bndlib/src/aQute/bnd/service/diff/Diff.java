@@ -1,6 +1,6 @@
 package aQute.bnd.service.diff;
 
-import java.util.*;
+import java.util.Collection;
 
 public interface Diff {
 	interface Ignore {

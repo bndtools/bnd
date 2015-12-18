@@ -1,19 +1,21 @@
 package test;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 
-import junit.framework.*;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.resource.Namespace;
+import org.osgi.resource.Requirement;
 
-import org.osgi.framework.namespace.*;
-import org.osgi.resource.*;
-
-import aQute.bnd.build.*;
-import aQute.bnd.build.model.*;
-import aQute.bnd.build.model.clauses.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.osgi.resource.*;
-import aQute.bnd.properties.*;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.properties.Document;
+import junit.framework.TestCase;
 
 public class BndEditModelTest extends TestCase {
 	static CapReqBuilder cp = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE);

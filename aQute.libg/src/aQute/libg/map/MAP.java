@@ -1,6 +1,10 @@
 package aQute.libg.map;
 
-import java.util.*;
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Easy way to build a map: Map<String,Integer> s = MAP.$("a",2).$("b",3);

@@ -1,10 +1,16 @@
 package aQute.lib.putjar;
 
-import java.io.*;
-import java.util.zip.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.zip.CRC32;
 
-import aQute.lib.io.*;
-import aQute.libg.fileiterator.*;
+import aQute.lib.io.IOConstants;
+import aQute.libg.fileiterator.FileIterator;
 
 public class DirectoryInputStream extends InputStream {
 	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;

@@ -1,10 +1,23 @@
 package aQute.bnd.differ;
 
-import static aQute.bnd.service.diff.Delta.*;
+import static aQute.bnd.service.diff.Delta.ADDED;
+import static aQute.bnd.service.diff.Delta.CHANGED;
+import static aQute.bnd.service.diff.Delta.IGNORED;
+import static aQute.bnd.service.diff.Delta.MAJOR;
+import static aQute.bnd.service.diff.Delta.MICRO;
+import static aQute.bnd.service.diff.Delta.MINOR;
+import static aQute.bnd.service.diff.Delta.REMOVED;
+import static aQute.bnd.service.diff.Delta.UNCHANGED;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
-import aQute.bnd.service.diff.*;
+import aQute.bnd.service.diff.Delta;
+import aQute.bnd.service.diff.Diff;
+import aQute.bnd.service.diff.Tree;
+import aQute.bnd.service.diff.Type;
 
 /**
  * A DiffImpl class compares a newer Element to an older Element. The Element

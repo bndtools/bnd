@@ -1,20 +1,35 @@
 package org.osgi.service.indexer.impl;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.*;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import javax.xml.parsers.*;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
-import org.osgi.framework.*;
-import org.osgi.service.component.*;
-import org.osgi.service.indexer.*;
-import org.osgi.service.indexer.impl.types.*;
-import org.osgi.service.log.*;
-import org.xml.sax.*;
-import org.xml.sax.helpers.*;
+import org.osgi.framework.Constants;
+import org.osgi.framework.Version;
+import org.osgi.service.component.ComponentConstants;
+import org.osgi.service.indexer.Builder;
+import org.osgi.service.indexer.Capability;
+import org.osgi.service.indexer.Namespaces;
+import org.osgi.service.indexer.Requirement;
+import org.osgi.service.indexer.Resource;
+import org.osgi.service.indexer.ResourceAnalyzer;
+import org.osgi.service.indexer.impl.types.VersionKey;
+import org.osgi.service.indexer.impl.types.VersionRange;
+import org.osgi.service.log.LogService;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 public class SCRAnalyzer implements ResourceAnalyzer {
 	static final Pattern		URI_VERSION_P	= Pattern.compile("/scr/v(\\d+\\.\\d+\\.\\d+)$");

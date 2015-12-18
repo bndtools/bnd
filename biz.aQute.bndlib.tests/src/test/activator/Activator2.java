@@ -1,6 +1,6 @@
 package test.activator;
 
-import org.osgi.framework.*;
+import org.osgi.framework.BundleContext;
 
 public class Activator2 extends Activator {
 

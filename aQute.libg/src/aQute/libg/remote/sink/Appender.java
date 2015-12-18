@@ -1,8 +1,8 @@
 package aQute.libg.remote.sink;
 
-import java.io.*;
+import java.io.IOException;
 
-import aQute.libg.remote.*;
+import aQute.libg.remote.Source;
 
 class Appender implements Appendable {
 	final Source	sources[];

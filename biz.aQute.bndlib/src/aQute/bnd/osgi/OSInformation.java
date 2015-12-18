@@ -1,8 +1,9 @@
 package aQute.bnd.osgi;
 
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.version.*;
+import aQute.bnd.version.Version;
 
 /**
  * OS specific information, used by the native_capability macro for

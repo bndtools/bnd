@@ -1,9 +1,11 @@
 package aQute.bnd.ext.test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
-import aQute.bnd.build.*;
-import aQute.bnd.service.extension.*;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.service.extension.ExtensionActivator;
 
 public class TestExtension implements ExtensionActivator {
 

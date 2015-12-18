@@ -1,15 +1,28 @@
 package aQute.bnd.signing;
 
-import java.io.*;
-import java.security.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.security.KeyStore;
 import java.security.KeyStore.PrivateKeyEntry;
-import java.util.*;
-import java.util.jar.*;
-import java.util.regex.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Signature;
+import java.util.Map;
+import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.EmbeddedResource;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
 import aQute.lib.base64.Base64;
-import aQute.lib.io.*;
+import aQute.lib.io.IO;
+import aQute.lib.io.IOConstants;
 
 /**
  * This class is used with the aQute.bnd.osgi package, it signs jars with DSA

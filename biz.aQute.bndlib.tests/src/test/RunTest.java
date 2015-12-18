@@ -1,10 +1,10 @@
 package test;
 
-import java.io.*;
+import java.io.File;
 
-import junit.framework.*;
-import aQute.bnd.build.*;
-import aQute.lib.io.*;
+import aQute.bnd.build.Workspace;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class RunTest extends TestCase {
 	Workspace	ws;

@@ -1,19 +1,24 @@
 package aQute.bnd.ant;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
-import org.apache.tools.ant.*;
-import org.apache.tools.ant.taskdefs.*;
-import org.apache.tools.ant.types.*;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.taskdefs.Property;
+import org.apache.tools.ant.types.Path;
+import org.apache.tools.ant.types.Reference;
 
-import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
-import aQute.bnd.osgi.*;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.eclipse.*;
-import aQute.lib.utf8properties.*;
-import aQute.libg.qtokens.*;
+import aQute.bnd.osgi.eclipse.EclipseClasspath;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.qtokens.QuotedTokenizer;
 
 /**
  * <p> This file is the bnd main task for ant. </p> <p> To define the task

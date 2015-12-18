@@ -1,6 +1,6 @@
 package test;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
 public class EcjTest extends TestCase {
 

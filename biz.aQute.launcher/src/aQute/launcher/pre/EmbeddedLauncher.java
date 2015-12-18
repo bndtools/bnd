@@ -1,12 +1,19 @@
 package aQute.launcher.pre;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.jar.Manifest;
 
-import aQute.lib.io.*;
+import aQute.lib.io.IOConstants;
 
 public class EmbeddedLauncher {
 	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;

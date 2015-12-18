@@ -1,9 +1,9 @@
 package aQute.bnd.service.export;
 
-import java.util.*;
+import java.util.Map;
 
-import aQute.bnd.build.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.osgi.Resource;
 
 public interface Exporter {
 	String[] getTypes();

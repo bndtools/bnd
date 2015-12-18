@@ -1,6 +1,6 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
+import java.io.OutputStream;
 
 public class JarResource extends WriteResource {
 	Jar		jar;

@@ -1,14 +1,22 @@
 package aQute.bnd.maven;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Map;
+import java.util.Set;
+import java.util.jar.Manifest;
 
-import aQute.bnd.build.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.libg.command.*;
-import aQute.service.reporter.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.JarResource;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.libg.command.Command;
+import aQute.service.reporter.Reporter;
 
 public class MavenDeployCmd extends Processor {
 

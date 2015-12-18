@@ -1,7 +1,7 @@
 package aQute.lib.hex;
 
-import java.io.*;
-import java.util.regex.*;
+import java.io.IOException;
+import java.util.regex.Pattern;
 
 /*
  * Hex converter.

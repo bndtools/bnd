@@ -1,11 +1,16 @@
 package aQute.bnd.make;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Map;
 
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.EmbeddedResource;
+import aQute.bnd.osgi.FileResource;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.osgi.URLResource;
+import aQute.bnd.service.MakePlugin;
 
 public class MakeCopy implements MakePlugin {
 

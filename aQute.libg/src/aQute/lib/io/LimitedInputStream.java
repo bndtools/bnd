@@ -1,6 +1,7 @@
 package aQute.lib.io;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class LimitedInputStream extends InputStream {
 	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;

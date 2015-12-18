@@ -1,14 +1,17 @@
 package test.resource;
 
-import java.util.*;
+import java.util.List;
 
-import junit.framework.*;
+import org.osgi.framework.Version;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
 
-import org.osgi.framework.*;
-import org.osgi.resource.*;
-
-import aQute.bnd.osgi.resource.*;
-import aQute.lib.json.*;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.PersistentResource;
+import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.lib.json.JSONCodec;
+import junit.framework.TestCase;
 
 public class PersistentResourceTest extends TestCase {
 

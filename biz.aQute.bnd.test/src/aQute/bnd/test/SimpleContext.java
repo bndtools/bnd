@@ -1,8 +1,9 @@
 package aQute.bnd.test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
 
-import javax.xml.namespace.*;
+import javax.xml.namespace.NamespaceContext;
 
 public class SimpleContext implements NamespaceContext {
 	final String	prefix;

@@ -1,15 +1,26 @@
 package aQute.bnd.testing;
 
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
-import java.util.regex.*;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.osgi.framework.*;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceReference;
 
-import aQute.bnd.make.component.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.collections.*;
+import aQute.bnd.make.component.ComponentAnnotationReader;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.URLResource;
+import aQute.lib.collections.MultiMap;
 
 /**
  * Intended to wire a number components for testing using the DS (from bnd)

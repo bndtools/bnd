@@ -1,8 +1,9 @@
 package aQute.lib.strings;
 
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.lib.collections.*;
+import aQute.lib.collections.ExtList;
 
 public class Strings {
 

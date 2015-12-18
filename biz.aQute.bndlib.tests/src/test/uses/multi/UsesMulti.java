@@ -1,7 +1,7 @@
 package test.uses.multi;
 
-import javax.security.auth.callback.*;
-import javax.sql.*;
+import javax.security.auth.callback.Callback;
+import javax.sql.DataSource;
 
 public class UsesMulti {
 

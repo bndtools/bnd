@@ -1,13 +1,15 @@
 package aQute.bnd.deployer.repository.providers;
 
-import static aQute.bnd.deployer.repository.api.Decision.*;
+import static aQute.bnd.deployer.repository.api.Decision.accept;
+import static aQute.bnd.deployer.repository.api.Decision.reject;
+import static aQute.bnd.deployer.repository.api.Decision.undecided;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
 
-import javax.xml.stream.*;
+import javax.xml.stream.XMLStreamException;
 
-import junit.framework.*;
-import aQute.bnd.deployer.repository.api.*;
+import aQute.bnd.deployer.repository.api.CheckResult;
+import junit.framework.TestCase;
 
 public class TestR5Recognition extends TestCase {
 

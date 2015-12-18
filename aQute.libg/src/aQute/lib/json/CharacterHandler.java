@@ -1,7 +1,7 @@
 package aQute.lib.json;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Type;
+import java.util.Map;
 
 public class CharacterHandler extends Handler {
 

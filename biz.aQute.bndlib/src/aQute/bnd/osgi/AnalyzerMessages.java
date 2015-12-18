@@ -1,9 +1,9 @@
 package aQute.bnd.osgi;
 
-import java.util.*;
+import java.util.Collection;
 
 import aQute.bnd.osgi.Descriptors.PackageRef;
-import aQute.service.reporter.*;
+import aQute.service.reporter.Messages;
 
 public interface AnalyzerMessages extends Messages {
 

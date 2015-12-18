@@ -1,11 +1,13 @@
 package aQute.lib.data;
 
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.regex.*;
+import java.lang.reflect.Field;
+import java.util.Formatter;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.lib.converter.*;
-import aQute.lib.hex.*;
+import aQute.lib.converter.Converter;
+import aQute.lib.hex.Hex;
 
 public class Data {
 

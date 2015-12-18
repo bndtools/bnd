@@ -1,6 +1,6 @@
 package aQute.bnd.service;
 
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Analyzer;
 
 public interface AnalyzerPlugin {
 

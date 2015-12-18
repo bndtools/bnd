@@ -1,7 +1,8 @@
 package aQute.bnd.service.url;
 
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 
 public interface URLConnector {
 

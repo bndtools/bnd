@@ -1,13 +1,18 @@
 package aQute.lib.env;
 
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
-import aQute.lib.collections.*;
-import aQute.libg.generics.*;
-import aQute.libg.qtokens.*;
-import aQute.service.reporter.*;
+import aQute.lib.collections.SortedList;
+import aQute.libg.generics.Create;
+import aQute.libg.qtokens.QuotedTokenizer;
+import aQute.service.reporter.Reporter;
 
 public class Header implements Map<String,Props> {
 	public final static Pattern TOKEN_P = Pattern.compile("[-a-zA-Z0-9_]+");

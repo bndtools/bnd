@@ -1,6 +1,6 @@
 package aQute.bnd.service;
 
-import java.io.*;
+import java.io.File;
 
 public interface Refreshable {
 	/**

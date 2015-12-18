@@ -1,8 +1,9 @@
 package aQute.bnd.deployer.obr;
 
-import java.util.*;
+import java.util.Map;
 
-import aQute.bnd.deployer.repository.*;
+import aQute.bnd.deployer.repository.AbstractIndexedRepo;
+import aQute.bnd.deployer.repository.FixedIndexedRepo;
 
 public class Conversions {
 

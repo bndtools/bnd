@@ -1,8 +1,8 @@
 package aQute.libg.cryptography;
 
-import java.util.*;
+import java.util.Arrays;
 
-import aQute.lib.hex.*;
+import aQute.lib.hex.Hex;
 
 public abstract class Digest {
 	final byte[] digest;

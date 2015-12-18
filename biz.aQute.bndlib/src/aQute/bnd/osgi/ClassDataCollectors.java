@@ -1,12 +1,13 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
-import java.util.*;
+import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.List;
 
 import aQute.bnd.osgi.Clazz.FieldDef;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.service.reporter.*;
+import aQute.service.reporter.Reporter;
 
 /**
  * This class dispatches class data collectors. Over time more and more code was

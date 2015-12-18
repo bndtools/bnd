@@ -1,6 +1,6 @@
 package aQute.libg.shacache;
 
-import java.io.*;
+import java.io.InputStream;
 
 /**
  * An object that can retrieve an inputstream on a given SHA-1

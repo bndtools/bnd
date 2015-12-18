@@ -1,16 +1,30 @@
 package aQute.libg.cafs;
 
-import static aQute.lib.io.IO.*;
+import static aQute.lib.io.IO.copy;
 
-import java.io.*;
-import java.nio.channels.*;
-import java.security.*;
-import java.util.*;
-import java.util.concurrent.atomic.*;
-import java.util.zip.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.DataInput;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.zip.CRC32;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
-import aQute.lib.index.*;
-import aQute.libg.cryptography.*;
+import aQute.lib.index.Index;
+import aQute.libg.cryptography.SHA1;
 
 /**
  * CAFS implements a SHA-1 based file store. The basic idea is that every file

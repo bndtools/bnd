@@ -1,9 +1,9 @@
 package aQute.bnd.build;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Method;
 
-import aQute.bnd.service.action.*;
-import aQute.lib.converter.*;
+import aQute.bnd.service.action.Action;
+import aQute.lib.converter.Converter;
 
 public class ReflectAction implements Action {
 	String what;

@@ -1,6 +1,7 @@
 package aQute.remote.agent;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintStream;
 
 /**
  * This is a null redirector. That is, it just does nothing.

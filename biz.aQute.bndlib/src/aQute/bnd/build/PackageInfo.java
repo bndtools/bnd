@@ -1,12 +1,15 @@
 package aQute.bnd.build;
 
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Formatter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.osgi.*;
-import aQute.bnd.version.*;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Verifier;
+import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
 
 /*
  * Hides the differences and handling of packageinfo and package-info.java 

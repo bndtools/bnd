@@ -1,16 +1,22 @@
 package aQute.lib.consoleapp;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.nio.charset.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
+import java.util.Formatter;
+import java.util.List;
 
-import aQute.lib.collections.*;
-import aQute.lib.env.*;
-import aQute.lib.getopt.*;
-import aQute.lib.io.*;
-import aQute.lib.justif.*;
-import aQute.lib.settings.*;
+import aQute.lib.collections.ExtList;
+import aQute.lib.env.Env;
+import aQute.lib.getopt.Arguments;
+import aQute.lib.getopt.CommandLine;
+import aQute.lib.getopt.Description;
+import aQute.lib.getopt.Options;
+import aQute.lib.io.IO;
+import aQute.lib.justif.Justif;
+import aQute.lib.settings.Settings;
 
 public abstract class AbstractConsoleApp extends Env {
 	Settings settings;

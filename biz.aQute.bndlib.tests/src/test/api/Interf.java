@@ -1,6 +1,7 @@
 package test.api;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 
 public interface Interf {
 	/**

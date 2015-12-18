@@ -1,12 +1,18 @@
 package test.diff;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 
-import junit.framework.*;
-import aQute.bnd.differ.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.diff.*;
-import aQute.lib.io.*;
+import aQute.bnd.differ.DiffPluginImpl;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.service.diff.Delta;
+import aQute.bnd.service.diff.Diff;
+import aQute.bnd.service.diff.Tree;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class DiffTest extends TestCase {
 	static DiffPluginImpl differ = new DiffPluginImpl();

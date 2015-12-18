@@ -1,6 +1,6 @@
 package test;
 
-import org.junit.*;
+import org.junit.Test;
 
 public class A {
 	@Test

@@ -1,8 +1,8 @@
 package aQute.lib.json;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.Map;
 
 public class EnumHandler extends Handler {
 	@SuppressWarnings("rawtypes")

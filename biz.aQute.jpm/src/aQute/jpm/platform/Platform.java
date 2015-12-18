@@ -1,18 +1,27 @@
 package aQute.jpm.platform;
 
-import static aQute.lib.io.IO.*;
+import static aQute.lib.io.IO.copy;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Formatter;
+import java.util.Map;
 
-import aQute.jpm.lib.*;
-import aQute.lib.collections.*;
-import aQute.lib.getopt.*;
-import aQute.lib.io.*;
-import aQute.libg.reporter.*;
-import aQute.libg.sed.*;
-import aQute.service.reporter.*;
+import aQute.jpm.lib.ArtifactData;
+import aQute.jpm.lib.CommandData;
+import aQute.jpm.lib.JVM;
+import aQute.jpm.lib.JustAnotherPackageManager;
+import aQute.jpm.lib.ServiceData;
+import aQute.lib.collections.ExtList;
+import aQute.lib.getopt.CommandLine;
+import aQute.lib.io.IO;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.libg.sed.Sed;
+import aQute.service.reporter.Reporter;
 
 public abstract class Platform {
 	public enum Type {

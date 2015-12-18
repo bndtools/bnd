@@ -1,6 +1,6 @@
 package aQute.bnd.ant;
 
-import aQute.bnd.service.progress.*;
+import aQute.bnd.service.progress.ProgressPlugin;
 
 public class ConsoleProgress implements ProgressPlugin {
 

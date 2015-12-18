@@ -1,17 +1,40 @@
 package aQute.lib.converter;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.math.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.URI;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.Stack;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 
-import junit.framework.*;
 import aQute.lib.converter.Converter.Hook;
-import aQute.lib.io.*;
-import aQute.libg.cryptography.*;
-import aQute.libg.map.*;
+import aQute.lib.io.IO;
+import aQute.libg.cryptography.Digester;
+import aQute.libg.cryptography.SHA1;
+import aQute.libg.map.MAP;
+import junit.framework.TestCase;
 
 @SuppressWarnings({
 		"unchecked", "rawtypes"

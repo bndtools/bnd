@@ -1,11 +1,19 @@
 package test;
 
-import java.io.*;
-import java.lang.instrument.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.lang.instrument.Instrumentation;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.Properties;
+import java.util.concurrent.Callable;
 
-import org.osgi.framework.*;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 
 public class TestActivator implements BundleActivator {
 

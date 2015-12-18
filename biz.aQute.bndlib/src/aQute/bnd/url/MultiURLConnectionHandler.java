@@ -1,9 +1,10 @@
 package aQute.bnd.url;
 
-import java.net.*;
+import java.net.URL;
+import java.net.URLConnection;
 
-import aQute.bnd.service.*;
-import aQute.bnd.service.url.*;
+import aQute.bnd.service.Registry;
+import aQute.bnd.service.url.URLConnectionHandler;
 
 /**
  * Will iterate over the current plugins to find a matching URLConnectionHandler

@@ -1,18 +1,26 @@
 package aQute.bnd.make.component;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Map.Entry;
 
-import aQute.bnd.annotation.component.*;
-import aQute.bnd.component.*;
-import aQute.bnd.header.*;
-import aQute.bnd.make.metatype.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.annotation.component.Component;
+import aQute.bnd.component.HeaderReader;
+import aQute.bnd.component.TagResource;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.make.metatype.MetaTypeReader;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.QUERY;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.bnd.service.*;
-import aQute.lib.tag.*;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.osgi.Verifier;
+import aQute.bnd.service.AnalyzerPlugin;
+import aQute.lib.tag.Tag;
 
 /**
  * This class is an analyzer plugin. It looks at the properties and tries to

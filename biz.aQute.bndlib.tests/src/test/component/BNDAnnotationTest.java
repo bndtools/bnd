@@ -20,8 +20,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import junit.framework.AssertionFailedError;
-
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
@@ -48,6 +46,7 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.repository.SearchableRepository;
 import aQute.bnd.test.BndTestCase;
+import junit.framework.AssertionFailedError;
 
 /**
  * Test for use of DS components specified using bnd proprietary annotations.

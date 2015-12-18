@@ -1,7 +1,7 @@
 package aQute.bnd.service.repository;
 
-import aQute.bnd.annotation.*;
-import aQute.bnd.util.dto.*;
+import aQute.bnd.annotation.ProviderType;
+import aQute.bnd.util.dto.DTO;
 
 @ProviderType
 public interface ResolverInfo {

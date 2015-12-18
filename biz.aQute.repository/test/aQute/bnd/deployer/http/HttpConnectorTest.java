@@ -1,24 +1,28 @@
 package aQute.bnd.deployer.http;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.net.ssl.*;
+import javax.net.ssl.SSLHandshakeException;
 
-import junit.framework.*;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
+import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 
-import org.eclipse.jetty.security.*;
-import org.eclipse.jetty.server.*;
-import org.eclipse.jetty.server.handler.*;
-import org.eclipse.jetty.server.nio.*;
-import org.eclipse.jetty.server.ssl.*;
-import org.eclipse.jetty.util.security.*;
-import org.eclipse.jetty.util.ssl.*;
-
-import test.http.*;
-import aQute.bnd.service.url.*;
-import aQute.lib.io.*;
+import aQute.bnd.service.url.TaggedData;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
+import test.http.ETaggingResourceHandler;
 
 public class HttpConnectorTest extends TestCase {
 

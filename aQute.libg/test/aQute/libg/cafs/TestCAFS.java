@@ -1,8 +1,8 @@
 package aQute.libg.cafs;
 
-import java.io.*;
+import java.io.File;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
 public class TestCAFS extends TestCase {
 	File tmp;

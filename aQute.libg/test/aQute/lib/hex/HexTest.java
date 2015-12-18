@@ -2,8 +2,8 @@ package aQute.lib.hex;
 
 import java.util.Arrays;
 
-import junit.framework.TestCase;
 import aQute.lib.base64.Base64;
+import junit.framework.TestCase;
 
 public class HexTest extends TestCase {
 

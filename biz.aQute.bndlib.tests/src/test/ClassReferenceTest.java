@@ -1,11 +1,15 @@
 package test;
 
-import java.util.*;
-import java.util.jar.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.jar.Manifest;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Clazz.JAVA;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class ClassReferenceTest extends TestCase {

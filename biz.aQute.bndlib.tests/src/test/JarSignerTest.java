@@ -1,14 +1,20 @@
 package test;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.File;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.signing.*;
-import aQute.lib.io.*;
-import aQute.libg.generics.*;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.signing.JartoolSigner;
+import aQute.lib.io.IO;
+import aQute.libg.generics.Create;
+import junit.framework.TestCase;
 
 @SuppressWarnings({
 		"resource", "restriction"

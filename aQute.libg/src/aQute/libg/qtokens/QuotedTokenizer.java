@@ -1,8 +1,8 @@
 package aQute.libg.qtokens;
 
-import java.util.*;
+import java.util.List;
 
-import aQute.libg.generics.*;
+import aQute.libg.generics.Create;
 
 public class QuotedTokenizer {
 	String	string;

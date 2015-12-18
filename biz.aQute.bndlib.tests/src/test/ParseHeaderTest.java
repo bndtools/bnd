@@ -1,12 +1,16 @@
 package test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
-import junit.framework.*;
-import aQute.bnd.header.*;
+import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Attrs.Type;
-import aQute.bnd.osgi.*;
-import aQute.bnd.version.*;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.version.Version;
+import junit.framework.TestCase;
 
 public class ParseHeaderTest extends TestCase {
 

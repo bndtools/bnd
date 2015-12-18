@@ -1,6 +1,6 @@
 package aQute.bnd.service;
 
-import java.util.*;
+import java.util.Map;
 
 /**
  * An interface to allow bnd to provide commands on elements. This interface can

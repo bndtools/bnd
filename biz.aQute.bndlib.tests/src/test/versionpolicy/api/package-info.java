@@ -2,4 +2,5 @@
 @Export(exclude = PrivateImpl.class, mandatory = "a=b")
 package test.versionpolicy.api;
 
-import aQute.bnd.annotation.*;
+import aQute.bnd.annotation.Export;
+import aQute.bnd.annotation.Version;

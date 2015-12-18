@@ -1,9 +1,9 @@
 package aQute.bnd.build;
 
-import java.io.*;
+import java.io.File;
 
-import aQute.bnd.service.*;
-import aQute.service.reporter.*;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.service.reporter.Reporter;
 
 /**
  * This class is intended to be used by the users of a {@link RepositoryPlugin}.

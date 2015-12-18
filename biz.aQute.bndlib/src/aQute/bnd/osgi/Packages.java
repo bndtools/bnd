@@ -1,8 +1,12 @@
 package aQute.bnd.osgi;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
-import aQute.bnd.header.*;
+import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 
 public class Packages implements Map<PackageRef,Attrs> {

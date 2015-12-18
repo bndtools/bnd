@@ -1,10 +1,14 @@
 package aQute.lib.index;
 
-import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 /**
  * <pre> 0 -> 0, 122 -> 1 123 -> 123, 244 -> 2 245 -> 245, ... </pre>

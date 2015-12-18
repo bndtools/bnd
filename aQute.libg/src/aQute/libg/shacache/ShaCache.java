@@ -1,10 +1,12 @@
 package aQute.libg.shacache;
 
-import java.io.*;
-import java.util.regex.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.regex.Pattern;
 
-import aQute.lib.io.*;
-import aQute.libg.cryptography.*;
+import aQute.lib.io.IO;
+import aQute.libg.cryptography.SHA1;
 
 /**
  * Provide a standardized cache based on the SHA-1 of a file.

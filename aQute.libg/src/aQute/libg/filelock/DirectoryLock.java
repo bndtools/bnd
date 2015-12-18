@@ -1,6 +1,6 @@
 package aQute.libg.filelock;
 
-import java.io.*;
+import java.io.File;
 
 public class DirectoryLock {
 	final File					lock;

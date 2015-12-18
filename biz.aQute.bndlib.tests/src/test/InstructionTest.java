@@ -1,9 +1,10 @@
 package test;
 
-import java.util.*;
+import java.util.Arrays;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Instruction;
+import aQute.bnd.osgi.Instructions;
+import junit.framework.TestCase;
 
 public class InstructionTest extends TestCase {
 

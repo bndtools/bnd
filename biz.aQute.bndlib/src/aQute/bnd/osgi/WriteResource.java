@@ -1,6 +1,10 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 
 public abstract class WriteResource implements Resource {
 	String			extra;

@@ -1,7 +1,12 @@
 package aQute.libg.classdump;
 
-import java.io.*;
-import java.lang.reflect.*;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.lang.reflect.Modifier;
 
 public class ClassDumper {
 	/**

@@ -1,11 +1,10 @@
 package aQute.bnd.deployer.repository.aether;
 
-import junit.framework.*;
+import org.eclipse.aether.artifact.Artifact;
 
-import org.eclipse.aether.artifact.*;
-
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.Jar;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class ConversionUtilsTest extends TestCase {
 

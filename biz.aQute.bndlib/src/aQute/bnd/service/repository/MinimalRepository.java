@@ -1,11 +1,12 @@
 package aQute.bnd.service.repository;
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
 
-import aQute.bnd.version.*;
-import aQute.service.reporter.*;
+import aQute.bnd.version.Version;
+import aQute.service.reporter.Report;
 
 public interface MinimalRepository {
 	public enum Gestalt {

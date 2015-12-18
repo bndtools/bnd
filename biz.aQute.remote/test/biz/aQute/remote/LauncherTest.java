@@ -1,23 +1,30 @@
 package biz.aQute.remote;
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.*;
-
-import org.osgi.framework.*;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
-import org.osgi.framework.launch.*;
+import org.osgi.framework.launch.Framework;
 
-import aQute.bnd.build.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.repository.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Run;
+import aQute.bnd.build.RunSession;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.service.repository.InfoRepository;
 import aQute.bnd.version.Version;
-import aQute.lib.io.*;
-import aQute.remote.main.*;
-import aQute.remote.plugin.*;
+import aQute.lib.io.IO;
+import aQute.remote.main.Main;
+import aQute.remote.plugin.RemoteProjectLauncherPlugin;
+import aQute.remote.plugin.RunSessionImpl;
+import junit.framework.TestCase;
 
 /**
  * Creates a workspace and then launches a main remote.

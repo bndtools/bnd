@@ -1,8 +1,9 @@
 package aQute.bnd.osgi.resource;
 
-import java.util.*;
+import java.util.Map;
 
-import org.osgi.resource.*;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Resource;
 
 public class CapabilityImpl extends CapReq implements Capability {
 

@@ -1,12 +1,15 @@
 package test;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.File;
+import java.util.Map;
+import java.util.Properties;
+import java.util.jar.Manifest;
 
-import junit.framework.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class ExportHeaderTest extends TestCase {

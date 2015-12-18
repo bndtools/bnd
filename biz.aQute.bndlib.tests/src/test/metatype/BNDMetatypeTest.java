@@ -29,8 +29,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import junit.framework.AssertionFailedError;
-
 import org.w3c.dom.Document;
 
 import aQute.bnd.annotation.metatype.Configurable;
@@ -40,6 +38,7 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.test.BndTestCase;
 import aQute.lib.io.IO;
 import aQute.libg.generics.Create;
+import junit.framework.AssertionFailedError;
 
 @SuppressWarnings("resource")
 public class BNDMetatypeTest extends BndTestCase {

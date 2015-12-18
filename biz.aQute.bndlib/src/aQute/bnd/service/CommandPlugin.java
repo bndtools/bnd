@@ -1,6 +1,6 @@
 package aQute.bnd.service;
 
-import aQute.bnd.build.*;
+import aQute.bnd.build.Project;
 
 /**
  * A plugin that makes it possible to @author aqute

@@ -4,9 +4,9 @@ import java.io.File;
 import java.util.List;
 import java.util.jar.Manifest;
 
-import junit.framework.TestCase;
-
 import org.osgi.service.indexer.Resource;
+
+import junit.framework.TestCase;
 
 public class TestJarResource extends TestCase {
 

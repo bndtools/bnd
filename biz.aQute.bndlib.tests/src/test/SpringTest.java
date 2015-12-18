@@ -1,7 +1,7 @@
 package test;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Processor;
+import junit.framework.TestCase;
 
 public class SpringTest extends TestCase {
 

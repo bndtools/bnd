@@ -17,8 +17,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
-import junit.framework.TestCase;
-
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -42,6 +40,7 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
 import aQute.libg.map.MAP;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class MavenTest extends TestCase {

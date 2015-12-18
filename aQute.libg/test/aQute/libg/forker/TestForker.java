@@ -1,8 +1,11 @@
 package aQute.libg.forker;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
 public class TestForker extends TestCase {
 

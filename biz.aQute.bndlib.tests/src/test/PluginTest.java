@@ -1,14 +1,16 @@
 package test;
 
-import java.applet.*;
-import java.awt.*;
-import java.util.*;
+import java.applet.Applet;
+import java.awt.MenuContainer;
 import java.util.List;
+import java.util.Map;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
-import aQute.service.reporter.*;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.Plugin;
+import aQute.service.reporter.Reporter;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 

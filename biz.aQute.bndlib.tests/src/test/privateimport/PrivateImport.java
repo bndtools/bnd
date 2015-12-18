@@ -1,9 +1,10 @@
 package test.privateimport;
 
-import java.io.*;
+import java.io.IOException;
 
-import org.osgi.framework.*;
-import org.osgi.service.cm.*;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.cm.ConfigurationAdmin;
 
 public class PrivateImport implements ConfigurationAdmin {
 

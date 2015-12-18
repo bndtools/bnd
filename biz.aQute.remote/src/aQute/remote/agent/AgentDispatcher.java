@@ -1,15 +1,29 @@
 package aQute.remote.agent;
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import java.io.Closeable;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.osgi.framework.*;
-import org.osgi.framework.launch.*;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.launch.Framework;
+import org.osgi.framework.launch.FrameworkFactory;
 
-import aQute.remote.api.*;
-import aQute.remote.util.*;
+import aQute.remote.api.Agent;
+import aQute.remote.api.Supervisor;
+import aQute.remote.util.Link;
 
 /**
  * This class collaborates with the Envoy part of this design. After the envoy

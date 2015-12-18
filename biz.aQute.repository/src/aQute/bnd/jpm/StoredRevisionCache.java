@@ -1,18 +1,35 @@
 package aQute.bnd.jpm;
 
-import java.io.*;
-import java.net.*;
-import java.security.*;
-import java.security.cert.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URLConnection;
+import java.security.DigestInputStream;
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
-import javax.net.ssl.*;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
-import aQute.lib.hex.*;
-import aQute.lib.io.*;
-import aQute.lib.json.*;
-import aQute.lib.settings.*;
-import aQute.rest.urlclient.*;
+import aQute.lib.hex.Hex;
+import aQute.lib.io.IO;
+import aQute.lib.json.JSONCodec;
+import aQute.lib.settings.Settings;
+import aQute.rest.urlclient.URLClient;
 import aQute.service.library.Library.Program;
 import aQute.service.library.Library.RevisionRef;
 

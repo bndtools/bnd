@@ -1,10 +1,16 @@
 package aQute.bnd.filerepo;
 
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.version.*;
+import aQute.bnd.version.Version;
+import aQute.bnd.version.VersionRange;
 
 @Deprecated
 public class FileRepo {

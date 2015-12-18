@@ -1,9 +1,9 @@
 package test;
 
-import java.io.*;
+import java.io.File;
 
-import junit.framework.*;
-import aQute.bnd.build.*;
+import aQute.bnd.build.DownloadBlocker;
+import junit.framework.TestCase;
 
 public class DownloadBlockerTest extends TestCase {
 

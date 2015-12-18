@@ -1,8 +1,8 @@
 package aQute.bnd.deployer.obr;
 
-import java.util.*;
+import java.util.Map;
 
-import aQute.bnd.deployer.repository.*;
+import aQute.bnd.deployer.repository.LocalIndexedRepo;
 
 public class LocalOBR extends LocalIndexedRepo {
 

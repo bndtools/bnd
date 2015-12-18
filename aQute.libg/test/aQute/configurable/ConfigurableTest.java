@@ -1,8 +1,10 @@
 package aQute.configurable;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
 public class ConfigurableTest extends TestCase {
 

@@ -1,11 +1,11 @@
 package aQute.bnd.ant;
 
-import java.io.*;
+import java.io.File;
 
-import org.apache.tools.ant.*;
+import org.apache.tools.ant.BuildException;
 
-import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 
 public class RunBundlesTask extends BaseTask {
 

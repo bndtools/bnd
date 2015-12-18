@@ -1,11 +1,17 @@
 package aQute.jpm.service;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketTimeoutException;
+import java.util.Date;
+import java.util.UUID;
 
-import aQute.lib.io.*;
+import aQute.lib.io.IO;
+import aQute.lib.io.IOConstants;
 
 public class ServiceMain extends Thread {
 	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;

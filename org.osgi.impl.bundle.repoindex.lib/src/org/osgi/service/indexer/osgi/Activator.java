@@ -1,8 +1,10 @@
 package org.osgi.service.indexer.osgi;
 
-import org.osgi.framework.*;
-import org.osgi.service.indexer.*;
-import org.osgi.service.indexer.impl.*;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.indexer.ResourceIndexer;
+import org.osgi.service.indexer.impl.RepoIndex;
 
 public class Activator implements BundleActivator {
 

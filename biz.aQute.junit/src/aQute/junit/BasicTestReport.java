@@ -1,12 +1,17 @@
 package aQute.junit;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.io.PrintStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.List;
 
-import junit.framework.*;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 
-import org.osgi.framework.*;
+import junit.framework.AssertionFailedError;
+import junit.framework.Test;
+import junit.framework.TestListener;
 
 public class BasicTestReport implements TestListener, TestReporter {
 	private int				errors;

@@ -1,14 +1,18 @@
 package aQute.libg.sax;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
-import javax.xml.transform.stream.*;
+import javax.xml.transform.stream.StreamResult;
 
-import junit.framework.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
-import org.xml.sax.*;
-
-import aQute.libg.sax.filters.*;
+import aQute.libg.sax.filters.ElementSelectionFilter;
+import aQute.libg.sax.filters.MergeContentFilter;
+import junit.framework.TestCase;
 
 public class TestSAXFilters extends TestCase {
 

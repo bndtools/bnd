@@ -17,8 +17,6 @@ import java.util.Set;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import junit.framework.TestCase;
-
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.AttributeType;
@@ -34,6 +32,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.test.XmlTester;
 import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 @SuppressWarnings({
 		"resource", "restriction"

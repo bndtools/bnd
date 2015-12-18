@@ -1,10 +1,13 @@
 package aQute.lib.persistentmap;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
-import aQute.lib.io.*;
-import junit.framework.*;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class PersistentMapTest extends TestCase {
 

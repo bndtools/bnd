@@ -1,6 +1,6 @@
 package test.diff.inherit;
 
-import java.io.*;
+import java.io.Serializable;
 
 public abstract class A<E extends Serializable> extends B<E> {
 

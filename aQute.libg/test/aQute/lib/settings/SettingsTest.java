@@ -1,10 +1,10 @@
 package aQute.lib.settings;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.Arrays;
 
-import junit.framework.*;
-import aQute.lib.io.*;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class SettingsTest extends TestCase {
 

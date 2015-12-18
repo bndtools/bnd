@@ -1,11 +1,12 @@
 package test;
 
-import java.io.*;
-import java.lang.reflect.*;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.lang.reflect.Method;
 
-import junit.framework.*;
-import test.signatures.*;
-import aQute.bnd.compatibility.*;
+import aQute.bnd.compatibility.Signatures;
+import junit.framework.TestCase;
+import test.signatures.Z;
 
 @SuppressWarnings("restriction")
 public class TestSignatures extends TestCase {

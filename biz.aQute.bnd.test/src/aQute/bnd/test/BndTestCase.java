@@ -2,9 +2,9 @@ package aQute.bnd.test;
 
 import java.util.List;
 
+import aQute.service.reporter.Reporter;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
-import aQute.service.reporter.Reporter;
 
 public abstract class BndTestCase extends TestCase {
 

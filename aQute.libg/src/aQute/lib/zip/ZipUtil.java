@@ -1,8 +1,8 @@
 package aQute.lib.zip;
 
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
+import java.io.IOException;
+import java.util.TimeZone;
+import java.util.zip.ZipEntry;
 
 /**
  * This class provides utilities to work with zip files.

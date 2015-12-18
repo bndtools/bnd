@@ -1,8 +1,8 @@
 package aQute.bnd.service.repository;
 
-import aQute.bnd.service.*;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
-import aQute.bnd.version.*;
+import aQute.bnd.version.Version;
 
 /**
  * Can return a {@link ResourceDescriptor} for a given bsn/version.

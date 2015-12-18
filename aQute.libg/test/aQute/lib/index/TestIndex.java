@@ -1,9 +1,9 @@
 package aQute.lib.index;
 
-import java.io.*;
+import java.io.File;
 
-import junit.framework.*;
-import aQute.lib.io.*;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class TestIndex extends TestCase {
 

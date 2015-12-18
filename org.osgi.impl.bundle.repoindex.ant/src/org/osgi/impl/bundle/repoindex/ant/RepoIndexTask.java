@@ -1,18 +1,32 @@
 package org.osgi.impl.bundle.repoindex.ant;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
-import org.apache.tools.ant.*;
-import org.apache.tools.ant.types.*;
-import org.osgi.framework.*;
-import org.osgi.framework.launch.*;
-import org.osgi.service.indexer.*;
-import org.osgi.service.indexer.impl.*;
-import org.osgi.util.tracker.*;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.FileSet;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.launch.Framework;
+import org.osgi.service.indexer.ResourceAnalyzer;
+import org.osgi.service.indexer.ResourceIndexer;
+import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
+import org.osgi.util.tracker.ServiceTracker;
 
-import de.kalpatec.pojosr.framework.*;
-import de.kalpatec.pojosr.framework.launch.*;
+import de.kalpatec.pojosr.framework.PojoServiceRegistryFactoryImpl;
+import de.kalpatec.pojosr.framework.launch.ClasspathScanner;
+import de.kalpatec.pojosr.framework.launch.PojoServiceRegistryFactory;
 
 @SuppressWarnings("restriction")
 public class RepoIndexTask extends Task {

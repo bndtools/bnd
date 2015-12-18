@@ -8,15 +8,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.osgi.impl.bundle.bindex.BundleIndexerImpl;
 
-import test.lib.MockRegistry;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.lib.io.IO;
+import junit.framework.TestCase;
+import test.lib.MockRegistry;
 
 public class TestMultipleLocalIndexGeneration extends TestCase {
 

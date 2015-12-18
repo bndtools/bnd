@@ -1,12 +1,15 @@
 package aQute.bnd.deployer.repository.api;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.util.Set;
 
-import org.osgi.service.log.*;
+import org.osgi.service.log.LogService;
 
-import aQute.bnd.service.*;
+import aQute.bnd.service.Registry;
 
 public interface IRepositoryContentProvider {
 

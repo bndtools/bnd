@@ -1,13 +1,16 @@
 package aQute.bnd.deployer.repository;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.List;
 
-import junit.framework.*;
-import test.lib.*;
-import aQute.bnd.deployer.http.*;
-import aQute.lib.io.*;
+import aQute.bnd.deployer.http.DefaultURLConnector;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
+import test.lib.NanoHTTPD;
 
 public class CachingUriResourceHandlerTest extends TestCase {
 

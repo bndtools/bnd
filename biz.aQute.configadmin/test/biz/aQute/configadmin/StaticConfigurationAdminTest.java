@@ -5,9 +5,9 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.osgi.service.cm.Configuration;
+
+import junit.framework.TestCase;
 
 public class StaticConfigurationAdminTest extends TestCase {
 

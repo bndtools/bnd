@@ -8,11 +8,11 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.TestCase;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class TestFixedIndexedRepo extends TestCase {
 

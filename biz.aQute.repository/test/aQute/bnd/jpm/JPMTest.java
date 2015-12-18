@@ -5,13 +5,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 
-import junit.framework.TestCase;
-
 import org.osgi.service.indexer.impl.util.Hex;
 
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class JPMTest extends TestCase {
 	File				tmp;

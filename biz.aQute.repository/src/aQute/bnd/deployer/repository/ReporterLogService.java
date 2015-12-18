@@ -1,9 +1,9 @@
 package aQute.bnd.deployer.repository;
 
-import org.osgi.framework.*;
-import org.osgi.service.log.*;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.log.LogService;
 
-import aQute.service.reporter.*;
+import aQute.service.reporter.Reporter;
 
 public class ReporterLogService implements LogService {
 

@@ -1,7 +1,14 @@
 package aQute.lib.collections;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
+import java.util.SortedSet;
 
 /**
  * An immutbale list that sorts objects by their natural order or through a

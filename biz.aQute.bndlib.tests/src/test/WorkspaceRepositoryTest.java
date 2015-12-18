@@ -1,12 +1,16 @@
 package test;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.SortedSet;
 
-import junit.framework.*;
-import aQute.bnd.build.*;
-import aQute.bnd.version.*;
-import aQute.lib.io.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.build.WorkspaceRepository;
+import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class WorkspaceRepositoryTest extends TestCase {
 	static Workspace			workspace;

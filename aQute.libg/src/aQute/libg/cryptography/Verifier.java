@@ -1,7 +1,9 @@
 package aQute.libg.cryptography;
 
-import java.io.*;
-import java.security.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.security.Signature;
+import java.security.SignatureException;
 
 public class Verifier extends OutputStream {
 	final Signature	signature;

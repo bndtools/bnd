@@ -1,9 +1,11 @@
 package aQute.lib.json;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 public class SpecialHandler extends Handler {
 	@SuppressWarnings("rawtypes")

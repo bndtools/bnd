@@ -1,6 +1,7 @@
 package aQute.remote.main;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * An Envoy only implements the Agent API partially. These APIs are coupled

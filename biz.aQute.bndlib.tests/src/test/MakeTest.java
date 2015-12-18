@@ -1,10 +1,14 @@
 package test;
 
-import java.util.*;
+import java.util.Properties;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.JarResource;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 /**
  * Tests the make functionality.

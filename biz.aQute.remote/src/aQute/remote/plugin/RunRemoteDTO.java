@@ -1,8 +1,8 @@
 package aQute.remote.plugin;
 
-import java.util.*;
+import java.util.Map;
 
-import aQute.bnd.util.dto.*;
+import aQute.bnd.util.dto.DTO;
 
 /**
  * Definition of the -runremote header

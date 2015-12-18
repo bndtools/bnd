@@ -15,18 +15,32 @@
  */
 package org.osgi.impl.bundle.bindex.cli;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
-import org.kohsuke.args4j.*;
-import org.osgi.framework.*;
-import org.osgi.framework.launch.*;
-import org.osgi.service.indexer.*;
-import org.osgi.service.indexer.impl.*;
-import org.osgi.util.tracker.*;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.launch.Framework;
+import org.osgi.service.indexer.ResourceAnalyzer;
+import org.osgi.service.indexer.ResourceIndexer;
+import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
+import org.osgi.service.indexer.impl.RepoIndex;
+import org.osgi.util.tracker.ServiceTracker;
 
-import de.kalpatec.pojosr.framework.*;
-import de.kalpatec.pojosr.framework.launch.*;
+import de.kalpatec.pojosr.framework.PojoServiceRegistryFactoryImpl;
+import de.kalpatec.pojosr.framework.launch.ClasspathScanner;
+import de.kalpatec.pojosr.framework.launch.PojoServiceRegistryFactory;
 
 @SuppressWarnings("restriction")
 public class Index {

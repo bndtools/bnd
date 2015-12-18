@@ -1,8 +1,9 @@
 package aQute.jpm.lib;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import aQute.lib.data.*;
+import aQute.lib.data.AllowNull;
 
 public class ServiceData extends CommandData {
 	public String		args	= "";

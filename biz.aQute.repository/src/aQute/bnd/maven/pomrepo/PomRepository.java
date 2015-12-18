@@ -1,17 +1,26 @@
 package aQute.bnd.maven.pomrepo;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
 
-import aQute.bnd.annotation.plugin.*;
-import aQute.bnd.build.*;
-import aQute.bnd.maven.support.*;
+import aQute.bnd.annotation.plugin.BndPlugin;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.maven.support.Maven;
+import aQute.bnd.maven.support.MavenEntry;
+import aQute.bnd.maven.support.Pom;
 import aQute.bnd.maven.support.Pom.Scope;
-import aQute.bnd.service.*;
-import aQute.bnd.version.*;
-import aQute.lib.converter.*;
-import aQute.service.reporter.*;
+import aQute.bnd.service.Plugin;
+import aQute.bnd.service.Refreshable;
+import aQute.bnd.service.Registry;
+import aQute.bnd.service.RegistryPlugin;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.version.Version;
+import aQute.lib.converter.Converter;
+import aQute.service.reporter.Reporter;
 
 @BndPlugin(name = "MavenPomRepo")
 public class PomRepository implements RepositoryPlugin, Plugin, RegistryPlugin, Refreshable {

@@ -23,8 +23,6 @@ import java.util.jar.Manifest;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import junit.framework.AssertionFailedError;
-
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
@@ -54,6 +52,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.test.BndTestCase;
 import aQute.bnd.test.XmlTester;
+import junit.framework.AssertionFailedError;
 
 /**
  * Test for use of DS components specified using spec DS annotations.

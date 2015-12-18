@@ -1,13 +1,21 @@
 package aQute.bnd.make.coverage;
 
-import static aQute.bnd.make.coverage.Coverage.*;
+import static aQute.bnd.make.coverage.Coverage.getCrossRef;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.MethodDef;
-import aQute.lib.tag.*;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Descriptors;
+import aQute.bnd.osgi.WriteResource;
+import aQute.lib.tag.Tag;
 
 /**
  * Creates an XML Coverage report. This class can be used as a resource so the

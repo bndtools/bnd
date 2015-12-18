@@ -1,10 +1,12 @@
 package aQute.bnd.url;
 
-import java.net.*;
-import java.util.*;
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
-import aQute.lib.converter.*;
+import aQute.lib.converter.Converter;
 
 /**
  * Generic connection setter can set a number of basic properties if applicable

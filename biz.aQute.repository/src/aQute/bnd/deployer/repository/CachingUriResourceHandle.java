@@ -1,14 +1,26 @@
 package aQute.bnd.deployer.repository;
 
-import java.io.*;
-import java.net.*;
-import java.security.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.security.DigestOutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
-import aQute.bnd.service.*;
-import aQute.bnd.service.url.*;
-import aQute.lib.hex.*;
-import aQute.lib.io.*;
-import aQute.service.reporter.*;
+import aQute.bnd.service.ResourceHandle;
+import aQute.bnd.service.url.URLConnector;
+import aQute.lib.hex.Hex;
+import aQute.lib.io.IO;
+import aQute.lib.io.IOConstants;
+import aQute.service.reporter.Reporter;
 
 /**
  * <p> This resource handler downloads remote resources on demand, and caches

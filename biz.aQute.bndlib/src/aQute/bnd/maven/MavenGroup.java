@@ -1,9 +1,9 @@
 package aQute.bnd.maven;
 
-import java.util.*;
+import java.util.Map;
 
-import aQute.bnd.service.*;
-import aQute.service.reporter.*;
+import aQute.bnd.service.Plugin;
+import aQute.service.reporter.Reporter;
 
 public class MavenGroup implements BsnToMavenPath, Plugin {
 	String groupId = "";

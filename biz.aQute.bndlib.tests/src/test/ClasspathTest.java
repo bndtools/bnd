@@ -1,11 +1,12 @@
 package test;
 
-import java.util.*;
-import java.util.jar.*;
+import java.util.Properties;
+import java.util.jar.Manifest;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Jar;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class ClasspathTest extends TestCase {

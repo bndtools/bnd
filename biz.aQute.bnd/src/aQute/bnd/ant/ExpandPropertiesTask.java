@@ -1,12 +1,16 @@
 package aQute.bnd.ant;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
-import org.apache.tools.ant.*;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 
-import aQute.bnd.osgi.*;
-import aQute.lib.utf8properties.*;
+import aQute.bnd.osgi.Processor;
+import aQute.lib.utf8properties.UTF8Properties;
 
 public class ExpandPropertiesTask extends BaseTask {
 	File propertyFile;

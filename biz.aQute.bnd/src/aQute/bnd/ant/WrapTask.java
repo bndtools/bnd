@@ -1,15 +1,18 @@
 package aQute.bnd.ant;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.jar.Manifest;
 
-import org.apache.tools.ant.*;
-import org.apache.tools.ant.types.*;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.types.FileSet;
 
-import aQute.bnd.osgi.*;
-import aQute.bnd.version.*;
-import aQute.libg.qtokens.*;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.version.Version;
+import aQute.libg.qtokens.QuotedTokenizer;
 
 /**
  * Task to wrap a JAR as an OSGi bundle. You can specify the following

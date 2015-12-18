@@ -1,7 +1,10 @@
 package aQute.bnd.compatibility;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class is compiled against 1.5 or later to provide access to the generic

@@ -1,11 +1,12 @@
 package org.osgi.service.indexer.osgi;
 
-import java.io.*;
-import java.util.*;
+import java.io.PrintStream;
+import java.util.Date;
 
-import org.osgi.framework.*;
-import org.osgi.service.log.*;
-import org.osgi.util.tracker.*;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.log.LogService;
+import org.osgi.util.tracker.ServiceTracker;
 
 class LogTracker extends ServiceTracker<LogService,LogService>implements LogService {
 

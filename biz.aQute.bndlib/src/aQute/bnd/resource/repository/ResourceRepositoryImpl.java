@@ -1,25 +1,44 @@
 package aQute.bnd.resource.repository;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.zip.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Formatter;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Semaphore;
+import java.util.zip.InflaterInputStream;
 
-import aQute.bnd.service.*;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
-import aQute.bnd.service.repository.*;
+import aQute.bnd.service.repository.ResourceRepository;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
-import aQute.bnd.service.url.*;
-import aQute.bnd.url.*;
-import aQute.bnd.version.*;
-import aQute.lib.collections.*;
-import aQute.lib.hex.*;
-import aQute.lib.io.*;
-import aQute.lib.json.*;
-import aQute.libg.cryptography.*;
-import aQute.libg.reporter.*;
-import aQute.service.reporter.*;
+import aQute.bnd.service.url.URLConnectionHandler;
+import aQute.bnd.url.DefaultURLConnectionHandler;
+import aQute.bnd.version.VersionRange;
+import aQute.lib.collections.MultiMap;
+import aQute.lib.hex.Hex;
+import aQute.lib.io.IO;
+import aQute.lib.json.JSONCodec;
+import aQute.libg.cryptography.SHA1;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.service.reporter.Reporter;
 
 /**
  * This class implements a hidden repository. This repo is kept in a text file

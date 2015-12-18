@@ -1,9 +1,11 @@
 package test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
 
-import junit.framework.*;
-import aQute.bnd.build.model.conversions.*;
+import aQute.bnd.build.model.conversions.CollectionFormatter;
+import aQute.bnd.build.model.conversions.Converter;
+import junit.framework.TestCase;
 
 @SuppressWarnings("restriction")
 public class FormattersTest extends TestCase {

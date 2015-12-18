@@ -1,9 +1,12 @@
 package aQute.bnd.osgi;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import aQute.bnd.annotation.*;
-import aQute.libg.generics.*;
+import aQute.bnd.annotation.ProviderType;
+import aQute.libg.generics.Create;
 
 public class Descriptors {
 	Map<String,TypeRef>		typeRefCache	= Create.map();

@@ -1,11 +1,15 @@
 package aQute.bnd.ant;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.StringTokenizer;
 
-import org.apache.tools.ant.*;
+import org.apache.tools.ant.BuildException;
 
-import aQute.bnd.osgi.eclipse.*;
+import aQute.bnd.osgi.eclipse.EclipseClasspath;
 
 public class EclipseTask extends BaseTask {
 	private String		prefix		= "project.";

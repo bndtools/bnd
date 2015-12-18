@@ -1,9 +1,10 @@
 package test;
 
-import java.util.jar.*;
+import java.util.jar.Manifest;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Jar;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 

@@ -1,19 +1,56 @@
 package aQute.bnd.make.component;
 
-import static aQute.bnd.osgi.Constants.*;
+import static aQute.bnd.osgi.Constants.COMPONENT_ACTIVATE;
+import static aQute.bnd.osgi.Constants.COMPONENT_CONFIGURATION_POLICY;
+import static aQute.bnd.osgi.Constants.COMPONENT_DEACTIVATE;
+import static aQute.bnd.osgi.Constants.COMPONENT_DESCRIPTORS;
+import static aQute.bnd.osgi.Constants.COMPONENT_DESIGNATE;
+import static aQute.bnd.osgi.Constants.COMPONENT_DESIGNATEFACTORY;
+import static aQute.bnd.osgi.Constants.COMPONENT_DYNAMIC;
+import static aQute.bnd.osgi.Constants.COMPONENT_ENABLED;
+import static aQute.bnd.osgi.Constants.COMPONENT_FACTORY;
+import static aQute.bnd.osgi.Constants.COMPONENT_IMMEDIATE;
+import static aQute.bnd.osgi.Constants.COMPONENT_IMPLEMENTATION;
+import static aQute.bnd.osgi.Constants.COMPONENT_MODIFIED;
+import static aQute.bnd.osgi.Constants.COMPONENT_MULTIPLE;
+import static aQute.bnd.osgi.Constants.COMPONENT_NAME;
+import static aQute.bnd.osgi.Constants.COMPONENT_OPTIONAL;
+import static aQute.bnd.osgi.Constants.COMPONENT_PROPERTIES;
+import static aQute.bnd.osgi.Constants.COMPONENT_PROVIDE;
+import static aQute.bnd.osgi.Constants.COMPONENT_SERVICEFACTORY;
+import static aQute.bnd.osgi.Constants.COMPONENT_VERSION;
 
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.Map.*;
-import java.util.regex.*;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.annotation.component.*;
-import aQute.bnd.component.error.*;
-import aQute.bnd.component.error.DeclarativeServicesAnnotationError.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.osgi.Clazz.*;
-import aQute.bnd.osgi.Descriptors.*;
-import aQute.service.reporter.*;
+import aQute.bnd.annotation.component.Activate;
+import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.Deactivate;
+import aQute.bnd.annotation.component.Modified;
+import aQute.bnd.annotation.component.Reference;
+import aQute.bnd.component.error.DeclarativeServicesAnnotationError;
+import aQute.bnd.component.error.DeclarativeServicesAnnotationError.ErrorType;
+import aQute.bnd.osgi.Annotation;
+import aQute.bnd.osgi.ClassDataCollector;
+import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Clazz.FieldDef;
+import aQute.bnd.osgi.Clazz.MethodDef;
+import aQute.bnd.osgi.Descriptors;
+import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Verifier;
+import aQute.service.reporter.Reporter;
 
 /**
  * This converts bnd style annotations to, roughly, the header format.

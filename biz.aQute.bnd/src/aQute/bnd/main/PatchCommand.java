@@ -1,12 +1,19 @@
 package aQute.bnd.main;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.File;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Set;
+import java.util.jar.Manifest;
 
-import aQute.bnd.osgi.*;
-import aQute.lib.getopt.*;
-import aQute.libg.generics.*;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.lib.getopt.Arguments;
+import aQute.lib.getopt.Description;
+import aQute.lib.getopt.Options;
+import aQute.libg.generics.Create;
 
 public class PatchCommand {
 	bnd bnd;

@@ -1,6 +1,7 @@
 package aQute.lib.collections;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class IteratorList<T> extends ArrayList<T> {
 	private static final long serialVersionUID = 1L;

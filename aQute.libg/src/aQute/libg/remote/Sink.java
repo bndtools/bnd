@@ -1,6 +1,8 @@
 package aQute.libg.remote;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A Sink maintains a different file system somewhere. This API synchronizes

@@ -1,9 +1,13 @@
 package aQute.libg.clauses;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-import aQute.libg.log.*;
-import aQute.libg.qtokens.*;
+import aQute.libg.log.Logger;
+import aQute.libg.qtokens.QuotedTokenizer;
 
 public class Clauses extends LinkedHashMap<String,Map<String,String>> {
 	private static final long serialVersionUID = 1L;

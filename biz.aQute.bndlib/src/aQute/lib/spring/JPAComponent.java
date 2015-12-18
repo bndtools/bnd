@@ -1,9 +1,10 @@
 package aQute.lib.spring;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import aQute.bnd.annotation.plugin.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.annotation.plugin.BndPlugin;
+import aQute.bnd.osgi.Analyzer;
 
 /**
  * This component is called when we find a resource in the META-INF/*.xml

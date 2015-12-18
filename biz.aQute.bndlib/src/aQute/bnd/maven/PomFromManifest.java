@@ -1,16 +1,26 @@
 package aQute.bnd.maven;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.jar.*;
-import java.util.regex.*;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.version.*;
-import aQute.lib.io.*;
-import aQute.lib.tag.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.WriteResource;
+import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
+import aQute.lib.tag.Tag;
 
 public class PomFromManifest extends WriteResource {
 	final Manifest			manifest;

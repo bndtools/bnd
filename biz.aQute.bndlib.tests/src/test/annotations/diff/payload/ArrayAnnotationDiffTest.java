@@ -1,6 +1,7 @@
 package test.annotations.diff.payload;
 
-import test.annotations.diff.*;
+import test.annotations.diff.Inner;
+import test.annotations.diff.Outer;
 
 @Outer(value = {
 		@Inner(value = {

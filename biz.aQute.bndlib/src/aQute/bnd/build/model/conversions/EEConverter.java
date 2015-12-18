@@ -1,6 +1,6 @@
 package aQute.bnd.build.model.conversions;
 
-import aQute.bnd.build.model.*;
+import aQute.bnd.build.model.EE;
 
 public class EEConverter implements Converter<EE,String> {
 

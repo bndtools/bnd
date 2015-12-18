@@ -1,9 +1,11 @@
 package test;
 
-import java.util.*;
+import java.util.List;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Verifier;
+import junit.framework.TestCase;
 
 public class NativeHeader extends TestCase {
 	static Builder b = new Builder();

@@ -1,9 +1,9 @@
 package aQute.bnd.jpm;
 
-import java.util.*;
+import java.util.Arrays;
 
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
-import aQute.service.library.*;
+import aQute.service.library.Library;
 import aQute.service.library.Library.RevisionRef;
 
 public class ResourceDescriptorImpl extends ResourceDescriptor {

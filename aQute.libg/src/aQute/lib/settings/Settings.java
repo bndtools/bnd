@@ -1,12 +1,26 @@
 package aQute.lib.settings;
 
-import java.io.*;
-import java.security.*;
-import java.security.spec.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Signature;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
-import aQute.lib.io.*;
-import aQute.lib.json.*;
+import aQute.lib.io.IO;
+import aQute.lib.json.JSONCodec;
 
 /**
  * Maintains persistent settings for bnd (or other apps). The default is

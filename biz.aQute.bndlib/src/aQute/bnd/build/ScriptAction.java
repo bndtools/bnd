@@ -1,6 +1,6 @@
 package aQute.bnd.build;
 
-import aQute.bnd.service.action.*;
+import aQute.bnd.service.action.Action;
 
 public class ScriptAction implements Action {
 	final String	script;

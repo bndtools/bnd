@@ -1,8 +1,8 @@
 package aQute.lib.justif;
 
-import java.util.*;
+import java.util.Formatter;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
 public class JustifTest extends TestCase {
 

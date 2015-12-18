@@ -1,6 +1,7 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public interface Resource {
 	InputStream openInputStream() throws Exception;

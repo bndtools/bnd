@@ -1,12 +1,21 @@
 package aQute.bnd.deployer.repository;
 
-import java.util.*;
+import static aQute.bnd.deployer.repository.RepoResourceUtils.getResourceIdentity;
+import static aQute.bnd.deployer.repository.RepoResourceUtils.getResourceVersion;
+import static aQute.bnd.deployer.repository.RepoResourceUtils.narrowVersionsByVersionRange;
 
-import org.osgi.resource.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
 
-import aQute.bnd.version.*;
-import aQute.lib.collections.*;
-import static aQute.bnd.deployer.repository.RepoResourceUtils.*;
+import org.osgi.resource.Resource;
+
+import aQute.bnd.version.Version;
+import aQute.lib.collections.SortedList;
 
 public class VersionedResourceIndex {
 

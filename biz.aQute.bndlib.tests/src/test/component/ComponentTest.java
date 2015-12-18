@@ -18,8 +18,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import junit.framework.TestCase;
-
 import org.osgi.framework.ServiceReference;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -36,6 +34,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
+import junit.framework.TestCase;
 
 /**
  * Test for use of DS components specified only by Service-Component headers.

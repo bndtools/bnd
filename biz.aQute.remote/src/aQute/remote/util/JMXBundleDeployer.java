@@ -1,16 +1,29 @@
 package aQute.remote.util;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Vector;
 
-import javax.management.*;
-import javax.management.openmbean.*;
-import javax.management.remote.*;
+import javax.management.MBeanServerConnection;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.TabularData;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
 
-import org.osgi.framework.*;
-import org.osgi.framework.dto.*;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.dto.BundleDTO;
 
 /**
  * This class will try to connect to a remote OSGi framework using JMX and will

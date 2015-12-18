@@ -1,7 +1,9 @@
 package aQute.jpm.lib;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 class DependencyCollector {
 	private final List<ArtifactData>		list	= new ArrayList<ArtifactData>();

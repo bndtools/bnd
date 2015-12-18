@@ -1,12 +1,15 @@
 package test;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.Properties;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
-import aQute.libg.cryptography.*;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
+import aQute.lib.io.IO;
+import aQute.libg.cryptography.SHA1;
+import junit.framework.TestCase;
 
 public class PreprocessTest extends TestCase {
 	/**

@@ -1,9 +1,11 @@
 package aQute.libg.remote.sink;
 
-import java.io.*;
+import java.io.File;
+import java.io.InputStream;
+import java.io.PipedOutputStream;
 
-import aQute.libg.command.*;
-import aQute.libg.remote.*;
+import aQute.libg.command.Command;
+import aQute.libg.remote.Area;
 
 public class AreaImpl extends Area {
 	File				root;

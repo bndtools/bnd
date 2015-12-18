@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.Properties;
 import java.util.jar.Manifest;
 
-import junit.framework.TestCase;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -15,6 +14,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Verifier;
 import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class VerifierTest extends TestCase {

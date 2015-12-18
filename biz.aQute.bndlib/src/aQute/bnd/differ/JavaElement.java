@@ -1,28 +1,58 @@
 package aQute.bnd.differ;
 
-import static aQute.bnd.service.diff.Delta.*;
-import static aQute.bnd.service.diff.Type.*;
-import static java.lang.reflect.Modifier.*;
+import static aQute.bnd.service.diff.Delta.CHANGED;
+import static aQute.bnd.service.diff.Delta.IGNORED;
+import static aQute.bnd.service.diff.Delta.MAJOR;
+import static aQute.bnd.service.diff.Delta.MICRO;
+import static aQute.bnd.service.diff.Delta.MINOR;
+import static aQute.bnd.service.diff.Type.ACCESS;
+import static aQute.bnd.service.diff.Type.CLASS_VERSION;
+import static aQute.bnd.service.diff.Type.EXTENDS;
+import static aQute.bnd.service.diff.Type.FIELD;
+import static aQute.bnd.service.diff.Type.IMPLEMENTS;
+import static aQute.bnd.service.diff.Type.METHOD;
+import static aQute.bnd.service.diff.Type.RETURN;
+import static java.lang.reflect.Modifier.isAbstract;
+import static java.lang.reflect.Modifier.isFinal;
+import static java.lang.reflect.Modifier.isPublic;
+import static java.lang.reflect.Modifier.isStatic;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.*;
-import java.util.jar.*;
-import java.util.regex.*;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.annotation.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.annotation.ConsumerType;
+import aQute.bnd.annotation.ProviderType;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Annotation;
+import aQute.bnd.osgi.ClassDataCollector;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.JAVA;
 import aQute.bnd.osgi.Clazz.MethodDef;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.bnd.service.diff.*;
+import aQute.bnd.osgi.Instructions;
+import aQute.bnd.osgi.Packages;
+import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Type;
 import aQute.bnd.version.Version;
-import aQute.lib.collections.*;
-import aQute.libg.generics.*;
+import aQute.lib.collections.MultiMap;
+import aQute.libg.generics.Create;
 
 /**
  * An element that compares the access field in a binary compatible way. This

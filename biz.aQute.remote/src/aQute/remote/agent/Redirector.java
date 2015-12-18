@@ -1,6 +1,7 @@
 package aQute.remote.agent;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.PrintStream;
 
 /**
  * API def for a redirector.

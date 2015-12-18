@@ -1,8 +1,11 @@
 package test.lib;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import aQute.bnd.service.*;
+import aQute.bnd.service.Registry;
 
 public class MockRegistry implements Registry {
 

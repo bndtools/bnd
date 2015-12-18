@@ -1,6 +1,9 @@
 package aQute.bnd.annotation.headers;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Maven defines contributors and developers in the POM. This annotation will

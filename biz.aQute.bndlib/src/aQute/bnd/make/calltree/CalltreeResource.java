@@ -1,11 +1,21 @@
 package aQute.bnd.make.calltree;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.ClassDataCollector;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.MethodDef;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.WriteResource;
 
 /**
  * Create an XML call tree of a set of classes. The structure of the XML is:
