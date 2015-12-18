@@ -816,6 +816,13 @@ public class Workspace extends Processor {
 
 	public void close() {
 		cache.remove(getPropertiesFile().getParentFile().getParentFile());
+
+		try {
+			super.close();
+		}
+		catch (IOException e) {
+			/* For backwards compatibility, we ignore the exception */
+		}
 	}
 
 	/**

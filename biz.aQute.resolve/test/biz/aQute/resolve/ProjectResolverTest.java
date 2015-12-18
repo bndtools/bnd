@@ -41,6 +41,7 @@ public class ProjectResolverTest extends TestCase {
 
 	@Override
 	protected void tearDown() throws Exception {
+		fr.close();
 		ws.close();
 		IO.delete(tmp);
 		super.tearDown();

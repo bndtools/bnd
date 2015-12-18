@@ -39,14 +39,13 @@ public class JpmRepoTest extends TestCase {
 
 	public void setUp() throws Exception {
 		tmp.mkdirs();
-		IO.delete(tmp);
-		tmp.mkdirs();
 		IO.copy(IO.getFile("testdata/ws"), tmp);
 		ws = new Workspace(tmp);
 		assertTrue(ws.check());
 	}
 
 	public void tearDown() throws Exception {
+		ws.close();
 		IO.delete(tmp);
 	}
 

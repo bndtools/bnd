@@ -95,8 +95,9 @@ public class InfoRepositoryWrapper implements Repository {
 
 						@Override
 						public void success(File file) throws Exception {
+							IndexResult index = null;
 							try {
-								IndexResult index = repoIndexer.indexFile(file);
+								index = repoIndexer.indexFile(file);
 
 								ResourceBuilder rb = new ResourceBuilder();
 
@@ -126,6 +127,10 @@ public class InfoRepositoryWrapper implements Repository {
 							}
 							finally {
 								super.success(file);
+
+								if (index != null) {
+									index.resource.close();
+								}
 							}
 						}
 					};
