@@ -1,18 +1,35 @@
 package aQute.bnd.jpm;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Formatter;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
-import aQute.bnd.version.*;
-import aQute.lib.converter.*;
-import aQute.lib.io.*;
-import aQute.lib.json.*;
-import aQute.libg.reporter.*;
-import aQute.service.library.*;
+import aQute.bnd.version.Version;
+import aQute.lib.converter.TypeReference;
+import aQute.lib.io.IO;
+import aQute.lib.json.Decoder;
+import aQute.lib.json.JSONCodec;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.service.library.Library;
 import aQute.service.library.Library.RevisionRef;
-import aQute.service.reporter.*;
-import aQute.struct.*;
+import aQute.service.library.Revisions;
+import aQute.service.reporter.Reporter;
+import aQute.struct.struct;
 
 public class Index {
 	Reporter reporter = new ReporterAdapter(System.out);
@@ -22,7 +39,7 @@ public class Index {
 		public boolean						learning		= true;
 		public boolean						recurse			= false;
 
-		byte[] synced;
+		byte[]								synced;
 
 		// Manually print this so that we
 		// have 1 line per resource, making it easier on git
@@ -33,21 +50,22 @@ public class Index {
 		}
 	}
 
-	private static final SortedSet<Version> EMPTY_VERSIONS = Collections.unmodifiableSortedSet(new TreeSet<Version>());
+	private static final SortedSet<Version>						EMPTY_VERSIONS	= Collections
+			.unmodifiableSortedSet(new TreeSet<Version>());
 
-	private File indexFile;
+	private File												indexFile;
 
-	private Map<String,TreeMap<Version,Library.RevisionRef>> cache;
+	private Map<String,TreeMap<Version,Library.RevisionRef>>	cache;
 
-	private Repo repo;
+	private Repo												repo;
 
 	public Index(File file) {
 		this.indexFile = file;
 	}
 
-	static final JSONCodec codec = new JSONCodec();
+	static final JSONCodec	codec	= new JSONCodec();
 
-	private boolean dirty;
+	private boolean			dirty;
 
 	private void init() throws Exception {
 		if (repo == null) {
@@ -66,8 +84,7 @@ public class Index {
 						Version v = toVersion(r.baseline, r.qualifier);
 						map.put(v, r);
 					}
-				}
-				finally {
+				} finally {
 					dec.close();
 				}
 			} else {
@@ -160,8 +177,7 @@ public class Index {
 					dirty = true;
 					return true;
 				}
-			}
-			finally {
+			} finally {
 				if (map.isEmpty())
 					cache.remove(bsn);
 			}
@@ -186,8 +202,7 @@ public class Index {
 		FileWriter fout = new FileWriter(tmp);
 		try {
 			save(fout);
-		}
-		finally {
+		} finally {
 			fout.close();
 		}
 		IO.rename(tmp, out);

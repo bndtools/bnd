@@ -1,9 +1,9 @@
 package aQute.bnd.ant;
 
-import java.io.*;
+import java.io.File;
 
-import aQute.libg.reporter.*;
-import aQute.service.reporter.*;
+import aQute.libg.reporter.Message;
+import aQute.service.reporter.Messages;
 
 @Message("bnd messages for Ant")
 public interface AntMessages extends Messages {

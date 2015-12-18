@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.Properties;
 import java.util.jar.Manifest;
 
-import junit.framework.TestCase;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -15,6 +14,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Verifier;
 import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class VerifierTest extends TestCase {
@@ -33,8 +33,9 @@ public class VerifierTest extends TestCase {
 	}
 
 	/**
-	 * Verify that the Meta-Persistence header is correctly verified @throws
-	 * Exception
+	 * Verify that the Meta-Persistence header is correctly verified
+	 * 
+	 * @throws Exception
 	 */
 
 	public void verifyMetaPersistence() throws Exception {
@@ -54,7 +55,9 @@ public class VerifierTest extends TestCase {
 	}
 
 	/**
-	 * Check for reserved file names (INVALIDFILENAMES) @throws Exception
+	 * Check for reserved file names (INVALIDFILENAMES)
+	 * 
+	 * @throws Exception
 	 */
 	public void testInvalidFileNames() throws Exception {
 		testFileName("0ABC", null, true);
@@ -91,14 +94,15 @@ public class VerifierTest extends TestCase {
 				assertTrue(b.check());
 			else
 				assertTrue(b.check("Invalid file/directory"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
 
 	/**
-	 * Create a require capality filter verification test @throws Exception
+	 * Create a require capality filter verification test
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testInvalidFilterOnRequirement() throws Exception {
@@ -123,7 +127,9 @@ public class VerifierTest extends TestCase {
 	}
 
 	/**
-	 * Create a require capality directive test @throws Exception
+	 * Create a require capality directive test
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testValidDirectivesOnRequirement() throws Exception {
@@ -326,8 +332,7 @@ public class VerifierTest extends TestCase {
 		try {
 			testFilter(string);
 			fail("Invalid filter");
-		}
-		catch (Exception e) {}
+		} catch (Exception e) {}
 	}
 
 	public static void testBundleActivationPolicyNone() throws Exception {

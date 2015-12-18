@@ -1,9 +1,13 @@
 package aQute.libg.clauses;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-import aQute.libg.log.*;
-import aQute.libg.qtokens.*;
+import aQute.libg.log.Logger;
+import aQute.libg.qtokens.QuotedTokenizer;
 
 public class Clauses extends LinkedHashMap<String,Map<String,String>> {
 	private static final long serialVersionUID = 1L;
@@ -12,7 +16,11 @@ public class Clauses extends LinkedHashMap<String,Map<String,String>> {
 	 * Standard OSGi header parser. This parser can handle the format clauses
 	 * ::= clause ( ',' clause ) + clause ::= name ( ';' name ) (';' key '='
 	 * value ) This is mapped to a Map { name => Map { attr|directive => value }
-	 * } @param value @return @throws MojoExecutionException
+	 * }
+	 * 
+	 * @param value
+	 * @return
+	 * @throws MojoExecutionException
 	 */
 	static public Clauses parse(String value, Logger logger) {
 		if (value == null || value.trim().length() == 0)

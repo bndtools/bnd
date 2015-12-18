@@ -1,9 +1,9 @@
 package aQute.lib.index;
 
-import java.io.*;
+import java.io.File;
 
-import junit.framework.*;
-import aQute.lib.io.*;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class TestIndex extends TestCase {
 
@@ -32,8 +32,7 @@ public class TestIndex extends TestCase {
 					3
 			}));
 			System.err.println(index.toString());
-		}
-		finally {
+		} finally {
 			index.close();
 		}
 
@@ -52,8 +51,7 @@ public class TestIndex extends TestCase {
 
 			index.close();
 
-		}
-		finally {
+		} finally {
 			index.close();
 			IO.delete(test.getParentFile());
 		}
@@ -90,8 +88,7 @@ public class TestIndex extends TestCase {
 			assertEquals(12, index.search(new byte[] {
 					6
 			}), 12);
-		}
-		finally {
+		} finally {
 			index.close();
 			IO.delete(test.getParentFile());
 		}

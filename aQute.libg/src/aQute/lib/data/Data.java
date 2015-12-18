@@ -1,11 +1,13 @@
 package aQute.lib.data;
 
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.regex.*;
+import java.lang.reflect.Field;
+import java.util.Formatter;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.lib.converter.*;
-import aQute.lib.hex.*;
+import aQute.lib.converter.Converter;
+import aQute.lib.hex.Hex;
 
 public class Data {
 
@@ -41,8 +43,7 @@ public class Data {
 						if (o instanceof String) {
 							try {
 								o = Double.parseDouble((String) o);
-							}
-							catch (Exception e) {
+							} catch (Exception e) {
 								formatter.format("Value for %s=%s %s%n", f.getName(), value, "Not a number");
 							}
 						}
@@ -54,8 +55,7 @@ public class Data {
 								formatter.format("Value for %s=%s not in valid range (%s,%s]%n", f.getName(), value,
 										numericValidator.min(), numericValidator.max());
 							}
-						}
-						catch (ClassCastException e) {
+						} catch (ClassCastException e) {
 							formatter.format("Value for %s=%s [%s,%s) is not a number%n", f.getName(), value,
 									numericValidator.min(), numericValidator.max());
 						}
@@ -68,8 +68,7 @@ public class Data {
 			if (sb.length() > 0)
 				sb.delete(sb.length() - 1, sb.length());
 			return sb.toString();
-		}
-		finally {
+		} finally {
 			formatter.close();
 		}
 	}
@@ -89,8 +88,7 @@ public class Data {
 
 				formatter.format("%-40s %s%n", name, object);
 			}
-		}
-		finally {
+		} finally {
 			formatter.close();
 		}
 	}

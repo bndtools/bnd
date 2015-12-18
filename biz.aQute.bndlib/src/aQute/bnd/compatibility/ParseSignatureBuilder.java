@@ -1,9 +1,13 @@
 package aQute.bnd.compatibility;
 
-import java.io.*;
+import java.io.InputStream;
 
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.ClassDataCollector;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
 
 public class ParseSignatureBuilder {
 	final Scope root;
@@ -17,8 +21,7 @@ public class ParseSignatureBuilder {
 			InputStream in = r.openInputStream();
 			try {
 				parse(in);
-			}
-			finally {
+			} finally {
 				in.close();
 			}
 		}
@@ -33,9 +36,9 @@ public class ParseSignatureBuilder {
 		Clazz clazz = new Clazz(analyzer, "", null);
 
 		clazz.parseClassFile(in, new ClassDataCollector() {
-			Scope s;
-			Scope enclosing;
-			Scope declaring;
+			Scope	s;
+			Scope	enclosing;
+			Scope	declaring;
 
 			@Override
 			public void classBegin(int access, TypeRef name) {

@@ -167,8 +167,7 @@ public class PropertiesParser {
 											code += Hex.nibble(reader.read()) * 0x0001;
 											if (code >= 0 && code <= 0xFFFF)
 												value.append((char) code);
-										}
-										catch (Exception e) {
+										} catch (Exception e) {
 											errors += file + "#" + line + ": " + e.getMessage() + "\n";
 										}
 										break;
@@ -215,12 +214,10 @@ public class PropertiesParser {
 								else
 									properties.setProperty(k, v);
 							}
-						}
-						catch (Exception e) {
+						} catch (Exception e) {
 							if (mandatory)
 								errors += file + "#" + line + ": include not found " + uri + "\n";
-						}
-						finally {
+						} finally {
 							inc.close();
 						}
 					}

@@ -61,7 +61,9 @@ public class FilterParserTest extends TestCase {
 
 	/**
 	 * Since the filters are cached we need to get similar filters to check if
-	 * this works. @throws IOException
+	 * this works.
+	 * 
+	 * @throws IOException
 	 */
 	public void testCache() throws IOException {
 		Expression exp = fp.parse("(&(osgi.wiring.package=a)(version>=1)(!(version>=2.0.0)))");

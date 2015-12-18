@@ -8,11 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class TestLocalObrGeneration extends TestCase {
 

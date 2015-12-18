@@ -1,31 +1,49 @@
 package aQute.bnd.deployer.repository;
 
-import java.io.*;
-import java.net.*;
-import java.security.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.security.DigestOutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
-import aQute.bnd.service.*;
-import aQute.bnd.service.url.*;
-import aQute.lib.hex.*;
-import aQute.lib.io.*;
-import aQute.service.reporter.*;
+import aQute.bnd.service.ResourceHandle;
+import aQute.bnd.service.url.URLConnector;
+import aQute.lib.hex.Hex;
+import aQute.lib.io.IO;
+import aQute.lib.io.IOConstants;
+import aQute.service.reporter.Reporter;
 
 /**
- * <p> This resource handler downloads remote resources on demand, and caches
- * them as local files. Resources that are already local (i.e.
- * <code>file:...</code> URLs) are returned directly. </p> <p> Two alternative
- * caching modes are available. When the mode is {@link
- * CachingMode#PreferCache}, the cached file will always be returned if it
- * exists; therefore to refresh from the remote resource it will be necessary to
- * delete the cache. When the mode is {@link CachingMode#PreferRemote}, the
+ * <p>
+ * This resource handler downloads remote resources on demand, and caches them
+ * as local files. Resources that are already local (i.e. <code>file:...</code>
+ * URLs) are returned directly.
+ * </p>
+ * <p>
+ * Two alternative caching modes are available. When the mode is
+ * {@link CachingMode#PreferCache}, the cached file will always be returned if
+ * it exists; therefore to refresh from the remote resource it will be necessary
+ * to delete the cache. When the mode is {@link CachingMode#PreferRemote}, the
  * first call to {@link #request()} will always attempt to download the remote
  * resource, and only uses the pre-downloaded cache if the remote could not be
- * downloaded (e.g. because the network is offline). </p> @author njbartlett
+ * downloaded (e.g. because the network is offline).
+ * </p>
+ * 
+ * @author njbartlett
  */
 public class CachingUriResourceHandle implements ResourceHandle {
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
+	static final int			BUFFER_SIZE	= IOConstants.PAGE_SIZE * 1;
 
-	private static final String SHA_256 = "SHA-256";
+	private static final String	SHA_256		= "SHA-256";
 
 	@Deprecated
 	public static enum CachingMode {
@@ -52,20 +70,20 @@ public class CachingUriResourceHandle implements ResourceHandle {
 	final URLConnector	connector;
 
 	// The resolved, absolute URL of the resource
-	final URL	url;
-	String		sha;
+	final URL			url;
+	String				sha;
 
 	// The local file, if the resource IS a file, otherwise null.
-	final File localFile;
+	final File			localFile;
 
 	// The cached file copy of the resource, if it is remote and has been
 	// downloaded.
-	final File	cachedFile;
-	final File	shaFile;
+	final File			cachedFile;
+	final File			shaFile;
 
-	final CachingMode mode;
+	final CachingMode	mode;
 
-	Reporter reporter;
+	Reporter			reporter;
 
 	public CachingUriResourceHandle(URI uri, final File cacheDir, URLConnector connector, String sha)
 			throws IOException {
@@ -193,8 +211,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 			saveSHAFile(serverSHA);
 
 			return cachedFile;
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			if (sha == null) {
 				// Remote access failed, use the cache if it exists AND if the
 				// original SHA was not known.
@@ -232,12 +249,10 @@ public class CachingUriResourceHandle implements ResourceHandle {
 			DigestOutputStream digestOutput = new DigestOutputStream(output, digest);
 			IO.copy(input, digestOutput);
 			return Hex.toHexString(digest.digest());
-		}
-		catch (NoSuchAlgorithmException e) {
+		} catch (NoSuchAlgorithmException e) {
 			// Can't happen... hopefully...
 			throw new IOException(e.getMessage());
-		}
-		finally {
+		} finally {
 			IO.close(input);
 			IO.close(output);
 		}
@@ -270,8 +285,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 			PrintStream pps = new PrintStream(buffer, false, "UTF-8");
 			t.printStackTrace(pps);
 			return buffer.toString("UTF-8");
-		}
-		catch (UnsupportedEncodingException e) {
+		} catch (UnsupportedEncodingException e) {
 			return null;
 		}
 	}
@@ -305,12 +319,10 @@ public class CachingUriResourceHandle implements ResourceHandle {
 
 				digest.update(buf, 0, bytesRead);
 			}
-		}
-		catch (NoSuchAlgorithmException e) {
+		} catch (NoSuchAlgorithmException e) {
 			// Can't happen... hopefully...
 			throw new IOException(e.getMessage());
-		}
-		finally {
+		} finally {
 			if (stream != null)
 				stream.close();
 		}
@@ -330,8 +342,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 	void saveSHAFile(String contents) {
 		try {
 			IO.copy(IO.stream(contents), shaFile);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			shaFile.delete();
 			// Errors saving the SHA should not interfere with the download
 			if (reporter != null)

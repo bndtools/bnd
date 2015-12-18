@@ -20,8 +20,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import junit.framework.AssertionFailedError;
-
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
@@ -48,6 +46,7 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.repository.SearchableRepository;
 import aQute.bnd.test.BndTestCase;
+import junit.framework.AssertionFailedError;
 
 /**
  * Test for use of DS components specified using bnd proprietary annotations.
@@ -92,8 +91,7 @@ public class BNDAnnotationTest extends BndTestCase {
 						return null;
 				}
 			});
-		}
-		catch (ParserConfigurationException e) {
+		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
 			throw new ExceptionInInitializerError(e);
 		}
@@ -148,7 +146,9 @@ public class BNDAnnotationTest extends BndTestCase {
 
 	/**
 	 * Can we order the references? References are ordered by their name as Java
-	 * does not define the order of the methods. @throws Exception
+	 * does not define the order of the methods.
+	 * 
+	 * @throws Exception
 	 */
 
 	@Component
@@ -379,7 +379,9 @@ public class BNDAnnotationTest extends BndTestCase {
 
 	/**
 	 * Imported default package because JSR14 seems to do something weird with
-	 * annotations. @throws Exception
+	 * annotations.
+	 * 
+	 * @throws Exception
 	 */
 	public void testJSR14ComponentAnnotations() throws Exception {
 		Builder b = new Builder();
@@ -720,7 +722,9 @@ public class BNDAnnotationTest extends BndTestCase {
 	}
 
 	/**
-	 * Test some more components @author aqute
+	 * Test some more components
+	 * 
+	 * @author aqute
 	 */
 	@Component(name = "acomp", enabled = true, factory = "abc", immediate = false, provide = LogService.class, servicefactory = true, configurationPolicy = ConfigurationPolicy.optional)
 	static class MyComponent implements Serializable {

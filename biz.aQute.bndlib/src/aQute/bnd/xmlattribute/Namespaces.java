@@ -1,8 +1,9 @@
 package aQute.bnd.xmlattribute;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-import aQute.lib.tag.*;
+import aQute.lib.tag.Tag;
 
 public class Namespaces {
 

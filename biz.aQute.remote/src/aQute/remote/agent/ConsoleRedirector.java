@@ -1,9 +1,10 @@
 package aQute.remote.agent;
 
-import java.io.*;
-import java.util.concurrent.*;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-import aQute.remote.api.*;
+import aQute.remote.api.Agent;
 
 /**
  * The Console Redirector redirects System.in, System.out, and System.err to the
@@ -19,7 +20,9 @@ public class ConsoleRedirector implements Redirector {
 	volatile boolean									quit	= false;
 
 	/**
-	 * Constructor. @param agent the agent we're redirecting for
+	 * Constructor.
+	 * 
+	 * @param agent the agent we're redirecting for
 	 */
 	public ConsoleRedirector(AgentServer agent) throws IOException {
 		synchronized (agents) {

@@ -76,27 +76,28 @@ import aQute.launcher.minifw.MiniFramework;
 public class Launcher implements ServiceListener {
 
 	// Use our own constant for this rather than depend on OSGi core 4.3
-	private static final String FRAMEWORK_SYSTEM_CAPABILITIES_EXTRA = "org.osgi.framework.system.capabilities.extra";
+	private static final String							FRAMEWORK_SYSTEM_CAPABILITIES_EXTRA	= "org.osgi.framework.system.capabilities.extra";
 
-	private PrintStream					out;
-	LauncherConstants					parms;
-	Framework							systemBundle;
-	volatile boolean					inrefresh;
-	private final Properties			properties;
-	private boolean						security;
-	private SimplePermissionPolicy		policy;
-	private Callable<Integer>			mainThread;
+	private PrintStream									out;
+	LauncherConstants									parms;
+	Framework											systemBundle;
+	volatile boolean									inrefresh;
+	private final Properties							properties;
+	private boolean										security;
+	private SimplePermissionPolicy						policy;
+	private Callable<Integer>							mainThread;
 	@SuppressWarnings("deprecation")
 	private org.osgi.service.packageadmin.PackageAdmin	padmin;
-	private final List<BundleActivator>	embedded			= new ArrayList<BundleActivator>();
-	private final Map<Bundle,Throwable>	errors				= new HashMap<Bundle,Throwable>();
-	private final Map<File,Bundle>		installedBundles	= new LinkedHashMap<File,Bundle>();
-	private File						home				= new File(System.getProperty("user.home"));
-	private File						bnd					= new File(home, "bnd");
-	private List<Bundle>				wantsToBeStarted	= new ArrayList<Bundle>();
-	AtomicBoolean						active				= new AtomicBoolean();
+	private final List<BundleActivator>					embedded							= new ArrayList<BundleActivator>();
+	private final Map<Bundle,Throwable>					errors								= new HashMap<Bundle,Throwable>();
+	private final Map<File,Bundle>						installedBundles					= new LinkedHashMap<File,Bundle>();
+	private File										home								= new File(
+			System.getProperty("user.home"));
+	private File										bnd									= new File(home, "bnd");
+	private List<Bundle>								wantsToBeStarted					= new ArrayList<Bundle>();
+	AtomicBoolean										active								= new AtomicBoolean();
 
-	private AtomicReference<DatagramSocket> commsSocket = new AtomicReference<DatagramSocket>();
+	private AtomicReference<DatagramSocket>				commsSocket							= new AtomicReference<DatagramSocket>();
 
 	public static void main(String[] args) {
 		try {
@@ -131,8 +132,7 @@ public class Launcher implements ServiceListener {
 				load(in, properties);
 				Launcher target = new Launcher(properties, propertiesFile);
 				exitcode = target.run(args);
-			}
-			catch (Throwable t) {
+			} catch (Throwable t) {
 				exitcode = 127;
 				// Last resort ... errors should be handled lower
 				t.printStackTrace(System.err);
@@ -141,8 +141,7 @@ public class Launcher implements ServiceListener {
 			// We exit, even if there are non-daemon threads active
 			// though we've reported those
 			System.exit(exitcode);
-		}
-		finally {
+		} finally {
 			System.out.println("gone");
 		}
 	}
@@ -151,8 +150,7 @@ public class Launcher implements ServiceListener {
 		InputStreamReader ir = new InputStreamReader(in, "UTF-8");
 		try {
 			properties.load(ir);
-		}
-		finally {
+		} finally {
 			ir.close();
 			in.close();
 		}
@@ -174,14 +172,12 @@ public class Launcher implements ServiceListener {
 						sb.append(del).append(bsn).append(";version=").append(version);
 						del = ", ";
 					}
-				}
-				finally {
+				} finally {
 					in.close();
 				}
 			}
 			return sb.toString();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return "Cannot read manifest: " + e.getMessage();
 		}
 	}
@@ -236,8 +232,7 @@ public class Launcher implements ServiceListener {
 							load(in, properties);
 							parms = new LauncherConstants(properties);
 							update(now);
-						}
-						catch (Exception e) {
+						} catch (Exception e) {
 							error("Error in updating the framework from the properties: %s", e);
 						}
 						begin = now;
@@ -262,8 +257,7 @@ public class Launcher implements ServiceListener {
 					newSocket = new DatagramSocket(new InetSocketAddress(InetAddress.getByName(null), 0));
 					newSocket.connect(new InetSocketAddress(InetAddress.getByName(null), parms.notificationPort));
 
-				}
-				catch (IOException ioe) {
+				} catch (IOException ioe) {
 					// TODO what now?
 					newSocket = null;
 				}
@@ -323,12 +317,10 @@ public class Launcher implements ServiceListener {
 			Integer exitCode = mainThread.call();
 			trace("main return, code " + exitCode);
 			return exitCode == null ? 0 : exitCode;
-		}
-		catch (Throwable e) {
+		} catch (Throwable e) {
 			error("Unexpected error in the run body: %s", e);
 			throw e;
-		}
-		finally {
+		} finally {
 			deactivate();
 			trace("stopped system bundle due to leaving run body");
 			// TODO should we wait here?
@@ -390,8 +382,7 @@ public class Launcher implements ServiceListener {
 					}
 					embedded.add(activator);
 					trace("adding activator %s", activator);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					throw new IllegalArgumentException("Embedded Bundle Activator incorrect: " + token + ", " + e);
 				}
 			}
@@ -415,8 +406,7 @@ public class Launcher implements ServiceListener {
 			Field f = activator.getClass().getField("IMMEDIATE");
 
 			return f.getBoolean(activator);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return false;
 		}
 	}
@@ -425,8 +415,7 @@ public class Launcher implements ServiceListener {
 		try {
 			trace("starting activator %s", activator);
 			activator.start(systemContext);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			error("Starting activator %s : %s", activator, e);
 			result = LauncherConstants.ERROR;
 		}
@@ -436,7 +425,9 @@ public class Launcher implements ServiceListener {
 	/**
 	 * Ensure that all the bundles in the parameters are actually started. We
 	 * can start in embedded mode (bundles are inside our main jar) or in file
-	 * system mode. @param begin
+	 * system mode.
+	 * 
+	 * @param begin
 	 */
 	@SuppressWarnings("deprecation")
 	void update(long before) throws Exception {
@@ -478,8 +469,7 @@ public class Launcher implements ServiceListener {
 					if (b.getState() == Bundle.INSTALLED) {
 						b.start();
 					}
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					failed.add(b.getSymbolicName() + "-" + b.getVersion() + "" + e.getMessage() + "\n");
 				}
 			}
@@ -501,8 +491,7 @@ public class Launcher implements ServiceListener {
 				if (!isFragment(b))
 					b.start(Bundle.START_ACTIVATION_POLICY);
 				trace("started  %s", b.getSymbolicName());
-			}
-			catch (BundleException e) {
+			} catch (BundleException e) {
 				wantsToBeStarted.add(b);
 				error("Failed to start bundle %s-%s, exception %s", b.getSymbolicName(), b.getVersion(), e);
 			}
@@ -543,8 +532,7 @@ public class Launcher implements ServiceListener {
 				trace("uninstalling %s", f);
 				installedBundles.get(f).uninstall();
 				installedBundles.remove(f);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				error("Failed to uninstall bundle %s, exception %s", f, e);
 			}
 
@@ -554,8 +542,7 @@ public class Launcher implements ServiceListener {
 				Bundle b = install(f);
 				installedBundles.put(f, b);
 				tobestarted.add(b);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				error("Failed to uninstall bundle %s, exception %s", f, e);
 			}
 
@@ -580,8 +567,7 @@ public class Launcher implements ServiceListener {
 					} else
 						trace("bundle is still current according to timestamp %s", f);
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				error("Failed to update bundle %s, exception %s", f, e);
 			}
 	}
@@ -591,7 +577,10 @@ public class Launcher implements ServiceListener {
 	 * jpm option since it stores the paths with a macro in the JAR through the
 	 * packager. This path is platform independent and must therefore be
 	 * translated to the executing platform. if no macro is present, we assume
-	 * the path is already native. @param s @return
+	 * the path is already native.
+	 * 
+	 * @param s
+	 * @return
 	 */
 	private String toNativePath(String s) {
 		if (!s.contains("${"))
@@ -642,8 +631,11 @@ public class Launcher implements ServiceListener {
 	}
 
 	/**
-	 * Install/Update the bundles from the current jar. @param
-	 * tobestarted @throws BundleException @throws IOException
+	 * Install/Update the bundles from the current jar.
+	 * 
+	 * @param tobestarted
+	 * @throws BundleException
+	 * @throws IOException
 	 */
 	void installEmbedded(List<Bundle> tobestarted) throws BundleException, IOException {
 		trace("starting in embedded mode");
@@ -659,8 +651,7 @@ public class Launcher implements ServiceListener {
 				else
 					bundle.update(in);
 				tobestarted.add(bundle);
-			}
-			finally {
+			} finally {
 				in.close();
 			}
 		}
@@ -681,15 +672,13 @@ public class Launcher implements ServiceListener {
 				b.update();
 			}
 			return b;
-		}
-		catch (BundleException e) {
+		} catch (BundleException e) {
 			trace("failed reference, will try to install %s with input stream", f.getAbsolutePath());
 			String reference = f.toURI().toURL().toExternalForm();
 			InputStream in = new FileInputStream(f);
 			try {
 				return context.installBundle(reference, in);
-			}
-			finally {
+			} finally {
 				in.close();
 			}
 		}
@@ -738,8 +727,7 @@ public class Launcher implements ServiceListener {
 							System.exit(UPDATE_NEEDED);
 							break;
 					}
-				}
-				catch (InterruptedException e) {
+				} catch (InterruptedException e) {
 					System.exit(CANCELED);
 				}
 			}
@@ -758,8 +746,7 @@ public class Launcher implements ServiceListener {
 			// for now.
 			policy.setDefaultPermissions(allPermissions);
 			security = true;
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			// This can throw a linkage error when the framework
 			// does not carry the PermissionAdmin class
 			security = false;
@@ -900,8 +887,7 @@ public class Launcher implements ServiceListener {
 					}
 				}
 			});
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			trace("could not register a framework listener: %s", e);
 		}
 		trace("inited system bundle %s", systemBundle);
@@ -918,8 +904,12 @@ public class Launcher implements ServiceListener {
 	}
 
 	/**
-	 * Try to get the stupid service interface ... @param loader @param
-	 * string @return @throws IOException
+	 * Try to get the stupid service interface ...
+	 * 
+	 * @param loader
+	 * @param string
+	 * @return
+	 * @throws IOException
 	 */
 	private List<String> getMetaInfServices(ClassLoader loader, String factory) throws IOException {
 		if (loader == null)
@@ -945,8 +935,7 @@ public class Launcher implements ServiceListener {
 						factories.add(line);
 					}
 				}
-			}
-			finally {
+			} finally {
 				if (rdr != null) {
 					rdr.close();
 				}
@@ -1022,8 +1011,7 @@ public class Launcher implements ServiceListener {
 					}
 				}
 			}
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			error("Sorry, can't print framework: %s", t);
 		}
 	}
@@ -1222,8 +1210,7 @@ public class Launcher implements ServiceListener {
 									"Found a main thread service which is Callable<" + m.getReturnType().getName()
 											+ "> which should be Callable<Integer> " + event.getServiceReference());
 						mainThread = (Callable<Integer>) service;
-					}
-					catch (NoSuchMethodException e) {
+					} catch (NoSuchMethodException e) {
 						assert false;
 					}
 				}
@@ -1310,8 +1297,7 @@ public class Launcher implements ServiceListener {
 
 				byte[] byteArray = outputStream.toByteArray();
 				socket.send(new DatagramPacket(byteArray, byteArray.length));
-			}
-			catch (IOException ioe) {
+			} catch (IOException ioe) {
 				out.println("! Unable to send notification to " + socket.getRemoteSocketAddress());
 				if (parms.trace)
 					ioe.printStackTrace(out);
@@ -1326,7 +1312,10 @@ public class Launcher implements ServiceListener {
 	}
 
 	/**
-	 * Find a bundle by its location. @param path the location to find @return
+	 * Find a bundle by its location.
+	 * 
+	 * @param path the location to find
+	 * @return
 	 */
 	private Bundle getBundleByLocation(String path) {
 		BundleContext context = systemBundle.getBundleContext();

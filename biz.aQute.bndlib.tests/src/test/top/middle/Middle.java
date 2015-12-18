@@ -1,6 +1,6 @@
 package test.top.middle;
 
-import test.top.*;
+import test.top.Top;
 
 public class Middle {
 	{

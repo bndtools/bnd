@@ -1,16 +1,20 @@
 package aQute.libg.sax.filters;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
-import org.xml.sax.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 
-import aQute.libg.sax.*;
+import aQute.libg.sax.ContentFilterImpl;
+import aQute.libg.sax.SAXElement;
 
 public class MergeContentFilter extends ContentFilterImpl {
 
-	private int elementDepth = 0;
+	private int						elementDepth	= 0;
 
-	private final List<SAXElement> rootElements = new LinkedList<SAXElement>();
+	private final List<SAXElement>	rootElements	= new LinkedList<SAXElement>();
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {

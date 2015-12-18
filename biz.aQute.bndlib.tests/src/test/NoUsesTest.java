@@ -1,12 +1,17 @@
 package test;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-import junit.framework.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class NoUsesTest extends TestCase {
 

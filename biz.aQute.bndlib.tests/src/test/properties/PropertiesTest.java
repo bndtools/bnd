@@ -1,12 +1,14 @@
 package test.properties;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.List;
+import java.util.Properties;
 
-import junit.framework.*;
-import aQute.bnd.build.model.*;
-import aQute.bnd.properties.*;
-import aQute.lib.io.*;
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.properties.Document;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class PropertiesTest extends TestCase {
 

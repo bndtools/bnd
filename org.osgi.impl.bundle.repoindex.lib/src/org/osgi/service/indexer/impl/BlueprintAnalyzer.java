@@ -12,10 +12,10 @@ import org.osgi.service.log.LogService;
 
 public class BlueprintAnalyzer implements ResourceAnalyzer {
 
-	private static final String BUNDLE_BLUEPRINT_HEADER = "Bundle-Blueprint";
+	private static final String	BUNDLE_BLUEPRINT_HEADER	= "Bundle-Blueprint";
 
 	@SuppressWarnings("unused")
-	private LogService log;
+	private LogService			log;
 
 	public BlueprintAnalyzer(LogService log) {
 		this.log = log;

@@ -1,17 +1,18 @@
 package aQute.bnd.deployer.repository.providers;
 
-import static aQute.bnd.deployer.repository.api.Decision.*;
+import static aQute.bnd.deployer.repository.api.Decision.accept;
+import static aQute.bnd.deployer.repository.api.Decision.reject;
+import static aQute.bnd.deployer.repository.api.Decision.undecided;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
 
-import javax.xml.stream.*;
+import javax.xml.stream.XMLStreamException;
 
-import junit.framework.*;
+import org.osgi.impl.bundle.bindex.BundleIndexerImpl;
+import org.osgi.service.bindex.BundleIndexer;
 
-import org.osgi.impl.bundle.bindex.*;
-import org.osgi.service.bindex.*;
-
-import aQute.bnd.deployer.repository.api.*;
+import aQute.bnd.deployer.repository.api.CheckResult;
+import junit.framework.TestCase;
 
 @SuppressWarnings("restriction")
 public class TestObrRecognition extends TestCase {

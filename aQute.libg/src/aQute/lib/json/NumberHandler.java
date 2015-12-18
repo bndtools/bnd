@@ -1,8 +1,9 @@
 package aQute.lib.json;
 
-import java.lang.reflect.*;
-import java.math.*;
-import java.util.*;
+import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Map;
 
 public class NumberHandler extends Handler {
 	final Class< ? > type;

@@ -1,10 +1,11 @@
 package test.annotations.diff;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Outer {
-	Inner[]value();
+	Inner[] value();
 
-	int[]x();
+	int[] x();
 }

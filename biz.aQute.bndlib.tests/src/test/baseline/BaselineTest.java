@@ -69,7 +69,8 @@ public class BaselineTest extends TestCase {
 				jar.getResource("org/osgi/application/ApplicationContext.class"));
 		Tree tree = diff.tree(out);
 
-		Tree src = tree.get("<resources>").get("OSGI-OPT/src/org/osgi/application/ApplicationContext.java")
+		Tree src = tree.get("<resources>")
+				.get("OSGI-OPT/src/org/osgi/application/ApplicationContext.java")
 				.getChildren()[0];
 		Tree clazz = tree.get("<resources>").get("org/osgi/application/ApplicationContext.class").getChildren()[0];
 		System.out.println("src & clazz " + src + " " + clazz);
@@ -196,7 +197,9 @@ public class BaselineTest extends TestCase {
 
 	/**
 	 * When a JAR is build the manifest is not set in the resources but in a
-	 * instance var. @throws Exception
+	 * instance var.
+	 * 
+	 * @throws Exception
 	 */
 	public void testPrematureJar() throws Exception {
 		Builder b1 = new Builder();
@@ -232,8 +235,7 @@ public class BaselineTest extends TestCase {
 			print(baseline.getDiff(), " ");
 
 			assertEquals(Delta.UNCHANGED, baseline.getDiff().getDelta());
-		}
-		finally {
+		} finally {
 			tmp.delete();
 		}
 	}
@@ -252,7 +254,13 @@ public class BaselineTest extends TestCase {
 	}
 
 	/**
-	 * In repo: <pre> p3-1.1.0.jar p3-1.2.0.jar </pre> @throws Exception
+	 * In repo:
+	 * 
+	 * <pre>
+	 *  p3-1.1.0.jar p3-1.2.0.jar
+	 * </pre>
+	 * 
+	 * @throws Exception
 	 */
 	public void testRepository() throws Exception {
 		Jar v1_2_0_a = mock(Jar.class);
@@ -328,8 +336,9 @@ public class BaselineTest extends TestCase {
 
 	/**
 	 * Check what happens when there is nothing in the repo ... We do not
-	 * generate an error when version <=1.0.0, otherwise we generate an
-	 * error. @throws Exception
+	 * generate an error when version <=1.0.0, otherwise we generate an error.
+	 * 
+	 * @throws Exception
 	 */
 	public void testNothingInRepo() throws Exception {
 		File tmp = new File("tmp");
@@ -354,8 +363,7 @@ public class BaselineTest extends TestCase {
 			p3.setBundleVersion("5");
 			p3.build();
 			assertTrue(p3.check("There is no baseline for p3 in the baseline repo"));
-		}
-		finally {
+		} finally {
 			IO.delete(tmp);
 		}
 	}

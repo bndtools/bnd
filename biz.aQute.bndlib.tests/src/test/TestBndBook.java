@@ -1,8 +1,8 @@
 package test;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.Builder;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class TestBndBook extends TestCase {

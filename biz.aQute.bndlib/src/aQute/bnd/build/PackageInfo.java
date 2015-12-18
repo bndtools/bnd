@@ -1,12 +1,15 @@
 package aQute.bnd.build;
 
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Formatter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.osgi.*;
-import aQute.bnd.version.*;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Verifier;
+import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
 
 /*
  * Hides the differences and handling of packageinfo and package-info.java 
@@ -28,8 +31,11 @@ class PackageInfo {
 
 	/**
 	 * Get the version for a package name. This traverse the source paths and
-	 * will stop at the first source directory that has a packageinfo or @param
-	 * packageName @return @throws Exception
+	 * will stop at the first source directory that has a packageinfo or
+	 * 
+	 * @param packageName
+	 * @return
+	 * @throws Exception
 	 */
 	public Version getPackageInfo(String packageName) throws Exception {
 		File target = getFile(packageName);
@@ -51,8 +57,11 @@ class PackageInfo {
 	 * exists then we use that one, otherwise we try the packageinfo file. If
 	 * neither exists, we create a package-info.java file. You can set the
 	 * annotation to use. Default is bnd. setting it to 'osgi' sets it to the
-	 * OSGi annotations. @param packageName The package name @param version The
-	 * new package version @throws Exception
+	 * OSGi annotations.
+	 * 
+	 * @param packageName The package name
+	 * @param version The new package version
+	 * @throws Exception
 	 */
 	public boolean setPackageInfo(String packageName, Version version) throws Exception {
 
@@ -110,10 +119,16 @@ class PackageInfo {
 	}
 
 	/**
-	 * Check what version annotation to use for new content: <ul> <li>not set ->
-	 * use packageinfo <li>osgi -> use the OSGi Version ann. <li>bnd -> use the
-	 * bnd version ann. <li>other -> use the content as the version annotation,
-	 * must have the same prototype as the bnd/osgi ann. </ul> @return
+	 * Check what version annotation to use for new content:
+	 * <ul>
+	 * <li>not set -> use packageinfo
+	 * <li>osgi -> use the OSGi Version ann.
+	 * <li>bnd -> use the bnd version ann.
+	 * <li>other -> use the content as the version annotation, must have the
+	 * same prototype as the bnd/osgi ann.
+	 * </ul>
+	 * 
+	 * @return
 	 */
 	private String getVersionAnnotation() {
 		String versionAnnotation = project.getProperty(Constants.PACKAGEINFOTYPE);
@@ -144,8 +159,7 @@ class PackageInfo {
 				f.format("version %s\n", version);
 			}
 			return f.toString();
-		}
-		finally {
+		} finally {
 			f.close();
 		}
 	}

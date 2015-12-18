@@ -1,11 +1,15 @@
 package test;
 
-import java.util.*;
-import java.util.jar.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.jar.Manifest;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Clazz.JAVA;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class ClassReferenceTest extends TestCase {
@@ -21,7 +25,9 @@ public class ClassReferenceTest extends TestCase {
 	 * We create a JAR with the test.classreferenc.ClassReference class. This
 	 * class contains a javax.swing.Box.class reference Prior to Java 1.5, this
 	 * was done in a silly way that is handled specially. After 1.5 it is a
-	 * normal reference. @throws Exception
+	 * normal reference.
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testSun_1_1() throws Exception {

@@ -1,11 +1,18 @@
 package aQute.libg.asn1;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class BER implements Types {
-	final static DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss\\Z");
+	final static DateFormat	df	= new SimpleDateFormat("yyyyMMddHHmmss\\Z");
 
 	final DataInputStream	xin;
 	long					position;
@@ -160,7 +167,9 @@ public class BER implements Types {
 	 * end-of-contents octets can be considered as the encoding of a value whose
 	 * tag is universal class, whose form is primitive, whose number of the tag
 	 * is zero, and whose contents are absent, thus: End-of-contents Length
-	 * Contents 0016 0016 Absent @return
+	 * Contents 0016 0016 Absent
+	 * 
+	 * @return
 	 */
 	private long readLength() throws IOException {
 		long n = readByte();

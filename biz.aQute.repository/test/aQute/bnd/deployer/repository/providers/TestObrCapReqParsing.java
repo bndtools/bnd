@@ -1,18 +1,23 @@
 package aQute.bnd.deployer.repository.providers;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.LinkedList;
+import java.util.List;
 
-import junit.framework.*;
+import org.osgi.framework.Version;
+import org.osgi.impl.bundle.bindex.BundleIndexerImpl;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
 
-import org.osgi.framework.*;
-import org.osgi.impl.bundle.bindex.*;
-import org.osgi.resource.*;
-
-import aQute.bnd.deployer.repository.*;
-import aQute.bnd.deployer.repository.api.*;
-import aQute.lib.io.*;
+import aQute.bnd.deployer.repository.NullLogService;
+import aQute.bnd.deployer.repository.api.IRepositoryIndexProcessor;
+import aQute.bnd.deployer.repository.api.Referral;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 @SuppressWarnings("restriction")
 public class TestObrCapReqParsing extends TestCase {

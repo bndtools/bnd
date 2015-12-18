@@ -1,7 +1,9 @@
 package aQute.libg.cryptography;
 
-import java.io.*;
-import java.security.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.security.Signature;
+import java.security.SignatureException;
 
 public class Verifier extends OutputStream {
 	final Signature	signature;
@@ -16,8 +18,7 @@ public class Verifier extends OutputStream {
 	public void write(byte[] buffer, int offset, int length) throws IOException {
 		try {
 			signature.update(buffer, offset, length);
-		}
-		catch (SignatureException e) {
+		} catch (SignatureException e) {
 			throw new IOException(e.getLocalizedMessage());
 		}
 	}
@@ -26,8 +27,7 @@ public class Verifier extends OutputStream {
 	public void write(int b) throws IOException {
 		try {
 			signature.update((byte) b);
-		}
-		catch (SignatureException e) {
+		} catch (SignatureException e) {
 			throw new IOException(e.getLocalizedMessage());
 		}
 	}

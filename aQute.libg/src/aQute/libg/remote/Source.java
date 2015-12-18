@@ -1,6 +1,6 @@
 package aQute.libg.remote;
 
-import java.io.*;
+import java.io.IOException;
 
 public interface Source {
 	byte[] getData(String id) throws Exception;

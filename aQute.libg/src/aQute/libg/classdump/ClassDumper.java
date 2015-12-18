@@ -1,16 +1,24 @@
 package aQute.libg.classdump;
 
-import java.io.*;
-import java.lang.reflect.*;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.lang.reflect.Modifier;
 
 public class ClassDumper {
 	/**
-	 * <pre> ACC_PUBLIC 0x0001 Declared public; may be accessed from outside its
+	 * <pre>
+	 *  ACC_PUBLIC 0x0001 Declared public; may be accessed from outside its
 	 * package. ACC_FINAL 0x0010 Declared final; no subclasses allowed.
 	 * ACC_SUPER 0x0020 Treat superclass methods specially when invoked by the
 	 * invokespecial instruction. ACC_INTERFACE 0x0200 Is an interface, not a
 	 * class. ACC_ABSTRACT 0x0400 Declared abstract; may not be instantiated.
-	 * </pre> @param mod
+	 * </pre>
+	 * 
+	 * @param mod
 	 */
 	final static int	ACC_PUBLIC		= 0x0001;	// Declared public; may be
 													// accessed
@@ -45,9 +53,9 @@ public class ClassDumper {
 	final static String	HEX_COLUMN	= "%-30s %x%n";
 	final static String	STR_COLUMN	= "%-30s %s%n";
 
-	PrintStream	ps	= System.err;
-	Object[]	pool;
-	InputStream	in;
+	PrintStream			ps			= System.err;
+	Object[]			pool;
+	InputStream			in;
 
 	public ClassDumper(String path) throws Exception {
 		this(path, new FileInputStream(new File(path)));
@@ -216,8 +224,10 @@ public class ClassDumper {
 	}
 
 	/**
-	 * Called for each attribute in the class, field, or method. @param in The
-	 * stream @throws IOException
+	 * Called for each attribute in the class, field, or method.
+	 * 
+	 * @param in The stream
+	 * @throws IOException
 	 */
 	private void doAttributes(DataInputStream in, String indent) throws IOException {
 		int attribute_count = in.readUnsignedShort();
@@ -228,8 +238,10 @@ public class ClassDumper {
 	}
 
 	/**
-	 * Process a single attribute, if not recognized, skip it. @param in the
-	 * data stream @throws IOException
+	 * Process a single attribute, if not recognized, skip it.
+	 * 
+	 * @param in the data stream
+	 * @throws IOException
 	 */
 	private void doAttribute(DataInputStream in, String indent) throws IOException {
 		int attribute_name_index = in.readUnsignedShort();
@@ -271,8 +283,13 @@ public class ClassDumper {
 	}
 
 	/**
-	 * <pre> Signature_attribute { u2 attribute_name_index; u4 attribute_length;
-	 * u2 signature_index; } </pre> @param in @param indent
+	 * <pre>
+	 *  Signature_attribute { u2 attribute_name_index; u4 attribute_length;
+	 * u2 signature_index; }
+	 * </pre>
+	 * 
+	 * @param in
+	 * @param indent
 	 */
 	void doSignature(DataInputStream in, String indent) throws IOException {
 		int signature_index = in.readUnsignedShort();
@@ -280,8 +297,10 @@ public class ClassDumper {
 	}
 
 	/**
-	 * <pre> EnclosingMethod_attribute { u2 attribute_name_index; u4
-	 * attribute_length; u2 class_index u2 method_index; } </pre>
+	 * <pre>
+	 *  EnclosingMethod_attribute { u2 attribute_name_index; u4
+	 * attribute_length; u2 class_index u2 method_index; }
+	 * </pre>
 	 */
 	void doEnclosingMethod(DataInputStream in, String indent) throws IOException {
 		int class_index = in.readUnsignedShort();
@@ -294,10 +313,14 @@ public class ClassDumper {
 	}
 
 	/**
-	 * <pre> Exceptions_attribute { u2 attribute_name_index; u4
+	 * <pre>
+	 *  Exceptions_attribute { u2 attribute_name_index; u4
 	 * attribute_length; u2 number_of_exceptions; u2
-	 * exception_index_table[number_of_exceptions]; } </pre> @param in @param
-	 * indent
+	 * exception_index_table[number_of_exceptions]; }
+	 * </pre>
+	 * 
+	 * @param in
+	 * @param indent
 	 */
 	private void doExceptions(DataInputStream in, String indent) throws IOException {
 		int number_of_exceptions = in.readUnsignedShort();
@@ -317,12 +340,17 @@ public class ClassDumper {
 	}
 
 	/**
-	 * <pre> Code_attribute { u2 attribute_name_index; u4 attribute_length; u2
+	 * <pre>
+	 *  Code_attribute { u2 attribute_name_index; u4 attribute_length; u2
 	 * max_stack; u2 max_locals; u4 code_length; u1 code[code_length]; u2
 	 * exception_table_length; { u2 start_pc; u2 end_pc; u2 handler_pc; u2
 	 * catch_type; } exception_table[exception_table_length]; u2
 	 * attributes_count; attribute_info attributes[attributes_count]; }
-	 * </pre> @param in @param pool @throws IOException
+	 * </pre>
+	 * 
+	 * @param in
+	 * @param pool
+	 * @throws IOException
 	 */
 	private void doCode(DataInputStream in, String indent) throws IOException {
 		int max_stack = in.readUnsignedShort();
@@ -348,7 +376,9 @@ public class ClassDumper {
 	}
 
 	/**
-	 * We must find Class.forName references ... @param code
+	 * We must find Class.forName references ...
+	 * 
+	 * @param code
 	 */
 	protected void printHex(byte[] code) {
 		int index = 0;
@@ -439,9 +469,11 @@ public class ClassDumper {
 	}
 
 	/**
-	 * <pre> LineNumberTable_attribute { u2 attribute_name_index; u4
+	 * <pre>
+	 *  LineNumberTable_attribute { u2 attribute_name_index; u4
 	 * attribute_length; u2 line_number_table_length; { u2 start_pc; u2
-	 * line_number; } line_number_table[line_number_table_length]; } </pre>
+	 * line_number; } line_number_table[line_number_table_length]; }
+	 * </pre>
 	 */
 	void doLineNumberTable(DataInputStream in, String indent) throws IOException {
 		int line_number_table_length = in.readUnsignedShort();
@@ -459,10 +491,12 @@ public class ClassDumper {
 	}
 
 	/**
-	 * <pre> LocalVariableTable_attribute { u2 attribute_name_index; u4
+	 * <pre>
+	 *  LocalVariableTable_attribute { u2 attribute_name_index; u4
 	 * attribute_length; u2 local_variable_table_length; { u2 start_pc; u2
 	 * length; u2 name_index; u2 descriptor_index; u2 index; }
-	 * local_variable_table[local_variable_table_length]; } </pre>
+	 * local_variable_table[local_variable_table_length]; }
+	 * </pre>
 	 */
 
 	void doLocalVariableTable(DataInputStream in, String indent) throws IOException {
@@ -480,10 +514,12 @@ public class ClassDumper {
 	}
 
 	/**
-	 * <pre> InnerClasses_attribute { u2 attribute_name_index; u4
+	 * <pre>
+	 *  InnerClasses_attribute { u2 attribute_name_index; u4
 	 * attribute_length; u2 number_of_classes; { u2 inner_class_info_index; u2
 	 * outer_class_info_index; u2 inner_name_index; u2 inner_class_access_flags;
-	 * } classes[number_of_classes]; } </pre>
+	 * } classes[number_of_classes]; }
+	 * </pre>
 	 */
 	void doInnerClasses(DataInputStream in, String indent) throws IOException {
 		int number_of_classes = in.readUnsignedShort();

@@ -1,12 +1,14 @@
 package aQute.bnd.build;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.List;
+import java.util.SortedMap;
 
-import aQute.bnd.annotation.*;
-import aQute.bnd.service.*;
+import aQute.bnd.annotation.ProviderType;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.Strategy;
 import aQute.bnd.version.Version;
-import aQute.service.reporter.*;
+import aQute.service.reporter.Messages;
 
 @ProviderType
 public interface ProjectMessages extends Messages {

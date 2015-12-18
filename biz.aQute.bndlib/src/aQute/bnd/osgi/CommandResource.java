@@ -1,8 +1,11 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 
-import aQute.libg.command.*;
+import aQute.libg.command.Command;
 
 public class CommandResource extends WriteResource {
 	final long		lastModified;

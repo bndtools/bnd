@@ -19,8 +19,7 @@ public class LibDirectiveTest extends TestCase {
 
 			assertNotNull(m.getMainAttributes().getValue(Constants.BUNDLE_CLASSPATH));
 			assertEquals(".,lib/asm.jar", m.getMainAttributes().getValue(Constants.BUNDLE_CLASSPATH));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -35,8 +34,7 @@ public class LibDirectiveTest extends TestCase {
 
 			assertNotNull(m.getMainAttributes().getValue(Constants.BUNDLE_CLASSPATH));
 			assertEquals(".,lib/asm.jar", m.getMainAttributes().getValue(Constants.BUNDLE_CLASSPATH));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}

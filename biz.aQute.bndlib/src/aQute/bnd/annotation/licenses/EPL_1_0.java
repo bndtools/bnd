@@ -1,6 +1,6 @@
 package aQute.bnd.annotation.licenses;
 
-import aQute.bnd.annotation.headers.*;
+import aQute.bnd.annotation.headers.BundleLicense;
 
 /**
  * An annotation to indicate that the type depends on the Eclipsse Public

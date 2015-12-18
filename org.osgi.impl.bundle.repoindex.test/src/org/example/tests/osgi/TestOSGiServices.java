@@ -1,25 +1,46 @@
 package org.example.tests.osgi;
 
-import static org.example.tests.utils.Utils.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.example.tests.utils.Utils.copyToTempFile;
+import static org.example.tests.utils.Utils.createTempDir;
+import static org.example.tests.utils.Utils.deleteWithException;
+import static org.example.tests.utils.Utils.readStream;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.StringWriter;
+import java.util.Collections;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import junit.framework.*;
+import org.example.tests.utils.WibbleAnalyzer;
+import org.mockito.ArgumentCaptor;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.indexer.Capability;
+import org.osgi.service.indexer.Requirement;
+import org.osgi.service.indexer.Resource;
+import org.osgi.service.indexer.ResourceAnalyzer;
+import org.osgi.service.indexer.ResourceIndexer;
+import org.osgi.service.log.LogService;
 
-import org.example.tests.utils.*;
-import org.mockito.*;
-import org.osgi.framework.*;
-import org.osgi.service.indexer.*;
-import org.osgi.service.log.*;
+import junit.framework.TestCase;
 
 public class TestOSGiServices extends TestCase {
 
-	private final BundleContext context = FrameworkUtil.getBundle(this.getClass()).getBundleContext();
+	private final BundleContext	context	= FrameworkUtil.getBundle(this.getClass()).getBundleContext();
 
-	private File tempDir;
+	private File				tempDir;
 
 	@Override
 	protected void setUp() throws Exception {

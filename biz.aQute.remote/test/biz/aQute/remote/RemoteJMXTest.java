@@ -1,16 +1,18 @@
 package biz.aQute.remote;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
-import junit.framework.*;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
+import org.osgi.framework.dto.BundleDTO;
+import org.osgi.framework.launch.Framework;
 
-import org.osgi.framework.*;
-import org.osgi.framework.dto.*;
-import org.osgi.framework.launch.*;
-
-import aQute.lib.io.*;
-import aQute.remote.util.*;
+import aQute.lib.io.IO;
+import aQute.remote.util.JMXBundleDeployer;
+import junit.framework.TestCase;
 
 public class RemoteJMXTest extends TestCase {
 

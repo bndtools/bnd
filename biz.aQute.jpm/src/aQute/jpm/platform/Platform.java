@@ -1,18 +1,27 @@
 package aQute.jpm.platform;
 
-import static aQute.lib.io.IO.*;
+import static aQute.lib.io.IO.copy;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Formatter;
+import java.util.Map;
 
-import aQute.jpm.lib.*;
-import aQute.lib.collections.*;
-import aQute.lib.getopt.*;
-import aQute.lib.io.*;
-import aQute.libg.reporter.*;
-import aQute.libg.sed.*;
-import aQute.service.reporter.*;
+import aQute.jpm.lib.ArtifactData;
+import aQute.jpm.lib.CommandData;
+import aQute.jpm.lib.JVM;
+import aQute.jpm.lib.JustAnotherPackageManager;
+import aQute.jpm.lib.ServiceData;
+import aQute.lib.collections.ExtList;
+import aQute.lib.getopt.CommandLine;
+import aQute.lib.io.IO;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.libg.sed.Sed;
+import aQute.service.reporter.Reporter;
 
 public abstract class Platform {
 	public enum Type {
@@ -25,7 +34,11 @@ public abstract class Platform {
 	JustAnotherPackageManager	jpm;
 
 	/**
-	 * Get the current platform manager. @param reporter @param jpmx @return
+	 * Get the current platform manager.
+	 * 
+	 * @param reporter
+	 * @param jpmx
+	 * @return
 	 */
 	public static Platform getPlatform(Reporter reporter, Type type) {
 		if (platform == null) {
@@ -64,13 +77,18 @@ public abstract class Platform {
 
 	/**
 	 * Return the place where we place the jpm home directory for global access.
-	 * E.g. /var/jpm @return @throws Exception
+	 * E.g. /var/jpm
+	 * 
+	 * @return
+	 * @throws Exception
 	 */
 	public abstract File getGlobal();
 
 	/**
 	 * Return the place where we place the jpm home directory for user/local
-	 * access. E.g. ~/.jpm @return
+	 * access. E.g. ~/.jpm
+	 * 
+	 * @return
 	 */
 	public abstract File getLocal();
 
@@ -85,8 +103,7 @@ public abstract class Platform {
 			formatter.format("Local               %s%n", getLocal());
 			formatter.format("Global              %s%n", getGlobal());
 			return formatter.toString();
-		}
-		finally {
+		} finally {
 			formatter.close();
 		}
 	}
@@ -241,15 +258,16 @@ public abstract class Platform {
 		try {
 			parseCompletion(target, tmp);
 			IO.copy(tmp, out);
-		}
-		finally {
+		} finally {
 			tmp.delete();
 		}
 	}
 
 	/**
-	 * Is called to initialize the platform if necessary. @throws
-	 * IOException @throws Exception
+	 * Is called to initialize the platform if necessary.
+	 * 
+	 * @throws IOException
+	 * @throws Exception
 	 */
 	public void init() throws Exception {
 		// can be overridden by the subclasses

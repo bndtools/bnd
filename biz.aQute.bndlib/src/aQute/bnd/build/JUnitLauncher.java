@@ -1,12 +1,16 @@
 package aQute.bnd.build;
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.regex.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.osgi.*;
-import aQute.libg.command.*;
+import aQute.bnd.osgi.Classpath;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
+import aQute.libg.command.Command;
 
 public class JUnitLauncher extends ProjectLauncher {
 	boolean					junit4Main;
@@ -63,8 +67,7 @@ public class JUnitLauncher extends ProjectLauncher {
 				return TIMEDOUT;
 			reportResult(result);
 			return result;
-		}
-		finally {
+		} finally {
 			cleanup();
 		}
 

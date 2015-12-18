@@ -1,21 +1,27 @@
 package aQute.lib.index;
 
-import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 /**
- * <pre> 0 -> 0, 122 -> 1 123 -> 123, 244 -> 2 245 -> 245, ... </pre>
+ * <pre>
+ *  0 -> 0, 122 -> 1 123 -> 123, 244 -> 2 245 -> 245, ...
+ * </pre>
  */
 public class Index implements Iterable<byte[]> {
-	final static int	LEAF	= 0;
-	final static int	INDEX	= 1;
+	final static int					LEAF		= 0;
+	final static int					INDEX		= 1;
 
-	final static int	SIGNATURE	= 0;
-	final static int	MAGIC		= 0x494C4458;
-	final static int	KEYSIZE		= 4;
+	final static int					SIGNATURE	= 0;
+	final static int					MAGIC		= 0x494C4458;
+	final static int					KEYSIZE		= 4;
 
 	FileChannel							file;
 	final int							pageSize	= 4096;
@@ -26,7 +32,7 @@ public class Index implements Iterable<byte[]> {
 	final LinkedHashMap<Integer,Page>	cache		= new LinkedHashMap<Integer,Index.Page>();
 	final MappedByteBuffer				settings;
 
-	private int nextPage;
+	private int							nextPage;
 
 	class Page {
 		final static int		TYPE_OFFSET		= 0;
@@ -55,8 +61,8 @@ public class Index implements Iterable<byte[]> {
 
 		Iterator<byte[]> iterator() {
 			return new Iterator<byte[]>() {
-				Iterator<byte[]> i;
-				int rover = 0;
+				Iterator<byte[]>	i;
+				int					rover	= 0;
 
 				public byte[] next() {
 					if (leaf) {
@@ -75,8 +81,7 @@ public class Index implements Iterable<byte[]> {
 							i = getPage(c).iterator();
 						}
 						return i.hasNext();
-					}
-					catch (IOException e) {
+					} catch (IOException e) {
 						throw new RuntimeException(e);
 					}
 
@@ -242,8 +247,7 @@ public class Index implements Iterable<byte[]> {
 			StringBuilder sb = new StringBuilder();
 			try {
 				toString(sb, "");
-			}
-			catch (IOException e) {
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			return sb.toString();
@@ -309,8 +313,7 @@ public class Index implements Iterable<byte[]> {
 				root = getPage(1);
 				nextPage = (int) (this.file.size() / pageSize);
 			}
-		}
-		finally {
+		} finally {
 			// raf.close();
 		}
 	}

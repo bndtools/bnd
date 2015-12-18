@@ -23,60 +23,60 @@ public class Attrs implements Map<String,String> {
 
 	public static DataType<String>			STRING			= new DataType<String>() {
 
-		public Type type() {
-			return Type.STRING;
-		}
-	};
+																public Type type() {
+																	return Type.STRING;
+																}
+															};
 	public static DataType<Long>			LONG			= new DataType<Long>() {
 
-		public Type type() {
-			return Type.LONG;
-		}
-	};;
+																public Type type() {
+																	return Type.LONG;
+																}
+															};;
 	public static DataType<Double>			DOUBLE			= new DataType<Double>() {
 
-		public Type type() {
-			return Type.DOUBLE;
-		}
-	};;
+																public Type type() {
+																	return Type.DOUBLE;
+																}
+															};;
 	public static DataType<Version>			VERSION			= new DataType<Version>() {
 
-		public Type type() {
-			return Type.VERSION;
-		}
-	};;
+																public Type type() {
+																	return Type.VERSION;
+																}
+															};;
 	public static DataType<List<String>>	LIST_STRING		= new DataType<List<String>>() {
 
-		public Type type() {
-			return Type.STRINGS;
-		}
-	};;
+																public Type type() {
+																	return Type.STRINGS;
+																}
+															};;
 	public static DataType<List<Long>>		LIST_LONG		= new DataType<List<Long>>() {
 
-		public Type type() {
-			return Type.LONGS;
-		}
-	};;
+																public Type type() {
+																	return Type.LONGS;
+																}
+															};;
 	public static DataType<List<Double>>	LIST_DOUBLE		= new DataType<List<Double>>() {
 
-		public Type type() {
-			return Type.DOUBLES;
-		}
-	};;
+																public Type type() {
+																	return Type.DOUBLES;
+																}
+															};;
 	public static DataType<List<Version>>	LIST_VERSION	= new DataType<List<Version>>() {
 
-		public Type type() {
-			return Type.VERSIONS;
-		}
-	};;
+																public Type type() {
+																	return Type.VERSIONS;
+																}
+															};;
 
 	public enum Type {
 		STRING(null, "String"), LONG(null, "Long"), VERSION(null, "Version"), DOUBLE(null, "Double"), STRINGS(STRING,
 				"List<String>"), LONGS(LONG, "List<Long>"), VERSIONS(VERSION, "List<Version>"), DOUBLES(DOUBLE,
 						"List<Double>");
 
-		Type sub;
-		String toString;
+		Type	sub;
+		String	toString;
 
 		Type(Type sub, String toString) {
 			this.sub = sub;
@@ -105,11 +105,13 @@ public class Attrs implements Map<String,String> {
 	}
 
 	/**
-	 * <pre> Provide-Capability ::= capability ::= name-space ::= typed-attr ::=
+	 * <pre>
+	 *  Provide-Capability ::= capability ::= name-space ::= typed-attr ::=
 	 * type ::= scalar ::= capability ( ',' capability )* name-space ( ’;’
 	 * directive | typed-attr )* symbolic-name extended ( ’:’ type ) ’=’
 	 * argument scalar | list ’String’ | ’Version’ | ’Long’ list ::= ’List<’
-	 * scalar ’>’ </pre>
+	 * scalar ’>’
+	 * </pre>
 	 */
 	static String				EXTENDED	= "[\\-0-9a-zA-Z\\._]+";
 	static String				SCALAR		= "String|Version|Long|Double";
@@ -397,8 +399,7 @@ public class Attrs implements Map<String,String> {
 				append(sb, e);
 				del = ";";
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// Cannot happen
 			e.printStackTrace();
 		}

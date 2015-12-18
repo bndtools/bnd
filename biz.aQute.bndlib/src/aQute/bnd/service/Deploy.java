@@ -2,7 +2,7 @@ package aQute.bnd.service;
 
 import java.io.InputStream;
 
-import aQute.bnd.build.*;
+import aQute.bnd.build.Project;
 
 /**
  * Deploy this artifact to maven.

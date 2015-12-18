@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 		"unchecked", "rawtypes"
 })
 public class Configurable<T> {
-	public static Pattern SPLITTER_P = Pattern.compile("(?<!\\\\)\\|");
+	public static Pattern		SPLITTER_P					= Pattern.compile("(?<!\\\\)\\|");
 	private static final String	BND_ANNOTATION_CLASS_NAME	= "aQute.bnd.osgi.Annotation";
 	private static final String	BND_ANNOTATION_METHOD_NAME	= "getAnnotation";
 
@@ -187,8 +187,7 @@ public class Configurable<T> {
 			try {
 				Constructor< ? > c = resultType.getConstructor(String.class);
 				return c.newInstance(o.toString());
-			}
-			catch (Throwable t) {
+			} catch (Throwable t) {
 				// handled on next line
 			}
 			throw new IllegalArgumentException(

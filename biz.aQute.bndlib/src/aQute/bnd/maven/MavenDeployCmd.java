@@ -1,28 +1,40 @@
 package aQute.bnd.maven;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Map;
+import java.util.Set;
+import java.util.jar.Manifest;
 
-import aQute.bnd.build.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.libg.command.*;
-import aQute.service.reporter.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.JarResource;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.libg.command.Command;
+import aQute.service.reporter.Reporter;
 
 public class MavenDeployCmd extends Processor {
 
-	String	repository	= "nexus";
-	String	url			= "http://oss.sonatype.org/service/local/staging/deploy/maven2";
-	String	homedir;
-	String	keyname;
+	String		repository	= "nexus";
+	String		url			= "http://oss.sonatype.org/service/local/staging/deploy/maven2";
+	String		homedir;
+	String		keyname;
 
 	String		passphrase;
 	Reporter	reporter;
 
 	/**
 	 * maven deploy [-url repo] [-passphrase passphrase] [-homedir homedir]
-	 * [-keyname keyname] bundle ... @param args @param i @throws Exception
+	 * [-keyname keyname] bundle ...
+	 * 
+	 * @param args
+	 * @param i
+	 * @throws Exception
 	 */
 	void run(String args[], int i) throws Exception {
 		if (i >= args.length) {
@@ -120,8 +132,7 @@ public class MavenDeployCmd extends Processor {
 				project.progress("Deploying main javadoc file");
 				maven_gpg_sign_and_deploy(project, javadocFile, "javadoc", null);
 
-			}
-			finally {
+			} finally {
 				main.close();
 				src.close();
 			}
@@ -212,8 +223,7 @@ public class MavenDeployCmd extends Processor {
 		OutputStream out = new FileOutputStream(f);
 		try {
 			r.write(out);
-		}
-		finally {
+		} finally {
 			out.close();
 		}
 		return f;

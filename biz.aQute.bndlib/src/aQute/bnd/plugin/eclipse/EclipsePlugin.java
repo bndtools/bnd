@@ -1,11 +1,15 @@
 package aQute.bnd.plugin.eclipse;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
-import aQute.bnd.annotation.plugin.*;
-import aQute.bnd.build.*;
-import aQute.bnd.service.lifecycle.*;
-import aQute.lib.io.*;
+import aQute.bnd.annotation.plugin.BndPlugin;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.service.lifecycle.LifeCyclePlugin;
+import aQute.lib.io.IO;
 
 /**
  * This plugin creates a build.xml file in the project when a project gets

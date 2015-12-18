@@ -35,46 +35,46 @@ import aQute.libg.generics.Create;
  * project to run the code. Launchers must extend this class.
  */
 public abstract class ProjectLauncher extends Processor {
-	private final Project		project;
-	private long				timeout			= 0;
-	private final List<String>	classpath		= new ArrayList<String>();
-	private List<String>		runbundles		= Create.list();
-	private final List<String>	runvm			= new ArrayList<String>();
-	private final List<String>	runprogramargs	= new ArrayList<String>();
-	private Map<String,String>	runproperties;
-	private Command				java;
-	private Parameters			runsystempackages;
-	private Parameters			runsystemcapabilities;
-	private final List<String>	activators		= Create.list();
-	private File				storageDir;
+	private final Project						project;
+	private long								timeout				= 0;
+	private final List<String>					classpath			= new ArrayList<String>();
+	private List<String>						runbundles			= Create.list();
+	private final List<String>					runvm				= new ArrayList<String>();
+	private final List<String>					runprogramargs		= new ArrayList<String>();
+	private Map<String,String>					runproperties;
+	private Command								java;
+	private Parameters							runsystempackages;
+	private Parameters							runsystemcapabilities;
+	private final List<String>					activators			= Create.list();
+	private File								storageDir;
 
 	private boolean								trace;
 	private boolean								keep;
 	private int									framework;
 	private File								cwd;
-	private Collection<String>					agents		= new ArrayList<String>();
-	private Map<NotificationListener,Boolean>	listeners	= new IdentityHashMap<NotificationListener,Boolean>();
+	private Collection<String>					agents				= new ArrayList<String>();
+	private Map<NotificationListener,Boolean>	listeners			= new IdentityHashMap<NotificationListener,Boolean>();
 
-	protected Appendable	out	= System.out;
-	protected Appendable	err	= System.err;
-	protected InputStream	in	= System.in;
+	protected Appendable						out					= System.out;
+	protected Appendable						err					= System.err;
+	protected InputStream						in					= System.in;
 
-	public final static int	SERVICES	= 10111;
-	public final static int	NONE		= 20123;
+	public final static int						SERVICES			= 10111;
+	public final static int						NONE				= 20123;
 
 	// MUST BE ALIGNED WITH LAUNCHER
-	public final static int	OK					= 0;
-	public final static int	WARNING				= -1;
-	public final static int	ERROR				= -2;
-	public final static int	TIMEDOUT			= -3;
-	public final static int	UPDATE_NEEDED		= -4;
-	public final static int	CANCELED			= -5;
-	public final static int	DUPLICATE_BUNDLE	= -6;
-	public final static int	RESOLVE_ERROR		= -7;
-	public final static int	ACTIVATOR_ERROR		= -8;
-	public final static int	CUSTOM_LAUNCHER		= -128;
+	public final static int						OK					= 0;
+	public final static int						WARNING				= -1;
+	public final static int						ERROR				= -2;
+	public final static int						TIMEDOUT			= -3;
+	public final static int						UPDATE_NEEDED		= -4;
+	public final static int						CANCELED			= -5;
+	public final static int						DUPLICATE_BUNDLE	= -6;
+	public final static int						RESOLVE_ERROR		= -7;
+	public final static int						ACTIVATOR_ERROR		= -8;
+	public final static int						CUSTOM_LAUNCHER		= -128;
 
-	public final static String EMBEDDED_ACTIVATOR = "Embedded-Activator";
+	public final static String					EMBEDDED_ACTIVATOR	= "Embedded-Activator";
 
 	public ProjectLauncher(Project project) throws Exception {
 		this.project = project;
@@ -84,7 +84,9 @@ public abstract class ProjectLauncher extends Processor {
 
 	/**
 	 * Collect all the aspect from the project and set the local fields from
-	 * them. Should be called @throws Exception
+	 * them. Should be called
+	 * 
+	 * @throws Exception
 	 */
 	protected void updateFromProject() throws Exception {
 		setCwd(project.getBase());
@@ -272,8 +274,7 @@ public abstract class ProjectLauncher extends Processor {
 			int port = 1044;
 			try {
 				port = Integer.parseInt(project.getProperty(Constants.RUNJDB));
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				// ok, value can also be ok, or on, or true
 			}
 			String suspend = port > 0 ? "y" : "n";
@@ -300,16 +301,16 @@ public abstract class ProjectLauncher extends Processor {
 				return TIMEDOUT;
 			reportResult(result);
 			return result;
-		}
-		finally {
+		} finally {
 			cleanup();
 			listeners.clear();
 		}
 	}
 
 	/**
-	 * launch a framework internally. I.e. do not start a separate
-	 * process. @throws Exception
+	 * launch a framework internally. I.e. do not start a separate process.
+	 * 
+	 * @throws Exception
 	 */
 	static Pattern IGNORE = Pattern.compile("org(/|\\.)osgi(/|\\.).resource.*");
 
@@ -427,7 +428,9 @@ public abstract class ProjectLauncher extends Processor {
 
 	/**
 	 * Should be called when all the changes to the launchers are set. Will
-	 * calculate whatever is necessary for the launcher. @throws Exception
+	 * calculate whatever is necessary for the launcher.
+	 * 
+	 * @throws Exception
 	 */
 	public abstract void prepare() throws Exception;
 
@@ -447,7 +450,9 @@ public abstract class ProjectLauncher extends Processor {
 	 * Either NONE or SERVICES to indicate how the remote end launches. NONE
 	 * means it should not use the classpath to run a framework. This likely
 	 * requires some dummy framework support. SERVICES means it should load the
-	 * framework from the claspath. @return
+	 * framework from the claspath.
+	 * 
+	 * @return
 	 */
 	public int getRunFramework() {
 		return framework;
@@ -461,8 +466,9 @@ public abstract class ProjectLauncher extends Processor {
 	/**
 	 * Add the specification for a set of bundles the runpath if it does not
 	 * already is included. This can be used by subclasses to ensure the proper
-	 * jars are on the classpath. @param defaultSpec The default spec for
-	 * default jars
+	 * jars are on the classpath.
+	 * 
+	 * @param defaultSpec The default spec for default jars
 	 */
 	public void addDefault(String defaultSpec) throws Exception {
 		Collection<Container> deflts = project.getBundles(Strategy.HIGHEST, defaultSpec, null);
@@ -517,7 +523,10 @@ public abstract class ProjectLauncher extends Processor {
 	/**
 	 * Set the stderr and stdout streams for the output process. The debugged
 	 * process must append its output (i.e. write operation in the process under
-	 * debug) to the given appendables. @param out std out @param err std err
+	 * debug) to the given appendables.
+	 * 
+	 * @param out std out
+	 * @param err std err
 	 */
 	public void setStreams(Appendable out, Appendable err) {
 		this.out = out;
@@ -525,8 +534,10 @@ public abstract class ProjectLauncher extends Processor {
 	}
 
 	/**
-	 * Write text to the debugged process as if it came from stdin. @param text
-	 * the text to write @throws Exception
+	 * Write text to the debugged process as if it came from stdin.
+	 * 
+	 * @param text the text to write
+	 * @throws Exception
 	 */
 	public void write(String text) throws Exception {
 
@@ -534,8 +545,9 @@ public abstract class ProjectLauncher extends Processor {
 
 	/**
 	 * Get the run sessions. If this return null, then launch on this object
-	 * should be used, otherwise each returned object provides a remote
-	 * session. @throws Exception
+	 * should be used, otherwise each returned object provides a remote session.
+	 * 
+	 * @throws Exception
 	 */
 
 	public List< ? extends RunSession> getRunSessions() throws Exception {
@@ -546,7 +558,9 @@ public abstract class ProjectLauncher extends Processor {
 	 * Utility to calculate the final framework properties from settings
 	 */
 	/**
-	 * This method should go to the ProjectLauncher @throws Exception
+	 * This method should go to the ProjectLauncher
+	 * 
+	 * @throws Exception
 	 */
 
 	public void calculatedProperties(Map<String,Object> properties) throws Exception {

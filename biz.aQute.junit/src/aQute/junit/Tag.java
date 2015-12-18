@@ -1,9 +1,17 @@
 package aQute.junit;
 
-import java.io.*;
-import java.net.*;
-import java.text.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * The Tag class represents a minimal XML tree. It consist of a named element
@@ -12,21 +20,21 @@ import java.util.*;
  * objects or other Tag objects.
  */
 public class Tag {
-	Tag							parent;											// Parent
-																				// element
-	String						name;											// Name
-																				// of
-																				// the
-																				// tag
-	Hashtable<String,String>	attributes	= new Hashtable<String,String>();	// Attributes
-																				// name
-																				// ->
-																				// value
-	Vector<Object>				content		= new Vector<Object>();				// Content
-																				// elements
-	boolean						cdata;
+	Tag								parent;														// Parent
+																								// element
+	String							name;														// Name
+																								// of
+																								// the
+																								// tag
+	Hashtable<String,String>		attributes	= new Hashtable<String,String>();				// Attributes
+																								// name
+																								// ->
+																								// value
+	Vector<Object>					content		= new Vector<Object>();							// Content
+																								// elements
+	boolean							cdata;
 
-	final static SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+	final static SimpleDateFormat	format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
 	/**
 	 * Construct a new Tag with a name.
@@ -276,8 +284,7 @@ public class Tag {
 						line = rdr.readLine();
 					}
 				}
-			}
-			finally {
+			} finally {
 				if (rdr != null) {
 					rdr.close();
 				}
@@ -285,8 +292,7 @@ public class Tag {
 					in.close();
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			System.err.println("Problems copying extra XML");
 		}
 	}

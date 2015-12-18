@@ -1,19 +1,31 @@
 package aQute.bnd.deployer.repository;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.Map.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.SortedMap;
 
-import org.osgi.framework.namespace.*;
-import org.osgi.resource.*;
-import org.osgi.service.log.*;
-import org.osgi.service.repository.*;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Resource;
+import org.osgi.service.log.LogService;
+import org.osgi.service.repository.ContentNamespace;
 
-import aQute.bnd.deployer.repository.api.*;
-import aQute.bnd.version.*;
-import aQute.lib.io.*;
-import aQute.libg.generics.*;
+import aQute.bnd.deployer.repository.api.CheckResult;
+import aQute.bnd.deployer.repository.api.Decision;
+import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
+import aQute.bnd.deployer.repository.api.IRepositoryIndexProcessor;
+import aQute.bnd.version.Version;
+import aQute.bnd.version.VersionRange;
+import aQute.lib.io.IO;
+import aQute.libg.generics.Create;
 
 public final class RepoResourceUtils {
 
@@ -37,8 +49,7 @@ public final class RepoResourceUtils {
 			try {
 				bufferedStream.mark(READ_AHEAD_MAX);
 				checkResult = provider.checkStream(name, new ProtectedStream(bufferedStream));
-			}
-			finally {
+			} finally {
 				bufferedStream.reset();
 			}
 
@@ -73,8 +84,7 @@ public final class RepoResourceUtils {
 		// Finally, parse the damn file.
 		try {
 			selectedProvider.parseIndex(bufferedStream, baseUri, listener, log);
-		}
-		finally {
+		} finally {
 			IO.close(bufferedStream);
 		}
 	}
@@ -123,8 +133,7 @@ public final class RepoResourceUtils {
 				return ((URL) uri).toURI();
 			if (uri instanceof String)
 				return new URI((String) uri);
-		}
-		catch (URISyntaxException e) {
+		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException("Failed to convert resource content location to a valid URI.", e);
 		}
 

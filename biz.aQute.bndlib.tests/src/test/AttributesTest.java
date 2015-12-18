@@ -1,21 +1,26 @@
 package test;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.File;
+import java.util.Map;
+import java.util.Properties;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
-import junit.framework.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class AttributesTest extends TestCase {
 
 	/**
 	 * Remove a version attribute A mandatory attribute adds the common and tst
-	 * properties to the import. We remove them using remove:=* @throws
-	 * Exception
+	 * properties to the import. We remove them using remove:=*
+	 * 
+	 * @throws Exception
 	 */
 	public static void testRemoveDirective() throws Exception {
 		Jar javax = new Jar("test");
@@ -56,7 +61,9 @@ public class AttributesTest extends TestCase {
 	}
 
 	/**
-	 * Remove a version attribute @throws Exception
+	 * Remove a version attribute
+	 * 
+	 * @throws Exception
 	 */
 	public static void testRemoveAttribute() throws Exception {
 		Jar javax = new Jar("test");
@@ -89,7 +96,9 @@ public class AttributesTest extends TestCase {
 	}
 
 	/**
-	 * Override a version attribute @throws Exception
+	 * Override a version attribute
+	 * 
+	 * @throws Exception
 	 */
 	public static void testOverrideAttribute() throws Exception {
 		File cp[] = {
@@ -115,7 +124,9 @@ public class AttributesTest extends TestCase {
 	}
 
 	/**
-	 * See if we inherit the version from the osgi.jar file. @throws Exception
+	 * See if we inherit the version from the osgi.jar file.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testSimple() throws Exception {
 		File cp[] = {

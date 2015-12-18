@@ -1,15 +1,23 @@
 package aQute.jpm.platform;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
 
-import javax.xml.parsers.*;
-import javax.xml.xpath.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
-import aQute.jpm.lib.*;
-import aQute.lib.io.*;
+import aQute.jpm.lib.CommandData;
+import aQute.jpm.lib.JVM;
+import aQute.jpm.lib.ServiceData;
+import aQute.lib.io.IO;
 
 class MacOS extends Unix {
 	static DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
@@ -111,8 +119,11 @@ class MacOS extends Unix {
 	}
 
 	/**
-	 * Return the VMs on the platform. @throws SAXException @throws
-	 * IOException @throws ParserConfigurationException
+	 * Return the VMs on the platform.
+	 * 
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws ParserConfigurationException
 	 */
 	@Override
 	public void getVMs(Collection<JVM> vms) throws Exception {
@@ -173,8 +184,7 @@ class MacOS extends Unix {
 			jvm.vendor = getSiblingValue(vendorNode);
 
 			return jvm;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			reporter.trace("Could not parse the Info.plist in %s, got %s", vmdir, e);
 			throw e;
 		}

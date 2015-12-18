@@ -228,8 +228,7 @@ public class Macro {
 								value = process(template, new Link(domain, link, key));
 								if (value != null)
 									return value;
-							}
-							finally {
+							} finally {
 								domain = domain.getParent();
 							}
 						}
@@ -266,7 +265,10 @@ public class Macro {
 
 	/**
 	 * Parse the key as a command. A command consist of parameters separated by
-	 * ':'. @param key @return
+	 * ':'.
+	 * 
+	 * @param key
+	 * @return
 	 */
 	static Pattern commands = Pattern.compile("(?<!\\\\);");
 
@@ -321,11 +323,9 @@ public class Macro {
 						args
 				});
 				return result == null ? NULLVALUE : result.toString();
-			}
-			catch (NoSuchMethodException e) {
+			} catch (NoSuchMethodException e) {
 				return null;
-			}
-			catch (InvocationTargetException e) {
+			} catch (InvocationTargetException e) {
 				if (e.getCause() instanceof IllegalArgumentException) {
 					domain.error("%s, for cmd: %s, arguments; %s", e.getCause().getMessage(), method,
 							Arrays.toString(args));
@@ -334,8 +334,7 @@ public class Macro {
 					e.getCause().printStackTrace();
 				}
 				return NULLVALUE;
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				domain.warning("Exception in replace: " + e + " method=" + method);
 				e.printStackTrace();
 				return NULLVALUE;
@@ -345,8 +344,10 @@ public class Macro {
 	}
 
 	/**
-	 * Return a unique list where the duplicates are removed. @param
-	 * args @return
+	 * Return a unique list where the duplicates are removed.
+	 * 
+	 * @param args
+	 * @return
 	 */
 	static String _uniqHelp = "${uniq;<list> ...}";
 
@@ -519,8 +520,7 @@ public class Macro {
 	public String _long2date(String args[]) {
 		try {
 			return new Date(Long.parseLong(args[1])).toString();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return "not a valid long";
@@ -543,7 +543,10 @@ public class Macro {
 	}
 
 	/**
-	 * replace ; <list> ; regex ; replace @param args @return
+	 * replace ; <list> ; regex ; replace
+	 * 
+	 * @param args
+	 * @return
 	 */
 	public String _replace(String args[]) {
 		if (args.length < 4 || args.length > 5) {
@@ -585,7 +588,10 @@ public class Macro {
 	}
 
 	/**
-	 * toclassname ; <path>.class ( , <path>.class ) * @param args @return
+	 * toclassname ; <path>.class ( , <path>.class ) *
+	 * 
+	 * @param args
+	 * @return
 	 */
 	static String _toclassnameHelp = "${classname;<list of class names>}, convert class paths to FQN class names ";
 
@@ -609,7 +615,10 @@ public class Macro {
 	}
 
 	/**
-	 * toclassname ; <path>.class ( , <path>.class ) * @param args @return
+	 * toclassname ; <path>.class ( , <path>.class ) *
+	 * 
+	 * @param args
+	 * @return
 	 */
 
 	static String _toclasspathHelp = "${toclasspath;<list>[;boolean]}, convert a list of class names to paths";
@@ -723,8 +732,7 @@ public class Macro {
 		if (tstamp != null)
 			try {
 				now = Long.parseLong(tstamp);
-			}
-			catch (NumberFormatException e) {
+			} catch (NumberFormatException e) {
 				// ignore, just use current time
 			}
 		return sdf.format(new Date(now));
@@ -732,8 +740,10 @@ public class Macro {
 
 	/**
 	 * Wildcard a directory. The lists can contain Instruction that are matched
-	 * against the given directory ${lsr;<dir>;<list>(;<list>)*}
-	 * ${lsa;<dir>;<list>(;<list>)*} @author aqute
+	 * against the given directory ${lsr;<dir>;<list>(;<list>)*} ${lsa;<dir>;
+	 * <list>(;<list>)*}
+	 * 
+	 * @author aqute
 	 */
 
 	public String _lsr(String args[]) {
@@ -779,20 +789,26 @@ public class Macro {
 
 	/**
 	 * Modify a version to set a version policy. The policy is a mask that is
-	 * mapped to a version. <pre> + increment - decrement = maintain s only
+	 * mapped to a version.
+	 * 
+	 * <pre>
+	 *  + increment - decrement = maintain s only
 	 * pos=3 (qualifier). If qualifer == SNAPSHOT, return m.m.m-SNAPSHOT else
 	 * m.m.m.q s only pos=3 (qualifier). If qualifer == SNAPSHOT, return
 	 * m.m.m-SNAPSHOT else m.m.m &tilde; discard ==+ = maintain major, minor,
 	 * increment micro, discard qualifier &tilde;&tilde;&tilde;= = just get the
 	 * qualifier version=&quot;[${version;==;${@}},${version;=+;${@}})&quot;
-	 * </pre> @param args @return
+	 * </pre>
+	 * 
+	 * @param args
+	 * @return
 	 */
 	final static String		MASK_STRING			= "[\\-+=~0123456789]{0,3}[=~]?";
 	final static Pattern	MASK				= Pattern.compile(MASK_STRING);
 	final static String		_versionHelp		= "${version;<mask>;<version>}, modify a version\n"
 			+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
 	final static Pattern	_versionPattern[]	= new Pattern[] {
-			null, null, MASK, Verifier.VERSION
+														null, null, MASK, Verifier.VERSION
 													};
 
 	public String _versionmask(String args[]) {
@@ -871,15 +887,22 @@ public class Macro {
 	}
 
 	/**
-	 * Schortcut for version policy <pre> -provide-policy : ${policy;[==,=+)}
-	 * -consume-policy : ${policy;[==,+)} </pre> @param args @return
+	 * Schortcut for version policy
+	 * 
+	 * <pre>
+	 *  -provide-policy : ${policy;[==,=+)}
+	 * -consume-policy : ${policy;[==,+)}
+	 * </pre>
+	 * 
+	 * @param args
+	 * @return
 	 */
 
 	static Pattern	RANGE_MASK		= Pattern.compile("(\\[|\\()(" + MASK_STRING + "),(" + MASK_STRING + ")(\\]|\\))");
 	static String	_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookyp ${@}\n"
 			+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
 	static Pattern	_rangePattern[]	= new Pattern[] {
-			null, RANGE_MASK
+											null, RANGE_MASK
 										};
 
 	public String _range(String args[]) {
@@ -920,8 +943,13 @@ public class Macro {
 	}
 
 	/**
-	 * System command. Execute a command and insert the result. @param
-	 * args @param help @param patterns @param low @param high
+	 * System command. Execute a command and insert the result.
+	 * 
+	 * @param args
+	 * @param help
+	 * @param patterns
+	 * @param low
+	 * @param high
 	 */
 	public String system_internal(boolean allowFail, String args[]) throws Exception {
 		if (nosystem)
@@ -971,8 +999,7 @@ public class Macro {
 		try {
 			result = system_internal(true, args);
 			return result == null ? "" : result;
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			/* ignore */
 			return "";
 		}
@@ -984,14 +1011,17 @@ public class Macro {
 		try {
 			String ret = System.getenv(args[1]);
 			return ret != null ? ret : "";
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			return "";
 		}
 	}
 
 	/**
-	 * Get the contents of a file. @param in @return @throws IOException
+	 * Get the contents of a file.
+	 * 
+	 * @param in
+	 * @return
+	 * @throws IOException
 	 */
 
 	public String _cat(String args[]) throws IOException {
@@ -1005,8 +1035,7 @@ public class Macro {
 			try {
 				URL url = new URL(args[1]);
 				return IO.collect(url, "UTF-8");
-			}
-			catch (MalformedURLException mfue) {
+			} catch (MalformedURLException mfue) {
 				// Ignore here
 			}
 			return null;
@@ -1121,11 +1150,18 @@ public class Macro {
 	 * Take all the properties and translate them to actual values. This method
 	 * takes the set properties and traverse them over all entries, including
 	 * the default properties for that properties. The values no longer contain
-	 * macros. <p> There are some rules <ul> <li>Property names starting with an
-	 * underscore ('_') are ignored. These are reserved for properties that
-	 * cause an unwanted side effect when expanded unnecessary <li>Property
-	 * names starting with a minus sign ('-') are not expanded to maintain
-	 * readability </ul> @return A new Properties with the flattened values
+	 * macros.
+	 * <p>
+	 * There are some rules
+	 * <ul>
+	 * <li>Property names starting with an underscore ('_') are ignored. These
+	 * are reserved for properties that cause an unwanted side effect when
+	 * expanded unnecessary
+	 * <li>Property names starting with a minus sign ('-') are not expanded to
+	 * maintain readability
+	 * </ul>
+	 * 
+	 * @return A new Properties with the flattened values
 	 */
 	public Properties getFlattenedProperties() {
 		return getFlattenedProperties(true);
@@ -1135,9 +1171,13 @@ public class Macro {
 	 * Take all the properties and translate them to actual values. This method
 	 * takes the set properties and traverse them over all entries, including
 	 * the default properties for that properties. The values no longer contain
-	 * macros. <p> Property names starting with an underscore ('_') are ignored.
-	 * These are reserved for properties that cause an unwanted side effect when
-	 * expanded unnecessary @return A new Properties with the flattened values
+	 * macros.
+	 * <p>
+	 * Property names starting with an underscore ('_') are ignored. These are
+	 * reserved for properties that cause an unwanted side effect when expanded
+	 * unnecessary
+	 * 
+	 * @return A new Properties with the flattened values
 	 */
 	public Properties getFlattenedProperties(boolean ignoreInstructions) {
 		// Some macros only work in a lower processor, so we
@@ -1163,8 +1203,7 @@ public class Macro {
 				}
 			}
 			return flattened;
-		}
-		finally {
+		} finally {
 			flattening = false;
 		}
 	}
@@ -1203,8 +1242,7 @@ public class Macro {
 			Field f = Properties.class.getDeclaredField("defaults");
 			f.setAccessible(true);
 			return (Properties) f.get(p);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			Field[] fields = Properties.class.getFields();
 			System.err.println(Arrays.toString(fields));
 			return null;
@@ -1838,8 +1876,7 @@ public class Macro {
 		try {
 			f.format(args[1], args2);
 			return f.toString();
-		}
-		finally {
+		} finally {
 			f.close();
 		}
 	}

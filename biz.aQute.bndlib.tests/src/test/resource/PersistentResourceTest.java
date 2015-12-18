@@ -1,21 +1,27 @@
 package test.resource;
 
-import java.util.*;
+import java.util.List;
 
-import junit.framework.*;
+import org.osgi.framework.Version;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
 
-import org.osgi.framework.*;
-import org.osgi.resource.*;
-
-import aQute.bnd.osgi.resource.*;
-import aQute.lib.json.*;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.PersistentResource;
+import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.lib.json.JSONCodec;
+import junit.framework.TestCase;
 
 public class PersistentResourceTest extends TestCase {
 
 	public void testSimple() throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
-		rb.addCapability(new CapReqBuilder("test").addAttribute("double", 3.0).addAttribute("long", 3L)
-				.addAttribute("string", "3.0").addAttribute("version", new Version("3.0")).buildSyntheticCapability());
+		rb.addCapability(new CapReqBuilder("test").addAttribute("double", 3.0)
+				.addAttribute("long", 3L)
+				.addAttribute("string", "3.0")
+				.addAttribute("version", new Version("3.0"))
+				.buildSyntheticCapability());
 		Resource r = rb.build();
 
 		PersistentResource pr = new PersistentResource(r);

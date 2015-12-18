@@ -1,16 +1,20 @@
 package aQute.bnd.make.metatype;
 
-import java.util.*;
+import java.util.Collection;
 
-import aQute.bnd.annotation.metatype.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.annotation.metatype.Meta;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.QUERY;
-import aQute.bnd.service.*;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.service.AnalyzerPlugin;
 
 /**
- * This class is responsible for meta type types. It is a plugin that
- * can @author aqute
+ * This class is responsible for meta type types. It is a plugin that can
+ * 
+ * @author aqute
  */
 public class MetatypePlugin implements AnalyzerPlugin {
 

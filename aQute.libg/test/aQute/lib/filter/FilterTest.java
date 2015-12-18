@@ -1,6 +1,6 @@
 package aQute.lib.filter;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
 public class FilterTest extends TestCase {
 

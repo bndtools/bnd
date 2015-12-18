@@ -1,14 +1,19 @@
 package aQute.jpm.main;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.Collection;
+import java.util.Map;
+import java.util.SortedSet;
 
-import junit.framework.*;
-import aQute.jpm.lib.*;
-import aQute.jpm.platform.*;
-import aQute.lib.io.*;
-import aQute.lib.settings.*;
-import aQute.libg.reporter.*;
+import aQute.jpm.lib.CommandData;
+import aQute.jpm.lib.JVM;
+import aQute.jpm.lib.JustAnotherPackageManager;
+import aQute.jpm.lib.ServiceData;
+import aQute.jpm.platform.Unix;
+import aQute.lib.io.IO;
+import aQute.lib.settings.Settings;
+import aQute.libg.reporter.ReporterAdapter;
+import junit.framework.TestCase;
 
 public class JPMTest extends TestCase {
 
@@ -164,8 +169,7 @@ public class JPMTest extends TestCase {
 			};
 			Main main = new Main();
 			main.run(args);
-		}
-		finally {
+		} finally {
 			IO.delete(tmp);
 		}
 	}

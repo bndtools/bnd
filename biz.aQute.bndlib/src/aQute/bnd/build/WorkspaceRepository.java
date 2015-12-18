@@ -169,8 +169,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		for (DownloadListener l : listeners) {
 			try {
 				l.success(file);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				workspace.exception(e, "Workspace repo listener callback for %s", file);
 			}
 		}

@@ -24,8 +24,7 @@ public class RequirementListConverter extends HeaderClauseListConverter<Requirem
 					} else {
 						try {
 							builder.addAttribute(key, entry.getValue());
-						}
-						catch (Exception e) {
+						} catch (Exception e) {
 							throw new IllegalArgumentException(e);
 						}
 					}

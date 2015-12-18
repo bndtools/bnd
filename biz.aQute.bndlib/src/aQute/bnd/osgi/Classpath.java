@@ -1,11 +1,13 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-import aQute.bnd.build.*;
-import aQute.lib.strings.*;
-import aQute.service.reporter.*;
+import aQute.bnd.build.Container;
+import aQute.lib.strings.Strings;
+import aQute.service.reporter.Reporter;
 
 public class Classpath {
 
@@ -37,7 +39,9 @@ public class Classpath {
 	}
 
 	/**
-	 * Visit each class on the class path. @param visitor the visitor
+	 * Visit each class on the class path.
+	 * 
+	 * @param visitor the visitor
 	 */
 	public void visit(ClassVisitor visitor) throws Exception {
 		Analyzer analyzer = new Analyzer();
@@ -53,13 +57,11 @@ public class Classpath {
 							visitor.visit(c);
 						}
 					}
-				}
-				finally {
+				} finally {
 					jar.close();
 				}
 			}
-		}
-		finally {
+		} finally {
 			analyzer.close();
 		}
 	}

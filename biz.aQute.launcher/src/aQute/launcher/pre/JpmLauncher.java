@@ -1,10 +1,16 @@
 package aQute.launcher.pre;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.lang.reflect.Method;
+import java.net.URL;
 
-import aQute.lib.io.*;
+import aQute.lib.io.IOConstants;
 
 public class JpmLauncher {
 	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
@@ -24,10 +30,7 @@ public class JpmLauncher {
 					args
 			});
 			return;
-		}
-		catch (ClassNotFoundException e) {}
-		catch (NoSuchMethodException eee) {}
-		catch (Exception ee) {
+		} catch (ClassNotFoundException e) {} catch (NoSuchMethodException eee) {} catch (Exception ee) {
 			throw ee;
 		}
 
@@ -63,8 +66,7 @@ public class JpmLauncher {
 				sb.append((char) c);
 
 			return sb.toString();
-		}
-		finally {
+		} finally {
 			inputStream.close();
 		}
 	}
@@ -77,12 +79,10 @@ public class JpmLauncher {
 				int size;
 				while ((size = in.read(buffer)) > 0)
 					out.write(buffer, 0, size);
-			}
-			finally {
+			} finally {
 				out.close();
 			}
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 	}

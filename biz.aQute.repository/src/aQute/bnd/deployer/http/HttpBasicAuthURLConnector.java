@@ -34,9 +34,9 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		boolean disableServerVerify() default false;
 	}
 
-	private static final String	PREFIX_PATTERN	= "pattern.";
-	private static final String	PREFIX_USER		= "uid.";
-	private static final String	PREFIX_PASSWORD	= "pwd.";
+	private static final String	PREFIX_PATTERN			= "pattern.";
+	private static final String	PREFIX_USER				= "uid.";
+	private static final String	PREFIX_PASSWORD			= "pwd.";
 
 	private static final String	HEADER_AUTHORIZATION	= "Authorization";
 	private static final String	PREFIX_BASIC_AUTH		= "Basic ";
@@ -59,12 +59,12 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		}
 	}
 
-	private final AtomicBoolean	inited		= new AtomicBoolean(false);
-	private final List<Mapping>	mappings	= new LinkedList<Mapping>();
+	private final AtomicBoolean	inited				= new AtomicBoolean(false);
+	private final List<Mapping>	mappings			= new LinkedList<Mapping>();
 
-	private Reporter	reporter;
-	private String		configFileList;
-	private boolean		disableSslVerify	= false;
+	private Reporter			reporter;
+	private String				configFileList;
+	private boolean				disableSslVerify	= false;
 
 	public void setReporter(Reporter reporter) {
 		this.reporter = reporter;
@@ -106,12 +106,10 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 								mappings.add(new Mapping(id, glob, uid, pwd));
 							}
 						}
-					}
-					catch (IOException e) {
+					} catch (IOException e) {
 						if (reporter != null)
 							reporter.error("Failed to load %s", configFileName);
-					}
-					finally {
+					} finally {
 						if (stream != null)
 							IO.close(stream);
 					}
@@ -156,8 +154,7 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		try {
 			if (disableSslVerify)
 				HttpsUtil.disableServerVerification(connection);
-		}
-		catch (GeneralSecurityException e) {
+		} catch (GeneralSecurityException e) {
 			if (reporter != null)
 				reporter.error("Error attempting to disable SSL server certificate verification: %s", e);
 			throw new IOException("Error attempting to disable SSL server certificate verification.");

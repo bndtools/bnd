@@ -1,20 +1,32 @@
 package aQute.bnd.testing;
 
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
-import java.util.regex.*;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.osgi.framework.*;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceReference;
 
-import aQute.bnd.make.component.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.collections.*;
+import aQute.bnd.make.component.ComponentAnnotationReader;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.URLResource;
+import aQute.lib.collections.MultiMap;
 
 /**
  * Intended to wire a number components for testing using the DS (from bnd)
- * annotations. <p> TODO add the OSGi Annotations and support more options.
- * needs cleanup
+ * annotations.
+ * <p>
+ * TODO add the OSGi Annotations and support more options. needs cleanup
  */
 public class DSTestWiring {
 	static Pattern REFERENCE = Pattern.compile("([^/]+)/([^/]+)(?:/([^/]+))?");
@@ -265,22 +277,23 @@ public class DSTestWiring {
 	/**
 	 * Add the class by name. If the class cannot be found in the local class
 	 * loader, and a Bundle Context is specified, try each bundle for that
-	 * class. @param cname the name of the class @return the class @throws
-	 * ClassNotFoundException if not found @throws Exception if something goes
-	 * wrong
+	 * class.
+	 * 
+	 * @param cname the name of the class
+	 * @return the class
+	 * @throws ClassNotFoundException if not found
+	 * @throws Exception if something goes wrong
 	 */
 	public Component< ? > add(String cname) throws ClassNotFoundException, Exception {
 		try {
 			return add(getClass().getClassLoader().loadClass(cname));
-		}
-		catch (ClassNotFoundException cnfe) {
+		} catch (ClassNotFoundException cnfe) {
 			if (context != null) {
 				for (Bundle b : context.getBundles()) {
 					try {
 						Class< ? > c = b.loadClass(cname);
 						return add(c);
-					}
-					catch (ClassNotFoundException e) {
+					} catch (ClassNotFoundException e) {
 						// ignore
 					}
 				}

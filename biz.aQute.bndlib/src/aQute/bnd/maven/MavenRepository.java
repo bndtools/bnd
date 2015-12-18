@@ -1,22 +1,32 @@
 package aQute.bnd.maven;
 
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.File;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.regex.Pattern;
 
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
-import aQute.bnd.version.*;
-import aQute.lib.collections.*;
-import aQute.service.reporter.*;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Verifier;
+import aQute.bnd.service.Plugin;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.Strategy;
+import aQute.bnd.version.Version;
+import aQute.bnd.version.VersionRange;
+import aQute.lib.collections.SortedList;
+import aQute.service.reporter.Reporter;
 
 public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath {
 
-	public final static String NAME = "name";
+	public final static String	NAME	= "name";
 
-	File		root;
-	Reporter	reporter;
-	String		name;
+	File						root;
+	Reporter					reporter;
+	String						name;
 
 	@Override
 	public String toString() {
@@ -215,8 +225,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		for (DownloadListener l : listeners) {
 			try {
 				l.success(file);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.exception(e, "Download listener for %s", file);
 			}
 		}

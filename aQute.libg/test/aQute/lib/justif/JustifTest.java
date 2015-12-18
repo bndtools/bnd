@@ -1,8 +1,8 @@
 package aQute.lib.justif;
 
-import java.util.*;
+import java.util.Formatter;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
 public class JustifTest extends TestCase {
 
@@ -41,8 +41,7 @@ public class JustifTest extends TestCase {
 			j.wrap(sb);
 
 			System.out.println(sb);
-		}
-		finally {
+		} finally {
 			f.close();
 		}
 	}

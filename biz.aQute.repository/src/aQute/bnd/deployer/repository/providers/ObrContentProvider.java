@@ -46,42 +46,42 @@ import aQute.lib.io.IO;
 
 public class ObrContentProvider implements IRepositoryContentProvider {
 
-	public static final String NAME = "OBR";
+	public static final String	NAME						= "OBR";
 
-	private static final String	INDEX_NAME			= "repository.xml";
-	private static final String	EMPTY_REPO_TEMPLATE	= "<?xml version='1.0' encoding='UTF-8'?>\n<repository name='%s' lastmodified='0' xmlns='http://www.osgi.org/xmlns/obr/v1.0.0'/>";
+	private static final String	INDEX_NAME					= "repository.xml";
+	private static final String	EMPTY_REPO_TEMPLATE			= "<?xml version='1.0' encoding='UTF-8'?>\n<repository name='%s' lastmodified='0' xmlns='http://www.osgi.org/xmlns/obr/v1.0.0'/>";
 
-	private static final String	NS_URI					= "http://www.osgi.org/xmlns/obr/v1.0.0";
-	private static final String	PI_DATA_STYLESHEET		= "type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'";
-	private static final String	PI_TARGET_STYLESHEET	= "xml-stylesheet";
+	private static final String	NS_URI						= "http://www.osgi.org/xmlns/obr/v1.0.0";
+	private static final String	PI_DATA_STYLESHEET			= "type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'";
+	private static final String	PI_TARGET_STYLESHEET		= "xml-stylesheet";
 
-	private static final String TAG_REPOSITORY = "repository";
+	private static final String	TAG_REPOSITORY				= "repository";
 
 	private static final String	TAG_RESOURCE				= "resource";
 	private static final String	ATTR_RESOURCE_SYMBOLIC_NAME	= "symbolicname";
 	private static final String	ATTR_RESOURCE_URI			= "uri";
 	private static final String	ATTR_RESOURCE_VERSION		= "version";
 
-	private static final String	TAG_REFERRAL		= "referral";
-	private static final String	ATTR_REFERRAL_URL	= "url";
-	private static final String	ATTR_REFERRAL_DEPTH	= "depth";
+	private static final String	TAG_REFERRAL				= "referral";
+	private static final String	ATTR_REFERRAL_URL			= "url";
+	private static final String	ATTR_REFERRAL_DEPTH			= "depth";
 
-	private static final String	TAG_CAPABILITY	= "capability";
-	private static final String	TAG_REQUIRE		= "require";
-	private static final String	ATTR_NAME		= "name";
-	private static final String	ATTR_EXTEND		= "extend";
-	private static final String	ATTR_OPTIONAL	= "optional";
-	private static final String	ATTR_FILTER		= "filter";
+	private static final String	TAG_CAPABILITY				= "capability";
+	private static final String	TAG_REQUIRE					= "require";
+	private static final String	ATTR_NAME					= "name";
+	private static final String	ATTR_EXTEND					= "extend";
+	private static final String	ATTR_OPTIONAL				= "optional";
+	private static final String	ATTR_FILTER					= "filter";
 
-	private static final String	TAG_PROPERTY		= "p";
-	private static final String	ATTR_PROPERTY_NAME	= "n";
-	private static final String	ATTR_PROPERTY_TYPE	= "t";
-	private static final String	ATTR_PROPERTY_VALUE	= "v";
+	private static final String	TAG_PROPERTY				= "p";
+	private static final String	ATTR_PROPERTY_NAME			= "n";
+	private static final String	ATTR_PROPERTY_TYPE			= "t";
+	private static final String	ATTR_PROPERTY_VALUE			= "v";
 
-	private static final String	PROPERTY_USES	= "uses";
-	private static final String	TYPE_VERSION	= "version";
+	private static final String	PROPERTY_USES				= "uses";
+	private static final String	TYPE_VERSION				= "version";
 
-	private BundleIndexer indexer;
+	private BundleIndexer		indexer;
 
 	private static enum ParserState {
 		beforeRoot, inRoot, inResource, inCapability
@@ -353,16 +353,13 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 				}
 			}
 			return new CheckResult(undecided, "Reached end of stream", null);
-		}
-		catch (XMLStreamException e) {
+		} catch (XMLStreamException e) {
 			return new CheckResult(reject, "Invalid XML", e);
-		}
-		finally {
+		} finally {
 			if (reader != null)
 				try {
 					reader.close();
-				}
-				catch (XMLStreamException e) {}
+				} catch (XMLStreamException e) {}
 		}
 	}
 

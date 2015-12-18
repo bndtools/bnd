@@ -1,18 +1,21 @@
 package test;
 
-import java.util.*;
-import java.util.jar.*;
+import java.util.Properties;
+import java.util.jar.Manifest;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Jar;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class ClasspathTest extends TestCase {
 
 	/**
 	 * Test if we can refer to the jars on the classpath by their file name (
-	 * ignoring the path) @throws Exception
+	 * ignoring the path)
+	 * 
+	 * @throws Exception
 	 */
 	public static void testBundleClasspath() throws Exception {
 		Builder b = new Builder();
@@ -26,7 +29,9 @@ public class ClasspathTest extends TestCase {
 
 	/**
 	 * Test if we can refer to the jars on the classpath by their file name (
-	 * ignoring the path) @throws Exception
+	 * ignoring the path)
+	 * 
+	 * @throws Exception
 	 */
 	public static void testFindJarOnClasspath() throws Exception {
 		Properties p = new Properties();
@@ -44,7 +49,9 @@ public class ClasspathTest extends TestCase {
 	}
 
 	/**
-	 * Test if we can use URLs on the classpath @throws Exception
+	 * Test if we can use URLs on the classpath
+	 * 
+	 * @throws Exception
 	 */
 	public static void testSimple() throws Exception {
 		Properties p = new Properties();

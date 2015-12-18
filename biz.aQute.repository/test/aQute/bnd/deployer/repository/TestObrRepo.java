@@ -1,15 +1,18 @@
 package aQute.bnd.deployer.repository;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
 
-import junit.framework.*;
-import test.helpers.*;
-import test.lib.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
-import aQute.bnd.version.*;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.Strategy;
+import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
+import test.helpers.Sed;
+import test.lib.NanoHTTPD;
 
 public class TestObrRepo extends TestCase {
 

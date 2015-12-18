@@ -1,6 +1,6 @@
 package aQute.bnd.build.model.conversions;
 
-import java.util.*;
+import java.util.Collection;
 
 public class CollectionFormatter<T> implements Converter<String,Collection< ? extends T>> {
 
@@ -33,11 +33,13 @@ public class CollectionFormatter<T> implements Converter<String,Collection< ? ex
 	}
 
 	/**
-	 * @param separator Separator between items @param itemFormatter Formatter
-	 * for each item @param emptyOutput Output to produce for empty
-	 * inputs @param leadingSpace Whether to lead with a space before the first
-	 * item @param prefix Prefix for the first item in lists containing more
-	 * than one items. @param suffix Suffix to add at the end of the list
+	 * @param separator Separator between items
+	 * @param itemFormatter Formatter for each item
+	 * @param emptyOutput Output to produce for empty inputs
+	 * @param leadingSpace Whether to lead with a space before the first item
+	 * @param prefix Prefix for the first item in lists containing more than one
+	 *            items.
+	 * @param suffix Suffix to add at the end of the list
 	 */
 	public CollectionFormatter(String separator, Converter<String, ? super T> itemFormatter, String emptyOutput,
 			boolean leadingSpace, String prefix, String suffix) {

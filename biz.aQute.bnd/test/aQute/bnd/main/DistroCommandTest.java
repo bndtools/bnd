@@ -23,8 +23,8 @@ import junit.framework.TestCase;
 @SuppressWarnings("restriction")
 public class DistroCommandTest extends TestCase {
 
-	private Framework			framework;
-	private File				tmp;
+	private Framework	framework;
+	private File		tmp;
 
 	@Override
 	protected void setUp() throws Exception {

@@ -1,6 +1,6 @@
 package aQute.bnd.compatibility;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Modifier;
 
 /**
  * Access modifier

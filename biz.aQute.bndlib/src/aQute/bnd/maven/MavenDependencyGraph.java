@@ -98,8 +98,7 @@ public class MavenDependencyGraph {
 					return cache.get(url);
 				}
 				return new Artifact(url.toURL());
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				System.err.println("Failed to get " + artifactId + " from " + repository);
 			}
 		}

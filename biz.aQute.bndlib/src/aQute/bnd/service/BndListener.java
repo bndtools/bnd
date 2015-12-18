@@ -1,9 +1,9 @@
 package aQute.bnd.service;
 
-import java.io.*;
-import java.util.concurrent.atomic.*;
+import java.io.File;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import aQute.service.reporter.*;
+import aQute.service.reporter.Reporter;
 
 public class BndListener {
 	final AtomicInteger inside = new AtomicInteger();

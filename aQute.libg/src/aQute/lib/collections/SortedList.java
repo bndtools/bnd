@@ -1,7 +1,14 @@
 package aQute.lib.collections;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
+import java.util.SortedSet;
 
 /**
  * An immutbale list that sorts objects by their natural order or through a
@@ -15,11 +22,13 @@ import java.util.*;
  * important reason, is that sometimes you do not know what collection you have
  * or it is not available in a sort ordering (MultiMap for example) ... I found
  * myself sorting these things over and over again and decided to just make an
- * immutable SortedList that is easy to slice and dice @param <T>
+ * immutable SortedList that is easy to slice and dice
+ * 
+ * @param <T>
  */
 @SuppressWarnings("unchecked")
 public class SortedList<T> implements SortedSet<T>, List<T> {
-	static SortedList< ? > empty = new SortedList<Object>();
+	static SortedList< ? >		empty		= new SortedList<Object>();
 
 	final T[]					list;
 	final int					start;
@@ -292,9 +301,10 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	}
 
 	/**
-	 * Find the first element that is equal or bigger than the given
-	 * element @param toElement @return absolute index (not relative!), returns
-	 * end if not found
+	 * Find the first element that is equal or bigger than the given element
+	 * 
+	 * @param toElement
+	 * @return absolute index (not relative!), returns end if not found
 	 */
 	private int find(T toElement) {
 		int i = start;

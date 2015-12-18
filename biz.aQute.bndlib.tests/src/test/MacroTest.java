@@ -17,7 +17,9 @@ import junit.framework.TestCase;
 public class MacroTest extends TestCase {
 
 	/**
-	 * A macro to get an attribute from a package @throws Exception
+	 * A macro to get an attribute from a package
+	 * 
+	 * @throws Exception
 	 */
 
 	public static void testPackageAttribute() throws Exception {
@@ -83,7 +85,9 @@ public class MacroTest extends TestCase {
 	}
 
 	/**
-	 * File name tests @throws Exception
+	 * File name tests
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testFileNameMacros() throws Exception {
@@ -614,8 +618,7 @@ public class MacroTest extends TestCase {
 			processed = p.getProperty("a");
 			assertEquals(1, p.getErrors().size());
 			p.getErrors().clear();
-		}
-		finally {
+		} finally {
 			System.setProperty("os.name", origOsName);
 			System.setProperty("os.version", origOsVersion);
 			System.setProperty("os.arch", origOsArch);

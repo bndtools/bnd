@@ -30,13 +30,15 @@ public class PermissionGenerator {
 			public void generate(StringBuilder sb, Builder builder) {
 				for (String namespace : builder.getProvideCapability().keySet()) {
 					if (!Processor.isDuplicate(namespace)) {
-						sb.append("(org.osgi.framework.CapabilityPermission \"").append(namespace)
+						sb.append("(org.osgi.framework.CapabilityPermission \"")
+								.append(namespace)
 								.append("\" \"provide\")\n");
 					}
 				}
 				for (String namespace : builder.getRequireCapability().keySet()) {
 					if (!Processor.isDuplicate(namespace)) {
-						sb.append("(org.osgi.framework.CapabilityPermission \"").append(namespace)
+						sb.append("(org.osgi.framework.CapabilityPermission \"")
+								.append(namespace)
 								.append("\" \"require\")\n");
 					}
 				}
@@ -67,11 +69,13 @@ public class PermissionGenerator {
 			@Override
 			public void generate(StringBuilder sb, Builder builder) {
 				for (String declaredService : getDeclaredServices(builder)) {
-					sb.append("(org.osgi.framework.ServicePermission \"").append(declaredService)
+					sb.append("(org.osgi.framework.ServicePermission \"")
+							.append(declaredService)
 							.append("\" \"register\")\n");
 				}
 				for (String referencedService : getReferencedServices(builder)) {
-					sb.append("(org.osgi.framework.ServicePermission \"").append(referencedService)
+					sb.append("(org.osgi.framework.ServicePermission \"")
+							.append(referencedService)
 							.append("\" \"get\")\n");
 				}
 			}
@@ -180,8 +184,7 @@ public class PermissionGenerator {
 			String name = args[ix].toUpperCase();
 			try {
 				parameters.add(Parameter.valueOf(name));
-			}
-			catch (IllegalArgumentException ex) {
+			} catch (IllegalArgumentException ex) {
 				builder.error("Could not parse argument for ${permissions}: %s", args[ix]);
 			}
 		}

@@ -1,7 +1,7 @@
 package aQute.bnd.plugin.gradle;
 
-import aQute.bnd.annotation.plugin.*;
-import aQute.bnd.service.lifecycle.*;
+import aQute.bnd.annotation.plugin.BndPlugin;
+import aQute.bnd.service.lifecycle.LifeCyclePlugin;
 
 /**
  * The Gradle life cycle plugin. ACtually nothing to do since gradle does not

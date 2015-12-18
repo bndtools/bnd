@@ -1,25 +1,37 @@
 package test.deployer;
 
-import static aQute.lib.io.IO.*;
+import static aQute.lib.io.IO.collect;
+import static aQute.lib.io.IO.copy;
+import static aQute.lib.io.IO.delete;
+import static aQute.lib.io.IO.getFile;
+import static aQute.lib.io.IO.stream;
 
-import java.io.*;
-import java.security.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.security.MessageDigest;
+import java.util.Arrays;
+import java.util.Formatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
 
-import junit.framework.*;
+import org.mockito.Mockito;
 
-import org.mockito.*;
-
-import aQute.bnd.service.*;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
 import aQute.bnd.service.RepositoryPlugin.PutOptions;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
-import aQute.bnd.version.*;
-import aQute.lib.deployer.*;
-import aQute.lib.io.*;
-import aQute.libg.cryptography.*;
-import aQute.libg.map.*;
+import aQute.bnd.version.Version;
+import aQute.lib.deployer.FileRepo;
+import aQute.lib.io.IO;
+import aQute.libg.cryptography.SHA1;
+import aQute.libg.cryptography.SHA256;
+import aQute.libg.map.MAP;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class FileRepoTest extends TestCase {
@@ -190,8 +202,7 @@ public class FileRepoTest extends TestCase {
 
 			assertEquals(hashToString(srcSha), hashToString(r.digest));
 			assertTrue(MessageDigest.isEqual(srcSha, r.digest));
-		}
-		finally {
+		} finally {
 			if (dstBundle != null) {
 				delete(dstBundle.getParentFile());
 			}
@@ -221,8 +232,7 @@ public class FileRepoTest extends TestCase {
 			f = repo.get("XXXXXXXXXXXXXXXXX", new Version("0"), null, mock);
 			assertNull(f);
 			Mockito.verifyZeroInteractions(mock);
-		}
-		finally {
+		} finally {
 			IO.delete(tmp);
 		}
 	}
@@ -237,8 +247,7 @@ public class FileRepoTest extends TestCase {
 			nonExistentRepo.put(new BufferedInputStream(new FileInputStream("testresources/test.jar")),
 					new RepositoryPlugin.PutOptions());
 			fail("Should have thrown exception");
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// OK, you cannot check for exception messages or exception type
 		}
 	}
@@ -270,8 +279,7 @@ public class FileRepoTest extends TestCase {
 				try {
 					repo.put(in, null);
 
-				}
-				finally {
+				} finally {
 					in.close();
 				}
 			}
@@ -280,11 +288,9 @@ public class FileRepoTest extends TestCase {
 				try {
 					repo.put(in, null);
 					fail("expected failure");
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					// ignore
-				}
-				finally {
+				} finally {
 					in.close();
 				}
 			}
@@ -304,8 +310,7 @@ public class FileRepoTest extends TestCase {
 			assertTrue(parts[5].matches("beforePut @ @/.*"));
 			assertTrue(parts[6].matches("abortPut @ @/.*"));
 			assertEquals(parts[7], "close @");
-		}
-		finally {
+		} finally {
 			delete(root);
 		}
 

@@ -50,20 +50,20 @@ public class Baseline {
 		public boolean	mismatch;
 
 		@Deprecated
-		public Version version;
+		public Version	version;
 	}
 
 	final Differ		differ;
 	final Reporter		bnd;
 	final BundleInfo	binfo	= new BundleInfo();
 
-	Diff		diff;
-	Set<Info>	infos;
-	String		bsn;
-	Version		newerVersion;
-	Version		olderVersion;
-	Version		suggestedVersion;
-	String		releaseRepository;
+	Diff				diff;
+	Set<Info>			infos;
+	String				bsn;
+	Version				newerVersion;
+	Version				olderVersion;
+	Version				suggestedVersion;
+	String				releaseRepository;
 
 	public Baseline(Reporter bnd, Differ differ) throws IOException {
 		this.differ = differ;
@@ -73,9 +73,13 @@ public class Baseline {
 	/**
 	 * This method compares a jar to a baseline jar and returns version
 	 * suggestions if the baseline does not agree with the newer jar. The
-	 * returned set contains all the exported packages. @param newer @param
-	 * older @return null if ok, otherwise a set of suggested versions for all
-	 * packages (also the ones that were ok). @throws Exception
+	 * returned set contains all the exported packages.
+	 * 
+	 * @param newer
+	 * @param older
+	 * @return null if ok, otherwise a set of suggested versions for all
+	 *         packages (also the ones that were ok).
+	 * @throws Exception
 	 */
 	public Set<Info> baseline(Jar newer, Jar older, Instructions packageFilters) throws Exception {
 		Tree n = differ.tree(newer);
@@ -205,7 +209,8 @@ public class Baseline {
 				highestDelta = pdiff.getDelta();
 			}
 		}
-		// If this is a first release, or the base has a different symbolic name,
+		// If this is a first release, or the base has a different symbolic
+		// name,
 		// then the newer version must be ok. Otherwise the version bump for
 		// bundles with the same symbolic name should be at least as big as the
 		// biggest semantic change
@@ -240,7 +245,9 @@ public class Baseline {
 	}
 
 	/**
-	 * Gets the generated diff @return the diff
+	 * Gets the generated diff
+	 * 
+	 * @return the diff
 	 */
 	public Diff getDiff() {
 		return diff;

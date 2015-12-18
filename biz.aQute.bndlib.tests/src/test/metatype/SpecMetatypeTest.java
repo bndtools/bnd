@@ -17,8 +17,6 @@ import java.util.Set;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import junit.framework.TestCase;
-
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.AttributeType;
@@ -34,6 +32,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.test.XmlTester;
 import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 @SuppressWarnings({
 		"resource", "restriction"
@@ -524,7 +523,8 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	private static final String[]	optionLabels	= {
-			"requireConfiguration", "optionalConfiguration", "ignoreConfiguration"
+															"requireConfiguration", "optionalConfiguration",
+															"ignoreConfiguration"
 														};
 	private static final String[]	optionValues	= optionLabels;
 
@@ -1060,7 +1060,9 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	/**
-	 * Test simple @author aqute
+	 * Test simple
+	 * 
+	 * @author aqute
 	 */
 	@ObjectClassDefinition(description = "simple", name = "TestSimple", pid = {
 			"simplePid"
@@ -1116,19 +1118,19 @@ public class SpecMetatypeTest extends TestCase {
 	public static @interface AnnotationDefaults {
 		int integer() default 1;
 
-		int[]integers() default {
+		int[] integers() default {
 				2, 3
 		};
 
 		boolean bool() default true;
 
-		boolean[]bools() default {
+		boolean[] bools() default {
 				true, false
 		};
 
-		Class< ? >clazz() default String.class;
+		Class< ? > clazz() default String.class;
 
-		Class< ? >[]clazzs() default {
+		Class< ? >[] clazzs() default {
 				Integer.class, Double.class
 		};
 
@@ -1138,13 +1140,13 @@ public class SpecMetatypeTest extends TestCase {
 
 		L l() default L.A;
 
-		L[]ls() default {
+		L[] ls() default {
 				L.B, L.C
 		};
 
 		String string() default "foo";
 
-		String[]strings() default {
+		String[] strings() default {
 				"bar", "baz"
 		};
 	}
@@ -1308,9 +1310,9 @@ public class SpecMetatypeTest extends TestCase {
 
 		Foo fooAttr();
 
-		String[]stringArrayAttr();
+		String[] stringArrayAttr();
 
-		int[]intArrayAttr();
+		int[] intArrayAttr();
 	}
 
 	@XMLAttribute(namespace = "org.foo.extensions.v1", prefix = "foo", embedIn = "*")
@@ -1323,7 +1325,7 @@ public class SpecMetatypeTest extends TestCase {
 
 		Foo fooAttr2();
 
-		Class< ? >classAttr2() default Object.class;
+		Class< ? > classAttr2() default Object.class;
 
 	}
 
@@ -1400,7 +1402,7 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	@XMLAttribute(namespace = "org.foo.extensions.v1", prefix = "foo", embedIn = "*", mapping = {
-		"value=simple"
+			"value=simple"
 	})
 	@Retention(RetentionPolicy.CLASS)
 	@Target({
@@ -1498,7 +1500,7 @@ public class SpecMetatypeTest extends TestCase {
 		@AttributeDefinition(defaultValue = {
 				" , \\", "a,b", "c,d", "'apostrophe'", "\"quote\"&amp;"
 		})
-		String[]escapes();
+		String[] escapes();
 	}
 
 	public void testEscapes() throws Exception {

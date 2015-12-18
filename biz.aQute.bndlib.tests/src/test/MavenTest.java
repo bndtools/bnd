@@ -17,8 +17,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
-import junit.framework.TestCase;
-
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -42,6 +40,7 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
 import aQute.libg.map.MAP;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class MavenTest extends TestCase {
@@ -51,7 +50,10 @@ public class MavenTest extends TestCase {
 	Maven					maven		= new Maven(executor);
 
 	/**
-	 * A test against maven 2 @throws Exception @throws URISyntaxException
+	 * A test against maven 2
+	 * 
+	 * @throws Exception
+	 * @throws URISyntaxException
 	 */
 	public void testRemote() throws URISyntaxException, Exception {
 		URI repo = new URI("http://repo1.maven.org/maven2");
@@ -66,7 +68,9 @@ public class MavenTest extends TestCase {
 	}
 
 	/**
-	 * Check if we get the correct bundles for a project @throws Exception
+	 * Check if we get the correct bundles for a project
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testProjectBundles() throws Exception {
@@ -84,7 +88,8 @@ public class MavenTest extends TestCase {
 	}
 
 	/**
-	 * @return @throws Exception
+	 * @return
+	 * @throws Exception
 	 */
 	protected static Project getProject(String name) throws Exception {
 		File wsf = IO.getFile(cwd, "testresources/ws");
@@ -98,7 +103,9 @@ public class MavenTest extends TestCase {
 	}
 
 	/**
-	 * See if we can create a maven repostory as a plugin @throws Exception
+	 * See if we can create a maven repostory as a plugin
+	 * 
+	 * @throws Exception
 	 */
 
 	public static void testMavenRepo() throws Exception {
@@ -142,7 +149,9 @@ public class MavenTest extends TestCase {
 	}
 
 	/**
-	 * Test parsing a project pom @throws Exception
+	 * Test parsing a project pom
+	 * 
+	 * @throws Exception
 	 */
 
 	public static void testProjectPom() throws Exception {
@@ -257,7 +266,9 @@ public class MavenTest extends TestCase {
 
 	/**
 	 * Test the pom parser which will turn the pom into a set of properties,
-	 * which will make it actually readable according to some. @throws Exception
+	 * which will make it actually readable according to some.
+	 * 
+	 * @throws Exception
 	 */
 
 	@SuppressWarnings("restriction")

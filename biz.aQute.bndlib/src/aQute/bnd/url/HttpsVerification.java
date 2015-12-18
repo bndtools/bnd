@@ -1,14 +1,28 @@
 package aQute.bnd.url;
 
-import java.io.*;
-import java.net.*;
-import java.security.*;
-import java.security.cert.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.URLConnection;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-import javax.net.ssl.*;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
-import aQute.lib.io.*;
+import aQute.lib.io.IO;
 
 /**
  * TODO Needs testing Can be used to override default verification of HTTPS. The
@@ -26,8 +40,10 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 	}
 
 	/**
-	 * Initialize the SSL Context, factory and verifier. @throws
-	 * NoSuchAlgorithmException @throws KeyManagementException
+	 * Initialize the SSL Context, factory and verifier.
+	 * 
+	 * @throws NoSuchAlgorithmException
+	 * @throws KeyManagementException
 	 */
 	private synchronized void init() throws NoSuchAlgorithmException, KeyManagementException {
 		if (factory == null) {
@@ -95,8 +111,7 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 						CertificateFactory cf = CertificateFactory.getInstance("X.509");
 						X509Certificate cert = (X509Certificate) cf.generateCertificate(inStream);
 						certificates.add(cert);
-					}
-					finally {
+					} finally {
 						inStream.close();
 					}
 				}

@@ -19,7 +19,10 @@ public class OSGiHeader {
 	 * Standard OSGi header parser. This parser can handle the format clauses
 	 * ::= clause ( ',' clause ) + clause ::= name ( ';' name ) (';' key '='
 	 * value ) This is mapped to a Map { name => Map { attr|directive => value }
-	 * } @param value A string @return a Map<String,Map<String,String>>
+	 * }
+	 * 
+	 * @param value A string
+	 * @return a Map<String,Map<String,String>>
 	 */
 	static public Parameters parseHeader(String value, Reporter logger) {
 		return parseHeader(value, logger, new Parameters());
@@ -139,7 +142,10 @@ public class OSGiHeader {
 	}
 
 	/**
-	 * @param sb @param value @return @throws IOException
+	 * @param sb
+	 * @param value
+	 * @return
+	 * @throws IOException
 	 */
 	public static boolean quote(Appendable sb, String value) throws IOException {
 		if (value.startsWith("\\\""))

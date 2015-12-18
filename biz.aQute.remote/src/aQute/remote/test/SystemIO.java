@@ -1,8 +1,10 @@
 package aQute.remote.test;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
-import org.osgi.framework.*;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
 
 public class SystemIO implements BundleActivator {
 

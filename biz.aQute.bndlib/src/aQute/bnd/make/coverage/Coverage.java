@@ -1,8 +1,14 @@
 package aQute.bnd.make.coverage;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.ClassDataCollector;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 
@@ -14,10 +20,12 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 public class Coverage {
 
 	/**
-	 * Create a cross reference table from source to dest. @param source The
-	 * methods that refer to dest @param dest The methods that are being
-	 * referred to @return A mapping of source methods to destination
-	 * methods. @throws IOException
+	 * Create a cross reference table from source to dest.
+	 * 
+	 * @param source The methods that refer to dest
+	 * @param dest The methods that are being referred to
+	 * @return A mapping of source methods to destination methods.
+	 * @throws IOException
 	 */
 	public static Map<MethodDef,List<MethodDef>> getCrossRef(Collection<Clazz> source, Collection<Clazz> dest)
 			throws Exception {

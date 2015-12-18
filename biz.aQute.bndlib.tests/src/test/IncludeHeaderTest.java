@@ -1,11 +1,13 @@
 package test;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.Analyzer;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class IncludeHeaderTest extends TestCase {
@@ -146,8 +148,7 @@ public class IncludeHeaderTest extends TestCase {
 			assertEquals("2", analyzer.getProperty("a"));
 			assertEquals("2", analyzer.getProperty("b"));
 			assertEquals(0, analyzer.getErrors().size());
-		}
-		finally {
+		} finally {
 			include.delete();
 		}
 	}

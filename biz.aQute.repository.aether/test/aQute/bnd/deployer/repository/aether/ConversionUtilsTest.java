@@ -1,11 +1,10 @@
 package aQute.bnd.deployer.repository.aether;
 
-import junit.framework.*;
+import org.eclipse.aether.artifact.Artifact;
 
-import org.eclipse.aether.artifact.*;
-
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.Jar;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class ConversionUtilsTest extends TestCase {
 
@@ -37,15 +36,13 @@ public class ConversionUtilsTest extends TestCase {
 		try {
 			ConversionUtils.maybeMavenCoordsToBsn(":foo.bar");
 			fail("Should have thrown IllegalArgumentException");
-		}
-		catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			// expected
 		}
 		try {
 			ConversionUtils.maybeMavenCoordsToBsn("org.example:");
 			fail("Should have thrown IllegalArgumentException");
-		}
-		catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			// expected
 		}
 	}

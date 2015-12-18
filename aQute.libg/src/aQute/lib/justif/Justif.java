@@ -1,13 +1,20 @@
 package aQute.lib.justif;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Formatter;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 /**
  * Formatter. This formatter allows you to build up an input string and then
- * wraps the text. The following markup is available <ul> <li>$- - Line over the
- * remaining width <li>\\t[0-9] - Go to tab position, and set indent to that
- * position <li>\\f - Newlin </ul>
+ * wraps the text. The following markup is available
+ * <ul>
+ * <li>$- - Line over the remaining width
+ * <li>\\t[0-9] - Go to tab position, and set indent to that position
+ * <li>\\f - Newlin
+ * </ul>
  */
 public class Justif {
 	final int[]		tabs;
@@ -28,10 +35,16 @@ public class Justif {
 
 	/**
 	 * Routine to wrap a stringbuffer. Basically adds line endings but has the
-	 * following control characters: <ul> <li>Space at the beginnng of a line is
-	 * repeated when wrapped for indent.</li> <li>A tab will mark the current
-	 * position and wrapping will return to that position</li> <li>A form feed
-	 * in a tabbed colum will break but stay in the column</li> </ul> @param sb
+	 * following control characters:
+	 * <ul>
+	 * <li>Space at the beginnng of a line is repeated when wrapped for indent.
+	 * </li>
+	 * <li>A tab will mark the current position and wrapping will return to that
+	 * position</li>
+	 * <li>A form feed in a tabbed colum will break but stay in the column</li>
+	 * </ul>
+	 * 
+	 * @param sb
 	 */
 	public void wrap(StringBuilder sb) {
 		List<Integer> indents = new ArrayList<Integer>();

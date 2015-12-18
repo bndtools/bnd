@@ -1,11 +1,15 @@
 package aQute.tester.plugin;
 
-import java.util.*;
+import java.util.Collection;
 
-import aQute.bnd.build.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
-import aQute.junit.constants.*;
+import aQute.bnd.build.Container;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.build.ProjectTester;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.EclipseJUnitTester;
+import aQute.junit.constants.TesterConstants;
 
 public class ProjectTesterImpl extends ProjectTester implements TesterConstants, EclipseJUnitTester {
 	int					port	= -1;

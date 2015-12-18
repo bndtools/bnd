@@ -14,11 +14,11 @@ import org.eclipse.aether.transfer.TransferResource;
 
 public class ConsoleTransferListener extends AbstractTransferListener {
 
-	private PrintStream out;
+	private PrintStream					out;
 
-	private Map<TransferResource,Long> downloads = new ConcurrentHashMap<TransferResource,Long>();
+	private Map<TransferResource,Long>	downloads	= new ConcurrentHashMap<TransferResource,Long>();
 
-	private int lastLength;
+	private int							lastLength;
 
 	public ConsoleTransferListener() {
 		this(null);

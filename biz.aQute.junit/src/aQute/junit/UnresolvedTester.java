@@ -31,10 +31,13 @@ public class UnresolvedTester extends TestCase {
 					&& b.getHeaders().get(aQute.bnd.osgi.Constants.FRAGMENT_HOST) == null) {
 				try {
 					b.start();
-				}
-				catch (BundleException e) {
-					sb.append(b.getBundleId()).append(" ").append(b.getSymbolicName()).append(";")
-							.append(b.getVersion()).append("\n");
+				} catch (BundleException e) {
+					sb.append(b.getBundleId())
+							.append(" ")
+							.append(b.getSymbolicName())
+							.append(";")
+							.append(b.getVersion())
+							.append("\n");
 					sb.append("    ").append(e.getMessage()).append("\n\n");
 					System.err.println(e.getMessage());
 				}

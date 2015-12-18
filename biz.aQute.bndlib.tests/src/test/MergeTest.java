@@ -1,11 +1,16 @@
 package test;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Properties;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class MergeTest extends TestCase {
@@ -76,8 +81,7 @@ public class MergeTest extends TestCase {
 			BufferedReader dis = new BufferedReader(new InputStreamReader(is));
 			String s = dis.readLine();
 			assertEquals(s, c);
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}

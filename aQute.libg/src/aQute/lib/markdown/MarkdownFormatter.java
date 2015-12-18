@@ -1,6 +1,6 @@
 package aQute.lib.markdown;
 
-import java.util.*;
+import java.util.Formatter;
 
 public class MarkdownFormatter {
 

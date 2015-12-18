@@ -77,13 +77,11 @@ public class Crawler extends Thread {
 					}
 				}
 				Thread.sleep(500000);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 				try {
 					Thread.sleep(5000);
-				}
-				catch (InterruptedException e1) {}
+				} catch (InterruptedException e1) {}
 			}
 	}
 

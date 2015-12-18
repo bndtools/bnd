@@ -1,9 +1,15 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
-import java.net.*;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 
-import aQute.lib.io.*;
+import aQute.lib.io.IO;
 
 public class URLResource implements Resource {
 	URL		url;
@@ -60,8 +66,7 @@ public class URLResource implements Resource {
 					}
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// Forget this exception, we do it the hard way
 		}
 		InputStream in = openInputStream();
@@ -73,8 +78,7 @@ public class URLResource implements Resource {
 				result += din.skipBytes(Integer.MAX_VALUE);
 			}
 			size = result;
-		}
-		finally {
+		} finally {
 			if (din != null) {
 				din.close();
 			}

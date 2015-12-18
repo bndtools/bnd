@@ -27,32 +27,32 @@ public class XMLResourceParser extends Processor {
 		inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
 	}
 
-	private static final String	NS_URI			= "http://www.osgi.org/xmlns/repository/v1.0.0";
-	private static final String	TAG_REPOSITORY	= "repository";
-	private static final String	TAG_REFERRAL	= "referral";
-	private static final String	TAG_RESOURCE	= "resource";
-	private static final String	TAG_CAPABILITY	= "capability";
-	private static final String	TAG_REQUIREMENT	= "requirement";
-	private static final String	TAG_ATTRIBUTE	= "attribute";
-	private static final String	TAG_DIRECTIVE	= "directive";
+	private static final String		NS_URI				= "http://www.osgi.org/xmlns/repository/v1.0.0";
+	private static final String		TAG_REPOSITORY		= "repository";
+	private static final String		TAG_REFERRAL		= "referral";
+	private static final String		TAG_RESOURCE		= "resource";
+	private static final String		TAG_CAPABILITY		= "capability";
+	private static final String		TAG_REQUIREMENT		= "requirement";
+	private static final String		TAG_ATTRIBUTE		= "attribute";
+	private static final String		TAG_DIRECTIVE		= "directive";
 
-	private static final String	ATTR_REFERRAL_URL	= "url";
-	private static final String	ATTR_REFERRAL_DEPTH	= "depth";
+	private static final String		ATTR_REFERRAL_URL	= "url";
+	private static final String		ATTR_REFERRAL_DEPTH	= "depth";
 
-	private static final String ATTR_NAMESPACE = "namespace";
+	private static final String		ATTR_NAMESPACE		= "namespace";
 
-	private static final String	ATTR_NAME	= "name";
-	private static final String	ATTR_VALUE	= "value";
-	private static final String	ATTR_TYPE	= "type";
+	private static final String		ATTR_NAME			= "name";
+	private static final String		ATTR_VALUE			= "value";
+	private static final String		ATTR_TYPE			= "type";
 
-	final private List<Resource>	resources	= new ArrayList<>();
+	final private List<Resource>	resources			= new ArrayList<>();
 	final private XMLStreamReader	reader;
 	final private Set<URI>			traversed;
 	final private String			what;
 	@SuppressWarnings("unused")
 	final private URI				url;
 
-	private int depth;
+	private int						depth;
 
 	public XMLResourceParser(URI url) throws Exception {
 		this(url.toURL().openStream(), url.toString(), url);

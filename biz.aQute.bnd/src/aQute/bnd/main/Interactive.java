@@ -1,7 +1,8 @@
 package aQute.bnd.main;
 
-import java.io.*;
-import java.util.*;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.util.Map;
 
 public class Interactive {
 

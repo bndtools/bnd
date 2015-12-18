@@ -1,8 +1,10 @@
 package aQute.remote.agent;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintStream;
 
-import org.apache.felix.service.command.*;
+import org.apache.felix.service.command.CommandSession;
+import org.apache.felix.service.command.Converter;
 
 /**
  * A redirector that redirects the input of a Gogo Command Processor
@@ -30,8 +32,7 @@ public class Shell extends RedirectInput {
 			} else {
 				prompt = "> ";
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			prompt = "> ";
 		}
 		this.out.print(prompt);
@@ -52,11 +53,9 @@ public class Shell extends RedirectInput {
 				if (result != null) {
 					out.println(session.format(result, Converter.INSPECT));
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace(out);
-			}
-			finally {
+			} finally {
 				running = false;
 			}
 			this.out.flush();

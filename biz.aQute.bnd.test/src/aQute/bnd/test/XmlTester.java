@@ -28,8 +28,7 @@ public class XmlTester {
 		try {
 			dbf.setNamespaceAware(true);
 			db = dbf.newDocumentBuilder();
-		}
-		catch (ParserConfigurationException e) {
+		} catch (ParserConfigurationException e) {
 			throw new RuntimeException(e);
 		}
 	}

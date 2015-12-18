@@ -1,18 +1,24 @@
 package aQute.bnd.ant;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
-import org.apache.tools.ant.*;
-import org.apache.tools.ant.taskdefs.*;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.Property;
 
-import aQute.bnd.build.*;
-import aQute.bnd.osgi.*;
-import aQute.libg.reporter.*;
-import aQute.service.reporter.*;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Constants;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.libg.reporter.ReporterMessages;
+import aQute.service.reporter.Reporter;
 
 public class BaseTask extends Task implements Reporter {
-	ReporterAdapter reporter = new ReporterAdapter();
+	ReporterAdapter			reporter		= new ReporterAdapter();
 
 	List<String>			errors			= new ArrayList<String>();
 	List<String>			warnings		= new ArrayList<String>();
@@ -71,8 +77,7 @@ public class BaseTask extends Task implements Reporter {
 		}
 		try {
 			return f.getCanonicalFile();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			return f.getAbsoluteFile();
 		}
 	}

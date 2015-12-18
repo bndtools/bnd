@@ -1,11 +1,15 @@
 package test.component;
 
-import java.io.*;
+import java.io.File;
 
-import junit.framework.*;
-import aQute.bnd.differ.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.diff.*;
+import aQute.bnd.differ.DiffPluginImpl;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.service.diff.Delta;
+import aQute.bnd.service.diff.Diff;
+import aQute.bnd.service.diff.Tree;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class ComponentOrderingTest extends TestCase {

@@ -19,8 +19,7 @@ public class RequirementImpl extends CapReq implements Requirement {
 				msg = fp.parse(this).toString();
 			}
 			return msg;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return e.getMessage();
 		}
 	}

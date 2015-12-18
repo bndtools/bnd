@@ -1,15 +1,21 @@
 package aQute.remote.agent;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.regex.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Matcher;
 
-import org.osgi.framework.*;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
 
-import aQute.remote.api.*;
-import aQute.remote.util.*;
+import aQute.remote.api.Agent;
+import aQute.remote.api.Supervisor;
+import aQute.remote.util.Link;
 
 /**
  * The agent bundles uses an activator instead of DS to not constrain the target
@@ -99,12 +105,10 @@ public class Activator extends Thread implements BundleActivator {
 				};
 				sa.setLink(link);
 				link.run();
-			}
-			catch (SocketException e) {
+			} catch (SocketException e) {
 				if (!isInterrupted())
 					About.log.warning("accepting agent requests " + e);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				About.log.warning("accepting agent requests " + e);
 			}
 	}

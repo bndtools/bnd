@@ -20,8 +20,8 @@ import aQute.lib.tag.Tag;
 
 class ReferenceDef extends ExtensionDef {
 
-	String	className;
-	String	bindDescriptor;
+	String					className;
+	String					bindDescriptor;
 
 	Version					version	= AnnotationReader.V1_0;
 	String					name;
@@ -43,8 +43,10 @@ class ReferenceDef extends ExtensionDef {
 	}
 
 	/**
-	 * Prepare the reference, will check for any errors. @param analyzer the
-	 * analyzer to report errors to. @throws Exception
+	 * Prepare the reference, will check for any errors.
+	 * 
+	 * @param analyzer the analyzer to report errors to.
+	 * @throws Exception
 	 */
 	public void prepare(Analyzer analyzer) throws Exception {
 		if (name == null)
@@ -68,8 +70,10 @@ class ReferenceDef extends ExtensionDef {
 	}
 
 	/**
-	 * Calculate the tag. @param namespaces @return a tag for the reference
-	 * element.
+	 * Calculate the tag.
+	 * 
+	 * @param namespaces
+	 * @return a tag for the reference element.
 	 */
 	public Tag getTag(Namespaces namespaces) {
 		Tag ref = new Tag("reference");

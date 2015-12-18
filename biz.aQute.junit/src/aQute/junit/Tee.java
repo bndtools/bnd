@@ -1,7 +1,11 @@
 package aQute.junit;
 
-import java.io.*;
-import java.nio.charset.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 public class Tee extends OutputStream {
 	PrintStream				oldStream;
@@ -30,8 +34,7 @@ public class Tee extends OutputStream {
 			return null;
 		try {
 			return buffer.toString(Charset.defaultCharset().toString());
-		}
-		catch (UnsupportedEncodingException e) {
+		} catch (UnsupportedEncodingException e) {
 			return null;
 		}
 	}

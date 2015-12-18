@@ -97,8 +97,7 @@ public class DebugReporter {
 				context.setInputRequirements(req);
 				Resolver resolver = new BndResolver(new ResolverLogger(4));
 				Map<Resource,List<Wire>> resolved = resolver.resolve(context);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				resolveError = e.getMessage();
 			}
 
@@ -140,8 +139,7 @@ public class DebugReporter {
 				ns = "Service";
 				try {
 					name = Converter.cnv(String.class, attributes.remove(Constants.OBJECTCLASS));
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					name = attributes.remove(Constants.OBJECTCLASS) + "";
 				}
 				break;

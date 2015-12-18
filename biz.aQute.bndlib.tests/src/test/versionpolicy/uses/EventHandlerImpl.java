@@ -1,6 +1,6 @@
 package test.versionpolicy.uses;
 
-import test.versionpolicy.api.*;
+import test.versionpolicy.api.EventHandler;
 
 public class EventHandlerImpl implements EventHandler {
 

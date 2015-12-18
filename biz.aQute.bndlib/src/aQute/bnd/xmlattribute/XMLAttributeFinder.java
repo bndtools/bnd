@@ -14,7 +14,7 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 
 public class XMLAttributeFinder extends ClassDataCollector {
 
-	private final Analyzer analyzer;
+	private final Analyzer			analyzer;
 
 	Map<TypeRef,XMLAttribute>		annoCache		= new HashMap<TypeRef,XMLAttribute>();
 	Map<TypeRef,Map<String,String>>	defaultsCache	= new HashMap<TypeRef,Map<String,String>>();
@@ -80,8 +80,7 @@ public class XMLAttributeFinder extends ClassDataCollector {
 											type.getFQN());
 									return;
 								}
-							}
-							catch (Exception e) {
+							} catch (Exception e) {
 								analyzer.error("Exception extracting annotation defaults for type %s", e, type);
 								return;
 							}
@@ -114,8 +113,7 @@ public class XMLAttributeFinder extends ClassDataCollector {
 			});
 			defaultsCache.put(name, props);
 			return props;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			analyzer.error("Exception extracting annotation defaults for type %s", e, name);
 		}
 		return null;

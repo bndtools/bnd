@@ -1,9 +1,9 @@
 package aQute.jpm.lib;
 
-import java.net.*;
+import java.net.URI;
 
-import aQute.service.library.*;
-import aQute.struct.*;
+import aQute.service.library.Coordinate;
+import aQute.struct.struct;
 
 public class ArtifactData extends struct {
 	public byte[]		sha;

@@ -1,24 +1,31 @@
 package test.bndmodel;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+import java.util.Map;
 
-import junit.framework.*;
-import aQute.bnd.build.model.*;
-import aQute.bnd.build.model.clauses.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.properties.*;
-import aQute.lib.io.*;
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.clauses.VersionedClause;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.properties.Document;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class BndModelTest extends TestCase {
 
-	static final String BND_BUILDPATH = "-buildpath: \\\n" + "\torg.apache.felix.dependencymanager,\\\n"
+	static final String	BND_BUILDPATH			= "-buildpath: \\\n" + "\torg.apache.felix.dependencymanager,\\\n"
 			+ "\tosgi.core\n";
 
-	static final String BND_BUILDPATH_EXPECTED = "-buildpath: osgi.core\n";
+	static final String	BND_BUILDPATH_EXPECTED	= "-buildpath: osgi.core\n";
 
 	/**
-	 * Test escaping of backslashes. @throws Exception
+	 * Test escaping of backslashes.
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testEscapingBackslashes() throws Exception {

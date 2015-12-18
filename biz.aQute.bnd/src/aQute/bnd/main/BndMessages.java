@@ -1,9 +1,9 @@
 package aQute.bnd.main;
 
-import java.io.*;
+import java.io.File;
 
-import aQute.bnd.build.*;
-import aQute.service.reporter.*;
+import aQute.bnd.build.Project;
+import aQute.service.reporter.Messages;
 
 public interface BndMessages extends Messages {
 

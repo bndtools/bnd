@@ -1,10 +1,12 @@
 package aQute.lib.spring;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.AnalyzerPlugin;
 
 public class XMLTypeProcessor implements AnalyzerPlugin {
 

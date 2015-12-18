@@ -1,13 +1,16 @@
 package test;
 
-import java.io.*;
-import java.util.regex.*;
+import java.io.File;
+import java.util.regex.Pattern;
 
-import junit.framework.*;
-import aQute.bnd.build.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Processor.FileLine;
-import aQute.lib.io.*;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class LocationTest extends TestCase {
 	Workspace		ws;

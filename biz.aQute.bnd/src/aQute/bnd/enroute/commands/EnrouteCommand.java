@@ -1,15 +1,23 @@
 package aQute.bnd.enroute.commands;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Formatter;
+import java.util.List;
 import java.util.Map.Entry;
-import java.util.regex.*;
+import java.util.regex.Pattern;
 
-import aQute.bnd.build.*;
-import aQute.bnd.main.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.getopt.*;
-import aQute.lib.io.*;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.main.bnd;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.osgi.Verifier;
+import aQute.lib.getopt.Arguments;
+import aQute.lib.getopt.Description;
+import aQute.lib.getopt.Options;
+import aQute.lib.io.IO;
 
 @Description("OSGi enRoute Commands")
 public class EnrouteCommand {
@@ -182,8 +190,7 @@ public class EnrouteCommand {
 					IO.copy(r.openInputStream(), dest);
 				}
 			}
-		}
-		finally {
+		} finally {
 			jar.close();
 		}
 	}

@@ -1,7 +1,7 @@
 package aQute.lib.codec;
 
-import java.io.*;
-import java.lang.reflect.*;
+import java.io.Reader;
+import java.lang.reflect.Type;
 
 public interface Codec {
 	Object decode(Reader in, Type type) throws Exception;

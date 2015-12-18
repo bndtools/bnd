@@ -5,7 +5,9 @@ package aQute.bnd.service;
  */
 public interface RegistryDonePlugin {
 	/**
-	 * Signals the end of the registry initialization @throws Exception
+	 * Signals the end of the registry initialization
+	 * 
+	 * @throws Exception
 	 */
 	void done() throws Exception;
 }

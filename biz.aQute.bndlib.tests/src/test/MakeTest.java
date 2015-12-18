@@ -1,10 +1,14 @@
 package test;
 
-import java.util.*;
+import java.util.Properties;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.JarResource;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 /**
  * Tests the make functionality.
@@ -32,8 +36,9 @@ public class MakeTest extends TestCase {
 	}
 
 	/**
-	 * Check if we can get a resource through the make copy facility. @throws
-	 * Exception
+	 * Check if we can get a resource through the make copy facility.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testCopy() throws Exception {
 		Builder bmaker = new Builder();
@@ -51,7 +56,9 @@ public class MakeTest extends TestCase {
 	}
 
 	/**
-	 * Check if we can create a JAR recursively @throws Exception
+	 * Check if we can create a JAR recursively
+	 * 
+	 * @throws Exception
 	 */
 	public static void testJarInJarInJar() throws Exception {
 		Builder bmaker = new Builder();
@@ -77,7 +84,9 @@ public class MakeTest extends TestCase {
 
 	/**
 	 * Check if we can create a jar on demand through the make facility with a
-	 * new name. @throws Exception
+	 * new name.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testComplexOnDemand() throws Exception {
 		Builder bmaker = new Builder();

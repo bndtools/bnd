@@ -1,7 +1,7 @@
 package aQute.libg.fileiterator;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.Iterator;
 
 public class FileIterator implements Iterator<File> {
 	File			dir;

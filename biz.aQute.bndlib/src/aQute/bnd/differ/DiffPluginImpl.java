@@ -50,17 +50,17 @@ public class DiffPluginImpl implements Differ {
 	 * Headers that are considered major enough to parse according to spec and
 	 * compare their constituents
 	 */
-	final static Set<String> MAJOR_HEADERS = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+	final static Set<String>	MAJOR_HEADERS	= new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
 	/**
 	 * Headers that are considered not major enough to be considered
 	 */
-	final static Set<String> IGNORE_HEADERS = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+	final static Set<String>	IGNORE_HEADERS	= new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
 	/**
 	 * Headers that have values that should be sorted
 	 */
-	final static Set<String> ORDERED_HEADERS = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+	final static Set<String>	ORDERED_HEADERS	= new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
 	static {
 		MAJOR_HEADERS.add(Constants.EXPORT_PACKAGE);
@@ -91,8 +91,7 @@ public class DiffPluginImpl implements Differ {
 		Jar jnewer = new Jar(newer);
 		try {
 			return tree(jnewer);
-		}
-		finally {
+		} finally {
 			jnewer.close();
 		}
 	}
@@ -105,8 +104,7 @@ public class DiffPluginImpl implements Differ {
 		try {
 			anewer.setJar(newer);
 			return tree(anewer);
-		}
-		finally {
+		} finally {
 			anewer.setJar((Jar) null);
 			anewer.close();
 		}
@@ -201,8 +199,7 @@ public class DiffPluginImpl implements Differ {
 				String value = Hex.toHexString(digester.digest().digest());
 				resources.add(new Element(Type.RESOURCE, entry.getKey(), Arrays.asList(new Element(Type.SHA, value)),
 						CHANGED, CHANGED, comment));
-			}
-			finally {
+			} finally {
 				in.close();
 			}
 		}

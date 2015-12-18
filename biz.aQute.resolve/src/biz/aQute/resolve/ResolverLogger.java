@@ -15,19 +15,19 @@ import aQute.lib.io.IO;
 
 public class ResolverLogger implements LogService {
 
-	public static final int DEFAULT_LEVEL = 4;
+	public static final int		DEFAULT_LEVEL	= 4;
 
-	public static final int	LOG_ERROR	= 1;
-	public static final int	LOG_WARNING	= 2;
-	public static final int	LOG_INFO	= 3;
-	public static final int	LOG_DEBUG	= 4;
+	public static final int		LOG_ERROR		= 1;
+	public static final int		LOG_WARNING		= 2;
+	public static final int		LOG_INFO		= 3;
+	public static final int		LOG_DEBUG		= 4;
 
 	private final File			file;
 	private final PrintWriter	printer;
 
-	private int level;
+	private int					level;
 
-	private String log;
+	private String				log;
 
 	public ResolverLogger() {
 		this(DEFAULT_LEVEL);
@@ -39,8 +39,7 @@ public class ResolverLogger implements LogService {
 			file = File.createTempFile("tmp", ".log");
 			file.deleteOnExit();
 			printer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -90,8 +89,11 @@ public class ResolverLogger implements LogService {
 
 					StringBuilder sb = new StringBuilder(10000);
 
-					sb.append("Log too large. Split from ").append(file.getAbsolutePath()).append("\nsize ")
-							.append((file.length() + 512) / 1024).append(" Kb\n===================\n");
+					sb.append("Log too large. Split from ")
+							.append(file.getAbsolutePath())
+							.append("\nsize ")
+							.append((file.length() + 512) / 1024)
+							.append(" Kb\n===================\n");
 
 					byte[] buffer = new byte[4000];
 					RandomAccessFile raf = new RandomAccessFile(file, "r");
@@ -108,8 +110,7 @@ public class ResolverLogger implements LogService {
 					raf.close();
 					log = sb.toString();
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log = e.getMessage();
 			}
 		}

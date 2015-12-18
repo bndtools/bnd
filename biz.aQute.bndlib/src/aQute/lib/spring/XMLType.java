@@ -1,23 +1,36 @@
 package aQute.lib.spring;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
-import javax.xml.transform.*;
-import javax.xml.transform.stream.*;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Descriptors.PackageRef;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
 
 public class XMLType {
 
-	Transformer	transformer;
-	Pattern		paths;
-	String		root;
+	Transformer		transformer;
+	Pattern			paths;
+	String			root;
 
-	static Pattern QN = Pattern.compile("[_A-Za-z$][_A-Za-z0-9$]*(\\.[_A-Za-z$][_A-Za-z0-9$]*)*");
+	static Pattern	QN	= Pattern.compile("[_A-Za-z$][_A-Za-z0-9$]*(\\.[_A-Za-z$][_A-Za-z0-9$]*)*");
 
 	public XMLType(URL source, String root, String paths) throws Exception {
 		transformer = getTransformer(source);
@@ -102,8 +115,7 @@ public class XMLType {
 				if (!analyzer.getReferred().containsKey(pack))
 					analyzer.getReferred().put(pack);
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			analyzer.error("Unexpected exception in processing spring resources(" + path + "): " + e);
 		}
 	}

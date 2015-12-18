@@ -54,12 +54,12 @@ public class PersistentResource extends DTO implements Resource {
 
 	public static class Attr extends DTO implements Comparable<Attr> {
 
-		public String	key;
-		public int		type;
-		public Object	value;
-		public boolean	directive	= false;
+		public String		key;
+		public int			type;
+		public Object		value;
+		public boolean		directive	= false;
 
-		transient Object converted;
+		transient Object	converted;
 
 		public int compareTo(Attr o) {
 			return key.compareTo(o.key);
@@ -102,8 +102,7 @@ public class PersistentResource extends DTO implements Resource {
 						return null;
 
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				return null;
 			}
 
@@ -269,8 +268,7 @@ public class PersistentResource extends DTO implements Resource {
 	public String toString() {
 		try {
 			return "P-" + getResource();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return "P-" + Hex.toHexString(sha);
 		}
 	}

@@ -70,8 +70,7 @@ public class AnalyzerTest extends BndTestCase {
 			Attrs osgi = b.getExports().getByFQN("test.version.annotations.osgi");
 			assertEquals("1.2.3.bnd", bnd.getVersion());
 			assertEquals("1.2.3.osgi", osgi.getVersion());
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -83,7 +82,10 @@ public class AnalyzerTest extends BndTestCase {
 	 * Class<? extends Annotation>[] qualifier() default Any.class; }
 	 * maven-bundle-plugin fails to generate the package import for
 	 * javax.enterprise.inject.Any, the default value of the annotation method.
-	 * At runtime, this leads to a non-descriptive exception <pre> Caused by:
+	 * At runtime, this leads to a non-descriptive exception
+	 * 
+	 * <pre>
+	 *  Caused by:
 	 * java.lang.ArrayStoreException:
 	 * sun.reflect.annotation.TypeNotPresentExceptionProxy at
 	 * sun.reflect.annotation.AnnotationParser.parseClassArray(AnnotationParser.
@@ -105,7 +107,8 @@ public class AnalyzerTest extends BndTestCase {
 	 * .java:70) ~[na:1.7.0_04] at
 	 * java.lang.Class.initAnnotationsIfNecessary(Class.java:3089)
 	 * ~[na:1.7.0_04] at java.lang.Class.getDeclaredAnnotations(Class.java:3077)
-	 * ~[na:1.7.0_04] </pre>
+	 * ~[na:1.7.0_04]
+	 * </pre>
 	 */
 	public void testAnnotationWithDefaultClass() throws Exception {
 		Builder b = new Builder();
@@ -117,8 +120,7 @@ public class AnalyzerTest extends BndTestCase {
 			assertTrue(b.getExports().containsKey(b.getPackageRef("test/annotation")));
 			assertFalse(b.getContained().containsKey(b.getPackageRef("test/annotation/any")));
 			assertTrue(b.getImports().containsKey(b.getPackageRef("test/annotation/any")));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -151,8 +153,7 @@ public class AnalyzerTest extends BndTestCase {
 			assertNotNull(m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
 			assertNull(m.getMainAttributes().getValue("Foo"));
 			assertNull(m.getMainAttributes().getValue("Bar"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -171,8 +172,7 @@ public class AnalyzerTest extends BndTestCase {
 			Jar jar = b.build();
 			assertTrue(b.check(
 					"((, )?(org.osgi.service.event|org.osgi.service.component|org.osgi.service.http|org.osgi.service.log|org.osgi.service.condpermadmin|org.osgi.service.wireadmin|org.osgi.service.device)){7,7}"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -191,8 +191,7 @@ public class AnalyzerTest extends BndTestCase {
 			Manifest m = jar.getManifest();
 			assertTrue(b.check());
 			m.write(System.err);
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 
@@ -211,8 +210,7 @@ public class AnalyzerTest extends BndTestCase {
 			String version = exports.getByFQN("test.refer_versioned").getVersion();
 			assertEquals("3.5.7", version);
 			m.write(System.err);
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 
@@ -232,14 +230,15 @@ public class AnalyzerTest extends BndTestCase {
 			assertEquals("1.0", b.getExports().getByFQN("thinlet").getVersion());
 			assertTrue(b.getJar().getDirectories().containsKey("thinlet"));
 			assertTrue(b.getJar().getResources().containsKey("thinlet/Thinlet.class"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
 
 	/**
-	 * Fastest way to create a manifest @throws Exception
+	 * Fastest way to create a manifest
+	 * 
+	 * @throws Exception
 	 */
 
 	public static void testGenerateManifest() throws Exception {
@@ -262,8 +261,7 @@ public class AnalyzerTest extends BndTestCase {
 					"org.osgi.framework;version=\"1.3\",org.osgi.service.event;uses:=\"org.osgi.framework\";version=\"1.0.1\"");
 			assertTrue(expected.isEqual(export));
 			assertEquals("1.0.0.x", manifest.getMainAttributes().getValue("Bundle-Version"));
-		}
-		finally {
+		} finally {
 			analyzer.close();
 		}
 
@@ -285,15 +283,15 @@ public class AnalyzerTest extends BndTestCase {
 			b.build();
 			assertTrue(b.check("Bundle-ClassPath uses a directory 'jars/some.jar'"));
 			assertTrue(b.getImports().toString(), b.getImports().getByFQN("org.osgi.service.event") != null);
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
 
 	/**
-	 * Uses constraints must be filtered by imports or exports. @throws
-	 * Exception
+	 * Uses constraints must be filtered by imports or exports.
+	 * 
+	 * @throws Exception
 	 */
 
 	public static void testUsesFiltering() throws Exception {
@@ -322,15 +320,16 @@ public class AnalyzerTest extends BndTestCase {
 			assertTrue(b.check("Empty Import-Package header"));
 			exports = jar.getManifest().getMainAttributes().getValue("Export-Package");
 			assertFalse(exports.contains("uses:=\"org.osgi.framework\""));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 
 	}
 
 	/**
-	 * Test if require works @throws Exception
+	 * Test if require works
+	 * 
+	 * @throws Exception
 	 */
 
 	public static void testRequire() throws Exception {
@@ -344,8 +343,7 @@ public class AnalyzerTest extends BndTestCase {
 			System.err.println(b.getWarnings());
 			assertEquals(1, b.getErrors().size());
 			assertEquals(0, b.getWarnings().size());
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -362,8 +360,7 @@ public class AnalyzerTest extends BndTestCase {
 			System.err.println(b.getWarnings());
 			assertEquals(0, b.getErrors().size());
 			assertEquals(0, b.getWarnings().size());
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -379,8 +376,7 @@ public class AnalyzerTest extends BndTestCase {
 
 			Collection<Clazz> c = a.getClasses("", "IMPORTS", "javax.microedition.io");
 			System.err.println(c);
-		}
-		finally {
+		} finally {
 			a.close();
 		}
 	}
@@ -395,8 +391,7 @@ public class AnalyzerTest extends BndTestCase {
 			System.err.println(result);
 			assertTrue(result.contains("test.T2"));
 			assertTrue(result.contains("test.T3"));
-		}
-		finally {
+		} finally {
 			a.close();
 		}
 
@@ -414,14 +409,15 @@ public class AnalyzerTest extends BndTestCase {
 					new TreeSet<String>(
 							Arrays.asList("org.osgi.service.http.HttpContext", "org.osgi.service.http.HttpService")),
 					r);
-		}
-		finally {
+		} finally {
 			a.close();
 		}
 	}
 
 	/**
-	 * Use a private activator, check it is not imported. @throws Exception
+	 * Use a private activator, check it is not imported.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testEmptyHeader() throws Exception {
 		Builder a = new Builder();
@@ -439,8 +435,7 @@ public class AnalyzerTest extends BndTestCase {
 			System.err.println(bb);
 			assertNotNull(bb);
 			assertEquals("", bb);
-		}
-		finally {
+		} finally {
 			a.close();
 		}
 	}
@@ -469,8 +464,7 @@ public class AnalyzerTest extends BndTestCase {
 			attrs = m.getAttributes("org/osgi/service/io");
 			assertNotNull(attrs);
 			assertEquals("spec title io", attrs.getValue("Specification-Title"));
-		}
-		finally {
+		} finally {
 			a.close();
 		}
 
@@ -501,14 +495,15 @@ public class AnalyzerTest extends BndTestCase {
 			System.err.println(imports);
 			assertTrue(imports.indexOf("x=1") >= 0);
 			assertTrue(imports.indexOf("y=2") >= 0);
-		}
-		finally {
+		} finally {
 			a.close();
 		}
 	}
 
 	/**
-	 * Use a private activator, check it is not imported. @throws Exception
+	 * Use a private activator, check it is not imported.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testPrivataBundleActivatorNotImported() throws Exception {
 		Builder a = new Builder();
@@ -527,15 +522,16 @@ public class AnalyzerTest extends BndTestCase {
 			String imports = manifest.getMainAttributes().getValue("Import-Package");
 			System.err.println(imports);
 			assertEquals("org.osgi.framework", imports);
-		}
-		finally {
+		} finally {
 			a.close();
 		}
 	}
 
 	/**
 	 * Use an activator that is not in the bundle but do not allow it to be
-	 * imported, this should generate an error. @throws Exception
+	 * imported, this should generate an error.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testBundleActivatorNotImported() throws Exception {
 		Builder a = new Builder();
@@ -553,16 +549,16 @@ public class AnalyzerTest extends BndTestCase {
 			Manifest manifest = a.getJar().getManifest();
 			String imports = manifest.getMainAttributes().getValue("Import-Package");
 			assertNull(imports);
-		}
-		finally {
+		} finally {
 			a.close();
 		}
 
 	}
 
 	/**
-	 * Use an activator that is on the class path but that is not in the
-	 * bundle. @throws Exception
+	 * Use an activator that is on the class path but that is not in the bundle.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testBundleActivatorImport() throws Exception {
 		Builder a = new Builder();
@@ -585,15 +581,15 @@ public class AnalyzerTest extends BndTestCase {
 			String imports = manifest.getMainAttributes().getValue("Import-Package");
 			assertNotNull(imports);
 			assertTrue(imports.indexOf("org.osgi.framework") >= 0);
-		}
-		finally {
+		} finally {
 			a.close();
 		}
 	}
 
 	/**
-	 * Use an activator that abstract, and so cannot be instantiated. @throws
-	 * Exception
+	 * Use an activator that abstract, and so cannot be instantiated.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testBundleActivatorAbstract() throws Exception {
 		Builder a = new Builder();
@@ -609,15 +605,15 @@ public class AnalyzerTest extends BndTestCase {
 			assertEquals(1, a.getErrors().size());
 			assertEquals(0, a.getWarnings().size());
 			assertTrue(a.check("The Bundle Activator test.activator.AbstractActivator is abstract"));
-		}
-		finally {
+		} finally {
 			a.close();
 		}
 	}
 
 	/**
-	 * Use an activator that is an interface, and so cannot be
-	 * instantiated. @throws Exception
+	 * Use an activator that is an interface, and so cannot be instantiated.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testBundleActivatorInterface() throws Exception {
 		Builder a = new Builder();
@@ -633,15 +629,16 @@ public class AnalyzerTest extends BndTestCase {
 			assertEquals(1, a.getErrors().size());
 			assertEquals(0, a.getWarnings().size());
 			assertTrue(a.check("The Bundle Activator test.activator.IActivator is an interface"));
-		}
-		finally {
+		} finally {
 			a.close();
 		}
 	}
 
 	/**
 	 * Use an activator that has no default constructor, and so cannot be
-	 * instantiated. @throws Exception
+	 * instantiated.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testBundleActivatorNoDefaultConstructor() throws Exception {
 		Builder a = new Builder();
@@ -658,15 +655,15 @@ public class AnalyzerTest extends BndTestCase {
 			assertEquals(0, a.getWarnings().size());
 			assertTrue(a.check(
 					"Bundle Activator classes must have a public zero-argument constructor and test.activator.MissingNoArgsConstructorActivator does not"));
-		}
-		finally {
+		} finally {
 			a.close();
 		}
 	}
 
 	/**
-	 * Use an activator that is not public, and so cannot be
-	 * instantiated. @throws Exception
+	 * Use an activator that is not public, and so cannot be instantiated.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testBundleActivatorNotPublic() throws Exception {
 		Builder a = new Builder();
@@ -684,15 +681,16 @@ public class AnalyzerTest extends BndTestCase {
 			assertTrue(a.check(
 					"Bundle Activator classes must be public, and test.activator.DefaultVisibilityActivator is not",
 					"Bundle Activator classes must have a public zero-argument constructor and test.activator.DefaultVisibilityActivator does not"));
-		}
-		finally {
+		} finally {
 			a.close();
 		}
 	}
 
 	/**
 	 * Use an activator that is not an instance of BundleActivator, and so
-	 * cannot be used. @throws Exception
+	 * cannot be used.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testNotABundleActivator() throws Exception {
 		Builder a = new Builder();
@@ -709,8 +707,7 @@ public class AnalyzerTest extends BndTestCase {
 			assertEquals(0, a.getWarnings().size());
 			assertTrue(
 					a.check("The Bundle Activator test.activator.NotAnActivator does not implement BundleActivator"));
-		}
-		finally {
+		} finally {
 			a.close();
 		}
 	}
@@ -731,15 +728,16 @@ public class AnalyzerTest extends BndTestCase {
 			a.setProperty("-removeheaders", "Implementation-Title");
 			m = a.calcManifest();
 			assertNull(m.getMainAttributes().getValue("Implementation-Title"));
-		}
-		finally {
+		} finally {
 			a.close();
 		}
 
 	}
 
 	/**
-	 * There was an export generated for a jar file. @throws Exception
+	 * There was an export generated for a jar file.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testExportForJar() throws Exception {
 		Jar jar = new Jar("dot");
@@ -754,8 +752,7 @@ public class AnalyzerTest extends BndTestCase {
 			Parameters map = Analyzer.parseHeader(exports, null);
 			assertEquals(1, map.size());
 			assertEquals("target", map.keySet().iterator().next());
-		}
-		finally {
+		} finally {
 			jar.close();
 			an.close();
 		}
@@ -763,7 +760,9 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	/**
-	 * Test if version works @throws IOException
+	 * Test if version works
+	 * 
+	 * @throws IOException
 	 */
 
 	public static void testVersion() throws IOException {
@@ -771,8 +770,7 @@ public class AnalyzerTest extends BndTestCase {
 		try {
 			String v = a.getBndVersion();
 			assertNotNull(v);
-		}
-		finally {
+		} finally {
 			a.close();
 		}
 	}
@@ -798,15 +796,16 @@ public class AnalyzerTest extends BndTestCase {
 			assertFalse(analyzer.getImports().getByFQN("org.objectweb.asm") != null);
 
 			assertEquals("Expected size", 2, analyzer.getExports().size());
-		}
-		finally {
+		} finally {
 			analyzer.close();
 		}
 
 	}
 
 	/**
-	 * See if we set attributes on export @throws IOException
+	 * See if we set attributes on export
+	 * 
+	 * @throws IOException
 	 */
 	public static void testAsm2() throws Exception {
 		Properties base = new Properties();
@@ -826,8 +825,7 @@ public class AnalyzerTest extends BndTestCase {
 			assertEquals("Expected size", 2, h.getExports().size());
 			assertEquals("short", get(h.getExports(), h.getPackageRef("org.objectweb.asm"), "name"));
 			assertEquals("long", get(h.getExports(), h.getPackageRef("org.objectweb.asm.signature"), "name"));
-		}
-		finally {
+		} finally {
 			h.close();
 		}
 	}
@@ -851,8 +849,7 @@ public class AnalyzerTest extends BndTestCase {
 					"org.eclipse.equinox.ds.parser, " + "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
 							+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
 							+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
-		}
-		finally {
+		} finally {
 			analyzer.close();
 		}
 	}
@@ -878,8 +875,7 @@ public class AnalyzerTest extends BndTestCase {
 					"org.eclipse.equinox.ds.parser, " + "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
 							+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
 							+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
-		}
-		finally {
+		} finally {
 			h.close();
 		}
 	}
@@ -903,8 +899,7 @@ public class AnalyzerTest extends BndTestCase {
 							+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
 							+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
 			System.err.println(h.getUnreachable());
-		}
-		finally {
+		} finally {
 			h.close();
 		}
 	}
@@ -928,8 +923,7 @@ public class AnalyzerTest extends BndTestCase {
 			assertEquals("Version from osgi.jar", "[1.3,2)",
 					get(h.getImports(), h.getPackageRef("org.osgi.util.tracker"), "version"));
 			assertEquals("Version from osgi.jar", null, get(h.getImports(), h.getPackageRef("org.xml.sax"), "version"));
-		}
-		finally {
+		} finally {
 			h.close();
 		}
 	}
@@ -939,7 +933,9 @@ public class AnalyzerTest extends BndTestCase {
 	 * are never used. This usually indicates a misunderstanding or a change in
 	 * the underlying classpath. These are reflected as warnings. If there is an
 	 * extra import, and it contains no wildcards, then it is treated as a
-	 * wildcard @throws IOException
+	 * wildcard
+	 * 
+	 * @throws IOException
 	 */
 	public static void testSuperfluous() throws Exception {
 		Properties base = new Properties();
@@ -957,8 +953,7 @@ public class AnalyzerTest extends BndTestCase {
 					"Unused Import-Package instructions: \\[com.foo.bar.*\\]"));
 			assertTrue(h.getImports().getByFQN("com.foo") != null);
 			assertTrue(h.getExports().getByFQN("com.bar") != null);
-		}
-		finally {
+		} finally {
 			h.close();
 		}
 	}

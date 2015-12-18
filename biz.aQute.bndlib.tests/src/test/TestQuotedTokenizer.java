@@ -1,7 +1,7 @@
 package test;
 
-import junit.framework.*;
-import aQute.libg.qtokens.*;
+import aQute.libg.qtokens.QuotedTokenizer;
+import junit.framework.TestCase;
 
 public class TestQuotedTokenizer extends TestCase {
 

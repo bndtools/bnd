@@ -8,7 +8,6 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import junit.framework.TestCase;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
@@ -16,6 +15,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class ResourcesTest extends TestCase {
@@ -122,7 +122,9 @@ public class ResourcesTest extends TestCase {
 
 	/**
 	 * If a name starts with a - sign then it is ok if it does not exist. The -
-	 * sign must be skipped obviously. @throws Exception
+	 * sign must be skipped obviously.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testAbsentIsOk() throws Exception {
 		{
@@ -397,8 +399,9 @@ public class ResourcesTest extends TestCase {
 	}
 
 	/**
-	 * Check if we can create a jar on demand through the make facility. @throws
-	 * Exception
+	 * Check if we can create a jar on demand through the make facility.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testOnDemandResource() throws Exception {
 		Builder bmaker = new Builder();

@@ -5,13 +5,13 @@ import java.util.regex.Pattern;
 
 public class MavenVersion implements Comparable<MavenVersion> {
 
-	public static final String VERSION_STRING = "(\\d{1,9})(\\.(\\d{1,9})(\\.(\\d{1,9}))?)?([-\\.]?([-_\\.\\da-zA-Z]+))?";
+	public static final String		VERSION_STRING		= "(\\d{1,9})(\\.(\\d{1,9})(\\.(\\d{1,9}))?)?([-\\.]?([-_\\.\\da-zA-Z]+))?";
 
-	private static final Pattern VERSION = Pattern.compile(VERSION_STRING);
+	private static final Pattern	VERSION				= Pattern.compile(VERSION_STRING);
 
-	private static final String QUALIFIER_SNAPSHOT = "SNAPSHOT";
+	private static final String		QUALIFIER_SNAPSHOT	= "SNAPSHOT";
 
-	private final Version osgiVersion;
+	private final Version			osgiVersion;
 
 	public MavenVersion(Version osgiVersion) {
 		this.osgiVersion = osgiVersion;

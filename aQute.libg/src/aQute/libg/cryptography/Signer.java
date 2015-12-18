@@ -1,7 +1,9 @@
 package aQute.libg.cryptography;
 
-import java.io.*;
-import java.security.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.security.Signature;
+import java.security.SignatureException;
 
 public class Signer<D extends Digest> extends OutputStream {
 	Signature	signature;
@@ -17,8 +19,7 @@ public class Signer<D extends Digest> extends OutputStream {
 		try {
 			signature.update(buffer, offset, length);
 			digester.write(buffer, offset, length);
-		}
-		catch (SignatureException e) {
+		} catch (SignatureException e) {
 			throw new IOException(e.getLocalizedMessage());
 		}
 	}
@@ -28,8 +29,7 @@ public class Signer<D extends Digest> extends OutputStream {
 		try {
 			signature.update((byte) b);
 			digester.write(b);
-		}
-		catch (SignatureException e) {
+		} catch (SignatureException e) {
 			throw new IOException(e.getLocalizedMessage());
 		}
 	}

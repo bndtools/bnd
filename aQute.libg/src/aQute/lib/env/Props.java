@@ -1,14 +1,18 @@
 package aQute.lib.env;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
-import aQute.lib.collections.*;
+import aQute.lib.collections.SortedList;
 
 public class Props implements Map<String,String> {
 
 	/**
 	 */
-	static String EXTENDED = "[\\-0-9a-zA-Z\\._]+";
+	static String				EXTENDED	= "[\\-0-9a-zA-Z\\._]+";
 
 	private Map<String,String>	map;
 	static Map<String,String>	EMPTY		= Collections.emptyMap();
@@ -172,8 +176,7 @@ public class Props implements Map<String,String> {
 				Header.quote(sb, e.getValue());
 				del = ";";
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// Cannot happen
 			e.printStackTrace();
 		}

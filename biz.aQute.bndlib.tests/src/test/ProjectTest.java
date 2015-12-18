@@ -174,7 +174,9 @@ public class ProjectTest extends TestCase {
 
 	/**
 	 * Check if a project=version, which is illegal on -runbundles, is actually
-	 * reported as an error. @throws Exception
+	 * reported as an error.
+	 * 
+	 * @throws Exception
 	 */
 	public void testErrorOnVersionIsProjectInRunbundles() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
@@ -207,7 +209,9 @@ public class ProjectTest extends TestCase {
 
 	/**
 	 * Two subsequent builds should not change the last modified if none of the
-	 * source inputs have been modified. @throws Exception
+	 * source inputs have been modified.
+	 * 
+	 * @throws Exception
 	 */
 	public void testLastModified() throws Exception {
 
@@ -247,8 +251,7 @@ public class ProjectTest extends TestCase {
 			newer.close();
 
 			assertTrue(Arrays.equals(olderDigest, newerDigest));
-		}
-		finally {
+		} finally {
 			project.clean();
 		}
 	}
@@ -372,7 +375,9 @@ public class ProjectTest extends TestCase {
 	}
 
 	/**
-	 * Check multiple repos @throws Exception
+	 * Check multiple repos
+	 * 
+	 * @throws Exception
 	 */
 	public void testMultipleRepos() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
@@ -429,7 +434,9 @@ public class ProjectTest extends TestCase {
 	}
 
 	/**
-	 * Tests the handling of the -sub facility @throws Exception
+	 * Tests the handling of the -sub facility
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testSub() throws Exception {
@@ -489,8 +496,7 @@ public class ProjectTest extends TestCase {
 			files = project.build();
 			assertEquals(1, files.length);
 			assertTrue("Must have newer files now", files[0].lastModified() > lastTime);
-		}
-		finally {
+		} finally {
 			project.clean();
 		}
 	}

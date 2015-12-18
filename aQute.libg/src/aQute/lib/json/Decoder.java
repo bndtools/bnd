@@ -1,12 +1,22 @@
 package aQute.lib.json;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.security.*;
-import java.util.*;
-import java.util.zip.*;
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.lang.reflect.Type;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.zip.InflaterInputStream;
 
-import aQute.lib.converter.*;
+import aQute.lib.converter.TypeReference;
 
 public class Decoder implements Closeable {
 	final JSONCodec		codec;
@@ -16,9 +26,9 @@ public class Decoder implements Closeable {
 	Map<String,Object>	extra;
 	String				encoding	= "UTF-8";
 
-	boolean	strict;
-	boolean	inflate;
-	boolean	keepOpen	= false;
+	boolean				strict;
+	boolean				inflate;
+	boolean				keepOpen	= false;
 
 	Decoder(JSONCodec codec) {
 		this.codec = codec;
@@ -82,8 +92,7 @@ public class Decoder implements Closeable {
 	public <T> T get(Class<T> clazz) throws Exception {
 		try {
 			return (T) codec.decode(clazz, this);
-		}
-		finally {
+		} finally {
 			if (!keepOpen)
 				close();
 		}
@@ -92,8 +101,7 @@ public class Decoder implements Closeable {
 	public Object get(Type type) throws Exception {
 		try {
 			return codec.decode(type, this);
-		}
-		finally {
+		} finally {
 			if (!keepOpen)
 				close();
 		}
@@ -102,8 +110,7 @@ public class Decoder implements Closeable {
 	public Object get() throws Exception {
 		try {
 			return codec.decode(null, this);
-		}
-		finally {
+		} finally {
 			if (!keepOpen)
 				close();
 		}
@@ -113,8 +120,7 @@ public class Decoder implements Closeable {
 	public <T> T get(TypeReference<T> ref) throws Exception {
 		try {
 			return (T) codec.decode(ref.getType(), this);
-		}
-		finally {
+		} finally {
 			if (!keepOpen)
 				close();
 		}
@@ -139,7 +145,10 @@ public class Decoder implements Closeable {
 	}
 
 	/**
-	 * Skip any whitespace. @return @throws Exception
+	 * Skip any whitespace.
+	 * 
+	 * @return
+	 * @throws Exception
 	 */
 	int skipWs() throws Exception {
 		while (Character.isWhitespace(current()))
@@ -148,7 +157,10 @@ public class Decoder implements Closeable {
 	}
 
 	/**
-	 * Skip any whitespace. @return @throws Exception
+	 * Skip any whitespace.
+	 * 
+	 * @return
+	 * @throws Exception
 	 */
 	int next() throws Exception {
 		read();

@@ -1,8 +1,8 @@
 package aQute.bnd.annotation.headers;
 
 /**
- * Standard categories as specified on <a
- * href="http://www.osgi.org/Specifications/Reference#categories">OSGi
+ * Standard categories as specified on
+ * <a href="http://www.osgi.org/Specifications/Reference#categories">OSGi
  * References Page</a>
  */
 public enum Category {
@@ -44,8 +44,8 @@ public enum Category {
 			xmls("XML, HTML, WML, ...", "Parsing and processing of ?ML information"), //
 			json("JSON", "JSON codecs"), enroute("OSGi enRoute", "A project to show how easy it is to use OSGi");
 
-	final public String name;
-	final public String desc;
+	final public String	name;
+	final public String	desc;
 
 	Category(String name, String desc) {
 		this.name = name;

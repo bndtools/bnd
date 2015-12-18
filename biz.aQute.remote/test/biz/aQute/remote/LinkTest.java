@@ -99,7 +99,9 @@ public class LinkTest extends TestCase {
 	}
 
 	/**
-	 * Test transfer @throws Exception
+	 * Test transfer
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testTransfer() throws Exception {
@@ -122,7 +124,9 @@ public class LinkTest extends TestCase {
 	}
 
 	/**
-	 * Test simple @throws InterruptedException
+	 * Test simple
+	 * 
+	 * @throws InterruptedException
 	 */
 
 	public void testSimple() throws IOException, InterruptedException {
@@ -148,7 +152,9 @@ public class LinkTest extends TestCase {
 	}
 
 	/**
-	 * Only close in @throws InterruptedException
+	 * Only close in
+	 * 
+	 * @throws InterruptedException
 	 */
 
 	public void testCloseLocalIn() throws IOException, InterruptedException {

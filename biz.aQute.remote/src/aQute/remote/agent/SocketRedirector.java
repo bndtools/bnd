@@ -18,7 +18,7 @@ public class SocketRedirector implements Redirector {
 	// socket is registered on
 	//
 
-	private static final String OSGI_SHELL_TELNET_IP = "osgi.shell.telnet.ip";
+	private static final String	OSGI_SHELL_TELNET_IP	= "osgi.shell.telnet.ip";
 
 	//
 	// Telnet sends some options in the beginning that need to be
@@ -26,15 +26,17 @@ public class SocketRedirector implements Redirector {
 	// by some commands.
 	//
 
-	private static final int	IAC	= 255;
+	private static final int	IAC						= 255;
 	private Socket				socket;
 	private PrintStream			in;
 	private Thread				out;
 	private boolean				quit;
 
 	/**
-	 * Constructor @param agentServer the agent we're working for @param port
-	 * the shell port
+	 * Constructor
+	 * 
+	 * @param agentServer the agent we're working for
+	 * @param port the shell port
 	 */
 	public SocketRedirector(final AgentServer agentServer, final int port) throws Exception {
 
@@ -102,20 +104,16 @@ public class SocketRedirector implements Redirector {
 							}
 							if (sb.length() > 0)
 								agentServer.getSupervisor().stdout(sb.toString());
-						}
-						catch (Exception e) {
+						} catch (Exception e) {
 							break;
 						}
-				}
-				catch (Exception e1) {
+				} catch (Exception e1) {
 					// ignore, we just exit
-				}
-				finally {
+				} finally {
 					try {
 						if (socket != null && !quit)
 							socket.close();
-					}
-					catch (IOException e) {
+					} catch (IOException e) {
 						// ignore
 					}
 				}
@@ -132,8 +130,7 @@ public class SocketRedirector implements Redirector {
 				InetAddress gogoHost = InetAddress.getByName(ip);
 				return new Socket(gogoHost, port);
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// ignore
 		}
 
@@ -146,8 +143,7 @@ public class SocketRedirector implements Redirector {
 
 			InetAddress oldStyle = InetAddress.getByName(null);
 			return new Socket(oldStyle, port);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// ignore
 		}
 
@@ -158,8 +154,7 @@ public class SocketRedirector implements Redirector {
 		try {
 			InetAddress localhost = InetAddress.getLocalHost();
 			return new Socket(localhost, port);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// ignore
 		}
 
@@ -173,8 +168,7 @@ public class SocketRedirector implements Redirector {
 		socket.close();
 		try {
 			out.join(500);
-		}
-		catch (InterruptedException e) {
+		} catch (InterruptedException e) {
 			// ignore, best effort
 		}
 	}

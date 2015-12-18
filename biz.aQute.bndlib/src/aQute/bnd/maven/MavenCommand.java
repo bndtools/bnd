@@ -1,23 +1,49 @@
 package aQute.bnd.maven;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.*;
-import java.util.jar.*;
-import java.util.regex.*;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.header.*;
-import aQute.bnd.maven.support.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.maven.support.CachedPom;
+import aQute.bnd.maven.support.Maven;
+import aQute.bnd.maven.support.Pom;
 import aQute.bnd.maven.support.Pom.Scope;
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
-import aQute.lib.collections.*;
-import aQute.lib.io.*;
-import aQute.lib.settings.*;
-import aQute.lib.utf8properties.*;
-import aQute.libg.command.*;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
+import aQute.lib.collections.LineCollection;
+import aQute.lib.io.IO;
+import aQute.lib.settings.Settings;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.command.Command;
 
 public class MavenCommand extends Processor {
 	final Settings	settings	= new Settings();
@@ -31,7 +57,11 @@ public class MavenCommand extends Processor {
 
 	/**
 	 * maven deploy [-url repo] [-passphrase passphrase] [-homedir homedir]
-	 * [-keyname keyname] bundle ... @param args @param i @throws Exception
+	 * [-keyname keyname] bundle ...
+	 * 
+	 * @param args
+	 * @param i
+	 * @throws Exception
 	 */
 	public void run(String args[], int i) throws Exception {
 		temp = new File("maven-bundle");
@@ -95,7 +125,10 @@ public class MavenCommand extends Processor {
 	}
 
 	/**
-	 * Show the maven settings @throws FileNotFoundException @throws Exception
+	 * Show the maven settings
+	 * 
+	 * @throws FileNotFoundException
+	 * @throws Exception
 	 */
 	private void settings() throws FileNotFoundException, Exception {
 		File userHome = new File(System.getProperty("user.home"));
@@ -114,14 +147,17 @@ public class MavenCommand extends Processor {
 			while (lc.hasNext()) {
 				System.err.println(lc.next());
 			}
-		}
-		finally {
+		} finally {
 			lc.close();
 		}
 	}
 
 	/**
-	 * Create a maven bundle. @param args @param i @throws Exception
+	 * Create a maven bundle.
+	 * 
+	 * @param args
+	 * @param i
+	 * @throws Exception
 	 */
 	private void bundle(String args[], int i) throws Exception {
 		List<String> developers = new ArrayList<String>();
@@ -168,9 +204,7 @@ public class MavenCommand extends Processor {
 				try {
 					in = new FileInputStream(args[i++]);
 					properties.load(in);
-				}
-				catch (Exception e) {}
-				finally {
+				} catch (Exception e) {} finally {
 					if (in != null) {
 						in.close();
 					}
@@ -353,7 +387,9 @@ public class MavenCommand extends Processor {
 	}
 
 	/**
-	 * @return @throws IOException @throws MalformedURLException
+	 * @return
+	 * @throws IOException
+	 * @throws MalformedURLException
 	 */
 	protected Jar getJarFromFileOrURL(String spec) throws IOException, MalformedURLException {
 		Jar jar;
@@ -365,8 +401,7 @@ public class MavenCommand extends Processor {
 			InputStream in = url.openStream();
 			try {
 				jar = new Jar(url.getFile(), in);
-			}
-			finally {
+			} finally {
 				in.close();
 			}
 		}
@@ -466,7 +501,10 @@ public class MavenCommand extends Processor {
 	}
 
 	/**
-	 * Generate a license string @param attr @return
+	 * Generate a license string
+	 * 
+	 * @param attr
+	 * @return
 	 */
 	private String license(Attributes attr) {
 		Parameters map = Processor.parseHeader(attr.getValue(Constants.BUNDLE_LICENSE), null);
@@ -500,7 +538,10 @@ public class MavenCommand extends Processor {
 	}
 
 	/**
-	 * Generate the copyright statement. @param attr @return
+	 * Generate the copyright statement.
+	 * 
+	 * @param attr
+	 * @return
 	 */
 	private String copyright(Attributes attr) {
 		return attr.getValue(Constants.BUNDLE_COPYRIGHT);

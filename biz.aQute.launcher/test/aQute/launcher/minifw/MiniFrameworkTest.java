@@ -1,12 +1,12 @@
 package aQute.launcher.minifw;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.net.URL;
+import java.util.Properties;
 
-import junit.framework.*;
+import org.osgi.framework.Bundle;
 
-import org.osgi.framework.*;
+import junit.framework.TestCase;
 
 public class MiniFrameworkTest extends TestCase {
 

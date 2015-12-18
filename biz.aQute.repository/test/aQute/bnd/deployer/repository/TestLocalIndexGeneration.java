@@ -221,9 +221,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		try {
 			GZIPInputStream gzip = new GZIPInputStream(new FileInputStream(prettyIndexFile));
 			fail("expected opening gzip on index file would fail because it should be uncompressed");
-		}
-		catch (ZipException ze) {}
-		finally {
+		} catch (ZipException ze) {} finally {
 			IO.delete(new File(r.artifact));
 			IO.delete(prettyIndexFile);
 		}

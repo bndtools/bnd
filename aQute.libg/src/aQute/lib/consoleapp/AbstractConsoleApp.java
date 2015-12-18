@@ -1,29 +1,35 @@
 package aQute.lib.consoleapp;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.nio.charset.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
+import java.util.Formatter;
+import java.util.List;
 
-import aQute.lib.collections.*;
-import aQute.lib.env.*;
-import aQute.lib.getopt.*;
-import aQute.lib.io.*;
-import aQute.lib.justif.*;
-import aQute.lib.settings.*;
+import aQute.lib.collections.ExtList;
+import aQute.lib.env.Env;
+import aQute.lib.getopt.Arguments;
+import aQute.lib.getopt.CommandLine;
+import aQute.lib.getopt.Description;
+import aQute.lib.getopt.Options;
+import aQute.lib.io.IO;
+import aQute.lib.justif.Justif;
+import aQute.lib.settings.Settings;
 
 public abstract class AbstractConsoleApp extends Env {
-	Settings settings;
+	Settings					settings;
 
 	protected final PrintStream	err;
 	protected final PrintStream	out;
 
-	static String			encoding	= System.getProperty("file.encoding");
-	int						width		= 120;									// characters
-	int						tabs[]		= {
-			40, 48, 56, 64, 72, 80, 88, 96, 104, 112
-											};
-	private final Object	target;
+	static String				encoding	= System.getProperty("file.encoding");
+	int							width		= 120;											// characters
+	int							tabs[]		= {
+													40, 48, 56, 64, 72, 80, 88, 96, 104, 112
+												};
+	private final Object		target;
 
 	static {
 		if (encoding == null)
@@ -31,7 +37,9 @@ public abstract class AbstractConsoleApp extends Env {
 	}
 
 	/**
-	 * Default constructor @throws UnsupportedEncodingException
+	 * Default constructor
+	 * 
+	 * @throws UnsupportedEncodingException
 	 */
 
 	public AbstractConsoleApp(Object target) throws UnsupportedEncodingException {
@@ -45,7 +53,9 @@ public abstract class AbstractConsoleApp extends Env {
 	}
 
 	/**
-	 * Main entry @throws Exception
+	 * Main entry
+	 * 
+	 * @throws Exception
 	 */
 	public void run(String args[]) throws Exception {
 		try {
@@ -55,8 +65,7 @@ public abstract class AbstractConsoleApp extends Env {
 			check();
 			if (help != null)
 				err.println(help);
-		}
-		finally {
+		} finally {
 			err.flush();
 			out.flush();
 		}
@@ -93,8 +102,11 @@ public abstract class AbstractConsoleApp extends Env {
 	}
 
 	/**
-	 * Initialize the repository and other global vars. @param opts the
-	 * options @throws InterruptedException @throws IOException
+	 * Initialize the repository and other global vars.
+	 * 
+	 * @param opts the options
+	 * @throws InterruptedException
+	 * @throws IOException
 	 */
 	@Description("")
 	public void __main(MainOptions opts) throws IOException {
@@ -128,18 +140,15 @@ public abstract class AbstractConsoleApp extends Env {
 				}
 			}
 
-		}
-		catch (InvocationTargetException t) {
+		} catch (InvocationTargetException t) {
 			Throwable tt = t;
 			while (tt instanceof InvocationTargetException)
 				tt = ((InvocationTargetException) tt).getTargetException();
 
 			exception(tt, "%s", tt.getMessage());
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			exception(t, "Failed %s", t);
-		}
-		finally {
+		} finally {
 			// Check if we need to wait for it to finish
 			if (opts.key()) {
 				System.out.println("Hit a key to continue ...");

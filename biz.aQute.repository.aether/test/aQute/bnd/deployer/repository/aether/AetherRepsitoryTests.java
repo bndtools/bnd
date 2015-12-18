@@ -1,34 +1,37 @@
 package aQute.bnd.deployer.repository.aether;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.SortedSet;
 
-import junit.framework.*;
-import test.lib.*;
-import aQute.bnd.service.*;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
-import aQute.bnd.version.*;
-import aQute.lib.io.*;
+import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
+import test.lib.NanoHTTPD;
 
 @SuppressWarnings("restriction")
 public class AetherRepsitoryTests extends TestCase {
 
-	private static NanoHTTPD	httpd;
-	private static int			httpdPort;
+	private static NanoHTTPD		httpd;
+	private static int				httpdPort;
 
-	private static DownloadListener listener = new DownloadListener() {
+	private static DownloadListener	listener	= new DownloadListener() {
 
-		@Override
-		public void failure(File file, String reason) throws Exception {}
+													@Override
+													public void failure(File file, String reason) throws Exception {}
 
-		@Override
-		public boolean progress(File file, int percentage) throws Exception {
-			return true;
-		}
+													@Override
+													public boolean progress(File file, int percentage)
+															throws Exception {
+														return true;
+													}
 
-		@Override
-		public void success(File file) throws Exception {}
-	};
+													@Override
+													public void success(File file) throws Exception {}
+												};
 
 	private AetherRepository createRepo() throws Exception {
 		AetherRepository repo = new AetherRepository();

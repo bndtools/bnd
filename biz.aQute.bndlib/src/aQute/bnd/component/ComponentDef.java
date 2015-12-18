@@ -67,8 +67,10 @@ class ComponentDef extends ExtensionDef {
 
 	/**
 	 * Called to prepare. If will look for any errors or inconsistencies in the
-	 * setup. @param analyzer the analyzer to report errors and create
-	 * references @throws Exception
+	 * setup.
+	 * 
+	 * @param analyzer the analyzer to report errors and create references
+	 * @throws Exception
 	 */
 	void prepare(Analyzer analyzer) throws Exception {
 
@@ -144,8 +146,9 @@ class ComponentDef extends ExtensionDef {
 	}
 
 	/**
-	 * Returns a tag describing the component element. @return a component
-	 * element
+	 * Returns a tag describing the component element.
+	 * 
+	 * @return a component element
 	 */
 	Tag getTag() {
 		String xmlns = this.xmlns;
@@ -255,17 +258,13 @@ class ComponentDef extends ExtensionDef {
 				c = Integer.class;
 			Method m = c.getMethod("valueOf", String.class);
 			m.invoke(null, v);
-		}
-		catch (ClassNotFoundException e) {
+		} catch (ClassNotFoundException e) {
 			analyzer.error("Invalid data type %s", type);
-		}
-		catch (NoSuchMethodException e) {
+		} catch (NoSuchMethodException e) {
 			analyzer.error("Cannot convert data %s to type %s", v, type);
-		}
-		catch (NumberFormatException e) {
+		} catch (NumberFormatException e) {
 			analyzer.error("Not a valid number %s for %s, %s", v, type, e.getMessage());
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			analyzer.error("Cannot convert data %s to type %s", v, type);
 		}
 		return v;

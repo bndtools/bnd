@@ -1,29 +1,43 @@
 package org.osgi.impl.bundle.repoindex.ant;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
-import org.apache.tools.ant.*;
-import org.apache.tools.ant.types.*;
-import org.osgi.framework.*;
-import org.osgi.framework.launch.*;
-import org.osgi.service.indexer.*;
-import org.osgi.service.indexer.impl.*;
-import org.osgi.util.tracker.*;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.FileSet;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.launch.Framework;
+import org.osgi.service.indexer.ResourceAnalyzer;
+import org.osgi.service.indexer.ResourceIndexer;
+import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
+import org.osgi.util.tracker.ServiceTracker;
 
-import de.kalpatec.pojosr.framework.*;
-import de.kalpatec.pojosr.framework.launch.*;
+import de.kalpatec.pojosr.framework.PojoServiceRegistryFactoryImpl;
+import de.kalpatec.pojosr.framework.launch.ClasspathScanner;
+import de.kalpatec.pojosr.framework.launch.PojoServiceRegistryFactory;
 
 @SuppressWarnings("restriction")
 public class RepoIndexTask extends Task {
 
-	private final List<FileSet>			fileSets	= new LinkedList<FileSet>();
-	private final Map<String,String>	config		= new HashMap<String,String>();
+	private final List<FileSet>			fileSets			= new LinkedList<FileSet>();
+	private final Map<String,String>	config				= new HashMap<String,String>();
 
-	private File	repositoryFile		= null;
-	private boolean	knownBundles;
-	private boolean	builtInknownBundles	= true;
-	private String	additionalKnownBundles;
+	private File						repositoryFile		= null;
+	private boolean						knownBundles;
+	private boolean						builtInknownBundles	= true;
+	private String						additionalKnownBundles;
 
 	public void setName(String name) {
 		config.put(ResourceIndexer.REPOSITORY_NAME, name);
@@ -108,16 +122,13 @@ public class RepoIndexTask extends Task {
 			// Run
 			fos = new FileOutputStream(repositoryFile);
 			index.index(fileList, fos, config);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new BuildException(e);
-		}
-		finally {
+		} finally {
 			if (fos != null) {
 				try {
 					fos.close();
-				}
-				catch (IOException e) {
+				} catch (IOException e) {
 					/* swallow */
 				}
 				fos = null;
@@ -136,8 +147,7 @@ public class RepoIndexTask extends Task {
 				try {
 					props.load(new FileReader(extras));
 					kba.setKnownBundlesExtra(props);
-				}
-				catch (IOException e) {
+				} catch (IOException e) {
 					throw new BuildException("Unable to load the additional known bundles " + additionalKnownBundles,
 							e);
 				}

@@ -86,7 +86,11 @@ public class RepoCommand {
 	final List<RepositoryPlugin>	repos	= new ArrayList<RepositoryPlugin>();
 
 	/**
-	 * Called from the command line @param bnd @param opts @throws Exception
+	 * Called from the command line
+	 * 
+	 * @param bnd
+	 * @param opts
+	 * @throws Exception
 	 */
 	public RepoCommand(bnd bnd, repoOptions opts) throws Exception {
 		this.opts = opts;
@@ -176,8 +180,7 @@ public class RepoCommand {
 			String location = "";
 			try {
 				location = repo.getLocation();
-			}
-			catch (Throwable e) {
+			} catch (Throwable e) {
 				// Ignore
 			}
 			bnd.out.printf("%03d: %-20s %4s %-20s %s%n", n++, repo.getName(), repo.canWrite() ? "r/w" : "r/o",
@@ -235,7 +238,9 @@ public class RepoCommand {
 	}
 
 	/**
-	 * get a file from the repo @param opts
+	 * get a file from the repo
+	 * 
+	 * @param opts
 	 */
 
 	@Description("Get an artifact from a repository.")
@@ -357,8 +362,7 @@ public class RepoCommand {
 				delete = true;
 				try {
 					IO.copy(new URL(source).openStream(), file);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					bnd.error("No such file %s", source);
 					continue nextArgument;
 				}
@@ -390,8 +394,7 @@ public class RepoCommand {
 					bnd.trace("put %s in %s (%s) into %s", source, writable.getName(), writable.getLocation(),
 							r.artifact);
 				}
-			}
-			finally {
+			} finally {
 				jar.close();
 			}
 			if (delete)
@@ -640,11 +643,9 @@ public class RepoCommand {
 							bnd.error("Digest error in upload %s", src);
 						}
 					}
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					bnd.error("Exception %s in upload %s", e, src);
-				}
-				finally {
+				} finally {
 					fin.close();
 				}
 			}

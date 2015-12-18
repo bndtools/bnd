@@ -1,6 +1,6 @@
 package aQute.bnd.build.model.conversions;
 
-import aQute.bnd.build.model.clauses.*;
+import aQute.bnd.build.model.clauses.HeaderClause;
 
 public class HeaderClauseFormatter implements Converter<String,HeaderClause> {
 	public String convert(HeaderClause input) throws IllegalArgumentException {

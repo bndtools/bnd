@@ -1,7 +1,15 @@
 package aQute.lib.codec;
 
-import java.io.*;
-import java.lang.reflect.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.lang.reflect.Type;
 
 public class HCodec implements Codec {
 	final Codec codec;
@@ -35,8 +43,7 @@ public class HCodec implements Codec {
 		OutputStreamWriter wr = new OutputStreamWriter(out, "UTF-8");
 		try {
 			codec.encode(t, o, wr);
-		}
-		finally {
+		} finally {
 			wr.flush();
 		}
 	}
@@ -47,12 +54,10 @@ public class HCodec implements Codec {
 			InputStreamReader rdr = new InputStreamReader(fin, "UTF-8");
 			try {
 				return t.cast(decode(rdr, t));
-			}
-			finally {
+			} finally {
 				rdr.close();
 			}
-		}
-		finally {
+		} finally {
 			fin.close();
 		}
 
@@ -64,12 +69,10 @@ public class HCodec implements Codec {
 			Writer wr = new OutputStreamWriter(oout, "UTF-8");
 			try {
 				codec.encode(t, o, wr);
-			}
-			finally {
+			} finally {
 				wr.close();
 			}
-		}
-		finally {
+		} finally {
 			oout.close();
 		}
 	}

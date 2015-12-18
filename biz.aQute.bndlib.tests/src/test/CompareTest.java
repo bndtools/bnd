@@ -1,10 +1,12 @@
 package test;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.lang.reflect.TypeVariable;
+import java.util.Collection;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
 public class CompareTest<O extends Serializable> extends TestCase {
 

@@ -1,30 +1,43 @@
 package aQute.bnd.signing;
 
-import java.io.*;
-import java.security.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.security.KeyStore;
 import java.security.KeyStore.PrivateKeyEntry;
-import java.util.*;
-import java.util.jar.*;
-import java.util.regex.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Signature;
+import java.util.Map;
+import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.EmbeddedResource;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
 import aQute.lib.base64.Base64;
-import aQute.lib.io.*;
+import aQute.lib.io.IO;
+import aQute.lib.io.IOConstants;
 
 /**
  * This class is used with the aQute.bnd.osgi package, it signs jars with DSA
  * signature. -sign: md5, sha1
  */
 public class Signer extends Processor {
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
+	static final int	BUFFER_SIZE		= IOConstants.PAGE_SIZE * 1;
 
-	static Pattern	METAINFDIR		= Pattern.compile("META-INF/[^/]*");
-	String			digestNames[]	= new String[] {
-			"MD5"
-										};
-	File			keystoreFile	= new File("keystore");
-	String			password;
-	String			alias;
+	static Pattern		METAINFDIR		= Pattern.compile("META-INF/[^/]*");
+	String				digestNames[]	= new String[] {
+												"MD5"
+											};
+	File				keystoreFile	= new File("keystore");
+	String				password;
+	String				alias;
 
 	public void signJar(Jar jar) {
 		if (digestNames == null || digestNames.length == 0)
@@ -79,13 +92,11 @@ public class Signer extends Processor {
 				keystore.load(keystoreInputStream, pw);
 				keystoreInputStream.close();
 				privateKeyEntry = (PrivateKeyEntry) keystore.getEntry(alias, new KeyStore.PasswordProtection(pw));
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				error("No able to load the private key from the give keystore(" + keystoreFile.getAbsolutePath()
 						+ ") with alias " + alias + " : " + e);
 				return;
-			}
-			finally {
+			} finally {
 				IO.close(keystoreInputStream);
 			}
 			PrivateKey privateKey = privateKeyEntry.getPrivateKey();
@@ -104,8 +115,7 @@ public class Signer extends Processor {
 
 			ByteArrayOutputStream tmpStream = new ByteArrayOutputStream();
 			jar.putResource("META-INF/BND.RSA", new EmbeddedResource(tmpStream.toByteArray(), 0));
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			error("During signing: " + e);
 		}
 	}
@@ -169,8 +179,7 @@ public class Signer extends Processor {
 			String name = digestNames[i];
 			try {
 				algorithms[i] = MessageDigest.getInstance(name);
-			}
-			catch (NoSuchAlgorithmException e) {
+			} catch (NoSuchAlgorithmException e) {
 				error("Specified digest algorithm " + digestNames[i] + ", but not such algorithm was found: " + e);
 			}
 		}

@@ -43,7 +43,10 @@ public class MavenEntry implements Closeable {
 	String						artifactPath;
 
 	/**
-	 * Constructor. @param maven @param path
+	 * Constructor.
+	 * 
+	 * @param maven
+	 * @param path
 	 */
 	MavenEntry(Maven maven, String path) {
 		this.root = maven.repository;
@@ -66,9 +69,11 @@ public class MavenEntry implements Closeable {
 	}
 
 	/**
-	 * This is the method to get the POM for a cached entry. @param urls The
-	 * allowed URLs @return a CachedPom for this maven entry @throws Exception
-	 * If something goes haywire
+	 * This is the method to get the POM for a cached entry.
+	 * 
+	 * @param urls The allowed URLs
+	 * @return a CachedPom for this maven entry
+	 * @throws Exception If something goes haywire
 	 */
 	public CachedPom getPom(URI[] urls) throws Exception {
 
@@ -135,16 +140,19 @@ public class MavenEntry implements Closeable {
 				}
 			}
 			return null;
-		}
-		finally {
+		} finally {
 			saveProperties();
 			// lock.release();
 		}
 	}
 
 	/**
-	 * Download a resource from the given repo. @param url The base url for the
-	 * repo @param path The path part @return @throws MalformedURLException
+	 * Download a resource from the given repo.
+	 * 
+	 * @param url The base url for the repo
+	 * @param path The path part
+	 * @return
+	 * @throws MalformedURLException
 	 */
 	boolean download(URI repo, String path) throws MalformedURLException {
 		try {
@@ -154,17 +162,19 @@ public class MavenEntry implements Closeable {
 			IO.copy(url.openStream(), file);
 			System.err.println("Downloaded " + url);
 			return true;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			System.err.println("debug: " + e);
 			return false;
 		}
 	}
 
 	/**
-	 * Converts a repo + path to a URL.. @param base The base repo @param path
-	 * The path in the directory + url @return a URL that points to the file in
-	 * the repo @throws MalformedURLException
+	 * Converts a repo + path to a URL..
+	 * 
+	 * @param base The base repo
+	 * @param path The path in the directory + url
+	 * @return a URL that points to the file in the repo
+	 * @throws MalformedURLException
 	 */
 	URL toURL(URI base, String path) throws MalformedURLException {
 		StringBuilder r = new StringBuilder();
@@ -177,15 +187,19 @@ public class MavenEntry implements Closeable {
 
 	/**
 	 * Check if this is a valid cache directory, might probably need some more
-	 * stuff. @return true if valid
+	 * stuff.
+	 * 
+	 * @return true if valid
 	 */
 	private boolean isValid() {
 		return pomFile.isFile() && pomFile.length() > 100 && artifactFile.isFile() && artifactFile.length() > 100;
 	}
 
 	/**
-	 * We maintain a set of bnd properties in the cache directory. @param key
-	 * The key for the property @param value The value for the property
+	 * We maintain a set of bnd properties in the cache directory.
+	 * 
+	 * @param key The key for the property
+	 * @param value The value for the property
 	 */
 	private void setProperty(String key, String value) {
 		Properties properties = getProperties();
@@ -205,11 +219,9 @@ public class MavenEntry implements Closeable {
 				try {
 					in = new FileInputStream(props);
 					properties.load(in);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					// we ignore for now, will handle it on safe
-				}
-				finally {
+				} finally {
 					IO.close(in);
 				}
 			}
@@ -218,7 +230,10 @@ public class MavenEntry implements Closeable {
 	}
 
 	/**
-	 * Answer a property. @param key The key @return The value
+	 * Answer a property.
+	 * 
+	 * @param key The key
+	 * @return The value
 	 */
 	private String getProperty(String key) {
 		Properties properties = getProperties();
@@ -231,8 +246,7 @@ public class MavenEntry implements Closeable {
 			OutputStreamWriter osw = new OutputStreamWriter(fout);
 			try {
 				properties.store(osw, "");
-			}
-			finally {
+			} finally {
 				properties = null;
 				propertiesChanged = false;
 				osw.close();
@@ -242,8 +256,11 @@ public class MavenEntry implements Closeable {
 	}
 
 	/**
-	 * Help function to create the POM and record its source. @param url the
-	 * repo from which it was constructed @return the new pom @throws Exception
+	 * Help function to create the POM and record its source.
+	 * 
+	 * @param url the repo from which it was constructed
+	 * @return the new pom
+	 * @throws Exception
 	 */
 	private CachedPom createPom(URI url) throws Exception {
 		CachedPom pom = new CachedPom(this, url);
@@ -255,9 +272,12 @@ public class MavenEntry implements Closeable {
 
 	/**
 	 * Verify that the repo has a checksum file for the given path and that this
-	 * checksum matchs. @param repo The repo @param path The file id @return
-	 * true if there is a digest and it matches one of the algorithms @throws
-	 * Exception
+	 * checksum matchs.
+	 * 
+	 * @param repo The repo
+	 * @param path The file id
+	 * @return true if there is a digest and it matches one of the algorithms
+	 * @throws Exception
 	 */
 	boolean verify(URI repo, String path) throws Exception {
 		for (String algorithm : Maven.ALGORITHMS) {
@@ -268,8 +288,13 @@ public class MavenEntry implements Closeable {
 	}
 
 	/**
-	 * Verify the path against its digest for the given algorithm. @param
-	 * repo @param path @param algorithm @return @throws Exception
+	 * Verify the path against its digest for the given algorithm.
+	 * 
+	 * @param repo
+	 * @param path
+	 * @param algorithm
+	 * @return
+	 * @throws Exception
 	 */
 	private boolean verify(URI repo, String path, String algorithm) throws Exception {
 		String digestPath = path + "." + algorithm;

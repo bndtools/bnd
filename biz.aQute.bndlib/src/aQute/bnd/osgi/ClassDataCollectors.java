@@ -1,12 +1,13 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
-import java.util.*;
+import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.List;
 
 import aQute.bnd.osgi.Clazz.FieldDef;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.service.reporter.*;
+import aQute.service.reporter.Reporter;
 
 /**
  * This class dispatches class data collectors. Over time more and more code was
@@ -27,8 +28,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		delegates.add(cd);
 		try {
 			clazz.parseClassFileWithCollector(this);
-		}
-		finally {
+		} finally {
 			delegates.remove(cd);
 		}
 	}
@@ -42,8 +42,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		for (ClassDataCollector cd : delegates)
 			try {
 				cd.classBegin(access, name);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to class classBegin on %s", cd);
 			}
 	}
@@ -57,8 +56,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 					shortlist.add(cd);
 					start = true;
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to class classStart on %s", cd);
 			}
 		return start;
@@ -73,8 +71,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 					shortlist.add(cd);
 					start = true;
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to class classStart on %s", cd);
 			}
 		return start;
@@ -85,8 +82,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		for (ClassDataCollector cd : shortlist)
 			try {
 				cd.extendsClass(zuper);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to class extendsClass on %s", cd);
 			}
 	}
@@ -96,8 +92,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		for (ClassDataCollector cd : shortlist)
 			try {
 				cd.implementsInterfaces(interfaces);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to class implementsInterfaces on %s", cd);
 			}
 	}
@@ -107,8 +102,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		for (ClassDataCollector cd : shortlist)
 			try {
 				cd.addReference(ref);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to class addReference on %s", cd);
 			}
 	}
@@ -118,8 +112,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		for (ClassDataCollector cd : shortlist)
 			try {
 				cd.annotation(annotation);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to class annotation on %s", cd);
 			}
 	}
@@ -129,8 +122,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		for (ClassDataCollector cd : shortlist)
 			try {
 				cd.parameter(p);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to class parameter on %s", cd);
 			}
 	}
@@ -140,8 +132,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		for (ClassDataCollector cd : shortlist)
 			try {
 				cd.method(defined);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to call method on %s", cd);
 			}
 	}
@@ -151,8 +142,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		for (ClassDataCollector cd : shortlist)
 			try {
 				cd.field(defined);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to call field on %s", cd);
 			}
 	}
@@ -162,8 +152,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		for (ClassDataCollector cd : shortlist)
 			try {
 				cd.classEnd();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to call classEnd on %s", cd);
 			}
 		shortlist.clear();
@@ -174,8 +163,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		for (ClassDataCollector cd : shortlist)
 			try {
 				cd.deprecated();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to call deprecated on %s", cd);
 			}
 	}
@@ -185,8 +173,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		for (ClassDataCollector cd : shortlist)
 			try {
 				cd.enclosingMethod(cName, mName, mDescriptor);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to call enclosingMethod on %s", cd);
 			}
 	}
@@ -197,8 +184,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		for (ClassDataCollector cd : shortlist)
 			try {
 				cd.innerClass(innerClass, outerClass, innerName, innerClassAccessFlags);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to call innerClass on %s", cd);
 			}
 	}
@@ -208,8 +194,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		for (ClassDataCollector cd : shortlist)
 			try {
 				cd.signature(signature);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to call innerClass on %s", cd);
 			}
 	}
@@ -219,8 +204,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		for (ClassDataCollector cd : shortlist)
 			try {
 				cd.constant(object);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to call constant on %s", cd);
 			}
 	}
@@ -230,8 +214,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		for (ClassDataCollector cd : shortlist)
 			try {
 				cd.memberEnd();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to call memberEnd on %s", cd);
 			}
 	}
@@ -241,8 +224,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		for (ClassDataCollector cd : shortlist)
 			try {
 				cd.version(minor, major);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to call version on %s", cd);
 			}
 	}
@@ -252,8 +234,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		for (ClassDataCollector cd : shortlist)
 			try {
 				cd.referenceMethod(access, className, method, descriptor);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to call referenceMethod on %s", cd);
 			}
 	}
@@ -263,8 +244,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 		for (ClassDataCollector cd : shortlist)
 			try {
 				cd.referTo(typeRef, modifiers);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to call referTo on %s", cd);
 			}
 	}
@@ -274,8 +254,7 @@ class ClassDataCollectors extends ClassDataCollector implements Closeable {
 			try {
 				if (cd instanceof Closeable)
 					((Closeable) cd).close();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Fail to call close on %s", cd);
 			}
 		delegates.clear();

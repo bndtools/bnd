@@ -28,7 +28,7 @@ public class EmbeddedActivator implements BundleActivator {
 	final static String			SYMBOLICNAME_S	= "[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)*";
 	public final static String	VERSION_S		= "(?:\\d{1,9})(?:\\.(?:\\d{1,9})(?:\\.(?:\\d{1,9})(?:\\.(?:[-_\\da-zA-Z]+))?)?)?";
 
-	final static Pattern BSN_VERSION_P = Pattern
+	final static Pattern		BSN_VERSION_P	= Pattern
 			.compile("\\s*(" + SYMBOLICNAME_S + ")\\s*=\\s*(" + VERSION_S + ")\\s*");
 
 	/**
@@ -140,8 +140,7 @@ public class EmbeddedActivator implements BundleActivator {
 			for (Bundle b : toStart) {
 				b.start();
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			stop(context);
 		}
 	}
@@ -184,8 +183,7 @@ public class EmbeddedActivator implements BundleActivator {
 			if (m.matches())
 				try {
 					b.stop();
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					exceptions.add(e);
 				}
 		}

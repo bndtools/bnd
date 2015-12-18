@@ -1,7 +1,9 @@
 package aQute.bnd.resource.repository;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 

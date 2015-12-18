@@ -92,8 +92,7 @@ public class MavenVersionTest extends TestCase {
 		try {
 			MavenVersion mv = MavenVersion.parseString("Not a number");
 			fail();
-		}
-		catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			// expected
 		}
 	}

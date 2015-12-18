@@ -1,11 +1,14 @@
 package aQute.bnd.deployer.repository;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * This is used to prevent content providers with interfering with the state of
- * the underlying stream by calling ant of {@link InputStream#close()}, {@link
- * InputStream#mark(int)} or {@link InputStream#reset()}. @author Neil Bartlett
+ * the underlying stream by calling ant of {@link InputStream#close()},
+ * {@link InputStream#mark(int)} or {@link InputStream#reset()}.
+ * 
+ * @author Neil Bartlett
  */
 class ProtectedStream extends InputStream {
 

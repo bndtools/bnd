@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import junit.framework.TestCase;
-
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -24,6 +22,7 @@ import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.remote.api.Agent;
 import aQute.remote.plugin.LauncherSupervisor;
+import junit.framework.TestCase;
 
 public class RemoteTest extends TestCase {
 	private int						random;
@@ -52,8 +51,7 @@ public class RemoteTest extends TestCase {
 			agent.start();
 
 			super.setUp();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

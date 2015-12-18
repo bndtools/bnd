@@ -1,12 +1,34 @@
 package aQute.launcher.minifw;
 
-import java.io.*;
-import java.net.*;
-import java.security.cert.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
-import org.osgi.framework.*;
-import org.osgi.framework.launch.*;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.BundleListener;
+import org.osgi.framework.Filter;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceListener;
+import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.framework.Version;
+import org.osgi.framework.launch.Framework;
 
 public class MiniFramework implements Framework, Bundle, BundleContext {
 	ClassLoader			loader;
@@ -152,8 +174,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 			bundles.put(new Long(c.id), c);
 			last = c;
 			return c;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new BundleException("Failed to install", e);
 		}
 	}
@@ -165,8 +186,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 			try {
 				@SuppressWarnings("unused")
 				URL url = new URL(location);
-			}
-			catch (MalformedURLException e) {
+			} catch (MalformedURLException e) {
 				throw new BundleException(
 						"For the mini framework, the location must be a proper URL even though this is not required by the specification "
 								+ location,
@@ -176,8 +196,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 			bundles.put(new Long(c.id), c);
 			last = c;
 			return c;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new BundleException("Can't install " + location, e);
 		}
 	}
@@ -265,8 +284,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 			for (Bundle b : bundles.values()) {
 				try {
 					return b.loadClass(name);
-				}
-				catch (ClassNotFoundException e) {
+				} catch (ClassNotFoundException e) {
 					// Ignore, try next
 				}
 			}

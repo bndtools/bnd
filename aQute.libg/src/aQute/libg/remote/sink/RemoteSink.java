@@ -25,9 +25,9 @@ public class RemoteSink implements Sink {
 	Source[]					sources;
 	final Map<String,AreaImpl>	areas	= new ConcurrentHashMap<String,AreaImpl>();
 
-	final File		areasDir;
-	final SinkFS	sinkfs;
-	private File	shacache;
+	final File					areasDir;
+	final SinkFS				sinkfs;
+	private File				shacache;
 
 	public RemoteSink(File root, Source... s) throws Exception {
 		this.root = root;
@@ -104,12 +104,10 @@ public class RemoteSink implements Sink {
 					area.command.setCwd(area.cwd);
 					area.command.setUseThreadForInput(true);
 					area.exitCode = area.command.execute(area.stdin, area.stdout, area.stderr);
-				}
-				catch (Throwable e) {
+				} catch (Throwable e) {
 					area.exitCode = -1;
 					area.exception = e.toString();
-				}
-				finally {
+				} finally {
 					area.running = false;
 					area.toStdin = null;
 					area.stderr = null;
@@ -239,8 +237,7 @@ public class RemoteSink implements Sink {
 		for (Source source : sources) {
 			try {
 				source.event(e, area);
-			}
-			catch (Exception e1) {
+			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
 		}

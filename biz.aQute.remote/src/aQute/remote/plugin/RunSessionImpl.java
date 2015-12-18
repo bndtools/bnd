@@ -109,8 +109,7 @@ public class RunSessionImpl implements RunSession {
 			update(dto);
 			int exitCode = supervisor.join();
 			return exitCode;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			started.countDown();
 			throw e;
 		}
@@ -203,8 +202,7 @@ public class RunSessionImpl implements RunSession {
 		InetAddress in;
 		try {
 			in = InetAddress.getByName(getHost());
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			launcher.exception(e, "Cannot find host %s", getHost());
 			return false; // no use to continue from here
 		}
@@ -222,13 +220,11 @@ public class RunSessionImpl implements RunSession {
 				Socket s = new Socket(getHost(), getAgent());
 				s.close();
 				break;
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				// Ignore
 				try {
 					Thread.sleep(500);
-				}
-				catch (InterruptedException e1) {}
+				} catch (InterruptedException e1) {}
 			}
 		return result;
 	}

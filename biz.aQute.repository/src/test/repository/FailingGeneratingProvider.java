@@ -1,13 +1,19 @@
 package test.repository;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.util.Set;
 
-import org.osgi.service.log.*;
+import org.osgi.service.log.LogService;
 
-import aQute.bnd.deployer.repository.api.*;
-import aQute.bnd.service.*;
+import aQute.bnd.deployer.repository.api.CheckResult;
+import aQute.bnd.deployer.repository.api.Decision;
+import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
+import aQute.bnd.deployer.repository.api.IRepositoryIndexProcessor;
+import aQute.bnd.service.Registry;
 
 public class FailingGeneratingProvider implements IRepositoryContentProvider {
 

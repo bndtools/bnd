@@ -1,15 +1,27 @@
 package aQute.bnd.maven.support;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
-import javax.xml.parsers.*;
-import javax.xml.xpath.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-import aQute.lib.io.*;
+import aQute.lib.io.IO;
 
 public abstract class Pom {
 	static DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
@@ -33,8 +45,8 @@ public abstract class Pom {
 		// }
 	}
 
-	final Maven	maven;
-	final URI	home;
+	final Maven			maven;
+	final URI			home;
 
 	String				groupId;
 	String				artifactId;
@@ -242,8 +254,7 @@ public abstract class Pom {
 						System.err.println("Cannot find " + dep + " from " + rover.previous.dependency);
 					else
 						System.err.println("Cannot find " + dep + " from top");
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					if (rover.previous != null)
 						System.err.println("Cannot find " + dep + " from " + rover.previous.dependency);
 					else
@@ -316,15 +327,17 @@ public abstract class Pom {
 			for (Pom dep : getDependencies(action, repositories)) {
 				doEntry(writer, dep);
 			}
-		}
-		finally {
+		} finally {
 			writer.close();
 		}
 		return file;
 	}
 
 	/**
-	 * @param writer @param dep @throws IOException @throws Exception
+	 * @param writer
+	 * @param dep
+	 * @throws IOException
+	 * @throws Exception
 	 */
 	private void doEntry(Writer writer, Pom dep) throws IOException, Exception {
 		writer.append(dep.getGroupId());

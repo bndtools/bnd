@@ -1,6 +1,6 @@
 package aQute.libg.remote;
 
-import java.util.*;
+import java.util.Map;
 
 public class Welcome {
 	public int					version;

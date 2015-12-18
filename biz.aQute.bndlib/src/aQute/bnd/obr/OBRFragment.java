@@ -1,25 +1,36 @@
 package aQute.bnd.obr;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.Formatter;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.jar.*;
-import java.util.regex.*;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
-import org.osgi.framework.namespace.*;
-import org.osgi.namespace.service.*;
-import org.osgi.resource.*;
-import org.osgi.service.repository.*;
+import org.osgi.framework.namespace.BundleNamespace;
+import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
+import org.osgi.framework.namespace.HostNamespace;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.namespace.service.ServiceNamespace;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Namespace;
+import org.osgi.service.repository.ContentNamespace;
 
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.osgi.resource.*;
-import aQute.bnd.version.*;
-import aQute.libg.cryptography.*;
-import aQute.libg.map.*;
-import aQute.service.reporter.*;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.version.VersionRange;
+import aQute.libg.cryptography.SHA1;
+import aQute.libg.map.MAP;
+import aQute.service.reporter.Reporter;
 
 public class OBRFragment {
 
@@ -241,8 +252,7 @@ public class OBRFragment {
 			for (Entry<String,Attrs> rc : d.getRequireCapability().entrySet()) {
 				resource.addCapability(toRequirement(rc.getKey(), rc.getValue()));
 			}
-		}
-		finally {
+		} finally {
 			formatter.close();
 		}
 
@@ -284,8 +294,7 @@ public class OBRFragment {
 
 			resource.addCapability(content);
 			return reporter;
-		}
-		finally {
+		} finally {
 			jar.close();
 		}
 	}
@@ -304,8 +313,7 @@ public class OBRFragment {
 			}
 
 			f.format(")");
-		}
-		finally {
+		} finally {
 			f.close();
 		}
 		return null;

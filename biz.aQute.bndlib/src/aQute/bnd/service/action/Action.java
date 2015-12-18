@@ -1,7 +1,7 @@
 package aQute.bnd.service.action;
 
-import aQute.bnd.annotation.*;
-import aQute.bnd.build.*;
+import aQute.bnd.annotation.ProviderType;
+import aQute.bnd.build.Project;
 
 @ProviderType
 public interface Action {

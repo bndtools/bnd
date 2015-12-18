@@ -40,8 +40,7 @@ public class Utils {
 		try {
 			URI uri = new URI(uriStr);
 			return createRepo(uri, name);
-		}
-		catch (URISyntaxException e) {
+		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -73,8 +72,7 @@ public class Utils {
 		else
 			try {
 				return new URI(uriObj.toString());
-			}
-			catch (URISyntaxException e) {
+			} catch (URISyntaxException e) {
 				throw new IllegalArgumentException("Resource content capability has invalid 'url' attribute.", e);
 			}
 	}

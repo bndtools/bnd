@@ -1,6 +1,9 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public abstract class AbstractResource implements Resource {
 	String	extra;
@@ -29,11 +32,9 @@ public abstract class AbstractResource implements Resource {
 				return calculated;
 
 			return calculated = getBytes();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw e;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			IOException ee = new IOException("Opening resource");
 			ee.initCause(e);
 			throw ee;

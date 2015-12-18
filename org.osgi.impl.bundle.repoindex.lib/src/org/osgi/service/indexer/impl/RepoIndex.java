@@ -46,30 +46,30 @@ public class RepoIndex implements ResourceIndexer {
 	 * Name of the configuration variable for the increment (if not set then
 	 * System.currentTimeMillis() is used)
 	 */
-	public static final String REPOSITORY_INCREMENT_OVERRIDE = "-repository.increment.override";
+	public static final String							REPOSITORY_INCREMENT_OVERRIDE	= "-repository.increment.override";
 
 	/** the generic bundle analyzer */
-	private final BundleAnalyzer bundleAnalyzer;
+	private final BundleAnalyzer						bundleAnalyzer;
 
 	/** the OSGi Framework analyzer */
-	private final OSGiFrameworkAnalyzer frameworkAnalyzer;
+	private final OSGiFrameworkAnalyzer					frameworkAnalyzer;
 
 	/** the Declarative Services analyzer */
-	private final SCRAnalyzer scrAnalyzer;
+	private final SCRAnalyzer							scrAnalyzer;
 
 	/** the BluePrint analyzer */
-	private final BlueprintAnalyzer blueprintAnalyzer;
+	private final BlueprintAnalyzer						blueprintAnalyzer;
 
 	/** the logger */
-	private final LogService log;
+	private final LogService							log;
 
 	/**
 	 * the list of analyzer/filter pairs. The filter determines which resources
 	 * can be analyzed
 	 */
-	private final List<Pair<ResourceAnalyzer,Filter>> analyzers = new LinkedList<Pair<ResourceAnalyzer,Filter>>();
+	private final List<Pair<ResourceAnalyzer,Filter>>	analyzers						= new LinkedList<Pair<ResourceAnalyzer,Filter>>();
 
-	private final List<URLResolver> resolvers = new ArrayList<>();
+	private final List<URLResolver>						resolvers						= new ArrayList<>();
 
 	/**
 	 * Construct a default instance that uses a console logger.
@@ -79,7 +79,9 @@ public class RepoIndex implements ResourceIndexer {
 	}
 
 	/**
-	 * Constructor @param log the log service to use
+	 * Constructor
+	 * 
+	 * @param log the log service to use
 	 */
 	public RepoIndex(LogService log) {
 		this.log = log;
@@ -96,15 +98,14 @@ public class RepoIndex implements ResourceIndexer {
 			addAnalyzer(frameworkAnalyzer, allFilter);
 			addAnalyzer(scrAnalyzer, allFilter);
 			addAnalyzer(blueprintAnalyzer, allFilter);
-		}
-		catch (InvalidSyntaxException e) {
+		} catch (InvalidSyntaxException e) {
 			throw new ExceptionInInitializerError("Unexpected internal error compiling filter");
 		}
 	}
 
 	/**
-	 * @param analyzer the analyzer to add @param filter the filter that
-	 * determines which resources can be analyzed
+	 * @param analyzer the analyzer to add
+	 * @param filter the filter that determines which resources can be analyzed
 	 */
 	public final void addAnalyzer(ResourceAnalyzer analyzer, Filter filter) {
 		synchronized (analyzers) {
@@ -113,8 +114,8 @@ public class RepoIndex implements ResourceIndexer {
 	}
 
 	/**
-	 * @param analyzer the analyzer to add @param filter the filter that
-	 * determines which resources can be analyzed
+	 * @param analyzer the analyzer to add
+	 * @param filter the filter that determines which resources can be analyzed
 	 */
 	public final void removeAnalyzer(ResourceAnalyzer analyzer, Filter filter) {
 		synchronized (analyzers) {
@@ -140,13 +141,15 @@ public class RepoIndex implements ResourceIndexer {
 			String prettySetting = config.get(ResourceIndexer.PRETTY);
 			String compressedSetting = config.get(ResourceIndexer.COMPRESSED);
 			/**
-			 * <pre> pretty compressed out-pretty out-compressed null null
+			 * <pre>
+			 *  pretty compressed out-pretty out-compressed null null
 			 * Indent.NONE true* null false Indent.NONE false null true
 			 * Indent.NONE true false null Indent.PRETTY false* false false
 			 * Indent.NONE false false true Indent.NONE true true null
 			 * Indent.PRETTY false* true false Indent.PRETTY false true true
 			 * Indent.PRETTY true * = original behaviour, before compressed was
-			 * introduced </pre>
+			 * introduced
+			 * </pre>
 			 */
 			indent = (prettySetting == null || (!Boolean.parseBoolean(prettySetting) && compressedSetting != null))
 					? Indent.NONE : Indent.PRETTY;
@@ -178,15 +181,13 @@ public class RepoIndex implements ResourceIndexer {
 				try {
 					Tag resourceTag = generateResource(file, config);
 					resourceTag.print(indent.next(), pw);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					log(LogService.LOG_WARNING,
 							MessageFormat.format("Could not index {0}, skipped ({1}).", file, e.getMessage()), null);
 				}
 			}
 			repoTag.printClose(indent, pw);
-		}
-		finally {
+		} finally {
 			if (pw != null) {
 				pw.flush();
 				pw.close();
@@ -219,8 +220,7 @@ public class RepoIndex implements ResourceIndexer {
 			try {
 				Tag resourceTag = generateResource(file, config);
 				resourceTag.print(Indent.PRETTY, pw);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log(LogService.LOG_WARNING,
 						MessageFormat.format("Could not index {0}, skipped ({1}).", file, e.getMessage()), null);
 			}
@@ -264,8 +264,7 @@ public class RepoIndex implements ResourceIndexer {
 						if (filter == null || filter.match(resource.getProperties())) {
 							try {
 								analyzer.analyzeResource(resource, caps, reqs);
-							}
-							catch (Exception e) {
+							} catch (Exception e) {
 								log(LogService.LOG_ERROR,
 										MessageFormat.format("Error calling analyzer \"{0}\" on resource {1}.",
 												analyzer.getClass().getName(), resource.getLocation()),
@@ -284,12 +283,10 @@ public class RepoIndex implements ResourceIndexer {
 						}
 					}
 				}
-			}
-			finally {
+			} finally {
 				bundleAnalyzer.setStateLocal(null);
 			}
-		}
-		finally {
+		} finally {
 			resource.close();
 		}
 

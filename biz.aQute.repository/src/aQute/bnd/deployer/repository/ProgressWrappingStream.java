@@ -1,8 +1,9 @@
 package aQute.bnd.deployer.repository;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 
-import aQute.bnd.service.progress.*;
+import aQute.bnd.service.progress.ProgressPlugin;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 
 public class ProgressWrappingStream extends InputStream {

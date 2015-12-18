@@ -32,19 +32,19 @@ import aQute.bnd.xmlattribute.XMLAttributeFinder;
 
 public class OCDReader extends ClassDataCollector {
 
-	private Analyzer			analyzer;
-	private Clazz				clazz;
-	private EnumSet<Options>	options;
+	private Analyzer					analyzer;
+	private Clazz						clazz;
+	private EnumSet<Options>			options;
 
-	private TypeRef			name;
-	private boolean			topLevel	= true;
-	private Set<TypeRef>	analyzed;
+	private TypeRef						name;
+	private boolean						topLevel	= true;
+	private Set<TypeRef>				analyzed;
 
-	private final Map<MethodDef,ADDef>	methods	= new LinkedHashMap<MethodDef,ADDef>();
+	private final Map<MethodDef,ADDef>	methods		= new LinkedHashMap<MethodDef,ADDef>();
 	private ADDef						current;
 	private OCDDef						ocd;
 
-	private final XMLAttributeFinder finder;
+	private final XMLAttributeFinder	finder;
 
 	OCDReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder finder) {
 		this.analyzer = analyzer;
@@ -88,8 +88,7 @@ public class OCDReader extends ClassDataCollector {
 							analyzer.error("Could not obtain super class %s of class %s", typeRef.getFQN(),
 									clazz.getClassName().getFQN());
 						}
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						analyzer.error("Could not obtain super class %s of class %s; exception %s", typeRef.getFQN(),
 								clazz.getClassName().getFQN(), e.getMessage());
 					}
@@ -173,8 +172,7 @@ public class OCDReader extends ClassDataCollector {
 				if (c != null && c.isEnum()) {
 					parseOptionValues(c, ad.options);
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				analyzer.error("AD for %s.%s Can not parse option values from type (%s), %s",
 						clazz.getClassName().getFQN(), defined.getName(), defined.getType().getFQN(), e.getMessage());
 			}
@@ -197,8 +195,7 @@ public class OCDReader extends ClassDataCollector {
 										type.getFQN());
 								return;
 							}
-						}
-						catch (Exception e) {
+						} catch (Exception e) {
 							analyzer.error(
 									"Exception looking at annotation type default for element with descriptor %s,  type %s",
 									e, defined, type);
@@ -248,8 +245,7 @@ public class OCDReader extends ClassDataCollector {
 				TypeRef ext = clazz.getSuper();
 				return ext != null && identifiableCollection(ext.getFQN(), false, false);
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return false;
 		}
 		return false;
@@ -366,8 +362,7 @@ public class OCDReader extends ClassDataCollector {
 				analyzer.error("Nested metatype only allowed with option: nested type %s", rtype);
 			}
 			return false;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			analyzer.error("could not examine class for return type %s, exception message: %s", rtype, e.getMessage());
 			return false;
 		}
@@ -401,8 +396,7 @@ public class OCDReader extends ClassDataCollector {
 					doXmlAttribute(annotation, xmlAttr);
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			analyzer.error("During generation of a component on class %s, exception %s", clazz, e);
 		}

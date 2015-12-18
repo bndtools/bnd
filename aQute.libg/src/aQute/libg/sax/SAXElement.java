@@ -1,6 +1,6 @@
 package aQute.libg.sax;
 
-import org.xml.sax.*;
+import org.xml.sax.Attributes;
 
 public class SAXElement {
 

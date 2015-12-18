@@ -18,7 +18,9 @@ import aQute.service.reporter.Report.Location;
 
 /**
  * OSGi Contracts are first defined in OSGi Enterprise Release 5.0.0. A Contract
- * is a namespace to control the versioning of a set of packages. @author aqute
+ * is a namespace to control the versioning of a set of packages.
+ * 
+ * @author aqute
  */
 class Contracts {
 
@@ -125,8 +127,10 @@ class Contracts {
 
 	/**
 	 * Find out if a package is contracted. If there are multiple contracts for
-	 * a package we remember this so we can generate a single error. @param
-	 * packageRef @return
+	 * a package we remember this so we can generate a single error.
+	 * 
+	 * @param packageRef
+	 * @return
 	 */
 	boolean isContracted(PackageRef packageRef) {
 		List<Contract> list = contracted.get(packageRef);
@@ -149,7 +153,9 @@ class Contracts {
 
 	/**
 	 * Called before we print the manifest. Should add any contracts that were
-	 * actually used to the requirements. @param requirements
+	 * actually used to the requirements.
+	 * 
+	 * @param requirements
 	 */
 	void addToRequirements(Parameters requirements) {
 		for (Contract c : contracts) {
@@ -168,8 +174,7 @@ class Contracts {
 				attrs.put("filter:", f.toString());
 
 				requirements.put(name, attrs);
-			}
-			finally {
+			} finally {
 				f.close();
 			}
 		}

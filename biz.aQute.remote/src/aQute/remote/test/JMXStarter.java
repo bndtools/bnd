@@ -1,10 +1,11 @@
 package aQute.remote.test;
 
-import java.lang.management.*;
+import java.lang.management.ManagementFactory;
 
-import javax.management.*;
+import javax.management.MBeanServer;
 
-import org.osgi.framework.*;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
 
 public class JMXStarter implements BundleActivator {
 

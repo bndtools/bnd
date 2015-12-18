@@ -1,12 +1,15 @@
 package aQute.libg.reporter;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.Arrays;
+import java.util.IllegalFormatException;
 
 import aQute.service.reporter.Messages.ERROR;
 import aQute.service.reporter.Messages.WARNING;
 import aQute.service.reporter.Report.Location;
-import aQute.service.reporter.*;
+import aQute.service.reporter.Reporter;
 import aQute.service.reporter.Reporter.SetLocation;
 
 public class ReporterMessages {
@@ -112,8 +115,7 @@ public class ReporterMessages {
 						return new WARNINGImpl(reporter.warning(format, args));
 					} else
 						reporter.trace(format, args);
-				}
-				catch (IllegalFormatException e) {
+				} catch (IllegalFormatException e) {
 					reporter.error("Formatter failed: %s %s %s", method.getName(), format, Arrays.toString(args));
 				}
 				return null;

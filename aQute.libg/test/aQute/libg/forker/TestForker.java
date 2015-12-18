@@ -1,8 +1,11 @@
 package aQute.libg.forker;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
 public class TestForker extends TestCase {
 
@@ -56,8 +59,7 @@ public class TestForker extends TestCase {
 		try {
 			forker.start(100);
 			fail();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			assertEquals(IllegalArgumentException.class, e.getClass());
 		}
@@ -76,12 +78,10 @@ public class TestForker extends TestCase {
 						System.err.println("starting to wait");
 						result.wait(TIMEOUT);
 						System.err.println("finished wait");
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						System.err.println("exception");
 						e.printStackTrace();
-					}
-					finally {
+					} finally {
 						System.err.println("leaving task");
 					}
 				}

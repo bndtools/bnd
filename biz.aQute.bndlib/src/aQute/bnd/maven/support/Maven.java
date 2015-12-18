@@ -1,10 +1,12 @@
 package aQute.bnd.maven.support;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.regex.*;
+import java.io.File;
+import java.net.URI;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 
 /*
  http://repository.springsource.com/maven/bundles/external/org/apache/coyote/com.springsource.org.apache.coyote/6.0.24/com.springsource.org.apache.coyote-6.0.24.pom
@@ -15,7 +17,7 @@ public class Maven {
 	final File						userHome	= new File(System.getProperty("user.home"));
 	final Map<String,MavenEntry>	entries		= new ConcurrentHashMap<String,MavenEntry>();
 	final static String[]			ALGORITHMS	= {
-			"md5", "sha1"
+														"md5", "sha1"
 													};
 	boolean							usecache	= false;
 	final Executor					executor;
@@ -39,8 +41,12 @@ public class Maven {
 	}
 
 	/**
-	 * @param groupId @param artifactId @param version @param
-	 * extra @return @throws Exception
+	 * @param groupId
+	 * @param artifactId
+	 * @param version
+	 * @param extra
+	 * @return
+	 * @throws Exception
 	 */
 	public MavenEntry getEntry(String groupId, String artifactId, String version) throws Exception {
 		String path = dirpath(groupId, artifactId, version);

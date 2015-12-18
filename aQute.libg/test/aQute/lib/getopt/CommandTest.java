@@ -146,8 +146,7 @@ public class CommandTest extends TestCase {
 		try {
 			getopt.execute(c, "commandWrongOption", new ExtList<String>());
 			fail();
-		}
-		catch (Error e) {}
+		} catch (Error e) {}
 	}
 
 	public void test_SameFirstChar_MaxTwoOptionsWithSameShortcut() throws Exception {
@@ -156,7 +155,6 @@ public class CommandTest extends TestCase {
 		try {
 			getopt.execute(c, "commandThreeOptions", new ExtList<String>());
 			fail();
-		}
-		catch (Error e) {}
+		} catch (Error e) {}
 	}
 }

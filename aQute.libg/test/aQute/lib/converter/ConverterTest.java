@@ -1,17 +1,40 @@
 package aQute.lib.converter;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.math.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.URI;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.Stack;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 
-import junit.framework.*;
 import aQute.lib.converter.Converter.Hook;
-import aQute.lib.io.*;
-import aQute.libg.cryptography.*;
-import aQute.libg.map.*;
+import aQute.lib.io.IO;
+import aQute.libg.cryptography.Digester;
+import aQute.libg.cryptography.SHA1;
+import aQute.libg.map.MAP;
+import junit.framework.TestCase;
 
 @SuppressWarnings({
 		"unchecked", "rawtypes"
@@ -102,7 +125,9 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Digests as byte[] @throws Exception
+	 * Digests as byte[]
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testDigest() throws Exception {
@@ -116,8 +141,7 @@ public class ConverterTest extends TestCase {
 			ByteArrayOutputStream bout = new ByteArrayOutputStream();
 			bout.write("Hello World".getBytes());
 			assertTrue(Arrays.equals("Hello World".getBytes(), converter.convert(byte[].class, bout)));
-		}
-		finally {
+		} finally {
 			digester.close();
 		}
 	}
@@ -137,7 +161,9 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test string to primitives @throws Exception
+	 * Test string to primitives
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testStringtoPrimitives() throws Exception {
@@ -164,7 +190,9 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test the wrappers @throws Exception
+	 * Test the wrappers
+	 * 
+	 * @throws Exception
 	 */
 	public void testWrappers() throws Exception {
 		Object[] types = {
@@ -178,8 +206,9 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Create an array and see if we can convert a single number @throws
-	 * Exception
+	 * Create an array and see if we can convert a single number
+	 * 
+	 * @throws Exception
 	 */
 	public void testPrimitives() throws Exception {
 		assertPrimitives1(1);
@@ -197,7 +226,10 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test enums @param source @throws Exception
+	 * Test enums
+	 * 
+	 * @param source
+	 * @throws Exception
 	 */
 	public enum X {
 		A, B, C;
@@ -209,7 +241,10 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test collections @param source @throws Exception
+	 * Test collections
+	 * 
+	 * @param source
+	 * @throws Exception
 	 */
 	static class XX {
 		public ArrayList<String>				al;
@@ -241,7 +276,10 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test generic collections @param source @throws Exception
+	 * Test generic collections
+	 * 
+	 * @param source
+	 * @throws Exception
 	 */
 	static class GC {
 		public Collection<String>				strings;
@@ -271,7 +309,10 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test generic maps @param source @throws Exception
+	 * Test generic maps
+	 * 
+	 * @param source
+	 * @throws Exception
 	 */
 	public static class GM {
 		public Map<String,Integer>					strings;
@@ -330,7 +371,10 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test constructor @param source @throws Exception
+	 * Test constructor
+	 * 
+	 * @param source
+	 * @throws Exception
 	 */
 
 	public void testConstructor() throws Exception {
@@ -341,7 +385,10 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test valueOf @param source @throws Exception
+	 * Test valueOf
+	 * 
+	 * @param source
+	 * @throws Exception
 	 */
 
 	public void testValueOf() throws Exception {

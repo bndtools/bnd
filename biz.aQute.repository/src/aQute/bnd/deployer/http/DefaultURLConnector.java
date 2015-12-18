@@ -1,15 +1,24 @@
 package aQute.bnd.deployer.http;
 
-import java.io.*;
-import java.net.*;
-import java.security.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.security.GeneralSecurityException;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-import aQute.bnd.deployer.repository.*;
-import aQute.bnd.service.*;
-import aQute.bnd.service.progress.*;
-import aQute.bnd.service.url.*;
-import aQute.service.reporter.*;
+import aQute.bnd.deployer.repository.ProgressWrappingStream;
+import aQute.bnd.service.Plugin;
+import aQute.bnd.service.Registry;
+import aQute.bnd.service.RegistryPlugin;
+import aQute.bnd.service.progress.ProgressPlugin;
+import aQute.bnd.service.url.TaggedData;
+import aQute.bnd.service.url.URLConnector;
+import aQute.service.reporter.Reporter;
 
 public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin {
 
@@ -22,9 +31,9 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 	private static final String	HEADER_LOCATION			= "Location";
 	private static final int	RESPONSE_NOT_MODIFIED	= 304;
 
-	private boolean		disableServerVerify	= false;
-	private Reporter	reporter			= null;
-	private Registry	registry			= null;
+	private boolean				disableServerVerify		= false;
+	private Reporter			reporter				= null;
+	private Registry			registry				= null;
 
 	public InputStream connect(URL url) throws IOException {
 		if (url == null)
@@ -57,8 +66,7 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 		try {
 			if (disableServerVerify)
 				HttpsUtil.disableServerVerification(connection);
-		}
-		catch (GeneralSecurityException e) {
+		} catch (GeneralSecurityException e) {
 			if (reporter != null)
 				reporter.error("Error attempting to disable SSL server certificate verification: %s", e);
 			throw new IOException("Error attempting to disable SSL server certificate verification.");
@@ -93,8 +101,7 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 					if (Thread.currentThread().isInterrupted())
 						throw new IOException("Interrupted");
 					result = connectTagged(resolved, tag, loopDetect);
-				}
-				catch (URISyntaxException e) {
+				} catch (URISyntaxException e) {
 					throw new IOException(
 							String.format("Failed to resolve location '%s' against origin URL: %s", location, url), e);
 				}

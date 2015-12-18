@@ -18,13 +18,14 @@ import java.util.regex.Pattern;
  * 
  */
 public class Base64 {
-	private static final int DEFAULT_MAX_INPUT_LENGTH = 65000;
+	private static final int	DEFAULT_MAX_INPUT_LENGTH	= 65000;
 
-	byte[] data;
+	byte[]						data;
 
-	static final String	alphabet	= "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-	static byte[]		values		= new byte[128];
-	static Pattern		BASE64_P	= Pattern.compile("(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?");
+	static final String			alphabet					= "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+	static byte[]				values						= new byte[128];
+	static Pattern				BASE64_P					= Pattern
+			.compile("(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?");
 
 	static {
 		for (int i = 0; i < values.length; i++) {
@@ -44,8 +45,7 @@ public class Base64 {
 	public final static byte[] decodeBase64(String string) {
 		try {
 			return decodeBase64(new StringReader(string));
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			// cannot get IO exceptions on String
 			return null;
 		}
@@ -60,8 +60,7 @@ public class Base64 {
 			ByteArrayOutputStream bout = new ByteArrayOutputStream(maxLength);
 			decode(rdr, bout, maxLength);
 			return bout.toByteArray();
-		}
-		finally {
+		} finally {
 			rdr.close();
 		}
 	}
@@ -69,8 +68,7 @@ public class Base64 {
 	public static byte[] decodeBase64(InputStream in) throws IOException {
 		try {
 			return decodeBase64(in, DEFAULT_MAX_INPUT_LENGTH);
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 	}
@@ -79,8 +77,7 @@ public class Base64 {
 		InputStreamReader ir = new InputStreamReader(in, "US-ASCII");
 		try {
 			return decodeBase64(ir, maxLength);
-		}
-		finally {
+		} finally {
 			ir.close();
 		}
 	}
@@ -92,11 +89,9 @@ public class Base64 {
 				throw new IllegalArgumentException("File " + file + " is >4Gb for base 64 decoding");
 
 			return decodeBase64(fin, (int) file.length() * 2 / 3);
-		}
-		catch (IllegalArgumentException iae) {
+		} catch (IllegalArgumentException iae) {
 			throw new IllegalArgumentException(iae.getMessage() + ": " + file);
-		}
-		finally {
+		} finally {
 			fin.close();
 		}
 	}
@@ -192,8 +187,7 @@ public class Base64 {
 		ByteArrayInputStream bin = new ByteArrayInputStream(data);
 		try {
 			encode(bin, sw);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			// can't happen
 		}
 		return sw.toString();
@@ -250,8 +244,7 @@ public class Base64 {
 				for (int i = 0; i < mod; i++)
 					sb.append('=');
 			}
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 	}

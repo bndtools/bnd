@@ -1,14 +1,20 @@
 package aQute.bnd.testing;
 
-import java.util.*;
-import java.util.regex.*;
+import java.util.ArrayList;
+import java.util.Formatter;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
-import org.osgi.framework.*;
-import org.osgi.service.log.*;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.log.LogEntry;
+import org.osgi.service.log.LogService;
 
-import aQute.bnd.annotation.component.*;
+import aQute.bnd.annotation.component.Activate;
+import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.metatype.Configurable;
-import aQute.bnd.testing.TestingLog.*;
+import aQute.bnd.testing.TestingLog.Config;
 
 /**
  * Provides a log service object to be used in testing. It can filter levels and
@@ -20,10 +26,10 @@ import aQute.bnd.testing.TestingLog.*;
 @Component(designate = Config.class)
 @SuppressWarnings("rawtypes")
 public class TestingLog implements LogService {
-	boolean	stacktrace;
-	boolean	direct;
-	int		level;
-	long	start	= System.currentTimeMillis();
+	boolean			stacktrace;
+	boolean			direct;
+	int				level;
+	long			start	= System.currentTimeMillis();
 
 	List<LogEntry>	entries	= new ArrayList<LogEntry>();
 	List<Pattern>	filters	= new ArrayList<Pattern>();
@@ -118,8 +124,7 @@ public class TestingLog implements LogService {
 							(sr == null ? "" : sr.getProperty("service.id")), message,
 							(exception == null ? "" : exception.getMessage()));
 					return sb.toString();
-				}
-				finally {
+				} finally {
 					f.close();
 				}
 			}

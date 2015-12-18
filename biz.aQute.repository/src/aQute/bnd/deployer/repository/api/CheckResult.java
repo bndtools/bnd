@@ -1,6 +1,7 @@
 package aQute.bnd.deployer.repository.api;
 
-import static aQute.bnd.deployer.repository.api.Decision.*;
+import static aQute.bnd.deployer.repository.api.Decision.accept;
+import static aQute.bnd.deployer.repository.api.Decision.reject;
 
 public class CheckResult {
 

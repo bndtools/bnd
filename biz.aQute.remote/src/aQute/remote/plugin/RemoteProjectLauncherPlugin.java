@@ -44,7 +44,9 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 	private boolean					prepared;
 
 	/**
-	 * The well defined launcher @param project the project or Run
+	 * The well defined launcher
+	 * 
+	 * @param project the project or Run
 	 */
 	public RemoteProjectLauncherPlugin(Project project) throws Exception {
 		super(project);
@@ -74,8 +76,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 				Attrs attrs = runremote.get(session.getName());
 				RunRemoteDTO dto = Converter.cnv(RunRemoteDTO.class, attrs);
 				session.update(dto);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				getProject().exception(e, "Failed to update session %s", session.getName());
 			}
 	}
@@ -141,8 +142,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 				public void run() {
 					try {
 						results[j] = session.launch();
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						//
 					}
 				}
@@ -171,8 +171,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 		for (RunSessionImpl session : sessions)
 			try {
 				session.close();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				// ignore
 			}
 	}
@@ -184,8 +183,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 		for (RunSessionImpl session : sessions)
 			try {
 				session.cancel();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				// ignore
 			}
 	}
@@ -213,8 +211,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 
 		try {
 			port = Integer.parseInt(jmx);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// not an integer
 		}
 
@@ -224,8 +221,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 			} else {
 				jmxBundleDeployer = new JMXBundleDeployer();
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// ignore if we can't create bundle deployer (no remote osgi.core
 			// jmx avail)
 		}
@@ -242,12 +238,10 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 							trace("agent installed with bundleId=", bundleId);
 							break;
 						}
-					}
-					finally {
+					} finally {
 						jar.close();
 					}
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					//
 				}
 			}

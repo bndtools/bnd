@@ -1,10 +1,11 @@
 package aQute.junit;
 
-import java.util.*;
+import java.util.List;
 
-import junit.framework.*;
+import org.osgi.framework.Bundle;
 
-import org.osgi.framework.*;
+import junit.framework.Test;
+import junit.framework.TestListener;
 
 public interface TestReporter extends TestListener {
 	void setup(Bundle framework, Bundle targetBundle);

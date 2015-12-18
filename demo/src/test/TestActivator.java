@@ -1,11 +1,19 @@
 package test;
 
-import java.io.*;
-import java.lang.instrument.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.lang.instrument.Instrumentation;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.Properties;
+import java.util.concurrent.Callable;
 
-import org.osgi.framework.*;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 
 public class TestActivator implements BundleActivator {
 
@@ -53,8 +61,7 @@ public class TestActivator implements BundleActivator {
 			try {
 				System.err.println("ANSWER=" + answer);
 				System.exit(Integer.parseInt(answer));
-			}
-			catch (NumberFormatException e) {
+			} catch (NumberFormatException e) {
 				System.exit(-1);
 			}
 		} else if ("noreference".equals(p)) {
@@ -110,8 +117,7 @@ public class TestActivator implements BundleActivator {
 								System.err.println("After stopping framework, sleeping");
 								Thread.sleep(10000);
 								System.err.println("After sleeping");
-							}
-							catch (Exception e) {
+							} catch (Exception e) {
 								e.printStackTrace();
 							}
 						}
@@ -120,8 +126,7 @@ public class TestActivator implements BundleActivator {
 					try {
 						System.err.println("before joining");
 						t.join();
-					}
-					catch (InterruptedException e) {
+					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}

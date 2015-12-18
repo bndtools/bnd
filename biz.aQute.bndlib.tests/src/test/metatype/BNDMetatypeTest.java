@@ -29,8 +29,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import junit.framework.AssertionFailedError;
-
 import org.w3c.dom.Document;
 
 import aQute.bnd.annotation.metatype.Configurable;
@@ -40,6 +38,7 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.test.BndTestCase;
 import aQute.lib.io.IO;
 import aQute.libg.generics.Create;
+import junit.framework.AssertionFailedError;
 
 @SuppressWarnings("resource")
 public class BNDMetatypeTest extends BndTestCase {
@@ -47,7 +46,7 @@ public class BNDMetatypeTest extends BndTestCase {
 	static XPathFactory				xpathf	= XPathFactory.newInstance();
 	static XPath					xpath	= xpathf.newXPath();
 
-	static DocumentBuilder db;
+	static DocumentBuilder			db;
 
 	static {
 		try {
@@ -70,8 +69,7 @@ public class BNDMetatypeTest extends BndTestCase {
 					return "http://www.osgi.org/xmlns/metatype/v1.1.0";
 				}
 			});
-		}
-		catch (ParserConfigurationException e) {
+		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
 			throw new ExceptionInInitializerError(e);
 		}
@@ -385,7 +383,9 @@ public class BNDMetatypeTest extends BndTestCase {
 	}
 
 	/**
-	 * Test the converter. @throws URISyntaxException
+	 * Test the converter.
+	 * 
+	 * @throws URISyntaxException
 	 */
 
 	public void testConverter() throws URISyntaxException {
@@ -1117,7 +1117,9 @@ public class BNDMetatypeTest extends BndTestCase {
 	}
 
 	/**
-	 * Test simple @author aqute
+	 * Test simple
+	 * 
+	 * @author aqute
 	 */
 	@Meta.OCD(description = "simple", name = "TestSimple")
 	public static interface TestSimple {
@@ -1178,23 +1180,28 @@ public class BNDMetatypeTest extends BndTestCase {
 
 	/**
 	 * https://github.com/bndtools/bnd/issues/316 Example Configuration:
-	 * <pre> @Meta.AD(required = false, type = Type.Boolean, deflt = "false")
+	 * 
+	 * <pre>
+	 *  &#64;Meta.AD(required = false, type = Type.Boolean, deflt = "false")
 	 * boolean enabled(); It appears that in the configurable class that this
 	 * logic if (resultType == boolean.class || resultType == Boolean.class) {
 	 * if ( actualType == boolean.class || actualType == Boolean.class) return
 	 * o; if (Number.class.isAssignableFrom(actualType)) { double b = ((Number)
 	 * o).doubleValue(); if (b == 0) return false; else return true; } return
-	 * true; </pre> Does not perform as expected. The deflt value from the
-	 * configuration interface will always be a string, and the value is never
-	 * parsed, therefore the third if statement is basically unreachable for a
-	 * default value. Additionally the default behavior of returning true is
-	 * unexpected because default values for booleans is false, configuration
-	 * admin would use false for anything NOT equal, ignore case "true", so why
-	 * would this be true, and how could that assumption even be made when, at
-	 * least in the aforementioned case of the default value, the incoming value
-	 * isn't processed(parsed, or in someway checked for actual content). Note
-	 * that per documentation available an number value was tried for the deflt,
-	 * ie "0", but again the value isn't processed so this had no effect.
+	 * true;
+	 * </pre>
+	 * 
+	 * Does not perform as expected. The deflt value from the configuration
+	 * interface will always be a string, and the value is never parsed,
+	 * therefore the third if statement is basically unreachable for a default
+	 * value. Additionally the default behavior of returning true is unexpected
+	 * because default values for booleans is false, configuration admin would
+	 * use false for anything NOT equal, ignore case "true", so why would this
+	 * be true, and how could that assumption even be made when, at least in the
+	 * aforementioned case of the default value, the incoming value isn't
+	 * processed(parsed, or in someway checked for actual content). Note that
+	 * per documentation available an number value was tried for the deflt, ie
+	 * "0", but again the value isn't processed so this had no effect.
 	 */
 	static interface DefaultBoolean {
 		@Meta.AD(deflt = "true", required = false)

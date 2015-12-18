@@ -222,18 +222,28 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 	/**
 	 * This method returns an interface that can be used to get and set the
 	 * properties in a type safe way (as well as describing any semantics of
-	 * these properties). <p/> The interface must have get and/or set methods.
-	 * The name is mangled to change _ to . and to remove $ (which is used to
-	 * mask keywords like new). If _ and $ are in there twice, one remains. The
-	 * set methods return the proxy object itself so you can use it in a builder
-	 * style. <p/> The values are always stored as strings (and can use macros).
-	 * The result is converted to the desired type. Arguments in the set methods
-	 * are always converted to strings using the toString methods. <p/> Example:
-	 * <pre> interface MyConfig { int level(); MyConfig level(int level);
+	 * these properties).
+	 * <p/>
+	 * The interface must have get and/or set methods. The name is mangled to
+	 * change _ to . and to remove $ (which is used to mask keywords like new).
+	 * If _ and $ are in there twice, one remains. The set methods return the
+	 * proxy object itself so you can use it in a builder style.
+	 * <p/>
+	 * The values are always stored as strings (and can use macros). The result
+	 * is converted to the desired type. Arguments in the set methods are always
+	 * converted to strings using the toString methods.
+	 * <p/>
+	 * Example:
+	 * 
+	 * <pre>
+	 *  interface MyConfig { int level(); MyConfig level(int level);
 	 * Pattern pattern(); MyConfig pattern(String p); } Env env = ... MyConfig c
-	 * = env.config(MyConfig.class, "myconfig."); </pre> @param front the
-	 * fronting interface @param prefix the prefix in the properties @return an
-	 * interface that can be used to get and set properties
+	 * = env.config(MyConfig.class, "myconfig.");
+	 * </pre>
+	 * 
+	 * @param front the fronting interface
+	 * @param prefix the prefix in the properties
+	 * @return an interface that can be used to get and set properties
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> T config(Class< ? > front, final String prefix) {

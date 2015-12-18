@@ -67,46 +67,49 @@ import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter;
 
 public class Workspace extends Processor {
-	public static final String EXT = "ext";
+	public static final String					EXT								= "ext";
 
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
+	static final int							BUFFER_SIZE						= IOConstants.PAGE_SIZE * 16;
 
-	public static final String	BUILDFILE	= "build.bnd";
-	public static final String	CNFDIR		= "cnf";
-	public static final String	BNDDIR		= "bnd";
-	public static final String	CACHEDIR	= "cache/" + About.CURRENT;
+	public static final String					BUILDFILE						= "build.bnd";
+	public static final String					CNFDIR							= "cnf";
+	public static final String					BNDDIR							= "bnd";
+	public static final String					CACHEDIR						= "cache/" + About.CURRENT;
 
-	public static final String STANDALONE_REPO_CLASS = "aQute.bnd.deployer.repository.FixedIndexedRepo";
+	public static final String					STANDALONE_REPO_CLASS			= "aQute.bnd.deployer.repository.FixedIndexedRepo";
 
 	private final Pattern						EMBEDDED_REPO_TESTING_PATTERN	= Pattern
 			.compile(".*biz\\.aQute\\.bnd\\.embedded-repo-(.*)\\.jar");
 
-	static Map<File,WeakReference<Workspace>>	cache			= newHashMap();
-	static Processor							defaults		= null;
-	final Map<String,Project>					models			= newHashMap();
-	final Map<String,Action>					commands		= newMap();
+	static Map<File,WeakReference<Workspace>>	cache							= newHashMap();
+	static Processor							defaults						= null;
+	final Map<String,Project>					models							= newHashMap();
+	final Map<String,Action>					commands						= newMap();
 	final File									buildDir;
-	final Maven									maven			= new Maven(Processor.getExecutor());
-	private boolean								offline			= true;
-	Settings									settings		= new Settings();
-	WorkspaceRepository							workspaceRepo	= new WorkspaceRepository(this);
-	static String								overallDriver	= "unset";
-	static Parameters							overallGestalt	= new Parameters();
+	final Maven									maven							= new Maven(Processor.getExecutor());
+	private boolean								offline							= true;
+	Settings									settings						= new Settings();
+	WorkspaceRepository							workspaceRepo					= new WorkspaceRepository(this);
+	static String								overallDriver					= "unset";
+	static Parameters							overallGestalt					= new Parameters();
 	/**
 	 * Signal a BndListener plugin. We ran an infinite bug loop :-(
 	 */
-	final ThreadLocal<Reporter>					signalBusy		= new ThreadLocal<Reporter>();
+	final ThreadLocal<Reporter>					signalBusy						= new ThreadLocal<Reporter>();
 	ResourceRepositoryImpl						resourceRepositoryImpl;
 
-	private Parameters gestalt;
+	private Parameters							gestalt;
 
-	private String driver;
+	private String								driver;
 
-	private final WorkspaceLayout layout;
+	private final WorkspaceLayout				layout;
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
-	 * an existing project) @param projectDir @return
+	 * an existing project)
+	 * 
+	 * @param projectDir
+	 * @return
 	 */
 	public static Project getProject(File projectDir) throws Exception {
 		projectDir = projectDir.getAbsoluteFile();
@@ -125,11 +128,9 @@ public class Workspace extends Processor {
 		if (propStream != null) {
 			try {
 				props.load(propStream);
-			}
-			catch (IOException e) {
+			} catch (IOException e) {
 				throw new IllegalArgumentException("Unable to load bnd defaults.", e);
-			}
-			finally {
+			} finally {
 				IO.close(propStream);
 			}
 		} else
@@ -146,8 +147,7 @@ public class Workspace extends Processor {
 	public static Workspace getWorkspaceWithoutException(File parent) throws Exception {
 		try {
 			return getWorkspace(parent);
-		}
-		catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			return null;
 		}
 	}
@@ -306,8 +306,7 @@ public class Workspace extends Processor {
 					extensionName = extensionName.substring(0, extensionName.length() - ".bnd".length());
 					try {
 						doIncludeFile(extension, false, getProperties(), "ext." + extensionName);
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						error("PropertiesChanged: " + e.getMessage());
 					}
 				}
@@ -346,8 +345,9 @@ public class Workspace extends Processor {
 	}
 
 	/**
-	 * Inform any listeners that we changed a file
-	 * (created/deleted/changed). @param f The changed file
+	 * Inform any listeners that we changed a file (created/deleted/changed).
+	 * 
+	 * @param f The changed file
 	 */
 	public void changedFile(File f) {
 		List<BndListener> listeners = getPlugins(BndListener.class);
@@ -355,8 +355,7 @@ public class Workspace extends Processor {
 			try {
 				offline = false;
 				l.changed(f);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 	}
@@ -369,8 +368,7 @@ public class Workspace extends Processor {
 					l.begin();
 				else
 					l.end();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				// who cares?
 			}
 	}
@@ -385,15 +383,12 @@ public class Workspace extends Processor {
 			for (BndListener l : listeners)
 				try {
 					l.signal(this);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					// who cares?
 				}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// Ignore
-		}
-		finally {
+		} finally {
 			signalBusy.set(null);
 		}
 	}
@@ -461,8 +456,7 @@ public class Workspace extends Processor {
 					return true;
 				} else
 					return false;
-			}
-			finally {
+			} finally {
 				lock.unlock();
 			}
 		}
@@ -483,16 +477,14 @@ public class Workspace extends Processor {
 							FileOutputStream out = new FileOutputStream(dest);
 							try {
 								copy(jin, out);
-							}
-							finally {
+							} finally {
 								out.close();
 							}
 						}
 					}
 					jentry = jin.getNextJarEntry();
 				}
-			}
-			finally {
+			} finally {
 				in.close();
 			}
 		}
@@ -568,17 +560,18 @@ public class Workspace extends Processor {
 			//
 			list.add(new SubsystemExporter());
 
-		}
-		catch (RuntimeException e) {
+		} catch (RuntimeException e) {
 			throw e;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	/**
-	 * Add any extensions listed @param list @param rri
+	 * Add any extensions listed
+	 * 
+	 * @param list
+	 * @param rri
 	 */
 	@Override
 	protected void addExtensions(Set<Object> list) {
@@ -611,8 +604,7 @@ public class Workspace extends Processor {
 				DownloadBlocker blocker = new DownloadBlocker(this);
 				blockers.put(blocker, i.getValue());
 				resourceRepositoryImpl.getResource(matches.last().id, blocker);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				error("Failed to load extension %s-%s, %s", bsn, stringRange, e);
 			}
 		}
@@ -647,15 +639,13 @@ public class Workspace extends Processor {
 								for (Object plugin : plugins) {
 									list.add(plugin);
 								}
-						}
-						catch (ClassNotFoundException cnfe) {
+						} catch (ClassNotFoundException cnfe) {
 							error("Loading extension %s, extension activator missing: %s (ignored)", blocker,
 									e.getKey());
 						}
 					}
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				error("failed to install extension %s due to %s", blocker, e);
 			}
 		}
@@ -664,7 +654,9 @@ public class Workspace extends Processor {
 	/**
 	 * Return if we're in offline mode. Offline mode is defined as an
 	 * environment where nobody tells us the resources are out of date (refresh
-	 * or changed). This is currently defined as having bndlisteners. @return
+	 * or changed). This is currently defined as having bndlisteners.
+	 * 
+	 * @return
 	 */
 	public boolean isOffline() {
 		return offline;
@@ -676,8 +668,10 @@ public class Workspace extends Processor {
 	}
 
 	/**
-	 * Provide access to the global settings of this machine. @throws
-	 * Exception @throws UnknownHostException
+	 * Provide access to the global settings of this machine.
+	 * 
+	 * @throws Exception
+	 * @throws UnknownHostException
 	 */
 
 	public String _global(String[] args) throws Exception {
@@ -733,8 +727,7 @@ public class Workspace extends Processor {
 					if (args.length != 1)
 						error("Specified repo %s for ${repodigests} was named but it is not found", repo.getName());
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				if (args.length != 1)
 					error("Specified repo %s for digests is not found", repo.getName());
 				// else Ignore
@@ -819,8 +812,7 @@ public class Workspace extends Processor {
 
 		try {
 			super.close();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			/* For backwards compatibility, we ignore the exception */
 		}
 	}
@@ -920,7 +912,9 @@ public class Workspace extends Processor {
 	}
 
 	/**
-	 * The macro to access the gestalt <p> {@code $ gestalt;part[;key[;value]]}
+	 * The macro to access the gestalt
+	 * <p>
+	 * {@code $ gestalt;part[;key[;value]]}
 	 */
 
 	public String _gestalt(String args[]) {
@@ -990,7 +984,11 @@ public class Workspace extends Processor {
 	}
 
 	/**
-	 * Create a new Workspace @param opts @param wsdir @throws Exception
+	 * Create a new Workspace
+	 * 
+	 * @param opts
+	 * @param wsdir
+	 * @throws Exception
 	 */
 	public static Workspace createWorkspace(File wsdir) throws Exception {
 		if (wsdir.exists())
@@ -1009,7 +1007,10 @@ public class Workspace extends Processor {
 	}
 
 	/**
-	 * Add a plugin @param plugin @throws Exception
+	 * Add a plugin
+	 * 
+	 * @param plugin
+	 * @throws Exception
 	 */
 
 	public boolean addPlugin(Class< ? > plugin, String alias, Map<String,String> parameters, boolean force)
@@ -1067,8 +1068,7 @@ public class Workspace extends Processor {
 
 			trace("setup %s", out);
 			IO.store(out, f);
-		}
-		finally {
+		} finally {
 			setup.close();
 		}
 
@@ -1105,8 +1105,10 @@ public class Workspace extends Processor {
 	}
 
 	/**
-	 * Create a workspace that does not inherit from a cnf directory etc. @param
-	 * run @return
+	 * Create a workspace that does not inherit from a cnf directory etc.
+	 * 
+	 * @param run
+	 * @return
 	 */
 	public static Workspace createStandaloneWorkspace(Processor run, URI base) throws Exception {
 		Workspace ws = new Workspace(WorkspaceLayout.STANDALONE);

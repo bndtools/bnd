@@ -94,16 +94,14 @@ public class CollectionsTest extends TestCase {
 		try {
 			sl.get(1000);
 			fail();
-		}
-		catch (ArrayIndexOutOfBoundsException e) {
+		} catch (ArrayIndexOutOfBoundsException e) {
 
 		}
 
 		try {
 			sl.get(-1);
 			fail();
-		}
-		catch (ArrayIndexOutOfBoundsException e) {
+		} catch (ArrayIndexOutOfBoundsException e) {
 
 		}
 	}

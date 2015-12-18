@@ -110,8 +110,7 @@ public class TestStandaloneLibrary extends TestCase {
 			assertEquals(0, errors.size());
 			assertEquals(0, warnings.size());
 
-		}
-		finally {
+		} finally {
 			deleteWithException(tempDir);
 		}
 	}

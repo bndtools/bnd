@@ -15,7 +15,10 @@ public class OSGiHeader {
 	 * Standard OSGi header parser. This parser can handle the format clauses
 	 * ::= clause ( ',' clause ) + clause ::= name ( ';' name ) (';' key '='
 	 * value ) This is mapped to a Map { name => Map { attr|directive => value }
-	 * } @param value A string @return a Map<String,Map<String,String>>
+	 * }
+	 * 
+	 * @param value A string
+	 * @return a Map<String,Map<String,String>>
 	 */
 	static public Map<String,Map<String,String>> parseHeader(String value, Reporter logger) {
 		if (value == null || value.trim().length() == 0)

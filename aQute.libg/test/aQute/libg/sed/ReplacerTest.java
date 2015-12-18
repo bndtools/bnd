@@ -1,10 +1,11 @@
 package aQute.libg.sed;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
-import junit.framework.*;
-import aQute.libg.reporter.*;
+import aQute.libg.reporter.ReporterAdapter;
+import junit.framework.TestCase;
 
 public class ReplacerTest extends TestCase {
 

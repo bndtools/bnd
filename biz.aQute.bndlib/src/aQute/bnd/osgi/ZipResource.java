@@ -1,11 +1,19 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
-import java.util.zip.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.Enumeration;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
-import aQute.lib.zip.*;
+import aQute.lib.zip.ZipUtil;
 
 public class ZipResource implements Resource {
 	ZipFile		zip;
@@ -52,12 +60,10 @@ public class ZipResource implements Resource {
 				}
 			}
 			return zip;
-		}
-		catch (ZipException ze) {
+		} catch (ZipException ze) {
 			throw new ZipException(
 					"The JAR/ZIP file (" + file.getAbsolutePath() + ") seems corrupted, error: " + ze.getMessage());
-		}
-		catch (FileNotFoundException e) {
+		} catch (FileNotFoundException e) {
 			throw new IllegalArgumentException("Problem opening JAR: " + file.getAbsolutePath());
 		}
 	}
@@ -72,8 +78,7 @@ public class ZipResource implements Resource {
 				lastModified = ZipUtil.getModifiedTime(entry);
 			}
 			return lastModified;
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			return lastModified = -1;
 		}
 	}

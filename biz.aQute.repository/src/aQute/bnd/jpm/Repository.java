@@ -94,57 +94,57 @@ import aQute.service.reporter.Reporter;
  */
 public class Repository implements Plugin, RepositoryPlugin, Closeable, Refreshable, Actionable, RegistryPlugin,
 		SearchableRepository, InfoRepository {
-	private static final DocumentBuilderFactory	dbf					= DocumentBuilderFactory.newInstance();
-	private static final XPathFactory			xpf					= XPathFactory.newInstance();
-	public static final String					REPO_DEFAULT_URI	= "http://repo.jpm4j.org";
+	private static final DocumentBuilderFactory	dbf							= DocumentBuilderFactory.newInstance();
+	private static final XPathFactory			xpf							= XPathFactory.newInstance();
+	public static final String					REPO_DEFAULT_URI			= "http://repo.jpm4j.org";
 
-	private static final PutOptions DEFAULT_OPTIONS = new PutOptions();
+	private static final PutOptions				DEFAULT_OPTIONS				= new PutOptions();
 
-	private static final String	SEARCH_PREFIX	= "/#!/search?q=";
-	private static final String	UTF_8			= "UTF-8";
+	private static final String					SEARCH_PREFIX				= "/#!/search?q=";
+	private static final String					UTF_8						= "UTF-8";
 
-	private final String					DOWN_ARROW		= " \u21E9";
-	protected final DownloadListener[]		EMPTY_LISTENER	= new DownloadListener[0];
-	private Pattern							SHA				= Pattern.compile("([A-F0-9][a-fA-F0-9]){20,20}",
-			Pattern.CASE_INSENSITIVE);
-	private final Justif					j				= new Justif(80, new int[] {
-			20, 28, 36, 44
-																});
-	private Settings						settings		= new Settings();
-	private boolean							canwrite;
-	final MultiMap<File,DownloadListener>	queues			= new MultiMap<File,RepositoryPlugin.DownloadListener>();
+	private final String						DOWN_ARROW					= " \u21E9";
+	protected final DownloadListener[]			EMPTY_LISTENER				= new DownloadListener[0];
+	private Pattern								SHA							= Pattern
+			.compile("([A-F0-9][a-fA-F0-9]){20,20}", Pattern.CASE_INSENSITIVE);
+	private final Justif						j							= new Justif(80, new int[] {
+																					20, 28, 36, 44
+																				});
+	private Settings							settings					= new Settings();
+	private boolean								canwrite;
+	final MultiMap<File,DownloadListener>		queues						= new MultiMap<File,RepositoryPlugin.DownloadListener>();
 
-	private final Pattern	JPM_REVISION_URL_PATTERN	= Pattern
+	private final Pattern						JPM_REVISION_URL_PATTERN	= Pattern
 			.compile("https?://.+#!?/p/([^/]+)/([^/]+)/([^/]*)/([^/]+)");
-	private Options			options;
-	Reporter				reporter					= new ReporterAdapter(System.out);
+	private Options								options;
+	Reporter									reporter					= new ReporterAdapter(System.out);
 
 	/**
 	 * Maintains the index of what we've downloaded so far.
 	 */
-	private File		indexFile;
-	private boolean		indexRecurse;
-	Index				index;
-	boolean				offline;
-	private Registry	registry;
-	StoredRevisionCache	cache;
-	Set<File>			notfound		= new HashSet<File>();
-	private Set<String>	notfoundref		= new HashSet<String>();
-	final Semaphore		limitDownloads	= new Semaphore(12);
-	private JpmRepo		library;
+	private File								indexFile;
+	private boolean								indexRecurse;
+	Index										index;
+	boolean										offline;
+	private Registry							registry;
+	StoredRevisionCache							cache;
+	Set<File>									notfound					= new HashSet<File>();
+	private Set<String>							notfoundref					= new HashSet<String>();
+	final Semaphore								limitDownloads				= new Semaphore(12);
+	private JpmRepo								library;
 
-	private String		depositoryGroup;
-	private String		depositoryName;
-	private URLClient	urlc;
-	private String		location;
+	private String								depositoryGroup;
+	private String								depositoryName;
+	private URLClient							urlc;
+	private String								location;
 
-	private URLClient depository;
+	private URLClient							depository;
 
-	private String email;
+	private String								email;
 
-	private String name;
+	private String								name;
 
-	URI url;
+	URI											url;
 
 	/**
 	 * Reports downloads but does never block on them. This is a best effort, if
@@ -172,35 +172,46 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 	interface Options {
 		/**
-		 * The URL to the remote repository. Default is
-		 * http://repo.jpm4j.org @return
+		 * The URL to the remote repository. Default is http://repo.jpm4j.org
+		 * 
+		 * @return
 		 */
 		URI url();
 
 		/**
-		 * The group of a depository,optional. @return
+		 * The group of a depository,optional.
+		 * 
+		 * @return
 		 */
 		String depository_group();
 
 		/**
-		 * The name of the depository @return
+		 * The name of the depository
+		 * 
+		 * @return
 		 */
 		String depository_name();
 
 		/**
-		 * The email address of the user @return
+		 * The email address of the user
+		 * 
+		 * @return
 		 */
 		String email();
 
 		/**
 		 * Where the index file is stored. The default should reside in the
-		 * workspace and be part of the scm @return
+		 * workspace and be part of the scm
+		 * 
+		 * @return
 		 */
 		String index();
 
 		/**
 		 * The cache location, default is ~/.bnd/cache. This file is relative
-		 * from the users home directory if not absolute. @return
+		 * from the users home directory if not absolute.
+		 * 
+		 * @return
 		 */
 		String location();
 
@@ -210,7 +221,9 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		String settings();
 
 		/**
-		 * The name of the repo @return
+		 * The name of the repo
+		 * 
+		 * @return
 		 */
 		String name();
 
@@ -259,7 +272,9 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	/**
-	 * Schedule a download, handling the listeners @param url
+	 * Schedule a download, handling the listeners
+	 * 
+	 * @param url
 	 */
 	private void scheduleDownload(final File file, final byte[] sha, final long size, final Set<URI> urls,
 			DownloadListener... listeners) throws Exception {
@@ -326,8 +341,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 						reporter.trace("downloading in background " + file);
 						cache.download(file, urls, sha);
 						success(queues.get(file).toArray(EMPTY_LISTENER), file);
-					}
-					catch (FileNotFoundException e) {
+					} catch (FileNotFoundException e) {
 						synchronized (notfound) {
 							reporter.error("Not found %s", e, file);
 							notfound.add(file);
@@ -335,15 +349,13 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 						synchronized (queues) {
 							failure(queues.get(file).toArray(EMPTY_LISTENER), file, e.toString());
 						}
-					}
-					catch (Throwable e) {
+					} catch (Throwable e) {
 						e.printStackTrace();
 						reporter.error("failed to download %s: %s", e, file);
 						synchronized (queues) {
 							failure(queues.get(file).toArray(EMPTY_LISTENER), file, e.toString());
 						}
-					}
-					finally {
+					} finally {
 						synchronized (queues) {
 							queues.remove(file);
 						}
@@ -355,8 +367,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				}
 			};
 			t.start();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// Is very unlikely to happen but we must ensure the
 			// listeners are called and we're at the head of the queue
 			reporter.error("Starting a download for %s failed %s", file, e);
@@ -430,12 +441,10 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			putr.artifact = depository.getUri(path);
 			putr.digest = digest;
 			return putr;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
-		}
-		finally {
+		} finally {
 			file.delete();
 		}
 	}
@@ -493,8 +502,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		Glob glob = null;
 		try {
 			glob = new Glob(query);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			glob = new Glob("*");
 		}
 
@@ -563,8 +571,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		try {
 			options = Converter.cnv(Options.class, map);
 			setOptions(options);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -626,8 +633,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 			crawl = options.crawl();
 
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			if (reporter != null)
 				reporter.exception(e, "Creating options");
 			throw new RuntimeException(e);
@@ -681,8 +687,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		if (connected)
 			try {
 				careful = getProgram(bsn, true);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Offline? %s", e);
 			}
 
@@ -699,7 +704,11 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	/**
-	 * @param p @param bsn @param version @return @throws Exception
+	 * @param p
+	 * @param bsn
+	 * @param version
+	 * @return
+	 * @throws Exception
 	 */
 	static Pattern JAR_FILE_P = Pattern.compile("(https?:.+)(\\.jar)");
 
@@ -732,8 +741,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			public void run() {
 				try {
 					delete(bsn, version, true);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -759,8 +767,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 								continue;
 							}
 						}
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						// ignore
 					}
 				}
@@ -790,8 +797,12 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	/**
-	 * @param bsn @param version @param resource @param withSources @param
-	 * src @return
+	 * @param bsn
+	 * @param version
+	 * @param resource
+	 * @param withSources
+	 * @param src
+	 * @return
 	 */
 	protected Runnable createAddSourceAction(final String bsn, final Version version,
 			final Library.RevisionRef resource, final File withSources, final URL src) {
@@ -814,16 +825,13 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 						try {
 							binary.addAll(sources, null, "OSGI-OPT/src");
 							binary.write(withSources);
-						}
-						finally {
+						} finally {
 							sources.close();
 						}
-					}
-					finally {
+					} finally {
 						binary.close();
 					}
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
 			}
@@ -832,8 +840,12 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	/**
-	 * @param bsn @param version @param resource @param withSources @param
-	 * src @return
+	 * @param bsn
+	 * @param version
+	 * @param resource
+	 * @param withSources
+	 * @param src
+	 * @return
 	 */
 	protected Runnable createRemoveSourceAction(final String bsn, final Version version,
 			final Library.RevisionRef resource, final File withSources, final URL src) {
@@ -855,16 +867,13 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 						try {
 							binary.addAll(sources, null, "OSGI-OPT/src");
 							binary.write(withSources);
-						}
-						finally {
+						} finally {
 							sources.close();
 						}
-					}
-					finally {
+					} finally {
 						binary.close();
 					}
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
 			}
@@ -873,7 +882,10 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	/**
-	 * @param bsn @param p @return @throws Exception
+	 * @param bsn
+	 * @param p
+	 * @return
+	 * @throws Exception
 	 */
 	private Map<String,Runnable> getProgramActions(final String bsn, final Program p) throws Exception {
 		Map<String,Runnable> map = new LinkedHashMap<String,Runnable>();
@@ -917,8 +929,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				public void run() {
 					try {
 						add(bsn, l);
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						throw new RuntimeException(e);
 					}
 				}
@@ -936,8 +947,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			public void run() {
 				try {
 					delete(bsn);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
 			}
@@ -946,7 +956,8 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	/**
-	 * @return @throws Exception
+	 * @return
+	 * @throws Exception
 	 */
 	private Map<String,Runnable> getRepositoryActions() throws Exception {
 		Map<String,Runnable> map = new LinkedHashMap<String,Runnable>();
@@ -973,8 +984,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				try {
 					byte[] revisions = sync();
 					open(url + "#!/revisions/" + Hex.toHexString(revisions));
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
 			}
@@ -987,8 +997,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			public void run() {
 				try {
 					cache.deleteAll();
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					reporter.error("Deleting cache %s", e);
 				}
 			}
@@ -999,8 +1008,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			public void run() {
 				try {
 					refresh();
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					reporter.error("Refreshing %s", e);
 				}
 			}
@@ -1011,8 +1019,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			public void run() {
 				try {
 					updateAll();
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					reporter.error("Update all %s", e);
 				}
 			}
@@ -1047,8 +1054,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 							get(bsn, v, null, dl);
 						}
 					}
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -1061,8 +1067,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			public void run() {
 				try {
 					cleanUp();
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -1080,8 +1085,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				try {
 					index.setLearning(!index.isLearning());
 					index.save();
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					reporter.error("Learning %s", e);
 				}
 			}
@@ -1097,8 +1101,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				try {
 					index.setRecurse(!index.isRecurse());
 					index.save();
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					reporter.error("Learning %s", e);
 				}
 			}
@@ -1143,8 +1146,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			f.format("Dirty          %s\n", index.isDirty());
 
 			return f.toString().trim();
-		}
-		finally {
+		} finally {
 			f.close();
 		}
 	}
@@ -1166,8 +1168,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				}
 				j.wrap((StringBuilder) sb.out());
 				return sb.toString().trim();
-			}
-			finally {
+			} finally {
 				sb.close();
 			}
 		}
@@ -1228,8 +1229,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 			j.wrap((StringBuilder) sb.out());
 			return sb.toString().trim();
-		}
-		finally {
+		} finally {
 			sb.close();
 		}
 	}
@@ -1255,8 +1255,12 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	/**
-	 * Find a revisionref for a bsn/version @param bsn @param
-	 * version @return @throws Exception
+	 * Find a revisionref for a bsn/version
+	 * 
+	 * @param bsn
+	 * @param version
+	 * @return
+	 * @throws Exception
 	 */
 	private RevisionRef getRevisionRef(String bsn, Version version) throws Exception {
 		// Handle when we have a sha reference
@@ -1314,9 +1318,9 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		return diff + " years";
 	}
 
-	String[] sizes = {
-			"bytes", "Kb", "Mb", "Gb", "Tb", "Pb", "Showing off?"
-	};
+	String[]		sizes	= {
+									"bytes", "Kb", "Mb", "Gb", "Tb", "Pb", "Showing off?"
+								};
 
 	private Crawler	crawler;
 	private boolean	crawl;
@@ -1331,7 +1335,9 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	/**
-	 * Update all bsns @throws Exception
+	 * Update all bsns
+	 * 
+	 * @throws Exception
 	 */
 
 	void updateAll() throws Exception {
@@ -1341,7 +1347,10 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	/**
-	 * Update all baselines for a bsn @param bsn @throws Exception
+	 * Update all baselines for a bsn
+	 * 
+	 * @param bsn
+	 * @throws Exception
 	 */
 	void update(String bsn) throws Exception {
 		Program program = getProgram(bsn, false);
@@ -1354,7 +1363,9 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	/**
-	 * Update a bsn @throws Exception
+	 * Update a bsn
+	 * 
+	 * @throws Exception
 	 */
 	Runnable getUpdateAction(Program program, String bsn) throws Exception {
 		final List<Runnable> update = new ArrayList<Runnable>();
@@ -1385,8 +1396,12 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 	/**
 	 * Find a RevisionRef from the Program. We are looking for a version with
-	 * the same baseline but a higher qualifier or different phase. @param
-	 * p @param currentVersion @return @throws Exception
+	 * the same baseline but a higher qualifier or different phase.
+	 * 
+	 * @param p
+	 * @param currentVersion
+	 * @return
+	 * @throws Exception
 	 */
 
 	private Runnable getUpdateAction(Program program, final RevisionRef current) throws Exception {
@@ -1412,8 +1427,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				public void run() {
 					try {
 						index.delete(current.bsn, toVersion(current.baseline, current.qualifier));
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						throw new RuntimeException(e);
 					}
 				}
@@ -1437,8 +1451,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 						index.delete(current.bsn, toVersion(current.baseline, current.qualifier));
 						index.addRevision(toAdd);
 						index.save();
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						throw new RuntimeException(e);
 					}
 				}
@@ -1462,8 +1475,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 						index.delete(current.bsn, toVersion(current.baseline, current.qualifier));
 						index.addRevision(toChange);
 						index.save();
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						throw new RuntimeException(e);
 					}
 				}
@@ -1484,8 +1496,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		for (DownloadListener l : downloadListeners) {
 			try {
 				l.success(f);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -1495,8 +1506,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		for (DownloadListener l : listeners) {
 			try {
 				l.failure(f, reason);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -1544,10 +1554,10 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				"[m]"), RETIRED(true, false, true, "[r]"), WITHDRAWN(true, false, true, "[x]"), UNKNOWN(true, false,
 						false, "[?]");
 
-		boolean locked;
-		boolean listable;
-		boolean permanent;
-		final String symbol;
+		boolean			locked;
+		boolean			listable;
+		boolean			permanent;
+		final String	symbol;
 
 		private Phase(boolean locked, boolean listable, boolean permanent, String symbol) {
 			this.locked = locked;
@@ -1576,8 +1586,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	private String getPhase(String phase) {
 		try {
 			return Phase.valueOf(phase).getSymbol();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return "?";
 		}
 	}
@@ -1610,14 +1619,11 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			for (RepositoryListenerPlugin listener : listeners) {
 				try {
 					listener.bundleAdded(this, jar, file);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					reporter.error("Repository listener threw an unexpected exception: %s", e, e);
-				}
-				finally {}
+				} finally {}
 			}
-		}
-		finally {
+		} finally {
 			jar.close();
 		}
 	}
@@ -1683,7 +1689,9 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	/**
-	 * @param ref @return @throws Exception
+	 * @param ref
+	 * @return
+	 * @throws Exception
 	 */
 	private Iterable<RevisionRef> getClosure(RevisionRef ref) throws Exception {
 		return library.getClosure(ref.revision, false);
@@ -1786,8 +1794,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			reporter.trace("adding revision " + ref);
 			add(ref);
 			return true;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
 		}
@@ -1796,9 +1803,12 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	/**
 	 * We have a URI that potentially could be a JAR. We download it and analyze
 	 * it. If it looks like a bndle or JAR, we try to guess the different parts
-	 * from it and return a ReveisionRef. @param uri the potential URI to a
-	 * bundle/jar @return null or a RevisionRef describing the
-	 * bundle/jar @throws IOException @throws IllegalArgumentException
+	 * from it and return a ReveisionRef.
+	 * 
+	 * @param uri the potential URI to a bundle/jar
+	 * @return null or a RevisionRef describing the bundle/jar
+	 * @throws IOException
+	 * @throws IllegalArgumentException
 	 */
 	private RevisionRef analyze(File file, URI uri) throws IllegalArgumentException, IOException {
 
@@ -1867,8 +1877,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 						ref.packaging = xp.evaluate("//packaging", doc);
 						ref.classifier = xp.evaluate("//classifier", doc);
 					}
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					reporter.trace("parsing maven failed for %s: %s", uri, e);
 				}
 
@@ -1890,12 +1899,10 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 						ref.bsn = "unknown";
 				}
 				return ref;
-			}
-			finally {
+			} finally {
 				jar.close();
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			reporter.trace("Could not parse JAR %s: %s", uri, e);
 		}
 		return null;
@@ -1912,8 +1919,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				Desktop desktop = Desktop.getDesktop();
 				desktop.browse(new URI(url));
 				return;
-			}
-			catch (Throwable e) {
+			} catch (Throwable e) {
 
 			}
 			String os = System.getProperty("os.name").toLowerCase();
@@ -1947,8 +1953,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 			} else
 				reporter.trace("Open " + url);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -2092,15 +2097,16 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				if (!interf.isLoopback() && interf.isUp())
 					return true;
 			}
-		}
-		catch (SocketException e) {
+		} catch (SocketException e) {
 			// ignore, we assume we're offline
 		}
 		return false;
 	}
 
 	/**
-	 * @param bsn @return @throws Exception
+	 * @param bsn
+	 * @return
+	 * @throws Exception
 	 */
 	private Program getProgram(final String bsn, boolean force) throws Exception {
 		Program p = cache.getProgram(bsn);
@@ -2113,7 +2119,9 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	/**
-	 * @param sha @return @throws Exception
+	 * @param sha
+	 * @return
+	 * @throws Exception
 	 */
 	private Revision getRevision(Coordinate c) throws Exception {
 		return library.getRevisionByCoordinate(c);
@@ -2125,7 +2133,9 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	/**
-	 * Ensure that the revisions is updated @throws Exception
+	 * Ensure that the revisions is updated
+	 * 
+	 * @throws Exception
 	 */
 	byte[] sync() throws Exception {
 		Revisions revisions = index.getRevisions();
@@ -2172,7 +2182,9 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	/**
-	 * Remove any unused entries in this repository @throws Exception
+	 * Remove any unused entries in this repository
+	 * 
+	 * @throws Exception
 	 */
 	void cleanUp() throws Exception {
 		Workspace workspace = registry.getPlugin(Workspace.class);
@@ -2202,8 +2214,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 						set.addAll(bndrun.getTestpath());
 						set.addAll(bndrun.getBootclasspath());
 						set.addAll(bndrun.getClasspath());
-					}
-					finally {
+					} finally {
 						bndrun.close();
 					}
 				}
@@ -2244,8 +2255,12 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	/**
-	 * Get a Resource Descriptor for a given bsn/version @param bsn @param
-	 * version @return @throws Exception
+	 * Get a Resource Descriptor for a given bsn/version
+	 * 
+	 * @param bsn
+	 * @param version
+	 * @return
+	 * @throws Exception
 	 */
 	public ResourceDescriptor getDescriptor(String bsn, Version version) throws Exception {
 		RevisionRef revisionRef = index.getRevisionRef(bsn, version);
@@ -2278,8 +2293,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		byte[] digest;
 		try {
 			digest = getDigest();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		return "JpmRepository [writable=" + canWrite() + ", " + (getName() != null ? "name=" + getName() + ", " : "")

@@ -1,12 +1,12 @@
 package aQute.bnd.ant;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.Collection;
 
-import org.apache.tools.ant.*;
+import org.apache.tools.ant.BuildException;
 
-import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 
 /**
  * ProjectBuildOrderTask calculates the correct build order for all of the bnd
@@ -15,16 +15,16 @@ import aQute.bnd.build.Project;
  */
 public class ProjectBuildOrderTask extends BaseTask {
 
-	private static final String	PROP_BUILD_ORDER	= "buildorder";
-	private String				propertyName		= PROP_BUILD_ORDER;
+	private static final String	PROP_BUILD_ORDER		= "buildorder";
+	private String				propertyName			= PROP_BUILD_ORDER;
 
-	private String	separator	= ",";
-	private File	workspaceLocation;
-	private boolean	fullpath	= false;
+	private String				separator				= ",";
+	private File				workspaceLocation;
+	private boolean				fullpath				= false;
 
-	private File	projectLocation			= null;
-	private String	bndFile					= Project.BNDFILE;
-	private boolean	delayRunDependencies	= true;
+	private File				projectLocation			= null;
+	private String				bndFile					= Project.BNDFILE;
+	private boolean				delayRunDependencies	= true;
 
 	@Override
 	public void execute() throws BuildException {
@@ -53,8 +53,7 @@ public class ProjectBuildOrderTask extends BaseTask {
 						project.setDelayRunDependencies(this.delayRunDependencies);
 					}
 					projects = workspace.getBuildOrder();
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					throw new BuildException(e);
 				}
 			} else {
@@ -62,8 +61,7 @@ public class ProjectBuildOrderTask extends BaseTask {
 				p.setDelayRunDependencies(this.delayRunDependencies);
 				try {
 					projects = p.getDependson();
-				}
-				finally {
+				} finally {
 					p.close();
 				}
 			}
@@ -81,23 +79,25 @@ public class ProjectBuildOrderTask extends BaseTask {
 			}
 
 			getProject().setProperty(propertyName, sb.toString());
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new BuildException(e);
 		}
 	}
 
 	/**
 	 * Sets character (or string) separator between projects in resultant ant
-	 * property. @param separator character (or string) separator
+	 * property.
+	 * 
+	 * @param separator character (or string) separator
 	 */
 	public void setSeparator(String separator) {
 		this.separator = separator;
 	}
 
 	/**
-	 * Sets Bnd workspace location. @param workspaceLocation Bnd workspace
-	 * location.
+	 * Sets Bnd workspace location.
+	 * 
+	 * @param workspaceLocation Bnd workspace location.
 	 */
 	public void setWorkspaceLocation(File workspaceLocation) {
 		this.workspaceLocation = workspaceLocation;
@@ -105,8 +105,10 @@ public class ProjectBuildOrderTask extends BaseTask {
 
 	/**
 	 * Sets whether to use project names or full absolute paths to projects in
-	 * the resultant ant property. Default is project names. @param fullpath
-	 * true for full absolete paths to project, false for project names.
+	 * the resultant ant property. Default is project names.
+	 * 
+	 * @param fullpath true for full absolete paths to project, false for
+	 *            project names.
 	 */
 	public void setFullPath(boolean fullpath) {
 		this.fullpath = fullpath;
@@ -115,8 +117,9 @@ public class ProjectBuildOrderTask extends BaseTask {
 	/**
 	 * Sets the project directory which contains the bndFile. Must be used with
 	 * the bndFile parameter. Default is unset (null), which instructions
-	 * ProjectBuildOrderTask to acquire the build order for the entire
-	 * workspace @param projectLocation Bnd project directory
+	 * ProjectBuildOrderTask to acquire the build order for the entire workspace
+	 * 
+	 * @param projectLocation Bnd project directory
 	 */
 	public void setProjectDir(File projectLocation) {
 		if (projectLocation != null && projectLocation.isDirectory()) {
@@ -130,7 +133,9 @@ public class ProjectBuildOrderTask extends BaseTask {
 	 * Sets a single bnd file for ProjectBuildOrderTask to acquire the build
 	 * order from. Default is bnd.bnd. Default is unset (null), which
 	 * instructions ProjectBuildOrderTask to acquire the build order for the
-	 * entire workspace @param bndFileParam bnd file
+	 * entire workspace
+	 * 
+	 * @param bndFileParam bnd file
 	 */
 	public void setBndFile(String bndFileParam) {
 		if (bndFileParam != null && bndFileParam.length() > 0) {
@@ -142,8 +147,9 @@ public class ProjectBuildOrderTask extends BaseTask {
 
 	/**
 	 * Sets the ant property that will contain the list of projects in build
-	 * order. If not provided, the default ant property name is
-	 * buildorder. @param newProperty ant property name
+	 * order. If not provided, the default ant property name is buildorder.
+	 * 
+	 * @param newProperty ant property name
 	 */
 	public void setProperty(String newProperty) {
 		if (newProperty != null && newProperty.length() > 0) {
@@ -155,7 +161,9 @@ public class ProjectBuildOrderTask extends BaseTask {
 
 	/**
 	 * Set true to ignore runbundles dependencies. Set false to include
-	 * runbundles dependencies in buildorder. @param b true/false
+	 * runbundles dependencies in buildorder.
+	 * 
+	 * @param b true/false
 	 */
 	public void setDelayRunDependencies(boolean b) {
 		this.delayRunDependencies = b;

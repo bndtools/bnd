@@ -1,19 +1,30 @@
 package aQute.bnd.annotation.headers;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Maven defines contributors and developers in the POM. This annotation will
- * generate a (not standardized by OSGi) Bundle-Contributors header. <p> This
- * annotation can be used directly on a type or it can 'color' an annotation.
- * This coloring allows custom annotations that define a specific contributor.
- * For example: <pre> {@code @}BundleContributor("Peter.Kriens@aQute.biz")
+ * generate a (not standardized by OSGi) Bundle-Contributors header.
+ * <p>
+ * This annotation can be used directly on a type or it can 'color' an
+ * annotation. This coloring allows custom annotations that define a specific
+ * contributor. For example:
+ * 
+ * <pre>
+ *  {@code @}BundleContributor("Peter.Kriens@aQute.biz")
  * {@code @}interface pkriens {} {@code @}pkriens public class MyFoo { ... }
- * </pre> Duplicates are removed before the header is generated and the coloring
- * does not create an entry in the header, only an annotation on an actual type
- * is counted. This makes it possible to make a library of contributors without
- * then adding them all to the header. <p> See <a
- * href=https://maven.apache.org/pom.html#Developers>Maven POM reference</a>
+ * </pre>
+ * 
+ * Duplicates are removed before the header is generated and the coloring does
+ * not create an entry in the header, only an annotation on an actual type is
+ * counted. This makes it possible to make a library of contributors without
+ * then adding them all to the header.
+ * <p>
+ * See <a href=https://maven.apache.org/pom.html#Developers>Maven POM
+ * reference</a>
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({
@@ -35,7 +46,7 @@ public @interface BundleContributors {
 	/**
 	 * The roles this contributor plays in the development.
 	 */
-	String[]roles() default {};
+	String[] roles() default {};
 
 	/**
 	 * The name of the organization where the contributor works for.

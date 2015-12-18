@@ -1,10 +1,12 @@
 package aQute.lib.json;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Map;
 
-import aQute.lib.hex.*;
+import aQute.lib.hex.Hex;
 
 public class ArrayHandler extends Handler {
 	Type componentType;
@@ -32,8 +34,7 @@ public class ArrayHandler extends Handler {
 				app.append(del);
 				app.encode(Array.get(object, i), componentType, visited);
 				del = ",";
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				throw new IllegalArgumentException("[" + i + "]", e);
 			}
 		app.undent();

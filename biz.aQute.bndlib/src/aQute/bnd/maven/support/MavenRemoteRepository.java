@@ -1,13 +1,21 @@
 package aQute.bnd.maven.support;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
 
-import aQute.bnd.service.*;
-import aQute.bnd.version.*;
-import aQute.lib.io.*;
-import aQute.service.reporter.*;
+import aQute.bnd.service.Plugin;
+import aQute.bnd.service.Registry;
+import aQute.bnd.service.RegistryPlugin;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.Strategy;
+import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
+import aQute.service.reporter.Reporter;
 
 public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, Plugin {
 	Reporter	reporter;
@@ -49,8 +57,7 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		try {
 			action = Pom.Scope.valueOf(value);
 			return pom.getLibrary(action, repositories);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return pom.getArtifact();
 		}
 	}
@@ -99,8 +106,7 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 					if (!uri.isAbsolute())
 						uri = IO.getFile(new File(""), repo).toURI();
 					repositories[n++] = uri;
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					if (reporter != null)
 						reporter.error("Invalid repository %s for maven plugin, %s", repo, e);
 				}
@@ -136,8 +142,7 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		for (DownloadListener l : listeners) {
 			try {
 				l.success(f);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.exception(e, "Download listener for %s", f);
 			}
 		}

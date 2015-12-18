@@ -61,11 +61,9 @@ public class RedirectOutput extends PrintStream {
 			try {
 				sb.append(new String(b, off, len)); // default encoding!
 				flushConditional();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				// e.printStackTrace();
-			}
-			finally {
+			} finally {
 				onStack.remove();
 			}
 		} else {
@@ -112,15 +110,12 @@ public class RedirectOutput extends PrintStream {
 					agent.getSupervisor().stderr(output);
 				else
 					agent.getSupervisor().stdout(output);
-			}
-			catch (InterruptedException ie) {
+			} catch (InterruptedException ie) {
 				return;
-			}
-			catch (Exception ie) {
+			} catch (Exception ie) {
 				try {
 					agent.close();
-				}
-				catch (IOException e) {
+				} catch (IOException e) {
 					// e.printStackTrace();
 				}
 			}

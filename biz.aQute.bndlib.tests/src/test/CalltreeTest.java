@@ -1,11 +1,18 @@
 package test;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Collection;
 
-import junit.framework.*;
-import aQute.bnd.make.calltree.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.make.calltree.CalltreeResource;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Resource;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class CalltreeTest extends TestCase {

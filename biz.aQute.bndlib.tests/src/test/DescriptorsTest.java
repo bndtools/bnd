@@ -1,9 +1,9 @@
 package test;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import junit.framework.TestCase;
 
 public class DescriptorsTest extends TestCase {
 

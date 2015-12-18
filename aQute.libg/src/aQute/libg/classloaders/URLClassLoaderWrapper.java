@@ -1,7 +1,9 @@
 package aQute.libg.classloaders;
 
-import java.lang.reflect.*;
-import java.net.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 
 public class URLClassLoaderWrapper {
 	final URLClassLoader	loader;
@@ -16,8 +18,7 @@ public class URLClassLoaderWrapper {
 	public void addURL(URL url) throws Exception {
 		try {
 			addURL.invoke(loader, url);
-		}
-		catch (InvocationTargetException ite) {
+		} catch (InvocationTargetException ite) {
 			throw (Exception) ite.getTargetException();
 		}
 	}

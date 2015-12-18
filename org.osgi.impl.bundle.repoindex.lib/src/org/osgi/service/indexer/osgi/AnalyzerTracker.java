@@ -1,11 +1,15 @@
 package org.osgi.service.indexer.osgi;
 
-import org.osgi.framework.*;
-import org.osgi.service.indexer.*;
-import org.osgi.service.indexer.impl.*;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.Filter;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.indexer.ResourceAnalyzer;
+import org.osgi.service.indexer.impl.RepoIndex;
 import org.osgi.service.indexer.osgi.AnalyzerTracker.TrackingStruct;
-import org.osgi.service.log.*;
-import org.osgi.util.tracker.*;
+import org.osgi.service.log.LogService;
+import org.osgi.util.tracker.ServiceTracker;
 
 class AnalyzerTracker extends ServiceTracker<ResourceAnalyzer,TrackingStruct> {
 
@@ -41,8 +45,7 @@ class AnalyzerTracker extends ServiceTracker<ResourceAnalyzer,TrackingStruct> {
 			struct.valid = true;
 
 			indexer.addAnalyzer(analyzer, filter);
-		}
-		catch (InvalidSyntaxException e) {
+		} catch (InvalidSyntaxException e) {
 			struct.valid = false;
 			log.log(reference, LogService.LOG_ERROR, "Ignoring ResourceAnalyzer due to invalid filter expression", e);
 		}
@@ -64,8 +67,7 @@ class AnalyzerTracker extends ServiceTracker<ResourceAnalyzer,TrackingStruct> {
 			struct.valid = true;
 
 			indexer.addAnalyzer(struct.analyzer, filter);
-		}
-		catch (InvalidSyntaxException e) {
+		} catch (InvalidSyntaxException e) {
 			struct.valid = false;
 			log.log(reference, LogService.LOG_ERROR, "Ignoring ResourceAnalyzer due to invalid filter expression", e);
 		}

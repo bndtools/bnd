@@ -13,7 +13,9 @@ import aQute.service.reporter.Report.Location;
 import junit.framework.TestCase;
 
 /**
- * Test if we properly can read @author aqute
+ * Test if we properly can read
+ * 
+ * @author aqute
  */
 public class UTF8PropertiesTest extends TestCase {
 	String trickypart = "\u00A0\u00A1\u00A2\u00A3\u00A4\u00A5\u00A6\u00A7\u00A8\u00A9\u00AA\u00AB\u00AC\u00AD\u00AE\u00AF"

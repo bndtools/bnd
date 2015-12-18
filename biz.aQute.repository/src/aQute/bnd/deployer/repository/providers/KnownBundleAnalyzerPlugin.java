@@ -1,20 +1,23 @@
 package aQute.bnd.deployer.repository.providers;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Properties;
 
-import org.osgi.service.indexer.*;
-import org.osgi.service.indexer.impl.*;
+import org.osgi.service.indexer.ResourceAnalyzer;
+import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
 
-import aQute.bnd.service.*;
-import aQute.lib.utf8properties.*;
-import aQute.service.reporter.*;
+import aQute.bnd.service.Plugin;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.service.reporter.Reporter;
 
 public class KnownBundleAnalyzerPlugin extends KnownBundleAnalyzer implements ResourceAnalyzer, Plugin {
 
-	private static final String PROP_DATA = "data";
+	private static final String	PROP_DATA	= "data";
 
-	Reporter reporter;
+	Reporter					reporter;
 
 	public KnownBundleAnalyzerPlugin() {
 		super(new UTF8Properties());
@@ -36,16 +39,13 @@ public class KnownBundleAnalyzerPlugin extends KnownBundleAnalyzer implements Re
 			Properties props = new UTF8Properties();
 			props.load(stream);
 			setKnownBundlesExtra(props);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw new IllegalArgumentException(String.format("Unable to read data file: %s", file), e);
-		}
-		finally {
+		} finally {
 			try {
 				if (stream != null)
 					stream.close();
-			}
-			catch (IOException e) {}
+			} catch (IOException e) {}
 		}
 	}
 

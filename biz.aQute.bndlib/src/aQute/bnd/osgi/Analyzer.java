@@ -85,16 +85,16 @@ import aQute.libg.generics.Create;
 import aQute.libg.reporter.ReporterMessages;
 
 public class Analyzer extends Processor {
-	private final SortedSet<Clazz.JAVA>	ees	= new TreeSet<Clazz.JAVA>();
-	static Properties					bndInfo;
+	private final SortedSet<Clazz.JAVA>				ees						= new TreeSet<Clazz.JAVA>();
+	static Properties								bndInfo;
 
 	// Bundle parameters
-	private Jar				dot;
-	private final Packages	contained	= new Packages();
-	private final Packages	referred	= new Packages();
-	private Packages		exports;
-	private Packages		imports;
-	private TypeRef			activator;
+	private Jar										dot;
+	private final Packages							contained				= new Packages();
+	private final Packages							referred				= new Packages();
+	private Packages								exports;
+	private Packages								imports;
+	private TypeRef									activator;
 
 	// Global parameters
 	private final MultiMap<PackageRef,PackageRef>	uses					= new MultiMap<PackageRef,PackageRef>(
@@ -127,7 +127,9 @@ public class Analyzer extends Processor {
 	public Analyzer() {}
 
 	/**
-	 * Specifically for Maven @param properties the properties
+	 * Specifically for Maven
+	 * 
+	 * @param properties the properties
 	 */
 
 	public static Properties getManifest(File dirOrJar) throws Exception {
@@ -145,15 +147,15 @@ public class Analyzer extends Processor {
 				result.put(name.toString(), m.getMainAttributes().getValue(name));
 			}
 			return result;
-		}
-		finally {
+		} finally {
 			analyzer.close();
 		}
 	}
 
 	/**
-	 * Calculates the data structures for generating a manifest. @throws
-	 * IOException
+	 * Calculates the data structures for generating a manifest.
+	 * 
+	 * @throws IOException
 	 */
 	public void analyze() throws Exception {
 		if (!analyzed) {
@@ -466,8 +468,7 @@ public class Analyzer extends Processor {
 			InputStream in = r.openInputStream();
 			try {
 				p.load(in);
-			}
-			finally {
+			} finally {
 				in.close();
 			}
 
@@ -506,8 +507,7 @@ public class Analyzer extends Processor {
 				attrs.put(key, value);
 			}
 			return attrs;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			msgs.NoSuchFile_(r);
 		}
 		return null;
@@ -549,8 +549,7 @@ public class Analyzer extends Processor {
 								error("Version from annotation for %s differs with packageinfo or Manifest",
 										clazz.getClassName().getFQN());
 							}
-						}
-						catch (Exception e) {
+						} catch (Exception e) {
 							// Ignore
 						}
 					}
@@ -625,7 +624,9 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Discussed with BJ and decided to kill the . @param referredAndExported
+	 * Discussed with BJ and decided to kill the .
+	 * 
+	 * @param referredAndExported
 	 */
 	void removeDynamicImports(Packages referredAndExported) {
 
@@ -651,16 +652,14 @@ public class Analyzer extends Processor {
 				Processor previous = beginHandleErrors(plugin.toString());
 				try {
 					reanalyze = plugin.analyzeJar(this);
-				}
-				finally {
+				} finally {
 					endHandleErrors(previous);
 				}
 				if (reanalyze) {
 					classspace.clear();
 					analyzeBundleClasspath();
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace(System.err);
 				error("Analyzer Plugin %s failed %s", plugin, e);
 			}
@@ -677,8 +676,10 @@ public class Analyzer extends Processor {
 
 	/**
 	 * One of the main workhorses of this class. This will analyze the current
-	 * setup and calculate a new manifest according to this
-	 * setup. @return @throws IOException
+	 * setup and calculate a new manifest according to this setup.
+	 * 
+	 * @return
+	 * @throws IOException
 	 */
 	public Manifest calcManifest() throws Exception {
 		try {
@@ -873,8 +874,7 @@ public class Analyzer extends Processor {
 			// by the caller.
 			// dot.setManifest(manifest);
 			return manifest;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// This should not really happen. The code should never throw
 			// exceptions in normal situations. So if it happens we need more
 			// information. So to help diagnostics. We do a full property dump
@@ -884,11 +884,11 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Added for 1.8 profiles. A 1.8 profile is a set of packages so the VM can
-	 * be delivered in smaller versions. This method will look at the {@link
-	 * Constants#EEPROFILE} option. If it is set, it can be "auto" or it can
-	 * contain a list of profiles specified as name="a,b,c" values. If we find a
-	 * package outside the profiles, no profile is set. Otherwise the highest
-	 * found profile is added. This only works for java packages.
+	 * be delivered in smaller versions. This method will look at the
+	 * {@link Constants#EEPROFILE} option. If it is set, it can be "auto" or it
+	 * can contain a list of profiles specified as name="a,b,c" values. If we
+	 * find a package outside the profiles, no profile is set. Otherwise the
+	 * highest found profile is added. This only works for java packages.
 	 */
 	private String doEEProfiles(JAVA highest) throws IOException {
 		String ee = getProperty(EEPROFILE);
@@ -968,11 +968,16 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Parse the namesection as instructions and then match them against the
-	 * current set of resources For example: <pre> -namesection: *;baz=true,
-	 * abc/def/bar/X.class=3 </pre> The raw value of {@link
-	 * Constants#NAMESECTION} is used but the values of the attributes are
-	 * replaced where @ is set to the resource name. This allows macro to
-	 * operate on the resource
+	 * current set of resources For example:
+	 * 
+	 * <pre>
+	 *  -namesection: *;baz=true,
+	 * abc/def/bar/X.class=3
+	 * </pre>
+	 * 
+	 * The raw value of {@link Constants#NAMESECTION} is used but the values of
+	 * the attributes are replaced where @ is set to the resource name. This
+	 * allows macro to operate on the resource
 	 */
 
 	private void doNamesection(Jar dot, Manifest manifest) {
@@ -1022,8 +1027,7 @@ public class Analyzer extends Processor {
 							try {
 								String processed = getReplacer().process(property.getValue());
 								attrs.putValue(property.getKey(), processed);
-							}
-							finally {
+							} finally {
 								unsetProperty("@");
 							}
 						}
@@ -1042,9 +1046,17 @@ public class Analyzer extends Processor {
 	 * This method is called when the header starts with a @, signifying a name
 	 * section header. The name part is defined by replacing all the @ signs to
 	 * a /, removing the first and the last, and using the last part as header
-	 * name: <pre> &#064;org@osgi@service@event@Implementation-Title </pre> This
-	 * will be the header Implementation-Title in the org/osgi/service/event
-	 * named section. @param manifest @param header
+	 * name:
+	 * 
+	 * <pre>
+	 *  &#064;org@osgi@service@event@Implementation-Title
+	 * </pre>
+	 * 
+	 * This will be the header Implementation-Title in the
+	 * org/osgi/service/event named section.
+	 * 
+	 * @param manifest
+	 * @param header
 	 */
 	void doNameSection(Manifest manifest, String header) {
 		String path = header.replace('@', '/');
@@ -1066,8 +1078,10 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Clear the key part of a header. I.e. remove everything from the first
-	 * ';' @param value @return
+	 * Clear the key part of a header. I.e. remove everything from the first ';'
+	 * 
+	 * @param value
+	 * @return
 	 */
 	public String getBsn() {
 		String value = getProperty(BUNDLE_SYMBOLICNAME);
@@ -1109,8 +1123,10 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Calculate an export header solely based on the contents of a JAR
-	 * file @param bundle The jar file to analyze @return
+	 * Calculate an export header solely based on the contents of a JAR file
+	 * 
+	 * @param bundle The jar file to analyze
+	 * @return
 	 */
 	public String calculateExportsFromContents(Jar bundle) {
 		String ddel = "";
@@ -1168,7 +1184,9 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Return the set of unreachable code depending on exports and the bundle
-	 * activator. @return
+	 * activator.
+	 * 
+	 * @return
 	 */
 	public Set<PackageRef> getUnreachable() {
 		Set<PackageRef> unreachable = new HashSet<PackageRef>(uses.keySet()); // all
@@ -1195,7 +1213,9 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Get the version for this bnd @return version or unknown.
+	 * Get the version for this bnd
+	 * 
+	 * @return version or unknown.
 	 */
 	public String getBndVersion() {
 		return getBndInfo("version", "<unknown>");
@@ -1214,8 +1234,7 @@ public class Analyzer extends Processor {
 				if (parse != null)
 					return parse.getTime();
 			}
-		}
-		catch (ParseException e) {
+		} catch (ParseException e) {
 			// Ignore
 		}
 		return 0;
@@ -1230,8 +1249,7 @@ public class Analyzer extends Processor {
 					InputStream in = url.openStream();
 					try {
 						bndInfoLocal.load(in);
-					}
-					finally {
+					} finally {
 						in.close();
 					}
 				}
@@ -1241,8 +1259,7 @@ public class Analyzer extends Processor {
 					bndInfoLocal.put("version", About.CURRENT.toString());
 				}
 				bndInfo = bndInfoLocal;
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 				return defaultValue;
 			}
@@ -1255,8 +1272,10 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Merge the existing manifest with the instructions but do not override
-	 * existing properties. @param manifest The manifest to merge with @throws
-	 * IOException
+	 * existing properties.
+	 * 
+	 * @param manifest The manifest to merge with
+	 * @throws IOException
 	 */
 	public void mergeManifest(Manifest manifest) throws IOException {
 		if (manifest != null) {
@@ -1281,8 +1300,10 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Set the classpath for this analyzer by file. @param classpath @throws
-	 * IOException
+	 * Set the classpath for this analyzer by file.
+	 * 
+	 * @param classpath
+	 * @throws IOException
 	 */
 	public void setClasspath(File[] classpath) throws IOException {
 		List<Jar> list = new ArrayList<Jar>();
@@ -1315,7 +1336,11 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Set the JAR file we are going to work in. This will read the JAR in
-	 * memory. @param jar @return @throws IOException
+	 * memory.
+	 * 
+	 * @param jar
+	 * @return
+	 * @throws IOException
 	 */
 	public Jar setJar(File jar) throws IOException {
 		Jar jarx = new Jar(jar);
@@ -1324,7 +1349,10 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Set the JAR directly we are going to work on. @param jar @return
+	 * Set the JAR directly we are going to work on.
+	 * 
+	 * @param jar
+	 * @return
 	 */
 	public Jar setJar(Jar jar) {
 		if (dot != null)
@@ -1351,9 +1379,11 @@ public class Analyzer extends Processor {
 
 	/**
 	 * Try to get a Jar from a file name/path or a url, or in last resort from
-	 * the classpath name part of their files. @param name URL or filename
-	 * relative to the base @param from Message identifying the caller for
-	 * errors @return null or a Jar with the contents for the name
+	 * the classpath name part of their files.
+	 * 
+	 * @param name URL or filename relative to the base
+	 * @param from Message identifying the caller for errors
+	 * @return null or a Jar with the contents for the name
 	 */
 	public Jar getJarFromName(String name, String from) {
 		Jar j = super.getJarFromName(name, from);
@@ -1369,7 +1399,8 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * @param manifests @throws Exception
+	 * @param manifests
+	 * @throws Exception
 	 */
 	private void merge(Manifest result, Manifest old) {
 		if (old != null) {
@@ -1398,8 +1429,9 @@ public class Analyzer extends Processor {
 	/**
 	 * Bnd is case sensitive for the instructions so we better check people are
 	 * not using an invalid case. We do allow this to set headers that should
-	 * not be processed by us but should be used by the framework. @param
-	 * properties Properties to verify.
+	 * not be processed by us but should be used by the framework.
+	 * 
+	 * @param properties Properties to verify.
 	 */
 
 	void verifyManifestHeadersCase(Properties properties) {
@@ -1524,7 +1556,9 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * @param jar @param contracts @param contracted
+	 * @param jar
+	 * @param contracts
+	 * @param contracted
 	 */
 	private void getManifestInfoFromClasspath(Jar jar, Packages classpathExports, Contracts contracts) {
 		try {
@@ -1554,8 +1588,7 @@ public class Analyzer extends Processor {
 				Parameters pcs = domain.getProvideCapability();
 				contracts.collectContracts(jar.getName(), pcs);
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			warning("Erroneous Manifest for " + jar + " " + e);
 		}
@@ -1571,7 +1604,9 @@ public class Analyzer extends Processor {
 	/**
 	 * Find some more information about imports in manifest and other places. It
 	 * is assumed that the augmentsExports has already copied external attrs
-	 * from the classpathExports. @throws Exception
+	 * from the classpathExports.
+	 * 
+	 * @throws Exception
 	 */
 	void augmentImports(Packages imports, Packages exports) throws Exception {
 		List<PackageRef> noimports = Create.list();
@@ -1658,8 +1693,7 @@ public class Analyzer extends Processor {
 				String result = importAttributes.get(Constants.VERSION_ATTRIBUTE);
 				if (result == null || !Verifier.isVersionRange(result))
 					noimports.add(packageRef);
-			}
-			finally {
+			} finally {
 				unsetProperty(CURRENT_PACKAGE);
 			}
 		}
@@ -1679,8 +1713,7 @@ public class Analyzer extends Processor {
 			} else
 				importRange = getVersionPolicy(provider);
 
-		}
-		finally {
+		} finally {
 			unsetProperty("@");
 		}
 		return importRange;
@@ -1689,7 +1722,9 @@ public class Analyzer extends Processor {
 	/**
 	 * Find the packages we depend on, where we implement an interface that is a
 	 * Provider Type. These packages, when we import them, must use the provider
-	 * policy. @throws Exception
+	 * policy.
+	 * 
+	 * @throws Exception
 	 */
 	Set<PackageRef> findProvidedPackages() throws Exception {
 		Set<PackageRef> providers = Create.set();
@@ -1722,8 +1757,9 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Provide any macro substitutions and versions for exported
-	 * packages. @throws IOException
+	 * Provide any macro substitutions and versions for exported packages.
+	 * 
+	 * @throws IOException
 	 */
 
 	void augmentExports(Packages exports) throws IOException {
@@ -1767,8 +1803,7 @@ public class Analyzer extends Processor {
 												location.header(EXPORT_PACKAGE);
 												location.context(packageName);
 											}
-										}
-										catch (Exception e) {
+										} catch (Exception e) {
 											// Ignored here, is picked up in
 											// other places
 										}
@@ -1778,8 +1813,7 @@ public class Analyzer extends Processor {
 						}
 					}
 				}
-			}
-			finally {
+			} finally {
 				unsetProperty(CURRENT_PACKAGE);
 			}
 			fixupAttributes(packageRef, attributes);
@@ -1788,7 +1822,9 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Fixup Attributes Execute any macros on an export and @throws IOException
+	 * Fixup Attributes Execute any macros on an export and
+	 * 
+	 * @throws IOException
 	 */
 
 	void fixupAttributes(PackageRef packageRef, Attrs attributes) throws IOException {
@@ -1832,24 +1868,27 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Calculate a version from a version policy. @param version The actual
-	 * exported version @param impl true for implementations and false for
-	 * clients
+	 * Calculate a version from a version policy.
+	 * 
+	 * @param version The actual exported version
+	 * @param impl true for implementations and false for clients
 	 */
 
 	String calculateVersionRange(String version, boolean impl) {
 		setProperty("@", version);
 		try {
 			return getVersionPolicy(impl);
-		}
-		finally {
+		} finally {
 			unsetProperty("@");
 		}
 	}
 
 	/**
-	 * Add the uses clauses. This method iterates over the exports and
-	 * cal @param exports @param uses @throws MojoExecutionException
+	 * Add the uses clauses. This method iterates over the exports and cal
+	 * 
+	 * @param exports
+	 * @param uses
+	 * @throws MojoExecutionException
 	 */
 	void doUses(Packages exports, Map<PackageRef,List<PackageRef>> uses, Packages imports) {
 		if (isTrue(getProperty(NOUSES)))
@@ -1861,8 +1900,7 @@ public class Analyzer extends Processor {
 			setProperty(CURRENT_PACKAGE, packageName);
 			try {
 				doUses(packageRef, exports, uses, imports);
-			}
-			finally {
+			} finally {
 				unsetProperty(CURRENT_PACKAGE);
 			}
 
@@ -1928,8 +1966,10 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Transitively remove all elemens from unreachable through the uses
-	 * link. @param name @param unreachable
+	 * Transitively remove all elemens from unreachable through the uses link.
+	 * 
+	 * @param name
+	 * @param unreachable
 	 */
 	void removeTransitive(PackageRef name, Set<PackageRef> unreachable) {
 		if (!unreachable.contains(name))
@@ -1947,8 +1987,13 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Verify an attribute @param f @param where @param key @param
-	 * propvalue @throws IOException
+	 * Verify an attribute
+	 * 
+	 * @param f
+	 * @param where
+	 * @param key
+	 * @param propvalue
+	 * @throws IOException
 	 */
 	private void verifyAttribute(String path, String where, String key, String value) throws IOException {
 		SetLocation location;
@@ -2008,7 +2053,10 @@ public class Analyzer extends Processor {
 	/**
 	 * Findpath looks through the contents of the JAR and finds paths that end
 	 * with the given regular expression ${findpath (; reg-expr (; replacement)?
-	 * )? } @param args @return
+	 * )? }
+	 * 
+	 * @param args
+	 * @return
 	 */
 	public String _findpath(String args[]) {
 		return findPath("findpath", args, true);
@@ -2166,8 +2214,7 @@ public class Analyzer extends Processor {
 						addClose(jar);
 						EmbeddedResource.build(jar, resource);
 						analyzeJar(jar, "", true);
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						warning("Invalid bundle classpath entry: " + path + " " + e);
 					}
 				} else {
@@ -2193,8 +2240,13 @@ public class Analyzer extends Processor {
 	/**
 	 * We traverse through all the classes that we can find and calculate the
 	 * contained and referred set and uses. This method ignores the Bundle
-	 * classpath. @param jar @param contained @param referred @param
-	 * uses @throws IOException
+	 * classpath.
+	 * 
+	 * @param jar
+	 * @param contained
+	 * @param referred
+	 * @param uses
+	 * @throws IOException
 	 */
 	private boolean analyzeJar(Jar jar, String prefix, boolean okToIncludeDirs) throws Exception {
 		Map<String,Clazz> mismatched = new HashMap<String,Clazz>();
@@ -2224,12 +2276,10 @@ public class Analyzer extends Processor {
 						clazz = new Clazz(this, path, resource);
 						try {
 							clazz.parseClassFile();
-						}
-						finally {
+						} finally {
 							in.close();
 						}
-					}
-					catch (Throwable e) {
+					} catch (Throwable e) {
 						error("Invalid class file %s (%s)", e, relativePath, e);
 						continue next;
 					}
@@ -2272,7 +2322,10 @@ public class Analyzer extends Processor {
 	/**
 	 * Clean up version parameters. Other builders use more fuzzy definitions of
 	 * the version syntax. This method cleans up such a version to match an OSGi
-	 * version. @param VERSION_STRING @return
+	 * version.
+	 * 
+	 * @param VERSION_STRING
+	 * @return
 	 */
 	static Pattern	fuzzyVersion		= Pattern.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([^a-zA-Z0-9](.*))?",
 			Pattern.DOTALL);
@@ -2280,7 +2333,7 @@ public class Analyzer extends Processor {
 			.compile("(\\(|\\[)\\s*([-\\da-zA-Z.]+)\\s*,\\s*([-\\da-zA-Z.]+)\\s*(\\]|\\))", Pattern.DOTALL);
 	static Pattern	fuzzyModifier		= Pattern.compile("(\\d+[.-])*(.*)", Pattern.DOTALL);
 
-	static Pattern nummeric = Pattern.compile("\\d*");
+	static Pattern	nummeric			= Pattern.compile("\\d*");
 
 	static public String cleanupVersion(String version) {
 
@@ -2293,8 +2346,7 @@ public class Analyzer extends Processor {
 			try {
 				VersionRange vr = new VersionRange(version);
 				return version;
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				// ignore
 			}
 		}
@@ -2354,9 +2406,15 @@ public class Analyzer extends Processor {
 	/**
 	 * TRhe cleanup version got confused when people used numeric dates like
 	 * 201209091230120 as qualifiers. These are too large for Integers. This
-	 * method checks if the all digit string fits in an integer. <pre> maxint =
-	 * 2,147,483,647 = 10 digits </pre> @param integer @return if this fits in
-	 * an integer
+	 * method checks if the all digit string fits in an integer.
+	 * 
+	 * <pre>
+	 *  maxint =
+	 * 2,147,483,647 = 10 digits
+	 * </pre>
+	 * 
+	 * @param integer
+	 * @return if this fits in an integer
 	 */
 	private static boolean isInteger(String minor) {
 		return minor.length() < 10 || (minor.length() == 10 && minor.compareTo("2147483647") < 0);
@@ -2567,8 +2625,10 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Locate a resource on the class path. @param path Path of the
-	 * reosurce @return A resource or <code>null</code>
+	 * Locate a resource on the class path.
+	 * 
+	 * @param path Path of the reosurce
+	 * @return A resource or <code>null</code>
 	 */
 	public Resource findResource(String path) {
 		for (Jar entry : getClasspath()) {
@@ -2580,8 +2640,10 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Find a clazz on the class path. This class has been parsed. @param
-	 * path @return
+	 * Find a clazz on the class path. This class has been parsed.
+	 * 
+	 * @param path
+	 * @return
 	 */
 	public Clazz findClass(TypeRef typeRef) throws Exception {
 		Clazz c = classspace.get(typeRef);
@@ -2608,7 +2670,9 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Answer the bundle version. @return
+	 * Answer the bundle version.
+	 * 
+	 * @return
 	 */
 	public String getVersion() {
 		String version = getProperty(BUNDLE_VERSION);
@@ -2649,8 +2713,7 @@ public class Analyzer extends Processor {
 				if (f.match(map))
 					continue;
 				error("%s fails for filter %s values=%s", REQUIRE_BND, require.get(filter), map);
-			}
-			catch (Exception t) {
+			} catch (Exception t) {
 				error("%s with value %s throws exception", t, REQUIRE_BND, require);
 			}
 		}
@@ -2731,17 +2794,24 @@ public class Analyzer extends Processor {
 	 * with the merged set of attributes. It is expected that the instructions
 	 * are ordered so that the instructor can define which pattern matches
 	 * first. Attributes in the instructions override any attributes from the
-	 * actual.<br/> A pattern is a modified regexp so it looks like globbing.
-	 * The * becomes a .* just like the ? becomes a .?. '.' are replaced with
-	 * \\. Additionally, if the pattern starts with an exclamation mark, it will
-	 * remove that matches for that pattern (- the !) from the working set. So
-	 * the following patterns should work: <ul> <li>com.foo.bar</li>
-	 * <li>com.foo.*</li> <li>com.foo.???</li> <li>com.*.[^b][^a][^r]</li>
-	 * <li>!com.foo.* (throws away any match for com.foo.*)</li> </ul> Enough
-	 * rope to hang the average developer I would say. @param instructions the
-	 * instructions with patterns. @param source the actual found packages,
-	 * contains no duplicates @return Only the packages that were filtered by
-	 * the given instructions
+	 * actual.<br/>
+	 * A pattern is a modified regexp so it looks like globbing. The * becomes a
+	 * .* just like the ? becomes a .?. '.' are replaced with \\. Additionally,
+	 * if the pattern starts with an exclamation mark, it will remove that
+	 * matches for that pattern (- the !) from the working set. So the following
+	 * patterns should work:
+	 * <ul>
+	 * <li>com.foo.bar</li>
+	 * <li>com.foo.*</li>
+	 * <li>com.foo.???</li>
+	 * <li>com.*.[^b][^a][^r]</li>
+	 * <li>!com.foo.* (throws away any match for com.foo.*)</li>
+	 * </ul>
+	 * Enough rope to hang the average developer I would say.
+	 * 
+	 * @param instructions the instructions with patterns.
+	 * @param source the actual found packages, contains no duplicates
+	 * @return Only the packages that were filtered by the given instructions
 	 */
 
 	Packages filter(Instructions instructions, Packages source, Set<Instruction> nomatch) {
@@ -2853,11 +2923,15 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Calculate the output file for the given target. The strategy is: <pre>
+	 * Calculate the output file for the given target. The strategy is:
+	 * 
+	 * <pre>
 	 * parameter given if not null and not directory if directory, this will be
 	 * the output directory based on bsn-version.jar name of the source file if
-	 * exists Untitled-[n] </pre> @param output may be null, otherwise a file
-	 * path relative to base
+	 * exists Untitled-[n]
+	 * </pre>
+	 * 
+	 * @param output may be null, otherwise a file path relative to base
 	 */
 	public File getOutputFile(String output) {
 
@@ -2912,9 +2986,12 @@ public class Analyzer extends Processor {
 	/**
 	 * Utility function to carefully save the file. Will create a backup if the
 	 * source file has the same path as the output. It will also only save if
-	 * the file was modified or the force flag is true @param output the output
-	 * file, if null {@link #getOutputFile(String)} is used. @param force if it
-	 * needs to be overwritten @throws Exception
+	 * the file was modified or the force flag is true
+	 * 
+	 * @param output the output file, if null {@link #getOutputFile(String)} is
+	 *            used.
+	 * @param force if it needs to be overwritten
+	 * @throws Exception
 	 */
 
 	public boolean save(File output, boolean force) throws Exception {
@@ -2942,8 +3019,7 @@ public class Analyzer extends Processor {
 			try {
 				trace("Saving jar to %s", output);
 				getJar().write(output);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				output.delete();
 				error("Cannot write JAR file to %s due to %s", e, output, e.getMessage());
 			}
@@ -2969,8 +3045,11 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Remove the own references and optional java references from the uses
-	 * lib @param apiUses @param removeJava @return
+	 * Remove the own references and optional java references from the uses lib
+	 * 
+	 * @param apiUses
+	 * @param removeJava
+	 * @return
 	 */
 	public Map<PackageRef,List<PackageRef>> cleanupUses(Map<PackageRef,List<PackageRef>> apiUses, boolean removeJava) {
 		MultiMap<PackageRef,PackageRef> map = new MultiMap<PackageRef,PackageRef>(apiUses);
@@ -2988,8 +3067,10 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Return the classes for a given source package. @param source the source
-	 * package @return a set of classes for the requested package.
+	 * Return the classes for a given source package.
+	 * 
+	 * @param source the source package
+	 * @return a set of classes for the requested package.
 	 */
 	public Set<Clazz> getClassspace(PackageRef source) {
 		Set<Clazz> result = new HashSet<Clazz>();
@@ -3001,8 +3082,13 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Create a cross reference from package source, to packages in dest @param
-	 * source @param dest @param sourceModifiers @return @throws Exception
+	 * Create a cross reference from package source, to packages in dest
+	 * 
+	 * @param source
+	 * @param dest
+	 * @param sourceModifiers
+	 * @return
+	 * @throws Exception
 	 */
 	public Map<Clazz.Def,List<TypeRef>> getXRef(final PackageRef source, final Collection<PackageRef> dest,
 			final int sourceModifiers) throws Exception {
@@ -3106,10 +3192,14 @@ public class Analyzer extends Processor {
 	/**
 	 * Return a range expression for a filter from a version. By default this is
 	 * based on consumer compatibility. You can specify a third argument (true)
-	 * to get provider compatibility. <pre> ${frange;1.2.3} ->
+	 * to get provider compatibility.
+	 * 
+	 * <pre>
+	 *  ${frange;1.2.3} ->
 	 * (&(version>=1.2.3)(!(version>=2.0.0)) ${frange;1.2.3, true} ->
 	 * (&(version>=1.2.3)(!(version>=1.3.0)) ${frange;[1.2.3,2.3.4)} ->
-	 * (&(version>=1.2.3)(!(version>=2.3.4)) </pre>
+	 * (&(version>=1.2.3)(!(version>=2.3.4))
+	 * </pre>
 	 */
 	public String _frange(String[] args) {
 		if (args.length < 2 || args.length > 3) {
@@ -3137,7 +3227,8 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * @param name @return
+	 * @param name
+	 * @return
 	 */
 	public String validResourcePath(String name, String reportIfWrong) {
 		boolean changed = false;
@@ -3175,8 +3266,7 @@ public class Analyzer extends Processor {
 					Check c = Enum.valueOf(Check.class, k.toUpperCase().replace('-', '_'));
 					checks.add(c);
 
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					error("Invalid -check constant, allowed values are %s", Arrays.toString(Check.values()));
 				}
 			if (!checks.isEmpty())
@@ -3186,7 +3276,11 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Find the source file for this type @param type @return @throws Exception
+	 * Find the source file for this type
+	 * 
+	 * @param type
+	 * @return
+	 * @throws Exception
 	 */
 	public String getSourceFileFor(TypeRef type) throws Exception {
 		Set<File> sp = Collections.singleton(getFile(getProperty(DEFAULT_PROP_SRC_DIR, "src")));
@@ -3254,8 +3348,7 @@ public class Analyzer extends Processor {
 			Clazz annoServiceClazz = findClass(getTypeRefFromFQN(annoService));
 			Clazz inferredServiceClazz = findClass(getTypeRefFromFQN(inferredService));
 			return assignable(annoServiceClazz, inferredServiceClazz);
-		}
-		catch (Exception e) {}
+		} catch (Exception e) {}
 		// we couldn't determine
 		return true;
 	}
@@ -3274,8 +3367,7 @@ public class Analyzer extends Processor {
 				return false;
 			try {
 				return assignable(findClass(zuper), inferredServiceClazz);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				// can't tell
 				return true;
 			}
@@ -3286,8 +3378,7 @@ public class Analyzer extends Processor {
 				try {
 					if (assignable(findClass(intf), inferredServiceClazz))
 						return true;
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					return true;
 				}
 			}
@@ -3300,8 +3391,7 @@ public class Analyzer extends Processor {
 					return assignable(zuper, inferredServiceClazz);
 				// cannot analyze super class
 				return true;
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				// cannot analyze super class
 				return true;
 			}

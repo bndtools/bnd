@@ -1,15 +1,24 @@
 package aQute.bnd.main;
 
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.annotation.metatype.*;
-import aQute.bnd.annotation.plugin.*;
-import aQute.bnd.build.*;
-import aQute.bnd.header.*;
-import aQute.lib.getopt.*;
-import aQute.lib.utf8properties.*;
+import aQute.bnd.annotation.metatype.Meta;
+import aQute.bnd.annotation.plugin.BndPlugin;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
+import aQute.lib.getopt.Arguments;
+import aQute.lib.getopt.Options;
+import aQute.lib.utf8properties.UTF8Properties;
 
 /**
  * Combines plugin management commands
@@ -148,8 +157,7 @@ public class Plugins {
 						annotatedPlugins.put(annotation.name(), c);
 					}
 
-				}
-				catch (Exception ex) {
+				} catch (Exception ex) {
 					bnd.error("Cannot find plugin %s", cname);
 				}
 			}

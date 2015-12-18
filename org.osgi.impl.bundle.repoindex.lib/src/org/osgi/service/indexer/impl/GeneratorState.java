@@ -6,8 +6,8 @@ import java.util.List;
 
 class GeneratorState {
 
-	private final URI		rootUrl;
-	private final String	urlTemplate;
+	private final URI			rootUrl;
+	private final String		urlTemplate;
 	private List<URLResolver>	resolver;
 
 	public GeneratorState(URI rootUrl, String urlTemplate, List<URLResolver> resolver) throws URISyntaxException {

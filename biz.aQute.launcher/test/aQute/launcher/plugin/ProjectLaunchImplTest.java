@@ -1,8 +1,9 @@
 package aQute.launcher.plugin;
 
-import junit.framework.*;
-import aQute.bnd.build.*;
-import aQute.lib.io.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class ProjectLaunchImplTest extends TestCase {
 
@@ -30,8 +31,7 @@ public class ProjectLaunchImplTest extends TestCase {
 
 			systemCaps = launcher.getSystemCapabilities();
 			launcher.close();
-		}
-		finally {
+		} finally {
 			project.close();
 			ws.close();
 		}

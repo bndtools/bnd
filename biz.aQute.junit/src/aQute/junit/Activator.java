@@ -18,12 +18,6 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
-import junit.framework.JUnit4TestAdapter;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestResult;
-import junit.framework.TestSuite;
-
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.NoTestsRemainException;
 import org.osgi.framework.Bundle;
@@ -35,6 +29,11 @@ import org.osgi.framework.SynchronousBundleListener;
 import org.osgi.framework.Version;
 
 import aQute.junit.constants.TesterConstants;
+import junit.framework.JUnit4TestAdapter;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestResult;
+import junit.framework.TestSuite;
 
 public class Activator implements BundleActivator, TesterConstants, Runnable {
 	BundleContext		context;
@@ -97,8 +96,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			try {
 				trace("using port %s", port);
 				jUnitEclipseReport = new JUnitEclipseReport(port);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				System.err.println("Cannot create link Eclipse JUnit on port " + port);
 				System.exit(-2);
 			}
@@ -143,8 +141,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			trace("automatic testing of all bundles with " + aQute.bnd.osgi.Constants.TESTCASES + " header");
 			try {
 				automatic();
-			}
-			catch (IOException e) {
+			} catch (IOException e) {
 				// ignore
 			}
 		} else {
@@ -152,8 +149,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			try {
 				int errors = test(null, testcases, null);
 				System.exit(errors);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 				System.exit(-2);
 			}
@@ -194,8 +190,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				while (queue.isEmpty() && active) {
 					try {
 						queue.wait();
-					}
-					catch (InterruptedException e) {
+					} catch (InterruptedException e) {
 						trace("tests bundle queue interrupted");
 						thread.interrupt();
 						break outer;
@@ -214,13 +209,11 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 						trace("queue " + queue);
 						System.exit(result);
 					}
-				}
-				finally {
+				} finally {
 					if (report != null)
 						report.close();
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				error("Not sure what happened anymore %s", e);
 				System.exit(-2);
 			}
@@ -251,9 +244,12 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	/**
-	 * The main test routine. @param bundle The bundle under test or null @param
-	 * testnames The names to test @param report The report writer or
-	 * null @return # of errors
+	 * The main test routine.
+	 * 
+	 * @param bundle The bundle under test or null
+	 * @param testnames The names to test
+	 * @param report The report writer or null
+	 * @return # of errors
 	 */
 	int test(Bundle bundle, String testnames, Writer report) {
 		trace("testing bundle %s with %s", bundle, testnames);
@@ -321,22 +317,18 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 					trace("running suite " + suite);
 					suite.run(result);
 
-				}
-				catch (Throwable t) {
+				} catch (Throwable t) {
 					trace(t.getMessage());
 					result.addError(null, t);
-				}
-				finally {
+				} finally {
 					for (TestReporter tr : reporters) {
 						tr.end();
 					}
 				}
-			}
-			catch (Throwable t) {
+			} catch (Throwable t) {
 				System.err.println("exiting " + t);
 				t.printStackTrace();
-			}
-			finally {
+			} finally {
 				System.setOut(systemOut.oldStream);
 				System.setErr(systemErr.oldStream);
 				trace("unset streams");
@@ -347,8 +339,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			System.err.println("Failures   : " + result.failureCount());
 
 			return result.errorCount() + result.failureCount();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return -1;
@@ -387,8 +378,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 							new Exception("Cannot load class " + fqn + ", was it included in the test bundle?"));
 				}
 			}
-		}
-		catch (Throwable e) {
+		} catch (Throwable e) {
 			System.err.println("Can not create test case for: " + fqn + " : " + e);
 			testResult.addError(suite, e);
 		}
@@ -470,8 +460,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 						return false;
 					}
 				});
-			}
-			catch (NoTestsRemainException e) {
+			} catch (NoTestsRemainException e) {
 				return;
 			}
 		}
@@ -503,8 +492,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				checkResolved(tfw);
 				try {
 					return tfw.loadClass(fqn);
-				}
-				catch (ClassNotFoundException e1) {
+				} catch (ClassNotFoundException e1) {
 					return null;
 				}
 			}
@@ -516,14 +504,12 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 					checkResolved(bundles[i]);
 					trace("found in %s", bundles[i]);
 					return bundles[i].loadClass(fqn);
-				}
-				catch (ClassNotFoundException e1) {
+				} catch (ClassNotFoundException e1) {
 					trace("not in %s", bundles[i]);
 					// try next
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			error("Exception during loading of class: %s. Exception %s and cause %s. This sometimes "
 					+ "happens when there is an error in the static initialization, the class has "
 					+ "no public constructor, it is an inner class, or it has no public access", fqn, e, e.getCause());
@@ -633,7 +619,9 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	/**
-	 * Running a test from the command line @param args
+	 * Running a test from the command line
+	 * 
+	 * @param args
 	 */
 
 	public static void main(String args[]) {

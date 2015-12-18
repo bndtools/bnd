@@ -152,8 +152,7 @@ public class FindProvidersTest extends TestCase {
 		try {
 			File bundle = repo.get("wrong.bsn", null, searchProps);
 			fail("Expected IllegalArgumentException");
-		}
-		catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			// expected
 		}
 	}

@@ -1,7 +1,10 @@
 package aQute.bnd.compatibility;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class is compiled against 1.5 or later to provide access to the generic
@@ -13,15 +16,16 @@ import java.util.*;
 public class Signatures {
 
 	/**
-	 * Check if the environment has generics, i.e. later than Java 5 VM. @return
-	 * true if generics are supported @throws Exception
+	 * Check if the environment has generics, i.e. later than Java 5 VM.
+	 * 
+	 * @return true if generics are supported
+	 * @throws Exception
 	 */
 	public boolean hasGenerics() throws Exception {
 		try {
 			call(Signatures.class, "getGenericSuperClass");
 			return true;
-		}
-		catch (NoSuchMethodException mnfe) {
+		} catch (NoSuchMethodException mnfe) {
 			return false;
 		}
 	}
@@ -67,8 +71,11 @@ public class Signatures {
 	}
 
 	/**
-	 * Calculate the generic signature of a Class,Method,Field, or
-	 * Constructor. @param f @return @throws Exception
+	 * Calculate the generic signature of a Class,Method,Field, or Constructor.
+	 * 
+	 * @param f
+	 * @return
+	 * @throws Exception
 	 */
 	public String getSignature(Object c) throws Exception {
 		if (c instanceof Class< ? >)
@@ -84,9 +91,15 @@ public class Signatures {
 	}
 
 	/**
-	 * Calculate the generic signature of a Class. A Class consists of: <pre>
-	 * class ::= declaration? reference reference* </pre> @param
-	 * f @return @throws Exception
+	 * Calculate the generic signature of a Class. A Class consists of:
+	 * 
+	 * <pre>
+	 * class ::= declaration? reference reference*
+	 * </pre>
+	 * 
+	 * @param f
+	 * @return
+	 * @throws Exception
 	 */
 	public String getSignature(Class< ? > c) throws Exception {
 		StringBuilder sb = new StringBuilder();
@@ -99,9 +112,15 @@ public class Signatures {
 	}
 
 	/**
-	 * Calculate the generic signature of a Method. A Method consists of: <pre>
-	 * method ::= declaration? '(' reference* ')' reference </pre> @param
-	 * c @return @throws Exception
+	 * Calculate the generic signature of a Method. A Method consists of:
+	 * 
+	 * <pre>
+	 * method ::= declaration? '(' reference* ')' reference
+	 * </pre>
+	 * 
+	 * @param c
+	 * @return
+	 * @throws Exception
 	 */
 	public String getSignature(Method m) throws Exception {
 		StringBuilder sb = new StringBuilder();
@@ -117,8 +136,15 @@ public class Signatures {
 
 	/**
 	 * Calculate the generic signature of a Constructor. A Constructor consists
-	 * of: <pre> constructor ::= declaration? '(' reference* ')V' </pre> @param
-	 * c @return @throws Exception
+	 * of:
+	 * 
+	 * <pre>
+	 *  constructor ::= declaration? '(' reference* ')V'
+	 * </pre>
+	 * 
+	 * @param c
+	 * @return
+	 * @throws Exception
 	 */
 	public String getSignature(Constructor< ? > c) throws Exception {
 		StringBuilder sb = new StringBuilder();
@@ -133,8 +159,15 @@ public class Signatures {
 	}
 
 	/**
-	 * Calculate the generic signature of a Field. A Field consists of: <pre>
-	 * constructor ::= reference </pre> @param c @return @throws Exception
+	 * Calculate the generic signature of a Field. A Field consists of:
+	 * 
+	 * <pre>
+	 * constructor ::= reference
+	 * </pre>
+	 * 
+	 * @param c
+	 * @return
+	 * @throws Exception
 	 */
 	public String getSignature(Field f) throws Exception {
 		StringBuilder sb = new StringBuilder();
@@ -147,11 +180,17 @@ public class Signatures {
 	 * Classes, Methods, or Constructors can have a declaration that provides
 	 * nested a scope for type variables. A Method/Constructor inherits the type
 	 * variables from its class and a class inherits its type variables from its
-	 * outer class. The declaration consists of the following syntax: <pre>
+	 * outer class. The declaration consists of the following syntax:
+	 * 
+	 * <pre>
 	 * declarations ::= '<' declaration ( ',' declaration )* '>' declaration ::=
 	 * identifier ':' declare declare ::= types | variable types ::= ( 'L' class
-	 * ';' )? ( ':' 'L' interface ';' )* variable ::= 'T' id ';' </pre> @param
-	 * sb @param gd @throws Exception
+	 * ';' )? ( ':' 'L' interface ';' )* variable ::= 'T' id ';'
+	 * </pre>
+	 * 
+	 * @param sb
+	 * @param gd
+	 * @throws Exception
 	 */
 	private void declaration(StringBuilder sb, Object gd) throws Exception {
 		Object[] typeParameters = (Object[]) call(gd, "getTypeParameters");
@@ -174,9 +213,12 @@ public class Signatures {
 	}
 
 	/**
-	 * Verify that the type is an interface. @param type the type to
-	 * check. @return true if this is a class that is an interface or a
-	 * Parameterized Type that is an interface @throws Exception
+	 * Verify that the type is an interface.
+	 * 
+	 * @param type the type to check.
+	 * @return true if this is a class that is an interface or a Parameterized
+	 *         Type that is an interface
+	 * @throws Exception
 	 */
 	private boolean isInterface(Object type) throws Exception {
 		if (type instanceof Class)
@@ -190,11 +232,18 @@ public class Signatures {
 
 	/**
 	 * This is the heart of the signature builder. A reference is used in a lot
-	 * of places. It referes to another type. <pre> reference ::= array | class
+	 * of places. It referes to another type.
+	 * 
+	 * <pre>
+	 *  reference ::= array | class
 	 * | primitive | variable array ::= '[' reference class ::= 'L' body ( '.'
 	 * body )* ';' body ::= id ( '<' ( wildcard | reference )* '>' )? variable
-	 * ::= 'T' id ';' primitive ::= PRIMITIVE </pre> @param sb @param t @throws
-	 * Exception
+	 * ::= 'T' id ';' primitive ::= PRIMITIVE
+	 * </pre>
+	 * 
+	 * @param sb
+	 * @param t
+	 * @throws Exception
 	 */
 	private void reference(StringBuilder sb, Object t) throws Exception {
 
@@ -246,8 +295,11 @@ public class Signatures {
 
 	/**
 	 * Creates the signature for a Parameterized Type. A Parameterized Type has
-	 * a raw class and a set of type variables. @param sb @param pt @throws
-	 * Exception
+	 * a raw class and a set of type variables.
+	 * 
+	 * @param sb
+	 * @param pt
+	 * @throws Exception
 	 */
 	private void parameterizedType(StringBuilder sb, Object pt) throws Exception {
 		Object owner = call(pt, "getOwnerType");
@@ -272,9 +324,10 @@ public class Signatures {
 	}
 
 	/**
-	 * Handle primitives, these need to be translated to a single char. @param
-	 * type the primitive class @return the single char associated with the
-	 * primitive
+	 * Handle primitives, these need to be translated to a single char.
+	 * 
+	 * @param type the primitive class
+	 * @return the single char associated with the primitive
 	 */
 	private char primitive(Class< ? > type) {
 		if (type == byte.class)
@@ -303,7 +356,9 @@ public class Signatures {
 	 * Normalize a signature to make sure the name of the variables are always
 	 * the same. We change the names of the type variables to _n, where n is an
 	 * integer. n is incremented for every new name and already used names are
-	 * replaced with the _n name. @return a normalized signature
+	 * replaced with the _n name.
+	 * 
+	 * @return a normalized signature
 	 */
 
 	public String normalize(String signature) {
@@ -332,8 +387,12 @@ public class Signatures {
 
 	/**
 	 * The heart of the routine. Handle a reference to a type. Can be an array,
-	 * a class, a type variable, or a primitive. @param sb @param map @param
-	 * rover @param primitivesAllowed
+	 * a class, a type variable, or a primitive.
+	 * 
+	 * @param sb
+	 * @param map
+	 * @param rover
+	 * @param primitivesAllowed
 	 */
 	private void reference(StringBuilder sb, Map<String,String> map, Rover rover, boolean primitivesAllowed) {
 
@@ -365,8 +424,11 @@ public class Signatures {
 
 	/**
 	 * Because classes can be nested the body handles the part that can be
-	 * nested, the reference handles the enclosing L ... ; @param sb @param
-	 * map @param rover
+	 * nested, the reference handles the enclosing L ... ;
+	 * 
+	 * @param sb
+	 * @param map
+	 * @param rover
 	 */
 	private void body(StringBuilder sb, Map<String,String> map, Rover rover) {
 		if (rover.peek() == '<') {
@@ -403,7 +465,11 @@ public class Signatures {
 	}
 
 	/**
-	 * Handle the declaration part. @param sb @param map @param rover
+	 * Handle the declaration part.
+	 * 
+	 * @param sb
+	 * @param map
+	 * @param rover
 	 */
 	private void declare(StringBuilder sb, Map<String,String> map, Rover rover) {
 		char c = rover.peek();
@@ -432,9 +498,11 @@ public class Signatures {
 
 	/**
 	 * Handles the assignment of type variables to index names so that we have a
-	 * normalized name for each type var. @param map the map with
-	 * variables. @param name The name of the variable @return the index name,
-	 * like _1
+	 * normalized name for each type var.
+	 * 
+	 * @param map the map with variables.
+	 * @param name The name of the variable
+	 * @return the index name, like _1
 	 */
 	private String assign(Map<String,String> map, String name) {
 		if (map.containsKey(name))

@@ -37,17 +37,16 @@ import java.util.Set;
 import aQute.libg.glob.Glob;
 
 public class IO {
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
+	static final int			BUFFER_SIZE	= IOConstants.PAGE_SIZE * 16;
 
-	static final public File	work	= new File(System.getProperty("user.dir"));
+	static final public File	work		= new File(System.getProperty("user.dir"));
 	static final public File	home;
 
 	static {
 		File tmp = null;
 		try {
 			tmp = new File(System.getenv("HOME"));
-		}
-		catch (Exception e) {}
+		} catch (Exception e) {}
 		if (tmp == null) {
 			tmp = new File(System.getProperty("user.home"));
 		}
@@ -84,8 +83,7 @@ public class IO {
 				w.write(buffer, 0, size);
 				size = r.read(buffer);
 			}
-		}
-		finally {
+		} finally {
 			r.close();
 			w.flush();
 		}
@@ -103,8 +101,7 @@ public class IO {
 		FileOutputStream out = new FileOutputStream(file);
 		try {
 			copy(data, out);
-		}
-		finally {
+		} finally {
 			out.close();
 		}
 	}
@@ -117,8 +114,7 @@ public class IO {
 		try {
 			InputStreamReader isr = new InputStreamReader(r, charset);
 			copy(isr, w);
-		}
-		finally {
+		} finally {
 			r.close();
 		}
 	}
@@ -131,8 +127,7 @@ public class IO {
 		try {
 			OutputStreamWriter osw = new OutputStreamWriter(o, charset);
 			copy(r, osw);
-		}
-		finally {
+		} finally {
 			r.close();
 		}
 	}
@@ -151,8 +146,7 @@ public class IO {
 				out.write(buffer, 0, size);
 				size = in.read(buffer);
 			}
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 	}
@@ -165,8 +159,7 @@ public class IO {
 				bb.put(buffer, 0, size);
 				size = in.read(buffer);
 			}
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 	}
@@ -191,8 +184,7 @@ public class IO {
 				md.update(buffer, 0, size);
 				size = in.read(buffer);
 			}
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 	}
@@ -220,8 +212,7 @@ public class IO {
 		OutputStream os = c.getOutputStream();
 		try {
 			copy(in, os);
-		}
-		finally {
+		} finally {
 			os.close();
 		}
 	}
@@ -231,8 +222,7 @@ public class IO {
 			FileOutputStream out = new FileOutputStream(b);
 			try {
 				copy(new FileInputStream(a), out);
-			}
-			finally {
+			} finally {
 				out.close();
 			}
 		} else if (a.isDirectory()) {
@@ -253,8 +243,7 @@ public class IO {
 		FileOutputStream out = new FileOutputStream(b);
 		try {
 			copy(a, out);
-		}
-		finally {
+		} finally {
 			out.close();
 		}
 	}
@@ -269,8 +258,7 @@ public class IO {
 		try {
 			in.readFully(data);
 			return data;
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 	}
@@ -339,13 +327,18 @@ public class IO {
 	}
 
 	/**
-	 * Create a temporary file. @param directory the directory in which to
-	 * create the file. Can be null, in which case the system TMP directory is
-	 * used @param pattern the filename prefix pattern. Must be at least 3
-	 * characters long @param suffix the filename suffix. Can be null, in which
-	 * case (system) default suffix is used @return @throws
-	 * IllegalArgumentException when pattern is null or too short @throws
-	 * IOException when the specified (non-null) directory is not a directory
+	 * Create a temporary file.
+	 * 
+	 * @param directory the directory in which to create the file. Can be null,
+	 *            in which case the system TMP directory is used
+	 * @param pattern the filename prefix pattern. Must be at least 3 characters
+	 *            long
+	 * @param suffix the filename suffix. Can be null, in which case (system)
+	 *            default suffix is used
+	 * @return
+	 * @throws IllegalArgumentException when pattern is null or too short
+	 * @throws IOException when the specified (non-null) directory is not a
+	 *             directory
 	 */
 	public static File createTempFile(File directory, String pattern, String suffix)
 			throws IllegalArgumentException, IOException {
@@ -402,24 +395,26 @@ public class IO {
 	}
 
 	/**
-	 * Deletes the specified file. Folders are recursively deleted.<br> If
-	 * file(s) cannot be deleted, no feedback is provided (fail
-	 * silently). @param f file to be deleted
+	 * Deletes the specified file. Folders are recursively deleted.<br>
+	 * If file(s) cannot be deleted, no feedback is provided (fail silently).
+	 * 
+	 * @param f file to be deleted
 	 */
 	public static void delete(File f) {
 		try {
 			deleteWithException(f);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			// Ignore a failed delete
 		}
 	}
 
 	/**
-	 * Deletes the specified file. Folders are recursively deleted.<br> Throws
-	 * exception if any of the files could not be deleted. @param f file to be
-	 * deleted @throws IOException if the file (or contents of a folder) could
-	 * not be deleted
+	 * Deletes the specified file. Folders are recursively deleted.<br>
+	 * Throws exception if any of the files could not be deleted.
+	 * 
+	 * @param f file to be deleted
+	 * @throws IOException if the file (or contents of a folder) could not be
+	 *             deleted
 	 */
 	public static void deleteWithException(File f) throws IOException {
 		f = f.getAbsoluteFile();
@@ -439,8 +434,7 @@ public class IO {
 			for (File sub : subs) {
 				try {
 					deleteWithException(sub);
-				}
-				catch (IOException e) {
+				} catch (IOException e) {
 					wasDeleted = false;
 				}
 			}
@@ -454,9 +448,12 @@ public class IO {
 
 	/**
 	 * Deletes <code>to</code> file if it exists, and renames <code>from</code>
-	 * file to <code>to</code>.<br> Throws exception the rename operation
-	 * fails. @param from source file @param to destination file @throws
-	 * IOException if the rename operation fails
+	 * file to <code>to</code>.<br>
+	 * Throws exception the rename operation fails.
+	 * 
+	 * @param from source file
+	 * @param to destination file
+	 * @throws IOException if the rename operation fails
 	 */
 	public static void rename(File from, File to) throws IOException {
 		IO.deleteWithException(to);
@@ -475,8 +472,7 @@ public class IO {
 				result += size;
 				size = in.read(buffer);
 			}
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 		return result;
@@ -499,8 +495,7 @@ public class IO {
 		try {
 			in.close();
 			return null;
-		}
-		catch (Throwable e) {
+		} catch (Throwable e) {
 			return e;
 		}
 	}
@@ -530,8 +525,7 @@ public class IO {
 		try {
 			String s = (o == null) ? "" : o.toString();
 			fout.write(s.getBytes(encoding));
-		}
-		finally {
+		} finally {
 			fout.close();
 		}
 	}
@@ -539,8 +533,7 @@ public class IO {
 	public static InputStream stream(String s) {
 		try {
 			return new ByteArrayInputStream(s.getBytes("UTF-8"));
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// Ignore
 			return null;
 		}
@@ -608,8 +601,7 @@ public class IO {
 					return true;
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// ignore
 		}
 		return false;
@@ -621,8 +613,7 @@ public class IO {
 			Class< ? > Files = Class.forName("java.nio.file.Files");
 			Method method = Files.getMethod("isSymbolicLink", toPath.getReturnType());
 			return (Boolean) method.invoke(null, toPath.invoke(link));
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// ignore
 		}
 		return false;
@@ -630,40 +621,44 @@ public class IO {
 
 	static public OutputStream	nullStream	= new OutputStream() {
 
-		@Override
-		public void write(int var0) throws IOException {}
+												@Override
+												public void write(int var0) throws IOException {}
 
-		@Override
-		public void write(byte[] var0) throws IOException {}
+												@Override
+												public void write(byte[] var0) throws IOException {}
 
-		@Override
-		public void write(byte[] var0, int from, int l) throws IOException {}
-	};
+												@Override
+												public void write(byte[] var0, int from, int l) throws IOException {}
+											};
 	static public Writer		nullWriter	= new Writer() {
-		public java.io.Writer append(char var0) throws java.io.IOException {
-			return null;
-		}
+												public java.io.Writer append(char var0) throws java.io.IOException {
+													return null;
+												}
 
-		public java.io.Writer append(java.lang.CharSequence var0) throws java.io.IOException {
-			return null;
-		}
+												public java.io.Writer append(java.lang.CharSequence var0)
+														throws java.io.IOException {
+													return null;
+												}
 
-		public java.io.Writer append(java.lang.CharSequence var0, int var1, int var2) throws java.io.IOException {
-			return null;
-		}
+												public java.io.Writer append(java.lang.CharSequence var0, int var1,
+														int var2) throws java.io.IOException {
+													return null;
+												}
 
-		public void write(int var0) throws java.io.IOException {}
+												public void write(int var0) throws java.io.IOException {}
 
-		public void write(java.lang.String var0) throws java.io.IOException {}
+												public void write(java.lang.String var0) throws java.io.IOException {}
 
-		public void write(java.lang.String var0, int var1, int var2) throws java.io.IOException {}
+												public void write(java.lang.String var0, int var1, int var2)
+														throws java.io.IOException {}
 
-		public void write(char[] var0) throws java.io.IOException {}
+												public void write(char[] var0) throws java.io.IOException {}
 
-		public void write(char[] var0, int var1, int var2) throws java.io.IOException {}
+												public void write(char[] var0, int var1, int var2)
+														throws java.io.IOException {}
 
-		public void close() throws IOException {}
+												public void close() throws IOException {}
 
-		public void flush() throws IOException {}
-	};
+												public void flush() throws IOException {}
+											};
 }

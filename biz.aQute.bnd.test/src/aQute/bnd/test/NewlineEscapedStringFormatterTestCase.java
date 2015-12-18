@@ -1,7 +1,7 @@
 package aQute.bnd.test;
 
-import junit.framework.*;
-import aQute.bnd.build.model.conversions.*;
+import aQute.bnd.build.model.conversions.NewlineEscapedStringFormatter;
+import junit.framework.TestCase;
 
 @SuppressWarnings("restriction")
 public class NewlineEscapedStringFormatterTestCase extends TestCase {

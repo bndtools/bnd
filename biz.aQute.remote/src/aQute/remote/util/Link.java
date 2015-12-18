@@ -1,24 +1,41 @@
 package aQute.remote.util;
 
-import java.io.*;
-import java.lang.reflect.*;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import java.lang.reflect.Type;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import aQute.lib.json.*;
+import aQute.lib.json.JSONCodec;
 
 /**
  * This is a simple RPC module that has a R and L interface. The R interface is
  * implemented on the remote side. The methods on this subclass are then
  * available remotely. I.e. this is a two way street. Void messages are
- * asynchronous, other messages block to a reply. @param <R>
+ * asynchronous, other messages block to a reply.
+ * 
+ * @param <R>
  */
 public class Link<L, R> extends Thread implements Closeable {
-	private static final String[]	EMPTY	= new String[] {};
-	static JSONCodec				codec	= new JSONCodec();
+	private static final String[]		EMPTY		= new String[] {};
+	static JSONCodec					codec		= new JSONCodec();
 
 	final DataInputStream				in;
 	final DataOutputStream				out;
@@ -29,9 +46,9 @@ public class Link<L, R> extends Thread implements Closeable {
 	volatile boolean					transfer	= false;
 	private ThreadLocal<Integer>		msgid		= new ThreadLocal<Integer>();
 
-	R				remote;
-	L				local;
-	ExecutorService	executor	= Executors.newFixedThreadPool(4);
+	R									remote;
+	L									local;
+	ExecutorService						executor	= Executors.newFixedThreadPool(4);
 
 	static class Result {
 		boolean			resolved;
@@ -72,20 +89,17 @@ public class Link<L, R> extends Thread implements Closeable {
 		if (local instanceof Closeable)
 			try {
 				((Closeable) local).close();
-			}
-			catch (Exception e) {}
+			} catch (Exception e) {}
 
 		if (!transfer) {
 			if (in != null)
 				try {
 					in.close();
-				}
-				catch (Exception e) {}
+				} catch (Exception e) {}
 			if (out != null)
 				try {
 					out.close();
-				}
-				catch (Exception e) {}
+				} catch (Exception e) {}
 		}
 		executor.shutdownNow();
 	}
@@ -114,25 +128,21 @@ public class Link<L, R> extends Thread implements Closeable {
 								promises.remove(msgId);
 								return null;
 							}
-						}
-						catch (Exception e) {
+						} catch (Exception e) {
 							terminate(e);
 							return null;
 						}
 
 						return waitForResult(msgId, method.getGenericReturnType());
-					}
-					catch (InvocationTargetException e) {
+					} catch (InvocationTargetException e) {
 						Throwable t = e;
 						while (t instanceof InvocationTargetException)
 							t = ((InvocationTargetException) t).getTargetException();
 						throw t;
-					}
-					catch (InterruptedException e) {
+					} catch (InterruptedException e) {
 						interrupt();
 						throw e;
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						throw e;
 					}
 				}
@@ -161,8 +171,7 @@ public class Link<L, R> extends Thread implements Closeable {
 						try {
 							msgid.set(id);
 							executeCommand(cmd, id, args);
-						}
-						catch (Exception e) {
+						} catch (Exception e) {
 							// e.printStackTrace();
 						}
 						msgid.set(-1);
@@ -170,11 +179,9 @@ public class Link<L, R> extends Thread implements Closeable {
 
 				};
 				executor.execute(r);
-			}
-			catch (SocketTimeoutException ee) {
+			} catch (SocketTimeoutException ee) {
 				// Ignore, just to allow polling the actors again
-			}
-			catch (Exception ee) {
+			} catch (Exception ee) {
 
 				terminate(ee);
 				return;
@@ -188,8 +195,7 @@ public class Link<L, R> extends Thread implements Closeable {
 	protected void terminate(Exception t) {
 		try {
 			close();
-		}
-		catch (IOException e) {}
+		} catch (IOException e) {}
 	}
 
 	Method getMethod(String cmd, int count) {
@@ -291,8 +297,7 @@ public class Link<L, R> extends Thread implements Closeable {
 					trace("end delay " + (delay - (deadline - System.currentTimeMillis())));
 				}
 			} while (true);
-		}
-		finally {
+		} finally {
 			promises.remove(id);
 		}
 	}
@@ -336,13 +341,11 @@ public class Link<L, R> extends Thread implements Closeable {
 					send(id, null, new Object[] {
 							result
 					});
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					terminate(e);
 					return;
 				}
-			}
-			catch (Throwable t) {
+			} catch (Throwable t) {
 				while (t instanceof InvocationTargetException
 						&& ((InvocationTargetException) t).getTargetException() != null)
 					t = ((InvocationTargetException) t).getTargetException();
@@ -351,8 +354,7 @@ public class Link<L, R> extends Thread implements Closeable {
 					send(-id, null, new Object[] {
 							t + ""
 					});
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					terminate(e);
 					return;
 				}

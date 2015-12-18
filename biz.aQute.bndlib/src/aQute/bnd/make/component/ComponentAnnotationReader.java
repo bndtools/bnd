@@ -1,55 +1,98 @@
 package aQute.bnd.make.component;
 
-import static aQute.bnd.osgi.Constants.*;
+import static aQute.bnd.osgi.Constants.COMPONENT_ACTIVATE;
+import static aQute.bnd.osgi.Constants.COMPONENT_CONFIGURATION_POLICY;
+import static aQute.bnd.osgi.Constants.COMPONENT_DEACTIVATE;
+import static aQute.bnd.osgi.Constants.COMPONENT_DESCRIPTORS;
+import static aQute.bnd.osgi.Constants.COMPONENT_DESIGNATE;
+import static aQute.bnd.osgi.Constants.COMPONENT_DESIGNATEFACTORY;
+import static aQute.bnd.osgi.Constants.COMPONENT_DYNAMIC;
+import static aQute.bnd.osgi.Constants.COMPONENT_ENABLED;
+import static aQute.bnd.osgi.Constants.COMPONENT_FACTORY;
+import static aQute.bnd.osgi.Constants.COMPONENT_IMMEDIATE;
+import static aQute.bnd.osgi.Constants.COMPONENT_IMPLEMENTATION;
+import static aQute.bnd.osgi.Constants.COMPONENT_MODIFIED;
+import static aQute.bnd.osgi.Constants.COMPONENT_MULTIPLE;
+import static aQute.bnd.osgi.Constants.COMPONENT_NAME;
+import static aQute.bnd.osgi.Constants.COMPONENT_OPTIONAL;
+import static aQute.bnd.osgi.Constants.COMPONENT_PROPERTIES;
+import static aQute.bnd.osgi.Constants.COMPONENT_PROVIDE;
+import static aQute.bnd.osgi.Constants.COMPONENT_SERVICEFACTORY;
+import static aQute.bnd.osgi.Constants.COMPONENT_VERSION;
 
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.Map.*;
-import java.util.regex.*;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.annotation.component.*;
-import aQute.bnd.component.error.*;
-import aQute.bnd.component.error.DeclarativeServicesAnnotationError.*;
-import aQute.bnd.osgi.*;
-import aQute.bnd.osgi.Clazz.*;
-import aQute.bnd.osgi.Descriptors.*;
-import aQute.service.reporter.*;
+import aQute.bnd.annotation.component.Activate;
+import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.Deactivate;
+import aQute.bnd.annotation.component.Modified;
+import aQute.bnd.annotation.component.Reference;
+import aQute.bnd.component.error.DeclarativeServicesAnnotationError;
+import aQute.bnd.component.error.DeclarativeServicesAnnotationError.ErrorType;
+import aQute.bnd.osgi.Annotation;
+import aQute.bnd.osgi.ClassDataCollector;
+import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Clazz.FieldDef;
+import aQute.bnd.osgi.Clazz.MethodDef;
+import aQute.bnd.osgi.Descriptors;
+import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Verifier;
+import aQute.service.reporter.Reporter;
 
 /**
  * This converts bnd style annotations to, roughly, the header format.
  */
 public class ComponentAnnotationReader extends ClassDataCollector {
 
-	String						EMPTY[]			= new String[0];
-	private static final String	V1_1			= "1.1.0";											// "1.1.0"
-	static Pattern				BINDDESCRIPTOR	= Pattern
+	String													EMPTY[]					= new String[0];
+	private static final String								V1_1					= "1.1.0";															// "1.1.0"
+	static Pattern											BINDDESCRIPTOR			= Pattern
 			.compile("\\(L([^;]*);(Ljava/util/Map;|Lorg/osgi/framework/ServiceReference;)*\\)V");
-	static Pattern				BINDMETHOD		= Pattern.compile("(set|bind|add)(.)(.*)");
+	static Pattern											BINDMETHOD				= Pattern
+			.compile("(set|bind|add)(.)(.*)");
 
-	static Pattern	ACTIVATEDESCRIPTOR		= Pattern.compile(
+	static Pattern											ACTIVATEDESCRIPTOR		= Pattern.compile(
 			"\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)V");
-	static Pattern	OLDACTIVATEDESCRIPTOR	= Pattern.compile("\\(Lorg/osgi/service/component/ComponentContext;\\)V");
+	static Pattern											OLDACTIVATEDESCRIPTOR	= Pattern
+			.compile("\\(Lorg/osgi/service/component/ComponentContext;\\)V");
 
-	static Pattern	OLDBINDDESCRIPTOR		= Pattern.compile("\\(L([^;]*);\\)V");
-	static Pattern	REFERENCEBINDDESCRIPTOR	= Pattern.compile("\\(Lorg/osgi/framework/ServiceReference;\\)V");
+	static Pattern											OLDBINDDESCRIPTOR		= Pattern
+			.compile("\\(L([^;]*);\\)V");
+	static Pattern											REFERENCEBINDDESCRIPTOR	= Pattern
+			.compile("\\(Lorg/osgi/framework/ServiceReference;\\)V");
 
-	static String[]	ACTIVATE_ARGUMENTS		= {
-			"org.osgi.service.component.ComponentContext", "org.osgi.framework.BundleContext", Map.class.getName(),
-			"org.osgi.framework.BundleContext"
-												};
-	static String[]	OLD_ACTIVATE_ARGUMENTS	= {
-			"org.osgi.service.component.ComponentContext"
-												};
+	static String[]											ACTIVATE_ARGUMENTS		= {
+																							"org.osgi.service.component.ComponentContext",
+																							"org.osgi.framework.BundleContext",
+																							Map.class.getName(),
+																							"org.osgi.framework.BundleContext"
+																						};
+	static String[]											OLD_ACTIVATE_ARGUMENTS	= {
+																							"org.osgi.service.component.ComponentContext"
+																						};
 
-	Reporter	reporter	= new Processor();
-	MethodDef	method;
-	FieldDef	field;
-	TypeRef		className;
-	Clazz		clazz;
-	TypeRef		interfaces[];
-	Set<String>	multiple	= new HashSet<String>();
-	Set<String>	optional	= new HashSet<String>();
-	Set<String>	dynamic		= new HashSet<String>();
+	Reporter												reporter				= new Processor();
+	MethodDef												method;
+	FieldDef												field;
+	TypeRef													className;
+	Clazz													clazz;
+	TypeRef													interfaces[];
+	Set<String>												multiple				= new HashSet<String>();
+	Set<String>												optional				= new HashSet<String>();
+	Set<String>												dynamic					= new HashSet<String>();
 
 	Map<String,String>										map						= new TreeMap<String,String>();
 	Set<String>												descriptors				= new HashSet<String>();
@@ -379,7 +422,10 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 
 	/**
 	 * Skip L and ; and replace / for . in an object descriptor. A string like
-	 * Lcom/acme/Foo; becomes com.acme.Foo @param string @return
+	 * Lcom/acme/Foo; becomes com.acme.Foo
+	 * 
+	 * @param string
+	 * @return
 	 */
 
 	// private String descriptorToFQN(String string) {

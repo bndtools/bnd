@@ -1,18 +1,21 @@
 package aQute.bnd.service.repository;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.List;
+import java.util.SortedSet;
 
-import aQute.bnd.service.*;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
-import aQute.bnd.version.*;
+import aQute.bnd.version.VersionRange;
 
 /**
  * A Resource Repository represents a repository local to the workspace. A
  * Workspace will always create one Workspace Repository. References to the
  * contents are stored in a text file in {@code ./cnf/dependencies.json}.
  * Associated with the repository is a cache (which might be shared with other
- * subsystems). <p> This repository can be used to get plugin dependencies.
+ * subsystems).
+ * <p>
+ * This repository can be used to get plugin dependencies.
  */
 public interface ResourceRepository {
 	String FILENAME = "repo.json";
@@ -39,9 +42,11 @@ public interface ResourceRepository {
 
 	/**
 	 * Get the list of Resource Descriptors. This contains all the descriptors
-	 * that are n the file, regardless of cache. @param filter An OSGi filter
-	 * matched against the {@link ResourceDescriptor} @return an immutable list
-	 * of resource descriptors
+	 * that are n the file, regardless of cache.
+	 * 
+	 * @param filter An OSGi filter matched against the
+	 *            {@link ResourceDescriptor}
+	 * @return an immutable list of resource descriptors
 	 */
 	List< ? extends ResourceDescriptor> filter(String repository, String filter) throws Exception;
 

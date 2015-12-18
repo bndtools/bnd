@@ -1,14 +1,19 @@
 package aQute.libg.gzip;
 
-import java.io.*;
-import java.util.zip.*;
+import java.io.BufferedInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.GZIPInputStream;
 
 public class GZipUtils {
 
 	/**
 	 * Determines whether the specified stream contains gzipped data, by
 	 * checking for the GZIP magic number, and returns a stream capable of
-	 * reading those data. @throws IOException
+	 * reading those data.
+	 * 
+	 * @throws IOException
 	 */
 	public static InputStream detectCompression(InputStream stream) throws IOException {
 		InputStream buffered;

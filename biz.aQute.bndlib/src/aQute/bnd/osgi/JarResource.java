@@ -1,6 +1,6 @@
 package aQute.bnd.osgi;
 
-import java.io.*;
+import java.io.OutputStream;
 
 public class JarResource extends WriteResource {
 	Jar		jar;
@@ -19,8 +19,7 @@ public class JarResource extends WriteResource {
 	public void write(OutputStream out) throws Exception {
 		try {
 			jar.write(out);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
 		}

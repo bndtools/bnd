@@ -1,7 +1,7 @@
 package test;
 
-import junit.framework.*;
-import aQute.bnd.version.*;
+import aQute.bnd.version.VersionRange;
+import junit.framework.TestCase;
 
 public class VersionTest extends TestCase {
 

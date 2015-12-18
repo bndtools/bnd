@@ -43,63 +43,74 @@ public class ResourceUtils {
 	/**
 	 * A comparator that compares the identity versions
 	 */
-	public static final Comparator<Resource> IDENTITY_VERSION_COMPARATOR = new Comparator<Resource>() {
+	public static final Comparator<Resource>			IDENTITY_VERSION_COMPARATOR	= new Comparator<Resource>() {
 
-		@Override
-		public int compare(Resource o1, Resource o2) {
-			if (o1 == o2)
-				return 0;
+																						@Override
+																						public int compare(Resource o1,
+																								Resource o2) {
+																							if (o1 == o2)
+																								return 0;
 
-			if (o1 == null)
-				return -1;
+																							if (o1 == null)
+																								return -1;
 
-			if (o2 == null)
-				return 1;
+																							if (o2 == null)
+																								return 1;
 
-			if (o1.equals(o2))
-				return 0;
+																							if (o1.equals(o2))
+																								return 0;
 
-			String v1 = getIdentityVersion(o1);
-			String v2 = getIdentityVersion(o2);
+																							String v1 = getIdentityVersion(
+																									o1);
+																							String v2 = getIdentityVersion(
+																									o2);
 
-			if (v1 == v2)
-				return 0;
+																							if (v1 == v2)
+																								return 0;
 
-			if (v1 == null)
-				return -1;
+																							if (v1 == null)
+																								return -1;
 
-			if (v2 == null)
-				return 1;
+																							if (v2 == null)
+																								return 1;
 
-			return new Version(v1).compareTo(new Version(v2));
-		}
+																							return new Version(v1)
+																									.compareTo(
+																											new Version(
+																													v2));
+																						}
 
-	};
+																					};
 
-	private static final Comparator< ? super Resource> RESOURCE_COMPARATOR = new Comparator<Resource>() {
+	private static final Comparator< ? super Resource>	RESOURCE_COMPARATOR			= new Comparator<Resource>() {
 
-		@Override
-		public int compare(Resource o1, Resource o2) {
-			if (o1 == o2)
-				return 0;
+																						@Override
+																						public int compare(Resource o1,
+																								Resource o2) {
+																							if (o1 == o2)
+																								return 0;
 
-			if (o1 == null)
-				return -1;
-			if (o2 == null)
-				return 1;
+																							if (o1 == null)
+																								return -1;
+																							if (o2 == null)
+																								return 1;
 
-			if (o1.equals(o2))
-				return 0;
+																							if (o1.equals(o2))
+																								return 0;
 
-			if (o1 instanceof ResourceImpl && o2 instanceof ResourceImpl) {
-				return ((ResourceImpl) o1).compareTo(o2);
-			}
+																							if (o1 instanceof ResourceImpl
+																									&& o2 instanceof ResourceImpl) {
+																								return ((ResourceImpl) o1)
+																										.compareTo(o2);
+																							}
 
-			return o1.toString().compareTo(o2.toString());
-		}
-	};
+																							return o1.toString()
+																									.compareTo(o2
+																											.toString());
+																						}
+																					};
 
-	static Converter cnv = new Converter();
+	static Converter									cnv							= new Converter();
 
 	static {
 		cnv.hook(Version.class, new Hook() {
@@ -248,8 +259,7 @@ public class ResourceUtils {
 				try {
 					URL url = new URL((String) uriObj);
 					return url.toURI();
-				}
-				catch (MalformedURLException mfue) {
+				} catch (MalformedURLException mfue) {
 					// Ignore
 				}
 
@@ -260,8 +270,7 @@ public class ResourceUtils {
 				return new URI((String) uriObj);
 			}
 
-		}
-		catch (URISyntaxException e) {
+		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException("Resource content capability has illegal URL attribute", e);
 		}
 
@@ -396,8 +405,7 @@ public class ResourceUtils {
 		try {
 			Filter f = new Filter(filter);
 			return f.matchMap(c.getAttributes());
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return false;
 		}
 	}

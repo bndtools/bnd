@@ -1,13 +1,18 @@
 package test;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
+import java.util.Properties;
+import java.util.jar.Manifest;
 
-import junit.framework.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class PropertiesTest extends TestCase {
@@ -112,7 +117,8 @@ public class PropertiesTest extends TestCase {
 		assertTrue(map.containsKey("org.osgi.util.tracker"));
 		assertEquals(1, analyzer.getWarnings().size());
 		System.err.println(analyzer.getWarnings());
-		assertTrue(analyzer.getWarnings().get(0)
+		assertTrue(analyzer.getWarnings()
+				.get(0)
 				.indexOf("Empty clause, usually caused by repeating a comma without") >= 0);
 		System.err.println(analyzer.getWarnings());
 	}

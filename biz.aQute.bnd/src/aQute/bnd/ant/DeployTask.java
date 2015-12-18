@@ -1,13 +1,15 @@
 package aQute.bnd.ant;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.tools.ant.*;
-import org.apache.tools.ant.types.*;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.types.FileSet;
 
-import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 
 public class DeployTask extends BaseTask {
 	private String	deployRepo	= null;
@@ -35,8 +37,7 @@ public class DeployTask extends BaseTask {
 								project.deploy(file);
 						} else
 							messages.NotAJarFile_(file);
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						messages.FailedToDeploy_Exception_(file, e);
 					}
 				}
@@ -44,8 +45,7 @@ public class DeployTask extends BaseTask {
 			report(project);
 			if (project.getErrors().size() > 0)
 				throw new BuildException("Deploy failed");
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			t.printStackTrace();
 			throw new BuildException(t);
 		}

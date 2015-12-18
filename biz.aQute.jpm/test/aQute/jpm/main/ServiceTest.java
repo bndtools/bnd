@@ -1,6 +1,6 @@
 package aQute.jpm.main;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
 public class ServiceTest extends TestCase {
 

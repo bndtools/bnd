@@ -12,7 +12,7 @@ public class VersionRange {
 	char			start	= '[';
 	char			end		= ']';
 
-	static Pattern RANGE = Pattern.compile(
+	static Pattern	RANGE	= Pattern.compile(
 			"(\\(|\\[)\\s*(" + Version.VERSION_STRING + ")\\s*,\\s*(" + Version.VERSION_STRING + ")\\s*(\\)|\\])");
 
 	public VersionRange(String string) {
@@ -153,7 +153,9 @@ public class VersionRange {
 	}
 
 	/**
-	 * Convert to an OSGi filter expression @return
+	 * Convert to an OSGi filter expression
+	 * 
+	 * @return
 	 */
 	public String toFilter() {
 		Formatter f = new Formatter();
@@ -175,8 +177,7 @@ public class VersionRange {
 				f.format("(version>=%s)", getLow());
 			}
 			return f.toString();
-		}
-		finally {
+		} finally {
 			f.close();
 		}
 	}

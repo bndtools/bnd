@@ -55,9 +55,11 @@ public class EmbeddedResource implements Resource {
 
 	/**
 	 * Convenience method to turn an inputstream into a byte array. The method
-	 * uses a recursive algorithm to minimize memory usage. @param in stream
-	 * with data @param offset where we are in the stream @returns byte array
-	 * filled with data
+	 * uses a recursive algorithm to minimize memory usage.
+	 * 
+	 * @param in stream with data
+	 * @param offset where we are in the stream
+	 * @returns byte array filled with data
 	 */
 	static byte[] collect(InputStream in) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -83,11 +85,9 @@ public class EmbeddedResource implements Resource {
 		InputStream in = resource.openInputStream();
 		try {
 			build(sub, in, resource.lastModified());
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 	}

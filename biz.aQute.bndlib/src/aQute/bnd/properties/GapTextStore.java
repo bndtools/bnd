@@ -3,20 +3,28 @@ package aQute.bnd.properties;
 /**
  * Implements a gap managing text store. The gap text store relies on the
  * assumption that consecutive changes to a document are co-located. The start
- * of the gap is always moved to the location of the last change. <p>
+ * of the gap is always moved to the location of the last change.
+ * <p>
  * <strong>Performance:</strong> Typing-style changes perform in constant time
  * unless re-allocation becomes necessary. Generally, a change that does not
- * cause re-allocation will cause at most one {@linkplain
- * System#arraycopy(Object, int, Object, int, int) arraycopy} operation of a
- * length of about <var>d</var>, where <var>d</var> is the distance from the
- * previous change. Let <var>a(x)</var> be the algorithmic performance of an
- * <code>arraycopy</code> operation of the length <var>x</var>, then such a
- * change then performs in <i>O(a(x))</i>, {@linkplain #get(int, int) get(int,
- * <var>length</var>)} performs in <i>O(a(length))</i>, {@link #get(int)} in
- * <i>O(1)</i>. <p> How frequently the array needs re-allocation is controlled
- * by the constructor parameters. </p> <p> This class is not intended to be
- * subclassed. </p> @see CopyOnWriteTextStore for a copy-on-write text store
- * wrapper @noextend This class is not intended to be subclassed by clients.
+ * cause re-allocation will cause at most one
+ * {@linkplain System#arraycopy(Object, int, Object, int, int) arraycopy}
+ * operation of a length of about <var>d</var>, where <var>d</var> is the
+ * distance from the previous change. Let <var>a(x)</var> be the algorithmic
+ * performance of an <code>arraycopy</code> operation of the length <var>x</var>
+ * , then such a change then performs in <i>O(a(x))</i>,
+ * {@linkplain #get(int, int) get(int, <var>length</var>)} performs in
+ * <i>O(a(length))</i>, {@link #get(int)} in <i>O(1)</i>.
+ * <p>
+ * How frequently the array needs re-allocation is controlled by the constructor
+ * parameters.
+ * </p>
+ * <p>
+ * This class is not intended to be subclassed.
+ * </p>
+ * 
+ * @see CopyOnWriteTextStore for a copy-on-write text store wrapper @noextend
+ *      This class is not intended to be subclassed by clients.
  */
 public class GapTextStore implements ITextStore {
 	/**
@@ -34,24 +42,26 @@ public class GapTextStore implements ITextStore {
 	private final float	fSizeMultiplier;
 
 	/** The store's content */
-	private char[]	fContent	= new char[0];
+	private char[]		fContent	= new char[0];
 	/** Starting index of the gap */
-	private int		fGapStart	= 0;
+	private int			fGapStart	= 0;
 	/** End index of the gap */
-	private int		fGapEnd		= 0;
+	private int			fGapEnd		= 0;
 	/**
 	 * The current high water mark. If a change would cause the gap to grow
 	 * larger than this, the array is re-allocated. @since 3.3
 	 */
-	private int		fThreshold	= 0;
+	private int			fThreshold	= 0;
 
 	/**
 	 * Creates a new empty text store using the specified low and high
-	 * watermarks. @param lowWatermark unused - at the lower bound, the array is
-	 * only resized when the content does not fit @param highWatermark if the
-	 * gap is ever larger than this, it will automatically be shrunken
-	 * (&gt;=&nbsp;0) @deprecated use {@link GapTextStore#GapTextStore(int, int,
-	 * float)} instead
+	 * watermarks.
+	 * 
+	 * @param lowWatermark unused - at the lower bound, the array is only
+	 *            resized when the content does not fit
+	 * @param highWatermark if the gap is ever larger than this, it will
+	 *            automatically be shrunken (&gt;=&nbsp;0) @deprecated use
+	 *            {@link GapTextStore#GapTextStore(int, int, float)} instead
 	 */
 	public GapTextStore(int lowWatermark, int highWatermark) {
 		/*
@@ -87,20 +97,28 @@ public class GapTextStore implements ITextStore {
 	 * <code>[0,&nbsp;maxGapFactor]</code>. When re-allocation occurs, the array
 	 * is sized such that the gap factor is <code>0.5 * maxGapFactor</code>. The
 	 * gap size computed in this manner is bounded by the <code>minSize</code>
-	 * and <code>maxSize</code> parameters. <p> A <code>maxGapFactor</code> of
-	 * <code>0</code> creates a text store that never has a gap at all (if
-	 * <code>minSize</code> is 0); a <code>maxGapFactor</code> of <code>1</code>
-	 * creates a text store that doubles its size with every re-allocation and
-	 * that never shrinks. </p> <p> The <code>minSize</code> and
-	 * <code>maxSize</code> parameters are absolute bounds to the allocated gap
-	 * size. Use <code>minSize</code> to avoid frequent re-allocation for small
-	 * documents. Use <code>maxSize</code> to avoid a huge gap being allocated
-	 * for large documents. </p> @param minSize the minimum gap size to allocate
-	 * (&gt;=&nbsp;0; use 0 for no minimum) @param maxSize the maximum gap size
-	 * to allocate (&gt;=&nbsp;minSize; use {@link Integer#MAX_VALUE} for no
-	 * maximum) @param maxGapFactor is the maximum fraction of the array that is
-	 * occupied by the gap (
-	 * <code>0&nbsp;&lt;=&nbsp;maxGapFactor&nbsp;&lt;=&nbsp;1</code>) @since 3.3
+	 * and <code>maxSize</code> parameters.
+	 * <p>
+	 * A <code>maxGapFactor</code> of <code>0</code> creates a text store that
+	 * never has a gap at all (if <code>minSize</code> is 0); a
+	 * <code>maxGapFactor</code> of <code>1</code> creates a text store that
+	 * doubles its size with every re-allocation and that never shrinks.
+	 * </p>
+	 * <p>
+	 * The <code>minSize</code> and <code>maxSize</code> parameters are absolute
+	 * bounds to the allocated gap size. Use <code>minSize</code> to avoid
+	 * frequent re-allocation for small documents. Use <code>maxSize</code> to
+	 * avoid a huge gap being allocated for large documents.
+	 * </p>
+	 * 
+	 * @param minSize the minimum gap size to allocate (&gt;=&nbsp;0; use 0 for
+	 *            no minimum)
+	 * @param maxSize the maximum gap size to allocate (&gt;=&nbsp;minSize; use
+	 *            {@link Integer#MAX_VALUE} for no maximum)
+	 * @param maxGapFactor is the maximum fraction of the array that is occupied
+	 *            by the gap (
+	 *            <code>0&nbsp;&lt;=&nbsp;maxGapFactor&nbsp;&lt;=&nbsp;1</code>
+	 *            ) @since 3.3
 	 */
 	public GapTextStore(int minSize, int maxSize, float maxGapFactor) {
 		fMinGapSize = minSize;
@@ -177,10 +195,13 @@ public class GapTextStore implements ITextStore {
 	 * <code>offset + remove</code> behind the gap. The gap size is kept between
 	 * 0 and {@link #fThreshold}, leading to re-allocation if needed. The
 	 * content between <code>offset</code> and <code>offset + add</code> is
-	 * undefined after this operation. @param offset the offset at which a
-	 * change happens @param remove the number of character which are removed or
-	 * overwritten at <code>offset</code> @param add the number of character
-	 * which are inserted or overwriting at <code>offset</code>
+	 * undefined after this operation.
+	 * 
+	 * @param offset the offset at which a change happens
+	 * @param remove the number of character which are removed or overwritten at
+	 *            <code>offset</code>
+	 * @param add the number of character which are inserted or overwriting at
+	 *            <code>offset</code>
 	 */
 	private void adjustGap(int offset, int remove, int add) {
 		final int oldGapSize = gapSize();
@@ -200,11 +221,14 @@ public class GapTextStore implements ITextStore {
 	}
 
 	/**
-	 * Moves the gap to <code>newGapStart</code>. @param offset the change
-	 * offset @param remove the number of removed / overwritten
-	 * characters @param oldGapSize the old gap size @param newGapSize the gap
-	 * size after the change @param newGapStart the offset in the array to move
-	 * the gap to @return the new gap end @since 3.3
+	 * Moves the gap to <code>newGapStart</code>.
+	 * 
+	 * @param offset the change offset
+	 * @param remove the number of removed / overwritten characters
+	 * @param oldGapSize the old gap size
+	 * @param newGapSize the gap size after the change
+	 * @param newGapStart the offset in the array to move the gap to
+	 * @return the new gap end @since 3.3
 	 */
 	private int moveGap(int offset, int remove, int oldGapSize, int newGapSize, int newGapStart) {
 		/*
@@ -232,12 +256,15 @@ public class GapTextStore implements ITextStore {
 	}
 
 	/**
-	 * Reallocates a new array and copies the data from the previous one. @param
-	 * offset the change offset @param remove the number of removed /
-	 * overwritten characters @param oldGapSize the old gap size @param
-	 * newGapSize the gap size after the change if no re-allocation would occur
-	 * (can be negative) @param newGapStart the offset in the array to move the
-	 * gap to @return the new gap end @since 3.3
+	 * Reallocates a new array and copies the data from the previous one.
+	 * 
+	 * @param offset the change offset
+	 * @param remove the number of removed / overwritten characters
+	 * @param oldGapSize the old gap size
+	 * @param newGapSize the gap size after the change if no re-allocation would
+	 *            occur (can be negative)
+	 * @param newGapStart the offset in the array to move the gap to
+	 * @return the new gap end @since 3.3
 	 */
 	private int reallocate(int offset, int remove, final int oldGapSize, int newGapSize, final int newGapStart) {
 		// the new content length (without any gap)
@@ -299,8 +326,10 @@ public class GapTextStore implements ITextStore {
 	}
 
 	/**
-	 * Allocates a new <code>char[size]</code>. @param size the length of the
-	 * new array. @return a newly allocated char array @since 3.3
+	 * Allocates a new <code>char[size]</code>.
+	 * 
+	 * @param size the length of the new array.
+	 * @return a newly allocated char array @since 3.3
 	 */
 	private char[] allocate(int size) {
 		return new char[size];
@@ -317,15 +346,18 @@ public class GapTextStore implements ITextStore {
 	}
 
 	/**
-	 * Returns the gap size. @return the gap size @since 3.3
+	 * Returns the gap size.
+	 * 
+	 * @return the gap size @since 3.3
 	 */
 	private int gapSize() {
 		return fGapEnd - fGapStart;
 	}
 
 	/**
-	 * Returns a copy of the content of this text store. For internal use
-	 * only. @return a copy of the content of this text store
+	 * Returns a copy of the content of this text store. For internal use only.
+	 * 
+	 * @return a copy of the content of this text store
 	 */
 	protected String getContentAsString() {
 		return new String(fContent);
@@ -333,8 +365,9 @@ public class GapTextStore implements ITextStore {
 
 	/**
 	 * Returns the start index of the gap managed by this text store. For
-	 * internal use only. @return the start index of the gap managed by this
-	 * text store
+	 * internal use only.
+	 * 
+	 * @return the start index of the gap managed by this text store
 	 */
 	protected int getGapStartIndex() {
 		return fGapStart;
@@ -342,7 +375,9 @@ public class GapTextStore implements ITextStore {
 
 	/**
 	 * Returns the end index of the gap managed by this text store. For internal
-	 * use only. @return the end index of the gap managed by this text store
+	 * use only.
+	 * 
+	 * @return the end index of the gap managed by this text store
 	 */
 	protected int getGapEndIndex() {
 		return fGapEnd;

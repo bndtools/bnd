@@ -1,31 +1,35 @@
 package aQute.bnd.deployer.http;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.net.ssl.*;
+import javax.net.ssl.SSLHandshakeException;
 
-import junit.framework.*;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
+import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 
-import org.eclipse.jetty.security.*;
-import org.eclipse.jetty.server.*;
-import org.eclipse.jetty.server.handler.*;
-import org.eclipse.jetty.server.nio.*;
-import org.eclipse.jetty.server.ssl.*;
-import org.eclipse.jetty.util.security.*;
-import org.eclipse.jetty.util.ssl.*;
-
-import test.http.*;
-import aQute.bnd.service.url.*;
-import aQute.lib.io.*;
+import aQute.bnd.service.url.TaggedData;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
+import test.http.ETaggingResourceHandler;
 
 public class HttpConnectorTest extends TestCase {
 
-	private static final String LOCALHOST = "127.0.0.1";
+	private static final String	LOCALHOST		= "127.0.0.1";
 
-	private static int	HTTP_PORT	= 0;
-	private static int	HTTPS_PORT	= 0;
+	private static int			HTTP_PORT		= 0;
+	private static int			HTTPS_PORT		= 0;
 
 	private static final String	RESOURCE_BASE	= "testdata/http";
 	private static final String	SECURED_PATH	= "/securebundles/*";
@@ -34,9 +38,9 @@ public class HttpConnectorTest extends TestCase {
 	private static final String	KEYSTORE_PATH	= "testdata/example.keystore";
 	private static final String	KEYSTORE_PASS	= "opensesame";
 
-	private static final String EXPECTED_ETAG = "64035a95";
+	private static final String	EXPECTED_ETAG	= "64035a95";
 
-	private static Server jetty;
+	private static Server		jetty;
 
 	private static String getUrl(boolean http) {
 		if (http) {
@@ -169,11 +173,9 @@ public class HttpConnectorTest extends TestCase {
 		try {
 			stream = connector.connect(new URL(getUrl(false) + "bundles/dummybundle.jar"));
 			fail("Expected SSLHandsakeException");
-		}
-		catch (SSLHandshakeException e) {
+		} catch (SSLHandshakeException e) {
 			// expected
-		}
-		finally {
+		} finally {
 			if (stream != null)
 				IO.close(stream);
 		}
@@ -197,11 +199,9 @@ public class HttpConnectorTest extends TestCase {
 		try {
 			connector.connectTagged(new URL(getUrl(false) + "bundles/dummybundle.jar"));
 			fail("Expected SSLHandsakeException");
-		}
-		catch (SSLHandshakeException e) {
+		} catch (SSLHandshakeException e) {
 			// expected
-		}
-		finally {
+		} finally {
 			if (stream != null)
 				IO.close(stream);
 		}
@@ -216,8 +216,7 @@ public class HttpConnectorTest extends TestCase {
 		try {
 			connector.connect(new URL(getUrl(true) + "securebundles/dummybundle.jar"));
 			fail("Should have thrown IOException due to missing auth");
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			// expected
 			assertTrue(e.getMessage().startsWith("Server returned HTTP response code: 401"));
 		}
@@ -243,8 +242,7 @@ public class HttpConnectorTest extends TestCase {
 		try {
 			connector.connect(new URL(getUrl(false) + "securebundles/dummybundle.jar"));
 			fail("Should have thrown error: invalid server certificate");
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			// expected
 			assertTrue(e instanceof SSLHandshakeException);
 		}
@@ -271,8 +269,7 @@ public class HttpConnectorTest extends TestCase {
 		try {
 			connector.connect(new URL(getUrl(true) + "securebundles/dummybundle.jar"));
 			fail("Should have thrown IOException due to incorrect auth");
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			// expected
 			assertTrue(e.getMessage().startsWith("Server returned HTTP response code: 401"));
 		}
@@ -288,8 +285,7 @@ public class HttpConnectorTest extends TestCase {
 		try {
 			connector.connect(new URL(getUrl(false) + "securebundles/dummybundle.jar"));
 			fail("Should have thrown IOException due to incorrect auth");
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			// expected
 			assertTrue(e.getMessage().startsWith("Server returned HTTP response code: 401"));
 		}

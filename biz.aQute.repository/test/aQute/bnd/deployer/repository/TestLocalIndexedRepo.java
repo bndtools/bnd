@@ -6,10 +6,10 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
-import test.lib.NanoHTTPD;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
+import junit.framework.TestCase;
+import test.lib.NanoHTTPD;
 
 public class TestLocalIndexedRepo extends TestCase {
 

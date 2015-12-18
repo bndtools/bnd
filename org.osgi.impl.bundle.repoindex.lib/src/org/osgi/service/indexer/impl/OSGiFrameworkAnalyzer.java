@@ -21,7 +21,7 @@ public class OSGiFrameworkAnalyzer implements ResourceAnalyzer {
 	private static final String	FRAMEWORK_PACKAGE			= "org.osgi.framework";
 
 	@SuppressWarnings("unused")
-	private final LogService log;
+	private final LogService	log;
 
 	public OSGiFrameworkAnalyzer(LogService log) {
 		this.log = log;
@@ -65,9 +65,12 @@ public class OSGiFrameworkAnalyzer implements ResourceAnalyzer {
 
 	/**
 	 * Map the version of package {@code org.osgi.framework} to an OSGi
-	 * specification release version @param pv Version of the {@code
-	 * org.osgi.framework} packge @return The OSGi specification release
-	 * version, or {@code null} if not known.
+	 * specification release version
+	 * 
+	 * @param pv Version of the {@code
+		 * org.osgi.framework} packge
+	 * @return The OSGi specification release version, or {@code null} if not
+	 *         known.
 	 */
 	private Version mapFrameworkPackageVersion(Version pv) {
 		if (pv.getMajor() != 1)

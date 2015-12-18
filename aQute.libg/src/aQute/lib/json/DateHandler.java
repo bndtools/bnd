@@ -1,9 +1,10 @@
 package aQute.lib.json;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.text.*;
-import java.util.*;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Map;
 
 public class DateHandler extends Handler {
 	final static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");

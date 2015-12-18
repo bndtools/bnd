@@ -1,12 +1,15 @@
 package test;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.Properties;
 
-import junit.framework.*;
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
-import aQute.libg.cryptography.*;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
+import aQute.lib.io.IO;
+import aQute.libg.cryptography.SHA1;
+import junit.framework.TestCase;
 
 public class PreprocessTest extends TestCase {
 	/**
@@ -33,7 +36,9 @@ public class PreprocessTest extends TestCase {
 	}
 
 	/**
-	 * Check if we can override @throws Exception
+	 * Check if we can override
+	 * 
+	 * @throws Exception
 	 */
 	public static void testPreProcessExcludeExtensionGlobal() throws Exception {
 		Builder b = new Builder();
@@ -83,8 +88,9 @@ public class PreprocessTest extends TestCase {
 	}
 
 	/**
-	 * Spaces at the end of a clause cause the preprocess to fail. @throws
-	 * Exception
+	 * Spaces at the end of a clause cause the preprocess to fail.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testPreProcess() throws Exception {
 		Properties base = new Properties();

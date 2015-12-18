@@ -15,30 +15,46 @@
  */
 package org.osgi.impl.bundle.bindex.cli;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
-import org.kohsuke.args4j.*;
-import org.osgi.framework.*;
-import org.osgi.framework.launch.*;
-import org.osgi.service.indexer.*;
-import org.osgi.service.indexer.impl.*;
-import org.osgi.util.tracker.*;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.launch.Framework;
+import org.osgi.service.indexer.ResourceAnalyzer;
+import org.osgi.service.indexer.ResourceIndexer;
+import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
+import org.osgi.service.indexer.impl.RepoIndex;
+import org.osgi.util.tracker.ServiceTracker;
 
-import de.kalpatec.pojosr.framework.*;
-import de.kalpatec.pojosr.framework.launch.*;
+import de.kalpatec.pojosr.framework.PojoServiceRegistryFactoryImpl;
+import de.kalpatec.pojosr.framework.launch.ClasspathScanner;
+import de.kalpatec.pojosr.framework.launch.PojoServiceRegistryFactory;
 
 @SuppressWarnings("restriction")
 public class Index {
 
 	/** the program name */
-	static final String PROGRAM_NAME = "repoindex";
+	static final String			PROGRAM_NAME					= "repoindex";
 
 	public static final String	DEFAULT_FILENAME_UNCOMPRESSED	= "index.xml";
 	public static final String	DEFAULT_FILENAME_COMPRESSED		= DEFAULT_FILENAME_UNCOMPRESSED + ".gz";
 
 	/**
-	 * Main entry point. See -help for options. @param args Program arguments
+	 * Main entry point. See -help for options.
+	 * 
+	 * @param args Program arguments
 	 */
 	public static void main(String args[]) {
 		try {
@@ -77,23 +93,19 @@ public class Index {
 			try {
 				fos = new FileOutputStream(outputFile);
 				index.index(fileList, fos, config);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
-			}
-			finally {
+			} finally {
 				if (fos != null) {
 					try {
 						fos.close();
-					}
-					catch (IOException e) {
+					} catch (IOException e) {
 						/* swallow */
 					}
 					fos = null;
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			System.exit(1);
 		}
@@ -113,8 +125,7 @@ public class Index {
 		CmdLineParser parser = new CmdLineParser(commandLineOptions);
 		try {
 			parser.parseArgument(args);
-		}
-		catch (CmdLineException e) {
+		} catch (CmdLineException e) {
 			err.printf("Error during command-line parsing: %s%n", e.getLocalizedMessage());
 			commandLineOptions.help = true;
 		}
@@ -131,8 +142,7 @@ public class Index {
 				if (cols > 80) {
 					parser.setUsageWidth(cols);
 				}
-			}
-			catch (NumberFormatException e) {
+			} catch (NumberFormatException e) {
 				/* swallow, can't be covered by a test */
 			}
 
@@ -205,8 +215,7 @@ public class Index {
 		try {
 			stream = new FileInputStream(knownBundles);
 			props.load(stream);
-		}
-		finally {
+		} finally {
 			if (stream != null)
 				stream.close();
 		}

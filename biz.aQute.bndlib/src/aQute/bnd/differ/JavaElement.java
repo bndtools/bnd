@@ -1,50 +1,93 @@
 package aQute.bnd.differ;
 
-import static aQute.bnd.service.diff.Delta.*;
-import static aQute.bnd.service.diff.Type.*;
-import static java.lang.reflect.Modifier.*;
+import static aQute.bnd.service.diff.Delta.CHANGED;
+import static aQute.bnd.service.diff.Delta.IGNORED;
+import static aQute.bnd.service.diff.Delta.MAJOR;
+import static aQute.bnd.service.diff.Delta.MICRO;
+import static aQute.bnd.service.diff.Delta.MINOR;
+import static aQute.bnd.service.diff.Type.ACCESS;
+import static aQute.bnd.service.diff.Type.CLASS_VERSION;
+import static aQute.bnd.service.diff.Type.EXTENDS;
+import static aQute.bnd.service.diff.Type.FIELD;
+import static aQute.bnd.service.diff.Type.IMPLEMENTS;
+import static aQute.bnd.service.diff.Type.METHOD;
+import static aQute.bnd.service.diff.Type.RETURN;
+import static java.lang.reflect.Modifier.isAbstract;
+import static java.lang.reflect.Modifier.isFinal;
+import static java.lang.reflect.Modifier.isPublic;
+import static java.lang.reflect.Modifier.isStatic;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.*;
-import java.util.jar.*;
-import java.util.regex.*;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import aQute.bnd.annotation.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.annotation.ConsumerType;
+import aQute.bnd.annotation.ProviderType;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Annotation;
+import aQute.bnd.osgi.ClassDataCollector;
+import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.JAVA;
 import aQute.bnd.osgi.Clazz.MethodDef;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.bnd.service.diff.*;
+import aQute.bnd.osgi.Instructions;
+import aQute.bnd.osgi.Packages;
+import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Type;
 import aQute.bnd.version.Version;
-import aQute.lib.collections.*;
-import aQute.libg.generics.*;
+import aQute.lib.collections.MultiMap;
+import aQute.libg.generics.Create;
 
 /**
  * An element that compares the access field in a binary compatible way. This
  * element is used for classes, methods, constructors, and fields. For that
  * reason we also included the only method that uses this class as a static
- * method. <p> Packages <ul> <li>MAJOR - Remove a public type <li>MINOR - Add a
- * public class <li>MINOR - Add an interface <li>MINOR - Add a method to a class
- * <li>MINOR - Add a method to a provider interface <li>MAJOR - Add a method to
- * a consumer interface <li>MINOR - Add a field <li>MICRO - Add an annotation to
- * a member <li>MINOR - Change the value of a constant <li>MICRO - -abstract
- * <li>MICRO - -final <li>MICRO - -protected <li>MAJOR - +abstract <li>MAJOR -
- * +final <li>MAJOR - +protected </ul>
+ * method.
+ * <p>
+ * Packages
+ * <ul>
+ * <li>MAJOR - Remove a public type
+ * <li>MINOR - Add a public class
+ * <li>MINOR - Add an interface
+ * <li>MINOR - Add a method to a class
+ * <li>MINOR - Add a method to a provider interface
+ * <li>MAJOR - Add a method to a consumer interface
+ * <li>MINOR - Add a field
+ * <li>MICRO - Add an annotation to a member
+ * <li>MINOR - Change the value of a constant
+ * <li>MICRO - -abstract
+ * <li>MICRO - -final
+ * <li>MICRO - -protected
+ * <li>MAJOR - +abstract
+ * <li>MAJOR - +final
+ * <li>MAJOR - +protected
+ * </ul>
  */
 
 class JavaElement {
-	static Pattern PARAMETERS_P = Pattern.compile(".*(\\(.*\\)).*");
+	static Pattern						PARAMETERS_P	= Pattern.compile(".*(\\(.*\\)).*");
 
-	final static EnumSet<Type>		INHERITED	= EnumSet.of(FIELD, METHOD, EXTENDS, IMPLEMENTS);
-	private static final Element	PROTECTED	= new Element(ACCESS, "protected", null, MAJOR, MINOR, null);
-	private static final Element	STATIC		= new Element(ACCESS, "static", null, MAJOR, MAJOR, null);
-	private static final Element	ABSTRACT	= new Element(ACCESS, "abstract", null, MAJOR, MINOR, null);
-	private static final Element	FINAL		= new Element(ACCESS, "final", null, MAJOR, MINOR, null);
+	final static EnumSet<Type>			INHERITED		= EnumSet.of(FIELD, METHOD, EXTENDS, IMPLEMENTS);
+	private static final Element		PROTECTED		= new Element(ACCESS, "protected", null, MAJOR, MINOR, null);
+	private static final Element		STATIC			= new Element(ACCESS, "static", null, MAJOR, MAJOR, null);
+	private static final Element		ABSTRACT		= new Element(ACCESS, "abstract", null, MAJOR, MINOR, null);
+	private static final Element		FINAL			= new Element(ACCESS, "final", null, MAJOR, MINOR, null);
 	// private static final Element DEPRECATED = new Element(ACCESS,
 	// "deprecated", null,
 	// CHANGED, CHANGED, null);
@@ -53,9 +96,9 @@ class JavaElement {
 	final Map<PackageRef,Instructions>	providerMatcher	= Create.map();
 	final Set<TypeRef>					notAccessible	= Create.set();
 	final Map<Object,Element>			cache			= Create.map();
-	MultiMap<PackageRef,																	//
+	MultiMap<PackageRef,																								//
 	Element>							packages;
-	final MultiMap<TypeRef,																	//
+	final MultiMap<TypeRef,																								//
 	Element>							covariant		= new MultiMap<TypeRef,Element>();
 	final Set<JAVA>						javas			= Create.set();
 	final Packages						exports;
@@ -63,7 +106,9 @@ class JavaElement {
 	/**
 	 * Create an element for the API. We take the exported packages and traverse
 	 * those for their classes. If there is no manifest or it does not describe
-	 * a bundle we assume the whole contents is exported. @param infos
+	 * a bundle we assume the whole contents is exported.
+	 * 
+	 * @param infos
 	 */
 	JavaElement(Analyzer analyzer) throws Exception {
 		this.analyzer = analyzer;
@@ -145,8 +190,13 @@ class JavaElement {
 	 * Calculate the class element. This requires parsing the class file and
 	 * finding all the methods that were added etc. The parsing will take super
 	 * interfaces and super classes into account. For this reason it maintains a
-	 * queue of classes/interfaces to parse. @param analyzer @param clazz @param
-	 * infos @return @throws Exception
+	 * queue of classes/interfaces to parse.
+	 * 
+	 * @param analyzer
+	 * @param clazz
+	 * @param infos
+	 * @return
+	 * @throws Exception
 	 */
 	Element classElement(final Clazz clazz) throws Exception {
 		Element e = cache.get(clazz);
@@ -180,8 +230,8 @@ class JavaElement {
 			return before;
 
 		clazz.parseClassFileWithCollector(new ClassDataCollector() {
-			boolean memberEnd;
-			Clazz.FieldDef last;
+			boolean			memberEnd;
+			Clazz.FieldDef	last;
 
 			@Override
 			public void version(int minor, int major) {
@@ -249,7 +299,10 @@ class JavaElement {
 			}
 
 			/**
-			 * @param members @param name @param comment @return
+			 * @param members
+			 * @param name
+			 * @param comment
+			 * @return
 			 */
 			Set<Element> OBJECT = Create.set();
 
@@ -294,7 +347,10 @@ class JavaElement {
 			 * tree. Starting with ANNOTATED, and then properties. A property is
 			 * a PROPERTY property or an ANNOTATED property if it is an
 			 * annotation. If it is an array, the key is suffixed with the
-			 * index. <pre> public @interface Outer { Inner[] value(); }
+			 * index.
+			 * 
+			 * <pre>
+			 *  public @interface Outer { Inner[] value(); }
 			 * public @interface Inner { String[] value(); } @Outer(
 			 * { @Inner("1","2"}) } class Xyz {} ANNOTATED Outer
 			 * (CHANGED/CHANGED) ANNOTATED Inner (CHANGED/CHANGED) PROPERTY

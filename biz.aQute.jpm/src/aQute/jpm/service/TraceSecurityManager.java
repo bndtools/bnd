@@ -1,7 +1,12 @@
 package aQute.jpm.service;
 
-import java.security.*;
-import java.util.*;
+import java.security.AllPermission;
+import java.security.Permission;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 
 public class TraceSecurityManager extends SecurityManager {
 	final HashSet<Permission> had = new HashSet<Permission>();

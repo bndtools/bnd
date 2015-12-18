@@ -3,28 +3,42 @@ package aQute.jpm.platform;
 /**
  * http://support.microsoft.com/kb/814596
  */
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Formatter;
+import java.util.List;
+import java.util.Map;
 
-import org.boris.winrun4j.*;
+import org.boris.winrun4j.RegistryKey;
 
-import aQute.bnd.osgi.*;
-import aQute.jpm.lib.*;
-import aQute.lib.getopt.*;
-import aQute.lib.io.*;
-import aQute.lib.strings.*;
+import aQute.bnd.osgi.Instructions;
+import aQute.jpm.lib.ArtifactData;
+import aQute.jpm.lib.CommandData;
+import aQute.jpm.lib.JVM;
+import aQute.jpm.lib.ServiceData;
+import aQute.lib.getopt.Arguments;
+import aQute.lib.getopt.Description;
+import aQute.lib.getopt.Options;
+import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 
 /**
- * The Windows platform uses an open source library <a
- * href="http://winrun4j.sourceforge.net/">WinRun4j</a>. An executable is copied
- * to the path of the desired command. When this command is executed, it looks
- * up the same path, but then with the .exe replaced with .ini. This ini file
- * then describes what Java code to start. For JPM, we copy the base exe (either
- * console and/or 64 bit arch) and then create the ini file from the jpm command
- * data. <p> TODO services (fortunately, winrun4j has extensive support)
+ * The Windows platform uses an open source library
+ * <a href="http://winrun4j.sourceforge.net/">WinRun4j</a>. An executable is
+ * copied to the path of the desired command. When this command is executed, it
+ * looks up the same path, but then with the .exe replaced with .ini. This ini
+ * file then describes what Java code to start. For JPM, we copy the base exe
+ * (either console and/or 64 bit arch) and then create the ini file from the jpm
+ * command data.
+ * <p>
+ * TODO services (fortunately, winrun4j has extensive support)
  */
 public class Windows extends Platform {
-	static boolean IS64 = System.getProperty("os.arch").contains("64");
+	static boolean	IS64	= System.getProperty("os.arch").contains("64");
 
 	static File		javahome;
 	private File	misc;
@@ -128,8 +142,7 @@ public class Windows extends Platform {
 				for (int i = 0; i < parts.length; i++)
 					pw.printf("vmarg.%d=%s%n", i, data.jvmArgs);
 			}
-		}
-		finally {
+		} finally {
 			pw.close();
 		}
 		reporter.trace("Ini content %s", IO.collect(ini));
@@ -151,7 +164,9 @@ public class Windows extends Platform {
 	}
 
 	/**
-	 * Where we store our miscellaneous stuff. @return
+	 * Where we store our miscellaneous stuff.
+	 * 
+	 * @return
 	 */
 	private File getMisc() {
 		if (misc == null) {
@@ -161,7 +176,10 @@ public class Windows extends Platform {
 	}
 
 	/**
-	 * Return the File to the exe file. @param data @return
+	 * Return the File to the exe file.
+	 * 
+	 * @param data
+	 * @return
 	 */
 	protected String getExecutable(CommandData data) {
 		return new File(jpm.getBinDir(), data.name + ".exe").getAbsolutePath();
@@ -217,24 +235,29 @@ public class Windows extends Platform {
 	public String toString() {
 		try {
 			return "Windows";
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	/**
-	 * Provide as much detail about the jpm environment as possible. @throws
-	 * IOException @throws InvocationTargetException @throws
-	 * IllegalAccessException @throws IllegalArgumentException
+	 * Provide as much detail about the jpm environment as possible.
+	 * 
+	 * @throws IOException
+	 * @throws InvocationTargetException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
 	 */
 
 	public void report(Formatter f) throws Exception {}
 
 	/**
-	 * Initialize the directories for windows. @throws IOException @throws
-	 * InvocationTargetException @throws IllegalAccessException @throws
-	 * IllegalArgumentException
+	 * Initialize the directories for windows.
+	 * 
+	 * @throws IOException
+	 * @throws InvocationTargetException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
 	 */
 
 	public void init() throws Exception {

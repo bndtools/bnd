@@ -30,15 +30,12 @@ public class KnownBundleAnalyzer implements ResourceAnalyzer {
 		if (stream != null) {
 			try {
 				defaultProperties.load(stream);
-			}
-			catch (IOException e) {
+			} catch (IOException e) {
 				// ignore
-			}
-			finally {
+			} finally {
 				try {
 					stream.close();
-				}
-				catch (IOException e) {}
+				} catch (IOException e) {}
 			}
 		}
 	}
@@ -55,8 +52,7 @@ public class KnownBundleAnalyzer implements ResourceAnalyzer {
 		SymbolicName resourceName;
 		try {
 			resourceName = Util.getSymbolicName(resource);
-		}
-		catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			// not a bundle, so return without analyzing
 			return;
 		}

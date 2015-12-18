@@ -1,8 +1,8 @@
 package aQute.remote.util;
 
-import java.io.*;
+import java.io.File;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
 public class JMXBundleDeployerTest extends TestCase {
 
@@ -27,8 +27,7 @@ public class JMXBundleDeployerTest extends TestCase {
 		try {
 			JMXBundleDeployer.getLocalConnectorAddress();
 			JMXBundleDeployer.getLocalConnectorAddress();
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			ex = t;
 		}
 

@@ -1,16 +1,27 @@
 package aQute.bnd.maven;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
 
-import javax.xml.parsers.*;
-import javax.xml.xpath.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
-import aQute.bnd.osgi.*;
-import aQute.lib.io.*;
-import aQute.lib.utf8properties.*;
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Processor;
+import aQute.lib.io.IO;
+import aQute.lib.utf8properties.UTF8Properties;
 
 /**
  * Provides a way to parse a maven pom as properties. This provides most of the
@@ -110,7 +121,11 @@ public class PomParser extends Processor {
 
 	/**
 	 * The maven POM is quite straightforward, it is basically a structured
-	 * property file. @param name @param parent @param p
+	 * property file.
+	 * 
+	 * @param name
+	 * @param parent
+	 * @param p
 	 */
 	static void traverse(String name, Node parent, Properties p) {
 		if (skip.contains(parent.getNodeName()))

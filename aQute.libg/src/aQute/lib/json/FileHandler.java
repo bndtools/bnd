@@ -23,8 +23,7 @@ public class FileHandler extends Handler {
 			app.append('"');
 			Base64.encode(in, app);
 			app.append('"');
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 	}
@@ -35,8 +34,7 @@ public class FileHandler extends Handler {
 		FileOutputStream fout = new FileOutputStream(tmp);
 		try {
 			Base64.decode(new StringReader(s), fout);
-		}
-		finally {
+		} finally {
 			fout.close();
 		}
 		return tmp;

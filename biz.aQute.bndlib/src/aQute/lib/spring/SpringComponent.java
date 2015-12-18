@@ -1,24 +1,39 @@
 package aQute.lib.spring;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.*;
+import java.util.Set;
+import java.util.regex.Pattern;
 
-import javax.xml.transform.*;
-import javax.xml.transform.stream.*;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
-import aQute.bnd.annotation.plugin.*;
-import aQute.bnd.header.*;
-import aQute.bnd.osgi.*;
+import aQute.bnd.annotation.plugin.BndPlugin;
+import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Descriptors.PackageRef;
-import aQute.bnd.service.*;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.service.AnalyzerPlugin;
 
 /**
  * This component is called when we find a resource in the META-INF/*.xml
  * pattern. We parse the resource and and the imports to the builder. Parsing is
  * done with XSLT (first time I see the use of having XML for the Spring
- * configuration files!). @author aqute
+ * configuration files!).
+ * 
+ * @author aqute
  */
 @BndPlugin(name = "spring")
 public class SpringComponent implements AnalyzerPlugin {
@@ -86,8 +101,7 @@ public class SpringComponent implements AnalyzerPlugin {
 						if (!analyzer.getReferred().containsKey(pack))
 							analyzer.getReferred().put(pack, new Attrs());
 					}
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					analyzer.error("Unexpected exception in processing spring resources(" + path + "): " + e);
 				}
 			}

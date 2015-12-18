@@ -315,8 +315,10 @@ public class CapReqBuilder {
 
 	/**
 	 * In bnd, we only use one map for both directives & attributes. This method
-	 * will properly dispatch them AND take care of typing @param attrs @throws
-	 * Exception
+	 * will properly dispatch them AND take care of typing
+	 * 
+	 * @param attrs
+	 * @throws Exception
 	 */
 	public void addAttributesOrDirectives(Attrs attrs) throws Exception {
 		for (Entry<String,String> e : attrs.entrySet()) {
@@ -371,7 +373,10 @@ public class CapReqBuilder {
 	 * asterisk ('*' \u002A), parentheses open ('(' \u0028) or parentheses close
 	 * (')' \u0029), then these characters should be preceded with the reverse
 	 * solidus ('\' \u005C) character. Spaces are significant in value. Space
-	 * characters are defined by Character.isWhiteSpace(). @param value @return
+	 * characters are defined by Character.isWhiteSpace().
+	 * 
+	 * @param value
+	 * @return
 	 */
 
 	static Pattern ESCAPE_FILTER_VALUE_P = Pattern.compile("[\\\\()*]");
@@ -485,8 +490,7 @@ public class CapReqBuilder {
 		if (value instanceof String)
 			try {
 				return new Version((String) value);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				return value;
 			}
 

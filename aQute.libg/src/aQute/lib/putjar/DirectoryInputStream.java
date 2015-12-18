@@ -1,26 +1,32 @@
 package aQute.lib.putjar;
 
-import java.io.*;
-import java.util.zip.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.zip.CRC32;
 
-import aQute.lib.io.*;
-import aQute.libg.fileiterator.*;
+import aQute.lib.io.IOConstants;
+import aQute.libg.fileiterator.FileIterator;
 
 public class DirectoryInputStream extends InputStream {
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
+	static final int			BUFFER_SIZE	= IOConstants.PAGE_SIZE * 16;
 
-	final File			root;
-	final FileIterator	fi;
-	File				element;
-	int					entries	= 0;
-	int					state	= START;
-	long				where	= 0;
+	final File					root;
+	final FileIterator			fi;
+	File						element;
+	int							entries		= 0;
+	int							state		= START;
+	long						where		= 0;
 
-	final static int	START		= 0;
-	final static int	HEADER		= 1;
-	final static int	DATA		= 2;
-	final static int	DIRECTORY	= 4;
-	final static int	EOF			= 5;
+	final static int			START		= 0;
+	final static int			HEADER		= 1;
+	final static int			DATA		= 2;
+	final static int			DIRECTORY	= 4;
+	final static int			EOF			= 5;
 
 	final static InputStream	eof			= new ByteArrayInputStream(new byte[0]);
 	ByteArrayOutputStream		directory	= new ByteArrayOutputStream();
@@ -85,13 +91,17 @@ public class DirectoryInputStream extends InputStream {
 	}
 
 	/**
-	 * <pre> end of central dir signature 4 bytes (0x06054b50) number of this
+	 * <pre>
+	 *  end of central dir signature 4 bytes (0x06054b50) number of this
 	 * disk 2 bytes number of the disk with the start of the central directory 2
 	 * bytes total number of entries in the central directory on this disk 2
 	 * bytes total number of entries in the central directory 2 bytes size of
 	 * the central directory 4 bytes offset of start of central directory with
 	 * respect to the starting disk number 4 bytes .ZIP file comment length 2
-	 * bytes .ZIP file comment (variable size) </pre> @return
+	 * bytes .ZIP file comment (variable size)
+	 * </pre>
+	 * 
+	 * @return
 	 */
 	InputStream getDirectory() throws IOException {
 		long where = this.where;
@@ -127,7 +137,10 @@ public class DirectoryInputStream extends InputStream {
 	}
 
 	/**
-	 * Local file header: <pre> local file header signature 4 bytes (0x04034b50)
+	 * Local file header:
+	 * 
+	 * <pre>
+	 *  local file header signature 4 bytes (0x04034b50)
 	 * version needed to extract 2 bytes general purpose bit flag 2 bytes
 	 * compression method 2 bytes last mod file time 2 bytes last mod file date
 	 * 2 bytes crc-32 4 bytes compressed size 4 bytes uncompressed size 4 bytes
@@ -140,8 +153,12 @@ public class DirectoryInputStream extends InputStream {
 	 * length 2 bytes file comment length 2 bytes disk number start 2 bytes
 	 * internal file attributes 2 bytes external file attributes 4 bytes
 	 * relative offset of local header 4 bytes file name (variable size) extra
-	 * field (variable size) file comment (variable size) </pre> </pre> @param
-	 * file @return
+	 * field (variable size) file comment (variable size)
+	 * </pre>
+	 * </pre>
+	 * 
+	 * @param file
+	 * @return
 	 */
 	private InputStream getHeader(File root, File file) throws IOException {
 		long where = this.where;
@@ -234,8 +251,7 @@ public class DirectoryInputStream extends InputStream {
 				crc.update(data, 0, size);
 				size = in.read(data);
 			}
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 		return crc;

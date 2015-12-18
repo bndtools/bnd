@@ -1,11 +1,32 @@
 package aQute.configurable;
 
-import java.io.*;
-import java.lang.reflect.*;
+import java.io.File;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
-import java.net.*;
-import java.util.*;
-import java.util.regex.*;
+import java.lang.reflect.Type;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 public class Configurable<T> {
 	public static Pattern SPLITTER_P = Pattern.compile("(?<!\\\\)\\|");
@@ -172,8 +193,7 @@ public class Configurable<T> {
 			try {
 				Constructor< ? > c = resultType.getConstructor(String.class);
 				return c.newInstance(o.toString());
-			}
-			catch (Throwable t) {
+			} catch (Throwable t) {
 				// handled on next line
 			}
 			throw new IllegalArgumentException(

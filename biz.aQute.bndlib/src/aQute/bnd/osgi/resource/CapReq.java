@@ -1,8 +1,11 @@
 package aQute.bnd.osgi.resource;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.osgi.resource.*;
+import org.osgi.resource.Namespace;
+import org.osgi.resource.Resource;
 
 class CapReq {
 

@@ -1,12 +1,17 @@
 package test.make;
 
-import java.io.*;
-import java.security.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.security.MessageDigest;
+import java.util.Map;
 
-import aQute.bnd.osgi.*;
-import aQute.bnd.service.*;
-import aQute.lib.io.*;
+import aQute.bnd.osgi.AbstractResource;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.service.MakePlugin;
+import aQute.lib.io.IOConstants;
 
 public class MD5 implements MakePlugin {
 	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
@@ -38,8 +43,7 @@ public class MD5 implements MakePlugin {
 				md5.update(b, 0, size);
 			}
 			return md5.digest();
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 	}

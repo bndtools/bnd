@@ -1,20 +1,28 @@
 package aQute.remote.agent;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.Arrays;
+import java.util.List;
 
-import org.apache.felix.service.command.*;
-import org.osgi.framework.*;
-import org.osgi.util.tracker.*;
+import org.apache.felix.service.command.CommandProcessor;
+import org.apache.felix.service.command.CommandSession;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * Create a new Gogo Shell Command Session if there is a Gogo Command Processor
  * service present. If no Command Processor is present we will idle (a service
- * tracker is used that will handle multiple and switches). <p> There is a bit
- * of a class space problem since the agent can be started on the framework side
- * of the class path. For this reason, we carry a copy of the Gogo API classes
- * and we will use proxies to use them. This leaves the Gogo API unconstrained.
+ * tracker is used that will handle multiple and switches).
+ * <p>
+ * There is a bit of a class space problem since the agent can be started on the
+ * framework side of the class path. For this reason, we carry a copy of the
+ * Gogo API classes and we will use proxies to use them. This leaves the Gogo
+ * API unconstrained.
  */
 public class GogoRedirector implements Redirector {
 
@@ -26,8 +34,10 @@ public class GogoRedirector implements Redirector {
 	private RedirectOutput										stdout;
 
 	/**
-	 * Create a redirector @param agentServer the server @param context the
-	 * context, needed to get the
+	 * Create a redirector
+	 * 
+	 * @param agentServer the server
+	 * @param context the context, needed to get the
 	 */
 	public GogoRedirector(AgentServer agentServer, BundleContext context) {
 		this.agentServer = agentServer;
@@ -106,8 +116,7 @@ public class GogoRedirector implements Redirector {
 
 					try {
 						return proxy(method.getReturnType(), result);
-					}
-					catch (Exception e) {}
+					} catch (Exception e) {}
 				return result;
 			}
 		});

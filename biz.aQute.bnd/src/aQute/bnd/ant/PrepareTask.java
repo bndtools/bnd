@@ -4,15 +4,16 @@ package aQute.bnd.ant;
  * The idea of this task is to read all the properties as if bnd has read them.
  * This makes it easier to use bnd standalone on the same data.
  */
+import java.io.File;
+import java.util.Enumeration;
+import java.util.Properties;
 
-import java.io.*;
-import java.util.*;
+import org.apache.tools.ant.BuildException;
 
-import org.apache.tools.ant.*;
-
-import aQute.bnd.build.*;
 import aQute.bnd.build.Project;
-import aQute.bnd.osgi.*;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
 
 public class PrepareTask extends BaseTask {
 	File	basedir;
@@ -51,8 +52,7 @@ public class PrepareTask extends BaseTask {
 				throw new BuildException("Errors during preparing bnd");
 
 			copyProperties(properties);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new BuildException(e);
 		}
@@ -91,23 +91,27 @@ public class PrepareTask extends BaseTask {
 	}
 
 	/**
-	 * Print out the properties when they are set in sorted order @param print
+	 * Print out the properties when they are set in sorted order
+	 * 
+	 * @param print
 	 */
 	public void setPrint(boolean print) {
 		this.print = print;
 	}
 
 	/**
-	 * Set the base directory of the project. This property MUST be set. @param
-	 * basedir
+	 * Set the base directory of the project. This property MUST be set.
+	 * 
+	 * @param basedir
 	 */
 	public void setBasedir(File basedir) {
 		this.basedir = basedir;
 	}
 
 	/**
-	 * Set the base directory of the project. This property MUST be set. @param
-	 * basedir
+	 * Set the base directory of the project. This property MUST be set.
+	 * 
+	 * @param basedir
 	 */
 	public void setTop(String top) {
 		this.top = top;

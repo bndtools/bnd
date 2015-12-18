@@ -29,8 +29,7 @@ public class SinkFS {
 		for (Delta delta : deltas) {
 			try {
 				delta(cwd, delta);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

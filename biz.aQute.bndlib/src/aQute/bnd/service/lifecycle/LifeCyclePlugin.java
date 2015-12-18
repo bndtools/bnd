@@ -1,8 +1,9 @@
 package aQute.bnd.service.lifecycle;
 
-import java.util.*;
+import java.util.Map;
 
-import aQute.bnd.build.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 
 /**
  * The base class for a plugin that wants to intercept workspace life cycle
@@ -12,7 +13,9 @@ public abstract class LifeCyclePlugin {
 
 	/**
 	 * Called when the plugin is setup. This plugin will be added to the setup
-	 * but the workspace is not yet refreshed. @throws Exception
+	 * but the workspace is not yet refreshed.
+	 * 
+	 * @throws Exception
 	 */
 	public void init(Workspace ws) throws Exception {}
 

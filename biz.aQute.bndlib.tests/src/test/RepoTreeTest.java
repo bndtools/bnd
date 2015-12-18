@@ -1,16 +1,21 @@
 
 package test;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import java.util.*;
+import java.util.Arrays;
 
-import junit.framework.*;
-import aQute.bnd.differ.*;
-import aQute.bnd.service.*;
-import aQute.bnd.service.diff.*;
-import aQute.bnd.version.*;
-import aQute.lib.collections.*;
+import aQute.bnd.differ.DiffImpl;
+import aQute.bnd.differ.RepositoryElement;
+import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.diff.Delta;
+import aQute.bnd.service.diff.Diff;
+import aQute.bnd.service.diff.Tree;
+import aQute.bnd.service.diff.Type;
+import aQute.bnd.version.Version;
+import aQute.lib.collections.SortedList;
+import junit.framework.TestCase;
 
 public class RepoTreeTest extends TestCase {
 	public static void testSimple() throws Exception {

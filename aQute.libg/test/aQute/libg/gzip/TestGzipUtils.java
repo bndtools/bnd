@@ -1,9 +1,10 @@
 package aQute.libg.gzip;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.InputStream;
 
-import junit.framework.*;
-import aQute.lib.io.*;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 public class TestGzipUtils extends TestCase {
 	public void testUnzipped() throws Exception {
@@ -11,8 +12,7 @@ public class TestGzipUtils extends TestCase {
 		InputStream stream = GZipUtils.detectCompression(fis);
 		try {
 			assertEquals("A plan, a plan, a canal, Panama.", IO.collect(stream));
-		}
-		finally {
+		} finally {
 			stream.close();
 			fis.close();
 		}
@@ -23,8 +23,7 @@ public class TestGzipUtils extends TestCase {
 		InputStream stream = GZipUtils.detectCompression(fis);
 		try {
 			assertEquals("A plan, a plan, a canal, Panama.", IO.collect(stream));
-		}
-		finally {
+		} finally {
 			stream.close();
 			fis.close();
 		}

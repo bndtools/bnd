@@ -14,14 +14,14 @@ import java.util.Hashtable;
 import java.util.Map;
 
 public class Filter {
-	final char WILDCARD = 65535;
+	final char			WILDCARD	= 65535;
 
-	final static int	EQ		= 0;
-	final static int	LE		= 1;
-	final static int	GE		= 2;
-	final static int	APPROX	= 3;
+	final static int	EQ			= 0;
+	final static int	LE			= 1;
+	final static int	GE			= 2;
+	final static int	APPROX		= 3;
 
-	String filter;
+	String				filter;
 
 	abstract class Query {
 		static final String	GARBAGE		= "Trailing garbage";
@@ -32,7 +32,7 @@ public class Filter {
 		static final String	TRUNCATED	= "Truncated expression";
 		static final String	EQUALITY	= "Only equality supported";
 
-		private String tail;
+		private String		tail;
 
 		boolean match() throws IllegalArgumentException {
 			tail = filter;
@@ -227,8 +227,7 @@ public class Filter {
 					Comparable<T> b = Comparable.class.cast(obj);
 					return compareSign(op, a.compareTo((T) b));
 				}
-			}
-			catch (Exception e) {}
+			} catch (Exception e) {}
 			return false;
 		}
 	}
@@ -269,8 +268,7 @@ public class Filter {
 	public boolean match(Dictionary< ? , ? > dict) {
 		try {
 			return new DictQuery(dict).match();
-		}
-		catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			return false;
 		}
 	}
@@ -278,8 +276,7 @@ public class Filter {
 	public boolean matchMap(Map< ? , ? > dict) {
 		try {
 			return new MapQuery(dict).match();
-		}
-		catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			return false;
 		}
 	}
@@ -287,8 +284,7 @@ public class Filter {
 	public String verify() {
 		try {
 			new DictQuery(new Hashtable<Object,Object>()).match();
-		}
-		catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			return e.getMessage();
 		}
 		return null;

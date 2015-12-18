@@ -1,6 +1,7 @@
 package test.activator;
 
-import org.osgi.framework.*;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
 
 public class Activator11 implements BundleActivator {
 

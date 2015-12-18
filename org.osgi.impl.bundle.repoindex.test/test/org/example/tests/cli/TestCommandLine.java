@@ -1,27 +1,33 @@
 package org.example.tests.cli;
 
-import static org.example.tests.utils.Utils.*;
+import static org.example.tests.utils.Utils.copyToTempFile;
+import static org.example.tests.utils.Utils.createTempDir;
+import static org.example.tests.utils.Utils.deleteWithException;
 
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+import java.util.zip.GZIPInputStream;
 
-import junit.framework.*;
+import org.example.tests.utils.Utils;
 
-import org.example.tests.utils.*;
-
-import aQute.bnd.build.*;
-import aQute.bnd.service.*;
-import aQute.lib.io.*;
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.service.Strategy;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
 @SuppressWarnings("restriction")
 public class TestCommandLine extends TestCase {
 
-	private static final String CLI = "org.osgi.impl.bundle.repoindex.cli";
+	private static final String	CLI	= "org.osgi.impl.bundle.repoindex.cli";
 
-	private File		tempDir;
-	private Workspace	ws;
-	private File		jarFile;
+	private File				tempDir;
+	private Workspace			ws;
+	private File				jarFile;
 
 	@Override
 	protected void setUp() throws Exception {
@@ -121,8 +127,7 @@ public class TestCommandLine extends TestCase {
 		try {
 			execute(args);
 			fail("Expected exception");
-		}
-		catch (Exception e) {}
+		} catch (Exception e) {}
 	}
 
 	public void testPrettyPrint() throws Exception {
