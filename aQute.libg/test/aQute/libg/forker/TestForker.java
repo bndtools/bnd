@@ -59,8 +59,7 @@ public class TestForker extends TestCase {
 		try {
 			forker.start(100);
 			fail();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			assertEquals(IllegalArgumentException.class, e.getClass());
 		}
@@ -79,12 +78,10 @@ public class TestForker extends TestCase {
 						System.err.println("starting to wait");
 						result.wait(TIMEOUT);
 						System.err.println("finished wait");
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						System.err.println("exception");
 						e.printStackTrace();
-					}
-					finally {
+					} finally {
 						System.err.println("leaving task");
 					}
 				}

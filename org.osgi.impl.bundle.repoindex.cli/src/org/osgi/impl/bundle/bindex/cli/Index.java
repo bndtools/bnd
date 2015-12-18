@@ -46,13 +46,15 @@ import de.kalpatec.pojosr.framework.launch.PojoServiceRegistryFactory;
 public class Index {
 
 	/** the program name */
-	static final String PROGRAM_NAME = "repoindex";
+	static final String			PROGRAM_NAME					= "repoindex";
 
 	public static final String	DEFAULT_FILENAME_UNCOMPRESSED	= "index.xml";
 	public static final String	DEFAULT_FILENAME_COMPRESSED		= DEFAULT_FILENAME_UNCOMPRESSED + ".gz";
 
 	/**
-	 * Main entry point. See -help for options. @param args Program arguments
+	 * Main entry point. See -help for options.
+	 * 
+	 * @param args Program arguments
 	 */
 	public static void main(String args[]) {
 		try {
@@ -91,23 +93,19 @@ public class Index {
 			try {
 				fos = new FileOutputStream(outputFile);
 				index.index(fileList, fos, config);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
-			}
-			finally {
+			} finally {
 				if (fos != null) {
 					try {
 						fos.close();
-					}
-					catch (IOException e) {
+					} catch (IOException e) {
 						/* swallow */
 					}
 					fos = null;
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			System.exit(1);
 		}
@@ -127,8 +125,7 @@ public class Index {
 		CmdLineParser parser = new CmdLineParser(commandLineOptions);
 		try {
 			parser.parseArgument(args);
-		}
-		catch (CmdLineException e) {
+		} catch (CmdLineException e) {
 			err.printf("Error during command-line parsing: %s%n", e.getLocalizedMessage());
 			commandLineOptions.help = true;
 		}
@@ -145,8 +142,7 @@ public class Index {
 				if (cols > 80) {
 					parser.setUsageWidth(cols);
 				}
-			}
-			catch (NumberFormatException e) {
+			} catch (NumberFormatException e) {
 				/* swallow, can't be covered by a test */
 			}
 
@@ -219,8 +215,7 @@ public class Index {
 		try {
 			stream = new FileInputStream(knownBundles);
 			props.load(stream);
-		}
-		finally {
+		} finally {
 			if (stream != null)
 				stream.close();
 		}

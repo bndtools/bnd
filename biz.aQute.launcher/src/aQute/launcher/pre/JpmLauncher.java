@@ -30,10 +30,7 @@ public class JpmLauncher {
 					args
 			});
 			return;
-		}
-		catch (ClassNotFoundException e) {}
-		catch (NoSuchMethodException eee) {}
-		catch (Exception ee) {
+		} catch (ClassNotFoundException e) {} catch (NoSuchMethodException eee) {} catch (Exception ee) {
 			throw ee;
 		}
 
@@ -69,8 +66,7 @@ public class JpmLauncher {
 				sb.append((char) c);
 
 			return sb.toString();
-		}
-		finally {
+		} finally {
 			inputStream.close();
 		}
 	}
@@ -83,12 +79,10 @@ public class JpmLauncher {
 				int size;
 				while ((size = in.read(buffer)) > 0)
 					out.write(buffer, 0, size);
-			}
-			finally {
+			} finally {
 				out.close();
 			}
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 	}

@@ -53,7 +53,8 @@ public class TestWrapper extends TestCase {
 		InfoRepositoryWrapper iw = getRepo();
 
 		Requirement cr = new CapReqBuilder("osgi.service").filter("(objectClass=org.slf4j.Logger)")
-				.addDirective("effective", "active").buildSyntheticRequirement();
+				.addDirective("effective", "active")
+				.buildSyntheticRequirement();
 
 		Map<Requirement,Collection<Capability>> provider = iw.findProviders(Collections.singleton(cr));
 		assertNotNull(provider);
@@ -77,7 +78,8 @@ public class TestWrapper extends TestCase {
 		InfoRepositoryWrapper iw = getRepo();
 
 		Requirement cr = new CapReqBuilder("osgi.service").filter("(objectClass=osgi.enroute.logger.api.LoggerAdmin)")
-				.addDirective("effective", "active").buildSyntheticRequirement();
+				.addDirective("effective", "active")
+				.buildSyntheticRequirement();
 
 		Map<Requirement,Collection<Capability>> provider = iw.findProviders(Collections.singleton(cr));
 		assertEquals(1, provider.size());

@@ -30,8 +30,7 @@ public class RunBundlesTask extends BaseTask {
 			bndProject.exportRunbundles(bndFile.getName(), new File(outputDir));
 
 			bndProject.close();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new BuildException(e);
 		}

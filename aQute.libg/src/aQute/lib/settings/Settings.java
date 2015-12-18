@@ -26,10 +26,11 @@ import aQute.lib.json.JSONCodec;
  * Maintains persistent settings for bnd (or other apps). The default is
  * ~/.bnd/settings.json). The settings are normal string properties but it
  * specially maintains a public/private key pair and it provides a method to
- * sign a byte array with this pair. <p/> Why not keystore and preferences?
- * Well, keystore is hard to use (you can only store a private key when you have
- * a certificate, but you cannot create a certificate without using com.sun
- * classes) and preferences are not editable.
+ * sign a byte array with this pair.
+ * <p/>
+ * Why not keystore and preferences? Well, keystore is hard to use (you can only
+ * store a private key when you have a certificate, but you cannot create a
+ * certificate without using com.sun classes) and preferences are not editable.
  */
 public class Settings implements Map<String,String> {
 	static JSONCodec	codec	= new JSONCodec();
@@ -84,12 +85,10 @@ public class Settings implements Map<String,String> {
 					data = codec.dec().from(in).get(Data.class);
 					loaded = true;
 					return true;
-				}
-				finally {
+				} finally {
 					in.close();
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				throw new RuntimeException("Cannot read settings file " + this.where, e);
 			}
 		}
@@ -129,13 +128,11 @@ public class Settings implements Map<String,String> {
 					}
 				}
 				codec.enc().to(out).put(data).flush();
-			}
-			finally {
+			} finally {
 				out.close();
 			}
 			assert this.where.isFile();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException("Cannot write settings file " + this.where, e);
 		}
 	}
@@ -187,7 +184,10 @@ public class Settings implements Map<String,String> {
 
 	/**
 	 * Return an encoded public RSA key. this key can be decoded with an
-	 * X509EncodedKeySpec @return an encoded public key. @throws Exception
+	 * X509EncodedKeySpec
+	 * 
+	 * @return an encoded public key.
+	 * @throws Exception
 	 */
 	public byte[] getPublicKey() throws Exception {
 		initKeys();
@@ -196,7 +196,10 @@ public class Settings implements Map<String,String> {
 
 	/**
 	 * Return an encoded private RSA key. this key can be decoded with an
-	 * PKCS8EncodedKeySpec @return an encoded private key. @throws Exception
+	 * PKCS8EncodedKeySpec
+	 * 
+	 * @return an encoded private key.
+	 * @throws Exception
 	 */
 	public byte[] getPrivateKey() throws Exception {
 		initKeys();

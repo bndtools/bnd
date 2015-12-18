@@ -61,45 +61,45 @@ import aQute.libg.generics.Create;
 import aQute.service.reporter.Reporter;
 
 public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
+	static final int				BUFFER_SIZE			= IOConstants.PAGE_SIZE * 1;
 
-	static Pattern PACKAGES_IGNORED = Pattern.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
+	static Pattern					PACKAGES_IGNORED	= Pattern.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
-	static ThreadLocal<Processor>	current			= new ThreadLocal<Processor>();
-	static ScheduledExecutorService	executor		= Executors.newScheduledThreadPool(1);
-	static Random					random			= new Random();
+	static ThreadLocal<Processor>	current				= new ThreadLocal<Processor>();
+	static ScheduledExecutorService	executor			= Executors.newScheduledThreadPool(1);
+	static Random					random				= new Random();
 	// TODO handle include files out of date
 	// TODO make splitter skip eagerly whitespace so trim is not necessary
-	public final static String		LIST_SPLITTER	= "\\s*,\\s*";
-	final List<String>				errors			= new ArrayList<String>();
-	final List<String>				warnings		= new ArrayList<String>();
-	final Set<Object>				basicPlugins	= new HashSet<Object>();
-	private final Set<Closeable>	toBeClosed		= new HashSet<Closeable>();
+	public final static String		LIST_SPLITTER		= "\\s*,\\s*";
+	final List<String>				errors				= new ArrayList<String>();
+	final List<String>				warnings			= new ArrayList<String>();
+	final Set<Object>				basicPlugins		= new HashSet<Object>();
+	private final Set<Closeable>	toBeClosed			= new HashSet<Closeable>();
 	Set<Object>						plugins;
 
-	boolean	pedantic;
-	boolean	trace;
-	boolean	exceptions;
-	boolean	fileMustExist	= true;
+	boolean							pedantic;
+	boolean							trace;
+	boolean							exceptions;
+	boolean							fileMustExist		= true;
 
-	private File base = new File("").getAbsoluteFile();
+	private File					base				= new File("").getAbsoluteFile();
 	private URI						baseURI				= base.toURI();
 
-	Properties		properties;
-	String			profile;
-	private Macro	replacer;
-	private long	lastModified;
-	private File	propertiesFile;
-	private boolean	fixup	= true;
-	long			modified;
-	Processor		parent;
-	List<File>		included;
+	Properties						properties;
+	String							profile;
+	private Macro					replacer;
+	private long					lastModified;
+	private File					propertiesFile;
+	private boolean					fixup				= true;
+	long							modified;
+	Processor						parent;
+	List<File>						included;
 
-	CL					pluginLoader;
-	Collection<String>	filter;
-	HashSet<String>		missingCommand;
-	Boolean				strict;
-	boolean				fixupMessages;
+	CL								pluginLoader;
+	Collection<String>				filter;
+	HashSet<String>					missingCommand;
+	Boolean							strict;
+	boolean							fixupMessages;
 
 	public static class FileLine {
 		public static final FileLine	DUMMY	= new FileLine(null, 0, 0);
@@ -198,14 +198,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					}
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	/**
-	 * A processor can mark itself current for a thread. @return
+	 * A processor can mark itself current for a thread.
+	 * 
+	 * @return
 	 */
 	private Processor current() {
 		Processor p = current.get();
@@ -234,8 +235,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			if (!p.errors.contains(s))
 				p.errors.add(s);
 			return location(s);
-		}
-		finally {
+		} finally {
 			p.signal();
 		}
 	}
@@ -271,8 +271,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			if (!p.errors.contains(s))
 				p.errors.add(s);
 			return location(s);
-		}
-		finally {
+		} finally {
 			p.signal();
 		}
 	}
@@ -355,7 +354,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Standard OSGi header parser. @param value @return
+	 * Standard OSGi header parser.
+	 * 
+	 * @param value
+	 * @return
 	 */
 	static public Parameters parseHeader(String value, Processor logger) {
 		return new Parameters(value, logger);
@@ -398,9 +400,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Return a list of plugins that implement the given class. @param clazz
-	 * Each returned plugin implements this class/interface @return A list of
-	 * plugins
+	 * Return a list of plugins that implement the given class.
+	 * 
+	 * @param clazz Each returned plugin implements this class/interface
+	 * @return A list of plugins
 	 */
 	public <T> List<T> getPlugins(Class<T> clazz) {
 		List<T> l = new ArrayList<T>();
@@ -413,8 +416,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Returns the first plugin it can find of the given type. @param <T> @param
-	 * clazz @return
+	 * Returns the first plugin it can find of the given type.
+	 * 
+	 * @param <T>
+	 * @param clazz
+	 * @return
 	 */
 	public <T> T getPlugin(Class<T> clazz) {
 		Set<Object> all = getPlugins();
@@ -429,7 +435,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * Return a list of plugins. Plugins are defined with the -plugin command.
 	 * They are class names, optionally associated with attributes. Plugins can
 	 * implement the Plugin interface to see these attributes. Any object can be
-	 * a plugin. @return
+	 * a plugin.
+	 * 
+	 * @return
 	 */
 	public Set<Object> getPlugins() {
 		synchronized (this) {
@@ -463,8 +471,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		for (RegistryDonePlugin rdp : getPlugins(RegistryDonePlugin.class)) {
 			try {
 				rdp.done();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				error("Calling done on %s, gives an exception %s", rdp, e);
 			}
 		}
@@ -472,7 +479,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Is called when all plugins are loaded @param plugins
+	 * Is called when all plugins are loaded
+	 * 
+	 * @param plugins
 	 */
 	protected void addExtensions(Set<Object> plugins) {
 
@@ -485,10 +494,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * extensions we need more). Since downloads might need plugins for
 	 * passwords and protocols we need to first load the paths specified on the
 	 * plugin clause, then check if there are any local plugins (starting with
-	 * aQute.bnd and be able to load from our own class loader). <p> After that,
-	 * we load the plugin paths, these can use the built in connectors. <p> Last
-	 * but not least, we load the remaining plugins. @param instances @param
-	 * pluginString
+	 * aQute.bnd and be able to load from our own class loader).
+	 * <p>
+	 * After that, we load the plugin paths, these can use the built in
+	 * connectors.
+	 * <p>
+	 * Last but not least, we load the remaining plugins.
+	 * 
+	 * @param instances
+	 * @param pluginString
 	 */
 	protected void loadPlugins(Set<Object> instances, String pluginString, String pluginPathString) {
 		Parameters plugins = new Parameters(pluginString);
@@ -505,8 +519,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 						File f = getFile(p).getAbsoluteFile();
 						loader.add(f.toURI().toURL());
 					}
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					error("Problem adding path %s to loader for plugin %s. Exception: (%s)", path, key, e);
 				}
 			}
@@ -581,9 +594,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * to the class loader. If this file does not exist, and there is a
 	 * {@link Constants#PLUGINPATH_URL_ATTR} attribute then we download it first
 	 * from that url. You can then also specify a
-	 * {@link Constants#PLUGINPATH_SHA1_ATTR} attribute to verify the file. @see
-	 * PLUGINPATH @param pluginPath the clauses for the plugin path @param
-	 * loader The class loader to extend
+	 * {@link Constants#PLUGINPATH_SHA1_ATTR} attribute to verify the file.
+	 * 
+	 * @see PLUGINPATH
+	 * @param pluginPath the clauses for the plugin path
+	 * @param loader The class loader to extend
 	 */
 	private void loadPluginPath(Set<Object> instances, String pluginPath, CL loader) {
 		Parameters pluginpath = new Parameters(pluginPath);
@@ -643,8 +658,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 										entry.getKey(), url, digest);
 							}
 						}
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						error("Failed to download plugin %s from %s, error %s", entry.getKey(), url, e);
 						continue nextClause;
 					}
@@ -657,8 +671,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			trace("Adding %s to loader for plugins", f);
 			try {
 				loader.add(f.toURI().toURL());
-			}
-			catch (MalformedURLException e) {
+			} catch (MalformedURLException e) {
 				// Cannot happen since every file has a correct url
 			}
 		}
@@ -666,8 +679,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Load a plugin and customize it. If the plugin cannot be loaded then we
-	 * return null. @param loader Name of the loader @param attrs @param
-	 * className @return
+	 * return null.
+	 * 
+	 * @param loader Name of the loader
+	 * @param attrs
+	 * @param className
+	 * @return
 	 */
 	private Object loadPlugin(ClassLoader loader, Attrs attrs, String className, boolean ignoreError) {
 		try {
@@ -678,16 +695,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				addClose((Closeable) plugin);
 			}
 			return plugin;
-		}
-		catch (NoClassDefFoundError e) {
+		} catch (NoClassDefFoundError e) {
 			if (!ignoreError)
 				error("Failed to load plugin %s;%s, error: %s ", className, attrs, e.getMessage());
-		}
-		catch (ClassNotFoundException e) {
+		} catch (ClassNotFoundException e) {
 			if (!ignoreError)
 				error("Failed to load plugin %s;%s, error: %s ", className, attrs, e.getMessage());
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			error("Unexpected error loading plugin %s-%s: %s", className, attrs, e);
 		}
 		return null;
@@ -700,7 +714,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Set the initial parameters of a plugin @param plugin @param entry
+	 * Set the initial parameters of a plugin
+	 * 
+	 * @param plugin
+	 * @param entry
 	 */
 	protected <T> T customize(T plugin, Attrs map) {
 		if (plugin instanceof Plugin) {
@@ -709,8 +726,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				if (map == null)
 					map = Attrs.EMPTY_ATTRS;
 				((Plugin) plugin).setProperties(map);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				error("While setting properties %s on plugin %s, %s", map, plugin, e);
 			}
 		}
@@ -721,8 +737,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Indicates that this run should ignore errors and succeed anyway @return
-	 * true if this processor should return errors
+	 * Indicates that this run should ignore errors and succeed anyway
+	 * 
+	 * @return true if this processor should return errors
 	 */
 	@Override
 	public boolean isFailOk() {
@@ -789,8 +806,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		for (Closeable c : toBeClosed) {
 			try {
 				c.close();
-			}
-			catch (IOException e) {
+			} catch (IOException e) {
 				// Who cares?
 			}
 		}
@@ -854,7 +870,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Property handling ... @return
+	 * Property handling ...
+	 * 
+	 * @return
 	 */
 
 	public Properties getProperties() {
@@ -875,8 +893,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			try {
 				Properties properties = loadProperties(file);
 				mergeProperties(properties, override);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				error("Error loading properties file: " + file);
 			}
 		} else {
@@ -929,8 +946,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Inspect the properties and if you find -includes parse the line included
 	 * manifest files or properties files. The files are relative from the given
-	 * base, this is normally the base for the analyzer. @param ubase @param
-	 * p @param done @throws IOException @throws IOException
+	 * base, this is normally the base for the analyzer.
+	 * 
+	 * @param ubase
+	 * @param p
+	 * @param done
+	 * @throws IOException
+	 * @throws IOException
 	 */
 
 	private void doIncludes(File ubase, Properties p) {
@@ -968,20 +990,17 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 							try {
 								IO.copy(url.openStream(), tmp);
 								doIncludeFile(tmp, overwrite, p);
-							}
-							finally {
+							} finally {
 								tmp.delete();
 							}
-						}
-						catch (Exception mue) {
+						} catch (Exception mue) {
 							// ignore
 						}
 						if (fileMustExist)
 							error("Included file " + file + (file.isDirectory() ? " is directory" : " does not exist"));
 					} else
 						doIncludeFile(file, overwrite, p);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					if (fileMustExist)
 						error("Error in processing included file: " + value, e);
 				}
@@ -990,16 +1009,25 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * @param file @param parent @param done @param overwrite @throws
-	 * FileNotFoundException @throws IOException
+	 * @param file
+	 * @param parent
+	 * @param done
+	 * @param overwrite
+	 * @throws FileNotFoundException
+	 * @throws IOException
 	 */
 	public void doIncludeFile(File file, boolean overwrite, Properties target) throws Exception {
 		doIncludeFile(file, overwrite, target, null);
 	}
 
 	/**
-	 * @param file @param parent @param done @param overwrite @param
-	 * extensionName @throws FileNotFoundException @throws IOException
+	 * @param file
+	 * @param parent
+	 * @param done
+	 * @param overwrite
+	 * @param extensionName
+	 * @throws FileNotFoundException
+	 * @throws IOException
 	 */
 	public void doIncludeFile(File file, boolean overwrite, Properties target, String extensionName) throws Exception {
 		if (included != null && included.contains(file)) {
@@ -1086,8 +1114,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Set the properties by file. Setting the properties this way will also set
 	 * the base for this analyzer. After reading the properties, this will call
-	 * setProperties(Properties) which will handle the includes. @param
-	 * propertiesFile @throws FileNotFoundException @throws IOException
+	 * setProperties(Properties) which will handle the includes.
+	 * 
+	 * @param propertiesFile
+	 * @throws FileNotFoundException
+	 * @throws IOException
 	 */
 	public void setProperties(File propertiesFile) throws IOException {
 		propertiesFile = propertiesFile.getAbsoluteFile();
@@ -1115,8 +1146,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					error("No such properties file: " + propertiesFile);
 				}
 			}
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			error("Could not load properties " + propertiesFile);
 		}
 	}
@@ -1154,8 +1184,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Get a property without preprocessing it with a proper default @param
-	 * headerName @param deflt @return
+	 * Get a property without preprocessing it with a proper default
+	 * 
+	 * @param headerName
+	 * @param deflt
+	 * @return
 	 */
 
 	public String getUnprocessedProperty(String key, String deflt) {
@@ -1163,8 +1196,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Get a property with preprocessing it with a proper default @param
-	 * headerName @param deflt @return
+	 * Get a property with preprocessing it with a proper default
+	 * 
+	 * @param headerName
+	 * @param deflt
+	 * @return
 	 */
 	public String getProperty(String key, String deflt) {
 		return getProperty(key, deflt, ",");
@@ -1245,8 +1281,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Helper to load a properties file from disk. @param file @return @throws
-	 * IOException
+	 * Helper to load a properties file from disk.
+	 * 
+	 * @param file
+	 * @return
+	 * @throws IOException
 	 */
 	public Properties loadProperties(File file) throws IOException {
 
@@ -1256,8 +1295,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 			UTF8Properties p = loadProperties0(in, file);
 			return p;
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 
@@ -1266,9 +1304,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Load Properties from disk. The default encoding is ISO-8859-1 but
 	 * nowadays all files are encoded with UTF-8. So we try to load it first as
-	 * UTF-8 and if this fails we fail back to ISO-8859-1 @param in The stream
-	 * to load from @param name The name of the file for doc reasons @return a
-	 * Properties @throws IOException
+	 * UTF-8 and if this fails we fail back to ISO-8859-1
+	 * 
+	 * @param in The stream to load from
+	 * @param name The name of the file for doc reasons
+	 * @return a Properties
+	 * @throws IOException
 	 */
 	UTF8Properties loadProperties0(InputStream in, File file) throws IOException {
 
@@ -1283,8 +1324,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			UTF8Properties p = new UTF8Properties();
 			p.load(in, file, this);
 			return replaceAll0(p, "\\$\\{\\.\\}", name);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			error("Error during loading properties file: " + name + ", error:" + e);
 			return new UTF8Properties();
 		}
@@ -1312,9 +1352,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Print a standard Map based OSGi header. @param exports map { name => Map
-	 * { attribute|directive => value } } @return the clauses @throws
-	 * IOException
+	 * Print a standard Map based OSGi header.
+	 * 
+	 * @param exports map { name => Map { attribute|directive => value } }
+	 * @return the clauses
+	 * @throws IOException
 	 */
 	public static String printClauses(Map< ? , ? extends Map< ? , ? >> exports) throws IOException {
 		return printClauses(exports, false);
@@ -1362,7 +1404,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * @param sb @param value @return @throws IOException
+	 * @param sb
+	 * @param value
+	 * @return
+	 * @throws IOException
 	 */
 	public static boolean quote(Appendable sb, String value) throws IOException {
 		return OSGiHeader.quote(sb, value);
@@ -1376,7 +1421,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * This should be overridden by subclasses to add extra macro command
-	 * domains on the search list. @return
+	 * domains on the search list.
+	 * 
+	 * @return
 	 */
 	protected Object[] getMacroDomains() {
 		return new Object[] {};
@@ -1384,7 +1431,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Return the properties but expand all macros. This always returns a new
-	 * Properties object that can be used in any way. @return
+	 * Properties object that can be used in any way.
+	 * 
+	 * @return
 	 */
 	public Properties getFlattenedProperties() {
 		return getReplacer().getFlattenedProperties();
@@ -1393,14 +1442,18 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Return the properties but expand all macros. This always returns a new
-	 * Properties object that can be used in any way. @return
+	 * Properties object that can be used in any way.
+	 * 
+	 * @return
 	 */
 	public Properties getFlattenedProperties(boolean ignoreInstructions) {
 		return getReplacer().getFlattenedProperties(ignoreInstructions);
 	}
 
 	/**
-	 * Return all inherited property keys @return
+	 * Return all inherited property keys
+	 * 
+	 * @return
 	 */
 	public Set<String> getPropertyKeys(boolean inherit) {
 		Set<String> result;
@@ -1427,7 +1480,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Add or override a new property. @param key @param value
+	 * Add or override a new property.
+	 * 
+	 * @param key
+	 * @param value
 	 */
 	public void setProperty(String key, String value) {
 		checkheader: for (int i = 0; i < headers.length; i++) {
@@ -1440,8 +1496,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Read a manifest but return a properties object. @param in @return @throws
-	 * IOException
+	 * Read a manifest but return a properties object.
+	 * 
+	 * @param in
+	 * @return
+	 * @throws IOException
 	 */
 	public static Properties getManifestAsProperties(InputStream in) throws IOException {
 		Properties p = new UTF8Properties();
@@ -1473,15 +1532,17 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				sb.append(chars, 0, size);
 				size = ir.read(chars);
 			}
-		}
-		finally {
+		} finally {
 			ir.close();
 		}
 		return sb.toString();
 	}
 
 	/**
-	 * Join a list. @param args @return
+	 * Join a list.
+	 * 
+	 * @param args
+	 * @return
 	 */
 	public static String join(Collection< ? > list, String delimeter) {
 		return join(delimeter, list);
@@ -1563,8 +1624,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Make the file short if it is inside our base directory, otherwise
-	 * long. @param f @return
+	 * Make the file short if it is inside our base directory, otherwise long.
+	 * 
+	 * @param f
+	 * @return
 	 */
 	public String normalize(String f) {
 		if (f.startsWith(base.getAbsolutePath() + "/"))
@@ -1607,8 +1670,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				//
 				clazz.getMethod("close").invoke(this);
 				return;
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				// ignore
 			}
 
@@ -1631,14 +1693,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 						loaderField.setAccessible(true);
 						JarFile jarFile = (JarFile) loaderField.get(loader);
 						jarFile.close();
-					}
-					catch (Throwable t) {
+					} catch (Throwable t) {
 						// if we got this far, this is probably not a JAR loader
 						// so skip it
 					}
 				}
-			}
-			catch (Throwable t) {
+			} catch (Throwable t) {
 				// probably not a SUN VM
 			}
 		}
@@ -1657,8 +1717,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			try {
 				Class< ? > c = super.loadClass(name);
 				return c;
-			}
-			catch (Throwable t) {
+			} catch (Throwable t) {
 				StringBuilder sb = new StringBuilder();
 				sb.append(name);
 				sb.append(" not found, parent:  ");
@@ -1817,7 +1876,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * contains the command name of a plugin, and that plugin is not available,
 	 * then an error is reported during manifest calculation. This allows the
 	 * plugin to fail to load when it is not needed. We first get the plugins to
-	 * ensure it is properly initialized. @param name @return
+	 * ensure it is properly initialized.
+	 * 
+	 * @param name
+	 * @return
 	 */
 	public boolean isMissingPlugin(String name) {
 		getPlugins();
@@ -1828,7 +1890,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * Append two strings to for a path in a ZIP or JAR file. It is guaranteed
 	 * to return a string that does not start, nor ends with a '/', while it is
 	 * properly separated with slashes. Double slashes are properly removed.
-	 * <pre> &quot;/&quot; + &quot;abc/def/&quot; becomes &quot;abc/def&quot;
+	 * 
+	 * <pre>
+	 * &quot;/&quot; + &quot;abc/def/&quot; becomes &quot;abc/def&quot;
 	 * &#064;param prefix &#064;param suffix &#064;return
 	 */
 	public static String appendPath(String... parts) {
@@ -1859,8 +1923,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Parse the a=b strings and return a map of them. @param attrs @param
-	 * clazz @return
+	 * Parse the a=b strings and return a map of them.
+	 * 
+	 * @param attrs
+	 * @param clazz
+	 * @return
 	 */
 	public static Attrs doAttrbutes(Object[] attrs, Clazz clazz, Macro macro) {
 		Attrs map = new Attrs();
@@ -1882,7 +1949,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * This method is the same as String.format but it makes sure that any
-	 * arrays are transformed to strings. @param string @param parms @return
+	 * arrays are transformed to strings.
+	 * 
+	 * @param string
+	 * @param parms
+	 * @return
 	 */
 	public static String formatArrays(String string, Object... parms) {
 		if (parms == null) {
@@ -1893,8 +1964,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Check if the object is an array and turn it into a string if it is,
-	 * otherwise unchanged. @param object the object to make printable @return a
-	 * string if it was an array or the original object
+	 * otherwise unchanged.
+	 * 
+	 * @param object the object to make printable
+	 * @return a string if it was an array or the original object
 	 */
 	public static Object makePrintable(Object object) {
 		if (object == null)
@@ -1963,8 +2036,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (args.length > 1) {
 			try {
 				numchars = Integer.parseInt(args[1]);
-			}
-			catch (NumberFormatException e) {
+			} catch (NumberFormatException e) {
 				throw new IllegalArgumentException("Invalid character count parameter in ${random} macro.");
 			}
 		}
@@ -1996,16 +2068,23 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private static final String	OS_PROCESSOR	= "processor";
 
 	/**
-	 * <p> Generates a Capability string, in the format specified by the OSGi
+	 * <p>
+	 * Generates a Capability string, in the format specified by the OSGi
 	 * Provide-Capability header, representing the current native platform
 	 * according to OSGi RFC 188. For example on Windows7 running on an x86_64
-	 * processor it should generate the following: </p> <pre>
+	 * processor it should generate the following:
+	 * </p>
+	 * 
+	 * <pre>
 	 * osgi.native;osgi.native.osname:List&lt;String&gt;="Windows7,Windows
 	 * 7,Win32";osgi.native.osversion:Version=6.1.0;osgi.native.processor:List&
-	 * lt;String&gt;="x86-64,amd64,em64t,x86_64" </pre> @param args The array of
-	 * properties. For example: the macro invocation of
-	 * "${native_capability;osversion=3.2.4;osname=Linux}" results in an args
-	 * array of [native_capability,&nbsp;osversion=3.2.4,&nbsp;osname=Linux]
+	 * lt;String&gt;="x86-64,amd64,em64t,x86_64"
+	 * </pre>
+	 * 
+	 * @param args The array of properties. For example: the macro invocation of
+	 *            "${native_capability;osversion=3.2.4;osname=Linux}" results in
+	 *            an args array of
+	 *            [native_capability,&nbsp;osversion=3.2.4,&nbsp;osname=Linux]
 	 */
 
 	public String _native_capability(String[] args) throws IllegalArgumentException {
@@ -2027,8 +2106,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		try {
 			osInformation = new OSInformation();
-		}
-		catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			osInformationException = e;
 		}
 
@@ -2041,7 +2119,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		String processorNamesOverride = null;
 
 		if (args.length > 1) {
-			assert("native_capability".equals(args[0]));
+			assert ("native_capability".equals(args[0]));
 			for (int i = 1; i < args.length; i++) {
 				String arg = args[i];
 				String[] fields = arg.split("=", 2);
@@ -2084,7 +2162,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		builder.append(";" + OSGI_NATIVE + "." + OS_NAME + ":List<String>=\"").append(osnameOverride).append('"');
 		builder.append(";" + OSGI_NATIVE + "." + OS_VERSION + ":Version=").append(osversionOverride);
-		builder.append(";" + OSGI_NATIVE + "." + OS_PROCESSOR + ":List<String>=\"").append(processorNamesOverride)
+		builder.append(";" + OSGI_NATIVE + "." + OS_PROCESSOR + ":List<String>=\"")
+				.append(processorNamesOverride)
 				.append('"');
 
 		/*
@@ -2116,7 +2195,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * End a command. Will restore the previous command owner. @param previous
+	 * End a command. Will restore the previous command owner.
+	 * 
+	 * @param previous
 	 */
 	protected void endHandleErrors(Processor previous) {
 		trace("end");
@@ -2130,7 +2211,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * These plugins are added to the total list of plugins. The separation is
 	 * necessary because the list of plugins is refreshed now and then so we
-	 * need to be able to add them at any moment in time. @param plugin
+	 * need to be able to add them at any moment in time.
+	 * 
+	 * @param plugin
 	 */
 	public synchronized void addBasicPlugin(Object plugin) {
 		basicPlugins.add(plugin);
@@ -2211,15 +2294,18 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			StringBuilder sb = new StringBuilder();
 			report(sb);
 			return sb.toString();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	/**
-	 * Utiltity to replace an extension @param s @param extension @param
-	 * newExtension @return
+	 * Utiltity to replace an extension
+	 * 
+	 * @param s
+	 * @param extension
+	 * @param newExtension
+	 * @return
 	 */
 	public String replaceExtension(String s, String extension, String newExtension) {
 		if (s.endsWith(extension))
@@ -2229,7 +2315,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Create a location object and add it to the locations @param s @return
+	 * Create a location object and add it to the locations
+	 * 
+	 * @param s
+	 * @return
 	 */
 	List<Location> locations = new ArrayList<Location>();
 
@@ -2300,7 +2389,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Get a header relative to this processor, tking its parents and includes
-	 * into account. @param location @param header @return @throws IOException
+	 * into account.
+	 * 
+	 * @param location
+	 * @param header
+	 * @return
+	 * @throws IOException
 	 */
 	public FileLine getHeader(String header) throws Exception {
 		return getHeader(
@@ -2313,8 +2407,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		sb.append("[^\\\\\n\r]*(\\\\\n[^\\\\\n\r]*)*");
 		try {
 			return Pattern.compile(sb.toString(), Pattern.MULTILINE + Pattern.CASE_INSENSITIVE);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return Pattern.compile("^[ \t]*" + Pattern.quote(header), Pattern.MULTILINE + Pattern.CASE_INSENSITIVE);
 		}
 	}
@@ -2471,8 +2564,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Report the details of this processor. Should in general be
-	 * overridden @param table @throws Exception
+	 * Report the details of this processor. Should in general be overridden
+	 * 
+	 * @param table
+	 * @throws Exception
 	 */
 
 	public void report(Map<String,Object> table) throws Exception {
@@ -2533,9 +2628,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Try to get a Jar from a file name/path or a url, or in last resort from
-	 * the classpath name part of their files. @param name URL or filename
-	 * relative to the base @param from Message identifying the caller for
-	 * errors @return null or a Jar with the contents for the name
+	 * the classpath name part of their files.
+	 * 
+	 * @param name URL or filename relative to the base
+	 * @param from Message identifying the caller for errors
+	 * @return null or a Jar with the contents for the name
 	 */
 	public Jar getJarFromName(String name, String from) {
 		File file = new File(name);
@@ -2547,8 +2644,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				Jar jar = new Jar(file);
 				addClose(jar);
 				return jar;
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				error("Exception in parsing jar file for " + from + ": " + name + " " + e);
 			}
 		// It is not a file ...
@@ -2566,8 +2662,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			EmbeddedResource.build(jar, in, lastModified);
 			in.close();
 			return jar;
-		}
-		catch (IOException ee) {
+		} catch (IOException ee) {
 			// ignore
 		}
 		return null;

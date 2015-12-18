@@ -19,8 +19,7 @@ public class Sed {
 				out.write(newline.getBytes());
 				out.write("\n".getBytes());
 			}
-		}
-		finally {
+		} finally {
 			reader.close();
 			out.close();
 		}

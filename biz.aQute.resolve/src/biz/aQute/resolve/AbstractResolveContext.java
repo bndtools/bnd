@@ -84,26 +84,26 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		// IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES.add(HostNamespace.HOST_NAMESPACE);
 	}
 
-	protected static final String	CONTRACT_OSGI_FRAMEWORK		= "OSGiFramework";
-	protected static final String	IDENTITY_INITIAL_RESOURCE	= "<<INITIAL>>";
-	protected static final String	IDENTITY_SYSTEM_RESOURCE	= "<<SYSTEM>>";
+	protected static final String					CONTRACT_OSGI_FRAMEWORK		= "OSGiFramework";
+	protected static final String					IDENTITY_INITIAL_RESOURCE	= "<<INITIAL>>";
+	protected static final String					IDENTITY_SYSTEM_RESOURCE	= "<<SYSTEM>>";
 
 	protected final LogService						log;
-	private CapabilityIndex							systemCapabilityIndex	= new CapabilityIndex();
-	private final List<Repository>					repositories			= new ArrayList<Repository>();
-	private final List<Requirement>					failed					= new ArrayList<Requirement>();
-	private final Map<CacheKey,List<Capability>>	providerCache			= new HashMap<CacheKey,List<Capability>>();
-	private final Set<Resource>						optionalRoots			= new HashSet<Resource>();
-	private final ConcurrentMap<Resource,Integer>	resourcePriorities		= new ConcurrentHashMap<Resource,Integer>();
+	private CapabilityIndex							systemCapabilityIndex		= new CapabilityIndex();
+	private final List<Repository>					repositories				= new ArrayList<Repository>();
+	private final List<Requirement>					failed						= new ArrayList<Requirement>();
+	private final Map<CacheKey,List<Capability>>	providerCache				= new HashMap<CacheKey,List<Capability>>();
+	private final Set<Resource>						optionalRoots				= new HashSet<Resource>();
+	private final ConcurrentMap<Resource,Integer>	resourcePriorities			= new ConcurrentHashMap<Resource,Integer>();
 	private final Comparator<Capability>			capabilityComparator;
-	private Map<String,Set<String>>					effectiveSet			= new HashMap<String,Set<String>>();
-	private final List<ResolverHook>				resolverHooks			= new ArrayList<ResolverHook>();
-	private final List<ResolutionCallback>			callbacks				= new LinkedList<ResolutionCallback>();
-	private boolean									initialised				= false;
+	private Map<String,Set<String>>					effectiveSet				= new HashMap<String,Set<String>>();
+	private final List<ResolverHook>				resolverHooks				= new ArrayList<ResolverHook>();
+	private final List<ResolutionCallback>			callbacks					= new LinkedList<ResolutionCallback>();
+	private boolean									initialised					= false;
 	private Resource								systemResource;
 	private Resource								inputResource;
-	private Set<Resource>							blacklistedResources	= new HashSet<Resource>();
-	private int										level					= 0;
+	private Set<Resource>							blacklistedResources		= new HashSet<Resource>();
+	private int										level						= 0;
 	private Resource								framework;
 
 	public AbstractResolveContext(LogService log) {
@@ -126,8 +126,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			}
 
 			initialised = true;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -292,9 +291,12 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	/**
 	 * Return any capabilities from the given repo. This method will filter the
-	 * blacklist. @param repo The repo to fetch requirements from @param
-	 * requirement the requirement @return a list of caps for the asked
-	 * requirement minus and capabilities that are skipped.
+	 * blacklist.
+	 * 
+	 * @param repo The repo to fetch requirements from
+	 * @param requirement the requirement
+	 * @return a list of caps for the asked requirement minus and capabilities
+	 *         that are skipped.
 	 */
 	protected Collection<Capability> findProviders(Repository repo, Requirement requirement) {
 		Map<Requirement,Collection<Capability>> map = repo.findProviders(Collections.singleton(requirement));
@@ -333,8 +335,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 					match = true;
 				else
 					match = filter.match(new MapToDictionaryAdapter(selfCap.getAttributes()));
-			}
-			catch (InvalidSyntaxException e) {
+			} catch (InvalidSyntaxException e) {
 				log.log(LogService.LOG_ERROR, "Invalid filter directive on requirement: " + requirement, e);
 			}
 		}
@@ -550,8 +551,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 					Version v2 = getVersion(o2, PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 					if (!v1.equals(v2))
 						return v2.compareTo(v1);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					log.log(LogService.LOG_INFO,
 							"Unable to determine the versions of the capabilities " + o1 + " and " + o2, e);
 				}
@@ -674,8 +674,12 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	/**
-	 * Get the framework repository from the @param repos @param bsn @param
-	 * version @return
+	 * Get the framework repository from the
+	 * 
+	 * @param repos
+	 * @param bsn
+	 * @param version
+	 * @return
 	 */
 	public List<Resource> getResources(List<Repository> repos, String bsn, String range) {
 		Requirement bundle = CapReqBuilder.createBundleRequirement(bsn, range).buildSyntheticRequirement();
@@ -694,9 +698,11 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	/**
-	 * Add a framework resource to the system resource builder @param system the
-	 * system resource being build up @param framework the framework
-	 * resource @throws Exception
+	 * Add a framework resource to the system resource builder
+	 * 
+	 * @param system the system resource being build up
+	 * @param framework the framework resource
+	 * @throws Exception
 	 */
 
 	protected void setFramework(ResourceBuilder system, Resource framework) throws Exception {
@@ -785,8 +791,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 									result.add(c);
 								}
 							}
-						}
-						catch (InvalidSyntaxException e) {}
+						} catch (InvalidSyntaxException e) {}
 					}
 					if (result.size() > 0) {
 						if (reqMap == null) {
@@ -889,8 +894,13 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	/**
 	 * Load a bnd path from the OSGi repositories. We assume the highest version
-	 * allowed. This mimics Project.getBundles() @param system @param
-	 * path @param what @throws IOException @throws Exception
+	 * allowed. This mimics Project.getBundles()
+	 * 
+	 * @param system
+	 * @param path
+	 * @param what
+	 * @throws IOException
+	 * @throws Exception
 	 */
 	public void loadPath(ResourceBuilder system, String path, String what) throws IOException, Exception {
 		Parameters p = new Parameters(path);

@@ -70,7 +70,6 @@ public class AnnotationHeadersTest extends TestCase {
 			attrs = pc.get("default-attrs");
 			assertEquals("42", attrs.get("foo"));
 
-
 		}
 	}
 
@@ -116,8 +115,7 @@ public class AnnotationHeadersTest extends TestCase {
 
 			attrs = p.get("param");
 			assertEquals("(&(a=hello)(b=goodbye))", attrs.get("filter:"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}

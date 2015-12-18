@@ -27,7 +27,7 @@ import aQute.lib.json.JSONCodec;
  * non-concurrent implementation so you must ensure it is only used in a single
  * thread. It cannot of course also not share the data directory.
  */
-public class PersistentMap<V> extends AbstractMap<String,V>implements Closeable {
+public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable {
 
 	final static JSONCodec				codec	= new JSONCodec();
 	final File							dir;
@@ -37,7 +37,7 @@ public class PersistentMap<V> extends AbstractMap<String,V>implements Closeable 
 	boolean								inited	= false;
 	boolean								closed	= false;
 
-	Type type;
+	Type								type;
 
 	public PersistentMap(File dir, Type type) throws Exception {
 		this.dir = dir;
@@ -61,8 +61,7 @@ public class PersistentMap<V> extends AbstractMap<String,V>implements Closeable 
 
 			if (!data.canWrite())
 				throw new IllegalArgumentException("PersistentMap cannot write data directory " + data);
-		}
-		finally {
+		} finally {
 			unlock(lock);
 		}
 
@@ -96,15 +95,12 @@ public class PersistentMap<V> extends AbstractMap<String,V>implements Closeable 
 				for (File file : data.listFiles()) {
 					cache.put(file.getName(), null);
 				}
-			}
-			finally {
+			} finally {
 				unlock(lock);
 			}
-		}
-		catch (RuntimeException e) {
+		} catch (RuntimeException e) {
 			throw e;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -120,8 +116,8 @@ public class PersistentMap<V> extends AbstractMap<String,V>implements Closeable 
 			public Iterator<java.util.Map.Entry<String,V>> iterator() {
 				init();
 				return new Iterator<Map.Entry<String,V>>() {
-					Iterator<java.util.Map.Entry<String,SoftReference<V>>> it = cache.entrySet().iterator();
-					java.util.Map.Entry<String,SoftReference<V>> entry;
+					Iterator<java.util.Map.Entry<String,SoftReference<V>>>	it	= cache.entrySet().iterator();
+					java.util.Map.Entry<String,SoftReference<V>>			entry;
 
 					public boolean hasNext() {
 						return it.hasNext();
@@ -158,8 +154,7 @@ public class PersistentMap<V> extends AbstractMap<String,V>implements Closeable 
 									return put(entry.getKey(), value);
 								}
 							};
-						}
-						catch (Exception e) {
+						} catch (Exception e) {
 							e.printStackTrace();
 							throw new RuntimeException(e);
 						}
@@ -187,15 +182,12 @@ public class PersistentMap<V> extends AbstractMap<String,V>implements Closeable 
 				codec.enc().to(file).put(value);
 				cache.put(key, new SoftReference<V>(value));
 				return old;
-			}
-			finally {
+			} finally {
 				unlock(lock);
 			}
-		}
-		catch (RuntimeException e) {
+		} catch (RuntimeException e) {
 			throw e;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -210,8 +202,7 @@ public class PersistentMap<V> extends AbstractMap<String,V>implements Closeable 
 					return null;
 				}
 				return lock;
-			}
-			catch (OverlappingFileLockException e) {
+			} catch (OverlappingFileLockException e) {
 				if (count-- > 0)
 					TimeUnit.MILLISECONDS.sleep(5);
 				else
@@ -238,15 +229,12 @@ public class PersistentMap<V> extends AbstractMap<String,V>implements Closeable 
 					throw new IllegalStateException("PersistentMap cannot delete entry " + file);
 
 				return cache.remove(key).get();
-			}
-			finally {
+			} finally {
 				unlock(lock);
 			}
-		}
-		catch (RuntimeException e) {
+		} catch (RuntimeException e) {
 			throw e;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -259,15 +247,12 @@ public class PersistentMap<V> extends AbstractMap<String,V>implements Closeable 
 				IO.deleteWithException(data);
 				cache.clear();
 				data.mkdir();
-			}
-			finally {
+			} finally {
 				unlock(lock);
 			}
-		}
-		catch (RuntimeException e) {
+		} catch (RuntimeException e) {
 			throw e;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -297,15 +282,12 @@ public class PersistentMap<V> extends AbstractMap<String,V>implements Closeable 
 						IO.deleteWithException(f);
 				}
 				cache.clear();
-			}
-			finally {
+			} finally {
 				unlock(lock);
 			}
-		}
-		catch (RuntimeException e) {
+		} catch (RuntimeException e) {
 			throw e;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}

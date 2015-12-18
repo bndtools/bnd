@@ -169,8 +169,7 @@ public class JPMTest extends TestCase {
 			};
 			Main main = new Main();
 			main.run(args);
-		}
-		finally {
+		} finally {
 			IO.delete(tmp);
 		}
 	}

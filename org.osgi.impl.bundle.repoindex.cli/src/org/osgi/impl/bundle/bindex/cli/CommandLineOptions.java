@@ -20,8 +20,7 @@ public class CommandLineOptions {
 		super();
 		try {
 			rootURL = new File(System.getProperty("user.dir")).toURI().toURL();
-		}
-		catch (MalformedURLException e) {
+		} catch (MalformedURLException e) {
 			throw new ExceptionInInitializerError(e);
 		}
 	}
@@ -30,9 +29,9 @@ public class CommandLineOptions {
 	 * Pretty
 	 */
 
-	public static final boolean DEFAULT_PRETTY = false;
+	public static final boolean	DEFAULT_PRETTY	= false;
 
-	boolean pretty = DEFAULT_PRETTY;
+	boolean						pretty			= DEFAULT_PRETTY;
 
 	@Option(name = "--pretty", handler = BooleanOptionHandler.class, usage = "Non-compressed, indented output. Forces the output filename to "
 			+ Index.DEFAULT_FILENAME_UNCOMPRESSED)
@@ -49,55 +48,55 @@ public class CommandLineOptions {
 	 * Output File
 	 */
 
-	public static final String DEFAULT_OUTPUT_FILENAME = DEFAULT_PRETTY ? Index.DEFAULT_FILENAME_UNCOMPRESSED
-			: Index.DEFAULT_FILENAME_COMPRESSED;
+	public static final String	DEFAULT_OUTPUT_FILENAME					= DEFAULT_PRETTY
+			? Index.DEFAULT_FILENAME_UNCOMPRESSED : Index.DEFAULT_FILENAME_COMPRESSED;
 
 	@Option(name = "-r", metaVar = "/output/file/index.xml(.gz)", usage = "Output file name " + "(default = "
 			+ Index.DEFAULT_FILENAME_COMPRESSED + " for normal output, " + Index.DEFAULT_FILENAME_UNCOMPRESSED
 			+ " for pretty output)")
-	File outputFile = new File(DEFAULT_OUTPUT_FILENAME);
+	File						outputFile								= new File(DEFAULT_OUTPUT_FILENAME);
 
 	/*
 	 * Repository Name
 	 */
 
-	public static final String DEFAULT_REPOSITORY_NAME = ResourceIndexer.REPOSITORYNAME_DEFAULT;
+	public static final String	DEFAULT_REPOSITORY_NAME					= ResourceIndexer.REPOSITORYNAME_DEFAULT;
 
 	@Option(name = "-n", metaVar = "RepositoryName", usage = "Repository name (default = " + DEFAULT_REPOSITORY_NAME
 			+ ")")
-	String repositoryName = DEFAULT_REPOSITORY_NAME;
+	String						repositoryName							= DEFAULT_REPOSITORY_NAME;
 
 	/*
 	 * Known Bundles Properties File
 	 */
 
 	@Option(name = "-k", metaVar = "/known/bundles.properties", usage = "Load extra known-bundles data from file (default = none)")
-	File knownBundlePropertiesFile = null;
+	File						knownBundlePropertiesFile				= null;
 
 	/*
 	 * Override Built-In Known Bundles
 	 */
 
-	public static final boolean DEFAULT_OVERRIDE_BUILTIN_KNOWN_BUNDLES = false;
+	public static final boolean	DEFAULT_OVERRIDE_BUILTIN_KNOWN_BUNDLES	= false;
 
 	@Option(name = "-K", handler = BooleanOptionHandler.class, usage = "Override built-in known-bundles data")
-	boolean overrideBuiltinKnownBundles = DEFAULT_OVERRIDE_BUILTIN_KNOWN_BUNDLES;
+	boolean						overrideBuiltinKnownBundles				= DEFAULT_OVERRIDE_BUILTIN_KNOWN_BUNDLES;
 
 	/*
 	 * Resource URL Template
 	 */
 
-	public static final String DEFAULT_RESOURCE_URL_TEMPLATE = "%p%f";
+	public static final String	DEFAULT_RESOURCE_URL_TEMPLATE			= "%p%f";
 
 	@Option(name = "-t", metaVar = DEFAULT_RESOURCE_URL_TEMPLATE, usage = "Resource URL template. Use %s for symbolic name, %v for version, %f for filename and %p for dirpath (default = "
 			+ DEFAULT_RESOURCE_URL_TEMPLATE + ")")
-	String resourceUrlTemplate = DEFAULT_RESOURCE_URL_TEMPLATE;
+	String						resourceUrlTemplate						= DEFAULT_RESOURCE_URL_TEMPLATE;
 
 	/*
 	 * Root Directory
 	 */
 
-	URL rootURL = null;
+	URL							rootURL									= null;
 
 	@Option(name = "-d", metaVar = "/root/dir", usage = "Root directory " + "(default = the current directory)")
 	public void setRootURL(File rootURL) throws MalformedURLException, IOException {
@@ -119,46 +118,46 @@ public class CommandLineOptions {
 	 */
 
 	@Option(name = "-l", metaVar = "file:license.html", usage = "License file " + "(default = none)")
-	URL licenseURL = null;
+	URL							licenseURL			= null;
 
 	/*
 	 * Verbose
 	 */
 
-	public static final boolean DEFAULT_VERBOSE = false;
+	public static final boolean	DEFAULT_VERBOSE		= false;
 
 	@Option(name = "-v", handler = BooleanOptionHandler.class, usage = "Verbose reporting")
-	boolean verbose = DEFAULT_VERBOSE;
+	boolean						verbose				= DEFAULT_VERBOSE;
 
 	/*
 	 * Stylesheet URL
 	 */
 
 	@Option(name = "-stylesheet", metaVar = "http://some/url.xsl", usage = "Stylesheet URL, for example: http://www.osgi.org/www/obr2html.xsl (default = none)")
-	URL stylesheetURL = null;
+	URL							stylesheetURL		= null;
 
 	/*
 	 * Increment Override
 	 */
 
-	public static final boolean DEFAULT_NOINCREMENT = false;
+	public static final boolean	DEFAULT_NOINCREMENT	= false;
 
 	@Option(name = "--noincrement", handler = BooleanOptionHandler.class, usage = "Increment override")
-	boolean incrementOverride = DEFAULT_NOINCREMENT;
+	boolean						incrementOverride	= DEFAULT_NOINCREMENT;
 
 	/*
 	 * File List
 	 */
 
 	@Argument(metaVar = "<file> [<file>*]", required = false, index = 0, usage = "The directories and/or files to index. Must be specified at least once, can be specified multiple times (default = none)")
-	List<File> fileList = new LinkedList<File>();
+	List<File>					fileList			= new LinkedList<File>();
 
 	/*
 	 * Help
 	 */
 
 	@Option(name = "-h", handler = BooleanOptionHandler.class, usage = "Help")
-	boolean help = false;
+	boolean						help				= false;
 
 	/*
 	 * Utilities

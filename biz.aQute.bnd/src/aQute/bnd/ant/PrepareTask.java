@@ -52,8 +52,7 @@ public class PrepareTask extends BaseTask {
 				throw new BuildException("Errors during preparing bnd");
 
 			copyProperties(properties);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new BuildException(e);
 		}
@@ -92,23 +91,27 @@ public class PrepareTask extends BaseTask {
 	}
 
 	/**
-	 * Print out the properties when they are set in sorted order @param print
+	 * Print out the properties when they are set in sorted order
+	 * 
+	 * @param print
 	 */
 	public void setPrint(boolean print) {
 		this.print = print;
 	}
 
 	/**
-	 * Set the base directory of the project. This property MUST be set. @param
-	 * basedir
+	 * Set the base directory of the project. This property MUST be set.
+	 * 
+	 * @param basedir
 	 */
 	public void setBasedir(File basedir) {
 		this.basedir = basedir;
 	}
 
 	/**
-	 * Set the base directory of the project. This property MUST be set. @param
-	 * basedir
+	 * Set the base directory of the project. This property MUST be set.
+	 * 
+	 * @param basedir
 	 */
 	public void setTop(String top) {
 		this.top = top;

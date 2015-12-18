@@ -49,19 +49,23 @@ import aQute.service.reporter.Reporter;
 public class ResourceRepositoryImpl implements ResourceRepository {
 	private static Comparator<ResourceDescriptor>	RESOURCE_DESCRIPTOR_COMPARATOR	= new Comparator<ResourceDescriptor>() {
 
-		public int compare(ResourceDescriptor o1, ResourceDescriptor o2) {
-			if (o1 == o2)
-				return 0;
+																						public int compare(
+																								ResourceDescriptor o1,
+																								ResourceDescriptor o2) {
+																							if (o1 == o2)
+																								return 0;
 
-			int r = o1.bsn.compareTo(o2.bsn);
-			if (r > 0)
-				return 1;
-			else if (r < 0)
-				return -1;
+																							int r = o1.bsn
+																									.compareTo(o2.bsn);
+																							if (r > 0)
+																								return 1;
+																							else if (r < 0)
+																								return -1;
 
-			return o1.version.compareTo(o2.version);
-		}
-	};
+																							return o1.version.compareTo(
+																									o2.version);
+																						}
+																					};
 	private static final long						THRESHOLD						= 4 * 3600 * 1000;											// 4
 	protected static final DownloadListener[]		EMPTY_LISTENER					= new DownloadListener[0];
 	static JSONCodec								codec							= new JSONCodec();
@@ -279,13 +283,11 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 					synchronized (queues) {
 						ok(queues.get(path).toArray(EMPTY_LISTENER), path);
 					}
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					synchronized (queues) {
 						fail(e, queues.get(path).toArray(EMPTY_LISTENER), path);
 					}
-				}
-				finally {
+				} finally {
 					synchronized (queues) {
 						queues.remove(path);
 					}
@@ -329,15 +331,17 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	}
 
 	/**
-	 * Just report success to all download listeners @param blockers @param file
+	 * Just report success to all download listeners
+	 * 
+	 * @param blockers
+	 * @param file
 	 */
 
 	void ok(DownloadListener[] blockers, File file) {
 		for (DownloadListener dl : blockers) {
 			try {
 				dl.success(file);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				//
 			}
 		}
@@ -347,8 +351,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		for (DownloadListener dl : blockers) {
 			try {
 				dl.failure(file, e.toString());
-			}
-			catch (Exception ee) {
+			} catch (Exception ee) {
 				//
 			}
 		}
@@ -365,13 +368,11 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 				reporter.trace("succesful download %s", path);
 				failures.remove(rds.url);
 				return;
-			}
-			catch (FileNotFoundException e) {
+			} catch (FileNotFoundException e) {
 				reporter.trace("no such file download %s", path);
 				exception = e;
 				break; // no use retrying
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.trace("exception download %s", path);
 				exception = e;
 			}
@@ -410,8 +411,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 						throw new FileNotFoundException("Cannot find " + url + " : " + s);
 					}
 					throw new IOException("Failed request " + result + ":" + http.getResponseMessage() + " " + s);
-				}
-				finally {
+				} finally {
 					if (err != null)
 						err.close();
 				}
@@ -440,35 +440,41 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	}
 
 	/**
-	 * Dispatch the events @param type @param rds @param exception
+	 * Dispatch the events
+	 * 
+	 * @param type
+	 * @param rds
+	 * @param exception
 	 */
 	private void event(TYPE type, ResourceDescriptor rds, Exception exception) {
 		for (Listener l : listeners) {
 			try {
 				l.events(new ResourceRepositoryEvent(type, rds, exception));
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.trace("listener %s throws exception %s", l, e);
 			}
 		}
 	}
 
 	/**
-	 * Sleep function that does not throw {@link InterruptedException} @param
-	 * i @return
+	 * Sleep function that does not throw {@link InterruptedException}
+	 * 
+	 * @param i
+	 * @return
 	 */
 	private boolean sleep(int i) {
 		try {
 			Thread.sleep(i);
 			return true;
-		}
-		catch (InterruptedException e) {
+		} catch (InterruptedException e) {
 			return false;
 		}
 	}
 
 	/**
-	 * Save the index file. @throws Exception
+	 * Save the index file.
+	 * 
+	 * @throws Exception
 	 */
 	private void save() throws Exception {
 		if (!dirty)
@@ -482,15 +488,17 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 			Formatter frm = new Formatter(ps);
 			getIndex().write(frm);
 			frm.close();
-		}
-		finally {
+		} finally {
 			ps.close();
 		}
 		IO.rename(tmp, indexFile);
 	}
 
 	/**
-	 * Get the index, load it if necessary @return @throws Exception
+	 * Get the index, load it if necessary
+	 * 
+	 * @return
+	 * @throws Exception
 	 */
 	private FileLayout getIndex() throws Exception {
 		if (index != null)

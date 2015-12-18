@@ -61,8 +61,7 @@ public class TestActivator implements BundleActivator {
 			try {
 				System.err.println("ANSWER=" + answer);
 				System.exit(Integer.parseInt(answer));
-			}
-			catch (NumberFormatException e) {
+			} catch (NumberFormatException e) {
 				System.exit(-1);
 			}
 		} else if ("noreference".equals(p)) {
@@ -118,8 +117,7 @@ public class TestActivator implements BundleActivator {
 								System.err.println("After stopping framework, sleeping");
 								Thread.sleep(10000);
 								System.err.println("After sleeping");
-							}
-							catch (Exception e) {
+							} catch (Exception e) {
 								e.printStackTrace();
 							}
 						}
@@ -128,8 +126,7 @@ public class TestActivator implements BundleActivator {
 					try {
 						System.err.println("before joining");
 						t.join();
-					}
-					catch (InterruptedException e) {
+					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}

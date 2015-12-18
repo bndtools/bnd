@@ -19,17 +19,17 @@ import aQute.lib.justif.Justif;
 import aQute.lib.settings.Settings;
 
 public abstract class AbstractConsoleApp extends Env {
-	Settings settings;
+	Settings					settings;
 
 	protected final PrintStream	err;
 	protected final PrintStream	out;
 
-	static String			encoding	= System.getProperty("file.encoding");
-	int						width		= 120;									// characters
-	int						tabs[]		= {
-			40, 48, 56, 64, 72, 80, 88, 96, 104, 112
-											};
-	private final Object	target;
+	static String				encoding	= System.getProperty("file.encoding");
+	int							width		= 120;											// characters
+	int							tabs[]		= {
+													40, 48, 56, 64, 72, 80, 88, 96, 104, 112
+												};
+	private final Object		target;
 
 	static {
 		if (encoding == null)
@@ -37,7 +37,9 @@ public abstract class AbstractConsoleApp extends Env {
 	}
 
 	/**
-	 * Default constructor @throws UnsupportedEncodingException
+	 * Default constructor
+	 * 
+	 * @throws UnsupportedEncodingException
 	 */
 
 	public AbstractConsoleApp(Object target) throws UnsupportedEncodingException {
@@ -51,7 +53,9 @@ public abstract class AbstractConsoleApp extends Env {
 	}
 
 	/**
-	 * Main entry @throws Exception
+	 * Main entry
+	 * 
+	 * @throws Exception
 	 */
 	public void run(String args[]) throws Exception {
 		try {
@@ -61,8 +65,7 @@ public abstract class AbstractConsoleApp extends Env {
 			check();
 			if (help != null)
 				err.println(help);
-		}
-		finally {
+		} finally {
 			err.flush();
 			out.flush();
 		}
@@ -99,8 +102,11 @@ public abstract class AbstractConsoleApp extends Env {
 	}
 
 	/**
-	 * Initialize the repository and other global vars. @param opts the
-	 * options @throws InterruptedException @throws IOException
+	 * Initialize the repository and other global vars.
+	 * 
+	 * @param opts the options
+	 * @throws InterruptedException
+	 * @throws IOException
 	 */
 	@Description("")
 	public void __main(MainOptions opts) throws IOException {
@@ -134,18 +140,15 @@ public abstract class AbstractConsoleApp extends Env {
 				}
 			}
 
-		}
-		catch (InvocationTargetException t) {
+		} catch (InvocationTargetException t) {
 			Throwable tt = t;
 			while (tt instanceof InvocationTargetException)
 				tt = ((InvocationTargetException) tt).getTargetException();
 
 			exception(tt, "%s", tt.getMessage());
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			exception(t, "Failed %s", t);
-		}
-		finally {
+		} finally {
 			// Check if we need to wait for it to finish
 			if (opts.key()) {
 				System.out.println("Hit a key to continue ...");

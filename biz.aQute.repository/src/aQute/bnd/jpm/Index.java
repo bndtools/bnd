@@ -39,7 +39,7 @@ public class Index {
 		public boolean						learning		= true;
 		public boolean						recurse			= false;
 
-		byte[] synced;
+		byte[]								synced;
 
 		// Manually print this so that we
 		// have 1 line per resource, making it easier on git
@@ -50,21 +50,22 @@ public class Index {
 		}
 	}
 
-	private static final SortedSet<Version> EMPTY_VERSIONS = Collections.unmodifiableSortedSet(new TreeSet<Version>());
+	private static final SortedSet<Version>						EMPTY_VERSIONS	= Collections
+			.unmodifiableSortedSet(new TreeSet<Version>());
 
-	private File indexFile;
+	private File												indexFile;
 
-	private Map<String,TreeMap<Version,Library.RevisionRef>> cache;
+	private Map<String,TreeMap<Version,Library.RevisionRef>>	cache;
 
-	private Repo repo;
+	private Repo												repo;
 
 	public Index(File file) {
 		this.indexFile = file;
 	}
 
-	static final JSONCodec codec = new JSONCodec();
+	static final JSONCodec	codec	= new JSONCodec();
 
-	private boolean dirty;
+	private boolean			dirty;
 
 	private void init() throws Exception {
 		if (repo == null) {
@@ -83,8 +84,7 @@ public class Index {
 						Version v = toVersion(r.baseline, r.qualifier);
 						map.put(v, r);
 					}
-				}
-				finally {
+				} finally {
 					dec.close();
 				}
 			} else {
@@ -177,8 +177,7 @@ public class Index {
 					dirty = true;
 					return true;
 				}
-			}
-			finally {
+			} finally {
 				if (map.isEmpty())
 					cache.remove(bsn);
 			}
@@ -203,8 +202,7 @@ public class Index {
 		FileWriter fout = new FileWriter(tmp);
 		try {
 			save(fout);
-		}
-		finally {
+		} finally {
 			fout.close();
 		}
 		IO.rename(tmp, out);

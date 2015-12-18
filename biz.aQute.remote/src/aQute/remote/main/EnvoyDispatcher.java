@@ -57,8 +57,7 @@ public class EnvoyDispatcher implements Closeable {
 				main.trace("closing framework for %s", this);
 				framework.close();
 				frameworks.remove(name);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				main.exception(e, "Closing framework for %s", this);
 			}
 		}
@@ -117,8 +116,7 @@ public class EnvoyDispatcher implements Closeable {
 				createAgent(info, true);
 
 				return true;
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				main.trace("creating framework %s: %s", name, e);
 				main.exception(e, "creating framework");
 				throw e;
@@ -233,24 +231,20 @@ public class EnvoyDispatcher implements Closeable {
 						main.trace("Got a request on %s", socket);
 						EnvoyImpl envoyImpl = new EnvoyImpl(socket);
 						envoyImpl.open();
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						main.exception(e, "while listening for incoming requests on %s:%s", network, port);
 						break;
 					}
 
 				server.close();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				try {
 					Thread.sleep(2000);
-				}
-				catch (InterruptedException e1) {}
+				} catch (InterruptedException e1) {}
 			}
 		try {
 			close();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			//
 		}
 	}

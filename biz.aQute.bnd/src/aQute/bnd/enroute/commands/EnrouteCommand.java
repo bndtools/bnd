@@ -190,8 +190,7 @@ public class EnrouteCommand {
 					IO.copy(r.openInputStream(), dest);
 				}
 			}
-		}
-		finally {
+		} finally {
 			jar.close();
 		}
 	}

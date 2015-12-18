@@ -59,8 +59,7 @@ public class InfoRepositoryWrapper implements Repository {
 		try {
 			if (System.currentTimeMillis() < lastTime + 10000)
 				return true;
-		}
-		finally {
+		} finally {
 			lastTime = System.currentTimeMillis();
 		}
 
@@ -124,8 +123,7 @@ public class InfoRepositoryWrapper implements Repository {
 
 								PersistentResource pr = new PersistentResource(resource);
 								persistent.put(id, pr);
-							}
-							finally {
+							} finally {
 								super.success(file);
 
 								if (index != null) {
@@ -150,8 +148,7 @@ public class InfoRepositoryWrapper implements Repository {
 				}
 			}
 			persistent.keySet().removeAll(toBeDeleted);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 
@@ -162,7 +159,10 @@ public class InfoRepositoryWrapper implements Repository {
 	}
 
 	/**
-	 * The repository method @param result2 @throws Exception
+	 * The repository method
+	 * 
+	 * @param result2
+	 * @throws Exception
 	 */
 
 	public void findProviders(Map<Requirement,List<Capability>> result, Collection< ? extends Requirement> requirements)
@@ -200,8 +200,7 @@ public class InfoRepositoryWrapper implements Repository {
 		try {
 			findProviders(result, requirements);
 			return (Map) result;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -239,7 +238,9 @@ public class InfoRepositoryWrapper implements Repository {
 	}
 
 	/**
-	 * Clear all files that were indexed before this date @param lastModified
+	 * Clear all files that were indexed before this date
+	 * 
+	 * @param lastModified
 	 */
 	public void clear(long whenOlder) {
 		persistent.clear(whenOlder);

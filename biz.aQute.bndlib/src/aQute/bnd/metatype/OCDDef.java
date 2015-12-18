@@ -17,10 +17,10 @@ public class OCDDef extends ExtensionDef {
 	final List<IconDef>			icons		= new ArrayList<IconDef>();
 	final List<DesignateDef>	designates	= new ArrayList<DesignateDef>();
 
-	String	id;
-	String	name;
-	String	localization;
-	String	description;
+	String						id;
+	String						name;
+	String						localization;
+	String						description;
 	MetatypeVersion				version		= MetatypeVersion.VERSION_1_2;
 
 	public OCDDef(XMLAttributeFinder finder) {

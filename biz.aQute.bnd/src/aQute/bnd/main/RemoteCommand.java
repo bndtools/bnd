@@ -63,7 +63,7 @@ class RemoteCommand extends Processor {
 	 * repository for the agent and handles the redirection. It also handles the
 	 * events.
 	 */
-	class LauncherSupervisor extends AgentSupervisor<Supervisor,Agent>implements Supervisor {
+	class LauncherSupervisor extends AgentSupervisor<Supervisor,Agent> implements Supervisor {
 
 		@Override
 		public boolean stdout(String out) throws Exception {

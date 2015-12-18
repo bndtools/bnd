@@ -162,14 +162,11 @@ public class Command {
 												stdin.flush();
 										}
 									}
-								}
-								catch (InterruptedIOException e) {
+								} catch (InterruptedIOException e) {
 									// Ignore here
-								}
-								catch (Exception e) {
+								} catch (Exception e) {
 									// Who cares?
-								}
-								finally {
+								} finally {
 									IO.close(stdin);
 								}
 							}
@@ -189,12 +186,10 @@ public class Command {
 				cout.join();
 				if (reporter != null)
 					reporter.trace("stdout/stderr streams have finished");
-			}
-			finally {
+			} finally {
 				err.close();
 			}
-		}
-		finally {
+		} finally {
 			out.close();
 			if (timer != null)
 				timer.cancel();
@@ -269,17 +264,14 @@ public class Command {
 					sb.append((char) c);
 					c = in.read();
 				}
-			}
-			catch (IOException e) {
+			} catch (IOException e) {
 				// We assume the socket is closed
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				try {
 					sb.append("\n**************************************\n");
 					sb.append(e.toString());
 					sb.append("\n**************************************\n");
-				}
-				catch (IOException e1) {}
+				} catch (IOException e1) {}
 				if (reporter != null) {
 					reporter.trace("cmd exec: %s", e);
 				}

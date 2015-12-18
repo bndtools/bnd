@@ -7,34 +7,36 @@ import aQute.struct.Define;
 import aQute.struct.struct;
 
 public class CommandData extends struct {
-	public byte[]	sha;									// primary source of
-															// data
-	public long		time	= System.currentTimeMillis();
-	public String	name;
+	public byte[]		sha;											// primary
+																		// source
+																		// of
+																		// data
+	public long			time			= System.currentTimeMillis();
+	public String		name;
 	@Define(optional = true)
-	public String	title;
+	public String		title;
 	@Define(optional = true)
-	public String	description;
+	public String		description;
 	@Define(optional = true)
-	public String	jvmArgs;
+	public String		jvmArgs;
 
 	public List<byte[]>	dependencies	= list();
 	public List<byte[]>	runbundles		= list();
 	public String		jpmRepoDir;
 
-	public boolean	installed;
+	public boolean		installed;
 	@Define(optional = true)
-	public String	bin;
+	public String		bin;
 	@Define(optional = true)
-	public String	java;
-	public boolean	trace;
+	public String		java;
+	public boolean		trace;
 
-	public Version	version;
+	public Version		version;
 	@Define(optional = true)
-	public String	bsn;
-	public String	main;
+	public String		bsn;
+	public String		main;
 	/**
 	 * Use javaw instead of java
 	 */
-	public boolean	windows;
+	public boolean		windows;
 }

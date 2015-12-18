@@ -99,9 +99,15 @@ public class StringHandler extends Handler {
 
 	/**
 	 * Gather the input until you find the the closing character making sure
-	 * that new blocks are are take care of. <p> This method parses the input
-	 * for a complete block so that it can be stored in a string. This allows
-	 * envelopes. @param isr @param c @return @throws Exception
+	 * that new blocks are are take care of.
+	 * <p>
+	 * This method parses the input for a complete block so that it can be
+	 * stored in a string. This allows envelopes.
+	 * 
+	 * @param isr
+	 * @param c
+	 * @return
+	 * @throws Exception
 	 */
 	private Object collect(Decoder isr, @SuppressWarnings("unused") char close) throws Exception {
 		boolean instring = false;

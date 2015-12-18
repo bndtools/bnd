@@ -70,331 +70,338 @@ import org.osgi.service.indexer.impl.URLResolver;
  */
 @Mojo(name = "index", defaultPhase = PACKAGE, requiresDependencyResolution = TEST)
 public class IndexerMojo extends AbstractMojo {
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
-    private MavenProject project;
 
-    @Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
-    private RepositorySystemSession session;
+	@Parameter(defaultValue = "${project}", readonly = true, required = true)
+	private MavenProject				project;
 
-    @Parameter(defaultValue = "${project.build.directory}", readonly = true)
-	private File targetDir;
+	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
+	private RepositorySystemSession		session;
 
-    @Parameter( property = "bnd.indexer.localURLs", defaultValue = "FORBIDDEN", readonly = true )
-    private LocalURLs localURLs;
-    
-    @Parameter( property = "bnd.indexer.includeTransitive", defaultValue = "true", readonly = true )
-    private boolean includeTransitive;
+	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
+	private File						targetDir;
 
-    @Parameter( property = "bnd.indexer.add.mvn.urls", defaultValue = "false", readonly = true )
-    private boolean addMvnURLs;
+	@Parameter(property = "bnd.indexer.localURLs", defaultValue = "FORBIDDEN", readonly = true)
+	private LocalURLs					localURLs;
 
-    @Parameter( property = "bnd.indexer.scopes", readonly = true, required=false )
-    private List<String> scopes;
-    
-    @Component
-    private RepositorySystem system;
+	@Parameter(property = "bnd.indexer.includeTransitive", defaultValue = "true", readonly = true)
+	private boolean						includeTransitive;
 
-    @Component
-    private ProjectDependenciesResolver resolver;
-    
-    @Component
-    private MetadataReader metadataReader;
-    
-    @Component
-    private MavenProjectHelper projectHelper;
-    
-    private boolean fail;
+	@Parameter(property = "bnd.indexer.add.mvn.urls", defaultValue = "false", readonly = true)
+	private boolean						addMvnURLs;
 
-    public void execute() throws MojoExecutionException, MojoFailureException {
+	@Parameter(property = "bnd.indexer.scopes", readonly = true, required = false)
+	private List<String>				scopes;
 
-    	if(scopes == null || scopes.isEmpty()) {
-    		scopes = Arrays.asList("compile", "runtime");
-    	}
-    	
-    	getLog().debug("Indexing dependencies with scopes: " + scopes);
-    	getLog().debug("Including Transitive dependencies: " + includeTransitive);
-    	getLog().debug("Local file URLs permitted: " + localURLs);
-    	getLog().debug("Adding mvn: URLs as alternative content: " + addMvnURLs);
-    	
-        DependencyResolutionRequest request = new DefaultDependencyResolutionRequest(project, session);
+	@Component
+	private RepositorySystem			system;
 
-        request.setResolutionFilter(new DependencyFilter(){
+	@Component
+	private ProjectDependenciesResolver	resolver;
+
+	@Component
+	private MetadataReader				metadataReader;
+
+	@Component
+	private MavenProjectHelper			projectHelper;
+
+	private boolean						fail;
+
+	public void execute() throws MojoExecutionException, MojoFailureException {
+
+		if (scopes == null || scopes.isEmpty()) {
+			scopes = Arrays.asList("compile", "runtime");
+		}
+
+		getLog().debug("Indexing dependencies with scopes: " + scopes);
+		getLog().debug("Including Transitive dependencies: " + includeTransitive);
+		getLog().debug("Local file URLs permitted: " + localURLs);
+		getLog().debug("Adding mvn: URLs as alternative content: " + addMvnURLs);
+
+		DependencyResolutionRequest request = new DefaultDependencyResolutionRequest(project, session);
+
+		request.setResolutionFilter(new DependencyFilter() {
 			@Override
 			public boolean accept(DependencyNode node, List<DependencyNode> parents) {
-				if(node.getDependency() != null) {
+				if (node.getDependency() != null) {
 					return scopes.contains(node.getDependency().getScope());
 				}
 				return false;
 			}
-        });
-        
-        DependencyResolutionResult result;
-        try {
-            result = resolver.resolve(request);
-        } catch (DependencyResolutionException e) {
-            throw new MojoExecutionException(e.getMessage(), e);
-        }
+		});
 
-        Map<File, ArtifactResult> dependencies = new HashMap<>();
-        
-        if (result.getDependencyGraph() != null && !result.getDependencyGraph().getChildren().isEmpty()) {
-            discoverArtifacts(dependencies, result.getDependencyGraph().getChildren(), project.getArtifact().getId());
-        }
+		DependencyResolutionResult result;
+		try {
+			result = resolver.resolve(request);
+		} catch (DependencyResolutionException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
 
-        Map<String, ArtifactRepository> repositories = new HashMap<>();
-       
-        for (ArtifactRepository artifactRepository : project.getRemoteArtifactRepositories()) {
-        	repositories.put(artifactRepository.getId(), artifactRepository);
-        }
+		Map<File,ArtifactResult> dependencies = new HashMap<>();
 
-        RepoIndex indexer = new RepoIndex();
-        Filter filter;
-        try {
-            filter = FrameworkUtil.createFilter("(name=*.jar)");
-        } catch (InvalidSyntaxException e) {
-            throw new MojoExecutionException(e.getMessage(), e);
-        }
-        indexer.addAnalyzer(new KnownBundleAnalyzer(), filter);
-        
-        indexer.addURLResolver(new RepositoryURLResolver(dependencies, repositories));
-       
-        if(addMvnURLs) {
-        	indexer.addURLResolver(new MavenURLResolver(dependencies));
-        }
-        
-        Map<String, String> config = new HashMap<String, String>();
-        config.put(ResourceIndexer.PRETTY, "true");
+		if (result.getDependencyGraph() != null && !result.getDependencyGraph().getChildren().isEmpty()) {
+			discoverArtifacts(dependencies, result.getDependencyGraph().getChildren(), project.getArtifact().getId());
+		}
 
-        File outputFile = new File(targetDir, "index.xml");
-        OutputStream output;
-        try {
-        	targetDir.mkdirs();
+		Map<String,ArtifactRepository> repositories = new HashMap<>();
+
+		for (ArtifactRepository artifactRepository : project.getRemoteArtifactRepositories()) {
+			repositories.put(artifactRepository.getId(), artifactRepository);
+		}
+
+		RepoIndex indexer = new RepoIndex();
+		Filter filter;
+		try {
+			filter = FrameworkUtil.createFilter("(name=*.jar)");
+		} catch (InvalidSyntaxException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
+		indexer.addAnalyzer(new KnownBundleAnalyzer(), filter);
+
+		indexer.addURLResolver(new RepositoryURLResolver(dependencies, repositories));
+
+		if (addMvnURLs) {
+			indexer.addURLResolver(new MavenURLResolver(dependencies));
+		}
+
+		Map<String,String> config = new HashMap<String,String>();
+		config.put(ResourceIndexer.PRETTY, "true");
+
+		File outputFile = new File(targetDir, "index.xml");
+		OutputStream output;
+		try {
+			targetDir.mkdirs();
 			output = new FileOutputStream(outputFile);
-        } catch (FileNotFoundException e) {
-            throw new MojoExecutionException(e.getMessage(), e);
-        }
-        
-        getLog().debug("Indexing artifacts: " + dependencies.keySet());
-        try {
-            indexer.index(dependencies.keySet(), output, config);
-        } catch (Exception e) {
-            throw new MojoExecutionException(e.getMessage(), e);
-        }
-        if(fail) {
-        	throw new MojoExecutionException("One or more URI lookups failed");
-        }
-        
+		} catch (FileNotFoundException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
+
+		getLog().debug("Indexing artifacts: " + dependencies.keySet());
+		try {
+			indexer.index(dependencies.keySet(), output, config);
+		} catch (Exception e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
+		if (fail) {
+			throw new MojoExecutionException("One or more URI lookups failed");
+		}
+
 		File gzipOutputFile = new File(outputFile.getPath() + ".gz");
-		
+
 		try (InputStream is = new BufferedInputStream(new FileInputStream(outputFile));
-			 OutputStream gos = new GZIPOutputStream(new FileOutputStream(gzipOutputFile))) {
+				OutputStream gos = new GZIPOutputStream(new FileOutputStream(gzipOutputFile))) {
 			byte[] bytes = new byte[4096];
 			int read;
-			while((read = is.read(bytes)) != -1) {
+			while ((read = is.read(bytes)) != -1) {
 				gos.write(bytes, 0, read);
 			}
 		} catch (IOException ioe) {
 			throw new MojoExecutionException("Unable to create the gzipped output file");
 		}
-		
+
 		attach(outputFile, "osgi-index", "xml");
 		attach(gzipOutputFile, "osgi-index", "xml.gz");
-    }
-    
-    private void attach(File file, String type, String extension) {
-    	DefaultArtifactHandler handler = new DefaultArtifactHandler(type);
-    	handler.setExtension(extension);
-		DefaultArtifact artifact = new DefaultArtifact(project.getGroupId(), 
-        		project.getArtifactId(), project.getVersion(), null, type, null, handler);
-        artifact.setFile(file);
+	}
+
+	private void attach(File file, String type, String extension) {
+		DefaultArtifactHandler handler = new DefaultArtifactHandler(type);
+		handler.setExtension(extension);
+		DefaultArtifact artifact = new DefaultArtifact(project.getGroupId(), project.getArtifactId(),
+				project.getVersion(), null, type, null, handler);
+		artifact.setFile(file);
 		project.addAttachedArtifact(artifact);
-    }
+	}
 
-    class MavenURLResolver implements URLResolver {
+	class MavenURLResolver implements URLResolver {
 
-        private final Map<File, ArtifactResult> dependencies;
+		private final Map<File,ArtifactResult> dependencies;
 
-		public MavenURLResolver(Map<File, ArtifactResult> dependencies) {
+		public MavenURLResolver(Map<File,ArtifactResult> dependencies) {
 			this.dependencies = dependencies;
-        }
+		}
 
 		public URI resolver(File file) throws Exception {
 			try {
 				ArtifactResult artifactResult = dependencies.get(file);
-	
-				if(artifactResult == null) {
-					throw new FileNotFoundException("The file " + file.getCanonicalPath() + " is not known to this resolver");
+
+				if (artifactResult == null) {
+					throw new FileNotFoundException(
+							"The file " + file.getCanonicalPath() + " is not known to this resolver");
 				}
-				
+
 				Artifact artifact = artifactResult.getArtifact();
-				
+
 				StringBuilder sb = new StringBuilder("mvn://");
-				
-				sb.append(artifact.getGroupId())
-					.append("/")
-					.append(artifact.getArtifactId())
-					.append("/");
-				
-				if(artifact.getVersion() != null) {
+
+				sb.append(artifact.getGroupId()).append("/").append(artifact.getArtifactId()).append("/");
+
+				if (artifact.getVersion() != null) {
 					sb.append(artifact.getVersion());
 				}
-				
+
 				sb.append("/");
-				
-				String type =  artifact.getProperty(ArtifactProperties.TYPE, artifact.getExtension());
-				if(type != null) {
+
+				String type = artifact.getProperty(ArtifactProperties.TYPE, artifact.getExtension());
+				if (type != null) {
 					sb.append(type);
 				}
 
 				sb.append("/");
-				
-				if(artifact.getClassifier() != null) {
+
+				if (artifact.getClassifier() != null) {
 					sb.append(artifact.getClassifier());
 				}
-				
+
 				return URI.create(sb.toString()).normalize();
 			} catch (Exception e) {
 				fail = true;
 				getLog().error("Failed to determine the artifact URI", e);
 				throw e;
 			}
-        }
-    }
+		}
+	}
 
-    class RepositoryURLResolver implements URLResolver {
-    	
-    	private final Map<File, ArtifactResult> dependencies;
-    	private final Map<String, ArtifactRepository> repositories;
-    	
-    	public RepositoryURLResolver(Map<File, ArtifactResult> dependencies, Map<String, ArtifactRepository> repositories) {
-    		this.dependencies = dependencies;
-    		this.repositories = repositories;
-    	}
-    	
-    	public URI resolver(File file) throws Exception {
-    		try {
-    			ArtifactResult artifactResult = dependencies.get(file);
-    			
-    			if(artifactResult == null) {
-    				throw new FileNotFoundException("The file " + file.getCanonicalPath() + " is not known to this resolver");
-    			}
-    			
-    			if(localURLs == REQUIRED) {
-    				return file.toURI();
-    			}
-    			
-    			Artifact artifact = artifactResult.getArtifact();
-    			
-    			ArtifactRepository repo = repositories.get(artifactResult.getRepository().getId());
-    			
-    			if(repo == null) {
-    				if(localURLs == ALLOWED) {
-    					getLog().info("The Artifact " + artifact.toString() + 
-    							" could not be found in any repository, returning the local location");
-    					return file.toURI();
-    				}
-    				throw new FileNotFoundException("The repository " + artifactResult.getRepository().getId() + " is not known to this resolver");
-    			}
-    			
-    			String baseUrl = repo.getUrl();
-    			if(baseUrl.startsWith("file:")) {
-    				//File URLs on Windows are nasty, so send them via a file
-    				baseUrl = new File(baseUrl.substring(5)).toURI().normalize().toString();
-    			}
-    			
-    			// The base URL must always point to a directory
-    			if(!baseUrl.endsWith("/")) {
-    				baseUrl = baseUrl + "/";
-    			}
-    			
-    			String artifactPath = repo.getLayout().pathOf(RepositoryUtils.toArtifact(artifact));
-    			
-    			// The artifact path should never be absolute, it is always relative to the repo URL
-    			while(artifactPath.startsWith("/")) {
-    				artifactPath = artifactPath.substring(1);
-    			}
-    			
-    			// As we have sorted the trailing and leading / characters resolve should do the rest! 	
+	class RepositoryURLResolver implements URLResolver {
+
+		private final Map<File,ArtifactResult>			dependencies;
+		private final Map<String,ArtifactRepository>	repositories;
+
+		public RepositoryURLResolver(Map<File,ArtifactResult> dependencies,
+				Map<String,ArtifactRepository> repositories) {
+			this.dependencies = dependencies;
+			this.repositories = repositories;
+		}
+
+		public URI resolver(File file) throws Exception {
+			try {
+				ArtifactResult artifactResult = dependencies.get(file);
+
+				if (artifactResult == null) {
+					throw new FileNotFoundException(
+							"The file " + file.getCanonicalPath() + " is not known to this resolver");
+				}
+
+				if (localURLs == REQUIRED) {
+					return file.toURI();
+				}
+
+				Artifact artifact = artifactResult.getArtifact();
+
+				ArtifactRepository repo = repositories.get(artifactResult.getRepository().getId());
+
+				if (repo == null) {
+					if (localURLs == ALLOWED) {
+						getLog().info("The Artifact " + artifact.toString()
+								+ " could not be found in any repository, returning the local location");
+						return file.toURI();
+					}
+					throw new FileNotFoundException("The repository " + artifactResult.getRepository().getId()
+							+ " is not known to this resolver");
+				}
+
+				String baseUrl = repo.getUrl();
+				if (baseUrl.startsWith("file:")) {
+					// File URLs on Windows are nasty, so send them via a file
+					baseUrl = new File(baseUrl.substring(5)).toURI().normalize().toString();
+				}
+
+				// The base URL must always point to a directory
+				if (!baseUrl.endsWith("/")) {
+					baseUrl = baseUrl + "/";
+				}
+
+				String artifactPath = repo.getLayout().pathOf(RepositoryUtils.toArtifact(artifact));
+
+				// The artifact path should never be absolute, it is always
+				// relative to the repo URL
+				while (artifactPath.startsWith("/")) {
+					artifactPath = artifactPath.substring(1);
+				}
+
+				// As we have sorted the trailing and leading / characters
+				// resolve should do the rest!
 				return URI.create(baseUrl).resolve(artifactPath).normalize();
-    		} catch (Exception e) {
-    			fail = true;
-    			getLog().error("Failed to determine the artifact URI", e);
-    			throw e;
-    		}
-    	}
-    }
+			} catch (Exception e) {
+				fail = true;
+				getLog().error("Failed to determine the artifact URI", e);
+				throw e;
+			}
+		}
+	}
 
-    private void discoverArtifacts(Map<File, ArtifactResult> files, List<DependencyNode> nodes, String parent) throws MojoExecutionException {
-        for ( DependencyNode node : nodes) {
-            //Ensure that the file is downloaded so we can index it
-            try {
-				ArtifactResult resolvedArtifact = postProcessResult(system.resolveArtifact(session, new ArtifactRequest(node.getArtifact(), 
-						project.getRemoteProjectRepositories(), parent)));
-				getLog().debug("Located file: " + resolvedArtifact.getArtifact().getFile() + " for artifact " + resolvedArtifact);
-				
+	private void discoverArtifacts(Map<File,ArtifactResult> files, List<DependencyNode> nodes, String parent)
+			throws MojoExecutionException {
+		for (DependencyNode node : nodes) {
+			// Ensure that the file is downloaded so we can index it
+			try {
+				ArtifactResult resolvedArtifact = postProcessResult(system.resolveArtifact(session,
+						new ArtifactRequest(node.getArtifact(), project.getRemoteProjectRepositories(), parent)));
+				getLog().debug("Located file: " + resolvedArtifact.getArtifact().getFile() + " for artifact "
+						+ resolvedArtifact);
+
 				files.put(resolvedArtifact.getArtifact().getFile(), resolvedArtifact);
 			} catch (ArtifactResolutionException e) {
-				throw new MojoExecutionException("Failed to resolve the dependency " + node.getArtifact().toString(), e);
+				throw new MojoExecutionException("Failed to resolve the dependency " + node.getArtifact().toString(),
+						e);
 			}
-            if(includeTransitive) {
+			if (includeTransitive) {
 				discoverArtifacts(files, node.getChildren(), node.getRequestContext());
 			} else {
 				getLog().debug("Ignoring transitive dependencies of " + node.getDependency());
 			}
-        }
-    }
+		}
+	}
 
 	private ArtifactResult postProcessResult(ArtifactResult resolvedArtifact) throws MojoExecutionException {
-		
-		if(localURLs == REQUIRED) {
-			//Skip the search as we will use the local file anyway
+
+		if (localURLs == REQUIRED) {
+			// Skip the search as we will use the local file anyway
 			return resolvedArtifact;
 		}
-		
+
 		String repoId = resolvedArtifact.getRepository().getId();
 		Artifact artifact = resolvedArtifact.getArtifact();
-		if("workspace".equals(repoId) || "local".equals(repoId)) {
+		if ("workspace".equals(repoId) || "local".equals(repoId)) {
 			getLog().debug("Post processing " + artifact + " to determine a remote source");
 			ArtifactResult postProcessed;
-			if(artifact.isSnapshot()) {
+			if (artifact.isSnapshot()) {
 				postProcessed = postProcessSnapshot(resolvedArtifact.getRequest(), artifact);
 			} else {
 				postProcessed = postProcessRelease(resolvedArtifact.getRequest(), artifact);
 			}
-			if(postProcessed != null) {
+			if (postProcessed != null) {
 				return postProcessed;
 			}
 		}
 		return resolvedArtifact;
 	}
-	
-	private ArtifactResult postProcessSnapshot(ArtifactRequest request, Artifact artifact) throws MojoExecutionException {
-		
+
+	private ArtifactResult postProcessSnapshot(ArtifactRequest request, Artifact artifact)
+			throws MojoExecutionException {
+
 		for (ArtifactRepository repository : project.getRemoteArtifactRepositories()) {
-			if(!repository.getSnapshots().isEnabled()) {
-				//Skip the repo if it isn't enabled for snapshots
+			if (!repository.getSnapshots().isEnabled()) {
+				// Skip the repo if it isn't enabled for snapshots
 				continue;
 			}
-			   
+
 			RemoteRepository aetherRepo = RepositoryUtils.toRepo(repository);
-			
-			//Remove the workspace from the session so that we don't use it
+
+			// Remove the workspace from the session so that we don't use it
 			DefaultRepositorySystemSession newSession = new DefaultRepositorySystemSession(session);
 			newSession.setWorkspaceReader(null);
-			
-			//Find the snapshot metadata for the module
-			MetadataRequest mr = new MetadataRequest()
-					.setRepository(aetherRepo)
+
+			// Find the snapshot metadata for the module
+			MetadataRequest mr = new MetadataRequest().setRepository(aetherRepo)
 					.setMetadata(new DefaultMetadata(artifact.getGroupId(), artifact.getArtifactId(),
 							artifact.getVersion(), "maven-metadata.xml", SNAPSHOT));
-			
+
 			for (MetadataResult metadataResult : system.resolveMetadata(newSession, singletonList(mr))) {
-				if(metadataResult.isResolved()) {
+				if (metadataResult.isResolved()) {
 					String version;
 					try {
 						Metadata read = metadataReader.read(metadataResult.getMetadata().getFile(), null);
 						Versioning versioning = read.getVersioning();
-						if(versioning == null || versioning.getSnapshotVersions() == null 
+						if (versioning == null || versioning.getSnapshotVersions() == null
 								|| versioning.getSnapshotVersions().isEmpty()) {
 							continue;
 						} else {
@@ -404,17 +411,18 @@ public class IndexerMojo extends AbstractMojo {
 						throw new MojoExecutionException("Unable to read project metadata for " + artifact, e);
 					}
 					Artifact fullVersionArtifact = new org.eclipse.aether.artifact.DefaultArtifact(
-							artifact.getGroupId(), artifact.getArtifactId(), 
-							artifact.getClassifier(), artifact.getExtension(), version);
+							artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(),
+							artifact.getExtension(), version);
 					try {
-						ArtifactResult result = system.resolveArtifact(newSession, new ArtifactRequest()
-								.setArtifact(fullVersionArtifact)
-								.addRepository(aetherRepo));
-						if(result.isResolved()) { 
-							File toUse = new File(session.getLocalRepository().getBasedir(), 
-									session.getLocalRepositoryManager().getPathForRemoteArtifact(fullVersionArtifact, aetherRepo, artifact.toString()));
-							if(!toUse.exists()) {
-								getLog().warn("The resolved artifact " + fullVersionArtifact + " does not exist at " + toUse);
+						ArtifactResult result = system.resolveArtifact(newSession,
+								new ArtifactRequest().setArtifact(fullVersionArtifact).addRepository(aetherRepo));
+						if (result.isResolved()) {
+							File toUse = new File(session.getLocalRepository().getBasedir(),
+									session.getLocalRepositoryManager().getPathForRemoteArtifact(fullVersionArtifact,
+											aetherRepo, artifact.toString()));
+							if (!toUse.exists()) {
+								getLog().warn(
+										"The resolved artifact " + fullVersionArtifact + " does not exist at " + toUse);
 								continue;
 							} else {
 								getLog().debug("Located snapshot file " + toUse + " for artifact " + artifact);
@@ -428,49 +436,47 @@ public class IndexerMojo extends AbstractMojo {
 				}
 			}
 		}
-		
+
 		getLog().debug("Unable to resolve a remote repository containing " + artifact);
-		
+
 		return null;
 	}
 
-	private ArtifactResult postProcessRelease(ArtifactRequest request, Artifact artifact) throws MojoExecutionException {
-		
+	private ArtifactResult postProcessRelease(ArtifactRequest request, Artifact artifact)
+			throws MojoExecutionException {
+
 		for (ArtifactRepository repository : project.getRemoteArtifactRepositories()) {
-			if(!repository.getReleases().isEnabled()) {
-				//Skip the repo if it isn't enabled for releases
+			if (!repository.getReleases().isEnabled()) {
+				// Skip the repo if it isn't enabled for releases
 				continue;
 			}
-			
+
 			RemoteRepository aetherRepo = RepositoryUtils.toRepo(repository);
-			
-			//Remove the workspace from the session so that we don't use it
+
+			// Remove the workspace from the session so that we don't use it
 			DefaultRepositorySystemSession newSession = new DefaultRepositorySystemSession(session);
 			newSession.setWorkspaceReader(null);
-			
-			//Find the snapshot metadata for the module
-			MetadataRequest mr = new MetadataRequest()
-					.setRepository(aetherRepo)
-					.setMetadata(new DefaultMetadata(artifact.getGroupId(), artifact.getArtifactId(),
-							null, "maven-metadata.xml", RELEASE));
-			
+
+			// Find the snapshot metadata for the module
+			MetadataRequest mr = new MetadataRequest().setRepository(aetherRepo).setMetadata(new DefaultMetadata(
+					artifact.getGroupId(), artifact.getArtifactId(), null, "maven-metadata.xml", RELEASE));
+
 			for (MetadataResult metadataResult : system.resolveMetadata(newSession, singletonList(mr))) {
-				if(metadataResult.isResolved()) {
+				if (metadataResult.isResolved()) {
 					try {
 						Metadata read = metadataReader.read(metadataResult.getMetadata().getFile(), null);
 						Versioning versioning = read.getVersioning();
-						if(versioning == null || versioning.getVersions() == null 
+						if (versioning == null || versioning.getVersions() == null
 								|| versioning.getVersions().isEmpty()) {
 							continue;
-						} else if(versioning.getVersions().contains(artifact.getVersion())) {
-							
-							ArtifactResult result = system.resolveArtifact(newSession, new ArtifactRequest()
-									.setArtifact(artifact)
-									.addRepository(aetherRepo));
-							if(result.isResolved()) { 
-								File toUse = new File(session.getLocalRepository().getBasedir(), 
+						} else if (versioning.getVersions().contains(artifact.getVersion())) {
+
+							ArtifactResult result = system.resolveArtifact(newSession,
+									new ArtifactRequest().setArtifact(artifact).addRepository(aetherRepo));
+							if (result.isResolved()) {
+								File toUse = new File(session.getLocalRepository().getBasedir(),
 										session.getLocalRepositoryManager().getPathForLocalArtifact(artifact));
-								if(!toUse.exists()) {
+								if (!toUse.exists()) {
 									getLog().warn("The resolved artifact " + artifact + " does not exist at " + toUse);
 									continue;
 								} else {
@@ -486,9 +492,9 @@ public class IndexerMojo extends AbstractMojo {
 				}
 			}
 		}
-		
+
 		getLog().debug("Unable to resolve a remote repository containing " + artifact);
-		
+
 		return null;
 	}
 

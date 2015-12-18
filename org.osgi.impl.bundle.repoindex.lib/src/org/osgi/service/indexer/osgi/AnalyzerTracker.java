@@ -45,8 +45,7 @@ class AnalyzerTracker extends ServiceTracker<ResourceAnalyzer,TrackingStruct> {
 			struct.valid = true;
 
 			indexer.addAnalyzer(analyzer, filter);
-		}
-		catch (InvalidSyntaxException e) {
+		} catch (InvalidSyntaxException e) {
 			struct.valid = false;
 			log.log(reference, LogService.LOG_ERROR, "Ignoring ResourceAnalyzer due to invalid filter expression", e);
 		}
@@ -68,8 +67,7 @@ class AnalyzerTracker extends ServiceTracker<ResourceAnalyzer,TrackingStruct> {
 			struct.valid = true;
 
 			indexer.addAnalyzer(struct.analyzer, filter);
-		}
-		catch (InvalidSyntaxException e) {
+		} catch (InvalidSyntaxException e) {
 			struct.valid = false;
 			log.log(reference, LogService.LOG_ERROR, "Ignoring ResourceAnalyzer due to invalid filter expression", e);
 		}

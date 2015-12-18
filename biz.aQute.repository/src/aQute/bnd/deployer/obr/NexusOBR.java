@@ -27,25 +27,40 @@ import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 
 /**
- * A read-write nexus OBR-based repository. <p> You will need to install the
- * nexus-obr-plugin in nexus (you can download it on <a
- * href="http://search.maven.org/#search|ga|1|a%3A%22nexus-obr-plugin%22"> maven
- * central</a>) </p> <p> <h2>Properties</h2> <ul> <li><b>repositoryUrl</b>: the
- * nexus repository url (http://localhost:8081/nexus/content/repositories/obr/
- * for example)</li> <li><b>username</b>: the username; defaults to
- * "deployment"</li> <li><b>password</b>: the password; defaults to
- * "deployment123"</li> <li><b>name</b>: repository name; defaults to the nexus
- * repository url</li> <li><b>cache</b>: local cache directory. May be omitted,
- * in which case a default directory will be used.</li> <li><b>readonly</b>: if
- * readonly, no bundle can be added to the repository </ul> </p> <p>
- * <h2>Example</h2> <pre> -plugin:
+ * A read-write nexus OBR-based repository.
+ * <p>
+ * You will need to install the nexus-obr-plugin in nexus (you can download it
+ * on <a href="http://search.maven.org/#search|ga|1|a%3A%22nexus-obr-plugin%22">
+ * maven central</a>)
+ * </p>
+ * <p>
+ * <h2>Properties</h2>
+ * <ul>
+ * <li><b>repositoryUrl</b>: the nexus repository url
+ * (http://localhost:8081/nexus/content/repositories/obr/ for example)</li>
+ * <li><b>username</b>: the username; defaults to "deployment"</li>
+ * <li><b>password</b>: the password; defaults to "deployment123"</li>
+ * <li><b>name</b>: repository name; defaults to the nexus repository url</li>
+ * <li><b>cache</b>: local cache directory. May be omitted, in which case a
+ * default directory will be used.</li>
+ * <li><b>readonly</b>: if readonly, no bundle can be added to the repository
+ * </ul>
+ * </p>
+ * <p>
+ * <h2>Example</h2>
+ * 
+ * <pre>
+ *  -plugin:
  * aQute.bnd.deployer.obr.NexusOBR;readonly=false;repositoryUrl=http://localhost
  * :8081/nexus/content/repositories/obr/;username=deployment;password=
- * deployment123;name=nexus-obr </pre> </p> @author Cedric Chabanois <cchabanois
- * at gmail.com>
+ * deployment123;name=nexus-obr
+ * </pre>
+ * </p>
+ * 
+ * @author Cedric Chabanois <cchabanois at gmail.com>
  */
 public class NexusOBR extends AbstractIndexedRepo {
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 2;
+	static final int			BUFFER_SIZE				= IOConstants.PAGE_SIZE * 2;
 
 	private static final String	DEFAULT_PASSWORD		= "deployment123";
 	private static final String	DEFAULT_USERNAME		= "deployment";
@@ -96,8 +111,7 @@ public class NexusOBR extends AbstractIndexedRepo {
 				try {
 					throw new IllegalArgumentException(String.format(
 							"Cache path '%s' does not exist, or is not a directory.", cacheDir.getCanonicalPath()));
-				}
-				catch (IOException e) {
+				} catch (IOException e) {
 					throw new IllegalArgumentException("Could not get cacheDir canonical path", e);
 				}
 		}
@@ -184,8 +198,7 @@ public class NexusOBR extends AbstractIndexedRepo {
 			}
 
 			return result;
-		}
-		finally {
+		} finally {
 			if (tmpFile != null && tmpFile.exists()) {
 				IO.delete(tmpFile);
 			}
@@ -193,8 +206,8 @@ public class NexusOBR extends AbstractIndexedRepo {
 	}
 
 	protected URL putArtifact(File tmpFile) throws Exception {
-		assert(tmpFile != null);
-		assert(tmpFile.isFile());
+		assert (tmpFile != null);
+		assert (tmpFile.isFile());
 
 		init();
 
@@ -214,8 +227,7 @@ public class NexusOBR extends AbstractIndexedRepo {
 				throw new IllegalArgumentException("Invalid version " + versionString + " in file " + tmpFile);
 
 			version = Version.parseVersion(versionString);
-		}
-		finally {
+		} finally {
 			jar.close();
 		}
 		URL url = put(tmpFile, bsn, version);
@@ -253,8 +265,7 @@ public class NexusOBR extends AbstractIndexedRepo {
 			if (respondeCode < 200 || respondeCode > 300) {
 				throw new IOException(httpUrlConnection.getResponseMessage());
 			}
-		}
-		finally {
+		} finally {
 			if (is != null) {
 				is.close();
 			}

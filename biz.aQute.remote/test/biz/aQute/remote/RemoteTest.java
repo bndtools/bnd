@@ -51,8 +51,7 @@ public class RemoteTest extends TestCase {
 			agent.start();
 
 			super.setUp();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

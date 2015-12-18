@@ -78,16 +78,14 @@ public class HttpRedirectionTest extends TestCase {
 				try {
 					InputStream stream = connector.connect(new URL("http://localhost:" + httpd.getPort() + "/foo"));
 					IO.collect(stream);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		});
 		try {
 			future.get(1, TimeUnit.SECONDS);
-		}
-		finally {
+		} finally {
 			future.cancel(true);
 			executor.shutdownNow();
 		}

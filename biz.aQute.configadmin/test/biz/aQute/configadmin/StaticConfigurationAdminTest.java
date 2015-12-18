@@ -69,8 +69,7 @@ public class StaticConfigurationAdminTest extends TestCase {
 		try {
 			cm.getConfiguration("org.example.baz");
 			fail("Should throw SecurityException");
-		}
-		catch (SecurityException e) {
+		} catch (SecurityException e) {
 			// expected
 		}
 	}

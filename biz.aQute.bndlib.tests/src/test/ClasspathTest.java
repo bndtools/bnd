@@ -13,7 +13,9 @@ public class ClasspathTest extends TestCase {
 
 	/**
 	 * Test if we can refer to the jars on the classpath by their file name (
-	 * ignoring the path) @throws Exception
+	 * ignoring the path)
+	 * 
+	 * @throws Exception
 	 */
 	public static void testBundleClasspath() throws Exception {
 		Builder b = new Builder();
@@ -27,7 +29,9 @@ public class ClasspathTest extends TestCase {
 
 	/**
 	 * Test if we can refer to the jars on the classpath by their file name (
-	 * ignoring the path) @throws Exception
+	 * ignoring the path)
+	 * 
+	 * @throws Exception
 	 */
 	public static void testFindJarOnClasspath() throws Exception {
 		Properties p = new Properties();
@@ -45,7 +49,9 @@ public class ClasspathTest extends TestCase {
 	}
 
 	/**
-	 * Test if we can use URLs on the classpath @throws Exception
+	 * Test if we can use URLs on the classpath
+	 * 
+	 * @throws Exception
 	 */
 	public static void testSimple() throws Exception {
 		Properties p = new Properties();

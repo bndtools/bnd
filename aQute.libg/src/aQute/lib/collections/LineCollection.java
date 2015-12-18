@@ -44,8 +44,7 @@ public class LineCollection implements Iterator<String>, Closeable {
 			if (next == null)
 				reader.close();
 			return result;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// ignore
 			return null;
 		}

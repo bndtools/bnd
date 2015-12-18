@@ -18,8 +18,8 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 	private static final String	INTERNAL_LIST_SEPARATOR				= ";";
 	private static final String	INTERNAL_LIST_SEPARATOR_NEWLINES	= INTERNAL_LIST_SEPARATOR + "\\\n\t\t";
 
-	protected String	name;
-	protected Attrs		attribs;
+	protected String			name;
+	protected Attrs				attribs;
 
 	public HeaderClause(String name, Attrs attribs) {
 		assert name != null;
@@ -121,8 +121,7 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 			clone.name = this.name;
 			clone.attribs = new Attrs(this.attribs);
 			return clone;
-		}
-		catch (CloneNotSupportedException e) {
+		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException(e);
 		}
 	}

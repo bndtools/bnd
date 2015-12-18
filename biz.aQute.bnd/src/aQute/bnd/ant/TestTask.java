@@ -58,8 +58,7 @@ public class TestTask extends BaseTask {
 			for (Project project : projects) {
 				executeProject(project);
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new BuildException(e);
 		}

@@ -23,20 +23,23 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Specify the version of a package. <p> This annotation is not retained at
- * runtime. It is for use by tools to generate bundle manifests or otherwise
- * process the version of a package. @see <a
- * href="http://www.osgi.org/wiki/uploads/Links/SemanticVersioning.pdf"
- * >Semantic Versioning</a> @author $Id:
- * dcb5aff364bf7d59d647211711ae0e32697cc56f $
+ * Specify the version of a package.
+ * <p>
+ * This annotation is not retained at runtime. It is for use by tools to
+ * generate bundle manifests or otherwise process the version of a package.
+ * 
+ * @see <a href="http://www.osgi.org/wiki/uploads/Links/SemanticVersioning.pdf"
+ *      > Semantic Versioning</a>
+ * @author $Id$
  */
 @Documented
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.PACKAGE)
 public @interface Version {
 	/**
-	 * The version of the annotated package. <p> The version must be a valid
-	 * OSGi version string.
+	 * The version of the annotated package.
+	 * <p>
+	 * The version must be a valid OSGi version string.
 	 */
 	String value();
 }

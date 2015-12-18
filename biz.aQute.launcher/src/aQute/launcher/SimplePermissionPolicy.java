@@ -18,14 +18,20 @@ import org.osgi.service.permissionadmin.PermissionInfo;
 
 /**
  * Implements a permissionpolicy. It will tried to read a resource from the
- * bundle. This resource should have the following format: <pre> '('
+ * bundle. This resource should have the following format:
+ * 
+ * <pre>
+ *  '('
  * permission-class [ '&quot;' name-parameter '&quot;' [ '&quot;' action [ ','
- * action ] ... '&quot;' ] ] ')' Or '#' * </pre> Each valid line is translated
- * into a PermissionInfo object and these objects together form the permissions
- * for a specific bundle. The class will also attempt to read a file called
- * "default.perm" from the current bundle that will have the same format. This
- * is used for the default permissions. <p> If there is no permission admin
- * service, this class does nothing relevant.
+ * action ] ... '&quot;' ] ] ')' Or '#' *
+ * </pre>
+ * 
+ * Each valid line is translated into a PermissionInfo object and these objects
+ * together form the permissions for a specific bundle. The class will also
+ * attempt to read a file called "default.perm" from the current bundle that
+ * will have the same format. This is used for the default permissions.
+ * <p>
+ * If there is no permission admin service, this class does nothing relevant.
  */
 public class SimplePermissionPolicy implements SynchronousBundleListener {
 	static final String	DEFAULT_PERMISSION_RESOURCE	= "default.perm";
@@ -54,8 +60,7 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 			PermissionInfo[] info;
 			try {
 				info = parse(in);
-			}
-			finally {
+			} finally {
 				in.close();
 			}
 			permissionAdmin.setDefaultPermissions(info);
@@ -105,8 +110,7 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 			try {
 				InputStream in = url.openStream();
 				info = parse(in);
-			}
-			catch (IOException e) {
+			} catch (IOException e) {
 				System.err.println("Unable to read permission info for bundle  " + bundle.getLocation() + " " + e);
 			}
 		return info;
@@ -128,14 +132,12 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 						continue;
 					try {
 						permissions.add(new PermissionInfo(line));
-					}
-					catch (IllegalArgumentException iae) {
+					} catch (IllegalArgumentException iae) {
 						/* incorrectly encoded permission */
 						System.err.println("Permission incorrectly encoded: " + line + " " + iae);
 					}
 				}
-			}
-			finally {
+			} finally {
 				in.close();
 			}
 			int size = permissions.size();

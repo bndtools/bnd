@@ -58,23 +58,36 @@ import aQute.libg.generics.Create;
  * An element that compares the access field in a binary compatible way. This
  * element is used for classes, methods, constructors, and fields. For that
  * reason we also included the only method that uses this class as a static
- * method. <p> Packages <ul> <li>MAJOR - Remove a public type <li>MINOR - Add a
- * public class <li>MINOR - Add an interface <li>MINOR - Add a method to a class
- * <li>MINOR - Add a method to a provider interface <li>MAJOR - Add a method to
- * a consumer interface <li>MINOR - Add a field <li>MICRO - Add an annotation to
- * a member <li>MINOR - Change the value of a constant <li>MICRO - -abstract
- * <li>MICRO - -final <li>MICRO - -protected <li>MAJOR - +abstract <li>MAJOR -
- * +final <li>MAJOR - +protected </ul>
+ * method.
+ * <p>
+ * Packages
+ * <ul>
+ * <li>MAJOR - Remove a public type
+ * <li>MINOR - Add a public class
+ * <li>MINOR - Add an interface
+ * <li>MINOR - Add a method to a class
+ * <li>MINOR - Add a method to a provider interface
+ * <li>MAJOR - Add a method to a consumer interface
+ * <li>MINOR - Add a field
+ * <li>MICRO - Add an annotation to a member
+ * <li>MINOR - Change the value of a constant
+ * <li>MICRO - -abstract
+ * <li>MICRO - -final
+ * <li>MICRO - -protected
+ * <li>MAJOR - +abstract
+ * <li>MAJOR - +final
+ * <li>MAJOR - +protected
+ * </ul>
  */
 
 class JavaElement {
-	static Pattern PARAMETERS_P = Pattern.compile(".*(\\(.*\\)).*");
+	static Pattern						PARAMETERS_P	= Pattern.compile(".*(\\(.*\\)).*");
 
-	final static EnumSet<Type>		INHERITED	= EnumSet.of(FIELD, METHOD, EXTENDS, IMPLEMENTS);
-	private static final Element	PROTECTED	= new Element(ACCESS, "protected", null, MAJOR, MINOR, null);
-	private static final Element	STATIC		= new Element(ACCESS, "static", null, MAJOR, MAJOR, null);
-	private static final Element	ABSTRACT	= new Element(ACCESS, "abstract", null, MAJOR, MINOR, null);
-	private static final Element	FINAL		= new Element(ACCESS, "final", null, MAJOR, MINOR, null);
+	final static EnumSet<Type>			INHERITED		= EnumSet.of(FIELD, METHOD, EXTENDS, IMPLEMENTS);
+	private static final Element		PROTECTED		= new Element(ACCESS, "protected", null, MAJOR, MINOR, null);
+	private static final Element		STATIC			= new Element(ACCESS, "static", null, MAJOR, MAJOR, null);
+	private static final Element		ABSTRACT		= new Element(ACCESS, "abstract", null, MAJOR, MINOR, null);
+	private static final Element		FINAL			= new Element(ACCESS, "final", null, MAJOR, MINOR, null);
 	// private static final Element DEPRECATED = new Element(ACCESS,
 	// "deprecated", null,
 	// CHANGED, CHANGED, null);
@@ -83,9 +96,9 @@ class JavaElement {
 	final Map<PackageRef,Instructions>	providerMatcher	= Create.map();
 	final Set<TypeRef>					notAccessible	= Create.set();
 	final Map<Object,Element>			cache			= Create.map();
-	MultiMap<PackageRef,																	//
+	MultiMap<PackageRef,																								//
 	Element>							packages;
-	final MultiMap<TypeRef,																	//
+	final MultiMap<TypeRef,																								//
 	Element>							covariant		= new MultiMap<TypeRef,Element>();
 	final Set<JAVA>						javas			= Create.set();
 	final Packages						exports;
@@ -93,7 +106,9 @@ class JavaElement {
 	/**
 	 * Create an element for the API. We take the exported packages and traverse
 	 * those for their classes. If there is no manifest or it does not describe
-	 * a bundle we assume the whole contents is exported. @param infos
+	 * a bundle we assume the whole contents is exported.
+	 * 
+	 * @param infos
 	 */
 	JavaElement(Analyzer analyzer) throws Exception {
 		this.analyzer = analyzer;
@@ -175,8 +190,13 @@ class JavaElement {
 	 * Calculate the class element. This requires parsing the class file and
 	 * finding all the methods that were added etc. The parsing will take super
 	 * interfaces and super classes into account. For this reason it maintains a
-	 * queue of classes/interfaces to parse. @param analyzer @param clazz @param
-	 * infos @return @throws Exception
+	 * queue of classes/interfaces to parse.
+	 * 
+	 * @param analyzer
+	 * @param clazz
+	 * @param infos
+	 * @return
+	 * @throws Exception
 	 */
 	Element classElement(final Clazz clazz) throws Exception {
 		Element e = cache.get(clazz);
@@ -210,8 +230,8 @@ class JavaElement {
 			return before;
 
 		clazz.parseClassFileWithCollector(new ClassDataCollector() {
-			boolean memberEnd;
-			Clazz.FieldDef last;
+			boolean			memberEnd;
+			Clazz.FieldDef	last;
 
 			@Override
 			public void version(int minor, int major) {
@@ -279,7 +299,10 @@ class JavaElement {
 			}
 
 			/**
-			 * @param members @param name @param comment @return
+			 * @param members
+			 * @param name
+			 * @param comment
+			 * @return
 			 */
 			Set<Element> OBJECT = Create.set();
 
@@ -324,7 +347,10 @@ class JavaElement {
 			 * tree. Starting with ANNOTATED, and then properties. A property is
 			 * a PROPERTY property or an ANNOTATED property if it is an
 			 * annotation. If it is an array, the key is suffixed with the
-			 * index. <pre> public @interface Outer { Inner[] value(); }
+			 * index.
+			 * 
+			 * <pre>
+			 *  public @interface Outer { Inner[] value(); }
 			 * public @interface Inner { String[] value(); } @Outer(
 			 * { @Inner("1","2"}) } class Xyz {} ANNOTATED Outer
 			 * (CHANGED/CHANGED) ANNOTATED Inner (CHANGED/CHANGED) PROPERTY

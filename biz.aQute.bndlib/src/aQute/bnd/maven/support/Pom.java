@@ -45,8 +45,8 @@ public abstract class Pom {
 		// }
 	}
 
-	final Maven	maven;
-	final URI	home;
+	final Maven			maven;
+	final URI			home;
 
 	String				groupId;
 	String				artifactId;
@@ -254,8 +254,7 @@ public abstract class Pom {
 						System.err.println("Cannot find " + dep + " from " + rover.previous.dependency);
 					else
 						System.err.println("Cannot find " + dep + " from top");
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					if (rover.previous != null)
 						System.err.println("Cannot find " + dep + " from " + rover.previous.dependency);
 					else
@@ -328,15 +327,17 @@ public abstract class Pom {
 			for (Pom dep : getDependencies(action, repositories)) {
 				doEntry(writer, dep);
 			}
-		}
-		finally {
+		} finally {
 			writer.close();
 		}
 		return file;
 	}
 
 	/**
-	 * @param writer @param dep @throws IOException @throws Exception
+	 * @param writer
+	 * @param dep
+	 * @throws IOException
+	 * @throws Exception
 	 */
 	private void doEntry(Writer writer, Pom dep) throws IOException, Exception {
 		writer.append(dep.getGroupId());

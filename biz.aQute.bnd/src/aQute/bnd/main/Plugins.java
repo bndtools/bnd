@@ -157,8 +157,7 @@ public class Plugins {
 						annotatedPlugins.put(annotation.name(), c);
 					}
 
-				}
-				catch (Exception ex) {
+				} catch (Exception ex) {
 					bnd.error("Cannot find plugin %s", cname);
 				}
 			}

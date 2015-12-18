@@ -12,8 +12,9 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.AnalyzerPlugin;
 
 /**
- * This class is responsible for meta type types. It is a plugin that
- * can @author aqute
+ * This class is responsible for meta type types. It is a plugin that can
+ * 
+ * @author aqute
  */
 public class MetatypePlugin implements AnalyzerPlugin {
 

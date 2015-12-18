@@ -57,36 +57,42 @@ import aQute.service.reporter.Reporter;
  */
 public class ComponentAnnotationReader extends ClassDataCollector {
 
-	String						EMPTY[]			= new String[0];
-	private static final String	V1_1			= "1.1.0";											// "1.1.0"
-	static Pattern				BINDDESCRIPTOR	= Pattern
+	String													EMPTY[]					= new String[0];
+	private static final String								V1_1					= "1.1.0";															// "1.1.0"
+	static Pattern											BINDDESCRIPTOR			= Pattern
 			.compile("\\(L([^;]*);(Ljava/util/Map;|Lorg/osgi/framework/ServiceReference;)*\\)V");
-	static Pattern				BINDMETHOD		= Pattern.compile("(set|bind|add)(.)(.*)");
+	static Pattern											BINDMETHOD				= Pattern
+			.compile("(set|bind|add)(.)(.*)");
 
-	static Pattern	ACTIVATEDESCRIPTOR		= Pattern.compile(
+	static Pattern											ACTIVATEDESCRIPTOR		= Pattern.compile(
 			"\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)V");
-	static Pattern	OLDACTIVATEDESCRIPTOR	= Pattern.compile("\\(Lorg/osgi/service/component/ComponentContext;\\)V");
+	static Pattern											OLDACTIVATEDESCRIPTOR	= Pattern
+			.compile("\\(Lorg/osgi/service/component/ComponentContext;\\)V");
 
-	static Pattern	OLDBINDDESCRIPTOR		= Pattern.compile("\\(L([^;]*);\\)V");
-	static Pattern	REFERENCEBINDDESCRIPTOR	= Pattern.compile("\\(Lorg/osgi/framework/ServiceReference;\\)V");
+	static Pattern											OLDBINDDESCRIPTOR		= Pattern
+			.compile("\\(L([^;]*);\\)V");
+	static Pattern											REFERENCEBINDDESCRIPTOR	= Pattern
+			.compile("\\(Lorg/osgi/framework/ServiceReference;\\)V");
 
-	static String[]	ACTIVATE_ARGUMENTS		= {
-			"org.osgi.service.component.ComponentContext", "org.osgi.framework.BundleContext", Map.class.getName(),
-			"org.osgi.framework.BundleContext"
-												};
-	static String[]	OLD_ACTIVATE_ARGUMENTS	= {
-			"org.osgi.service.component.ComponentContext"
-												};
+	static String[]											ACTIVATE_ARGUMENTS		= {
+																							"org.osgi.service.component.ComponentContext",
+																							"org.osgi.framework.BundleContext",
+																							Map.class.getName(),
+																							"org.osgi.framework.BundleContext"
+																						};
+	static String[]											OLD_ACTIVATE_ARGUMENTS	= {
+																							"org.osgi.service.component.ComponentContext"
+																						};
 
-	Reporter	reporter	= new Processor();
-	MethodDef	method;
-	FieldDef	field;
-	TypeRef		className;
-	Clazz		clazz;
-	TypeRef		interfaces[];
-	Set<String>	multiple	= new HashSet<String>();
-	Set<String>	optional	= new HashSet<String>();
-	Set<String>	dynamic		= new HashSet<String>();
+	Reporter												reporter				= new Processor();
+	MethodDef												method;
+	FieldDef												field;
+	TypeRef													className;
+	Clazz													clazz;
+	TypeRef													interfaces[];
+	Set<String>												multiple				= new HashSet<String>();
+	Set<String>												optional				= new HashSet<String>();
+	Set<String>												dynamic					= new HashSet<String>();
 
 	Map<String,String>										map						= new TreeMap<String,String>();
 	Set<String>												descriptors				= new HashSet<String>();
@@ -416,7 +422,10 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 
 	/**
 	 * Skip L and ; and replace / for . in an object descriptor. A string like
-	 * Lcom/acme/Foo; becomes com.acme.Foo @param string @return
+	 * Lcom/acme/Foo; becomes com.acme.Foo
+	 * 
+	 * @param string
+	 * @return
 	 */
 
 	// private String descriptorToFQN(String string) {

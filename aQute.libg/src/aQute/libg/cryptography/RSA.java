@@ -14,15 +14,14 @@ import java.security.spec.RSAPublicKeySpec;
 import aQute.libg.tuple.Pair;
 
 public class RSA {
-	final static String ALGORITHM = "RSA";
+	final static String		ALGORITHM	= "RSA";
 
-	final static KeyFactory factory = getKeyFactory();
+	final static KeyFactory	factory		= getKeyFactory();
 
 	static private KeyFactory getKeyFactory() {
 		try {
 			return KeyFactory.getInstance(ALGORITHM);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// built in
 		}
 		return null;

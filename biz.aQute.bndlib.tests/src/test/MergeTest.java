@@ -81,8 +81,7 @@ public class MergeTest extends TestCase {
 			BufferedReader dis = new BufferedReader(new InputStreamReader(is));
 			String s = dis.readLine();
 			assertEquals(s, c);
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}

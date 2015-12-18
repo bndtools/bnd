@@ -40,8 +40,10 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 	}
 
 	/**
-	 * Initialize the SSL Context, factory and verifier. @throws
-	 * NoSuchAlgorithmException @throws KeyManagementException
+	 * Initialize the SSL Context, factory and verifier.
+	 * 
+	 * @throws NoSuchAlgorithmException
+	 * @throws KeyManagementException
 	 */
 	private synchronized void init() throws NoSuchAlgorithmException, KeyManagementException {
 		if (factory == null) {
@@ -109,8 +111,7 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 						CertificateFactory cf = CertificateFactory.getInstance("X.509");
 						X509Certificate cert = (X509Certificate) cf.generateCertificate(inStream);
 						certificates.add(cert);
-					}
-					finally {
+					} finally {
 						inStream.close();
 					}
 				}

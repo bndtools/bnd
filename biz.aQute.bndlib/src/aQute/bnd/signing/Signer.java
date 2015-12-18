@@ -29,15 +29,15 @@ import aQute.lib.io.IOConstants;
  * signature. -sign: md5, sha1
  */
 public class Signer extends Processor {
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
+	static final int	BUFFER_SIZE		= IOConstants.PAGE_SIZE * 1;
 
-	static Pattern	METAINFDIR		= Pattern.compile("META-INF/[^/]*");
-	String			digestNames[]	= new String[] {
-			"MD5"
-										};
-	File			keystoreFile	= new File("keystore");
-	String			password;
-	String			alias;
+	static Pattern		METAINFDIR		= Pattern.compile("META-INF/[^/]*");
+	String				digestNames[]	= new String[] {
+												"MD5"
+											};
+	File				keystoreFile	= new File("keystore");
+	String				password;
+	String				alias;
 
 	public void signJar(Jar jar) {
 		if (digestNames == null || digestNames.length == 0)
@@ -92,13 +92,11 @@ public class Signer extends Processor {
 				keystore.load(keystoreInputStream, pw);
 				keystoreInputStream.close();
 				privateKeyEntry = (PrivateKeyEntry) keystore.getEntry(alias, new KeyStore.PasswordProtection(pw));
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				error("No able to load the private key from the give keystore(" + keystoreFile.getAbsolutePath()
 						+ ") with alias " + alias + " : " + e);
 				return;
-			}
-			finally {
+			} finally {
 				IO.close(keystoreInputStream);
 			}
 			PrivateKey privateKey = privateKeyEntry.getPrivateKey();
@@ -117,8 +115,7 @@ public class Signer extends Processor {
 
 			ByteArrayOutputStream tmpStream = new ByteArrayOutputStream();
 			jar.putResource("META-INF/BND.RSA", new EmbeddedResource(tmpStream.toByteArray(), 0));
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			error("During signing: " + e);
 		}
 	}
@@ -182,8 +179,7 @@ public class Signer extends Processor {
 			String name = digestNames[i];
 			try {
 				algorithms[i] = MessageDigest.getInstance(name);
-			}
-			catch (NoSuchAlgorithmException e) {
+			} catch (NoSuchAlgorithmException e) {
 				error("Specified digest algorithm " + digestNames[i] + ", but not such algorithm was found: " + e);
 			}
 		}

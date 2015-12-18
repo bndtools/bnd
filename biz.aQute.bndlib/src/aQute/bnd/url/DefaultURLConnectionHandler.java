@@ -17,8 +17,8 @@ import aQute.service.reporter.Reporter;
 /**
  * Base class for the URL Connection handlers. This class implements some
  * convenient methods like the matching. In general you should subclass and
- * implement {@link #handle(URLConnection)}. Be aware to call the {@link
- * #matches(URLConnection)} method to verify the plugin is applicable.
+ * implement {@link #handle(URLConnection)}. Be aware to call the
+ * {@link #matches(URLConnection)} method to verify the plugin is applicable.
  */
 public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin, RegistryPlugin, Reporter {
 
@@ -52,9 +52,10 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 	}
 
 	/**
-	 * Convenience method to make it easier to verify connections @param
-	 * connection The connection to match @return true if this connection should
-	 * be handled.
+	 * Convenience method to make it easier to verify connections
+	 * 
+	 * @param connection The connection to match
+	 * @return true if this connection should be handled.
 	 */
 	protected boolean matches(URLConnection connection) {
 		return matches(connection.getURL());

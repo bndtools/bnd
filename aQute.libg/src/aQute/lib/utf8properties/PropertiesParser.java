@@ -102,8 +102,7 @@ final class PropertiesParser {
 					}
 					return current;
 			}
-		}
-		finally {
+		} finally {
 			pos++;
 		}
 	}
@@ -157,8 +156,7 @@ final class PropertiesParser {
 				properties.put(key, value);
 
 			} else {
-				error("No value specified for key: %s. An empty value should be specified as '%<s:' or '%<s='",
-						key);
+				error("No value specified for key: %s. An empty value should be specified as '%<s:' or '%<s='", key);
 				properties.put(key, "");
 				continue;
 			}

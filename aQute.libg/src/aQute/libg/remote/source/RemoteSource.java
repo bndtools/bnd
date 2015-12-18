@@ -55,7 +55,9 @@ public class RemoteSource implements Source {
 	}
 
 	/**
-	 * Close @throws IOException
+	 * Close
+	 * 
+	 * @throws IOException
 	 */
 	public void close() throws IOException {}
 
@@ -136,8 +138,7 @@ public class RemoteSource implements Source {
 									getSink().input(areaId, new String(data));
 								}
 							}
-						}
-						catch (Exception e) {
+						} catch (Exception e) {
 							e.printStackTrace();
 						}
 				}

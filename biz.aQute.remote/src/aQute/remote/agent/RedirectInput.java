@@ -16,8 +16,9 @@ public class RedirectInput extends InputStream {
 	private int			in, out;
 
 	/**
-	 * Create a redirector input stream with an original input stream @param in
-	 * the original
+	 * Create a redirector input stream with an original input stream
+	 * 
+	 * @param in the original
 	 */
 	public RedirectInput(InputStream in) throws IOException {
 		this.org = in;
@@ -29,16 +30,18 @@ public class RedirectInput extends InputStream {
 	public RedirectInput() {}
 
 	/**
-	 * Get the original inputstream, potentially null @return null or the
-	 * original input stream
+	 * Get the original inputstream, potentially null
+	 * 
+	 * @return null or the original input stream
 	 */
 	public InputStream getOrg() {
 		return org;
 	}
 
 	/**
-	 * Provide the string that should be treated as input for the running
-	 * code. @param s the string
+	 * Provide the string that should be treated as input for the running code.
+	 * 
+	 * @param s the string
 	 */
 	public synchronized void add(String s) throws IOException {
 		byte[] bytes = s.getBytes();
@@ -78,8 +81,7 @@ public class RedirectInput extends InputStream {
 			while (in == out) {
 				try {
 					ring.wait(400);
-				}
-				catch (InterruptedException e) {
+				} catch (InterruptedException e) {
 					return -1;
 				}
 			}

@@ -32,8 +32,7 @@ public class MakeCopy implements MakePlugin {
 		try {
 			URL url = new URL(from);
 			return new URLResource(url);
-		}
-		catch (MalformedURLException mfue) {
+		} catch (MalformedURLException mfue) {
 			// We ignore this
 		}
 		throw new IllegalArgumentException("Copy source does not exist " + from + " for destination " + destination);

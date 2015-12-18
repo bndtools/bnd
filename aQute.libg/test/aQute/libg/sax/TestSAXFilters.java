@@ -16,20 +16,20 @@ import junit.framework.TestCase;
 
 public class TestSAXFilters extends TestCase {
 
-	private static final String	SAMPLE1	= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+	private static final String	SAMPLE1		= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 			+ "<root a=\"1\"><a><b><c></c></b></a></root>";
-	private static final String	SAMPLE2	= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+	private static final String	SAMPLE2		= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 			+ "<root b=\"2\"><x><y><z></z></y></x></root>";
 
-	private static final String MERGED1_2 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+	private static final String	MERGED1_2	= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 			+ "<root a=\"1\"><a><b><c/></b></a><x><y><z/></y></x></root>";
 
-	private static final String	SAMPLE3	= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+	private static final String	SAMPLE3		= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 			+ "<anotherRoot b=\"2\"><x><y><z></z></y></x></anotherRoot>";
-	private static final String	SAMPLE4	= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+	private static final String	SAMPLE4		= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 			+ "<root c=\"3\"><a><b><c><d><e><f><g><h></h></g></f></e></d></c></b></a></root>";
 
-	private static final String SAMPLE5 = "<?xml version='1.0' encoding='UTF-8'?><?xml-stylesheet type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'?><root><a/></root>";
+	private static final String	SAMPLE5		= "<?xml version='1.0' encoding='UTF-8'?><?xml-stylesheet type='text/xsl' href='http://www2.osgi.org/www/obr2html.xsl'?><root><a/></root>";
 
 	public void testMerge() throws Exception {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -55,8 +55,7 @@ public class TestSAXFilters extends TestCase {
 			reader.parse(new InputSource(new ByteArrayInputStream(SAMPLE1.getBytes())));
 			reader.parse(new InputSource(new ByteArrayInputStream(SAMPLE3.getBytes())));
 			fail("Should throw exception for inconsistent roots");
-		}
-		catch (SAXException e) {}
+		} catch (SAXException e) {}
 	}
 
 	public void testDontRepeatProcessingInstruction() throws Exception {

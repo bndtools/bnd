@@ -92,8 +92,7 @@ class Makefile extends Processor {
 						}
 					}
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				exception(e, "%s: -prepare", name);
 				target.delete();
 			}
@@ -146,8 +145,7 @@ class Makefile extends Processor {
 		private String getGroup(Matcher m, String group) {
 			try {
 				return m.group(group);
-			}
-			catch (Exception e) {}
+			} catch (Exception e) {}
 			return null;
 		}
 	}
@@ -191,8 +189,7 @@ class Makefile extends Processor {
 				}
 
 				commands.add(cmd);
-			}
-			catch (Exception ee) {
+			} catch (Exception ee) {
 				exception(ee, "-prepare: Could not parse command %s : %s", e.getKey(), e.getValue());
 			}
 

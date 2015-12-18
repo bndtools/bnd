@@ -45,9 +45,9 @@ class ConstantValues {
 interface WithGenerics<VERYLONGTYPE, X extends Jar> {
 	List< ? super VERYLONGTYPE> baz2();
 
-	List< ? extends Jar> field = null;
+	List< ? extends Jar>	field	= null;
 
-	WithGenerics<URL,Jar> x = null;
+	WithGenerics<URL,Jar>	x		= null;
 }
 
 class Generics {
@@ -89,7 +89,9 @@ public class ClassParserTest extends TestCase {
 	static Analyzer a = new Analyzer();
 
 	/**
-	 * Java Type & Parameter annotations @throws Exception
+	 * Java Type & Parameter annotations
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testJavaTypeAnnotations() throws Exception {
@@ -138,7 +140,9 @@ public class ClassParserTest extends TestCase {
 	}
 
 	/**
-	 * Test the constant values @throws Exception
+	 * Test the constant values
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testConstantValues() throws Exception {
@@ -289,21 +293,22 @@ public class ClassParserTest extends TestCase {
 
 	/**
 	 * @Neil: I'm trying to use bnd to bundleize a library called JQuantLib, but
-	 * it causes an ArrayIndexOutOfBoundsException while parsing a class. The
-	 * problem is reproducible and I have even rebuilt the library from source
-	 * and get the same problem. Here's the stack trace:
-	 * java.lang.ArrayIndexOutOfBoundsException: -29373 at
-	 * aQute.bnd.osgi.Clazz.parseClassFile(Clazz.java:262) at
-	 * aQute.bnd.osgi.Clazz.<init>(Clazz.java:101) at
-	 * aQute.bnd.osgi.Analyzer.analyzeJar(Analyzer.java:1647) at
-	 * aQute.bnd.osgi.Analyzer.analyzeBundleClasspath(Analyzer.java:1563) at
-	 * aQute.bnd.osgi.Analyzer.analyze(Analyzer.java:108) at
-	 * aQute.bnd.osgi.Builder.analyze(Builder.java:192) at
-	 * aQute.bnd.osgi.Builder.doConditional(Builder.java:158) at
-	 * aQute.bnd.osgi.Builder.build(Builder.java:71) at
-	 * aQute.bnd.main.bnd.doBuild(bnd.java:379) at
-	 * aQute.bnd.main.bnd.run(bnd.java:130) at
-	 * aQute.bnd.main.bnd.main(bnd.java:39) @throws Exception
+	 *        it causes an ArrayIndexOutOfBoundsException while parsing a class.
+	 *        The problem is reproducible and I have even rebuilt the library
+	 *        from source and get the same problem. Here's the stack trace:
+	 *        java.lang.ArrayIndexOutOfBoundsException: -29373 at
+	 *        aQute.bnd.osgi.Clazz.parseClassFile(Clazz.java:262) at
+	 *        aQute.bnd.osgi.Clazz.<init>(Clazz.java:101) at
+	 *        aQute.bnd.osgi.Analyzer.analyzeJar(Analyzer.java:1647) at
+	 *        aQute.bnd.osgi.Analyzer.analyzeBundleClasspath(Analyzer.java:1563)
+	 *        at aQute.bnd.osgi.Analyzer.analyze(Analyzer.java:108) at
+	 *        aQute.bnd.osgi.Builder.analyze(Builder.java:192) at
+	 *        aQute.bnd.osgi.Builder.doConditional(Builder.java:158) at
+	 *        aQute.bnd.osgi.Builder.build(Builder.java:71) at
+	 *        aQute.bnd.main.bnd.doBuild(bnd.java:379) at
+	 *        aQute.bnd.main.bnd.run(bnd.java:130) at
+	 *        aQute.bnd.main.bnd.main(bnd.java:39)
+	 * @throws Exception
 	 */
 
 	public static void testJQuantlib() throws Exception {
@@ -359,8 +364,7 @@ public class ClassParserTest extends TestCase {
 			assertNotNull(in);
 			Clazz clazz = new Clazz(a, "test", null);
 			clazz.parseClassFile(in);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
 		}
@@ -382,8 +386,7 @@ public class ClassParserTest extends TestCase {
 			assertEquals(0, builder.getWarnings().size());
 			System.err.println(builder.getErrors());
 			System.err.println(builder.getWarnings());
-		}
-		finally {
+		} finally {
 			builder.close();
 		}
 	}
@@ -393,7 +396,9 @@ public class ClassParserTest extends TestCase {
 	 * skipBytes. skip is not guaranteed to real skip the amount of bytes, not
 	 * even if there are still bytes left. It seems to be able to stop skipping
 	 * if it is at the end of a buffer or so :-( Idiots. The
-	 * DataInputStream.skipBytes works correctly. @throws IOException
+	 * DataInputStream.skipBytes works correctly.
+	 * 
+	 * @throws IOException
 	 */
 	public void testLargeClass() throws IOException {
 		InputStream in = getClass().getResourceAsStream("Parser.jclass");
@@ -401,8 +406,7 @@ public class ClassParserTest extends TestCase {
 		try {
 			Clazz clazz = new Clazz(a, "test", null);
 			clazz.parseClassFile(in);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
 		}

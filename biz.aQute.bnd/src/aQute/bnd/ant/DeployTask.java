@@ -37,8 +37,7 @@ public class DeployTask extends BaseTask {
 								project.deploy(file);
 						} else
 							messages.NotAJarFile_(file);
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						messages.FailedToDeploy_Exception_(file, e);
 					}
 				}
@@ -46,8 +45,7 @@ public class DeployTask extends BaseTask {
 			report(project);
 			if (project.getErrors().size() > 0)
 				throw new BuildException("Deploy failed");
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			t.printStackTrace();
 			throw new BuildException(t);
 		}

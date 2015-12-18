@@ -16,9 +16,12 @@ public interface Envoy {
 	boolean isEnvoy();
 
 	/**
-	 * Create a framework @param name the name of the framework @param runpath
-	 * The SHAs for the -runpath @param properties the fw properties @return
-	 * true if a new fw was created, false if an existing fw
+	 * Create a framework
+	 * 
+	 * @param name the name of the framework
+	 * @param runpath The SHAs for the -runpath
+	 * @param properties the fw properties
+	 * @return true if a new fw was created, false if an existing fw
 	 */
 	boolean createFramework(String name, Collection<String> runpath, Map<String,Object> properties) throws Exception;
 

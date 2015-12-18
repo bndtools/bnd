@@ -17,15 +17,11 @@ public interface Dialogs {
 	 * Display a message and optionally a set of buttons. Return the index of
 	 * the selected button or -1 if the dialog was canceled.
 	 * 
-	 * @param title
-	 *            The title of the dialog, must not be null
-	 * @param message
-	 *            The message displayed, must not be null
-	 * @param buttons
-	 *            A list of buttons, may be null
-	 * @param defaultIndex
-	 *            The default index. Must be -1 for none or between 0..n, where
-	 *            n is the number of buttons specified.
+	 * @param title The title of the dialog, must not be null
+	 * @param message The message displayed, must not be null
+	 * @param buttons A list of buttons, may be null
+	 * @param defaultIndex The default index. Must be -1 for none or between
+	 *            0..n, where n is the number of buttons specified.
 	 * @return -1 if canceled, otherwise the index of the given button that was
 	 *         pressed.
 	 */
@@ -37,14 +33,10 @@ public interface Dialogs {
 	 * Either null is returned when the user cancels or a string with valid
 	 * input.
 	 * 
-	 * @param title
-	 *            The title of the dialog, must not be null
-	 * @param query
-	 *            The query displayed, must not be null
-	 * @param initialValue
-	 *            The initial value, can be null
-	 * @param validator
-	 *            A pattern that must match the input, can be null if no
+	 * @param title The title of the dialog, must not be null
+	 * @param query The query displayed, must not be null
+	 * @param initialValue The initial value, can be null
+	 * @param validator A pattern that must match the input, can be null if no
 	 *            validator is necessary
 	 * @return A string object or null if no input was given
 	 */
@@ -55,10 +47,8 @@ public interface Dialogs {
 	 * immediately, it will not wait for the user to dismiss this window.
 	 * Multiple calls might actually be aggregated into a single dialog
 	 * 
-	 * @param message
-	 *            The message displayed, must not be null
-	 * @param reporter
-	 *            Contains the errors and warnings
+	 * @param message The message displayed, must not be null
+	 * @param reporter Contains the errors and warnings
 	 */
 	void errors(String message, Reporter reporter) throws Exception;
 

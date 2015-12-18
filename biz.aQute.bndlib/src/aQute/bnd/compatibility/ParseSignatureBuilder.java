@@ -21,8 +21,7 @@ public class ParseSignatureBuilder {
 			InputStream in = r.openInputStream();
 			try {
 				parse(in);
-			}
-			finally {
+			} finally {
 				in.close();
 			}
 		}
@@ -37,9 +36,9 @@ public class ParseSignatureBuilder {
 		Clazz clazz = new Clazz(analyzer, "", null);
 
 		clazz.parseClassFile(in, new ClassDataCollector() {
-			Scope s;
-			Scope enclosing;
-			Scope declaring;
+			Scope	s;
+			Scope	enclosing;
+			Scope	declaring;
 
 			@Override
 			public void classBegin(int access, TypeRef name) {

@@ -38,22 +38,22 @@ import org.osgi.service.indexer.impl.util.Yield;
 import org.osgi.service.log.LogService;
 
 public class BundleAnalyzer implements ResourceAnalyzer {
-	private static URI cwd = new File("").toURI().normalize();
+	private static URI							cwd							= new File("").toURI().normalize();
 
-	private static final String SHA_256 = "SHA-256";
+	private static final String					SHA_256						= "SHA-256";
 
 	// Duplicate these constants here to avoid a compile-time dependency on OSGi
 	// R4.3
-	private static final String	PROVIDE_CAPABILITY	= "Provide-Capability";
-	private static final String	REQUIRE_CAPABILITY	= "Require-Capability";
+	private static final String					PROVIDE_CAPABILITY			= "Provide-Capability";
+	private static final String					REQUIRE_CAPABILITY			= "Require-Capability";
 
 	// Obsolete OSGi constants
-	private static final String IMPORT_SERVICE_AVAILABILITY = "availability:";
+	private static final String					IMPORT_SERVICE_AVAILABILITY	= "availability:";
 
 	// Filename suffix for JAR files
-	private static final String SUFFIX_JAR = ".jar";
+	private static final String					SUFFIX_JAR					= ".jar";
 
-	private final ThreadLocal<GeneratorState>	state	= new ThreadLocal<GeneratorState>();
+	private final ThreadLocal<GeneratorState>	state						= new ThreadLocal<GeneratorState>();
 	@SuppressWarnings("unused")
 	private final LogService					log;
 
@@ -110,7 +110,8 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		Version version = Util.getVersion(resource);
 
 		Builder builder = new Builder().setNamespace(Namespaces.NS_IDENTITY)
-				.addAttribute(Namespaces.NS_IDENTITY, bsn.getName()).addAttribute(Namespaces.ATTR_IDENTITY_TYPE, type)
+				.addAttribute(Namespaces.NS_IDENTITY, bsn.getName())
+				.addAttribute(Namespaces.ATTR_IDENTITY_TYPE, type)
 				.addAttribute(Namespaces.ATTR_VERSION, version);
 		if (singleton)
 			builder.addDirective(Namespaces.DIRECTIVE_SINGLETON, Boolean.TRUE.toString());
@@ -129,13 +130,13 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 				String versionStr = name.substring(dashIndex + 1);
 				version = new Version(versionStr);
 				name = name.substring(0, dashIndex);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				version = null;
 			}
 		}
 
-		Builder builder = new Builder().setNamespace(Namespaces.NS_IDENTITY).addAttribute(Namespaces.NS_IDENTITY, name)
+		Builder builder = new Builder().setNamespace(Namespaces.NS_IDENTITY)
+				.addAttribute(Namespaces.NS_IDENTITY, name)
 				.addAttribute(Namespaces.ATTR_IDENTITY_TYPE, Namespaces.RESOURCE_TYPE_PLAIN_JAR);
 		if (version != null)
 			builder.addAttribute(Namespaces.ATTR_VERSION, version);
@@ -186,8 +187,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 
 				digest.update(buf, 0, bytesRead);
 			}
-		}
-		finally {
+		} finally {
 			if (stream != null)
 				stream.close();
 		}
@@ -223,8 +223,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 							log.log(LogService.LOG_DEBUG,
 									"Resolver " + resolver + " had no output for " + normalizedUri);
 						}
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						if (log != null)
 							log.log(LogService.LOG_ERROR, "Resolver " + resolver + " failed on " + normalizedUri);
 					}
@@ -250,8 +249,10 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			if (urlTemplate != null) {
 				String bsn = (urlTemplate.indexOf("%s") == -1) ? "" : Util.getSymbolicName(resource).getName();
 				Version version = (urlTemplate.indexOf("%v") == -1) ? Version.emptyVersion : Util.getVersion(resource);
-				urlTemplate = urlTemplate.replaceAll("%s", "%1\\$s").replaceAll("%f", "%2\\$s")
-						.replaceAll("%p", "%3\\$s").replaceAll("%v", "%4\\$s");
+				urlTemplate = urlTemplate.replaceAll("%s", "%1\\$s")
+						.replaceAll("%f", "%2\\$s")
+						.replaceAll("%p", "%3\\$s")
+						.replaceAll("%v", "%4\\$s");
 				return singletonList(String.format(urlTemplate, bsn, fileName, relativeDir.toString(), version));
 			} else {
 				return singletonList(relativeDir.resolve(fileName).toString());
@@ -477,7 +478,8 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 
 	private void doBREE(Resource resource, List< ? super Requirement> reqs) throws Exception {
 		@SuppressWarnings("deprecation")
-		String breeStr = resource.getManifest().getMainAttributes()
+		String breeStr = resource.getManifest()
+				.getMainAttributes()
 				.getValue(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT);
 		Map<String,Map<String,String>> brees = OSGiHeader.parseHeader(breeStr);
 
@@ -497,7 +499,8 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			}
 
 			Requirement requirement = new Builder().setNamespace(Namespaces.NS_EE)
-					.addDirective(Namespaces.DIRECTIVE_FILTER, filter).buildRequirement();
+					.addDirective(Namespaces.DIRECTIVE_FILTER, filter)
+					.buildRequirement();
 			reqs.add(requirement);
 		}
 	}

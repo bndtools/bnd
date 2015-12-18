@@ -26,10 +26,10 @@ import aQute.bnd.testing.TestingLog.Config;
 @Component(designate = Config.class)
 @SuppressWarnings("rawtypes")
 public class TestingLog implements LogService {
-	boolean	stacktrace;
-	boolean	direct;
-	int		level;
-	long	start	= System.currentTimeMillis();
+	boolean			stacktrace;
+	boolean			direct;
+	int				level;
+	long			start	= System.currentTimeMillis();
 
 	List<LogEntry>	entries	= new ArrayList<LogEntry>();
 	List<Pattern>	filters	= new ArrayList<Pattern>();
@@ -124,8 +124,7 @@ public class TestingLog implements LogService {
 							(sr == null ? "" : sr.getProperty("service.id")), message,
 							(exception == null ? "" : exception.getMessage()));
 					return sb.toString();
-				}
-				finally {
+				} finally {
 					f.close();
 				}
 			}

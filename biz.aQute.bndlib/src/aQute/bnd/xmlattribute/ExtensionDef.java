@@ -11,9 +11,9 @@ import aQute.lib.tag.Tag;
 
 public class ExtensionDef {
 
-	protected final XMLAttributeFinder finder;
+	protected final XMLAttributeFinder				finder;
 
-	protected final Map<XMLAttribute,Annotation> attributes = new LinkedHashMap<XMLAttribute,Annotation>();
+	protected final Map<XMLAttribute,Annotation>	attributes	= new LinkedHashMap<XMLAttribute,Annotation>();
 
 	public ExtensionDef(XMLAttributeFinder finder) {
 		this.finder = finder;

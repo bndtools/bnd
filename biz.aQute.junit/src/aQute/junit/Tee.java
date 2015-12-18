@@ -34,8 +34,7 @@ public class Tee extends OutputStream {
 			return null;
 		try {
 			return buffer.toString(Charset.defaultCharset().toString());
-		}
-		catch (UnsupportedEncodingException e) {
+		} catch (UnsupportedEncodingException e) {
 			return null;
 		}
 	}

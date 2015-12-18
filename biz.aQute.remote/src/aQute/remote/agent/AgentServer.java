@@ -53,15 +53,15 @@ import aQute.remote.util.Link;
  * interfaces and communicates with a Supervisor interfaces.
  */
 public class AgentServer implements Agent, Closeable, FrameworkListener {
-	AtomicInteger sequence = new AtomicInteger(1000);
+	AtomicInteger											sequence			= new AtomicInteger(1000);
 
 	//
 	// Constant so we do not have to repeat it
 	//
 
-	private static final TypeReference<Map<String,String>> MAP_STRING_STRING_T = new TypeReference<Map<String,String>>() {};
+	private static final TypeReference<Map<String,String>>	MAP_STRING_STRING_T	= new TypeReference<Map<String,String>>() {};
 
-	private static final long[] EMPTY = new long[0];
+	private static final long[]								EMPTY				= new long[0];
 
 	//
 	// Known keys in the framework properties since we cannot
@@ -69,33 +69,50 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	//
 
 	@SuppressWarnings("deprecation")
-	static String keys[] = {
-			Constants.FRAMEWORK_BEGINNING_STARTLEVEL, Constants.FRAMEWORK_BOOTDELEGATION,
-			Constants.FRAMEWORK_BSNVERSION, Constants.FRAMEWORK_BUNDLE_PARENT, Constants.FRAMEWORK_TRUST_REPOSITORIES,
-			Constants.FRAMEWORK_COMMAND_ABSPATH, Constants.FRAMEWORK_EXECPERMISSION,
-			Constants.FRAMEWORK_EXECUTIONENVIRONMENT, Constants.FRAMEWORK_LANGUAGE,
-			Constants.FRAMEWORK_LIBRARY_EXTENSIONS, Constants.FRAMEWORK_OS_NAME, Constants.FRAMEWORK_OS_VERSION,
-			Constants.FRAMEWORK_PROCESSOR, Constants.FRAMEWORK_SECURITY, Constants.FRAMEWORK_STORAGE,
-			Constants.FRAMEWORK_SYSTEMCAPABILITIES, Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA,
-			Constants.FRAMEWORK_SYSTEMPACKAGES, Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, Constants.FRAMEWORK_UUID,
-			Constants.FRAMEWORK_VENDOR, Constants.FRAMEWORK_VERSION, Constants.FRAMEWORK_WINDOWSYSTEM,
-	};
+	static String											keys[]				= {
+																						Constants.FRAMEWORK_BEGINNING_STARTLEVEL,
+																						Constants.FRAMEWORK_BOOTDELEGATION,
+																						Constants.FRAMEWORK_BSNVERSION,
+																						Constants.FRAMEWORK_BUNDLE_PARENT,
+																						Constants.FRAMEWORK_TRUST_REPOSITORIES,
+																						Constants.FRAMEWORK_COMMAND_ABSPATH,
+																						Constants.FRAMEWORK_EXECPERMISSION,
+																						Constants.FRAMEWORK_EXECUTIONENVIRONMENT,
+																						Constants.FRAMEWORK_LANGUAGE,
+																						Constants.FRAMEWORK_LIBRARY_EXTENSIONS,
+																						Constants.FRAMEWORK_OS_NAME,
+																						Constants.FRAMEWORK_OS_VERSION,
+																						Constants.FRAMEWORK_PROCESSOR,
+																						Constants.FRAMEWORK_SECURITY,
+																						Constants.FRAMEWORK_STORAGE,
+																						Constants.FRAMEWORK_SYSTEMCAPABILITIES,
+																						Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA,
+																						Constants.FRAMEWORK_SYSTEMPACKAGES,
+																						Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA,
+																						Constants.FRAMEWORK_UUID,
+																						Constants.FRAMEWORK_VENDOR,
+																						Constants.FRAMEWORK_VERSION,
+																						Constants.FRAMEWORK_WINDOWSYSTEM,
+																					};
 
-	private Supervisor							remote;
-	private BundleContext						context;
-	private final ShaCache						cache;
-	private ShaSource							source;
-	private final Map<String,String>			installed	= new HashMap<String,String>();
-	volatile boolean							quit;
-	private static Map<String,AgentDispatcher>	instances	= new HashMap<String,AgentDispatcher>();
-	private Redirector							redirector	= new NullRedirector();
-	private Link<Agent,Supervisor>				link;
-	private CountDownLatch						refresh		= new CountDownLatch(0);
+	private Supervisor										remote;
+	private BundleContext									context;
+	private final ShaCache									cache;
+	private ShaSource										source;
+	private final Map<String,String>						installed			= new HashMap<String,String>();
+	volatile boolean										quit;
+	private static Map<String,AgentDispatcher>				instances			= new HashMap<String,AgentDispatcher>();
+	private Redirector										redirector			= new NullRedirector();
+	private Link<Agent,Supervisor>							link;
+	private CountDownLatch									refresh				= new CountDownLatch(0);
 
 	/**
 	 * An agent server is based on a context and takes a name and cache
-	 * directory @param name the name of the agent's framework @param context a
-	 * bundle context of the framework @param cache the directory for caching
+	 * directory
+	 * 
+	 * @param name the name of the agent's framework
+	 * @param context a bundle context of the framework
+	 * @param cache the directory for caching
 	 */
 	public AgentServer(String name, BundleContext context, File cache) {
 		this.context = context;
@@ -144,8 +161,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			Bundle bundle = context.getBundle(id);
 			try {
 				bundle.start();
-			}
-			catch (BundleException e) {
+			} catch (BundleException e) {
 				sb.append(e.getMessage()).append("\n");
 			}
 		}
@@ -160,8 +176,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			Bundle bundle = context.getBundle(id);
 			try {
 				bundle.stop();
-			}
-			catch (BundleException e) {
+			} catch (BundleException e) {
 				sb.append(e.getMessage()).append("\n");
 			}
 		}
@@ -177,8 +192,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			try {
 				bundle.uninstall();
 				installed.remove(bundle.getBundleId());
-			}
-			catch (BundleException e) {
+			} catch (BundleException e) {
 				sb.append(e.getMessage()).append("\n");
 			}
 		}
@@ -222,8 +236,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 					toBeStarted.add(b);
 
 				b.stop();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				printStack(e);
 				out.format("Trying to stop bundle %s : %s", b, e);
 			}
@@ -241,8 +254,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 				b.uninstall();
 				installed.remove(location);
 				toBeStarted.remove(b);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				printStack(e);
 				out.format("Trying to uninstall %s: %s", location, e);
 			}
@@ -262,8 +274,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 				installed.put(location, sha);
 				toBeStarted.add(b);
 
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				printStack(e);
 				out.format("Trying to install %s: %s", location, e);
 			}
@@ -291,8 +302,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 				else
 					bundle.update(in);
 
-			}
-			catch (Exception e1) {
+			} catch (Exception e1) {
 				printStack(e1);
 				out.format("Trying to update %s: %s", location, e);
 			}
@@ -301,8 +311,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		for (Bundle b : toBeStarted) {
 			try {
 				b.start();
-			}
-			catch (Exception e1) {
+			} catch (Exception e1) {
 				printStack(e1);
 				out.format("Trying to start %s: %s", b, e1);
 			}
@@ -329,8 +338,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			Bundle bundle = context.getBundle(id);
 			bundle.update(in);
 			refresh(true);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			sb.append(e.getMessage()).append("\n");
 		}
 
@@ -345,8 +353,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			Bundle bundle = context.getBundle(id);
 			bundle.update(is);
 			refresh(true);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			sb.append(e.getMessage()).append("\n");
 		}
 
@@ -357,8 +364,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		try {
 			Bundle bundle = context.getBundle(location);
 			return bundle;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			printStack(e);
 		}
 		return null;
@@ -384,8 +390,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		if (port <= Agent.COMMAND_SESSION) {
 			try {
 				redirector = new GogoRedirector(this, context);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				throw new IllegalStateException("Gogo is not present in this framework", e);
 			}
 			return true;
@@ -501,8 +506,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	public void close() throws IOException {
 		try {
 			cleanup(-2);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new IOException(e);
 		}
 	}
@@ -518,8 +522,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		e.code = code;
 		try {
 			remote.event(e);
-		}
-		catch (Exception e1) {
+		} catch (Exception e1) {
 			printStack(e1);
 		}
 	}
@@ -531,8 +534,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			e.type = Type.framework;
 			e.code = event.getType();
 			remote.event(e);
-		}
-		catch (Exception e1) {
+		} catch (Exception e1) {
 			printStack(e1);
 		}
 	}
@@ -540,8 +542,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	private void printStack(Exception e1) {
 		try {
 			e1.printStackTrace(redirector.getOut());
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			//
 		}
 	}

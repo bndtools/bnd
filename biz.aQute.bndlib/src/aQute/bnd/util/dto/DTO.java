@@ -25,21 +25,29 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Super type for Data Transfer Objects. <p> A Data Transfer Object (DTO) is
- * easily serializable having only public fields of primitive types and their
- * wrapper classes, Strings, and DTOs. List, Set, Map and array aggregates may
- * also be used. The aggregates must only hold objects of the listed types or
- * aggregates. <p> The object graph from a Data Transfer Object must be a tree
- * to simplify serialization and deserialization. @author $Id:
- * 188acb2fabd24111170674c9641969decc044ef1 $ @NotThreadSafe
+ * Super type for Data Transfer Objects.
+ * <p>
+ * A Data Transfer Object (DTO) is easily serializable having only public fields
+ * of primitive types and their wrapper classes, Strings, and DTOs. List, Set,
+ * Map and array aggregates may also be used. The aggregates must only hold
+ * objects of the listed types or aggregates.
+ * <p>
+ * The object graph from a Data Transfer Object must be a tree to simplify
+ * serialization and deserialization.
+ * 
+ * @author $Id$ @NotThreadSafe
  */
 public abstract class DTO {
 
 	/**
 	 * Return a string representation of this DTO suitable for use when
-	 * debugging. <p> The format of the string representation is not specified
-	 * and subject to change. @return A string representation of this DTO
-	 * suitable for use when debugging.
+	 * debugging.
+	 * <p>
+	 * The format of the string representation is not specified and subject to
+	 * change.
+	 * 
+	 * @return A string representation of this DTO suitable for use when
+	 *         debugging.
 	 */
 	@Override
 	public String toString() {
@@ -48,11 +56,14 @@ public abstract class DTO {
 
 	/**
 	 * Append the specified DTO's string representation to the specified
-	 * StringBuilder. @param result StringBuilder to which the string
-	 * representation is appended. @param objectRefs References to "seen"
-	 * objects. @param refpath The reference path of the specified DTO. @param
-	 * dto The DTO whose string representation is to be appended. @return The
-	 * specified StringBuilder.
+	 * StringBuilder.
+	 * 
+	 * @param result StringBuilder to which the string representation is
+	 *            appended.
+	 * @param objectRefs References to "seen" objects.
+	 * @param refpath The reference path of the specified DTO.
+	 * @param dto The DTO whose string representation is to be appended.
+	 * @return The specified StringBuilder.
 	 */
 	private static StringBuilder appendDTO(final StringBuilder result, final Map<Object,String> objectRefs,
 			final String refpath, final DTO dto) {
@@ -69,8 +80,7 @@ public abstract class DTO {
 			Object value = null;
 			try {
 				value = field.get(dto);
-			}
-			catch (IllegalAccessException e) {
+			} catch (IllegalAccessException e) {
 				// use null value;
 			}
 			appendValue(result, objectRefs, refpath + "/" + name, value);
@@ -82,13 +92,18 @@ public abstract class DTO {
 
 	/**
 	 * Append the specified value's string representation to the specified
-	 * StringBuilder. <p> This method handles cycles in the object graph, using
-	 * path-based references, even though the specification requires the object
-	 * graph from a DTO to be a tree. @param result StringBuilder to which the
-	 * string representation is appended. @param objectRefs References to "seen"
-	 * objects. @param refpath The reference path of the specified value. @param
-	 * value The object whose string representation is to be appended. @return
-	 * The specified StringBuilder.
+	 * StringBuilder.
+	 * <p>
+	 * This method handles cycles in the object graph, using path-based
+	 * references, even though the specification requires the object graph from
+	 * a DTO to be a tree.
+	 * 
+	 * @param result StringBuilder to which the string representation is
+	 *            appended.
+	 * @param objectRefs References to "seen" objects.
+	 * @param refpath The reference path of the specified value.
+	 * @param value The object whose string representation is to be appended.
+	 * @return The specified StringBuilder.
 	 */
 	private static StringBuilder appendValue(final StringBuilder result, final Map<Object,String> objectRefs,
 			final String refpath, final Object value) {
@@ -130,11 +145,14 @@ public abstract class DTO {
 
 	/**
 	 * Append the specified array's string representation to the specified
-	 * StringBuilder. @param result StringBuilder to which the string
-	 * representation is appended. @param objectRefs References to "seen"
-	 * objects. @param refpath The reference path of the specified array. @param
-	 * array The array whose string representation is to be appended. @return
-	 * The specified StringBuilder.
+	 * StringBuilder.
+	 * 
+	 * @param result StringBuilder to which the string representation is
+	 *            appended.
+	 * @param objectRefs References to "seen" objects.
+	 * @param refpath The reference path of the specified array.
+	 * @param array The array whose string representation is to be appended.
+	 * @return The specified StringBuilder.
 	 */
 	private static StringBuilder appendArray(final StringBuilder result, final Map<Object,String> objectRefs,
 			final String refpath, final Object array) {
@@ -152,11 +170,15 @@ public abstract class DTO {
 
 	/**
 	 * Append the specified iterable's string representation to the specified
-	 * StringBuilder. @param result StringBuilder to which the string
-	 * representation is appended. @param objectRefs References to "seen"
-	 * objects. @param refpath The reference path of the specified list. @param
-	 * iterable The iterable whose string representation is to be
-	 * appended. @return The specified StringBuilder.
+	 * StringBuilder.
+	 * 
+	 * @param result StringBuilder to which the string representation is
+	 *            appended.
+	 * @param objectRefs References to "seen" objects.
+	 * @param refpath The reference path of the specified list.
+	 * @param iterable The iterable whose string representation is to be
+	 *            appended.
+	 * @return The specified StringBuilder.
 	 */
 	private static StringBuilder appendIterable(final StringBuilder result, final Map<Object,String> objectRefs,
 			final String refpath, final Iterable< ? > iterable) {
@@ -175,11 +197,14 @@ public abstract class DTO {
 
 	/**
 	 * Append the specified map's string representation to the specified
-	 * StringBuilder. @param result StringBuilder to which the string
-	 * representation is appended. @param objectRefs References to "seen"
-	 * objects. @param refpath The reference path of the specified map. @param
-	 * map The map whose string representation is to be appended. @return The
-	 * specified StringBuilder.
+	 * StringBuilder.
+	 * 
+	 * @param result StringBuilder to which the string representation is
+	 *            appended.
+	 * @param objectRefs References to "seen" objects.
+	 * @param refpath The reference path of the specified map.
+	 * @param map The map whose string representation is to be appended.
+	 * @return The specified StringBuilder.
 	 */
 	private static StringBuilder appendMap(final StringBuilder result, final Map<Object,String> objectRefs,
 			final String refpath, final Map< ? , ? > map) {
@@ -199,9 +224,11 @@ public abstract class DTO {
 	}
 
 	/**
-	 * Append the specified string to the specified StringBuilder. @param result
-	 * StringBuilder to which the string is appended. @param string The string
-	 * to be appended. @return The specified StringBuilder.
+	 * Append the specified string to the specified StringBuilder.
+	 * 
+	 * @param result StringBuilder to which the string is appended.
+	 * @param string The string to be appended.
+	 * @return The specified StringBuilder.
 	 */
 	private static StringBuilder appendString(final StringBuilder result, final CharSequence string) {
 		result.append("\"");
@@ -227,8 +254,10 @@ public abstract class DTO {
 	}
 
 	/**
-	 * Compress, in length, the specified string. @param in The string to
-	 * potentially compress. @return The string compressed, if necessary.
+	 * Compress, in length, the specified string.
+	 * 
+	 * @param in The string to potentially compress.
+	 * @return The string compressed, if necessary.
 	 */
 	private static CharSequence compress(final CharSequence in) {
 		final int length = in.length();

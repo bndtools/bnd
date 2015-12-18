@@ -43,8 +43,7 @@ public class HCodec implements Codec {
 		OutputStreamWriter wr = new OutputStreamWriter(out, "UTF-8");
 		try {
 			codec.encode(t, o, wr);
-		}
-		finally {
+		} finally {
 			wr.flush();
 		}
 	}
@@ -55,12 +54,10 @@ public class HCodec implements Codec {
 			InputStreamReader rdr = new InputStreamReader(fin, "UTF-8");
 			try {
 				return t.cast(decode(rdr, t));
-			}
-			finally {
+			} finally {
 				rdr.close();
 			}
-		}
-		finally {
+		} finally {
 			fin.close();
 		}
 
@@ -72,12 +69,10 @@ public class HCodec implements Codec {
 			Writer wr = new OutputStreamWriter(oout, "UTF-8");
 			try {
 				codec.encode(t, o, wr);
-			}
-			finally {
+			} finally {
 				wr.close();
 			}
-		}
-		finally {
+		} finally {
 			oout.close();
 		}
 	}

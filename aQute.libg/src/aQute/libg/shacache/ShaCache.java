@@ -12,12 +12,14 @@ import aQute.libg.cryptography.SHA1;
  * Provide a standardized cache based on the SHA-1 of a file.
  */
 public class ShaCache {
-	static Pattern SHA_P = Pattern.compile("[A-F0-9]{40,40}", Pattern.CASE_INSENSITIVE);
+	static Pattern		SHA_P	= Pattern.compile("[A-F0-9]{40,40}", Pattern.CASE_INSENSITIVE);
 
-	private final File root;
+	private final File	root;
 
 	/**
-	 * Create a SHA-1 cache on a directory. @param root the directory
+	 * Create a SHA-1 cache on a directory.
+	 * 
+	 * @param root the directory
 	 */
 	public ShaCache(File root) {
 		this.root = root;
@@ -29,8 +31,11 @@ public class ShaCache {
 	/**
 	 * Return a stream that is associated with a SHA. If the SHA is not in the
 	 * local cache, the given sources parameter can specify a way to get the
-	 * content. @param sha the sha @param sources objects that can retrieve the
-	 * original data @return the stream or null if not found.
+	 * content.
+	 * 
+	 * @param sha the sha
+	 * @param sources objects that can retrieve the original data
+	 * @return the stream or null if not found.
 	 */
 	public InputStream getStream(String sha, ShaSource... sources) throws Exception {
 
@@ -86,8 +91,7 @@ public class ShaCache {
 						tmp.renameTo(f);
 						break;
 					}
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -104,9 +108,11 @@ public class ShaCache {
 	}
 
 	/**
-	 * Small variation on the cache that returns a file instead of a
-	 * stream @param sha the SHA-1 @param sources the inputs @return a file or
-	 * null
+	 * Small variation on the cache that returns a file instead of a stream
+	 * 
+	 * @param sha the SHA-1
+	 * @param sources the inputs
+	 * @return a file or null
 	 */
 	public File getFile(String sha, ShaSource... sources) throws Exception {
 		//
@@ -137,8 +143,7 @@ public class ShaCache {
 						break;
 					}
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}

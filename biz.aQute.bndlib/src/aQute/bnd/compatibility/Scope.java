@@ -7,13 +7,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Scope {
-	final Map<String,Scope> children = new LinkedHashMap<String,Scope>();
+	final Map<String,Scope>	children	= new LinkedHashMap<String,Scope>();
 
 	// class: slashed name
 	// field: name ":" typed
 	// constructor: ":(" typed* ")" typed
 	// method: name ":(" typed* ")" typed
-	final String name;
+	final String			name;
 
 	Access					access;
 	Kind					kind;
@@ -26,16 +26,16 @@ public class Scope {
 	// field: type
 	// constructor: void
 	// method: return
-	GenericType base;
+	GenericType				base;
 
 	// class: interfaces
 	// constructor: args
 	// method: args
-	GenericType[] parameters;
+	GenericType[]			parameters;
 
 	// constructor: exceptions
 	// method: exceptions
-	GenericType[] exceptions;
+	GenericType[]			exceptions;
 
 	// class: super interfaces*
 	// field: type

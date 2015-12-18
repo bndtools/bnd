@@ -15,13 +15,13 @@ public class ObrUtil {
 
 	// Pattern to remove naked greater-than operators and replace with
 	// not-less-than-or-equal
-	private static final Pattern	REMOVE_GT				= Pattern
+	private static final Pattern	REMOVE_GT					= Pattern
 			.compile("\\(([^<>=~()]*)>([^*=]([^\\\\\\*\\(\\)]|\\\\|\\*|\\(|\\))*)\\)");
-	private static final String		NOT_LESS_THAN_OR_EQUAL	= "(!($1<=$2))";
+	private static final String		NOT_LESS_THAN_OR_EQUAL		= "(!($1<=$2))";
 
 	// Patterns to search for OBR's extension "Set Arithmetic" operations
-	private static final Pattern	REMOVE_SUBSET	= Pattern.compile("\\([^<>=~()]*<\\*[^)]*\\)");
-	private static final Pattern	REMOVE_SUPERSET	= Pattern.compile("\\([^<>=~()]*\\*>[^)]*\\)");
+	private static final Pattern	REMOVE_SUBSET				= Pattern.compile("\\([^<>=~()]*<\\*[^)]*\\)");
+	private static final Pattern	REMOVE_SUPERSET				= Pattern.compile("\\([^<>=~()]*\\*>[^)]*\\)");
 
 	public static final String processFilter(String filter, LogService log) {
 		filter = removeMatches(filter, REMOVE_SUBSET, log, "Removed unsupported subset clause: %s");

@@ -23,11 +23,11 @@ import junit.framework.TestCase;
 @SuppressWarnings("restriction")
 public class TestCommandLine extends TestCase {
 
-	private static final String CLI = "org.osgi.impl.bundle.repoindex.cli";
+	private static final String	CLI	= "org.osgi.impl.bundle.repoindex.cli";
 
-	private File		tempDir;
-	private Workspace	ws;
-	private File		jarFile;
+	private File				tempDir;
+	private Workspace			ws;
+	private File				jarFile;
 
 	@Override
 	protected void setUp() throws Exception {
@@ -127,8 +127,7 @@ public class TestCommandLine extends TestCase {
 		try {
 			execute(args);
 			fail("Expected exception");
-		}
-		catch (Exception e) {}
+		} catch (Exception e) {}
 	}
 
 	public void testPrettyPrint() throws Exception {

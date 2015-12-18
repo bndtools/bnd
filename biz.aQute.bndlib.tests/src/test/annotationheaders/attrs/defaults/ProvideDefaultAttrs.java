@@ -6,4 +6,3 @@ import aQute.bnd.annotation.headers.ProvideCapability;
 public @interface ProvideDefaultAttrs {
 	int foo() default 42;
 }
-

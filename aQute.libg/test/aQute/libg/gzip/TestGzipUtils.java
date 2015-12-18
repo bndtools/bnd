@@ -12,8 +12,7 @@ public class TestGzipUtils extends TestCase {
 		InputStream stream = GZipUtils.detectCompression(fis);
 		try {
 			assertEquals("A plan, a plan, a canal, Panama.", IO.collect(stream));
-		}
-		finally {
+		} finally {
 			stream.close();
 			fis.close();
 		}
@@ -24,8 +23,7 @@ public class TestGzipUtils extends TestCase {
 		InputStream stream = GZipUtils.detectCompression(fis);
 		try {
 			assertEquals("A plan, a plan, a canal, Panama.", IO.collect(stream));
-		}
-		finally {
+		} finally {
 			stream.close();
 			fis.close();
 		}

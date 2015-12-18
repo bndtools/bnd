@@ -137,9 +137,11 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	}
 
 	/**
-	 * Traverses a string to find a macro. It can handle nested brackets. @param
-	 * line The line with the macro @param index Points to the character after
-	 * the '$' @return the end position
+	 * Traverses a string to find a macro. It can handle nested brackets.
+	 * 
+	 * @param line The line with the macro
+	 * @param index Points to the character after the '$'
+	 * @return the end position
 	 */
 	public int findMacro(CharSequence line, int index) {
 		if (index >= line.length() || line.charAt(index) != '$')
@@ -282,8 +284,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 								value = process(template, new Link(domain, link, key));
 								if (value != null)
 									return value;
-							}
-							finally {
+							} finally {
 								domain = old;
 							}
 						}
@@ -314,7 +315,10 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	/**
 	 * Parse the key as a command. A command consist of parameters separated by
-	 * ':'. @param key @return
+	 * ':'.
+	 * 
+	 * @param key
+	 * @return
 	 */
 	static Pattern commands = Pattern.compile("(?<!\\\\);");
 
@@ -367,11 +371,9 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 				return "" + m.invoke(target, new Object[] {
 						args
 				});
-			}
-			catch (NoSuchMethodException e) {
+			} catch (NoSuchMethodException e) {
 				// Ignore
-			}
-			catch (InvocationTargetException e) {
+			} catch (InvocationTargetException e) {
 				if (e.getCause() instanceof IllegalArgumentException) {
 					reporter.error("%s, for cmd: %s, arguments; %s", e.getCause().getMessage(), method,
 							Arrays.toString(args));
@@ -379,8 +381,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 					reporter.warning("Exception in replace: " + e.getCause());
 					e.getCause().printStackTrace();
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.warning("Exception in replace: " + e + " method=" + method);
 				e.printStackTrace();
 			}
@@ -389,8 +390,10 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	}
 
 	/**
-	 * Return a unique list where the duplicates are removed. @param
-	 * args @return
+	 * Return a unique list where the duplicates are removed.
+	 * 
+	 * @param args
+	 * @return
 	 */
 	static String _uniqHelp = "${uniq;<list> ...}";
 
@@ -532,8 +535,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	public String _long2date(String args[]) {
 		try {
 			return new Date(Long.parseLong(args[1])).toString();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return "not a valid long";
@@ -557,7 +559,10 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	}
 
 	/**
-	 * replace ; <list> ; regex ; replace @param args @return
+	 * replace ; <list> ; regex ; replace
+	 * 
+	 * @param args
+	 * @return
 	 */
 	public String _replace(String args[]) {
 		if (args.length != 4) {
@@ -595,7 +600,10 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	}
 
 	/**
-	 * toclassname ; <path>.class ( , <path>.class ) * @param args @return
+	 * toclassname ; <path>.class ( , <path>.class ) *
+	 * 
+	 * @param args
+	 * @return
 	 */
 	static String _toclassnameHelp = "${classname;<list of class names>}, convert class paths to FQN class names ";
 
@@ -619,7 +627,10 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	}
 
 	/**
-	 * toclassname ; <path>.class ( , <path>.class ) * @param args @return
+	 * toclassname ; <path>.class ( , <path>.class ) *
+	 * 
+	 * @param args
+	 * @return
 	 */
 
 	static String _toclasspathHelp = "${toclasspath;<list>[;boolean]}, convert a list of class names to paths";
@@ -731,8 +742,10 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	/**
 	 * Wildcard a directory. The lists can contain Instruction that are matched
-	 * against the given directory ${lsr;<dir>;<list>(;<list>)*}
-	 * ${lsa;<dir>;<list>(;<list>)*} @author aqute
+	 * against the given directory ${lsr;<dir>;<list>(;<list>)*} ${lsa;<dir>;
+	 * <list>(;<list>)*}
+	 * 
+	 * @author aqute
 	 */
 
 	public String _lsr(String args[]) {
@@ -777,8 +790,13 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	}
 
 	/**
-	 * System command. Execute a command and insert the result. @param
-	 * args @param help @param patterns @param low @param high
+	 * System command. Execute a command and insert the result.
+	 * 
+	 * @param args
+	 * @param help
+	 * @param patterns
+	 * @param low
+	 * @param high
 	 */
 	public String system_internal(boolean allowFail, String args[]) throws Exception {
 		verifyCommand(args,
@@ -823,8 +841,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		String result = "";
 		try {
 			result = system_internal(true, args);
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			/* ignore */
 		}
 		return result;
@@ -835,14 +852,17 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 		try {
 			return System.getenv(args[1]);
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			return null;
 		}
 	}
 
 	/**
-	 * Get the contents of a file. @param in @return @throws IOException
+	 * Get the contents of a file.
+	 * 
+	 * @param in
+	 * @return
+	 * @throws IOException
 	 */
 
 	public String _cat(String args[]) throws IOException {
@@ -856,8 +876,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 			try {
 				URL url = new URL(args[1]);
 				return IO.collect(url, "UTF-8");
-			}
-			catch (MalformedURLException mfue) {
+			} catch (MalformedURLException mfue) {
 				// Ignore here
 			}
 			return null;
@@ -938,7 +957,9 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	 * Take all the properties and translate them to actual values. This method
 	 * takes the set properties and traverse them over all entries, including
 	 * the default properties for that properties. The values no longer contain
-	 * macros. @return A new Properties with the flattened values
+	 * macros.
+	 * 
+	 * @return A new Properties with the flattened values
 	 */
 	public Map<String,String> getFlattenedProperties() {
 		// Some macros only work in a lower Domain, so we
@@ -955,8 +976,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 						flattened.put(key, process(source.get(key)));
 			}
 			return flattened;
-		}
-		finally {
+		} finally {
 			flattening = false;
 		}
 	}
@@ -983,8 +1003,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 			Field f = Properties.class.getDeclaredField("defaults");
 			f.setAccessible(true);
 			return (Properties) f.get(p);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			Field[] fields = Properties.class.getFields();
 			System.err.println(Arrays.toString(fields));
 			return null;
@@ -1006,8 +1025,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		if (args.length > 1) {
 			try {
 				numchars = Integer.parseInt(args[1]);
-			}
-			catch (NumberFormatException e) {
+			} catch (NumberFormatException e) {
 				throw new IllegalArgumentException("Invalid character count parameter in ${random} macro.");
 			}
 		}

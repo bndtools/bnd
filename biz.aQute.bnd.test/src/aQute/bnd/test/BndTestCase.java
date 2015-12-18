@@ -16,8 +16,7 @@ public abstract class BndTestCase extends TestCase {
 		try {
 			assertEquals(errors, reporter.getErrors().size());
 			assertEquals(warnings, reporter.getWarnings().size());
-		}
-		catch (AssertionFailedError t) {
+		} catch (AssertionFailedError t) {
 			print("Errors", reporter.getErrors());
 			print("Warnings", reporter.getWarnings());
 			throw t;

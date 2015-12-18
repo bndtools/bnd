@@ -49,11 +49,11 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	private static final String	JPM_LAUNCHER			= "aQute/launcher/pre/JpmLauncher.class";
 	private static final String	JPM_LAUNCHER_FQN		= "aQute.launcher.pre.JpmLauncher";
 
-	final private Project	project;
-	final private File		propertiesFile;
-	boolean					prepared;
+	final private Project		project;
+	final private File			propertiesFile;
+	boolean						prepared;
 
-	DatagramSocket listenerComms;
+	DatagramSocket				listenerComms;
 
 	public ProjectLauncherImpl(Project project) throws Exception {
 		super(project);
@@ -133,15 +133,16 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		OutputStream out = new FileOutputStream(propertiesFile);
 		try {
 			lc.getProperties(new UTF8Properties()).store(out, "Launching " + project);
-		}
-		finally {
+		} finally {
 			out.close();
 		}
 	}
 
 	/**
-	 * @return @throws Exception @throws FileNotFoundException @throws
-	 * IOException
+	 * @return
+	 * @throws Exception
+	 * @throws FileNotFoundException
+	 * @throws IOException
 	 */
 	private LauncherConstants getConstants(Collection<String> runbundles, boolean exported)
 			throws Exception, FileNotFoundException, IOException {
@@ -176,8 +177,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 								for (NotificationListener listener : getNotificationListeners()) {
 									listener.notify(type, message);
 								}
-							}
-							catch (IOException e) {}
+							} catch (IOException e) {}
 						}
 					}
 				}).start();
@@ -194,8 +194,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			Map<String, ? extends Map<String,String>> systemPkgs = getSystemPackages();
 			if (systemPkgs != null && !systemPkgs.isEmpty())
 				lc.systemPackages = Processor.printClauses(systemPkgs);
-		}
-		catch (Throwable e) {}
+		} catch (Throwable e) {}
 
 		try {
 			// If the workspace contains a newer version of biz.aQute.launcher
@@ -207,8 +206,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 				if (systemCaps.length() > 0)
 					lc.systemCapabilities = systemCaps;
 			}
-		}
-		catch (Throwable e) {}
+		} catch (Throwable e) {}
 		return lc;
 
 	}
@@ -218,7 +216,9 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 * into the JAR and the runbundles are copied to a directory in the jar. The
 	 * launcher will see that it starts in embedded mode and will automatically
 	 * detect that it should load the bundles from inside. This is drive by the
-	 * launcher.embedded flag. @throws Exception
+	 * launcher.embedded flag.
+	 * 
+	 * @throws Exception
 	 */
 
 	@Override

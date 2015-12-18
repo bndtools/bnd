@@ -15,8 +15,8 @@ import aQute.bnd.xmlattribute.XMLAttributeFinder;
 import aQute.lib.tag.Tag;
 
 public class ADDef extends ExtensionDef {
-	AttributeDefinition	ad;
-	Annotation			a;
+	AttributeDefinition		ad;
+	Annotation				a;
 
 	String					id;
 	String					name;

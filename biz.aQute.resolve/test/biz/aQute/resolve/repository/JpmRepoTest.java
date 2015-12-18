@@ -131,8 +131,7 @@ public class JpmRepoTest extends TestCase {
 			Set<Resource> resources = resolved.keySet();
 			Resource resource = getResource(resources, "org.apache.felix.gogo.runtime", "0.12");
 			assertNotNull(resource);
-		}
-		catch (ResolutionException e) {
+		} catch (ResolutionException e) {
 			fail("Resolve failed");
 		}
 	}
@@ -159,8 +158,7 @@ public class JpmRepoTest extends TestCase {
 		try {
 			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
 			fail("Resolve did not fail");
-		}
-		catch (ResolutionException e) {
+		} catch (ResolutionException e) {
 			assertTrue(e.getUnresolvedRequirements().size() == 1);
 			ResolutionException augmented = ResolveProcess.augment(new BndrunResolveContext(model, ws, log), e);
 			assertTrue(augmented.getUnresolvedRequirements().size() == 2);

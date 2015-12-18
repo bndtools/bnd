@@ -88,18 +88,19 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 	public static final String	PROP_PASSWORD	= "password";
 	public static final String	PROP_CACHE		= "cache";
 
-	private static final String META_OBR = ".meta/obr.xml";
+	private static final String	META_OBR		= ".meta/obr.xml";
 
-	Reporter			reporter;
-	private Registry	registry;
+	Reporter					reporter;
+	private Registry			registry;
 
 	// Config Properties
-	private String	name		= this.getClass().getSimpleName();
-	private URI		mainUri;
-	private URI		indexUri;
-	private File	cacheDir	= new File(System.getProperty("user.home") + File.separator + DEFAULT_CACHE_DIR);
-	private String	username	= null;
-	private String	password	= "";
+	private String				name			= this.getClass().getSimpleName();
+	private URI					mainUri;
+	private URI					indexUri;
+	private File				cacheDir		= new File(
+			System.getProperty("user.home") + File.separator + DEFAULT_CACHE_DIR);
+	private String				username		= null;
+	private String				password		= "";
 
 	// Initialisation Fields
 	private boolean				initialised;
@@ -133,8 +134,7 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 			if (mainUrlStr.endsWith("/"))
 				mainUrlStr = mainUrlStr.substring(0, mainUrlStr.length() - 1);
 			mainUri = new URI(mainUrlStr);
-		}
-		catch (URISyntaxException e) {
+		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException(String.format("Invalid '%s' property in plugin %s", PROP_MAIN_URL), e);
 		}
 
@@ -145,8 +145,7 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 		} else {
 			try {
 				indexUri = new URI(indexUriStr);
-			}
-			catch (URISyntaxException e) {
+			} catch (URISyntaxException e) {
 				throw new IllegalArgumentException(String.format("Invalid '%s' property in plugin %s", PROP_INDEX_URL),
 						e);
 			}
@@ -166,8 +165,7 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 				String canonicalPath;
 				try {
 					canonicalPath = cacheDir.getCanonicalPath();
-				}
-				catch (IOException e) {
+				} catch (IOException e) {
 					throw new IllegalArgumentException(
 							String.format("Could not canonical path for cacheDir '%s'.", cachePath), e);
 				}
@@ -231,11 +229,9 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 					config.put(FixedIndexedRepo.PROP_LOCATIONS, indexUri.toString());
 					indexedRepo.setProperties(config);
 				}
-			}
-			catch (UnknownHostException e) {
+			} catch (UnknownHostException e) {
 				return;
-			}
-			finally {
+			} finally {
 				connection.disconnect();
 			}
 		}
@@ -309,8 +305,7 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 			} else {
 				throw new Exception("Artifact was not uploaded");
 			}
-		}
-		finally {
+		} finally {
 			if (tmpFile != null && tmpFile.isFile())
 				IO.delete(tmpFile);
 		}
@@ -336,8 +331,7 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 
 		try {
 			artifact = new DefaultArtifact(bsn + ":[0,)");
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// ignore non-GAV style dependencies
 		}
 
@@ -360,8 +354,7 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 		for (org.eclipse.aether.version.Version version : rangeResult.getVersions()) {
 			try {
 				versions.add(MavenVersion.parseString(version.toString()).getOSGiVersion());
-			}
-			catch (IllegalArgumentException e) {
+			} catch (IllegalArgumentException e) {
 				// ignore version
 			}
 		}
@@ -440,14 +433,12 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 				ArtifactResult artifactResult = repoSystem.resolveArtifact(session, request);
 				artifact = artifactResult.getArtifact();
 				file = artifact.getFile();
-			}
-			catch (ArtifactResolutionException ex) {
+			} catch (ArtifactResolutionException ex) {
 				// could not download artifact, simply return null
 			}
 
 			return file;
-		}
-		finally {
+		} finally {
 			for (DownloadListener dl : listeners) {
 				if (file != null)
 					dl.success(file);
@@ -473,17 +464,23 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 	}
 
 	/**
-	 * <p> Find the default URI of the OBR index for a hosted repository,
-	 * assuming that the OBR plugin is used to generate a Virtual repository
-	 * with the same name as the referenced repository with the addition of
-	 * "-obr" to its name. </p> <p> For example suppose there is a hosted
-	 * repository with the identity "releases"; it will have the URI {@code
+	 * <p>
+	 * Find the default URI of the OBR index for a hosted repository, assuming
+	 * that the OBR plugin is used to generate a Virtual repository with the
+	 * same name as the referenced repository with the addition of "-obr" to its
+	 * name.
+	 * </p>
+	 * <p>
+	 * For example suppose there is a hosted repository with the identity
+	 * "releases"; it will have the URI {@code
 	 * http://hostname/nexus/content/repositories/releases}. We assume there is
 	 * a Virtual OBR repository with ID "releases-obr". It will have the URL
 	 * {@code http://hostname/nexus/content/repositories/releases-obr}, and the
 	 * OBR index will be at {@code
-	 * http://hostname/nexus/content/repositories/releases-obr/.meta/obr.xml}
-	 * . @param hostedUri The URI of the source Hosted repository. @return
+	 * http://hostname/nexus/content/repositories/releases-obr/.meta/obr.xml} .
+	 * 
+	 * @param hostedUri The URI of the source Hosted repository.
+	 * @return
 	 */
 	private static URI findDefaultVirtualIndexUri(URI hostedUri) {
 		StringBuilder sb = new StringBuilder();

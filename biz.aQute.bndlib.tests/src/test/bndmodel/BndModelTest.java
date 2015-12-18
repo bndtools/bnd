@@ -17,13 +17,15 @@ import junit.framework.TestCase;
 
 public class BndModelTest extends TestCase {
 
-	static final String BND_BUILDPATH = "-buildpath: \\\n" + "\torg.apache.felix.dependencymanager,\\\n"
+	static final String	BND_BUILDPATH			= "-buildpath: \\\n" + "\torg.apache.felix.dependencymanager,\\\n"
 			+ "\tosgi.core\n";
 
-	static final String BND_BUILDPATH_EXPECTED = "-buildpath: osgi.core\n";
+	static final String	BND_BUILDPATH_EXPECTED	= "-buildpath: osgi.core\n";
 
 	/**
-	 * Test escaping of backslashes. @throws Exception
+	 * Test escaping of backslashes.
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testEscapingBackslashes() throws Exception {

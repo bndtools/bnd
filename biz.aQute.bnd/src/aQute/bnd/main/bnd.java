@@ -141,15 +141,15 @@ import aQute.service.reporter.Reporter;
  * Utility to make bundles. @version $Revision: 1.14 $
  */
 public class bnd extends Processor {
-	static Pattern				ASSIGNMENT	= Pattern.compile(									//
+	static Pattern								ASSIGNMENT	= Pattern.compile(																			//
 			"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
-	Settings					settings	= new Settings();
-	final PrintStream			err			= System.err;
-	final public PrintStream	out			= System.out;
-	Justif						justif		= new Justif(80, 40, 42, 70);
-	BndMessages					messages	= ReporterMessages.base(this, BndMessages.class);
-	private Workspace			ws;
-	private char[]				password;
+	Settings									settings	= new Settings();
+	final PrintStream							err			= System.err;
+	final public PrintStream					out			= System.out;
+	Justif										justif		= new Justif(80, 40, 42, 70);
+	BndMessages									messages	= ReporterMessages.base(this, BndMessages.class);
+	private Workspace							ws;
+	private char[]								password;
 
 	private static final ThreadLocal<Boolean>	noExit		= new ThreadLocal<Boolean>() {
 																protected Boolean initialValue() {
@@ -157,10 +157,11 @@ public class bnd extends Processor {
 																};
 															};
 
-	static Pattern JARCOMMANDS = Pattern.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
+	static Pattern								JARCOMMANDS	= Pattern
+			.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
-	static Pattern	COMMAND	= Pattern.compile("\\w[\\w\\d]+");
-	static Pattern	EMAIL_P	= Pattern.compile(
+	static Pattern								COMMAND		= Pattern.compile("\\w[\\w\\d]+");
+	static Pattern								EMAIL_P		= Pattern.compile(
 			"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
 			Pattern.CASE_INSENSITIVE);
 
@@ -200,8 +201,7 @@ public class bnd extends Processor {
 		bnd main = new bnd();
 		try {
 			main.start(args);
-		}
-		finally {
+		} finally {
 			main.close();
 		}
 		exitWithCode(0);
@@ -224,8 +224,10 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Rewrite the command line to mimic the jar command @param args @throws
-	 * Exception
+	 * Rewrite the command line to mimic the jar command
+	 * 
+	 * @param args
+	 * @throws Exception
 	 */
 	private void rewrite(List<String> args) throws Exception {
 		if (args.isEmpty())
@@ -318,7 +320,10 @@ public class bnd extends Processor {
 
 	/**
 	 * Main command. This has options the bnd base options and will then run
-	 * another command. @param options @throws Exception
+	 * another command.
+	 * 
+	 * @param options
+	 * @throws Exception
 	 */
 	@Description("The swiss army tool for OSGi")
 	public void _bnd(bndOptions options) throws Exception {
@@ -362,8 +367,7 @@ public class bnd extends Processor {
 				password = options.secret();
 				settings.load(password);
 			}
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			while (t instanceof InvocationTargetException)
 				t = t.getCause();
 			exception(t, "%s", t.getMessage());
@@ -431,7 +435,7 @@ public class bnd extends Processor {
 	 * </pre>
 	 * 
 	 * @param options
-	 * 			@throws Exception
+	 * @throws Exception
 	 */
 	@Description("Create jar, used to support backward compatible java jar commands")
 	public void _create(createOptions options) throws Exception {
@@ -489,8 +493,12 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Helper for the jar create function, adds files to the jar @param
-	 * jar @param base @param path @param report
+	 * Helper for the jar create function, adds files to the jar
+	 * 
+	 * @param jar
+	 * @param base
+	 * @param path
+	 * @param report
 	 */
 	private void add(Jar jar, File base, String path, boolean report) {
 		if (path.endsWith("/"))
@@ -573,8 +581,7 @@ public class bnd extends Processor {
 				Resource r = jar.getResource(path);
 				IO.copy(r.openInputStream(), f);
 			}
-		}
-		finally {
+		} finally {
 			jar.close();
 		}
 	}
@@ -619,15 +626,19 @@ public class bnd extends Processor {
 				} else
 					err.printf("%s\n", path);
 			}
-		}
-		finally {
+		} finally {
 			jar.close();
 		}
 	}
 
 	/**
-	 * The do command interprets files and does a default action for each
-	 * file @param project @param args @param i @return @throws Exception
+	 * The do command interprets files and does a default action for each file
+	 * 
+	 * @param project
+	 * @param args
+	 * @param i
+	 * @return
+	 * @throws Exception
 	 */
 
 	@Description("Execute a file based on its extension. Supported extensions are: bnd (build), bndrun (run), and jar (print)")
@@ -644,8 +655,8 @@ public class bnd extends Processor {
 		for (String path : options._arguments()) {
 			if (path.endsWith(Constants.DEFAULT_BND_EXTENSION)) {
 				build(options.output(), options.force(), path);
-			} else
-				if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION) || path.endsWith(Constants.DEFAULT_BAR_EXTENSION)) {
+			} else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION)
+					|| path.endsWith(Constants.DEFAULT_BAR_EXTENSION)) {
 				Jar jar = getJar(path);
 				doPrint(jar, MANIFEST, null);
 			} else if (path.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
@@ -684,8 +695,7 @@ public class bnd extends Processor {
 					out.delete();
 				}
 			}
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -746,7 +756,11 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Bump a version number @param args @param i @throws Exception
+	 * Bump a version number
+	 * 
+	 * @param args
+	 * @param i
+	 * @throws Exception
 	 */
 	@Description("Bumps the version of a project. Will take the current version and then increment "
 			+ "with a major, minor, or micro increment. The default bump is minor.")
@@ -976,8 +990,7 @@ public class bnd extends Processor {
 		verifyDependencies(run, verify, false);
 		try {
 			run.run();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			messages.Failed__(e, "Running " + run);
 		}
 		getInfo(run);
@@ -1053,7 +1066,10 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Package a bnd or bndrun file for packaging. @param path @throws Exception
+	 * Package a bnd or bndrun file for packaging.
+	 * 
+	 * @param path
+	 * @throws Exception
 	 */
 	@Description("Package a bnd or bndrun file into a single jar that executes with java -jar <>.jar. The JAR contains all dependencies, including the framework and the launcher. "
 			+ "A profile can be specified which will be used to find properties. If a property is not found, a property with the name [<profile>]NAME will be looked up. This allows "
@@ -1139,8 +1155,7 @@ public class bnd extends Processor {
 					out = new File(output, path);
 				jar.write(out);
 				jar.close();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				messages.ForProject_File_FailedToCreateExecutableException_(run, path, e);
 			}
 			getInfo(run);
@@ -1188,7 +1203,12 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Show the value of a macro @param args @param i @return @throws Exception
+	 * Show the value of a macro
+	 * 
+	 * @param args
+	 * @param i
+	 * @return
+	 * @throws Exception
 	 */
 	@Description("Show macro value. Macro can contain the ${ and } parentheses but it is also ok without. You can use the ':' instead of the ';' in a macro")
 	@Arguments(arg = {
@@ -1231,7 +1251,11 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Release the project @param args @param i @throws Exception
+	 * Release the project
+	 * 
+	 * @param args
+	 * @param i
+	 * @throws Exception
 	 */
 	@Description("Release this project")
 	interface releaseOptions extends Options {
@@ -1291,8 +1315,10 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Cross reference every class in the jar file to the files it
-	 * references @param args @param i
+	 * Cross reference every class in the jar file to the files it references
+	 * 
+	 * @param args
+	 * @param i
 	 */
 	@Description("Show a cross references for all classes in a set of jars.")
 	@Arguments(arg = {
@@ -1357,12 +1383,10 @@ public class bnd extends Processor {
 							}
 						}
 					}
-				}
-				finally {
+				} finally {
 					jar.close();
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -1520,8 +1544,7 @@ public class bnd extends Processor {
 				OutputStream out = new FileOutputStream(pom);
 				try {
 					r.write(out);
-				}
-				finally {
+				} finally {
 					out.close();
 				}
 			}
@@ -1555,8 +1578,7 @@ public class bnd extends Processor {
 				for (String p : parts) {
 					prebuild(set, order, builders, p);
 				}
-			}
-			finally {
+			} finally {
 				set.remove(s);
 			}
 		}
@@ -1565,8 +1587,11 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * View files from JARs We parse the commandline and print each file on
-	 * it. @param args @param i @throws Exception
+	 * View files from JARs We parse the commandline and print each file on it.
+	 * 
+	 * @param args
+	 * @param i
+	 * @throws Exception
 	 */
 	@Description("View a resource from a JAR file. Manifest will be pretty printed and class files are shown disassembled.")
 	@Arguments(arg = {
@@ -1615,14 +1640,17 @@ public class bnd extends Processor {
 					IO.copy(isr, out);
 				}
 			}
-		}
-		finally {
+		} finally {
 			jar.close();
 		}
 	}
 
 	/**
-	 * Wrap a jar to a bundle. @param args @param i @throws Exception
+	 * Wrap a jar to a bundle.
+	 * 
+	 * @param args
+	 * @param i
+	 * @throws Exception
 	 */
 	@Description("Wrap a jar into a bundle. This is a poor man's facility to "
 			+ "quickly turn a non-OSGi JAR into an OSGi bundle. "
@@ -1722,8 +1750,7 @@ public class bnd extends Processor {
 					wrapper.save(outputFile, options.force());
 				}
 				getInfo(wrapper, file.toString());
-			}
-			finally {
+			} finally {
 				wrapper.close();
 			}
 		}
@@ -1747,8 +1774,11 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Printout all the variables in scope. @param args @param i @throws
-	 * Exception
+	 * Printout all the variables in scope.
+	 * 
+	 * @param args
+	 * @param i
+	 * @throws Exception
 	 */
 	@Description("Show a lot of info about the project you're in")
 	interface debugOptions extends Options {
@@ -1853,11 +1883,11 @@ public class bnd extends Processor {
 	 * Print out a JAR
 	 */
 
-	final static int VERIFY = 1;
+	final static int	VERIFY			= 1;
 
-	final static int MANIFEST = 2;
+	final static int	MANIFEST		= 2;
 
-	final static int LIST = 4;
+	final static int	LIST			= 4;
 
 	final static int	IMPEXP			= 16;
 	final static int	USES			= 32;
@@ -1948,8 +1978,7 @@ public class bnd extends Processor {
 			Jar jar = getJar(s);
 			try {
 				doPrint(jar, opts, options);
-			}
-			finally {
+			} finally {
 				jar.close();
 			}
 		}
@@ -2115,8 +2144,7 @@ public class bnd extends Processor {
 				}
 				out.println();
 			}
-		}
-		finally {
+		} finally {
 			jar.close();
 			analyzer.close();
 		}
@@ -2158,7 +2186,9 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Print the components in this JAR. @param jar
+	 * Print the components in this JAR.
+	 * 
+	 * @param jar
 	 */
 	private void printComponents(PrintStream out, Jar jar) throws Exception {
 		out.println("[COMPONENTS]");
@@ -2179,8 +2209,7 @@ public class bnd extends Processor {
 				OutputStreamWriter or = new OutputStreamWriter(out, Constants.DEFAULT_CHARSET);
 				try {
 					IO.copy(ir, or);
-				}
-				finally {
+				} finally {
 					or.flush();
 					ir.close();
 				}
@@ -2193,7 +2222,9 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Print the metatypes in this JAR. @param jar
+	 * Print the metatypes in this JAR.
+	 * 
+	 * @param jar
 	 */
 	private void printMetatype(PrintStream out, Jar jar) throws Exception {
 		out.println("[METATYPE]");
@@ -2279,8 +2310,11 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Run the tests from a prepared bnd file. @param args @param i @throws
-	 * Exception
+	 * Run the tests from a prepared bnd file.
+	 * 
+	 * @param args
+	 * @param i
+	 * @throws Exception
 	 */
 
 	@Description("Run OSGi tests and create report")
@@ -2355,8 +2389,7 @@ public class bnd extends Processor {
 						}
 					}
 				}
-			}
-			catch (Throwable e) {
+			} catch (Throwable e) {
 				if (isExceptions()) {
 					printExceptionSummary(e, out);
 				}
@@ -2384,15 +2417,13 @@ public class bnd extends Processor {
 
 			try {
 				summary.print(0, pw);
-			}
-			finally {
+			} finally {
 				pw.close();
 				out.close();
 			}
 			if (errors != 0)
 				error("Errors found %s", errors);
-		}
-		finally {
+		} finally {
 			ws.close();
 		}
 	}
@@ -2482,13 +2513,11 @@ public class bnd extends Processor {
 					test.addAttribute("failed", "unknown reason");
 					return errors;
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			test.addAttribute("failed", e);
 			error("Exception in run %s", e);
 			return 1;
-		}
-		finally {
+		} finally {
 			long duration = System.currentTimeMillis() - start;
 			test.addAttribute("duration", (duration + 500) / 1000);
 			getInfo(project, project.toString() + ": ");
@@ -2512,8 +2541,7 @@ public class bnd extends Processor {
 			doCoverage(report, doc, xpath);
 			doHtmlReport(report, file, doc, xpath);
 
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			report.addAttribute("coverage-failed", e.getMessage());
 		}
 	}
@@ -2545,8 +2573,7 @@ public class bnd extends Processor {
 				Transformer transformer = fact.newTransformer(new StreamSource(in));
 				transformer.transform(new DOMSource(doc), new StreamResult(out));
 				trace("Transformed");
-			}
-			finally {
+			} finally {
 				in.close();
 				out.close();
 			}
@@ -2554,7 +2581,9 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Merge a bundle with its source. @throws Exception
+	 * Merge a bundle with its source.
+	 * 
+	 * @throws Exception
 	 */
 
 	@Description("Verify jars")
@@ -2584,7 +2613,9 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Merge a bundle with its source. @throws Exception
+	 * Merge a bundle with its source.
+	 * 
+	 * @throws Exception
 	 */
 
 	@Description("Merge a binary jar with its sources. It is possible to specify  source path")
@@ -2628,19 +2659,20 @@ public class bnd extends Processor {
 				for (String path : src.getResources().keySet())
 					bin.putResource("OSGI-OPT/src/" + path, src.getResource(path));
 				bin.write(tmp);
-			}
-			finally {
+			} finally {
 				src.close();
 			}
-		}
-		finally {
+		} finally {
 			bin.close();
 		}
 		tmp.renameTo(output);
 	}
 
 	/**
-	 * Diff two jar files @return @throws Exception
+	 * Diff two jar files
+	 * 
+	 * @return
+	 * @throws Exception
 	 */
 
 	@Description("Diff jars")
@@ -2650,7 +2682,10 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Baseline @return @throws Exception
+	 * Baseline
+	 * 
+	 * @return
+	 * @throws Exception
 	 */
 
 	@Description("Compare a newer bundle to a baselined bundle and provide versioning advice")
@@ -2660,7 +2695,10 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Create a schema of package deltas and versions @return @throws Exception
+	 * Create a schema of package deltas and versions
+	 * 
+	 * @return
+	 * @throws Exception
 	 */
 
 	@Description("Highly specialized function to create an overview of package deltas in ees")
@@ -2772,17 +2810,14 @@ public class bnd extends Processor {
 						OutputStreamWriter osw = new OutputStreamWriter(fout, "UTF-8");
 						try {
 							p.store(osw, "converted from " + from);
-						}
-						finally {
+						} finally {
 							osw.close();
 						}
 					}
-				}
-				finally {
+				} finally {
 					fout.close();
 				}
-			}
-			finally {
+			} finally {
 				in.close();
 			}
 			return;
@@ -2884,7 +2919,10 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Central routine to get a JAR with error checking @param s @return
+	 * Central routine to get a JAR with error checking
+	 * 
+	 * @param s
+	 * @return
 	 */
 	Jar getJar(String s) {
 
@@ -2892,11 +2930,9 @@ public class bnd extends Processor {
 		if (f.isFile()) {
 			try {
 				return new Jar(f);
-			}
-			catch (ZipException e) {
+			} catch (ZipException e) {
 				error("Not a jar/zip file: %s", f);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				error("Opening file: %s", e, f);
 			}
 			return null;
@@ -2905,8 +2941,7 @@ public class bnd extends Processor {
 		try {
 			URL url = new URL(s);
 			return new Jar(s, url.openStream());
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// Ignore
 		}
 
@@ -2915,7 +2950,9 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Show the version of this bnd @throws IOException
+	 * Show the version of this bnd
+	 * 
+	 * @throws IOException
 	 */
 
 	@Description("Show version information about bnd")
@@ -2945,8 +2982,7 @@ public class bnd extends Processor {
 				long lastModified = 0;
 				try {
 					lastModified = Long.parseLong(attrs.getValue(Constants.BND_LASTMODIFIED));
-				}
-				catch (Exception ee) {
+				} catch (Exception ee) {
 					// Ignore
 				}
 				out.printf("%-40s %s\n", "Version", attrs.getValue(Constants.BUNDLE_VERSION));
@@ -3109,8 +3145,7 @@ public class bnd extends Processor {
 						}
 					}
 				}
-			}
-			finally {
+			} finally {
 				in.close();
 			}
 		}
@@ -3238,15 +3273,18 @@ public class bnd extends Processor {
 					settings.save(password);
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
 	/**
-	 * Set the private key in the settings for this machine @param hex @param
-	 * data @return @throws Exception
+	 * Set the private key in the settings for this machine
+	 * 
+	 * @param hex
+	 * @param data
+	 * @return
+	 * @throws Exception
 	 */
 
 	private String tos(boolean hex, byte[] data) {
@@ -3265,7 +3303,10 @@ public class bnd extends Processor {
 	};
 
 	/**
-	 * hash a file @throws Exception @throws NoSuchAlgorithmException
+	 * hash a file
+	 * 
+	 * @throws Exception
+	 * @throws NoSuchAlgorithmException
 	 */
 	@Description("Digest a number of files")
 	@Arguments(arg = "file...")
@@ -3338,7 +3379,10 @@ public class bnd extends Processor {
 						del = " ";
 					}
 					if (o.process()) {
-						sb.append(del).append(System.currentTimeMillis() - now).append(" ms ").append(f.length() / 1000)
+						sb.append(del)
+								.append(System.currentTimeMillis() - now)
+								.append(" ms ")
+								.append(f.length() / 1000)
 								.append(" Kb");
 						total += f.length();
 					}
@@ -3356,7 +3400,9 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Maven command @throws Exception
+	 * Maven command
+	 * 
+	 * @throws Exception
 	 */
 
 	@Description("Maven bundle command")
@@ -3392,8 +3438,7 @@ public class bnd extends Processor {
 			sed.replace("%listCommands%", sb.toString().substring(1));
 			sed.doIt();
 			IO.copy(tmp, out);
-		}
-		finally {
+		} finally {
 			tmp.delete();
 		}
 	}
@@ -3567,8 +3612,7 @@ public class bnd extends Processor {
 						}
 					}
 				}
-			}
-			finally {
+			} finally {
 				jar.close();
 			}
 		}
@@ -3616,14 +3660,15 @@ public class bnd extends Processor {
 				jar.setManifest(last.getManifest());
 			}
 			jar.write(out);
-		}
-		finally {
+		} finally {
 			jar.close();
 		}
 	}
 
 	/**
-	 * Show the class versions used in a JAR @throws Exception
+	 * Show the class versions used in a JAR
+	 * 
+	 * @throws Exception
 	 */
 
 	@Arguments(arg = "<jar-file>...")
@@ -3645,8 +3690,7 @@ public class bnd extends Processor {
 					a.setJar(jar);
 					a.analyze();
 					out.printf("%s %s%n", jar.getName(), a.getEEs());
-				}
-				finally {
+				} finally {
 					a.close();
 				}
 			}
@@ -3654,7 +3698,9 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Lets see if we can build in parallel @throws Exception
+	 * Lets see if we can build in parallel
+	 * 
+	 * @throws Exception
 	 */
 
 	@Description("experimental - parallel build")
@@ -3692,8 +3738,7 @@ public class bnd extends Processor {
 									dep.build();
 								if (!dep.isOk())
 									quit.set(true);
-							}
-							catch (Exception e) {
+							} catch (Exception e) {
 								e.printStackTrace();
 							}
 						}
@@ -3716,14 +3761,15 @@ public class bnd extends Processor {
 			}
 
 			workspace.close();
-		}
-		finally {
+		} finally {
 			pool.shutdownNow();
 		}
 	}
 
 	/**
-	 * Force a cache update of the workspace @throws Exception
+	 * Force a cache update of the workspace
+	 * 
+	 * @throws Exception
 	 */
 
 	public void _sync(projectOptions options) throws Exception {
@@ -3819,18 +3865,18 @@ public class bnd extends Processor {
 					}
 
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				error("failed to create url list from file %s : %s", f, e);
-			}
-			finally {
+			} finally {
 				r.close();
 			}
 		}
 	}
 
 	/**
-	 * Show the loaded workspace plugins @throws Exception
+	 * Show the loaded workspace plugins
+	 * 
+	 * @throws Exception
 	 */
 
 	public void _plugins(projectOptions opts) throws Exception {
@@ -4112,7 +4158,9 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Resolve command @throws Exception
+	 * Resolve command
+	 * 
+	 * @throws Exception
 	 */
 
 	public void _resolve(ResolveCommand.ResolveOptions options) throws Exception {
@@ -4125,7 +4173,9 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Remote command @throws Exception
+	 * Remote command
+	 * 
+	 * @throws Exception
 	 */
 
 	public void _remote(RemoteCommand.RemoteOptions options) throws Exception {

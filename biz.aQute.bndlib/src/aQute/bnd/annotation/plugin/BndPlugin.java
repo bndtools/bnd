@@ -13,5 +13,5 @@ public @interface BndPlugin {
 
 	String name();
 
-	Class< ? >parameters() default Object.class;
+	Class< ? > parameters() default Object.class;
 }

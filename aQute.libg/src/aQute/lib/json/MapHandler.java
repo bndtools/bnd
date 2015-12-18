@@ -91,8 +91,7 @@ public class MapHandler extends Handler {
 				app.append(":");
 				app.encode(e.getValue(), valueType, visited);
 				del = ",";
-			}
-			catch (Exception ee) {
+			} catch (Exception ee) {
 				throw new IllegalArgumentException("[\"" + e.getKey() + "\"]", ee);
 			}
 		app.append("}");

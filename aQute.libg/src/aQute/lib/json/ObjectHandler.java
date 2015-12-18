@@ -57,8 +57,7 @@ public class ObjectHandler extends Handler {
 			for (int i = 0; i < this.fields.length; i++) {
 				defaults[i] = this.fields[i].get(template);
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// Ignore
 		}
 	}
@@ -87,8 +86,7 @@ public class ObjectHandler extends Handler {
 				app.append(":");
 				app.encode(value, types[i], visited);
 				del = ",";
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				throw new IllegalArgumentException(fields[i].getName() + ":", e);
 			}
 		app.undent();

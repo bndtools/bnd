@@ -21,28 +21,54 @@ import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.qtokens.QuotedTokenizer;
 
 /**
- * <p> This file is the bnd main task for ant. </p> <p> To define the task
- * library, load property from <code>build.bnd</code> and prepare the workspace:
- * </p> <pre> &lt;target name="init" unless="initialized"&gt; &lt;taskdef
+ * <p>
+ * This file is the bnd main task for ant.
+ * </p>
+ * <p>
+ * To define the task library, load property from <code>build.bnd</code> and
+ * prepare the workspace:
+ * </p>
+ * 
+ * <pre>
+ *  &lt;target name="init" unless="initialized"&gt; &lt;taskdef
  * classpath="${path.to.bnd.jar}"
  * resource="aQute/bnd/ant/taskdef.properties"&gt; &lt;bndprepare
  * basedir="${projectdir}" print="false" top="${release.dir}"/&gt; &lt;property
- * name="initialized" value="set"/&gt; &lt;/target&gt; </pre> <p> To recursively
- * build dependency projects, before building this project: </p> <pre>
+ * name="initialized" value="set"/&gt; &lt;/target&gt;
+ * </pre>
+ * <p>
+ * To recursively build dependency projects, before building this project:
+ * </p>
+ * 
+ * <pre>
  * &lt;target name="dependencies" depends="init" if="project.dependson"
  * unless="donotrecurse"&gt; &lt;subant target="build" inheritAll="false"
  * buildpath="${project.dependson}"&gt; &lt;property name="donotrecurse"
- * value="true"/&gt; &lt;/subant&gt; &lt;/target> </pre> <p> To build a bundle:
- * </p> <pre> &lt;target name="build" depends="compile"&gt; &lt;mkdir
+ * value="true"/&gt; &lt;/subant&gt; &lt;/target>
+ * </pre>
+ * <p>
+ * To build a bundle:
+ * </p>
+ * 
+ * <pre>
+ *  &lt;target name="build" depends="compile"&gt; &lt;mkdir
  * dir="${target}"/&gt; &lt;bnd command="build" exceptions="true"
- * basedir="${project}"/&gt; &lt;/target&gt; </pre> <p> To pass properties into
- * bnd from ANT: </p> <pre> &lt;target name="build" depends="compile"&gt;
+ * basedir="${project}"/&gt; &lt;/target&gt;
+ * </pre>
+ * <p>
+ * To pass properties into bnd from ANT:
+ * </p>
+ * 
+ * <pre>
+ *  &lt;target name="build" depends="compile"&gt;
  * &lt;mkdir dir="${target}"/&gt; &lt;bnd command="build" exceptions="true"
  * basedir="${project}"&gt; &lt;!-- Property will be set on the bnd Project:
  * --&gt; &lt;property name="foo" value="bar"/&gt; &lt;!-- Property will be set
  * on the bnd Workspace: --&gt; &lt;wsproperty name="foo" value="bar"/&gt;
- * &lt;/bnd&gt; &lt;/target&gt; </pre> @see {@link DeployTask} {@link
- * ReleaseTask}
+ * &lt;/bnd&gt; &lt;/target&gt;
+ * </pre>
+ * 
+ * @see {@link DeployTask} {@link ReleaseTask}
  */
 
 /*
@@ -64,12 +90,12 @@ import aQute.libg.qtokens.QuotedTokenizer;
  * </fileset> <bndfiles> </bnd> </target> </project> </pre>
  */
 public class BndTask extends BaseTask {
-	String	command;
-	File	basedir;
-	boolean	test;
-	boolean	failok;
-	boolean	exceptions;
-	boolean	print;
+	String			command;
+	File			basedir;
+	boolean			test;
+	boolean			failok;
+	boolean			exceptions;
+	boolean			print;
 
 	// flags aiming to know how classpath & bnd descriptors were set
 	private boolean	classpathDirectlySet;
@@ -122,8 +148,7 @@ public class BndTask extends BaseTask {
 
 			if (report(ws))
 				throw new BuildException("Command " + command + " failed");
-		}
-		catch (Throwable e) {
+		} catch (Throwable e) {
 			if (exceptions)
 				e.printStackTrace();
 			throw new BuildException(e);
@@ -136,8 +161,9 @@ public class BndTask extends BaseTask {
 	}
 
 	/**
-	 * Set the base directory of the project. This property MUST be set. @param
-	 * basedir
+	 * Set the base directory of the project. This property MUST be set.
+	 * 
+	 * @param basedir
 	 */
 	public void setBasedir(File basedir) {
 		this.basedir = basedir;
@@ -245,8 +271,7 @@ public class BndTask extends BaseTask {
 				}
 				builder.close();
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// if (exceptions)
 			e.printStackTrace();
 			if (!failok)
@@ -368,8 +393,9 @@ public class BndTask extends BaseTask {
 	}
 
 	/**
-	 * validate required parameters before starting execution @throws
-	 * BuildException , if build is impossible
+	 * validate required parameters before starting execution
+	 * 
+	 * @throws BuildException , if build is impossible
 	 */
 	protected void validate() {
 		// no one of the 2 classpaths handling styles are defined
@@ -402,11 +428,11 @@ public class BndTask extends BaseTask {
 
 	private void addFilesFrom(Path path, List<File> files) {
 		for (String fileName : path.list()) {
-		  File f = new File(fileName.replace('\\', '/'));
-		  if (f.exists())
-		    files.add(f);
-		  else
-		    messages.NoSuchFile_(f.getAbsoluteFile());
+			File f = new File(fileName.replace('\\', '/'));
+			if (f.exists())
+				files.add(f);
+			else
+				messages.NoSuchFile_(f.getAbsoluteFile());
 		}
 	}
 }

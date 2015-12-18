@@ -86,8 +86,7 @@ public class RunconfigToDistributionTask extends BaseTask {
 							source = new FileInputStream(foundJar).getChannel();
 							destination = new FileOutputStream(outputFile).getChannel();
 							destination.transferFrom(source, 0, source.size());
-						}
-						finally {
+						} finally {
 							if (source != null) {
 								source.close();
 							}
@@ -103,8 +102,7 @@ public class RunconfigToDistributionTask extends BaseTask {
 			}
 
 			bndProject.close();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new BuildException(e);
 		}
@@ -137,8 +135,7 @@ public class RunconfigToDistributionTask extends BaseTask {
 				try {
 					jar = new Jar(generatedFile);
 					snapshots.put(jar.getBsn(), jar);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					log("Error creating a bundle from " + generatedFile.getAbsolutePath());
 					e.printStackTrace();
 				}

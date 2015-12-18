@@ -60,8 +60,7 @@ public class CapabilityIndex {
 				if (match)
 					capabilities.add(cap);
 			}
-		}
-		catch (InvalidSyntaxException e) {
+		} catch (InvalidSyntaxException e) {
 			// Assume no matches
 		}
 	}

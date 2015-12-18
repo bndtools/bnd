@@ -36,15 +36,13 @@ public class ConversionUtilsTest extends TestCase {
 		try {
 			ConversionUtils.maybeMavenCoordsToBsn(":foo.bar");
 			fail("Should have thrown IllegalArgumentException");
-		}
-		catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			// expected
 		}
 		try {
 			ConversionUtils.maybeMavenCoordsToBsn("org.example:");
 			fail("Should have thrown IllegalArgumentException");
-		}
-		catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			// expected
 		}
 	}

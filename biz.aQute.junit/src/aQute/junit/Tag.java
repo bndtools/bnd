@@ -20,21 +20,21 @@ import java.util.Vector;
  * objects or other Tag objects.
  */
 public class Tag {
-	Tag							parent;											// Parent
-																				// element
-	String						name;											// Name
-																				// of
-																				// the
-																				// tag
-	Hashtable<String,String>	attributes	= new Hashtable<String,String>();	// Attributes
-																				// name
-																				// ->
-																				// value
-	Vector<Object>				content		= new Vector<Object>();				// Content
-																				// elements
-	boolean						cdata;
+	Tag								parent;														// Parent
+																								// element
+	String							name;														// Name
+																								// of
+																								// the
+																								// tag
+	Hashtable<String,String>		attributes	= new Hashtable<String,String>();				// Attributes
+																								// name
+																								// ->
+																								// value
+	Vector<Object>					content		= new Vector<Object>();							// Content
+																								// elements
+	boolean							cdata;
 
-	final static SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+	final static SimpleDateFormat	format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
 	/**
 	 * Construct a new Tag with a name.
@@ -284,8 +284,7 @@ public class Tag {
 						line = rdr.readLine();
 					}
 				}
-			}
-			finally {
+			} finally {
 				if (rdr != null) {
 					rdr.close();
 				}
@@ -293,8 +292,7 @@ public class Tag {
 					in.close();
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			System.err.println("Problems copying extra XML");
 		}
 	}

@@ -62,14 +62,14 @@ import junit.framework.AssertionFailedError;
 })
 public class DSAnnotationTest extends BndTestCase {
 
-	public static final String FELIX_1_2 = "http://felix.apache.org/xmlns/scr/v1.2.0-felix";
+	public static final String	FELIX_1_2				= "http://felix.apache.org/xmlns/scr/v1.2.0-felix";
 
-	private static String[]	SERIALIZABLE_RUNNABLE	= {
-			Serializable.class.getName(), Runnable.class.getName()
-														};
-	private static String[]	OBJECT					= {
-			Object.class.getName()
-														};
+	private static String[]		SERIALIZABLE_RUNNABLE	= {
+																Serializable.class.getName(), Runnable.class.getName()
+															};
+	private static String[]		OBJECT					= {
+																Object.class.getName()
+															};
 
 	/**
 	 * Property test
@@ -772,8 +772,7 @@ public class DSAnnotationTest extends BndTestCase {
 																											// http://www.osgi.org/xmlns/scr/1.1.0
 
 		// Test the defaults
-		xt.assertAttribute(className,
-				"scr:component/implementation/@class");
+		xt.assertAttribute(className, "scr:component/implementation/@class");
 
 		// Default must be the implementation class
 		xt.assertAttribute(className, "scr:component/@name");
@@ -1604,10 +1603,10 @@ public class DSAnnotationTest extends BndTestCase {
 			@Reference(name = "logMethod", service = LogService.class, cardinality = ReferenceCardinality.MANDATORY, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY, target = "(service.id=1)", bind = "setLogMethod", unbind = "unsetLogMethod", updated = "updatedLogMethod"),
 	})
 	public static class ref_on_comp implements Serializable, Runnable {
-		private static final long serialVersionUID = 1L;
+		private static final long	serialVersionUID	= 1L;
 
 		@SuppressWarnings("unused")
-		private List<LogService> logField;
+		private List<LogService>	logField;
 
 		protected void setLogMethod(LogService logService) {};
 
@@ -2084,25 +2083,25 @@ public class DSAnnotationTest extends BndTestCase {
 	public @interface ConfigTypes {
 		String myString() default "foo";
 
-		String[]myStringArray() default {
+		String[] myStringArray() default {
 				"foo", "bar"
 		};
 
 		int myInt() default 1;
 
-		int[]myIntArray() default {
+		int[] myIntArray() default {
 				2, 3
 		};
 
-		Class< ? >myClass() default ConfigTypes.class;
+		Class< ? > myClass() default ConfigTypes.class;
 
-		Class< ? >[]myClassArray() default {
+		Class< ? >[] myClassArray() default {
 				ConfigTypes.class, ConfigTypes.class
 		};
 
 		Foo myEnum() default Foo.A;
 
-		Foo[]myEnumArray() default {
+		Foo[] myEnumArray() default {
 				Foo.A, Foo.B
 		};
 
@@ -2523,19 +2522,19 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component
 	public static class TestFieldInjection {
 		@Reference
-		private LogService serviceField;
+		private LogService									serviceField;
 
 		@Reference
-		private ServiceReference<LogService> srField;
+		private ServiceReference<LogService>				srField;
 
 		@Reference
-		private ComponentServiceObjects<LogService> soField;
+		private ComponentServiceObjects<LogService>			soField;
 
 		@Reference(service = LogService.class)
-		private Map<String,Object> propsField;
+		private Map<String,Object>							propsField;
 
 		@Reference
-		private Map.Entry<Map<String,Object>,LogService> tupleField;
+		private Map.Entry<Map<String,Object>,LogService>	tupleField;
 
 	}
 
@@ -2580,26 +2579,26 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@Component
 	public static class TestFieldCollectionType implements Serializable, Runnable {
-		private static final long serialVersionUID = 1L;
+		private static final long										serialVersionUID	= 1L;
 
 		@Reference
 		// (service = LogService.class)
-		private Collection<ServiceReference<LogService>> srField;
+		private Collection<ServiceReference<LogService>>				srField;
 
 		@Reference
 		// (service=LogService.class)
-		private Collection<ComponentServiceObjects<LogService>> soField;
+		private Collection<ComponentServiceObjects<LogService>>			soField;
 
 		@Reference(service = LogService.class)
-		private Collection<Map<String,Object>> propsField;
+		private Collection<Map<String,Object>>							propsField;
 
 		@Reference
 		// (service=LogService.class)
-		private Collection<LogService> serviceField;
+		private Collection<LogService>									serviceField;
 
 		@Reference
 		// (service = LogService.class)
-		private Collection<Map.Entry<Map<String,Object>,LogService>> tupleField;
+		private Collection<Map.Entry<Map<String,Object>,LogService>>	tupleField;
 
 		public void run() {}
 	}
@@ -3161,10 +3160,10 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component
 	static class FinalDynamicCollectionField {
 		@Reference(policy = ReferencePolicy.DYNAMIC)
-		private final List<LogService> logs1 = new CopyOnWriteArrayList<LogService>();
+		private final List<LogService>	logs1	= new CopyOnWriteArrayList<LogService>();
 
 		@Reference
-		private final List<LogService> logs2 = new CopyOnWriteArrayList<LogService>();
+		private final List<LogService>	logs2	= new CopyOnWriteArrayList<LogService>();
 
 	}
 
@@ -3231,8 +3230,7 @@ public class DSAnnotationTest extends BndTestCase {
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 		// Test the defaults
-		xt.assertAttribute("test.component.DSAnnotationTest$FieldCardinality",
-				"scr:component/implementation/@class");
+		xt.assertAttribute("test.component.DSAnnotationTest$FieldCardinality", "scr:component/implementation/@class");
 
 		xt.assertAttribute("log1", "scr:component/reference[1]/@name");
 		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[1]/@interface");
@@ -3493,7 +3491,8 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
-	private List<String>	indices	= new ArrayList<String>();
+	private List<String> indices = new ArrayList<String>();
+
 	public void testReferenceType() throws Exception {
 
 		Builder b = new Builder();
@@ -3544,10 +3543,10 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertNoAttribute("scr:component/reference[" + index + "]/@updated");
 	}
 
-	@Component(reference = @Reference(name = "LogService", service = LogService.class))
+	@Component(reference = @Reference(name = "LogService", service = LogService.class) )
 	public static class ComponentReferenceGood {}
 
-	@Component(reference = @Reference(service = LogService.class))
+	@Component(reference = @Reference(service = LogService.class) )
 	public static class ComponentReferenceBad {}
 
 	public void testComponentReference() throws Exception {

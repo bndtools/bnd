@@ -7,14 +7,17 @@ import java.io.InputStream;
  */
 public interface ShaSource {
 	/**
-	 * Retrieving the stream is fast so do not cache @return true if a fast
-	 * retrieval can be done
+	 * Retrieving the stream is fast so do not cache
+	 * 
+	 * @return true if a fast retrieval can be done
 	 */
 	boolean isFast();
 
 	/**
-	 * Get an inputstream based on the given SHA-1 @param sha the SHA-1 @return
-	 * a stream or null if not found
+	 * Get an inputstream based on the given SHA-1
+	 * 
+	 * @param sha the SHA-1
+	 * @return a stream or null if not found
 	 */
 	InputStream get(String sha) throws Exception;
 }

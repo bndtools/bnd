@@ -16,9 +16,9 @@ public class GenericResolveContext extends AbstractResolveContext {
 	protected static final String	IDENTITY_INITIAL_RESOURCE	= "<<INITIAL>>";
 	protected static final String	IDENTITY_SYSTEM_RESOURCE	= "<<SYSTEM>>";
 
-	private boolean			initialised	= false;
-	private ResourceBuilder	system		= new ResourceBuilder();
-	private ResourceBuilder	input		= new ResourceBuilder();
+	private boolean					initialised					= false;
+	private ResourceBuilder			system						= new ResourceBuilder();
+	private ResourceBuilder			input						= new ResourceBuilder();
 
 	public GenericResolveContext(LogService log) {
 		super(log);
@@ -36,8 +36,7 @@ public class GenericResolveContext extends AbstractResolveContext {
 			setSystemResource(system.build());
 
 			super.init();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}

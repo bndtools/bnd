@@ -168,8 +168,11 @@ public class ResolveProcessTest extends TestCase {
 
 		for (String pkg : morePackages) {
 			wire = iterator.next();
-			assertEquals("org.apache.felix.scr", wire.getRequirer().getCapabilities(IDENTITY_NAMESPACE).get(0)
-					.getAttributes().get(IDENTITY_NAMESPACE));
+			assertEquals("org.apache.felix.scr", wire.getRequirer()
+					.getCapabilities(IDENTITY_NAMESPACE)
+					.get(0)
+					.getAttributes()
+					.get(IDENTITY_NAMESPACE));
 			assertTrue(wire.getRequirement().toString(),
 					wire.getRequirement().getDirectives().get(REQUIREMENT_FILTER_DIRECTIVE).contains(pkg));
 		}

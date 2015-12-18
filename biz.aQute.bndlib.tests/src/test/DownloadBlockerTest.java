@@ -28,8 +28,7 @@ public class DownloadBlockerTest extends TestCase {
 					try {
 						Thread.sleep(1000);
 						dbb.failure(new File(""), "Ouch");
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						e.printStackTrace();
 					}
 				}
@@ -48,8 +47,7 @@ public class DownloadBlockerTest extends TestCase {
 					try {
 						Thread.sleep(1000);
 						dbb.success(new File(""));
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						e.printStackTrace();
 					}
 				}

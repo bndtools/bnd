@@ -9,23 +9,23 @@ import aQute.bnd.annotation.ProviderType;
 import aQute.libg.generics.Create;
 
 public class Descriptors {
-	Map<String,TypeRef>		typeRefCache	= Create.map();
-	Map<String,Descriptor>	descriptorCache	= Create.map();
-	Map<String,PackageRef>	packageCache	= Create.map();
+	Map<String,TypeRef>		typeRefCache		= Create.map();
+	Map<String,Descriptor>	descriptorCache		= Create.map();
+	Map<String,PackageRef>	packageCache		= Create.map();
 
 	// MUST BE BEFORE PRIMITIVES, THEY USE THE DEFAULT PACKAGE!!
 	final static PackageRef	DEFAULT_PACKAGE		= new PackageRef();
 	final static PackageRef	PRIMITIVE_PACKAGE	= new PackageRef();
 
-	final static TypeRef	VOID	= new ConcreteRef("V", "void", PRIMITIVE_PACKAGE);
-	final static TypeRef	BOOLEAN	= new ConcreteRef("Z", "boolean", PRIMITIVE_PACKAGE);
-	final static TypeRef	BYTE	= new ConcreteRef("B", "byte", PRIMITIVE_PACKAGE);
-	final static TypeRef	CHAR	= new ConcreteRef("C", "char", PRIMITIVE_PACKAGE);
-	final static TypeRef	SHORT	= new ConcreteRef("S", "short", PRIMITIVE_PACKAGE);
-	final static TypeRef	INTEGER	= new ConcreteRef("I", "int", PRIMITIVE_PACKAGE);
-	final static TypeRef	LONG	= new ConcreteRef("J", "long", PRIMITIVE_PACKAGE);
-	final static TypeRef	DOUBLE	= new ConcreteRef("D", "double", PRIMITIVE_PACKAGE);
-	final static TypeRef	FLOAT	= new ConcreteRef("F", "float", PRIMITIVE_PACKAGE);
+	final static TypeRef	VOID				= new ConcreteRef("V", "void", PRIMITIVE_PACKAGE);
+	final static TypeRef	BOOLEAN				= new ConcreteRef("Z", "boolean", PRIMITIVE_PACKAGE);
+	final static TypeRef	BYTE				= new ConcreteRef("B", "byte", PRIMITIVE_PACKAGE);
+	final static TypeRef	CHAR				= new ConcreteRef("C", "char", PRIMITIVE_PACKAGE);
+	final static TypeRef	SHORT				= new ConcreteRef("S", "short", PRIMITIVE_PACKAGE);
+	final static TypeRef	INTEGER				= new ConcreteRef("I", "int", PRIMITIVE_PACKAGE);
+	final static TypeRef	LONG				= new ConcreteRef("J", "long", PRIMITIVE_PACKAGE);
+	final static TypeRef	DOUBLE				= new ConcreteRef("D", "double", PRIMITIVE_PACKAGE);
+	final static TypeRef	FLOAT				= new ConcreteRef("F", "float", PRIMITIVE_PACKAGE);
 
 	public enum SignatureType {
 		TYPEVAR, METHOD, FIELD;
@@ -142,7 +142,10 @@ public class Descriptors {
 		}
 
 		/**
-		 * Decide if the package is a metadata package. @param pack @return
+		 * Decide if the package is a metadata package.
+		 * 
+		 * @param pack
+		 * @return
 		 */
 		public boolean isMetaData() {
 			if (isDefaultPackage())
@@ -354,7 +357,7 @@ public class Descriptors {
 	}
 
 	public TypeRef getTypeRef(String binaryClassName) {
-		assert!binaryClassName.endsWith(".class");
+		assert !binaryClassName.endsWith(".class");
 
 		TypeRef ref = typeRefCache.get(binaryClassName);
 		if (ref != null)

@@ -19,15 +19,12 @@ public abstract class WriteResource implements Resource {
 				try {
 					write(pout);
 					pout.flush();
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					e.printStackTrace();
-				}
-				finally {
+				} finally {
 					try {
 						pout.close();
-					}
-					catch (IOException e) {
+					} catch (IOException e) {
 						// Ignore
 					}
 				}

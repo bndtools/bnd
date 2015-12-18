@@ -10,11 +10,13 @@
  */
 
 /**
- * OSGi Versioning Annotations Package Version 1.0. <p> This package is not used
- * at runtime. @see <a
- * href="http://www.osgi.org/wiki/uploads/Links/SemanticVersioning.pdf"
- * >Semantic Versioning</a> @version 1.0 @author $Id:
- * 1bffd081f72d9ddcdc31a7c49493b35b009ba0e3 $
+ * OSGi Versioning Annotations Package Version 1.0.
+ * <p>
+ * This package is not used at runtime.
+ * 
+ * @see <a href="http://www.osgi.org/wiki/uploads/Links/SemanticVersioning.pdf"
+ *      > Semantic Versioning</a> @version 1.0
+ * @author $Id$
  */
 @Version("1.0")
 package org.osgi.annotation.versioning;

@@ -26,10 +26,15 @@ import junit.framework.TestCase;
 public class ClazzTest extends TestCase {
 
 	/**
-	 * <pre> java.lang.ArrayIndexOutOfBoundsException: 43007 [bnd] at
+	 * <pre>
+	 *  java.lang.ArrayIndexOutOfBoundsException: 43007 [bnd] at
 	 * aQute.bnd.osgi.Clazz.classConstRef(Clazz.java:1880) [bnd] at
-	 * aQute.bnd.osgi.Clazz.crawl(Clazz.java:1185) </pre> This happened on the
-	 * Jini platform @throws Exception
+	 * aQute.bnd.osgi.Clazz.crawl(Clazz.java:1185)
+	 * </pre>
+	 * 
+	 * This happened on the Jini platform
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testJiniPlatformClasses() throws Exception {
@@ -55,8 +60,7 @@ public class ClazzTest extends TestCase {
 		public void foo() {
 			try {
 				throw new E();
-			}
-			catch (SAXException sax) {
+			} catch (SAXException sax) {
 
 			}
 		}
@@ -96,7 +100,10 @@ public class ClazzTest extends TestCase {
 	}
 
 	/**
-	 * Complaint from Groovy that the dynamic instruction fails. <pre> [bndwrap]
+	 * Complaint from Groovy that the dynamic instruction fails.
+	 * 
+	 * <pre>
+	 *  [bndwrap]
 	 * java.lang.ArrayIndexOutOfBoundsException: 15 [bndwrap] at
 	 * aQute.bnd.osgi.Clazz.parseClassFile(Clazz.java:387) [bndwrap] at
 	 * aQute.bnd.osgi.Clazz.parseClassFile(Clazz.java:308) [bndwrap] at
@@ -107,7 +114,8 @@ public class ClazzTest extends TestCase {
 	 * aQute.bnd.osgi.Analyzer.analyzeBundleClasspath(Analyzer.java:1387)
 	 * [bndwrap] Invalid class file:
 	 * groovy/inspect/swingui/AstNodeToScriptVisitor.class [bndwrap] Exception:
-	 * 15 </pre>
+	 * 15
+	 * </pre>
 	 */
 	public static void testDynamicInstr() throws Exception {
 		Analyzer a = new Analyzer();
@@ -171,6 +179,7 @@ public class ClazzTest extends TestCase {
 		Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 		clazz.parseClassFile();
 		analyzer.getClassspace().put(clazz.getClassName(), clazz);
-		AnnotationReader.getDefinition(clazz, analyzer, EnumSet.noneOf(DSAnnotations.Options.class), new XMLAttributeFinder(analyzer));
+		AnnotationReader.getDefinition(clazz, analyzer, EnumSet.noneOf(DSAnnotations.Options.class),
+				new XMLAttributeFinder(analyzer));
 	}
 }

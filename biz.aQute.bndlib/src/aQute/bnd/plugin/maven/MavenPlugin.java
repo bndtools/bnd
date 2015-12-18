@@ -81,8 +81,7 @@ public class MavenPlugin extends LifeCyclePlugin {
 			f.format("testbin=target/test-classes\n");
 			f.format("target-dir=target\n");
 			return f.toString();
-		}
-		finally {
+		} finally {
 			f.close();
 		}
 	}

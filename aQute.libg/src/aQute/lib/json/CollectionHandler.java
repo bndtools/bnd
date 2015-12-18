@@ -55,8 +55,7 @@ public class CollectionHandler extends Handler {
 				app.encode(o, componentType, visited);
 				del = ",";
 				index++;
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				throw new IllegalArgumentException("[" + index + "]", e);
 			}
 		app.append("]");

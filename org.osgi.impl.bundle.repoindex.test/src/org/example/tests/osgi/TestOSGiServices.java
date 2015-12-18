@@ -38,9 +38,9 @@ import junit.framework.TestCase;
 
 public class TestOSGiServices extends TestCase {
 
-	private final BundleContext context = FrameworkUtil.getBundle(this.getClass()).getBundleContext();
+	private final BundleContext	context	= FrameworkUtil.getBundle(this.getClass()).getBundleContext();
 
-	private File tempDir;
+	private File				tempDir;
 
 	@Override
 	protected void setUp() throws Exception {

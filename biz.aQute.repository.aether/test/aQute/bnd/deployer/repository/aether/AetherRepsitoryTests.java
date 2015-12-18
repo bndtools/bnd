@@ -15,22 +15,23 @@ import test.lib.NanoHTTPD;
 @SuppressWarnings("restriction")
 public class AetherRepsitoryTests extends TestCase {
 
-	private static NanoHTTPD	httpd;
-	private static int			httpdPort;
+	private static NanoHTTPD		httpd;
+	private static int				httpdPort;
 
-	private static DownloadListener listener = new DownloadListener() {
+	private static DownloadListener	listener	= new DownloadListener() {
 
-		@Override
-		public void failure(File file, String reason) throws Exception {}
+													@Override
+													public void failure(File file, String reason) throws Exception {}
 
-		@Override
-		public boolean progress(File file, int percentage) throws Exception {
-			return true;
-		}
+													@Override
+													public boolean progress(File file, int percentage)
+															throws Exception {
+														return true;
+													}
 
-		@Override
-		public void success(File file) throws Exception {}
-	};
+													@Override
+													public void success(File file) throws Exception {}
+												};
 
 	private AetherRepository createRepo() throws Exception {
 		AetherRepository repo = new AetherRepository();

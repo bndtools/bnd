@@ -51,8 +51,7 @@ public class BasicAuthentication extends DefaultURLConnectionHandler {
 		try {
 			String encoded = Base64.encodeBase64(authString.getBytes("UTF-8"));
 			this.authentication = PREFIX_BASIC_AUTH + encoded;
-		}
-		catch (UnsupportedEncodingException e) {
+		} catch (UnsupportedEncodingException e) {
 			// cannot happen, UTF-8 is always present
 		}
 	}

@@ -31,9 +31,9 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 	private static final String	HEADER_LOCATION			= "Location";
 	private static final int	RESPONSE_NOT_MODIFIED	= 304;
 
-	private boolean		disableServerVerify	= false;
-	private Reporter	reporter			= null;
-	private Registry	registry			= null;
+	private boolean				disableServerVerify		= false;
+	private Reporter			reporter				= null;
+	private Registry			registry				= null;
 
 	public InputStream connect(URL url) throws IOException {
 		if (url == null)
@@ -66,8 +66,7 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 		try {
 			if (disableServerVerify)
 				HttpsUtil.disableServerVerification(connection);
-		}
-		catch (GeneralSecurityException e) {
+		} catch (GeneralSecurityException e) {
 			if (reporter != null)
 				reporter.error("Error attempting to disable SSL server certificate verification: %s", e);
 			throw new IOException("Error attempting to disable SSL server certificate verification.");
@@ -102,8 +101,7 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 					if (Thread.currentThread().isInterrupted())
 						throw new IOException("Interrupted");
 					result = connectTagged(resolved, tag, loopDetect);
-				}
-				catch (URISyntaxException e) {
+				} catch (URISyntaxException e) {
 					throw new IOException(
 							String.format("Failed to resolve location '%s' against origin URL: %s", location, url), e);
 				}

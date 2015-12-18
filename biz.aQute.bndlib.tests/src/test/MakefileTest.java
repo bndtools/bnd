@@ -4,6 +4,5 @@ import junit.framework.TestCase;
 
 public class MakefileTest extends TestCase {
 
-	public void testSimple() {
-	}
+	public void testSimple() {}
 }

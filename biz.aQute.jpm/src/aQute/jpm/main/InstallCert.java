@@ -37,6 +37,7 @@ package aQute.jpm.main;
  * Example:
  *% java InstallCert ecc.fedora.redhat.com
  */
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -92,8 +93,7 @@ public class InstallCert {
 			socket.startHandshake();
 			socket.close();
 			reporter.trace("No errors, certificate is already trusted");
-		}
-		catch (SSLException e) {
+		} catch (SSLException e) {
 			reporter.trace("expected exception");
 		}
 
@@ -141,8 +141,7 @@ public class InstallCert {
 		OutputStream out = new FileOutputStream(file);
 		try {
 			ks.store(out, passphrase.toCharArray());
-		}
-		finally {
+		} finally {
 			out.close();
 		}
 	}
@@ -155,8 +154,7 @@ public class InstallCert {
 		try {
 			ks = KeyStore.getInstance(KeyStore.getDefaultType());
 			ks.load(in, passphrase.toCharArray());
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 

@@ -40,12 +40,10 @@ public class PreprocessResource extends AbstractResource {
 			byte[] data = bout.toByteArray();
 			return data;
 
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return IO.read(resource.openInputStream());
 
-		}
-		finally {
+		} finally {
 			if (rdr != null) {
 				rdr.close();
 			}

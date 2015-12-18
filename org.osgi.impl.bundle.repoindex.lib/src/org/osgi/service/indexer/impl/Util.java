@@ -199,7 +199,10 @@ public class Util {
 	/**
 	 * Returns a list of resource paths matching the glob pattern, e.g. {@code
 	 * OSGI-INF/blueprint/*.xml}. Wildcards only permitted in the final path
-	 * segment. @return @throws IOException
+	 * segment.
+	 * 
+	 * @return
+	 * @throws IOException
 	 */
 	public static final List<String> findMatchingPaths(Resource resource, String globPattern) throws IOException {
 		String prefix;

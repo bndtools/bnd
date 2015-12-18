@@ -31,8 +31,7 @@ public class PersistentMapTest extends TestCase {
 			}
 			assertEquals("XXX", pm2.get("abc"));
 			pm2.close();
-		}
-		finally {
+		} finally {
 			pm.close();
 			IO.delete(tmp);
 		}
@@ -66,8 +65,7 @@ public class PersistentMapTest extends TestCase {
 			assertEquals(0, pm2.size());
 
 			pm2.close();
-		}
-		finally {
+		} finally {
 			pm.close();
 			IO.delete(tmp);
 		}

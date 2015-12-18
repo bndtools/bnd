@@ -16,9 +16,9 @@ import aQute.bnd.xmlattribute.XMLAttributeFinder;
 
 public class DesignateReader extends ClassDataCollector {
 
-	private Analyzer			analyzer;
-	private Clazz				clazz;
-	private Map<TypeRef,OCDDef>	classToOCDMap;
+	private Analyzer					analyzer;
+	private Clazz						clazz;
+	private Map<TypeRef,OCDDef>			classToOCDMap;
 
 	private String[]					pids;
 	private String						pid;
@@ -83,8 +83,7 @@ public class DesignateReader extends ClassDataCollector {
 					doXmlAttribute(annotation, xmlAttr);
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			analyzer.error("During generation of a component on class %s, exception %s", clazz, e);
 		}

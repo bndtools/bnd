@@ -336,17 +336,19 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	/**
-	 * Indicates that this run should ignore errors and succeed anyway @return
-	 * true if this processor should return errors
+	 * Indicates that this run should ignore errors and succeed anyway
+	 * 
+	 * @return true if this processor should return errors
 	 */
 	public boolean isFailOk() {
 		return Processor.isTrue(get(FAIL_OK));
 	}
 
 	/**
-	 * Find an icon with the requested size in the list of icons. @param
-	 * requestedSize the number of pixels desired @return null or a the selected
-	 * URI (which may be relative)
+	 * Find an icon with the requested size in the list of icons.
+	 * 
+	 * @param requestedSize the number of pixels desired
+	 * @return null or a the selected URI (which may be relative)
 	 */
 	public String getIcon(int requestedSize) throws Exception {
 		String spec = get(Constants.BUNDLE_ICON);
@@ -413,8 +415,7 @@ public abstract class Domain implements Iterable<String> {
 			InputStream in = propsResource.openInputStream();
 			try {
 				translation.load(in);
-			}
-			finally {
+			} finally {
 				in.close();
 			}
 		}

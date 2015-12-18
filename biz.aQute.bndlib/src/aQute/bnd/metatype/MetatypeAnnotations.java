@@ -38,8 +38,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		for (String s : optionsHeader.keySet()) {
 			try {
 				options.add(Options.valueOf(s));
-			}
-			catch (IllegalArgumentException e) {
+			} catch (IllegalArgumentException e) {
 				analyzer.error("Unrecognized %s value %s, expected values are %s",
 						Constants.METATYPE_ANNOTATIONS_OPTIONS, s, EnumSet.allOf(Options.class));
 			}

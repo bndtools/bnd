@@ -18,7 +18,7 @@ import aQute.libg.reporter.ReporterMessages;
 import aQute.service.reporter.Reporter;
 
 public class BaseTask extends Task implements Reporter {
-	ReporterAdapter reporter = new ReporterAdapter();
+	ReporterAdapter			reporter		= new ReporterAdapter();
 
 	List<String>			errors			= new ArrayList<String>();
 	List<String>			warnings		= new ArrayList<String>();
@@ -77,8 +77,7 @@ public class BaseTask extends Task implements Reporter {
 		}
 		try {
 			return f.getCanonicalFile();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			return f.getAbsoluteFile();
 		}
 	}

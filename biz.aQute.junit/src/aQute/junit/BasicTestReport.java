@@ -70,16 +70,14 @@ public class BasicTestReport implements TestListener, TestReporter {
 						context
 				});
 				activator.trace("set context through setter");
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				Field f;
 				try {
 					f = test.getClass().getField("context");
 					f.setAccessible(true);
 					f.set(test, context);
 					activator.trace("set context in field");
-				}
-				catch (Exception e1) {
+				} catch (Exception e1) {
 					// Ok, no problem
 				}
 			}

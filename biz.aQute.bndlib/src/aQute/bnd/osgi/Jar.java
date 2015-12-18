@@ -46,14 +46,14 @@ public class Jar implements Closeable {
 		DEFLATE, STORE
 	}
 
-	static final String DEFAULT_MANIFEST_NAME = "META-INF/MANIFEST.MF";
+	static final String						DEFAULT_MANIFEST_NAME	= "META-INF/MANIFEST.MF";
 
-	public static final Object[]			EMPTY_ARRAY		= new Jar[0];
-	final Map<String,Resource>				resources		= new TreeMap<String,Resource>();
-	final Map<String,Map<String,Resource>>	directories		= new TreeMap<String,Map<String,Resource>>();
+	public static final Object[]			EMPTY_ARRAY				= new Jar[0];
+	final Map<String,Resource>				resources				= new TreeMap<String,Resource>();
+	final Map<String,Map<String,Resource>>	directories				= new TreeMap<String,Map<String,Resource>>();
 	Manifest								manifest;
 	boolean									manifestFirst;
-	String									manifestName	= DEFAULT_MANIFEST_NAME;
+	String									manifestName			= DEFAULT_MANIFEST_NAME;
 	String									name;
 	File									source;
 	ZipFile									zipFile;
@@ -62,7 +62,7 @@ public class Jar implements Closeable {
 	Reporter								reporter;
 	boolean									doNotTouchManifest;
 	boolean									nomanifest;
-	Compression								compression		= Compression.DEFLATE;
+	Compression								compression				= Compression.DEFLATE;
 	boolean									closed;
 	String[]								algorithms;
 
@@ -100,8 +100,10 @@ public class Jar implements Closeable {
 	}
 
 	/**
-	 * Make the JAR file name the project name if we get a src or bin
-	 * directory. @param f @return
+	 * Make the JAR file name the project name if we get a src or bin directory.
+	 * 
+	 * @param f
+	 * @return
 	 */
 	private static String getName(File f) {
 		f = f.getAbsoluteFile();
@@ -239,8 +241,7 @@ public class Jar implements Closeable {
 		try {
 			Manifest m = new Manifest(fin);
 			setManifest(m);
-		}
-		finally {
+		} finally {
 			fin.close();
 		}
 	}
@@ -258,15 +259,13 @@ public class Jar implements Closeable {
 			OutputStream out = new FileOutputStream(file);
 			try {
 				write(out);
-			}
-			finally {
+			} finally {
 				IO.close(out);
 			}
 			file.setLastModified(lastModified);
 			return;
 
-		}
-		catch (Exception t) {
+		} catch (Exception t) {
 			file.delete();
 			throw t;
 		}
@@ -383,13 +382,11 @@ public class Jar implements Closeable {
 			try {
 				tmp.calcChecksums(algorithms);
 				tmp.write(out);
-			}
-			finally {
+			} finally {
 				f.delete();
 				tmp.close();
 			}
-		}
-		finally {
+		} finally {
 			algorithms = algs;
 		}
 	}
@@ -422,8 +419,10 @@ public class Jar implements Closeable {
 
 	/**
 	 * Cleanup the manifest for writing. Cleaning up consists of adding a space
-	 * after any \n to prevent the manifest to see this newline as a
-	 * delimiter. @param out Output @throws IOException
+	 * after any \n to prevent the manifest to see this newline as a delimiter.
+	 * 
+	 * @param out Output
+	 * @throws IOException
 	 */
 
 	public void writeManifest(OutputStream out) throws Exception {
@@ -459,16 +458,18 @@ public class Jar implements Closeable {
 	 * As a bonus, we can now sort the manifest!
 	 */
 	private final static byte[]	EOL			= new byte[] {
-			'\r', '\n'
+													'\r', '\n'
 												};
 	private final static byte[]	SEPARATOR	= new byte[] {
-			':', ' '
+													':', ' '
 												};
 
 	/**
-	 * Main function to output a manifest properly in UTF-8. @param manifest The
-	 * manifest to output @param out The output stream @throws IOException when
-	 * something fails
+	 * Main function to output a manifest properly in UTF-8.
+	 * 
+	 * @param manifest The manifest to output
+	 * @param out The output stream
+	 * @throws IOException when something fails
 	 */
 	public static void outputManifest(Manifest manifest, OutputStream out) throws IOException {
 		writeEntry(out, "Manifest-Version", "1.0");
@@ -497,10 +498,13 @@ public class Jar implements Closeable {
 	}
 
 	/**
-	 * Convert a string to bytes with UTF-8 and then output in max 72
-	 * bytes @param out the output string @param width the current width @param
-	 * s the string to output @return the new width @throws IOException when
-	 * something fails
+	 * Convert a string to bytes with UTF-8 and then output in max 72 bytes
+	 * 
+	 * @param out the output string
+	 * @param width the current width
+	 * @param s the string to output
+	 * @return the new width
+	 * @throws IOException when something fails
 	 */
 	private static int write(OutputStream out, int width, String s) throws IOException {
 		byte[] bytes = s.getBytes("UTF-8");
@@ -510,10 +514,14 @@ public class Jar implements Closeable {
 	/**
 	 * Write the bytes but ensure that the line length does not exceed 72
 	 * characters. If it is more than 70 characters, we just put a cr/lf +
-	 * space. @param out The output stream @param width The nr of characters
-	 * output in a line before this method started @param bytes the bytes to
-	 * output @return the nr of characters in the last line @throws IOException
-	 * if something fails
+	 * space.
+	 * 
+	 * @param out The output stream
+	 * @param width The nr of characters output in a line before this method
+	 *            started
+	 * @param bytes the bytes to output
+	 * @return the nr of characters in the last line
+	 * @throws IOException if something fails
 	 */
 	private static int write(OutputStream out, int width, byte[] bytes) throws IOException {
 		int w = width;
@@ -530,9 +538,11 @@ public class Jar implements Closeable {
 	}
 
 	/**
-	 * Output an Attributes map. We will sort this map before outputing. @param
-	 * value the attrbutes @param out the output stream @throws IOException when
-	 * something fails
+	 * Output an Attributes map. We will sort this map before outputing.
+	 * 
+	 * @param value the attrbutes
+	 * @param out the output stream
+	 * @throws IOException when something fails
 	 */
 	private static void attributes(Attributes value, OutputStream out) throws IOException {
 		TreeMap<String,String> map = new TreeMap<String,String>(String.CASE_INSENSITIVE_ORDER);
@@ -618,8 +628,7 @@ public class Jar implements Closeable {
 			jout.putNextEntry(ze);
 			resource.write(jout);
 			jout.closeEntry();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new Exception("Problem writing resource " + path, e);
 		}
 	}
@@ -643,18 +652,20 @@ public class Jar implements Closeable {
 	}
 
 	/**
-	 * Add all the resources in the given jar that match the given
-	 * filter. @param sub the jar @param filter a pattern that should match the
-	 * resoures in sub to be added
+	 * Add all the resources in the given jar that match the given filter.
+	 * 
+	 * @param sub the jar
+	 * @param filter a pattern that should match the resoures in sub to be added
 	 */
 	public boolean addAll(Jar sub, Instruction filter) {
 		return addAll(sub, filter, "");
 	}
 
 	/**
-	 * Add all the resources in the given jar that match the given
-	 * filter. @param sub the jar @param filter a pattern that should match the
-	 * resoures in sub to be added
+	 * Add all the resources in the given jar that match the given filter.
+	 * 
+	 * @param sub the jar
+	 * @param filter a pattern that should match the resoures in sub to be added
 	 */
 	public boolean addAll(Jar sub, Instruction filter, String destination) {
 		check();
@@ -674,8 +685,7 @@ public class Jar implements Closeable {
 		if (zipFile != null)
 			try {
 				zipFile.close();
-			}
-			catch (IOException e) {
+			} catch (IOException e) {
 				// Ignore
 			}
 		resources.clear();
@@ -802,8 +812,7 @@ public class Jar implements Closeable {
 						d.update(buffer, 0, size);
 					size = in.read(buffer);
 				}
-			}
-			finally {
+			} finally {
 				in.close();
 			}
 			for (MessageDigest d : digests)
@@ -815,10 +824,13 @@ public class Jar implements Closeable {
 
 	/**
 	 * Get the jar bsn from the {@link Constants#BUNDLE_SYMBOLICNAME} manifest
-	 * header. @return null when the jar has no manifest, when the manifest has
-	 * no {@link Constants#BUNDLE_SYMBOLICNAME} header, or when the value of the
-	 * header is not a valid bsn according to {@link #BSN}. @throws Exception
-	 * when the jar is closed or when the manifest could not be retrieved.
+	 * header.
+	 * 
+	 * @return null when the jar has no manifest, when the manifest has no
+	 *         {@link Constants#BUNDLE_SYMBOLICNAME} header, or when the value
+	 *         of the header is not a valid bsn according to {@link #BSN}.
+	 * @throws Exception when the jar is closed or when the manifest could not
+	 *             be retrieved.
 	 */
 	public String getBsn() throws Exception {
 		check();
@@ -839,9 +851,12 @@ public class Jar implements Closeable {
 
 	/**
 	 * Get the jar version from the {@link Constants#BUNDLE_VERSION} manifest
-	 * header. @return null when the jar has no manifest or when the manifest
-	 * has no {@link Constants#BUNDLE_VERSION} header @throws Exception when the
-	 * jar is closed or when the manifest could not be retrieved.
+	 * header.
+	 * 
+	 * @return null when the jar has no manifest or when the manifest has no
+	 *         {@link Constants#BUNDLE_VERSION} header
+	 * @throws Exception when the jar is closed or when the manifest could not
+	 *             be retrieved.
 	 */
 	public String getVersion() throws Exception {
 		check();
@@ -857,9 +872,10 @@ public class Jar implements Closeable {
 	}
 
 	/**
-	 * Expand the JAR file to a directory. @param dir the dst directory, is not
-	 * required to exist @throws Exception if anything does not work as
-	 * expected.
+	 * Expand the JAR file to a directory.
+	 * 
+	 * @param dir the dst directory, is not required to exist
+	 * @throws Exception if anything does not work as expected.
 	 */
 	public void expand(File dir) throws Exception {
 		check();
@@ -882,7 +898,9 @@ public class Jar implements Closeable {
 	}
 
 	/**
-	 * Make sure we have a manifest @throws Exception
+	 * Make sure we have a manifest
+	 * 
+	 * @throws Exception
 	 */
 	public void ensureManifest() throws Exception {
 		if (getManifest() != null)
@@ -917,9 +935,12 @@ public class Jar implements Closeable {
 	}
 
 	/**
-	 * Return a data uri from the JAR. The data must be less than 32k @param jar
-	 * The jar to load the data from @param path the path in the jar @param mime
-	 * the mime type @return a URI or null if conversion could not take place
+	 * Return a data uri from the JAR. The data must be less than 32k
+	 * 
+	 * @param jar The jar to load the data from
+	 * @param path the path in the jar
+	 * @param mime the mime type
+	 * @return a URI or null if conversion could not take place
 	 */
 
 	public URI getDataURI(String path, String mime, int max) throws Exception {
@@ -934,8 +955,7 @@ public class Jar implements Closeable {
 			din.readFully(data);
 			String encoded = Base64.encodeBase64(data);
 			return new URI("data:" + mime + ";base64," + encoded);
-		}
-		finally {
+		} finally {
 			din.close();
 		}
 	}

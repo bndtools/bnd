@@ -91,8 +91,7 @@ public class BNDAnnotationTest extends BndTestCase {
 						return null;
 				}
 			});
-		}
-		catch (ParserConfigurationException e) {
+		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
 			throw new ExceptionInInitializerError(e);
 		}
@@ -147,7 +146,9 @@ public class BNDAnnotationTest extends BndTestCase {
 
 	/**
 	 * Can we order the references? References are ordered by their name as Java
-	 * does not define the order of the methods. @throws Exception
+	 * does not define the order of the methods.
+	 * 
+	 * @throws Exception
 	 */
 
 	@Component
@@ -378,7 +379,9 @@ public class BNDAnnotationTest extends BndTestCase {
 
 	/**
 	 * Imported default package because JSR14 seems to do something weird with
-	 * annotations. @throws Exception
+	 * annotations.
+	 * 
+	 * @throws Exception
 	 */
 	public void testJSR14ComponentAnnotations() throws Exception {
 		Builder b = new Builder();
@@ -719,7 +722,9 @@ public class BNDAnnotationTest extends BndTestCase {
 	}
 
 	/**
-	 * Test some more components @author aqute
+	 * Test some more components
+	 * 
+	 * @author aqute
 	 */
 	@Component(name = "acomp", enabled = true, factory = "abc", immediate = false, provide = LogService.class, servicefactory = true, configurationPolicy = ConfigurationPolicy.optional)
 	static class MyComponent implements Serializable {

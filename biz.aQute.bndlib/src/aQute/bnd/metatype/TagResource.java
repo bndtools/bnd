@@ -22,8 +22,7 @@ public class TagResource extends WriteResource {
 		pw.print("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 		try {
 			tag.print(0, pw);
-		}
-		finally {
+		} finally {
 			pw.flush();
 		}
 	}

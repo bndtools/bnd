@@ -26,11 +26,11 @@ import aQute.bnd.osgi.Resource;
 
 public class XMLType {
 
-	Transformer	transformer;
-	Pattern		paths;
-	String		root;
+	Transformer		transformer;
+	Pattern			paths;
+	String			root;
 
-	static Pattern QN = Pattern.compile("[_A-Za-z$][_A-Za-z0-9$]*(\\.[_A-Za-z$][_A-Za-z0-9$]*)*");
+	static Pattern	QN	= Pattern.compile("[_A-Za-z$][_A-Za-z0-9$]*(\\.[_A-Za-z$][_A-Za-z0-9$]*)*");
 
 	public XMLType(URL source, String root, String paths) throws Exception {
 		transformer = getTransformer(source);
@@ -115,8 +115,7 @@ public class XMLType {
 				if (!analyzer.getReferred().containsKey(pack))
 					analyzer.getReferred().put(pack);
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			analyzer.error("Unexpected exception in processing spring resources(" + path + "): " + e);
 		}
 	}

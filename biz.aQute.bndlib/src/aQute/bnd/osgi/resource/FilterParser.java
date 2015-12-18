@@ -57,47 +57,47 @@ public class FilterParser {
 	public static abstract class Expression {
 		static Expression	TRUE	= new Expression() {
 
-			@Override
-			public boolean eval(Map<String, ? > map) {
-				return true;
-			}
+										@Override
+										public boolean eval(Map<String, ? > map) {
+											return true;
+										}
 
-			@Override
-			Expression not() {
-				return FALSE;
-			}
+										@Override
+										Expression not() {
+											return FALSE;
+										}
 
-			@Override
-			public <T> T visit(ExpressionVisitor<T> visitor) {
-				return visitor.visitTrue();
-			}
+										@Override
+										public <T> T visit(ExpressionVisitor<T> visitor) {
+											return visitor.visitTrue();
+										}
 
-			@Override
-			void toString(StringBuilder sb) {
-				sb.append("true");
-			}
-		};
+										@Override
+										void toString(StringBuilder sb) {
+											sb.append("true");
+										}
+									};
 		static Expression	FALSE	= new Expression() {
 
-			@Override
-			public boolean eval(Map<String, ? > map) {
-				return false;
-			}
+										@Override
+										public boolean eval(Map<String, ? > map) {
+											return false;
+										}
 
-			@Override
-			public <T> T visit(ExpressionVisitor<T> visitor) {
-				return visitor.visitFalse();
-			}
+										@Override
+										public <T> T visit(ExpressionVisitor<T> visitor) {
+											return visitor.visitFalse();
+										}
 
-			@Override
-			Expression not() {
-				return TRUE;
-			}
+										@Override
+										Expression not() {
+											return TRUE;
+										}
 
-			void toString(StringBuilder sb) {
-				sb.append("false");
-			}
-		};
+										void toString(StringBuilder sb) {
+											sb.append("false");
+										}
+									};
 
 		public abstract boolean eval(Map<String, ? > map);
 
@@ -156,8 +156,7 @@ public class FilterParser {
 					if (a.equals(Version.LOWEST))
 						return high;
 
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					// ignore, might not be a version
 				}
 			}
@@ -265,14 +264,12 @@ public class FilterParser {
 					try {
 						Method factory = scalarClass.getMethod("valueOf", String.class);
 						cached = factory.invoke(null, value);
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						Constructor< ? > constructor;
 						try {
 							constructor = scalarClass.getConstructor(String.class);
 							cached = constructor.newInstance(value);
-						}
-						catch (Exception e1) {
+						} catch (Exception e1) {
 							cached = value;
 						}
 					}
@@ -959,8 +956,7 @@ public class FilterParser {
 
 			if (c != ')')
 				throw new IllegalArgumentException("Expression must end with a )");
-		}
-		catch (IllegalArgumentException ie) {
+		} catch (IllegalArgumentException ie) {
 			throw new RuntimeException("Parsing failed on " + s + " " + ie.getMessage());
 		}
 		cache.put(s, e);
@@ -1061,8 +1057,7 @@ public class FilterParser {
 				sb.append(parse);
 			}
 			return sb.toString();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return e.toString();
 		}
 	}

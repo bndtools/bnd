@@ -86,8 +86,7 @@ public class LauncherTest extends TestCase {
 					Main.main(new String[] {
 							"-s", "generated/storage", "-c", "generated/cache", "-p", "1090", "-et"
 					});
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -134,11 +133,9 @@ public class LauncherTest extends TestCase {
 			public void run() {
 				try {
 					exitCode.set(session.launch());
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					e.printStackTrace();
-				}
-				finally {
+				} finally {
 					latch.countDown();
 				}
 			}
@@ -244,11 +241,9 @@ public class LauncherTest extends TestCase {
 			public void run() {
 				try {
 					session.launch();
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					e.printStackTrace();
-				}
-				finally {
+				} finally {
 					latch.countDown();
 				}
 			}

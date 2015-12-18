@@ -9,11 +9,11 @@ import java.util.regex.Pattern;
  * TODO Implement string to byte[]
  */
 public class Hex {
-	static Pattern HEX_P = Pattern.compile("(?:[0-9a-fA-F][0-9a-fA-Z])+");
+	static Pattern		HEX_P	= Pattern.compile("(?:[0-9a-fA-F][0-9a-fA-Z])+");
 
-	final static char[] HEX = {
-			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
-	};
+	final static char[]	HEX		= {
+										'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+									};
 
 	public final static byte[] toByteArray(String string) {
 		string = string.trim();
@@ -45,8 +45,7 @@ public class Hex {
 		StringBuilder sb = new StringBuilder();
 		try {
 			append(sb, data);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			// cannot happen with sb
 		}
 		return sb.toString();

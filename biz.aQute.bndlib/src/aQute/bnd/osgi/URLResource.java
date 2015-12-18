@@ -66,8 +66,7 @@ public class URLResource implements Resource {
 					}
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// Forget this exception, we do it the hard way
 		}
 		InputStream in = openInputStream();
@@ -79,8 +78,7 @@ public class URLResource implements Resource {
 				result += din.skipBytes(Integer.MAX_VALUE);
 			}
 			size = result;
-		}
-		finally {
+		} finally {
 			if (din != null) {
 				din.close();
 			}

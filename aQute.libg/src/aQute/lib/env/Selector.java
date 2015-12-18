@@ -46,13 +46,13 @@ public class Selector {
 	transient Pattern	pattern;
 	transient boolean	optional;
 
-	final String	input;
-	final String	match;
-	final boolean	negated;
-	final boolean	duplicate;
-	final boolean	literal;
-	final boolean	any;
-	final boolean	caseInsensitive;
+	final String		input;
+	final String		match;
+	final boolean		negated;
+	final boolean		duplicate;
+	final boolean		literal;
+	final boolean		any;
+	final boolean		caseInsensitive;
 
 	public Selector(String input) {
 		this.input = input;

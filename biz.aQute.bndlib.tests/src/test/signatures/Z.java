@@ -8,14 +8,14 @@ class X<A> {}
 
 interface Y<B> {}
 
-public class Z<C> extends X<String>implements Y<Integer> {
+public class Z<C> extends X<String> implements Y<Integer> {
 
 	public class V<D> {
 		public <E> void fooLCO(@SuppressWarnings("unused") E e, @SuppressWarnings("unused") C c,
 				@SuppressWarnings("unused") D d) {}
 	}
 
-	public abstract class U extends Z<String>implements Cloneable, Serializable {
+	public abstract class U extends Z<String> implements Cloneable, Serializable {
 		private static final long serialVersionUID = 1L;
 	}
 

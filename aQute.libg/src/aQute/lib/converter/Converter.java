@@ -161,8 +161,7 @@ public class Converter {
 					if (m.getReturnType() == byte[].class)
 						return m.invoke(o);
 
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					// Ignore
 				}
 			}
@@ -229,7 +228,7 @@ public class Converter {
 			resultType = Double.class;
 		}
 
-		assert!resultType.isPrimitive();
+		assert !resultType.isPrimitive();
 
 		if (actualType == String.class) {
 			String input = (String) o;
@@ -242,8 +241,7 @@ public class Converter {
 			if (Enum.class.isAssignableFrom(resultType)) {
 				try {
 					return Enum.valueOf((Class<Enum>) resultType, input);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					input = input.toUpperCase();
 					return Enum.valueOf((Class<Enum>) resultType, input);
 				}
@@ -258,14 +256,12 @@ public class Converter {
 			try {
 				Constructor< ? > c = resultType.getConstructor(String.class);
 				return c.newInstance(o.toString());
-			}
-			catch (Throwable t) {}
+			} catch (Throwable t) {}
 			try {
 				Method m = resultType.getMethod("valueOf", String.class);
 				if (Modifier.isStatic(m.getModifiers()))
 					return m.invoke(null, o.toString());
-			}
-			catch (Throwable t) {}
+			} catch (Throwable t) {}
 
 			if (resultType == Character.class && input.length() == 1)
 				return input.charAt(0);
@@ -279,8 +275,7 @@ public class Converter {
 					int nn = n.intValue();
 					if (nn > 0 && nn < vs.length)
 						return vs[nn];
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					// Ignore
 				}
 			}
@@ -309,8 +304,7 @@ public class Converter {
 						Field f = resultType.getField(key);
 						Object value = convert(f.getGenericType(), e.getValue());
 						f.set(instance, value);
-					}
-					catch (Exception ee) {
+					} catch (Exception ee) {
 
 						// We cannot find the key, so try the __extra field
 						Field f = resultType.getField("__extra");
@@ -324,8 +318,7 @@ public class Converter {
 					}
 				}
 				return instance;
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				return error(
 						"No conversion found for " + o.getClass() + " to " + type + ", error " + e + " on key " + key);
 			}
@@ -355,8 +348,7 @@ public class Converter {
 			String s = (String) o;
 			try {
 				return Double.parseDouble(s);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				// Ignore
 			}
 		}
@@ -531,7 +523,11 @@ public class Converter {
 	}
 
 	/**
-	 * Convert a map to an interface. @param interfc @param properties @return
+	 * Convert a map to an interface.
+	 * 
+	 * @param interfc
+	 * @param properties
+	 * @return
 	 */
 	public <T> T proxy(Class<T> interfc, final Map< ? , ? > properties) {
 		return (T) Proxy.newProxyInstance(interfc.getClassLoader(), new Class[] {

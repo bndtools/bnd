@@ -193,8 +193,7 @@ public class Configurable<T> {
 			try {
 				Constructor< ? > c = resultType.getConstructor(String.class);
 				return c.newInstance(o.toString());
-			}
-			catch (Throwable t) {
+			} catch (Throwable t) {
 				// handled on next line
 			}
 			throw new IllegalArgumentException(

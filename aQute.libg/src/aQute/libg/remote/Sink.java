@@ -15,7 +15,9 @@ public interface Sink {
 
 	/**
 	 * Return the protocol version that must be used. The parameter passed
-	 * specifies the highest supported by the caller. @return
+	 * specifies the highest supported by the caller.
+	 * 
+	 * @return
 	 */
 	Welcome getWelcome(int highestAccepted);
 
@@ -35,12 +37,17 @@ public interface Sink {
 	boolean removeArea(String areaId) throws Exception;
 
 	/**
-	 * Create a new area @param area area id, or null for a new area @return
+	 * Create a new area
+	 * 
+	 * @param area area id, or null for a new area
+	 * @return
 	 */
 	Area createArea(String areaId) throws Exception;
 
 	/**
-	 * Launch @return
+	 * Launch
+	 * 
+	 * @return
 	 */
 
 	boolean launch(String areaId, Map<String,String> env, List<String> args) throws Exception;

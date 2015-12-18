@@ -32,11 +32,9 @@ public abstract class AbstractResource implements Resource {
 				return calculated;
 
 			return calculated = getBytes();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw e;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			IOException ee = new IOException("Opening resource");
 			ee.initCause(e);
 			throw ee;

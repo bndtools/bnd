@@ -57,7 +57,11 @@ public class MavenCommand extends Processor {
 
 	/**
 	 * maven deploy [-url repo] [-passphrase passphrase] [-homedir homedir]
-	 * [-keyname keyname] bundle ... @param args @param i @throws Exception
+	 * [-keyname keyname] bundle ...
+	 * 
+	 * @param args
+	 * @param i
+	 * @throws Exception
 	 */
 	public void run(String args[], int i) throws Exception {
 		temp = new File("maven-bundle");
@@ -121,7 +125,10 @@ public class MavenCommand extends Processor {
 	}
 
 	/**
-	 * Show the maven settings @throws FileNotFoundException @throws Exception
+	 * Show the maven settings
+	 * 
+	 * @throws FileNotFoundException
+	 * @throws Exception
 	 */
 	private void settings() throws FileNotFoundException, Exception {
 		File userHome = new File(System.getProperty("user.home"));
@@ -140,14 +147,17 @@ public class MavenCommand extends Processor {
 			while (lc.hasNext()) {
 				System.err.println(lc.next());
 			}
-		}
-		finally {
+		} finally {
 			lc.close();
 		}
 	}
 
 	/**
-	 * Create a maven bundle. @param args @param i @throws Exception
+	 * Create a maven bundle.
+	 * 
+	 * @param args
+	 * @param i
+	 * @throws Exception
 	 */
 	private void bundle(String args[], int i) throws Exception {
 		List<String> developers = new ArrayList<String>();
@@ -194,9 +204,7 @@ public class MavenCommand extends Processor {
 				try {
 					in = new FileInputStream(args[i++]);
 					properties.load(in);
-				}
-				catch (Exception e) {}
-				finally {
+				} catch (Exception e) {} finally {
 					if (in != null) {
 						in.close();
 					}
@@ -379,7 +387,9 @@ public class MavenCommand extends Processor {
 	}
 
 	/**
-	 * @return @throws IOException @throws MalformedURLException
+	 * @return
+	 * @throws IOException
+	 * @throws MalformedURLException
 	 */
 	protected Jar getJarFromFileOrURL(String spec) throws IOException, MalformedURLException {
 		Jar jar;
@@ -391,8 +401,7 @@ public class MavenCommand extends Processor {
 			InputStream in = url.openStream();
 			try {
 				jar = new Jar(url.getFile(), in);
-			}
-			finally {
+			} finally {
 				in.close();
 			}
 		}
@@ -492,7 +501,10 @@ public class MavenCommand extends Processor {
 	}
 
 	/**
-	 * Generate a license string @param attr @return
+	 * Generate a license string
+	 * 
+	 * @param attr
+	 * @return
 	 */
 	private String license(Attributes attr) {
 		Parameters map = Processor.parseHeader(attr.getValue(Constants.BUNDLE_LICENSE), null);
@@ -526,7 +538,10 @@ public class MavenCommand extends Processor {
 	}
 
 	/**
-	 * Generate the copyright statement. @param attr @return
+	 * Generate the copyright statement.
+	 * 
+	 * @param attr
+	 * @return
 	 */
 	private String copyright(Attributes attr) {
 		return attr.getValue(Constants.BUNDLE_COPYRIGHT);

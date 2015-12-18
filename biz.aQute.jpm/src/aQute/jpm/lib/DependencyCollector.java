@@ -15,8 +15,10 @@ class DependencyCollector {
 	}
 
 	/**
-	 * Add a revision to this collector and start the download @param
-	 * key @throws Exception
+	 * Add a revision to this collector and start the download
+	 * 
+	 * @param key
+	 * @throws Exception
 	 */
 	public void add(String coordinate, String name) throws Exception {
 		jpm.reporter.trace("add %s = %s", coordinate, name);

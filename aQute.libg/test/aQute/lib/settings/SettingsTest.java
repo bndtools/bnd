@@ -27,8 +27,7 @@ public class SettingsTest extends TestCase {
 			ss.clear();
 			assertNull(ss.get("a"));
 
-		}
-		finally {
+		} finally {
 			IO.delete(tmp);
 		}
 	}

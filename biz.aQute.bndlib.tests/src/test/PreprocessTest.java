@@ -36,7 +36,9 @@ public class PreprocessTest extends TestCase {
 	}
 
 	/**
-	 * Check if we can override @throws Exception
+	 * Check if we can override
+	 * 
+	 * @throws Exception
 	 */
 	public static void testPreProcessExcludeExtensionGlobal() throws Exception {
 		Builder b = new Builder();
@@ -86,8 +88,9 @@ public class PreprocessTest extends TestCase {
 	}
 
 	/**
-	 * Spaces at the end of a clause cause the preprocess to fail. @throws
-	 * Exception
+	 * Spaces at the end of a clause cause the preprocess to fail.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testPreProcess() throws Exception {
 		Properties base = new Properties();

@@ -117,7 +117,8 @@ public class PropertiesTest extends TestCase {
 		assertTrue(map.containsKey("org.osgi.util.tracker"));
 		assertEquals(1, analyzer.getWarnings().size());
 		System.err.println(analyzer.getWarnings());
-		assertTrue(analyzer.getWarnings().get(0)
+		assertTrue(analyzer.getWarnings()
+				.get(0)
 				.indexOf("Empty clause, usually caused by repeating a comma without") >= 0);
 		System.err.println(analyzer.getWarnings());
 	}

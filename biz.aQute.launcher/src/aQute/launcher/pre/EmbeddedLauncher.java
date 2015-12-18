@@ -16,7 +16,7 @@ import java.util.jar.Manifest;
 import aQute.lib.io.IOConstants;
 
 public class EmbeddedLauncher {
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
+	static final int			BUFFER_SIZE			= IOConstants.PAGE_SIZE * 16;
 
 	public static final String	EMBEDDED_RUNPATH	= "Embedded-Runpath";
 	static byte[]				buffer				= new byte[BUFFER_SIZE];
@@ -62,12 +62,10 @@ public class EmbeddedLauncher {
 					out.write(buffer, 0, size);
 					size = in.read(buffer);
 				}
-			}
-			finally {
+			} finally {
 				out.close();
 			}
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 		f.deleteOnExit();

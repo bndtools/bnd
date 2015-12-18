@@ -60,12 +60,10 @@ public class ZipResource implements Resource {
 				}
 			}
 			return zip;
-		}
-		catch (ZipException ze) {
+		} catch (ZipException ze) {
 			throw new ZipException(
 					"The JAR/ZIP file (" + file.getAbsolutePath() + ") seems corrupted, error: " + ze.getMessage());
-		}
-		catch (FileNotFoundException e) {
+		} catch (FileNotFoundException e) {
 			throw new IllegalArgumentException("Problem opening JAR: " + file.getAbsolutePath());
 		}
 	}
@@ -80,8 +78,7 @@ public class ZipResource implements Resource {
 				lastModified = ZipUtil.getModifiedTime(entry);
 			}
 			return lastModified;
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			return lastModified = -1;
 		}
 	}

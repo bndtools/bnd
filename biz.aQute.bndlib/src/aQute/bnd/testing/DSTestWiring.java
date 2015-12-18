@@ -24,8 +24,9 @@ import aQute.lib.collections.MultiMap;
 
 /**
  * Intended to wire a number components for testing using the DS (from bnd)
- * annotations. <p> TODO add the OSGi Annotations and support more options.
- * needs cleanup
+ * annotations.
+ * <p>
+ * TODO add the OSGi Annotations and support more options. needs cleanup
  */
 public class DSTestWiring {
 	static Pattern REFERENCE = Pattern.compile("([^/]+)/([^/]+)(?:/([^/]+))?");
@@ -276,22 +277,23 @@ public class DSTestWiring {
 	/**
 	 * Add the class by name. If the class cannot be found in the local class
 	 * loader, and a Bundle Context is specified, try each bundle for that
-	 * class. @param cname the name of the class @return the class @throws
-	 * ClassNotFoundException if not found @throws Exception if something goes
-	 * wrong
+	 * class.
+	 * 
+	 * @param cname the name of the class
+	 * @return the class
+	 * @throws ClassNotFoundException if not found
+	 * @throws Exception if something goes wrong
 	 */
 	public Component< ? > add(String cname) throws ClassNotFoundException, Exception {
 		try {
 			return add(getClass().getClassLoader().loadClass(cname));
-		}
-		catch (ClassNotFoundException cnfe) {
+		} catch (ClassNotFoundException cnfe) {
 			if (context != null) {
 				for (Bundle b : context.getBundles()) {
 					try {
 						Class< ? > c = b.loadClass(cname);
 						return add(c);
-					}
-					catch (ClassNotFoundException e) {
+					} catch (ClassNotFoundException e) {
 						// ignore
 					}
 				}

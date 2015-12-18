@@ -57,8 +57,7 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		try {
 			action = Pom.Scope.valueOf(value);
 			return pom.getLibrary(action, repositories);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return pom.getArtifact();
 		}
 	}
@@ -107,8 +106,7 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 					if (!uri.isAbsolute())
 						uri = IO.getFile(new File(""), repo).toURI();
 					repositories[n++] = uri;
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					if (reporter != null)
 						reporter.error("Invalid repository %s for maven plugin, %s", repo, e);
 				}
@@ -144,8 +142,7 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		for (DownloadListener l : listeners) {
 			try {
 				l.success(f);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.exception(e, "Download listener for %s", f);
 			}
 		}

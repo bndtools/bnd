@@ -60,15 +60,17 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 		try {
 			CAFS = "CAFS".getBytes("UTF-8");
 			CAFE = "CAFE".getBytes("UTF-8");
-		}
-		catch (Throwable e) {
+		} catch (Throwable e) {
 			throw new ExceptionInInitializerError(e);
 		}
 	}
 
 	/**
-	 * Constructor for a Content Addressable File Store @param home @param
-	 * create @throws Exception
+	 * Constructor for a Content Addressable File Store
+	 * 
+	 * @param home
+	 * @param create
+	 * @throws Exception
 	 */
 	public CAFS(File home, boolean create) throws Exception {
 		this.home = home;
@@ -105,8 +107,11 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 
 	/**
 	 * Store an input stream in the CAFS while calculating and returning the
-	 * SHA-1 code. @param in The input stream to store. @return The SHA-1
-	 * code. @throws Exception if anything goes wrong
+	 * SHA-1 code.
+	 * 
+	 * @param in The input stream to store.
+	 * @return The SHA-1 code.
+	 * @throws Exception if anything goes wrong
 	 */
 	public SHA1 write(InputStream in) throws Exception {
 
@@ -155,8 +160,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 				update(sha1.digest(), compressed, totalLength);
 				index.insert(sha1.digest(), insertPoint);
 				return sha1;
-			}
-			finally {
+			} finally {
 				if (lock != null)
 					lock.release();
 			}
@@ -164,8 +168,11 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 	}
 
 	/**
-	 * Read the contents of a sha 1 key. @param sha1 The key @return An Input
-	 * Stream on the content or null of key not found @throws Exception
+	 * Read the contents of a sha 1 key.
+	 * 
+	 * @param sha1 The key
+	 * @return An Input Stream on the content or null of key not found
+	 * @throws Exception
 	 */
 	public InputStream read(final SHA1 sha1) throws Exception {
 		synchronized (store) {
@@ -234,8 +241,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 				ixf.renameTo(indexFile);
 				this.index = new Index(indexFile, KEYLENGTH);
 			}
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 	}
@@ -244,8 +250,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 		synchronized (store) {
 			try {
 				store.close();
-			}
-			finally {
+			} finally {
 				index.close();
 			}
 		}
@@ -282,9 +287,9 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 	private InputStream getSha1Stream(final SHA1 sha1, byte[] buffer, final int total) throws NoSuchAlgorithmException {
 		ByteArrayInputStream in = new ByteArrayInputStream(buffer);
 		InflaterInputStream iin = new InflaterInputStream(in) {
-			int count = 0;
-			final MessageDigest digestx = MessageDigest.getInstance(ALGORITHM);
-			final AtomicBoolean calculated = new AtomicBoolean();
+			int					count		= 0;
+			final MessageDigest	digestx		= MessageDigest.getInstance(ALGORITHM);
+			final AtomicBoolean	calculated	= new AtomicBoolean();
 
 			@Override
 			public int read(byte[] data, int offset, int length) throws IOException {
@@ -335,9 +340,12 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 
 	/**
 	 * Update a record in the store, assuming the store is at the right
-	 * position. @param sha1 The checksum @param compressed The compressed
-	 * length @param totalLength The uncompressed length @throws IOException The
-	 * exception
+	 * position.
+	 * 
+	 * @param sha1 The checksum
+	 * @param compressed The compressed length
+	 * @param totalLength The uncompressed length
+	 * @throws IOException The exception
 	 */
 	private void update(byte[] sha1, byte[] compressed, int totalLength) throws IOException {
 		// System.err.println("pos: " + store.getFilePointer());
@@ -378,8 +386,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 				synchronized (store) {
 					try {
 						return position < store.length();
-					}
-					catch (IOException e) {
+					} catch (IOException e) {
 						throw new RuntimeException(e);
 					}
 				}
@@ -405,8 +412,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 
 						position += HEADERLENGTH + compressedLength;
 						return new SHA1(sha1);
-					}
-					catch (IOException e) {
+					} catch (IOException e) {
 						throw new RuntimeException(e);
 					}
 				}

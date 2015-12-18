@@ -33,8 +33,7 @@ public class JUnitEclipseReport implements TestReporter {
 		for (int i = 0; socket == null && i < 30; i++) {
 			try {
 				socket = new Socket(InetAddress.getByName(null), port);
-			}
-			catch (ConnectException ce) {
+			} catch (ConnectException ce) {
 				e = ce;
 				Thread.sleep(i * 100);
 			}
@@ -97,8 +96,7 @@ public class JUnitEclipseReport implements TestReporter {
 			m.invoke(test, new Object[] {
 					targetBundle.getBundleContext()
 			});
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 
 		}
 	}
@@ -150,8 +148,7 @@ public class JUnitEclipseReport implements TestReporter {
 	public void close() {
 		try {
 			in.close();
-		}
-		catch (Exception ioe) {
+		} catch (Exception ioe) {
 			// ignore
 		}
 	}

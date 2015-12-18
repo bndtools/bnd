@@ -48,23 +48,27 @@ import aQute.service.reporter.Reporter;
 /**
  * A FileRepo is the primary and example implementation of a repository based on
  * a file system. It maintains its files in a bsn/bsn-version.jar style from a
- * given location. It implements all the functions of the {@link
- * RepositoryPlugin}, {@link Refreshable}, {@link Actionable}, and {@link
- * Closeable}. The FileRepo can be extended or used as is. When used as is, it
- * is possible to add shell commands to the life cycle of the FileRepo. This
- * life cycle is as follows: <ul> <li>{@link #CMD_INIT} - Is only executed when
- * the location did not exist</li> <li>{@link #CMD_OPEN} - Called (after init if
- * necessary) to open it once</li> <li>{@link #CMD_REFRESH} - Called when
- * refreshed.</li> <li>{@link #CMD_BEFORE_PUT} - Before the file system is
- * changed</li> <li>{@link #CMD_AFTER_PUT} - After the file system has changed,
- * and the put <li>{@link #CMD_BEFORE_GET} - Before the file is gotten</li>
- * <li>{@link #CMD_AFTER_ACTION} - Before the file is gotten</li> <li>{@link
- * #CMD_CLOSE} - When the repo is closed and no more actions will take
- * place</li> was a success</li> <li>{@link #CMD_ABORT_PUT} - When the put is
- * aborted.</li> <li>{@link #CMD_CLOSE} - To close the repository.</li> </ul>
- * Additionally, it is possible to set the {@link #CMD_SHELL} and the {@link
- * #CMD_PATH}. Notice that you can use the ${global} macro to read global (that
- * is, machine local) settings from the ~/.bnd/settings.json file (can be
+ * given location. It implements all the functions of the
+ * {@link RepositoryPlugin}, {@link Refreshable}, {@link Actionable}, and
+ * {@link Closeable}. The FileRepo can be extended or used as is. When used as
+ * is, it is possible to add shell commands to the life cycle of the FileRepo.
+ * This life cycle is as follows:
+ * <ul>
+ * <li>{@link #CMD_INIT} - Is only executed when the location did not exist</li>
+ * <li>{@link #CMD_OPEN} - Called (after init if necessary) to open it once</li>
+ * <li>{@link #CMD_REFRESH} - Called when refreshed.</li>
+ * <li>{@link #CMD_BEFORE_PUT} - Before the file system is changed</li>
+ * <li>{@link #CMD_AFTER_PUT} - After the file system has changed, and the put
+ * <li>{@link #CMD_BEFORE_GET} - Before the file is gotten</li>
+ * <li>{@link #CMD_AFTER_ACTION} - Before the file is gotten</li>
+ * <li>{@link #CMD_CLOSE} - When the repo is closed and no more actions will
+ * take place</li> was a success</li>
+ * <li>{@link #CMD_ABORT_PUT} - When the put is aborted.</li>
+ * <li>{@link #CMD_CLOSE} - To close the repository.</li>
+ * </ul>
+ * Additionally, it is possible to set the {@link #CMD_SHELL} and the
+ * {@link #CMD_PATH}. Notice that you can use the ${global} macro to read global
+ * (that is, machine local) settings from the ~/.bnd/settings.json file (can be
  * managed with bnd).
  */
 
@@ -108,150 +112,173 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	/**
 	 * If set, will trace to stdout. Works only if no reporter is set.
 	 */
-	public final static String TRACE = "trace";
+	public final static String				TRACE				= "trace";
 
 	/**
 	 * Property name for the location of the repo, must be a valid path name
 	 * using forward slashes (see {@link IO#getFile(String)}.
 	 */
-	public final static String LOCATION = "location";
+	public final static String				LOCATION			= "location";
 
 	/**
 	 * Property name for the readonly state of the repository. If no, will
-	 * read/write, otherwise it must be a boolean value read by {@link
-	 * Boolean#parseBoolean(String)}. Read only repositories will not accept
-	 * writes. Defaults to false.
+	 * read/write, otherwise it must be a boolean value read by
+	 * {@link Boolean#parseBoolean(String)}. Read only repositories will not
+	 * accept writes. Defaults to false.
 	 */
-	public final static String READONLY = "readonly";
+	public final static String				READONLY			= "readonly";
 
 	/**
 	 * Property name for the latest option of the repository. If true, will copy
 	 * the put jar to a 'latest' file (option must be a boolean value read by
 	 * {@link Boolean#parseBoolean(String)}). Defaults to true.
 	 */
-	public final static String LATEST_OPTION = "latest";
+	public final static String				LATEST_OPTION		= "latest";
 
 	/**
 	 * Set the name of this repository (optional)
 	 */
-	public final static String NAME = "name";
+	public final static String				NAME				= "name";
 
 	/**
 	 * Should this file repo have an index? Either true or false (absent)
 	 */
-	public final static String INDEX = "index";
+	public final static String				INDEX				= "index";
 
 	/**
 	 * Path property for commands. A comma separated path for directories to be
 	 * searched for command. May contain $ @} which will be replaced by the
 	 * system path. If this property is not set, the system path is assumed.
 	 */
-	public static final String CMD_PATH = "cmd.path";
+	public static final String				CMD_PATH			= "cmd.path";
 
 	/**
 	 * The name ( and path) of the shell to execute the commands. By default
 	 * this is sh and searched in the path.
 	 */
-	public static final String CMD_SHELL = "cmd.shell";
+	public static final String				CMD_SHELL			= "cmd.shell";
 
 	/**
 	 * Property for commands. The command only runs when the location does not
-	 * exist. </p> @param rootFile the root of the repo (directory exists)
+	 * exist.
+	 * </p>
+	 * 
+	 * @param rootFile the root of the repo (directory exists)
 	 */
-	public static final String CMD_INIT = "cmd.init";
+	public static final String				CMD_INIT			= "cmd.init";
 
 	/**
 	 * Property for commands. Command is run before the repo is first used.
-	 * </p> @param $0 rootFile the root of the repo (directory exists)
+	 * </p>
+	 * 
+	 * @param $0 rootFile the root of the repo (directory exists)
 	 */
-	public static final String CMD_OPEN = "cmd.open";
+	public static final String				CMD_OPEN			= "cmd.open";
 
 	/**
 	 * Property for commands. The command runs after a put operation.
-	 * </p> @param $0 the root of the repo (directory exists) @param $1 the file
-	 * that was put @param $2 the hex checksum of the file
+	 * </p>
+	 * 
+	 * @param $0 the root of the repo (directory exists)
+	 * @param $1 the file that was put
+	 * @param $2 the hex checksum of the file
 	 */
-	public static final String CMD_AFTER_PUT = "cmd.after.put";
+	public static final String				CMD_AFTER_PUT		= "cmd.after.put";
 
 	/**
 	 * Property for commands. The command runs when the repository is refreshed.
-	 * </p> @param $ {0} the root of the repo (directory exists)
+	 * </p>
+	 * 
+	 * @param $ {0} the root of the repo (directory exists)
 	 */
-	public static final String CMD_REFRESH = "cmd.refresh";
+	public static final String				CMD_REFRESH			= "cmd.refresh";
 
 	/**
 	 * Property for commands. The command runs after the file is put.
-	 * </p> @param $0 the root of the repo (directory exists) @param $1 the path
-	 * to a temporary file
+	 * </p>
+	 * 
+	 * @param $0 the root of the repo (directory exists)
+	 * @param $1 the path to a temporary file
 	 */
-	public static final String CMD_BEFORE_PUT = "cmd.before.put";
+	public static final String				CMD_BEFORE_PUT		= "cmd.before.put";
 
 	/**
 	 * Property for commands. The command runs when a put is aborted after file
-	 * changes were made. </p> @param $0 the root of the repo (directory
-	 * exists) @param $1 the temporary file that was used (optional)
+	 * changes were made.
+	 * </p>
+	 * 
+	 * @param $0 the root of the repo (directory exists)
+	 * @param $1 the temporary file that was used (optional)
 	 */
-	public static final String CMD_ABORT_PUT = "cmd.abort.put";
+	public static final String				CMD_ABORT_PUT		= "cmd.abort.put";
 
 	/**
 	 * Property for commands. The command runs after the file is put.
-	 * </p> @param $0 the root of the repo (directory exists)
+	 * </p>
+	 * 
+	 * @param $0 the root of the repo (directory exists)
 	 */
-	public static final String CMD_CLOSE = "cmd.close";
+	public static final String				CMD_CLOSE			= "cmd.close";
 
 	/**
 	 * Property for commands. Will be run after an action has been executed.
-	 * </p> @param $0 the root of the repo (directory exists) @param $1 the path
-	 * to the file that the action was executed on @param $2 the action executed
+	 * </p>
+	 * 
+	 * @param $0 the root of the repo (directory exists)
+	 * @param $1 the path to the file that the action was executed on
+	 * @param $2 the action executed
 	 */
-	public static final String CMD_AFTER_ACTION = "cmd.after.action";
+	public static final String				CMD_AFTER_ACTION	= "cmd.after.action";
 
 	/**
-	 * Called before a before get. @param $0 the root of the repo (directory
-	 * exists) @param $1 the bsn @param $2 the version
+	 * Called before a before get.
+	 * 
+	 * @param $0 the root of the repo (directory exists)
+	 * @param $1 the bsn
+	 * @param $2 the version
 	 */
-	public static final String CMD_BEFORE_GET = "cmd.before.get";
+	public static final String				CMD_BEFORE_GET		= "cmd.before.get";
 
 	/**
 	 * Options used when the options are null
 	 */
-	static final PutOptions DEFAULTOPTIONS = new PutOptions();
+	static final PutOptions					DEFAULTOPTIONS		= new PutOptions();
 
-	public static final int MAX_MAJOR = 999999999;
+	public static final int					MAX_MAJOR			= 999999999;
 
-	private static final String				LATEST_POSTFIX	= "-" + Constants.VERSION_ATTR_LATEST + ".jar";
-	public static final Version				LATEST_VERSION	= new Version(MAX_MAJOR, 0, 0);
-	private static final SortedSet<Version>	LATEST_SET		= new TreeSet<Version>(
+	private static final String				LATEST_POSTFIX		= "-" + Constants.VERSION_ATTR_LATEST + ".jar";
+	public static final Version				LATEST_VERSION		= new Version(MAX_MAJOR, 0, 0);
+	private static final SortedSet<Version>	LATEST_SET			= new TreeSet<Version>(
 			Collections.singleton(LATEST_VERSION));
 
-	final static JSONCodec	codec	= new JSONCodec();
-	String					shell;
-	String					path;
-	String					init;
-	String					open;
-	String					refresh;
-	String					beforePut;
-	String					afterPut;
-	String					abortPut;
-	String					beforeGet;
-	String					close;
-	String					action;
+	final static JSONCodec					codec				= new JSONCodec();
+	String									shell;
+	String									path;
+	String									init;
+	String									open;
+	String									refresh;
+	String									beforePut;
+	String									afterPut;
+	String									abortPut;
+	String									beforeGet;
+	String									close;
+	String									action;
 
-	File[]								EMPTY_FILES		= new File[0];
-	protected File						root;
-	Registry							registry;
-	boolean								createLatest	= true;
-	boolean								canWrite		= true;
-	Pattern								REPO_FILE		= Pattern.compile("(?:([-a-zA-z0-9_\\.]+)-)("
+	File[]									EMPTY_FILES			= new File[0];
+	protected File							root;
+	Registry								registry;
+	boolean									createLatest		= true;
+	boolean									canWrite			= true;
+	Pattern									REPO_FILE			= Pattern.compile("(?:([-a-zA-z0-9_\\.]+)-)("
 			+ Version.VERSION_STRING + "|" + Constants.VERSION_ATTR_LATEST + ")\\.(jar|lib)");
-	Reporter							reporter;
-	boolean								dirty			= true;
-	String								name;
-	boolean								inited;
-	boolean								trace;
-	PersistentMap<ResourceDescriptor>	index;
+	Reporter								reporter;
+	boolean									dirty				= true;
+	String									name;
+	boolean									inited;
+	boolean									trace;
+	PersistentMap<ResourceDescriptor>		index;
 
-	private boolean hasIndex;
+	private boolean							hasIndex;
 
 	public FileRepo() {}
 
@@ -264,8 +291,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	/**
 	 * Initialize the repository Subclasses should first call this method and
-	 * then if it returns true, do their own initialization @return true if
-	 * initialized, false if already had been initialized. @throws Exception
+	 * then if it returns true, do their own initialization
+	 * 
+	 * @return true if initialized, false if already had been initialized.
+	 * @throws Exception
 	 */
 	protected boolean init() throws Exception {
 		if (inited)
@@ -341,17 +370,22 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * Local helper method that tries to insert a file in the repository. This
 	 * method can be overridden but MUST not change the content of the tmpFile.
 	 * This method should also create a latest version of the artifact for
-	 * reference by tools like ant etc. </p> It is allowed to rename the file,
-	 * the tmp file must be beneath the root directory to prevent rename
-	 * problems. @param tmpFile source file @param digest @return a File that
-	 * contains the content of the tmpFile @throws Exception
+	 * reference by tools like ant etc.
+	 * </p>
+	 * It is allowed to rename the file, the tmp file must be beneath the root
+	 * directory to prevent rename problems.
+	 * 
+	 * @param tmpFile source file
+	 * @param digest
+	 * @return a File that contains the content of the tmpFile
+	 * @throws Exception
 	 */
 	protected File putArtifact(File tmpFile, byte[] digest) throws Exception {
 		return putArtifact(tmpFile, null, digest);
 	}
 
 	protected File putArtifact(File tmpFile, PutOptions options, byte[] digest) throws Exception {
-		assert(tmpFile != null);
+		assert (tmpFile != null);
 
 		Jar tmpJar = new Jar(tmpFile);
 		try {
@@ -371,8 +405,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			} else {
 				try {
 					version = new Version(tmpJar.getVersion());
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					throw new IllegalArgumentException("Incorrect version in : " + tmpFile + " " + tmpJar.getVersion());
 				}
 			}
@@ -418,8 +451,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			reporter.trace("updated %s", file.getAbsolutePath());
 
 			return file;
-		}
-		finally {
+		} finally {
 			tmpJar.close();
 		}
 	}
@@ -470,16 +502,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				result.artifact = file.toURI();
 
 				return result;
-			}
-			finally {
+			} finally {
 				dis.close();
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			abortPut(tmpFile);
 			throw e;
-		}
-		finally {
+		} finally {
 			IO.delete(tmpFile);
 		}
 	}
@@ -583,8 +612,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			for (DownloadListener l : listeners) {
 				try {
 					l.success(file);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					reporter.exception(e, "Download listener for %s", file);
 				}
 			}
@@ -609,8 +637,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				public void run() {
 					try {
 						refresh();
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						throw new RuntimeException(e);
 					}
 				}
@@ -636,8 +663,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				};
 			});
 			return actions;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return null;
 		}
 	}
@@ -677,8 +703,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			}
 			return s;
 
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return null;
 		}
 	}
@@ -813,12 +838,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				if (jar == null)
 					jar = new Jar(file);
 				listener.bundleAdded(this, jar, file);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				if (reporter != null)
 					reporter.warning("Repository listener threw an unexpected exception: %s", e);
-			}
-			finally {
+			} finally {
 				if (jar != null)
 					jar.close();
 			}
@@ -827,7 +850,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	/**
 	 * Execute a command. Used in different stages so that the repository can be
-	 * synced with external tools. @param line @param target
+	 * synced with external tools.
+	 * 
+	 * @param line
+	 * @param target
 	 */
 	void exec(String line, Object... args) {
 		if (line == null) {
@@ -886,8 +912,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			if (result != 0) {
 				reporter.error("Command %s failed with %s %s %s", line, result, stdout, stderr);
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			reporter.exception(e, e.getMessage());
 		}
@@ -901,8 +926,11 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	}
 
 	/**
-	 * Delete an entry from the repository and cleanup the directory @param
-	 * bsn @param version @throws Exception
+	 * Delete an entry from the repository and cleanup the directory
+	 * 
+	 * @param bsn
+	 * @param version
+	 * @throws Exception
 	 */
 	public void delete(String bsn, Version version) throws Exception {
 		init();
@@ -1028,8 +1056,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			rd.sha256 = SHA256.digest(f).digest();
 			rd.url = f.toURI();
 			return rd;
-		}
-		finally {
+		} finally {
 			if (tmpjar != null)
 				tmpjar.close();
 		}

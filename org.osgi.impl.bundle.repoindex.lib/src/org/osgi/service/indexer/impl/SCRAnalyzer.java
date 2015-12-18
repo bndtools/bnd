@@ -32,12 +32,12 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class SCRAnalyzer implements ResourceAnalyzer {
-	static final Pattern		URI_VERSION_P	= Pattern.compile("/scr/v(\\d+\\.\\d+\\.\\d+)$");
-	public static final String	NS_1_0			= Namespaces.NS_OSGI + "/scr/v1.0.0";
-	public static final String	NS_1_1			= Namespaces.NS_OSGI + "/scr/v1.1.0";
-	public static final String	NS_1_2			= Namespaces.NS_OSGI + "/scr/v1.2.0";
-	public static final String	NS_1_2_1		= Namespaces.NS_OSGI + "/scr/v1.2.1";
-	public static final String	NS_1_3			= Namespaces.NS_OSGI + "/scr/v1.3.0";
+	static final Pattern		URI_VERSION_P		= Pattern.compile("/scr/v(\\d+\\.\\d+\\.\\d+)$");
+	public static final String	NS_1_0				= Namespaces.NS_OSGI + "/scr/v1.0.0";
+	public static final String	NS_1_1				= Namespaces.NS_OSGI + "/scr/v1.1.0";
+	public static final String	NS_1_2				= Namespaces.NS_OSGI + "/scr/v1.2.0";
+	public static final String	NS_1_2_1			= Namespaces.NS_OSGI + "/scr/v1.2.1";
+	public static final String	NS_1_3				= Namespaces.NS_OSGI + "/scr/v1.3.0";
 
 	public static final String	ELEMENT_COMPONENT	= "component";
 	public static final String	ELEMENT_SERVICE		= "service";
@@ -52,7 +52,7 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 	public static final String	ATTRIB_VALUE		= "value";
 	public static final String	ATTRIB_TARGET		= "target";
 
-	private LogService log;
+	private LogService			log;
 
 	public SCRAnalyzer(LogService log) {
 		this.log = log;
@@ -107,8 +107,7 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 			parser.parse(childResource.getStream(), handler);
 
 			return handler.highest;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			if (log != null)
 				log.log(LogService.LOG_ERROR,
 						MessageFormat.format("Processing error: failed to parse child resource {0} in resource {1}.",
@@ -138,10 +137,10 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 		private List<Capability>	caps;
 		private List<Requirement>	reqs;
 
-		Version highest = null;
+		Version						highest					= null;
 
-		private List<String>		provides	= null;
-		private List<Requirement>	references	= null;
+		private List<String>		provides				= null;
+		private List<Requirement>	references				= null;
 
 		private Map<String,Object>	properties				= null;
 		private String				currentPropertyName		= null;

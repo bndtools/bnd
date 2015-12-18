@@ -33,7 +33,9 @@ public class LauncherTest extends TestCase {
 	}
 
 	/**
-	 * Test the packager for remote @throws Exception
+	 * Test the packager for remote
+	 * 
+	 * @throws Exception
 	 */
 	public static void testRemotePackager() throws Exception {
 		Project project = getProject();
@@ -71,8 +73,9 @@ public class LauncherTest extends TestCase {
 
 	/**
 	 * Gradle Problems exporting an executable jar #980 Test the packager's
-	 * difference between plan export in gradle & from bndtools @throws
-	 * Exception
+	 * difference between plan export in gradle & from bndtools
+	 * 
+	 * @throws Exception
 	 */
 	public static void testPackagerDifference() throws Exception {
 
@@ -171,7 +174,9 @@ public class LauncherTest extends TestCase {
 	}
 
 	/**
-	 * junit 4 "unrooted" tests with parametrized tests #661 @throws Exception
+	 * junit 4 "unrooted" tests with parametrized tests #661
+	 * 
+	 * @throws Exception
 	 */
 	public static void testJunit4Tester() throws Exception {
 		Project project = getProject();
@@ -281,19 +286,19 @@ public class LauncherTest extends TestCase {
 				l.setTrace(true);
 				l.getRunProperties().put("test.cmd", "exit");
 				assertEquals(42, l.launch());
-			}
-			finally {
+			} finally {
 				p.close();
 				ws.close();
 			}
-		}
-		finally {
+		} finally {
 			IO.delete(f);
 		}
 	}
 
 	/**
-	 * Test the java agent @throws Exception
+	 * Test the java agent
+	 * 
+	 * @throws Exception
 	 */
 	public static void testAgent() throws Exception {
 		Project project = getProject();
@@ -306,7 +311,9 @@ public class LauncherTest extends TestCase {
 	}
 
 	/**
-	 * Test env variables @throws Exception
+	 * Test env variables
+	 * 
+	 * @throws Exception
 	 */
 	public static void testEnv() throws Exception {
 		Project project = getProject();
@@ -321,7 +328,9 @@ public class LauncherTest extends TestCase {
 	/**
 	 * Tests if the properties are cleaned up. This requires some knowledge of
 	 * the launcher unfortunately. It is also not sure if the file is not just
-	 * deleted by the onExit ... @throws Exception
+	 * deleted by the onExit ...
+	 * 
+	 * @throws Exception
 	 */
 	public static void testCleanup() throws Exception {
 		Project project = getProject();
@@ -338,8 +347,7 @@ public class LauncherTest extends TestCase {
 				try {
 					Thread.sleep(1000);
 					l.cancel();
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					// Ignore
 				}
 			}
@@ -353,7 +361,10 @@ public class LauncherTest extends TestCase {
 
 	/**
 	 * The properties file is an implementation detail ... so this is white box
-	 * testing. @param project @throws Exception
+	 * testing.
+	 * 
+	 * @param project
+	 * @throws Exception
 	 */
 	private static void assertNoProperties(File target) throws Exception {
 		if (!target.exists())
@@ -376,7 +387,9 @@ public class LauncherTest extends TestCase {
 	}
 
 	/**
-	 * Test the packager @throws Exception
+	 * Test the packager
+	 * 
+	 * @throws Exception
 	 */
 	public static void testPackager() throws Exception {
 		Project project = getProject();
@@ -394,7 +407,9 @@ public class LauncherTest extends TestCase {
 	}
 
 	/**
-	 * Test the sha packager @throws Exception
+	 * Test the sha packager
+	 * 
+	 * @throws Exception
 	 */
 	public static void testShaPackager() throws Exception {
 		Project project = getProject();
@@ -428,8 +443,9 @@ public class LauncherTest extends TestCase {
 	 * testing. This current one does not work since the demo project uses the
 	 * snapshots of the launcher and tester, and when copied they are not there
 	 * in that workspace. So we need another demo project that does not use OSGi
-	 * and has not special deps. Then the following code can be used. @throws
-	 * Exception
+	 * and has not special deps. Then the following code can be used.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testWorkspaceWithSpace() throws Exception {
 		// // reuse built .class files from the demo project.
@@ -457,7 +473,8 @@ public class LauncherTest extends TestCase {
 	}
 
 	/**
-	 * @return @throws Exception
+	 * @return
+	 * @throws Exception
 	 */
 	static Project getProject() throws Exception {
 		workspace = Workspace.getWorkspace(new File("").getAbsoluteFile().getParentFile());
@@ -512,8 +529,9 @@ public class LauncherTest extends TestCase {
 	}
 
 	/**
-	 * Allowing Runnable and Callable, with Callable as priority @throws
-	 * Exception
+	 * Allowing Runnable and Callable, with Callable as priority
+	 * 
+	 * @throws Exception
 	 */
 	public static void testMainThread() throws Exception {
 		assertExitCode("main.thread", ProjectLauncher.OK);

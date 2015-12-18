@@ -49,8 +49,7 @@ public final class RepoResourceUtils {
 			try {
 				bufferedStream.mark(READ_AHEAD_MAX);
 				checkResult = provider.checkStream(name, new ProtectedStream(bufferedStream));
-			}
-			finally {
+			} finally {
 				bufferedStream.reset();
 			}
 
@@ -85,8 +84,7 @@ public final class RepoResourceUtils {
 		// Finally, parse the damn file.
 		try {
 			selectedProvider.parseIndex(bufferedStream, baseUri, listener, log);
-		}
-		finally {
+		} finally {
 			IO.close(bufferedStream);
 		}
 	}
@@ -135,8 +133,7 @@ public final class RepoResourceUtils {
 				return ((URL) uri).toURI();
 			if (uri instanceof String)
 				return new URI((String) uri);
-		}
-		catch (URISyntaxException e) {
+		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException("Failed to convert resource content location to a valid URI.", e);
 		}
 

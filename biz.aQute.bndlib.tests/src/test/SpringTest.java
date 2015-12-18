@@ -7,7 +7,9 @@ public class SpringTest extends TestCase {
 
 	/**
 	 * Basic test to see if the analzyer works. We read the sprint-test1.xml and
-	 * see if we can detect all the different packages. @throws Exception
+	 * see if we can detect all the different packages.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testSimple() throws Exception {
 
@@ -30,19 +32,22 @@ public class SpringTest extends TestCase {
 	/**
 	 * Now check if the plugin works, we create a dummy bundle and put the
 	 * spring-test1.xml in the appropriate place. This means that the
-	 * import-header contains all the the packages. @throws Exception public
-	 * void testPlugin() throws Exception { Builder b = new Builder();
-	 * b.setProperty(Analyzer.INCLUDE_RESOURCE,
-	 * "META-INF/spring/one.xml=src/test/spring-test1.xml");
-	 * b.setProperty(Analyzer.IMPORT_PACKAGE, "*");
-	 * b.setProperty(Analyzer.EXPORT_PACKAGE, "*"); b.setClasspath(new File[] {
-	 * IO.getFile("jar/asm.jar") }); Jar jar = b.build(); checkMessages(b,0,0);
-	 * test(jar); }
+	 * import-header contains all the the packages.
+	 * 
+	 * @throws Exception public void testPlugin() throws Exception { Builder b =
+	 *             new Builder(); b.setProperty(Analyzer.INCLUDE_RESOURCE,
+	 *             "META-INF/spring/one.xml=src/test/spring-test1.xml");
+	 *             b.setProperty(Analyzer.IMPORT_PACKAGE, "*");
+	 *             b.setProperty(Analyzer.EXPORT_PACKAGE, "*");
+	 *             b.setClasspath(new File[] { IO.getFile("jar/asm.jar") }); Jar
+	 *             jar = b.build(); checkMessages(b,0,0); test(jar); }
 	 */
 
 	/**
 	 * See what happens if we put the spring file in the wrong place. We should
-	 * have no import packages. @throws Exception
+	 * have no import packages.
+	 * 
+	 * @throws Exception
 	 */
 	// public void testPluginWrongPlace() throws Exception {
 	// Builder b = new Builder();

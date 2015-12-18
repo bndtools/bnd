@@ -43,8 +43,7 @@ public class MD5 implements MakePlugin {
 				md5.update(b, 0, size);
 			}
 			return md5.digest();
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 	}

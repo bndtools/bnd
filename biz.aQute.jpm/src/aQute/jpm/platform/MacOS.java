@@ -119,8 +119,11 @@ class MacOS extends Unix {
 	}
 
 	/**
-	 * Return the VMs on the platform. @throws SAXException @throws
-	 * IOException @throws ParserConfigurationException
+	 * Return the VMs on the platform.
+	 * 
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws ParserConfigurationException
 	 */
 	@Override
 	public void getVMs(Collection<JVM> vms) throws Exception {
@@ -181,8 +184,7 @@ class MacOS extends Unix {
 			jvm.vendor = getSiblingValue(vendorNode);
 
 			return jvm;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			reporter.trace("Could not parse the Info.plist in %s, got %s", vmdir, e);
 			throw e;
 		}

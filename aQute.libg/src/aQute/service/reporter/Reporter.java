@@ -26,12 +26,18 @@ public interface Reporter extends Report {
 		SetLocation header(String header);
 
 		/**
-		 * Set the context in the header. @param context @return
+		 * Set the context in the header.
+		 * 
+		 * @param context
+		 * @return
 		 */
 		SetLocation context(String context);
 
 		/**
-		 * Set the method where the error is reported. @param context @return
+		 * Set the method where the error is reported.
+		 * 
+		 * @param context
+		 * @return
 		 */
 		SetLocation method(String methodName);
 
@@ -61,47 +67,62 @@ public interface Reporter extends Report {
 	/**
 	 * Create an error. Implementations must ensure that the given args are not
 	 * prevented from garbage collecting. The args must have a proper toString
-	 * method. @param format The format of the error @param args The arguments
-	 * of the error @return a SetLocation to set the location
+	 * method.
+	 * 
+	 * @param format The format of the error
+	 * @param args The arguments of the error
+	 * @return a SetLocation to set the location
 	 */
 	SetLocation error(String format, Object... args);
 
 	/**
 	 * Create a warning. Implementations must ensure that the given args are not
 	 * prevented from garbage collecting. The args must have a proper toString
-	 * method. @param format The format of the error @param args The arguments
-	 * of the error @return a SetLocation to set the location
+	 * method.
+	 * 
+	 * @param format The format of the error
+	 * @param args The arguments of the error
+	 * @return a SetLocation to set the location
 	 */
 	SetLocation warning(String format, Object... args);
 
 	/**
 	 * Create a warning. Implementations must ensure that the given args are not
 	 * prevented from garbage collecting. The args must have a proper toString
-	 * method. @param format The format of the error @param args The arguments
-	 * of the error
+	 * method.
+	 * 
+	 * @param format The format of the error
+	 * @param args The arguments of the error
 	 */
 	void trace(String format, Object... args);
 
 	/**
 	 * Create a warning. Implementations must ensure that the given args are not
 	 * prevented from garbage collecting. The args must have a proper toString
-	 * method. @param progress A value between 0 and 1 indicating the progress.
-	 * 0 is starting and >=1 is done. @param format The format of the
-	 * error @param args The arguments of the error @return a SetLocation to set
-	 * the location
+	 * method.
+	 * 
+	 * @param progress A value between 0 and 1 indicating the progress. 0 is
+	 *            starting and >=1 is done.
+	 * @param format The format of the error
+	 * @param args The arguments of the error
+	 * @return a SetLocation to set the location
 	 */
 	void progress(float progress, String format, Object... args);
 
 	/**
-	 * Dedicated message for an exception. @param t The exception @param s The
-	 * format of the message @param args The arguments
+	 * Dedicated message for an exception.
+	 * 
+	 * @param t The exception
+	 * @param s The format of the message
+	 * @param args The arguments
 	 */
 	public SetLocation exception(Throwable t, String format, Object... args);
 
 	/**
 	 * The provider of the reporter wants pedantic reporting, meaning every
-	 * possible warning should be reported. @return if this is a pedantic
-	 * reporter.
+	 * possible warning should be reported.
+	 * 
+	 * @return if this is a pedantic reporter.
 	 */
 	boolean isPedantic();
 

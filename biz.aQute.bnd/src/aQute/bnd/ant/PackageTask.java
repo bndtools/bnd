@@ -18,8 +18,7 @@ public class PackageTask extends BaseTask {
 
 		try {
 			Workspace.getProject(getProject().getBaseDir()).export(runFilePath, keep, output);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new BuildException(e);
 		}
 	}

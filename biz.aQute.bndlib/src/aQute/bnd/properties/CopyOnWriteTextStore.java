@@ -1,12 +1,17 @@
 package aQute.bnd.properties;
 
 /**
- * Copy-on-write <code>ITextStore</code> wrapper. <p> This implementation uses
- * an unmodifiable text store for the initial content. Upon first modification
- * attempt, the unmodifiable store is replaced with a modifiable instance which
- * must be supplied in the constructor. </p> <p> This class is not intended to
- * be subclassed. </p> @since 3.2 @noextend This class is not intended to be
- * subclassed by clients.
+ * Copy-on-write <code>ITextStore</code> wrapper.
+ * <p>
+ * This implementation uses an unmodifiable text store for the initial content.
+ * Upon first modification attempt, the unmodifiable store is replaced with a
+ * modifiable instance which must be supplied in the constructor.
+ * </p>
+ * <p>
+ * This class is not intended to be subclassed.
+ * </p>
+ * 
+ * @since 3.2 @noextend This class is not intended to be subclassed by clients.
  */
 public class CopyOnWriteTextStore implements ITextStore {
 
@@ -28,8 +33,9 @@ public class CopyOnWriteTextStore implements ITextStore {
 		}
 
 		/**
-		 * Create a text store with initial content. @param text the initial
-		 * content
+		 * Create a text store with initial content.
+		 * 
+		 * @param text the initial content
 		 */
 		StringTextStore(String text) {
 			super();
@@ -76,15 +82,17 @@ public class CopyOnWriteTextStore implements ITextStore {
 	}
 
 	/** The underlying "real" text store */
-	protected ITextStore fTextStore = new StringTextStore();
+	protected ITextStore		fTextStore	= new StringTextStore();
 
 	/** A modifiable <code>ITextStore</code> instance */
-	private final ITextStore fModifiableTextStore;
+	private final ITextStore	fModifiableTextStore;
 
 	/**
 	 * Creates an empty text store. The given text store will be used upon first
-	 * modification attempt. @param modifiableTextStore a modifiable
-	 * <code>ITextStore</code> instance, may not be <code>null</code>
+	 * modification attempt.
+	 * 
+	 * @param modifiableTextStore a modifiable <code>ITextStore</code> instance,
+	 *            may not be <code>null</code>
 	 */
 	public CopyOnWriteTextStore(ITextStore modifiableTextStore) {
 		fTextStore = new StringTextStore();

@@ -40,29 +40,29 @@ import aQute.bnd.service.Registry;
 
 public class R5RepoContentProvider implements IRepositoryContentProvider {
 
-	public static final String NAME = "R5";
+	public static final String	NAME					= "R5";
 
-	private static final String NS_URI = "http://www.osgi.org/xmlns/repository/v1.0.0";
+	private static final String	NS_URI					= "http://www.osgi.org/xmlns/repository/v1.0.0";
 
 	private static final String	INDEX_NAME_COMPRESSED	= "index.xml.gz";
 	private static final String	INDEX_NAME_PRETTY		= "index.xml";
 
-	private static final String	TAG_REPOSITORY	= "repository";
-	private static final String	TAG_REFERRAL	= "referral";
-	private static final String	TAG_RESOURCE	= "resource";
-	private static final String	TAG_CAPABILITY	= "capability";
-	private static final String	TAG_REQUIREMENT	= "requirement";
-	private static final String	TAG_ATTRIBUTE	= "attribute";
-	private static final String	TAG_DIRECTIVE	= "directive";
+	private static final String	TAG_REPOSITORY			= "repository";
+	private static final String	TAG_REFERRAL			= "referral";
+	private static final String	TAG_RESOURCE			= "resource";
+	private static final String	TAG_CAPABILITY			= "capability";
+	private static final String	TAG_REQUIREMENT			= "requirement";
+	private static final String	TAG_ATTRIBUTE			= "attribute";
+	private static final String	TAG_DIRECTIVE			= "directive";
 
-	private static final String	ATTR_REFERRAL_URL	= "url";
-	private static final String	ATTR_REFERRAL_DEPTH	= "depth";
+	private static final String	ATTR_REFERRAL_URL		= "url";
+	private static final String	ATTR_REFERRAL_DEPTH		= "depth";
 
-	private static final String ATTR_NAMESPACE = "namespace";
+	private static final String	ATTR_NAMESPACE			= "namespace";
 
-	private static final String	ATTR_NAME	= "name";
-	private static final String	ATTR_VALUE	= "value";
-	private static final String	ATTR_TYPE	= "type";
+	private static final String	ATTR_NAME				= "name";
+	private static final String	ATTR_VALUE				= "value";
+	private static final String	ATTR_TYPE				= "type";
 
 	public String getName() {
 		return NAME;
@@ -137,16 +137,13 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 
 			}
 			return new CheckResult(undecided, "Reached end of stream", null);
-		}
-		catch (XMLStreamException e) {
+		} catch (XMLStreamException e) {
 			return new CheckResult(reject, "Invalid XML", e);
-		}
-		finally {
+		} finally {
 			if (reader != null)
 				try {
 					reader.close();
-				}
-				catch (XMLStreamException e) {}
+				} catch (XMLStreamException e) {}
 		}
 	}
 
@@ -226,13 +223,11 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 						break;
 				}
 			}
-		}
-		finally {
+		} finally {
 			if (reader != null) {
 				try {
 					reader.close();
-				}
-				catch (Exception e) {}
+				} catch (Exception e) {}
 			}
 		}
 	}

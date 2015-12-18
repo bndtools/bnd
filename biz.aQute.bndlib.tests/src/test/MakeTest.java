@@ -36,8 +36,9 @@ public class MakeTest extends TestCase {
 	}
 
 	/**
-	 * Check if we can get a resource through the make copy facility. @throws
-	 * Exception
+	 * Check if we can get a resource through the make copy facility.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testCopy() throws Exception {
 		Builder bmaker = new Builder();
@@ -55,7 +56,9 @@ public class MakeTest extends TestCase {
 	}
 
 	/**
-	 * Check if we can create a JAR recursively @throws Exception
+	 * Check if we can create a JAR recursively
+	 * 
+	 * @throws Exception
 	 */
 	public static void testJarInJarInJar() throws Exception {
 		Builder bmaker = new Builder();
@@ -81,7 +84,9 @@ public class MakeTest extends TestCase {
 
 	/**
 	 * Check if we can create a jar on demand through the make facility with a
-	 * new name. @throws Exception
+	 * new name.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testComplexOnDemand() throws Exception {
 		Builder bmaker = new Builder();

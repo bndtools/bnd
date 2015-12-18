@@ -148,8 +148,7 @@ public class IncludeHeaderTest extends TestCase {
 			assertEquals("2", analyzer.getProperty("a"));
 			assertEquals("2", analyzer.getProperty("b"));
 			assertEquals(0, analyzer.getErrors().size());
-		}
-		finally {
+		} finally {
 			include.delete();
 		}
 	}

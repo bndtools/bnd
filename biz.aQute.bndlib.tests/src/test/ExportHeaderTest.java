@@ -16,8 +16,9 @@ public class ExportHeaderTest extends TestCase {
 
 	/**
 	 * If you import a range then the maven guys can have the silly -SNAPSHOT in
-	 * the version. This tests if ranges are correcly cleaned up. @throws
-	 * Exception
+	 * the version. This tests if ranges are correcly cleaned up.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testImportHeaderWithMessedUpRange() throws Exception {
 		Builder builder = new Builder();

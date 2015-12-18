@@ -16,7 +16,11 @@ public class Clauses extends LinkedHashMap<String,Map<String,String>> {
 	 * Standard OSGi header parser. This parser can handle the format clauses
 	 * ::= clause ( ',' clause ) + clause ::= name ( ';' name ) (';' key '='
 	 * value ) This is mapped to a Map { name => Map { attr|directive => value }
-	 * } @param value @return @throws MojoExecutionException
+	 * }
+	 * 
+	 * @param value
+	 * @return
+	 * @throws MojoExecutionException
 	 */
 	static public Clauses parse(String value, Logger logger) {
 		if (value == null || value.trim().length() == 0)

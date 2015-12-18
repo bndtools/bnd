@@ -59,8 +59,7 @@ public class UTF8Properties extends Properties {
 		FileInputStream fin = new FileInputStream(file);
 		try {
 			load(fin, file, reporter);
-		}
-		finally {
+		} finally {
 			fin.close();
 		}
 	}
@@ -83,21 +82,18 @@ public class UTF8Properties extends Properties {
 		try {
 			try {
 				return convert(buffer, UTF8);
-			}
-			catch (CharacterCodingException e) {
+			} catch (CharacterCodingException e) {
 				// Ok, not good, fallback to old encoding
 			}
 
 			try {
 				return convert(buffer, ISO8859_1);
-			}
-			catch (CharacterCodingException e) {
+			} catch (CharacterCodingException e) {
 				// Ok, not good, fallback to platform encoding
 			}
 
 			return new String(buffer);
-		}
-		finally {
+		} finally {
 			// System.out.println("UTF8Props: " + this);
 		}
 	}

@@ -100,7 +100,9 @@ public class BuilderTest extends BndTestCase {
 	 * the bundle exports the org.osgi.util.promise and org.osgi.util.function
 	 * packages. org.osgi.util.promise uses org.osgi.util.function. bnd
 	 * correctly exports both packages but only imports org.osgi.util.promise.
-	 * <pre> Export-Package:
+	 * 
+	 * <pre>
+	 *  Export-Package:
 	 * org.osgi.service.async;version="1.0";uses:="org.osgi.framework,org.osgi.
 	 * util.promise",org.osgi.service.async.delegate;version="1.0";uses:="org.
 	 * osgi.util.promise",org.osgi.util.promise;version="1.0";uses:="org.osgi.
@@ -109,18 +111,26 @@ public class BuilderTest extends BndTestCase {
 	 * 1.0,2)",org.osgi.service.async;version="[1.0,1.1)",org.osgi.service.async
 	 * .delegate;version="[1.0,2)",org.osgi.service.log;version="[1.3,2)",org.
 	 * osgi.util.promise;version="[1.0,1.1)",org.osgi.util.tracker;version="[1.5
-	 * ,2)" Tool: Bnd-3.0.0.201506011706 </pre> So effectively the offer to
-	 * import org.osgi.util.promise is broken. If the framework wanted to
-	 * resolve the bundle by importing org.osgi.util.promise, that package has a
-	 * uses constraint on org.osgi.util.function and since the bundle only
-	 * exports org.osgi.util.function, the framework can only resolve the bundle
-	 * to another exporter of org.osgi.util.promise if that exporter imports
+	 * ,2)" Tool: Bnd-3.0.0.201506011706
+	 * </pre>
+	 * 
+	 * So effectively the offer to import org.osgi.util.promise is broken. If
+	 * the framework wanted to resolve the bundle by importing
+	 * org.osgi.util.promise, that package has a uses constraint on
+	 * org.osgi.util.function and since the bundle only exports
+	 * org.osgi.util.function, the framework can only resolve the bundle to
+	 * another exporter of org.osgi.util.promise if that exporter imports
 	 * org.osgi.util.function from this bundle. Obviously that wont work for
 	 * additional bundle attempting the same thing. bnd fails to also import
 	 * org.osgi.util.function. This issue exists in bnd 2.4.1 and master. We
-	 * have 4 packages <pre> p1 -> p2 exported (makes p2 importable) p2 -> none
-	 * exported (force to import by p1) p3 -> p1 private (makes p1 importable)
-	 * p4 -> p3 exported (p4 cannot be imported due to private ref) <pre>
+	 * have 4 packages
+	 * 
+	 * <pre>
+	 * p1 -> p2 exported (makes p2 importable) p2 -> none exported (force to
+	 * import by p1) p3 -> p1 private (makes p1 importable) p4 -> p3 exported
+	 * (p4 cannot be imported due to private ref)
+	 * 
+	 * <pre>
 	 */
 
 	public void testNoImportForUsedExport_971() throws Exception {
@@ -222,7 +232,9 @@ public class BuilderTest extends BndTestCase {
 	 * version of a.b because the scanning of a.b.c already has set the
 	 * information for a.b to "nothing". The learnPackage() method must be
 	 * adapted so that "empty" package do not occupy a position This was
-	 * diagnosed by Balázs Zsoldos balazs.zsoldos@everit.biz @throws Exception
+	 * diagnosed by Balázs Zsoldos balazs.zsoldos@everit.biz
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testOverlappingPackageMissesImportVersions() throws Exception {
@@ -284,24 +296,22 @@ public class BuilderTest extends BndTestCase {
 					System.out.println(date + " " + t);
 					// TODO we need to adapt the timestamp handling
 					assertTrue(date + " " + t, t == 1142555622000L);
-				}
-				finally {
+				} finally {
 					ajr.close();
 				}
-			}
-			finally {
+			} finally {
 				build.close();
 			}
-		}
-		finally {
+		} finally {
 			file.delete();
 		}
 
 	}
 
 	/**
-	 * A Require-Bundle should not fail on missing imports, just warn @throws
-	 * Exception
+	 * A Require-Bundle should not fail on missing imports, just warn
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testMissingImportWithRequireBundle() throws Exception {
@@ -318,8 +328,7 @@ public class BuilderTest extends BndTestCase {
 			Verifier v = new Verifier(b.getJar());
 			v.verify();
 			assertTrue(v.check());
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -345,12 +354,10 @@ public class BuilderTest extends BndTestCase {
 			try {
 				v.verify();
 				assertTrue(v.check("Unresolved references to \\[javax.swing\\] by class\\(es\\)"));
-			}
-			finally {
+			} finally {
 				v.close();
 			}
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -375,25 +382,27 @@ public class BuilderTest extends BndTestCase {
 			try {
 				v.verify();
 				assertTrue(v.check("Unresolved references to \\[javax.swing\\] by class\\(es\\)"));
-			}
-			finally {
+			} finally {
 				v.close();
 			}
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 
 	}
 
 	/**
-	 * <pre> [2013-12-11 15:55:14] BJ Hargrave: init: [echo] Enter project
+	 * <pre>
+	 *  [2013-12-11 15:55:14] BJ Hargrave: init: [echo] Enter project
 	 * org.osgi.test.cases.prefs (${top}) [bndprepare] 2 WARNINGS [bndprepare]
 	 * No translation found for macro:
 	 * classes;extending;junit.framework.TestCase;concrete [bndprepare] No
 	 * translation found for macro: classes,concrete [2013-12-11 15:55:31] BJ
 	 * Hargrave: I am getting this on the latest bnd.master in the OSGi test
-	 * projects </pre> @throws Exception
+	 * projects
+	 * </pre>
+	 * 
+	 * @throws Exception
 	 */
 
 	public static void testClassQuery() throws Exception {
@@ -410,14 +419,15 @@ public class BuilderTest extends BndTestCase {
 			Manifest m = jar.getManifest();
 			Parameters p = new Parameters(m.getMainAttributes().getValue("Test-Cases"));
 			assertTrue(p.size() >= 4);
-		}
-		finally {
+		} finally {
 			a.close();
 		}
 	}
 
 	/**
-	 * Bundle ActivationPolicy @throws Exception
+	 * Bundle ActivationPolicy
+	 * 
+	 * @throws Exception
 	 */
 	public void testBundleActivationPolicy() throws Exception {
 		Builder b = new Builder();
@@ -428,22 +438,22 @@ public class BuilderTest extends BndTestCase {
 			b.setProperty("Export-Package", "test.activator");
 			b.build();
 			assertTrue(b.check());
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
 
 	/**
-	 * #388 Manifest header to get GIT head @throws IOException
+	 * #388 Manifest header to get GIT head
+	 * 
+	 * @throws IOException
 	 */
 	public void testGitHead() throws IOException {
 		Builder b = new Builder();
 		try {
 			String s = b.getReplacer().process("${githead}");
 			assertTrue(Hex.isHex(s));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -463,8 +473,7 @@ public class BuilderTest extends BndTestCase {
 
 			Attrs imports = b.getExports().getByFQN("test.packageinfo.both_no_version");
 			assertEquals("1.2.3", imports.getVersion());
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 
@@ -472,8 +481,9 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * An old osgi 3.0.0 jar had an old packageinfo in it. This included some
-	 * never well developed syntax which now clashes with the proprty
-	 * syntax. @throws Exception
+	 * never well developed syntax which now clashes with the proprty syntax.
+	 * 
+	 * @throws Exception
 	 */
 	public void testVeryOldPackageInfo() throws Exception {
 		Builder b = new Builder();
@@ -484,8 +494,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(
 					b.check("Version for package org.osgi.util.measurement is set to different values in the source ",
 							"Version for package org.osgi.util.tracker is set to different values in the source"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 
@@ -514,8 +523,7 @@ public class BuilderTest extends BndTestCase {
 			assertEquals(5, location.length);
 
 			assertTrue(b.check("package info for test.package_info_versioniskey attribute \\[1.0.0=''\\],"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -569,28 +577,22 @@ public class BuilderTest extends BndTestCase {
 				long lm3 = result.lastModified();
 				assertTrue("Last modified date of bundle has increased after deleting last class from package",
 						lm3 > lm2);
-			}
-			finally {
+			} finally {
 				b.close();
 			}
-		}
-		finally {
+		} finally {
 			try {
 				IO.getFile("bin/a1/a/A.class").delete();
-			}
-			catch (Exception e) {}
+			} catch (Exception e) {}
 			try {
 				IO.getFile("bin/a1/a/B.class").delete();
-			}
-			catch (Exception e) {}
+			} catch (Exception e) {}
 			try {
 				IO.getFile("bin/a1/a").delete();
-			}
-			catch (Exception e) {}
+			} catch (Exception e) {}
 			try {
 				IO.getFile("bin/a1").delete();
-			}
-			catch (Exception e) {}
+			} catch (Exception e) {}
 		}
 	}
 
@@ -615,8 +617,7 @@ public class BuilderTest extends BndTestCase {
 			b.build();
 			assertTrue(b.check());
 			b.getExports().containsFQN("UPPERCASEPACKAGE");
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -627,7 +628,9 @@ public class BuilderTest extends BndTestCase {
 	 * following error message on the bnd.bnd file null, for cmd : classes,
 	 * arguments [classes;CONCRETE;ANNOTATION;javax.persistence.Entity] My bnd
 	 * file does have the following line ... Hibernate-Db =
-	 * ${classes;CONCRETE;ANNOTATION;javax.persistence.Entity} @throws Exception
+	 * ${classes;CONCRETE;ANNOTATION;javax.persistence.Entity}
+	 * 
+	 * @throws Exception
 	 */
 
 	public static void testClasses() throws Exception {
@@ -644,14 +647,15 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(s.contains("test.Target"));
 			assertEquals("${classes;CONCRETE;ANNOTATEDX;x.y.Z}", b.getProperty("z"));
 			assertTrue(b.check("ANNOTATEDX"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
 
 	/**
-	 * Check if we can create digests @throws Exception
+	 * Check if we can create digests
+	 * 
+	 * @throws Exception
 	 */
 
 	public static void testDigests() throws Exception {
@@ -673,8 +677,7 @@ public class BuilderTest extends BndTestCase {
 			assertEquals("RTRhr3kadnulINegRhpmog==", attrs.getValue("MD5-Digest"));
 			assertEquals("BfVfpnE3Srx/0UWwtzNecrAGf8A=", attrs.getValue("SHA-Digest"));
 			other.close();
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -695,8 +698,7 @@ public class BuilderTest extends BndTestCase {
 			System.out.println(b.getImports());
 			assertTrue(b.getImports().containsFQN("test.genericinterf.b"));
 			assertTrue(b.getImports().containsFQN("test.genericinterf.c"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -710,7 +712,9 @@ public class BuilderTest extends BndTestCase {
 	 * Import-Package: org.example This is unexpected. If a Private-Package
 	 * instruction is given with a specific package name (i.e. not a wildcard),
 	 * and that package does not exist or is empty, then bnd should fail or
-	 * print an error. @throws Exception
+	 * print an error.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testPrivatePackageNonExistent() throws Exception {
 		Builder b = new Builder();
@@ -723,8 +727,7 @@ public class BuilderTest extends BndTestCase {
 			b.build();
 			assertTrue(b.check("on the class path: \\[com.example\\]",
 					"Bundle-Activator com.example.Activator is being imported"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -746,8 +749,7 @@ public class BuilderTest extends BndTestCase {
 			Parameters ee = domain.getBundleRequiredExecutionEnvironment();
 			System.err.println(ee);
 			assertTrue(ee.containsKey("JRE-1.1"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -789,23 +791,31 @@ public class BuilderTest extends BndTestCase {
 				Matcher m = p.matcher(filter);
 				assertTrue(m.matches());
 				assertEquals(versions[i], m.group(1));
-			}
-			finally {
+			} finally {
 				b.close();
 			}
 		}
 	}
 
 	/**
-	 * bnd issues Consider the following descriptor file: <pre>
+	 * bnd issues Consider the following descriptor file:
+	 * 
+	 * <pre>
 	 * Bundle-Activator: org.example.Activator Private-Package: org.example
-	 * </pre> Now suppose that at build time, bnd cannot find the package
-	 * org.example, or it is empty. Bnd sees the Bundle-Activator instruction as
-	 * creating a dependency, so it generates a manifest containing an import
-	 * for that package: <pre> Import-Package: org.example </pre> This is
-	 * unexpected. If a Private-Package instruction is given with a specific
-	 * package name (i.e. not a wildcard), and that package does not exist or is
-	 * empty, then bnd should fail or print an error.
+	 * </pre>
+	 * 
+	 * Now suppose that at build time, bnd cannot find the package org.example,
+	 * or it is empty. Bnd sees the Bundle-Activator instruction as creating a
+	 * dependency, so it generates a manifest containing an import for that
+	 * package:
+	 * 
+	 * <pre>
+	 *  Import-Package: org.example
+	 * </pre>
+	 * 
+	 * This is unexpected. If a Private-Package instruction is given with a
+	 * specific package name (i.e. not a wildcard), and that package does not
+	 * exist or is empty, then bnd should fail or print an error.
 	 */
 
 	public static void testReportEmptyPrivatePackage() throws Exception {
@@ -815,8 +825,7 @@ public class BuilderTest extends BndTestCase {
 			b.setPrivatePackage("does.not.exist");
 			b.build();
 			assertTrue(b.check("The JAR is empty", "Unused Private-Package instruction"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -845,8 +854,7 @@ public class BuilderTest extends BndTestCase {
 			assertNotNull(m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("SHA1"));
 			assertEquals(m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("MD5-Digest"),
 					m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("MD5"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 
@@ -910,8 +918,9 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * Check of the use of x- directives are not skipped. bnd allows x-
-	 * directives in the import/export clauses but strips other ones. @throws
-	 * Exception
+	 * directives in the import/export clauses but strips other ones.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testXDirectives() throws Exception {
 		Builder b = new Builder();
@@ -923,14 +932,15 @@ public class BuilderTest extends BndTestCase {
 			Manifest m = jar.getManifest();
 			String s = m.getMainAttributes().getValue("Export-Package");
 			assertTrue(s.contains("x-foo:"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
 
 	/**
-	 * Check of SNAPSHOT is replaced with the -snapshot instr @throws Exception
+	 * Check of SNAPSHOT is replaced with the -snapshot instr
+	 * 
+	 * @throws Exception
 	 */
 	public static void testSnapshot() throws Exception {
 		Builder b = new Builder();
@@ -942,8 +952,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(b.check("The JAR is empty"));
 			Manifest m = jar.getManifest();
 			assertEquals("1.0.0.TIMESTAMP", m.getMainAttributes().getValue("Bundle-Version"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -969,8 +978,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(names.contains("minax.bnd"));
 			assertTrue(names.contains("rox.bnd"));
 			assertTrue(names.contains("WithAnnotations.jclass"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -989,8 +997,7 @@ public class BuilderTest extends BndTestCase {
 
 			Set<String> names = b.getJar().getResources().keySet();
 			assertFalse(names.contains(".DS_Store"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -1008,15 +1015,16 @@ public class BuilderTest extends BndTestCase {
 			b.setProperty("-resourceonly", "true");
 			b.build();
 			assertTrue(b.check("Input file does not exist: lib", "Cannot find entry on -classpath: xyz.jar"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
 
 	/**
 	 * bnd seems to pick the wrong version if a packageinfo is available
-	 * multiple times. @throws Exception
+	 * multiple times.
+	 * 
+	 * @throws Exception
 	 */
 
 	public static void testMultiplePackageInfo() throws Exception {
@@ -1029,8 +1037,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(b.check());
 			String version = b.getImports().getByFQN("org.osgi.framework").get(Constants.VERSION_ATTRIBUTE);
 			assertEquals("[1.3,2)", version);
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -1049,8 +1056,7 @@ public class BuilderTest extends BndTestCase {
 
 			assertEquals("1.3", b.getExports().getByFQN("org.osgi.framework").get("version"));
 			assertEquals("osgi", b.getExports().getByFQN("org.osgi.framework").get(Constants.FROM_DIRECTIVE));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 
@@ -1066,8 +1072,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(b.check());
 
 			assertEquals("1.3", b.getExports().getByFQN("org.osgi.framework").get("version"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -1087,8 +1092,7 @@ public class BuilderTest extends BndTestCase {
 			String ip = jar.getManifest().getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
 			Parameters map = Processor.parseHeader(ip, null);
 			assertEquals("[1.0,1.1)", map.get("org.osgi.service.event").get("version"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -1105,8 +1109,7 @@ public class BuilderTest extends BndTestCase {
 			String ip = jar.getManifest().getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
 			Parameters map = Processor.parseHeader(ip, null);
 			assertEquals("[1.0,2)", map.get("org.osgi.service.event").get("version"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -1125,15 +1128,15 @@ public class BuilderTest extends BndTestCase {
 			String ip = jar.getManifest().getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
 			Parameters map = Processor.parseHeader(ip, null);
 			assertEquals("1.1.1", map.get("javax.ws.rs.core").get("version"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
 
 	/**
-	 * Test where the version comes from: Manifest or packageinfo @throws
-	 * Exception
+	 * Test where the version comes from: Manifest or packageinfo
+	 * 
+	 * @throws Exception
 	 */
 	public static void testExportVersionSource() throws Exception {
 		Manifest manifest = new Manifest();
@@ -1172,20 +1175,19 @@ public class BuilderTest extends BndTestCase {
 
 				s = bpinfos.getExports().getByFQN("org.osgi.service.event").get("version");
 				assertEquals("1.0.1", s);
-			}
-			finally {
+			} finally {
 				bms.close();
 			}
-		}
-		finally {
+		} finally {
 			manifestOnly.close();
 		}
 
 	}
 
 	/**
-	 * Test where the version comes from: Manifest or packageinfo @throws
-	 * Exception
+	 * Test where the version comes from: Manifest or packageinfo
+	 * 
+	 * @throws Exception
 	 */
 	public static void testImportVersionSource() throws Exception {
 		Jar fromManifest = new Jar("manifestsource");
@@ -1233,21 +1235,17 @@ public class BuilderTest extends BndTestCase {
 						assertTrue(bms.check());
 						s = bboth.getImports().getByFQN("org.osgi.service.event").get("version");
 						assertEquals("[101.0,102)", s);
-					}
-					finally {
+					} finally {
 						bboth.close();
 					}
-				}
-				finally {
+				} finally {
 					bpinfos.close();
 				}
-			}
-			finally {
+			} finally {
 				bms.close();
 			}
 
-		}
-		finally {
+		} finally {
 			fromManifest.close();
 			fromPackageInfo.close();
 			fromBoth.close();
@@ -1284,8 +1282,7 @@ public class BuilderTest extends BndTestCase {
 																	// (does not
 																	// use
 																	// fw).
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 
@@ -1322,8 +1319,7 @@ public class BuilderTest extends BndTestCase {
 																	// use
 																	// fw).
 
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -1365,8 +1361,7 @@ public class BuilderTest extends BndTestCase {
 																	// (does not
 																	// use
 																	// fw).
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -1383,8 +1378,7 @@ public class BuilderTest extends BndTestCase {
 			Manifest m = jar.getManifest();
 			m.write(System.err);
 			assertNotNull(b.getImports().getByFQN("org.osgi.framework"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 
@@ -1409,8 +1403,7 @@ public class BuilderTest extends BndTestCase {
 			assertNotNull(jar.getResource("WEB-INF/classes/org/osgi/framework/BundleContext.class"));
 			assertNotNull(jar.getResource("osgi.jar"));
 			assertNotNull(jar.getResource("OSGI-INF/xml/x.xml"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -1432,8 +1425,7 @@ public class BuilderTest extends BndTestCase {
 			assertEquals("1", m.getMainAttributes().getValue("T2"));
 			assertEquals("1", m.getMainAttributes().getValue("T1_2"));
 			assertEquals(null, m.getMainAttributes().getValue("T1"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -1454,8 +1446,7 @@ public class BuilderTest extends BndTestCase {
 			JarInputStream jin = new JarInputStream(new FileInputStream(f));
 			Manifest m = jin.getManifest();
 			assertNull(m);
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -1468,8 +1459,7 @@ public class BuilderTest extends BndTestCase {
 			b.setProperty("-nomanifest", "true");
 			b.build();
 			assertTrue(b.check("Classes found in the wrong directory"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -1482,8 +1472,7 @@ public class BuilderTest extends BndTestCase {
 			b.setProperty("Bundle-ClassPath", "WEB-INF/classes");
 			b.build();
 			assertTrue(b.check());
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -1491,7 +1480,9 @@ public class BuilderTest extends BndTestCase {
 	/**
 	 * #196 StringIndexOutOfBoundsException in Builder.getClasspathEntrySuffix
 	 * If a class path entry was changed the isInScope threw an exception
-	 * because it assumed all cpes were directories. @throws Exception
+	 * because it assumed all cpes were directories.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testInScopeClasspathEntry() throws Exception {
 		Builder b = new Builder();
@@ -1504,8 +1495,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(b.isInScope(project));
 			List<File> cpe = Arrays.asList(b.getFile("jar/osgi.jar"));
 			assertTrue(b.isInScope(cpe));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -1521,8 +1511,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(b.isInScope(nonexistent));
 			List<File> outside = Arrays.asList(b.getFile("bin/test/AnalyzerTest.class"));
 			assertFalse(b.isInScope(outside));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -1553,8 +1542,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(b.isInScope(Arrays.asList(b.getFile("dirb/x.jar"))));
 			assertTrue(b.isInScope(Arrays.asList(b.getFile("dirb/x.jar"))));
 			assertTrue(b.isInScope(Arrays.asList(b.getFile("dirc/x.jar"))));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -1574,8 +1562,7 @@ public class BuilderTest extends BndTestCase {
 			Resource r2 = jar.getResource("www/xyz.jar");
 			assertNotNull(r2);
 			assertEquals("italsoworks", r2.getExtra());
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -1592,14 +1579,15 @@ public class BuilderTest extends BndTestCase {
 			b.setProperty("Export-Package", "org.osgi.service.event");
 			b.build();
 			assertTrue(b.check());
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
 
 	/**
-	 * This test checks if @throws Exception
+	 * This test checks if
+	 * 
+	 * @throws Exception
 	 */
 
 	public static void testMacroBasedExpansion() throws Exception {
@@ -1628,8 +1616,7 @@ public class BuilderTest extends BndTestCase {
 			Parameters h = domain.getExportPackage();
 			assertTrue(h.containsKey("org.osgi.service.cu"));
 			assertTrue(h.containsKey("org.osgi.service.cu.admin"));
-		}
-		finally {
+		} finally {
 			builder.close();
 			proc.close();
 		}
@@ -1659,8 +1646,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(fwimports.containsKey("resolution:"));
 			assertEquals("optional", ioimports.get("resolution:"));
 			assertEquals("mandatory", fwimports.get("resolution:"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 
@@ -1668,7 +1654,9 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * Test private imports. We first build a jar with a import:=private packge.
-	 * Then place it @throws Exception
+	 * Then place it
+	 * 
+	 * @throws Exception
 	 */
 
 	public static void testClassnames() throws Exception {
@@ -1710,8 +1698,7 @@ public class BuilderTest extends BndTestCase {
 					asl("org.eclipse.equinox.ds.parser.XMLParserNotAvailableException,org.eclipse.equinox.ds.parser.Parser,org.eclipse.equinox.ds.parser.ParserHandler,netscape.application.HTMLParser,org.eclipse.equinox.ds.parser.ParserConstants,org.osgi.util.xml.XMLParserActivator"),
 					asl(main.getValue("C4")));
 			assertEquals("netscape.application.HTMLParser", main.getValue("C5"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -1744,8 +1731,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(b.check("The JAR is empty"));
 			String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
 			assertEquals("1.0.1", s);
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -1760,8 +1746,7 @@ public class BuilderTest extends BndTestCase {
 
 			String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
 			assertEquals("[1.0,2)", s);
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 
@@ -1787,8 +1772,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(ip.indexOf("org.objectweb.asm;version=\"1.1\"") >= 0);
 			assertTrue(ip.indexOf("org.objectweb.asm;version=\"1.2\"") >= 0);
 			assertTrue(ip.indexOf("org.objectweb.asm;version=\"2.3\"") >= 0);
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 	}
@@ -1854,8 +1838,7 @@ public class BuilderTest extends BndTestCase {
 			m.write(System.err);
 			String ip = m.getMainAttributes().getValue("Export-Package");
 			assertTrue(ip.indexOf("org.objectweb.asm;version=\"1.2\"") >= 0);
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 	}
@@ -1878,8 +1861,7 @@ public class BuilderTest extends BndTestCase {
 			Manifest m = jar.getManifest();
 			String ip = m.getMainAttributes().getValue("Export-Package");
 			assertTrue(ip.indexOf("org.objectweb.asm") >= 0);
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 	}
@@ -1901,8 +1883,7 @@ public class BuilderTest extends BndTestCase {
 			Manifest m = jar.getManifest();
 			String ip = m.getMainAttributes().getValue("Import-Package");
 			assertTrue(ip.indexOf("whatever") >= 0);
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 	}
@@ -1920,15 +1901,16 @@ public class BuilderTest extends BndTestCase {
 			Map<String,Resource> map = jar.getDirectories().get("bnd");
 			assertNotNull(map);
 			assertEquals(2, map.size());
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 	}
 
 	/**
 	 * There is an error that gives a split package when you export a package
-	 * that is also private I think. @throws Exception
+	 * that is also private I think.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testSplitOnExportAndPrivate() throws Exception {
 		File cp[] = {
@@ -1943,8 +1925,7 @@ public class BuilderTest extends BndTestCase {
 			bmaker.setClasspath(cp);
 			bmaker.build();
 			assertTrue(bmaker.check());
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 	}
@@ -1960,14 +1941,15 @@ public class BuilderTest extends BndTestCase {
 			assertNotNull(jars);
 			assertEquals(1, jars.length);
 			assertEquals("ASM", jars[0].getManifest().getMainAttributes().getValue("Implementation-Title"));
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
 
 	/**
-	 * Export a package that was loaded with resources @throws Exception
+	 * Export a package that was loaded with resources
+	 * 
+	 * @throws Exception
 	 */
 	public static void testExportSyntheticPackage() throws Exception {
 		Builder bmaker = new Builder();
@@ -1984,14 +1966,15 @@ public class BuilderTest extends BndTestCase {
 			String header = manifest.getMainAttributes().getValue("Export-Package");
 			System.err.println(header);
 			assertTrue(header.indexOf("resources") >= 0);
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 	}
 
 	/**
-	 * Exporting packages in META-INF @throws Exception
+	 * Exporting packages in META-INF
+	 * 
+	 * @throws Exception
 	 */
 	public static void testMETAINF() throws Exception {
 		File cp[] = {
@@ -2011,15 +1994,16 @@ public class BuilderTest extends BndTestCase {
 			Manifest manifest = jar.getManifest();
 			String header = manifest.getMainAttributes().getValue("Export-Package");
 			assertTrue(header.indexOf("META-INF.xyz") >= 0);
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 	}
 
 	/**
 	 * Bnd cleans up versions if they do not follow the OSGi rule. Check a
-	 * number of those versions. @throws Exception
+	 * number of those versions.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testVersionCleanup() throws Exception {
 		assertVersion("1.201209072340200", "1.0.0.201209072340200");
@@ -2081,8 +2065,7 @@ public class BuilderTest extends BndTestCase {
 			assertNotNull(export);
 			assertEquals("1", export.get("version"));
 			assertEquals("true", export.get("x"));
-		}
-		finally {
+		} finally {
 			builder.close();
 		}
 	}
@@ -2110,8 +2093,7 @@ public class BuilderTest extends BndTestCase {
 			assertFalse(b.getImports().getByFQN("test.top") != null);
 			assertFalse(b.getImports().getByFQN("test.top.middle") != null);
 			assertFalse(b.getImports().getByFQN("test.top.middle.bottom") != null);
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
@@ -2136,8 +2118,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(analyzer.check());
 			assertNotNull(analyzer.getExports().getByFQN("org.osgi.service.log"));
 			assertNotNull(jar.getDirectories().get("org/osgi/framework"));
-		}
-		finally {
+		} finally {
 			analyzer.close();
 		}
 	}
@@ -2156,8 +2137,7 @@ public class BuilderTest extends BndTestCase {
 			analyzer.setProperties(base);
 			analyzer.build();
 			assertTrue(analyzer.check("The JAR is empty", "Split package"));
-		}
-		finally {
+		} finally {
 			analyzer.close();
 		}
 	}
@@ -2177,8 +2157,7 @@ public class BuilderTest extends BndTestCase {
 			analyzer.build();
 			assertEquals(2, analyzer.getWarnings().size());
 			assertTrue(analyzer.check("Split package"));
-		}
-		finally {
+		} finally {
 			analyzer.close();
 		}
 	}
@@ -2197,8 +2176,7 @@ public class BuilderTest extends BndTestCase {
 			analyzer.setProperties(base);
 			analyzer.build();
 			assertTrue(analyzer.check());
-		}
-		finally {
+		} finally {
 			analyzer.close();
 		}
 	}
@@ -2217,14 +2195,15 @@ public class BuilderTest extends BndTestCase {
 			analyzer.setProperties(base);
 			analyzer.build();
 			assertTrue(analyzer.check());
-		}
-		finally {
+		} finally {
 			analyzer.close();
 		}
 	}
 
 	/**
-	 * Test Resource inclusion that do not exist @throws Exception
+	 * Test Resource inclusion that do not exist
+	 * 
+	 * @throws Exception
 	 */
 	public static void testResourceNotFound() throws Exception {
 		Properties base = new Properties();
@@ -2238,8 +2217,7 @@ public class BuilderTest extends BndTestCase {
 			analyzer.setProperties(base);
 			analyzer.build();
 			assertTrue(analyzer.check("file does not exist: does_not_exist"));
-		}
-		finally {
+		} finally {
 			analyzer.close();
 		}
 	}
@@ -2267,8 +2245,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(bcp.indexOf("mina.jar") >= 0);
 			assertTrue(bcp.indexOf("rox.jar") >= 0);
 			assertTrue(bcp.indexOf("osgi.jar") >= 0);
-		}
-		finally {
+		} finally {
 			analyzer.close();
 		}
 	}
@@ -2293,8 +2270,7 @@ public class BuilderTest extends BndTestCase {
 			Manifest manifest = analyzer.getJar().getManifest();
 			String version = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_VERSION);
 			assertEquals("0.9.0.incubator-SNAPSHOT", version);
-		}
-		finally {
+		} finally {
 			analyzer.close();
 		}
 	}
@@ -2302,7 +2278,9 @@ public class BuilderTest extends BndTestCase {
 	/**
 	 * We are only adding privately the core equinox ds package. We then add
 	 * conditionally all packages that should belong to this as well as any OSGi
-	 * interfaces. @throws Exception
+	 * interfaces.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testConditional() throws Exception {
 		File cp[] = {
@@ -2325,8 +2303,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(bmaker.getContained().getByFQN("org.osgi.service.cm") != null);
 			assertTrue(bmaker.getContained().getByFQN("org.osgi.service.component") != null);
 			assertFalse(bmaker.getContained().getByFQN("org.osgi.service.wireadmin") != null);
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 	}
@@ -2348,8 +2325,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(analyzer.check());
 			assertFalse(analyzer.getExports().getByFQN("META-INF") != null);
 			assertTrue(analyzer.getExports().getByFQN("org.objectweb.asm") != null);
-		}
-		finally {
+		} finally {
 			analyzer.close();
 		}
 	}
@@ -2379,8 +2355,7 @@ public class BuilderTest extends BndTestCase {
 			assertEquals("[3.0,4)", attrs.getVersion());
 			attrs = imports.getByFQN("javax.servlet");
 			assertEquals("[3.0,4)", attrs.getVersion());
-		}
-		finally {
+		} finally {
 			analyzer.close();
 		}
 	}
@@ -2411,8 +2386,7 @@ public class BuilderTest extends BndTestCase {
 			assertEquals("[3.0,4)", attrs.getVersion());
 			attrs = imports.getByFQN("javax.servlet");
 			assertEquals("[3.0,4)", attrs.getVersion());
-		}
-		finally {
+		} finally {
 			analyzer.close();
 		}
 	}
@@ -2443,8 +2417,7 @@ public class BuilderTest extends BndTestCase {
 			assertEquals("[3.0,4)", attrs.getVersion());
 			attrs = imports.getByFQN("javax.servlet");
 			assertEquals("[3.0,4)", attrs.getVersion());
-		}
-		finally {
+		} finally {
 			analyzer.close();
 		}
 	}
@@ -2476,14 +2449,15 @@ public class BuilderTest extends BndTestCase {
 			assertEquals("[3.0,4)", attrs.getVersion());
 			attrs = imports.getByFQN("javax.servlet");
 			assertEquals("[3.0,4)", attrs.getVersion());
-		}
-		finally {
+		} finally {
 			analyzer.close();
 		}
 	}
 
 	/**
-	 * Check that the activator is found. @throws Exception
+	 * Check that the activator is found.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testFindActivator() throws Exception {
 		Builder bmaker = new Builder();
@@ -2501,8 +2475,7 @@ public class BuilderTest extends BndTestCase {
 			report("testFindActivator", bmaker, jar);
 			assertEquals(0, bmaker.getErrors().size());
 			assertEquals(0, bmaker.getWarnings().size());
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 	}
@@ -2529,8 +2502,7 @@ public class BuilderTest extends BndTestCase {
 			Packages imports = bmaker.getImports();
 			Map<String,String> framework = imports.get(bmaker.getPackageRef("org.osgi.framework"));
 			assertEquals(output, framework.get("version"));
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 
@@ -2555,15 +2527,16 @@ public class BuilderTest extends BndTestCase {
 
 			assertNotNull(b.getImports().getByFQN("org.osgi.framework"));
 			assertEquals("0.9.5.SNAPSHOT", b.getImports().getByFQN("org.osgi.framework").getVersion());
-		}
-		finally {
+		} finally {
 			b.close();
 		}
 	}
 
 	/**
 	 * Check if can find an activator in the bundle while using a complex bundle
-	 * classpath. @throws Exception
+	 * classpath.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testBundleClasspath3() throws Exception {
 		Builder bmaker = new Builder();
@@ -2584,8 +2557,7 @@ public class BuilderTest extends BndTestCase {
 			report("testBundleClasspath3", bmaker, jar);
 			assertEquals(0, bmaker.getErrors().size());
 			assertEquals(0, bmaker.getWarnings().size());
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 
@@ -2593,7 +2565,9 @@ public class BuilderTest extends BndTestCase {
 
 	/**
 	 * Check if can find an activator in a embedded jar while using a complex
-	 * bundle classpath. @throws Exception
+	 * bundle classpath.
+	 * 
+	 * @throws Exception
 	 */
 	public static void testBundleClasspath2() throws Exception {
 		Builder bmaker = new Builder();
@@ -2614,8 +2588,7 @@ public class BuilderTest extends BndTestCase {
 			report("testBundleClasspath2", bmaker, jar);
 			assertEquals(bmaker.getErrors().size(), 0);
 			assertEquals(bmaker.getWarnings().size(), 0);
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 	}
@@ -2639,8 +2612,7 @@ public class BuilderTest extends BndTestCase {
 			jar.exists("testresources/activator/Activator.class");
 			assertEquals(bmaker.getErrors().size(), 0);
 			assertEquals(bmaker.getWarnings().size(), 0);
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 
@@ -2658,8 +2630,7 @@ public class BuilderTest extends BndTestCase {
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
 			report("testUnreferredImport", bmaker, jar);
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 	}
@@ -2676,8 +2647,7 @@ public class BuilderTest extends BndTestCase {
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
 			report("testUnreferredImport", bmaker, jar);
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 
@@ -2700,8 +2670,7 @@ public class BuilderTest extends BndTestCase {
 			assertFalse(bmaker.getExports().getByFQN("META-INF") != null);
 
 			assertEquals(3, jar.getResources().size());
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 	}
@@ -2718,8 +2687,7 @@ public class BuilderTest extends BndTestCase {
 			bmaker.setClasspath(cp);
 			bmaker.build();
 			assertTrue(bmaker.check("The JAR is empty", "Missing file on classpath: .*/jar/idonotexist.jar"));
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 
@@ -2744,8 +2712,7 @@ public class BuilderTest extends BndTestCase {
 			assertEquals(0, bmaker.getWarnings().size());
 			assertEquals(0, bmaker.getErrors().size());
 			assertEquals(3, jar.getResources().size());
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 	}
@@ -2766,8 +2733,7 @@ public class BuilderTest extends BndTestCase {
 			assertEquals(0, bmaker.getWarnings().size());
 			assertEquals(0, bmaker.getErrors().size());
 			assertEquals(3, jar.getResources().size());
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 	}
@@ -2789,8 +2755,7 @@ public class BuilderTest extends BndTestCase {
 			assertEquals(0, bmaker.getWarnings().size());
 			assertEquals(0, bmaker.getErrors().size());
 			assertEquals(4, jar.getResources().size());
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 
@@ -2817,8 +2782,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(bmaker.check());
 
 			assertEquals(59, jar.getResources().size());
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 	}
@@ -2835,8 +2799,7 @@ public class BuilderTest extends BndTestCase {
 
 			assertEquals(59, jar.getResources().size());
 			assertNotNull(jar.getResource("org/easymock/AbstractMatcher.class"));
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 
@@ -2857,8 +2820,7 @@ public class BuilderTest extends BndTestCase {
 
 			assertEquals(7, jar.getResources().size());
 			assertNotNull(jar.getResource("OPT-INF/test/org/osgi/service/event/EventAdmin.class"));
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 
@@ -2874,8 +2836,7 @@ public class BuilderTest extends BndTestCase {
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
 			assertEquals(59, jar.getResources().size());
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 
@@ -2892,8 +2853,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(bmaker.check());
 			assertEquals(1, jar.getResources().size());
 			assertNotNull(jar.getResource("LICENSE"));
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 
@@ -2915,8 +2875,7 @@ public class BuilderTest extends BndTestCase {
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
 			jar.getManifest().write(System.err);
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 
@@ -2936,8 +2895,7 @@ public class BuilderTest extends BndTestCase {
 			assertEquals(
 					"[test/activator/AbstractActivator.class, test/activator/Activator.class, test/activator/Activator11.class, test/activator/Activator2.class, test/activator/Activator3.class, test/activator/ActivatorPackage.class, test/activator/ActivatorPrivate.class, test/activator/DefaultVisibilityActivator.class, test/activator/IActivator.class, test/activator/MissingNoArgsConstructorActivator.class, test/activator/NotAnActivator.class]",
 					new SortedList<String>(jar.getDirectories().get("test/activator").keySet()).toString());
-		}
-		finally {
+		} finally {
 			bmaker.close();
 		}
 

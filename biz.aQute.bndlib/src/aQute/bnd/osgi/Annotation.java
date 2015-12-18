@@ -75,9 +75,7 @@ public class Annotation {
 			@SuppressWarnings("unchecked")
 			Class<T> c = (Class<T>) getClass().getClassLoader().loadClass(cname);
 			return getAnnotation(c);
-		}
-		catch (ClassNotFoundException e) {}
-		catch (NoClassDefFoundError e) {}
+		} catch (ClassNotFoundException e) {} catch (NoClassDefFoundError e) {}
 		return null;
 	}
 
@@ -101,9 +99,9 @@ public class Annotation {
 
 	public void addDefaults(Clazz c) throws Exception {
 		Map<String,Object> defaults = c.getDefaults();
-		if ( defaults == null || defaults.isEmpty())
+		if (defaults == null || defaults.isEmpty())
 			return;
-		
+
 		for (Map.Entry<String,Object> e : defaults.entrySet()) {
 			if (elements == null || !elements.containsKey(e.getKey())) {
 				put(e.getKey(), e.getValue());

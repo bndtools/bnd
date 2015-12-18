@@ -34,8 +34,7 @@ public class ArrayHandler extends Handler {
 				app.append(del);
 				app.encode(Array.get(object, i), componentType, visited);
 				del = ",";
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				throw new IllegalArgumentException("[" + i + "]", e);
 			}
 		app.undent();

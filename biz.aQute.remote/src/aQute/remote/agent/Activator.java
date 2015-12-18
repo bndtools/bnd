@@ -105,12 +105,10 @@ public class Activator extends Thread implements BundleActivator {
 				};
 				sa.setLink(link);
 				link.run();
-			}
-			catch (SocketException e) {
+			} catch (SocketException e) {
 				if (!isInterrupted())
 					About.log.warning("accepting agent requests " + e);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				About.log.warning("accepting agent requests " + e);
 			}
 	}

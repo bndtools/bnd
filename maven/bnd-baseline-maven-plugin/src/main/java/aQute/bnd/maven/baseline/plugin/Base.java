@@ -2,16 +2,16 @@ package aQute.bnd.maven.baseline.plugin;
 
 public class Base {
 
-	private String groupId;
-	
-	private String artifactId;
-	
-	private String version;
-	
-	private String classifier;
-	
-	private String extension;
-	
+	private String	groupId;
+
+	private String	artifactId;
+
+	private String	version;
+
+	private String	classifier;
+
+	private String	extension;
+
 	public String getGroupId() {
 		return groupId;
 	}
@@ -54,10 +54,7 @@ public class Base {
 
 	@Override
 	public String toString() {
-		return "Base [groupId=" + groupId + 
-				", artifactId=" + artifactId + 
-				", version=" + version + 
-				", classifier=" + classifier +
-				", extension=" + extension + "]";
+		return "Base [groupId=" + groupId + ", artifactId=" + artifactId + ", version=" + version + ", classifier="
+				+ classifier + ", extension=" + extension + "]";
 	}
 }

@@ -104,8 +104,10 @@ public class ProjectPom extends Pom {
 	// }
 
 	/**
-	 * @param parentArtifactId @param parentGroupId @param parentVersion @throws
-	 * Exception
+	 * @param parentArtifactId
+	 * @param parentGroupId
+	 * @param parentVersion
+	 * @throws Exception
 	 */
 	private void setNames(Pom pom) throws Exception {
 		if (artifactId == null || artifactId.length() == 0)

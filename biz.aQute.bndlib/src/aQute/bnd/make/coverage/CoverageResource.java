@@ -43,12 +43,10 @@ public class CoverageResource extends WriteResource {
 			PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, Constants.DEFAULT_CHARSET));
 			try {
 				coverage.print(0, pw);
-			}
-			finally {
+			} finally {
 				pw.flush();
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

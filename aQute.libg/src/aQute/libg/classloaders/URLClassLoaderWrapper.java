@@ -18,8 +18,7 @@ public class URLClassLoaderWrapper {
 	public void addURL(URL url) throws Exception {
 		try {
 			addURL.invoke(loader, url);
-		}
-		catch (InvocationTargetException ite) {
+		} catch (InvocationTargetException ite) {
 			throw (Exception) ite.getTargetException();
 		}
 	}

@@ -8,22 +8,22 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
 public @interface Component {
-	String RNAME = "LaQute/bnd/annotation/component/Component;";
-	String PROVIDE = "provide";
-	String NAME = "name";
-	String FACTORY = "factory";
-	String SERVICEFACTORY = "servicefactory";
-	String IMMEDIATE = "immediate";
-	String CONFIGURATION_POLICY = "configurationPolicy";
-	String ENABLED = "enabled";
-	String PROPERTIES = "properties";
-	String VERSION = "version";
-	String DESIGNATE = "designate";
-	String DESIGNATE_FACTORY = "designateFactory";
+	String	RNAME					= "LaQute/bnd/annotation/component/Component;";
+	String	PROVIDE					= "provide";
+	String	NAME					= "name";
+	String	FACTORY					= "factory";
+	String	SERVICEFACTORY			= "servicefactory";
+	String	IMMEDIATE				= "immediate";
+	String	CONFIGURATION_POLICY	= "configurationPolicy";
+	String	ENABLED					= "enabled";
+	String	PROPERTIES				= "properties";
+	String	VERSION					= "version";
+	String	DESIGNATE				= "designate";
+	String	DESIGNATE_FACTORY		= "designateFactory";
 
 	String name() default "";
 
-	Class< ? >[]provide() default Object.class;
+	Class< ? >[] provide() default Object.class;
 
 	String factory() default "";
 
@@ -35,9 +35,9 @@ public @interface Component {
 
 	ConfigurationPolicy configurationPolicy() default ConfigurationPolicy.optional;
 
-	String[]properties() default {};
+	String[] properties() default {};
 
-	Class< ? >designate() default Object.class;
+	Class< ? > designate() default Object.class;
 
-	Class< ? >designateFactory() default Object.class;
+	Class< ? > designateFactory() default Object.class;
 }

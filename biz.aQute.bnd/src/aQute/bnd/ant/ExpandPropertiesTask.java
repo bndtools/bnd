@@ -35,14 +35,12 @@ public class ExpandPropertiesTask extends BaseTask {
 							project.setProperty(key, flattened.getProperty(key));
 						}
 					}
-				}
-				finally {
+				} finally {
 					processor.close();
 				}
 			}
 			report();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 			throw new BuildException(e);
 		}

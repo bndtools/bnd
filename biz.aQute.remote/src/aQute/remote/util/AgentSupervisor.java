@@ -20,8 +20,10 @@ import aQute.libg.cryptography.SHA1;
 /**
  * This is a base class that provides the basic functionality of a supervisor.
  * In general an actual supervisor extends this class to provide the
- * functionality to use on the client side. @param <Supervisor> The supervisor
- * type @param <Agent> The agent type
+ * functionality to use on the client side.
+ * 
+ * @param <Supervisor> The supervisor type
+ * @param <Agent> The agent type
  */
 public class AgentSupervisor<Supervisor, Agent> {
 	private static final Map<File,Info>				fileInfo	= new ConcurrentHashMap<File,AgentSupervisor.Info>();
@@ -46,8 +48,7 @@ public class AgentSupervisor<Supervisor, Agent> {
 				this.setAgent(link);
 				link.open();
 				return;
-			}
-			catch (ConnectException e) {
+			} catch (ConnectException e) {
 				Thread.sleep(200);
 			}
 	}
@@ -95,8 +96,7 @@ public class AgentSupervisor<Supervisor, Agent> {
 		this.exitCode = exitCode;
 		try {
 			close();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// ignore
 		}
 	}

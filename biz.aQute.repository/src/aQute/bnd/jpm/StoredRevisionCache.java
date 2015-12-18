@@ -139,12 +139,10 @@ public class StoredRevisionCache {
 						file.setLastModified(modified);
 				}
 				return;
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				errors.put(file, e);
 				throw e;
-			}
-			finally {
+			} finally {
 				if (d != null)
 					d.tmp.delete();
 			}
@@ -283,8 +281,7 @@ public class StoredRevisionCache {
 				p = codec.dec().from(pf).get(Program.class);
 				programs.put(bsn, p);
 				return p;
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				//
 				return null;
 			}
@@ -299,15 +296,21 @@ public class StoredRevisionCache {
 	}
 
 	/**
-	 * Check if a revision has sources ... @param revision @return
+	 * Check if a revision has sources ...
+	 * 
+	 * @param revision
+	 * @return
 	 */
 	public boolean hasSources(String bsn, String version, byte[] sha) {
 		return getPath(bsn, version, sha, true).isFile();
 	}
 
 	/**
-	 * Remove the sources from the cache. @param bsn @param string @param
-	 * revision
+	 * Remove the sources from the cache.
+	 * 
+	 * @param bsn
+	 * @param string
+	 * @param revision
 	 */
 	public void removeSources(String bsn, String version, byte[] sha) {
 		getPath(bsn, version, sha, true).delete();

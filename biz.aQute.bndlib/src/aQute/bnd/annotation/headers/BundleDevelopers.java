@@ -46,7 +46,7 @@ public @interface BundleDevelopers {
 	/**
 	 * The roles this developer plays in the development.
 	 */
-	String[]roles() default {};
+	String[] roles() default {};
 
 	/**
 	 * The name of the organization where the developer works for.

@@ -37,18 +37,18 @@ public class HeaderReader extends Processor {
 	private final static Set<String>	LIFECYCLE_METHODS	= new HashSet<String>(
 			Arrays.asList("activate", "deactivate", "modified"));
 
-	private final Analyzer analyzer;
+	private final Analyzer				analyzer;
 
-	private final static String	ComponentContextTR	= "org.osgi.service.component.ComponentContext";
-	private final static String	BundleContextTR		= "org.osgi.framework.BundleContext";
-	private final static String	MapTR				= Map.class.getName();
-	private final static String	IntTR				= int.class.getName();
-	final static Set<String>	allowed				= new HashSet<String>(
+	private final static String			ComponentContextTR	= "org.osgi.service.component.ComponentContext";
+	private final static String			BundleContextTR		= "org.osgi.framework.BundleContext";
+	private final static String			MapTR				= Map.class.getName();
+	private final static String			IntTR				= int.class.getName();
+	final static Set<String>			allowed				= new HashSet<String>(
 			Arrays.asList(ComponentContextTR, BundleContextTR, MapTR));
-	final static Set<String>	allowedDeactivate	= new HashSet<String>(
+	final static Set<String>			allowedDeactivate	= new HashSet<String>(
 			Arrays.asList(ComponentContextTR, BundleContextTR, MapTR, IntTR));
 
-	private final static String ServiceReferenceTR = "org.osgi.framework.ServiceReference";
+	private final static String			ServiceReferenceTR	= "org.osgi.framework.ServiceReference";
 
 	public HeaderReader(Analyzer analyzer) {
 		this.analyzer = analyzer;
@@ -193,8 +193,12 @@ public class HeaderReader extends Processor {
 	}
 
 	/**
-	 * Check if we need to use the v1.1 namespace (or later). @param info @param
-	 * cd TODO @param descriptors TODO @return
+	 * Check if we need to use the v1.1 namespace (or later).
+	 * 
+	 * @param info
+	 * @param cd TODO
+	 * @param descriptors TODO
+	 * @return
 	 */
 	private void getNamespace(Map<String,String> info, ComponentDef cd, Map<String,MethodDef> descriptors) {
 		String namespace = info.get(COMPONENT_NAMESPACE);
@@ -206,8 +210,7 @@ public class HeaderReader extends Processor {
 			try {
 				Version v = new Version(version);
 				cd.updateVersion(v);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				error("version: specified on component header but not a valid version: " + version);
 				return;
 			}
@@ -244,7 +247,10 @@ public class HeaderReader extends Processor {
 	}
 
 	/**
-	 * Print the Service-Component properties element @param cd @param info
+	 * Print the Service-Component properties element
+	 * 
+	 * @param cd
+	 * @param info
 	 */
 	void properties(ComponentDef cd, Map<String,String> info, String name) {
 		Collection<String> properties = split(info.get(COMPONENT_PROPERTIES));
@@ -274,7 +280,8 @@ public class HeaderReader extends Processor {
 	}
 
 	/**
-	 * @param cd @param provides
+	 * @param cd
+	 * @param provides
 	 */
 	void provide(ComponentDef cd, String provides, String impl) {
 		if (provides != null) {
@@ -298,10 +305,11 @@ public class HeaderReader extends Processor {
 	/**
 	 * rates the methods according to the scale in 112.5.8 (compendium 4.3, ds
 	 * 1.2), also returning "6" for invalid methods We don't look at return
-	 * values yet due to proposal to all them for setting service
-	 * properties. @param test methodDef to examine for suitability as a DS
-	 * lifecycle method @param allowedParams TODO @return rating; 6 if invalid,
-	 * lower is better
+	 * values yet due to proposal to all them for setting service properties.
+	 * 
+	 * @param test methodDef to examine for suitability as a DS lifecycle method
+	 * @param allowedParams TODO
+	 * @return rating; 6 if invalid, lower is better
 	 */
 	int rateLifecycle(MethodDef test, Set<String> allowedParams) {
 		TypeRef[] prototype = test.getDescriptor().getPrototype();
@@ -326,7 +334,10 @@ public class HeaderReader extends Processor {
 
 	/**
 	 * see 112.3.2. We can't distinguish the bind type, so we just accept
-	 * anything. @param test @return
+	 * anything.
+	 * 
+	 * @param test
+	 * @return
 	 */
 	int rateBind(MethodDef test) {
 		TypeRef[] prototype = test.getDescriptor().getPrototype();
@@ -340,8 +351,11 @@ public class HeaderReader extends Processor {
 	}
 
 	/**
-	 * @param info @param impl TODO @param descriptors TODO @param pw @throws
-	 * Exception
+	 * @param info
+	 * @param impl TODO
+	 * @param descriptors TODO
+	 * @param pw
+	 * @throws Exception
 	 */
 	void reference(Map<String,String> info, String impl, ComponentDef cd, Map<String,MethodDef> descriptors)
 			throws Exception {
@@ -432,8 +446,7 @@ public class HeaderReader extends Processor {
 						updated = null;
 					else
 						error("In component %s, the updated method %s for %s is not defined", cd.effectiveName(),
-								updated,
-								referenceName);
+								updated, referenceName);
 				}
 			}
 			// Check the cardinality by looking at the last
@@ -489,10 +502,10 @@ public class HeaderReader extends Processor {
 			if (dynamic.contains(referenceName)) {
 				rd.policy = ReferencePolicy.DYNAMIC;
 				if (rd.unbind == null)
-					error("In component %s, reference %s is dynamic but has no unbind method.", cd.effectiveName(),
-							rd.name)
-							.details(new DeclarativeServicesAnnotationError(cd.implementation.getFQN(), null, null,
-									ErrorType.DYNAMIC_REFERENCE_WITHOUT_UNBIND));
+					error("In component %s, reference %s is dynamic but has no unbind method.",
+							cd.effectiveName(), rd.name)
+									.details(new DeclarativeServicesAnnotationError(cd.implementation.getFQN(), null,
+											null, ErrorType.DYNAMIC_REFERENCE_WITHOUT_UNBIND));
 			}
 
 			if (greedy.contains(referenceName)) {

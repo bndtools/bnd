@@ -202,8 +202,7 @@ public class FileRepoTest extends TestCase {
 
 			assertEquals(hashToString(srcSha), hashToString(r.digest));
 			assertTrue(MessageDigest.isEqual(srcSha, r.digest));
-		}
-		finally {
+		} finally {
 			if (dstBundle != null) {
 				delete(dstBundle.getParentFile());
 			}
@@ -233,8 +232,7 @@ public class FileRepoTest extends TestCase {
 			f = repo.get("XXXXXXXXXXXXXXXXX", new Version("0"), null, mock);
 			assertNull(f);
 			Mockito.verifyZeroInteractions(mock);
-		}
-		finally {
+		} finally {
 			IO.delete(tmp);
 		}
 	}
@@ -249,8 +247,7 @@ public class FileRepoTest extends TestCase {
 			nonExistentRepo.put(new BufferedInputStream(new FileInputStream("testresources/test.jar")),
 					new RepositoryPlugin.PutOptions());
 			fail("Should have thrown exception");
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// OK, you cannot check for exception messages or exception type
 		}
 	}
@@ -282,8 +279,7 @@ public class FileRepoTest extends TestCase {
 				try {
 					repo.put(in, null);
 
-				}
-				finally {
+				} finally {
 					in.close();
 				}
 			}
@@ -292,11 +288,9 @@ public class FileRepoTest extends TestCase {
 				try {
 					repo.put(in, null);
 					fail("expected failure");
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					// ignore
-				}
-				finally {
+				} finally {
 					in.close();
 				}
 			}
@@ -316,8 +310,7 @@ public class FileRepoTest extends TestCase {
 			assertTrue(parts[5].matches("beforePut @ @/.*"));
 			assertTrue(parts[6].matches("abortPut @ @/.*"));
 			assertEquals(parts[7], "close @");
-		}
-		finally {
+		} finally {
 			delete(root);
 		}
 

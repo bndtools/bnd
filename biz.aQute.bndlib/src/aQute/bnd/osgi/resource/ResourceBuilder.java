@@ -35,7 +35,7 @@ public class ResourceBuilder {
 	private final List<Capability>	capabilities	= new LinkedList<Capability>();
 	private final List<Requirement>	requirements	= new LinkedList<Requirement>();
 
-	private boolean built = false;
+	private boolean					built			= false;
 
 	public ResourceBuilder(Resource source) throws Exception {
 		addCapabilities(source.getCapabilities(null));
@@ -94,8 +94,10 @@ public class ResourceBuilder {
 	}
 
 	/**
-	 * Parse the manifest and turn them into requirements & capabilities @param
-	 * manifest The manifest to parse @throws Exception
+	 * Parse the manifest and turn them into requirements & capabilities
+	 * 
+	 * @param manifest The manifest to parse
+	 * @throws Exception
 	 */
 	public void addManifest(Domain manifest) throws Exception {
 
@@ -200,7 +202,9 @@ public class ResourceBuilder {
 	}
 
 	/**
-	 * Add the Require-Bundle header @throws Exception
+	 * Add the Require-Bundle header
+	 * 
+	 * @throws Exception
 	 */
 
 	public void addRequireBundles(Parameters requireBundle) throws Exception {
@@ -285,7 +289,9 @@ public class ResourceBuilder {
 	}
 
 	/**
-	 * Add Exported Packages @throws Exception
+	 * Add Exported Packages
+	 * 
+	 * @throws Exception
 	 */
 	public void addExportPackages(Parameters exports) throws Exception {
 		for (Entry<String,Attrs> clause : exports.entrySet()) {
@@ -316,7 +322,9 @@ public class ResourceBuilder {
 	}
 
 	/**
-	 * Add imported packages @throws Exception
+	 * Add imported packages
+	 * 
+	 * @throws Exception
 	 */
 	public void addImportPackages(Parameters imports) throws Exception {
 		for (Entry<String,Attrs> clause : imports.entrySet()) {

@@ -17,7 +17,7 @@ public class Maven {
 	final File						userHome	= new File(System.getProperty("user.home"));
 	final Map<String,MavenEntry>	entries		= new ConcurrentHashMap<String,MavenEntry>();
 	final static String[]			ALGORITHMS	= {
-			"md5", "sha1"
+														"md5", "sha1"
 													};
 	boolean							usecache	= false;
 	final Executor					executor;
@@ -41,8 +41,12 @@ public class Maven {
 	}
 
 	/**
-	 * @param groupId @param artifactId @param version @param
-	 * extra @return @throws Exception
+	 * @param groupId
+	 * @param artifactId
+	 * @param version
+	 * @param extra
+	 * @return
+	 * @throws Exception
 	 */
 	public MavenEntry getEntry(String groupId, String artifactId, String version) throws Exception {
 		String path = dirpath(groupId, artifactId, version);

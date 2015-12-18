@@ -8,7 +8,7 @@ public @interface AnnotationWithAttrs {
 		A, B, C
 	}
 
-	String[]foo();
+	String[] foo();
 
 	int bar();
 

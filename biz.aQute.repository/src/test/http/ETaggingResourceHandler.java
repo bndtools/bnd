@@ -86,8 +86,7 @@ public class ETaggingResourceHandler extends ResourceHandler {
 		OutputStream out = null;
 		try {
 			out = response.getOutputStream();
-		}
-		catch (IllegalStateException e) {
+		} catch (IllegalStateException e) {
 			out = new WriterOutputStream(response.getWriter());
 		}
 		resource.writeTo(out, 0, resource.length());

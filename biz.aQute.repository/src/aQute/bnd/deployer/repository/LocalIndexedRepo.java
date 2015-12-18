@@ -42,26 +42,26 @@ import aQute.libg.cryptography.SHA256;
 
 public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, Participant, Actionable {
 
-	private final String		UPWARDS_ARROW	= " \u2191";
-	private final String		DOWNWARDS_ARROW	= " \u2193";
+	private final String		UPWARDS_ARROW			= " \u2191";
+	private final String		DOWNWARDS_ARROW			= " \u2193";
 	Pattern						REPO_FILE				= Pattern
-																.compile("([-a-zA-z0-9_\\.]+)(-|_)([0-9\\.]+)(-[-a-zA-z0-9_]+)?\\.(jar|lib)");
-	private static final String	CACHE_PATH		= ".cache";
-	public static final String	PROP_LOCAL_DIR	= "local";
-	public static final String	PROP_READONLY	= "readonly";
-	public static final String	PROP_PRETTY		= "pretty";
-	public static final String	PROP_OVERWRITE	= "overwrite";
-	public static final String	PROP_ONLYDIRS	= "onlydirs";
+			.compile("([-a-zA-z0-9_\\.]+)(-|_)([0-9\\.]+)(-[-a-zA-z0-9_]+)?\\.(jar|lib)");
+	private static final String	CACHE_PATH				= ".cache";
+	public static final String	PROP_LOCAL_DIR			= "local";
+	public static final String	PROP_READONLY			= "readonly";
+	public static final String	PROP_PRETTY				= "pretty";
+	public static final String	PROP_OVERWRITE			= "overwrite";
+	public static final String	PROP_ONLYDIRS			= "onlydirs";
 
 	@SuppressWarnings("deprecation")
-	private boolean	readOnly;
-	private boolean	pretty		= false;
-	private boolean	overwrite	= true;
-	private File	storageDir;
-	private String	onlydirs	= null;
+	private boolean				readOnly;
+	private boolean				pretty					= false;
+	private boolean				overwrite				= true;
+	private File				storageDir;
+	private String				onlydirs				= null;
 
 	// @GuardedBy("newFilesInCoordination")
-	private final List<URI> newFilesInCoordination = new LinkedList<URI>();
+	private final List<URI>		newFilesInCoordination	= new LinkedList<URI>();
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -108,8 +108,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 						indexes.add(indexFile.toURI());
 					}
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				logService.log(LogService.LOG_ERROR,
 						String.format("Unable to load/generate index file '%s' for repository type %s", indexFile,
 								contentProvider.getName()),
@@ -122,8 +121,8 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	}
 
 	/**
-	 * @param contentProvider the repository content provider @return the
-	 * filename of the index on local storage
+	 * @param contentProvider the repository content provider
+	 * @return the filename of the index on local storage
 	 */
 	private File getIndexFile(IRepositoryContentProvider contentProvider) {
 		String indexFileName = contentProvider.getDefaultIndexName(pretty);
@@ -141,8 +140,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			File indexFile = getIndexFile(provider);
 			try {
 				generateIndex(indexFile, provider);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				logService.log(LogService.LOG_ERROR,
 						String.format("Unable to regenerate index file '%s' for repository type %s", indexFile,
 								provider.getName()),
@@ -169,8 +167,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 			URI rootUri = storageDir.getCanonicalFile().toURI();
 			provider.generateIndex(allFiles, out, this.getName(), rootUri, pretty, registry, logService);
-		}
-		finally {
+		} finally {
 			IO.close(out);
 			out = null;
 			shaFile.delete();
@@ -182,8 +179,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		try {
 			out = new FileOutputStream(shaFile);
 			out.write(Hex.toHexString(md.digest()).toLowerCase().toString().getBytes());
-		}
-		finally {
+		} finally {
 			if (out != null) {
 				out.close();
 			}
@@ -279,16 +275,15 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		for (URI entry : clone) {
 			try {
 				new File(entry).delete();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.warning("Failed to remove repository entry %s on coordination rollback: %s", entry, e);
 			}
 		}
 	}
 
 	protected File putArtifact(File tmpFile) throws Exception {
-		assert(tmpFile != null);
-		assert(tmpFile.isFile());
+		assert (tmpFile != null);
+		assert (tmpFile.isFile());
 
 		init();
 
@@ -334,8 +329,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 				finishPut();
 			}
 			return file;
-		}
-		finally {
+		} finally {
 			jar.close();
 		}
 	}
@@ -391,8 +385,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			}
 
 			return result;
-		}
-		finally {
+		} finally {
 			if (tmpFile != null && tmpFile.exists()) {
 				IO.delete(tmpFile);
 			}
@@ -419,12 +412,10 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 				if (jar == null)
 					jar = new Jar(file);
 				listener.bundleAdded(this, jar, file);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				if (reporter != null)
 					reporter.warning("Repository listener threw an unexpected exception: %s", e);
-			}
-			finally {
+			} finally {
 				if (jar != null)
 					jar.close();
 			}

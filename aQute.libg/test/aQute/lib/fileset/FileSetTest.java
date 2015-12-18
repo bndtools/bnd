@@ -49,6 +49,7 @@ public class FileSetTest extends TestCase {
 		System.out.println(fs.getFiles());
 		assertEquals(3, fs.getFiles().size());
 	}
+
 	public void testRootAll() {
 		FileSet fs = new FileSet(root, "*");
 		System.out.println(fs.getFiles());

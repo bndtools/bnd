@@ -115,8 +115,7 @@ public class ReporterMessages {
 						return new WARNINGImpl(reporter.warning(format, args));
 					} else
 						reporter.trace(format, args);
-				}
-				catch (IllegalFormatException e) {
+				} catch (IllegalFormatException e) {
 					reporter.error("Formatter failed: %s %s %s", method.getName(), format, Arrays.toString(args));
 				}
 				return null;

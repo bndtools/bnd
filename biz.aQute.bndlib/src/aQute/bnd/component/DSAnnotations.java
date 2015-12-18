@@ -45,8 +45,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 		for (String s : optionsHeader.keySet()) {
 			try {
 				options.add(Options.valueOf(s));
-			}
-			catch (IllegalArgumentException e) {
+			} catch (IllegalArgumentException e) {
 				analyzer.error("Unrecognized %s value %s, expected values are %s", Constants.DSANNOTATIONS_OPTIONS, s,
 						EnumSet.allOf(Options.class));
 			}
@@ -160,8 +159,11 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 	/**
 	 * Updates specified header, sorting and removing duplicates. Destroys
-	 * contents of set parameter. @param analyzer @param name header name @param
-	 * set values to add to header; contents are not preserved.
+	 * contents of set parameter.
+	 * 
+	 * @param analyzer
+	 * @param name header name
+	 * @param set values to add to header; contents are not preserved.
 	 */
 	private void updateHeader(Analyzer analyzer, String name, TreeSet<String> set) {
 		if (!set.isEmpty()) {

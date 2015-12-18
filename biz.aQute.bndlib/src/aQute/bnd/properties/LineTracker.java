@@ -18,8 +18,10 @@ public class LineTracker {
 	protected LineTracker() {}
 
 	/**
-	 * Binary search for the line at a given offset. @param offset the offset
-	 * whose line should be found @return the line of the offset
+	 * Binary search for the line at a given offset.
+	 * 
+	 * @param offset the offset whose line should be found
+	 * @return the line of the offset
 	 */
 	private int findLine(int offset) {
 
@@ -58,11 +60,13 @@ public class LineTracker {
 	}
 
 	/**
-	 * Returns the number of lines covered by the specified text range. @param
-	 * startLine the line where the text range starts @param offset the start
-	 * offset of the text range @param length the length of the text
-	 * range @return the number of lines covered by this text range @exception
-	 * BadLocationException if range is undefined in this tracker
+	 * Returns the number of lines covered by the specified text range.
+	 * 
+	 * @param startLine the line where the text range starts
+	 * @param offset the start offset of the text range
+	 * @param length the length of the text range
+	 * @return the number of lines covered by this text range @exception
+	 *         BadLocationException if range is undefined in this tracker
 	 */
 	private int getNumberOfLines(int startLine, int offset, int length) throws BadLocationException {
 
@@ -248,9 +252,11 @@ public class LineTracker {
 
 	/**
 	 * Returns the information about the first delimiter found in the given text
-	 * starting at the given offset. @param text the text to be searched @param
-	 * offset the offset in the given text @return the information of the first
-	 * found delimiter or <code>null</code>
+	 * starting at the given offset.
+	 * 
+	 * @param text the text to be searched
+	 * @param offset the offset in the given text
+	 * @return the information of the first found delimiter or <code>null</code>
 	 */
 	protected DelimiterInfo nextDelimiterInfo(String text, int offset) {
 
@@ -291,11 +297,13 @@ public class LineTracker {
 	/**
 	 * Creates the line structure for the given text. Newly created lines are
 	 * inserted into the line structure starting at the given position. Returns
-	 * the number of newly created lines. @param text the text for which to
-	 * create a line structure @param insertPosition the position at which the
-	 * newly created lines are inserted into the tracker's line structure @param
-	 * offset the offset of all newly created lines @return the number of newly
-	 * created lines
+	 * the number of newly created lines.
+	 * 
+	 * @param text the text for which to create a line structure
+	 * @param insertPosition the position at which the newly created lines are
+	 *            inserted into the tracker's line structure
+	 * @param offset the offset of all newly created lines
+	 * @return the number of newly created lines
 	 */
 	private int createLines(String text, int insertPosition, int offset) {
 
@@ -355,9 +363,9 @@ public class LineTracker {
 
 	/**
 	 * Returns the internal data structure, a {@link List} of {@link Line}s.
-	 * Used only by {@link
-	 * TreeLineTracker#TreeLineTracker(ListLineTracker)}. @return the internal
-	 * list of lines.
+	 * Used only by {@link TreeLineTracker#TreeLineTracker(ListLineTracker)} .
+	 * 
+	 * @return the internal list of lines.
 	 */
 	final List<Line> getLines() {
 		return fLines;

@@ -59,50 +59,77 @@ import aQute.lib.utf8properties.UTF8Properties;
 /**
  * A model for a Bnd file. In the first iteration, use a simple Properties
  * object; this will need to be enhanced to additionally record formatting, e.g.
- * line breaks and empty lines, and comments. @author Neil Bartlett
+ * line breaks and empty lines, and comments.
+ * 
+ * @author Neil Bartlett
  */
 public class BndEditModel {
 
-	public static final String	NEWLINE_LINE_SEPARATOR	= "\\n\\\n\t";
-	public static final String	LIST_SEPARATOR			= ",\\\n\t";
+	public static final String										NEWLINE_LINE_SEPARATOR		= "\\n\\\n\t";
+	public static final String										LIST_SEPARATOR				= ",\\\n\t";
 
-	private static String[] KNOWN_PROPERTIES = new String[] {
-			Constants.BUNDLE_LICENSE, Constants.BUNDLE_CATEGORY, Constants.BUNDLE_NAME, Constants.BUNDLE_DESCRIPTION,
-			Constants.BUNDLE_COPYRIGHT, Constants.BUNDLE_UPDATELOCATION, Constants.BUNDLE_VENDOR,
-			Constants.BUNDLE_CONTACTADDRESS, Constants.BUNDLE_DOCURL, Constants.BUNDLE_SYMBOLICNAME,
-			Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, Constants.EXPORT_PACKAGE, Constants.IMPORT_PACKAGE,
-			aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, aQute.bnd.osgi.Constants.SOURCES,
-			aQute.bnd.osgi.Constants.SERVICE_COMPONENT, aQute.bnd.osgi.Constants.CLASSPATH,
-			aQute.bnd.osgi.Constants.BUILDPATH, aQute.bnd.osgi.Constants.RUNBUNDLES,
-			aQute.bnd.osgi.Constants.RUNPROPERTIES, aQute.bnd.osgi.Constants.SUB, aQute.bnd.osgi.Constants.RUNFRAMEWORK,
-			aQute.bnd.osgi.Constants.RUNFW, aQute.bnd.osgi.Constants.RUNVM, aQute.bnd.osgi.Constants.RUNPROGRAMARGS,
-			aQute.bnd.osgi.Constants.DISTRO,
-			// BndConstants.RUNVMARGS,
-			// BndConstants.TESTSUITES,
-			aQute.bnd.osgi.Constants.TESTCASES, aQute.bnd.osgi.Constants.PLUGIN, aQute.bnd.osgi.Constants.PLUGINPATH,
-			aQute.bnd.osgi.Constants.RUNREPOS, aQute.bnd.osgi.Constants.RUNREQUIRES, aQute.bnd.osgi.Constants.RUNEE,
-			Constants.BUNDLE_BLUEPRINT, Constants.INCLUDE_RESOURCE, "-standalone"
-	};
+	private static String[]											KNOWN_PROPERTIES			= new String[] {
+																										Constants.BUNDLE_LICENSE,
+																										Constants.BUNDLE_CATEGORY,
+																										Constants.BUNDLE_NAME,
+																										Constants.BUNDLE_DESCRIPTION,
+																										Constants.BUNDLE_COPYRIGHT,
+																										Constants.BUNDLE_UPDATELOCATION,
+																										Constants.BUNDLE_VENDOR,
+																										Constants.BUNDLE_CONTACTADDRESS,
+																										Constants.BUNDLE_DOCURL,
+																										Constants.BUNDLE_SYMBOLICNAME,
+																										Constants.BUNDLE_VERSION,
+																										Constants.BUNDLE_ACTIVATOR,
+																										Constants.EXPORT_PACKAGE,
+																										Constants.IMPORT_PACKAGE,
+																										aQute.bnd.osgi.Constants.PRIVATE_PACKAGE,
+																										aQute.bnd.osgi.Constants.SOURCES,
+																										aQute.bnd.osgi.Constants.SERVICE_COMPONENT,
+																										aQute.bnd.osgi.Constants.CLASSPATH,
+																										aQute.bnd.osgi.Constants.BUILDPATH,
+																										aQute.bnd.osgi.Constants.RUNBUNDLES,
+																										aQute.bnd.osgi.Constants.RUNPROPERTIES,
+																										aQute.bnd.osgi.Constants.SUB,
+																										aQute.bnd.osgi.Constants.RUNFRAMEWORK,
+																										aQute.bnd.osgi.Constants.RUNFW,
+																										aQute.bnd.osgi.Constants.RUNVM,
+																										aQute.bnd.osgi.Constants.RUNPROGRAMARGS,
+																										aQute.bnd.osgi.Constants.DISTRO,
+																										// BndConstants.RUNVMARGS,
+																										// BndConstants.TESTSUITES,
+																										aQute.bnd.osgi.Constants.TESTCASES,
+																										aQute.bnd.osgi.Constants.PLUGIN,
+																										aQute.bnd.osgi.Constants.PLUGINPATH,
+																										aQute.bnd.osgi.Constants.RUNREPOS,
+																										aQute.bnd.osgi.Constants.RUNREQUIRES,
+																										aQute.bnd.osgi.Constants.RUNEE,
+																										Constants.BUNDLE_BLUEPRINT,
+																										Constants.INCLUDE_RESOURCE,
+																										"-standalone"
+																									};
 
-	public static final String PROP_WORKSPACE = "_workspace";
+	public static final String										PROP_WORKSPACE				= "_workspace";
 
-	public static final String BUNDLE_VERSION_MACRO = "${" + Constants.BUNDLE_VERSION + "}";
+	public static final String										BUNDLE_VERSION_MACRO		= "${"
+			+ Constants.BUNDLE_VERSION + "}";
 
-	private final Map<String,Converter< ? extends Object,String>>	converters	= new HashMap<String,Converter< ? extends Object,String>>();
-	private final Map<String,Converter<String, ? extends Object>>	formatters	= new HashMap<String,Converter<String, ? extends Object>>();
+	private final Map<String,Converter< ? extends Object,String>>	converters					= new HashMap<String,Converter< ? extends Object,String>>();
+	private final Map<String,Converter<String, ? extends Object>>	formatters					= new HashMap<String,Converter<String, ? extends Object>>();
 	// private final DataModelHelper obrModelHelper = new DataModelHelperImpl();
 
-	private File	bndResource;
-	private String	bndResourceName;
+	private File													bndResource;
+	private String													bndResourceName;
 
-	private final PropertyChangeSupport	propChangeSupport	= new PropertyChangeSupport(this);
-	private Properties					properties			= new UTF8Properties();
-	private final Map<String,Object>	objectProperties	= new HashMap<String,Object>();
-	private final Map<String,String>	changesToSave		= new TreeMap<String,String>();
-	private Project						project;
+	private final PropertyChangeSupport								propChangeSupport			= new PropertyChangeSupport(
+			this);
+	private Properties												properties					= new UTF8Properties();
+	private final Map<String,Object>								objectProperties			= new HashMap<String,Object>();
+	private final Map<String,String>								changesToSave				= new TreeMap<String,String>();
+	private Project													project;
 
 	// CONVERTERS
-	private Converter<List<VersionedClause>,String>	buildPathConverter			= new HeaderClauseListConverter<VersionedClause>(
+	private Converter<List<VersionedClause>,String>					buildPathConverter			= new HeaderClauseListConverter<VersionedClause>(
 			new Converter<VersionedClause,HeaderClause>() {
 				public VersionedClause convert(HeaderClause input) throws IllegalArgumentException {
 					if (input == null)
@@ -115,7 +142,7 @@ public class BndEditModel {
 					return null;
 				}
 			});
-	private Converter<List<VersionedClause>,String>	buildPackagesConverter		= new HeaderClauseListConverter<VersionedClause>(
+	private Converter<List<VersionedClause>,String>					buildPackagesConverter		= new HeaderClauseListConverter<VersionedClause>(
 			new Converter<VersionedClause,HeaderClause>() {
 				public VersionedClause convert(HeaderClause input) throws IllegalArgumentException {
 					if (input == null)
@@ -128,25 +155,31 @@ public class BndEditModel {
 					return VersionedClause.error(msg);
 				}
 			});
-	private Converter<List<VersionedClause>,String>	clauseListConverter			= new HeaderClauseListConverter<VersionedClause>(
+	private Converter<List<VersionedClause>,String>					clauseListConverter			= new HeaderClauseListConverter<VersionedClause>(
 			new VersionedClauseConverter());
-	private Converter<String,String>					stringConverter				= new NoopConverter<String>();
-	private Converter<Boolean,String>					includedSourcesConverter	= new Converter<Boolean,String>() {
-		public Boolean convert(String string) throws IllegalArgumentException {
-			return Boolean.valueOf(string);
-		}
+	private Converter<String,String>								stringConverter				= new NoopConverter<String>();
+	private Converter<Boolean,String>								includedSourcesConverter	= new Converter<Boolean,String>() {
+																									public Boolean convert(
+																											String string)
+																													throws IllegalArgumentException {
+																										return Boolean
+																												.valueOf(
+																														string);
+																									}
 
-		@Override
-		public Boolean error(String msg) {
-			return Boolean.FALSE;
-		}
-	};
-	private Converter<List<String>,String>				listConverter				= SimpleListConverter.create();
+																									@Override
+																									public Boolean error(
+																											String msg) {
+																										return Boolean.FALSE;
+																									}
+																								};
+	private Converter<List<String>,String>							listConverter				= SimpleListConverter
+			.create();
 
-	private Converter<List<HeaderClause>,String>		headerClauseListConverter	= new HeaderClauseListConverter<>(
+	private Converter<List<HeaderClause>,String>					headerClauseListConverter	= new HeaderClauseListConverter<>(
 			new NoopConverter<HeaderClause>());
 
-	private Converter<List<ExportedPackage>,String> exportPackageConverter = new HeaderClauseListConverter<>(
+	private Converter<List<ExportedPackage>,String>					exportPackageConverter		= new HeaderClauseListConverter<>(
 			new Converter<ExportedPackage,HeaderClause>() {
 				public ExportedPackage convert(HeaderClause input) {
 					if (input == null)
@@ -160,7 +193,7 @@ public class BndEditModel {
 				}
 			});
 
-	private Converter<List<ServiceComponent>,String>	serviceComponentConverter	= new HeaderClauseListConverter<ServiceComponent>(
+	private Converter<List<ServiceComponent>,String>				serviceComponentConverter	= new HeaderClauseListConverter<ServiceComponent>(
 			new Converter<ServiceComponent,HeaderClause>() {
 				public ServiceComponent convert(HeaderClause input) throws IllegalArgumentException {
 					if (input == null)
@@ -173,7 +206,7 @@ public class BndEditModel {
 					return ServiceComponent.error(msg);
 				}
 			});
-	private Converter<List<ImportPattern>,String>		importPatternConverter		= new HeaderClauseListConverter<ImportPattern>(
+	private Converter<List<ImportPattern>,String>					importPatternConverter		= new HeaderClauseListConverter<ImportPattern>(
 			new Converter<ImportPattern,HeaderClause>() {
 				public ImportPattern convert(HeaderClause input) throws IllegalArgumentException {
 					if (input == null)
@@ -187,10 +220,10 @@ public class BndEditModel {
 				}
 			});
 
-	private Converter<Map<String,String>,String> propertiesConverter = new PropertiesConverter();
+	private Converter<Map<String,String>,String>					propertiesConverter			= new PropertiesConverter();
 
-	private Converter<List<Requirement>,String>	requirementListConverter	= new RequirementListConverter();
-	private Converter<EE,String>				eeConverter					= new EEConverter();
+	private Converter<List<Requirement>,String>						requirementListConverter	= new RequirementListConverter();
+	private Converter<EE,String>									eeConverter					= new EEConverter();
 
 	// Converter<ResolveMode, String> resolveModeConverter =
 	// EnumConverter.create(ResolveMode.class, ResolveMode.manual);
@@ -206,16 +239,16 @@ public class BndEditModel {
 	private Converter<String,Map<String,String>>					propertiesFormatter			= new MapFormatter(
 			LIST_SEPARATOR, new PropertiesEntryFormatter(), null);
 
-	private Converter<String,Collection< ? extends Requirement>> requirementListFormatter = new CollectionFormatter<Requirement>(
+	private Converter<String,Collection< ? extends Requirement>>	requirementListFormatter	= new CollectionFormatter<Requirement>(
 			LIST_SEPARATOR, new RequirementFormatter(), null);
 
-	private Converter<String,Collection< ? extends HeaderClause>> standaloneLinkListFormatter = new CollectionFormatter<>(
+	private Converter<String,Collection< ? extends HeaderClause>>	standaloneLinkListFormatter	= new CollectionFormatter<>(
 			LIST_SEPARATOR, new HeaderClauseFormatter(), "");
 
-	private Converter<String,EE>							eeFormatter			= new EEFormatter();
-	private Converter<String,Collection< ? extends String>>	runReposFormatter	= new CollectionFormatter<String>(
+	private Converter<String,EE>									eeFormatter					= new EEFormatter();
+	private Converter<String,Collection< ? extends String>>			runReposFormatter			= new CollectionFormatter<String>(
 			LIST_SEPARATOR, aQute.bnd.osgi.Constants.EMPTY_HEADER);
-	private Workspace										workspace;
+	private Workspace												workspace;
 
 	// Converter<String, ResolveMode> resolveModeFormatter =
 	// EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
@@ -366,8 +399,7 @@ public class BndEditModel {
 				// null values for old and new forced the change to be fired
 				propChangeSupport.firePropertyChange(prop, null, null);
 			}
-		}
-		finally {
+		} finally {
 			inputStream.close();
 		}
 
@@ -444,8 +476,7 @@ public class BndEditModel {
 					newEntry = "\n" + newEntry;
 				document.replace(document.getLength(), 0, newEntry);
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -877,7 +908,7 @@ public class BndEditModel {
 	}
 
 	public void setRunFramework(String clause) {
-		assert(Constants.RUNFRAMEWORK_SERVICES.equals(clause.toLowerCase().trim())
+		assert (Constants.RUNFRAMEWORK_SERVICES.equals(clause.toLowerCase().trim())
 				|| Constants.RUNFRAMEWORK_NONE.equals(clause.toLowerCase().trim()));
 		String oldValue = getRunFramework();
 		doSetObject(aQute.bnd.osgi.Constants.RUNFRAMEWORK, oldValue, clause, newlineEscapeFormatter);
@@ -933,8 +964,7 @@ public class BndEditModel {
 			}
 
 			return result;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return converter.error(e.getMessage());
 		}
 	}
@@ -1056,8 +1086,9 @@ public class BndEditModel {
 	/**
 	 * Return a processor for this model. This processor is based on the parent
 	 * project or the bndrun file. It will contain the properties of the project
-	 * file and the changes from the model. @return a processor that reflects
-	 * the actual project or bndrun file setup
+	 * file and the changes from the model.
+	 * 
+	 * @return a processor that reflects the actual project or bndrun file setup
 	 */
 	public Processor getProperties() throws Exception {
 		Processor parent = null;

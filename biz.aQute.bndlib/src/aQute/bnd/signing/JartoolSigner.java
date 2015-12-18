@@ -19,8 +19,9 @@ import aQute.service.reporter.Reporter;
 
 /**
  * Sign the jar file. -sign : <alias> [ ';' 'password:=' <password> ] [ ';'
- * 'keystore:=' <keystore> ] [ ';' 'sign-password:=' <pw> ] ( ',' ... )* @author
- * aqute
+ * 'keystore:=' <keystore> ] [ ';' 'sign-password:=' <pw> ] ( ',' ... )*
+ * 
+ * @author aqute
  */
 
 @aQute.bnd.annotation.plugin.BndPlugin(name = "signer", parameters = JartoolSigner.Config.class)
@@ -155,8 +156,7 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 					}
 					rdr.close();
 					in.close();
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					// Ignore any exceptions
 				}
 			}

@@ -38,8 +38,7 @@ public class Make {
 							builder.trace("Made " + source + " from args " + arguments + " with " + plugin);
 							return resource;
 						}
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						builder.error("Plugin " + plugin + " generates error when use in making " + source
 								+ " with args " + arguments, e);
 					}

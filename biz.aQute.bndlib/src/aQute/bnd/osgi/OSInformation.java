@@ -10,69 +10,70 @@ import aQute.bnd.version.Version;
  * osgi.native.* bundle properties.
  */
 public class OSInformation {
-	String	osnames		= null;
-	Version	osversion	= null;
+	String					osnames							= null;
+	Version					osversion						= null;
 
 	static private String	regexQualifierNotAllowedChars	= "[^\\p{Alnum}-_]";
 	static private Pattern	digitPattern					= Pattern.compile("(\\d+).*");
 
-	final static String[][]	processorFamilies	= {
-			new String[] {
-					"x86-64", "amd64", "em64t", "x86_64"
-															},
-			new String[] {
-					"x86", "pentium", "i386", "i486", "i586", "i686"
-															},
-			new String[] {
-					"68k"
-															},
-			new String[] {
-					"ARM"
-															},
-			new String[] {
-					"ARM_be"
-															},
-			new String[] {
-					"ARM_le"
-															},
-			new String[] {
-					"Alpha"
-															},
-			new String[] {
-					"ia64n"
-															},
-			new String[] {
-					"ia64w"
-															},
-			new String[] {
-					"Ignite", "psc1k"
-															},
-			new String[] {
-					"Mips"
-															},
-			new String[] {
-					"PARisc"
-															},
-			new String[] {
-					"PowerPC", "power", "ppc"
-															},
-			new String[] {
-					"Sh4"
-															},
-			new String[] {
-					"Sparc"
-															},
-			new String[] {
-					"Sparcv9"
-															},
-			new String[] {
-					"S390"
-															},
-			new String[] {
-					"V850e"
-															},
-													};
-	static String[]			osarch				= getProcessorAliases(System.getProperty("os.arch"));
+	final static String[][]	processorFamilies				= {
+																	new String[] {
+																			"x86-64", "amd64", "em64t", "x86_64"
+																		},
+																	new String[] {
+																			"x86", "pentium", "i386", "i486", "i586",
+																			"i686"
+																		},
+																	new String[] {
+																			"68k"
+																		},
+																	new String[] {
+																			"ARM"
+																		},
+																	new String[] {
+																			"ARM_be"
+																		},
+																	new String[] {
+																			"ARM_le"
+																		},
+																	new String[] {
+																			"Alpha"
+																		},
+																	new String[] {
+																			"ia64n"
+																		},
+																	new String[] {
+																			"ia64w"
+																		},
+																	new String[] {
+																			"Ignite", "psc1k"
+																		},
+																	new String[] {
+																			"Mips"
+																		},
+																	new String[] {
+																			"PARisc"
+																		},
+																	new String[] {
+																			"PowerPC", "power", "ppc"
+																		},
+																	new String[] {
+																			"Sh4"
+																		},
+																	new String[] {
+																			"Sparc"
+																		},
+																	new String[] {
+																			"Sparcv9"
+																		},
+																	new String[] {
+																			"S390"
+																		},
+																	new String[] {
+																			"V850e"
+																		},
+																};
+	static String[]			osarch							= getProcessorAliases(System.getProperty("os.arch"));
 
 	public static String[] getProcessorAliases(String osArch) {
 		for (String[] pnames : processorFamilies) {
@@ -88,12 +89,17 @@ public class OSInformation {
 	}
 
 	/**
-	 * <p> Convert a generic Unix kernel version to an OSGi version. </p> <p> As
-	 * long as we have digits separated by dots, convert the digits into the
+	 * <p>
+	 * Convert a generic Unix kernel version to an OSGi version.
+	 * </p>
+	 * <p>
+	 * As long as we have digits separated by dots, convert the digits into the
 	 * respective version segments. Anything left after that conversion is the
 	 * qualifier. Illegal characters in that qualifier are converted into
-	 * underscores to ensure that the final qualifier is valid. </p> @param
-	 * sysPropOsVersion the system property "os.version"
+	 * underscores to ensure that the final qualifier is valid.
+	 * </p>
+	 * 
+	 * @param sysPropOsVersion the system property "os.version"
 	 */
 	void convertUnixKernelVersion(String sysPropOsVersion) {
 		osversion = new Version(0, 0, 0);
@@ -106,9 +112,8 @@ public class OSInformation {
 				int matchedDigitNumber;
 				try {
 					matchedDigitNumber = Integer.parseInt(matchedDigit);
-				}
-				catch (NumberFormatException e) {
-					assert(false);
+				} catch (NumberFormatException e) {
+					assert (false);
 					break;
 				}
 
@@ -126,7 +131,7 @@ public class OSInformation {
 						break;
 
 					default :
-						assert(false);
+						assert (false);
 						break;
 				}
 
@@ -149,7 +154,9 @@ public class OSInformation {
 	}
 
 	/**
-	 * Construct OS specific information @throws IllegalArgumentException
+	 * Construct OS specific information
+	 * 
+	 * @throws IllegalArgumentException
 	 */
 	public OSInformation() throws IllegalArgumentException {
 		String sysPropOsName = System.getProperty("os.name");

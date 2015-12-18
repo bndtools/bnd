@@ -70,13 +70,22 @@ import aQute.struct.struct;
  * point for the command line. This program maintains a repository, a list of
  * installed commands, and a list of installed service. It provides the commands
  * to changes these resources. All information is kept in a platform specific
- * area. However, the layout of this area is standardized. <pre> platform/ check
+ * area. However, the layout of this area is standardized.
+ * 
+ * <pre>
+ *  platform/ check
  * check for write access repo/ repository &lt;bsn&gt;/ bsn directory
  * &lt;bsn&gt;-&lt;version&gt;.jar jar file service/ All service
  * &lt;service&gt;/ A service data Service data (JSON) wdir/ Working dir lock
  * Lock file (if running, contains port) commands/ &lt;command&gt; Command data
- * (JSON) </pre> For each service, the platform must also have a user writable
- * directory used for working dir, lock, and logging. <pre> platform var/ wdir/
+ * (JSON)
+ * </pre>
+ * 
+ * For each service, the platform must also have a user writable directory used
+ * for working dir, lock, and logging.
+ * 
+ * <pre>
+ *  platform var/ wdir/
  * Working dir lock Lock file (exists only when running, contains UDP port)
  * </pre>
  */
@@ -102,24 +111,26 @@ public class JustAnotherPackageManager {
 			Pattern.CASE_INSENSITIVE);
 	static Executor				executor;
 
-	final File		homeDir;
-	final File		binDir;
-	final File		repoDir;
-	final File		commandDir;
-	final File		serviceDir;
-	final File		service;
-	final Platform	platform;
-	final Reporter	reporter;
+	final File					homeDir;
+	final File					binDir;
+	final File					repoDir;
+	final File					commandDir;
+	final File					serviceDir;
+	final File					service;
+	final Platform				platform;
+	final Reporter				reporter;
 
-	JpmRepo				library;
-	final List<Service>	startedByDaemon	= new ArrayList<Service>();
-	boolean				localInstall	= false;
-	private URLClient	host;
-	private boolean		underTest		= System.getProperty("jpm.intest") != null;
-	Settings			settings;
+	JpmRepo						library;
+	final List<Service>			startedByDaemon		= new ArrayList<Service>();
+	boolean						localInstall		= false;
+	private URLClient			host;
+	private boolean				underTest			= System.getProperty("jpm.intest") != null;
+	Settings					settings;
 
 	/**
-	 * Constructor @throws Exception
+	 * Constructor
+	 * 
+	 * @throws Exception
 	 */
 	public JustAnotherPackageManager(Reporter reporter, Platform platform, File homeDir, File binDir) throws Exception {
 
@@ -162,8 +173,8 @@ public class JustAnotherPackageManager {
 	}
 
 	public boolean hasAccess() {
-		assert(binDir != null);
-		assert(homeDir != null);
+		assert (binDir != null);
+		assert (homeDir != null);
 
 		return binDir.canWrite() && homeDir.canWrite();
 	}
@@ -227,7 +238,9 @@ public class JustAnotherPackageManager {
 	}
 
 	/**
-	 * Garbage collect repository @throws Exception
+	 * Garbage collect repository
+	 * 
+	 * @throws Exception
 	 */
 	public void gc() throws Exception {
 		HashSet<byte[]> deps = new HashSet<byte[]>();
@@ -331,8 +344,7 @@ public class JustAnotherPackageManager {
 
 				justify.wrap(sb);
 				out.append(sb.toString());
-			}
-			finally {
+			} finally {
 				f.close();
 			}
 		} else { // i.e. if(force)
@@ -418,8 +430,7 @@ public class JustAnotherPackageManager {
 					Service s = getService(sdata);
 					try {
 						s.stop();
-					}
-					catch (Exception e) {}
+					} catch (Exception e) {}
 				}
 				count++;
 			}
@@ -452,15 +463,17 @@ public class JustAnotherPackageManager {
 
 			String result = (toDelete.size() > precount) ? f.toString() : null;
 			return result;
-		}
-		finally {
+		} finally {
 			f.close();
 		}
 
 	}
 
 	/**
-	 * @param data @param target @throws Exception @throws IOException
+	 * @param data
+	 * @param target
+	 * @throws Exception
+	 * @throws IOException
 	 */
 	public String createService(ServiceData data, boolean force) throws Exception, IOException {
 
@@ -509,7 +522,10 @@ public class JustAnotherPackageManager {
 	}
 
 	/**
-	 * @param data @param target @throws Exception @throws IOException
+	 * @param data
+	 * @param target
+	 * @throws Exception
+	 * @throws IOException
 	 */
 	public String createCommand(CommandData data, boolean force) throws Exception, IOException {
 
@@ -559,7 +575,9 @@ public class JustAnotherPackageManager {
 
 	/**
 	 * Verify that the jar file is correct. This also verifies ok when there are
-	 * no checksums or. @throws IOException
+	 * no checksums or.
+	 * 
+	 * @throws IOException
 	 */
 	static Pattern MANIFEST_ENTRY = Pattern.compile("(META-INF/[^/]+)|(.*/)");
 
@@ -597,28 +615,28 @@ public class JustAnotherPackageManager {
 										+ Base64.encodeBase64(md.digest());
 						} else
 							reporter.error("could not find digest for " + algorithm + "-Digest");
-					}
-					catch (NoSuchAlgorithmException nsae) {
+					} catch (NoSuchAlgorithmException nsae) {
 						return "Missing digest algorithm " + algorithm;
 					}
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return "Failed to verify due to exception: " + e.getMessage();
 		}
 		return null;
 	}
 
 	/**
-	 * @param clazz @param dataFile @return @throws Exception
+	 * @param clazz
+	 * @param dataFile
+	 * @return
+	 * @throws Exception
 	 */
 
 	private <T> T getData(Class<T> clazz, File dataFile) throws Exception {
 		try {
 			return codec.dec().from(dataFile).get(clazz);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// e.printStackTrace();
 			// System.out.println("Cannot read data file "+dataFile+": " +
 			// IO.collect(dataFile));
@@ -631,8 +649,9 @@ public class JustAnotherPackageManager {
 	}
 
 	/**
-	 * This is called when JPM runs in the background to start jobs @throws
-	 * Exception
+	 * This is called when JPM runs in the background to start jobs
+	 * 
+	 * @throws Exception
 	 */
 	public void daemon() throws Exception {
 		Runtime.getRuntime().addShutdownHook(new Thread("Daemon shutdown") {
@@ -643,8 +662,7 @@ public class JustAnotherPackageManager {
 						reporter.error("Stopping " + service);
 						service.stop();
 						reporter.error("Stopped " + service);
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						// Ignore
 					}
 				}
@@ -674,8 +692,7 @@ public class JustAnotherPackageManager {
 				else
 					startedByDaemon.add(service);
 				reporter.trace("Started " + service);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.error("Cannot start daemon %s, due to %s", sd.name, e);
 			}
 		}
@@ -689,8 +706,7 @@ public class JustAnotherPackageManager {
 						if (result != null)
 							reporter.error("Started error " + result);
 					}
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					reporter.error("Cannot start daemon %s, due to %s", sd, e);
 				}
 			}
@@ -737,12 +753,10 @@ public class JustAnotherPackageManager {
 			public void run() {
 				try {
 					put(uri, data);
-				}
-				catch (Throwable e) {
+				} catch (Throwable e) {
 					e.printStackTrace();
 					data.error = e.toString();
-				}
-				finally {
+				} finally {
 					reporter.trace("done downloading %s", uri);
 					data.done();
 				}
@@ -787,8 +801,7 @@ public class JustAnotherPackageManager {
 				data.name = Strings.display(cmddata.title, cmddata.bsn, cmddata.name, uri);
 			codec.enc().to(meta).put(data);
 			reporter.trace("TD = " + data);
-		}
-		finally {
+		} finally {
 			tmp.delete();
 			reporter.trace("puted %s %s", uri, data);
 		}
@@ -905,8 +918,7 @@ public class JustAnotherPackageManager {
 				ArtifactData data = putAsync(new URI(arg));
 				data.local = true;
 				return data;
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.trace("hmm, not a valid url %s, will try the server", arg);
 				return null;
 			}
@@ -918,8 +930,7 @@ public class JustAnotherPackageManager {
 				ArtifactData data = putAsync(f.toURI());
 				data.local = true;
 				return data;
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.trace("hmm, not a valid file %s, will try the server", arg);
 				return null;
 			}
@@ -991,8 +1002,13 @@ public class JustAnotherPackageManager {
 
 	/**
 	 * Copy from the copy method in StructUtil. Did not want to drag that code
-	 * in. maybe this actually should go to struct. @param from @param to @param
-	 * excludes @return @throws Exception
+	 * in. maybe this actually should go to struct.
+	 * 
+	 * @param from
+	 * @param to
+	 * @param excludes
+	 * @return
+	 * @throws Exception
 	 */
 	static public <T extends struct> T xcopy(struct from, T to, String... excludes) throws Exception {
 		Arrays.sort(excludes);
@@ -1008,8 +1024,7 @@ public class JustAnotherPackageManager {
 			if (tof != null)
 				try {
 					tof.set(to, Converter.cnv(tof.getGenericType(), o));
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					System.out.println("Failed to convert " + f.getName() + " from " + from.getClass() + " to "
 							+ to.getClass() + " value " + o + " exception " + e);
 				}
@@ -1089,8 +1104,7 @@ public class JustAnotherPackageManager {
 			f.flush();
 			justif.wrap(sb);
 			return sb.toString();
-		}
-		finally {
+		} finally {
 			f.close();
 		}
 
@@ -1195,7 +1209,9 @@ public class JustAnotherPackageManager {
 	}
 
 	/**
-	 * Find programs @throws Exception
+	 * Find programs
+	 * 
+	 * @throws Exception
 	 */
 
 	public List<Program> find(String query, int skip, int limit) throws Exception {
@@ -1302,8 +1318,7 @@ public class JustAnotherPackageManager {
 
 			}
 			return data;
-		}
-		finally {
+		} finally {
 			jar.close();
 		}
 	}
@@ -1313,8 +1328,11 @@ public class JustAnotherPackageManager {
 	}
 
 	/**
-	 * Turn the shas into a readable form @param dependencies @return @throws
-	 * Exception
+	 * Turn the shas into a readable form
+	 * 
+	 * @param dependencies
+	 * @return
+	 * @throws Exception
 	 */
 
 	public List< ? > toString(List<byte[]> dependencies) throws Exception {
@@ -1331,7 +1349,10 @@ public class JustAnotherPackageManager {
 	}
 
 	/**
-	 * Get a list of candidates from a coordinate @param c @throws Exception
+	 * Get a list of candidates from a coordinate
+	 * 
+	 * @param c
+	 * @throws Exception
 	 */
 	public Iterable<Revision> getCandidates(Coordinate c) throws Exception {
 		return library.getRevisionsByCoordinate(c);

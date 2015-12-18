@@ -15,9 +15,9 @@ import aQute.service.reporter.Reporter;
 
 public class KnownBundleAnalyzerPlugin extends KnownBundleAnalyzer implements ResourceAnalyzer, Plugin {
 
-	private static final String PROP_DATA = "data";
+	private static final String	PROP_DATA	= "data";
 
-	Reporter reporter;
+	Reporter					reporter;
 
 	public KnownBundleAnalyzerPlugin() {
 		super(new UTF8Properties());
@@ -39,16 +39,13 @@ public class KnownBundleAnalyzerPlugin extends KnownBundleAnalyzer implements Re
 			Properties props = new UTF8Properties();
 			props.load(stream);
 			setKnownBundlesExtra(props);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw new IllegalArgumentException(String.format("Unable to read data file: %s", file), e);
-		}
-		finally {
+		} finally {
 			try {
 				if (stream != null)
 					stream.close();
-			}
-			catch (IOException e) {}
+			} catch (IOException e) {}
 		}
 	}
 

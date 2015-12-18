@@ -27,8 +27,9 @@ public class GenericResolveContextResolveTest extends TestCase {
 
 	/**
 	 * Simple basic resolve. We use a small index with gogo + framework and then
-	 * try to see if we can resolve the runtime from the shell
-	 * requirement. @throws Exception
+	 * try to see if we can resolve the runtime from the shell requirement.
+	 * 
+	 * @throws Exception
 	 */
 	public void testSimpleResolve() throws Exception {
 		Repository repository = createRepo(IO.getFile("testdata/repo3.index.xml"));
@@ -75,7 +76,8 @@ public class GenericResolveContextResolveTest extends TestCase {
 		grc.addRepository(repository);
 		Requirement logservice = new CapReqBuilder("osgi.service")
 				.addDirective("filter", "(objectClass=org.osgi.service.log.LogService)")
-				.addDirective("effective", "resolve").buildSyntheticRequirement();
+				.addDirective("effective", "resolve")
+				.buildSyntheticRequirement();
 		List<Capability> providers = grc.findProviders(logservice);
 
 		assertEquals(2, providers.size());
@@ -90,7 +92,8 @@ public class GenericResolveContextResolveTest extends TestCase {
 
 		Requirement logservice = new CapReqBuilder("osgi.service")
 				.addDirective("filter", "(objectClass=org.osgi.service.log.LogService)")
-				.addDirective("effective", "active").buildSyntheticRequirement();
+				.addDirective("effective", "active")
+				.buildSyntheticRequirement();
 		List<Capability> providers = grc.findProviders(logservice);
 
 		assertEquals(3, providers.size());
@@ -128,8 +131,12 @@ public class GenericResolveContextResolveTest extends TestCase {
 	void assertNames(List<Capability> providers, String... ids) {
 		Set<String> resourceNames = new HashSet<String>();
 		for (Capability cap : providers) {
-			resourceNames.add(cap.getResource().getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE).get(0)
-					.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE).toString());
+			resourceNames.add(cap.getResource()
+					.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE)
+					.get(0)
+					.getAttributes()
+					.get(IdentityNamespace.IDENTITY_NAMESPACE)
+					.toString());
 		}
 
 		Set<String> expectedResourceNames = new HashSet<String>(Arrays.asList(ids));

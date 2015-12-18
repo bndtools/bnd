@@ -252,8 +252,7 @@ public class OBRFragment {
 			for (Entry<String,Attrs> rc : d.getRequireCapability().entrySet()) {
 				resource.addCapability(toRequirement(rc.getKey(), rc.getValue()));
 			}
-		}
-		finally {
+		} finally {
 			formatter.close();
 		}
 
@@ -295,8 +294,7 @@ public class OBRFragment {
 
 			resource.addCapability(content);
 			return reporter;
-		}
-		finally {
+		} finally {
 			jar.close();
 		}
 	}
@@ -315,8 +313,7 @@ public class OBRFragment {
 			}
 
 			f.format(")");
-		}
-		finally {
+		} finally {
 			f.close();
 		}
 		return null;

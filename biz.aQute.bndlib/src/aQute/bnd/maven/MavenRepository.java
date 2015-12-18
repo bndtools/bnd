@@ -22,11 +22,11 @@ import aQute.service.reporter.Reporter;
 
 public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath {
 
-	public final static String NAME = "name";
+	public final static String	NAME	= "name";
 
-	File		root;
-	Reporter	reporter;
-	String		name;
+	File						root;
+	Reporter					reporter;
+	String						name;
 
 	@Override
 	public String toString() {
@@ -225,8 +225,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		for (DownloadListener l : listeners) {
 			try {
 				l.success(file);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				reporter.exception(e, "Download listener for %s", file);
 			}
 		}

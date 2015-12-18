@@ -115,12 +115,10 @@ public class BaselineCommands {
 							differ.setIgnore(pb.getProperty(Constants.DIFFIGNORE));
 							baseline(opts, newer, older);
 							bnd.getInfo(b);
-						}
-						finally {
+						} finally {
 							newer.close();
 						}
-					}
-					finally {
+					} finally {
 						older.close();
 					}
 				}
@@ -218,8 +216,12 @@ public class BaselineCommands {
 
 	/**
 	 * Print out the packages from spec jars and check in which ees they appear.
-	 * Example <pre> package overview -ee j2se-1.6.0 -ee j2se-1.5.0 -ee
-	 * j2ee-1.4.0 javax.activation-1.1.jar </pre>
+	 * Example
+	 * 
+	 * <pre>
+	 *  package overview -ee j2se-1.6.0 -ee j2se-1.5.0 -ee
+	 * j2ee-1.4.0 javax.activation-1.1.jar
+	 * </pre>
 	 */
 	@Description("Print out the packages from spec jars and check in which ees they appear. Very specific. For example, schema ee.j2se-1.6.0 ee.j2se-1.5.0 ee.j2ee-1.4.0")
 	interface schemaOptions extends Options {
@@ -247,8 +249,15 @@ public class BaselineCommands {
 	/**
 	 * Create a schema of a set of jars outling the packages and their versions.
 	 * This will create a list of packages with multiple versions, link to their
-	 * specifications, and the deltas between versions. <pre> bnd package schema
-	 * <file.jar>* </pre> @param opts @throws Exception
+	 * specifications, and the deltas between versions.
+	 * 
+	 * <pre>
+	 *  bnd package schema
+	 * <file.jar>*
+	 * </pre>
+	 * 
+	 * @param opts
+	 * @throws Exception
 	 */
 	public void _schema(schemaOptions opts) throws Exception {
 		MultiMap<String,PSpec> map = new MultiMap<String,PSpec>();
@@ -411,12 +420,10 @@ public class BaselineCommands {
 			try {
 				pw.print("<?xml version='1.0' encoding='UTF-8'?>\n");
 				top.print(0, pw);
-			}
-			finally {
+			} finally {
 				pw.close();
 			}
-		}
-		finally {
+		} finally {
 			fw.close();
 		}
 
@@ -434,8 +441,7 @@ public class BaselineCommands {
 			try {
 				Transformer transformer = transformerFactory.newTransformer(new StreamSource(xslt.openStream()));
 				transformer.transform(new StreamSource(of), new StreamResult(out));
-			}
-			finally {
+			} finally {
 				out.close();
 			}
 		}

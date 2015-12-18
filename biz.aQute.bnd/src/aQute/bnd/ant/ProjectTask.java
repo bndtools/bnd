@@ -24,16 +24,16 @@ public class ProjectTask extends BaseTask {
 			Project project = Workspace.getProject(basedir);
 			project.build(underTest);
 			report(project);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new BuildException(e);
 		}
 	}
 
 	/**
-	 * Set the base directory of the project. This property MUST be set. @param
-	 * basedir
+	 * Set the base directory of the project. This property MUST be set.
+	 * 
+	 * @param basedir
 	 */
 	public void setBasedir(File basedir) {
 		this.basedir = basedir;

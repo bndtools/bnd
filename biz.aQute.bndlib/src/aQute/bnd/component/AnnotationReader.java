@@ -46,40 +46,43 @@ import aQute.lib.collections.MultiMap;
  * Processes spec DS annotations into xml.
  */
 public class AnnotationReader extends ClassDataCollector {
-	final static TypeRef[]	EMPTY				= new TypeRef[0];
-	final static Pattern	PROPERTY_PATTERN	= Pattern.compile(
+	final static TypeRef[]				EMPTY						= new TypeRef[0];
+	final static Pattern				PROPERTY_PATTERN			= Pattern.compile(
 			"\\s*([^=\\s:]+)\\s*(?::\\s*(Boolean|Byte|Character|Short|Integer|Long|Float|Double|String)\\s*)?=(.*)");
 
-	public static final Version	V1_0	= new Version("1.0.0");	// "1.0.0"
-	public static final Version	V1_1	= new Version("1.1.0");	// "1.1.0"
-	public static final Version	V1_2	= new Version("1.2.0");	// "1.2.0"
-	public static final Version	V1_3	= new Version("1.3.0");	// "1.3.0"
+	public static final Version			V1_0						= new Version("1.0.0");																											// "1.0.0"
+	public static final Version			V1_1						= new Version("1.1.0");																											// "1.1.0"
+	public static final Version			V1_2						= new Version("1.2.0");																											// "1.2.0"
+	public static final Version			V1_3						= new Version("1.3.0");																											// "1.3.0"
 
-	static Pattern BINDNAME = Pattern.compile("(set|add|bind)?(.*)");
+	static Pattern						BINDNAME					= Pattern.compile("(set|add|bind)?(.*)");
 
-	static Pattern	BINDDESCRIPTORDS10	= Pattern.compile(
+	static Pattern						BINDDESCRIPTORDS10			= Pattern.compile(
 			"\\(L(((org/osgi/framework/ServiceReference)|(org/osgi/service/component/ComponentServiceObjects)|(java/util/Map\\$Entry)|(java/util/Map))|([^;]+));\\)(V|(Ljava/util/Map;))");
-	static Pattern	BINDDESCRIPTORDS11	= Pattern.compile("\\(L([^;]+);(Ljava/util/Map;)?\\)(V|(Ljava/util/Map;))");
+	static Pattern						BINDDESCRIPTORDS11			= Pattern
+			.compile("\\(L([^;]+);(Ljava/util/Map;)?\\)(V|(Ljava/util/Map;))");
 
 	// includes support for felix extensions
-	static Pattern BINDDESCRIPTORDS13 = Pattern.compile(
+	static Pattern						BINDDESCRIPTORDS13			= Pattern.compile(
 			"\\(((Lorg/osgi/framework/ServiceReference;)|(Lorg/osgi/service/component/ComponentServiceObjects;)|(Ljava/util/Map;)|(Ljava/util/Map\\$Entry;)|(L([^;]+);))+\\)(V|(Ljava/util/Map;))");
 
-	static Pattern	LIFECYCLEDESCRIPTORDS10	= Pattern
+	static Pattern						LIFECYCLEDESCRIPTORDS10		= Pattern
 			.compile("\\((Lorg/osgi/service/component/ComponentContext;)\\)(V|(Ljava/util/Map;))");
-	static Pattern	LIFECYCLEDESCRIPTORDS11	= Pattern.compile(
+	static Pattern						LIFECYCLEDESCRIPTORDS11		= Pattern.compile(
 			"\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)(V|(Ljava/util/Map;))");
-	static Pattern	LIFECYCLEDESCRIPTORDS13	= Pattern.compile("\\((L([^;]+);)*\\)(V|(Ljava/util/Map;))");
-	static Pattern	LIFECYCLEARGUMENT		= Pattern.compile(
+	static Pattern						LIFECYCLEDESCRIPTORDS13		= Pattern
+			.compile("\\((L([^;]+);)*\\)(V|(Ljava/util/Map;))");
+	static Pattern						LIFECYCLEARGUMENT			= Pattern.compile(
 			"((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(L([^;]+);))");
 
-	static Pattern IDENTIFIERTOPROPERTY = Pattern.compile("(__)|(_)|(\\$\\$)|(\\$)");
+	static Pattern						IDENTIFIERTOPROPERTY		= Pattern.compile("(__)|(_)|(\\$\\$)|(\\$)");
 
-	static Pattern	DEACTIVATEDESCRIPTORDS11	= Pattern.compile(
+	static Pattern						DEACTIVATEDESCRIPTORDS11	= Pattern.compile(
 			"\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(Ljava/lang/Integer;)|(I))*\\)(V|(Ljava/util/Map;))");
-	static Pattern	DEACTIVATEDESCRIPTORDS13	= Pattern.compile("\\(((L([^;]+);)|(I))*\\)(V|(Ljava/util/Map;))");
+	static Pattern						DEACTIVATEDESCRIPTORDS13	= Pattern
+			.compile("\\(((L([^;]+);)|(I))*\\)(V|(Ljava/util/Map;))");
 
-	final static Map<String,Class< ? >> wrappers;
+	final static Map<String,Class< ? >>	wrappers;
 
 	static {
 		Map<String,Class< ? >> map = new HashMap<String,Class< ? >>();
@@ -94,23 +97,23 @@ public class AnnotationReader extends ClassDataCollector {
 		wrappers = Collections.unmodifiableMap(map);
 	}
 
-	ComponentDef component;
+	ComponentDef											component;
 
-	Clazz					clazz;
-	TypeRef					interfaces[];
-	FieldDef				member;
-	TypeRef					className;
-	Analyzer				analyzer;
-	MultiMap<String,Clazz.MethodDef>						methods						= new MultiMap<String,Clazz.MethodDef>();
-	TypeRef					extendsClass;
-	boolean					baseclass	= true;
-	final EnumSet<Options>	options;
+	Clazz													clazz;
+	TypeRef													interfaces[];
+	FieldDef												member;
+	TypeRef													className;
+	Analyzer												analyzer;
+	MultiMap<String,Clazz.MethodDef>						methods					= new MultiMap<String,Clazz.MethodDef>();
+	TypeRef													extendsClass;
+	boolean													baseclass				= true;
+	final EnumSet<Options>									options;
 
-	final Map<FieldDef,ReferenceDef> referencesByMember = new HashMap<FieldDef,ReferenceDef>();
+	final Map<FieldDef,ReferenceDef>						referencesByMember		= new HashMap<FieldDef,ReferenceDef>();
 
-	final XMLAttributeFinder finder;
+	final XMLAttributeFinder								finder;
 
-	Map<String,List<DeclarativeServicesAnnotationError>> mismatchedAnnotations = new HashMap<String,List<DeclarativeServicesAnnotationError>>();
+	Map<String,List<DeclarativeServicesAnnotationError>>	mismatchedAnnotations	= new HashMap<String,List<DeclarativeServicesAnnotationError>>();
 
 	AnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder finder) {
 		this.analyzer = analyzer;
@@ -165,7 +168,8 @@ public class AnnotationReader extends ClassDataCollector {
 	}
 
 	/**
-	 * @param analyzer @param rdef
+	 * @param analyzer
+	 * @param rdef
 	 */
 	protected String referredMethod(Analyzer analyzer, ReferenceDef rdef, String value, String... matches) {
 		if (value == null) {
@@ -238,8 +242,7 @@ public class AnnotationReader extends ClassDataCollector {
 					doXmlAttribute(annotation, xmlAttr);
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			analyzer.error("During generation of a component on class %s, exception %s", clazz, e);
 		}
@@ -406,9 +409,12 @@ public class AnnotationReader extends ClassDataCollector {
 	}
 
 	/**
-	 * look for annotation arguments and extract properties from them @param
-	 * methodDescriptor @param fqn TODO @param method TODO @param descriptor
-	 * TODO
+	 * look for annotation arguments and extract properties from them
+	 * 
+	 * @param methodDescriptor
+	 * @param fqn TODO
+	 * @param method TODO
+	 * @param descriptor TODO
 	 */
 	private void processAnnotationArguments(final String methodDescriptor,
 			final DeclarativeServicesAnnotationError details) {
@@ -443,8 +449,7 @@ public class AnnotationReader extends ClassDataCollector {
 														defined.getName(), type.getFQN()).details(details);
 												return;
 											}
-										}
-										catch (Exception e) {
+										} catch (Exception e) {
 											analyzer.error(
 													"Exception looking at annotation type to lifecycle method with descriptor %s,  type %s",
 													e, methodDescriptor, type).details(details);
@@ -505,8 +510,7 @@ public class AnnotationReader extends ClassDataCollector {
 						analyzer.error("Non annotation argument to lifecycle method with descriptor %s,  type %s",
 								methodDescriptor, type).details(details);
 					}
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					analyzer.error(
 							"Exception looking at annotation argument to lifecycle method with descriptor %s,  type %s",
 							e, methodDescriptor, type).details(details);
@@ -516,8 +520,9 @@ public class AnnotationReader extends ClassDataCollector {
 	}
 
 	/**
-	 * @param reference @Reference proxy backed by raw. @param raw @Reference
-	 * contents @throws Exception
+	 * @param reference @Reference proxy backed by raw.
+	 * @param raw @Reference contents
+	 * @throws Exception
 	 */
 	protected void doReference(Reference reference, Annotation raw) throws Exception {
 		ReferenceDef def;
@@ -796,9 +801,10 @@ public class AnnotationReader extends ClassDataCollector {
 	}
 
 	/**
-	 * @param annoService @param inferredService @return true if the inferred
-	 * service is a non-parameter object because it differs from the specified
-	 * service type.
+	 * @param annoService
+	 * @param inferredService
+	 * @return true if the inferred service is a non-parameter object because it
+	 *         differs from the specified service type.
 	 */
 	private boolean noMatch(String annoService, String inferredService) {
 		if (annoService == null)
@@ -807,7 +813,8 @@ public class AnnotationReader extends ClassDataCollector {
 	}
 
 	/**
-	 * @param annotation @throws Exception
+	 * @param annotation
+	 * @throws Exception
 	 */
 	@SuppressWarnings("deprecation")
 	protected void doComponent(Component comp, Annotation annotation) throws Exception {
@@ -908,8 +915,8 @@ public class AnnotationReader extends ClassDataCollector {
 				Clazz service = analyzer.findClass(typeRef);
 				if (!analyzer.assignable(clazz, service)) {
 					analyzer.error("Class %s is not assignable to specified service %s", clazz.getFQN(),
-							typeRef.getFQN()).details(
-							new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
+							typeRef.getFQN())
+							.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
 									ErrorType.INCOMPATIBLE_SERVICE));
 				}
 				component.service[i] = typeRef;

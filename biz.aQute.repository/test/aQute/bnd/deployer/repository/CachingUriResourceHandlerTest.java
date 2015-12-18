@@ -14,10 +14,10 @@ import test.lib.NanoHTTPD;
 
 public class CachingUriResourceHandlerTest extends TestCase {
 
-	private static final String EXPECTED_SHA = "d0002141a722ef03ecd8fd2e0d3e4d3bc680ba91483cb4962f68a41a12dd01ab"
+	private static final String	EXPECTED_SHA	= "d0002141a722ef03ecd8fd2e0d3e4d3bc680ba91483cb4962f68a41a12dd01ab"
 			.toUpperCase();
 
-	static File currentDir = new File(System.getProperty("user.dir"));
+	static File					currentDir		= new File(System.getProperty("user.dir"));
 
 	public static void testLoadFromCache() throws Exception {
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
@@ -40,17 +40,16 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		try {
 			handle.request();
 			fail("Should throw IOException");
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			// expected
 
 			/* cleanup */
 			List<String> cacheFiles = Arrays.asList(cacheDir.list());
 			String uriCacheDir = URLEncoder.encode(baseUri.toURL().toExternalForm(), "UTF-8");
-			assert(cacheFiles.size() == 1 || cacheFiles.size() == 2);
-			assert(cacheFiles.contains(uriCacheDir));
+			assert (cacheFiles.size() == 1 || cacheFiles.size() == 2);
+			assert (cacheFiles.contains(uriCacheDir));
 			if (cacheFiles.size() == 2) {
-				assert(cacheFiles.contains(".gitignore"));
+				assert (cacheFiles.contains(".gitignore"));
 			}
 			IO.getFile(testDirName + "/" + uriCacheDir).delete();
 		}
@@ -79,14 +78,13 @@ public class CachingUriResourceHandlerTest extends TestCase {
 			/* cleanup */
 			List<String> cacheFiles = Arrays.asList(cacheDir.list());
 			String uriCacheDir = URLEncoder.encode(baseUri.toURL().toExternalForm(), "UTF-8");
-			assert(cacheFiles.size() == 1 || cacheFiles.size() == 2);
-			assert(cacheFiles.contains(uriCacheDir));
+			assert (cacheFiles.size() == 1 || cacheFiles.size() == 2);
+			assert (cacheFiles.contains(uriCacheDir));
 			if (cacheFiles.size() == 2) {
-				assert(cacheFiles.contains(".gitignore"));
+				assert (cacheFiles.contains(".gitignore"));
 			}
 			IO.getFile(testDirName + "/" + uriCacheDir).delete();
-		}
-		finally {
+		} finally {
 			httpd.stop();
 		}
 	}
@@ -104,8 +102,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 			File result = handle.request();
 			assertEquals(cached, result);
 			assertEquals("File timestamp should NOT change", cacheTimestamp, result.lastModified());
-		}
-		finally {
+		} finally {
 			httpd.stop();
 		}
 	}
@@ -129,8 +126,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 			assertNotSame("File timestamp SHOULD change", cacheTimestamp, result.lastModified());
 
 			assertEquals(EXPECTED_SHA, IO.collect(shaFile));
-		}
-		finally {
+		} finally {
 			httpd.stop();
 		}
 	}
@@ -159,14 +155,13 @@ public class CachingUriResourceHandlerTest extends TestCase {
 
 			/* cleanup */
 			List<String> cacheFiles = Arrays.asList(cacheDir.list());
-			assert(cacheFiles.size() == 1 || cacheFiles.size() == 2);
-			assert(cacheFiles.contains(uriCacheDir));
+			assert (cacheFiles.size() == 1 || cacheFiles.size() == 2);
+			assert (cacheFiles.contains(uriCacheDir));
 			if (cacheFiles.size() == 2) {
-				assert(cacheFiles.contains(".gitignore"));
+				assert (cacheFiles.contains(".gitignore"));
 			}
 			IO.delete(IO.getFile(testDirName + "/" + uriCacheDir));
-		}
-		finally {
+		} finally {
 			httpd.stop();
 		}
 	}

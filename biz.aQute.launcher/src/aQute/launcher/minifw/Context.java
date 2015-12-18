@@ -168,8 +168,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 				}
 			}
 			return paths.elements();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -201,8 +200,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 				ZipEntry entry = e.nextElement();
 				paths.add(entry.getName());
 			}
-		}
-		finally {
+		} finally {
 			jar.close();
 		}
 		return paths;

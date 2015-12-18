@@ -137,8 +137,7 @@ public class ResolveTest extends TestCase {
 
 			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
 			Set<Resource> resources = resolved.keySet();
-		}
-		catch (ResolutionException e) {
+		} catch (ResolutionException e) {
 			String msg = e.getMessage().replaceAll("\\[caused by:", "\n->");
 			System.out.println(msg);
 			fail(msg);
@@ -147,7 +146,9 @@ public class ResolveTest extends TestCase {
 	}
 
 	/**
-	 * Test if we can augment @throws Exception
+	 * Test if we can augment
+	 * 
+	 * @throws Exception
 	 */
 
 	public static void testResolveWithAugments() throws Exception {
@@ -183,8 +184,7 @@ public class ResolveTest extends TestCase {
 		try {
 			assertAugmentResolve(augment, require, effective);
 			fail("Failed to fail augment=" + augment + ", require=" + require + ", effective=" + effective);
-		}
-		catch (AssertionError | ResolutionException e) {
+		} catch (AssertionError | ResolutionException e) {
 			// Yup, expected
 		}
 	}
@@ -212,8 +212,10 @@ public class ResolveTest extends TestCase {
 	}
 
 	/**
-	 * Test minimal setup @throws URISyntaxException @throws
-	 * MalformedURLException
+	 * Test minimal setup
+	 * 
+	 * @throws URISyntaxException
+	 * @throws MalformedURLException
 	 */
 	public static void testMinimalSetup() throws MalformedURLException, URISyntaxException {
 		File index = IO.getFile("testdata/repo3.index.xml");
@@ -236,15 +238,16 @@ public class ResolveTest extends TestCase {
 			Set<Resource> resources = resolved.keySet();
 			Resource shell = getResource(resources, "org.apache.felix.gogo.shell", "0.10.0");
 			assertNotNull(shell);
-		}
-		catch (ResolutionException e) {
+		} catch (ResolutionException e) {
 			e.printStackTrace();
 			fail("Resolve failed");
 		}
 	}
 
 	/**
-	 * Test if we can resolve with a distro @throws ResolutionException
+	 * Test if we can resolve with a distro
+	 * 
+	 * @throws ResolutionException
 	 */
 	public static void testResolveWithDistro() throws ResolutionException {
 
@@ -299,8 +302,7 @@ public class ResolveTest extends TestCase {
 			Set<Resource> resources = resolved.keySet();
 			Resource resource = getResource(resources, "org.apache.felix.gogo.runtime", "0.10");
 			assertNotNull(resource);
-		}
-		catch (ResolutionException e) {
+		} catch (ResolutionException e) {
 			fail("Resolve failed");
 		}
 	}
@@ -403,7 +405,9 @@ public class ResolveTest extends TestCase {
 	}
 
 	/**
-	 * Simple test that resolves a requirement @throws ResolutionException
+	 * Simple test that resolves a requirement
+	 * 
+	 * @throws ResolutionException
 	 */
 	public static void testMultipleOptionsNotDuplicated() throws ResolutionException {
 

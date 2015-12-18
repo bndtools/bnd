@@ -7,21 +7,21 @@ import java.util.regex.Pattern;
 
 public class AttributeType {
 
-	public static final AttributeType	STRING		= new AttributeType(false, ScalarType.String);
-	public static final AttributeType	STRINGLIST	= new AttributeType(true, ScalarType.String);
-	public static final AttributeType	LONG		= new AttributeType(false, ScalarType.Long);
-	public static final AttributeType	LONGLIST	= new AttributeType(true, ScalarType.Long);
-	public static final AttributeType	DOUBLE		= new AttributeType(false, ScalarType.Double);
-	public static final AttributeType	DOUBLELIST	= new AttributeType(true, ScalarType.Double);
-	public static final AttributeType	VERSION		= new AttributeType(false, ScalarType.Version);
-	public static final AttributeType	VERSIONLIST	= new AttributeType(true, ScalarType.Version);
+	public static final AttributeType	STRING				= new AttributeType(false, ScalarType.String);
+	public static final AttributeType	STRINGLIST			= new AttributeType(true, ScalarType.String);
+	public static final AttributeType	LONG				= new AttributeType(false, ScalarType.Long);
+	public static final AttributeType	LONGLIST			= new AttributeType(true, ScalarType.Long);
+	public static final AttributeType	DOUBLE				= new AttributeType(false, ScalarType.Double);
+	public static final AttributeType	DOUBLELIST			= new AttributeType(true, ScalarType.Double);
+	public static final AttributeType	VERSION				= new AttributeType(false, ScalarType.Version);
+	public static final AttributeType	VERSIONLIST			= new AttributeType(true, ScalarType.Version);
 
-	public static final AttributeType DEFAULT = STRING;
+	public static final AttributeType	DEFAULT				= STRING;
 
-	private static final Pattern LIST_TYPE_PATTERN = Pattern.compile("List<(\\w*)>");
+	private static final Pattern		LIST_TYPE_PATTERN	= Pattern.compile("List<(\\w*)>");
 
-	private final boolean		list;
-	private final ScalarType	baseType;
+	private final boolean				list;
+	private final ScalarType			baseType;
 
 	public static AttributeType parseTypeName(String typeName) throws IllegalArgumentException {
 		if (typeName == null)

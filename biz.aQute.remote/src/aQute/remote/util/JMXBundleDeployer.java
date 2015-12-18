@@ -36,9 +36,9 @@ import org.osgi.framework.dto.BundleDTO;
  */
 public class JMXBundleDeployer {
 
-	private final static String OBJECTNAME = "osgi.core";
+	private final static String		OBJECTNAME	= "osgi.core";
 
-	private MBeanServerConnection mBeanServerConnection;
+	private MBeanServerConnection	mBeanServerConnection;
 
 	public JMXBundleDeployer() {
 		this(getLocalConnectorAddress());
@@ -54,18 +54,19 @@ public class JMXBundleDeployer {
 			final JMXConnector jmxConnector = JMXConnectorFactory.connect(jmxServiceUrl, null);
 
 			mBeanServerConnection = jmxConnector.getMBeanServerConnection();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new IllegalArgumentException("Unable to get JMX connection", e);
 		}
 	}
 
 	/**
 	 * Gets the current list of installed bsns, compares it to the bsn provided.
-	 * If bsn doesn't exist, then install it. If it does exist then update
-	 * it. @param bsn Bundle-SymbolicName of bundle you are wanting to
-	 * deploy @param bundle the bundle @return the id of the updated or
-	 * installed bundle @throws Exception
+	 * If bsn doesn't exist, then install it. If it does exist then update it.
+	 * 
+	 * @param bsn Bundle-SymbolicName of bundle you are wanting to deploy
+	 * @param bundle the bundle
+	 * @return the id of the updated or installed bundle
+	 * @throws Exception
 	 */
 	public long deploy(String bsn, File bundle) throws Exception {
 		final ObjectName framework = getFramework(mBeanServerConnection);
@@ -120,7 +121,8 @@ public class JMXBundleDeployer {
 
 	private ObjectName getBundleState() throws MalformedObjectNameException, IOException {
 
-		return mBeanServerConnection.queryNames(new ObjectName(OBJECTNAME + ":type=bundleState,*"), null).iterator()
+		return mBeanServerConnection.queryNames(new ObjectName(OBJECTNAME + ":type=bundleState,*"), null)
+				.iterator()
 				.next();
 	}
 
@@ -138,8 +140,9 @@ public class JMXBundleDeployer {
 	}
 
 	/**
-	 * Calls osgi.core bundleState MBean listBundles operation @return array of
-	 * bundles in framework
+	 * Calls osgi.core bundleState MBean listBundles operation
+	 * 
+	 * @return array of bundles in framework
 	 */
 	public BundleDTO[] listBundles() {
 		final List<BundleDTO> retval = new ArrayList<BundleDTO>();
@@ -165,13 +168,11 @@ public class JMXBundleDeployer {
 
 				try {
 					retval.add(newFromData(cd));
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
@@ -206,8 +207,10 @@ public class JMXBundleDeployer {
 
 	/**
 	 * Uninstall a bundle by passing in its Bundle-SymbolicName. If bundle
-	 * doesn't exist, this is a NOP. @param bsn bundle symbolic name @throws
-	 * Exception
+	 * doesn't exist, this is a NOP.
+	 * 
+	 * @param bsn bundle symbolic name
+	 * @throws Exception
 	 */
 	public void uninstall(String bsn) throws Exception {
 		for (BundleDTO osgiBundle : listBundles()) {
@@ -223,7 +226,10 @@ public class JMXBundleDeployer {
 
 	/**
 	 * Calls through directly to the OSGi frameworks MBean uninstallBundle
-	 * operation @param id id of bundle to uninstall @throws Exception
+	 * operation
+	 * 
+	 * @param id id of bundle to uninstall
+	 * @throws Exception
 	 */
 	public void uninstall(long id) throws Exception {
 		final ObjectName framework = getFramework(mBeanServerConnection);
@@ -243,7 +249,9 @@ public class JMXBundleDeployer {
 	 * Uses Oracle JDK's Attach API to try to search VMs on this machine looking
 	 * for the osgi.core MBeans. This will stop searching for VMs once the
 	 * MBeans are found. Beware if you have multiple JVMs with osgi.core MBeans
-	 * published. @return
+	 * published.
+	 * 
+	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	static String getLocalConnectorAddress() {
@@ -307,25 +315,20 @@ public class JMXBundleDeployer {
 									}
 								}
 							}
-						}
-						catch (Exception e) {
+						} catch (Exception e) {
 							e.printStackTrace();
-						}
-						finally {
+						} finally {
 							Method detachMethod = vmClass.getMethod("detach");
 							detachMethod.invoke(vm);
 						}
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						e.printStackTrace();
 					}
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		}
-		finally {
+		} finally {
 			Thread.currentThread().setContextClassLoader(cl);
 			// try to get custom classloader to unload native libs
 			try {
@@ -345,8 +348,7 @@ public class JMXBundleDeployer {
 						}
 					}
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -362,8 +364,7 @@ public class JMXBundleDeployer {
 
 			try {
 				toolsUrl = toolsJar.toURI().toURL();
-			}
-			catch (MalformedURLException e) {
+			} catch (MalformedURLException e) {
 				//
 			}
 

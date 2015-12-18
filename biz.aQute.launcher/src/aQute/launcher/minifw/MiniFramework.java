@@ -174,8 +174,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 			bundles.put(new Long(c.id), c);
 			last = c;
 			return c;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new BundleException("Failed to install", e);
 		}
 	}
@@ -187,8 +186,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 			try {
 				@SuppressWarnings("unused")
 				URL url = new URL(location);
-			}
-			catch (MalformedURLException e) {
+			} catch (MalformedURLException e) {
 				throw new BundleException(
 						"For the mini framework, the location must be a proper URL even though this is not required by the specification "
 								+ location,
@@ -198,8 +196,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 			bundles.put(new Long(c.id), c);
 			last = c;
 			return c;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new BundleException("Can't install " + location, e);
 		}
 	}
@@ -287,8 +284,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 			for (Bundle b : bundles.values()) {
 				try {
 					return b.loadClass(name);
-				}
-				catch (ClassNotFoundException e) {
+				} catch (ClassNotFoundException e) {
 					// Ignore, try next
 				}
 			}

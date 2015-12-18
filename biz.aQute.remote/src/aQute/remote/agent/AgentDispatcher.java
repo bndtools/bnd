@@ -55,22 +55,19 @@ public class AgentDispatcher {
 			for (AgentServer as : servers) {
 				try {
 					as.close();
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					// ignore
 				}
 			}
 			for (BundleActivator ba : activators)
 				try {
 					ba.stop(framework.getBundleContext());
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					// ignore
 				}
 			try {
 				framework.stop();
-			}
-			catch (BundleException e) {
+			} catch (BundleException e) {
 				// ignore
 			}
 		}
@@ -144,8 +141,7 @@ public class AgentDispatcher {
 						ba.start(framework.getBundleContext());
 						d.activators.add(ba);
 					}
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					// TODO
 					System.out.println("IGNORED");
 					e.printStackTrace();
@@ -201,8 +197,7 @@ public class AgentDispatcher {
 		for (Descriptor descriptor : descriptors) {
 			try {
 				descriptor.framework.waitForStop(2000);
-			}
-			catch (InterruptedException e) {
+			} catch (InterruptedException e) {
 				// ignore
 			}
 		}

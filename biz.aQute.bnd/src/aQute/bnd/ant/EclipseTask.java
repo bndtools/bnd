@@ -52,8 +52,7 @@ public class EclipseTask extends BaseTask {
 			if (dependents.size() > 0) {
 				addProperty(prefix + "buildpath", join(dependents, separator));
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new BuildException("Error during parsing Eclipse .classpath files", e);
 		}
 	}

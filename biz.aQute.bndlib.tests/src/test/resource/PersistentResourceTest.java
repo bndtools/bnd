@@ -17,8 +17,11 @@ public class PersistentResourceTest extends TestCase {
 
 	public void testSimple() throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
-		rb.addCapability(new CapReqBuilder("test").addAttribute("double", 3.0).addAttribute("long", 3L)
-				.addAttribute("string", "3.0").addAttribute("version", new Version("3.0")).buildSyntheticCapability());
+		rb.addCapability(new CapReqBuilder("test").addAttribute("double", 3.0)
+				.addAttribute("long", 3L)
+				.addAttribute("string", "3.0")
+				.addAttribute("version", new Version("3.0"))
+				.buildSyntheticCapability());
 		Resource r = rb.build();
 
 		PersistentResource pr = new PersistentResource(r);

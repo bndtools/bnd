@@ -98,7 +98,10 @@ public class DiffTest extends TestCase {
 	 * Even stranger is the fact that, though always about the same class, the
 	 * actual diff is not consistent. Tested with several versions of bnd
 	 * (including master HEAD) as well as several versions of the guava bundles
-	 * from maven central. Reproduced by @bnd . <pre> $ java -jar
+	 * from maven central. Reproduced by @bnd .
+	 * 
+	 * <pre>
+	 *  $ java -jar
 	 * biz.aQute.bnd.jar diff guava-14.0.1.jar guava-14.0.1.jar MINOR PACKAGE
 	 * com.google.common.collect MINOR CLASS
 	 * com.google.common.collect.ContiguousSet MINOR METHOD
@@ -111,7 +114,10 @@ public class DiffTest extends TestCase {
 	 * java.io.Serializable ADDED RETURN java.lang.Iterable ADDED RETURN
 	 * java.lang.Iterable ADDED RETURN java.lang.Iterable ADDED RETURN
 	 * java.util.Collection ADDED RETURN java.util.Collection ADDED RETURN
-	 * java.util.Set </pre> @throws Exception
+	 * java.util.Set
+	 * </pre>
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testGuavaDiff() throws Exception {
@@ -125,9 +131,16 @@ public class DiffTest extends TestCase {
 
 	/**
 	 * Test the scenario where nested annotations can generate false positive in
-	 * diffs <p> The trigger is a class-level annotations of the form <pre>
+	 * diffs
+	 * <p>
+	 * The trigger is a class-level annotations of the form
+	 * 
+	 * <pre>
 	 * {@literal @}Properties(value = { {@literal @}Property(name = "some.key",
-	 * value = "some.value") }) </pre> @throws Exception
+	 * value = "some.value") })
+	 * </pre>
+	 * 
+	 * @throws Exception
 	 */
 	public void testNestedExportedAnnotations() throws Exception {
 		Builder b = new Builder();
@@ -144,9 +157,16 @@ public class DiffTest extends TestCase {
 
 	/**
 	 * Test the scenario where nested annotations can generate false positive in
-	 * diffs <p> The trigger is a class-level annotations of the form <pre>
+	 * diffs
+	 * <p>
+	 * The trigger is a class-level annotations of the form
+	 * 
+	 * <pre>
 	 * {@literal @}Properties(value = { {@literal @}Property(name = "some.key",
-	 * value = "some.value") }) </pre> @throws Exception
+	 * value = "some.value") })
+	 * </pre>
+	 * 
+	 * @throws Exception
 	 */
 	public void testNestedExportedAnnotations2() throws Exception {
 

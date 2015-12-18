@@ -14,12 +14,13 @@ import javax.crypto.spec.PBEParameterSpec;
 public class PasswordCryptor {
 
 	// Salt
-	final static byte[] salt = {
-			(byte) 0x21, (byte) 0x48, (byte) 0x3F, (byte) 0x65, (byte) 0x0, (byte) 0x8, (byte) 0xee, (byte) 0xFF
-	};
+	final static byte[]				salt			= {
+															(byte) 0x21, (byte) 0x48, (byte) 0x3F, (byte) 0x65,
+															(byte) 0x0, (byte) 0x8, (byte) 0xee, (byte) 0xFF
+														};
 
 	// Iteration count
-	final static int count = 50;
+	final static int				count			= 50;
 
 	final static PBEParameterSpec	pbeParamSpec	= new PBEParameterSpec(salt, count);
 	final SecretKeyFactory			keyFac			= SecretKeyFactory.getInstance("PBEWithMD5AndDES");

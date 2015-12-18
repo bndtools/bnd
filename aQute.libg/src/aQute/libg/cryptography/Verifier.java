@@ -18,8 +18,7 @@ public class Verifier extends OutputStream {
 	public void write(byte[] buffer, int offset, int length) throws IOException {
 		try {
 			signature.update(buffer, offset, length);
-		}
-		catch (SignatureException e) {
+		} catch (SignatureException e) {
 			throw new IOException(e.getLocalizedMessage());
 		}
 	}
@@ -28,8 +27,7 @@ public class Verifier extends OutputStream {
 	public void write(int b) throws IOException {
 		try {
 			signature.update((byte) b);
-		}
-		catch (SignatureException e) {
+		} catch (SignatureException e) {
 			throw new IOException(e.getLocalizedMessage());
 		}
 	}

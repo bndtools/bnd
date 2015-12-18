@@ -27,8 +27,7 @@ public class JMXBundleDeployerTest extends TestCase {
 		try {
 			JMXBundleDeployer.getLocalConnectorAddress();
 			JMXBundleDeployer.getLocalConnectorAddress();
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			ex = t;
 		}
 

@@ -4,7 +4,9 @@ import java.util.Enumeration;
 import java.util.Iterator;
 
 /**
- * Simple facade for enumerators so they can be used in for loops. @param <T>
+ * Simple facade for enumerators so they can be used in for loops.
+ * 
+ * @param <T>
  */
 public class EnumerationIterator<T> implements Iterable<T>, Iterator<T> {
 

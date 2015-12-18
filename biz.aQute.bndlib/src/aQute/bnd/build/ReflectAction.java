@@ -32,8 +32,7 @@ public class ReflectAction implements Action {
 							}
 							m.invoke(project, args2);
 							return;
-						}
-						catch (Exception e) {
+						} catch (Exception e) {
 							// try next method
 						}
 					}

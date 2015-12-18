@@ -67,8 +67,7 @@ public class JUnitLauncher extends ProjectLauncher {
 				return TIMEDOUT;
 			reportResult(result);
 			return result;
-		}
-		finally {
+		} finally {
 			cleanup();
 		}
 

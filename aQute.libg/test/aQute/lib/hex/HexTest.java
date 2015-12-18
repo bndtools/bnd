@@ -8,19 +8,19 @@ import junit.framework.TestCase;
 public class HexTest extends TestCase {
 
 	static final char	ns[]	= {
-			' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'A', 'B', 'C',
-			'D', 'E', 'F', 'G', '_'
+										' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
+										'f', 'g', 'A', 'B', 'C', 'D', 'E', 'F', 'G', '_'
 									};
 	static final int	nsr[]	= {
-			-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, -1, 10, 11, 12, 13, 14, 15, -1, -1
+										-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, -1, 10, 11, 12, 13,
+										14, 15, -1, -1
 									};
 
 	public static void testNibble() {
 		for (int i = 0; i < ns.length; i++) {
 			try {
 				assertEquals(nsr[i], Hex.nibble(ns[i]));
-			}
-			catch (IllegalArgumentException e) {
+			} catch (IllegalArgumentException e) {
 				assertEquals("Did not get an exception for nibble \"" + ns[i] + "\"", -1, nsr[i]);
 			}
 		}
@@ -31,8 +31,7 @@ public class HexTest extends TestCase {
 		byte[] bytes = null;
 		try {
 			Hex.toByteArray("b10a8db164e0754105b7a99be72e3fe");
-		}
-		catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			ex = true;
 		}
 		assertTrue(ex);

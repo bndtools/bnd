@@ -125,7 +125,9 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Digests as byte[] @throws Exception
+	 * Digests as byte[]
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testDigest() throws Exception {
@@ -139,8 +141,7 @@ public class ConverterTest extends TestCase {
 			ByteArrayOutputStream bout = new ByteArrayOutputStream();
 			bout.write("Hello World".getBytes());
 			assertTrue(Arrays.equals("Hello World".getBytes(), converter.convert(byte[].class, bout)));
-		}
-		finally {
+		} finally {
 			digester.close();
 		}
 	}
@@ -160,7 +161,9 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test string to primitives @throws Exception
+	 * Test string to primitives
+	 * 
+	 * @throws Exception
 	 */
 
 	public void testStringtoPrimitives() throws Exception {
@@ -187,7 +190,9 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test the wrappers @throws Exception
+	 * Test the wrappers
+	 * 
+	 * @throws Exception
 	 */
 	public void testWrappers() throws Exception {
 		Object[] types = {
@@ -201,8 +206,9 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Create an array and see if we can convert a single number @throws
-	 * Exception
+	 * Create an array and see if we can convert a single number
+	 * 
+	 * @throws Exception
 	 */
 	public void testPrimitives() throws Exception {
 		assertPrimitives1(1);
@@ -220,7 +226,10 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test enums @param source @throws Exception
+	 * Test enums
+	 * 
+	 * @param source
+	 * @throws Exception
 	 */
 	public enum X {
 		A, B, C;
@@ -232,7 +241,10 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test collections @param source @throws Exception
+	 * Test collections
+	 * 
+	 * @param source
+	 * @throws Exception
 	 */
 	static class XX {
 		public ArrayList<String>				al;
@@ -264,7 +276,10 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test generic collections @param source @throws Exception
+	 * Test generic collections
+	 * 
+	 * @param source
+	 * @throws Exception
 	 */
 	static class GC {
 		public Collection<String>				strings;
@@ -294,7 +309,10 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test generic maps @param source @throws Exception
+	 * Test generic maps
+	 * 
+	 * @param source
+	 * @throws Exception
 	 */
 	public static class GM {
 		public Map<String,Integer>					strings;
@@ -353,7 +371,10 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test constructor @param source @throws Exception
+	 * Test constructor
+	 * 
+	 * @param source
+	 * @throws Exception
 	 */
 
 	public void testConstructor() throws Exception {
@@ -364,7 +385,10 @@ public class ConverterTest extends TestCase {
 	}
 
 	/**
-	 * Test valueOf @param source @throws Exception
+	 * Test valueOf
+	 * 
+	 * @param source
+	 * @throws Exception
 	 */
 
 	public void testValueOf() throws Exception {

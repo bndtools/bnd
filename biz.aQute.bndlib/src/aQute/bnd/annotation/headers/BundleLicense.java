@@ -76,8 +76,8 @@ import java.lang.annotation.Target;
 })
 public @interface BundleLicense {
 	/**
-	 * The name of the license, should refer to <a
-	 * href="http://opensource.org/">Open Source Initiative</a>
+	 * The name of the license, should refer to
+	 * <a href="http://opensource.org/">Open Source Initiative</a>
 	 */
 	String name();
 

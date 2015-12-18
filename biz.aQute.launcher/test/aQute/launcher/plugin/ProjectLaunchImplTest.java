@@ -31,8 +31,7 @@ public class ProjectLaunchImplTest extends TestCase {
 
 			systemCaps = launcher.getSystemCapabilities();
 			launcher.close();
-		}
-		finally {
+		} finally {
 			project.close();
 			ws.close();
 		}

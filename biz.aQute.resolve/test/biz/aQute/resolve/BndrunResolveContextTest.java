@@ -356,7 +356,11 @@ public class BndrunResolveContextTest extends TestCase {
 		registry.addPlugin(new ResolverHook() {
 			public void filterMatches(Requirement requirement, List<Capability> candidates) {
 				for (Iterator<Capability> iter = candidates.iterator(); iter.hasNext();) {
-					Object id = iter.next().getResource().getCapabilities("osgi.identity").get(0).getAttributes()
+					Object id = iter.next()
+							.getResource()
+							.getCapabilities("osgi.identity")
+							.get(0)
+							.getAttributes()
 							.get("osgi.identity");
 					if ("osgi.cmpn".equals(id))
 						iter.remove();
@@ -476,7 +480,11 @@ public class BndrunResolveContextTest extends TestCase {
 		registry.addPlugin(new ResolverHook() {
 			public void filterMatches(Requirement requirement, List<Capability> candidates) {
 				for (Iterator<Capability> iter = candidates.iterator(); iter.hasNext();) {
-					Object id = iter.next().getResource().getCapabilities("osgi.identity").get(0).getAttributes()
+					Object id = iter.next()
+							.getResource()
+							.getCapabilities("osgi.identity")
+							.get(0)
+							.getAttributes()
 							.get("osgi.identity");
 					if ("org.apache.felix.framework".equals(id)) {
 						fail("this line should not be reached");
@@ -548,7 +556,10 @@ public class BndrunResolveContextTest extends TestCase {
 
 		Requirement resourceReq = new CapReqBuilder("osgi.identity")
 				.addDirective("filter", "(osgi.identity=dummy-selfcap)").buildSyntheticRequirement();
-		Resource resource = repo.findProviders(Collections.singleton(resourceReq)).get(resourceReq).iterator().next()
+		Resource resource = repo.findProviders(Collections.singleton(resourceReq))
+				.get(resourceReq)
+				.iterator()
+				.next()
 				.getResource();
 
 		Requirement packageReq = resource.getRequirements("osgi.wiring.package").get(0);
@@ -780,8 +791,7 @@ public class BndrunResolveContextTest extends TestCase {
 			assertEquals(1, providers.size());
 			assertEquals(IO.getFile("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(),
 					findContentURI(providers.get(0).getResource()));
-		}
-		finally {
+		} finally {
 			System.setProperty("os.name", origOsName);
 			System.setProperty("os.version", origOsVersion);
 			System.setProperty("os.arch", origOsArch);

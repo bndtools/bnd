@@ -158,8 +158,7 @@ public class DiffCommand {
 				pw.print("<?xml version='1.0' encoding='UTF-8'?>\n");
 				tag.print(0, pw);
 			}
-		}
-		finally {
+		} finally {
 			if (older != null) {
 				older.close();
 			}
@@ -173,7 +172,11 @@ public class DiffCommand {
 	}
 
 	/**
-	 * Just show the single tree @param bnd @param options @throws Exception
+	 * Just show the single tree
+	 * 
+	 * @param bnd
+	 * @param options
+	 * @throws Exception
 	 */
 
 	private static void showTree(bnd bnd, diffOptions options) throws Exception {
@@ -203,8 +206,7 @@ public class DiffCommand {
 			if (all || options.resources())
 				show(pw, n.get("<resources>"), 0);
 			pw.close();
-		}
-		finally {
+		} finally {
 			newer.close();
 		}
 

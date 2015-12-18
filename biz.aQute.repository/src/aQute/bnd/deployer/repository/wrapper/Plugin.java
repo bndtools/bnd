@@ -116,14 +116,12 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 
 					this.wrapper.addAugment(p.getFlattenedProperties());
 					this.wrapper.clear(workspace.getPropertiesFile().lastModified());
-				}
-				finally {
+				} finally {
 					p.close();
 				}
 			}
 
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
 		}
@@ -145,8 +143,7 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 		MultiMap<Requirement,Capability> result = new MultiMap<Requirement,Capability>();
 		try {
 			wrapper.findProviders(result, requirements);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		return (Map) result;

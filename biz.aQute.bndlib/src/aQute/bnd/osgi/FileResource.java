@@ -13,11 +13,11 @@ import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 
 public class FileResource implements Resource, Closeable {
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
+	static final int	BUFFER_SIZE	= IOConstants.PAGE_SIZE * 16;
 
-	File	file;
-	String	extra;
-	boolean	deleteOnClose;
+	File				file;
+	String				extra;
+	boolean				deleteOnClose;
 
 	public FileResource(File file) {
 		this.file = file;
@@ -25,7 +25,10 @@ public class FileResource implements Resource, Closeable {
 
 	/**
 	 * Turn a resource into a file so that anything in the conversion is
-	 * properly caught @param r @throws Exception
+	 * properly caught
+	 * 
+	 * @param r
+	 * @throws Exception
 	 */
 	public FileResource(Resource r) throws Exception {
 		this.file = File.createTempFile("fileresource", ".resource");
@@ -60,8 +63,7 @@ public class FileResource implements Resource, Closeable {
 				out.write(buffer, 0, size);
 				size = in.read(buffer);
 			}
-		}
-		finally {
+		} finally {
 			in.close();
 		}
 	}

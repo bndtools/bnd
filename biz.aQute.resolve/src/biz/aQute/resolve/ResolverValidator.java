@@ -125,8 +125,7 @@ public class ResolverValidator extends Processor {
 			resolution.succeeded = true;
 
 			trace("resolving %s succeeded", resource);
-		}
-		catch (ResolutionException e) {
+		} catch (ResolutionException e) {
 			trace("resolving %s failed", resource);
 
 			resolution.succeeded = false;
@@ -166,8 +165,7 @@ public class ResolverValidator extends Processor {
 					resolution.system.add(r);
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			error("resolving %s failed with %s", context.getInputResource().getRequirements(null), e);
 			resolution.message = e.getMessage();

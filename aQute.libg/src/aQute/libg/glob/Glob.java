@@ -122,17 +122,18 @@ public class Glob {
 	public static Pattern toPattern(String s, int flags) {
 		try {
 			return Pattern.compile(convertGlobToRegEx(s), flags);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// ignore
 		}
 		return null;
 	}
 
 	/**
-	 * Get a list of files that match the glob expression @param root the
-	 * directory to get the files from @param recursive to traverse the dirs
-	 * recursive @return
+	 * Get a list of files that match the glob expression
+	 * 
+	 * @param root the directory to get the files from
+	 * @param recursive to traverse the dirs recursive
+	 * @return
 	 */
 	public List<File> getFiles(File root, boolean recursive, boolean usePath) {
 		List<File> result = new ArrayList<File>();

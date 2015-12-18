@@ -51,34 +51,37 @@ import java.util.regex.Pattern;
  * Will now use hex for encoding byte arrays
  */
 public class JSONCodec {
-	final static String START_CHARACTERS = "[{\"-0123456789tfn";
+	final static String								START_CHARACTERS	= "[{\"-0123456789tfn";
 
 	// Handlers
-	private final static WeakHashMap<Type,Handler>	handlers	= new WeakHashMap<Type,Handler>();
-	private static StringHandler					sh			= new StringHandler();
-	private static BooleanHandler					bh			= new BooleanHandler();
-	private static CharacterHandler					ch			= new CharacterHandler();
-	private static CollectionHandler				dch			= new CollectionHandler(ArrayList.class, Object.class);
-	private static SpecialHandler					sph			= new SpecialHandler(Pattern.class, null, null);
-	private static DateHandler						sdh			= new DateHandler();
-	private static FileHandler						fh			= new FileHandler();
-	private static ByteArrayHandler					byteh		= new ByteArrayHandler();
-	private static UUIDHandler						uuidh		= new UUIDHandler();
+	private final static WeakHashMap<Type,Handler>	handlers			= new WeakHashMap<Type,Handler>();
+	private static StringHandler					sh					= new StringHandler();
+	private static BooleanHandler					bh					= new BooleanHandler();
+	private static CharacterHandler					ch					= new CharacterHandler();
+	private static CollectionHandler				dch					= new CollectionHandler(ArrayList.class,
+			Object.class);
+	private static SpecialHandler					sph					= new SpecialHandler(Pattern.class, null, null);
+	private static DateHandler						sdh					= new DateHandler();
+	private static FileHandler						fh					= new FileHandler();
+	private static ByteArrayHandler					byteh				= new ByteArrayHandler();
+	private static UUIDHandler						uuidh				= new UUIDHandler();
 
-	boolean				ignorenull;
-	Map<Type,Handler>	localHandlers	= new ConcurrentHashMap<Type,Handler>();
+	boolean											ignorenull;
+	Map<Type,Handler>								localHandlers		= new ConcurrentHashMap<Type,Handler>();
 
 	/**
-	 * Create a new Encoder with the state and appropriate API. @return an
-	 * Encoder
+	 * Create a new Encoder with the state and appropriate API.
+	 * 
+	 * @return an Encoder
 	 */
 	public Encoder enc() {
 		return new Encoder(this);
 	}
 
 	/**
-	 * Create a new Decoder with the state and appropriate API. @return a
-	 * Decoder
+	 * Create a new Decoder with the state and appropriate API.
+	 * 
+	 * @return a Decoder
 	 */
 	public Decoder dec() {
 		return new Decoder(this);
@@ -187,14 +190,12 @@ public class JSONCodec {
 
 				try {
 					constructor = clazz.getConstructor(String.class);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					// Ignore
 				}
 				try {
 					valueOf = clazz.getMethod("valueOf", String.class);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					// Ignore
 				}
 				if (constructor != null || valueOf != null)
@@ -524,7 +525,10 @@ public class JSONCodec {
 	}
 
 	/**
-	 * Ignore null values in output and input @param ignorenull @return
+	 * Ignore null values in output and input
+	 * 
+	 * @param ignorenull
+	 * @return
 	 */
 	public JSONCodec setIgnorenull(boolean ignorenull) {
 		this.ignorenull = ignorenull;

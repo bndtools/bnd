@@ -41,8 +41,7 @@ public class JustifTest extends TestCase {
 			j.wrap(sb);
 
 			System.out.println(sb);
-		}
-		finally {
+		} finally {
 			f.close();
 		}
 	}

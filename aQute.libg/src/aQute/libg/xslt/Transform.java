@@ -16,9 +16,9 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 public class Transform {
-	static TransformerFactory transformerFactory = TransformerFactory.newInstance();
+	static TransformerFactory	transformerFactory	= TransformerFactory.newInstance();
 
-	static Map<URI,Templates> cache = new ConcurrentHashMap<URI,Templates>();
+	static Map<URI,Templates>	cache				= new ConcurrentHashMap<URI,Templates>();
 
 	public static void transform(TransformerFactory transformerFactory, URL xslt, InputStream in, OutputStream out)
 			throws Exception {
@@ -32,8 +32,7 @@ public class Transform {
 				templates = transformerFactory.newTemplates(new StreamSource(xsltIn));
 
 				cache.put(xslt.toURI(), templates);
-			}
-			finally {
+			} finally {
 				in.close();
 			}
 		}

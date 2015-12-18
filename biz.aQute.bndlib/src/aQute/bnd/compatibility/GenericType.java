@@ -11,7 +11,7 @@ public class GenericType {
 	GenericType[]				b;
 	int							array;
 
-	Scope scope;
+	Scope						scope;
 
 	static public class GenericWildcard extends GenericType {
 

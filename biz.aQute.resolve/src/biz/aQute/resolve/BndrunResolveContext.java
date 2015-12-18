@@ -50,17 +50,20 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	public static final String	RUN_EFFECTIVE_INSTRUCTION	= "-resolve.effective";
 	public static final String	PROP_RESOLVE_PREFERENCES	= "-resolve.preferences";
 
-	private Registry		registry;
-	private Parameters		resolvePrefs;
-	private final Processor	properties;
-	private Project			project;
-	private boolean			initialized;
+	private Registry			registry;
+	private Parameters			resolvePrefs;
+	private final Processor		properties;
+	private Project				project;
+	private boolean				initialized;
 
 	/**
 	 * Constructor for a BndEditModel. The idea to use a BndEditModel was rather
 	 * bad because it couples things that should not be coupled. The other
-	 * constructor should be preferred. @param runModel The edit model @param
-	 * registry The bnd registry @param log
+	 * constructor should be preferred.
+	 * 
+	 * @param runModel The edit model
+	 * @param registry The bnd registry
+	 * @param log
 	 */
 	@Deprecated
 	public BndrunResolveContext(BndEditModel runModel, Registry registry, LogService log) {
@@ -69,16 +72,18 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			this.registry = registry;
 			this.properties = runModel.getProperties();
 			this.project = runModel.getProject();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	/**
-	 * The preferred constructor @param runModel The model (its
-	 * properties) @param project The project to access bundles @param registry
-	 * the registry @param log
+	 * The preferred constructor
+	 * 
+	 * @param runModel The model (its properties)
+	 * @param project The project to access bundles
+	 * @param registry the registry
+	 * @param log
 	 */
 
 	public BndrunResolveContext(Processor runModel, Project project, Registry registry, LogService log) {
@@ -87,8 +92,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			this.registry = registry;
 			this.properties = runModel;
 			this.project = project;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -220,8 +224,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			}
 
 			setSystemResource(system.build());
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.log(LogService.LOG_ERROR, e.getMessage(), e);
 			throw new RuntimeException(e);
 		}
@@ -283,7 +286,9 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	}
 
 	/**
-	 * Load the effective set from the properties @return
+	 * Load the effective set from the properties
+	 * 
+	 * @return
 	 */
 	Map<String,Set<String>> loadEffectiveSet() {
 		String effective = properties.getProperty(RUN_EFFECTIVE_INSTRUCTION);
@@ -303,8 +308,11 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	}
 
 	/**
-	 * Load all the OSGi repositories from our registry <p> TODO Use Instruction
-	 * ... @throws Exception
+	 * Load all the OSGi repositories from our registry
+	 * <p>
+	 * TODO Use Instruction ...
+	 * 
+	 * @throws Exception
 	 */
 
 	private void loadRepositories() throws Exception {

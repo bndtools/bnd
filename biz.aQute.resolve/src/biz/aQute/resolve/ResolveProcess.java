@@ -44,15 +44,14 @@ public class ResolveProcess {
 	private Map<Resource,List<Wire>>	required;
 	private Map<Resource,List<Wire>>	optional;
 
-	private ResolutionException resolutionException;
+	private ResolutionException			resolutionException;
 
 	public Map<Resource,List<Wire>> resolveRequired(BndEditModel inputModel, Registry plugins, Resolver resolver,
 			Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
 		try {
 			return resolveRequired(inputModel.getProperties(), inputModel.getProject(), plugins, resolver, callbacks,
 					log);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new ResolutionException(e);
 		}
 	}
@@ -93,8 +92,7 @@ public class ResolveProcess {
 									continue reqs;
 								}
 							}
-						}
-						catch (InvalidSyntaxException e) {}
+						} catch (InvalidSyntaxException e) {}
 					}
 				}
 			}
@@ -178,8 +176,7 @@ public class ResolveProcess {
 			required.putAll(result);
 			optional = tidyUpOptional(wirings, discoveredOptional, log);
 			return result;
-		}
-		catch (ResolutionException re) {
+		} catch (ResolutionException re) {
 			throw augment(new BndrunResolveContext(properties, project, plugins, log), re);
 		}
 	}
@@ -205,8 +202,7 @@ public class ResolveProcess {
 			}
 			if (!list.isEmpty())
 				return new ResolutionException(re.getMessage(), re.getCause(), list);
-		}
-		catch (TimeoutException toe) {}
+		} catch (TimeoutException toe) {}
 		return re;
 	}
 
@@ -456,8 +452,7 @@ public class ResolveProcess {
 		}
 		try {
 			return CapReqBuilder.copy(capabilities.get(0), null);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.log(LogService.LOG_ERROR, "Unable to copy the capability " + capabilities.get(0));
 			return null;
 		}

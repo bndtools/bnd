@@ -20,10 +20,12 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 public class Coverage {
 
 	/**
-	 * Create a cross reference table from source to dest. @param source The
-	 * methods that refer to dest @param dest The methods that are being
-	 * referred to @return A mapping of source methods to destination
-	 * methods. @throws IOException
+	 * Create a cross reference table from source to dest.
+	 * 
+	 * @param source The methods that refer to dest
+	 * @param dest The methods that are being referred to
+	 * @return A mapping of source methods to destination methods.
+	 * @throws IOException
 	 */
 	public static Map<MethodDef,List<MethodDef>> getCrossRef(Collection<Clazz> source, Collection<Clazz> dest)
 			throws Exception {

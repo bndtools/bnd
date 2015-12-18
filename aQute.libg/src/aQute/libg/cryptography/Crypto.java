@@ -16,7 +16,10 @@ public class Crypto {
 	static final Pattern	RSA_PUBLIC	= Pattern.compile("\\s*RSA\\.Public\\((\\p{XDigit})+:(\\p{XDigit})+\\)\\s*");
 
 	/**
-	 * @param <T> @param spec @return @throws Exception
+	 * @param <T>
+	 * @param spec
+	 * @return
+	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T fromString(String spec, Class<T> c) throws Exception {

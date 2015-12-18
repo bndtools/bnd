@@ -249,8 +249,10 @@ public class Instructions implements Map<Instruction,Attrs> {
 	 * Turn this Instructions into a map of File -> Attrs. You can specify a
 	 * base directory, which will match all files in that directory against the
 	 * specification or you can use literal instructions to get files from
-	 * anywhere. @param base The directory to list files from. @return The map
-	 * that links files to attributes
+	 * anywhere.
+	 * 
+	 * @param base The directory to list files from.
+	 * @return The map that links files to attributes
 	 */
 	public Map<File,Attrs> select(File base) {
 

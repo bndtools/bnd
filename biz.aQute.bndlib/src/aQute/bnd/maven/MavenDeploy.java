@@ -23,10 +23,10 @@ import aQute.service.reporter.Reporter;
 
 public class MavenDeploy implements Deploy, Plugin {
 
-	String	repository;
-	String	url;
-	String	homedir;
-	String	keyname;
+	String		repository;
+	String		url;
+	String		homedir;
+	String		keyname;
 
 	String		passphrase;
 	Reporter	reporter;
@@ -99,14 +99,12 @@ public class MavenDeploy implements Deploy, Plugin {
 					project.progress("Deploying main javadoc file");
 					maven_gpg_sign_and_deploy(project, javadocFile, "javadoc", null);
 
-				}
-				finally {
+				} finally {
 					main.close();
 					src.close();
 				}
 			}
-		}
-		finally {
+		} finally {
 			original.close();
 		}
 		return true;
@@ -195,8 +193,7 @@ public class MavenDeploy implements Deploy, Plugin {
 		OutputStream out = new FileOutputStream(f);
 		try {
 			r.write(out);
-		}
-		finally {
+		} finally {
 			out.close();
 		}
 		return f;

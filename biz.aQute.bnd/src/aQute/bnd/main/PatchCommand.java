@@ -84,12 +84,10 @@ public class PatchCommand {
 					} else
 						return false;
 				}
-			}
-			finally {
+			} finally {
 				bin.close();
 			}
-		}
-		finally {
+		} finally {
 			ain.close();
 		}
 	}

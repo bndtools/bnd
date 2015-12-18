@@ -4,10 +4,10 @@ import java.io.Serializable;
 
 public class Pair<A, B> implements Serializable, Cloneable {
 
-	private static final long serialVersionUID = 1L;
+	private static final long	serialVersionUID	= 1L;
 
-	private final A	first;
-	private final B	second;
+	private final A				first;
+	private final B				second;
 
 	public Pair(A first, B second) {
 		assert first != null && second != null : "both parameters must be non-null";

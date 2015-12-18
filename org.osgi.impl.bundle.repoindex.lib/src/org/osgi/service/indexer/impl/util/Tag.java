@@ -31,13 +31,13 @@ import java.util.Vector;
  * objects or other Tag objects.
  */
 public class Tag {
-	Tag					parent;
-	String				name;
-	Map<String,String>	attributes	= new TreeMap<String,String>();
-	Vector<Object>		content		= new Vector<Object>();
-	Vector<String>		comments	= new Vector<String>();
+	Tag						parent;
+	String					name;
+	Map<String,String>		attributes	= new TreeMap<String,String>();
+	Vector<Object>			content		= new Vector<Object>();
+	Vector<String>			comments	= new Vector<String>();
 
-	static SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+	static SimpleDateFormat	format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
 	/**
 	 * Construct a new Tag with a name.

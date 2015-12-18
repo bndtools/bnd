@@ -39,43 +39,53 @@ import aQute.lib.strings.Strings;
  * track of what other annotations are applied to these classes. After all the
  * classes have been parsed, we look at any of the annotations that was applied
  * to one of the contained classes. These annotations are also parsed then to
- * check if they have header annotations applied to them. <p> This may sound a
- * bit bizarre, so let me explain. The idea is that you can create a custom
- * annotation for a specific resource. <pre>
+ * check if they have header annotations applied to them.
+ * <p>
+ * This may sound a bit bizarre, so let me explain. The idea is that you can
+ * create a custom annotation for a specific resource.
+ * 
+ * <pre>
  * &#064;RequireCapability(&quot;osgi.webresource;filter:='(&amp;(osgi.
  * webresource=/google/angular)(version&gt;=${@version}))&quot;) &#064;interface
- * Angular {} </pre> Now all a user has to do is apply the @Angular annotation.
- * It will then automatically create a Require-Capability, with the version of
- * the package. <pre> @Angular public class MySpace {...} </pre> {@link About}
- * provides some more information.
+ * Angular {}
+ * </pre>
+ * 
+ * Now all a user has to do is apply the @Angular annotation. It will then
+ * automatically create a Require-Capability, with the version of the package.
+ * 
+ * <pre>
+ *  &#64;Angular public class MySpace {...}
+ * </pre>
+ * 
+ * {@link About} provides some more information.
  */
 class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
-	static final Pattern SIMPLE_PARAM_PATTERN = Pattern
+	static final Pattern			SIMPLE_PARAM_PATTERN	= Pattern
 			.compile("\\$\\{(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\}");
 
 	final Analyzer					analyzer;
-	final Set<TypeRef>				interesting	= new HashSet<TypeRef>();
-	final MultiMap<String,String>	headers		= new MultiMap<String,String>();
+	final Set<TypeRef>				interesting				= new HashSet<TypeRef>();
+	final MultiMap<String,String>	headers					= new MultiMap<String,String>();
 
 	//
 	// fixed names for faster comparison
 	//
 
-	final TypeRef	bundleLicenseRef;
-	final TypeRef	requireCapabilityRef;
-	final TypeRef	provideCapabilityRef;
-	final TypeRef	bundleCategoryRef;
-	final TypeRef	bundleDocURLRef;
-	final TypeRef	bundleDeveloperRef;
-	final TypeRef	bundleContributorRef;
-	final TypeRef	bundleCopyrightRef;
+	final TypeRef					bundleLicenseRef;
+	final TypeRef					requireCapabilityRef;
+	final TypeRef					provideCapabilityRef;
+	final TypeRef					bundleCategoryRef;
+	final TypeRef					bundleDocURLRef;
+	final TypeRef					bundleDeveloperRef;
+	final TypeRef					bundleContributorRef;
+	final TypeRef					bundleCopyrightRef;
 
 	// Class we're currently processing
-	Clazz current;
+	Clazz							current;
 
 	// we parse the annotations separately at the end
-	boolean finalizing;
+	boolean							finalizing;
 
 	/*
 	 * Initialize
@@ -424,8 +434,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			value = macro.process(value);
 			headers.add(name, value);
 			next.close();
-		}
-		finally {
+		} finally {
 			macro.setNosystem(prev);
 		}
 	}

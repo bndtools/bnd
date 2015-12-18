@@ -84,11 +84,11 @@ public class Main extends ReporterAdapter {
 	File						sm;
 	private String				url;
 	private JpmOptions			options;
-	static String				encoding	= System.getProperty("file.encoding");
-	int							width		= 120;									// characters
-	int							tabs[]		= {
-			40, 48, 56, 64, 72, 80, 88, 96, 104, 112
-												};
+	static String				encoding		= System.getProperty("file.encoding");
+	int							width			= 120;																// characters
+	int							tabs[]			= {
+														40, 48, 56, 64, 72, 80, 88, 96, 104, 112
+													};
 
 	static {
 		if (encoding == null)
@@ -96,7 +96,9 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Default constructor @throws UnsupportedEncodingException
+	 * Default constructor
+	 * 
+	 * @throws UnsupportedEncodingException
 	 */
 
 	public Main() throws UnsupportedEncodingException {
@@ -106,14 +108,15 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Main entry @throws Exception
+	 * Main entry
+	 * 
+	 * @throws Exception
 	 */
 	public static void main(String args[]) throws Exception {
 		Main jpm = new Main();
 		try {
 			jpm.run(args);
-		}
-		finally {
+		} finally {
 			jpm.err.flush();
 			jpm.out.flush();
 		}
@@ -276,8 +279,11 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Initialize the repository and other global vars. @param opts the
-	 * options @throws InterruptedException @throws IOException
+	 * Initialize the repository and other global vars.
+	 * 
+	 * @param opts the options
+	 * @throws InterruptedException
+	 * @throws IOException
 	 */
 	@Description("Just Another Package Manager for Java (\"jpm help jpm\" to see a list of global options)")
 	public void _jpm(JpmOptions opts) throws IOException {
@@ -366,8 +372,7 @@ public class Main extends ReporterAdapter {
 
 				if (options.width() > 0)
 					this.width = options.width();
-			}
-			finally {
+			} finally {
 				jpm.close();
 			}
 		}
@@ -378,11 +383,9 @@ public class Main extends ReporterAdapter {
 				tt = ((InvocationTargetException) tt).getTargetException();
 
 			exception(tt, "%s", tt.getMessage());
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			exception(t, "Failed %s", t);
-		}
-		finally {
+		} finally {
 			// Check if we need to wait for it to finish
 			if (opts.key()) {
 				System.out.println("Hit a key to continue ...");
@@ -785,7 +788,10 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Main entry for the command line @param args @throws Exception
+	 * Main entry for the command line
+	 * 
+	 * @param args
+	 * @throws Exception
 	 */
 	public void run(String[] args) throws Exception {
 		CommandLine cl = new CommandLine(this);
@@ -797,7 +803,9 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Setup jpm to run on this system. @throws Exception
+	 * Setup jpm to run on this system.
+	 * 
+	 * @throws Exception
 	 */
 	@Description("Install jpm on the current system")
 	interface InitOptions extends Options {}
@@ -863,14 +871,12 @@ public class Main extends ReporterAdapter {
 					out.println("Bin  dir      " + jpm.getBinDir());
 				} else
 					error("Cannot find the jpm jar from %s", f);
-			}
-			catch (InvocationTargetException e) {
+			} catch (InvocationTargetException e) {
 				exception(e.getTargetException(), "Could not install jpm, %s", e.getTargetException().getMessage());
 				if (isExceptions())
 					e.printStackTrace();
 			}
-		}
-		catch (Throwable e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 		}
 	}
@@ -888,7 +894,11 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Show the platform info. @param opts @throws IOException @throws Exception
+	 * Show the platform info.
+	 * 
+	 * @param opts
+	 * @throws IOException
+	 * @throws Exception
 	 */
 	@Description("Show platform information")
 	public void _platform(PlatformOptions opts) throws IOException, Exception {
@@ -937,7 +947,10 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Start a service. @param options @throws Exception
+	 * Start a service.
+	 * 
+	 * @param options
+	 * @throws Exception
 	 */
 	@Arguments(arg = {
 			"service"
@@ -967,8 +980,7 @@ public class Main extends ReporterAdapter {
 						String result = service.start();
 						if (result != null)
 							error("Failed to start: %s", result);
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						exception(e, "Could not start service %s due to %s", s, e.getMessage());
 					}
 				} else
@@ -978,7 +990,10 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Restart a service. @param options @throws Exception
+	 * Restart a service.
+	 * 
+	 * @param options
+	 * @throws Exception
 	 */
 	@Arguments(arg = "service")
 	@Description("Restart a service")
@@ -999,8 +1014,7 @@ public class Main extends ReporterAdapter {
 					String result = service.start();
 					if (result != null)
 						error("Failed to start: %s", result);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					exception(e, "Could not start service %s due to %s", s, e.getMessage());
 				}
 			}
@@ -1008,7 +1022,10 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Trace a service. @param options @throws Exception
+	 * Trace a service.
+	 * 
+	 * @param options
+	 * @throws Exception
 	 */
 	@Arguments(arg = {
 			"service", "[on|off]"
@@ -1035,15 +1052,17 @@ public class Main extends ReporterAdapter {
 					if (result != null)
 						error("Failed to trace: %s", result);
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				exception(e, "Could not trace service %s due to %s", s, e.getMessage());
 			}
 		}
 	}
 
 	/**
-	 * Stop a service. @param options @throws Exception
+	 * Stop a service.
+	 * 
+	 * @param options
+	 * @throws Exception
 	 */
 	@Description("Stop a service")
 	public interface StopOptions extends Options {}
@@ -1060,8 +1079,7 @@ public class Main extends ReporterAdapter {
 						String result = service.stop();
 						if (result != null)
 							error("Failed to stop: %s", result);
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						exception(e, "Could not stop service %s due to %s", s, e.getMessage());
 					}
 				} else
@@ -1071,7 +1089,10 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Status a service. @param options @throws Exception
+	 * Status a service.
+	 * 
+	 * @param options
+	 * @throws Exception
 	 */
 	@Description("Status of a service")
 	@Arguments(arg = {
@@ -1094,8 +1115,7 @@ public class Main extends ReporterAdapter {
 						runs = service.isRunning() + "";
 						status = service.status();
 					}
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					status = e.getMessage();
 					exception(e, "could not fetch status information from service %s, due to %s", s, e.getMessage());
 				}
@@ -1110,7 +1130,9 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Show the current version @throws IOException
+	 * Show the current version
+	 * 
+	 * @throws IOException
 	 */
 
 	@Arguments(arg = {})
@@ -1269,8 +1291,7 @@ public class Main extends ReporterAdapter {
 				if (l == raf.length())
 					Thread.sleep(100);
 			}
-		}
-		finally {
+		} finally {
 			raf.close();
 		}
 	}
@@ -1374,8 +1395,7 @@ public class Main extends ReporterAdapter {
 					settings.save();
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -1465,8 +1485,7 @@ public class Main extends ReporterAdapter {
 			}
 			j.wrap(sb);
 			out.println(sb);
-		}
-		finally {
+		} finally {
 			f.close();
 		}
 	}
@@ -1504,8 +1523,7 @@ public class Main extends ReporterAdapter {
 				f.format("\n");
 			}
 			out.println(j.wrap());
-		}
-		finally {
+		} finally {
 			f.close();
 		}
 	}
@@ -1514,7 +1532,9 @@ public class Main extends ReporterAdapter {
 	interface findOptions extends Options {
 
 		/**
-		 * Number of search items to skip @return
+		 * Number of search items to skip
+		 * 
+		 * @return
 		 */
 		@Description("Number of programs to skip")
 		int skip();
@@ -1943,7 +1963,9 @@ public class Main extends ReporterAdapter {
 	}
 
 	/**
-	 * Start jpm as daemon @throws Exception
+	 * Start jpm as daemon
+	 * 
+	 * @throws Exception
 	 */
 
 	public void _daemon(Options opts) throws Exception {
