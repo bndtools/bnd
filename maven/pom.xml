@@ -5,6 +5,8 @@
 
 	<groupId>biz.aQute.bnd</groupId>
 	<artifactId>bnd-plugin-parent</artifactId>
+    <description>Parent POM for the bnd maven plugins.</description>
+    <name>${project.groupId}:${project.artifactId}</name>
 	<packaging>pom</packaging>
 	<version>3.2.0</version>
 
