@@ -163,6 +163,9 @@ public class Version implements Comparable<Version> {
 	}
 
 	public Version getWithoutQualifier() {
+		if (qualifier == null) {
+			return this;
+		}
 		return new Version(major, minor, micro);
 	}
 
