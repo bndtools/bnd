@@ -138,10 +138,10 @@ class BundleTaskConvention {
           from archivePath
           into temporaryDir
         }
-        File temporaryFile = new File(temporaryDir, archiveName)
-        Jar temporaryJar = new Jar(archiveName, temporaryFile)
-        temporaryJar.setManifest(new Manifest())
-        builder.setJar(temporaryJar)
+        File archiveCopyFile = new File(temporaryDir, archiveName)
+        Jar archiveCopyJar = new Jar(archiveName, archiveCopyFile)
+        archiveCopyJar.setManifest(new Manifest())
+        builder.setJar(archiveCopyJar)
 
         // set builder classpath
         def buildpath = project.files(configuration.resolvedConfiguration.resolvedArtifacts.findAll{it.type == 'jar'}*.file)
@@ -184,7 +184,7 @@ class BundleTaskConvention {
         }
 
         // Write out the bundle
-        bundleJar.updateModified(temporaryFile.lastModified(), 'time of Jar task generated jar')
+        bundleJar.updateModified(archiveCopyFile.lastModified(), 'time of Jar task generated jar')
         try {
           bundleJar.write(archivePath)
         } catch (Exception e) {
