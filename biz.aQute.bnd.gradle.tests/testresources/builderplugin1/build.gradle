@@ -36,7 +36,19 @@ task bundle(type: Bundle) {
    group 'build'
    from sourceSets.test.output
    baseName = baseName+'_bundle'
-   bndfile = project.file('bnd.bnd')
+   bndfile = new File(temporaryDir, 'bnd.bnd')
+   bndfile << '''
+Export-Package: doubler
+-sources: true
+My-Header: my-value
+text: TEXT
+Override: Override the jar task manifest
+Project-Name: ${project.name}
+Project-Dir: ${project.dir}
+Project-Output: ${project.output}
+Project-Sourcepath: ${project.sourcepath}
+Project-Buildpath: ${project.buildpath}
+'''
    configuration = configurations.testCompile
    sourceSet = sourceSets.test
    version = '1.1.0'
