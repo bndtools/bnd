@@ -792,6 +792,7 @@ public class Builder extends Analyzer {
 
 		Instructions preprocess = null;
 		boolean absentIsOk = false;
+		boolean overwrite = true;
 
 		if (name.startsWith("{") && name.endsWith("}")) {
 			preprocess = getPreProcessMatcher(extra);
@@ -808,9 +809,13 @@ public class Builder extends Analyzer {
 			source = source.substring(1);
 			absentIsOk = true;
 		}
+		if (source.startsWith("~")) {
+			source = source.substring(1);
+			overwrite = false;
+		}
 
 		if (source.startsWith("@")) {
-			extractFromJar(jar, source.substring(1), parts.length == 1 ? "" : destination, absentIsOk);
+			extractFromJar(jar, source.substring(1), parts.length == 1 ? "" : destination, absentIsOk, overwrite);
 		} else if (extra.containsKey("cmd")) {
 			doCommand(jar, source, destination, extra, preprocess, absentIsOk);
 		} else if (extra.containsKey(LITERAL_ATTRIBUTE)) {
@@ -819,7 +824,7 @@ public class Builder extends Analyzer {
 			String x = extra.get("extra");
 			if (x != null)
 				r.setExtra(x);
-			jar.putResource(name, r);
+			jar.putResource(name, r, overwrite);
 		} else {
 			File sourceFile;
 			String destinationPath;
@@ -837,7 +842,7 @@ public class Builder extends Analyzer {
 			}
 			// Handle directories
 			if (sourceFile.isDirectory()) {
-				destinationPath = doResourceDirectory(jar, extra, preprocess, sourceFile, destinationPath);
+				destinationPath = doResourceDirectory(jar, extra, preprocess, sourceFile, destinationPath, overwrite);
 				return;
 			}
 
@@ -849,7 +854,7 @@ public class Builder extends Analyzer {
 
 				noSuchFile(jar, name, extra, source, destinationPath);
 			} else
-				copy(jar, destinationPath, sourceFile, preprocess, extra);
+				copy(jar, destinationPath, sourceFile, preprocess, extra, overwrite);
 		}
 	}
 
@@ -999,7 +1004,7 @@ public class Builder extends Analyzer {
 	}
 
 	private String doResourceDirectory(Jar jar, Map<String,String> extra, Instructions preprocess, File sourceFile,
-			String destinationPath) throws Exception {
+			String destinationPath, boolean overwrite) throws Exception {
 		String filter = extra.get("filter:");
 		boolean flatten = isTrue(extra.get("flatten:"));
 		boolean recursive = true;
@@ -1019,7 +1024,7 @@ public class Builder extends Analyzer {
 		resolveFiles(sourceFile, iFilter, recursive, destinationPath, files, flatten);
 
 		for (Map.Entry<String,File> entry : files.entrySet()) {
-			copy(jar, entry.getKey(), entry.getValue(), preprocess, extra);
+			copy(jar, entry.getKey(), entry.getValue(), preprocess, extra, overwrite);
 		}
 		return destinationPath;
 	}
@@ -1083,7 +1088,7 @@ public class Builder extends Analyzer {
 	 * the @param jar @param clauses @param i @throws ZipException @throws
 	 * IOException
 	 */
-	private void extractFromJar(Jar jar, String source, String destination, boolean absentIsOk)
+	private void extractFromJar(Jar jar, String source, String destination, boolean absentIsOk, boolean overwrite)
 			throws ZipException, IOException {
 		// Inline all resources and classes from another jar
 		// optionally appended with a modified regular expression
@@ -1108,7 +1113,7 @@ public class Builder extends Analyzer {
 
 			error("Can not find JAR file '" + source + "'");
 		} else {
-			addAll(jar, sub, instr, destination);
+			addAll(jar, sub, instr, destination, overwrite);
 		}
 	}
 
@@ -1127,18 +1132,28 @@ public class Builder extends Analyzer {
 	 * resoures in sub to be added
 	 */
 	public boolean addAll(Jar to, Jar sub, Instruction filter, String destination) {
+		return addAll(to, sub, filter, destination, true);
+	}
+
+	/**
+	 * Add all the resources in the given jar that match the given
+	 * filter. @param sub the jar @param filter a pattern that should match the
+	 * resoures in sub to be added
+	 */
+	private boolean addAll(Jar to, Jar sub, Instruction filter, String destination, boolean overwrite) {
 		boolean dupl = false;
 		for (String name : sub.getResources().keySet()) {
 			if ("META-INF/MANIFEST.MF".equals(name))
 				continue;
 
 			if (filter == null || filter.matches(name) != filter.isNegated())
-				dupl |= to.putResource(Processor.appendPath(destination, name), sub.getResource(name), true);
+				dupl |= to.putResource(Processor.appendPath(destination, name), sub.getResource(name), overwrite);
 		}
 		return dupl;
 	}
 
-	private void copy(Jar jar, String path, File from, Instructions preprocess, Map<String,String> extra)
+	private void copy(Jar jar, String path, File from, Instructions preprocess, Map<String,String> extra,
+			boolean overwrite)
 			throws Exception {
 		if (doNotCopy(from))
 			return;
@@ -1147,7 +1162,7 @@ public class Builder extends Analyzer {
 
 			File files[] = from.listFiles();
 			for (int i = 0; i < files.length; i++) {
-				copy(jar, appendPath(path, files[i].getName()), files[i], preprocess, extra);
+				copy(jar, appendPath(path, files[i].getName()), files[i], preprocess, extra, overwrite);
 			}
 		} else {
 			if (from.exists()) {
@@ -1160,7 +1175,7 @@ public class Builder extends Analyzer {
 					resource.setExtra(x);
 				if (path.endsWith("/"))
 					path = path + from.getName();
-				jar.putResource(path, resource);
+				jar.putResource(path, resource, overwrite);
 
 				if (isTrue(extra.get(LIB_DIRECTIVE))) {
 					setProperty(BUNDLE_CLASSPATH, append(getProperty(BUNDLE_CLASSPATH, "."), path));

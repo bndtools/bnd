@@ -2960,4 +2960,24 @@ public class BuilderTest extends BndTestCase {
 		System.err.println("Imports     " + builder.getImports());
 	}
 
+	public void testOverwriteIncludeResources() throws Exception {
+		Builder bmaker = new Builder();
+		bmaker.setClasspath(new File[] {
+				new File("bin"), new File("src")
+		});
+		bmaker.setProperty("Export-Package", "test.includeresource");
+		bmaker.setProperty("Include-Resource", "@jar/includeresource.jar");
+		Jar jar = bmaker.build();
+		assertTrue(jar.getResource("test/includeresource/SomeClass.class").size() == 294);
+		
+		// now again without overwrite
+		bmaker = new Builder();
+		bmaker.setClasspath(new File[] {
+				new File("bin"), new File("src")
+		});
+		bmaker.setProperty("Export-Package", "test.includeresource");
+		bmaker.setProperty("Include-Resource", "~@jar/includeresource.jar");
+		jar = bmaker.build();
+		assertTrue(jar.getResource("test/includeresource/SomeClass.class").size() > 294);
+	}
 }
