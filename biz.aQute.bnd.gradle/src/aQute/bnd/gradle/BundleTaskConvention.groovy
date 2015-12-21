@@ -104,7 +104,7 @@ class BundleTaskConvention {
       new Builder().withCloseable { builder ->
         builder.setTrace(logger.isDebugEnabled())
         // load bnd properties
-        File temporaryBndFile = new File(temporaryDir, 'bnd.bnd')
+        File temporaryBndFile = File.createTempFile('bnd', '.bnd', temporaryDir)
         temporaryBndFile.withWriter('UTF-8') { writer ->
           // write any task manifest entries into the tmp bnd file
           manifest.effectiveManifest.attributes.inject(new Properties()) { properties, key, value ->
