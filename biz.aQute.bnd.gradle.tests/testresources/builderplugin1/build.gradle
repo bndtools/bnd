@@ -36,7 +36,7 @@ task bundle(type: Bundle) {
    group 'build'
    from sourceSets.test.output
    baseName = baseName+'_bundle'
-   bndfile = new File(temporaryDir, 'bnd.bnd')
+   bndfile = File.createTempFile(baseName, '.bnd', temporaryDir)
    bndfile << '''
 Export-Package: doubler
 -sources: true
