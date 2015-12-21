@@ -11,7 +11,7 @@
 Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable, aQute.remote.*, org.osgi.*, org.yaml.*
 
 -includeresource: \
- LICENSE, \
+ ${workspace}/LICENSE, \
  embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}, \
  templates=templates, \
  @${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
