@@ -42,7 +42,7 @@ Export-Package: \
     org.osgi.util.promise
 
 Conditional-Package:	        aQute.service.*, aQute.configurable
--includeresource: 				LICENSE, img/=img/, {readme.md}
+-includeresource: 				${workspace}/LICENSE, img/=img/, {readme.md}
 
 -buildpath:  \
 	org.osgi.service.component.annotations;version=1.3.0,\
