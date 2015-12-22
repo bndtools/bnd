@@ -3,6 +3,8 @@ package bndtools.central;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -20,7 +22,7 @@ import bndtools.model.repo.RepositoryBundleVersion;
 public class RepositoryUtils {
     private static final ILogger logger = Logger.getLogger(RepositoryUtils.class);
 
-    private static final Object CACHE_REPO = "cache";
+    private static final String CACHE_REPO = "cache";
     private static final String VERSION_LATEST = "latest";
 
     public static List<RepositoryPlugin> listRepositories(boolean hideCache) {
@@ -34,25 +36,41 @@ public class RepositoryUtils {
     }
 
     public static List<RepositoryPlugin> listRepositories(Workspace localWorkspace, boolean hideCache) {
+        boolean interrupted = Thread.interrupted();
         try {
-            List<RepositoryPlugin> plugins = localWorkspace.getPlugins(RepositoryPlugin.class);
-            List<RepositoryPlugin> repos = new ArrayList<RepositoryPlugin>(plugins.size() + 1);
+            final ReentrantLock bndLock = Central.getBndLock();
+            if (bndLock.tryLock(5, TimeUnit.SECONDS)) {
+                try {
+                    List<RepositoryPlugin> plugins = localWorkspace.getPlugins(RepositoryPlugin.class);
+                    List<RepositoryPlugin> repos = new ArrayList<RepositoryPlugin>(plugins.size() + 1);
 
-            // Add the workspace repo if the provided workspace == the global bnd workspace
-            Workspace bndWorkspace = Central.getWorkspaceIfPresent();
-            if (bndWorkspace == localWorkspace)
-                repos.add(Central.getWorkspaceRepository());
+                    // Add the workspace repo if the provided workspace == the global bnd workspace
+                    Workspace bndWorkspace = Central.getWorkspaceIfPresent();
+                    if (bndWorkspace == localWorkspace)
+                        repos.add(Central.getWorkspaceRepository());
 
-            // Add the repos from the provided workspace
-            for (RepositoryPlugin plugin : plugins) {
-                if (!hideCache || !CACHE_REPO.equals(plugin.getName()))
-                    repos.add(plugin);
+                    // Add the repos from the provided workspace
+                    for (RepositoryPlugin plugin : plugins) {
+                        if (!hideCache || !CACHE_REPO.equals(plugin.getName()))
+                            repos.add(plugin);
+                    }
+                    return repos;
+                } finally {
+                    bndLock.unlock();
+                }
             }
-            return repos;
+            logger.logError("Unable to acquire lock to load repositories", null);
+        } catch (InterruptedException e) {
+            logger.logError("Unable to acquire lock to load repositories", e);
+            interrupted = true;
         } catch (Exception e) {
             logger.logError("Error loading repositories", e);
-            return Collections.emptyList();
+        } finally {
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
         }
+        return Collections.emptyList();
     }
 
     public static VersionedClause convertRepoBundle(RepositoryBundle bundle) {

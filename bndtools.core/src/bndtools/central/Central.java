@@ -40,7 +40,6 @@ import org.osgi.framework.FrameworkUtil;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
@@ -58,7 +57,6 @@ public class Central implements IStartupParticipant {
     static final List<Function<Workspace,Void>> workspaceInitCallbackQueue = new LinkedList<Function<Workspace,Void>>();
 
     static WorkspaceR5Repository r5Repository = null;
-    static RepositoryPlugin workspaceRepo = null;
 
     private static Auxiliary auxiliary;
 
@@ -178,11 +176,7 @@ public class Central implements IStartupParticipant {
     }
 
     public synchronized static RepositoryPlugin getWorkspaceRepository() throws Exception {
-        if (workspaceRepo != null)
-            return workspaceRepo;
-
-        workspaceRepo = new WorkspaceRepository(getWorkspace());
-        return workspaceRepo;
+        return getWorkspace().getWorkspaceRepository();
     }
 
     public synchronized static Workspace getWorkspaceIfPresent() {
