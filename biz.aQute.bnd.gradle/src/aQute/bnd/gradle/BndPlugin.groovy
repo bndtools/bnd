@@ -193,26 +193,30 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       processResources {
-        def srcDirs = sourceSets.main.resources.srcDirs
-        def outputDir = sourceSets.main.output.resourcesDir
-        inputs.files.each {
-          def input = it.absolutePath
-          srcDirs.each {
-            input -= it
+        outputs.files {
+          def srcDirs = sourceSets.main.resources.srcDirs
+          def outputDir = sourceSets.main.output.resourcesDir
+          inputs.files.collect {
+            def input = it.absolutePath
+            srcDirs.each {
+              input -= it
+            }
+            new File(outputDir, input)
           }
-          outputs.file new File(outputDir, input)
         }
       }
 
       processTestResources {
-        def srcDirs = sourceSets.test.resources.srcDirs
-        def outputDir = sourceSets.test.output.resourcesDir
-        inputs.files.each {
-          def input = it.absolutePath
-          srcDirs.each {
-            input -= it
+        outputs.files {
+          def srcDirs = sourceSets.test.resources.srcDirs
+          def outputDir = sourceSets.test.output.resourcesDir
+          inputs.files.collect {
+            def input = it.absolutePath
+            srcDirs.each {
+              input -= it
+            }
+            new File(outputDir, input)
           }
-          outputs.file new File(outputDir, input)
         }
       }
 
@@ -233,10 +237,15 @@ public class BndPlugin implements Plugin<Project> {
             exclude relativePath(buildDir)
           }
           /* project dependencies' artifacts should trigger jar task */
-          configurations.compile.dependencies.withType(ProjectDependency.class).each {
-            inputs.files it.dependencyProject.configurations.archives.artifacts.files
+          inputs.files {
+            configurations.compile.dependencies.withType(ProjectDependency.class).collect {
+              it.dependencyProject.configurations.archives.artifacts.files
+            }
           }
-          outputs.files configurations.archives.artifacts.files, new File(buildDir, Constants.BUILDFILES)
+          outputs.files {
+            configurations.archives.artifacts.files
+          }
+          outputs.file new File(buildDir, Constants.BUILDFILES)
           doLast {
             def built
             try {
@@ -258,7 +267,7 @@ public class BndPlugin implements Plugin<Project> {
         group 'release'
         enabled !bndProject.isNoBundles() && !bnd(Constants.RELEASEREPO, 'unset').empty
         if (enabled) {
-          inputs.files configurations.archives.artifacts.files
+          inputs.files jar
           doLast {
             try {
               bndProject.release()
@@ -288,6 +297,8 @@ public class BndPlugin implements Plugin<Project> {
         enabled !parseBoolean(bnd(Constants.NOJUNITOSGI, 'false')) && !bndUnprocessed(Constants.TESTCASES, '').empty
         ext.ignoreFailures = false
         if (enabled) {
+          inputs.files jar
+          outputs.dir testResultsDir
           doLast {
             try {
               bndProject.test()
@@ -435,9 +446,7 @@ public class BndPlugin implements Plugin<Project> {
           println "Project ${project.name}"
           println '------------------------------------------------------------'
           println()
-          bndProject.getPropertyKeys(true).sort({
-            s1, s2 -> s1.compareTo(s2)
-          }).each {
+          bndProject.getPropertyKeys(true).sort().each {
             println "${it}: ${bnd(it, '')}"
           }
           println()

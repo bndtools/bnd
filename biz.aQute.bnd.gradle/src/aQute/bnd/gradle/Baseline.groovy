@@ -200,7 +200,7 @@ public class Baseline extends DefaultTask {
       processor.addClose(older)
 
       def baseliner = new aQute.bnd.differ.Baseline(processor, new DiffPluginImpl())
-      def infos = baseliner.baseline(newer, older, null).toSorted {it.packageName}
+      def infos = baseliner.baseline(newer, older, null).sort {it.packageName}
       def bundleInfo = baseliner.getBundleInfo()
       report.withPrintWriter('UTF-8') { writer ->
         writer.println '==============================================================='
