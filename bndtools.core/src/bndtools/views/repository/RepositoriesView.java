@@ -640,7 +640,12 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                                                 @Override
                                                 public void done(IJobChangeEvent event) {
                                                     if (event.getResult().isOK()) {
-                                                        viewer.refresh();
+                                                        viewer.getTree().getDisplay().asyncExec(new Runnable() {
+                                                            @Override
+                                                            public void run() {
+                                                                viewer.refresh();
+                                                            }
+                                                        });
                                                     }
                                                 }
                                             });
