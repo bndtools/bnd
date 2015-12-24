@@ -3,15 +3,22 @@ package bndtools.model.repo;
 import org.bndtools.utils.resources.ResourceUtils;
 import org.osgi.framework.Version;
 import org.osgi.resource.Resource;
+import aQute.bnd.service.RepositoryPlugin;
 
 public class RepositoryResourceElement {
 
     private final Resource resource;
     private final String name;
+    private final RepositoryBundleVersion repositoryBundleVersion;
 
-    RepositoryResourceElement(Resource resource) {
+    RepositoryResourceElement(RepositoryPlugin repoPlugin, Resource resource) {
         this.resource = resource;
         this.name = ResourceUtils.getIdentity(resource);
+        this.repositoryBundleVersion = new RepositoryBundleVersion(new RepositoryBundle(repoPlugin, name), aQute.bnd.version.Version.parseVersion(getVersionString()));
+    }
+
+    public RepositoryBundleVersion getRepositoryBundleVersion() {
+        return repositoryBundleVersion;
     }
 
     String getIdentity() {
