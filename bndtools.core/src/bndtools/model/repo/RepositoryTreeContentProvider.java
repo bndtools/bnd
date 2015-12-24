@@ -233,11 +233,11 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
         if (requirementFilter != null) {
             if (repoPlugin instanceof Repository) {
-                result = searchR5Repository((Repository) repoPlugin);
+                result = searchR5Repository(repoPlugin, (Repository) repoPlugin);
             } else if (repoPlugin instanceof WorkspaceRepository) {
                 try {
                     WorkspaceR5Repository workspaceRepo = Central.getWorkspaceR5Repository();
-                    result = searchR5Repository(workspaceRepo);
+                    result = searchR5Repository(repoPlugin, workspaceRepo);
                 } catch (Exception e) {
                     logger.logError("Error querying workspace repository", e);
                 }
@@ -262,14 +262,14 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return result;
     }
 
-    private Object[] searchR5Repository(Repository osgiRepo) {
+    private Object[] searchR5Repository(RepositoryPlugin repoPlugin, Repository osgiRepo) {
         Object[] result;
         Set<RepositoryResourceElement> resultSet = new LinkedHashSet<RepositoryResourceElement>();
         Map<Requirement,Collection<Capability>> providers = osgiRepo.findProviders(Collections.singleton(requirementFilter));
 
         for (Entry<Requirement,Collection<Capability>> providersEntry : providers.entrySet()) {
             for (Capability providerCap : providersEntry.getValue())
-                resultSet.add(new RepositoryResourceElement(providerCap.getResource()));
+                resultSet.add(new RepositoryResourceElement(repoPlugin, providerCap.getResource()));
         }
 
         result = resultSet.toArray(new Object[resultSet.size()]);

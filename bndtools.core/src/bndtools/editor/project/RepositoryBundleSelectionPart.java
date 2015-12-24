@@ -55,7 +55,6 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.ResourceTransfer;
-
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
@@ -70,6 +69,7 @@ import bndtools.model.repo.DependencyPhase;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
+import bndtools.model.repo.RepositoryResourceElement;
 import bndtools.preferences.BndPreferences;
 import bndtools.types.Pair;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
@@ -195,12 +195,15 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 
                 Iterator< ? > iterator = ((IStructuredSelection) selection).iterator();
                 while (iterator.hasNext()) {
-                    Object element = iterator.next();
-                    if (!(element instanceof RepositoryBundle) && !(element instanceof RepositoryBundleVersion) && !(element instanceof ProjectBundle)) {
+                    if (!selectionIsDroppable(iterator.next())) {
                         return false;
                     }
                 }
                 return true;
+            }
+
+            private boolean selectionIsDroppable(Object element) {
+                return element instanceof RepositoryBundle || element instanceof RepositoryBundleVersion || element instanceof ProjectBundle || element instanceof RepositoryResourceElement;
             }
 
             @Override
@@ -283,6 +286,10 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
                     } else if (item instanceof RepositoryBundleVersion) {
                         RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) item;
                         VersionedClause newClause = RepositoryUtils.convertRepoBundleVersion(bundleVersion, phase);
+                        adding.add(newClause);
+                    } else if (item instanceof RepositoryResourceElement) {
+                        RepositoryResourceElement elt = (RepositoryResourceElement) item;
+                        VersionedClause newClause = RepositoryUtils.convertRepoBundleVersion(elt.getRepositoryBundleVersion(), phase);
                         adding.add(newClause);
                     }
                 }
