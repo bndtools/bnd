@@ -176,6 +176,7 @@ public class RunRequirementsPart extends BndEditorPart implements PropertyChange
         btnResolveNow.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
+                btnResolveNow.setEnabled(false);
                 doResolve();
             }
         });
@@ -327,8 +328,10 @@ public class RunRequirementsPart extends BndEditorPart implements PropertyChange
                 }
             };
             int response = errorDialog.open();
-            if (Window.CANCEL == response || validation.getSeverity() >= IStatus.ERROR)
+            if (Window.CANCEL == response || validation.getSeverity() >= IStatus.ERROR) {
+                btnResolveNow.setEnabled(true);
                 return;
+            }
         }
 
         // Add the operation to perform at the end of the resolution job (i.e.,
@@ -344,6 +347,7 @@ public class RunRequirementsPart extends BndEditorPart implements PropertyChange
                     editor.getEditorSite().getPage().saveEditor(editor, false);
                 }
 
+                btnResolveNow.setEnabled(true);
             }
         };
         job.addJobChangeListener(new JobChangeAdapter() {
