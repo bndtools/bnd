@@ -3,10 +3,12 @@ package test;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -23,6 +25,8 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.EmbeddedResource;
@@ -30,6 +34,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.osgi.URLResource;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.test.BndTestCase;
 import aQute.bnd.version.Version;
@@ -2959,25 +2964,51 @@ public class BuilderTest extends BndTestCase {
 		System.err.println("Exports     " + builder.getExports());
 		System.err.println("Imports     " + builder.getImports());
 	}
+	
+  public void testIncludeResourcesOverwrite() throws Exception {
+    Builder bmaker = new Builder();
+    bmaker.setClasspath(new File[] {
+        new File("bin"), new File("src")
+    });
+    bmaker.setProperty("Export-Package", "test.includeresource");
+    bmaker.setProperty("-includeresource", "@jar/includeresource.jar");
+    Jar jar = bmaker.build();
+    
+    Resource resource = jar.getResource("test/includeresource/SomeClass.class");
+    assertNotNull(resource);
+    Clazz clazz = new Clazz(new Analyzer(), "", resource);
+    Set<String> methods = new HashSet<String>();
+    clazz.parseClassFileWithCollector(new MethodCollector(methods));
+    assertFalse(methods.contains("newOperation"));
+  }
 
-	public void testOverwriteIncludeResources() throws Exception {
+	public void testIncludeResourcesOverwriteDisabled() throws Exception {
 		Builder bmaker = new Builder();
 		bmaker.setClasspath(new File[] {
 				new File("bin"), new File("src")
 		});
 		bmaker.setProperty("Export-Package", "test.includeresource");
-		bmaker.setProperty("Include-Resource", "@jar/includeresource.jar");
+		bmaker.setProperty("-includeresource", "~@jar/includeresource.jar");
 		Jar jar = bmaker.build();
-		assertTrue(jar.getResource("test/includeresource/SomeClass.class").size() == 294);
+    Resource resource = jar.getResource("test/includeresource/SomeClass.class");
+    assertNotNull(resource);
+    Analyzer a = new Analyzer();
+    Clazz clazz = new Clazz(new Analyzer(), "", resource);
+    Set<String> methods = new HashSet<String>();
+    clazz.parseClassFileWithCollector(new MethodCollector(methods));
+    assertTrue(methods.contains("newOperation"));
+	}
+	
+	private static class MethodCollector extends ClassDataCollector {
+		Set<String> methodNames;
 		
-		// now again without overwrite
-		bmaker = new Builder();
-		bmaker.setClasspath(new File[] {
-				new File("bin"), new File("src")
-		});
-		bmaker.setProperty("Export-Package", "test.includeresource");
-		bmaker.setProperty("Include-Resource", "~@jar/includeresource.jar");
-		jar = bmaker.build();
-		assertTrue(jar.getResource("test/includeresource/SomeClass.class").size() > 294);
+		public MethodCollector(Set<String> methodNames) {
+		  this.methodNames = methodNames;
+		}
+		
+		@Override
+    public void method(Clazz.MethodDef defined) {
+		  methodNames.add(defined.getName());
+    }
 	}
 }
