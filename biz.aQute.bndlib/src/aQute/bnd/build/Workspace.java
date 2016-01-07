@@ -12,6 +12,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Formatter;
 import java.util.HashMap;
@@ -22,6 +23,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -103,6 +105,9 @@ public class Workspace extends Processor {
 	private String								driver;
 
 	private final WorkspaceLayout				layout;
+
+	final Set<Project>							trail							= Collections
+			.newSetFromMap(new ConcurrentHashMap<Project,Boolean>());
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -671,7 +676,6 @@ public class Workspace extends Processor {
 	 * Provide access to the global settings of this machine.
 	 * 
 	 * @throws Exception
-	 * @throws UnknownHostException
 	 */
 
 	public String _global(String[] args) throws Exception {

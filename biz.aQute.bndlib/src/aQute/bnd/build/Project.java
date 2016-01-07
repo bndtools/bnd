@@ -33,8 +33,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
@@ -104,7 +104,7 @@ public class Project extends Processor {
 	public final static String	BNDCNF					= "cnf";
 	public final static String	SHA_256					= "SHA-256";
 	final Workspace				workspace;
-	boolean						preparedPaths;
+	private final AtomicBoolean	preparedPaths			= new AtomicBoolean();
 	final Collection<Project>	dependson				= new LinkedHashSet<Project>();
 	final Collection<Container>	classpath				= new LinkedHashSet<Container>();
 	final Collection<Container>	buildpath				= new LinkedHashSet<Container>();
@@ -117,15 +117,10 @@ public class Project extends Processor {
 	final Collection<File>		allsourcepath			= new LinkedHashSet<File>();
 	final Collection<Container>	bootclasspath			= new LinkedHashSet<Container>();
 	final Map<String,Version>	versionMap				= new LinkedHashMap<String,Version>();
-	final Lock					lock					= new ReentrantLock(true);
-	volatile String				lockingReason;
-	volatile Thread				lockingThread;
 	File						output;
 	File						target;
-	boolean						inPrepare;
-	int							revision;
+	private final AtomicInteger	revision				= new AtomicInteger();
 	File						files[];
-	static List<Project>		trail					= new ArrayList<Project>();
 	boolean						delayRunDependencies	= true;
 	final ProjectMessages		msgs					= ReporterMessages.base(this, ProjectMessages.class);
 	private Properties			ide;
@@ -179,7 +174,7 @@ public class Project extends Processor {
 		return project;
 	}
 
-	public synchronized boolean isValid() {
+	public boolean isValid() {
 		if (getBase() == null || !getBase().isDirectory())
 			return false;
 
@@ -195,7 +190,7 @@ public class Project extends Processor {
 	 * @return
 	 * @throws Exception
 	 */
-	public synchronized ProjectBuilder getBuilder(ProjectBuilder parent) throws Exception {
+	public ProjectBuilder getBuilder(ProjectBuilder parent) throws Exception {
 
 		ProjectBuilder builder;
 
@@ -210,19 +205,19 @@ public class Project extends Processor {
 		return builder;
 	}
 
-	public synchronized int getChanged() {
-		return revision;
+	public int getChanged() {
+		return revision.get();
 	}
 
 	/*
 	 * Indicate a change in the external world that affects our build. This will
 	 * clear any cached results.
 	 */
-	public synchronized void setChanged() {
+	public void setChanged() {
 		// if (refresh()) {
-		preparedPaths = false;
+		preparedPaths.set(false);
 		files = null;
-		revision++;
+		revision.getAndIncrement();
 		// }
 	}
 
@@ -239,167 +234,161 @@ public class Project extends Processor {
 	 * Set up all the paths
 	 */
 
-	public synchronized void prepare() throws Exception {
+	public void prepare() throws Exception {
 		if (!isValid()) {
 			warning("Invalid project attempts to prepare: %s", this);
 			return;
 		}
 
-		if (inPrepare)
-			throw new CircularDependencyException(trail.toString() + "," + this);
-
-		trail.add(this);
-		try {
-			if (!preparedPaths) {
-
+		synchronized (preparedPaths) {
+			if (preparedPaths.get()) {
+				return;
+			}
+			if (!workspace.trail.add(this)) {
+				throw new CircularDependencyException(workspace.trail.toString() + "," + this);
+			}
+			try {
 				String prefix = getBase().getAbsolutePath();
 
-				inPrepare = true;
-				try {
-					dependson.clear();
-					buildpath.clear();
-					sourcepath.clear();
-					allsourcepath.clear();
-					bootclasspath.clear();
+				dependson.clear();
+				buildpath.clear();
+				sourcepath.clear();
+				allsourcepath.clear();
+				bootclasspath.clear();
 
-					// JIT
-					testpath.clear();
-					runpath.clear();
-					runbundles.clear();
-					runfw.clear();
+				// JIT
+				testpath.clear();
+				runpath.clear();
+				runbundles.clear();
+				runfw.clear();
 
-					// We use a builder to construct all the properties for
-					// use.
-					setProperty("basedir", getBase().getAbsolutePath());
+				// We use a builder to construct all the properties for
+				// use.
+				setProperty("basedir", getBase().getAbsolutePath());
 
-					// If a bnd.bnd file exists, we read it.
-					// Otherwise, we just do the build properties.
-					if (!getPropertiesFile().isFile() && new File(getBase(), ".classpath").isFile()) {
-						// Get our Eclipse info, we might depend on other
-						// projects
-						// though ideally this should become empty and void
-						doEclipseClasspath();
-					}
-
-					// Calculate our source directories
-
-					Parameters srces = new Parameters(mergeProperties(Constants.DEFAULT_PROP_SRC_DIR));
-					if (srces.isEmpty())
-						srces.add(Constants.DEFAULT_PROP_SRC_DIR, new Attrs());
-
-					for (Entry<String,Attrs> e : srces.entrySet()) {
-
-						File dir = getFile(removeDuplicateMarker(e.getKey()));
-
-						if (!dir.getAbsolutePath().startsWith(prefix)) {
-							error("The source directory lies outside the project %s directory: %s", this, dir)
-									.header(Constants.DEFAULT_PROP_SRC_DIR).context(e.getKey());
-							continue;
-						}
-
-						if (!dir.isDirectory()) {
-							dir.mkdirs();
-						}
-
-						if (dir.isDirectory()) {
-
-							sourcepath.put(dir, new Attrs(e.getValue()));
-							allsourcepath.add(dir);
-						} else
-							error("the src path (src property) contains an entry that is not a directory %s", dir)
-									.header(Constants.DEFAULT_PROP_SRC_DIR).context(e.getKey());
-					}
-
-					// Set default bin directory
-					output = getSrcOutput().getAbsoluteFile();
-					if (!output.exists()) {
-						if (!output.mkdirs()) {
-							throw new IOException("Could not create directory " + output);
-						}
-						getWorkspace().changedFile(output);
-					}
-					if (!output.isDirectory())
-						msgs.NoOutputDirectory_(output);
-					else {
-						Container c = new Container(this, output);
-						if (!buildpath.contains(c))
-							buildpath.add(c);
-					}
-
-					// Where we store all our generated stuff.
-					target = getTarget0();
-
-					// Where the launched OSGi framework stores stuff
-					String runStorageStr = getProperty(Constants.RUNSTORAGE);
-					runstorage = runStorageStr != null ? getFile(runStorageStr) : null;
-
-					// We might have some other projects we want build
-					// before we do anything, but these projects are not in
-					// our path. The -dependson allows you to build them before.
-					// The values are possibly negated globbing patterns.
-
-					// dependencies.add( getWorkspace().getProject("cnf"));
-
-					Set<String> requiredProjectNames = new LinkedHashSet<String>(
-							getMergedParameters(Constants.DEPENDSON).keySet());
-
-					// Allow DependencyConstributors to modify
-					// requiredProjectNames
-					List<DependencyContributor> dcs = getPlugins(DependencyContributor.class);
-					for (DependencyContributor dc : dcs)
-						dc.addDependencies(this, requiredProjectNames);
-
-					Instructions is = new Instructions(requiredProjectNames);
-
-					Set<Instruction> unused = new HashSet<Instruction>();
-					Collection<Project> projects = getWorkspace().getAllProjects();
-					Collection<Project> dependencies = is.select(projects, unused, false);
-
-					for (Instruction u : unused)
-						msgs.MissingDependson_(u.getInput());
-
-					// We have two paths that consists of repo files, projects,
-					// or some other stuff. The doPath routine adds them to the
-					// path and extracts the projects so we can build them
-					// before.
-
-					doPath(buildpath, dependencies, parseBuildpath(), bootclasspath, false, BUILDPATH);
-					doPath(testpath, dependencies, parseTestpath(), bootclasspath, false, TESTPATH);
-					if (!delayRunDependencies) {
-						doPath(runfw, dependencies, parseRunFw(), null, false, RUNFW);
-						doPath(runpath, dependencies, parseRunpath(), null, false, RUNPATH);
-						doPath(runbundles, dependencies, parseRunbundles(), null, true, RUNBUNDLES);
-					}
-
-					// We now know all dependent projects. But we also depend
-					// on whatever those projects depend on. This creates an
-					// ordered list without any duplicates. This of course
-					// assumes
-					// that there is no circularity. However, this is checked
-					// by the inPrepare flag, will throw an exception if we
-					// are circular.
-
-					Set<Project> done = new HashSet<Project>();
-					done.add(this);
-
-					for (Project project : dependencies)
-						project.traverse(dependson, done);
-
-					for (Project project : dependson) {
-						allsourcepath.addAll(project.getSourcePath());
-					}
-					// [cs] Testing this commented out. If bad issues, never
-					// setting this to true means that
-					// TONS of extra preparing is done over and over again on
-					// the same projects.
-					// if (isOk())
-					preparedPaths = true;
-				} finally {
-					inPrepare = false;
+				// If a bnd.bnd file exists, we read it.
+				// Otherwise, we just do the build properties.
+				if (!getPropertiesFile().isFile() && new File(getBase(), ".classpath").isFile()) {
+					// Get our Eclipse info, we might depend on other
+					// projects
+					// though ideally this should become empty and void
+					doEclipseClasspath();
 				}
+
+				// Calculate our source directories
+
+				Parameters srces = new Parameters(mergeProperties(Constants.DEFAULT_PROP_SRC_DIR));
+				if (srces.isEmpty())
+					srces.add(Constants.DEFAULT_PROP_SRC_DIR, new Attrs());
+
+				for (Entry<String,Attrs> e : srces.entrySet()) {
+
+					File dir = getFile(removeDuplicateMarker(e.getKey()));
+
+					if (!dir.getAbsolutePath().startsWith(prefix)) {
+						error("The source directory lies outside the project %s directory: %s", this, dir)
+								.header(Constants.DEFAULT_PROP_SRC_DIR).context(e.getKey());
+						continue;
+					}
+
+					if (!dir.isDirectory()) {
+						dir.mkdirs();
+					}
+
+					if (dir.isDirectory()) {
+
+						sourcepath.put(dir, new Attrs(e.getValue()));
+						allsourcepath.add(dir);
+					} else
+						error("the src path (src property) contains an entry that is not a directory %s", dir)
+								.header(Constants.DEFAULT_PROP_SRC_DIR).context(e.getKey());
+				}
+
+				// Set default bin directory
+				output = getSrcOutput().getAbsoluteFile();
+				if (!output.exists()) {
+					if (!output.mkdirs()) {
+						throw new IOException("Could not create directory " + output);
+					}
+					getWorkspace().changedFile(output);
+				}
+				if (!output.isDirectory())
+					msgs.NoOutputDirectory_(output);
+				else {
+					Container c = new Container(this, output);
+					if (!buildpath.contains(c))
+						buildpath.add(c);
+				}
+
+				// Where we store all our generated stuff.
+				target = getTarget0();
+
+				// Where the launched OSGi framework stores stuff
+				String runStorageStr = getProperty(Constants.RUNSTORAGE);
+				runstorage = runStorageStr != null ? getFile(runStorageStr) : null;
+
+				// We might have some other projects we want build
+				// before we do anything, but these projects are not in
+				// our path. The -dependson allows you to build them before.
+				// The values are possibly negated globbing patterns.
+
+				// dependencies.add( getWorkspace().getProject("cnf"));
+
+				Set<String> requiredProjectNames = new LinkedHashSet<String>(
+						getMergedParameters(Constants.DEPENDSON).keySet());
+
+				// Allow DependencyConstributors to modify requiredProjectNames
+				List<DependencyContributor> dcs = getPlugins(DependencyContributor.class);
+				for (DependencyContributor dc : dcs)
+					dc.addDependencies(this, requiredProjectNames);
+
+				Instructions is = new Instructions(requiredProjectNames);
+
+				Set<Instruction> unused = new HashSet<Instruction>();
+				Collection<Project> projects = getWorkspace().getAllProjects();
+				Collection<Project> dependencies = is.select(projects, unused, false);
+
+				for (Instruction u : unused)
+					msgs.MissingDependson_(u.getInput());
+
+				// We have two paths that consists of repo files, projects,
+				// or some other stuff. The doPath routine adds them to the
+				// path and extracts the projects so we can build them
+				// before.
+
+				doPath(buildpath, dependencies, parseBuildpath(), bootclasspath, false, BUILDPATH);
+				doPath(testpath, dependencies, parseTestpath(), bootclasspath, false, TESTPATH);
+				if (!delayRunDependencies) {
+					doPath(runfw, dependencies, parseRunFw(), null, false, RUNFW);
+					doPath(runpath, dependencies, parseRunpath(), null, false, RUNPATH);
+					doPath(runbundles, dependencies, parseRunbundles(), null, true, RUNBUNDLES);
+				}
+
+				// We now know all dependent projects. But we also depend
+				// on whatever those projects depend on. This creates an
+				// ordered list without any duplicates. This of course assumes
+				// that there is no circularity. However, this is checked
+				// by the inPrepare flag, will throw an exception if we
+				// are circular.
+
+				Set<Project> done = new HashSet<Project>();
+				done.add(this);
+
+				for (Project project : dependencies)
+					project.traverse(dependson, done);
+
+				for (Project project : dependson) {
+					allsourcepath.addAll(project.getSourcePath());
+				}
+				// [cs] Testing this commented out. If bad issues, never
+				// setting this to true means that
+				// TONS of extra preparing is done over and over again on
+				// the same projects.
+				// if (isOk())
+				preparedPaths.set(true);
+			} finally {
+				workspace.trail.remove(this);
 			}
-		} finally {
-			trail.remove(this);
 		}
 	}
 
@@ -1843,9 +1832,7 @@ public class Project extends Processor {
 	 */
 	@Override
 	public boolean refresh() {
-		synchronized (versionMap) {
-			versionMap.clear();
-		}
+		versionMap.clear();
 		boolean changed = false;
 		if (isCnf()) {
 			changed = workspace.refresh();
@@ -1864,7 +1851,7 @@ public class Project extends Processor {
 	@Override
 	public void propertiesChanged() {
 		super.propertiesChanged();
-		preparedPaths = false;
+		preparedPaths.set(false);
 		files = null;
 		makefile = null;
 		versionMap.clear();
@@ -2853,24 +2840,22 @@ public class Project extends Processor {
 	}
 
 	public Map<String,Version> getVersions() throws Exception {
-		synchronized (versionMap) {
-			if (versionMap.isEmpty()) {
-				for (Builder builder : getSubBuilders()) {
-					String v = builder.getVersion();
-					if (v == null)
-						v = "0";
-					else {
-						v = Analyzer.cleanupVersion(v);
-						if (!Verifier.isVersion(v))
-							continue; // skip
-					}
-
-					Version version = new Version(v);
-					versionMap.put(builder.getBsn(), version);
+		if (versionMap.isEmpty()) {
+			for (Builder builder : getSubBuilders()) {
+				String v = builder.getVersion();
+				if (v == null)
+					v = "0";
+				else {
+					v = Analyzer.cleanupVersion(v);
+					if (!Verifier.isVersion(v))
+						continue; // skip
 				}
+
+				Version version = new Version(v);
+				versionMap.put(builder.getBsn(), version);
 			}
-			return new LinkedHashMap<String,Version>(versionMap);
 		}
+		return new LinkedHashMap<String,Version>(versionMap);
 	}
 
 	public Collection<String> getBsns() throws Exception {
