@@ -3,9 +3,7 @@ package bndtools.central;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
-
+import java.util.concurrent.Callable;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.utils.repos.RepoUtils;
@@ -35,12 +33,11 @@ public class RepositoryUtils {
         return listRepositories(workspace, hideCache);
     }
 
-    public static List<RepositoryPlugin> listRepositories(Workspace localWorkspace, boolean hideCache) {
-        boolean interrupted = Thread.interrupted();
+    public static List<RepositoryPlugin> listRepositories(final Workspace localWorkspace, final boolean hideCache) {
         try {
-            final ReentrantLock bndLock = Central.getBndLock();
-            if (bndLock.tryLock(5, TimeUnit.SECONDS)) {
-                try {
+            return Central.bndCall(new Callable<List<RepositoryPlugin>>() {
+                @Override
+                public List<RepositoryPlugin> call() throws Exception {
                     List<RepositoryPlugin> plugins = localWorkspace.getPlugins(RepositoryPlugin.class);
                     List<RepositoryPlugin> repos = new ArrayList<RepositoryPlugin>(plugins.size() + 1);
 
@@ -55,20 +52,10 @@ public class RepositoryUtils {
                             repos.add(plugin);
                     }
                     return repos;
-                } finally {
-                    bndLock.unlock();
                 }
-            }
-            logger.logError("Unable to acquire lock to load repositories", null);
-        } catch (InterruptedException e) {
-            logger.logError("Unable to acquire lock to load repositories", e);
-            interrupted = true;
+            });
         } catch (Exception e) {
-            logger.logError("Error loading repositories", e);
-        } finally {
-            if (interrupted) {
-                Thread.currentThread().interrupt();
-            }
+            logger.logError("Error loading repositories: " + e.getMessage(), e);
         }
         return Collections.emptyList();
     }

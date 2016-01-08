@@ -11,6 +11,7 @@ public class BuildLogger {
     private final StringBuilder sb = new StringBuilder();
     private final Formatter formatter = new Formatter(sb);
     private boolean used = false;
+    private int files = -1;
 
     public BuildLogger(int level) {
         this.level = level;
@@ -57,7 +58,7 @@ public class BuildLogger {
         sb.append('\n');
     }
 
-    public String toString(String name, int files) {
+    public String toString(String name) {
         long end = System.currentTimeMillis();
         full("Duration %.2f sec", (end - start) / 1000f);
 
@@ -74,5 +75,9 @@ public class BuildLogger {
 
     public boolean isActive() {
         return level != LOG_NONE;
+    }
+
+    public void setFiles(int f) {
+        files = f;
     }
 }
