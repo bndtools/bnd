@@ -10,8 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.Callable;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -193,27 +192,16 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             }
 
             List<IClasspathEntry> newClasspath = Collections.emptyList();
-            boolean interrupted = Thread.interrupted();
             try {
-                final ReentrantLock bndLock = Central.getBndLock();
-                if (bndLock.tryLock(5, TimeUnit.SECONDS)) {
-                    try {
-                        newClasspath = calculateProjectClasspath();
-                    } finally {
-                        bndLock.unlock();
+                newClasspath = Central.bndCall(new Callable<List<IClasspathEntry>>() {
+                    @Override
+                    public List<IClasspathEntry> call() throws Exception {
+                        return calculateProjectClasspath();
                     }
-                } else {
-                    SetLocation error = error("Unable to acquire lock to calculate classpath for project %s", project.getName());
-                    logger.logError(error.location().message, null);
-                }
-            } catch (InterruptedException e) {
-                SetLocation error = error("Unable to acquire lock to calculate classpath for project %s", e, project.getName());
+                });
+            } catch (Exception e) {
+                SetLocation error = error("Unable to calculate classpath for project %s", e, project.getName());
                 logger.logError(error.location().message, e);
-                interrupted = true;
-            } finally {
-                if (interrupted) {
-                    Thread.currentThread().interrupt();
-                }
             }
 
             newClasspath = BndContainerSourceManager.loadAttachedSources(project, newClasspath);
@@ -606,10 +594,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 }
             }
             return false;
-        }
-
-        private SetLocation error(String message, Object... args) {
-            return model.error(message, args).context(model.getName()).header(Constants.BUILDPATH).file(model.getPropertiesFile().getAbsolutePath());
         }
 
         private SetLocation error(String message, Throwable t, Object... args) {

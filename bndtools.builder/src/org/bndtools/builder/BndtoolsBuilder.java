@@ -8,10 +8,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
-
+import java.util.concurrent.TimeoutException;
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -92,24 +91,19 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
      * @return List of projects we depend on
      */
     @Override
-    protected IProject[] build(int kind, Map<String,String> args, IProgressMonitor monitor) throws CoreException {
+    protected IProject[] build(final int kind, Map<String,String> args, final IProgressMonitor monitor) throws CoreException {
 
         BndPreferences prefs = new BndPreferences();
         buildLog = new BuildLogger(prefs.getBuildLogging());
 
-        final CompileErrorAction actionOnCompileError = getActionOnCompileError();
-
         final BuildListeners listeners = new BuildListeners();
-        int files = -1;
 
         final IProject myProject = getProject();
         try {
 
             listeners.fireBuildStarting(myProject);
 
-            MarkerSupport markers = new MarkerSupport(myProject);
-
-            boolean force = kind == FULL_BUILD || kind == CLEAN_BUILD;
+            final MarkerSupport markers = new MarkerSupport(myProject);
 
             //
             // First time after a restart
@@ -130,12 +124,11 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                     return noreport();
             }
 
-            boolean interrupted = Thread.interrupted();
             try {
-                // We must hold the lock before using non-thread safe bndlib.
-                final ReentrantLock bndLock = Central.getBndLock();
-                if (bndLock.tryLock(5, TimeUnit.SECONDS)) {
-                    try {
+                return Central.bndCall(new Callable<IProject[]>() {
+                    @Override
+                    public IProject[] call() throws Exception {
+                        boolean force = kind == FULL_BUILD || kind == CLEAN_BUILD;
                         model.clear();
 
                         DeltaWrapper delta = new DeltaWrapper(model, getDelta(myProject), buildLog);
@@ -244,11 +237,12 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
                         if (model.isNoBundles()) {
                             buildLog.basic("-nobundles was set, so no build");
-                            files = 0;
+                            buildLog.setFiles(0);
                             return report(markers);
                         }
 
                         if (markers.hasBlockingErrors(delta)) {
+                            CompileErrorAction actionOnCompileError = getActionOnCompileError();
                             if (actionOnCompileError != CompileErrorAction.build) {
                                 if (actionOnCompileError == CompileErrorAction.delete) {
                                     buildLog.basic("Blocking errors, delete build files, quit");
@@ -271,7 +265,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
                         if (buildFiles != null) {
                             listeners.updateListeners(buildFiles, myProject);
-                            files = buildFiles.length;
+                            buildLog.setFiles(buildFiles.length);
                         }
 
                         // We can now decorate based on the build we just did.
@@ -282,26 +276,17 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                         }
 
                         return report(markers);
-                    } finally {
-                        bndLock.unlock();
                     }
-                }
-                logger.logWarning("Unable to acquire lock to build project " + myProject.getName(), null);
+                }, monitor);
+            } catch (TimeoutException | InterruptedException e) {
+                logger.logWarning("Unable to build project " + myProject.getName(), e);
                 return postpone();
-            } catch (InterruptedException e) {
-                logger.logWarning("Unable to acquire lock to build project " + myProject.getName(), e);
-                interrupted = true;
-                return postpone();
-            } finally {
-                if (interrupted) {
-                    Thread.currentThread().interrupt();
-                }
             }
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Build Error!", e));
         } finally {
             if (buildLog.isActive())
-                logger.logInfo(buildLog.toString(myProject.getName(), files), null);
+                logger.logInfo(buildLog.toString(myProject.getName()), null);
             listeners.release(myProject);
         }
     }
@@ -328,39 +313,29 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     protected void clean(IProgressMonitor monitor) throws CoreException {
         try {
             IProject myProject = getProject();
-            Project model = null;
+            final Project model;
             try {
                 model = Central.getProject(myProject.getLocation().toFile());
             } catch (Exception e) {
                 MarkerSupport markers = new MarkerSupport(myProject);
                 markers.deleteMarkers("*");
                 markers.createMarker(null, IMarker.SEVERITY_ERROR, "Cannot find bnd project", BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
+                return;
             }
             if (model == null)
                 return;
 
-            boolean interrupted = Thread.interrupted();
             try {
-                // We must hold the lock before using non-thread safe bndlib.
-                final ReentrantLock bndLock = Central.getBndLock();
-                if (bndLock.tryLock(5, TimeUnit.SECONDS)) {
-                    try {
+                Central.bndCall(new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
                         model.clean();
-                    } finally {
-                        bndLock.unlock();
+                        return null;
                     }
-                } else {
-                    logger.logWarning("Unable to acquire lock to clean project " + myProject.getName(), null);
-                    return;
-                }
-            } catch (InterruptedException e) {
-                logger.logWarning("Unable to acquire lock to clean project " + myProject.getName(), e);
-                interrupted = true;
+                }, monitor);
+            } catch (TimeoutException | InterruptedException e) {
+                logger.logWarning("Unable to clean project " + myProject.getName(), e);
                 return;
-            } finally {
-                if (interrupted) {
-                    Thread.currentThread().interrupt();
-                }
             }
 
             // Tell Eclipse what we did...

@@ -6,9 +6,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeoutException;
 
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
 import org.eclipse.core.resources.WorkspaceJob;
@@ -120,7 +120,7 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
     private IStatus ensureLoaded(IProgressMonitor monitor, Collection<RepositoryPlugin> repos) {
         int n = 0;
         try {
-            RepositoryPlugin workspaceRepo = Central.getWorkspaceRepository();
+            final RepositoryPlugin workspaceRepo = Central.getWorkspaceRepository();
             for (RepositoryPlugin repo : repos) {
                 if (monitor.isCanceled()) {
                     return Status.CANCEL_STATUS;
@@ -130,26 +130,16 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
                     repo.list(null); // looks silly but is here to incur any download time
                     continue;
                 }
-                // We must get bndLock to list workspace repo
-                final ReentrantLock bndLock = Central.getBndLock();
-                boolean interrupted = Thread.interrupted();
+                // We must safely call bnd to list workspace repo
                 try {
-                    if (bndLock.tryLock(5, TimeUnit.SECONDS)) {
-                        try {
-                            workspaceRepo.list(null);
-                        } finally {
-                            bndLock.unlock();
+                    Central.bndCall(new Callable<List<String>>() {
+                        @Override
+                        public List<String> call() throws Exception {
+                            return workspaceRepo.list(null);
                         }
-                    } else {
-                        return new Status(Status.ERROR, Plugin.PLUGIN_ID, "Unable to acquire lock to refresh repository " + repo.getName());
-                    }
-                } catch (InterruptedException e) {
-                    interrupted = true;
+                    }, monitor);
+                } catch (TimeoutException | InterruptedException e) {
                     return new Status(Status.ERROR, Plugin.PLUGIN_ID, "Unable to acquire lock to refresh repository " + repo.getName(), e);
-                } finally {
-                    if (interrupted) {
-                        Thread.currentThread().interrupt();
-                    }
                 }
             }
         } catch (Exception e) {

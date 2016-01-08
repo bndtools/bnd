@@ -6,7 +6,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -27,8 +30,10 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
@@ -534,12 +539,68 @@ public class Central implements IStartupParticipant {
     }
 
     /**
-     * Used to serialize access to bnd code which is not thread safe
+     * Reentrant lock for serializing access to bnd code.
      */
     private static final ReentrantLock bndLock = new ReentrantLock();
 
-    public static ReentrantLock getBndLock() {
-        return bndLock;
+    /**
+     * Used to serialize access to bnd code which is not thread safe.
+     *
+     * @param callable
+     *            The code to execute while holding the central lock.
+     * @return The result of the specified callable.
+     * @throws InterruptedException
+     *             If the thread is interrupted while waiting for the lock.
+     * @throws TimeoutException
+     *             If the lock was not obtained within the timeout period.
+     * @throws Exception
+     *             If the callable throws an exception.
+     */
+    public static <V> V bndCall(Callable<V> callable) throws Exception {
+        return bndCall(callable, new NullProgressMonitor());
+    }
+
+    /**
+     * Used to serialize access to bnd code which is not thread safe.
+     *
+     * @param callable
+     *            The code to execute while holding the central lock.
+     * @param monitor
+     *            If the monitor is cancelled, a TimeoutException will be thrown.
+     * @return The result of the specified callable.
+     * @throws InterruptedException
+     *             If the thread is interrupted while waiting for the lock.
+     * @throws TimeoutException
+     *             If the lock was not obtained within the timeout period or the specified monitor is cancelled while
+     *             waiting to obtain the lock.
+     * @throws Exception
+     *             If the callable throws an exception.
+     */
+    public static <V> V bndCall(Callable<V> callable, IProgressMonitor monitor) throws Exception {
+        boolean interrupted = Thread.interrupted();
+        try {
+            boolean locked = false;
+            for (int i = 0; !locked && (i < 60) && !monitor.isCanceled(); i++) {
+                try {
+                    locked = bndLock.tryLock(1, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                    throw e;
+                }
+            }
+            if (!locked) {
+                throw new TimeoutException("Unable to acquire bndLock");
+            }
+            try {
+                return callable.call();
+            } finally {
+                bndLock.unlock();
+            }
+        } finally {
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     /**
