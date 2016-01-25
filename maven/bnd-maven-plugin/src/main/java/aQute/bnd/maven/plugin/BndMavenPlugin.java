@@ -81,6 +81,9 @@ public class BndMavenPlugin extends AbstractMojo {
 	@Parameter(defaultValue = "${settings}", readonly = true)
 	private Settings			settings;
 
+	@Parameter(readonly = true)
+	private String				bndLocation;
+
 	@Component
 	private BuildContext		buildContext;
 
@@ -185,7 +188,13 @@ public class BndMavenPlugin extends AbstractMojo {
 
 		// Merge in current project properties
 		File baseDir = project.getBasedir();
-		File bndFile = new File(baseDir, Project.BNDFILE);
+		File bndFile;
+		if(bndLocation != null) {
+			bndFile = new File(bndLocation);
+		} else {
+			bndFile = new File(baseDir, Project.BNDFILE);
+		}
+
 		if (bndFile.isFile()) { // we use setProperties to handle -include
 			builder.setProperties(baseDir, builder.loadProperties(bndFile));
 		}
