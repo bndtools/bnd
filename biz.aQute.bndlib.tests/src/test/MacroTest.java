@@ -1126,6 +1126,7 @@ public class MacroTest extends TestCase {
 		b.setProperty("All-Packages", "${packages}");
 		b.setProperty("Annotated", "${packages;annotated;test.packageinfo.annotated.BlahAnnotation}");
 		b.setProperty("Named", "${packages;named;*.notannotated}");
+		b.setProperty("Negated", "${packages;named;!*.no*}");
 		b.build();
 
 		assertEquals(0, b.getErrors().size());
@@ -1134,6 +1135,7 @@ public class MacroTest extends TestCase {
 				b.getProperty("All-Packages"));
 		assertEquals("test.packageinfo.annotated", b.getProperty("Annotated"));
 		assertEquals("test.packageinfo.notannotated", b.getProperty("Named"));
+		assertEquals("test.packageinfo.annotated", b.getProperty("Negated"));
 	}
 
 	public void testBase64() {
