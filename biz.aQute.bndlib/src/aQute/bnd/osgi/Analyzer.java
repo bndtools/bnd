@@ -2554,10 +2554,7 @@ public class Analyzer extends Processor {
 					case NAMED :
 						if (instr == null)
 							throw new IllegalArgumentException("Not enough arguments in ${packages} macro");
-						if (instr.matches(pkg.getFQN()))
-							accept = !instr.isNegated();
-						else
-							accept = false;
+						accept = instr.matches(pkg.getFQN()) ^ instr.isNegated();
 						break;
 
 					case ANNOTATED :
