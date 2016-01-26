@@ -1121,21 +1121,23 @@ public class MacroTest extends TestCase {
 				new Jar(IO.getFile("bin"))
 		});
 		b.setProperty("Private-Package",
-				"test.packageinfo.annotated,test.packageinfo.notannotated,test.packageinfo.nopackageinfo");
-
+				"test.packageinfo.annotated,test.packageinfo.notannotated,test.packageinfo.nopackageinfo,test.activator");
 		b.setProperty("All-Packages", "${packages}");
 		b.setProperty("Annotated", "${packages;annotated;test.packageinfo.annotated.BlahAnnotation}");
 		b.setProperty("Named", "${packages;named;*.notannotated}");
 		b.setProperty("Negated", "${packages;named;!*.no*}");
+		b.setProperty("Versioned", "${packages;versioned}");
 		b.build();
 
 		assertEquals(0, b.getErrors().size());
 
-		assertEquals("test.packageinfo.annotated,test.packageinfo.notannotated,test.packageinfo.nopackageinfo",
+		assertEquals(
+				"test.packageinfo.annotated,test.packageinfo.notannotated,test.packageinfo.nopackageinfo,test.activator",
 				b.getProperty("All-Packages"));
 		assertEquals("test.packageinfo.annotated", b.getProperty("Annotated"));
 		assertEquals("test.packageinfo.notannotated", b.getProperty("Named"));
-		assertEquals("test.packageinfo.annotated", b.getProperty("Negated"));
+		assertEquals("test.packageinfo.annotated,test.activator", b.getProperty("Negated"));
+		assertEquals("test.packageinfo.annotated,test.packageinfo.notannotated", b.getProperty("Versioned"));
 	}
 
 	public void testBase64() {

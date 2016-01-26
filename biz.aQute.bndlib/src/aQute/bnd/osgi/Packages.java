@@ -14,7 +14,7 @@ public class Packages implements Map<PackageRef,Attrs> {
 	static Map<PackageRef,Attrs>			EMPTY	= Collections.emptyMap();
 
 	public static enum QUERY {
-		ANY, ANNOTATED, NAMED
+		ANY, ANNOTATED, NAMED, VERSIONED
 	}
 
 	public Packages(Packages other) {
