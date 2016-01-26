@@ -16,6 +16,12 @@ import junit.framework.TestCase;
 @SuppressWarnings("resource")
 public class MacroTest extends TestCase {
 
+	public void testGlobToRegExp() {
+		Processor p = new Processor();
+		Macro m = p.getReplacer();
+		assertEquals(".*x", m.process("${glob;*x}"));
+		assertEquals("(?!.*x)", m.process("${glob;!*x}"));
+	}
 	/**
 	 * A macro to get an attribute from a package
 	 * 
