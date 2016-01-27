@@ -2562,6 +2562,9 @@ public class Analyzer extends Processor {
 							throw new IllegalArgumentException("Not enough arguments in ${packages} macro");
 						accept = pkgInfo != null && pkgInfo.is(Clazz.QUERY.ANNOTATED, instr, this);
 						break;
+					case VERSIONED :
+						accept = entry.getValue().getVersion() != null;
+						break;
 				}
 			} else {
 				accept = true;
