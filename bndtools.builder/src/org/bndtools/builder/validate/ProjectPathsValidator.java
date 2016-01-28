@@ -64,7 +64,7 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
 
         IJavaProject javaProject = Central.getJavaProject(model);
         if (javaProject == null) {
-            model.error("Eclipse: The project in %s is not linked with a Java project.", model.getBase());
+            model.error("Bndtools: The project in %s is not linked with a Java project.", model.getBase());
             return;
         }
 
@@ -78,7 +78,7 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
             w = null;
         }
         if (w == null || w != model) {
-            model.error("Eclipse: Error in setup, likely the cnf folder is not ../cnf relative to the project folder '%s'. The workspace is in '%s'.", model.getBase(), model.getWorkspace().getBase());
+            model.error("Bndtools: Error in setup, likely the cnf folder is not ../cnf relative to the project folder '%s'. The workspace is in '%s'.", model.getBase(), model.getWorkspace().getBase());
             return;
         }
 
@@ -99,11 +99,11 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
             int kind = cpe.getEntryKind();
             switch (kind) {
             case IClasspathEntry.CPE_VARIABLE :
-                warning(model, null, null, cpe, "Eclipse: Found a variable in the eclipse build path, this variable is not available during continuous integration", cpe).file(new File(model.getBase(), ".classpath").getAbsolutePath());
+                warning(model, null, null, cpe, "Bndtools: Found a variable in the eclipse build path, this variable is not available during continuous integration", cpe).file(new File(model.getBase(), ".classpath").getAbsolutePath());
                 break;
 
             case IClasspathEntry.CPE_LIBRARY :
-                warning(model, null, null, cpe, "Eclipse: The .classpath containsa a library that will not be available during continuous integration: %s", cpe.getPath()).file(new File(model.getBase(), ".classpath").getAbsolutePath());
+                warning(model, null, null, cpe, "Bndtools: The .classpath contains a library that will not be available during continuous integration: %s", cpe.getPath()).file(new File(model.getBase(), ".classpath").getAbsolutePath());
                 break;
 
             case IClasspathEntry.CPE_CONTAINER :
@@ -115,8 +115,8 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
                         if (path.segmentCount() == 1) {
                             // warning because default might vary <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
                             warning(model, null, path.toString(), cpe,
-                                    "Eclipse: The .classpath contains a default JRE container: %s. This makes it undefined to what version you compile and this might differ between Continuous Integration and Eclipse", path).file(
-                                    new File(model.getBase(), ".classpath").getAbsolutePath());
+                                    "Bndtools: The .classpath contains a default JRE container: %s. This makes it undefined to what version you compile and this might differ between Continuous Integration and Eclipse", path)
+                                            .file(new File(model.getBase(), ".classpath").getAbsolutePath());
                         } else {
                             String segment = path.segment(1);
                             if ("org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType".equals(segment) && path.segmentCount() == 3) {
@@ -124,18 +124,19 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
 
                                 String javac = model.getProperty(Constants.JAVAC_SOURCE, "1.5");
                                 if (!path.segment(2).endsWith(javac)) {
-                                    warning(model, null, path.toString(), cpe, "Eclipse: The .JRE container is set to %s but bnd is compiling against %s", path.segment(2), javac).file(
-                                            new File(model.getBase(), ".classpath").getAbsolutePath());
+                                    warning(model, null, path.toString(), cpe, "Bndtools: The .JRE container is set to %s but bnd is compiling against %s", path.segment(2), javac)
+                                            .file(new File(model.getBase(), ".classpath").getAbsolutePath());
                                 }
                             } else {
                                 // warning because local/machine specific <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 7 [1.7.0_71]"/>
                                 warning(model, null, path.toString(), cpe,
-                                        "Eclipse: The .classpath contains an non-portable JRE container: %s. This makes it undefined to what version you compile and this might differ between Continuous Integration and Eclipse", path).file(
-                                        new File(model.getBase(), ".classpath").getAbsolutePath());
+                                        "Bndtools: The .classpath contains an non-portable JRE container: %s. This makes it undefined to what version you compile and this might differ between Continuous Integration and Eclipse", path)
+                                                .file(new File(model.getBase(), ".classpath").getAbsolutePath());
                             }
                         }
                     } else {
-                        warning(model, null, path.toString(), cpe, "Eclipse: The .classpath contains an unknown container: %s", path).file(new File(model.getBase(), ".classpath").getAbsolutePath());
+                        warning(model, null, path.toString(), cpe, "Bndtools: The .classpath contains an unknown container: %s. This could make your build less portable.", path)
+                                .file(new File(model.getBase(), ".classpath").getAbsolutePath());
                     }
                 }
                 break;
@@ -143,7 +144,7 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
             case IClasspathEntry.CPE_SOURCE :
                 File file = toFile(cpe.getPath());
                 if (file == null) {
-                    model.warning("Eclipse: Found virtual file for '%s'", cpe.getPath()).details(cpe);
+                    model.warning("Bndtools: Found virtual file for '%s'", cpe.getPath()).details(cpe);
                 } else {
                     File output = toFile(cpe.getOutputLocation());
                     if (output == null)
@@ -156,7 +157,7 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
                         //
                         found.remove(SetupTypes.testsrc);
                         if (!testbin.equals(output)) {
-                            warning(model, DEFAULT_PROP_TESTBIN_DIR, testbin, cpe, "Eclipse: testsrc folder '%s' has output folder set to '%s', which does not match bnd's testbin folder '%s'", file, output, testbin);
+                            warning(model, DEFAULT_PROP_TESTBIN_DIR, testbin, cpe, "Bndtools: testsrc folder '%s' has output folder set to '%s', which does not match bnd's testbin folder '%s'", file, output, testbin);
                         }
                     } else {
                         //
@@ -167,10 +168,10 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
                         //
                         if (sourcePath.remove(file)) {
                             if (!bin.equals(output)) {
-                                warning(model, DEFAULT_PROP_BIN_DIR, bin, cpe, "Eclipse: src folder '%s' has output folder set to '%s', which does not match bnd's bin folder '%s'", file, output, bin);
+                                warning(model, DEFAULT_PROP_BIN_DIR, bin, cpe, "Bndtools: src folder '%s' has output folder set to '%s', which does not match bnd's bin folder '%s'", file, output, bin);
                             }
                         } else {
-                            warning(model, DEFAULT_PROP_SRC_DIR, null, cpe, "Eclipse: Found source folder '%s' that is not on bnd's source path '%s'", file, model.getProperty(Constants.DEFAULT_PROP_SRC_DIR));
+                            warning(model, DEFAULT_PROP_SRC_DIR, null, cpe, "Bndtools: Found source folder '%s' that is not on bnd's source path '%s'", file, model.getProperty(Constants.DEFAULT_PROP_SRC_DIR));
                         }
                     }
                 }
@@ -187,7 +188,7 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
         // have something in sourcePath
         //
         for (File file : sourcePath) {
-            warning(model, DEFAULT_PROP_SRC_DIR, file, null, "Eclipse: bnd's src folder '%s' is not in the Eclipse build path", file);
+            warning(model, DEFAULT_PROP_SRC_DIR, file, null, "Bndtools: bnd's src folder '%s' is not in the Eclipse build path", file);
         }
 
         //
@@ -197,11 +198,11 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
             switch (t) {
             case testsrc :
                 if (testsrc.isDirectory()) // if the testsrc directory does not exist, then don't warn
-                    warning(model, DEFAULT_PROP_TESTSRC_DIR, null, null, "Eclipse: bnd's testsrc folder '%s' is not in the Eclipse build path", testsrc);
+                    warning(model, DEFAULT_PROP_TESTSRC_DIR, null, null, "Bndtools: bnd's testsrc folder '%s' is not in the Eclipse build path", testsrc);
                 break;
 
             case bndcontainer :
-                warning(model, null, null, null, "Eclipse: The build path does not refer to the bnd container '%s'", BndtoolsConstants.BND_CLASSPATH_ID.segment(0));
+                warning(model, null, null, null, "Bndtools: The build path does not refer to the bnd container '%s'", BndtoolsConstants.BND_CLASSPATH_ID.segment(0));
                 break;
 
             default :
