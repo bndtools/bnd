@@ -2139,6 +2139,7 @@ public class Analyzer extends Processor {
 		if (isPedantic() && jar.getResources().isEmpty())
 			warning("There is an empty jar or directory on the classpath: " + jar.getName());
 
+		addClose(jar);
 		classpath.add(jar);
 	}
 
