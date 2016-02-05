@@ -38,6 +38,17 @@ public class ParseHeaderTest extends TestCase {
 		assertEquals(Arrays.asList(new Version("1.0.1"), new Version("1.0.2")), attrs.getTyped("h"));
 	}
 
+	public void testMergeWithOverrideFalse() {
+		Parameters a = new Parameters("a;a=value_a;av:Version=\"1.0.0\"");
+		Parameters b = new Parameters("b;b=metal;bv:Version=\"1.0.0\"");
+
+		try {
+			a.mergeWith(b, false);
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}
+	}
+
 	public void testEscaping() {
 
 		{
