@@ -120,7 +120,7 @@ public class Attrs implements Map<String,String> {
 			.compile("\\s*(" + EXTENDED + ")\\s*:\\s*(" + SCALAR + "|" + LIST + ")\\s*");
 
 	private Map<String,String>	map;
-	private Map<String,Type>	types;
+	private Map<String,Type>	types		= new LinkedHashMap<String,Type>();
 	static Map<String,String>	EMPTY		= Collections.emptyMap();
 	public static Attrs			EMPTY_ATTRS	= new Attrs();
 
@@ -327,8 +327,6 @@ public class Attrs implements Map<String,String> {
 				else if ("Version".equals(type))
 					t = Type.VERSION;
 			}
-			if (types == null)
-				types = new LinkedHashMap<String,Type>();
 			types.put(key, t);
 
 			// TODO verify value?
