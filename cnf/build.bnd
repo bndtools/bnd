@@ -72,7 +72,7 @@ groupid:                biz.aQute.bnd
 Bundle-Version:         ${build.version}
 Bundle-Vendor:          Bndtools http://bndtools.org/
 Bundle-Copyright:       ${copyright}
-Bundle-License:         http://www.opensource.org/licenses/apache2.0.php; \
+Bundle-License:         Apache-2.0; \
                         description="Apache License, Version 2.0"; \
                         link="http://www.apache.org/licenses/LICENSE-2.0"
 Bundle-DocURL:          http://bnd.bndtools.org/
