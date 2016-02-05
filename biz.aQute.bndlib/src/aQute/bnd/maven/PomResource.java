@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.jar.Manifest;
@@ -16,7 +15,6 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
-import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.WriteResource;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
@@ -114,7 +112,7 @@ public class PomResource extends WriteResource {
 		String description = manifest.getMainAttributes().getValue(Constants.BUNDLE_DESCRIPTION);
 		String docUrl = manifest.getMainAttributes().getValue(Constants.BUNDLE_DOCURL);
 		String bundleVendor = manifest.getMainAttributes().getValue(Constants.BUNDLE_VENDOR);
-		String licenses = manifest.getMainAttributes().getValue(Constants.BUNDLE_LICENSE);
+		String bundleLicense = manifest.getMainAttributes().getValue(Constants.BUNDLE_LICENSE);
 
 		Tag project = new Tag("project");
 		project.addAttribute("xmlns", "http://maven.apache.org/POM/4.0.0");
@@ -158,37 +156,34 @@ public class PomResource extends WriteResource {
 				new Tag(organization, "url").addContent(urlPart.trim());
 			}
 		}
-		if (licenses != null) {
-			Tag ls = new Tag(project, "licenses");
+		Tag ls = null;
+		Parameters licenses = new Parameters(bundleLicense);
+		for (Entry<String,Attrs> license : licenses.entrySet()) {
+			// Bundle-License: identifier;description="description";link="URL"
+			//
+			// <licenses>
+			//   <license>
+			//     <name>identifier</name>
+			//     <url>URL</url>
+			//     <distribution>repo</distribution>
+			//     <comments>description</comments>
+			//   </license>
+			// </licenses>
 
-			Parameters map = Processor.parseHeader(licenses, null);
-			for (Iterator<Entry<String,Attrs>> e = map.entrySet().iterator(); e.hasNext();) {
-
-				// Bundle-License:
-				// http://www.opensource.org/licenses/apache2.0.php; \
-				// description="${Bundle-Copyright}"; \
-				// link=LICENSE
-				//
-				//  <license>
-				//    <name>This material is licensed under the Apache
-				// Software License, Version 2.0</name>
-				//    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-				//    <distribution>repo</distribution>
-				//    </license>
-
-				Entry<String,Attrs> entry = e.next();
-				Tag l = new Tag(ls, "license");
-				Map<String,String> values = entry.getValue();
-				String url = entry.getKey();
-
-				if (values.containsKey("description"))
-					tagFromMap(l, values, "description", "name", url);
-				else
-					tagFromMap(l, values, "name", "name", url);
-
-				tagFromMap(l, values, "url", "url", url);
-				tagFromMap(l, values, "distribution", "distribution", "repo");
-			}
+			String identifier = license.getKey();
+			if (identifier == null)
+				continue;
+			identifier = identifier.trim();
+			if (identifier.equals("<<EXTERNAL>>"))
+				continue;
+			if (ls == null)
+				ls = new Tag(project, "licenses");
+			Tag l = new Tag(ls, "license");
+			Map<String,String> attrs = license.getValue();
+			tagFromMap(l, attrs, "name", "name", identifier);
+			tagFromMap(l, attrs, "link", "url", identifier);
+			tagFromMap(l, attrs, "distribution", "distribution", "repo");
+			tagFromMap(l, attrs, "description", "comments", null);
 		}
 
 		String scm = processor.get(Constants.BUNDLE_SCM);
@@ -237,16 +232,18 @@ public class PomResource extends WriteResource {
 	/**
 	 * Utility function to print a tag from a map
 	 * 
-	 * @param ps
-	 * @param values
-	 * @param string
+	 * @param parent
+	 * @param attrs
+	 * @param key
 	 * @param tag
-	 * @param object
+	 * @param defaultValue
 	 */
-	private Tag tagFromMap(Tag parent, Map<String,String> values, String string, String tag, String object) {
-		String value = values.get(string);
+	private Tag tagFromMap(Tag parent, Map<String,String> attrs, String key, String tag, String defaultValue) {
+		String value = attrs.get(key);
 		if (value == null)
-			value = object;
+			value = attrs.get(tag);
+		if (value == null)
+			value = defaultValue;
 		if (value == null)
 			return parent;
 		new Tag(parent, tag).addContent(value.trim());

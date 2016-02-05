@@ -366,22 +366,24 @@ public class MavenTest extends TestCase {
 
 		testPom("pom.xml", "true", "com.example.foo", "1.2.3.qualifier", "com.example", "foo", "1.2.3.qualifier",
 				"url=http://github.com/bndtools,connection=scm:git:https://github.com/bndtools/bnd,developerConnection=scm:git:git@github.com/bndtools/bnd",
-				"Peter.Kriens@aQute.biz;name=\"Peter Kriens\";organization=aQute;roles=\"programmer,gopher\"");
+				"Peter.Kriens@aQute.biz;name=\"Peter Kriens\";organization=aQute;roles=\"programmer,gopher\"", null);
 		testPom("pom.xml", "true", "com.example.foo", "1.2.3.qualifier", "com.example", "foo", "1.2.3.qualifier", null,
-				null);
-		testPom("pom.xml", "true", "uvw.xyz", "1.2.3", "uvw", "xyz", "1.2.3", null, null);
+				null, null);
+		testPom("pom.xml", "true", "uvw.xyz", "1.2.3", "uvw", "xyz", "1.2.3", null, null, null);
 		testPom("META-INF/maven/abc.def.ghi/jkl/pom.xml", "groupid=abc.def.ghi,artifactid=jkl", "uvw.xyz", "1.2.3",
-				"abc.def.ghi", "jkl", "1.2.3", null, null);
+				"abc.def.ghi", "jkl", "1.2.3", null, null, "<<EXTERNAL>>");
 		testPom("META-INF/maven/abc.def.ghi/uvw.xyz/pom.xml", "groupid=abc.def.ghi", "uvw.xyz", "1.2.3", "abc.def.ghi",
-				"uvw.xyz", "1.2.3", null, null);
+				"uvw.xyz", "1.2.3", null, null, "http://www.apache.org/licenses/LICENSE-2.0");
 		testPom("META-INF/maven/abc.def.ghi/uvw.xyz/pom.xml", "groupid=abc.def.ghi,version=2.6.8", "uvw.xyz", "1.2.3",
-				"abc.def.ghi", "uvw.xyz", "2.6.8", null, null);
+				"abc.def.ghi", "uvw.xyz", "2.6.8", null, null,
+				"http://www.apache.org/licenses/LICENSE-2.0;description=\"Apache License, Version 2.0\"");
 		testPom("META-INF/maven/pom.xml", "groupid=abc.def.ghi,version=2.6.8,where=META-INF/maven/pom.xml", "uvw.xyz",
-				"1.2.3", "abc.def.ghi", "uvw.xyz", "2.6.8", null, null);
+				"1.2.3", "abc.def.ghi", "uvw.xyz", "2.6.8", null, null,
+				"Apache-2.0;description=\"Apache License, Version 2.0\";link=\"http://www.apache.org/licenses/LICENSE-2.0\"");
 	}
 
 	void testPom(String where, String pom, String bsn, String version, String groupId, String artifactId,
-			String mversion, String scm, String developers)
+			String mversion, String scm, String developers, String license)
 					throws IOException, SAXException, ParserConfigurationException, Exception {
 		Builder b = new Builder();
 		b.setProperty("-pom", pom);
@@ -393,6 +395,9 @@ public class MavenTest extends TestCase {
 
 		if (scm != null)
 			b.setProperty(Constants.BUNDLE_SCM, scm);
+
+		if (license != null)
+			b.setProperty(Constants.BUNDLE_LICENSE, license);
 
 		Jar jar = b.build();
 		assertTrue(b.check());
@@ -406,5 +411,7 @@ public class MavenTest extends TestCase {
 
 		assertEquals((developers == null) ? "0" : "1", xpath.evaluate("count(/project/developers)", d));
 		assertEquals((scm == null) ? "0" : "1", xpath.evaluate("count(/project/scm)", d));
+		assertEquals(((license == null) || license.trim().equals("<<EXTERNAL>>")) ? "0" : "1",
+				xpath.evaluate("count(/project/licenses)", d));
 	}
 }
