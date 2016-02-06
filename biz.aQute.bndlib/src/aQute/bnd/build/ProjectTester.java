@@ -78,9 +78,6 @@ public abstract class ProjectTester {
 		if (!reportDir.exists() && !reportDir.mkdirs()) {
 			throw new IOException("Could not create directory " + reportDir);
 		}
-		for (File file : reportDir.listFiles()) {
-			file.delete();
-		}
 		return true;
 	}
 
