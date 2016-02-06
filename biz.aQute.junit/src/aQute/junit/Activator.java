@@ -238,7 +238,9 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			Version v = bundle.getVersion();
 			File f = new File(reportDir, "TEST-" + bundle.getSymbolicName() + "-" + v.getMajor() + "." + v.getMinor()
 					+ "." + v.getMicro() + ".xml");
-			return new OutputStreamWriter(new FileOutputStream(f), "UTF-8");
+			Writer writer = new OutputStreamWriter(new FileOutputStream(f), "UTF-8");
+			writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+			return writer;
 		}
 		return null;
 	}
