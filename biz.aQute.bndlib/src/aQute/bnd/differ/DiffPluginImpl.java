@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -148,6 +149,8 @@ public class DiffPluginImpl implements Differ {
 		Jar jar = analyzer.getJar();
 
 		List<Element> resources = new ArrayList<Element>();
+		Set<String> sourcesAnalyzed = new HashSet<String>();
+
 		for (Map.Entry<String,Resource> entry : jar.getResources().entrySet()) {
 
 			//
@@ -182,6 +185,11 @@ public class DiffPluginImpl implements Differ {
 					if (clazz != null) {
 						String sourceFile = clazz.getSourceFile();
 						String source = "OSGI-OPT/src/" + packageRef.getBinary() + "/" + sourceFile;
+						if (sourcesAnalyzed.contains(source))
+							continue;
+
+						sourcesAnalyzed.add(source);
+
 						resource = jar.getResources().get(source);
 						comment = "Σ" + sourceFile;
 					}
