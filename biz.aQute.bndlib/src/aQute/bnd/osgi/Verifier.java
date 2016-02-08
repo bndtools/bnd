@@ -352,8 +352,8 @@ public class Verifier extends Processor {
 								bactivator, ActivatorErrorType.NO_SUITABLE_CONSTRUCTOR);
 					}
 
-					if (!activatorClazz.is(QUERY.IMPLEMENTS, new Instruction("org.osgi.framework.BundleActivator"),
-							analyzer)) {
+					if ( !analyzer.assignable(activatorClazz.getFQN() , "org.osgi.framework.BundleActivator")) {
+						
 						registerActivatorErrorLocation(
 								error("The Bundle Activator " + bactivator + " does not implement BundleActivator."),
 								bactivator, ActivatorErrorType.NOT_AN_ACTIVATOR);

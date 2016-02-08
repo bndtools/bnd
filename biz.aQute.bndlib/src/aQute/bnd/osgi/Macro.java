@@ -45,6 +45,7 @@ import aQute.lib.collections.SortedList;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.glob.Glob;
 
 /**
  * Provide a macro processor. This processor can replace variables in strings
@@ -2002,5 +2003,23 @@ public class Macro {
 		}
 		l = Math.round(l * 10) / 10;
 		sb.format("%s %s", l, strings[i]);
+	}
+
+	static String _globHelp = "${glob;<globexp>} (turn it into a regular expression)";
+
+	public String _glob(String[] args) {
+		verifyCommand(args, _globHelp, null, 2, 2);
+		String glob = args[1];
+		boolean negate = false;
+		if (glob.startsWith("!")) {
+			glob = glob.substring(1);
+			negate = true;
+		}
+
+		Pattern pattern = Glob.toPattern(glob);
+		if (negate)
+			return "(?!" + pattern.pattern() + ")";
+		else
+			return pattern.pattern();
 	}
 }
