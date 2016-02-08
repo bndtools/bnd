@@ -436,7 +436,7 @@ public class ResolveTest extends TestCase {
 
 		// Resolve the bndrun
 		BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
-		Resolver resolver = new ResolverImpl(null);
+		Resolver resolver = new ResolverImpl(new org.apache.felix.resolver.Logger(4), null);
 		Collection<Resource> resolvedResources = new ResolveProcess()
 				.resolveRequired(runModel, registry, resolver, Collections.<ResolutionCallback> emptyList(), log)
 				.keySet();

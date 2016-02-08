@@ -77,7 +77,7 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 	private Project							project;
 	private Map<Resource,List<Wire>>		resolution;
 	private ReporterLogger					log			= new ReporterLogger(0);
-	private ResolverImpl					resolver	= new ResolverImpl(new ReporterLogger(0));
+	private ResolverImpl					resolver	= new ResolverImpl(new ReporterLogger(0), null);
 	private ResolveProcess					resolve		= new ResolveProcess();
 	private Collection<ResolutionCallback>	cbs			= new ArrayList<ResolutionCallback>();
 
