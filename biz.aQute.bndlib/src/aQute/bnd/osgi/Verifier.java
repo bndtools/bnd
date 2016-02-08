@@ -17,7 +17,6 @@ import java.util.regex.Pattern;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
-import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.verifier.VerifierPlugin;
