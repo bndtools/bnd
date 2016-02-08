@@ -812,7 +812,9 @@ public class Builder extends Analyzer {
 
 	private void doIncludeResource(Jar jar, Parameters clauses) throws ZipException, IOException, Exception {
 		for (Entry<String,Attrs> entry : clauses.entrySet()) {
-			doIncludeResource(jar, entry.getKey(), entry.getValue());
+
+			String key = removeDuplicateMarker(entry.getKey());
+			doIncludeResource(jar, key, entry.getValue());
 		}
 	}
 
