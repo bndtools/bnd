@@ -954,12 +954,12 @@ public class Project extends Processor {
 	}
 
 	public File release(String jarName, InputStream jarStream) throws Exception {
-		String name = getProperty(Constants.RELEASEREPO);
+		String name = getReleaseRepoName(null);
 		return release(name, jarName, jarStream);
 	}
 
 	public URI releaseURI(String jarName, InputStream jarStream) throws Exception {
-		String name = getProperty(Constants.RELEASEREPO);
+		String name = getReleaseRepoName(null);
 		return releaseURI(name, jarName, jarStream);
 	}
 
@@ -1009,7 +1009,7 @@ public class Project extends Processor {
 	}
 
 	RepositoryPlugin getReleaseRepo(String releaserepo) {
-		String name = releaserepo == null ? name = getProperty(RELEASEREPO) : releaserepo;
+		String repoName = getReleaseRepoName(releaserepo);
 
 		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
 
@@ -1017,17 +1017,26 @@ public class Project extends Processor {
 			if (!plugin.canWrite())
 				continue;
 
-			if (name == null)
+			if (repoName == null)
 				return plugin;
 
-			if (name.equals(plugin.getName()))
+			if (repoName.equals(plugin.getName()))
 				return plugin;
 		}
 		return null;
 	}
 
+	private String getReleaseRepoName(String name) {
+		String releaseRepo = name == null ? getProperty(RELEASEREPO) : name;
+		Parameters p = new Parameters(releaseRepo);
+		if (p.isEmpty())
+			return null;
+
+		return p.entrySet().iterator().next().getKey();
+	}
+
 	public void release(boolean test) throws Exception {
-		String name = getProperty(Constants.RELEASEREPO);
+		String name = getReleaseRepoName(null);
 		release(name, test);
 	}
 
@@ -1046,9 +1055,13 @@ public class Project extends Processor {
 			trace("no jars being build");
 			return;
 		}
-		trace("build ", Arrays.toString(jars));
-		for (File jar : jars) {
-			release(name, jar.getName(), new BufferedInputStream(new FileInputStream(jar)));
+		Parameters repos = new Parameters(name);
+		trace("build %s - %s", Arrays.toString(jars), repos);
+
+		for (Map.Entry<String,Attrs> entry : repos.entrySet()) {
+			for (File jar : jars) {
+				release(entry.getKey(), jar.getName(), new BufferedInputStream(new FileInputStream(jar)));
+			}
 		}
 	}
 
