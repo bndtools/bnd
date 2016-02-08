@@ -1284,16 +1284,13 @@ public class Builder extends Analyzer {
 	/**
 	 * Called when we start to build a builder
 	 */
-	protected void startBuild(Builder builder) {
-
+	protected void startBuild(Builder builder) throws Exception {
 	}
 
 	/**
-	 * Called when we 're done with a builder
+	 * Called when we're done with a builder
 	 */
-	protected void doneBuild(Builder builder) {
-		// TODO Auto-generated method stub
-
+	protected void doneBuild(Builder builder) throws Exception {
 	}
 
 	/**
@@ -1307,11 +1304,13 @@ public class Builder extends Analyzer {
 	 * @throws Exception
 	 */
 	public List<Builder> getSubBuilders() throws Exception {
-		String sub = getProperty(SUB);
-		if (sub == null || sub.trim().length() == 0 || EMPTY_HEADER.equals(sub))
-			return Arrays.asList(this);
-
 		List<Builder> builders = new ArrayList<Builder>();
+		String sub = getProperty(SUB);
+		if (sub == null || sub.trim().length() == 0 || EMPTY_HEADER.equals(sub)) {
+			builders.add(this);
+			return builders;
+		}
+
 		if (isTrue(getProperty(NOBUNDLES)))
 			return builders;
 
@@ -1364,15 +1363,9 @@ public class Builder extends Analyzer {
 		if (builder != null) {
 			builder.setProperties(file);
 			addClose(builder);
-
-			doDefaults(builder);
 		}
 
 		return builder;
-	}
-
-	public void doDefaults(Builder b) throws Exception {
-
 	}
 
 	public Builder getSubBuilder() throws Exception {
