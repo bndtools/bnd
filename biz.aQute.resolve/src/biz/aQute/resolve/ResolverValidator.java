@@ -34,7 +34,7 @@ import aQute.lib.strings.Strings;
 public class ResolverValidator extends Processor {
 
 	LogReporter	reporter		= new LogReporter(this);
-	Resolver	resolver		= new ResolverImpl(reporter);
+	Resolver	resolver		= new ResolverImpl(reporter, null);
 	List<URI>	repositories	= new ArrayList<>();
 	Resource	system			= null;
 

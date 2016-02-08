@@ -95,7 +95,7 @@ public class JpmRepoTest extends TestCase {
 	// BndrunResolveContext context = new BndrunResolveContext(model, ws, log);
 	//
 	// Resolver resolver = new ResolverImpl(new
-	// org.apache.felix.resolver.Logger(4));
+	// org.apache.felix.resolver.Logger(4), null);
 	//
 	// Map<Resource,List<Wire>> resolved = resolver.resolve(context);
 	// Set<Resource> resources = resolved.keySet();
@@ -124,7 +124,7 @@ public class JpmRepoTest extends TestCase {
 		model.setRunRequires(requires);
 		BndrunResolveContext context = new BndrunResolveContext(model, ws, log);
 
-		Resolver resolver = new ResolverImpl(new org.apache.felix.resolver.Logger(4));
+		Resolver resolver = new ResolverImpl(new org.apache.felix.resolver.Logger(4), null);
 
 		try {
 			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
@@ -153,7 +153,7 @@ public class JpmRepoTest extends TestCase {
 		model.setRunRequires(requires);
 		BndrunResolveContext context = new BndrunResolveContext(model, ws, log);
 
-		Resolver resolver = new ResolverImpl(new org.apache.felix.resolver.Logger(4));
+		Resolver resolver = new ResolverImpl(new org.apache.felix.resolver.Logger(4), null);
 
 		try {
 			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
