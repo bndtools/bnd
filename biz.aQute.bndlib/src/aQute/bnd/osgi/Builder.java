@@ -3,6 +3,7 @@ package aQute.bnd.osgi;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -1361,8 +1362,15 @@ public class Builder extends Analyzer {
 		if (builder != null) {
 			builder.setProperties(file);
 			addClose(builder);
+
+			doDefaults(builder);
 		}
+
 		return builder;
+	}
+
+	public void doDefaults(Builder b) throws Exception {
+
 	}
 
 	public Builder getSubBuilder() throws Exception {

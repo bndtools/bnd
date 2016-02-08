@@ -66,6 +66,44 @@ public class ProjectBuilder extends Builder {
 		return project.getBuilder(this);
 	}
 
+	/*
+	 * During discussion on bndtools/bndtools#1270, @rotty3000 raised the issue
+	 * that, in a workspace build, bnd will not include anything in a bundle by
+	 * default. One must specify Private-Package, Export-Package,
+	 * Include-Resource, or -includeresource to put any content in a bundle. And
+	 * new users make mistakes and end up with empty bundles which will be
+	 * unexpected. This is different than the non-workspace modes such as the
+	 * bnd gradle plugin or the bnd-maven-plugin which always include default
+	 * content (gradle: normal jar task content, maven: target/classes folder).
+	 * So this bug suggests that we change ProjectBuilder (not Builder which is
+	 * used by non-workspace builds) to use the source output folder (e.g. bin
+	 * folder) as the default contents if the bundle's bnd file does not specify
+	 * any of the following headers: Private-Package, Export-Package,
+	 * Include-Resource, or -includeresource. If the bnd file specifies any of
+	 * those headers, then they will fully control the contents of the bundle.
+	 */
+
+	@Override
+	public void doDefaults(Builder b) throws Exception {
+
+		if (b.getProperty(Constants.RESOURCEONLY) != null)
+			return;
+
+		if (b.getProperty(Constants.PRIVATE_PACKAGE) != null)
+			return;
+
+		if (b.getProperty(Constants.EXPORT_PACKAGE) != null)
+			return;
+
+		if (b.getProperty(Constants.INCLUDE_RESOURCE) != null)
+			return;
+
+		if (b.getProperty(Constants.INCLUDERESOURCE) != null)
+			return;
+
+		b.setIncludeResource("${bin}");
+	}
+
 	public Project getProject() {
 		return project;
 	}
