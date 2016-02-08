@@ -14,9 +14,14 @@ import java.util.Map;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
+import aQute.lib.io.IO;
 
 public class Container {
 	public enum TYPE {
@@ -34,6 +39,8 @@ public class Container {
 	volatile Map<String,String>	attributes;
 	private long				manifestTime;
 	private Manifest			manifest;
+	private File[]				bundleClasspathExpansion;
+	public String				warning	= "";
 
 	Container(Project project, String bsn, String version, TYPE type, File source, String error,
 			Map<String,String> attributes, DownloadBlocker db) {
@@ -45,11 +52,18 @@ public class Container {
 
 		this.project = project;
 		this.error = error;
+
 		if (attributes == null || attributes.isEmpty())
 			this.attributes = Collections.emptyMap();
 		else
 			this.attributes = attributes;
 		this.db = db;
+
+		if (!this.attributes.containsKey("expand-bcp")) {
+			this.bundleClasspathExpansion = new File[] {
+					this.file
+			};
+		}
 	}
 
 	public Container(Project project, File file, Map<String,String> attributes) {
@@ -62,6 +76,10 @@ public class Container {
 
 	public Container(File file, DownloadBlocker db) {
 		this(null, file.getName(), "project", TYPE.EXTERNAL, file, null, null, db);
+	}
+
+	public Container(File file, DownloadBlocker db, Attrs attributes) {
+		this(null, file.getName(), "project", TYPE.EXTERNAL, file, null, attributes, null);
 	}
 
 	public File getFile() {
@@ -82,7 +100,9 @@ public class Container {
 		switch (type) {
 			case EXTERNAL :
 			case REPO :
-				files.add(getFile());
+				for (File f : getBundleClasspathFiles()) {
+					files.add(f);
+				}
 				return true;
 
 			case PROJECT :
@@ -271,5 +291,78 @@ public class Container {
 			}
 		}
 		return manifest;
+	}
+
+	/**
+	 * @throws Exception
+	 */
+
+	File[] getBundleClasspathFiles() throws Exception {
+
+		if (this.bundleClasspathExpansion != null)
+			return bundleClasspathExpansion;
+
+		File file = getFile();
+
+		Manifest m = getManifest();
+		String bundleClassPath;
+		if (m == null || (bundleClassPath = m.getMainAttributes().getValue(Constants.BUNDLE_CLASSPATH)) == null) {
+			this.bundleClasspathExpansion = new File[] {
+					file
+			};
+		} else {
+
+			File bundleClasspathDirectory = IO.getFile(file.getParentFile(), "." + file.getName() + "-bcp");
+			Parameters header = new Parameters(bundleClassPath);
+			this.bundleClasspathExpansion = new File[header.size()];
+			bundleClasspathDirectory.mkdir();
+
+			int n = 0;
+			Jar jar = null;
+			try {
+				for (Map.Entry<String,Attrs> entry : header.entrySet()) {
+					if (".".equals(entry.getKey())) {
+						this.bundleClasspathExpansion[n] = file;
+					} else {
+						File member = new File(bundleClasspathDirectory, n + "-" + toName(entry.getKey()));
+						if (!isCurrent(file, member)) {
+
+							if (jar == null) {
+								jar = new Jar(file);
+							}
+
+							Resource resource = jar.getResource(entry.getKey());
+							if (resource == null) {
+								warning += "Invalid bcp entry: " + entry.getKey() + "\n";
+							} else {
+								IO.copy(resource.openInputStream(), member);
+								member.setLastModified(file.lastModified());
+							}
+
+						}
+						this.bundleClasspathExpansion[n] = member;
+					}
+					n++;
+				}
+			} finally {
+				if (jar != null)
+					jar.close();
+			}
+		}
+
+		return this.bundleClasspathExpansion;
+	}
+
+	boolean isCurrent(File file, File member) {
+		return member.isFile() && member.lastModified() == file.lastModified();
+	}
+
+	private String toName(String key) {
+		int n = key.lastIndexOf('/');
+		return key.substring(n + 1);
+	}
+
+	public String getWarning() {
+		return warning;
 	}
 }
