@@ -1888,6 +1888,10 @@ public class Clazz {
 		return zuper != null && zuper.getBinary().equals("java/lang/Enum");
 	}
 
+	public boolean isSynthetic() {
+		return (0x1000 & accessx) != 0;
+	}
+
 	public JAVA getFormat() {
 		return JAVA.format(major);
 

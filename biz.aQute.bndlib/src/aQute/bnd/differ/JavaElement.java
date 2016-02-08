@@ -141,6 +141,10 @@ class JavaElement {
 		packages = new MultiMap<PackageRef,Element>();
 
 		for (Clazz c : analyzer.getClassspace().values()) {
+
+			if (c.isSynthetic())
+				continue;
+
 			if (c.isPublic() || c.isProtected()) {
 				PackageRef packageName = c.getClassName().getPackageRef();
 
