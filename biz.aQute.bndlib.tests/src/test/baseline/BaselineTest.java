@@ -55,6 +55,20 @@ public class BaselineTest extends TestCase {
 	}
 
 	/**
+	 * Test 2 jars compiled with different compilers
+	 */
+	public void testCompilerEnumDifference() throws Exception {
+		DiffPluginImpl diff = new DiffPluginImpl();
+		Jar ecj = new Jar(IO.getFile("jar/baseline/com.example.baseline.ecj.jar"));
+		Jar javac = new Jar(IO.getFile("jar/baseline/com.example.baseline.javac.jar"));
+
+		Tree tecj = diff.tree(ecj);
+		Tree tjavac = diff.tree(javac);
+		Diff d = tecj.diff(tjavac);
+		assertEquals(Delta.UNCHANGED, d.getDelta());
+	}
+
+	/**
 	 * Test skipping classes when there is source
 	 */
 	public void testClassesDiffWithSource() throws Exception {
@@ -72,9 +86,11 @@ public class BaselineTest extends TestCase {
 		Tree src = tree.get("<resources>")
 				.get("OSGI-OPT/src/org/osgi/application/ApplicationContext.java")
 				.getChildren()[0];
-		Tree clazz = tree.get("<resources>").get("org/osgi/application/ApplicationContext.class").getChildren()[0];
-		System.out.println("src & clazz " + src + " " + clazz);
-		assertEquals(src, clazz);
+
+		assertNotNull(src);
+
+		assertNull(tree.get("<resources>").get("org/osgi/application/ApplicationContext.class"));
+
 	}
 
 	public void testClassesDiffWithoutSource() throws Exception {
