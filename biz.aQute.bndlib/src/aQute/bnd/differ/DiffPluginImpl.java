@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,17 +50,17 @@ public class DiffPluginImpl implements Differ {
 	 * Headers that are considered major enough to parse according to spec and
 	 * compare their constituents
 	 */
-	final static Set<String>	MAJOR_HEADERS	= new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+	final static Set<String> MAJOR_HEADERS = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
 	/**
 	 * Headers that are considered not major enough to be considered
 	 */
-	final static Set<String>	IGNORE_HEADERS	= new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+	final static Set<String> IGNORE_HEADERS = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
 	/**
 	 * Headers that have values that should be sorted
 	 */
-	final static Set<String>	ORDERED_HEADERS	= new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+	final static Set<String> ORDERED_HEADERS = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
 	static {
 		MAJOR_HEADERS.add(Constants.EXPORT_PACKAGE);
@@ -149,7 +148,6 @@ public class DiffPluginImpl implements Differ {
 		Jar jar = analyzer.getJar();
 
 		List<Element> resources = new ArrayList<Element>();
-		Set<String> sourcesAnalyzed = new HashSet<String>();
 
 		for (Map.Entry<String,Resource> entry : jar.getResources().entrySet()) {
 
@@ -173,32 +171,20 @@ public class DiffPluginImpl implements Differ {
 			//
 
 			String path = entry.getKey();
-			Resource resource = null;
-			String comment = null;
 
 			if (analyzer.since(About._3_0)) {
 
-				if (path.endsWith(".class")) {
-					TypeRef type = analyzer.getTypeRefFromPath(path);
-					PackageRef packageRef = type.getPackageRef();
-					Clazz clazz = analyzer.findClass(type);
-					if (clazz != null) {
-						String sourceFile = clazz.getSourceFile();
-						String source = "OSGI-OPT/src/" + packageRef.getBinary() + "/" + sourceFile;
-						if (sourcesAnalyzed.contains(source))
-							continue;
+				//
+				// Skip resources that have a source component in the same
+				// Jar. Changes will be reported on that component
+				//
 
-						sourcesAnalyzed.add(source);
-
-						resource = jar.getResources().get(source);
-						comment = "Σ" + sourceFile;
-					}
-				}
+				if (hasSource(analyzer, path))
+					continue;
 
 			}
 
-			if (resource == null)
-				resource = entry.getValue();
+			Resource resource = entry.getValue();
 
 			InputStream in = resource.openInputStream();
 			try {
@@ -206,12 +192,35 @@ public class DiffPluginImpl implements Differ {
 				IO.copy(in, digester);
 				String value = Hex.toHexString(digester.digest().digest());
 				resources.add(new Element(Type.RESOURCE, entry.getKey(), Arrays.asList(new Element(Type.SHA, value)),
-						CHANGED, CHANGED, comment));
+						CHANGED, CHANGED, null));
 			} finally {
 				in.close();
 			}
 		}
 		return new Element(Type.RESOURCES, "<resources>", resources, CHANGED, CHANGED, null);
+	}
+
+	private boolean hasSource(Analyzer analyzer, String path) throws Exception {
+
+		if (!path.endsWith(".class"))
+			return false;
+
+		TypeRef type = analyzer.getTypeRefFromPath(path);
+		PackageRef packageRef = type.getPackageRef();
+		Clazz clazz = analyzer.findClass(type);
+		if (clazz == null)
+			return false;
+
+		String sourceFile = clazz.getSourceFile();
+		if (sourceFile == null)
+			return false;
+
+		String source = "OSGI-OPT/src/" + packageRef.getBinary() + "/" + sourceFile;
+		Resource sourceResource = analyzer.getJar().getResource(source);
+		if (sourceResource == null)
+			return false;
+
+		return true;
 	}
 
 	/**
