@@ -563,6 +563,15 @@ public class Clazz {
 				case NameAndType :
 					nameAndType(in, poolIndex, tag);
 					break;
+				case MethodHandle :
+					methodHandle(in, poolIndex, tag);
+					break;
+				case MethodType :
+					methodType(in, poolIndex, tag);
+					break;
+				case InvokeDynamic :
+					invokeDynamic(in, poolIndex, tag);
+					break;
 				default :
 					in.skipBytes(tag.skip());
 					break;
@@ -590,6 +599,7 @@ public class Clazz {
 						break;
 
 					case NameAndType :
+					case MethodType :
 						referTo(assoc.b, 0); // Descriptor
 						break;
 					default :
@@ -795,6 +805,40 @@ public class Clazz {
 	 * @param tag
 	 * @throws IOException
 	 */
+	private void methodType(DataInputStream in, int poolIndex, CONSTANT tag) throws IOException {
+		int descriptor_index = in.readUnsignedShort();
+		pool[poolIndex] = new Assoc(tag, 0, descriptor_index);
+	}
+
+	/**
+	 * @param in
+	 * @param poolIndex
+	 * @param tag
+	 * @throws IOException
+	 */
+	private void methodHandle(DataInputStream in, int poolIndex, CONSTANT tag) throws IOException {
+		int reference_kind = in.readUnsignedByte();
+		int reference_index = in.readUnsignedShort();
+		pool[poolIndex] = new Assoc(tag, reference_kind, reference_index);
+	}
+
+	/**
+	 * @param in
+	 * @param poolIndex
+	 * @param tag
+	 * @throws IOException
+	 */
+	private void invokeDynamic(DataInputStream in, int poolIndex, CONSTANT tag) throws IOException {
+		int bootstrap_method_attr_index = in.readUnsignedShort();
+		int name_and_type_index = in.readUnsignedShort();
+		pool[poolIndex] = new Assoc(tag, bootstrap_method_attr_index, name_and_type_index);
+	}
+
+	/**
+	 * @param in
+	 * @param poolIndex
+	 * @throws IOException
+	 */
 	private void ref(DataInputStream in, int poolIndex) throws IOException {
 		int class_index = in.readUnsignedShort();
 		int name_and_type_index = in.readUnsignedShort();
@@ -957,6 +1001,8 @@ public class Clazz {
 			}
 		} else if ("Exceptions".equals(attributeName))
 			doExceptions(in, access_flags);
+		else if ("BootstrapMethods".equals(attributeName))
+			doBootstrapMethods(in);
 		else {
 			if (attribute_length > 0x7FFFFFFF) {
 				throw new IllegalArgumentException("Attribute > 2Gb");
@@ -1547,6 +1593,20 @@ public class Clazz {
 		}
 	}
 
+	/*
+	 * We don't currently process BootstrapMethods. We walk the data structure
+	 * to consume the attribute.
+	 */
+	private void doBootstrapMethods(DataInputStream in) throws IOException {
+		final int num_bootstrap_methods = in.readUnsignedShort();
+		for (int v = 0; v < num_bootstrap_methods; v++) {
+			final int bootstrap_method_ref = in.readUnsignedShort();
+			final int num_bootstrap_arguments = in.readUnsignedShort();
+			for (int a = 0; a < num_bootstrap_arguments; a++) {
+				final int bootstrap_argument = in.readUnsignedShort();
+			}
+		}
+	}
 	/**
 	 * Add a new package reference.
 	 * 
