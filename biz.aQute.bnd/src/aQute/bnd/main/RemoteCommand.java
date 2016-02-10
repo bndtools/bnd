@@ -280,8 +280,7 @@ class RemoteCommand extends Processor {
 			jar.setManifest(m);
 
 			Verifier v = new Verifier(jar);
-			v.setProperty("-fixupmessages",
-					"osgi* namespaces must not be specified with generic requirements/capabilities");
+			v.setProperty(Constants.FIXUPMESSAGES, "osgi.* namespace must not be specified with generic capabilities");
 			v.verify();
 			v.getErrors();
 

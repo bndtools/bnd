@@ -752,17 +752,20 @@ public class Verifier extends Processor {
 
 			} else if (key.equals("osgi.ee")) {
 
-			} else if (key.startsWith("osgi.wiring.") || key.startsWith("osgi.identity")) {
-				error("osgi.wiring.* namespaces must not be specified with generic requirements/capabilities");
+			} else if (key.equals("osgi.native")) {
+
+			} else if (key.equals("osgi.identity")) {
+
+			} else if (key.startsWith("osgi.wiring.")) {
+				error("%s namespace must not be specified with generic requirements", key);
 			}
 
 			verifyAttrs(key, attrs);
 
 			if (attrs.containsKey("mandatory:"))
-				error("mandatory: directive is intended for Capabilities, not Requirement %s", key);
-
+				error("%s directive is intended for Capabilities, not Requirement %s", "mandatory:", key);
 			if (attrs.containsKey("uses:"))
-				error("uses: directive is intended for Capabilities, not Requirement %s", key);
+				error("%s directive is intended for Capabilities, not Requirement %s", "uses:", key);
 		}
 	}
 
@@ -790,38 +793,35 @@ public class Verifier extends Processor {
 		for (String key : map.keySet()) {
 			verifyNamespace(key, "Provide");
 			Attrs attrs = map.get(key);
-			verify(attrs, "cardinality:", CARDINALITY_PATTERN, false, "Requirement %s cardinality not correct", key);
-			verify(attrs, "resolution:", RESOLUTION_PATTERN, false, "Requirement %s resolution not correct", key);
+			verify(attrs, "cardinality:", CARDINALITY_PATTERN, false, "Capability %s cardinality not correct", key);
+			verify(attrs, "resolution:", RESOLUTION_PATTERN, false, "Capability %s resolution not correct", key);
 
 			if (key.equals("osgi.extender")) {
-				verify(attrs, "osgi.extender", SYMBOLICNAME, true,
-						"Extender %s must always have the osgi.extender attribute set", key);
-				verify(attrs, "version", VERSION, true, "Extender %s must always have a version", key);
+				verify(attrs, "osgi.extender", SYMBOLICNAME, true, "%s must have the %s attribute set", key,
+						"osgi.extender");
+				verify(attrs, "version", VERSION, true, "%s must have the %s attribute set", key, "version");
 			} else if (key.equals("osgi.serviceloader")) {
 				verify(attrs, "register:", PACKAGEPATTERN, false,
 						"Service Loader extender register: directive not a fully qualified Java name");
 			} else if (key.equals("osgi.contract")) {
-				verify(attrs, "osgi.contract", SYMBOLICNAME, true,
-						"Contracts %s must always have the osgi.contract attribute set", key);
-
+				verify(attrs, "osgi.contract", SYMBOLICNAME, true, "%s must have the %s attribute set", key,
+						"osgi.contract");
 			} else if (key.equals("osgi.service")) {
-				verify(attrs, "objectClass", MULTIPACKAGEPATTERN, true,
-						"osgi.service %s must have the objectClass attribute set", key);
-
-			} else if (key.equals("osgi.ee")) {
-				// TODO
-			} else if (key.startsWith("osgi.wiring.") || key.startsWith("osgi.identity")) {
-				error("osgi.wiring.* namespaces must not be specified with generic requirements/capabilities");
+				verify(attrs, "objectClass", MULTIPACKAGEPATTERN, true, "%s must have the %s attribute set", key,
+						"objectClass");
+			} else if (key.startsWith("osgi.wiring.") || key.equals("osgi.identity") || key.equals("osgi.ee")
+					|| key.equals("osgi.native")) {
+				error("%s namespace must not be specified with generic capabilities", key);
 			}
 
 			verifyAttrs(key, attrs);
 
 			if (attrs.containsKey("filter:"))
-				error("filter: directive is intended for Requirements, not Capability %s", key);
+				error("%s directive is intended for Requirements, not Capability %s", "filter:", key);
 			if (attrs.containsKey("cardinality:"))
-				error("cardinality: directive is intended for Requirements, not Capability %s", key);
+				error("%s directive is intended for Requirements, not Capability %s", "cardinality:", key);
 			if (attrs.containsKey("resolution:"))
-				error("resolution: directive is intended for Requirements, not Capability %s", key);
+				error("%s directive is intended for Requirements, not Capability %s", "resolution:", key);
 		}
 	}
 
