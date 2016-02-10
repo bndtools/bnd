@@ -1,0 +1,6 @@
+-buildpath: \
+	biz.aQute.bndlib;version=latest;packages=*,\
+	org.osgi.util.promise
+	
+-testpath: \
+	${junit}

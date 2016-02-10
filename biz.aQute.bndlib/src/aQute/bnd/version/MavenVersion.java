@@ -79,4 +79,10 @@ public class MavenVersion implements Comparable<MavenVersion> {
 		return true;
 	}
 
+	public MavenVersion toSnapshot() {
+		Version newv = new Version(osgiVersion.getMajor(), osgiVersion.getMinor(), osgiVersion.getMicro(),
+				QUALIFIER_SNAPSHOT);
+		return new MavenVersion(newv);
+	}
+
 }

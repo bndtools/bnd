@@ -12,13 +12,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,7 +47,9 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.jpm.StoredRevisionCache.Download;
+import aQute.bnd.jpm.util.JSONRPCProxy;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
@@ -67,7 +68,6 @@ import aQute.bnd.service.repository.InfoRepository;
 import aQute.bnd.service.repository.SearchableRepository;
 import aQute.bnd.version.Version;
 import aQute.jpm.facade.repo.JpmRepo;
-import aQute.jsonrpc.proxy.JSONRPCProxy;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.collections.SortedList;
 import aQute.lib.converter.Converter;
@@ -80,7 +80,6 @@ import aQute.libg.cryptography.SHA1;
 import aQute.libg.cryptography.SHA256;
 import aQute.libg.glob.Glob;
 import aQute.libg.reporter.ReporterAdapter;
-import aQute.rest.urlclient.URLClient;
 import aQute.service.library.Coordinate;
 import aQute.service.library.Library;
 import aQute.service.library.Library.Program;
@@ -97,23 +96,19 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	private static final DocumentBuilderFactory	dbf							= DocumentBuilderFactory.newInstance();
 	private static final XPathFactory			xpf							= XPathFactory.newInstance();
 	public static final String					REPO_DEFAULT_URI			= "http://repo.jpm4j.org";
-
 	private static final PutOptions				DEFAULT_OPTIONS				= new PutOptions();
-
 	private static final String					SEARCH_PREFIX				= "/#!/search?q=";
 	private static final String					UTF_8						= "UTF-8";
-
 	private final String						DOWN_ARROW					= " \u21E9";
 	protected final DownloadListener[]			EMPTY_LISTENER				= new DownloadListener[0];
 	private Pattern								SHA							= Pattern
 			.compile("([A-F0-9][a-fA-F0-9]){20,20}", Pattern.CASE_INSENSITIVE);
 	private final Justif						j							= new Justif(80, new int[] {
-																					20, 28, 36, 44
+			20, 28, 36, 44
 																				});
 	private Settings							settings					= new Settings();
 	private boolean								canwrite;
 	final MultiMap<File,DownloadListener>		queues						= new MultiMap<File,RepositoryPlugin.DownloadListener>();
-
 	private final Pattern						JPM_REVISION_URL_PATTERN	= Pattern
 			.compile("https?://.+#!?/p/([^/]+)/([^/]+)/([^/]*)/([^/]+)");
 	private Options								options;
@@ -122,29 +117,25 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	/**
 	 * Maintains the index of what we've downloaded so far.
 	 */
-	private File								indexFile;
-	private boolean								indexRecurse;
-	Index										index;
-	boolean										offline;
-	private Registry							registry;
-	StoredRevisionCache							cache;
-	Set<File>									notfound					= new HashSet<File>();
-	private Set<String>							notfoundref					= new HashSet<String>();
-	final Semaphore								limitDownloads				= new Semaphore(12);
-	private JpmRepo								library;
+	private File		indexFile;
+	private boolean		indexRecurse;
+	Index				index;
+	boolean				offline;
+	private Registry	registry;
+	StoredRevisionCache	cachex;
+	Set<File>			notfound		= new HashSet<File>();
+	private Set<String>	notfoundref		= new HashSet<String>();
+	final Semaphore		limitDownloads	= new Semaphore(12);
+	private JpmRepo		libraryx;
 
-	private String								depositoryGroup;
-	private String								depositoryName;
-	private URLClient							urlc;
-	private String								location;
-
-	private URLClient							depository;
-
-	private String								email;
-
-	private String								name;
-
-	URI											url;
+	private String		depositoryGroup;
+	private String		depositoryName;
+	private String		location;
+	private URI			depository;
+	private String		email;
+	private String		name;
+	private URI			url;
+	private HttpClient	httpClient	= new HttpClient();
 
 	/**
 	 * Reports downloads but does never block on them. This is a best effort, if
@@ -259,14 +250,14 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	 */
 	private File getLocal(RevisionRef resource, Map<String,String> attrs, DownloadListener... downloadListeners)
 			throws Exception {
-		File sources = cache.getPath(resource.bsn, Index.toVersion(resource).toString(), resource.revision, true);
+		File sources = getCache().getPath(resource.bsn, Index.toVersion(resource).toString(), resource.revision, true);
 		if (sources.isFile()) {
 			for (DownloadListener dl : downloadListeners) {
 				dl.success(sources);
 			}
 			return sources;
 		}
-		File file = cache.getPath(resource.bsn, Index.toVersion(resource).toString(), resource.revision);
+		File file = getCache().getPath(resource.bsn, Index.toVersion(resource).toString(), resource.revision);
 		scheduleDownload(file, resource.revision, resource.size, resource.urls, downloadListeners);
 		return file;
 	}
@@ -305,7 +296,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		// Check if we need synchronous
 		if (listeners.length == 0) {
 			reporter.trace("in cache, no listeners");
-			cache.download(file, urls, sha);
+			getCache().download(file, urls, sha);
 			return;
 		}
 
@@ -339,7 +330,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				public void run() {
 					try {
 						reporter.trace("downloading in background " + file);
-						cache.download(file, urls, sha);
+						getCache().download(file, urls, sha);
 						success(queues.get(file).toArray(EMPTY_LISTENER), file);
 					} catch (FileNotFoundException e) {
 						synchronized (notfound) {
@@ -414,31 +405,38 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			reporter.trace("creating tmp copy");
 			copy(in, file);
 			if (depository == null) {
-				URI url = library.depository(depositoryGroup, depositoryName);
 				reporter.trace("send to url " + url);
-				depository = new URLClient(url.toString());
-				setCredentials(depository);
+				depository = getLibrary().depository(depositoryGroup, depositoryName);
 				reporter.trace("credentials " + depository);
 			}
 
 			byte[] digest = options.digest == null ? SHA1.digest(file).digest() : options.digest;
 			String path = Hex.toHexString(digest);
 			reporter.trace("putting " + path);
-			Library.RevisionRef d = depository.put(path, file, Library.RevisionRef.class, null);
+
+			URI uri = getDepository(path);
+
+			Library.RevisionRef d = httpClient.build()
+					.verb("PUT")
+					.upload(file)
+					.get(Library.RevisionRef.class)
+					.go(uri.toURL());
+
 			if (d == null) {
 				reporter.error("Cant deposit %s", file);
 				return null;
 			}
+
 			if (!Arrays.equals(digest, d.revision))
 				throw new Exception("Invalid digest");
 
 			// Copy it to our cache
-			cache.add(d, file);
+			getCache().add(d, file);
 			index.addRevision(d);
 			index.save(); // Coordinator
 
 			PutResult putr = new PutResult();
-			putr.artifact = depository.getUri(path);
+			putr.artifact = uri;
 			putr.digest = digest;
 			return putr;
 		} catch (Exception e) {
@@ -449,12 +447,20 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		}
 	}
 
+	private URI getDepository(String path) throws Exception {
+		if (depository == null) {
+			depository = getLibrary().depository(depositoryGroup, depositoryName);
+		}
+		return new URI(depository + "/" + path);
+	}
+
 	/**
 	 * If we have no search or an empty search we list our index. Otherwise we
 	 * query remotely.
 	 */
 
 	Pattern COMMAND_P = Pattern.compile("^([^/]*)/(!?[lmsprw])([^/]*)$");
+	private File	cacheDir;
 
 	@Override
 	public List<String> list(String query) throws Exception {
@@ -567,7 +573,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 	@Override
 	public void setProperties(Map<String,String> map) {
-		reporter.trace("CLs " + getClass().getClassLoader() + " " + URLClient.class.getClassLoader());
 		try {
 			options = Converter.cnv(Options.class, map);
 			setOptions(options);
@@ -594,12 +599,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			if (url == null)
 				url = new URI(REPO_DEFAULT_URI);
 
-			urlc = new URLClient(url.toString());
-			if (email != null && !email.contains("anonymous"))
-				setCredentials(urlc);
-			urlc.setReporter(reporter);
-
-			File cacheDir = IO.getFile(IO.home, location);
+			cacheDir = IO.getFile(IO.home, location);
 			cacheDir.mkdirs();
 			if (!cacheDir.isDirectory())
 				throw new IllegalArgumentException("Not able to create cache directory " + cacheDir);
@@ -615,9 +615,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 			indexRecurse = options.recurse();
 
-			cache = new StoredRevisionCache(cacheDir, settings);
-
-			library = JSONRPCProxy.createRPC(JpmRepo.class, urlc, "jpm");
 
 			if (options.index() == null)
 				throw new IllegalArgumentException("Index file not set");
@@ -640,25 +637,18 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		}
 	}
 
-	private void setCredentials(URLClient urlc) throws UnknownHostException, Exception {
-		urlc.credentials(email, InetAddress.getLocalHost().getHostName(), settings.getPublicKey(),
-				settings.getPrivateKey());
-	}
-
 	@Override
 	public void setReporter(Reporter processor) {
 		reporter = processor;
 		if (index != null)
 			index.setReporter(reporter);
-		if (urlc != null)
-			urlc.setReporter(processor);
 	}
 
 	@Override
 	public boolean refresh() throws Exception {
 		index = new Index(indexFile);
 		index.setRecurse(indexRecurse);
-		cache.refresh();
+		getCache().refresh();
 		notfound.clear();
 		notfoundref.clear();
 		if (crawler != null)
@@ -748,7 +738,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 		});
 		if (isConnected()) {
-			final File sourceFile = cache.getPath(bsn, version.toString(), resource.revision, true);
+			final File sourceFile = getCache().getPath(bsn, version.toString(), resource.revision, true);
 			Runnable run = null;
 
 			if (!sourceFile.isFile()) {
@@ -782,12 +772,16 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			else
 				map.put("-Add Sources", null);
 		}
-		if (cache.hasSources(bsn, version.toString(), resource.revision)) {
+		if (getCache().hasSources(bsn, version.toString(), resource.revision)) {
 			map.put("Remove Sources", new Runnable() {
 
 				@Override
 				public void run() {
-					cache.removeSources(bsn, version.toString(), resource.revision);
+					try {
+						getCache().removeSources(bsn, version.toString(), resource.revision);
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
 				}
 
 			});
@@ -817,7 +811,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 					// listeners.
 					get(bsn, version, null);
 
-					File file = cache.getPath(bsn, version.toString(), resource.revision);
+					File file = getCache().getPath(bsn, version.toString(), resource.revision);
 					Jar binary = new Jar(file);
 					try {
 						Jar sources = new Jar(src.getFile(), src.openStream());
@@ -860,7 +854,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 					// listeners.
 					get(bsn, version, null);
 
-					File file = cache.getPath(bsn, version.toString(), resource.revision);
+					File file = getCache().getPath(bsn, version.toString(), resource.revision);
 					Jar binary = new Jar(file);
 					try {
 						Jar sources = new Jar(src.getFile(), src.openStream());
@@ -996,7 +990,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			@Override
 			public void run() {
 				try {
-					cache.deleteAll();
+					getCache().deleteAll();
 				} catch (Exception e) {
 					reporter.error("Deleting cache %s", e);
 				}
@@ -1201,7 +1195,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			sb.format("Age: %s\n", age(r.created));
 			sb.format("URL: %s\n", r.urls);
 
-			File f = cache.getPath(bsn, version.toString(), r.revision);
+			File f = getCache().getPath(bsn, version.toString(), r.revision);
 			if (f.isFile() && f.length() == r.size)
 				sb.format("Cached %s\n", f);
 			else
@@ -1221,7 +1215,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				}
 			}
 
-			File sources = cache.getPath(bsn, version.toString(), r.revision, true);
+			File sources = getCache().getPath(bsn, version.toString(), r.revision, true);
 			if (sources.isFile())
 				sb.format("Has sources: %s\n", sources.getAbsolutePath());
 			else
@@ -1318,9 +1312,9 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		return diff + " years";
 	}
 
-	String[]		sizes	= {
-									"bytes", "Kb", "Mb", "Gb", "Tb", "Pb", "Showing off?"
-								};
+	String[] sizes = {
+			"bytes", "Kb", "Mb", "Gb", "Tb", "Pb", "Showing off?"
+	};
 
 	private Crawler	crawler;
 	private boolean	crawl;
@@ -1536,11 +1530,11 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 			String title = getPhase(resource.phase.toString()) + " " + version.toString();
 
-			File path = cache.getPath(bsn, version.toString(), resource.revision);
+			File path = getCache().getPath(bsn, version.toString(), resource.revision);
 			if (path.isFile() && path.length() == resource.size) {
 				title += DOWN_ARROW;
 			}
-			if (cache.getPath(bsn, version.toString(), resource.revision, true).isFile())
+			if (getCache().getPath(bsn, version.toString(), resource.revision, true).isFile())
 				title += "+";
 			return title;
 		}
@@ -1554,10 +1548,10 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				"[m]"), RETIRED(true, false, true, "[r]"), WITHDRAWN(true, false, true, "[x]"), UNKNOWN(true, false,
 						false, "[?]");
 
-		boolean			locked;
-		boolean			listable;
-		boolean			permanent;
-		final String	symbol;
+		boolean locked;
+		boolean listable;
+		boolean permanent;
+		final String symbol;
 
 		private Phase(boolean locked, boolean listable, boolean permanent, String symbol) {
 			this.locked = locked;
@@ -1592,8 +1586,8 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	@Override
-	public File getRoot() {
-		return cache.getRoot();
+	public File getRoot() throws Exception {
+		return getCache().getRoot();
 	}
 
 	@Override
@@ -1631,6 +1625,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	@Override
 	public void setRegistry(Registry registry) {
 		this.registry = registry;
+		this.httpClient = registry.getPlugin(HttpClient.class);
 	}
 
 	private void init() throws Exception {
@@ -1694,7 +1689,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	 * @throws Exception
 	 */
 	private Iterable<RevisionRef> getClosure(RevisionRef ref) throws Exception {
-		return library.getClosure(ref.revision, false);
+		return getLibrary().getClosure(ref.revision, false);
 	}
 
 	public void delete(String bsn, Version version, boolean immediate) throws Exception {
@@ -1758,7 +1753,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				// See if it is a bundle
 				//
 
-				Download d = cache.doDownload(uri);
+				Download d = getCache().doDownload(uri);
 				if (d == null) {
 					return false;
 				}
@@ -1770,7 +1765,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 					return false;
 				}
 
-				cache.makePermanent(ref, d);
+				getCache().makePermanent(ref, d);
 
 			} else {
 
@@ -1975,7 +1970,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			ResourceDescriptor rd = createResourceDescriptor(new RevisionRef(revision));
 			resources.add(rd);
 			if (includeDependencies) {
-				for (RevisionRef dependency : library.getClosure(revision._id, false)) {
+				for (RevisionRef dependency : getLibrary().getClosure(revision._id, false)) {
 					ResourceDescriptor dep = createResourceDescriptor(dependency);
 					dep.dependency = true;
 					resources.add(dep);
@@ -2032,7 +2027,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		RevisionRef master = null;
 		RevisionRef staging = null;
 
-		for (Program p : library.getQueryPrograms(query, 0, 100)) {
+		for (Program p : getLibrary().getQueryPrograms(query, 0, 100)) {
 			for (RevisionRef ref : p.revisions) {
 				if (master == null && ref.phase == Library.Phase.MASTER) {
 					master = ref;
@@ -2109,11 +2104,11 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	 * @throws Exception
 	 */
 	private Program getProgram(final String bsn, boolean force) throws Exception {
-		Program p = cache.getProgram(bsn);
+		Program p = getCache().getProgram(bsn);
 		if (p == null || force) {
-			p = library.getProgram(Library.OSGI_GROUP, bsn);
+			p = getLibrary().getProgram(Library.OSGI_GROUP, bsn);
 			if (p != null)
-				cache.putProgram(bsn, p);
+				getCache().putProgram(bsn, p);
 		}
 		return p;
 	}
@@ -2124,7 +2119,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	 * @throws Exception
 	 */
 	private Revision getRevision(Coordinate c) throws Exception {
-		return library.getRevisionByCoordinate(c);
+		return getLibrary().getRevisionByCoordinate(c);
 	}
 
 	public byte[] getDigest() throws Exception {
@@ -2142,7 +2137,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 		if (!index.isSynced()) {
 			reporter.trace("Syncing repo indexes");
-			library.createRevisions(revisions);
+			getLibrary().createRevisions(revisions);
 			index.setSynced(revisions._id);
 		}
 		return revisions._id;
@@ -2238,7 +2233,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 					// missing!
 					reporter.trace("Missing " + c.getBundleSymbolicName());
 					Coordinate coord = new Coordinate(c.getBundleSymbolicName());
-					Revision rev = library.getRevisionByCoordinate(coord);
+					Revision rev = getLibrary().getRevisionByCoordinate(coord);
 					if (rev != null) {
 						index.addRevision(new RevisionRef(rev));
 					} else
@@ -2263,6 +2258,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	 * @throws Exception
 	 */
 	public ResourceDescriptor getDescriptor(String bsn, Version version) throws Exception {
+		init();
 		RevisionRef revisionRef = index.getRevisionRef(bsn, version);
 		if (revisionRef == null)
 			return null;
@@ -2299,6 +2295,25 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		return "JpmRepository [writable=" + canWrite() + ", " + (getName() != null ? "name=" + getName() + ", " : "")
 				+ (getLocation() != null ? "location=" + getLocation() + ", " : "")
 				+ (digest != null ? "digest=" + Hex.toHexString(digest) : "") + "]";
+	}
+
+	public JpmRepo getLibrary() throws URISyntaxException, Exception {
+		if (libraryx == null) {
+			libraryx = JSONRPCProxy.createRPC(JpmRepo.class, httpClient,
+					new URI(url.toString() + "/" + JSONRPCProxy.JSONRPC_2_0 + "jpm"));
+		}
+		return libraryx;
+	}
+
+	/**
+	 * @return the cache
+	 * @throws Exception
+	 */
+	private StoredRevisionCache getCache() throws Exception {
+		if (cachex == null) {
+			cachex = new StoredRevisionCache(cacheDir, settings, httpClient);
+		}
+		return cachex;
 	}
 
 }

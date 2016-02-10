@@ -13,5 +13,5 @@ public interface ResourceHandle {
 
 	Location getLocation();
 
-	File request() throws IOException;
+	File request() throws IOException, Exception;
 }

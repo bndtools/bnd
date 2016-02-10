@@ -12,8 +12,9 @@ public interface URLConnector {
 	 * @param url
 	 * @return
 	 * @throws IOException
+	 * @throws Exception 
 	 */
-	InputStream connect(URL url) throws IOException;
+	InputStream connect(URL url) throws IOException, Exception;
 
 	/**
 	 * Connect to the specified URL, also returning the ETag if available.
@@ -24,7 +25,7 @@ public interface URLConnector {
 	 *         {@code null} if the resource has no tag.
 	 * @throws IOException @since 1.1
 	 */
-	TaggedData connectTagged(URL url) throws IOException;
+	TaggedData connectTagged(URL url) throws Exception;
 
 	/**
 	 * Connect to the specified URL while providing the last known tag for the
@@ -36,7 +37,8 @@ public interface URLConnector {
 	 * @return An instance of {@link TaggedData}, or {@code null} if the
 	 *         resource has not modified (i.e., if it has the same tag value).
 	 * @throws IOException @since 1.1
+	 * @throws Exception
 	 */
-	TaggedData connectTagged(URL url, String tag) throws IOException;
+	TaggedData connectTagged(URL url, String tag) throws Exception;
 
 }
