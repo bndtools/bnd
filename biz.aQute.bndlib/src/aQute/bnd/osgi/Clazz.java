@@ -146,6 +146,24 @@ public class Clazz {
 
 	}
 
+	static enum CONSTANT {
+		Zero(0), Utf8, Two, Integer(4), Float(4), Long(8), Double(8), Class, String(2), Fieldref(4), Methodref(
+				4), InterfaceMethodref(4), NameAndType(4), Thirteen, Fourteen, MethodHandle(3), MethodType(
+						2), Seventeen, InvokeDynamic(4);
+		private final int skip;
+
+		CONSTANT(int skip) {
+			this.skip = skip;
+		}
+
+		CONSTANT() {
+			this.skip = -1;
+		}
+
+		public int skip() {
+			return skip;
+		}
+	}
 	public final static EnumSet<QUERY>	HAS_ARGUMENT	= EnumSet.of(QUERY.IMPLEMENTS, QUERY.EXTENDS, QUERY.IMPORTS,
 			QUERY.NAMED, QUERY.VERSION, QUERY.ANNOTATED);
 
@@ -177,18 +195,18 @@ public class Clazz {
 	final static int					ACC_ENUM		= 0x4000;
 
 	static protected class Assoc {
-		Assoc(byte tag, int a, int b) {
+		Assoc(CONSTANT tag, int a, int b) {
 			this.tag = tag;
 			this.a = a;
 			this.b = b;
 		}
 
-		byte	tag;
+		CONSTANT	tag;
 		int		a;
 		int		b;
 
 		public String toString() {
-			return "Assoc[" + a + "," + b + "]";
+			return "Assoc[" + tag + ", " + a + "," + b + "]";
 		}
 	}
 
@@ -405,29 +423,6 @@ public class Clazz {
 		}
 	}
 
-	final static byte SkipTable[] = { //
-			0, // 0 non existent
-			-1, // 1 CONSTANT_utf8 UTF 8, handled in
-			// method
-			-1, // 2
-			4, // 3 CONSTANT_Integer
-			4, // 4 CONSTANT_Float
-			8, // 5 CONSTANT_Long (index +=2!)
-			8, // 6 CONSTANT_Double (index +=2!)
-			-1, // 7 CONSTANT_Class
-			2, // 8 CONSTANT_String
-			4, // 9 CONSTANT_FieldRef
-			4, // 10 CONSTANT_MethodRef
-			4, // 11 CONSTANT_InterfaceMethodRef
-			4, // 12 CONSTANT_NameAndType
-			-1, // 13 Not defined
-			-1, // 14 Not defined
-			3, // 15 CONSTANT_MethodHandle
-			2, // 16 CONSTANT_MethodType
-			-1, // 17 Not defined
-			4, // 18 CONSTANT_InvokeDynamic
-	};
-
 	public static final Comparator<Clazz> NAME_COMPARATOR = new Comparator<Clazz>() {
 
 		public int compare(Clazz a, Clazz b) {
@@ -526,64 +521,59 @@ public class Clazz {
 		pool = new Object[count];
 		intPool = new int[count];
 
+		CONSTANT[] tags = CONSTANT.values();
 		process: for (int poolIndex = 1; poolIndex < count; poolIndex++) {
-			byte tag = in.readByte();
+			CONSTANT tag = tags[in.readByte()];
 			switch (tag) {
-				case 0 :
+				case Zero :
 					break process;
-				case 1 :
+				case Two :
+					throw new IOException("Invalid tag " + tag);
+				case Utf8 :
 					constantUtf8(in, poolIndex);
 					break;
-
-				case 3 :
+				case Integer :
 					constantInteger(in, poolIndex);
 					break;
-
-				case 4 :
+				case Float :
 					constantFloat(in, poolIndex);
 					break;
-
-				// For some insane optimization reason are
-				// the long and the double two entries in the
+				// For some insane optimization reason,
+				// the long and double entries take two slots in the
 				// constant pool. See 4.4.5
-				case 5 :
+				case Long :
 					constantLong(in, poolIndex);
 					poolIndex++;
 					break;
-
-				case 6 :
+				case Double :
 					constantDouble(in, poolIndex);
 					poolIndex++;
 					break;
-
-				case 7 :
+				case Class :
 					constantClass(in, poolIndex);
 					break;
-
-				case 8 :
+				case String :
 					constantString(in, poolIndex);
 					break;
-
-				case 9 : // Field ref
-				case 10 : // Method ref
-				case 11 : // Interface Method ref
+				case Fieldref :
+				case Methodref :
+				case InterfaceMethodref :
 					ref(in, poolIndex);
 					break;
-
-				// Name and Type
-				case 12 :
+				case NameAndType :
 					nameAndType(in, poolIndex, tag);
 					break;
-
-				case 18 : // TODO Invoke dynamic
-
-					// We get the skip count for each record type
-					// from the SkipTable. This will also automatically
-					// abort when
+				case MethodHandle :
+					methodHandle(in, poolIndex, tag);
+					break;
+				case MethodType :
+					methodType(in, poolIndex, tag);
+					break;
+				case InvokeDynamic :
+					invokeDynamic(in, poolIndex, tag);
+					break;
 				default :
-					if (tag == 2)
-						throw new IOException("Invalid tag " + tag);
-					in.skipBytes(SkipTable[tag]);
+					in.skipBytes(tag.skip());
 					break;
 			}
 		}
@@ -602,14 +592,17 @@ public class Clazz {
 			if (o instanceof Assoc) {
 				Assoc assoc = (Assoc) o;
 				switch (assoc.tag) {
-					case 9 :
-					case 10 :
-					case 11 :
+					case Fieldref :
+					case Methodref :
+					case InterfaceMethodref :
 						classConstRef(assoc.a);
 						break;
 
-					case 12 :
+					case NameAndType :
+					case MethodType :
 						referTo(assoc.b, 0); // Descriptor
+						break;
+					default :
 						break;
 				}
 			}
@@ -795,10 +788,15 @@ public class Clazz {
 	 * @param tag
 	 * @throws IOException
 	 */
-	protected void nameAndType(DataInputStream in, int poolIndex, byte tag) throws IOException {
+	private void nameAndType(DataInputStream in, int poolIndex, CONSTANT tag) throws IOException {
 		int name_index = in.readUnsignedShort();
 		int descriptor_index = in.readUnsignedShort();
 		pool[poolIndex] = new Assoc(tag, name_index, descriptor_index);
+	}
+
+	@Deprecated
+	protected void nameAndType(DataInputStream in, int poolIndex, byte tag) throws IOException {
+		nameAndType(in, poolIndex, CONSTANT.values()[tag]);
 	}
 
 	/**
@@ -807,10 +805,44 @@ public class Clazz {
 	 * @param tag
 	 * @throws IOException
 	 */
+	private void methodType(DataInputStream in, int poolIndex, CONSTANT tag) throws IOException {
+		int descriptor_index = in.readUnsignedShort();
+		pool[poolIndex] = new Assoc(tag, 0, descriptor_index);
+	}
+
+	/**
+	 * @param in
+	 * @param poolIndex
+	 * @param tag
+	 * @throws IOException
+	 */
+	private void methodHandle(DataInputStream in, int poolIndex, CONSTANT tag) throws IOException {
+		int reference_kind = in.readUnsignedByte();
+		int reference_index = in.readUnsignedShort();
+		pool[poolIndex] = new Assoc(tag, reference_kind, reference_index);
+	}
+
+	/**
+	 * @param in
+	 * @param poolIndex
+	 * @param tag
+	 * @throws IOException
+	 */
+	private void invokeDynamic(DataInputStream in, int poolIndex, CONSTANT tag) throws IOException {
+		int bootstrap_method_attr_index = in.readUnsignedShort();
+		int name_and_type_index = in.readUnsignedShort();
+		pool[poolIndex] = new Assoc(tag, bootstrap_method_attr_index, name_and_type_index);
+	}
+
+	/**
+	 * @param in
+	 * @param poolIndex
+	 * @throws IOException
+	 */
 	private void ref(DataInputStream in, int poolIndex) throws IOException {
 		int class_index = in.readUnsignedShort();
 		int name_and_type_index = in.readUnsignedShort();
-		pool[poolIndex] = new Assoc((byte) 10, class_index, name_and_type_index);
+		pool[poolIndex] = new Assoc(CONSTANT.Methodref, class_index, name_and_type_index);
 	}
 
 	/**
@@ -882,14 +914,14 @@ public class Clazz {
 		for (int i = 1; i < pool.length; i++) {
 			if (pool[i] instanceof Assoc) {
 				Assoc methodref = (Assoc) pool[i];
-				if (methodref.tag == 10) {
+				if (methodref.tag == CONSTANT.Methodref) {
 					// Method ref
 					int class_index = methodref.a;
 					int class_name_index = intPool[class_index];
 					if (clazz.equals(pool[class_name_index])) {
 						int name_and_type_index = methodref.b;
 						Assoc name_and_type = (Assoc) pool[name_and_type_index];
-						if (name_and_type.tag == 12) {
+						if (name_and_type.tag == CONSTANT.NameAndType) {
 							// Name and Type
 							int name_index = name_and_type.a;
 							int type_index = name_and_type.b;
@@ -969,6 +1001,8 @@ public class Clazz {
 			}
 		} else if ("Exceptions".equals(attributeName))
 			doExceptions(in, access_flags);
+		else if ("BootstrapMethods".equals(attributeName))
+			doBootstrapMethods(in);
 		else {
 			if (attribute_length > 0x7FFFFFFF) {
 				throw new IllegalArgumentException("Attribute > 2Gb");
@@ -1559,6 +1593,20 @@ public class Clazz {
 		}
 	}
 
+	/*
+	 * We don't currently process BootstrapMethods. We walk the data structure
+	 * to consume the attribute.
+	 */
+	private void doBootstrapMethods(DataInputStream in) throws IOException {
+		final int num_bootstrap_methods = in.readUnsignedShort();
+		for (int v = 0; v < num_bootstrap_methods; v++) {
+			final int bootstrap_method_ref = in.readUnsignedShort();
+			final int num_bootstrap_arguments = in.readUnsignedShort();
+			for (int a = 0; a < num_bootstrap_arguments; a++) {
+				final int bootstrap_argument = in.readUnsignedShort();
+			}
+		}
+	}
 	/**
 	 * Add a new package reference.
 	 * 
@@ -1853,12 +1901,12 @@ public class Clazz {
 		Object o = pool[methodRefPoolIndex];
 		if (o != null && o instanceof Assoc) {
 			Assoc assoc = (Assoc) o;
-			if (assoc.tag == 10) {
+			if (assoc.tag == CONSTANT.Methodref) {
 				int string_index = intPool[assoc.a];
 				TypeRef className = analyzer.getTypeRef((String) pool[string_index]);
 				int name_and_type_index = assoc.b;
 				Assoc name_and_type = (Assoc) pool[name_and_type_index];
-				if (name_and_type.tag == 12) {
+				if (name_and_type.tag == CONSTANT.NameAndType) {
 					// Name and Type
 					int name_index = name_and_type.a;
 					int type_index = name_and_type.b;
