@@ -164,8 +164,12 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			}
 		}
 
-		caps.add(hc);
-		return caps.size() - 1;
+		int newIndex = caps.size();
+		// the List passed by Felix does not support the
+		// single-arg version of add()... it throws
+		// UnsupportedOperationException
+		caps.add(newIndex, hc);
+		return newIndex;
 	}
 
 	@Override
