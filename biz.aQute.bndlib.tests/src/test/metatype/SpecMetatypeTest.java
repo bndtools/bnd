@@ -1267,8 +1267,8 @@ public class SpecMetatypeTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
-		b.setProperty(Constants.METATYPE_ANNOTATIONS, DesignateOCD.class.getName());
-		b.setProperty(Constants.DSANNOTATIONS, DesignateComponent.class.getName() + "*");
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, "test.metatype.SpecMetatypeTest$Designate*");
+		b.setProperty(Constants.DSANNOTATIONS, "test.metatype.SpecMetatypeTest$Designate*");
 		b.build();
 		{
 			Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$DesignateOCD.xml");
