@@ -1,9 +1,9 @@
 package aQute.bnd.metatype;
 
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,6 +18,7 @@ import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.service.AnalyzerPlugin;
 import aQute.bnd.xmlattribute.XMLAttributeFinder;
+import aQute.libg.generics.Create;
 
 /**
  * Analyze the class space for any classes that have an OSGi annotation for DS.
@@ -50,39 +51,28 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		Set<String> pids = new HashSet<String>();
 
 		Instructions instructions = new Instructions(header);
-		Collection<Clazz> list = analyzer.getClassspace().values();
 
 		XMLAttributeFinder finder = new XMLAttributeFinder(analyzer);
-		for (Clazz c : list) {
-			for (Instruction instruction : instructions.keySet()) {
 
+		List<Clazz> list = Create.list();
+		for (Clazz c : analyzer.getClassspace().values()) {
+			for (Instruction instruction : instructions.keySet()) {
 				if (instruction.matches(c.getFQN())) {
-					if (instruction.isNegated())
-						break;
-					OCDDef definition = OCDReader.getOCDDef(c, analyzer, options, finder);
-					if (definition != null) {
-						classToOCDMap.put(c.getClassName(), definition);
+					if (!instruction.isNegated()) {
+						list.add(c);
+						OCDDef definition = OCDReader.getOCDDef(c, analyzer, options, finder);
+						if (definition != null) {
+							classToOCDMap.put(c.getClassName(), definition);
+						}
 					}
+					break;
 				}
 			}
 		}
 
-		header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS));
-		if (header.size() > 0) {
-
-			instructions = new Instructions(header);
-			list = analyzer.getClassspace().values();
-
-			for (Clazz c : list) {
-				for (Instruction instruction : instructions.keySet()) {
-
-					if (instruction.matches(c.getFQN())) {
-						if (instruction.isNegated())
-							break;
-						DesignateReader.getDesignate(c, analyzer, classToOCDMap, finder);
-					}
-				}
-			}
+		// process Designate annotations after OCD annotations
+		for (Clazz c : list) {
+			DesignateReader.getDesignate(c, analyzer, classToOCDMap, finder);
 		}
 
 		for (Map.Entry<TypeRef,OCDDef> entry : classToOCDMap.entrySet()) {
