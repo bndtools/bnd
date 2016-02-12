@@ -1332,13 +1332,12 @@ public class Analyzer extends Processor {
 	 * Set the JAR file we are going to work in. This will read the JAR in
 	 * memory.
 	 * 
-	 * @param jar
+	 * @param file
 	 * @throws IOException
 	 */
-	public Jar setJar(File jar) throws IOException {
-		Jar jarx = new Jar(jar);
-		addClose(jarx);
-		return setJar(jarx);
+	public Jar setJar(File file) throws IOException {
+		Jar jar = new Jar(file);
+		return setJar(jar);
 	}
 
 	/**
@@ -2151,8 +2150,7 @@ public class Analyzer extends Processor {
 		if (!cp.exists())
 			warning("File on classpath that does not exist: " + cp);
 		Jar jar = new Jar(cp);
-		addClose(jar);
-		classpath.add(jar);
+		addClasspath(jar);
 	}
 
 	@Override
