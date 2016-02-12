@@ -41,6 +41,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
+import org.codehaus.plexus.util.Scanner;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 import aQute.bnd.build.Project;
@@ -105,6 +106,56 @@ public class BndMavenPlugin extends AbstractMojo {
 			builder.setBase(project.getBasedir());
 			loadProjectProperties(builder, project);
 			builder.setProperty("project.output", targetDir.getCanonicalPath());
+
+			// incremental build only if any resource in the project outside of
+			// the targetDir is changed. This implicitly includes POM and bnd files.
+			if (buildContext.isIncremental()) {
+				boolean hasChanges = false;
+
+				// compute relative target path. While changes here should never
+				// be reported, sometimes they are, e.g. due to (temporary)
+				// misconfiguration
+				String basePath = project.getBasedir().getCanonicalPath();
+				String targetPath = targetDir.getCanonicalPath();
+				int i = targetPath.indexOf(basePath);
+				if (i != 0) {
+					// target is not relative to basedir
+					targetPath = null;
+				} else {
+					targetPath = targetPath.substring(basePath.length() + 1);
+					if (!targetPath.endsWith(File.separator)) {
+						targetPath = targetPath + File.separator;
+					}
+				}
+
+				Scanner changeScanner = buildContext.newScanner(project.getBasedir(), true);
+				changeScanner.scan();
+				for (String sourceFile : changeScanner.getIncludedFiles()) {
+					if (targetPath == null || !sourceFile.startsWith(targetPath)) {
+						if (!buildContext.isUptodate(manifestPath, new File(project.getBasedir(), sourceFile))) {
+							hasChanges = true;
+							break;
+						}
+					}
+				}
+				
+				if (!hasChanges) {
+					// check for deleted resources
+					Scanner deleteScanner = buildContext.newDeleteScanner(project.getBasedir());
+					deleteScanner.scan();
+					for (String sourceFile : deleteScanner.getIncludedFiles()) {
+						if (targetPath == null || !sourceFile.startsWith(targetPath)) {
+							hasChanges = true;
+							break;
+						}
+					}
+				}
+
+				if (!hasChanges) {
+					log.info("no incremental changes");
+					return;
+				}
+			}
 
 			// Reject sub-bundle projects
 			List<Builder> subs = builder.getSubBuilders();
