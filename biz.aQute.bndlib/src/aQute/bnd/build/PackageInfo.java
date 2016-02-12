@@ -34,7 +34,6 @@ class PackageInfo {
 	 * will stop at the first source directory that has a packageinfo or
 	 * 
 	 * @param packageName
-	 * @return
 	 * @throws Exception
 	 */
 	public Version getPackageInfo(String packageName) throws Exception {
@@ -127,8 +126,7 @@ class PackageInfo {
 	 * <li>other -> use the content as the version annotation, must have the
 	 * same prototype as the bnd/osgi ann.
 	 * </ul>
-	 * 
-	 * @return
+	 *
 	 */
 	private String getVersionAnnotation() {
 		String versionAnnotation = project.getProperty(Constants.PACKAGEINFOTYPE);

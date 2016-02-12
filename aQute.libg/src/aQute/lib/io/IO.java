@@ -335,7 +335,7 @@ public class IO {
 	 *            long
 	 * @param suffix the filename suffix. Can be null, in which case (system)
 	 *            default suffix is used
-	 * @return
+	 * @return temp file
 	 * @throws IllegalArgumentException when pattern is null or too short
 	 * @throws IOException when the specified (non-null) directory is not a
 	 *             directory

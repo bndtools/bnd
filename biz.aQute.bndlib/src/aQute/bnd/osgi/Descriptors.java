@@ -144,8 +144,6 @@ public class Descriptors {
 		/**
 		 * Decide if the package is a metadata package.
 		 * 
-		 * @param pack
-		 * @return
 		 */
 		public boolean isMetaData() {
 			if (isDefaultPackage())

@@ -307,7 +307,6 @@ public class Builder extends Analyzer {
 	 * Sign the jar file. -sign : <alias> [ ';' 'password:=' <password> ] [ ';'
 	 * 'keystore:=' <keystore> ] [ ';' 'sign-password:=' <pw> ] ( ',' ... )*
 	 * 
-	 * @return
 	 */
 
 	void sign(@SuppressWarnings("unused") Jar jar) throws Exception {
@@ -626,7 +625,6 @@ public class Builder extends Analyzer {
 
 	/**
 	 * @param from
-	 * @return
 	 */
 	private List<Jar> filterFrom(Instruction from, List<Jar> providers) {
 		if (from.isAny())
@@ -718,7 +716,6 @@ public class Builder extends Analyzer {
 	 * @param pack
 	 * @param classpath
 	 * @param source
-	 * @return
 	 */
 	private String diagnostic(String pack, List<Jar> culprits) {
 		// Default is like merge-first, but with a warning
@@ -756,7 +753,6 @@ public class Builder extends Analyzer {
 	 * @param unused The total list of patterns, matched patterns are removed
 	 * @param source The name of the source container, can be filtered upon with
 	 *            the from: directive.
-	 * @return
 	 */
 	private Instruction matches(Instructions instructions, String pack, Set<Instruction> unused, String source) {
 		for (Entry<Instruction,Attrs> entry : instructions.entrySet()) {
@@ -1020,7 +1016,6 @@ public class Builder extends Analyzer {
 	 * 
 	 * @param file
 	 * @param lastModified
-	 * @return
 	 */
 	private long findLastModifiedWhileOlder(File file, long lastModified) {
 		if (file.isDirectory()) {
@@ -1235,7 +1230,6 @@ public class Builder extends Analyzer {
 	 * Build Multiple jars. If the -sub command is set, we filter the file with
 	 * the given patterns.
 	 * 
-	 * @return
 	 * @throws Exception
 	 */
 	public Jar[] builds() throws Exception {
@@ -1412,8 +1406,6 @@ public class Builder extends Analyzer {
 	 * file it is on the class path and the Export-Package or Private-Package
 	 * include this resource.
 	 * 
-	 * @param f
-	 * @return
 	 */
 	public boolean isInScope(Collection<File> resources) throws Exception {
 		Parameters clauses = parseHeader(mergeProperties(Constants.EXPORT_PACKAGE));
@@ -1455,8 +1447,7 @@ public class Builder extends Analyzer {
 	/**
 	 * Extra the paths for the directories and files that are used in the
 	 * Include-Resource header.
-	 * 
-	 * @return
+	 *
 	 */
 	private Collection<String> getIncludedResourcePrefixes() {
 		List<String> prefixes = new ArrayList<String>();
@@ -1674,7 +1665,6 @@ public class Builder extends Analyzer {
 	 * a .git/HEAD file, going up in the file hierarchy. Then get this file, and
 	 * resolve any symbolic reference.
 	 * 
-	 * @throws IOException
 	 */
 	static Pattern	GITREF_P		= Pattern.compile("ref:\\s*(refs/(heads|tags|remotes)/([^\\s]+))\\s*");
 

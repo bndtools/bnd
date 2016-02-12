@@ -12,11 +12,15 @@ import java.lang.annotation.Target;
  * annotation that models a specific capability. For example:
  * 
  * <pre>
- *  interface Webserver
- * { @ProvideCapability(ns="osgi.extender", name="aQute.webserver", version =
- * "${@version}") @interface Provide {} @RequireCapability(ns="osgi.extender",
- * filter="(&(osgi.extender=aQute.webserver)${frange;${@version}})") @interface
- * Require {} } Webserver.@Provide public class MyWebserver { }
+ * interface Webserver {
+ * 	&#64;ProvideCapability(ns = "osgi.extender", name = "aQute.webserver", version = "${&#64;version}")
+ * 	&#64;interface Provide {}
+ * 	&#64;RequireCapability(ns = "osgi.extender", filter = "(&(osgi.extender=aQute.webserver)${frange;${&#64;version}})")
+ * 	&#64;interface Require {}
+ * }
+ * 
+ * &#64;Webserver.Provide
+ * public class MyWebserver {}
  * </pre>
  */
 @Retention(RetentionPolicy.CLASS)

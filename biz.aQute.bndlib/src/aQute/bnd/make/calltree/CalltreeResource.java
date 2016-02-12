@@ -79,7 +79,7 @@ public class CalltreeResource extends WriteResource {
 	 * 
 	 * @param out The output writer
 	 * @param classes The set of classes
-	 * @throws IOException Any errors
+	 * @throws Exception Any errors
 	 */
 	public static void writeCalltree(PrintWriter out, Collection<Clazz> classes) throws Exception {
 

@@ -121,9 +121,7 @@ class MacOS extends Unix {
 	/**
 	 * Return the VMs on the platform.
 	 * 
-	 * @throws SAXException
-	 * @throws IOException
-	 * @throws ParserConfigurationException
+	 * @throws Exception
 	 */
 	@Override
 	public void getVMs(Collection<JVM> vms) throws Exception {

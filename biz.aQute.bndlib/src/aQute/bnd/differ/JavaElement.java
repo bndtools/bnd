@@ -199,7 +199,6 @@ class JavaElement {
 	 * @param analyzer
 	 * @param clazz
 	 * @param infos
-	 * @return
 	 * @throws Exception
 	 */
 	Element classElement(final Clazz clazz) throws Exception {
@@ -303,10 +302,6 @@ class JavaElement {
 			}
 
 			/**
-			 * @param members
-			 * @param name
-			 * @param comment
-			 * @return
 			 */
 			Set<Element> OBJECT = Create.set();
 

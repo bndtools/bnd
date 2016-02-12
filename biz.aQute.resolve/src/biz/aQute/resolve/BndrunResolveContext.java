@@ -287,8 +287,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 	/**
 	 * Load the effective set from the properties
-	 * 
-	 * @return
+	 *
 	 */
 	Map<String,Set<String>> loadEffectiveSet() {
 		String effective = properties.getProperty(RUN_EFFECTIVE_INSTRUCTION);

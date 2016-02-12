@@ -18,7 +18,7 @@ public class Crypto {
 	/**
 	 * @param <T>
 	 * @param spec
-	 * @return
+	 * @return key
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")

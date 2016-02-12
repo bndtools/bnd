@@ -70,8 +70,7 @@ public class LauncherConstants {
 
 	/**
 	 * Translate a constants to properties.
-	 * 
-	 * @return
+	 *
 	 */
 	public Properties getProperties(Properties p) {
 		p.setProperty(LAUNCH_NOREFERENCES, noreferences + "");

@@ -480,7 +480,6 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 	 * http://hostname/nexus/content/repositories/releases-obr/.meta/obr.xml} .
 	 * 
 	 * @param hostedUri The URI of the source Hosted repository.
-	 * @return
 	 */
 	private static URI findDefaultVirtualIndexUri(URI hostedUri) {
 		StringBuilder sb = new StringBuilder();

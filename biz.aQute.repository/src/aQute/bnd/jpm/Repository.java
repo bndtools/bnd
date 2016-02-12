@@ -173,45 +173,39 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	interface Options {
 		/**
 		 * The URL to the remote repository. Default is http://repo.jpm4j.org
-		 * 
-		 * @return
+		 *
 		 */
 		URI url();
 
 		/**
 		 * The group of a depository,optional.
-		 * 
-		 * @return
+		 *
 		 */
 		String depository_group();
 
 		/**
 		 * The name of the depository
-		 * 
-		 * @return
+		 *
 		 */
 		String depository_name();
 
 		/**
 		 * The email address of the user
-		 * 
-		 * @return
+		 *
 		 */
 		String email();
 
 		/**
 		 * Where the index file is stored. The default should reside in the
 		 * workspace and be part of the scm
-		 * 
-		 * @return
+		 *
 		 */
 		String index();
 
 		/**
 		 * The cache location, default is ~/.bnd/cache. This file is relative
 		 * from the users home directory if not absolute.
-		 * 
-		 * @return
+		 *
 		 */
 		String location();
 
@@ -222,8 +216,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 		/**
 		 * The name of the repo
-		 * 
-		 * @return
+		 *
 		 */
 		String name();
 
@@ -703,13 +696,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		return null;
 	}
 
-	/**
-	 * @param p
-	 * @param bsn
-	 * @param version
-	 * @return
-	 * @throws Exception
-	 */
 	static Pattern JAR_FILE_P = Pattern.compile("(https?:.+)(\\.jar)");
 
 	private Map<String,Runnable> getRevisionActions(final Program program, final String bsn, final Version version)
@@ -802,7 +788,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	 * @param resource
 	 * @param withSources
 	 * @param src
-	 * @return
 	 */
 	protected Runnable createAddSourceAction(final String bsn, final Version version,
 			final Library.RevisionRef resource, final File withSources, final URL src) {
@@ -845,7 +830,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	 * @param resource
 	 * @param withSources
 	 * @param src
-	 * @return
 	 */
 	protected Runnable createRemoveSourceAction(final String bsn, final Version version,
 			final Library.RevisionRef resource, final File withSources, final URL src) {
@@ -884,7 +868,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	/**
 	 * @param bsn
 	 * @param p
-	 * @return
 	 * @throws Exception
 	 */
 	private Map<String,Runnable> getProgramActions(final String bsn, final Program p) throws Exception {
@@ -956,7 +939,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	/**
-	 * @return
 	 * @throws Exception
 	 */
 	private Map<String,Runnable> getRepositoryActions() throws Exception {
@@ -1259,7 +1241,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	 * 
 	 * @param bsn
 	 * @param version
-	 * @return
 	 * @throws Exception
 	 */
 	private RevisionRef getRevisionRef(String bsn, Version version) throws Exception {
@@ -1400,7 +1381,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	 * 
 	 * @param p
 	 * @param currentVersion
-	 * @return
 	 * @throws Exception
 	 */
 
@@ -1690,7 +1670,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 	/**
 	 * @param ref
-	 * @return
 	 * @throws Exception
 	 */
 	private Iterable<RevisionRef> getClosure(RevisionRef ref) throws Exception {
@@ -2105,7 +2084,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 	/**
 	 * @param bsn
-	 * @return
 	 * @throws Exception
 	 */
 	private Program getProgram(final String bsn, boolean force) throws Exception {
@@ -2120,7 +2098,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 	/**
 	 * @param sha
-	 * @return
 	 * @throws Exception
 	 */
 	private Revision getRevision(Coordinate c) throws Exception {
@@ -2259,7 +2236,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	 * 
 	 * @param bsn
 	 * @param version
-	 * @return
 	 * @throws Exception
 	 */
 	public ResourceDescriptor getDescriptor(String bsn, Version version) throws Exception {

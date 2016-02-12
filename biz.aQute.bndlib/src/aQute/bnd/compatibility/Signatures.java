@@ -73,8 +73,6 @@ public class Signatures {
 	/**
 	 * Calculate the generic signature of a Class,Method,Field, or Constructor.
 	 * 
-	 * @param f
-	 * @return
 	 * @throws Exception
 	 */
 	public String getSignature(Object c) throws Exception {
@@ -97,8 +95,6 @@ public class Signatures {
 	 * class ::= declaration? reference reference*
 	 * </pre>
 	 * 
-	 * @param f
-	 * @return
 	 * @throws Exception
 	 */
 	public String getSignature(Class< ? > c) throws Exception {
@@ -118,8 +114,6 @@ public class Signatures {
 	 * method ::= declaration? '(' reference* ')' reference
 	 * </pre>
 	 * 
-	 * @param c
-	 * @return
 	 * @throws Exception
 	 */
 	public String getSignature(Method m) throws Exception {
@@ -143,7 +137,6 @@ public class Signatures {
 	 * </pre>
 	 * 
 	 * @param c
-	 * @return
 	 * @throws Exception
 	 */
 	public String getSignature(Constructor< ? > c) throws Exception {
@@ -165,8 +158,6 @@ public class Signatures {
 	 * constructor ::= reference
 	 * </pre>
 	 * 
-	 * @param c
-	 * @return
 	 * @throws Exception
 	 */
 	public String getSignature(Field f) throws Exception {

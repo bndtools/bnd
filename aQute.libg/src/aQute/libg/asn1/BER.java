@@ -168,8 +168,6 @@ public class BER implements Types {
 	 * tag is universal class, whose form is primitive, whose number of the tag
 	 * is zero, and whose contents are absent, thus: End-of-contents Length
 	 * Contents 0016 0016 Absent
-	 * 
-	 * @return
 	 */
 	private long readLength() throws IOException {
 		long n = readByte();

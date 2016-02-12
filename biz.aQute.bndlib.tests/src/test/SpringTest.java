@@ -47,7 +47,6 @@ public class SpringTest extends TestCase {
 	 * See what happens if we put the spring file in the wrong place. We should
 	 * have no import packages.
 	 * 
-	 * @throws Exception
 	 */
 	// public void testPluginWrongPlace() throws Exception {
 	// Builder b = new Builder();

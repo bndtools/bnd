@@ -580,7 +580,6 @@ public class Launcher implements ServiceListener {
 	 * the path is already native.
 	 * 
 	 * @param s
-	 * @return
 	 */
 	private String toNativePath(String s) {
 		if (!s.contains("${"))
@@ -908,7 +907,6 @@ public class Launcher implements ServiceListener {
 	 * 
 	 * @param loader
 	 * @param string
-	 * @return
 	 * @throws IOException
 	 */
 	private List<String> getMetaInfServices(ClassLoader loader, String factory) throws IOException {
@@ -1315,7 +1313,6 @@ public class Launcher implements ServiceListener {
 	 * Find a bundle by its location.
 	 * 
 	 * @param path the location to find
-	 * @return
 	 */
 	private Bundle getBundleByLocation(String path) {
 		BundleContext context = systemBundle.getBundleContext();

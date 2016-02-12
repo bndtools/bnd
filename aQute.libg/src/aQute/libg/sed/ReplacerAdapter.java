@@ -316,9 +316,6 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	/**
 	 * Parse the key as a command. A command consist of parameters separated by
 	 * ':'.
-	 * 
-	 * @param key
-	 * @return
 	 */
 	static Pattern commands = Pattern.compile("(?<!\\\\);");
 
@@ -391,9 +388,6 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	/**
 	 * Return a unique list where the duplicates are removed.
-	 * 
-	 * @param args
-	 * @return
 	 */
 	static String _uniqHelp = "${uniq;<list> ...}";
 
@@ -562,7 +556,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	 * replace ; <list> ; regex ; replace
 	 * 
 	 * @param args
-	 * @return
+	 * @return result
 	 */
 	public String _replace(String args[]) {
 		if (args.length != 4) {
@@ -601,9 +595,6 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	/**
 	 * toclassname ; <path>.class ( , <path>.class ) *
-	 * 
-	 * @param args
-	 * @return
 	 */
 	static String _toclassnameHelp = "${classname;<list of class names>}, convert class paths to FQN class names ";
 
@@ -628,9 +619,6 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	/**
 	 * toclassname ; <path>.class ( , <path>.class ) *
-	 * 
-	 * @param args
-	 * @return
 	 */
 
 	static String _toclasspathHelp = "${toclasspath;<list>[;boolean]}, convert a list of class names to paths";
@@ -791,12 +779,6 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	/**
 	 * System command. Execute a command and insert the result.
-	 * 
-	 * @param args
-	 * @param help
-	 * @param patterns
-	 * @param low
-	 * @param high
 	 */
 	public String system_internal(boolean allowFail, String args[]) throws Exception {
 		verifyCommand(args,
@@ -860,8 +842,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	/**
 	 * Get the contents of a file.
 	 * 
-	 * @param in
-	 * @return
+	 * @return contents of file
 	 * @throws IOException
 	 */
 

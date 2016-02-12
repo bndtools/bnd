@@ -102,11 +102,7 @@ public abstract class OSGiTestCase extends TestCase {
 	 * @param service The service class.
 	 * @param filter An additional filter expression, or {@code
 	 * null}.
-	 * @param timeout The maximum time to wait (in milliseconds) for a service
-	 *            to become available; a zero or negative timeout implies we
-	 *            should fail if the service is not immediately available.
 	 * @param operation The operation to perform against the service.
-	 * @return
 	 * @throws Exception
 	 */
 	protected <S, R> R withService(Class<S> service, String filter, Operation< ? super S,R> operation)
@@ -139,7 +135,6 @@ public abstract class OSGiTestCase extends TestCase {
 	 *            available; a zero or negative timeout implies we should fail
 	 *            if the service is not immediatelt available.
 	 * @param operation The operation to perform against the service.
-	 * @return
 	 * @throws Exception
 	 */
 	protected <S, R> R withService(Class<S> service, String filter, long timeout, Operation< ? super S,R> operation)

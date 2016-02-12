@@ -16,7 +16,6 @@ public class EnumFormatter<E extends Enum<E>> implements Converter<String,E> {
 	 * of the enum will print that value.
 	 * 
 	 * @param enumType The enum type.
-	 * @return
 	 */
 	public static <E extends Enum<E>> EnumFormatter<E> create(Class<E> enumType) {
 		return new EnumFormatter<E>(null);
@@ -27,7 +26,6 @@ public class EnumFormatter<E extends Enum<E>> implements Converter<String,E> {
 	 * 
 	 * @param enumType The enum type.
 	 * @param defaultValue The default value, which will never be output.
-	 * @return
 	 */
 	public static <E extends Enum<E>> EnumFormatter<E> create(Class<E> enumType, E defaultValue) {
 		return new EnumFormatter<E>(defaultValue);

@@ -298,8 +298,6 @@ public class StoredRevisionCache {
 	/**
 	 * Check if a revision has sources ...
 	 * 
-	 * @param revision
-	 * @return
 	 */
 	public boolean hasSources(String bsn, String version, byte[] sha) {
 		return getPath(bsn, version, sha, true).isFile();
@@ -309,8 +307,8 @@ public class StoredRevisionCache {
 	 * Remove the sources from the cache.
 	 * 
 	 * @param bsn
-	 * @param string
-	 * @param revision
+	 * @param version
+	 * @param sha
 	 */
 	public void removeSources(String bsn, String version, byte[] sha) {
 		getPath(bsn, version, sha, true).delete();

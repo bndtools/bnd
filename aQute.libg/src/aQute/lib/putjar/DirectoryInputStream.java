@@ -100,8 +100,6 @@ public class DirectoryInputStream extends InputStream {
 	 * respect to the starting disk number 4 bytes .ZIP file comment length 2
 	 * bytes .ZIP file comment (variable size)
 	 * </pre>
-	 * 
-	 * @return
 	 */
 	InputStream getDirectory() throws IOException {
 		long where = this.where;
@@ -156,9 +154,6 @@ public class DirectoryInputStream extends InputStream {
 	 * field (variable size) file comment (variable size)
 	 * </pre>
 	 * </pre>
-	 * 
-	 * @param file
-	 * @return
 	 */
 	private InputStream getHeader(File root, File file) throws IOException {
 		long where = this.where;

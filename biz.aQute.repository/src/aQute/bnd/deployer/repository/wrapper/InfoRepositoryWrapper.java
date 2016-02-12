@@ -161,7 +161,6 @@ public class InfoRepositoryWrapper implements Repository {
 	/**
 	 * The repository method
 	 * 
-	 * @param result2
 	 * @throws Exception
 	 */
 
@@ -240,7 +239,7 @@ public class InfoRepositoryWrapper implements Repository {
 	/**
 	 * Clear all files that were indexed before this date
 	 * 
-	 * @param lastModified
+	 * @param whenOlder
 	 */
 	public void clear(long whenOlder) {
 		persistent.clear(whenOlder);

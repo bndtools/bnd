@@ -148,7 +148,6 @@ public class BNDAnnotationTest extends BndTestCase {
 	 * Can we order the references? References are ordered by their name as Java
 	 * does not define the order of the methods.
 	 * 
-	 * @throws Exception
 	 */
 
 	@Component

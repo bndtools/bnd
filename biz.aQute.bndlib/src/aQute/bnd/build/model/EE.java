@@ -110,7 +110,6 @@ public enum EE {
 	/**
 	 * Return the list of packages
 	 * 
-	 * @return
 	 * @throws IOException
 	 */
 	public Parameters getPackages() throws IOException {

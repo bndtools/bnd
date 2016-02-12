@@ -46,7 +46,7 @@ import aQute.lib.strings.Strings;
  * 
  * <pre>
  * &#064;RequireCapability(&quot;osgi.webresource;filter:='(&amp;(osgi.
- * webresource=/google/angular)(version&gt;=${@version}))&quot;) &#064;interface
+ * webresource=/google/angular)(version&gt;=${&#064;version}))&quot;) &#064;interface
  * Angular {}
  * </pre>
  * 

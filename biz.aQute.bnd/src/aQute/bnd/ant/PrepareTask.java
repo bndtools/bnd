@@ -111,7 +111,7 @@ public class PrepareTask extends BaseTask {
 	/**
 	 * Set the base directory of the project. This property MUST be set.
 	 * 
-	 * @param basedir
+	 * @param top
 	 */
 	public void setTop(String top) {
 		this.top = top;

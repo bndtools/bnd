@@ -19,8 +19,8 @@ import java.lang.annotation.Target;
  * </p>
  * 
  * <pre>
- * &#64;RequireCapability( ns = "com.acme.engine", effective = "active", filter
- * = "(com.acme.engine=${type})") public @interface Engine { String type(); }
+ * &#64;RequireCapability( ns = "com.acme.engine", effective = "active", filter = "(com.acme.engine=${type})") 
+ * public &#64;interface Engine { String type(); }
  * &#64;Engine(type = "wankel") public class Vehicle { ... }
  * </pre>
  * <p>
@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  * 
  * <pre>
  * Require-Capability:\ com.acme.engine; \ effective:=active; \
- * filter:="(com.acme.engine=wankel)",\ ...
+ *  filter:="(com.acme.engine=wankel)",\ ...
  * </pre>
  * 
  * {@link About}

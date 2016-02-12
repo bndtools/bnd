@@ -19,8 +19,7 @@ public class Clauses extends LinkedHashMap<String,Map<String,String>> {
 	 * }
 	 * 
 	 * @param value
-	 * @return
-	 * @throws MojoExecutionException
+	 * @return parsed clauses
 	 */
 	static public Clauses parse(String value, Logger logger) {
 		if (value == null || value.trim().length() == 0)

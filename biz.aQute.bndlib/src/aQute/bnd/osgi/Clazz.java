@@ -176,7 +176,6 @@ public class Clazz {
 	 * class. ACC_ABSTRACT 0x0400 Declared abstract; may not be instantiated.
 	 * </pre>
 	 * 
-	 * @param mod
 	 */
 
 	// Declared public; may be accessed from outside its package.
@@ -1651,7 +1650,7 @@ public class Clazz {
 	 * pointer to limit the creation of string objects.
 	 * 
 	 * @param descriptor The to be parsed descriptor
-	 * @param rover The pointer to start at
+	 * @param modifiers
 	 */
 
 	public void parseDescriptor(String descriptor, int modifiers) {
@@ -1738,7 +1737,6 @@ public class Clazz {
 	 * 
 	 * @param descriptor
 	 * @param index
-	 * @return
 	 */
 	private int parseFormalTypeParameters(String descriptor, int index, int modifiers) {
 		index++;
@@ -2039,7 +2037,6 @@ public class Clazz {
 	 * @param access
 	 * @param name
 	 * @param descriptor
-	 * @return
 	 */
 	public MethodDef getMethodDef(int access, String name, String descriptor) {
 		return new MethodDef(access, name, descriptor);

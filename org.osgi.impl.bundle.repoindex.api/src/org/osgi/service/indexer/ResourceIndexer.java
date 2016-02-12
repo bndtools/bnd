@@ -120,13 +120,6 @@ public interface ResourceIndexer {
 	 */
 	void indexFragment(Set<File> files, Writer out, Map<String,String> config) throws Exception;
 
-	/**
-	 * Return a Resource from a file
-	 * 
-	 * @param file a bundle to index
-	 * @return The resource, caps, and reqs for that file
-	 */
-
 	class IndexResult {
 		public Resource				resource;
 		public List<Capability>		capabilities	= new ArrayList<Capability>();
@@ -142,5 +135,11 @@ public interface ResourceIndexer {
 		public long					signature;
 	}
 
+	/**
+	 * Return a Resource from a file
+	 * 
+	 * @param file a bundle to index
+	 * @return The resource, caps, and reqs for that file
+	 */
 	IndexResult indexFile(File file) throws Exception;
 }

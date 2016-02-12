@@ -170,7 +170,6 @@ public class ServiceComponent implements AnalyzerPlugin {
 		 * no use specifying annotated components.
 		 * 
 		 * @param name
-		 * @return
 		 * @throws Exception
 		 */
 		private Collection<Clazz> checkAnnotationsFeasible(String name) throws Exception {

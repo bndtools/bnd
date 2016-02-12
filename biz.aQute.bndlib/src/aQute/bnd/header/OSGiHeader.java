@@ -144,7 +144,6 @@ public class OSGiHeader {
 	/**
 	 * @param sb
 	 * @param value
-	 * @return
 	 * @throws IOException
 	 */
 	public static boolean quote(Appendable sb, String value) throws IOException {

@@ -57,7 +57,7 @@ public class Header implements Map<String,Props> {
 		if (map == null)
 			return false;
 
-		return map.containsKey((String) name);
+		return map.containsKey(name);
 	}
 
 	public boolean containsValue(Props value) {
@@ -74,7 +74,7 @@ public class Header implements Map<String,Props> {
 		if (map == null)
 			return false;
 
-		return map.containsValue((Props) value);
+		return map.containsValue(value);
 	}
 
 	public Set<java.util.Map.Entry<String,Props>> entrySet() {
@@ -91,7 +91,7 @@ public class Header implements Map<String,Props> {
 		if (map == null)
 			return null;
 
-		return map.get((String) key);
+		return map.get(key);
 	}
 
 	public Props get(String key) {
@@ -145,7 +145,7 @@ public class Header implements Map<String,Props> {
 		if (map == null)
 			return null;
 
-		return map.remove((String) var0);
+		return map.remove(var0);
 	}
 
 	public Props remove(String var0) {
@@ -365,7 +365,7 @@ public class Header implements Map<String,Props> {
 	/**
 	 * @param sb
 	 * @param value
-	 * @return
+	 * @return clean
 	 * @throws IOException
 	 */
 	public static boolean quote(Appendable sb, String value) throws IOException {

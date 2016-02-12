@@ -198,7 +198,6 @@ public class HeaderReader extends Processor {
 	 * @param info
 	 * @param cd TODO
 	 * @param descriptors TODO
-	 * @return
 	 */
 	private void getNamespace(Map<String,String> info, ComponentDef cd, Map<String,MethodDef> descriptors) {
 		String namespace = info.get(COMPONENT_NAMESPACE);
@@ -337,7 +336,6 @@ public class HeaderReader extends Processor {
 	 * anything.
 	 * 
 	 * @param test
-	 * @return
 	 */
 	int rateBind(MethodDef test) {
 		TypeRef[] prototype = test.getDescriptor().getPrototype();

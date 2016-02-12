@@ -187,7 +187,6 @@ public class Project extends Processor {
 	 * 
 	 * @param parent The project builder to use as parent, use this project if
 	 *            null
-	 * @return
 	 * @throws Exception
 	 */
 	public ProjectBuilder getBuilder(ProjectBuilder parent) throws Exception {
@@ -494,8 +493,7 @@ public class Project extends Processor {
 	 * Bundles are listed in repo specific names. So we just let our repo
 	 * plugins iterate over the list of bundles and we get the highest version
 	 * from them.
-	 * 
-	 * @return
+	 *
 	 */
 
 	private List<Container> parseBuildpath() throws Exception {
@@ -529,9 +527,8 @@ public class Project extends Processor {
 	 * output directory is calculated. The default directory ${bin} can be
 	 * overridden with the output attribute.
 	 * 
-	 * @param strategy STRATEGY_LOWEST or STRATEGY_HIGHEST
+	 * @param strategyx STRATEGY_LOWEST or STRATEGY_HIGHEST
 	 * @param spec The header
-	 * @return
 	 */
 
 	public List<Container> getBundles(Strategy strategyx, String spec, String source) throws Exception {
@@ -645,7 +642,6 @@ public class Project extends Processor {
 	 * @param strategyx The version selection strategy, which may be 'HIGHEST'
 	 *            or 'LOWEST' only -- 'EXACT' is not permitted.
 	 * @param attrs Additional search attributes.
-	 * @return
 	 * @throws Exception
 	 */
 	public List<Container> getBundlesWildcard(String bsnPattern, String range, Strategy strategyx,
@@ -765,7 +761,6 @@ public class Project extends Processor {
 	 * 
 	 * @param strategyx the strategy to use.
 	 * @param result The list of result containers
-	 * @param attrs The attributes
 	 * @throws Exception anything goes wrong
 	 */
 	public void doMavenPom(Strategy strategyx, List<Container> result, String action) throws Exception {
@@ -969,7 +964,6 @@ public class Project extends Processor {
 	 * @param name The repository name
 	 * @param jarName
 	 * @param jarStream
-	 * @return
 	 * @throws Exception
 	 */
 	public File release(String name, String jarName, InputStream jarStream) throws Exception {
@@ -1072,7 +1066,7 @@ public class Project extends Processor {
 	 * 
 	 * @param bsn The bundle symbolic name
 	 * @param range The version range
-	 * @param lowest set to LOWEST or HIGHEST
+	 * @param strategy set to LOWEST or HIGHEST
 	 * @return the file object that points to the bundle or null if not found
 	 * @throws Exception when something goes wrong
 	 */
@@ -1219,7 +1213,6 @@ public class Project extends Processor {
 	/**
 	 * @param attrs
 	 * @param useStrategy
-	 * @return
 	 */
 	protected Strategy overrideStrategy(Map<String,String> attrs, Strategy useStrategy) {
 		if (attrs != null) {
@@ -1278,7 +1271,6 @@ public class Project extends Processor {
 	 * @param range
 	 * @param attrs
 	 * @param result
-	 * @return
 	 */
 	protected Container toContainer(String bsn, String range, Map<String,String> attrs, File result,
 			DownloadBlocker db) {
@@ -1302,7 +1294,6 @@ public class Project extends Processor {
 	 * 
 	 * @param bsn The bsn
 	 * @param attrs Any attributes
-	 * @return
 	 * @throws Exception
 	 */
 	private Container getBundleFromProject(String bsn, Map<String,String> attrs) throws Exception {
@@ -1528,7 +1519,6 @@ public class Project extends Processor {
 	 * out of date.
 	 * 
 	 * @param underTest
-	 * @return
 	 * @throws Exception
 	 */
 	public File[] build(boolean underTest) throws Exception {
@@ -1621,7 +1611,6 @@ public class Project extends Processor {
 	 * different class spaces which makes it hard to detect we already build it.
 	 * This method remembers the files in the appropriate instance vars.
 	 * 
-	 * @return
 	 */
 
 	public File[] getBuildFiles() throws Exception {
@@ -1667,7 +1656,6 @@ public class Project extends Processor {
 	 * projects are built first.
 	 * 
 	 * @param underTest
-	 * @return
 	 * @throws Exception
 	 */
 	public File[] buildLocal(boolean underTest) throws Exception {
@@ -1741,7 +1729,6 @@ public class Project extends Processor {
 	/**
 	 * Answer if this project does not have any output
 	 * 
-	 * @return
 	 */
 	public boolean isNoBundles() {
 		return isTrue(getProperty(NOBUNDLES));
@@ -1802,8 +1789,6 @@ public class Project extends Processor {
 	 * Calculate the file for a JAR. The default name is bsn.jar, but this can
 	 * be overridden with an
 	 * 
-	 * @param jar
-	 * @return
 	 * @throws Exception
 	 */
 	public File getOutputFile(String bsn, String version) throws Exception {
@@ -2089,9 +2074,6 @@ public class Project extends Processor {
 	 * bundle with manifest, a manifest is added based on defaults. If it is a
 	 * bundle, but not r4, we try to add the r4 headers.
 	 * 
-	 * @param descriptor
-	 * @param in
-	 * @return
 	 * @throws Exception
 	 */
 	public Jar getValidJar(File f) throws Exception {
@@ -2411,8 +2393,6 @@ public class Project extends Processor {
 	/**
 	 * Answer the container associated with a given bsn.
 	 * 
-	 * @param bndFile A file pointing to a bnd file.
-	 * @return null or the builder for a sub file.
 	 * @throws Exception
 	 */
 	public Container getDeliverable(String bsn, Map<String,String> attrs) throws Exception {
@@ -2469,7 +2449,6 @@ public class Project extends Processor {
 	/**
 	 * Get a launcher.
 	 * 
-	 * @return
 	 * @throws Exception
 	 */
 	public ProjectLauncher getProjectLauncher() throws Exception {

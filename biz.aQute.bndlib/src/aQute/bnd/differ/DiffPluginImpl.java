@@ -138,9 +138,6 @@ public class DiffPluginImpl implements Differ {
 	/**
 	 * Create an element representing all resources in the JAR
 	 * 
-	 * @param jar
-	 * @return the created {@code Element}
-	 * @throws Exception
 	 */
 	static Pattern META_INF_P = Pattern.compile("META-INF/([^/]+\\.(MF|SF|DSA|RSA))|(SIG-.*)");
 
