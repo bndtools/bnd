@@ -471,7 +471,6 @@ public class JustAnotherPackageManager {
 
 	/**
 	 * @param data
-	 * @param target
 	 * @throws Exception
 	 * @throws IOException
 	 */
@@ -523,7 +522,6 @@ public class JustAnotherPackageManager {
 
 	/**
 	 * @param data
-	 * @param target
 	 * @throws Exception
 	 * @throws IOException
 	 */
@@ -577,7 +575,6 @@ public class JustAnotherPackageManager {
 	 * Verify that the jar file is correct. This also verifies ok when there are
 	 * no checksums or.
 	 * 
-	 * @throws IOException
 	 */
 	static Pattern MANIFEST_ENTRY = Pattern.compile("(META-INF/[^/]+)|(.*/)");
 
@@ -629,7 +626,6 @@ public class JustAnotherPackageManager {
 	/**
 	 * @param clazz
 	 * @param dataFile
-	 * @return
 	 * @throws Exception
 	 */
 
@@ -1007,7 +1003,6 @@ public class JustAnotherPackageManager {
 	 * @param from
 	 * @param to
 	 * @param excludes
-	 * @return
 	 * @throws Exception
 	 */
 	static public <T extends struct> T xcopy(struct from, T to, String... excludes) throws Exception {
@@ -1331,7 +1326,6 @@ public class JustAnotherPackageManager {
 	 * Turn the shas into a readable form
 	 * 
 	 * @param dependencies
-	 * @return
 	 * @throws Exception
 	 */
 

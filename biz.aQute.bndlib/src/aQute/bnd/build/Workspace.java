@@ -114,7 +114,6 @@ public class Workspace extends Processor {
 	 * an existing project)
 	 * 
 	 * @param projectDir
-	 * @return
 	 */
 	public static Project getProject(File projectDir) throws Exception {
 		projectDir = projectDir.getAbsoluteFile();
@@ -576,7 +575,6 @@ public class Workspace extends Processor {
 	 * Add any extensions listed
 	 * 
 	 * @param list
-	 * @param rri
 	 */
 	@Override
 	protected void addExtensions(Set<Object> list) {
@@ -661,7 +659,6 @@ public class Workspace extends Processor {
 	 * environment where nobody tells us the resources are out of date (refresh
 	 * or changed). This is currently defined as having bndlisteners.
 	 * 
-	 * @return
 	 */
 	public boolean isOffline() {
 		return offline;
@@ -990,7 +987,6 @@ public class Workspace extends Processor {
 	/**
 	 * Create a new Workspace
 	 * 
-	 * @param opts
 	 * @param wsdir
 	 * @throws Exception
 	 */
@@ -1112,7 +1108,6 @@ public class Workspace extends Processor {
 	 * Create a workspace that does not inherit from a cnf directory etc.
 	 * 
 	 * @param run
-	 * @return
 	 */
 	public static Workspace createStandaloneWorkspace(Processor run, URI base) throws Exception {
 		Workspace ws = new Workspace(WorkspaceLayout.STANDALONE);

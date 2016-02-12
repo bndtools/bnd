@@ -17,7 +17,6 @@ class DependencyCollector {
 	/**
 	 * Add a revision to this collector and start the download
 	 * 
-	 * @param key
 	 * @throws Exception
 	 */
 	public void add(String coordinate, String name) throws Exception {

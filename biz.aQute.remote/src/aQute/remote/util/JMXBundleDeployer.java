@@ -250,8 +250,7 @@ public class JMXBundleDeployer {
 	 * for the osgi.core MBeans. This will stop searching for VMs once the
 	 * MBeans are found. Beware if you have multiple JVMs with osgi.core MBeans
 	 * published.
-	 * 
-	 * @return
+	 *
 	 */
 	@SuppressWarnings("unchecked")
 	static String getLocalConnectorAddress() {

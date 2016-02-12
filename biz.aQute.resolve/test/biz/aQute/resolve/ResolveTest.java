@@ -275,8 +275,8 @@ public class ResolveTest extends TestCase {
 
 	/**
 	 * This is a basic test of resolving. This test is paired with
-	 * {@link #testResolveWithProfile()}. If you change the resources, make sure
-	 * this is done in the same way. The {@link #testResolveWithProfile()} has a
+	 * {@link #testResolveWithDistro()}. If you change the resources, make sure
+	 * this is done in the same way. The {@link #testResolveWithDistro()} has a
 	 * negative check while this one checks positive.
 	 */
 	public static void testSimpleResolve() {

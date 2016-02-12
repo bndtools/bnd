@@ -387,7 +387,6 @@ public class MavenCommand extends Processor {
 	}
 
 	/**
-	 * @return
 	 * @throws IOException
 	 * @throws MalformedURLException
 	 */
@@ -504,7 +503,6 @@ public class MavenCommand extends Processor {
 	 * Generate a license string
 	 * 
 	 * @param attr
-	 * @return
 	 */
 	private String license(Attributes attr) {
 		Parameters map = Processor.parseHeader(attr.getValue(Constants.BUNDLE_LICENSE), null);
@@ -541,7 +539,6 @@ public class MavenCommand extends Processor {
 	 * Generate the copyright statement.
 	 * 
 	 * @param attr
-	 * @return
 	 */
 	private String copyright(Attributes attr) {
 		return attr.getValue(Constants.BUNDLE_COPYRIGHT);

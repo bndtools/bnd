@@ -310,7 +310,6 @@ public abstract class ProjectLauncher extends Processor {
 	/**
 	 * launch a framework internally. I.e. do not start a separate process.
 	 * 
-	 * @throws Exception
 	 */
 	static Pattern IGNORE = Pattern.compile("org(/|\\.)osgi(/|\\.).resource.*");
 
@@ -452,7 +451,6 @@ public abstract class ProjectLauncher extends Processor {
 	 * requires some dummy framework support. SERVICES means it should load the
 	 * framework from the claspath.
 	 * 
-	 * @return
 	 */
 	public int getRunFramework() {
 		return framework;

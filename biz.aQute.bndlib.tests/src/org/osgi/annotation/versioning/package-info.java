@@ -15,7 +15,8 @@
  * This package is not used at runtime.
  * 
  * @see <a href="http://www.osgi.org/wiki/uploads/Links/SemanticVersioning.pdf"
- *      > Semantic Versioning</a> @version 1.0
+ *      > Semantic Versioning</a>
+ * @version 1.0
  * @author $Id$
  */
 @Version("1.0")

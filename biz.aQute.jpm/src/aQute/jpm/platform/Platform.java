@@ -37,8 +37,7 @@ public abstract class Platform {
 	 * Get the current platform manager.
 	 * 
 	 * @param reporter
-	 * @param jpmx
-	 * @return
+	 * @param type
 	 */
 	public static Platform getPlatform(Reporter reporter, Type type) {
 		if (platform == null) {
@@ -78,17 +77,14 @@ public abstract class Platform {
 	/**
 	 * Return the place where we place the jpm home directory for global access.
 	 * E.g. /var/jpm
-	 * 
-	 * @return
-	 * @throws Exception
+	 *
 	 */
 	public abstract File getGlobal();
 
 	/**
 	 * Return the place where we place the jpm home directory for user/local
 	 * access. E.g. ~/.jpm
-	 * 
-	 * @return
+	 *
 	 */
 	public abstract File getLocal();
 

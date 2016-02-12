@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.tools.ant.BuildException;
@@ -68,7 +67,8 @@ import aQute.libg.qtokens.QuotedTokenizer;
  * &lt;/bnd&gt; &lt;/target&gt;
  * </pre>
  * 
- * @see {@link DeployTask} {@link ReleaseTask}
+ * @see DeployTask
+ * @see ReleaseTask
  */
 
 /*
@@ -215,7 +215,7 @@ public class BndTask extends BaseTask {
 				// properties, if the inherit flag is specified
 				if (inherit) {
 					Properties projectProperties = new UTF8Properties();
-					projectProperties.putAll((Map< ? , ? >) getProject().getProperties());
+					projectProperties.putAll(getProject().getProperties());
 					projectProperties.putAll(builder.getProperties());
 					builder.setProperties(projectProperties);
 				}

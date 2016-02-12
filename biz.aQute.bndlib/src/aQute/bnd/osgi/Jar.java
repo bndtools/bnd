@@ -103,7 +103,6 @@ public class Jar implements Closeable {
 	 * Make the JAR file name the project name if we get a src or bin directory.
 	 * 
 	 * @param f
-	 * @return
 	 */
 	private static String getName(File f) {
 		f = f.getAbsoluteFile();
@@ -937,7 +936,6 @@ public class Jar implements Closeable {
 	/**
 	 * Return a data uri from the JAR. The data must be less than 32k
 	 * 
-	 * @param jar The jar to load the data from
 	 * @param path the path in the jar
 	 * @param mime the mime type
 	 * @return a URI or null if conversion could not take place

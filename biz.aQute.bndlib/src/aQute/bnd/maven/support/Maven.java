@@ -44,8 +44,6 @@ public class Maven {
 	 * @param groupId
 	 * @param artifactId
 	 * @param version
-	 * @param extra
-	 * @return
 	 * @throws Exception
 	 */
 	public MavenEntry getEntry(String groupId, String artifactId, String version) throws Exception {

@@ -395,7 +395,6 @@ public class ProjectBuilder extends Builder {
 	 * 
 	 * @param versions
 	 * @param repo
-	 * @return
 	 * @throws Exception
 	 */
 	private SortedSet<Version> removeStagedAndFilter(SortedSet<Version> versions, RepositoryPlugin repo, String bsn)
@@ -441,7 +440,6 @@ public class ProjectBuilder extends Builder {
 	 * @param repo
 	 * @param bsn
 	 * @param v
-	 * @return
 	 * @throws Exception
 	 */
 	private boolean isMaster(InfoRepository repo, String bsn, Version v) throws Exception {
@@ -620,7 +618,6 @@ public class ProjectBuilder extends Builder {
 	 * Find the source file for this type
 	 * 
 	 * @param type
-	 * @return
 	 * @throws Exception
 	 */
 	@Override

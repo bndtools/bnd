@@ -10,7 +10,6 @@ public interface URLConnector {
 	 * Connect to the specified URL.
 	 * 
 	 * @param url
-	 * @return
 	 * @throws IOException
 	 */
 	InputStream connect(URL url) throws IOException;

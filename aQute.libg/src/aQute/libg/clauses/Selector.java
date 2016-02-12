@@ -41,7 +41,7 @@ public class Selector {
 	 * different cases
 	 * 
 	 * @param string
-	 * @return
+	 * @return new selector
 	 */
 	public static Selector getPattern(String string) {
 		boolean negated = false;

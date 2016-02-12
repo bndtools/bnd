@@ -155,7 +155,6 @@ public class VersionRange {
 	/**
 	 * Convert to an OSGi filter expression
 	 * 
-	 * @return
 	 */
 	public String toFilter() {
 		Formatter f = new Formatter();

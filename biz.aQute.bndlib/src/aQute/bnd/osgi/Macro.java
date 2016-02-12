@@ -268,8 +268,6 @@ public class Macro {
 	 * Parse the key as a command. A command consist of parameters separated by
 	 * ':'.
 	 * 
-	 * @param key
-	 * @return
 	 */
 	static Pattern commands = Pattern.compile("(?<!\\\\);");
 
@@ -347,8 +345,6 @@ public class Macro {
 	/**
 	 * Return a unique list where the duplicates are removed.
 	 * 
-	 * @param args
-	 * @return
 	 */
 	static String _uniqHelp = "${uniq;<list> ...}";
 
@@ -547,7 +543,6 @@ public class Macro {
 	 * replace ; <list> ; regex ; replace
 	 * 
 	 * @param args
-	 * @return
 	 */
 	public String _replace(String args[]) {
 		if (args.length < 4 || args.length > 5) {
@@ -591,8 +586,6 @@ public class Macro {
 	/**
 	 * toclassname ; <path>.class ( , <path>.class ) *
 	 * 
-	 * @param args
-	 * @return
 	 */
 	static String _toclassnameHelp = "${classname;<list of class names>}, convert class paths to FQN class names ";
 
@@ -618,8 +611,6 @@ public class Macro {
 	/**
 	 * toclassname ; <path>.class ( , <path>.class ) *
 	 * 
-	 * @param args
-	 * @return
 	 */
 
 	static String _toclasspathHelp = "${toclasspath;<list>[;boolean]}, convert a list of class names to paths";
@@ -798,11 +789,8 @@ public class Macro {
 	 * m.m.m.q s only pos=3 (qualifier). If qualifer == SNAPSHOT, return
 	 * m.m.m-SNAPSHOT else m.m.m &tilde; discard ==+ = maintain major, minor,
 	 * increment micro, discard qualifier &tilde;&tilde;&tilde;= = just get the
-	 * qualifier version=&quot;[${version;==;${@}},${version;=+;${@}})&quot;
+	 * qualifier version=&quot;[${version;==;${&#x40;}},${version;=+;${&#x40;}})&quot;
 	 * </pre>
-	 * 
-	 * @param args
-	 * @return
 	 */
 	final static String		MASK_STRING			= "[\\-+=~0123456789]{0,3}[=~]?";
 	final static Pattern	MASK				= Pattern.compile(MASK_STRING);
@@ -895,8 +883,6 @@ public class Macro {
 	 * -consume-policy : ${policy;[==,+)}
 	 * </pre>
 	 * 
-	 * @param args
-	 * @return
 	 */
 
 	static Pattern	RANGE_MASK		= Pattern.compile("(\\[|\\()(" + MASK_STRING + "),(" + MASK_STRING + ")(\\]|\\))");
@@ -946,11 +932,6 @@ public class Macro {
 	/**
 	 * System command. Execute a command and insert the result.
 	 * 
-	 * @param args
-	 * @param help
-	 * @param patterns
-	 * @param low
-	 * @param high
 	 */
 	public String system_internal(boolean allowFail, String args[]) throws Exception {
 		if (nosystem)
@@ -1020,8 +1001,6 @@ public class Macro {
 	/**
 	 * Get the contents of a file.
 	 * 
-	 * @param in
-	 * @return
 	 * @throws IOException
 	 */
 

@@ -151,7 +151,6 @@ public class MavenEntry implements Closeable {
 	 * 
 	 * @param url The base url for the repo
 	 * @param path The path part
-	 * @return
 	 * @throws MalformedURLException
 	 */
 	boolean download(URI repo, String path) throws MalformedURLException {
@@ -293,7 +292,6 @@ public class MavenEntry implements Closeable {
 	 * @param repo
 	 * @param path
 	 * @param algorithm
-	 * @return
 	 * @throws Exception
 	 */
 	private boolean verify(URI repo, String path, String algorithm) throws Exception {

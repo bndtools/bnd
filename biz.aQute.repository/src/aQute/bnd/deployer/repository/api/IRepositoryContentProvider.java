@@ -45,8 +45,7 @@ public interface IRepositoryContentProvider {
 
 	/**
 	 * Return whether the content provider supports index generation.
-	 * 
-	 * @return
+	 *
 	 */
 	boolean supportsGeneration();
 
@@ -80,7 +79,6 @@ public interface IRepositoryContentProvider {
 	 *            may return a different default file name depending on this
 	 *            value, e.g. a non-pretty file may be compressed with the
 	 *            {@code .gz} extension.
-	 * @return
 	 */
 	String getDefaultIndexName(boolean pretty);
 

@@ -347,10 +347,8 @@ public class CommandLine {
 	 * 
 	 * @param options The command line map
 	 * @param args the args input
-	 * @param i where we are
 	 * @param m the selected method for this option
 	 * @param last if this is the last in a multi single character option
-	 * @return
 	 */
 	public void assignOptionValue(Map<String,Object> options, Method m, List<String> args, boolean last) {
 		String name = m.getName();
@@ -535,7 +533,7 @@ public class CommandLine {
 	 * Parse a class and return a list of command names
 	 * 
 	 * @param target
-	 * @return
+	 * @return command names
 	 */
 	public Map<String,Method> getCommands(Object target) {
 		Map<String,Method> map = new TreeMap<String,Method>();
@@ -566,7 +564,6 @@ public class CommandLine {
 
 	/**
 	 * @param m
-	 * @return
 	 */
 	private boolean isOption(Method m) {
 		return m.getReturnType() == boolean.class || m.getReturnType() == Boolean.class;

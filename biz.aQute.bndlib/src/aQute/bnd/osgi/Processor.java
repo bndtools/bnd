@@ -3,6 +3,7 @@ package aQute.bnd.osgi;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -206,7 +207,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * A processor can mark itself current for a thread.
 	 * 
-	 * @return
 	 */
 	private Processor current() {
 		Processor p = current.get();
@@ -357,7 +357,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * Standard OSGi header parser.
 	 * 
 	 * @param value
-	 * @return
 	 */
 	static public Parameters parseHeader(String value, Processor logger) {
 		return new Parameters(value, logger);
@@ -420,7 +419,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * 
 	 * @param <T>
 	 * @param clazz
-	 * @return
 	 */
 	public <T> T getPlugin(Class<T> clazz) {
 		Set<Object> all = getPlugins();
@@ -437,7 +435,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * implement the Plugin interface to see these attributes. Any object can be
 	 * a plugin.
 	 * 
-	 * @return
 	 */
 	public Set<Object> getPlugins() {
 		synchronized (this) {
@@ -684,7 +681,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param loader Name of the loader
 	 * @param attrs
 	 * @param className
-	 * @return
 	 */
 	private Object loadPlugin(ClassLoader loader, Attrs attrs, String className, boolean ignoreError) {
 		try {
@@ -717,7 +713,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * Set the initial parameters of a plugin
 	 * 
 	 * @param plugin
-	 * @param entry
+	 * @param map
 	 */
 	protected <T> T customize(T plugin, Attrs map) {
 		if (plugin instanceof Plugin) {
@@ -872,7 +868,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Property handling ...
 	 * 
-	 * @return
 	 */
 
 	public Properties getProperties() {
@@ -1010,8 +1005,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * @param file
-	 * @param parent
-	 * @param done
 	 * @param overwrite
 	 * @throws FileNotFoundException
 	 * @throws IOException
@@ -1022,8 +1015,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * @param file
-	 * @param parent
-	 * @param done
 	 * @param overwrite
 	 * @param extensionName
 	 * @throws FileNotFoundException
@@ -1186,9 +1177,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Get a property without preprocessing it with a proper default
 	 * 
-	 * @param headerName
+	 * @param key
 	 * @param deflt
-	 * @return
 	 */
 
 	public String getUnprocessedProperty(String key, String deflt) {
@@ -1198,9 +1188,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Get a property with preprocessing it with a proper default
 	 * 
-	 * @param headerName
+	 * @param key
 	 * @param deflt
-	 * @return
 	 */
 	public String getProperty(String key, String deflt) {
 		return getProperty(key, deflt, ",");
@@ -1284,7 +1273,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * Helper to load a properties file from disk.
 	 * 
 	 * @param file
-	 * @return
 	 * @throws IOException
 	 */
 	public Properties loadProperties(File file) throws IOException {
@@ -1406,7 +1394,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * @param sb
 	 * @param value
-	 * @return
 	 * @throws IOException
 	 */
 	public static boolean quote(Appendable sb, String value) throws IOException {
@@ -1423,7 +1410,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * This should be overridden by subclasses to add extra macro command
 	 * domains on the search list.
 	 * 
-	 * @return
 	 */
 	protected Object[] getMacroDomains() {
 		return new Object[] {};
@@ -1433,7 +1419,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * Return the properties but expand all macros. This always returns a new
 	 * Properties object that can be used in any way.
 	 * 
-	 * @return
 	 */
 	public Properties getFlattenedProperties() {
 		return getReplacer().getFlattenedProperties();
@@ -1444,7 +1429,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * Return the properties but expand all macros. This always returns a new
 	 * Properties object that can be used in any way.
 	 * 
-	 * @return
 	 */
 	public Properties getFlattenedProperties(boolean ignoreInstructions) {
 		return getReplacer().getFlattenedProperties(ignoreInstructions);
@@ -1453,7 +1437,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Return all inherited property keys
 	 * 
-	 * @return
 	 */
 	public Set<String> getPropertyKeys(boolean inherit) {
 		Set<String> result;
@@ -1499,7 +1482,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * Read a manifest but return a properties object.
 	 * 
 	 * @param in
-	 * @return
 	 * @throws IOException
 	 */
 	public static Properties getManifestAsProperties(InputStream in) throws IOException {
@@ -1541,8 +1523,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Join a list.
 	 * 
-	 * @param args
-	 * @return
 	 */
 	public static String join(Collection< ? > list, String delimeter) {
 		return join(delimeter, list);
@@ -1627,7 +1607,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * Make the file short if it is inside our base directory, otherwise long.
 	 * 
 	 * @param f
-	 * @return
 	 */
 	public String normalize(String f) {
 		if (f.startsWith(base.getAbsolutePath() + "/"))
@@ -1879,7 +1858,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * ensure it is properly initialized.
 	 * 
 	 * @param name
-	 * @return
 	 */
 	public boolean isMissingPlugin(String name) {
 		getPlugins();
@@ -1927,7 +1905,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * 
 	 * @param attrs
 	 * @param clazz
-	 * @return
 	 */
 	public static Attrs doAttrbutes(Object[] attrs, Clazz clazz, Macro macro) {
 		Attrs map = new Attrs();
@@ -1953,7 +1930,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * 
 	 * @param string
 	 * @param parms
-	 * @return
 	 */
 	public static String formatArrays(String string, Object... parms) {
 		if (parms == null) {
@@ -2305,7 +2281,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param s
 	 * @param extension
 	 * @param newExtension
-	 * @return
 	 */
 	public String replaceExtension(String s, String extension, String newExtension) {
 		if (s.endsWith(extension))
@@ -2317,8 +2292,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Create a location object and add it to the locations
 	 * 
-	 * @param s
-	 * @return
 	 */
 	List<Location> locations = new ArrayList<Location>();
 
@@ -2391,9 +2364,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * Get a header relative to this processor, tking its parents and includes
 	 * into account.
 	 * 
-	 * @param location
 	 * @param header
-	 * @return
 	 * @throws IOException
 	 */
 	public FileLine getHeader(String header) throws Exception {

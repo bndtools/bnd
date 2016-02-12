@@ -105,7 +105,6 @@ public abstract class AbstractConsoleApp extends Env {
 	 * Initialize the repository and other global vars.
 	 * 
 	 * @param opts the options
-	 * @throws InterruptedException
 	 * @throws IOException
 	 */
 	@Description("")

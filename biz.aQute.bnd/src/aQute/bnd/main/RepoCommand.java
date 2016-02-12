@@ -237,12 +237,6 @@ public class RepoCommand {
 		}
 	}
 
-	/**
-	 * get a file from the repo
-	 * 
-	 * @param opts
-	 */
-
 	@Description("Get an artifact from a repository.")
 	@Arguments(arg = {
 			"bsn", "[range]"
@@ -257,6 +251,11 @@ public class RepoCommand {
 		Instruction from();
 	}
 
+	/**
+	 * get a file from the repo
+	 * 
+	 * @param opts
+	 */
 	@Description("Get an artifact from a repository.")
 	public void _get(getOptions opts) throws Exception {
 		Instruction from = opts.from();

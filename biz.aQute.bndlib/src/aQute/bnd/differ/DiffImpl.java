@@ -73,7 +73,6 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 	 * 
 	 * @param newer The newer Element
 	 * @param older The older Element
-	 * @param types
 	 */
 	public DiffImpl(Tree newer, Tree older) {
 		assert newer != null || older != null;

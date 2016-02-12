@@ -129,7 +129,6 @@ public class Analyzer extends Processor {
 	/**
 	 * Specifically for Maven
 	 * 
-	 * @param properties the properties
 	 */
 
 	public static Properties getManifest(File dirOrJar) throws Exception {
@@ -678,7 +677,6 @@ public class Analyzer extends Processor {
 	 * One of the main workhorses of this class. This will analyze the current
 	 * setup and calculate a new manifest according to this setup.
 	 * 
-	 * @return
 	 * @throws IOException
 	 */
 	public Manifest calcManifest() throws Exception {
@@ -1080,8 +1078,6 @@ public class Analyzer extends Processor {
 	/**
 	 * Clear the key part of a header. I.e. remove everything from the first ';'
 	 * 
-	 * @param value
-	 * @return
 	 */
 	public String getBsn() {
 		String value = getProperty(BUNDLE_SYMBOLICNAME);
@@ -1126,7 +1122,6 @@ public class Analyzer extends Processor {
 	 * Calculate an export header solely based on the contents of a JAR file
 	 * 
 	 * @param bundle The jar file to analyze
-	 * @return
 	 */
 	public String calculateExportsFromContents(Jar bundle) {
 		String ddel = "";
@@ -1186,7 +1181,6 @@ public class Analyzer extends Processor {
 	 * Return the set of unreachable code depending on exports and the bundle
 	 * activator.
 	 * 
-	 * @return
 	 */
 	public Set<PackageRef> getUnreachable() {
 		Set<PackageRef> unreachable = new HashSet<PackageRef>(uses.keySet()); // all
@@ -1339,7 +1333,6 @@ public class Analyzer extends Processor {
 	 * memory.
 	 * 
 	 * @param jar
-	 * @return
 	 * @throws IOException
 	 */
 	public Jar setJar(File jar) throws IOException {
@@ -1352,7 +1345,6 @@ public class Analyzer extends Processor {
 	 * Set the JAR directly we are going to work on.
 	 * 
 	 * @param jar
-	 * @return
 	 */
 	public Jar setJar(Jar jar) {
 		if (dot != null)
@@ -2056,7 +2048,6 @@ public class Analyzer extends Processor {
 	 * )? }
 	 * 
 	 * @param args
-	 * @return
 	 */
 	public String _findpath(String args[]) {
 		return findPath("findpath", args, true);
@@ -2325,8 +2316,6 @@ public class Analyzer extends Processor {
 	 * the version syntax. This method cleans up such a version to match an OSGi
 	 * version.
 	 * 
-	 * @param VERSION_STRING
-	 * @return
 	 */
 	static Pattern	fuzzyVersion		= Pattern.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([^a-zA-Z0-9](.*))?",
 			Pattern.DOTALL);
@@ -2643,8 +2632,6 @@ public class Analyzer extends Processor {
 	/**
 	 * Find a clazz on the class path. This class has been parsed.
 	 * 
-	 * @param path
-	 * @return
 	 */
 	public Clazz findClass(TypeRef typeRef) throws Exception {
 		Clazz c = classspace.get(typeRef);
@@ -2673,7 +2660,6 @@ public class Analyzer extends Processor {
 	/**
 	 * Answer the bundle version.
 	 * 
-	 * @return
 	 */
 	public String getVersion() {
 		String version = getProperty(BUNDLE_VERSION);
@@ -3050,7 +3036,6 @@ public class Analyzer extends Processor {
 	 * 
 	 * @param apiUses
 	 * @param removeJava
-	 * @return
 	 */
 	public Map<PackageRef,List<PackageRef>> cleanupUses(Map<PackageRef,List<PackageRef>> apiUses, boolean removeJava) {
 		MultiMap<PackageRef,PackageRef> map = new MultiMap<PackageRef,PackageRef>(apiUses);
@@ -3088,7 +3073,6 @@ public class Analyzer extends Processor {
 	 * @param source
 	 * @param dest
 	 * @param sourceModifiers
-	 * @return
 	 * @throws Exception
 	 */
 	public Map<Clazz.Def,List<TypeRef>> getXRef(final PackageRef source, final Collection<PackageRef> dest,
@@ -3229,7 +3213,6 @@ public class Analyzer extends Processor {
 
 	/**
 	 * @param name
-	 * @return
 	 */
 	public String validResourcePath(String name, String reportIfWrong) {
 		boolean changed = false;
@@ -3280,7 +3263,6 @@ public class Analyzer extends Processor {
 	 * Find the source file for this type
 	 * 
 	 * @param type
-	 * @return
 	 * @throws Exception
 	 */
 	public String getSourceFileFor(TypeRef type) throws Exception {

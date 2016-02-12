@@ -473,7 +473,6 @@ public class LauncherTest extends TestCase {
 	}
 
 	/**
-	 * @return
 	 * @throws Exception
 	 */
 	static Project getProject() throws Exception {

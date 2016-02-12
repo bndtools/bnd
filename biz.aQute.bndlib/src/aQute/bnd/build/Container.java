@@ -93,7 +93,6 @@ public class Container {
 	 * Iterate over the containers and get the files they represent
 	 * 
 	 * @param files
-	 * @return
 	 * @throws Exception
 	 */
 	public boolean contributeFiles(List<File> files, Processor reporter) throws Exception {
@@ -165,7 +164,6 @@ public class Container {
 	/**
 	 * Must show the file name or the error formatted as a file name
 	 * 
-	 * @return
 	 */
 	@Override
 	public String toString() {
@@ -189,7 +187,6 @@ public class Container {
 	 * library, return the members. This could work recursively, e.g., libraries
 	 * can point to libraries.
 	 * 
-	 * @return
 	 * @throws Exception
 	 */
 	public List<Container> getMembers() throws Exception {
@@ -257,7 +254,7 @@ public class Container {
 	 * Take a container list and flatten it (e.g. expand any libraries).
 	 * 
 	 * @param containers The containers to flatten, can be null
-	 * @return a list of containers guaranteed to contain no libraries
+	 * @param list of containers guaranteed to contain no libraries
 	 */
 
 	public static void flatten(Collection<Container> containers, List<Container> list) throws Exception {

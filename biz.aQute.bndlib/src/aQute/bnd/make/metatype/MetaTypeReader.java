@@ -63,19 +63,6 @@ public class MetaTypeReader extends WriteResource {
 		this.inherit = Processor.isTrue(reporter.getProperty("-metatype-inherit"));
 	}
 
-	/**
-	 * @param id
-	 * @param name
-	 * @param cardinality
-	 * @param required
-	 * @param deflt
-	 * @param type
-	 * @param max
-	 * @param min
-	 * @param optionLabels
-	 * @param optionValues
-	 */
-
 	static Pattern COLLECTION = Pattern.compile("(.*(Collection|Set|List|Queue|Stack|Deque))<(L.+;)>");
 
 	private void addMethod(MethodDef method, Meta.AD ad) throws Exception {

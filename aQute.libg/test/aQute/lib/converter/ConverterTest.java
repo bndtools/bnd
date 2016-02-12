@@ -227,9 +227,6 @@ public class ConverterTest extends TestCase {
 
 	/**
 	 * Test enums
-	 * 
-	 * @param source
-	 * @throws Exception
 	 */
 	public enum X {
 		A, B, C;
@@ -242,9 +239,6 @@ public class ConverterTest extends TestCase {
 
 	/**
 	 * Test collections
-	 * 
-	 * @param source
-	 * @throws Exception
 	 */
 	static class XX {
 		public ArrayList<String>				al;
@@ -277,9 +271,6 @@ public class ConverterTest extends TestCase {
 
 	/**
 	 * Test generic collections
-	 * 
-	 * @param source
-	 * @throws Exception
 	 */
 	static class GC {
 		public Collection<String>				strings;
@@ -310,9 +301,6 @@ public class ConverterTest extends TestCase {
 
 	/**
 	 * Test generic maps
-	 * 
-	 * @param source
-	 * @throws Exception
 	 */
 	public static class GM {
 		public Map<String,Integer>					strings;
@@ -373,7 +361,6 @@ public class ConverterTest extends TestCase {
 	/**
 	 * Test constructor
 	 * 
-	 * @param source
 	 * @throws Exception
 	 */
 
@@ -387,7 +374,6 @@ public class ConverterTest extends TestCase {
 	/**
 	 * Test valueOf
 	 * 
-	 * @param source
 	 * @throws Exception
 	 */
 

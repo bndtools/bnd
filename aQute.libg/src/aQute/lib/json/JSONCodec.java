@@ -528,7 +528,7 @@ public class JSONCodec {
 	 * Ignore null values in output and input
 	 * 
 	 * @param ignorenull
-	 * @return
+	 * @return this
 	 */
 	public JSONCodec setIgnorenull(boolean ignorenull) {
 		this.ignorenull = ignorenull;

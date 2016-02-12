@@ -460,7 +460,6 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	 * Sleep function that does not throw {@link InterruptedException}
 	 * 
 	 * @param i
-	 * @return
 	 */
 	private boolean sleep(int i) {
 		try {
@@ -496,8 +495,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
 	/**
 	 * Get the index, load it if necessary
-	 * 
-	 * @return
+	 *
 	 * @throws Exception
 	 */
 	private FileLayout getIndex() throws Exception {

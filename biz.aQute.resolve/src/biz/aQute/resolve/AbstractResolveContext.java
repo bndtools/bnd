@@ -682,8 +682,6 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	 * 
 	 * @param repos
 	 * @param bsn
-	 * @param version
-	 * @return
 	 */
 	public List<Resource> getResources(List<Repository> repos, String bsn, String range) {
 		Requirement bundle = CapReqBuilder.createBundleRequirement(bsn, range).buildSyntheticRequirement();

@@ -424,8 +424,6 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 	 * Skip L and ; and replace / for . in an object descriptor. A string like
 	 * Lcom/acme/Foo; becomes com.acme.Foo
 	 * 
-	 * @param string
-	 * @return
 	 */
 
 	// private String descriptorToFQN(String string) {

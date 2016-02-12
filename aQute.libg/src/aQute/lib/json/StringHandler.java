@@ -106,7 +106,6 @@ public class StringHandler extends Handler {
 	 * 
 	 * @param isr
 	 * @param c
-	 * @return
 	 * @throws Exception
 	 */
 	private Object collect(Decoder isr, @SuppressWarnings("unused") char close) throws Exception {

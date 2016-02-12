@@ -527,7 +527,7 @@ public class Converter {
 	 * 
 	 * @param interfc
 	 * @param properties
-	 * @return
+	 * @return proxy object for map
 	 */
 	public <T> T proxy(Class<T> interfc, final Map< ? , ? > properties) {
 		return (T) Proxy.newProxyInstance(interfc.getClassLoader(), new Class[] {

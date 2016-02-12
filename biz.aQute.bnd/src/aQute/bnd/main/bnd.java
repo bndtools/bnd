@@ -631,15 +631,6 @@ public class bnd extends Processor {
 		}
 	}
 
-	/**
-	 * The do command interprets files and does a default action for each file
-	 * 
-	 * @param project
-	 * @param args
-	 * @param i
-	 * @return
-	 * @throws Exception
-	 */
 
 	@Description("Execute a file based on its extension. Supported extensions are: bnd (build), bndrun (run), and jar (print)")
 	interface dooptions extends Options {
@@ -650,6 +641,11 @@ public class bnd extends Processor {
 		boolean force();
 	}
 
+	/**
+	 * The do command interprets files and does a default action for each file
+	 * 
+	 * @throws Exception
+	 */
 	@Description("Execute a file based on its extension. Supported extensions are: bnd (build), bndrun (run), and jar (print)")
 	public void _do(dooptions options) throws Exception {
 		for (String path : options._arguments()) {
@@ -755,13 +751,6 @@ public class bnd extends Processor {
 		}
 	}
 
-	/**
-	 * Bump a version number
-	 * 
-	 * @param args
-	 * @param i
-	 * @throws Exception
-	 */
 	@Description("Bumps the version of a project. Will take the current version and then increment "
 			+ "with a major, minor, or micro increment. The default bump is minor.")
 	@Arguments(arg = "<major|minor|micro>")
@@ -770,6 +759,11 @@ public class bnd extends Processor {
 		String project();
 	}
 
+	/**
+	 * Bump a version number
+	 * 
+	 * @throws Exception
+	 */
 	@Description("Bumps the version of a project")
 	public void _bump(bumpoptions options) throws Exception {
 		Project project = getProject(options.project());
@@ -1065,12 +1059,6 @@ public class bnd extends Processor {
 		}
 	}
 
-	/**
-	 * Package a bnd or bndrun file for packaging.
-	 * 
-	 * @param path
-	 * @throws Exception
-	 */
 	@Description("Package a bnd or bndrun file into a single jar that executes with java -jar <>.jar. The JAR contains all dependencies, including the framework and the launcher. "
 			+ "A profile can be specified which will be used to find properties. If a property is not found, a property with the name [<profile>]NAME will be looked up. This allows "
 			+ "you to make different profiles for testing and runtime.")
@@ -1090,6 +1078,11 @@ public class bnd extends Processor {
 		boolean jpm();
 	}
 
+	/**
+	 * Package a bnd or bndrun file for packaging.
+	 * 
+	 * @throws Exception
+	 */
 	@Description("Package a bnd or bndrun file into a single jar that executes with java -jar <>.jar")
 	public void _package(packageOptions opts) throws Exception {
 		List<String> cmdline = opts._arguments();
@@ -1202,14 +1195,6 @@ public class bnd extends Processor {
 		getInfo(project);
 	}
 
-	/**
-	 * Show the value of a macro
-	 * 
-	 * @param args
-	 * @param i
-	 * @return
-	 * @throws Exception
-	 */
 	@Description("Show macro value. Macro can contain the ${ and } parentheses but it is also ok without. You can use the ':' instead of the ';' in a macro")
 	@Arguments(arg = {
 			"<macro>", "[...]"
@@ -1219,6 +1204,11 @@ public class bnd extends Processor {
 		String project();
 	}
 
+	/**
+	 * Show the value of a macro
+	 * 
+	 * @throws Exception
+	 */
 	@Description("Show macro value")
 	public void _macro(macroOptions options) throws Exception {
 		Project project = getProject(options.project());
@@ -1250,13 +1240,6 @@ public class bnd extends Processor {
 		err.println(sb);
 	}
 
-	/**
-	 * Release the project
-	 * 
-	 * @param args
-	 * @param i
-	 * @throws Exception
-	 */
 	@Description("Release this project")
 	interface releaseOptions extends Options {
 		@Description("Path to project, default is current project")
@@ -1273,6 +1256,11 @@ public class bnd extends Processor {
 
 	}
 
+	/**
+	 * Release the project
+	 * 
+	 * @throws Exception
+	 */
 	@Description("Release this project")
 	public void _release(releaseOptions options) throws Exception {
 		Set<Project> projects = new LinkedHashSet<Project>();
@@ -1314,12 +1302,6 @@ public class bnd extends Processor {
 		getInfo(project);
 	}
 
-	/**
-	 * Cross reference every class in the jar file to the files it references
-	 * 
-	 * @param args
-	 * @param i
-	 */
 	@Description("Show a cross references for all classes in a set of jars.")
 	@Arguments(arg = {
 			"<jar path>", "[...]"
@@ -1344,6 +1326,9 @@ public class bnd extends Processor {
 		public Map<PackageRef,List<PackageRef>>	packages	= new HashMap<Descriptors.PackageRef,List<PackageRef>>();
 	}
 
+	/**
+	 * Cross reference every class in the jar file to the files it references
+	 */
 	@Description("Show a cross references for all classes in a set of jars.")
 	public void _xref(xrefOptions options) throws IOException, Exception {
 		Analyzer analyzer = new Analyzer();
@@ -1586,13 +1571,6 @@ public class bnd extends Processor {
 		builders.add(b);
 	}
 
-	/**
-	 * View files from JARs We parse the commandline and print each file on it.
-	 * 
-	 * @param args
-	 * @param i
-	 * @throws Exception
-	 */
 	@Description("View a resource from a JAR file. Manifest will be pretty printed and class files are shown disassembled.")
 	@Arguments(arg = {
 			"<jar-file>", "<resource>", "[...]"
@@ -1602,6 +1580,11 @@ public class bnd extends Processor {
 		String charset();
 	}
 
+	/**
+	 * View files from JARs We parse the commandline and print each file on it.
+	 * 
+	 * @throws Exception
+	 */
 	@Description("View a resource from a JAR file.")
 	public void _view(viewOptions options) throws Exception {
 		String charset = "UTF-8";
@@ -1645,13 +1628,6 @@ public class bnd extends Processor {
 		}
 	}
 
-	/**
-	 * Wrap a jar to a bundle.
-	 * 
-	 * @param args
-	 * @param i
-	 * @throws Exception
-	 */
 	@Description("Wrap a jar into a bundle. This is a poor man's facility to "
 			+ "quickly turn a non-OSGi JAR into an OSGi bundle. "
 			+ "It is usually better to write a bnd file and use the bnd <file>.bnd "
@@ -1679,6 +1655,11 @@ public class bnd extends Processor {
 		Version version();
 	}
 
+	/**
+	 * Wrap a jar to a bundle.
+	 * 
+	 * @throws Exception
+	 */
 	@Description("Wrap a jar")
 	public void _wrap(wrapOptions options) throws Exception {
 		List<File> classpath = Create.list();
@@ -1773,13 +1754,6 @@ public class bnd extends Processor {
 		return null;
 	}
 
-	/**
-	 * Printout all the variables in scope.
-	 * 
-	 * @param args
-	 * @param i
-	 * @throws Exception
-	 */
 	@Description("Show a lot of info about the project you're in")
 	interface debugOptions extends Options {
 		@Description("Path to a project, default is current directory")
@@ -1789,6 +1763,11 @@ public class bnd extends Processor {
 		boolean flattened();
 	}
 
+	/**
+	 * Printout all the variables in scope.
+	 * 
+	 * @throws Exception
+	 */
 	@SuppressWarnings("unchecked")
 	@Description("Show a lot of info about the project you're in")
 	public void _debug(debugOptions options) throws Exception {
@@ -2309,14 +2288,6 @@ public class bnd extends Processor {
 		opts._command().execute(pcmd, args.remove(0), args);
 	}
 
-	/**
-	 * Run the tests from a prepared bnd file.
-	 * 
-	 * @param args
-	 * @param i
-	 * @throws Exception
-	 */
-
 	@Description("Run OSGi tests and create report")
 	interface runtestsOptions extends Options {
 		@Description("Report directory")
@@ -2332,6 +2303,11 @@ public class bnd extends Processor {
 		String workspace();
 	}
 
+	/**
+	 * Run the tests from a prepared bnd file.
+	 * 
+	 * @throws Exception
+	 */
 	@Description("Run OSGi tests and create report")
 	public void _runtests(runtestsOptions opts) throws Exception {
 		int errors = 0;
@@ -2580,18 +2556,17 @@ public class bnd extends Processor {
 		}
 	}
 
-	/**
-	 * Merge a bundle with its source.
-	 * 
-	 * @throws Exception
-	 */
-
 	@Description("Verify jars")
 	@Arguments(arg = {
 			"<jar path>", "[...]"
 	})
 	interface verifyOptions extends Options {}
 
+	/**
+	 * Verify jars.
+	 * 
+	 * @throws Exception
+	 */
 	@Description("Verify jars")
 	public void _verify(verifyOptions opts) throws Exception {
 		for (String path : opts._arguments()) {
@@ -2612,12 +2587,6 @@ public class bnd extends Processor {
 		}
 	}
 
-	/**
-	 * Merge a bundle with its source.
-	 * 
-	 * @throws Exception
-	 */
-
 	@Description("Merge a binary jar with its sources. It is possible to specify  source path")
 	//
 	@Arguments(arg = {
@@ -2629,6 +2598,11 @@ public class bnd extends Processor {
 		String output();
 	}
 
+	/**
+	 * Merge a bundle with its source.
+	 * 
+	 * @throws Exception
+	 */
 	@Description("Merge a binary jar with its sources. It is possible to specify  source path")
 	public void _source(sourceOptions opts) throws Exception {
 		List<String> arguments = opts._arguments();
@@ -2671,10 +2645,8 @@ public class bnd extends Processor {
 	/**
 	 * Diff two jar files
 	 * 
-	 * @return
 	 * @throws Exception
 	 */
-
 	@Description("Diff jars")
 	public void _diff(diffOptions opts) throws Exception {
 		DiffCommand diff = new DiffCommand(this);
@@ -2684,7 +2656,6 @@ public class bnd extends Processor {
 	/**
 	 * Baseline
 	 * 
-	 * @return
 	 * @throws Exception
 	 */
 
@@ -2697,7 +2668,6 @@ public class bnd extends Processor {
 	/**
 	 * Create a schema of package deltas and versions
 	 * 
-	 * @return
 	 * @throws Exception
 	 */
 
@@ -2922,7 +2892,6 @@ public class bnd extends Processor {
 	 * Central routine to get a JAR with error checking
 	 * 
 	 * @param s
-	 * @return
 	 */
 	Jar getJar(String s) {
 
@@ -2949,12 +2918,6 @@ public class bnd extends Processor {
 		return null;
 	}
 
-	/**
-	 * Show the version of this bnd
-	 * 
-	 * @throws IOException
-	 */
-
 	@Description("Show version information about bnd")
 	@Arguments(arg = {})
 	public interface versionOptions extends Options {
@@ -2962,6 +2925,11 @@ public class bnd extends Processor {
 		boolean xtra();
 	}
 
+	/**
+	 * Show the version of this bnd
+	 * 
+	 * @throws IOException
+	 */
 	@Description("Show version information about bnd")
 	public void _version(versionOptions o) throws IOException {
 		if (!o.xtra()) {
@@ -3283,7 +3251,6 @@ public class bnd extends Processor {
 	 * 
 	 * @param hex
 	 * @param data
-	 * @return
 	 * @throws Exception
 	 */
 
@@ -3302,12 +3269,6 @@ public class bnd extends Processor {
 		SHA1, MD5, TIMELESS
 	};
 
-	/**
-	 * hash a file
-	 * 
-	 * @throws Exception
-	 * @throws NoSuchAlgorithmException
-	 */
 	@Description("Digest a number of files")
 	@Arguments(arg = "file...")
 	interface hashOptions extends Options {
@@ -3329,6 +3290,12 @@ public class bnd extends Processor {
 
 	}
 
+	/**
+	 * hash a file
+	 * 
+	 * @throws Exception
+	 * @throws NoSuchAlgorithmException
+	 */
 	@Description("Digests a number of files")
 	public void _digest(hashOptions o) throws NoSuchAlgorithmException, Exception {
 		long start = System.currentTimeMillis();
@@ -3665,18 +3632,17 @@ public class bnd extends Processor {
 		}
 	}
 
-	/**
-	 * Show the class versions used in a JAR
-	 * 
-	 * @throws Exception
-	 */
-
 	@Arguments(arg = "<jar-file>...")
 	@Description("Show the Execution Environments of a JAR")
 	interface EEOptions extends Options {
 
 	}
 
+	/**
+	 * Show the class versions used in a JAR
+	 * 
+	 * @throws Exception
+	 */
 	@Description("Show the Execution Environments of a JAR")
 	public void _ees(EEOptions options) throws Exception {
 		for (String path : options._arguments()) {
@@ -3697,17 +3663,16 @@ public class bnd extends Processor {
 		}
 	}
 
-	/**
-	 * Lets see if we can build in parallel
-	 * 
-	 * @throws Exception
-	 */
-
 	@Description("experimental - parallel build")
 	interface ParallelBuildOptions extends buildoptions {
 
 	}
 
+	/**
+	 * Lets see if we can build in parallel
+	 * 
+	 * @throws Exception
+	 */
 	public void __par(final ParallelBuildOptions options) throws Exception {
 		ExecutorService pool = Executors.newCachedThreadPool();
 		final AtomicBoolean quit = new AtomicBoolean();

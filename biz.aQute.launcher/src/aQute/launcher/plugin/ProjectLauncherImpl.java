@@ -139,7 +139,6 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	}
 
 	/**
-	 * @return
 	 * @throws Exception
 	 * @throws FileNotFoundException
 	 * @throws IOException

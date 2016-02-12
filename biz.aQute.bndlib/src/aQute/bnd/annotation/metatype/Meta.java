@@ -148,7 +148,6 @@ public interface Meta {
 		 * Indicates that this attribute is required. By default attributes are
 		 * required.
 		 * 
-		 * @return
 		 */
 		boolean required() default true;
 

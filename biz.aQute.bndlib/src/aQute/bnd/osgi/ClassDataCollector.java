@@ -55,7 +55,7 @@ public class ClassDataCollector {
 	 *            null.
 	 * @param outerClass The name of the outer class (with slashes) Can be null.
 	 * @param innerName The name inside the outer class, can be null.
-	 * @param modifiers The access flags
+	 * @param innerClassAccessFlags The access flags
 	 * @throws Exception
 	 */
 	public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName, int innerClassAccessFlags)

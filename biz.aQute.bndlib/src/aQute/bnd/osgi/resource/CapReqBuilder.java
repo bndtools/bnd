@@ -375,8 +375,6 @@ public class CapReqBuilder {
 	 * solidus ('\' \u005C) character. Spaces are significant in value. Space
 	 * characters are defined by Character.isWhiteSpace().
 	 * 
-	 * @param value
-	 * @return
 	 */
 
 	static Pattern ESCAPE_FILTER_VALUE_P = Pattern.compile("[\\\\()*]");

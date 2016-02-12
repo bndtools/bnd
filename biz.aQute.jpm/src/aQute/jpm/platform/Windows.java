@@ -165,8 +165,7 @@ public class Windows extends Platform {
 
 	/**
 	 * Where we store our miscellaneous stuff.
-	 * 
-	 * @return
+	 *
 	 */
 	private File getMisc() {
 		if (misc == null) {
@@ -179,7 +178,6 @@ public class Windows extends Platform {
 	 * Return the File to the exe file.
 	 * 
 	 * @param data
-	 * @return
 	 */
 	protected String getExecutable(CommandData data) {
 		return new File(jpm.getBinDir(), data.name + ".exe").getAbsolutePath();
@@ -243,10 +241,7 @@ public class Windows extends Platform {
 	/**
 	 * Provide as much detail about the jpm environment as possible.
 	 * 
-	 * @throws IOException
-	 * @throws InvocationTargetException
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
+	 * @throws Exception
 	 */
 
 	public void report(Formatter f) throws Exception {}
@@ -254,10 +249,7 @@ public class Windows extends Platform {
 	/**
 	 * Initialize the directories for windows.
 	 * 
-	 * @throws IOException
-	 * @throws InvocationTargetException
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
+	 * @throws Exception
 	 */
 
 	public void init() throws Exception {

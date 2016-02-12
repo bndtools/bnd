@@ -29,15 +29,13 @@ public interface Reporter extends Report {
 		 * Set the context in the header.
 		 * 
 		 * @param context
-		 * @return
 		 */
 		SetLocation context(String context);
 
 		/**
 		 * Set the method where the error is reported.
 		 * 
-		 * @param context
-		 * @return
+		 * @param methodName
 		 */
 		SetLocation method(String methodName);
 
@@ -105,7 +103,6 @@ public interface Reporter extends Report {
 	 *            starting and >=1 is done.
 	 * @param format The format of the error
 	 * @param args The arguments of the error
-	 * @return a SetLocation to set the location
 	 */
 	void progress(float progress, String format, Object... args);
 
@@ -113,7 +110,7 @@ public interface Reporter extends Report {
 	 * Dedicated message for an exception.
 	 * 
 	 * @param t The exception
-	 * @param s The format of the message
+	 * @param format The format of the message
 	 * @param args The arguments
 	 */
 	public SetLocation exception(Throwable t, String format, Object... args);

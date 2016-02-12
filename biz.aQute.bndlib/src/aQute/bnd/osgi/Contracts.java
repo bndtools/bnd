@@ -130,7 +130,6 @@ class Contracts {
 	 * a package we remember this so we can generate a single error.
 	 * 
 	 * @param packageRef
-	 * @return
 	 */
 	boolean isContracted(PackageRef packageRef) {
 		List<Contract> list = contracted.get(packageRef);

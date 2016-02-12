@@ -88,7 +88,6 @@ public class MavenTest extends TestCase {
 	}
 
 	/**
-	 * @return
 	 * @throws Exception
 	 */
 	protected static Project getProject(String name) throws Exception {

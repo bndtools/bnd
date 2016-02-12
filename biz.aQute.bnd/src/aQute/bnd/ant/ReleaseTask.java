@@ -26,7 +26,7 @@ import aQute.bnd.build.Workspace;
  * </pre>
  * 
  * @author Neil Bartlett
- * @see {@link BndTask} for setup instructions.
+ * @see BndTask for setup instructions.
  */
 public class ReleaseTask extends BaseTask {
 

@@ -282,7 +282,6 @@ public class Main extends ReporterAdapter {
 	 * Initialize the repository and other global vars.
 	 * 
 	 * @param opts the options
-	 * @throws InterruptedException
 	 * @throws IOException
 	 */
 	@Description("Just Another Package Manager for Java (\"jpm help jpm\" to see a list of global options)")
@@ -434,7 +433,6 @@ public class Main extends ReporterAdapter {
 		// /**
 		// * Specify a version range for the artifact.
 		// *
-		// * @return
 		// */
 		// Version version(); // pl: not used
 
@@ -805,7 +803,6 @@ public class Main extends ReporterAdapter {
 	/**
 	 * Setup jpm to run on this system.
 	 * 
-	 * @throws Exception
 	 */
 	@Description("Install jpm on the current system")
 	interface InitOptions extends Options {}
@@ -946,12 +943,6 @@ public class Main extends ReporterAdapter {
 
 	}
 
-	/**
-	 * Start a service.
-	 * 
-	 * @param options
-	 * @throws Exception
-	 */
 	@Arguments(arg = {
 			"service"
 	})
@@ -960,6 +951,12 @@ public class Main extends ReporterAdapter {
 		boolean clean();
 	}
 
+	/**
+	 * Start a service.
+	 * 
+	 * @param options
+	 * @throws Exception
+	 */
 	@Description("Start a service")
 	public void _start(startOptions options) throws Exception {
 		if (!jpm.hasAccess()) {
@@ -989,16 +986,16 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
+	@Arguments(arg = "service")
+	@Description("Restart a service")
+	public interface RestartOptions extends Options {}
+
 	/**
 	 * Restart a service.
 	 * 
 	 * @param options
 	 * @throws Exception
 	 */
-	@Arguments(arg = "service")
-	@Description("Restart a service")
-	public interface RestartOptions extends Options {}
-
 	@Description("Restart a service")
 	public void _restart(RestartOptions options) throws Exception {
 		for (String s : options._arguments()) {
@@ -1021,12 +1018,6 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
-	/**
-	 * Trace a service.
-	 * 
-	 * @param options
-	 * @throws Exception
-	 */
 	@Arguments(arg = {
 			"service", "[on|off]"
 	})
@@ -1034,6 +1025,12 @@ public class Main extends ReporterAdapter {
 		boolean continuous();
 	}
 
+	/**
+	 * Trace a service.
+	 * 
+	 * @param options
+	 * @throws Exception
+	 */
 	@Description("Trace a service")
 	public void _trace(traceOptions options) throws Exception {
 		List<String> args = options._arguments();
@@ -1058,15 +1055,15 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
+	@Description("Stop a service")
+	public interface StopOptions extends Options {}
+
 	/**
 	 * Stop a service.
 	 * 
 	 * @param options
 	 * @throws Exception
 	 */
-	@Description("Stop a service")
-	public interface StopOptions extends Options {}
-
 	@Description("Stop a service")
 	public void _stop(StopOptions options) throws Exception {
 		for (String s : options._arguments()) {
@@ -1088,12 +1085,6 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
-	/**
-	 * Status a service.
-	 * 
-	 * @param options
-	 * @throws Exception
-	 */
 	@Description("Status of a service")
 	@Arguments(arg = {
 			"service", "[service]", "..."
@@ -1103,6 +1094,12 @@ public class Main extends ReporterAdapter {
 		boolean continuous();
 	}
 
+	/**
+	 * Status a service.
+	 * 
+	 * @param options
+	 * @throws InterruptedException
+	 */
 	@Description("Status of a service/services")
 	public void _status(statusOptions options) throws InterruptedException {
 		while (true) {
@@ -1129,18 +1126,17 @@ public class Main extends ReporterAdapter {
 		}
 	}
 
-	/**
-	 * Show the current version
-	 * 
-	 * @throws IOException
-	 */
-
 	@Arguments(arg = {})
 	@Description("Show the current version. The qualifier represents the build date.")
 	interface VersionOptions extends Options {
 
 	}
 
+	/**
+	 * Show the current version
+	 * 
+	 * @throws IOException
+	 */
 	@Description("Show the current version of jpm")
 	public void _version(VersionOptions options) throws IOException {
 		Enumeration<URL> urls = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
@@ -1175,10 +1171,6 @@ public class Main extends ReporterAdapter {
 	// cline.execute(library, _.remove(0), _);
 	//
 	// }
-
-	/**
-	 * @throws Exception
-	 */
 
 	interface KeysOptions extends Options {
 		boolean secret();
@@ -1533,8 +1525,7 @@ public class Main extends ReporterAdapter {
 
 		/**
 		 * Number of search items to skip
-		 * 
-		 * @return
+		 *
 		 */
 		@Description("Number of programs to skip")
 		int skip();

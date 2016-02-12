@@ -163,7 +163,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * exist.
 	 * </p>
 	 * 
-	 * @param rootFile the root of the repo (directory exists)
 	 */
 	public static final String				CMD_INIT			= "cmd.init";
 
@@ -171,7 +170,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * Property for commands. Command is run before the repo is first used.
 	 * </p>
 	 * 
-	 * @param $0 rootFile the root of the repo (directory exists)
 	 */
 	public static final String				CMD_OPEN			= "cmd.open";
 
@@ -179,9 +177,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * Property for commands. The command runs after a put operation.
 	 * </p>
 	 * 
-	 * @param $0 the root of the repo (directory exists)
-	 * @param $1 the file that was put
-	 * @param $2 the hex checksum of the file
 	 */
 	public static final String				CMD_AFTER_PUT		= "cmd.after.put";
 
@@ -189,7 +184,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * Property for commands. The command runs when the repository is refreshed.
 	 * </p>
 	 * 
-	 * @param $ {0} the root of the repo (directory exists)
 	 */
 	public static final String				CMD_REFRESH			= "cmd.refresh";
 
@@ -197,8 +191,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * Property for commands. The command runs after the file is put.
 	 * </p>
 	 * 
-	 * @param $0 the root of the repo (directory exists)
-	 * @param $1 the path to a temporary file
 	 */
 	public static final String				CMD_BEFORE_PUT		= "cmd.before.put";
 
@@ -207,8 +199,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * changes were made.
 	 * </p>
 	 * 
-	 * @param $0 the root of the repo (directory exists)
-	 * @param $1 the temporary file that was used (optional)
 	 */
 	public static final String				CMD_ABORT_PUT		= "cmd.abort.put";
 
@@ -216,7 +206,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * Property for commands. The command runs after the file is put.
 	 * </p>
 	 * 
-	 * @param $0 the root of the repo (directory exists)
 	 */
 	public static final String				CMD_CLOSE			= "cmd.close";
 
@@ -224,18 +213,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * Property for commands. Will be run after an action has been executed.
 	 * </p>
 	 * 
-	 * @param $0 the root of the repo (directory exists)
-	 * @param $1 the path to the file that the action was executed on
-	 * @param $2 the action executed
 	 */
 	public static final String				CMD_AFTER_ACTION	= "cmd.after.action";
 
 	/**
 	 * Called before a before get.
 	 * 
-	 * @param $0 the root of the repo (directory exists)
-	 * @param $1 the bsn
-	 * @param $2 the version
 	 */
 	public static final String				CMD_BEFORE_GET		= "cmd.before.get";
 

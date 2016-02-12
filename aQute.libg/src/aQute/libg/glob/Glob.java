@@ -133,7 +133,7 @@ public class Glob {
 	 * 
 	 * @param root the directory to get the files from
 	 * @param recursive to traverse the dirs recursive
-	 * @return
+	 * @return file list
 	 */
 	public List<File> getFiles(File root, boolean recursive, boolean usePath) {
 		List<File> result = new ArrayList<File>();
