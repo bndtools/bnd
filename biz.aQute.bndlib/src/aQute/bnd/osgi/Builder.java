@@ -108,6 +108,7 @@ public class Builder extends Analyzer {
 		if (mf != null) {
 			File mff = getFile(mf);
 			if (mff.isFile()) {
+				updateModified(mff.lastModified(), "Manifest " + mff);
 				try {
 					InputStream in = new FileInputStream(mff);
 					manifest = new Manifest(in);
