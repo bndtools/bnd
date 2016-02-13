@@ -23,12 +23,12 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 					/=resources
 
 -buildpath:\
-	osgi.core;version=${osgi.core.version},\
-	osgi.cmpn;version=${osgi.cmpn.version},\
 	${bndlib},\
 	bndtools.utils;version=project;packages=*,\
 	bndtools.api;version=latest, \
 	bndtools.core;version=latest, \
+	osgi.core;version=${osgi.core.version},\
+	osgi.cmpn;version=${osgi.cmpn.version},\
 	org.eclipse.core.runtime,\
 	org.eclipse.core.contenttype,\
 	org.eclipse.jface,\

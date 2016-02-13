@@ -2,10 +2,13 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath:  \
-	osgi.core;version=${osgi.core.version},\
-	osgi.cmpn;version=${osgi.cmpn.version},\
 	${bndlib};packages=*,\
 	${aQute-repository};packages=*,\
+	bndtools.api;version=latest,\
+	bndtools.utils;version=project;packages=*,\
+	bndtools.core;version=snapshot, \
+	osgi.core;version=${osgi.core.version},\
+	osgi.cmpn;version=${osgi.cmpn.version},\
 	javax.xml,\
 	org.eclipse.osgi,\
 	org.eclipse.equinox.common,\
@@ -25,10 +28,7 @@
 	org.eclipse.jdt.launching,\
 	org.eclipse.jdt.ui,\
 	org.eclipse.swt.cocoa.macosx.x86_64;packages=*,\
-	org.eclipse.swt,\
-	bndtools.api;version=latest,\
-	bndtools.utils;version=project;packages=*,\
-	bndtools.core;version=snapshot
+	org.eclipse.swt
 
 # Headers
 Bundle-SymbolicName: bndtools.builder; singleton:=true
