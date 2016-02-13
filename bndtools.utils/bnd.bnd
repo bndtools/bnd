@@ -2,9 +2,10 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
-    osgi.core;version=${osgi.core.version},\
-    osgi.cmpn;version=${osgi.cmpn.version},\
     ${bndlib}, \
+    bndtools.api; version=latest, \
+    osgi.core;version=${osgi.core.version}, \
+    osgi.cmpn;version=${osgi.cmpn.version}, \
     org.eclipse.osgi, \
     org.eclipse.equinox.common, \
     org.eclipse.equinox.registry, \
@@ -18,8 +19,7 @@
     org.eclipse.ui.ide, \
     org.eclipse.ui.workbench, \
     org.eclipse.jdt.core, \
-    org.eclipse.text, \
-    bndtools.api; version=latest
+    org.eclipse.text
     
 -testpath: \
     ${junit}

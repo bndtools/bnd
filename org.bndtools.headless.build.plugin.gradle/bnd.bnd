@@ -2,13 +2,13 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
-	osgi.core;version=${osgi.core.version},\
+	${bndlib},\
 	bndtools.api;version=latest,\
 	org.bndtools.headless.build.manager;version=latest,\
 	org.bndtools.versioncontrol.ignores.manager;version=latest,\
 	bndtools.utils;version=project;packages=*,\
 	biz.aQute.bnd.annotation,\
-	${bndlib},\
+	osgi.core;version=${osgi.core.version},\
 	${junit}
 -includeresource: \
 	templates=resources/templates/unprocessed, \

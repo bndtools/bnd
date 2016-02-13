@@ -86,11 +86,11 @@ eclipse.deps: \
 	org.eclipse.core.contenttype
 
 -buildpath: \
-	osgi.core;version=${osgi.core.version},\
-	osgi.cmpn;version=${osgi.cmpn.version},\
 	${bndlib},\
 	${aQute-repository},\
 	${aQute-resolve},\
+	osgi.core;version=${osgi.core.version},\
+	osgi.cmpn;version=${osgi.cmpn.version},\
 	${eclipse.deps},\
 	javax.xml,\
 	javax.xml.stream,\

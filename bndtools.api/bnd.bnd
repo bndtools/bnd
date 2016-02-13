@@ -2,8 +2,8 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
-	osgi.core;version=${osgi.core.version}, \
 	${bndlib}, \
+	osgi.core;version=${osgi.core.version}, \
 	org.eclipse.equinox.common, \
 	org.eclipse.core.runtime
 

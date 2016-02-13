@@ -2,11 +2,11 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath:\
+	${bndlib},\
+	${aQute-repository},\
 	osgi.core; version=${osgi.core.version},\
 	osgi.cmpn; version=${osgi.cmpn.version},\
 	org.eclipse.equinox.common,\
-	${bndlib},\
-	${aQute-repository},\
 	ST4-4.0.8-complete.jar; version=file
 -testpath: \
 	${junit}
