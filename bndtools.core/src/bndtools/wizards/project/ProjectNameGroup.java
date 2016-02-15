@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import bndtools.Plugin;
+import bndtools.utils.JavaLangUtils;
 
 public class ProjectNameGroup {
 
@@ -139,6 +140,9 @@ public class ProjectNameGroup {
                 if (!Character.isJavaIdentifierPart(ch))
                     return "Illegal character in package name part: " + ch;
             }
+
+            if (JavaLangUtils.isKeyword(part) || JavaLangUtils.isReserved(part))
+                return "Invalid package name. '" + part + "' is not a valid Java identifier";
         }
 
         // Orl Korrect
