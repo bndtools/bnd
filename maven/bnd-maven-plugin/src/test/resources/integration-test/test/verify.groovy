@@ -22,17 +22,17 @@ JarFile wrapper_jar = new JarFile(wrapper_bundle)
 Attributes wrapper_manifest = wrapper_jar.getManifest().getMainAttributes()
 
 // Basic manifest check
-assert 'test-api-bundle' == api_manifest.getValue('Bundle-SymbolicName')
-assert 'test-impl-bundle' == impl_manifest.getValue('Bundle-SymbolicName')
-assert 'test-wrapper-bundle' == wrapper_manifest.getValue('Bundle-SymbolicName')
-assert '0.0.1' == api_manifest.getValue('Bundle-Version')
-assert '0.0.1' == impl_manifest.getValue('Bundle-Version')
-assert '0.0.1' == wrapper_manifest.getValue('Bundle-Version')
+assert api_manifest.getValue('Bundle-SymbolicName') == 'test-api-bundle'
+assert impl_manifest.getValue('Bundle-SymbolicName') == 'test-impl-bundle'
+assert wrapper_manifest.getValue('Bundle-SymbolicName') == 'test-wrapper-bundle'
+assert api_manifest.getValue('Bundle-Version') == '0.0.1'
+assert impl_manifest.getValue('Bundle-Version') == '0.0.1'
+assert wrapper_manifest.getValue('Bundle-Version') == '0.0.1'
 
 // Check inheritance of properties in bnd.bnd from the parent project
-assert 'it worked' == api_manifest.getValue('X-ParentProjectProperty')
-assert 'it worked' == impl_manifest.getValue('X-ParentProjectProperty')
-assert 'overridden' == wrapper_manifest.getValue('X-ParentProjectProperty')
+assert api_manifest.getValue('X-ParentProjectProperty') == 'it worked'
+assert impl_manifest.getValue('X-ParentProjectProperty') == 'it worked'
+assert wrapper_manifest.getValue('X-ParentProjectProperty') == 'overridden'
 
 // Check -include of bnd files
 assert api_manifest.getValue('X-IncludedParentProjectProperty') == 'Included via -include in parent bnd.bnd file'
@@ -41,14 +41,14 @@ assert wrapper_manifest.getValue('X-IncludedParentProjectProperty') == 'Included
 assert impl_manifest.getValue('X-IncludedProjectProperty') == 'Included via -include in project bnd.bnd file'
 
 // Check POM properties
-assert new File(basedir, 'test-impl-bundle/target/classes').absolutePath == impl_manifest.getValue('Project-Build-OutputDirectory')
-assert 'UTF-8' == impl_manifest.getValue('Project-Build-SourceEncoding')
-assert 'biz.aQute.bnd-test:test-impl-bundle' == impl_manifest.getValue('Project-GroupId-ArtifactId')
-assert '${project.nosuchproperty}' == impl_manifest.getValue('Project-NoSuchProperty')
-assert localRepositoryPath.absolutePath == impl_manifest.getValue('Settings-LocalRepository')
-assert 'false' == impl_manifest.getValue('Settings-InteractiveMode')
-assert 'value' == impl_manifest.getValue('SomeVar')
-assert 'parentValue' == impl_manifest.getValue('SomeParentVar')
+assert impl_manifest.getValue('Project-Build-OutputDirectory') == new File(basedir, 'test-impl-bundle/target/classes').absolutePath
+assert impl_manifest.getValue('Project-Build-SourceEncoding') == 'UTF-8'
+assert impl_manifest.getValue('Project-GroupId-ArtifactId') == 'biz.aQute.bnd-test:test-impl-bundle'
+assert impl_manifest.getValue('Project-NoSuchProperty') == '${project.nosuchproperty}'
+assert impl_manifest.getValue('Settings-LocalRepository') == localRepositoryPath.absolutePath
+assert impl_manifest.getValue('Settings-InteractiveMode') == 'false'
+assert impl_manifest.getValue('SomeVar') == 'value'
+assert impl_manifest.getValue('SomeParentVar') == 'parentValue'
 
 // Check bnd properties
 assert api_manifest.getValue('Project-Name') == 'test-api-bundle'
@@ -68,11 +68,11 @@ assert impl_manifest.getValue('Project-Sourcepath')
 assert !wrapper_manifest.getValue('Project-Sourcepath')
 
 // Check contents
-assert null != api_jar.getEntry('org/example/api/')
-assert null != api_jar.getEntry('org/example/types/')
-assert null != api_jar.getEntry('OSGI-OPT/src/')
-assert null != impl_jar.getEntry('org/example/impl/')
-assert null != impl_jar.getEntry('OSGI-INF/org.example.impl.ExampleComponent.xml')
-assert null != impl_jar.getEntry('OSGI-INF/metatype/org.example.impl.Config.xml')
-assert null != wrapper_jar.getEntry('org/example/api/')
-assert null != wrapper_jar.getEntry('org/example/types/')
+assert api_jar.getEntry('org/example/api/') != null
+assert api_jar.getEntry('org/example/types/') != null
+assert api_jar.getEntry('OSGI-OPT/src/') != null
+assert impl_jar.getEntry('org/example/impl/') != null
+assert impl_jar.getEntry('OSGI-INF/org.example.impl.ExampleComponent.xml') != null
+assert impl_jar.getEntry('OSGI-INF/metatype/org.example.impl.Config.xml') != null
+assert wrapper_jar.getEntry('org/example/api/') != null
+assert wrapper_jar.getEntry('org/example/types/') != null
