@@ -346,6 +346,22 @@ public class Syntax implements Constants {
 																							null)
 
 																				),
+																			new Syntax(CONDITIONAL_PACKAGE,
+																					"The " + CONDITIONAL_PACKAGE
+																							+ " works as private package but will only include the packages when they are imported. When this header is used, bnd will recursively add packages that match the patterns until there are no more additions.",
+																					CONDITIONAL_PACKAGE + ": com.*", "${packages}", null),
+																			new Syntax(CONDITIONALPACKAGE,
+																					"The " + CONDITIONALPACKAGE
+																							+ " works as private package but will only include the packages when they are imported. When this header is used, bnd will recursively add packages that match the patterns until there are no more additions.",
+																					CONDITIONALPACKAGE + ": com.*", "${packages}", null),
+																			new Syntax(PRIVATE_PACKAGE,
+																					"The " + PRIVATE_PACKAGE
+																							+ " header contains a declaration of packages to be included in the resulting bundle, the only difference is, is that these packages will not be exported.",
+																					PRIVATE_PACKAGE + ": com.*", "${packages}", null),
+																			new Syntax(PRIVATEPACKAGE,
+																					"The " + PRIVATEPACKAGE
+																							+ " header contains a declaration of packages to be included in the resulting bundle, the only difference is, is that these packages will not be exported.",
+																					PRIVATEPACKAGE + ": com.*", "${packages}", null),
 																			new Syntax(EXPORT_SERVICE, "Deprecated.",
 																					EXPORT_SERVICE
 																							+ ": org.osgi.service.log.LogService",
@@ -534,6 +550,10 @@ public class Syntax implements Constants {
 																			new Syntax(INCLUDERESOURCE,
 																					"Include resources from the file system. You can specify a directory, or file. All files are copied to the root, unless a destination directory is indicated.",
 																					INCLUDERESOURCE + ": lib=jar", null,
+																					null),
+																			new Syntax(INCLUDE_RESOURCE,
+																					"Include resources from the file system. You can specify a directory, or file. All files are copied to the root, unless a destination directory is indicated.",
+																					INCLUDE_RESOURCE + ": lib=jar", null,
 																					null),
 
 																			new Syntax(MAKE,
