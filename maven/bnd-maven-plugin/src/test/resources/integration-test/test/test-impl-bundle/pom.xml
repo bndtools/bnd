@@ -7,6 +7,7 @@
 		<version>0.0.1</version>
 	</parent>
 	<artifactId>test-impl-bundle</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
     <properties>
         <someVar>value</someVar>
     </properties>
@@ -25,7 +26,7 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>test-api-bundle</artifactId>
-			<version>${project.version}</version>
+			<version>0.0.1</version>
 		</dependency>
 	</dependencies>
 

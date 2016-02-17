@@ -8,3 +8,4 @@ Settings-LocalRepository: ${settings.localRepository}
 SomeVar: ${someVar}
 SomeParentVar: ${someParentVar}
 -include: other.bnd
+-snapshot: SNAPSHOT

@@ -59,7 +59,6 @@ import aQute.lib.strings.Strings;
 public class BndMavenPlugin extends AbstractMojo {
 
 	private static final String	PACKAGING_POM	= "pom";
-	private static final String	SNAPSHOT		= "SNAPSHOT";
 	private static final String	TSTAMP			= "${tstamp}";
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
@@ -147,8 +146,10 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			// Set Bundle-Version
 			Version version = MavenVersion.parseString(project.getVersion()).getOSGiVersion();
-			version = replaceSNAPSHOT(version);
 			builder.setProperty(Constants.BUNDLE_VERSION, version.toString());
+			if (builder.getProperty(Constants.SNAPSHOT) == null) {
+				builder.setProperty(Constants.SNAPSHOT, TSTAMP);
+			}
 
 			if (log.isDebugEnabled()) {
 				log.debug("builder properties: " + builder.getProperties());
@@ -236,21 +237,6 @@ public class BndMavenPlugin extends AbstractMojo {
 				jar.writeManifest(manifestOut);
 			}
 		}
-	}
-
-	private Version replaceSNAPSHOT(Version version) {
-		String qualifier = version.getQualifier();
-		if (qualifier != null) {
-			int i = qualifier.indexOf(SNAPSHOT);
-			if (i >= 0) {
-				qualifier = new StringBuilder().append(qualifier.substring(0, i))
-						.append(TSTAMP)
-						.append(qualifier.substring(i + SNAPSHOT.length()))
-						.toString();
-				version = new Version(version.getMajor(), version.getMinor(), version.getMicro(), qualifier);
-			}
-		}
-		return version;
 	}
 
 	private class BeanProperties extends Properties {
