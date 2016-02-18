@@ -82,8 +82,10 @@ public class BndMavenPlugin extends AbstractMojo {
 	@Component
 	private BuildContext		buildContext;
 
+	private Log					log;
+
 	public void execute() throws MojoExecutionException {
-		Log log = getLog();
+		log = getLog();
 
 		// Exit without generating anything if this is a pom-packaging project.
 		// Probably it's just a parent project.
@@ -280,7 +282,7 @@ public class BndMavenPlugin extends AbstractMojo {
 				}
 				value = getter.invoke(target);
 			} catch (Exception e) {
-				getLog().debug("Could not find getter method for field: " + fieldName, e);
+				log.debug("Could not find getter method for field: " + fieldName, e);
 			}
 			if ((value != null) && (i > 0)) {
 				value = getField(value, key.substring(i + 1));
