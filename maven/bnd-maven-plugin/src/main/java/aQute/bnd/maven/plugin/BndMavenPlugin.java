@@ -176,15 +176,17 @@ public class BndMavenPlugin extends AbstractMojo {
 			loadProjectProperties(builder, parentProject);
 		}
 
+		File pomFile = project.getFile();
+		if (pomFile == null) {
+			return; // repository based POM
+		}
+		builder.updateModified(pomFile.lastModified(), "POM: " + pomFile);
+
 		// Merge in current project properties
 		File baseDir = project.getBasedir();
 		File bndFile = new File(baseDir, Project.BNDFILE);
 		if (bndFile.isFile()) { // we use setProperties to handle -include
 			builder.setProperties(baseDir, builder.loadProperties(bndFile));
-		}
-		File pomFile = project.getFile(); // pom files can affect dependencies
-		if ((pomFile != null) && pomFile.isFile()) {
-			builder.updateModified(pomFile.lastModified(), "POM: " + pomFile);
 		}
 	}
 
