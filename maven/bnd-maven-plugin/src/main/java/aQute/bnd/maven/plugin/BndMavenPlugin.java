@@ -213,6 +213,9 @@ public class BndMavenPlugin extends AbstractMojo {
 
 	private void expandJar(Jar jar, File dir) throws Exception {
 		final long lastModified = jar.lastModified();
+		if (log.isDebugEnabled()) {
+			log.debug(String.format("Bundle lastModified: %tF %<tT.%<tL", lastModified));
+		}
 		dir = dir.getAbsoluteFile();
 		Files.createDirectories(dir.toPath());
 
@@ -228,6 +231,13 @@ public class BndMavenPlugin extends AbstractMojo {
 				}
 			}
 			if (!outFile.exists() || outFile.lastModified() < lastModified) {
+				if (log.isDebugEnabled()) {
+					if (outFile.exists())
+						log.debug(String.format("Updating lastModified: %tF %<tT.%<tL '%s'", outFile.lastModified(),
+								outFile));
+					else
+						log.debug(String.format("Creating '%s'", outFile));
+				}
 				Files.createDirectories(outFile.toPath().getParent());
 				try (OutputStream out = buildContext.newFileOutputStream(outFile)) {
 					IO.copy(resource.openInputStream(), out);
@@ -236,6 +246,13 @@ public class BndMavenPlugin extends AbstractMojo {
 		}
 
 		if (!manifestPath.exists() || manifestPath.lastModified() < lastModified) {
+			if (log.isDebugEnabled()) {
+				if (manifestPath.exists())
+					log.debug(String.format("Updating lastModified: %tF %<tT.%<tL '%s'", manifestPath.lastModified(),
+							manifestPath));
+				else
+					log.debug(String.format("Creating '%s'", manifestPath));
+			}
 			Files.createDirectories(manifestPath.toPath().getParent());
 			try (OutputStream manifestOut = buildContext.newFileOutputStream(manifestPath)) {
 				jar.writeManifest(manifestOut);
