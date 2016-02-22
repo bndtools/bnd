@@ -29,3 +29,5 @@ Conditional-Package: aQute.lib*, fi.*, org.bouncycastle.*
 	org.apache.commons.codec
 
 Export-Package: biz.aQute.http.testservers
+
+-releaserepo:
