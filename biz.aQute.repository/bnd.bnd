@@ -11,12 +11,12 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	lib/jetty-util-7.6.3.v20120416.jar;version=file
 
 -buildpath: \
-	osgi.core;version=@5,\
+	osgi.core;version=@6,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
 	org.osgi.impl.bundle.bindex;packages=org.osgi.*.bindex.*,\
 	org.osgi.impl.bundle.repoindex.lib;version=latest,\
-	osgi.cmpn;version=@5,\
+	osgi.cmpn;version=@6,\
 	lib/javax.xml.stream-1.0.1.jar;version=file,\
 	${jetty.libs},\
 	aQute.jpm.clnt;version=1.0;packages=*
@@ -52,7 +52,7 @@ Export-Package:\
 	org.osgi.service.indexer
 
 # NB: `org.osgi.*` API is included in Private-Package for running outside of OSGi.
-Private-Package:  \
+Private-Package: \
 	${bindex-pkgs},\
 	${repoindex-pkgs},\
 	org.osgi.service.log;-split-package:=first,\
@@ -62,7 +62,8 @@ Private-Package:  \
 	aQute.rest.urlclient,\
 	aQute.service.library,\
 	aQute.jsonrpc.domain,\
-	aQute.struct
+	aQute.struct,\
+	aQute.bnd.jpm.util
 
 Conditional-Package:\
 	aQute.lib.*;-split-package:=first,\

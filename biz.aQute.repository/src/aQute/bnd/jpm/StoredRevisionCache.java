@@ -2,42 +2,24 @@ package aQute.bnd.jpm;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.InetAddress;
+import java.io.InputStream;
 import java.net.URI;
-import java.net.URLConnection;
 import java.security.DigestInputStream;
-import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
+import aQute.bnd.http.HttpClient;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.lib.settings.Settings;
-import aQute.rest.urlclient.URLClient;
 import aQute.service.library.Library.Program;
 import aQute.service.library.Library.RevisionRef;
 
 public class StoredRevisionCache {
-	private static TrustManager[]	trustAllCerts;
-	private static HostnameVerifier	trustAnyHost;
-	private static SSLContext		sslContext;
-	private static SSLSocketFactory	sslSocketFactory;
 	private final File				root;
 	final File						tmpdir;
 	final File						repodir;
@@ -48,9 +30,12 @@ public class StoredRevisionCache {
 	private Map<String,Program>		programs	= new HashMap<String,Program>();
 	private static final JSONCodec	codec		= new JSONCodec();
 	File							refresh;
-	final URLClient					urlc;
+	private HttpClient				httpc		= new HttpClient();
 
-	public StoredRevisionCache(File root, Settings settings) throws Exception {
+	public StoredRevisionCache(File root, Settings settings, HttpClient client) throws Exception {
+		if (client != null)
+			this.httpc = client;
+
 		this.root = root;
 		this.settings = settings;
 		this.getRoot().mkdirs();
@@ -63,12 +48,6 @@ public class StoredRevisionCache {
 		this.refresh = new File(root, ".refreshed");
 		if (!this.refresh.isFile())
 			this.refresh.createNewFile();
-		urlc = new URLClient("");
-		if (settings != null)
-			urlc.credentials(settings.getEmail(), InetAddress.getLocalHost().toString(), settings.getPublicKey(),
-					settings.getPrivateKey());
-		else
-			System.out.println("no settings");
 	}
 
 	/*
@@ -100,7 +79,6 @@ public class StoredRevisionCache {
 		byte[]			md5;
 		byte[]			sha;
 		URI				uri;
-		URLConnection	connection;
 	}
 
 	/*
@@ -134,9 +112,9 @@ public class StoredRevisionCache {
 					// one since we seem to have lost.
 					d.tmp.delete();
 				} else {
-					long modified = d.connection.getLastModified();
-					if (modified > 0)
-						file.setLastModified(modified);
+					// long modified = d.connection.getLastModified();
+					// if (modified > 0)
+					// file.setLastModified(modified);
 				}
 				return;
 			} catch (Exception e) {
@@ -156,11 +134,11 @@ public class StoredRevisionCache {
 	Download doDownload(URI url) throws Exception {
 		Download d = new Download();
 		d.tmp = IO.createTempFile(tmpdir, "tmp", ".tmp");
-		d.connection = getConnection(url);
+		InputStream connect = httpc.connect(url.toURL());
 
 		MessageDigest sha = MessageDigest.getInstance("SHA1");
 		MessageDigest md5 = MessageDigest.getInstance("MD5");
-		DigestInputStream shaIn = new DigestInputStream(d.connection.getInputStream(), sha);
+		DigestInputStream shaIn = new DigestInputStream(connect, sha);
 		DigestInputStream md5In = new DigestInputStream(shaIn, md5);
 		IO.copy(md5In, d.tmp);
 
@@ -176,84 +154,6 @@ public class StoredRevisionCache {
 		long modified = file.lastModified();
 		if (modified > 0)
 			path.setLastModified(modified);
-	}
-
-	private URLConnection getConnection(URI url) throws Exception {
-		int count = 4;
-		while (count-- > 0) {
-
-			if (url.getScheme().equalsIgnoreCase("file")) {
-				String s = url.toString();
-
-				File f = IO.getFile(s.substring("FILE:".length()));
-				url = f.toURI();
-			}
-
-			URLConnection urlc = url.toURL().openConnection();
-
-			//
-			// For testing, fixup file paths to make them relative
-			//
-
-			if (!(urlc instanceof HttpURLConnection)) {
-				return urlc;
-			}
-
-			urlc.setConnectTimeout(30000);
-			HttpURLConnection connection = (HttpURLConnection) urlc;
-			authenticate(connection);
-			if (connection.getResponseCode() / 100 == 2)
-				return connection;
-
-			if (connection.getResponseCode() == 301 || connection.getResponseCode() == 302) {
-				String u = connection.getHeaderField("Location");
-				if (u == null)
-					throw new IOException("Had a url redirect but no location was set");
-				url = new URI(u.trim());
-
-			} else {
-
-				throw new IOException("Could not open URL, [" + connection.getResponseCode() + "] "
-						+ connection.getResponseMessage() + " for '" + connection.getURL() + "'");
-			}
-
-		}
-		throw new IOException("Could not open URL, too many redirects ");
-	}
-
-	protected void authenticate(URLConnection connection) throws Exception {
-		if (connection instanceof HttpURLConnection) {
-			urlc.sign(connection);
-		}
-	}
-
-	static void disableTrust(HttpsURLConnection httpsConnection) throws GeneralSecurityException {
-		if (sslSocketFactory == null) {
-			trustAllCerts = new TrustManager[] {
-					new X509TrustManager() {
-						public X509Certificate[] getAcceptedIssuers() {
-							return null;
-						}
-
-						public void checkServerTrusted(X509Certificate[] certs, String authType)
-								throws CertificateException {}
-
-						public void checkClientTrusted(X509Certificate[] certs, String authType)
-								throws CertificateException {}
-					}
-			};
-
-			trustAnyHost = new HostnameVerifier() {
-				public boolean verify(String string, SSLSession session) {
-					return true;
-				}
-			};
-			sslContext = SSLContext.getInstance("TLS");
-			sslContext.init(null, trustAllCerts, new SecureRandom());
-			sslSocketFactory = sslContext.getSocketFactory();
-		}
-		httpsConnection.setSSLSocketFactory(sslSocketFactory);
-		httpsConnection.setHostnameVerifier(trustAnyHost);
 	}
 
 	public File getRoot() {

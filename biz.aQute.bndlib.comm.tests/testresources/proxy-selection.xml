@@ -1,0 +1,31 @@
+
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                          http://maven.apache.org/xsd/settings-1.0.0.xsd">
+	<localRepository />
+	<interactiveMode />
+	<usePluginRegistry />
+	<offline />
+	<pluginGroups />
+	<servers />
+	<mirrors />
+	<proxies>
+		<proxy>
+			<id>inactive-proxy</id>
+			<active>false</active>
+		</proxy>
+		<proxy>
+			<id>not-google-and-ibiblio</id>
+			<active>true</active>
+			<nonProxyHosts>*.google.com|ibiblio.org</nonProxyHosts>
+		</proxy>
+		<proxy>
+			<id>not-google</id>
+			<active>true</active>
+			<nonProxyHosts>*.google.com</nonProxyHosts>
+		</proxy>
+	</proxies>
+	<profiles />
+	<activeProfiles />
+</settings>

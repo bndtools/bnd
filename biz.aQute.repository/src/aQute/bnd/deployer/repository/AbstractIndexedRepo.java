@@ -8,7 +8,6 @@ import static aQute.bnd.deployer.repository.RepoResourceUtils.readIndex;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -333,7 +332,7 @@ public abstract class AbstractIndexedRepo
 		return requestAll(handles);
 	}
 
-	protected static File[] requestAll(ResourceHandle[] handles) throws IOException {
+	protected static File[] requestAll(ResourceHandle[] handles) throws Exception {
 		File[] result;
 		if (handles == null)
 			result = new File[0];

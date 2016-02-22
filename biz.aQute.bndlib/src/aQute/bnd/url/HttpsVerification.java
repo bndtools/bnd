@@ -2,6 +2,8 @@ package aQute.bnd.url;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
 import java.security.KeyManagementException;
@@ -22,7 +24,7 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import aQute.lib.io.IO;
+import aQute.service.reporter.Reporter;
 
 /**
  * TODO Needs testing Can be used to override default verification of HTTPS. The
@@ -33,10 +35,23 @@ import aQute.lib.io.IO;
 public class HttpsVerification extends DefaultURLConnectionHandler {
 	private SSLSocketFactory			factory;
 	private HostnameVerifier			verifier;
-	private final List<X509Certificate>	certificates	= new ArrayList<X509Certificate>();
+	private boolean						verify			= true;
+	private String						certificatesPath;
 
 	interface Config {
 		String trusted();
+	}
+
+	public HttpsVerification() {
+
+	}
+
+	// http://stackoverflow.com/questions/24555890/using-a-custom-truststore-in-java-as-well-as-the-default-one
+	public HttpsVerification(String certificates, boolean hostnameVerify,
+			Reporter reporter) {
+		certificatesPath = certificates;
+		this.verify = hostnameVerify;
+		this.setReporter(reporter);
 	}
 
 	/**
@@ -44,23 +59,18 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 	 * 
 	 * @throws NoSuchAlgorithmException
 	 * @throws KeyManagementException
+	 * @throws IOException
+	 * @throws CertificateException
+	 * @throws FileNotFoundException
 	 */
-	private synchronized void init() throws NoSuchAlgorithmException, KeyManagementException {
+	private synchronized void init() throws NoSuchAlgorithmException, KeyManagementException, FileNotFoundException,
+			CertificateException, IOException {
 		if (factory == null) {
+			List<X509Certificate> certificates = createCertificates(certificatesPath);
 			final X509Certificate trusted[] = certificates.toArray(new X509Certificate[certificates.size()]);
 
 			TrustManager[] trustAllCerts = new TrustManager[] {
-					new X509TrustManager() {
-						public X509Certificate[] getAcceptedIssuers() {
-							return trusted;
-						}
-
-						public void checkServerTrusted(X509Certificate[] certs, String authType)
-								throws CertificateException {}
-
-						public void checkClientTrusted(X509Certificate[] certs, String authType)
-								throws CertificateException {}
-					}
+					getTrustManager(trusted)
 			};
 			SSLContext context = SSLContext.getInstance("TLS");
 			context.init(null, trustAllCerts, new SecureRandom());
@@ -72,10 +82,30 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 			//
 			verifier = new HostnameVerifier() {
 				public boolean verify(String string, SSLSession session) {
-					return true;
+					return verify;
 				}
 			};
 		}
+	}
+
+	X509TrustManager getTrustManager(final X509Certificate[] trusted) {
+		X509TrustManager tm = new X509TrustManager() {
+			public X509Certificate[] getAcceptedIssuers() {
+				return trusted;
+			}
+
+			public void checkServerTrusted(X509Certificate[] certs, String authType)
+					throws CertificateException {
+				System.out.println("certs " + certs + " " + authType);
+			}
+
+			public void checkClientTrusted(X509Certificate[] certs, String authType)
+					throws CertificateException {
+				System.out.println("certs " + certs + " " + authType);
+			}
+		};
+		System.out.print(tm.getAcceptedIssuers());
+		return tm;
 	}
 
 	/**
@@ -84,11 +114,8 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 	public void handle(URLConnection connection) throws Exception {
 
 		if (connection instanceof HttpsURLConnection && matches(connection)) {
-			init();
-			if (certificates.isEmpty())
-				trace("Https verification for %s is DISABLED", connection.getURL());
-
 			HttpsURLConnection https = (HttpsURLConnection) connection;
+			init();
 			https.setSSLSocketFactory(factory);
 			https.setHostnameVerifier(verifier);
 		}
@@ -101,10 +128,15 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 	public void setProperties(Map<String,String> map) throws Exception {
 		super.setProperties(map);
 
-		String paths = map.get("trusted");
+		certificatesPath = map.get("trusted");
+	}
+
+	List<X509Certificate> createCertificates(String paths)
+			throws FileNotFoundException, CertificateException, IOException {
+		List<X509Certificate> certificates = new ArrayList<X509Certificate>();
 		if (paths != null) {
 			for (String path : paths.split("\\s*,\\s*")) {
-				File file = IO.getFile(path);
+				File file = new File(path); // This is a system specific path!
 				if (file.isFile()) {
 					InputStream inStream = new FileInputStream(file);
 					try {
@@ -117,5 +149,6 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 				}
 			}
 		}
+		return certificates;
 	}
 }

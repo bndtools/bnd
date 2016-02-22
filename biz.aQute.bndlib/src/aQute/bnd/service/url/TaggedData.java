@@ -1,6 +1,7 @@
 package aQute.bnd.service.url;
 
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 
 /**
  * Represents a data stream that has a tag associated with it; the primary
@@ -12,10 +13,16 @@ public class TaggedData {
 
 	private final String		tag;
 	private final InputStream	inputStream;
+	private final int			code;
 
-	public TaggedData(String tag, InputStream inputStream) {
+	public TaggedData(String tag, InputStream inputStream, int responseCode) {
 		this.tag = tag;
 		this.inputStream = inputStream;
+		this.code = responseCode;
+	}
+
+	public TaggedData(String tag, InputStream inputStream) {
+		this(tag, inputStream, HttpURLConnection.HTTP_OK);
 	}
 
 	/**
@@ -31,6 +38,10 @@ public class TaggedData {
 	 */
 	public InputStream getInputStream() {
 		return inputStream;
+	}
+
+	public int getResponseCode() {
+		return code;
 	}
 
 }

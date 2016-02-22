@@ -18,6 +18,7 @@ Export-Package: \
 	aQute.bnd.maven;-noimport:=true,\
 	aQute.bnd.build;-noimport:=true,\
 	aQute.bnd.osgi.eclipse;-noimport:=true,\
+	aQute.bnd.http;-noimport:=true,\
 	aQute.bnd.differ;-noimport:=true,\
 	aQute.bnd.service.*;-noimport:=true,\
 	aQute.bnd.help.*;-noimport:=true,\
@@ -37,9 +38,9 @@ Export-Package: \
 	aQute.bnd.util.dto;-noimport:=true,\
 	aQute.bnd.component.error;-noimport:=true,\
 	org.osgi.service.repository,\
-	org.osgi.resource, \
-    org.osgi.util.function, \
-    org.osgi.util.promise
+	org.osgi.resource,\
+	org.osgi.util.function,\
+	org.osgi.util.promise
 
 Conditional-Package:	        aQute.service.*, aQute.configurable
 -includeresource: 				${workspace}/LICENSE, img/=img/, {readme.md}
@@ -52,7 +53,6 @@ Conditional-Package:	        aQute.service.*, aQute.configurable
 	aQute.libg;version=project, \
 	org.osgi.util.function;version=1, \
 	org.osgi.util.promise;version=1
-	
 
 Import-Package: junit.framework;resolution:=optional,\
 	org.osgi.resource;resolution:=optional,\
@@ -64,3 +64,5 @@ Bundle-Developers: peter.kriens@aQute.biz, njbartlett@gmail.com
 Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huberts@pelagic.nl, bj@bjhargrave.com
 
 -baseline: *
+
+-fixupmessages: "Export aQute.bnd.http"

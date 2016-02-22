@@ -1,0 +1,6 @@
+-connection-settings: settings.xml
+
+-plugin.indexed = \
+	aQute.bnd.deployer.repository.FixedIndexedRepo; \
+		name='Test'; \
+		locations=${repo}

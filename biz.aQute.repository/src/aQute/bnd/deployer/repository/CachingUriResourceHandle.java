@@ -177,7 +177,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		return result;
 	}
 
-	public File request() throws IOException {
+	public File request() throws Exception {
 		if (localFile != null)
 			return localFile;
 		if (cachedFile == null)

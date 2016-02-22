@@ -36,10 +36,12 @@ import java.util.regex.Pattern;
 import javax.naming.TimeLimitExceededException;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
+import aQute.bnd.connection.settings.ConnectionSettings;
 import aQute.bnd.exporter.subsystem.SubsystemExporter;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.maven.support.Maven;
 import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Constants;
@@ -69,45 +71,44 @@ import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter;
 
 public class Workspace extends Processor {
-	public static final String					EXT								= "ext";
+	public static final String EXT = "ext";
 
-	static final int							BUFFER_SIZE						= IOConstants.PAGE_SIZE * 16;
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
 
-	public static final String					BUILDFILE						= "build.bnd";
-	public static final String					CNFDIR							= "cnf";
-	public static final String					BNDDIR							= "bnd";
-	public static final String					CACHEDIR						= "cache/" + About.CURRENT;
+	public static final String	BUILDFILE	= "build.bnd";
+	public static final String	CNFDIR		= "cnf";
+	public static final String	BNDDIR		= "bnd";
+	public static final String	CACHEDIR	= "cache/" + About.CURRENT;
 
-	public static final String					STANDALONE_REPO_CLASS			= "aQute.bnd.deployer.repository.FixedIndexedRepo";
+	public static final String STANDALONE_REPO_CLASS = "aQute.bnd.deployer.repository.FixedIndexedRepo";
 
-	private final Pattern						EMBEDDED_REPO_TESTING_PATTERN	= Pattern
+	private final Pattern EMBEDDED_REPO_TESTING_PATTERN = Pattern
 			.compile(".*biz\\.aQute\\.bnd\\.embedded-repo-(.*)\\.jar");
 
-	static Map<File,WeakReference<Workspace>>	cache							= newHashMap();
-	static Processor							defaults						= null;
-	final Map<String,Project>					models							= newHashMap();
-	final Map<String,Action>					commands						= newMap();
+	static Map<File,WeakReference<Workspace>>	cache			= newHashMap();
+	static Processor							defaults		= null;
+	final Map<String,Project>					models			= newHashMap();
+	final Map<String,Action>					commands		= newMap();
 	final File									buildDir;
-	final Maven									maven							= new Maven(Processor.getExecutor());
-	private boolean								offline							= true;
-	Settings									settings						= new Settings();
-	WorkspaceRepository							workspaceRepo					= new WorkspaceRepository(this);
-	static String								overallDriver					= "unset";
-	static Parameters							overallGestalt					= new Parameters();
+	final Maven									maven			= new Maven(Processor.getExecutor());
+	private boolean								offline			= true;
+	Settings									settings		= new Settings();
+	WorkspaceRepository							workspaceRepo	= new WorkspaceRepository(this);
+	static String								overallDriver	= "unset";
+	static Parameters							overallGestalt	= new Parameters();
 	/**
 	 * Signal a BndListener plugin. We ran an infinite bug loop :-(
 	 */
-	final ThreadLocal<Reporter>					signalBusy						= new ThreadLocal<Reporter>();
+	final ThreadLocal<Reporter>					signalBusy		= new ThreadLocal<Reporter>();
 	ResourceRepositoryImpl						resourceRepositoryImpl;
 
-	private Parameters							gestalt;
+	private Parameters gestalt;
 
-	private String								driver;
+	private String driver;
 
-	private final WorkspaceLayout				layout;
+	private final WorkspaceLayout layout;
 
-	final Set<Project>							trail							= Collections
-			.newSetFromMap(new ConcurrentHashMap<Project,Boolean>());
+	final Set<Project> trail = Collections.newSetFromMap(new ConcurrentHashMap<Project,Boolean>());
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -562,7 +563,19 @@ public class Workspace extends Processor {
 			//
 			// Exporters
 			//
+
 			list.add(new SubsystemExporter());
+
+			try {
+				try (ConnectionSettings cs = new ConnectionSettings(this);) {
+					cs.readSettings();
+				}
+
+				HttpClient client = new HttpClient(this);
+				list.add(client);
+			} catch( Exception e) {
+				exception(e, "Failed to load the communication settings");
+			}
 
 		} catch (RuntimeException e) {
 			throw e;

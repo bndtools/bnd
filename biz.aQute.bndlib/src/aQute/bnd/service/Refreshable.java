@@ -11,5 +11,5 @@ public interface Refreshable {
 	 */
 	boolean refresh() throws Exception;
 
-	File getRoot();
+	File getRoot() throws Exception;
 }

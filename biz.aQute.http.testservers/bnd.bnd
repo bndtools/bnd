@@ -1,0 +1,28 @@
+Bundle-Version: 1.0.0.${tstamp}
+Bundle-Description: \
+	The HttpTestServer Provides an HTTP(S) server that is very easy to extend by creating a subclass. \
+	Methods that start with '_' are treated as paths. That is, `get_foo()` maps to `get/foo`. Remaining \
+	path and parameters are mapped to the method. See Httpbin as an example. This example implements a lot \
+	of methods that are very useful to test HTTP communication.
+
+Private-Package: biz.aQute.http.testservers.www
+
+Conditional-Package: aQute.lib*, fi.*, org.bouncycastle.*
+
+-buildpath: \
+	biz.aQute.bndlib;version=latest;packages=*,\
+	org.osgi.util.promise,\
+	org.nanohttpd__nanohttpd;version=2.2,\
+	bcpkix;version=1.54,\
+	bcprov;version=1.54, \
+	org.littleshoot__littleproxy
+	
+-testpath: \
+	${junit}, \
+	slf4j.api, \
+	slf4j.simple, \
+	com.google.guava, \
+	org.apache.commons.lang3, \
+	org.apache.commons.codec
+
+Export-Package: biz.aQute.http.testservers

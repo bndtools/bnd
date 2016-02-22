@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.net.ssl.HttpsURLConnection;
 
 import aQute.lib.base64.Base64;
+import aQute.service.reporter.Reporter;
 
 /**
  * Provide Http Basic Authentication. This URL Connection Handler plugin will
@@ -37,10 +38,26 @@ public class BasicAuthentication extends DefaultURLConnectionHandler {
 	private String				user;
 	private String				authentication;
 
+	public BasicAuthentication() {
+
+	}
+
+	public BasicAuthentication(String user, String password, Reporter reporter) {
+		this.user = user;
+		this.password = password;
+		this.setReporter(reporter);
+		init(null);
+	}
+
 	public void setProperties(Map<String,String> map) throws Exception {
 		super.setProperties(map);
 		this.password = map.get(PASSWORD);
 		this.user = map.get(USER);
+
+		init(map);
+	}
+
+	void init(Map<String,String> map) {
 		if (this.password == null) {
 			error("No .password property set on this plugin %s", map);
 		}

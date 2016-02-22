@@ -1,0 +1,14 @@
+-buildpath: \
+	biz.aQute.bndlib;version=latest;packages=*,\
+	org.osgi.util.promise,\
+	biz.aQute.http.testservers;version=latest,\
+	jar/sockslib-1.0.0.jar;version=file,\
+	${junit},\
+	slf4j.api,\
+	slf4j.simple,\
+	org.littleshoot__littleproxy,\
+	io.netty__netty-all,\
+	org.apache.commons.lang3,\
+	org.apache.commons.codec,\
+	biz.aQute.repository;version=latest
+
