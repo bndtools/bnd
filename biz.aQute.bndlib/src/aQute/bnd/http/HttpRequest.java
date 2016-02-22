@@ -132,4 +132,11 @@ public class HttpRequest<T> {
 		});
 		return deferred.getPromise();
 	}
+
+	@Override
+	public String toString() {
+		return "HttpRequest [verb=" + verb + ", upload=" + upload + ", download=" + download + ", headers=" + headers
+				+ ", timeout=" + timeout + ", client=" + client + ", ifNoneMatch=" + ifNoneMatch + ", since=" + since
+				+ ", url=" + url + "]";
+	}
 }

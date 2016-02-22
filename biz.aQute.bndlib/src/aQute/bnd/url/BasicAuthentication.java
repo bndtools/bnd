@@ -1,6 +1,5 @@
 package aQute.bnd.url;
 
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.util.Map;
@@ -8,6 +7,7 @@ import java.util.Map;
 import javax.net.ssl.HttpsURLConnection;
 
 import aQute.lib.base64.Base64;
+import aQute.libg.cryptography.SHA1;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -37,6 +37,7 @@ public class BasicAuthentication extends DefaultURLConnectionHandler {
 	private String				password;
 	private String				user;
 	private String				authentication;
+	private String				sha;
 
 	public BasicAuthentication() {
 
@@ -68,7 +69,8 @@ public class BasicAuthentication extends DefaultURLConnectionHandler {
 		try {
 			String encoded = Base64.encodeBase64(authString.getBytes("UTF-8"));
 			this.authentication = PREFIX_BASIC_AUTH + encoded;
-		} catch (UnsupportedEncodingException e) {
+			sha = SHA1.digest(password.getBytes()).asHex();
+		} catch (Exception e) {
 			// cannot happen, UTF-8 is always present
 		}
 	}
@@ -81,6 +83,11 @@ public class BasicAuthentication extends DefaultURLConnectionHandler {
 
 			connection.setRequestProperty(HEADER_AUTHORIZATION, authentication);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "BasicAuthentication [password=" + sha + ", user=" + user + "]";
 	}
 
 }
