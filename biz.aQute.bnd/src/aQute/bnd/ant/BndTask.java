@@ -2,6 +2,7 @@ package aQute.bnd.ant;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -215,7 +216,9 @@ public class BndTask extends BaseTask {
 				// properties, if the inherit flag is specified
 				if (inherit) {
 					Properties projectProperties = new UTF8Properties();
-					projectProperties.putAll(getProject().getProperties());
+					@SuppressWarnings("unchecked")
+					Hashtable<Object,Object> antProps = getProject().getProperties();
+					projectProperties.putAll(antProps);
 					projectProperties.putAll(builder.getProperties());
 					builder.setProperties(projectProperties);
 				}
