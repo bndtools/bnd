@@ -1,4 +1,7 @@
 Bundle-Version: 1.0.0.${tstamp}
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 Bundle-Description: \
 	The HttpTestServer Provides an HTTP(S) server that is very easy to extend by creating a subclass. \
 	Methods that start with '_' are treated as paths. That is, `get_foo()` maps to `get/foo`. Remaining \
