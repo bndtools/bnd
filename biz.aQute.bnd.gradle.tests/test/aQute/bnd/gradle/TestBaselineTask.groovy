@@ -68,4 +68,28 @@ class TestBaselineTask extends Specification {
           result.getOutput() =~ Pattern.quote('Bundle-SymbolicName: biz.aQute.bnd')
           result.getOutput() =~ Pattern.quote('Bundle-Version: 2.4.1')
     }
+
+    def "Bnd No Baseline Test"() {
+        given:
+          String testProject = 'baselinetask3'
+          File testProjectDir = new File(testResources, testProject).canonicalFile
+          assert testProjectDir.isDirectory()
+          File testProjectReportsDir = new File(testProjectDir, 'build/reports').canonicalFile
+
+        when:
+          def result = GradleRunner.create()
+            .withProjectDir(testProjectDir)
+            .withArguments('--stacktrace', 'tasks', 'baseline')
+            .withPluginClasspath(pluginClasspath)
+            .forwardOutput()
+            .build()
+
+        then:
+          result.task(":tasks").outcome == SUCCESS
+          result.task(":baseline").outcome == SUCCESS
+
+          testProjectReportsDir.isDirectory()
+          File baseline = new File(testProjectReportsDir, 'baseline/baseline.txt')
+          baseline.isFile()
+    }
 }
