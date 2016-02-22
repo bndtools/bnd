@@ -1,0 +1,14 @@
+/*
+ *
+ */
+
+plugins {
+    id 'biz.aQute.bnd.builder'
+}
+
+repositories {
+    mavenCentral()
+}
+
+version = '1.0'
+
