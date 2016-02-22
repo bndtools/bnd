@@ -2,9 +2,11 @@ package aQute.bnd.http;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
@@ -13,6 +15,7 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -38,10 +41,12 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 	private ThreadLocal<PasswordAuthentication>	passwordAuthentication	= new ThreadLocal<>();
 	private boolean								inited;
 	private static JSONCodec					codec					= new JSONCodec();
+	private PrintWriter							trace;
 
-	public HttpClient(Processor processor) {
+	public HttpClient(Processor processor) throws IOException {
 		super(processor);
 		use(processor);
+
 	}
 
 	public HttpClient() {
@@ -54,6 +59,20 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 
 		inited = true;
 
+		String path = getProperty("-connection-log");
+		if (path != null)
+			try {
+
+				File f = IO.getFile(path);
+				f.getParentFile().mkdirs();
+				trace = new PrintWriter(new FileWriter(f, true));
+				return;
+
+			} catch (Exception e) {
+				exception(e, "While setting trace");
+			}
+		trace = new PrintWriter(IO.nullWriter);
+
 		Authenticator.setDefault(new Authenticator() {
 			@Override
 			protected PasswordAuthentication getPasswordAuthentication() {
@@ -65,6 +84,18 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 		proxyHandlers.addAll(getParent().getPlugins(ProxyHandler.class));
 	}
 
+	@Override
+	public void trace(String msg, Object... parms) {
+		init();
+		super.trace(msg, parms);
+		try {
+			String s = String.format(msg, parms);
+			trace.println(s);
+			trace.flush();
+		} catch (Exception e) {
+			trace.println("# trace fail " + e + " : " + msg + " : " + Arrays.toString(parms));
+		}
+	}
 	public void close() {
 		Authenticator.setDefault(null);
 	}
@@ -89,10 +120,12 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 	}
 
 	public Object send(final HttpRequest< ? > request) throws Exception {
+		trace("%s", request);
 
 		final ProxySetup proxy = getProxySetup(request.url);
 		final URLConnection con = getProxiedAndConfiguredConnection(request.url, proxy);
 		final HttpURLConnection hcon = (HttpURLConnection) (con instanceof HttpURLConnection ? con : null);
+
 
 		setHeaders(request.headers, con);
 
@@ -115,6 +148,7 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 		for (ProxyHandler ph : getProxyHandlers()) {
 			ProxySetup setup = ph.forURL(url);
 			if (setup != null) {
+				trace("Proxy %s", setup);
 				return setup;
 			}
 		}
@@ -138,8 +172,10 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 
 		for (URLConnectionHandler urlh : getURLConnectionHandlers()) {
 			if (urlh.matches(url)) {
+				trace("Decorate %s with handler %s", url, urlh);
 				urlh.handle(urlc);
-			}
+			} else
+				trace("No match for %s, handler %s", url, urlh);
 		}
 		return urlc;
 	}
@@ -148,6 +184,7 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 		if (connectionHandlers.isEmpty()) {
 			List<URLConnectionHandler> connectionHandlers = getParent().getPlugins(URLConnectionHandler.class);
 			this.connectionHandlers.addAll(connectionHandlers);
+			trace("URL Connection handlers %s", connectionHandlers);
 		}
 		return connectionHandlers;
 	}
@@ -156,6 +193,7 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 		if (proxyHandlers.isEmpty()) {
 			List<ProxyHandler> proxyHandlers = getParent().getPlugins(ProxyHandler.class);
 			proxyHandlers.addAll(proxyHandlers);
+			trace("Proxy handlers %s", proxyHandlers);
 		}
 		return proxyHandlers;
 	}
@@ -179,6 +217,7 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 		if (hcon != null) {
 
 			int code = hcon.getResponseCode();
+			trace("response for %s is %s", con.getURL(), code);
 
 			if (code / 100 != 2) {
 
@@ -234,8 +273,10 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 	}
 
 	private void doOutput(Object put, final URLConnection con) throws IOException, Exception {
+		trace("doOutput");
 		con.setDoOutput(true);
 		try (OutputStream out = con.getOutputStream();) {
+			trace("go stream");
 			if (put instanceof InputStream) {
 				IO.copy((InputStream) put, out);
 			} else if (put instanceof byte[])
@@ -259,6 +300,7 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 	private void setHeaders(Map<String,String> headers, final URLConnection con) {
 		if (headers != null) {
 			for (Entry<String,String> e : headers.entrySet()) {
+				trace("set header %s=%s", e.getKey(), e.getValue());
 				con.setRequestProperty(e.getKey(), e.getValue());
 			}
 		}

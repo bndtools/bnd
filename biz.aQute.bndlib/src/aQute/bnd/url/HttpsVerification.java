@@ -151,4 +151,9 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 		}
 		return certificates;
 	}
+
+	@Override
+	public String toString() {
+		return "HttpsVerification [verify=" + verify + ", certificatesPath=" + certificatesPath + "]";
+	}
 }

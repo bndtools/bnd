@@ -122,6 +122,10 @@ public class ConnectionSettings extends Processor {
 			boolean isHttps(URLConnection connection) {
 				return "https".equalsIgnoreCase(connection.getURL().getProtocol());
 			}
+
+			public String toString() {
+				return "Server [ match=" + match + ", basic=" + basic + ", https=" + https + "]";
+			}
 		};
 	}
 
