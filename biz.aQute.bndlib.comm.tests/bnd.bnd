@@ -1,4 +1,10 @@
--buildpath: \
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
+-dependson: biz.aQute.http.testservers
+-nobundles: true
+
+-testpath: \
 	biz.aQute.bndlib;version=latest;packages=*,\
 	org.osgi.util.promise,\
 	biz.aQute.http.testservers;version=latest,\
@@ -10,5 +16,6 @@
 	io.netty__netty-all,\
 	org.apache.commons.lang3,\
 	org.apache.commons.codec,\
-	biz.aQute.repository;version=latest
+	biz.aQute.repository;version=latest,\
+	com.google.guava;version=19.0
 

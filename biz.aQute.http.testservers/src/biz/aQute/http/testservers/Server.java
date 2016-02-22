@@ -2,7 +2,6 @@ package biz.aQute.http.testservers;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -35,7 +34,6 @@ import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
-import aQute.lib.io.IO;
 import biz.aQute.http.testservers.HttpTestServer.Config;
 import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.NanoHTTPD.Response.IStatus;
@@ -45,7 +43,7 @@ class Server extends NanoHTTPD {
 	private X509Certificate[]		certificateChain;
 	private Config					config;
 	final static SecureRandom		random		= new SecureRandom();
-	final Map<String, HttpContext>	contexts	= new HashMap<>();
+	final Map<String,HttpContext>	contexts	= new HashMap<>();
 
 	public Server(HttpTestServer.Config config) throws Exception {
 		super(config.host, config.port);
@@ -67,14 +65,14 @@ class Server extends NanoHTTPD {
 			final biz.aQute.http.testservers.HttpTestServer.Response response = new HttpTestServer.Response();
 			final biz.aQute.http.testservers.HttpTestServer.Request request = new HttpTestServer.Request();
 
-			Map<String, String> headers = session.getHeaders();
-			if ( headers.containsKey("content-length")) {
+			Map<String,String> headers = session.getHeaders();
+			if (headers.containsKey("content-length")) {
 				int length = Integer.parseInt(headers.get("content-length"));
 				request.content = new byte[length];
 				DataInputStream din = new DataInputStream(session.getInputStream());
 				din.readFully(request.content);
 			}
-			
+
 			HttpContext context = findHandler(session.getUri());
 			if (context == null) {
 				return newFixedLengthResponse(NanoHTTPD.Response.Status.BAD_REQUEST, "text/plain",
@@ -82,7 +80,7 @@ class Server extends NanoHTTPD {
 
 			}
 			request.uri = new URI(session.getUri());
-			request.headers = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
+			request.headers = new TreeMap<String,String>(String.CASE_INSENSITIVE_ORDER);
 			request.headers.putAll(session.getHeaders());
 			request.args = session.getParms();
 			request.ip = session.getHeaders().get("remote-addr");
@@ -111,7 +109,7 @@ class Server extends NanoHTTPD {
 			Response r = newFixedLengthResponse(status, response.mimeType, new ByteArrayInputStream(response.content),
 					response.length);
 
-			for (Map.Entry<String, String> entry : response.headers.entrySet()) {
+			for (Map.Entry<String,String> entry : response.headers.entrySet()) {
 				r.addHeader(entry.getKey(), entry.getValue());
 			}
 
@@ -189,7 +187,9 @@ class Server extends NanoHTTPD {
 				.build(keyPair.getPrivate());
 		X509Certificate certificate = new JcaX509CertificateConverter()
 				.getCertificate(certificateBuilder.build(contentSigner));
-		return new X509Certificate[] { certificate };
+		return new X509Certificate[] {
+				certificate
+		};
 	}
 
 	private KeyPair createKey() throws NoSuchAlgorithmException {

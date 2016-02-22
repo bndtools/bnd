@@ -12,3 +12,5 @@ Export-Package:         aQute.bnd.test.*
 	osgi.core;version=@5,\
 	osgi.cmpn;version=@5,\
 	${junit}
+
+-releaserepo:

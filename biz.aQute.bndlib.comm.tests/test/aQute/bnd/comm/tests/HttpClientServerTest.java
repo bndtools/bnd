@@ -18,12 +18,13 @@ import junit.framework.TestCase;
  */
 public class HttpClientServerTest extends TestCase {
 	File tmp = IO.getFile("generated/tmp");
+
 	{
 		IO.delete(tmp);
 		tmp.mkdirs();
-		
+
 	}
-	
+
 	public void testSimpleSecureNoVerify() throws Exception {
 		createSecureServer();
 		assertOk(null, false);
@@ -34,11 +35,12 @@ public class HttpClientServerTest extends TestCase {
 		assertOk(null, true);
 	}
 
+	@SuppressWarnings("resource")
 	private void assertOk(String password, boolean verify) throws Exception {
 		File log = new File(tmp, "log");
 		Processor p = new Processor();
 		p.setProperty("-connection-log", log.toURI().getPath());
-		
+
 		HttpClient hc = new HttpClient(p);
 		ConnectionSettings cs = new ConnectionSettings(p);
 
@@ -63,7 +65,7 @@ public class HttpClientServerTest extends TestCase {
 		String s = IO.collect(tag.getInputStream());
 		assertNotNull(s);
 		assertTrue(s.trim().startsWith("{"));
-		IO.copy( log, System.out);
+		IO.copy(log, System.out);
 	}
 
 	private Httpbin httpServer;

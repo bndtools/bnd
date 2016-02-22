@@ -10,6 +10,7 @@
              biz.aQute.bnd.gradle.tests, \
              biz.aQute.bndlib, \
              biz.aQute.bndlib.tests, \
+             biz.aQute.bndlib.comm.tests, \
              biz.aQute.jpm, \
              biz.aQute.junit, \
              biz.aQute.launcher, \

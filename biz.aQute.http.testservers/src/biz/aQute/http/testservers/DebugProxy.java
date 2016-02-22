@@ -33,7 +33,7 @@ public class DebugProxy extends NanoHTTPD {
 			c.setRequestMethod(session.getMethod().toString());
 			System.out.println("-> " + session.getMethod() + " " + session.getUri());
 
-			for (Entry<String, String> e : session.getHeaders().entrySet()) {
+			for (Entry<String,String> e : session.getHeaders().entrySet()) {
 				if (e.getKey().equalsIgnoreCase("host")) {
 					String host = forward.getHost();
 					if (forward.getPort() != forward.getDefaultPort())
@@ -47,7 +47,7 @@ public class DebugProxy extends NanoHTTPD {
 
 			byte[] data = null;
 
-			Map<String, String> headers = session.getHeaders();
+			Map<String,String> headers = session.getHeaders();
 			if (headers.containsKey("content-length")) {
 				int length = Integer.parseInt(headers.get("content-length"));
 				data = new byte[length];
@@ -91,15 +91,15 @@ public class DebugProxy extends NanoHTTPD {
 				DataInputStream din = new DataInputStream(c.getInputStream());
 				din.readFully(data);
 				String s = new String(data);
-//				System.out.println("--------------------\n");
-//				System.out.println(s);
-//				System.out.println("--------------------\n");
+				// System.out.println("--------------------\n");
+				// System.out.println(s);
+				// System.out.println("--------------------\n");
 				in = new ByteArrayInputStream(data);
 			}
 
 			Response r = new Response(status, c.getContentType(), in, c.getContentLengthLong()) {
 				{
-					for (Map.Entry<String, List<String>> l : c.getHeaderFields().entrySet()) {
+					for (Map.Entry<String,List<String>> l : c.getHeaderFields().entrySet()) {
 						for (String value : l.getValue()) {
 							if (l.getKey() != null)
 								addHeader(l.getKey(), value);
