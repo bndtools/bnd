@@ -23,7 +23,6 @@ public class Httpbin extends HttpTestServer {
 
 	/**
 	 * Default page
-	 * 
 	 */
 
 	public void __(Response rsp) throws Exception {
@@ -32,7 +31,6 @@ public class Httpbin extends HttpTestServer {
 
 	/**
 	 * Returns the request
-	 * 
 	 */
 
 	public Request _get(Request rq) throws Exception {
@@ -55,6 +53,7 @@ public class Httpbin extends HttpTestServer {
 	public void _delete(Request rq, Response rsp) throws Exception {
 		turnAround(rq, rsp);
 	}
+
 	public void _put(Request rq, Response rsp) throws Exception {
 		turnAround(rq, rsp);
 	}
@@ -62,16 +61,14 @@ public class Httpbin extends HttpTestServer {
 	public void _encoding(Request req, Response rsp, String charsetName) throws IOException {
 		getResource(rsp, "utf8.html", "text/html;charset=" + charsetName);
 		Charset c1 = Charset.forName(charsetName);
-		
-		if ( c1.equals(StandardCharsets.UTF_8))
+
+		if (c1.equals(StandardCharsets.UTF_8))
 			return;
 
-		String s = new String( rsp.content, StandardCharsets.UTF_8);
+		String s = new String(rsp.content, StandardCharsets.UTF_8);
 		rsp.content = s.getBytes(c1);
 	}
-	
-	
-	
+
 	public void _gzip(Request req, Response rsp) throws IOException {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		GZIPOutputStream gzout = new GZIPOutputStream(bout);
@@ -82,7 +79,7 @@ public class Httpbin extends HttpTestServer {
 		rsp.length = rsp.content.length;
 		rsp.headers.put("Content-Encoding", "gzip");
 	}
-	
+
 	public void _deflate(Request req, Response rsp) throws IOException {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		DeflaterOutputStream gzout = new DeflaterOutputStream(bout);
@@ -93,37 +90,33 @@ public class Httpbin extends HttpTestServer {
 		rsp.length = rsp.content.length;
 		rsp.headers.put("Content-Encoding", "deflate");
 	}
-	
+
 	void turnAround(Request rq, Response rsp) {
 		rsp.content = rq.content;
 		String type = rq.headers.get("Content-Type");
-		if ( type != null)
+		if (type != null)
 			rsp.headers.put("Content-Type", type);
 	}
 
-	
-
 	/**
 	 * Returns status code
-	 * 
 	 */
 
 	public void _status(Response rsp, int code) throws Exception {
 		rsp.code = code;
 	}
 
-	public Map<String, String> _ip(Request rq) {
+	public Map<String,String> _ip(Request rq) {
 		return Collections.singletonMap("origin", rq.ip);
 	}
 
-	public Map<String, String> _headers(Request rq) {
+	public Map<String,String> _headers(Request rq) {
 		return rq.headers;
 	}
 
-	public Map<String, String> _user$2dagent(Request rq) {
+	public Map<String,String> _user$2dagent(Request rq) {
 		return Collections.singletonMap("user-agent", rq.headers.get("user-agent"));
 	}
-	
 
 	static Pattern BASIC_AUTH_P = Pattern.compile("Basic\\s+(?<auth>[^\\s]+)\\s*", Pattern.CASE_INSENSITIVE);
 
@@ -145,16 +138,15 @@ public class Httpbin extends HttpTestServer {
 		return null;
 	}
 
-
 	public void _index(Request rq, Response rsp) throws IOException {
 		getResource(rsp, "index.xml", "text/xml");
 	}
 
 	public void _index$2dauth(Request rq, Response rsp, String user, String password) throws IOException {
 		_basic$2dauth(rq, rsp, user, password);
-		if ( rsp.code == HttpURLConnection.HTTP_UNAUTHORIZED)
+		if (rsp.code == HttpURLConnection.HTTP_UNAUTHORIZED)
 			return;
-		
+
 		getResource(rsp, "index.xml", "text/xml");
 	}
 }

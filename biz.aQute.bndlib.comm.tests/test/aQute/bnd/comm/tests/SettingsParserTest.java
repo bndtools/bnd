@@ -15,14 +15,15 @@ public class SettingsParserTest extends TestCase {
 
 	public void testServerSelectionWithTrust() throws Exception {
 		SettingsDTO settings = getSettings("server-trust-selection.xml");
-		assertEquals(1,settings.servers.size());
+		assertEquals(1, settings.servers.size());
 		ServerDTO p = settings.servers.get(0);
 		assertEquals("httpbin.org", p.id);
-		assertNotNull( p.trust);
+		assertNotNull(p.trust);
 	}
+
 	public void testServerSelection() throws Exception {
 		SettingsDTO settings = getSettings("server-selection.xml");
-		assertEquals(1,settings.servers.size());
+		assertEquals(1, settings.servers.size());
 		ServerDTO p = settings.servers.get(0);
 		assertEquals("httpbin.org", p.id);
 		assertEquals(null, p.passphrase);
@@ -33,7 +34,7 @@ public class SettingsParserTest extends TestCase {
 
 	public void testSocksAuth() throws Exception {
 		SettingsDTO settings = getSettings("socks-auth.xml");
-		assertEquals(1,settings.proxies.size());
+		assertEquals(1, settings.proxies.size());
 		ProxyDTO p = settings.proxies.get(0);
 		assertEquals("myproxy", p.id);
 		assertEquals(true, p.active);
@@ -46,7 +47,7 @@ public class SettingsParserTest extends TestCase {
 
 	public void testSocksNoAuth() throws Exception {
 		SettingsDTO settings = getSettings("socks-noauth.xml");
-		assertEquals(1,settings.proxies.size());
+		assertEquals(1, settings.proxies.size());
 		ProxyDTO p = settings.proxies.get(0);
 		assertEquals("myproxy", p.id);
 		assertEquals(true, p.active);
@@ -59,7 +60,7 @@ public class SettingsParserTest extends TestCase {
 
 	public void testNonProxyHost() throws Exception {
 		SettingsDTO settings = getSettings("socks-auth-nonproxyhosts.xml");
-		assertEquals(1,settings.proxies.size());
+		assertEquals(1, settings.proxies.size());
 		ProxyDTO p = settings.proxies.get(0);
 		assertEquals("myproxy", p.id);
 		assertEquals(true, p.active);
@@ -68,19 +69,19 @@ public class SettingsParserTest extends TestCase {
 		assertEquals("*.google.com|ibiblio.org", p.nonProxyHosts);
 		assertEquals(null, p.username);
 		assertEquals(null, p.password);
-		
+
 	}
 
 	public SettingsDTO getSettings(String name) throws Exception {
-		File f = aQute.lib.io.IO.getFile("testresources/"+name);
+		File f = aQute.lib.io.IO.getFile("testresources/" + name);
 		SettingsParser msp = new SettingsParser(f);
 		SettingsDTO settings = msp.getSettings();
 		return settings;
 	}
-	
+
 	public void testAuthority() throws IOException {
 		URL url = new URL("http://abc:def@httpbin.org/headers");
 		System.out.println(url.getUserInfo());
-		System.out.println( aQute.lib.io.IO.collect( url.openStream()));
+		System.out.println(aQute.lib.io.IO.collect(url.openStream()));
 	}
 }

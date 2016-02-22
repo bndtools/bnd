@@ -37,8 +37,8 @@ import sockslib.server.msg.CommandMessage;
 public class IndexedReposWithComms extends TestCase {
 
 	private static SocksProxyServer	socks5Proxy;
-	private static File tmp = IO.getFile("generated/tmp");
-	
+	private static File				tmp	= IO.getFile("generated/tmp");
+
 	public void testBasicWorkspace() throws Exception {
 		HttpTestServer ht = http();
 		try {
@@ -52,13 +52,12 @@ public class IndexedReposWithComms extends TestCase {
 			assertTrue(connectors.get(0) instanceof HttpClient);
 
 			HttpClient hc = (HttpClient) connectors.get(0);
-			
-			InputStream connect = hc.connect(new URL(ht.getBaseURI()+"/basic-auth/user/good"));
+
+			InputStream connect = hc.connect(new URL(ht.getBaseURI() + "/basic-auth/user/good"));
 			assertNotNull(connect);
 			aQute.lib.io.IO.copy(connect, System.out);
 			connect.close();
-			
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.toString());
@@ -67,81 +66,76 @@ public class IndexedReposWithComms extends TestCase {
 		}
 	}
 
-	
 	/*
-	 * Uses workspaces/indexed
-	 * 
-	 * Sets up a FixedIndexedRepo to the local server.
+	 * Uses workspaces/indexed Sets up a FixedIndexedRepo to the local server.
 	 */
 
 	public void testIndexedRepo() throws IOException, Exception {
-		try(HttpTestServer ht = http();) {
+		try (HttpTestServer ht = http();) {
 			createSecureSocks5();
-			
+
 			Workspace ws = Workspace.getWorkspace(aQute.lib.io.IO.getFile("workspaces/indexed"));
 			assertNotNull(ws);
-			ws.setProperty("repo", ht.getBaseURI().toASCIIString() +"/index");
+			ws.setProperty("repo", ht.getBaseURI().toASCIIString() + "/index");
 			FixedIndexedRepo plugin = ws.getPlugin(FixedIndexedRepo.class);
-			assertTrue( ws.check());
+			assertTrue(ws.check());
 			assertNotNull(plugin);
-			
+
 			List<String> list = plugin.list(null);
-			assertTrue( ws.check());
-			assertTrue( list.size() > 0 );
-			
+			assertTrue(ws.check());
+			assertTrue(list.size() > 0);
+
 		}
 	}
-	
+
 	/*
-	 * Uses workspaces/indexed
-	 * 
-	 * Sets up a FixedIndexedRepo to the local server.
+	 * Uses workspaces/indexed Sets up a FixedIndexedRepo to the local server.
 	 */
 
 	public void testIndexedRepoWithPassword() throws IOException, Exception {
-		try(HttpTestServer ht = https();) {
+		try (HttpTestServer ht = https();) {
 			createSecureSocks5();
-			
+
 			Workspace ws = Workspace.getWorkspace(aQute.lib.io.IO.getFile("workspaces/indexed"));
 			assertNotNull(ws);
 			ws.setProperty("-connection-settings", "settings-withpassword.xml");
-			ws.setProperty("repo", ht.getBaseURI().toASCIIString() +"/index-auth/user/good");
+			ws.setProperty("repo", ht.getBaseURI().toASCIIString() + "/index-auth/user/good");
 			FixedIndexedRepo plugin = ws.getPlugin(FixedIndexedRepo.class);
-			assertTrue( ws.check());
+			assertTrue(ws.check());
 			assertNotNull(plugin);
-			
+
 			List<String> list = plugin.list(null);
-			assertTrue( ws.check());
-			assertTrue( list.size() > 0 );
-			
+			assertTrue(ws.check());
+			assertTrue(list.size() > 0);
+
 		}
 	}
-	
-	public void testJpmRepoQuery() throws Exception  {
-		try(HttpTestServer ht = http();) {
-			
+
+	public void testJpmRepoQuery() throws Exception {
+		try (HttpTestServer ht = http();) {
+
 			createSecureSocks5();
-			
+
 			Workspace ws = Workspace.getWorkspace(aQute.lib.io.IO.getFile("workspaces/jpm"));
 			assertNotNull(ws);
 			ws.setProperty("repo", ht.getBaseURI().toASCIIString());
 			ws.setProperty("tmp", tmp.toURI().getPath());
 			Repository plugin = ws.getPlugin(Repository.class);
-			assertTrue( ws.check());
+			assertTrue(ws.check());
 			assertNotNull(plugin);
 
 			Set<ResourceDescriptor> query = plugin.query("bla");
-			assertTrue( ws.check());
-			assertTrue( query.size() > 0 );
-			
+			assertTrue(ws.check());
+			assertTrue(query.size() > 0);
+
 		}
 	}
 
-	public void testJpmRepoDownload() throws Exception  {
-		try(HttpTestServer ht = http();) {
-			
+	public void testJpmRepoDownload() throws Exception {
+		try (HttpTestServer ht = http();) {
+
 			createSecureSocks5();
-			
+
 			Workspace ws = Workspace.getWorkspace(aQute.lib.io.IO.getFile("workspaces/jpm"));
 			assertNotNull(ws);
 			ws.setProperty("repo", ht.getBaseURI().toASCIIString());
@@ -149,11 +143,11 @@ public class IndexedReposWithComms extends TestCase {
 			Repository plugin = ws.getPlugin(Repository.class);
 			ResourceDescriptor descriptor = plugin.getDescriptor("slf4j.simple", new Version("1.7.13"));
 			assertNotNull(descriptor);
-			
+
 			File file = plugin.get("slf4j.simple", new Version("1.7.13"), null);
-			assertTrue( file.isFile());
+			assertTrue(file.isFile());
 			byte[] digest = SHA256.digest(file).digest();
-			assertTrue( Arrays.equals(descriptor.sha256, digest));
+			assertTrue(Arrays.equals(descriptor.sha256, digest));
 		}
 	}
 
@@ -203,18 +197,19 @@ public class IndexedReposWithComms extends TestCase {
 	public void setUp() {
 		IO.delete(tmp);
 	}
+
 	public void tearDown() {
 		if (socks5Proxy != null)
 			socks5Proxy.shutdown();
 	}
-	
+
 	public static class HS extends Httpbin {
 
 		public HS(Config config) throws Exception {
 			super(config);
 		}
 
-		//jsonrpc/2.0/jpm
+		// jsonrpc/2.0/jpm
 		public void _jsonrpc$2f2$2e0$2fjpm(Request rq, Response rsp) throws IOException {
 			rsp.content = IO.read(IO.getFile("workspaces/jpm/cnf/programs.json"));
 			rsp.mimeType = "application/json";
@@ -228,7 +223,7 @@ public class IndexedReposWithComms extends TestCase {
 		ht.start();
 		return ht;
 	}
-	
+
 	HttpTestServer https() throws Exception, IOException {
 		HttpTestServer.Config config = new HttpTestServer.Config();
 		config.host = "localhost";
@@ -237,6 +232,5 @@ public class IndexedReposWithComms extends TestCase {
 		ht.start();
 		return ht;
 	}
-	
-	
+
 }

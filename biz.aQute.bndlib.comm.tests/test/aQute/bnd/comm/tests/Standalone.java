@@ -29,14 +29,14 @@ public class Standalone {
 		userManager.create(new User("proxyuser", "good"));
 		SocksServerBuilder builder = SocksServerBuilder.newSocks5ServerBuilder();
 		builder.setBindPort(9090);
-		//builder.setUserManager(userManager);
-		
+		// builder.setUserManager(userManager);
+
 		UsernamePasswordMethod usernamePasswordMethod = new UsernamePasswordMethod();
-		usernamePasswordMethod.setAuthenticator( new UsernamePasswordAuthenticator(){
+		usernamePasswordMethod.setAuthenticator(new UsernamePasswordAuthenticator() {
 			@Override
 			public void doAuthenticate(Credentials arg0, Session arg1) throws AuthenticationException {
 				super.doAuthenticate(arg0, arg1);
-				System.out.println("Auth " + arg0 + " "+ arg1);
+				System.out.println("Auth " + arg0 + " " + arg1);
 			}
 		});
 		builder.setSocksMethods(usernamePasswordMethod).setUserManager(userManager);
@@ -68,7 +68,7 @@ public class Standalone {
 
 		socks5Proxy.start();
 	}
-	
+
 	void createHttpProxy() {
 		HttpProxyServerBootstrap bootstrap = DefaultHttpProxyServer.bootstrap().withPort(9091);
 		bootstrap.withProxyAuthenticator(new ProxyAuthenticator() {
@@ -82,14 +82,15 @@ public class Standalone {
 		});
 		bootstrap.start();
 	}
-	
+
 	public static void main(String args[]) throws InterruptedException, IOException {
 		Standalone s = new Standalone();
 		s.createSecureSocks5();
 		s.createHttpProxy();
-//		Socks5Server socks5Server = new Socks5Server();
-//		socks5Server.start(new String[] {"--port", "9090", "--auth", "proxyuser:good"});
-		
+		// Socks5Server socks5Server = new Socks5Server();
+		// socks5Server.start(new String[] {"--port", "9090", "--auth",
+		// "proxyuser:good"});
+
 		Thread.sleep(10000000);
 	}
 }

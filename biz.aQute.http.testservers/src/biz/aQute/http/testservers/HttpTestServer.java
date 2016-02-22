@@ -34,7 +34,7 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 		public boolean				https;
 		public int					port;
 		public String				host	= "localhost";
-		public Map<String, String>	users	= new HashMap<>();
+		public Map<String,String>	users	= new HashMap<>();
 		public int					backlog	= 0;
 		public int					keysize	= 1024;
 	}
@@ -43,8 +43,8 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 		public final long				time	= System.currentTimeMillis();
 		public String					method;
 		public URI						uri;
-		public TreeMap<String, String>	headers;
-		public Map<String, String>		args	= new HashMap<>();
+		public TreeMap<String,String>	headers;
+		public Map<String,String>		args	= new HashMap<>();
 		public byte[]					content;
 		public String					ip;
 
@@ -55,7 +55,7 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 	}
 
 	public static class Response {
-		public Map<String, String>	headers	= new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+		public Map<String,String>	headers	= new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 		public byte[]				content;
 		public int					code	= 200;
 		public String				mimeType;
@@ -103,19 +103,19 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 		for (int i = 0; i < m.getName().length(); i++) {
 			char c = m.getName().charAt(i);
 			switch (c) {
-			case '_':
-				sb.append('/');
-				break;
-			case '$':
-				String hex = m.getName().substring(i + 1, i + 3);
-				int charCode = Integer.parseInt(hex, 16);
-				sb.append((char) charCode);
-				i += 2;
-				break;
+				case '_' :
+					sb.append('/');
+					break;
+				case '$' :
+					String hex = m.getName().substring(i + 1, i + 3);
+					int charCode = Integer.parseInt(hex, 16);
+					sb.append((char) charCode);
+					i += 2;
+					break;
 
-			default:
-				sb.append(c);
-				break;
+				default :
+					sb.append(c);
+					break;
 			}
 		}
 		String path = sb.toString();
@@ -239,7 +239,7 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 		throw new FileNotFoundException(name);
 	}
 
-	protected boolean getResource(Class<?> clazz, Response rsp, String name, String mime) throws IOException {
+	protected boolean getResource(Class< ? > clazz, Response rsp, String name, String mime) throws IOException {
 		try (InputStream in = clazz.getResourceAsStream("www/" + name)) {
 
 			if (in == null)

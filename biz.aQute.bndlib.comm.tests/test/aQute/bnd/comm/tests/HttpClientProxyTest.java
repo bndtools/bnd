@@ -40,9 +40,8 @@ import sockslib.server.msg.CommandMessage;
 
 /**
  * This test verifies the HttpClient against a Http Proxy and a SOCKS 5 proxy.
- * Different combinations are tried out with a secure and unsecure server.
- * 
- * See https://github.com/fengyouchao/sockslib for socks
+ * Different combinations are tried out with a secure and unsecure server. See
+ * https://github.com/fengyouchao/sockslib for socks
  */
 public class HttpClientProxyTest extends TestCase {
 
@@ -158,7 +157,6 @@ public class HttpClientProxyTest extends TestCase {
 	private AtomicReference<Throwable>	exception				= new AtomicReference<>();
 	private AtomicInteger				created					= new AtomicInteger();
 
-	
 	// we use different ports because the servers seem to linger
 
 	void createAuthenticationHttpProxy() {
@@ -254,6 +252,7 @@ public class HttpClientProxyTest extends TestCase {
 			socks5Proxy.shutdown();
 	}
 
+	@SuppressWarnings("resource")
 	void assertHttpProxy(String password, boolean authenticationCalled) throws MalformedURLException, Exception {
 		Processor p = new Processor();
 		p.setProperty("-connectionsettings", "" + false);
@@ -278,7 +277,7 @@ public class HttpClientProxyTest extends TestCase {
 		server.id = httpTestServer.getBaseURI().toString();
 		server.verify = false;
 		server.trust = Strings.join(httpTestServer.getTrustedCertificateFiles(IO.getFile("generated")));
-		cs.add( server );
+		cs.add(server);
 
 		URL url = new URL(httpTestServer.getBaseURI() + "/get-tag/ABCDEFGH");
 		TaggedData tag = hc.connectTagged(url);
@@ -291,6 +290,7 @@ public class HttpClientProxyTest extends TestCase {
 
 	}
 
+	@SuppressWarnings("resource")
 	void assertSocks5Proxy(String password, boolean authenticationCalled) throws MalformedURLException, Exception {
 		Processor p = new Processor();
 		p.setProperty("-connectionsettings", "" + false);
