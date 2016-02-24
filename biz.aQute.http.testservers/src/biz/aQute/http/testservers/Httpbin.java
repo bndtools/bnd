@@ -4,10 +4,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.DeflaterOutputStream;
@@ -16,6 +19,11 @@ import java.util.zip.GZIPOutputStream;
 import aQute.lib.base64.Base64;
 
 public class Httpbin extends HttpTestServer {
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
+
+	static {
+		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+	}
 
 	public Httpbin(Config config) throws Exception {
 		super(config);
@@ -149,4 +157,48 @@ public class Httpbin extends HttpTestServer {
 
 		getResource(rsp, "index.xml", "text/xml");
 	}
+
+	/**
+	 * Redirect count times and return response code response
+	 */
+	public void _redirect(Request rq, Response rsp, int count, int response) throws URISyntaxException {
+		if (count > 0) {
+			System.out.println("redirect " + count);
+			rsp.headers.put("Location", getBaseURI() + "/redirect/" + (--count) + "/" + response);
+			rsp.code = 301;
+		} else {
+			rsp.code = response;
+		}
+	}
+
+	/**
+	 * Redirect to https
+	 */
+	public void _xlocation(Request rq, Response rsp) throws URISyntaxException {
+		String to = rq.headers.get("XLocation");
+		rsp.headers.put("Location", to);
+		rsp.code = 301;
+	}
+
+	public Request _etag(Request rq, Response rsp, String etag, long resourceModifiedTime) throws Exception {
+		String requestedTag = rq.headers.get("If-None-Match");
+		String requestedDate = rq.headers.get("If-Modified-Since");
+
+		rsp.headers.put("ETag", etag);
+
+		if (requestedDate != null) {
+			long modifiedSince = sdf.parse(requestedDate).getTime();
+			if (modifiedSince >= resourceModifiedTime) {
+				rsp.code = HttpURLConnection.HTTP_NOT_MODIFIED;
+				return null;
+			}
+		}
+
+		if (etag.equals("*") || etag.equals(requestedTag)) {
+			rsp.code = HttpURLConnection.HTTP_NOT_MODIFIED;
+			return null;
+		}
+		return _get(rq);
+	}
+
 }

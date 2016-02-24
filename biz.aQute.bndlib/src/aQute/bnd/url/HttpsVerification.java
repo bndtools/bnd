@@ -37,6 +37,7 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 	private HostnameVerifier			verifier;
 	private boolean						verify			= true;
 	private String						certificatesPath;
+	private X509Certificate[]	certificateChain;
 
 	interface Config {
 		String trusted();
@@ -52,6 +53,12 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 		certificatesPath = certificates;
 		this.verify = hostnameVerify;
 		this.setReporter(reporter);
+	}
+
+	public HttpsVerification(X509Certificate[] certificateChain, boolean b, Reporter hc) {
+		this.certificateChain = certificateChain;
+		this.verify = b;
+		this.setReporter(hc);
 	}
 
 	/**
@@ -147,6 +154,10 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 						inStream.close();
 					}
 				}
+			}
+		} else if (certificateChain != null) {
+			for (X509Certificate cert : certificateChain) {
+				certificates.add(cert);
 			}
 		}
 		return certificates;
