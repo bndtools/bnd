@@ -70,6 +70,8 @@ assert !wrapper_manifest.getValue('Project-Sourcepath')
 
 // Check contents
 assert api_jar.getEntry('org/example/api/') != null
+assert api_jar.getEntry('org/example/api/aresource.txt') != null
+assert api_jar.getInputStream(api_jar.getEntry('org/example/api/aresource.txt')).text =~ /This is a resource/
 assert api_jar.getEntry('org/example/types/') != null
 assert api_jar.getEntry('OSGI-OPT/src/') != null
 assert impl_jar.getEntry('org/example/impl/') != null
