@@ -38,7 +38,7 @@ public class HttpClientTest extends TestCase {
 
 	public void testFetch() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
-			String text = hc.build().get(String.class).go(new URL(httpServer.getBaseURI().toString() + "/get"));
+			String text = hc.build().get(String.class).go(httpServer.getBaseURI("get"));
 			assertNotNull(text);
 			assertTrue(text.startsWith("{"));
 		}
@@ -46,9 +46,7 @@ public class HttpClientTest extends TestCase {
 
 	public void testRedirect() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
-			TaggedData tag = hc.build()
-					.get(TaggedData.class)
-					.go(new URL(httpServer.getBaseURI().toString() + "/redirect/3/200"));
+			TaggedData tag = hc.build().get(TaggedData.class).go(httpServer.getBaseURI("redirect/3/200"));
 			assertNotNull(tag);
 			assertEquals(200, tag.getResponseCode());
 		}
@@ -56,8 +54,10 @@ public class HttpClientTest extends TestCase {
 
 	public void testRedirectTooMany() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
-			TaggedData tag = hc.build().maxRedirects(3).get(TaggedData.class).go(
-					new URL(httpServer.getBaseURI().toString() + "/redirect/200/200"));
+			TaggedData tag = hc.build()
+					.maxRedirects(3)
+					.get(TaggedData.class)
+					.go(httpServer.getBaseURI("redirect/200/200"));
 			assertEquals(3, tag.getResponseCode() / 100);
 		}
 	}
@@ -65,8 +65,9 @@ public class HttpClientTest extends TestCase {
 	public void testRedirectURL() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			hc.addBasicPlugin(new HttpsVerification(httpsServer.getCertificateChain(), false, hc));
-			URI uri = new URI(httpsServer.getBaseURI() + "/get");
-			URL go = new URL(httpServer.getBaseURI().toString() + "/xlocation");
+			URI uri = httpsServer.getBaseURI("get");
+			URL go = httpServer.getBaseURI("xlocation").toURL();
+
 			TaggedData tag = hc.build()
 					.maxRedirects(3)
 					.get(TaggedData.class)
@@ -79,9 +80,7 @@ public class HttpClientTest extends TestCase {
 
 	public void testETag() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
-			TaggedData data = hc.build()
-					.get(TaggedData.class)
-					.go(new URL(httpServer.getBaseURI().toString() + "/etag/1234/0"));
+			TaggedData data = hc.build().get(TaggedData.class).go(httpServer.getBaseURI("etag/1234/0"));
 			assertNotNull(data);
 			assertEquals("1234", data.getTag());
 		}
@@ -89,8 +88,10 @@ public class HttpClientTest extends TestCase {
 
 	public void testNotModifiedEtag() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
-			TaggedData data = hc.build().get(TaggedData.class).ifNoneMatch("1234").go(
-					new URL(httpServer.getBaseURI().toString() + "/etag/1234/0"));
+			TaggedData data = hc.build()
+					.get(TaggedData.class)
+					.ifNoneMatch("1234")
+					.go(httpServer.getBaseURI("etag/1234/0"));
 			assertNotNull(data);
 			assertEquals("1234", data.getTag());
 			assertEquals(HttpURLConnection.HTTP_NOT_MODIFIED, data.getResponseCode());
@@ -99,8 +100,10 @@ public class HttpClientTest extends TestCase {
 
 	public void testModifiedWithEtag() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
-			TaggedData data = hc.build().get(TaggedData.class).ifNoneMatch("0000").go(
-					new URL(httpServer.getBaseURI().toString() + "/etag/1234/0"));
+			TaggedData data = hc.build()
+					.get(TaggedData.class)
+					.ifNoneMatch("0000")
+					.go(httpServer.getBaseURI("etag/1234/0"));
 			assertNotNull(data);
 			assertEquals("1234", data.getTag());
 			assertEquals(200, data.getResponseCode());
@@ -110,7 +113,7 @@ public class HttpClientTest extends TestCase {
 	public void testNotModifiedSince() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData data = hc.build().get(TaggedData.class).ifNoneMatch("*").ifModifiedSince(20000).go(
-					new URL(httpServer.getBaseURI().toString() + "/etag/1234/10000"));
+					httpServer.getBaseURI("etag/1234/10000"));
 			assertNotNull(data);
 			assertEquals("1234", data.getTag());
 			assertEquals(HttpURLConnection.HTTP_NOT_MODIFIED, data.getResponseCode());
@@ -120,7 +123,7 @@ public class HttpClientTest extends TestCase {
 	public void testNotModifiedSinceAtSameTime() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData data = hc.build().get(TaggedData.class).ifNoneMatch("*").ifModifiedSince(20000).go(
-					new URL(httpServer.getBaseURI().toString() + "/etag/1234/20000"));
+					httpServer.getBaseURI("etag/1234/20000"));
 			assertNotNull(data);
 			assertEquals("1234", data.getTag());
 			assertEquals(HttpURLConnection.HTTP_NOT_MODIFIED, data.getResponseCode());
@@ -130,7 +133,7 @@ public class HttpClientTest extends TestCase {
 	public void testModifiedSince() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData data = hc.build().get(TaggedData.class).ifNoneMatch("*").ifModifiedSince(10000).go(
-					new URL(httpServer.getBaseURI().toString() + "/etag/1234/20000"));
+					httpServer.getBaseURI("etag/1234/20000"));
 			assertNotNull(data);
 			assertEquals("1234", data.getTag());
 			assertEquals(200, data.getResponseCode());

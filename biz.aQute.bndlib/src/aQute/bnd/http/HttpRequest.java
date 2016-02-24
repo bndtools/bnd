@@ -1,6 +1,7 @@
 package aQute.bnd.http;
 
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -120,6 +121,11 @@ public class HttpRequest<T> {
 
 	public T go(URL url) throws Exception {
 		this.url = url;
+		return (T) client.send(this);
+	}
+
+	public T go(URI url) throws Exception {
+		this.url = url.toURL();
 		return (T) client.send(this);
 	}
 

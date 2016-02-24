@@ -232,6 +232,13 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 		return new URI(sb.toString());
 	}
 
+	public URI getBaseURI(String path) throws URISyntaxException {
+		while (path.startsWith("/"))
+			path = path.substring(1);
+
+		return new URI(getBaseURI() + "/" + path);
+	}
+
 	protected void getResource(Response rsp, String name, String mime) throws IOException {
 		if (getResource(getClass(), rsp, name, mime))
 			return;
