@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
@@ -14,15 +15,16 @@ import aQute.lib.converter.TypeReference;
 
 @SuppressWarnings("unchecked")
 public class HttpRequest<T> {
-	String				verb	= "GET";
+	String				verb		= "GET";
 	Object				upload;
 	Type				download;
-	Map<String,String>	headers	= new HashMap<>();
-	long				timeout	= -1;
+	Map<String,String>	headers		= new HashMap<>();
+	long				timeout		= -1;
 	HttpClient			client;
 	String				ifNoneMatch;
 	long				since;
 	URL					url;
+	int					redirects	= 10;
 
 	HttpRequest(HttpClient client) {
 		this.client = client;
@@ -108,9 +110,19 @@ public class HttpRequest<T> {
 		return this;
 	}
 
+	public HttpRequest<T> maxRedirects(int n) {
+		this.redirects = n;
+		return this;
+	}
+
 	public T go(URL url) throws Exception {
 		this.url = url;
 		return (T) client.send(this);
+	}
+
+	public HttpRequest<T> age(int n, TimeUnit tu) {
+		this.headers.put("Age", "" + tu.toSeconds(n));
+		return this;
 	}
 
 	public Promise<T> async(final URL url) {

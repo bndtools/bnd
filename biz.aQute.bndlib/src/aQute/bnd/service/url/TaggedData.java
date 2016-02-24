@@ -2,6 +2,7 @@ package aQute.bnd.service.url;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 
 /**
  * Represents a data stream that has a tag associated with it; the primary
@@ -14,15 +15,22 @@ public class TaggedData {
 	private final String		tag;
 	private final InputStream	inputStream;
 	private final int			code;
+	private final long			modified;
+	private final URI			url;
 
-	public TaggedData(String tag, InputStream inputStream, int responseCode) {
+	public TaggedData(String tag, InputStream inputStream, int responseCode, long modified, URI url) {
 		this.tag = tag;
 		this.inputStream = inputStream;
 		this.code = responseCode;
+		this.modified = modified;
+		this.url = url;
 	}
 
+	public TaggedData(String tag, InputStream inputStream, int responseCode) {
+		this(tag, inputStream, responseCode, 0, null);
+	}
 	public TaggedData(String tag, InputStream inputStream) {
-		this(tag, inputStream, HttpURLConnection.HTTP_OK);
+		this(tag, inputStream, HttpURLConnection.HTTP_OK, 0, null);
 	}
 
 	/**
@@ -42,6 +50,18 @@ public class TaggedData {
 
 	public int getResponseCode() {
 		return code;
+	}
+
+	public long getModified() {
+		return modified;
+	}
+
+	public boolean hasPayload() {
+		return inputStream != null;
+	}
+
+	public URI getUrl() {
+		return this.url;
 	}
 
 }

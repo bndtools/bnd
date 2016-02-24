@@ -14,12 +14,15 @@ import java.net.PasswordAuthentication;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
@@ -35,7 +38,8 @@ import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 
 public class HttpClient extends Processor implements Closeable, URLConnector {
-
+	private static final SimpleDateFormat		sdf						= new SimpleDateFormat(
+			"EEE, dd MMM yyyy HH:mm:ss z");
 	private final List<ProxyHandler>			proxyHandlers			= new ArrayList<>();
 	private final List<URLConnectionHandler>	connectionHandlers		= new ArrayList<>();
 	private ThreadLocal<PasswordAuthentication>	passwordAuthentication	= new ThreadLocal<>();
@@ -80,8 +84,8 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 			}
 		});
 
-		connectionHandlers.addAll(getParent().getPlugins(URLConnectionHandler.class));
-		proxyHandlers.addAll(getParent().getPlugins(ProxyHandler.class));
+		connectionHandlers.addAll(getPlugins(URLConnectionHandler.class));
+		proxyHandlers.addAll(getPlugins(ProxyHandler.class));
 	}
 
 	@Override
@@ -96,6 +100,7 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 			trace.println("# trace fail " + e + " : " + msg + " : " + Arrays.toString(parms));
 		}
 	}
+
 	public void close() {
 		Authenticator.setDefault(null);
 	}
@@ -126,19 +131,26 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 		final URLConnection con = getProxiedAndConfiguredConnection(request.url, proxy);
 		final HttpURLConnection hcon = (HttpURLConnection) (con instanceof HttpURLConnection ? con : null);
 
-
-		setHeaders(request.headers, con);
-
 		if (request.ifNoneMatch != null) {
 			request.headers.put("If-None-Match", request.ifNoneMatch);
 		}
+
+		if (request.since != 0) {
+			synchronized (sdf) {
+				sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+				String format = sdf.format(new Date(request.since));
+				request.headers.put("If-Modified-Since", format);
+			}
+		}
+
+		setHeaders(request.headers, con);
 
 		configureHttpConnection(request.verb, hcon);
 
 		return connectWithProxy(proxy, new Callable<Object>() {
 			@Override
 			public Object call() throws Exception {
-				return doConnect(request.upload, request.download, con, hcon);
+				return doConnect(request.upload, request.download, con, hcon, request);
 			}
 		});
 	}
@@ -182,7 +194,7 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 
 	private synchronized Collection< ? extends URLConnectionHandler> getURLConnectionHandlers() throws Exception {
 		if (connectionHandlers.isEmpty()) {
-			List<URLConnectionHandler> connectionHandlers = getParent().getPlugins(URLConnectionHandler.class);
+			List<URLConnectionHandler> connectionHandlers = getPlugins(URLConnectionHandler.class);
 			this.connectionHandlers.addAll(connectionHandlers);
 			trace("URL Connection handlers %s", connectionHandlers);
 		}
@@ -191,7 +203,7 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 
 	private synchronized Collection< ? extends ProxyHandler> getProxyHandlers() throws Exception {
 		if (proxyHandlers.isEmpty()) {
-			List<ProxyHandler> proxyHandlers = getParent().getPlugins(ProxyHandler.class);
+			List<ProxyHandler> proxyHandlers = getPlugins(ProxyHandler.class);
 			proxyHandlers.addAll(proxyHandlers);
 			trace("Proxy handlers %s", proxyHandlers);
 		}
@@ -199,15 +211,16 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 	}
 
 	private InputStream createProgressWrappedStream(InputStream inputStream, String name, int size) {
-		ProgressPlugin progressPlugin = getParent().getPlugin(ProgressPlugin.class);
+		ProgressPlugin progressPlugin = getPlugin(ProgressPlugin.class);
 		if (progressPlugin == null)
 			return inputStream;
 
 		return new ProgressWrappingStream(inputStream, name, size, progressPlugin);
 	}
 
-	private Object doConnect(Object put, Type ref, final URLConnection con, final HttpURLConnection hcon)
-			throws IOException, Exception {
+	private Object doConnect(Object put, Type ref, final URLConnection con, final HttpURLConnection hcon,
+			HttpRequest< ? > request) throws IOException, Exception {
+
 		if (put != null) {
 			doOutput(put, con);
 		}
@@ -219,13 +232,33 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 			int code = hcon.getResponseCode();
 			trace("response for %s is %s", con.getURL(), code);
 
+			//
+			// Though we ask Java to handle the redirects
+			// it does not do it for https <-> http :-(
+			//
+
+			if (code == HttpURLConnection.HTTP_MOVED_TEMP || code == HttpURLConnection.HTTP_MOVED_PERM
+					|| code == HttpURLConnection.HTTP_SEE_OTHER) {
+
+				if (request.redirects-- > 0) {
+
+					String location = hcon.getHeaderField("Location");
+					request.url = new URL(location);
+					return send(request);
+
+				}
+
+			}
+
 			if (code / 100 != 2) {
 
 				if (code == HttpURLConnection.HTTP_NOT_FOUND) {
 					return null;
 				}
 
-				throw new HttpRequestException(hcon);
+				if (ref != TaggedData.class) {
+					throw new HttpRequestException(hcon);
+				}
 			}
 		}
 
@@ -234,10 +267,11 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 		InputStream xin = con.getInputStream();
 		InputStream in = handleContentEncoding(hcon, xin);
 		in = createProgressWrappedStream(in, con.toString(), con.getContentLength());
-		return convert(ref, in, con);
+		return convert(ref, in, con, hcon);
 	}
 
-	private Object convert(Type ref, InputStream in, URLConnection con) throws IOException, Exception {
+	private Object convert(Type ref, InputStream in, URLConnection con, HttpURLConnection hcon)
+			throws IOException, Exception {
 		if (ref instanceof Class) {
 			Class< ? > refc = (Class< ? >) ref;
 			if (refc == byte[].class) {
@@ -247,7 +281,12 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 			} else if (String.class == refc) {
 				return IO.collect(in);
 			} else if (TaggedData.class == ref) {
-				return new TaggedData(con.getHeaderField("ETag"), in);
+				if (hcon == null)
+					return new TaggedData(con.getHeaderField("ETag"), in, 0, con.getLastModified(),
+							con.getURL().toURI());
+				else
+					return new TaggedData(con.getHeaderField("ETag"), in, hcon.getResponseCode(), con.getLastModified(),
+							con.getURL().toURI());
 			} else if (URLConnection.class.isAssignableFrom(refc))
 				return con;
 		}
@@ -292,7 +331,7 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 	private void configureHttpConnection(String verb, final HttpURLConnection hcon) throws ProtocolException {
 		if (hcon != null) {
 			hcon.setRequestProperty("Accept-Encoding", "deflate, gzip");
-			hcon.setInstanceFollowRedirects(true);
+			hcon.setInstanceFollowRedirects(false); // we handle it
 			hcon.setRequestMethod(verb);
 		}
 	}
