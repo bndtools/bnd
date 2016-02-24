@@ -2131,6 +2131,7 @@ public class Analyzer extends Processor {
 
 		addClose(jar);
 		classpath.add(jar);
+		updateModified(jar.lastModified(), jar.toString());
 	}
 
 	public void addClasspath(Collection< ? > jars) throws IOException {

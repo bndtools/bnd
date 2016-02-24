@@ -67,6 +67,9 @@ public class BndMavenPlugin extends AbstractMojo {
 	@Parameter(defaultValue = "${project.build.sourceDirectory}", readonly = true)
 	private File				sourceDir;
 
+	@Parameter(defaultValue = "${project.build.resources}", readonly = true)
+	private List<org.apache.maven.model.Resource>	resources;
+
 	@Parameter(defaultValue = "${project.build.outputDirectory}", readonly = true)
 	private File				classesDir;
 
@@ -136,14 +139,24 @@ public class BndMavenPlugin extends AbstractMojo {
 			}
 
 			// Set bnd sourcepath
+			boolean delta = false;
 			List<File> sourcepath = new ArrayList<File>();
 			if (sourceDir.exists()) {
 				sourcepath.add(sourceDir.getCanonicalFile());
+				delta |= buildContext.hasDelta(sourceDir);
+			}
+			for (org.apache.maven.model.Resource resource : resources) {
+				File resourceDir = new File(resource.getDirectory());
+				if (resourceDir.exists()) {
+					sourcepath.add(resourceDir.getCanonicalFile());
+					delta |= buildContext.hasDelta(resourceDir);
+				}
 			}
 			builder.setProperty("project.sourcepath", Strings.join(File.pathSeparator, sourcepath));
 			builder.setSourcepath(sourcepath.toArray(new File[sourcepath.size()]));
 			if (log.isDebugEnabled()) {
 				log.debug("builder sourcepath: " + builder.getProperty("project.sourcepath"));
+				log.debug("builder sourcepath buildContext.hasDelta: " + delta);
 			}
 
 			// Set Bundle-Version
@@ -157,14 +170,18 @@ public class BndMavenPlugin extends AbstractMojo {
 				log.debug("builder properties: " + builder.getProperties());
 			}
 
-			// Build bnd Jar (in memory)
-			Jar bndJar = builder.build();
+			if (delta || (builder.getJar() == null) || (builder.lastModified() > builder.getJar().lastModified())) {
+				// Build bnd Jar (in memory)
+				Jar bndJar = builder.build();
 
-			// Expand Jar into target/classes
-			expandJar(bndJar, classesDir);
+				// Expand Jar into target/classes
+				expandJar(bndJar, classesDir);
 
-			// Finally, report
-			reportErrorsAndWarnings(builder);
+				// Finally, report
+				reportErrorsAndWarnings(builder);
+			} else {
+				log.debug("No build");
+			}
 
 		} catch (Exception e) {
 			throw new MojoExecutionException("bnd error", e);
