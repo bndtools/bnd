@@ -3,6 +3,7 @@ package bndtools.views.repository;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -210,20 +212,25 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                 if (URLTransfer.getInstance().isSupportedType(getCurrentEvent().currentDataType)) {
                     try {
                         URL url = new URL((String) URLTransfer.getInstance().nativeToJava(getCurrentEvent().currentDataType));
-                        if (url.getPath().endsWith(".jar")) {
-                            File tmp = File.createTempFile("dwnl", ".jar");
-                            IO.copy(url, tmp);
+                        if (!url.getPath().endsWith(".jar")) {
+                            String uris = url.toString();
+                            if (uris.contains("#!/p/sha/")) {
+                                MessageDialog.openWarning(null, "Dropped URL is a JPM Revision Identifier, not a JAR",
+                                        "The dropped URL is a JPM identifier, can only be dropped on a JPM repository. You can also select the revision on JPM and drag the 'jar' link of the revision to any of the other repositories.");
+                                return false;
+                            }
+                        }
+
+                        File tmp = File.createTempFile("dwnl", ".jar");
+                        IO.copy(url, tmp);
+
+                        if (isJarFile(tmp)) {
                             copied = addFilesToRepository((RepositoryPlugin) getCurrentTarget(), new File[] {
                                     tmp
                             });
                         } else {
-                            String uris = url.toString();
-                            if (uris.contains("#!/p/sha/"))
-                                MessageDialog.openWarning(null, "Dropped URL is a JPM Revision Identifier, not a JAR",
-                                        "The dropped URL is a JPM identifier, can only be dropped on a JPM repository. You can also select the revision on JPM and drag the 'jar' link of the revision to any of the other repositories.");
-                            else
-                                MessageDialog.openWarning(null, "Unrecognized URL", "The dropped URL is not recognized as a remote JAR file (expected to end in '.jar'): " + url.toString());
-
+                            tmp.delete();
+                            MessageDialog.openWarning(null, "Unrecognized Artifact", "The dropped URL is not recognized as a remote JAR file: " + url.toString());
                         }
                     } catch (Exception e) {
                         return false;
@@ -806,5 +813,13 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
     @Override
     public List<RepositoryPlugin> getRepositories() {
         return RepositoryUtils.listRepositories(true);
+    }
+
+    private static boolean isJarFile(File candidate) {
+        try (JarFile jar = new JarFile(candidate)) {
+            return jar.getManifest() != null;
+        } catch (IOException ex) {
+            return false;
+        }
     }
 }
