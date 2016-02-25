@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
@@ -39,7 +40,8 @@ import aQute.lib.json.JSONCodec;
 
 public class HttpClient extends Processor implements Closeable, URLConnector {
 	private static final SimpleDateFormat		sdf						= new SimpleDateFormat(
-			"EEE, dd MMM yyyy HH:mm:ss z");
+"EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+
 	private final List<ProxyHandler>			proxyHandlers			= new ArrayList<>();
 	private final List<URLConnectionHandler>	connectionHandlers		= new ArrayList<>();
 	private ThreadLocal<PasswordAuthentication>	passwordAuthentication	= new ThreadLocal<>();
@@ -135,11 +137,23 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 			request.headers.put("If-None-Match", request.ifNoneMatch);
 		}
 
-		if (request.since != 0) {
+		if (request.ifNoneMatch != null) {
+			request.headers.put("If-Match", request.ifMatch);
+		}
+
+		if (request.ifModifiedSince != 0) {
 			synchronized (sdf) {
 				sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
-				String format = sdf.format(new Date(request.since));
+				String format = sdf.format(new Date(request.ifModifiedSince));
 				request.headers.put("If-Modified-Since", format);
+			}
+		}
+
+		if (request.ifUnmodifiedSince != 0) {
+			synchronized (sdf) {
+				sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+				String format = sdf.format(new Date(request.ifUnmodifiedSince));
+				request.headers.put("If-Unmodified-Since", format);
 			}
 		}
 

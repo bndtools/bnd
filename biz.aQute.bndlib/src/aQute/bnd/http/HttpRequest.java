@@ -22,9 +22,11 @@ public class HttpRequest<T> {
 	long				timeout		= -1;
 	HttpClient			client;
 	String				ifNoneMatch;
-	long				since;
+	long				ifModifiedSince;
+	long				ifUnmodifiedSince;
 	URL					url;
 	int					redirects	= 10;
+	String				ifMatch;
 
 	HttpRequest(HttpClient client) {
 		this.client = client;
@@ -106,7 +108,7 @@ public class HttpRequest<T> {
 	}
 
 	public HttpRequest<T> ifModifiedSince(long epochTime) {
-		this.since = epochTime;
+		this.ifModifiedSince = epochTime;
 		return this;
 	}
 
@@ -148,7 +150,18 @@ public class HttpRequest<T> {
 	@Override
 	public String toString() {
 		return "HttpRequest [verb=" + verb + ", upload=" + upload + ", download=" + download + ", headers=" + headers
-				+ ", timeout=" + timeout + ", client=" + client + ", ifNoneMatch=" + ifNoneMatch + ", since=" + since
-				+ ", url=" + url + "]";
+				+ ", timeout=" + timeout + ", client=" + client + ", ifNoneMatch=" + ifNoneMatch + ", ifModifiedSince="
+				+ ifModifiedSince + ", ifUnmodifiedSince=" + ifUnmodifiedSince + ", ifMatch=" + ifMatch + ", url=" + url
+				+ "]";
+	}
+
+	public HttpRequest<T> ifUnmodifiedSince(long ifNotModifiedSince) {
+		this.ifUnmodifiedSince = ifNotModifiedSince;
+		return this;
+	}
+
+	public HttpRequest<T> ifMatch(String etag) {
+		this.ifMatch = etag;
+		return this;
 	}
 }
