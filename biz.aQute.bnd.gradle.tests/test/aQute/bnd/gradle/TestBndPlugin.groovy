@@ -50,4 +50,23 @@ class TestBndPlugin extends Specification {
           File release_jar = new File(testProjectDir, 'cnf/repo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
     }
+
+    def "Bnd Workspace Plugin echo/bndproperties Test"() {
+        given:
+          String testProject = 'workspaceplugin1'
+          File testProjectDir = new File(testResources, testProject)
+          assert testProjectDir.isDirectory()
+
+        when:
+          def result = GradleRunner.create()
+            .withProjectDir(testProjectDir)
+            .withArguments('--stacktrace', 'echo', 'bndproperties', ':tasks')
+            .forwardOutput()
+            .build()
+
+        then:
+          result.task(":test.simple:echo").outcome == SUCCESS
+          result.task(":test.simple:bndproperties").outcome == SUCCESS
+          result.task(":tasks").outcome == SUCCESS
+    }
 }

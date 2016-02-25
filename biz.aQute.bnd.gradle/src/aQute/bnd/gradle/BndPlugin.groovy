@@ -434,7 +434,7 @@ public class BndPlugin implements Plugin<Project> {
           }
           println "target:                 ${buildDir}"
           println()
-          checkErrors(logger)
+          checkErrors(logger, true)
         }
       }
 
@@ -450,7 +450,7 @@ public class BndPlugin implements Plugin<Project> {
             println "${it}: ${bnd(it, '')}"
           }
           println()
-          checkErrors(logger)
+          checkErrors(logger, true)
         }
       }
 
