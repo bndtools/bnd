@@ -26,6 +26,7 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
+import org.gradle.api.logging.LogLevel
 
 public class BndPlugin implements Plugin<Project> {
   public static final String PLUGINID = 'biz.aQute.bnd'
@@ -52,6 +53,10 @@ public class BndPlugin implements Plugin<Project> {
       this.bndProject = bndWorkspace.getProject(name)
       if (bndProject == null) {
         throw new GradleException("Unable to load bnd project ${name} from workspace ${rootDir}")
+      }
+      if (logger.isDebugEnabled()) {
+        bndProject.setTrace(true)
+        logging.captureStandardError LogLevel.DEBUG
       }
       bndProject.prepare();
       if (!bndProject.isValid()) {
@@ -225,6 +230,7 @@ public class BndPlugin implements Plugin<Project> {
         deleteAllActions() /* Replace the standard task actions */
         enabled !bndProject.isNoBundles()
         if (enabled) {
+          logging.captureStandardError project.logging.standardErrorCaptureLevel
           /* bnd can include any class on the buildpath */
           inputs.files compilePath().collect {
             it.file ? it : fileTree(it)
@@ -239,7 +245,7 @@ public class BndPlugin implements Plugin<Project> {
           /* project dependencies' artifacts should trigger jar task */
           inputs.files {
             configurations.compile.dependencies.withType(ProjectDependency.class).collect {
-              it.dependencyProject.configurations.archives.artifacts.files
+              it.dependencyProject.jar
             }
           }
           outputs.files {
@@ -267,6 +273,7 @@ public class BndPlugin implements Plugin<Project> {
         group 'release'
         enabled !bndProject.isNoBundles() && !bnd(Constants.RELEASEREPO, 'unset').empty
         if (enabled) {
+          logging.captureStandardError project.logging.standardErrorCaptureLevel
           inputs.files jar
           doLast {
             try {
@@ -297,6 +304,7 @@ public class BndPlugin implements Plugin<Project> {
         enabled !parseBoolean(bnd(Constants.NOJUNITOSGI, 'false')) && !bndUnprocessed(Constants.TESTCASES, '').empty
         ext.ignoreFailures = false
         if (enabled) {
+          logging.captureStandardError project.logging.standardErrorCaptureLevel
           inputs.files jar
           outputs.dir testResultsDir
           doLast {
@@ -339,6 +347,7 @@ public class BndPlugin implements Plugin<Project> {
               description "Export the ${bndrun}.bndrun file to an executable jar."
               dependsOn assemble
               group 'export'
+              logging.captureStandardError project.logging.standardErrorCaptureLevel
               def executableJar = new File(distsDir, "executable/${bndrun}.jar")
               doFirst {
                 project.mkdir(executableJar.parent)
@@ -376,6 +385,7 @@ public class BndPlugin implements Plugin<Project> {
               description "Create a distribution of the runbundles in the ${bndrun}.bndrun file."
               dependsOn assemble
               group 'export'
+              logging.captureStandardError project.logging.standardErrorCaptureLevel
               def runbundlesDir = new File(distsDir, "runbundles/${bndrun}")
               doFirst {
                 project.delete(runbundlesDir)
@@ -409,32 +419,31 @@ public class BndPlugin implements Plugin<Project> {
         description 'Displays the bnd project information.'
         group 'help'
         doLast {
-          println '------------------------------------------------------------'
-          println "Project ${project.name}"
-          println '------------------------------------------------------------'
-          println()
-          println "project.workspace:      ${rootDir}"
-          println "project.dir:            ${projectDir}"
-          println "project.name:           ${project.name}"
-          println "project.dependson:      ${bndProject.getDependson()*.getName()}"
-          println "project.sourcepath:     ${files(sourceSets.main.java.srcDirs).asPath}"
-          println "project.output:         ${compileJava.destinationDir}"
-          println "project.buildpath:      ${compileJava.classpath.asPath}"
-          println "project.allsourcepath:  ${bnd.allSrcDirs.asPath}"
-          println "project.testsrc:        ${files(sourceSets.test.java.srcDirs).asPath}"
-          println "project.testoutput:     ${compileTestJava.destinationDir}"
-          println "project.testpath:       ${compileTestJava.classpath.asPath}"
-          println "project.bootclasspath:  ${compileJava.options.bootClasspath}"
-          println "project.deliverables:   ${configurations.archives.artifacts.files*.path}"
-          println "javac:                  ${compileJava.options.forkOptions.executable}"
-          println "javac.source:           ${sourceCompatibility}"
-          println "javac.target:           ${targetCompatibility}"
-          if (!javacProfile.empty) {
-            println "javac.profile:          ${javacProfile}"
-          }
-          println "target:                 ${buildDir}"
-          println()
-          checkErrors(logger)
+          println """
+------------------------------------------------------------
+Project ${project.name}
+------------------------------------------------------------
+
+project.workspace:      ${rootDir}
+project.name:           ${project.name}
+project.dir:            ${projectDir}
+target:                 ${buildDir}
+project.dependson:      ${bndProject.getDependson()*.getName()}
+project.sourcepath:     ${files(sourceSets.main.java.srcDirs).asPath}
+project.output:         ${compileJava.destinationDir}
+project.buildpath:      ${compileJava.classpath.asPath}
+project.allsourcepath:  ${bnd.allSrcDirs.asPath}
+project.testsrc:        ${files(sourceSets.test.java.srcDirs).asPath}
+project.testoutput:     ${compileTestJava.destinationDir}
+project.testpath:       ${compileTestJava.classpath.asPath}
+project.bootclasspath:  ${compileJava.options.bootClasspath}
+project.deliverables:   ${configurations.archives.artifacts.files*.path}
+javac:                  ${compileJava.options.forkOptions.executable}
+javac.source:           ${sourceCompatibility}
+javac.target:           ${targetCompatibility}
+javac.profile:          ${javacProfile}
+"""
+          checkErrors(logger, true)
         }
       }
 
@@ -442,15 +451,16 @@ public class BndPlugin implements Plugin<Project> {
         description 'Displays the bnd properties.'
         group 'help'
         doLast {
-          println '------------------------------------------------------------'
-          println "Project ${project.name}"
-          println '------------------------------------------------------------'
-          println()
+          println """
+------------------------------------------------------------
+Project ${project.name}
+------------------------------------------------------------
+"""
           bndProject.getPropertyKeys(true).sort().each {
             println "${it}: ${bnd(it, '')}"
           }
           println()
-          checkErrors(logger)
+          checkErrors(logger, true)
         }
       }
 

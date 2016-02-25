@@ -28,6 +28,7 @@ import aQute.bnd.osgi.Jar
 import aQute.bnd.version.MavenVersion
 import org.gradle.api.GradleException
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.SourceSet
 
 class BundleTaskConvention {
@@ -102,7 +103,10 @@ class BundleTaskConvention {
     task.configure {
       // create Builder and set trace level from gradle
       new Builder().withCloseable { builder ->
-        builder.setTrace(logger.isDebugEnabled())
+        if (logger.isDebugEnabled()) {
+          builder.setTrace(true)
+          logging.captureStandardError LogLevel.DEBUG
+        }
         // load bnd properties
         File temporaryBndFile = File.createTempFile('bnd', '.bnd', temporaryDir)
         temporaryBndFile.withWriter('UTF-8') { writer ->
