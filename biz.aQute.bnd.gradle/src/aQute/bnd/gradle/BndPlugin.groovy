@@ -239,7 +239,7 @@ public class BndPlugin implements Plugin<Project> {
           /* project dependencies' artifacts should trigger jar task */
           inputs.files {
             configurations.compile.dependencies.withType(ProjectDependency.class).collect {
-              it.dependencyProject.configurations.archives.artifacts.files
+              it.dependencyProject.jar
             }
           }
           outputs.files {
