@@ -54,6 +54,7 @@ import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.service.reporter.Report.Location;
 
 @Mojo(name = "bnd-process", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class BndMavenPlugin extends AbstractMojo {
@@ -183,8 +184,10 @@ public class BndMavenPlugin extends AbstractMojo {
 				log.debug("No build");
 			}
 
+		} catch (MojoExecutionException e) {
+			throw e;
 		} catch (Exception e) {
-			throw new MojoExecutionException("bnd error", e);
+			throw new MojoExecutionException("bnd error: " + e.getMessage(), e);
 		}
 	}
 
@@ -212,13 +215,29 @@ public class BndMavenPlugin extends AbstractMojo {
 	private void reportErrorsAndWarnings(Builder builder) throws MojoExecutionException {
 		Log log = getLog();
 
+		File defaultFile = new File(project.getBasedir(), Project.BNDFILE);
+		if (!defaultFile.exists()) {
+			defaultFile = project.getFile();
+		}
 		List<String> warnings = builder.getWarnings();
 		for (String warning : warnings) {
-			log.warn(warning);
+			Location location = builder.getLocation(warning);
+			if (location == null) {
+				location = new Location();
+				location.message = warning;
+			}
+			buildContext.addMessage(location.file == null ? defaultFile : new File(location.file), location.line,
+					location.length, location.message, BuildContext.SEVERITY_WARNING, null);
 		}
 		List<String> errors = builder.getErrors();
 		for (String error : errors) {
-			log.error(error);
+			Location location = builder.getLocation(error);
+			if (location == null) {
+				location = new Location();
+				location.message = error;
+			}
+			buildContext.addMessage(location.file == null ? defaultFile : new File(location.file), location.line,
+					location.length, location.message, BuildContext.SEVERITY_ERROR, null);
 		}
 		if (!builder.isOk()) {
 			if (errors.size() == 1)
