@@ -409,31 +409,30 @@ public class BndPlugin implements Plugin<Project> {
         description 'Displays the bnd project information.'
         group 'help'
         doLast {
-          println '------------------------------------------------------------'
-          println "Project ${project.name}"
-          println '------------------------------------------------------------'
-          println()
-          println "project.workspace:      ${rootDir}"
-          println "project.dir:            ${projectDir}"
-          println "project.name:           ${project.name}"
-          println "project.dependson:      ${bndProject.getDependson()*.getName()}"
-          println "project.sourcepath:     ${files(sourceSets.main.java.srcDirs).asPath}"
-          println "project.output:         ${compileJava.destinationDir}"
-          println "project.buildpath:      ${compileJava.classpath.asPath}"
-          println "project.allsourcepath:  ${bnd.allSrcDirs.asPath}"
-          println "project.testsrc:        ${files(sourceSets.test.java.srcDirs).asPath}"
-          println "project.testoutput:     ${compileTestJava.destinationDir}"
-          println "project.testpath:       ${compileTestJava.classpath.asPath}"
-          println "project.bootclasspath:  ${compileJava.options.bootClasspath}"
-          println "project.deliverables:   ${configurations.archives.artifacts.files*.path}"
-          println "javac:                  ${compileJava.options.forkOptions.executable}"
-          println "javac.source:           ${sourceCompatibility}"
-          println "javac.target:           ${targetCompatibility}"
-          if (!javacProfile.empty) {
-            println "javac.profile:          ${javacProfile}"
-          }
-          println "target:                 ${buildDir}"
-          println()
+          println """
+------------------------------------------------------------
+Project ${project.name}
+------------------------------------------------------------
+
+project.workspace:      ${rootDir}
+project.name:           ${project.name}
+project.dir:            ${projectDir}
+target:                 ${buildDir}
+project.dependson:      ${bndProject.getDependson()*.getName()}
+project.sourcepath:     ${files(sourceSets.main.java.srcDirs).asPath}
+project.output:         ${compileJava.destinationDir}
+project.buildpath:      ${compileJava.classpath.asPath}
+project.allsourcepath:  ${bnd.allSrcDirs.asPath}
+project.testsrc:        ${files(sourceSets.test.java.srcDirs).asPath}
+project.testoutput:     ${compileTestJava.destinationDir}
+project.testpath:       ${compileTestJava.classpath.asPath}
+project.bootclasspath:  ${compileJava.options.bootClasspath}
+project.deliverables:   ${configurations.archives.artifacts.files*.path}
+javac:                  ${compileJava.options.forkOptions.executable}
+javac.source:           ${sourceCompatibility}
+javac.target:           ${targetCompatibility}
+javac.profile:          ${javacProfile}
+"""
           checkErrors(logger, true)
         }
       }
@@ -442,10 +441,11 @@ public class BndPlugin implements Plugin<Project> {
         description 'Displays the bnd properties.'
         group 'help'
         doLast {
-          println '------------------------------------------------------------'
-          println "Project ${project.name}"
-          println '------------------------------------------------------------'
-          println()
+          println """
+------------------------------------------------------------
+Project ${project.name}
+------------------------------------------------------------
+"""
           bndProject.getPropertyKeys(true).sort().each {
             println "${it}: ${bnd(it, '')}"
           }
