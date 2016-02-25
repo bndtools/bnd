@@ -20,7 +20,8 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	lib/javax.xml.stream-1.0.1.jar;version=file,\
 	${jetty.libs},\
 	slf4j.api,\
-	aQute.jpm.clnt;version=1.0;packages=*
+	aQute.jpm.clnt;version=1.0;packages=*, \
+	biz.aQute.http.testservers;version=latest
 	
 -testpath: \
 	${junit},\
@@ -49,9 +50,11 @@ Export-Package:\
 	aQute.bnd.deployer.repository.api,\
 	aQute.bnd.deployer.repository.providers;bnd-plugins=true,\
 	aQute.bnd.deployer.repository.wrapper;bnd-plugins=true,\
+	aQute.bnd.repository.maven.provider;bnd-plugins=true, \
 	aQute.bnd.jpm;bnd-plugins=true,\
 	org.osgi.service.coordinator,\
-	org.osgi.service.indexer
+	org.osgi.service.indexer, \
+	aQute.maven.*
 
 # NB: `org.osgi.*` API is included in Private-Package for running outside of OSGi.
 Private-Package: \
@@ -80,3 +83,5 @@ Import-Package:\
 	aQute.bnd.osgi.resource,\
 	org.osgi.service.coordinator; resolution:=optional,\
 	*
+	
+-fixupmessages: "private references"

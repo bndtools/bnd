@@ -15,10 +15,12 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
+import aQute.http.testservers.HttpTestServer;
+import aQute.http.testservers.Httpbin;
+import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.converter.TypeReference;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
-import biz.aQute.http.testservers.HttpTestServer.Config;
 import junit.framework.TestCase;
 
 public class HttpTestServerTest extends TestCase {

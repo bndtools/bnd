@@ -23,7 +23,7 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 	}
 
 	public MultiMap(boolean noduplicates) {
-		this.noduplicates = false;
+		this.noduplicates = noduplicates;
 		keyClass = Object.class;
 		valueClass = Object.class;
 	}

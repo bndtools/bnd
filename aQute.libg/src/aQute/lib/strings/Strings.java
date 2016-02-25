@@ -74,4 +74,24 @@ public class Strings {
 		return getLastSegment(name, '.');
 	}
 
+	public static String trim(String s) {
+		if (s == null)
+			return null;
+
+		if (s.isEmpty())
+			return s;
+
+		int start = 0;
+		while (start < s.length() && Character.isWhitespace(s.charAt(start)))
+			start++;
+
+		int end = s.length();
+		while (end > start && Character.isWhitespace(s.charAt(end - 1)))
+			end--;
+
+		if (start == 0 && end == s.length())
+			return s;
+
+		return s.substring(start, end);
+	}
 }

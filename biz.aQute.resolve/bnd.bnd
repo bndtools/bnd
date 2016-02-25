@@ -24,3 +24,5 @@ Private-Package: \
 	org.apache.felix.resolver.*
 
 Conditional-Package: aQute.lib*
+
+-fixupmessages: private references

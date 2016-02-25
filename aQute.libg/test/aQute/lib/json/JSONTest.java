@@ -18,7 +18,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import aQute.lib.collections.MultiMap;
@@ -478,7 +480,8 @@ public class JSONTest extends TestCase {
 		Decoder dec = new JSONCodec().dec();
 
 		// Dates
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
+		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 		Date d = sdf.parse("2012-03-01T10:23:00");
 		System.out.println(d.getTime());
 		assertEquals(d, dec.from("\"2012-03-01T10:23:00\"").get(Date.class));

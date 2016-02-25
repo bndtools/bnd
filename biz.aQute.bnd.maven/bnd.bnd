@@ -1,9 +1,0 @@
-# Set javac settings from JDT prefs
--include: ${workspace}/cnf/eclipse/jdt.bnd
-
--buildpath: \
-	biz.aQute.bndlib;version=latest;packages=*,\
-	org.osgi.util.promise
-	
--testpath: \
-	${junit}

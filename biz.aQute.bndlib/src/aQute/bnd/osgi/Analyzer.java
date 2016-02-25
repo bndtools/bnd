@@ -49,6 +49,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
@@ -81,6 +82,7 @@ import aQute.libg.cryptography.Digester;
 import aQute.libg.cryptography.MD5;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.generics.Create;
+import aQute.libg.glob.Glob;
 import aQute.libg.reporter.ReporterMessages;
 
 public class Analyzer extends Processor {
@@ -1218,6 +1220,10 @@ public class Analyzer extends Processor {
 
 	static SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
 
+	static {
+		df.setTimeZone(TimeZone.getTimeZone("UTC"));
+	}
+
 	public long getBndLastModified() {
 		String time = getBndInfo("lastmodified", "0");
 		if (time.matches("\\d+"))
@@ -1402,15 +1408,38 @@ public class Analyzer extends Processor {
 	 */
 	public Jar getJarFromName(String name, String from) {
 		Jar j = super.getJarFromName(name, from);
+		Glob g = new Glob(name);
 		if (j == null) {
 			for (Iterator<Jar> cp = getClasspath().iterator(); cp.hasNext();) {
 				Jar entry = cp.next();
-				if (entry.getSource() != null && entry.getSource().getName().equals(name)) {
+				if (entry.getSource() == null)
+					continue;
+
+				if (g.matcher(entry.getSource().getName()).matches()) {
 					return entry;
 				}
 			}
 		}
 		return j;
+	}
+
+	public List<Jar> getJarsFromName(String name, String from) {
+		Jar j = super.getJarFromName(name, from);
+		if (j != null)
+			return Collections.singletonList(j);
+
+		Glob g = new Glob(name);
+		List<Jar> result = new ArrayList<>();
+		for (Iterator<Jar> cp = getClasspath().iterator(); cp.hasNext();) {
+			Jar entry = cp.next();
+			if (entry.getSource() == null)
+				continue;
+
+			if (g.matcher(entry.getSource().getName()).matches()) {
+				result.add(entry);
+			}
+		}
+		return result;
 	}
 
 	/**
