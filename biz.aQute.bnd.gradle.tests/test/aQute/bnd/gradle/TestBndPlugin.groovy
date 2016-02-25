@@ -20,7 +20,7 @@ class TestBndPlugin extends Specification {
         when:
           def result = GradleRunner.create()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', 'build', 'release')
+            .withArguments('--stacktrace', '--debug', 'build', 'release')
             .forwardOutput()
             .build()
 

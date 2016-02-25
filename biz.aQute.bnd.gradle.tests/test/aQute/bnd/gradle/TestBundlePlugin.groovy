@@ -28,7 +28,7 @@ class TestBundlePlugin extends Specification {
         when:
           def result = GradleRunner.create()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', 'build')
+            .withArguments('--stacktrace', '--debug', 'build')
             .withPluginClasspath(pluginClasspath)
             .forwardOutput()
             .build()

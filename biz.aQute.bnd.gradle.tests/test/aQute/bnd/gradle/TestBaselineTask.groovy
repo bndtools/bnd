@@ -29,7 +29,7 @@ class TestBaselineTask extends Specification {
         when:
           def result = GradleRunner.create()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', 'baseline', 'baselineSelf')
+            .withArguments('--stacktrace', '--debug', 'baseline', 'baselineSelf')
             .withPluginClasspath(pluginClasspath)
             .forwardOutput()
             .build()
