@@ -9,7 +9,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 
 	private static final Pattern	VERSION				= Pattern.compile(VERSION_STRING);
 
-	private static final String		QUALIFIER_SNAPSHOT	= "SNAPSHOT";
+	private static final String		SNAPSHOT	= "SNAPSHOT";
 
 	private final Version			osgiVersion;
 
@@ -36,7 +36,14 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	}
 
 	public boolean isSnapshot() {
-		return QUALIFIER_SNAPSHOT.equals(osgiVersion.getQualifier());
+		String qualifier = osgiVersion.getQualifier();
+		if (qualifier == null)
+			return false;
+		if (qualifier.equals(SNAPSHOT))
+			return true;
+		if (qualifier.endsWith("-" + SNAPSHOT))
+			return true;
+		return false;
 	}
 
 	public int compareTo(MavenVersion other) {
@@ -81,7 +88,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 
 	public MavenVersion toSnapshot() {
 		Version newv = new Version(osgiVersion.getMajor(), osgiVersion.getMinor(), osgiVersion.getMicro(),
-				QUALIFIER_SNAPSHOT);
+				SNAPSHOT);
 		return new MavenVersion(newv);
 	}
 

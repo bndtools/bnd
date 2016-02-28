@@ -380,7 +380,7 @@ public class Builder extends Analyzer {
 		String version = getProperty(BUNDLE_VERSION);
 		if (version != null) {
 			version = cleanupVersion(version);
-			if (version.endsWith(".SNAPSHOT")) {
+			if (version.endsWith(".SNAPSHOT") || version.endsWith("-SNAPSHOT")) {
 				version = version.replaceAll("SNAPSHOT$", getProperty(SNAPSHOT, "SNAPSHOT"));
 			}
 			setProperty(BUNDLE_VERSION, version);

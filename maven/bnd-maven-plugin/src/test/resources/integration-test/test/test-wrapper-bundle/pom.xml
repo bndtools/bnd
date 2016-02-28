@@ -7,7 +7,7 @@
 		<version>0.0.1</version>
 	</parent>
 	<artifactId>test-wrapper-bundle</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1-BUILD-SNAPSHOT</version>
 
 	<dependencies>
 		<dependency>

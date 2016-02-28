@@ -34,6 +34,12 @@ public class MavenVersionTest extends TestCase {
 		mv = MavenVersion.parseString("1.2.3.SNAPSHOT");
 		assertEquals(new Version(1, 2, 3, "SNAPSHOT"), mv.getOSGiVersion());
 		assertTrue(mv.isSnapshot());
+		mv = MavenVersion.parseString("1.2.3.BUILD-SNAPSHOT");
+		assertEquals(new Version(1, 2, 3, "BUILD-SNAPSHOT"), mv.getOSGiVersion());
+		assertTrue(mv.isSnapshot());
+		mv = MavenVersion.parseString("1.2-BUILD-SNAPSHOT");
+		assertEquals(new Version(1, 2, 0, "BUILD-SNAPSHOT"), mv.getOSGiVersion());
+		assertTrue(mv.isSnapshot());
 	}
 
 	public void testNumericQualifier() {

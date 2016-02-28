@@ -10,7 +10,7 @@ File api_bundle = new File(basedir, 'test-api-bundle/target/test-api-bundle-0.0.
 assert api_bundle.isFile()
 File impl_bundle = new File(basedir, 'test-impl-bundle/target/test-impl-bundle-0.0.1-SNAPSHOT.jar')
 assert impl_bundle.isFile()
-File wrapper_bundle = new File(basedir, 'test-wrapper-bundle/target/test-wrapper-bundle-0.0.1-SNAPSHOT.jar')
+File wrapper_bundle = new File(basedir, 'test-wrapper-bundle/target/test-wrapper-bundle-0.0.1-BUILD-SNAPSHOT.jar')
 assert wrapper_bundle.isFile()
 
 // Load manifests
@@ -27,8 +27,8 @@ assert impl_manifest.getValue('Bundle-SymbolicName') == 'test-impl-bundle'
 assert wrapper_manifest.getValue('Bundle-SymbolicName') == 'test-wrapper-bundle'
 assert api_manifest.getValue('Bundle-Version') == '0.0.1'
 assert impl_manifest.getValue('Bundle-Version') == '0.0.1.SNAPSHOT'
-assert wrapper_manifest.getValue('Bundle-Version') != '0.0.1.SNAPSHOT'
-assert wrapper_manifest.getValue('Bundle-Version') =~ /^0\.0\.1\./
+assert wrapper_manifest.getValue('Bundle-Version') != '0.0.1.BUILD-SNAPSHOT'
+assert wrapper_manifest.getValue('Bundle-Version') =~ /^0\.0\.1\.BUILD-/
 
 // Check inheritance of properties in bnd.bnd from the parent project
 assert api_manifest.getValue('X-ParentProjectProperty') == 'it worked'
