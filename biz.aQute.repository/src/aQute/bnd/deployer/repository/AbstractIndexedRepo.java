@@ -216,9 +216,10 @@ public abstract class AbstractIndexedRepo
 							CachingUriResourceHandle indexHandle = new CachingUriResourceHandle(indexLocation,
 									getCacheDirectory(), connector, (String) null);
 							indexHandle.setReporter(reporter);
-							readIndex(indexLocation.getPath(), indexLocation,
-									new FileInputStream(indexHandle.request()), allContentProviders.values(), this,
-									logService);
+							InputStream indexStream = GZipUtils
+									.detectCompression(new FileInputStream(indexHandle.request()));
+							readIndex(indexLocation.getPath(), indexLocation, indexStream, allContentProviders.values(),
+									this, logService);
 						} catch (Exception e) {
 							warning("Unable to read referral index at URL '%s' from parent index '%s': %s",
 									indexLocation, parentUri, e);
