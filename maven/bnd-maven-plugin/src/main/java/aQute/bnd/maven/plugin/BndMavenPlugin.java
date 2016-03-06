@@ -41,6 +41,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 import aQute.bnd.build.Project;
@@ -54,6 +55,7 @@ import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.lib.utf8properties.UTF8Properties;
 import aQute.service.reporter.Report.Location;
 
 @Mojo(name = "bnd-process", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE)
@@ -198,17 +200,44 @@ public class BndMavenPlugin extends AbstractMojo {
 			loadProjectProperties(builder, parentProject);
 		}
 
-		File pomFile = project.getFile();
-		if (pomFile == null) {
-			return; // repository based POM
-		}
-		builder.updateModified(pomFile.lastModified(), "POM: " + pomFile);
-
 		// Merge in current project properties
+		Xpp3Dom configuration = project.getGoalConfiguration("biz.aQute.bnd", "bnd-maven-plugin", null, null);
 		File baseDir = project.getBasedir();
-		File bndFile = new File(baseDir, Project.BNDFILE);
-		if (bndFile.isFile()) { // we use setProperties to handle -include
-			builder.setProperties(baseDir, builder.loadProperties(bndFile));
+		if (baseDir != null) { // file system based pom
+			File pomFile = project.getFile();
+			builder.updateModified(pomFile.lastModified(), "POM: " + pomFile);
+			// check for bnd file
+			String bndFileName = Project.BNDFILE;
+			if (configuration != null) {
+				Xpp3Dom bndfileElement = configuration.getChild("bndfile");
+				if (bndfileElement != null) {
+					bndFileName = bndfileElement.getValue();
+				}
+			}
+			File bndFile = IO.getFile(baseDir, bndFileName);
+			if (bndFile.isFile()) {
+				if (log.isDebugEnabled()) {
+					log.debug("loading bnd properties from file: " + bndFile);
+				}
+				// we use setProperties to handle -include
+				builder.setProperties(bndFile.getParentFile(), builder.loadProperties(bndFile));
+				return;
+			}
+			// no bnd file found, so we fall through
+		}
+		// check for bnd-in-pom configuration
+		if (configuration != null) {
+			Xpp3Dom bndElement = configuration.getChild("bnd");
+			if (bndElement != null) {
+				if (log.isDebugEnabled()) {
+					log.debug("loading bnd properties from bnd element in pom: " + bndElement.getValue());
+				}
+				UTF8Properties properties = new UTF8Properties();
+				properties.load(bndElement.getValue(), project.getFile(), builder);
+				// we use setProperties to handle -include
+				builder.setProperties(baseDir, properties);
+				return;
+			}
 		}
 	}
 
