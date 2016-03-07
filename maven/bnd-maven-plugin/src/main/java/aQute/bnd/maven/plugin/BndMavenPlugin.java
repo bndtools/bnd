@@ -162,6 +162,14 @@ public class BndMavenPlugin extends AbstractMojo {
 				log.debug("builder sourcepath buildContext.hasDelta: " + delta);
 			}
 
+			// Set Bundle-SymbolicName
+			if (builder.getProperty(Constants.BUNDLE_SYMBOLICNAME) == null) {
+				builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, project.getArtifactId());
+			}
+			// Set Bundle-Name
+			if (builder.getProperty(Constants.BUNDLE_NAME) == null) {
+				builder.setProperty(Constants.BUNDLE_NAME, project.getName());
+			}
 			// Set Bundle-Version
 			Version version = MavenVersion.parseString(project.getVersion()).getOSGiVersion();
 			builder.setProperty(Constants.BUNDLE_VERSION, version.toString());

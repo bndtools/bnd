@@ -6,7 +6,7 @@ println " localRepositoryPath: ${localRepositoryPath}"
 println " mavenVersion: ${mavenVersion}"
 
 // Check the bundles exist!
-File api_bundle = new File(basedir, 'test-api-bundle/target/test-api-bundle-0.0.1.jar')
+File api_bundle = new File(basedir, 'test-api-bundle/target/test.api.bundle-0.0.1.jar')
 assert api_bundle.isFile()
 File impl_bundle = new File(basedir, 'test-impl-bundle/target/test-impl-bundle-0.0.1-SNAPSHOT.jar')
 assert impl_bundle.isFile()
@@ -22,9 +22,12 @@ JarFile wrapper_jar = new JarFile(wrapper_bundle)
 Attributes wrapper_manifest = wrapper_jar.getManifest().getMainAttributes()
 
 // Basic manifest check
-assert api_manifest.getValue('Bundle-SymbolicName') == 'test-api-bundle'
+assert api_manifest.getValue('Bundle-SymbolicName') == 'test.api.bundle'
 assert impl_manifest.getValue('Bundle-SymbolicName') == 'test-impl-bundle'
-assert wrapper_manifest.getValue('Bundle-SymbolicName') == 'test-wrapper-bundle'
+assert wrapper_manifest.getValue('Bundle-SymbolicName') == 'test.wrapper.bundle'
+assert api_manifest.getValue('Bundle-Name') == 'Test API Bundle'
+assert impl_manifest.getValue('Bundle-Name') == 'Test Impl Bundle'
+assert wrapper_manifest.getValue('Bundle-Name') == 'test-wrapper-bundle'
 assert api_manifest.getValue('Bundle-Version') == '0.0.1'
 assert impl_manifest.getValue('Bundle-Version') == '0.0.1.SNAPSHOT'
 assert wrapper_manifest.getValue('Bundle-Version') != '0.0.1.BUILD-SNAPSHOT'
@@ -53,7 +56,7 @@ assert impl_manifest.getValue('SomeVar') == 'value'
 assert impl_manifest.getValue('SomeParentVar') == 'parentValue'
 
 // Check bnd properties
-assert api_manifest.getValue('Project-Name') == 'test-api-bundle'
+assert api_manifest.getValue('Project-Name') == 'Test API Bundle'
 assert impl_manifest.getValue('Project-Name') == 'test-impl-bundle'
 assert wrapper_manifest.getValue('Project-Name') == 'test-wrapper-bundle'
 assert api_manifest.getValue('Project-Dir') == new File(basedir, 'test-api-bundle').absolutePath

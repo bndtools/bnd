@@ -12,7 +12,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>test-api-bundle</artifactId>
+			<artifactId>test.api.bundle</artifactId>
 			<version>0.0.1</version>
 		</dependency>
 	</dependencies>
