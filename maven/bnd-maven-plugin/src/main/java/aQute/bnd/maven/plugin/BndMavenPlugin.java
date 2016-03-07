@@ -162,6 +162,12 @@ public class BndMavenPlugin extends AbstractMojo {
 				log.debug("builder sourcepath buildContext.hasDelta: " + delta);
 			}
 
+			// Set Bundle-SymbolicName
+			String bundleSymbolicName = builder.getProperty(Constants.BUNDLE_SYMBOLICNAME);
+			if (isEmpty(bundleSymbolicName)) {
+				builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, project.getArtifactId());
+			}
+
 			// Set Bundle-Version
 			Version version = MavenVersion.parseString(project.getVersion()).getOSGiVersion();
 			builder.setProperty(Constants.BUNDLE_VERSION, version.toString());
@@ -371,5 +377,9 @@ public class BndMavenPlugin extends AbstractMojo {
 			}
 			return value;
 		}
+	}
+
+	private boolean isEmpty(String header) {
+		return (header == null) || header.trim().isEmpty() || Constants.EMPTY_HEADER.equals(header);
 	}
 }
