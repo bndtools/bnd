@@ -39,6 +39,7 @@ assert wrapper_manifest.getValue('X-ParentProjectProperty') == 'overridden'
 assert api_manifest.getValue('X-IncludedParentProjectProperty') == 'Included via -include in parent bnd.bnd file'
 assert impl_manifest.getValue('X-IncludedParentProjectProperty') == 'Included via -include in parent bnd.bnd file'
 assert wrapper_manifest.getValue('X-IncludedParentProjectProperty') == 'Included via -include in parent bnd.bnd file'
+assert wrapper_manifest.getValue('X-IncludedProperty') == 'Included via -include in project bnd.bnd file'
 assert impl_manifest.getValue('X-IncludedProjectProperty') == 'Included via -include in project bnd.bnd file'
 
 // Check POM properties

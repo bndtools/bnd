@@ -32,6 +32,17 @@
 						</goals>
 					</execution>
 				</executions>
+                <configuration>
+                    <bnd><![CDATA[
+X-ParentProjectProperty: it worked
+Project-Name: ${project.name}
+Project-Dir: ${project.dir}
+Project-Output: ${project.output}
+Project-Sourcepath: ${project.sourcepath}
+Project-Buildpath: ${project.buildpath}
+-include: other.bnd
+]]></bnd>
+                </configuration>
 			</plugin>
 
 			<!--

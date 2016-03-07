@@ -16,5 +16,16 @@
 			<version>0.0.1</version>
 		</dependency>
 	</dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+                <configuration>
+                    <bndfile>bnd/wrapper.bnd</bndfile>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
