@@ -6,7 +6,8 @@
 		<artifactId>test</artifactId>
 		<version>0.0.1</version>
 	</parent>
-	<artifactId>test-api-bundle</artifactId>
+	<artifactId>test.api.bundle</artifactId>
+    <name>Test API Bundle</name>
 
 	<dependencies>
 		<dependency>
