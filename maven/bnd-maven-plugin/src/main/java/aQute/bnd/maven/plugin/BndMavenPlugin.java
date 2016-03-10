@@ -126,22 +126,29 @@ public class BndMavenPlugin extends AbstractMojo {
 				builder.setJar(classesDirJar);
 			}
 
-			// Set bnd classpath
+			// Compute bnd classpath
 			Set<Artifact> artifacts = project.getArtifacts();
-			List<File> buildpath = new ArrayList<File>(artifacts.size());
+			List<Object> buildpath = new ArrayList<Object>(artifacts.size());
 			for (Artifact artifact : artifacts) {
 				if (!artifact.getType().equals("jar")) {
 					continue;
 				}
-				buildpath.add(artifact.getFile().getCanonicalFile());
+				File cpe = artifact.getFile().getCanonicalFile();
+				if (cpe.isDirectory()) {
+					Jar cpeDir = new Jar(cpe);
+					builder.updateModified(cpeDir.lastModified(), cpe.getPath());
+					buildpath.add(cpeDir);
+				} else {
+					builder.updateModified(cpe.lastModified(), cpe.getPath());
+					buildpath.add(cpe);
+				}
 			}
 			builder.setProperty("project.buildpath", Strings.join(File.pathSeparator, buildpath));
-			builder.setClasspath(buildpath.toArray(new File[buildpath.size()]));
 			if (log.isDebugEnabled()) {
 				log.debug("builder classpath: " + builder.getProperty("project.buildpath"));
 			}
 
-			// Set bnd sourcepath
+			// Compute bnd sourcepath
 			boolean delta = !buildContext.isIncremental();
 			List<File> sourcepath = new ArrayList<File>();
 			if (sourceDir.exists()) {
@@ -156,7 +163,6 @@ public class BndMavenPlugin extends AbstractMojo {
 				}
 			}
 			builder.setProperty("project.sourcepath", Strings.join(File.pathSeparator, sourcepath));
-			builder.setSourcepath(sourcepath.toArray(new File[sourcepath.size()]));
 			if (log.isDebugEnabled()) {
 				log.debug("builder sourcepath: " + builder.getProperty("project.sourcepath"));
 				log.debug("builder sourcepath buildContext.hasDelta: " + delta);
@@ -182,6 +188,10 @@ public class BndMavenPlugin extends AbstractMojo {
 			}
 
 			if (delta || (builder.getJar() == null) || (builder.lastModified() > builder.getJar().lastModified())) {
+				// Set builder paths
+				builder.setClasspath(buildpath);
+				builder.setSourcepath(sourcepath.toArray(new File[sourcepath.size()]));
+
 				// Build bnd Jar (in memory)
 				Jar bndJar = builder.build();
 
