@@ -1299,6 +1299,29 @@ public class Analyzer extends Processor {
 	 * @param classpath
 	 * @throws IOException
 	 */
+	public void setClasspath(Collection< ? > classpath) throws IOException {
+		for (Object cpe : classpath) {
+			if (cpe instanceof Jar) {
+				addClasspath((Jar) cpe);
+			} else if (cpe instanceof File) {
+				File f = (File) cpe;
+				if (!f.exists()) {
+					error("Missing file on classpath: %s", f.getAbsolutePath().replace(File.separatorChar, '/'));
+					continue;
+				}
+				addClasspath(f);
+			} else if (cpe instanceof String) {
+				Jar j = getJarFromName((String) cpe, " setting classpath");
+				if (j == null) {
+					continue;
+				}
+				addClasspath(j);
+			} else {
+				error("Cannot convert to JAR to add to classpath %s. Not a File, Jar, or String", cpe);
+			}
+		}
+	}
+
 	public void setClasspath(File[] classpath) throws IOException {
 		List<Jar> list = new ArrayList<Jar>();
 		for (int i = 0; i < classpath.length; i++) {
