@@ -135,9 +135,10 @@ public class BndMavenPlugin extends AbstractMojo {
 				}
 				File cpe = artifact.getFile().getCanonicalFile();
 				if (cpe.isDirectory()) {
-					Jar cpeDir = new Jar(cpe);
-					builder.updateModified(cpeDir.lastModified(), cpe.getPath());
-					buildpath.add(cpeDir);
+					Jar cpeJar = new Jar(cpe);
+					builder.addClose(cpeJar);
+					builder.updateModified(cpeJar.lastModified(), cpe.getPath());
+					buildpath.add(cpeJar);
 				} else {
 					builder.updateModified(cpe.lastModified(), cpe.getPath());
 					buildpath.add(cpe);
@@ -165,7 +166,6 @@ public class BndMavenPlugin extends AbstractMojo {
 			builder.setProperty("project.sourcepath", Strings.join(File.pathSeparator, sourcepath));
 			if (log.isDebugEnabled()) {
 				log.debug("builder sourcepath: " + builder.getProperty("project.sourcepath"));
-				log.debug("builder sourcepath buildContext.hasDelta: " + delta);
 			}
 
 			// Set Bundle-SymbolicName
@@ -185,6 +185,7 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			if (log.isDebugEnabled()) {
 				log.debug("builder properties: " + builder.getProperties());
+				log.debug("builder delta: " + delta);
 			}
 
 			if (delta || (builder.getJar() == null) || (builder.lastModified() > builder.getJar().lastModified())) {
@@ -197,13 +198,12 @@ public class BndMavenPlugin extends AbstractMojo {
 
 				// Expand Jar into target/classes
 				expandJar(bndJar, classesDir);
-
-				// Finally, report
-				reportErrorsAndWarnings(builder);
 			} else {
 				log.debug("No build");
 			}
 
+			// Finally, report
+			reportErrorsAndWarnings(builder);
 		} catch (MojoExecutionException e) {
 			throw e;
 		} catch (Exception e) {
