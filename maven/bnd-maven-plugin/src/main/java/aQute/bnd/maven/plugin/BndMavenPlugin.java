@@ -197,13 +197,12 @@ public class BndMavenPlugin extends AbstractMojo {
 
 				// Expand Jar into target/classes
 				expandJar(bndJar, classesDir);
-
-				// Finally, report
-				reportErrorsAndWarnings(builder);
 			} else {
 				log.debug("No build");
 			}
 
+			// Finally, report
+			reportErrorsAndWarnings(builder);
 		} catch (MojoExecutionException e) {
 			throw e;
 		} catch (Exception e) {
