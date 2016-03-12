@@ -63,10 +63,11 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
+
 import aQute.lib.io.IO;
 import bndtools.Plugin;
 
-public class RepoTemplateSelectionWizardPage extends WizardPage {
+public class TemplateSelectionWizardPage extends WizardPage {
 
     public static final String PROP_TEMPLATE = "template";
 
@@ -91,7 +92,7 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
 
     private boolean shown = false;
 
-    public RepoTemplateSelectionWizardPage(String pageName, String templateType, Template emptyTemplate) {
+    public TemplateSelectionWizardPage(String pageName, String templateType, Template emptyTemplate) {
         super(pageName);
         this.templateType = templateType;
         this.emptyTemplate = emptyTemplate;
@@ -151,7 +152,7 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
         viewer.setContentProvider(contentProvider);
         viewer.setLabelProvider(new RepoTemplateLabelProvider(loadedImages));
         viewer.addFilter(latestFilter);
-        setTemplates(Collections.singletonList(emptyTemplate));
+        setTemplates(emptyTemplate != null ? Collections.singletonList(emptyTemplate) : Collections.<Template> emptyList());
 
         btnLatestOnly = new Button(composite, SWT.CHECK);
         btnLatestOnly.setText("Show latest versions only");
@@ -250,6 +251,7 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
             try {
                 final Set<Template> templates = new LinkedHashSet<>();
                 final List<String> errors = new LinkedList<>();
+
                 List<ServiceReference<TemplateLoader>> templateLoaderSvcRefs = new ArrayList<>(context.getServiceReferences(TemplateLoader.class, null));
                 Collections.sort(templateLoaderSvcRefs);
 
@@ -263,6 +265,10 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
                         context.ungetService(templateLoaderSvcRef);
                     }
                 }
+
+                // Add empty template if provided
+                if (emptyTemplate != null)
+                    templates.add(emptyTemplate);
 
                 // Log errors
                 for (String error : errors)

@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 import org.bndtools.api.ProjectLayout;
 import org.bndtools.api.ProjectPaths;
 import org.bndtools.core.ui.wizards.shared.BuiltInTemplate;
-import org.bndtools.core.ui.wizards.shared.RepoTemplateSelectionWizardPage;
+import org.bndtools.core.ui.wizards.shared.TemplateSelectionWizardPage;
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.StringResource;
@@ -48,7 +48,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
     public static final String DEFAULT_BUNDLE_VERSION = "0.0.0.${tstamp}";
 
-    private RepoTemplateSelectionWizardPage templatePage;
+    private TemplateSelectionWizardPage templatePage;
 
     NewBndProjectWizard(final NewBndProjectWizardPageOne pageOne, final NewJavaProjectWizardPageTwo pageTwo) {
         super(pageOne, pageTwo);
@@ -62,10 +62,10 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
         baseTemplate.addInputResource("bnd.bnd", new StringResource(""));
         baseTemplate.setHelpPath("docs/empty_project.xml");
 
-        templatePage = new RepoTemplateSelectionWizardPage("projectTemplateSelection", "project", baseTemplate);
+        templatePage = new TemplateSelectionWizardPage("projectTemplateSelection", "project", baseTemplate);
         templatePage.setTitle("Select Project Template");
 
-        templatePage.addPropertyChangeListener(RepoTemplateSelectionWizardPage.PROP_TEMPLATE, new PropertyChangeListener() {
+        templatePage.addPropertyChangeListener(TemplateSelectionWizardPage.PROP_TEMPLATE, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 pageOne.setTemplate(templatePage.getTemplate());
