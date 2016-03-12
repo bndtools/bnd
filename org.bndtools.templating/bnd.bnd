@@ -7,9 +7,12 @@
 	osgi.core; version=${osgi.core.version},\
 	osgi.cmpn; version=${osgi.cmpn.version},\
 	org.eclipse.equinox.common,\
-	ST4-4.0.8-complete.jar; version=file
+	ST4-4.0.8-complete.jar; version=file,\
+	org.eclipse.equinox.ds
+
 -testpath: \
-	${junit}
+	${junit},\
+	bndtools.utils; packages=*
 
 
 Private-Package: org.bndtools.templating.*

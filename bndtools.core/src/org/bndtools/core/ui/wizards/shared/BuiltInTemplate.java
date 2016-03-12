@@ -9,7 +9,7 @@ import java.util.Map;
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
-import org.bndtools.templating.repobased.StringTemplateEngine;
+import org.bndtools.templating.engine.StringTemplateEngine;
 import org.bndtools.templating.util.ObjectClassDefinitionImpl;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;

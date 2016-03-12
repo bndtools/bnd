@@ -5,13 +5,12 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,15 +19,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.bndtools.templating.Template;
-import org.bndtools.templating.repobased.RepoPluginsBundleLocator;
-import org.bndtools.templating.repobased.ReposTemplateLoader;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IContributor;
+import org.bndtools.templating.TemplateLoader;
+import org.bndtools.utils.progress.ProgressMonitorReporter;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
@@ -64,15 +59,12 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.ScrolledFormText;
-import org.osgi.service.repository.Repository;
-
-import aQute.bnd.build.Workspace;
-import aQute.bnd.deployer.repository.FixedIndexedRepo;
-import aQute.bnd.service.RepositoryPlugin;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
-import bndtools.central.Central;
-import bndtools.preferences.BndPreferences;
 
 public class RepoTemplateSelectionWizardPage extends WizardPage {
 
@@ -84,7 +76,6 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
 
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     private final String templateType;
-    private final String templateExtPoint;
     private final Template emptyTemplate;
 
     private final Map<Template,Image> loadedImages = new IdentityHashMap<>();
@@ -100,10 +91,9 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
 
     private boolean shown = false;
 
-    public RepoTemplateSelectionWizardPage(String pageName, String templateType, String templateExtPoint, Template emptyTemplate) {
+    public RepoTemplateSelectionWizardPage(String pageName, String templateType, Template emptyTemplate) {
         super(pageName);
         this.templateType = templateType;
-        this.templateExtPoint = templateExtPoint;
         this.emptyTemplate = emptyTemplate;
     }
 
@@ -246,6 +236,8 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
         private final Shell shell;
         private final String originalMessage;
 
+        private final BundleContext context = FrameworkUtil.getBundle(LoadTemplatesJob.class).getBundleContext();
+
         public LoadTemplatesJob(Shell shell, String originalMessage) {
             this.shell = shell;
             this.originalMessage = originalMessage;
@@ -258,57 +250,23 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
             try {
                 final Set<Template> templates = new LinkedHashSet<>();
                 final List<String> errors = new LinkedList<>();
+                List<ServiceReference<TemplateLoader>> templateLoaderSvcRefs = new ArrayList<>(context.getServiceReferences(TemplateLoader.class, null));
+                Collections.sort(templateLoaderSvcRefs);
 
-                // Load from workspace, if one exists
-                Workspace ws = Central.getWorkspaceIfPresent();
-                if (ws != null) {
-                    List<Repository> repos = ws.getPlugins(Repository.class);
-                    RepoPluginsBundleLocator locator = new RepoPluginsBundleLocator(ws.getRepositories());
-                    templates.addAll(new ReposTemplateLoader(repos, locator).findTemplates(templateType, errors, monitor.newChild(1, SubMonitor.SUPPRESS_NONE)));
-                }
-
-                // Load from the preferences-configured template repository
-                BndPreferences bndPrefs = new BndPreferences();
-                if (bndPrefs.getEnableTemplateRepo()) {
+                for (ServiceReference<TemplateLoader> templateLoaderSvcRef : templateLoaderSvcRefs) {
+                    TemplateLoader templateLoader = context.getService(templateLoaderSvcRef);
                     try {
-                        FixedIndexedRepo repo = loadRepo(bndPrefs.getTemplateRepoUriList());
-                        RepoPluginsBundleLocator locator = new RepoPluginsBundleLocator(Collections.<RepositoryPlugin> singletonList(repo));
-                        ReposTemplateLoader loader = new ReposTemplateLoader(Collections.<Repository> singletonList(repo), locator);
-                        templates.addAll(loader.findTemplates(templateType, errors, monitor.newChild(1, SubMonitor.SUPPRESS_NONE)));
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
+                        ProgressMonitorReporter reporter = new ProgressMonitorReporter(monitor.newChild(1, SubMonitor.SUPPRESS_NONE), "Finding templates");
+                        templates.addAll(templateLoader.findTemplates(templateType, reporter));
+                        errors.addAll(reporter.getErrors());
+                    } finally {
+                        context.ungetService(templateLoaderSvcRef);
                     }
                 }
 
                 // Log errors
-                for (String error : errors) {
+                for (String error : errors)
                     Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, error, null));
-                }
-
-                // Add the build-in empty template if provided
-                if (emptyTemplate != null)
-                    templates.add(emptyTemplate);
-
-                // Load from extension registry
-                if (templateExtPoint != null) {
-                    IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, templateExtPoint);
-                    if (elements == null)
-                        elements = new IConfigurationElement[0];
-                    monitor.setWorkRemaining(elements.length);
-
-                    for (IConfigurationElement element : elements) {
-                        String elementName = element.getName();
-                        IContributor contributor = element.getContributor();
-                        try {
-                            Template extTemplate = (Template) element.createExecutableExtension("class");
-                            templates.add(extTemplate);
-                        } catch (CoreException e) {
-                            Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Error loading template '%s' from bundle %s", elementName, contributor.getName()), e));
-                        } finally {
-                            monitor.worked(1);
-                        }
-                    }
-                }
 
                 // Display results
                 Control control = viewer.getControl();
@@ -324,6 +282,8 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
                     });
                 }
 
+            } catch (InvalidSyntaxException ex) {
+                throw new InvocationTargetException(ex);
             } finally {
                 monitor.done();
                 // Restore the original message to the page
@@ -337,17 +297,6 @@ public class RepoTemplateSelectionWizardPage extends WizardPage {
             }
         }
 
-        private FixedIndexedRepo loadRepo(List<String> uris) throws IOException, URISyntaxException {
-            FixedIndexedRepo repo = new FixedIndexedRepo();
-            StringBuilder sb = new StringBuilder();
-            for (Iterator<String> iter = uris.iterator(); iter.hasNext();) {
-                sb.append(iter.next());
-                if (iter.hasNext())
-                    sb.append(',');
-            }
-            repo.setLocations(sb.toString());
-            return repo;
-        }
     }
 
     protected void loadTemplates() {

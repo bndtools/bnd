@@ -1,4 +1,4 @@
-package org.bndtools.templating.repobased;
+package org.bndtools.core.templating.repobased;
 
 import java.io.File;
 

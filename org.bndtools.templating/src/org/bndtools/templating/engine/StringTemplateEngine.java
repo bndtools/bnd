@@ -1,4 +1,4 @@
-package org.bndtools.templating.repobased;
+package org.bndtools.templating.engine;
 
 import java.io.BufferedReader;
 import java.io.IOException;

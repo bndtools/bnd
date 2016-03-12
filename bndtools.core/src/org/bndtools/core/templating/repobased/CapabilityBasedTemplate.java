@@ -1,4 +1,4 @@
-package org.bndtools.templating.repobased;
+package org.bndtools.core.templating.repobased;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,6 +15,7 @@ import org.bndtools.templating.FolderResource;
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
+import org.bndtools.templating.engine.StringTemplateEngine;
 import org.bndtools.templating.util.AttributeDefinitionImpl;
 import org.bndtools.templating.util.ObjectClassDefinitionImpl;
 import org.osgi.framework.Version;

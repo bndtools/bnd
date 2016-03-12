@@ -7,6 +7,9 @@ import java.util.Map;
 import org.osgi.framework.Version;
 import org.osgi.service.metatype.ObjectClassDefinition;
 
+import aQute.bnd.annotation.ProviderType;
+
+@ProviderType
 public interface Template {
 
     /**

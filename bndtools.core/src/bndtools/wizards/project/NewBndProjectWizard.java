@@ -62,7 +62,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
         baseTemplate.addInputResource("bnd.bnd", new StringResource(""));
         baseTemplate.setHelpPath("docs/empty_project.xml");
 
-        templatePage = new RepoTemplateSelectionWizardPage("projectTemplateSelection", "project", "projectTemplates", baseTemplate);
+        templatePage = new RepoTemplateSelectionWizardPage("projectTemplateSelection", "project", baseTemplate);
         templatePage.setTitle("Select Project Template");
 
         templatePage.addPropertyChangeListener(RepoTemplateSelectionWizardPage.PROP_TEMPLATE, new PropertyChangeListener() {
