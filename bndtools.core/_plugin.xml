@@ -164,6 +164,15 @@
             name="Bndtools Project"
             project="true">
       </wizard>
+      <wizard
+            id="bndtools.workspaceWizard"
+            category="bndtools.wizardCategory"
+            class="bndtools.wizards.workspace.WorkspaceSetupWizard"
+            finalPerspective="bndtools.perspective"
+            preferredPerspectives="bndtools.perspective"
+            icon="icons/bndtools-logo-16x16.png"
+            name="Bnd OSGi Workspace">
+      </wizard>
    </extension>
    <extension
          point="org.eclipse.ui.views">

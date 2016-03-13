@@ -2,10 +2,8 @@ package bndtools.wizards.workspace;
 
 import java.io.File;
 
-import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
-
-import aQute.bnd.build.Project;
 
 class LocationSelection {
 
@@ -28,10 +26,6 @@ class LocationSelection {
                 return "Location must be specified";
             if (!Path.EMPTY.isValidPath(externalPath))
                 return "Invalid location.";
-
-            IPath path = new Path(externalPath);
-            if (!Project.BNDCNF.equals(path.lastSegment()))
-                return String.format("Last path segment must be '%s'.", Project.BNDCNF);
 
             File dir = new File(externalPath);
             if (dir.exists() && !dir.isDirectory())
@@ -66,6 +60,12 @@ class LocationSelection {
         } else if (!externalPath.equals(other.externalPath))
             return false;
         return true;
+    }
+
+    public File toFile() {
+        if (eclipseWorkspace)
+            return ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile();
+        return new File(externalPath);
     }
 
 }
