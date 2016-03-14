@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+	<groupId>commons.dbcp</groupId>
+	<artifactId>commons-dbcp</artifactId>
+	<versioning>
+		<latest>1.5-SNAPSHOT</latest>
+		<versions>
+			<version>1.4.1-SNAPSHOT</version>
+			<version>1.5-SNAPSHOT</version>
+		</versions>
+		<lastUpdated>20151210182516</lastUpdated>
+		<skip>
+			<skip></skip>
+		</skip>
+	</versioning>
+	<skip />
+</metadata>
