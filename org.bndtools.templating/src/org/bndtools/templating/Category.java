@@ -10,6 +10,8 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.osgi.framework.Version;
+
 public final class Category implements Comparable<Category> {
 
     private final String name;
@@ -27,7 +29,13 @@ public final class Category implements Comparable<Category> {
                 return diff;
 
             // Finally sort on version -- again, intentionally backwards
-            return t1.getVersion().compareTo(t2.getVersion());
+            Version v1 = t1.getVersion();
+            if (v1 == null)
+                v1 = Version.emptyVersion;
+            Version v2 = t2.getVersion();
+            if (v2 == null)
+                v2 = Version.emptyVersion;
+            return v1.compareTo(v2);
         }
     });
     private final String prefix;

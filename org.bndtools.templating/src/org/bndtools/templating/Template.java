@@ -1,5 +1,6 @@
 package org.bndtools.templating;
 
+import java.io.Closeable;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +11,7 @@ import org.osgi.service.metatype.ObjectClassDefinition;
 import aQute.bnd.annotation.ProviderType;
 
 @ProviderType
-public interface Template {
+public interface Template extends Closeable {
 
     /**
      * The name of this template.

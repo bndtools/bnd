@@ -37,14 +37,16 @@ public class RepoTemplateLabelProvider extends StyledCellLabelProvider {
 
             // Name
             StyledString label = new StyledString(template.getName(), UIConstants.BOLD_STYLER);
-            label.append(" ");
 
             // Version, with all segments except qualifier in bold
-            Version version = template.getVersion() != null ? template.getVersion() : Version.emptyVersion;
-            label.append(String.format("%d.%d.%d", version.getMajor(), version.getMinor(), version.getMicro()), UIConstants.BOLD_COUNTER_STYLER);
-            String q = version.getQualifier();
-            if (q != null && !q.isEmpty())
-                label.append("." + q, StyledString.COUNTER_STYLER);
+            Version version = template.getVersion();
+            if (version != null) {
+                label.append(" ");
+                label.append(String.format("%d.%d.%d", version.getMajor(), version.getMinor(), version.getMicro()), UIConstants.BOLD_COUNTER_STYLER);
+                String q = version.getQualifier();
+                if (q != null && !q.isEmpty())
+                    label.append("." + q, StyledString.COUNTER_STYLER);
+            }
 
             label.append(" \u2014 [", StyledString.QUALIFIER_STYLER).append(template.getShortDescription(), StyledString.QUALIFIER_STYLER).append("]", StyledString.QUALIFIER_STYLER);
 

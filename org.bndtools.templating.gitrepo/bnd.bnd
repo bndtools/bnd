@@ -1,0 +1,21 @@
+# This bundle separated from core as it has a dependency on JGit.
+
+-buildpath: \
+	${bndlib},\
+	org.bndtools.templating; version=latest,\
+	bndtools.utils; version=latest; packages=*,\
+	org.eclipse.jgit,\
+	osgi.core;version=${osgi.core.version},\
+	osgi.cmpn;version=${osgi.cmpn.version},\
+	org.eclipse.jface,\
+	org.eclipse.ui.workbench,\
+	org.eclipse.swt.cocoa.macosx.x86_64; packages=*,\
+	org.eclipse.equinox.preferences
+
+-privatepackage: org.bndtools.templating.jgit.*
+-includeresource: resources
+-conditionalpackage: aQute.lib.*, aQute.libg.*, org.bndtools.utils.*
+
+
+Bundle-ActivationPolicy: lazy
+Bundle-SymbolicName: org.bndtools.templating.gitrepo; singleton:=true

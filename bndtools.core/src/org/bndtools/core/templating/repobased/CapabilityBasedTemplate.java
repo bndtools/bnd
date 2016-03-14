@@ -244,4 +244,9 @@ public class CapabilityBasedTemplate implements Template {
         return true;
     }
 
+    @Override
+    public void close() throws IOException {
+        // nothing to do
+    }
+
 }

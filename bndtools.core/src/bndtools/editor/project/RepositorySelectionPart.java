@@ -11,6 +11,8 @@ import java.util.Map.Entry;
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.Function;
 import org.bndtools.utils.jface.StrikeoutStyler;
+import org.bndtools.utils.swt.AddRemoveButtonBarPart;
+import org.bndtools.utils.swt.AddRemoveButtonBarPart.AddRemoveListener;
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -31,8 +33,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
-import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.StyledString.Styler;
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerDropAdapter;
@@ -84,8 +86,6 @@ import bndtools.editor.common.BndEditorPart;
 import bndtools.editor.common.UpDownButtonBarPart;
 import bndtools.editor.common.UpDownButtonBarPart.UpDownListener;
 import bndtools.shared.URLDialog;
-import bndtools.editor.common.AddRemoveButtonBarPart;
-import bndtools.editor.common.AddRemoveButtonBarPart.AddRemoveListener;
 
 public class RepositorySelectionPart extends BndEditorPart {
 

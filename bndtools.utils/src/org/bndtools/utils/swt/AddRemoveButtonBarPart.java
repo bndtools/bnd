@@ -1,4 +1,4 @@
-package bndtools.editor.common;
+package org.bndtools.utils.swt;
 
 import java.util.ArrayList;
 import java.util.List;

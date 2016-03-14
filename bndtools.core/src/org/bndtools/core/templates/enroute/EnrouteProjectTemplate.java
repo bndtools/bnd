@@ -1,5 +1,6 @@
 package org.bndtools.core.templates.enroute;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -420,6 +421,11 @@ public class EnrouteProjectTemplate implements Template, IExecutableExtension {
             out_ = out_.replace(e.getKey(), e.getValue());
         }
         return out_;
+    }
+
+    @Override
+    public void close() throws IOException {
+        // nothing to do
     }
 
 }

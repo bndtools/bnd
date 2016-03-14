@@ -17,7 +17,8 @@ workspace.bundles: \
 	org.bndtools.headless.build.plugin.gradle;version=snapshot,\
 	org.bndtools.versioncontrol.ignores.manager;version=snapshot,\
 	org.bndtools.versioncontrol.ignores.plugin.git;version=snapshot,\
-	org.bndtools.templating; version=snapshot
+	org.bndtools.templating; version=snapshot,\
+	org.bndtools.templating.gitrepo; version=snapshot
 
 p2.bundles: \
 	org.eclipse.equinox.p2.core,\
@@ -181,6 +182,9 @@ crossplatform.bundles: \
 	org.eclipse.ui.workbench,\
 	org.eclipse.ui.workbench.texteditor,\
 	org.eclipse.update.configurator,\
+	org.eclipse.jgit,\
+	javaewah,\
+	com.jcraft.jsch,\
 	org.hamcrest.core,\
 	org.junit,\
 	org.osgi.impl.bundle.bindex;version=latest,\

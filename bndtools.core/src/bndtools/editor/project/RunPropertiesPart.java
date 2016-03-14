@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.bndtools.utils.swt.AddRemoveButtonBarPart;
+import org.bndtools.utils.swt.AddRemoveButtonBarPart.AddRemoveListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -30,11 +32,9 @@ import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.osgi.Constants;
 import bndtools.editor.common.BndEditorPart;
-import bndtools.editor.common.AddRemoveButtonBarPart;
 import bndtools.editor.common.MapContentProvider;
 import bndtools.editor.common.MapEntryCellModifier;
 import bndtools.editor.common.PropertiesTableLabelProvider;
-import bndtools.editor.common.AddRemoveButtonBarPart.AddRemoveListener;
 import bndtools.editor.utils.ToolTips;
 import bndtools.utils.ModificationLock;
 

@@ -1,5 +1,6 @@
 package org.bndtools.core.ui.wizards.shared;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -95,6 +96,11 @@ public class BuiltInTemplate implements Template {
             }
         }
         return uri;
+    }
+
+    @Override
+    public void close() throws IOException {
+        // nothing to do
     }
 
 }

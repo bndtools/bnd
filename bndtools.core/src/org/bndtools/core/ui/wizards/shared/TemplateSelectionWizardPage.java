@@ -329,6 +329,14 @@ public class TemplateSelectionWizardPage extends WizardPage {
             if (!img.isDisposed())
                 img.dispose();
         }
+
+        if (selected != null) {
+            try {
+                selected.close();
+            } catch (IOException e) {
+                Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Problem cleaning up template content", e));
+            }
+        }
     }
 
     private void setTemplates(final Collection<Template> templates) {

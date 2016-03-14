@@ -5,6 +5,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bndtools.utils.swt.AddRemoveButtonBarPart;
+import org.bndtools.utils.swt.AddRemoveButtonBarPart.AddRemoveListener;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.preference.PreferencePage;
@@ -29,8 +31,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
-import bndtools.editor.common.AddRemoveButtonBarPart;
-import bndtools.editor.common.AddRemoveButtonBarPart.AddRemoveListener;
 import bndtools.preferences.BndPreferences;
 import bndtools.shared.URLDialog;
 import bndtools.shared.URLLabelProvider;
