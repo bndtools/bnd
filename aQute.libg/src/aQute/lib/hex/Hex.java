@@ -3,6 +3,8 @@ package aQute.lib.hex;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
+import aQute.lib.strings.Strings;
+
 /*
  * Hex converter.
  * 
@@ -16,7 +18,7 @@ public class Hex {
 									};
 
 	public final static byte[] toByteArray(String string) {
-		string = string.trim();
+		string = Strings.trim(string);
 		if ((string.length() & 1) != 0)
 			throw new IllegalArgumentException("a hex string must have an even length");
 
