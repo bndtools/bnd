@@ -39,7 +39,7 @@ import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 
 public class HttpClient extends Processor implements Closeable, URLConnector {
-	private static final SimpleDateFormat		sdf						= new SimpleDateFormat(
+	public static final SimpleDateFormat sdf = new SimpleDateFormat(
 "EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
 
 	private final List<ProxyHandler>			proxyHandlers			= new ArrayList<>();
@@ -332,7 +332,9 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 			trace("go stream");
 			if (put instanceof InputStream) {
 				IO.copy((InputStream) put, out);
-			} else if (put instanceof byte[])
+			} else if (put instanceof String)
+				IO.store(put, out);
+			else if (put instanceof byte[])
 				IO.copy((byte[]) put, out);
 			else if (put instanceof File)
 				IO.copy((File) put, out);

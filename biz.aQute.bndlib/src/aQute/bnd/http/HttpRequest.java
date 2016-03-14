@@ -11,6 +11,7 @@ import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.url.TaggedData;
 import aQute.lib.converter.TypeReference;
 
 @SuppressWarnings("unchecked")
@@ -163,5 +164,13 @@ public class HttpRequest<T> {
 	public HttpRequest<T> ifMatch(String etag) {
 		this.ifMatch = etag;
 		return this;
+	}
+
+	public HttpRequest<TaggedData> asTag() {
+		return get(TaggedData.class);
+	}
+
+	public HttpRequest<String> asString() {
+		return get(String.class);
 	}
 }

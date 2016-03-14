@@ -3,6 +3,7 @@ package aQute.bnd.service.url;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.util.Date;
 
 /**
  * Represents a data stream that has a tag associated with it; the primary
@@ -62,6 +63,11 @@ public class TaggedData {
 
 	public URI getUrl() {
 		return this.url;
+	}
+
+	@Override
+	public String toString() {
+		return "TaggedData [tag=" + tag + ", code=" + code + ", modified=" + new Date(modified) + ", url=" + url + "]";
 	}
 
 }
