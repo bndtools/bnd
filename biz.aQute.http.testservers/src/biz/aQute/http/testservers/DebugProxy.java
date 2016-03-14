@@ -119,7 +119,7 @@ public class DebugProxy extends NanoHTTPD {
 	}
 
 	public static void main(String args[]) throws Exception {
-		DebugProxy dp = new DebugProxy(9999, new URL("http://maven.apache.org"));
+		DebugProxy dp = new DebugProxy(9999, new URL("http://localhost:8081"));
 		dp.start();
 
 		Thread.sleep(1000000);

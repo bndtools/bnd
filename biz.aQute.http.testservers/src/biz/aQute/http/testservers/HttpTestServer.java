@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import aQute.lib.converter.Converter;
+import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 
 public class HttpTestServer implements AutoCloseable, Closeable {
@@ -141,12 +142,14 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 							response.content = (byte[]) result;
 							response.mimeType = "application/octet-stream";
 						} else if (result instanceof InputStream) {
-							response.content = aQute.lib.io.IO.read(((InputStream) result));
+							response.content = IO.read(((InputStream) result));
 							response.mimeType = "application/octet-stream";
 						} else if (result instanceof String) {
 							String s = (String) result;
 							response.content = s.getBytes(StandardCharsets.UTF_8);
 							response.mimeType = "text/" + (s.startsWith("<") ? "html" : "plain");
+						} else if (result instanceof File) {
+							response.content = IO.read((File) result);
 						} else {
 							response.content = toJSON(result);
 							response.mimeType = "application/json";
