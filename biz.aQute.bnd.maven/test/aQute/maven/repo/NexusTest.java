@@ -22,7 +22,7 @@ public class NexusTest extends TestCase {
 		IO.delete(local);
 		local.mkdirs();
 		HttpClient httpClient = new HttpClient();
-		httpClient.addBasicPlugin(new BasicAuthentication("deployment", "deployment123", Workspace.log));
+		httpClient.addURLConnectionHandler(new BasicAuthentication("deployment", "deployment123", Workspace.log));
 		repo = new RemoteRepo(httpClient, "http://localhost:8081/nexus/content/repositories/snapshots/");
 	}
 

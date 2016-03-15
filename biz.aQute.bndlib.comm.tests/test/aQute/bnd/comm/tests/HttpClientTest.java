@@ -64,7 +64,9 @@ public class HttpClientTest extends TestCase {
 
 	public void testRedirectURL() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
-			hc.addBasicPlugin(new HttpsVerification(httpsServer.getCertificateChain(), false, hc));
+			HttpsVerification httpsVerification = new HttpsVerification(httpsServer.getCertificateChain(), false,
+					hc.getReporter());
+			hc.addURLConnectionHandler(httpsVerification);
 			URI uri = httpsServer.getBaseURI("get");
 			URL go = httpServer.getBaseURI("xlocation").toURL();
 

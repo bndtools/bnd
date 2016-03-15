@@ -31,9 +31,9 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 	private static final String	HEADER_LOCATION			= "Location";
 	private static final int	RESPONSE_NOT_MODIFIED	= 304;
 
-	private boolean				disableServerVerify		= false;
-	private Reporter			reporter				= null;
-	private Registry			registry				= null;
+	private boolean		disableServerVerify	= false;
+	private Reporter	reporter			= null;
+	private Registry	registry			= null;
 
 	public InputStream connect(URL url) throws IOException {
 		if (url == null)
@@ -59,66 +59,75 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 	}
 
 	public TaggedData connectTagged(URL url, String tag, Set<String> loopDetect) throws IOException {
-		TaggedData result;
-
-		loopDetect.add(url.toString());
-		URLConnection connection = url.openConnection();
 		try {
-			if (disableServerVerify)
-				HttpsUtil.disableServerVerification(connection);
-		} catch (GeneralSecurityException e) {
-			if (reporter != null)
-				reporter.error("Error attempting to disable SSL server certificate verification: %s", e);
-			throw new IOException("Error attempting to disable SSL server certificate verification.");
-		}
+			TaggedData result;
 
-		if (connection instanceof HttpURLConnection) {
-			// Turn on caching and send the ETag
-			HttpURLConnection httpConnection = (HttpURLConnection) connection;
-			httpConnection.setUseCaches(true);
-			if (tag != null)
-				httpConnection.setRequestProperty(HEADER_IF_NONE_MATCH, tag);
+			loopDetect.add(url.toString());
+			URLConnection connection = url.openConnection();
+			try {
+				if (disableServerVerify)
+					HttpsUtil.disableServerVerification(connection);
+			} catch (GeneralSecurityException e) {
+				if (reporter != null)
+					reporter.error("Error attempting to disable SSL server certificate verification: %s", e);
+				throw new IOException("Error attempting to disable SSL server certificate verification.");
+			}
 
-			httpConnection.setInstanceFollowRedirects(false);
-			httpConnection.connect();
+			if (connection instanceof HttpURLConnection) {
+				// Turn on caching and send the ETag
+				HttpURLConnection httpConnection = (HttpURLConnection) connection;
+				httpConnection.setUseCaches(true);
+				if (tag != null)
+					httpConnection.setRequestProperty(HEADER_IF_NONE_MATCH, tag);
 
-			int responseCode = httpConnection.getResponseCode();
-			if (responseCode == RESPONSE_NOT_MODIFIED) {
-				result = null;
-				httpConnection.disconnect();
-			} else if (responseCode >= 300 && responseCode < 400) {
-				String location = httpConnection.getHeaderField(HEADER_LOCATION);
-				if (location == null)
-					throw new IOException("HTTP server returned redirect status but Location header was missing.");
+				httpConnection.setInstanceFollowRedirects(false);
+				httpConnection.connect();
 
-				try {
-					URL resolved = url.toURI().resolve(location).toURL();
-					if (reporter != null)
-						reporter.warning("HTTP address redirected from %s to %s", url.toString(), resolved.toString());
-					if (loopDetect.contains(resolved.toString()))
+				int responseCode = httpConnection.getResponseCode();
+				if (responseCode == RESPONSE_NOT_MODIFIED) {
+					result = null;
+					httpConnection.disconnect();
+				} else if (responseCode >= 300 && responseCode < 400) {
+					String location = httpConnection.getHeaderField(HEADER_LOCATION);
+					if (location == null)
+						throw new IOException("HTTP server returned redirect status but Location header was missing.");
+
+					try {
+						URL resolved = url.toURI().resolve(location).toURL();
+						if (reporter != null)
+							reporter.warning("HTTP address redirected from %s to %s", url.toString(),
+									resolved.toString());
+						if (loopDetect.contains(resolved.toString()))
+							throw new IOException(
+									String.format("Detected loop in HTTP redirect from '%s' to '%s'.", url, resolved));
+						if (Thread.currentThread().isInterrupted())
+							throw new IOException("Interrupted");
+						result = connectTagged(resolved, tag, loopDetect);
+					} catch (URISyntaxException e) {
 						throw new IOException(
-								String.format("Detected loop in HTTP redirect from '%s' to '%s'.", url, resolved));
-					if (Thread.currentThread().isInterrupted())
-						throw new IOException("Interrupted");
-					result = connectTagged(resolved, tag, loopDetect);
-				} catch (URISyntaxException e) {
-					throw new IOException(
-							String.format("Failed to resolve location '%s' against origin URL: %s", location, url), e);
+								String.format("Failed to resolve location '%s' against origin URL: %s", location, url),
+								e);
+					}
+				} else {
+					String responseTag = httpConnection.getHeaderField(HEADER_ETAG);
+					// TODO: get content-size from the http header
+
+					InputStream stream = createProgressWrappedStream(connection.getInputStream(), "Downloading " + url,
+							-1);
+					result = new TaggedData(connection, stream);
 				}
 			} else {
-				String responseTag = httpConnection.getHeaderField(HEADER_ETAG);
-				// TODO: get content-size from the http header
-
+				// Non-HTTP so ignore all this tagging malarky
 				InputStream stream = createProgressWrappedStream(connection.getInputStream(), "Downloading " + url, -1);
-				result = new TaggedData(responseTag, stream);
+				result = new TaggedData(connection, stream);
 			}
-		} else {
-			// Non-HTTP so ignore all this tagging malarky
-			InputStream stream = createProgressWrappedStream(connection.getInputStream(), "Downloading " + url, -1);
-			result = new TaggedData(null, stream);
-		}
 
-		return result;
+			return result;
+		} catch (IOException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
 	}
 
 	private InputStream createProgressWrappedStream(InputStream inputStream, String name, int size) {

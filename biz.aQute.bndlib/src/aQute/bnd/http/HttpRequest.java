@@ -1,5 +1,6 @@
 package aQute.bnd.http;
 
+import java.io.File;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URL;
@@ -29,6 +30,8 @@ public class HttpRequest<T> {
 	URL					url;
 	int					redirects	= 10;
 	String				ifMatch;
+	boolean				cached;
+	long				maxStale;
 
 	HttpRequest(HttpClient client) {
 		this.client = client;
@@ -157,8 +160,7 @@ public class HttpRequest<T> {
 	@Override
 	public String toString() {
 		return "HttpRequest [verb=" + verb + ", upload=" + upload + ", download=" + download + ", headers=" + headers
-				+ ", timeout=" + timeout + ", client=" + client + ", ifNoneMatch=" + ifNoneMatch + ", ifModifiedSince="
-				+ ifModifiedSince + ", ifUnmodifiedSince=" + ifUnmodifiedSince + ", ifMatch=" + ifMatch + ", url=" + url
+				+ ", timeout=" + timeout + ", client=" + client + ", url=" + url
 				+ "]";
 	}
 
@@ -178,5 +180,20 @@ public class HttpRequest<T> {
 
 	public HttpRequest<String> asString() {
 		return get(String.class);
+	}
+
+	public boolean isCache() {
+		return ("GET".equalsIgnoreCase(verb) && cached && download != TaggedData.class) || download == File.class;
+	}
+
+	public HttpRequest<File> useCache(long maxStale) {
+		this.maxStale = maxStale;
+		this.cached = true;
+		download = File.class;
+		return (HttpRequest<File>) this;
+	}
+
+	public HttpRequest<File> useCache() {
+		return useCache(-1);
 	}
 }
