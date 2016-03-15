@@ -20,12 +20,14 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Display;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
 
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
-import bndtools.Activator;
 import bndtools.Plugin;
 
 public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
@@ -41,7 +43,14 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
     private final Map<TreeViewer,RefreshModel> viewers = new ConcurrentHashMap<>();
 
     RepositoriesViewRefresher() {
-        registration = Activator.getDefault().getBundleContext().registerService(RepositoryListenerPlugin.class, this, null);
+        ServiceRegistration<RepositoryListenerPlugin> reg = null;
+        Bundle bundle = FrameworkUtil.getBundle(RepositoriesViewRefresher.class);
+        if (bundle != null) {
+            BundleContext context = bundle.getBundleContext();
+            if (context != null)
+                reg = context.registerService(RepositoryListenerPlugin.class, this, null);
+        }
+        this.registration = reg;
     }
 
     public void refreshRepositories(final RepositoryPlugin target) {

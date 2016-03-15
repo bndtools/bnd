@@ -1,8 +1,5 @@
 package org.bndtools.core.templating.repobased;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.Collections;
@@ -12,33 +9,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.bndtools.core.templating.repobased.ReposTemplateLoader;
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
 import org.bndtools.utils.progress.ProgressMonitorReporter;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.junit.Before;
-import org.junit.Test;
-
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
+import junit.framework.TestCase;
 
-public class ReposTemplateLoaderTest {
+public class ReposTemplateLoaderTest extends TestCase {
 
     private ReposTemplateLoader loader;
 
-    @Before
-    public void setup() throws Exception {
+    @Override
+    protected void setUp() throws Exception {
         Run project = Run.createRun(null, IO.getFile("testdata/ws.bndrun"));
         Workspace ws = project.getWorkspace();
         loader = new ReposTemplateLoader();
-        loader.activate();
+        loader.activate(ws);
     }
 
-    @Test
     public void testLoad() throws Exception {
         List<Template> templates = loader.findTemplates("test1", new ProgressMonitorReporter(new NullProgressMonitor(), ""));
         assertEquals(1, templates.size());
@@ -48,7 +41,6 @@ public class ReposTemplateLoaderTest {
         assertNull(template.getCategory());
     }
 
-    @Test
     public void testProcessTemplate() throws Exception {
         List<Template> templates = loader.findTemplates("test1", new ProgressMonitorReporter(new NullProgressMonitor(), ""));
         assertEquals(1, templates.size());
@@ -89,7 +81,6 @@ public class ReposTemplateLoaderTest {
         assertEquals("Bundle-SymbolicName: org.example.foo", IO.collect(entry.getValue().getContent()));
     }
 
-    @Test
     public void testAlternateDelimiters() throws Exception {
         List<Template> templates = loader.findTemplates("test2", new ProgressMonitorReporter(new NullProgressMonitor(), ""));
         assertEquals(1, templates.size());
@@ -130,7 +121,6 @@ public class ReposTemplateLoaderTest {
         assertEquals("Bundle-SymbolicName: org.example.foo", IO.collect(entry.getValue().getContent()));
     }
 
-    @Test
     public void testReferTemplateDefinitions() throws Exception {
         List<Template> templates = loader.findTemplates("test3", new ProgressMonitorReporter(new NullProgressMonitor(), ""));
         assertEquals(1, templates.size());
@@ -150,7 +140,6 @@ public class ReposTemplateLoaderTest {
         assertEquals("My name is <i>Homer Simpson</i>!", IO.collect(entry.getValue().getContent()));
     }
 
-    @Test
     public void testExtendUnprocessedPatternAndIgnore() throws Exception {
         List<Template> templates = loader.findTemplates("test4", new ProgressMonitorReporter(new NullProgressMonitor(), ""));
         assertEquals(1, templates.size());

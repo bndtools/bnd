@@ -43,9 +43,10 @@ public class ReposTemplateLoader implements TemplateLoader {
 
     private BundleLocator locator;
 
-    @Activate
-    void activate() {
-        Workspace workspace = Central.getWorkspaceIfPresent();
+    /**
+     * For testing
+     */
+    void activate(Workspace workspace) {
         if (workspace != null) {
             this.repos = workspace.getPlugins(Repository.class);
             this.locator = new RepoPluginsBundleLocator(workspace.getRepositories());
@@ -60,6 +61,15 @@ public class ReposTemplateLoader implements TemplateLoader {
         }
     }
 
+    @Activate
+    void activate() {
+        Workspace workspace = null;
+        try {
+            workspace = Central.getWorkspaceIfPresent();
+        } catch (IllegalStateException e) {}
+        activate(workspace);
+    }
+
     @Override
     public List<Template> findTemplates(String templateType, Reporter reporter) {
         String filterStr = String.format("(%s=%s)", NS_TEMPLATE, templateType);
@@ -67,19 +77,9 @@ public class ReposTemplateLoader implements TemplateLoader {
         Requirement requirement = new CapReqBuilder(NS_TEMPLATE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filterStr).buildSyntheticRequirement();
         List<Template> templates = new ArrayList<>();
 
-        // Get the repositories as workspace + preference if enabled
         List<Repository> repos = new ArrayList<>(this.repos.size() + 1);
         repos.addAll(this.repos);
-        BndPreferences bndPrefs = new BndPreferences();
-        if (bndPrefs.getEnableTemplateRepo()) {
-            List<String> repoUris = bndPrefs.getTemplateRepoUriList();
-            try {
-                FixedIndexedRepo prefsRepo = loadRepo(repoUris);
-                repos.add(prefsRepo);
-            } catch (IOException | URISyntaxException ex) {
-                reporter.exception(ex, "Error loading preference repository: %s", repoUris);
-            }
-        }
+        addPreferenceConfiguredRepos(repos, reporter);
 
         // Search for templates
         for (Repository repo : repos) {
@@ -101,6 +101,25 @@ public class ReposTemplateLoader implements TemplateLoader {
             }
         }
         return templates;
+    }
+
+    private static void addPreferenceConfiguredRepos(List<Repository> repos, Reporter reporter) {
+        BndPreferences bndPrefs = null;
+        try {
+            bndPrefs = new BndPreferences();
+        } catch (Exception e) {
+            // e.printStackTrace();
+        }
+
+        if (bndPrefs != null && bndPrefs.getEnableTemplateRepo()) {
+            List<String> repoUris = bndPrefs.getTemplateRepoUriList();
+            try {
+                FixedIndexedRepo prefsRepo = loadRepo(repoUris);
+                repos.add(prefsRepo);
+            } catch (IOException | URISyntaxException ex) {
+                reporter.exception(ex, "Error loading preference repository: %s", repoUris);
+            }
+        }
     }
 
     private static FixedIndexedRepo loadRepo(List<String> uris) throws IOException, URISyntaxException {

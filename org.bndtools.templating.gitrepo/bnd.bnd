@@ -10,7 +10,9 @@
 	org.eclipse.jface,\
 	org.eclipse.ui.workbench,\
 	org.eclipse.swt.cocoa.macosx.x86_64; packages=*,\
-	org.eclipse.equinox.preferences
+	org.eclipse.equinox.preferences,\
+	org.eclipse.equinox.common,\
+	org.eclipse.core.commands
 
 -privatepackage: org.bndtools.templating.jgit.*
 -includeresource: resources
