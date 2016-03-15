@@ -6,7 +6,6 @@ import org.bndtools.templating.jgit.Cache;
 import org.bndtools.templating.jgit.GitHub;
 import org.bndtools.templating.jgit.GithubRepoDetailsDTO;
 import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -21,7 +20,10 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-public class GitHubRepoDialog extends TitleAreaDialog {
+import aQute.bnd.header.Attrs;
+import aQute.libg.tuple.Pair;
+
+public class GitHubRepoDialog extends AbstractNewEntryDialog {
 
     private final Cache cache = new Cache();
     private final String title;
@@ -51,7 +53,7 @@ public class GitHubRepoDialog extends TitleAreaDialog {
         txtRepository.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent ev) {
-                repository = txtRepository.getText();
+                repository = txtRepository.getText().trim();
                 updateFromInput();
             }
         });
@@ -63,7 +65,9 @@ public class GitHubRepoDialog extends TitleAreaDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
-                    GithubRepoDetailsDTO dto = new GitHub(cache).loadRepoDetails(getRepository());
+                    if (repository == null || repository.isEmpty())
+                        throw new Exception("No repository name specified");
+                    GithubRepoDetailsDTO dto = new GitHub(cache).loadRepoDetails(repository);
                     URI cloneUri = URI.create(dto.clone_url);
                     setErrorMessage(null);
                     setMessage("Validated, clone URL is " + cloneUri, IMessageProvider.INFORMATION);
@@ -91,7 +95,9 @@ public class GitHubRepoDialog extends TitleAreaDialog {
         getButton(OK).setEnabled(repository != null && repository.trim().length() > 0);
     }
 
-    public String getRepository() {
-        return repository != null ? repository.trim() : null;
+    @Override
+    public Pair<String,Attrs> getEntry() {
+        return repository != null ? new Pair<String,Attrs>(repository.trim(), new Attrs()) : null;
     }
+
 }

@@ -15,8 +15,8 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.service.reporter.Reporter;
 
-@Component(name = "org.bndtools.core.templating.workspace", property = {
-        Constants.SERVICE_DESCRIPTION + "=Load workspace templates from configured Git repositories"
+@Component(name = "org.bndtools.core.templating.workspace.github", property = {
+        Constants.SERVICE_DESCRIPTION + "=Load workspace templates from GitHub repositories"
 })
 public class GitHubWorkspaceTemplateLoader implements TemplateLoader {
 
@@ -41,7 +41,6 @@ public class GitHubWorkspaceTemplateLoader implements TemplateLoader {
                 GithubRepoDetailsDTO detailsDTO = gitHub.loadRepoDetails(repo);
                 if (detailsDTO.clone_url == null)
                     throw new IllegalArgumentException("Missing clone URL");
-                URI cloneUri = URI.create(detailsDTO.clone_url);
 
                 // Generate icon URI from the owner avatar. The s=16 parameter
                 // is added to select a 16x16 icon.
@@ -52,7 +51,7 @@ public class GitHubWorkspaceTemplateLoader implements TemplateLoader {
                 String name = attribs.get("name");
                 if (name == null)
                     name = repo;
-                GitCloneTemplate template = new GitCloneTemplate(cloneUri, name, detailsDTO.description, "GitHub", avatarUri);
+                GitCloneTemplate template = new GitCloneTemplate(detailsDTO.clone_url, name, detailsDTO.description, "GitHub", avatarUri);
                 templates.add(template);
             } catch (Exception e) {
                 reporter.exception(e, "Error loading template from Github repository %s", repo);

@@ -37,7 +37,7 @@ public class WorkspaceSetupWizardPage extends WizardPage {
         setControl(composite);
 
         Control locationControl = locationPart.createControl(composite);
-        locationControl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        locationControl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
 
         locationPart.addPropertyChangeListener(WorkspaceLocationPart.PROP_LOCATION, new PropertyChangeListener() {
             @Override

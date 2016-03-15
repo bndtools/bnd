@@ -22,7 +22,7 @@ import aQute.lib.io.IO;
 
 public class GitCloneTemplate implements Template {
 
-    private final URI cloneUri;
+    private final String cloneUrl;
     private final String name;
     private final String description;
     private final String category;
@@ -30,8 +30,8 @@ public class GitCloneTemplate implements Template {
 
     private Repository checkedOut = null;
 
-    public GitCloneTemplate(URI cloneUri, String name, String description, String category, URI iconUri) {
-        this.cloneUri = cloneUri;
+    public GitCloneTemplate(String cloneUrl, String name, String description, String category, URI iconUri) {
+        this.cloneUrl = cloneUrl;
         this.name = name;
         this.description = description;
         this.category = category;
@@ -86,7 +86,7 @@ public class GitCloneTemplate implements Template {
             workingDir = Files.createTempDirectory("checkout").toFile();
             gitDir = new File(workingDir, ".git");
 
-            Git call = Git.cloneRepository().setURI(cloneUri.toString()).setBranch("master").setDirectory(workingDir).call();
+            Git call = Git.cloneRepository().setURI(cloneUrl).setBranch("master").setDirectory(workingDir).call();
             checkedOut = call.getRepository();
         }
 
