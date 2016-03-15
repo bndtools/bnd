@@ -31,6 +31,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
@@ -173,9 +174,12 @@ public class WorkspaceSetupWizard extends Wizard implements IWorkbenchWizard {
             });
 
             // Prompt to switch to the bndtools perspective
-            if (MessageDialog.openQuestion(getShell(), "Bndtools Perspective", "Switch to the Bndtools perspective?")) {
-                IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-                workbench.showPerspective("bndtools.perspective", window);
+            IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+            IPerspectiveDescriptor currentPerspective = window.getActivePage().getPerspective();
+            if (!"bndtools.perspective".equals(currentPerspective.getId())) {
+                if (MessageDialog.openQuestion(getShell(), "Bndtools Perspective", "Switch to the Bndtools perspective?")) {
+                    workbench.showPerspective("bndtools.perspective", window);
+                }
             }
             return true;
         } catch (InvocationTargetException e) {
