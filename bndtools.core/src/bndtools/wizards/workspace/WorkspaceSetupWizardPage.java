@@ -2,7 +2,10 @@ package bndtools.wizards.workspace;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -10,6 +13,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
+import aQute.bnd.build.Project;
 import bndtools.Plugin;
 
 public class WorkspaceSetupWizardPage extends WizardPage {
@@ -44,6 +48,13 @@ public class WorkspaceSetupWizardPage extends WizardPage {
                 setPageComplete(locationError == null);
             }
         });
+
+        // Check for existing workspace/cnf
+        IProject cnfProject = ResourcesPlugin.getWorkspace().getRoot().getProject(Project.BNDCNF);
+        if (cnfProject != null && cnfProject.exists()) {
+            File cnfDir = cnfProject.getLocation().toFile();
+            setMessage(String.format("This Eclipse workspace is already configured as a bnd workspace. You will not be able to create or import a bnd workspace from elsewhere.", cnfDir), WARNING);
+        }
     }
 
     public void setLocation(LocationSelection location) {
