@@ -118,7 +118,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                     model = Central.getProject(myProject.getLocation().toFile());
                 } catch (Exception e) {
                     markers.deleteMarkers("*");
-                    markers.createMarker(null, IMarker.SEVERITY_ERROR, "Cannot find bnd project", BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
+                    markers.createMarker(null, IMarker.SEVERITY_ERROR, "No bnd Workspace found. Create a new workspace with the Bnd OSGi Workspace wizard.", BndtoolsConstants.MARKER_BND_MISSING_WORKSPACE);
                 }
                 if (model == null)
                     return noreport();

@@ -46,6 +46,9 @@ class MarkerSupport {
             if (containsError(dw, project.findMarkers(MARKER_BND_PATH_PROBLEM, true, IResource.DEPTH_INFINITE)))
                 return true;
 
+            if (containsError(dw, project.findMarkers(MARKER_BND_MISSING_WORKSPACE, true, IResource.DEPTH_INFINITE)))
+                return true;
+
             return false;
         } catch (CoreException e) {
             logger.logError("Error looking for project problem markers", e);
@@ -64,6 +67,7 @@ class MarkerSupport {
             deleteMarkers(MARKER_BND_PROBLEM);
             deleteMarkers(MARKER_BND_PATH_PROBLEM);
             deleteMarkers(MARKER_BND_WORKSPACE_PROBLEM);
+            deleteMarkers(MARKER_BND_MISSING_WORKSPACE);
         } else
             project.deleteMarkers(markerType, true, IResource.DEPTH_INFINITE);
     }

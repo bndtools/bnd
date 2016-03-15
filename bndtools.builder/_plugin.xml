@@ -68,7 +68,17 @@
 		<super type="org.eclipse.core.resources.textmarker"/>
 		<super type="org.eclipse.core.resources.problemmarker"/>
 	</extension>
-
+	
+	<extension
+		point="org.eclipse.core.resources.markers"
+		id="missingworkspace"
+		name="Missing Bndtools Workspace Problem Marker"
+		>
+		<persistent value="true"/>
+		<super type="org.eclipse.core.resources.textmarker"/>
+		<super type="org.eclipse.core.resources.problemmarker"/>
+	</extension>
+	
 	<extension point="org.eclipse.jdt.core.classpathContainerInitializer">
 		<classpathContainerInitializer
 			id="aQute.bnd.classpath.container"
@@ -87,11 +97,6 @@
 	<extension point="bndtools.core.bndtoolsStartupParticipant">
 		<startupParticipant
 			class="org.bndtools.builder.jobs.newproject.NewProjectJobsStartupParticipant" />
-	</extension>
-
-	<extension point="bndtools.core.buildListeners">
-		<listener name="Workspace Setup"
-			class="org.bndtools.builder.listeners.CnfSetupBuildListener" />
 	</extension>
 
 	<extension point="bndtools.core.buildListeners">
@@ -123,7 +128,7 @@
 		<markerResolutionGenerator markerType="bndtools.core.bndproblem"
 			class="org.bndtools.builder.BndtoolsMarkerResolutionGenerator" />
 	</extension>
-
+	
 	<extension point="bndtools.core.validators">
 		<validator name="BSN check"
 			class="org.bndtools.builder.validate.BsnValidator" />

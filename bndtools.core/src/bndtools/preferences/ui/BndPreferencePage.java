@@ -1,7 +1,5 @@
 package bndtools.preferences.ui;
 
-import java.text.MessageFormat;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -15,9 +13,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
-import aQute.bnd.build.Project;
 import bndtools.preferences.BndPreferences;
-import bndtools.wizards.workspace.CnfSetupWizard;
 
 public class BndPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
     public BndPreferencePage() {}
@@ -38,14 +34,6 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         Composite composite = new Composite(parent, SWT.NONE);
 
         // Create controls
-        Group cnfCheckGroup = new Group(composite, SWT.NONE);
-        cnfCheckGroup.setText(Messages.BndPreferencePage_cnfCheckGroup);
-
-        final Button btnNoCheckCnf = new Button(cnfCheckGroup, SWT.CHECK);
-        btnNoCheckCnf.setText(MessageFormat.format(Messages.BndPreferencePage_btnNoCheckCnf, Project.BNDCNF));
-        final Button btnCheckCnfNow = new Button(cnfCheckGroup, SWT.PUSH);
-        btnCheckCnfNow.setText(Messages.BndPreferencePage_btnCheckCnfNow);
-
         Group grpLaunching = new Group(composite, SWT.NONE);
         grpLaunching.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
         grpLaunching.setText(Messages.BndPreferencePage_grpLaunching_text);
@@ -64,8 +52,6 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         btnEditorOpenSourceTab.setText(Messages.BndPreferencePage_btnEditorOpenSourceTab);
 
         // Load Data
-        btnNoCheckCnf.setSelection(noCheckCnf);
-        btnCheckCnfNow.setEnabled(!noCheckCnf);
         btnWarnExistingLaunch.setSelection(warnExistingLaunch);
         btnBuildBeforeLaunch.setSelection(buildBeforeLaunch);
         btnEditorOpenSourceTab.setSelection(editorOpenSourceTab);
@@ -73,21 +59,6 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         // versionControlIgnores already done
 
         // Listeners
-        btnNoCheckCnf.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                noCheckCnf = btnNoCheckCnf.getSelection();
-                btnCheckCnfNow.setEnabled(!noCheckCnf);
-            }
-        });
-        btnCheckCnfNow.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (!CnfSetupWizard.showIfNeeded(true)) {
-                    MessageDialog.openInformation(getShell(), Messages.BndPreferencePage_btnCheckCnfNow_BndConf, Messages.BndPreferencePage_btnCheckCnfNow_Exists);
-                }
-            }
-        });
         btnBuildBeforeLaunch.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -112,15 +83,6 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
 
         layout = new GridLayout(1, false);
         composite.setLayout(layout);
-
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        cnfCheckGroup.setLayoutData(gd);
-
-        cnfCheckGroup.setLayout(new GridLayout(1, false));
-        gd = new GridData(SWT.LEFT, SWT.CENTER, true, false);
-        btnNoCheckCnf.setLayoutData(gd);
-        gd = new GridData(SWT.LEFT, SWT.CENTER, true, false);
-        btnCheckCnfNow.setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         editorGroup.setLayoutData(gd);
