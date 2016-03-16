@@ -466,7 +466,7 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
     protected abstract List<VersionedClause> loadFromModel(BndEditModel model);
 
     protected final RepoBundleSelectionWizard createBundleSelectionWizard(List<VersionedClause> bundles) throws Exception {
-        RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(model.getWorkspace(), bundles, phase);
+        RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(bundles, phase);
         setSelectionWizardTitleAndMessage(wizard);
 
         return wizard;

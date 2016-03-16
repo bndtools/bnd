@@ -11,12 +11,15 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
@@ -31,6 +34,8 @@ public class WorkspaceSetupWizardPage extends WizardPage {
 
     private LocationSelection location = LocationSelection.WORKSPACE;
     private boolean cleanBuild = true;
+
+    private Image bannerImg;
 
     public WorkspaceSetupWizardPage() {
         super("Workspace Setup");
@@ -47,6 +52,11 @@ public class WorkspaceSetupWizardPage extends WizardPage {
         layout.verticalSpacing = 20;
         composite.setLayout(layout);
         setControl(composite);
+
+        bannerImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "banner.png").createImage(parent.getDisplay());
+        Label lblBanner = new Label(composite, SWT.NONE);
+        lblBanner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        lblBanner.setImage(bannerImg);
 
         Control locationControl = locationPart.createControl(composite);
         locationControl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
@@ -96,6 +106,12 @@ public class WorkspaceSetupWizardPage extends WizardPage {
         String locationError = location.validate();
         setErrorMessage(locationError);
         setPageComplete(locationError == null);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        bannerImg.dispose();
     }
 
     public void setLocation(LocationSelection location) {

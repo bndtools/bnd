@@ -64,7 +64,6 @@ import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 
-import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.resource.CapReqBuilder;
@@ -254,8 +253,7 @@ public class RunRequirementsPart extends BndEditorPart implements PropertyChange
 
     private void doAddBundle() {
         try {
-            Workspace workspace = model.getWorkspace();
-            RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(workspace, new ArrayList<VersionedClause>(), DependencyPhase.Run);
+            RepoBundleSelectionWizard wizard = new RepoBundleSelectionWizard(new ArrayList<VersionedClause>(), DependencyPhase.Run);
             wizard.setSelectionPageTitle("Add Bundle Requirement");
             WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
 
