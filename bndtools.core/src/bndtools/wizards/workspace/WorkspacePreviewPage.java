@@ -15,6 +15,7 @@ import java.util.Set;
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
+import org.bndtools.utils.jface.ItalicStyler;
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -47,7 +48,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bndtools.Plugin;
-import bndtools.UIConstants;
 import bndtools.utils.ModificationLock;
 
 public class WorkspacePreviewPage extends WizardPage {
@@ -213,7 +213,7 @@ public class WorkspacePreviewPage extends WizardPage {
                 String path = (String) cell.getElement();
                 String error = resourceErrors.get(path);
                 if (error != null) {
-                    label = new StyledString(path, UIConstants.ERROR_STYLER);
+                    label = new StyledString(path, ItalicStyler.INSTANCE_ERROR);
                     icon = imgError;
                 } else {
                     label = new StyledString(path);

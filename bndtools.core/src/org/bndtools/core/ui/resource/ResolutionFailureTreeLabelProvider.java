@@ -26,7 +26,7 @@ public class ResolutionFailureTreeLabelProvider extends RequirementLabelProvider
             label = getLabel(match.getRequirement());
             Collection<Resource> matchedResources = match.getResources();
             if (matchedResources.isEmpty()) {
-                label.append(" UNMATCHED", UIConstants.BOLD_STYLER);
+                label.append(" UNMATCHED", BoldStyler.INSTANCE_DEFAULT);
             } else if (matchedResources.size() == 1) {
                 label.append(" 1 potential match", StyledString.QUALIFIER_STYLER);
             } else {
@@ -35,7 +35,7 @@ public class ResolutionFailureTreeLabelProvider extends RequirementLabelProvider
             image = getIcon(match.getRequirement());
         } else {
             image = null;
-            label = new StyledString("ERROR", UIConstants.BOLD_STYLER);
+            label = new StyledString("ERROR", BoldStyler.INSTANCE_DEFAULT);
         }
 
         cell.setImage(image);
@@ -49,9 +49,9 @@ public class ResolutionFailureTreeLabelProvider extends RequirementLabelProvider
     private static StyledString getLabel(Resource resource) {
         StyledString label;
         if (resource == null || resource.getId() == null) {
-            label = new StyledString(LABEL_INITIAL, UIConstants.BOLD_STYLER);
+            label = new StyledString(LABEL_INITIAL, BoldStyler.INSTANCE_DEFAULT);
         } else {
-            label = new StyledString(resource.getSymbolicName(), UIConstants.BOLD_STYLER);
+            label = new StyledString(resource.getSymbolicName(), BoldStyler.INSTANCE_DEFAULT);
             if (resource.getVersion() != null)
                 label.append(" " + resource.getVersion().toString(), StyledString.COUNTER_STYLER);
         }

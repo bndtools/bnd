@@ -33,9 +33,9 @@ public class ResolutionFailureFlatLabelProvider extends RequirementLabelProvider
     private static StyledString getLabel(Resource resource) {
         StyledString label;
         if (resource == null || resource.getId() == null) {
-            label = new StyledString(LABEL_INITIAL, UIConstants.BOLD_STYLER);
+            label = new StyledString(LABEL_INITIAL, BoldStyler.INSTANCE_DEFAULT);
         } else {
-            label = new StyledString(resource.getSymbolicName(), UIConstants.BOLD_STYLER);
+            label = new StyledString(resource.getSymbolicName(), BoldStyler.INSTANCE_DEFAULT);
             if (resource.getVersion() != null)
                 label.append(" " + resource.getVersion().toString(), StyledString.COUNTER_STYLER);
         }
