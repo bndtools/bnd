@@ -4,9 +4,8 @@ import java.util.List;
 
 import org.eclipse.jface.wizard.Wizard;
 
-import bndtools.model.repo.DependencyPhase;
-import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.clauses.VersionedClause;
+import bndtools.model.repo.DependencyPhase;
 
 public class RepoBundleSelectionWizard extends Wizard {
 
@@ -22,9 +21,9 @@ public class RepoBundleSelectionWizard extends Wizard {
      *            A mutable collection of bundles.
      * @throws Exception
      */
-    public RepoBundleSelectionWizard(Workspace workspace, List<VersionedClause> bundles, DependencyPhase phase) throws Exception {
+    public RepoBundleSelectionWizard(List<VersionedClause> bundles, DependencyPhase phase) throws Exception {
         this.phase = phase;
-        selectionPage = new RepoBundleSelectionWizardPage(workspace, phase);
+        selectionPage = new RepoBundleSelectionWizardPage(phase);
         selectionPage.setSelectedBundles(bundles);
         addPage(selectionPage);
     }

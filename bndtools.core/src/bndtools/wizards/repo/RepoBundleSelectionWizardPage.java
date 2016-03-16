@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.eclipse.jface.viewers.IOpenListener;
@@ -61,7 +60,6 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
     private final Map<String,VersionedClause> selectedBundles = new LinkedHashMap<String,VersionedClause>();
-    private final Workspace workspace;
     private final DependencyPhase phase;
 
     TreeViewer availableViewer;
@@ -94,9 +92,8 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         }
     };
 
-    protected RepoBundleSelectionWizardPage(Workspace workspace, DependencyPhase phase) {
+    protected RepoBundleSelectionWizardPage(DependencyPhase phase) {
         super("bundleSelectionPage");
-        this.workspace = workspace;
         this.phase = phase;
     }
 
@@ -130,7 +127,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         try {
             refreshBundleList();
         } catch (Exception e) {
-            setErrorMessage("Error querying repository configuration.");
+            setErrorMessage("Error querying repositories: " + e.getMessage());
             logger.logError("Error querying repository configuration.", e);
         }
 
@@ -285,7 +282,8 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
     }
 
     protected void refreshBundleList() throws Exception {
-        Central.getWorkspace().refresh();
+        Workspace workspace = Central.getWorkspace();
+        workspace.refresh();
         availableViewer.setInput(RepositoryUtils.listRepositories(workspace, true));
     }
 
