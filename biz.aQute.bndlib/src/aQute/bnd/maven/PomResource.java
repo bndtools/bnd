@@ -52,6 +52,10 @@ public class PomResource extends WriteResource {
 
 		if (processor.containsKey(GROUPID)) {
 			groupId = processor.get(GROUPID);
+		} else {
+			groupId = processor.get(Constants.GROUPID);
+		}
+		if (groupId != null) {
 			artifactId = processor.get(ARTIFACTID);
 			if (artifactId == null)
 				artifactId = bsn;
