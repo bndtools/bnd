@@ -1,6 +1,16 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
+-buildpath: \
+	org.bndtools.templating; version=latest,\
+	org.eclipse.core.runtime,\
+	org.eclipse.equinox.common,\
+	org.eclipse.equinox.registry,\
+	osgi.core;version=${osgi.core.version},\
+	osgi.cmpn;version=${osgi.cmpn.version},\
+	bndtools.utils; version=latest; packages=*,\
+	${bndlib}
+
 Bundle-SymbolicName: bndtools.repository.base;singleton:=true
 
 bundlehub-template: templates/cnfs/bundlehub
@@ -20,10 +30,11 @@ jpm-template-resources: \
 	${jpm-template}/releaserepo/=templates/repos/releaserepo,\
 	${jpm-template}/plugins/biz.aQute.repository/biz.aQute.repository.jar=${repo;biz.aQute.repository;${bnd-version-base}}
 
-
-Include-Resource:\
+-privatepackage: org.bndtools.wizards.workspace.legacy
+-includeresource:\
 	{plugin.xml=_plugin.xml},\
 	icons/=icons,\
 	templateDocs/=templateDocs,\
 	${bundlehub-template-resources},\
 	${jpm-template-resources}
+-conditionalpackage: org.bndtools.utils.osgi

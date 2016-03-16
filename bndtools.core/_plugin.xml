@@ -3,11 +3,11 @@
 
 	
    <!-- Extension Points -->
+   <!-- DEPRECATED -->
    <extension-point id="cnfTemplates"
       name="Workspace Configuration Templates"
       schema="schema/cnfTemplates.exsd"
    />
-   <!-- DEPRECATED -->
    <extension-point id="launchTemplates"
       name="Launch Templates"
       schema="schema/launchTemplates.exsd"
@@ -15,6 +15,9 @@
    <extension-point id="projectTemplates"
       name="Project Templates"
       schema="schema/projectTemplates.exsd"
+   />
+   <extension-point id="workspaceTemplates"
+      name="Workspace Templates"
    />
    <!-- END DEPRECATION -->
    <extension-point id="bndtoolsStartupParticipant"
@@ -985,7 +988,7 @@
          commandId="bnd.launch.runShortcut.debug"
          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
    </extension>
-
+   
 	${cat;resources/enroute/_plugin.xml}
 	
 
