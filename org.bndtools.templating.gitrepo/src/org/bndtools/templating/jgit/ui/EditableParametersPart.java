@@ -4,13 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.bndtools.utils.jface.BoldStyler;
 import org.bndtools.utils.swt.AddRemoveButtonBarPart;
 import org.bndtools.utils.swt.AddRemoveButtonBarPart.AddRemoveListener;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.window.Window;
@@ -19,6 +24,8 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -26,11 +33,18 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.libg.tuple.Pair;
 
 public class EditableParametersPart {
+
+    private static final Bundle BUNDLE = FrameworkUtil.getBundle(EditableParametersPart.class);
 
     private final String title;
     private final NewEntryDialogFactory dialogFactory;
@@ -81,7 +95,13 @@ public class EditableParametersPart {
             public void update(ViewerCell cell) {
                 @SuppressWarnings("unchecked")
                 Pair<String,Attrs> entry = (Pair<String,Attrs>) cell.getElement();
-                cell.setText(entry.getFirst());
+                StyledString label = new StyledString(entry.getFirst(), BoldStyler.INSTANCE_DEFAULT);
+                for (Entry<String,String> attribEntry : entry.getSecond().entrySet()) {
+                    label.append("; " + attribEntry.getKey() + "=", StyledString.QUALIFIER_STYLER);
+                    label.append(attribEntry.getValue());
+                }
+                cell.setText(label.toString());
+                cell.setStyleRanges(label.getStyleRanges());
                 cell.setImage(iconImg);
             }
         });
@@ -92,9 +112,16 @@ public class EditableParametersPart {
         table.setLayoutData(gd);
 
         final AddRemoveButtonBarPart buttonBarPart = new AddRemoveButtonBarPart();
-        Control buttonBar = buttonBarPart.createControl(composite, SWT.FLAT | SWT.VERTICAL);
+        ToolBar buttonBar = buttonBarPart.createControl(composite, SWT.FLAT | SWT.VERTICAL);
         buttonBar.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+        final Image imgEdit = ImageDescriptor.createFromURL(BUNDLE.getEntry("icons/edit.gif")).createImage(parent.getDisplay());
+        final Image imgEditDisabled = ImageDescriptor.createFromURL(BUNDLE.getEntry("icons/edit-disabled.gif")).createImage(parent.getDisplay());
+        final ToolItem btnEdit = new ToolItem(buttonBar, SWT.PUSH);
+        btnEdit.setImage(imgEdit);
+        btnEdit.setDisabledImage(imgEditDisabled);
+
         buttonBarPart.setRemoveEnabled(false);
+        btnEdit.setEnabled(false);
         buttonBarPart.addListener(new AddRemoveListener() {
             @Override
             public void addSelected() {
@@ -106,10 +133,24 @@ public class EditableParametersPart {
                 doRemove();
             }
         });
+        btnEdit.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                doEdit();
+            }
+        });
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                buttonBarPart.setRemoveEnabled(!viewer.getSelection().isEmpty());
+                boolean enabled = !viewer.getSelection().isEmpty();
+                buttonBarPart.setRemoveEnabled(enabled);
+                btnEdit.setEnabled(enabled);
+            }
+        });
+        viewer.addOpenListener(new IOpenListener() {
+            @Override
+            public void open(OpenEvent event) {
+                doEdit();
             }
         });
         table.addKeyListener(new KeyAdapter() {
@@ -123,6 +164,8 @@ public class EditableParametersPart {
             @Override
             public void widgetDisposed(DisposeEvent ev) {
                 iconImg.dispose();
+                imgEdit.dispose();
+                imgEditDisabled.dispose();
             }
         });
 
@@ -148,5 +191,19 @@ public class EditableParametersPart {
             selected.add(entries.get(index));
         entries.removeAll(selected);
         viewer.remove(selected.toArray(new Object[selected.size()]));
+    }
+
+    void doEdit() {
+        @SuppressWarnings("unchecked")
+        Pair<String,Attrs> selected = (Pair<String,Attrs>) ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+        AbstractNewEntryDialog dialog = dialogFactory.create(parent.getShell());
+        dialog.setEntry(selected);
+        if (dialog.open() == Window.OK) {
+            Pair<String,Attrs> newEntry = dialog.getEntry();
+
+            int index = entries.indexOf(selected);
+            entries.set(index, newEntry);
+            viewer.refresh();
+        }
     }
 }

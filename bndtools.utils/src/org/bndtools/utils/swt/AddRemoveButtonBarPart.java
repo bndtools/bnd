@@ -7,7 +7,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.ISharedImages;
@@ -28,7 +27,7 @@ public class AddRemoveButtonBarPart {
     private ToolItem btnAdd;
     private ToolItem btnRemove;
 
-    public Control createControl(Composite parent, int style) {
+    public ToolBar createControl(Composite parent, int style) {
         toolbar = new ToolBar(parent, style);
 
         btnAdd = new ToolItem(toolbar, SWT.PUSH);

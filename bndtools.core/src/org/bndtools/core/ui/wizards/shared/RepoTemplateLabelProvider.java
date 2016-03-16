@@ -47,7 +47,10 @@ public class RepoTemplateLabelProvider extends StyledCellLabelProvider {
                     label.append("." + q, StyledString.COUNTER_STYLER);
             }
 
-            label.append(" \u2014 [", StyledString.QUALIFIER_STYLER).append(template.getShortDescription(), StyledString.QUALIFIER_STYLER).append("]", StyledString.QUALIFIER_STYLER);
+            String description = template.getShortDescription();
+            if (description != null) {
+                label.append(" \u2014 [", StyledString.QUALIFIER_STYLER).append(template.getShortDescription(), StyledString.QUALIFIER_STYLER).append("]", StyledString.QUALIFIER_STYLER);
+            }
 
             cell.setText(label.toString());
             cell.setStyleRanges(label.getStyleRanges());
