@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 
-import org.bndtools.core.ui.util.SWTUtil;
+import org.bndtools.utils.swt.SWTUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -162,7 +162,7 @@ public class ProjectLocationGroup {
                         directoryName = previous;
                 }
 
-                assert(directoryName != null);
+                assert (directoryName != null);
 
                 if (directoryName.length() > 0) {
                     File path = new File(directoryName);
