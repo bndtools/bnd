@@ -16,6 +16,7 @@ public final class BndtoolsConstants {
     public static final String MARKER_BND_PROBLEM = "bndtools.builder.bndproblem";
     public static final String MARKER_BND_PATH_PROBLEM = "bndtools.builder.bndpathproblem";
     public static final String MARKER_BND_WORKSPACE_PROBLEM = "bndtools.builder.bndworkspaceproblem";
+    public static final String MARKER_BND_MISSING_WORKSPACE = "bndtools.builder.missingworkspace";
 
     /**
      * Marker attribute name for the bnd {@link Location#context}

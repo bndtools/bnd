@@ -133,6 +133,8 @@ public class TemplateSelectionWizardPage extends WizardPage {
 
     @Override
     public void createControl(Composite parent) {
+        setImageDescriptor(Plugin.imageDescriptorFromPlugin("icons/bndtools-wizban.png")); //$NON-NLS-1$
+
         GridData gd;
 
         Composite composite = new Composite(parent, SWT.NULL);

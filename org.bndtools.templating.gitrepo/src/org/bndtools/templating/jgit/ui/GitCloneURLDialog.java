@@ -22,8 +22,11 @@ public class GitCloneURLDialog extends AbstractNewEntryDialog {
 
     private final String title;
 
-    private URIish cloneUri = null;
+    private String cloneUri = null;
+    private String name = null;
     private Text txtRepository;
+
+    private Text txtName;
 
     public GitCloneURLDialog(Shell parentShell, String title) {
         super(parentShell);
@@ -41,18 +44,30 @@ public class GitCloneURLDialog extends AbstractNewEntryDialog {
         container.setLayout(new GridLayout(2, false));
 
         Label lblRepo = new Label(container, SWT.NONE);
-        lblRepo.setText("Git Clone URL:");
+        lblRepo.setText("Clone URL:");
 
         txtRepository = new Text(container, SWT.BORDER);
         txtRepository.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-        txtRepository.addModifyListener(new ModifyListener() {
+        if (cloneUri != null)
+            txtRepository.setText(cloneUri.toString());
+
+        Label lblName = new Label(container, SWT.NONE);
+        lblName.setText("Name:");
+        txtName = new Text(container, SWT.BORDER);
+        txtName.setMessage("optional");
+        txtName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        if (name != null)
+            txtName.setText(name);
+
+        ModifyListener modifyListener = new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent ev) {
                 updateFromInput();
+                updateButtons();
             }
-        });
-        if (cloneUri != null)
-            txtRepository.setText(cloneUri.toString());
+        };
+        txtRepository.addModifyListener(modifyListener);
+        txtName.addModifyListener(modifyListener);
 
         return area;
     }
@@ -62,24 +77,44 @@ public class GitCloneURLDialog extends AbstractNewEntryDialog {
         super.createButtonsForButtonBar(parent);
 
         Button ok = getButton(OK);
-        ok.setText("Add");
+        ok.setText("Save");
         ok.setEnabled(cloneUri != null);
     }
 
     private void updateFromInput() {
-        cloneUri = null;
         try {
-            cloneUri = new URIish(txtRepository.getText().trim());
+            cloneUri = txtRepository.getText().trim();
+            name = txtName.getText().trim();
             setErrorMessage(null);
-            getButton(OK).setEnabled(cloneUri != null);
+
+            @SuppressWarnings("unused") // for validation
+            URIish uriish = new URIish(cloneUri);
         } catch (URISyntaxException e) {
             setErrorMessage(e.getMessage());
         }
     }
 
+    private void updateButtons() {
+        getButton(OK).setEnabled(cloneUri != null);
+    }
+
+    @Override
+    public void setEntry(Pair<String,Attrs> entry) {
+        cloneUri = entry.getFirst();
+        name = entry.getSecond().get("name");
+
+        if (txtRepository != null && !txtRepository.isDisposed())
+            txtRepository.setText(cloneUri);
+        if (txtName != null && !txtName.isDisposed())
+            txtName.setText(name);
+    }
+
     @Override
     public Pair<String,Attrs> getEntry() {
-        return cloneUri != null ? new Pair<>(cloneUri.toString(), new Attrs()) : null;
+        Attrs attrs = new Attrs();
+        if (name != null && !name.isEmpty())
+            attrs.put("name", name);
+        return cloneUri != null ? new Pair<>(cloneUri.toString(), attrs) : null;
     }
 
 }

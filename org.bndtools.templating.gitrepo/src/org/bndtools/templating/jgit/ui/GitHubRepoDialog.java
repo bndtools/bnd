@@ -29,6 +29,7 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
     private final String title;
 
     private String repository = null;
+    private Text txtRepository;
 
     public GitHubRepoDialog(Shell parentShell, String title) {
         super(parentShell);
@@ -48,13 +49,15 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
         Label lblRepo = new Label(container, SWT.NONE);
         lblRepo.setText("Repository Name:");
 
-        final Text txtRepository = new Text(container, SWT.BORDER);
+        txtRepository = new Text(container, SWT.BORDER);
         txtRepository.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        if (repository != null)
+            txtRepository.setText(repository);
         txtRepository.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent ev) {
                 repository = txtRepository.getText().trim();
-                updateFromInput();
+                updateButtons();
             }
         });
 
@@ -76,9 +79,6 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
                 }
             }
         });
-        if (repository != null)
-            txtRepository.setText(repository);
-
         return area;
     }
 
@@ -91,8 +91,15 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
         ok.setEnabled(repository != null);
     }
 
-    private void updateFromInput() {
+    private void updateButtons() {
         getButton(OK).setEnabled(repository != null && repository.trim().length() > 0);
+    }
+
+    @Override
+    public void setEntry(Pair<String,Attrs> entry) {
+        repository = entry.getFirst();
+        if (txtRepository != null && !txtRepository.isDisposed())
+            txtRepository.setText(repository);
     }
 
     @Override

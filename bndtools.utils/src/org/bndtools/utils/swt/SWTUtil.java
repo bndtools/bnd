@@ -1,10 +1,13 @@
 package org.bndtools.utils.swt;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -43,6 +46,13 @@ public class SWTUtil {
         if (ld instanceof GridData) {
             ((GridData) ld).grabExcessHorizontalSpace = true;
         }
+    }
+
+    // Shamelessly stolen from JDT
+    public static int getButtonWidthHint(Button button) {
+        PixelConverter converter = new PixelConverter(button);
+        int widthHint = converter.convertHorizontalDLUsToPixels(IDialogConstants.BUTTON_WIDTH);
+        return Math.max(widthHint, button.computeSize(SWT.DEFAULT, SWT.DEFAULT, true).x);
     }
 
 }

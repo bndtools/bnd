@@ -31,6 +31,7 @@ public class ExtensionRegistryTemplateLoader implements TemplateLoader {
     @Activate
     void activate() {
         typeToExtPoint.put("project", "projectTemplates");
+        typeToExtPoint.put("workspace", "workspaceTemplates");
     }
 
     @Override

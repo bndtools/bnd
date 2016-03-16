@@ -3,11 +3,11 @@
 
 	
    <!-- Extension Points -->
+   <!-- DEPRECATED -->
    <extension-point id="cnfTemplates"
       name="Workspace Configuration Templates"
       schema="schema/cnfTemplates.exsd"
    />
-   <!-- DEPRECATED -->
    <extension-point id="launchTemplates"
       name="Launch Templates"
       schema="schema/launchTemplates.exsd"
@@ -15,6 +15,9 @@
    <extension-point id="projectTemplates"
       name="Project Templates"
       schema="schema/projectTemplates.exsd"
+   />
+   <extension-point id="workspaceTemplates"
+      name="Workspace Templates"
    />
    <!-- END DEPRECATION -->
    <extension-point id="bndtoolsStartupParticipant"
@@ -111,7 +114,7 @@
             category="bndtools.wizardCategory"
             class="bndtools.wizards.bndfile.EmptyBndFileWizard"
             icon="${icons.bundle}"
-            name="Bundle Descriptor"
+            name="Bundle Descriptor File (.bnd)"
             project="false">
       </wizard>
       <wizard
@@ -152,7 +155,7 @@
             category="bndtools.wizardCategory"
             class="bndtools.wizards.bndfile.BndRunFileWizard"
             icon="${icons.bndrun}"
-            name="Run Descriptor">
+            name="Run Descriptor File (.bndrun)">
       </wizard>
       <wizard
             id="bndtools.newProjWiz"
@@ -160,7 +163,7 @@
             class="bndtools.wizards.project.NewBndProjectWizardFactory"
             finalPerspective="bndtools.perspective"
             preferredPerspectives="bndtools.perspective"
-            icon="icons/bndtools-logo-16x16.png"
+            icon="icons/bricks.png"
             name="Bndtools Project"
             project="true">
       </wizard>
@@ -174,6 +177,14 @@
             name="Bnd OSGi Workspace">
       </wizard>
    </extension>
+
+	<extension point="org.eclipse.ui.ide.markerResolution">
+		<markerResolutionGenerator
+			markerType="bndtools.builder.missingworkspace"
+			class="bndtools.wizards.workspace.MissingWorkspaceMarkerResolutionGenerator"
+		/>
+	</extension>
+
    <extension
          point="org.eclipse.ui.views">
       <category
@@ -977,7 +988,7 @@
          commandId="bnd.launch.runShortcut.debug"
          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
    </extension>
-
+   
 	${cat;resources/enroute/_plugin.xml}
 	
 

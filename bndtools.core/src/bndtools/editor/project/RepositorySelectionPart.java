@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.Function;
+import org.bndtools.utils.jface.BoldStyler;
 import org.bndtools.utils.jface.StrikeoutStyler;
 import org.bndtools.utils.swt.AddRemoveButtonBarPart;
 import org.bndtools.utils.swt.AddRemoveButtonBarPart.AddRemoveListener;
@@ -79,7 +80,6 @@ import aQute.bnd.build.model.conversions.Converter;
 import aQute.bnd.header.Attrs;
 import bndtools.BndConstants;
 import bndtools.Plugin;
-import bndtools.UIConstants;
 import bndtools.central.Central;
 import bndtools.central.WorkspaceR5Repository;
 import bndtools.editor.common.BndEditorPart;
@@ -261,7 +261,7 @@ public class RepositorySelectionPart extends BndEditorPart {
 
                 cell.setImage(imgLink);
 
-                StyledString label = new StyledString(linkStr, UIConstants.BOLD_STYLER);
+                StyledString label = new StyledString(linkStr, BoldStyler.INSTANCE_DEFAULT);
 
                 boolean first = true;
                 for (Entry<String,String> entry : clause.getAttribs().entrySet()) {

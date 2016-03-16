@@ -19,7 +19,7 @@ public class GitRepoPreferences {
         store = new ScopedPreferenceStore(InstanceScope.INSTANCE, bundle.getSymbolicName());
 
         store.setDefault(PREF_GITHUB_REPOS, "osgi/workspace");
-        store.setDefault(PREF_GIT_REPOS, "https://github.com/osgi/workspace.git");
+        store.setDefault(PREF_GIT_REPOS, "https://github.com/osgi/workspace.git; name='OSGi enRoute'");
     }
 
     public Parameters getGithubRepos() {

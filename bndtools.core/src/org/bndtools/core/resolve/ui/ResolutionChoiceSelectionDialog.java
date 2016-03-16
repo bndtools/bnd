@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.bndtools.core.ui.resource.R5LabelFormatter;
+import org.bndtools.utils.jface.BoldStyler;
+import org.bndtools.utils.jface.ItalicStyler;
 import org.bndtools.utils.resources.ResourceUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
@@ -28,7 +30,6 @@ import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
-import bndtools.UIConstants;
 import bndtools.model.resolution.CapabilityLabelProvider;
 
 public class ResolutionChoiceSelectionDialog extends TitleAreaDialog {
@@ -169,9 +170,9 @@ public class ResolutionChoiceSelectionDialog extends TitleAreaDialog {
         String name = ResourceUtils.getIdentity(identity);
 
         StyledString label = new StyledString("Save top candidate (");
-        label.append(name, UIConstants.BOLD_STYLER);
+        label.append(name, BoldStyler.INSTANCE_DEFAULT);
         label.append(") as a ");
-        label.append("preferred resource.", UIConstants.ITALIC_STYLER);
+        label.append("preferred resource.", ItalicStyler.INSTANCE_DEFAULT);
 
         txtSavePreference.setText(label.getString());
         txtSavePreference.setStyleRanges(label.getStyleRanges());
@@ -180,7 +181,7 @@ public class ResolutionChoiceSelectionDialog extends TitleAreaDialog {
     protected StyledString createRequirementText() {
         StyledString label = new StyledString();
         label.append("Namespace: ");
-        label.append(requirement.getNamespace() + "\n", UIConstants.BOLD_STYLER);
+        label.append(requirement.getNamespace() + "\n", BoldStyler.INSTANCE_DEFAULT);
 
         label.append("Filter: ");
         R5LabelFormatter.appendRequirementLabel(label, requirement, false);
@@ -193,7 +194,7 @@ public class ResolutionChoiceSelectionDialog extends TitleAreaDialog {
         }
 
         if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE)))
-            label.append("Optionally ", UIConstants.ITALIC_STYLER);
+            label.append("Optionally ", ItalicStyler.INSTANCE_DEFAULT);
         label.append("Required by Resource: ");
         R5LabelFormatter.appendResourceLabel(label, requirement.getResource());
 

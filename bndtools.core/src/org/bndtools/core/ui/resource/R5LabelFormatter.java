@@ -7,6 +7,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bndtools.core.ui.icons.Icons;
+import org.bndtools.utils.jface.BoldStyler;
+import org.bndtools.utils.jface.ItalicStyler;
 import org.bndtools.utils.resources.ResourceUtils;
 import org.eclipse.jface.viewers.StyledString;
 import org.osgi.framework.Version;
@@ -30,7 +32,6 @@ import aQute.bnd.osgi.resource.FilterParser.Op;
 import aQute.bnd.osgi.resource.FilterParser.RangeExpression;
 import aQute.bnd.osgi.resource.FilterParser.SimpleExpression;
 import aQute.bnd.osgi.resource.FilterParser.WithRangeExpression;
-import bndtools.UIConstants;
 
 public class R5LabelFormatter {
 
@@ -140,7 +141,7 @@ public class R5LabelFormatter {
 
         if (prefix.length() > 0)
             label.append(prefix + "=", StyledString.QUALIFIER_STYLER);
-        label.append(value, UIConstants.BOLD_STYLER);
+        label.append(value, BoldStyler.INSTANCE_DEFAULT);
     }
 
     public static void appendCapability(StyledString label, Capability cap, boolean shorten) {
@@ -155,11 +156,11 @@ public class R5LabelFormatter {
                 Object version = cap.getAttributes().get(versionAttributeName);
                 if (version != null) {
                     label.append(", " + versionAttributeName, StyledString.QUALIFIER_STYLER);
-                    label.append(" " + version.toString(), UIConstants.BOLD_COUNTER_STYLER);
+                    label.append(" " + version.toString(), BoldStyler.INSTANCE_COUNTER);
                 }
             }
         } else {
-            label.append(ns, UIConstants.BOLD_STYLER);
+            label.append(ns, BoldStyler.INSTANCE_DEFAULT);
         }
         label.append(" ", StyledString.QUALIFIER_STYLER);
 
@@ -204,7 +205,7 @@ public class R5LabelFormatter {
                 name = "<unknown>";
             }
         }
-        label.append(name, UIConstants.BOLD_STYLER);
+        label.append(name, BoldStyler.INSTANCE_DEFAULT);
 
         Version version = ResourceUtils.getVersion(identity);
         if (version != null)
@@ -226,10 +227,10 @@ public class R5LabelFormatter {
                 while (matcher.find()) {
                     int begin = matcher.start(1);
                     int end = matcher.end(1);
-                    label.setStyle(begin, end - begin, UIConstants.BOLD_STYLER);
+                    label.setStyle(begin, end - begin, BoldStyler.INSTANCE_DEFAULT);
                 }
             } else {
-                label.append(namespace + ": <no filter>", UIConstants.ERROR_STYLER);
+                label.append(namespace + ": <no filter>", ItalicStyler.INSTANCE_ERROR);
             }
         } else {
             try {
@@ -254,7 +255,7 @@ public class R5LabelFormatter {
                 }
             } catch (Exception e) {
                 label.append(namespace + ": ", StyledString.QUALIFIER_STYLER);
-                label.append("<parse error>", UIConstants.ERROR_STYLER);
+                label.append("<parse error>", ItalicStyler.INSTANCE_ERROR);
             }
         }
 
@@ -271,7 +272,7 @@ public class R5LabelFormatter {
 
         if (optional) {
             label.setStyle(0, label.length(), StyledString.QUALIFIER_STYLER);
-            label.append(" <optional>", UIConstants.ITALIC_STYLER);
+            label.append(" <optional>", ItalicStyler.INSTANCE_DEFAULT);
         }
     }
 
