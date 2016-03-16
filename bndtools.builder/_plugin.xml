@@ -75,6 +75,7 @@
 		name="Missing Bndtools Workspace Problem Marker"
 		>
 		<persistent value="true"/>
+		<super type="bndtools.builder.bndpathproblem"/>
 		<super type="org.eclipse.core.resources.textmarker"/>
 		<super type="org.eclipse.core.resources.problemmarker"/>
 	</extension>
