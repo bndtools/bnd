@@ -182,8 +182,6 @@ crossplatform.bundles: \
 	org.eclipse.ui.workbench,\
 	org.eclipse.ui.workbench.texteditor,\
 	org.eclipse.update.configurator,\
-	org.eclipse.jgit,\
-	javaewah,\
 	com.jcraft.jsch,\
 	org.hamcrest.core,\
 	org.junit,\
