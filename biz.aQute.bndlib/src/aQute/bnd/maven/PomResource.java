@@ -3,7 +3,6 @@ package aQute.bnd.maven;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.jar.Manifest;
@@ -15,6 +14,7 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.WriteResource;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
@@ -26,7 +26,7 @@ public class PomResource extends WriteResource {
 	private static final String	WHERE		= "where";
 	final Manifest				manifest;
 	private Map<String,String>	scm;
-	final Map<String,String>	processor;
+	final Processor				processor;
 	final static Pattern		NAME_URL	= Pattern.compile("(.*)(https?://.*)", Pattern.CASE_INSENSITIVE);
 	private String				where;
 	private String				groupId;
@@ -35,10 +35,20 @@ public class PomResource extends WriteResource {
 	private String				name;
 
 	public PomResource(Manifest manifest) {
-		this(new HashMap<String,String>(), manifest);
+		this(new Processor(), manifest);
 	}
 
 	public PomResource(Map<String,String> b, Manifest manifest) {
+		this(asProcessor(b), manifest);
+	}
+
+	private static Processor asProcessor(Map<String,String> b) {
+		Processor p = new Processor();
+		p.addProperties(b);
+		return p;
+	}
+
+	public PomResource(Processor b, Manifest manifest) {
 		this.manifest = manifest;
 		this.processor = b;
 
@@ -50,9 +60,8 @@ public class PomResource extends WriteResource {
 		name = domain.get(Constants.BUNDLE_NAME);
 		where = processor.get(WHERE);
 
-		if (processor.containsKey(GROUPID)) {
-			groupId = processor.get(GROUPID);
-		} else {
+		groupId = processor.get(GROUPID);
+		if (groupId == null) {
 			groupId = processor.get(Constants.GROUPID);
 		}
 		if (groupId != null) {
