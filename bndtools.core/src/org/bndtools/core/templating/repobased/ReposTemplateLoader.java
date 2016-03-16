@@ -1,6 +1,5 @@
 package org.bndtools.core.templating.repobased;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -17,7 +16,6 @@ import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.repository.Repository;
 
@@ -39,36 +37,8 @@ public class ReposTemplateLoader implements TemplateLoader {
 
     private static final String NS_TEMPLATE = "org.bndtools.template";
 
-    private List<Repository> repos;
-
-    private BundleLocator locator;
-
-    /**
-     * For testing
-     */
-    void activate(Workspace workspace) {
-        if (workspace != null) {
-            this.repos = workspace.getPlugins(Repository.class);
-            this.locator = new RepoPluginsBundleLocator(workspace.getRepositories());
-        } else {
-            this.repos = Collections.emptyList();
-            this.locator = new BundleLocator() {
-                @Override
-                public File locate(String bsn, String hash, String algo) throws Exception {
-                    return null;
-                }
-            };
-        }
-    }
-
-    @Activate
-    void activate() {
-        Workspace workspace = null;
-        try {
-            workspace = Central.getWorkspaceIfPresent();
-        } catch (IllegalStateException e) {}
-        activate(workspace);
-    }
+    // for testing
+    Workspace workspace = null;
 
     @Override
     public List<Template> findTemplates(String templateType, Reporter reporter) {
@@ -77,8 +47,22 @@ public class ReposTemplateLoader implements TemplateLoader {
         Requirement requirement = new CapReqBuilder(NS_TEMPLATE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filterStr).buildSyntheticRequirement();
         List<Template> templates = new ArrayList<>();
 
-        List<Repository> repos = new ArrayList<>(this.repos.size() + 1);
-        repos.addAll(this.repos);
+        // Try to get the repositories and BundleLocator from the workspace
+        List<Repository> workspaceRepos;
+        BundleLocator locator;
+        try {
+            if (workspace == null)
+                workspace = Central.getWorkspace();
+            workspaceRepos = workspace.getPlugins(Repository.class);
+            locator = new RepoPluginsBundleLocator(workspace.getRepositories());
+        } catch (Exception e) {
+            workspaceRepos = Collections.emptyList();
+            locator = new DirectDownloadBundleLocator();
+        }
+
+        List<Repository> repos = new ArrayList<>(workspaceRepos.size() + 1);
+        repos.addAll(workspaceRepos);
+
         addPreferenceConfiguredRepos(repos, reporter);
 
         // Search for templates

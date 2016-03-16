@@ -186,7 +186,7 @@ public class CapabilityBasedTemplate implements Template {
     }
 
     private synchronized File fetchBundle() throws IOException {
-        if (_bundleFile != null)
+        if (_bundleFile != null && _bundleFile.exists())
             return _bundleFile;
 
         Capability idCap = capability.getResource().getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE).get(0);
@@ -207,15 +207,17 @@ public class CapabilityBasedTemplate implements Template {
             return _bundleFile;
         }
 
-        String hashStr = (String) contentCap.getAttributes().get(ContentNamespace.CONTENT_NAMESPACE);
-        try {
-            _bundleFile = locator.locate(id, hashStr, "SHA-256");
-            if (_bundleFile != null)
-                return _bundleFile;
-        } catch (Exception e) {
-            throw new IOException("Unable to fetch bundle for template: " + getName());
+        // Try to locate from the workspace and/or repositories if a BundleLocator was provide
+        if (locator != null) {
+            String hashStr = (String) contentCap.getAttributes().get(ContentNamespace.CONTENT_NAMESPACE);
+            try {
+                _bundleFile = locator.locate(id, hashStr, "SHA-256", location);
+                if (_bundleFile != null)
+                    return _bundleFile;
+            } catch (Exception e) {
+                throw new IOException("Unable to fetch bundle for template: " + getName(), e);
+            }
         }
-
         throw new IOException("Unable to fetch bundle for template: " + getName());
     }
 
