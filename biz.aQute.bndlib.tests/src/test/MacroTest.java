@@ -763,8 +763,13 @@ public class MacroTest extends TestCase {
 		//
 
 		assertEquals("1.2.3-SNAPSHOT", macro.process("${version;===S;1.2.3.SNAPSHOT}"));
+		assertEquals("1.2.3-SNAPSHOT", macro.process("${version;===s;1.2.3.SNAPSHOT}"));
 		assertEquals("1.2.3.SNAPSHOT", macro.process("${version;====;1.2.3.SNAPSHOT}"));
+		assertEquals("1.2.3-SNAPSHOT", macro.process("${version;===S;1.2.3.BUILD-SNAPSHOT}"));
+		assertEquals("1.2.3-SNAPSHOT", macro.process("${version;===s;1.2.3.BUILD-SNAPSHOT}"));
+		assertEquals("1.2.3.BUILD-SNAPSHOT", macro.process("${version;====;1.2.3.BUILD-SNAPSHOT}"));
 		assertEquals("1.2.3.X", macro.process("${version;===S;1.2.3.X}"));
+		assertEquals("1.2.3", macro.process("${version;===s;1.2.3.X}"));
 		assertEquals("1.2.3.X", macro.process("${version;====;1.2.3.X}"));
 	}
 
