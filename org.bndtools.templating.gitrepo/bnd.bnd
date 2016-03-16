@@ -5,6 +5,7 @@
 	org.bndtools.templating; version=latest,\
 	bndtools.utils; version=latest; packages=*,\
 	org.eclipse.jgit,\
+	javaewah,\
 	osgi.core;version=${osgi.core.version},\
 	osgi.cmpn;version=${osgi.cmpn.version},\
 	org.eclipse.jface,\
@@ -16,11 +17,7 @@
 
 -privatepackage: org.bndtools.templating.jgit.*
 -includeresource: resources
--conditionalpackage: aQute.lib.*, aQute.libg.*, org.bndtools.utils.*
-
+-conditionalpackage: aQute.lib.*, aQute.libg.*, org.bndtools.utils.*, org.eclipse.jgit.*, com.googlecode.javaewah
 
 Bundle-ActivationPolicy: lazy
 Bundle-SymbolicName: org.bndtools.templating.gitrepo; singleton:=true
-Import-Package: \
-	org.eclipse.jgit.*;version='[3.4,5.0)',\
-	*
