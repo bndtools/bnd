@@ -37,6 +37,7 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
@@ -837,14 +838,15 @@ public class Macro {
 			if (c != '~') {
 				if (i == 3) {
 					result = version.getQualifier();
+					MavenVersion mv = new MavenVersion(version);
 					if (c == 'S') {
 						// we have a request for a Maven snapshot
-						if ("SNAPSHOT".equals(result))
-							return sb.toString() + "-SNAPSHOT";
+						if (mv.isSnapshot())
+							return sb.append("-SNAPSHOT").toString();
 					} else if (c == 's') {
 						// we have a request for a Maven snapshot
-						if ("SNAPSHOT".equals(result))
-							return sb.toString() + "-SNAPSHOT";
+						if (mv.isSnapshot())
+							return sb.append("-SNAPSHOT").toString();
 						else
 							return sb.toString();
 					}
