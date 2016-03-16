@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -91,6 +92,7 @@ public class WorkspaceSetupWizard extends Wizard implements IWorkbenchWizard {
 
         final File targetDir = previewPage.getTargetDir();
         final Set<String> checkedPaths = previewPage.getCheckedPaths();
+        final boolean cleanBuild = setupPage.isCleanBuild();
 
         try {
             // Expand the template
@@ -124,13 +126,17 @@ public class WorkspaceSetupWizard extends Wizard implements IWorkbenchWizard {
                 }
             }
 
-            // Import anything that looks like an Eclipse project
+            // Import anything that looks like an Eclipse project & do a full rebuild
             final IWorkspaceRunnable importProjectsRunnable = new IWorkspaceRunnable() {
                 @Override
                 public void run(IProgressMonitor monitor) throws CoreException {
                     File[] children = targetDir.listFiles();
                     if (children != null) {
-                        SubMonitor progress = SubMonitor.convert(monitor, children.length * 2);
+                        int work = children.length;
+                        if (cleanBuild)
+                            work += 2;
+
+                        SubMonitor progress = SubMonitor.convert(monitor, work);
                         for (File folder : children) {
                             if (folder.isDirectory() && topLevelFolders.contains(folder)) {
                                 String projectName = folder.getName();
@@ -139,8 +145,9 @@ public class WorkspaceSetupWizard extends Wizard implements IWorkbenchWizard {
                                     IProject project = workspace.getRoot().getProject(projectName);
                                     if (!project.exists()) {
                                         // No existing project in the workspace, so import the generated project.
-                                        project.create(progress.newChild(1));
-                                        project.open(progress.newChild(1));
+                                        SubMonitor subProgress = progress.newChild(1);
+                                        project.create(subProgress.newChild(1));
+                                        project.open(subProgress.newChild(1));
                                     } else {
                                         // If a project with the same name exists, does it live in the same location? If not, we can't import the generated project.
                                         File existingLocation = project.getLocation().toFile();
@@ -150,15 +157,18 @@ public class WorkspaceSetupWizard extends Wizard implements IWorkbenchWizard {
                                             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, null));
                                         }
 
-                                        // Open it if closed
-                                        project.open(progress.newChild(1));
+                                        SubMonitor subProgress = progress.newChild(1);
 
+                                        // Open it if closed
+                                        project.open(subProgress.newChild(1));
                                         // Refresh, as the template may have generated new content
-                                        project.refreshLocal(IResource.DEPTH_INFINITE, progress.newChild(1));
+                                        project.refreshLocal(IResource.DEPTH_INFINITE, subProgress.newChild(1));
                                     }
                                 }
                             }
                         }
+                        if (cleanBuild)
+                            workspace.build(IncrementalProjectBuilder.CLEAN_BUILD, progress.newChild(2));
                     }
                 }
             };
