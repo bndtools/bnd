@@ -15,7 +15,6 @@ import org.bndtools.templating.Template;
 import org.bndtools.utils.progress.ProgressMonitorReporter;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import aQute.bnd.build.Run;
-import aQute.bnd.build.Workspace;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import junit.framework.TestCase;
@@ -27,9 +26,8 @@ public class ReposTemplateLoaderTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         Run project = Run.createRun(null, IO.getFile("testdata/ws.bndrun"));
-        Workspace ws = project.getWorkspace();
         loader = new ReposTemplateLoader();
-        loader.activate(ws);
+        loader.workspace = project.getWorkspace();
     }
 
     public void testLoad() throws Exception {
