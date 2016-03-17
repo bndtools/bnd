@@ -136,7 +136,7 @@ class PackageInfo {
 		if ("osgi".equals(versionAnnotation))
 			return "org.osgi.annotation.versioning.Version";
 		else if ("bnd".equals(versionAnnotation))
-			return aQute.bnd.annotation.Version.class.getName();
+			return "aQute.bnd.annotation.Version";
 		else if ("packageinfo".equals(versionAnnotation)) {
 			return null;
 		} else

@@ -32,6 +32,7 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 
 -buildpath: \
 	aQute.libg;version=latest,\
+	biz.aQute.bnd.annotation;version=project,\
 	biz.aQute.bndlib;version=project,\
 	org.apache.tools.ant,\
 	org.osgi.service.component.annotations;version=1.3.0,\

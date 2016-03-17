@@ -59,7 +59,6 @@ import java.util.regex.Pattern;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 
 import aQute.bnd.annotation.Export;
-import aQute.bnd.annotation.ProviderType;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -525,99 +524,101 @@ public class Analyzer extends Processor {
 			@Override
 			public void annotation(Annotation a) {
 				String name = a.getName().getFQN();
-				if (aQute.bnd.annotation.Version.class.getName().equals(name)
-						|| "org.osgi.annotation.versioning.Version".equals(name)) {
-
-					// Check version
-					String version = a.get("value");
-					if (!info.containsKey(Constants.VERSION_ATTRIBUTE)) {
-						if (version != null) {
-							version = getReplacer().process(version);
-							if (Verifier.VERSION.matcher(version).matches())
-								info.put(VERSION_ATTRIBUTE, version);
-							else
-								error("Version annotation in %s has invalid version info: %s", clazz, version);
-						}
-					} else {
-						// Verify this matches with packageinfo
-						String presentVersion = info.get(VERSION_ATTRIBUTE);
-						try {
-							Version av = new Version(presentVersion).getWithoutQualifier();
-							Version bv = new Version(version).getWithoutQualifier();
-							if (!av.equals(bv)) {
-								error("Version from annotation for %s differs with packageinfo or Manifest",
-										clazz.getClassName().getFQN());
+				switch (name) {
+					case "aQute.bnd.annotation.Version" :
+						warning("%s annotation used in class %s. Bnd versioning annotations are deprecated as of Bnd 3.2 and support will be removed in Bnd 4.0. Please change to use OSGi versioning annotations.",
+								name, clazz);
+					case "org.osgi.annotation.versioning.Version" :
+						// Check version
+						String version = a.get("value");
+						if (!info.containsKey(Constants.VERSION_ATTRIBUTE)) {
+							if (version != null) {
+								version = getReplacer().process(version);
+								if (Verifier.VERSION.matcher(version).matches())
+									info.put(VERSION_ATTRIBUTE, version);
+								else
+									error("Version annotation in %s has invalid version info: %s", clazz, version);
 							}
-						} catch (Exception e) {
-							// Ignore
+						} else {
+							// Verify this matches with packageinfo
+							String presentVersion = info.get(VERSION_ATTRIBUTE);
+							try {
+								Version av = new Version(presentVersion).getWithoutQualifier();
+								Version bv = new Version(version).getWithoutQualifier();
+								if (!av.equals(bv)) {
+									error("Version from annotation for %s differs with packageinfo or Manifest",
+											clazz.getClassName().getFQN());
+								}
+							} catch (Exception e) {
+								// Ignore
+							}
 						}
-					}
-				} else if (name.equals(Export.class.getName())) {
+						break;
+					case "aQute.bnd.annotation.Export" :
+						// Check mandatory attributes
+						Attrs attrs = doAttrbutes((Object[]) a.get(Export.MANDATORY), clazz, getReplacer());
+						if (!attrs.isEmpty()) {
+							info.putAll(attrs);
+							info.put(MANDATORY_DIRECTIVE, Processor.join(attrs.keySet()));
+						}
 
-					// Check mandatory attributes
-					Attrs attrs = doAttrbutes((Object[]) a.get(Export.MANDATORY), clazz, getReplacer());
-					if (!attrs.isEmpty()) {
-						info.putAll(attrs);
-						info.put(MANDATORY_DIRECTIVE, Processor.join(attrs.keySet()));
-					}
+						// Check optional attributes
+						attrs = doAttrbutes((Object[]) a.get(Export.OPTIONAL), clazz, getReplacer());
+						if (!attrs.isEmpty()) {
+							info.putAll(attrs);
+						}
 
-					// Check optional attributes
-					attrs = doAttrbutes((Object[]) a.get(Export.OPTIONAL), clazz, getReplacer());
-					if (!attrs.isEmpty()) {
-						info.putAll(attrs);
-					}
+						// Check Included classes
+						Object[] included = a.get(Export.INCLUDE);
+						if (included != null && included.length > 0) {
+							StringBuilder sb = new StringBuilder();
+							String del = "";
+							for (Object i : included) {
+								Matcher m = OBJECT_REFERENCE.matcher(((TypeRef) i).getFQN());
+								if (m.matches()) {
+									sb.append(del);
+									sb.append(m.group(2));
+									del = ",";
+								}
+							}
+							info.put(INCLUDE_DIRECTIVE, sb.toString());
+						}
 
-					// Check Included classes
-					Object[] included = a.get(Export.INCLUDE);
-					if (included != null && included.length > 0) {
-						StringBuilder sb = new StringBuilder();
-						String del = "";
-						for (Object i : included) {
-							Matcher m = OBJECT_REFERENCE.matcher(((TypeRef) i).getFQN());
-							if (m.matches()) {
+						// Check Excluded classes
+						Object[] excluded = a.get(Export.EXCLUDE);
+						if (excluded != null && excluded.length > 0) {
+							StringBuilder sb = new StringBuilder();
+							String del = "";
+							for (Object i : excluded) {
+								Matcher m = OBJECT_REFERENCE.matcher(((TypeRef) i).getFQN());
+								if (m.matches()) {
+									sb.append(del);
+									sb.append(m.group(2));
+									del = ",";
+								}
+							}
+							info.put(EXCLUDE_DIRECTIVE, sb.toString());
+						}
+
+						// Check Uses
+						Object[] uses = a.get(Export.USES);
+						if (uses != null && uses.length > 0) {
+							String old = info.get(USES_DIRECTIVE);
+							if (old == null)
+								old = "";
+							StringBuilder sb = new StringBuilder(old);
+							String del = sb.length() == 0 ? "" : ",";
+
+							for (Object use : uses) {
 								sb.append(del);
-								sb.append(m.group(2));
+								sb.append(use);
 								del = ",";
 							}
+							info.put(USES_DIRECTIVE, sb.toString());
 						}
-						info.put(INCLUDE_DIRECTIVE, sb.toString());
-					}
-
-					// Check Excluded classes
-					Object[] excluded = a.get(Export.EXCLUDE);
-					if (excluded != null && excluded.length > 0) {
-						StringBuilder sb = new StringBuilder();
-						String del = "";
-						for (Object i : excluded) {
-							Matcher m = OBJECT_REFERENCE.matcher(((TypeRef) i).getFQN());
-							if (m.matches()) {
-								sb.append(del);
-								sb.append(m.group(2));
-								del = ",";
-							}
-						}
-						info.put(EXCLUDE_DIRECTIVE, sb.toString());
-					}
-
-					// Check Uses
-					Object[] uses = a.get(Export.USES);
-					if (uses != null && uses.length > 0) {
-						String old = info.get(USES_DIRECTIVE);
-						if (old == null)
-							old = "";
-						StringBuilder sb = new StringBuilder(old);
-						String del = sb.length() == 0 ? "" : ",";
-
-						for (Object use : uses) {
-							sb.append(del);
-							sb.append(use);
-							del = ",";
-						}
-						info.put(USES_DIRECTIVE, sb.toString());
-					}
+						break;
 				}
 			}
-
 		});
 		return info;
 	}
@@ -1764,10 +1765,17 @@ public class Analyzer extends Processor {
 		if (c.annotations == null)
 			return false;
 
-		TypeRef pt = getTypeRefFromFQN(ProviderType.class.getName());
 		TypeRef r6pt = getTypeRefFromFQN("org.osgi.annotation.versioning.ProviderType");
-		boolean result = c.annotations.contains(pt) || c.annotations.contains(r6pt);
-		return result;
+		if (c.annotations.contains(r6pt)) {
+			return true;
+		}
+		TypeRef pt = getTypeRefFromFQN("aQute.bnd.annotation.ProviderType");
+		if (c.annotations.contains(pt)) {
+			warning("%s annotation used in class %s. Bnd versioning annotations are deprecated as of Bnd 3.2 and support will be removed in Bnd 4.0. Please change to use OSGi versioning annotations.",
+					"aQute.bnd.annotation.ProviderType", c);
+			return true;
+		}
+		return false;
 	}
 
 	/**

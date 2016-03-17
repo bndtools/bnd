@@ -1,11 +1,11 @@
 package aQute.bnd.make.component;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import aQute.bnd.annotation.component.Component;
 import aQute.bnd.component.HeaderReader;
 import aQute.bnd.component.TagResource;
 import aQute.bnd.header.Attrs;
@@ -125,7 +125,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 				// Annotations possible!
 
 				Collection<Clazz> annotatedComponents = analyzer.getClasses("", QUERY.ANNOTATED.toString(),
-						Component.class.getName(), //
+						"aQute.bnd.annotation.component.Component", //
 						QUERY.NAMED.toString(), name //
 				);
 
@@ -194,6 +194,9 @@ public class ServiceComponent implements AnalyzerPlugin {
 		}
 
 		void annotated(Map<String,Map<String,String>> components, Clazz c, Map<String,String> info) throws Exception {
+			analyzer.warning(
+					"%s annotation used in class %s. Bnd DS annotations are deprecated as of Bnd 3.2 and support will be removed in Bnd 4.0. Please change to use OSGi DS annotations.",
+					"aQute.bnd.annotation.component.Component", c);
 			// Get the component definition
 			// from the annotations
 			Map<String,String> map = ComponentAnnotationReader.getDefinition(c, this);

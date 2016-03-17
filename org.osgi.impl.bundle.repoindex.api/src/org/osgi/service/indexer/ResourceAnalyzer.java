@@ -2,7 +2,7 @@ package org.osgi.service.indexer;
 
 import java.util.List;
 
-import aQute.bnd.annotation.ConsumerType;
+import org.osgi.annotation.versioning.ConsumerType;
 
 /**
  * <p>

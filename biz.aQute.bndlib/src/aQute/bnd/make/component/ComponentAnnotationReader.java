@@ -34,10 +34,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Modified;
 import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.component.error.DeclarativeServicesAnnotationError;
 import aQute.bnd.component.error.DeclarativeServicesAnnotationError.ErrorType;
@@ -130,7 +127,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 	public void annotation(Annotation annotation) {
 		String fqn = annotation.getName().getFQN();
 
-		if (fqn.equals(Component.class.getName())) {
+		if (fqn.equals("aQute.bnd.annotation.component.Component")) {
 			if (!mismatchedAnnotations.isEmpty()) {
 				String componentName = annotation.get(Component.NAME);
 				componentName = (componentName == null) ? className.getFQN() : componentName;
@@ -208,7 +205,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				set(COMPONENT_PROVIDE, Processor.join(Arrays.asList(p)), "<>");
 			}
 
-		} else if (fqn.equals(Activate.class.getName())) {
+		} else if (fqn.equals("aQute.bnd.annotation.component.Activate")) {
 			if (!checkMethod())
 				setVersion(V1_1);
 
@@ -229,7 +226,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				set(COMPONENT_ACTIVATE, method, "<>");
 			}
 
-		} else if (fqn.equals(Deactivate.class.getName())) {
+		} else if (fqn.equals("aQute.bnd.annotation.component.Deactivate")) {
 			if (!checkMethod())
 				setVersion(V1_1);
 
@@ -246,7 +243,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 				setVersion(V1_1);
 				set(COMPONENT_DEACTIVATE, method, "<>");
 			}
-		} else if (fqn.equals(Modified.class.getName())) {
+		} else if (fqn.equals("aQute.bnd.annotation.component.Modified")) {
 			if (!ACTIVATEDESCRIPTOR.matcher(method.getDescriptor().toString()).matches())
 				reporter.error(
 						"Modified method for %s does not have an acceptable prototype, only Map, ComponentContext, or BundleContext is allowed. Found: %s",
@@ -255,9 +252,9 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 								method.getDescriptor().toString(), ErrorType.MODIFIED_SIGNATURE_ERROR));
 			set(COMPONENT_MODIFIED, method, "<>");
 			setVersion(V1_1);
-		} else if (fqn.equals(Reference.class.getName())) {
+		} else if (fqn.equals("aQute.bnd.annotation.component.Reference")) {
 
-			String name = (String) annotation.get(Reference.class.getName());
+			String name = (String) annotation.get("aQute.bnd.annotation.component.Reference");
 			String bind = method.getName();
 			String unbind = null;
 

@@ -33,8 +33,6 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import aQute.bnd.annotation.ConsumerType;
-import aQute.bnd.annotation.ProviderType;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.osgi.Analyzer;
@@ -376,10 +374,10 @@ class JavaElement {
 					// released yet
 					//
 					String name = annotation.getName().getFQN();
-					if (ProviderType.class.getName().equals(name)
+					if ("aQute.bnd.annotation.ProviderType".equals(name)
 							|| "org.osgi.annotation.versioning.ProviderType".equals(name)) {
 						provider.set(true);
-					} else if (ConsumerType.class.getName().equals(name)
+					} else if ("aQute.bnd.annotation.ConsumerType".equals(name)
 							|| "org.osgi.annotation.versioning.ConsumerType".equals(name)) {
 						provider.set(false);
 					}

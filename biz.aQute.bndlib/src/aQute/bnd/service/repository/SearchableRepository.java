@@ -3,9 +3,9 @@ package aQute.bnd.service.repository;
 import java.net.URI;
 import java.util.Set;
 
+import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.resource.Requirement;
 
-import aQute.bnd.annotation.ProviderType;
 import aQute.bnd.version.Version;
 
 /**

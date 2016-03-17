@@ -147,6 +147,7 @@ public class ComponentTest extends TestCase {
 		});
 		b.setProperty("Service-Component", "*InheritedActivator");
 		b.setProperty("Private-Package", "test.activator.inherits");
+		b.setProperty("-fixupmessages.bndannodeprecated", "Bnd DS annotations are deprecated");
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.build();
 		System.err.println(b.getErrors());

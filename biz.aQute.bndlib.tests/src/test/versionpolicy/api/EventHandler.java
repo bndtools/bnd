@@ -1,6 +1,6 @@
 package test.versionpolicy.api;
 
-import aQute.bnd.annotation.ConsumerType;
+import org.osgi.annotation.versioning.ConsumerType;
 
 @ConsumerType
 public interface EventHandler {

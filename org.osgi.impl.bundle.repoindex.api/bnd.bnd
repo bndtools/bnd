@@ -3,4 +3,4 @@
 
 Export-Package: org.osgi.service.indexer
 -buildpath: \
-	biz.aQute.bnd.annotation;version=latest
+	osgi.annotation;version=6.0.1
