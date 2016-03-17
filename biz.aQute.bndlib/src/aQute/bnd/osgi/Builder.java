@@ -134,20 +134,28 @@ public class Builder extends Analyzer {
 		// we know what it is on the classpath
 		addSources(dot);
 
-		String pom = getProperty(POM);
-		if (pom != null) {
-			if (!pom.equalsIgnoreCase("false")) {
-				Map<String,String> map = OSGiHeader.parseProperties(pom);
-				map.put(Constants.BUNDLE_SCM, getProperty(Constants.BUNDLE_SCM));
-				map.put(Constants.BUNDLE_DEVELOPERS, getProperty(Constants.BUNDLE_DEVELOPERS));
-				map.put(Constants.GROUPID, getProperty(Constants.GROUPID));
-				PomResource pomXml = new PomResource(map, dot.getManifest());
-				PomPropertiesResource pomProperties = new PomPropertiesResource(pomXml);
-				dot.putResource(pomXml.getWhere(), pomXml);
-				if (!pomProperties.getWhere().equals(pomXml.getWhere())) {
-					dot.putResource(pomProperties.getWhere(), pomProperties);
+		Processor scoped = new Processor(this);
+		try {
+			String bsn = getBsn();
+			if (bsn != null)
+				scoped.setProperty("@bsn", bsn);
+			String version = getBundleVersion();
+			if (version != null)
+				scoped.setProperty("@version", version);
+			String pom = scoped.getProperty(POM);
+			if (pom != null) {
+				if (!pom.equalsIgnoreCase("false")) {
+					scoped.addProperties(OSGiHeader.parseProperties(pom));
+					PomResource pomXml = new PomResource(scoped, dot.getManifest());
+					PomPropertiesResource pomProperties = new PomPropertiesResource(pomXml);
+					dot.putResource(pomXml.getWhere(), pomXml);
+					if (!pomProperties.getWhere().equals(pomXml.getWhere())) {
+						dot.putResource(pomProperties.getWhere(), pomProperties);
+					}
 				}
 			}
+		} finally {
+			scoped.close();
 		}
 
 		if (!isNoBundle())
