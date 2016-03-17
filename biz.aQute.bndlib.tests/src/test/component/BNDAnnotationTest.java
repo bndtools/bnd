@@ -110,6 +110,7 @@ public class BNDAnnotationTest extends BndTestCase {
 		b.setProperty("Service-Component", spec);
 		b.setProperty("Private-Package", "test.component");
 		b.setProperty("-dsannotations", "");
+		b.setProperty("-fixupmessages.bndannodeprecated", "Bnd DS annotations are deprecated");
 		b.build();
 		assertOk(b, errors, warnings);
 		return b;
