@@ -45,7 +45,25 @@ public class About {
 	public static Version				_3_2		= new Version(3, 2, 0);
 	public static Version				CURRENT		= _3_2;
 
-	public static String[]				CHANGES_3_2	= {};
+	public static String[]				CHANGES_3_2	= {
+			"Default content for bundle", "bndlib: Remove synchronization which causes deadlocks",
+			"packages macro: Fix negation processing", "pom: Update -pom processing of Bundle-License header",
+			"junit: Write xml declaration to junit xml output", "test: Do not clear test-results folder",
+			"class parsing: Parse and process MethodType constant pool entries",
+			"Process Designate annotation based upon -metatypeannotations instruction",
+			"builder: SubBuilders inherit pedantic/trace", "snapshot: Also support qualifier ending in '-SNAPSHOT'",
+			"pom: Use -groupid if set as the default groupid on the -pom instruction",
+			"Close classpath  jar files after execution.", "Added support for ${packages;versioned}",
+			"Fixupmessage was not properly restricting warnings",
+			"Added a ${glob;expo} macro that turns a glob expression into a regex",
+			"Bundle-Activator test did not take extend or implement via another interface into account.",
+			"Baselining 'cross compiler' fails when using switch on an enum", "Expand the bundle class path",
+			"Allow -releaserepo to contain multiple names",
+			"Skips comparing class files when a corresponding source can be found",
+			"Added HttpClient. bnd now reads ~/.bnd/bnd-settings.xml or ~/.m2/settings.xml to find out proxy & authentication settings",
+			"version macro: Use MavenVersion to test for SNAPSHOT version",
+			"-pom: Add support for @bsn and @version scoped properties"
+	};
 	public static String[]				CHANGES_3_1	= {
 															"The embedded repo is expanded into cnf/cache/<bnd-version> folder to avoid potential conflicts.",
 															"${uri;<uri>[;<base>]}: Add new uri macro that uses the Processor base as base URI",
