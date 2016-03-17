@@ -52,7 +52,8 @@ Conditional-Package:	        aQute.service.*, aQute.configurable
 	osgi.cmpn;version=@5,\
 	aQute.libg;version=project, \
 	org.osgi.util.function;version=1, \
-	org.osgi.util.promise;version=1
+	org.osgi.util.promise;version=1,\
+	biz.aQute.bnd.annotation;version=project
 
 Import-Package: junit.framework;resolution:=optional,\
 	org.osgi.resource;resolution:=optional,\

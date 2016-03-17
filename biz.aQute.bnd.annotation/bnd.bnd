@@ -6,5 +6,3 @@ Bundle-Description:     Contains only the annotations for bnd.
 Bundle-DocURL:          http://www.aQute.biz/Code/Bnd
 Export-Package:         aQute.bnd.annotation.*
 
--buildpath: \
-	biz.aQute.bndlib;version=project

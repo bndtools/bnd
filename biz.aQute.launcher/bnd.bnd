@@ -7,9 +7,9 @@
 	ee.j2se;version=${javac.compliance}
 
 -testpath: \
-	${junit}
-	
-	
+	${junit},\
+	biz.aQute.bnd.annotation;version=project
+
 Launcher-Plugin: aQute.launcher.plugin.ProjectLauncherImpl
 
 Private-Package: aQute.launcher.*
