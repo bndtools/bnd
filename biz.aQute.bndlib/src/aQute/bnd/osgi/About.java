@@ -62,7 +62,8 @@ public class About {
 			"Skips comparing class files when a corresponding source can be found",
 			"Added HttpClient. bnd now reads ~/.bnd/bnd-settings.xml or ~/.m2/settings.xml to find out proxy & authentication settings",
 			"version macro: Use MavenVersion to test for SNAPSHOT version",
-			"-pom: Add support for @bsn and @version scoped properties"
+			"-pom: Add support for @bsn and @version scoped properties",
+			"Bnd DS, metatype, and versioning annotations are deprecated; support to be removed in Bnd 4.0"
 	};
 	public static String[]				CHANGES_3_1	= {
 															"The embedded repo is expanded into cnf/cache/<bnd-version> folder to avoid potential conflicts.",
