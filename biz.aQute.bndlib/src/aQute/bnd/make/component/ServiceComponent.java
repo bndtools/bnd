@@ -1,11 +1,11 @@
 package aQute.bnd.make.component;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import aQute.bnd.annotation.component.Component;
 import aQute.bnd.component.HeaderReader;
 import aQute.bnd.component.TagResource;
 import aQute.bnd.header.Attrs;
@@ -125,7 +125,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 				// Annotations possible!
 
 				Collection<Clazz> annotatedComponents = analyzer.getClasses("", QUERY.ANNOTATED.toString(),
-						Component.class.getName(), //
+						"aQute.bnd.annotation.component.Component", //
 						QUERY.NAMED.toString(), name //
 				);
 

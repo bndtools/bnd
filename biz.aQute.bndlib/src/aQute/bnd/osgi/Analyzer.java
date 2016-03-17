@@ -59,7 +59,6 @@ import java.util.regex.Pattern;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 
 import aQute.bnd.annotation.Export;
-import aQute.bnd.annotation.ProviderType;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -525,7 +524,7 @@ public class Analyzer extends Processor {
 			@Override
 			public void annotation(Annotation a) {
 				String name = a.getName().getFQN();
-				if (aQute.bnd.annotation.Version.class.getName().equals(name)
+				if ("aQute.bnd.annotation.Version".equals(name)
 						|| "org.osgi.annotation.versioning.Version".equals(name)) {
 
 					// Check version
@@ -1764,7 +1763,7 @@ public class Analyzer extends Processor {
 		if (c.annotations == null)
 			return false;
 
-		TypeRef pt = getTypeRefFromFQN(ProviderType.class.getName());
+		TypeRef pt = getTypeRefFromFQN("aQute.bnd.annotation.ProviderType");
 		TypeRef r6pt = getTypeRefFromFQN("org.osgi.annotation.versioning.ProviderType");
 		boolean result = c.annotations.contains(pt) || c.annotations.contains(r6pt);
 		return result;
