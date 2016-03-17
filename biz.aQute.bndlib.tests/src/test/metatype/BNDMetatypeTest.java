@@ -267,6 +267,7 @@ public class BNDMetatypeTest extends BndTestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.setProperty("-metatypeannotations", "!*");
+		b.setProperty("-fixupmessages.bndannodeprecated", "Bnd metatype annotations are deprecated");
 		b.build();
 		assertOk(b);
 
@@ -631,6 +632,7 @@ public class BNDMetatypeTest extends BndTestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.setProperty("-metatypeannotations", "");
+		b.setProperty("-fixupmessages.bndannodeprecated", "Bnd metatype annotations are deprecated");
 
 		b.build();
 		assertOk(b);
@@ -684,6 +686,7 @@ public class BNDMetatypeTest extends BndTestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.setProperty("-metatypeannotations", "");
+		b.setProperty("-fixupmessages.bndannodeprecated", "Bnd metatype annotations are deprecated");
 
 		b.build();
 		assertOk(b);
@@ -810,6 +813,7 @@ public class BNDMetatypeTest extends BndTestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.setProperty("-metatypeannotations", "!*");
+		b.setProperty("-fixupmessages.bndannodeprecated", "Bnd metatype annotations are deprecated");
 
 		b.build();
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$TestAD.xml");
@@ -880,6 +884,7 @@ public class BNDMetatypeTest extends BndTestCase {
 		b.setProperty("-metatypeannotations", "!*");
 
 		b.setProperty("-metatype-inherit", "true");
+		b.setProperty("-fixupmessages.bndannodeprecated", "Bnd metatype annotations are deprecated");
 		b.build();
 		Resource r = b.getJar()
 				.getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$TestADWithInheritanceChild.xml");
@@ -1019,6 +1024,7 @@ public class BNDMetatypeTest extends BndTestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.setProperty("-metatypeannotations", "!*");
+		b.setProperty("-fixupmessages.bndannodeprecated", "Bnd metatype annotations are deprecated");
 
 		b.build();
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$TestReturnTypes.xml");
@@ -1140,6 +1146,7 @@ public class BNDMetatypeTest extends BndTestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty("-metatype", "*");
 		b.setProperty("-metatypeannotations", "!*");
+		b.setProperty("-fixupmessages.bndannodeprecated", "Bnd metatype annotations are deprecated");
 
 		b.build();
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.BNDMetatypeTest$TestSimple.xml");

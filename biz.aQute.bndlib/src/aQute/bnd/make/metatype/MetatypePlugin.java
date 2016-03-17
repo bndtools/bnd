@@ -28,6 +28,9 @@ public class MetatypePlugin implements AnalyzerPlugin {
 					QUERY.NAMED.toString(), name //
 			);
 			for (Clazz c : metatypes) {
+				analyzer.warning(
+						"%s annotation used in class %s. Bnd metatype annotations are deprecated as of Bnd 3.2 and support will be removed in Bnd 4.0. Please change to use OSGi Metatype annotations.",
+						"aQute.bnd.annotation.metatype.Meta$OCD", c);
 				jar.putResource("OSGI-INF/metatype/" + c.getFQN() + ".xml", new MetaTypeReader(c, analyzer));
 			}
 		}
