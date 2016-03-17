@@ -1,32 +1,6 @@
 ########################
 ## BND BUILD SETTINGS ##
 ########################
-
-
-## Global defaults are loaded from the bnd library (as shown below), place your
-## specific settings here. Additional settings are inherited from ext/*.bnd and
-## they will be overridden by anything you specify in this file.
-
-## General Options
-#project.dependson:     ${p-dependson;:}
-#project.bootclasspath: ${p-bootclasspath;:}
-#project.buildpath:     ${p-buildpath;:}
-#project.sourcepath:    ${p-sourcepath;:}
-#project.allsourcepath: ${p-allsourcepath;:}
-#project.output:        ${p-output}
-#project.testpath:      ${p-testpath;:}
-
-#-verbose:              false
-#project:               ${basedir}
-#src:                   src
-#bin:                   bin
-#target-dir:            generated
-#target:                ${project}/${target-dir}
-#build:                 ${workspace}/cnf
-#p:                     ${basename;${project}}
-#project.name:          ${p}
-#plugin-dir:            ${build}/plugins
-
 ## Java Compiler Options
 #java:                  java
 #javac:                 javac
@@ -35,28 +9,11 @@ javac.target:           1.7
 javac.compliance:       1.7
 javac.debug:            on
 
-## Bnd Options
-#-sources:              true
-#-sourcepath:           ${project}/src
-
-#-sources:              true
-#-sourcepath:           ${project}/src
-
-
-## Properties from ext/*.bnd can be referenced in order to extend them. For
-## example, to add one additional plugin to the list defined in
-## ext/repositories.bnd:
-# -plugin: ${ext.repositories.-plugin}, org.example.MyPlugin
-
-
-## If you use git, you might want to uncomment the following lines:
-Git-Descriptor:         ${system-allow-fail;git describe --dirty --always}
-Git-SHA:                ${system-allow-fail;git rev-list -1 HEAD}
-
-
 #
 # Custom Settings
 #
+Git-Descriptor:         ${system-allow-fail;git describe --dirty --always}
+Git-SHA:                ${system-allow-fail;git rev-list -1 HEAD}
 
 copyright:              Copyright (c) aQute SARL (2000, ${tstamp;yyyy}) and others. All Rights Reserved.
 copyright.html:         Copyright &copy; aQute SARL (2000, ${tstamp;yyyy}) and others. All Rights Reserved.
@@ -92,14 +49,11 @@ Bundle-Developers: \
         roles="architect,developer"; \
         timezone=1
 
-# default version policies
-#   -provider-policy =  ${range;[==,=+)}
-#   -consumer-policy =  ${range;[==,+)}
-
 -make:                  (*).(jar);type=bnd; recipe="bnd/$1.bnd"
 
 -removeheaders:         Include-Resource
 
+# Used in unit testing
 -runproperties.testlauncher0: in.workspace=workspace
 -runproperties.testlauncher1: in.project=workspace
 -runproperties.testlauncher2: in.bndrun=workspace
