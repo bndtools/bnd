@@ -4,7 +4,8 @@ import java.io.File;
 import java.util.List;
 import java.util.SortedMap;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
+
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.version.Version;

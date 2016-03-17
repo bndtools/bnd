@@ -2,7 +2,8 @@ package aQute.bnd.service;
 
 import java.io.File;
 
-import aQute.bnd.annotation.ConsumerType;
+import org.osgi.annotation.versioning.ConsumerType;
+
 import aQute.bnd.osgi.Jar;
 
 @ConsumerType

@@ -1,6 +1,7 @@
 package aQute.bnd.service.action;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
+
 import aQute.bnd.build.Project;
 
 @ProviderType

@@ -1,6 +1,7 @@
 package aQute.bnd.service.repository;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
+
 import aQute.bnd.util.dto.DTO;
 
 @ProviderType

@@ -6,7 +6,7 @@ import java.util.Dictionary;
 import java.util.List;
 import java.util.jar.Manifest;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * A resource that is to be indexed.
