@@ -25,6 +25,7 @@ import java.util.Formatter;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -491,7 +492,7 @@ public class Macro {
 			if ("long".equals(args[1]))
 				return now.getTime();
 
-			DateFormat df = new SimpleDateFormat(args[1]);
+			DateFormat df = new SimpleDateFormat(args[1], Locale.US);
 			return df.format(now);
 		}
 		return new Date();
@@ -719,7 +720,7 @@ public class Macro {
 			domain.warning("Too many arguments for tstamp: " + Arrays.toString(args));
 		}
 
-		SimpleDateFormat sdf = new SimpleDateFormat(format);
+		SimpleDateFormat sdf = new SimpleDateFormat(format, Locale.US);
 		sdf.setTimeZone(tz);
 		String tstamp = domain.getProperty(Constants.TSTAMP);
 		if (tstamp != null)
@@ -1823,22 +1824,22 @@ public class Macro {
 						DateFormat df;
 						switch (args[n].length()) {
 							case 6 :
-								df = new SimpleDateFormat("yyMMdd");
+								df = new SimpleDateFormat("yyMMdd", Locale.US);
 								break;
 
 							case 8 :
-								df = new SimpleDateFormat("yyyyMMdd");
+								df = new SimpleDateFormat("yyyyMMdd", Locale.US);
 								break;
 
 							case 12 :
-								df = new SimpleDateFormat("yyyyMMddHHmm");
+								df = new SimpleDateFormat("yyyyMMddHHmm", Locale.US);
 								break;
 
 							case 14 :
-								df = new SimpleDateFormat("yyyyMMddHHmmss");
+								df = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
 								break;
 							case 19 :
-								df = new SimpleDateFormat("yyyyMMddHHmmss.SSSZ");
+								df = new SimpleDateFormat("yyyyMMddHHmmss.SSSZ", Locale.US);
 								break;
 
 							default :

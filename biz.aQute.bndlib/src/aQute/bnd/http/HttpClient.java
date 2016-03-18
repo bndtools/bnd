@@ -2,11 +2,10 @@ package aQute.bnd.http;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
@@ -16,10 +15,10 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
@@ -27,7 +26,8 @@ import java.util.concurrent.Callable;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
-import aQute.bnd.osgi.Processor;
+import aQute.bnd.http.URLCache.Info;
+import aQute.bnd.service.Registry;
 import aQute.bnd.service.progress.ProgressPlugin;
 import aQute.bnd.service.url.ProxyHandler;
 import aQute.bnd.service.url.ProxyHandler.ProxySetup;
@@ -36,46 +36,33 @@ import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.service.url.URLConnector;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.service.reporter.Reporter;
 
-public class HttpClient extends Processor implements Closeable, URLConnector {
-	private static final SimpleDateFormat		sdf						= new SimpleDateFormat(
-			"EEE, dd MMM yyyy HH:mm:ss z");
+/**
+ * A simple Http Client that inter-works with the bnd registry. It provides an
+ * easy way to construct a URL request. The request is then decorated with third
+ * parties that are in the bnd registry for proxies and authentication models.
+ */
+public class HttpClient implements Closeable, URLConnector {
+	public static final SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+
 	private final List<ProxyHandler>			proxyHandlers			= new ArrayList<>();
 	private final List<URLConnectionHandler>	connectionHandlers		= new ArrayList<>();
 	private ThreadLocal<PasswordAuthentication>	passwordAuthentication	= new ThreadLocal<>();
 	private boolean								inited;
 	private static JSONCodec					codec					= new JSONCodec();
-	private PrintWriter							trace;
+	private URLCache							cache					= new URLCache(IO.getFile("~/.bnd/urlcache"));
+	private Registry							registry				= null;
+	private Reporter							reporter				= new ReporterAdapter(System.out);
 
-	public HttpClient(Processor processor) throws IOException {
-		super(processor);
-		use(processor);
-
-	}
-
-	public HttpClient() {
-		super(new Processor());
-	}
+	public HttpClient() {}
 
 	synchronized void init() {
 		if (inited)
 			return;
 
 		inited = true;
-
-		String path = getProperty("-connection-log");
-		if (path != null)
-			try {
-
-				File f = IO.getFile(path);
-				f.getParentFile().mkdirs();
-				trace = new PrintWriter(new FileWriter(f, true));
-				return;
-
-			} catch (Exception e) {
-				exception(e, "While setting trace");
-			}
-		trace = new PrintWriter(IO.nullWriter);
 
 		Authenticator.setDefault(new Authenticator() {
 			@Override
@@ -84,21 +71,6 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 			}
 		});
 
-		connectionHandlers.addAll(getPlugins(URLConnectionHandler.class));
-		proxyHandlers.addAll(getPlugins(ProxyHandler.class));
-	}
-
-	@Override
-	public void trace(String msg, Object... parms) {
-		init();
-		super.trace(msg, parms);
-		try {
-			String s = String.format(msg, parms);
-			trace.println(s);
-			trace.flush();
-		} catch (Exception e) {
-			trace.println("# trace fail " + e + " : " + msg + " : " + Arrays.toString(parms));
-		}
 	}
 
 	public void close() {
@@ -125,21 +97,95 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 	}
 
 	public Object send(final HttpRequest< ? > request) throws Exception {
-		trace("%s", request);
+		if (request.isCache()) {
+			return doCached(request);
+		} else {
+			TaggedData in = send0(request);
+			if ( request.download == TaggedData.class)
+				return in;
+						
+			return convert(request.download, in.getInputStream());
+		}
+	}
+
+	Object doCached(final HttpRequest< ? > request) throws Exception, IOException {
+		try (Info info = cache.get(request.url.toURI())) {
+			if (info.isPresent()) {
+
+				//
+				// We have a file in the cache, check if it is within
+				// our accepted stale period
+				//
+
+				if (info.file.lastModified() + request.maxStale < System.currentTimeMillis()) {
+
+					//
+					// Ok, expired. So check if there is a newer one on the
+					// server
+					//
+
+					request.ifNoneMatch(info.getETag());
+					TaggedData in = send0(request);
+
+					if (in.isOk()) {
+
+						//
+						// update the cache from the input stream
+						//
+
+						info.update(in.getInputStream(), in.getTag(), in.getModified());
+
+					} else if (in.getResponseCode() != HttpURLConnection.HTTP_NOT_MODIFIED)
+						throw new HttpRequestException((HttpURLConnection) in.getConnection());
+				}
+				return convert(request.download, info.file);
+			}
+
+			//
+			// No entry in the cache, but we are cached
+			//
+
+			request.ifMatch = null;
+			request.ifNoneMatch = null;
+			request.ifModifiedSince = -1;
+
+			TaggedData in = send0(request);
+			if (in.isOk()) {
+				info.update(in.getInputStream(), in.getTag(), in.getModified());
+				return convert(request.download, info.file);
+			} else
+				throw new HttpRequestException((HttpURLConnection) in.getConnection());
+		}
+	}
+
+	public TaggedData send0(final HttpRequest< ? > request) throws Exception {
+		reporter.trace("%s", request);
 
 		final ProxySetup proxy = getProxySetup(request.url);
 		final URLConnection con = getProxiedAndConfiguredConnection(request.url, proxy);
 		final HttpURLConnection hcon = (HttpURLConnection) (con instanceof HttpURLConnection ? con : null);
 
 		if (request.ifNoneMatch != null) {
-			request.headers.put("If-None-Match", request.ifNoneMatch);
+			request.headers.put("If-None-Match", entitytag(request.ifNoneMatch));
 		}
 
-		if (request.since != 0) {
+		if (request.ifMatch != null) {
+			request.headers.put("If-Match", "\"" + entitytag(request.ifMatch));
+		}
+
+		if (request.ifModifiedSince > 0) {
 			synchronized (sdf) {
 				sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
-				String format = sdf.format(new Date(request.since));
+				String format = sdf.format(new Date(request.ifModifiedSince));
 				request.headers.put("If-Modified-Since", format);
+			}
+		}
+
+		if (request.ifUnmodifiedSince != 0) {
+			synchronized (sdf) {
+				sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+				String format = sdf.format(new Date(request.ifUnmodifiedSince));
+				request.headers.put("If-Unmodified-Since", format);
 			}
 		}
 
@@ -147,12 +193,21 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 
 		configureHttpConnection(request.verb, hcon);
 
-		return connectWithProxy(proxy, new Callable<Object>() {
+		return connectWithProxy(proxy, new Callable<TaggedData>() {
 			@Override
-			public Object call() throws Exception {
+			public TaggedData call() throws Exception {
 				return doConnect(request.upload, request.download, con, hcon, request);
 			}
 		});
+	}
+
+	private String entitytag(String entity) {
+		if (entity == null || entity.isEmpty() || "*".equals(entity))
+			return entity;
+
+		return entity;
+
+		// return "\"" + entity + "\"";
 	}
 
 	public ProxySetup getProxySetup(URL url) throws Exception {
@@ -160,7 +215,7 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 		for (ProxyHandler ph : getProxyHandlers()) {
 			ProxySetup setup = ph.forURL(url);
 			if (setup != null) {
-				trace("Proxy %s", setup);
+				reporter.trace("Proxy %s", setup);
 				return setup;
 			}
 		}
@@ -184,41 +239,44 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 
 		for (URLConnectionHandler urlh : getURLConnectionHandlers()) {
 			if (urlh.matches(url)) {
-				trace("Decorate %s with handler %s", url, urlh);
+				reporter.trace("Decorate %s with handler %s", url, urlh);
 				urlh.handle(urlc);
 			} else
-				trace("No match for %s, handler %s", url, urlh);
+				reporter.trace("No match for %s, handler %s", url, urlh);
 		}
 		return urlc;
 	}
 
 	private synchronized Collection< ? extends URLConnectionHandler> getURLConnectionHandlers() throws Exception {
-		if (connectionHandlers.isEmpty()) {
-			List<URLConnectionHandler> connectionHandlers = getPlugins(URLConnectionHandler.class);
+		if (connectionHandlers.isEmpty() && registry != null) {
+			List<URLConnectionHandler> connectionHandlers = registry.getPlugins(URLConnectionHandler.class);
 			this.connectionHandlers.addAll(connectionHandlers);
-			trace("URL Connection handlers %s", connectionHandlers);
+			reporter.trace("URL Connection handlers %s", connectionHandlers);
 		}
 		return connectionHandlers;
 	}
 
 	private synchronized Collection< ? extends ProxyHandler> getProxyHandlers() throws Exception {
-		if (proxyHandlers.isEmpty()) {
-			List<ProxyHandler> proxyHandlers = getPlugins(ProxyHandler.class);
+		if (proxyHandlers.isEmpty() && registry != null) {
+			List<ProxyHandler> proxyHandlers = registry.getPlugins(ProxyHandler.class);
 			proxyHandlers.addAll(proxyHandlers);
-			trace("Proxy handlers %s", proxyHandlers);
+			reporter.trace("Proxy handlers %s", proxyHandlers);
 		}
 		return proxyHandlers;
 	}
 
 	private InputStream createProgressWrappedStream(InputStream inputStream, String name, int size) {
-		ProgressPlugin progressPlugin = getPlugin(ProgressPlugin.class);
+		if (registry == null)
+			return inputStream;
+
+		ProgressPlugin progressPlugin = registry.getPlugin(ProgressPlugin.class);
 		if (progressPlugin == null)
 			return inputStream;
 
 		return new ProgressWrappingStream(inputStream, name, size, progressPlugin);
 	}
 
-	private Object doConnect(Object put, Type ref, final URLConnection con, final HttpURLConnection hcon,
+	private TaggedData doConnect(Object put, Type ref, final URLConnection con, final HttpURLConnection hcon,
 			HttpRequest< ? > request) throws IOException, Exception {
 
 		if (put != null) {
@@ -230,7 +288,11 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 		if (hcon != null) {
 
 			int code = hcon.getResponseCode();
-			trace("response for %s is %s", con.getURL(), code);
+			System.out.println("Response code " + code);
+			if (code == -1)
+				System.out.println("WTF?");
+
+			reporter.trace("response for %s is %s", con.getURL(), code);
 
 			//
 			// Though we ask Java to handle the redirects
@@ -244,7 +306,7 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 
 					String location = hcon.getHeaderField("Location");
 					request.url = new URL(location);
-					return send(request);
+					return send0(request);
 
 				}
 
@@ -256,9 +318,6 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 					return null;
 				}
 
-				if (ref != TaggedData.class) {
-					throw new HttpRequestException(hcon);
-				}
 			}
 		}
 
@@ -267,11 +326,18 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 		InputStream xin = con.getInputStream();
 		InputStream in = handleContentEncoding(hcon, xin);
 		in = createProgressWrappedStream(in, con.toString(), con.getContentLength());
-		return convert(ref, in, con, hcon);
+		return new TaggedData(con, in);
 	}
 
-	private Object convert(Type ref, InputStream in, URLConnection con, HttpURLConnection hcon)
-			throws IOException, Exception {
+	private Object convert(Type type, File in) throws IOException, Exception {
+		if (type == File.class)
+			return in;
+		try (FileInputStream fin = new FileInputStream(in)) {
+			return convert(type, fin);
+		}
+	}
+
+	private Object convert(Type ref, InputStream in) throws IOException, Exception {
 		if (ref instanceof Class) {
 			Class< ? > refc = (Class< ? >) ref;
 			if (refc == byte[].class) {
@@ -280,15 +346,7 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 				return in;
 			} else if (String.class == refc) {
 				return IO.collect(in);
-			} else if (TaggedData.class == ref) {
-				if (hcon == null)
-					return new TaggedData(con.getHeaderField("ETag"), in, 0, con.getLastModified(),
-							con.getURL().toURI());
-				else
-					return new TaggedData(con.getHeaderField("ETag"), in, hcon.getResponseCode(), con.getLastModified(),
-							con.getURL().toURI());
-			} else if (URLConnection.class.isAssignableFrom(refc))
-				return con;
+			}
 		}
 		String s = IO.collect(in);
 		return codec.dec().from(s).get(ref);
@@ -302,23 +360,25 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 		if (encoding != null) {
 			if (encoding.equalsIgnoreCase("deflate")) {
 				in = new InflaterInputStream(in);
-				trace("inflate");
+				reporter.trace("inflate");
 			} else if (encoding.equalsIgnoreCase("gzip")) {
 				in = new GZIPInputStream(in);
-				trace("gzip");
+				reporter.trace("gzip");
 			}
 		}
 		return in;
 	}
 
 	private void doOutput(Object put, final URLConnection con) throws IOException, Exception {
-		trace("doOutput");
+		reporter.trace("doOutput");
 		con.setDoOutput(true);
 		try (OutputStream out = con.getOutputStream();) {
-			trace("go stream");
+			reporter.trace("go stream");
 			if (put instanceof InputStream) {
 				IO.copy((InputStream) put, out);
-			} else if (put instanceof byte[])
+			} else if (put instanceof String)
+				IO.store(put, out);
+			else if (put instanceof byte[])
 				IO.copy((byte[]) put, out);
 			else if (put instanceof File)
 				IO.copy((File) put, out);
@@ -339,10 +399,37 @@ public class HttpClient extends Processor implements Closeable, URLConnector {
 	private void setHeaders(Map<String,String> headers, final URLConnection con) {
 		if (headers != null) {
 			for (Entry<String,String> e : headers.entrySet()) {
-				trace("set header %s=%s", e.getKey(), e.getValue());
+				reporter.trace("set header %s=%s", e.getKey(), e.getValue());
 				con.setRequestProperty(e.getKey(), e.getValue());
 			}
 		}
 	}
 
+	public void setCache(File cache) {
+		this.cache = new URLCache(cache);
+	}
+
+	public void setReporter(Reporter reporter) {
+		this.reporter = reporter;
+	}
+
+	public void setRegistry(Registry registry) {
+		this.registry = registry;
+	}
+
+	public void addURLConnectionHandler(URLConnectionHandler handler) {
+		connectionHandlers.add(handler);
+	}
+
+	public Reporter getReporter() {
+		return reporter;
+	}
+
+	public void addProxyHandler(ProxyHandler proxyHandler) {
+		proxyHandlers.add(proxyHandler);
+	}
+
+	public void setLog(File log) throws IOException {
+		reporter = new ReporterAdapter(IO.writer(log));
+	}
 }

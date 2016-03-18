@@ -256,9 +256,8 @@ public class HttpClientProxyTest extends TestCase {
 	void assertHttpProxy(String password, boolean authenticationCalled) throws MalformedURLException, Exception {
 		Processor p = new Processor();
 		p.setProperty("-connectionsettings", "" + false);
-		ConnectionSettings cs = new ConnectionSettings(p);
-
-		HttpClient hc = new HttpClient(p);
+		HttpClient hc = new HttpClient();
+		ConnectionSettings cs = new ConnectionSettings(p, hc);
 
 		if (httpProxy != null) {
 			ProxyDTO proxy = new ProxyDTO();
@@ -270,7 +269,7 @@ public class HttpClientProxyTest extends TestCase {
 				proxy.username = "proxyuser";
 				proxy.password = password;
 			}
-			p.addBasicPlugin(ConnectionSettings.createProxyHandler(proxy));
+			hc.addProxyHandler(ConnectionSettings.createProxyHandler(proxy));
 		}
 
 		ServerDTO server = new ServerDTO();
@@ -294,9 +293,9 @@ public class HttpClientProxyTest extends TestCase {
 	void assertSocks5Proxy(String password, boolean authenticationCalled) throws MalformedURLException, Exception {
 		Processor p = new Processor();
 		p.setProperty("-connectionsettings", "" + false);
-		ConnectionSettings cs = new ConnectionSettings(p);
+		HttpClient hc = new HttpClient();
+		ConnectionSettings cs = new ConnectionSettings(p, hc);
 
-		HttpClient hc = new HttpClient(p);
 
 		if (socks5Proxy != null) {
 			ProxyDTO proxy = new ProxyDTO();
@@ -308,7 +307,7 @@ public class HttpClientProxyTest extends TestCase {
 				proxy.username = "proxyuser";
 				proxy.password = password;
 			}
-			p.addBasicPlugin(ConnectionSettings.createProxyHandler(proxy));
+			hc.addProxyHandler(ConnectionSettings.createProxyHandler(proxy));
 		}
 
 		ServerDTO server = new ServerDTO();

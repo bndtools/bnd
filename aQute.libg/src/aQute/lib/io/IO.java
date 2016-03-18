@@ -53,6 +53,14 @@ public class IO {
 		home = tmp;
 	}
 
+	public static String getExtension(String fileName, String deflt) {
+		int n = fileName.lastIndexOf('.');
+		if (n < 0)
+			return deflt;
+
+		return fileName.substring(n + 1);
+	}
+
 	public static Collection<File> tree(File current) {
 		Set<File> files = new LinkedHashSet<File>();
 		traverse(files, current, null);

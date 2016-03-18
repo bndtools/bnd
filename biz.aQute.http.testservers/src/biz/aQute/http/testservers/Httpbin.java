@@ -9,6 +9,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
@@ -19,7 +20,7 @@ import java.util.zip.GZIPOutputStream;
 import aQute.lib.base64.Base64;
 
 public class Httpbin extends HttpTestServer {
-	private static final SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
 
 	static {
 		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -184,7 +185,9 @@ public class Httpbin extends HttpTestServer {
 		String requestedTag = rq.headers.get("If-None-Match");
 		String requestedDate = rq.headers.get("If-Modified-Since");
 
-		rsp.headers.put("ETag", etag);
+		String qetag = etag;
+		if (!etag.isEmpty())
+			rsp.headers.put("ETag", qetag);
 
 		if (requestedDate != null) {
 			long modifiedSince = sdf.parse(requestedDate).getTime();
@@ -194,11 +197,15 @@ public class Httpbin extends HttpTestServer {
 			}
 		}
 
-		if (etag.equals("*") || etag.equals(requestedTag)) {
-			rsp.code = HttpURLConnection.HTTP_NOT_MODIFIED;
-			return null;
+		if (requestedTag != null) {
+			if (requestedTag.equals("*") || requestedTag.equals(qetag)) {
+				rsp.code = HttpURLConnection.HTTP_NOT_MODIFIED;
+				return null;
+			}
 		}
-		return _get(rq);
+
+		rsp.content = etag != null ? etag.getBytes(StandardCharsets.UTF_8) : new byte[0];
+		return null;
 	}
 
 }

@@ -59,9 +59,20 @@ import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.generics.Create;
+import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
 public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
+	public static Reporter log;;
+
+	static {
+		ReporterAdapter reporterAdapter = new ReporterAdapter(System.out);
+		reporterAdapter.setTrace(true);
+		reporterAdapter.setExceptions(true);
+		reporterAdapter.setPedantic(true);
+		log = reporterAdapter;
+	}
+
 	static final int				BUFFER_SIZE			= IOConstants.PAGE_SIZE * 1;
 
 	static Pattern					PACKAGES_IGNORED	= Pattern.compile("(java\\.lang\\.reflect|sun\\.reflect).*");

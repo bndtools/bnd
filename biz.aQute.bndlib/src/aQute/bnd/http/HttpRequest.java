@@ -1,6 +1,8 @@
 package aQute.bnd.http;
 
+import java.io.File;
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +13,7 @@ import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.url.TaggedData;
 import aQute.lib.converter.TypeReference;
 
 @SuppressWarnings("unchecked")
@@ -22,9 +25,13 @@ public class HttpRequest<T> {
 	long				timeout		= -1;
 	HttpClient			client;
 	String				ifNoneMatch;
-	long				since;
+	long				ifModifiedSince;
+	long				ifUnmodifiedSince;
 	URL					url;
 	int					redirects	= 10;
+	String				ifMatch;
+	boolean				cached;
+	long				maxStale;
 
 	HttpRequest(HttpClient client) {
 		this.client = client;
@@ -106,7 +113,7 @@ public class HttpRequest<T> {
 	}
 
 	public HttpRequest<T> ifModifiedSince(long epochTime) {
-		this.since = epochTime;
+		this.ifModifiedSince = epochTime;
 		return this;
 	}
 
@@ -117,6 +124,11 @@ public class HttpRequest<T> {
 
 	public T go(URL url) throws Exception {
 		this.url = url;
+		return (T) client.send(this);
+	}
+
+	public T go(URI url) throws Exception {
+		this.url = url.toURL();
 		return (T) client.send(this);
 	}
 
@@ -148,7 +160,40 @@ public class HttpRequest<T> {
 	@Override
 	public String toString() {
 		return "HttpRequest [verb=" + verb + ", upload=" + upload + ", download=" + download + ", headers=" + headers
-				+ ", timeout=" + timeout + ", client=" + client + ", ifNoneMatch=" + ifNoneMatch + ", since=" + since
-				+ ", url=" + url + "]";
+				+ ", timeout=" + timeout + ", client=" + client + ", url=" + url
+				+ "]";
+	}
+
+	public HttpRequest<T> ifUnmodifiedSince(long ifNotModifiedSince) {
+		this.ifUnmodifiedSince = ifNotModifiedSince;
+		return this;
+	}
+
+	public HttpRequest<T> ifMatch(String etag) {
+		this.ifMatch = etag;
+		return this;
+	}
+
+	public HttpRequest<TaggedData> asTag() {
+		return get(TaggedData.class);
+	}
+
+	public HttpRequest<String> asString() {
+		return get(String.class);
+	}
+
+	public boolean isCache() {
+		return ("GET".equalsIgnoreCase(verb) && cached && download != TaggedData.class) || download == File.class;
+	}
+
+	public HttpRequest<File> useCache(long maxStale) {
+		this.maxStale = maxStale;
+		this.cached = true;
+		download = File.class;
+		return (HttpRequest<File>) this;
+	}
+
+	public HttpRequest<File> useCache() {
+		return useCache(-1);
 	}
 }

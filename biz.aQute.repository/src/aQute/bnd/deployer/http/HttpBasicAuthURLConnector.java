@@ -118,7 +118,7 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		}
 	}
 
-	public InputStream connect(URL url) throws IOException {
+	public InputStream connect(URL url) throws Exception {
 		TaggedData data = connectTagged(url, null);
 		if (data == null)
 			throw new IOException("HTTP server did not respond with data.");
@@ -126,11 +126,11 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		return data.getInputStream();
 	}
 
-	public TaggedData connectTagged(URL url) throws IOException {
+	public TaggedData connectTagged(URL url) throws Exception {
 		return connectTagged(url, null);
 	}
 
-	public TaggedData connectTagged(URL url, String tag) throws IOException {
+	public TaggedData connectTagged(URL url, String tag) throws Exception {
 		init();
 
 		for (Mapping mapping : mappings) {
@@ -147,7 +147,7 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		return connectTagged(url, tag, null, null);
 	}
 
-	private TaggedData connectTagged(URL url, String tag, String user, String pass) throws IOException {
+	private TaggedData connectTagged(URL url, String tag, String user, String pass) throws Exception {
 		TaggedData result;
 
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -178,7 +178,7 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 			result = null;
 		else {
 			String responseTag = connection.getHeaderField(HEADER_ETAG);
-			result = new TaggedData(responseTag, connection.getInputStream());
+			result = new TaggedData(connection, connection.getInputStream());
 		}
 
 		return result;

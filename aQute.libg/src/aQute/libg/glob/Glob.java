@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 
 public class Glob {
 
+	public static final Glob	ALL	= new Glob("*");
 	private final String	glob;
 	private final Pattern	pattern;
 

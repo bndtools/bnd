@@ -3,7 +3,9 @@
 
 -buildpath: \
 	biz.aQute.bndlib;version=latest;packages=*,\
-	org.osgi.util.promise
+	org.osgi.util.promise,\
+	aQute.libg;version=latest,\
+	biz.aQute.http.testservers;version=latest
 	
 -testpath: \
 	${junit}
