@@ -16,9 +16,9 @@ import java.util.concurrent.Executor;
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
-import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Registry;
@@ -127,7 +127,7 @@ public class MavenBndRepository implements RepositoryPlugin, RegistryPlugin, Plu
 					if (!local) {
 						ReleaseDTO info = getReleaseDTO(options.context);
 
-						try (Tool tool = new Tool(reporter);) {
+						try (Tool tool = new Tool(options.context, binary);) {
 							if (info.javadoc != null) {
 								try (Jar jar = tool.doJavadoc(binary, resolve(options.context, info.javadoc.path),
 										info.javadoc.options);) {
@@ -164,14 +164,14 @@ public class MavenBndRepository implements RepositoryPlugin, RegistryPlugin, Plu
 
 	}
 
-	private File resolve(ProjectBuilder project, String path) {
-		if (project == null)
+	private File resolve(Processor context, String path) {
+		if (context == null)
 			return IO.getFile(path);
 
-		return project.getFile(path);
+		return context.getFile(path);
 	}
 
-	private ReleaseDTO getReleaseDTO(ProjectBuilder project) {
+	private ReleaseDTO getReleaseDTO(Processor context) {
 		// TODO Auto-generated method stub
 		return null;
 	}

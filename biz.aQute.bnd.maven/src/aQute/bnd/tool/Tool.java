@@ -5,12 +5,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Map;
 
-import aQute.bnd.build.Project;
-import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
-import aQute.service.reporter.Reporter;
 
 public class Tool extends Processor {
 
@@ -25,9 +22,6 @@ public class Tool extends Processor {
 
 
 	public Jar doJavadoc(Jar binary, File file, Map<String,String> options) {
-		if ( file != null) {
-			if ( file.exists() )
-		}
 		return null;
 	}
 
