@@ -232,7 +232,7 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
 
     @Override
     protected void constructTypeAnnotationStubs(StringBuffer buf, ImportsManager imports, String lineDelimiter) {
-        buf.append("@").append(imports.addImport("aQute.bnd.annotation.component.Component")).append(lineDelimiter);
+        buf.append("@").append(imports.addImport("org.osgi.service.component.annotations.Component")).append(lineDelimiter);
     }
 
     @Override
@@ -249,7 +249,7 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
 
             // Generate activate method
             builder = new StringBuilder();
-            builder.append("@").append(imports.addImport("aQute.bnd.annotation.component.Activate")).append(lineDelim);
+            builder.append("@").append(imports.addImport("org.osgi.service.component.annotations.Activate")).append(lineDelim);
             builder.append("void activate(");
 
             switch (activateSignature) {
@@ -278,7 +278,7 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
 
             // Generate deactivate method
             builder = new StringBuilder();
-            builder.append("@").append(imports.addImport("aQute.bnd.annotation.component.Deactivate")).append(lineDelim);
+            builder.append("@").append(imports.addImport("org.osgi.service.component.annotations.Deactivate")).append(lineDelim);
             builder.append("void deactivate() {").append(lineDelim);
             content = CodeGeneration.getMethodBodyContent(newType.getCompilationUnit(), newType.getTypeQualifiedName('.'), "activate", false, "", lineDelim);
             if (content != null && content.length() > 0)
