@@ -2,7 +2,6 @@ package aQute.maven.repo.provider;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.Date;
 
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
@@ -21,7 +20,6 @@ public class SnapshotReleaser extends Releaser {
 		super(home, revision);
 		force();
 
-
 		assert revision.isSnapshot();
 		revisionMetadata = localOnly ? new RevisionMetadata() : home.getMetadata(revision);
 		revisionMetadata.group = revision.group;
@@ -32,10 +30,10 @@ public class SnapshotReleaser extends Releaser {
 	}
 
 	public void updateMetadata() throws Exception {
-		File metafile = home.toFile(revision.metadata(home.id));
+		File metafile = home.toLocalFile(revision.metadata(home.id));
 		metafile.getParentFile().mkdirs();
 		IO.store(revisionMetadata.toString(), metafile);
-		home.remote.store(metafile, revision.metadata());
+		home.release.store(metafile, revision.metadata());
 
 		super.updateMetadata();
 	}
@@ -43,7 +41,7 @@ public class SnapshotReleaser extends Releaser {
 	@Override
 	public void add(Archive archive, InputStream in) throws Exception {
 		try {
-			File to = IO.getFile(tmp, archive.getName(snapshotVersion));
+			File to = IO.getFile(tmp, archive.getName(getSnapshotVersion()));
 			IO.copy(in, to);
 			upload.add(to);
 
@@ -51,7 +49,7 @@ public class SnapshotReleaser extends Releaser {
 			snapshotVersion.extension = archive.extension;
 			snapshotVersion.classifier = archive.classifier.isEmpty() ? null : archive.classifier;
 			snapshotVersion.updated = programMetadata.lastUpdated;
-			snapshotVersion.value = this.snapshotVersion;
+			snapshotVersion.value = getSnapshotVersion();
 			revisionMetadata.snapshotVersions.add(snapshotVersion);
 
 		} catch (Exception e) {
@@ -60,14 +58,12 @@ public class SnapshotReleaser extends Releaser {
 		}
 	}
 
-	@Override
-	public void setBuild(String timestamp, String build) {
-		this.snapshotVersion = revision.version.toSnapshot(timestamp, build);
+	private MavenVersion getSnapshotVersion() {
+		if (snapshotVersion == null) {
+			long tstamp = System.currentTimeMillis();
+			snapshotVersion = revision.version.toSnapshot(tstamp, null);
+		}
+		return snapshotVersion;
 	}
 
-	@Override
-	public void setBuild(long timestamp, String build) {
-		String t = MetadataParser.snapshotTimestamp.format(new Date(timestamp));
-		this.snapshotVersion = revision.version.toSnapshot(t, build);
-	}
 }

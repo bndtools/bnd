@@ -76,4 +76,8 @@ public class Revision {
 	public String toString() {
 		return program.toString() + "@" + version;
 	}
+
+	public Archive pomArchive() {
+		return archive("pom", null);
+	}
 }

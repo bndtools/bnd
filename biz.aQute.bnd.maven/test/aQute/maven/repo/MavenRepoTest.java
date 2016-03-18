@@ -7,6 +7,7 @@ import java.util.List;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
+import aQute.libg.reporter.ReporterAdapter;
 import aQute.maven.repo.api.Archive;
 import aQute.maven.repo.api.Program;
 import aQute.maven.repo.api.Release;
@@ -37,7 +38,7 @@ public class MavenRepoTest extends TestCase {
 		remote.mkdirs();
 		local.mkdirs();
 		repo = new RemoteRepo(new HttpClient(), fnx.getBaseURI() + "/repo/");
-		storage = new MavenStorage(local, "fnexus", this.repo);
+		storage = new MavenStorage(local, "fnexus", this.repo, null, null, new ReporterAdapter(System.out), null);
 	}
 
 	@Override
@@ -71,7 +72,7 @@ public class MavenRepoTest extends TestCase {
 		assertNotNull(archive);
 		assertEquals("1.4-20160119.062305-9", archive.snapshot.toString());
 
-		File file = storage.get(archive);
+		File file = storage.get(archive).getValue();
 		assertNotNull(file);
 		assertEquals(10373L, file.length());
 
@@ -133,18 +134,18 @@ public class MavenRepoTest extends TestCase {
 		assertFalse(fpom.exists());
 		assertFalse(apom.isResolved());
 
-		File f = storage.get(apom);
+		File f = storage.get(apom).getValue();
 		assertEquals(fpom.getAbsolutePath(), f.getAbsolutePath());
 		assertRecent(f);
 		long flastModified = f.lastModified();
 		Thread.sleep(1001);
 
-		f = storage.get(apom);
+		f = storage.get(apom).getValue();
 		assertEquals(flastModified, f.lastModified());
 
 		f.setLastModified(10000);
 		assertFalse(Math.abs(System.currentTimeMillis() - f.lastModified()) <= 2000);
-		f = storage.get(apom);
+		f = storage.get(apom).getValue();
 		assertRecent(f);
 	}
 
@@ -163,12 +164,12 @@ public class MavenRepoTest extends TestCase {
 		assertTrue(rapom.isResolved());
 		assertEquals(rapom, apom);
 
-		File f = storage.get(rapom);
+		File f = storage.get(rapom).getValue();
 		assertEquals(fpom, f);
 		assertRecent(f);
 
 		f.setLastModified(10000);
-		f = storage.get(rapom);
+		f = storage.get(rapom).getValue();
 		assertEquals(fpom, f);
 		assertEquals(10000L, f.lastModified());
 

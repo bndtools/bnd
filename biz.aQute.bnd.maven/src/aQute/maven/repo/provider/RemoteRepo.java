@@ -1,9 +1,11 @@
 package aQute.maven.repo.provider;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 
 import org.osgi.util.promise.Promise;
@@ -17,7 +19,7 @@ import aQute.libg.cryptography.Digest;
 import aQute.libg.cryptography.MD5;
 import aQute.libg.cryptography.SHA1;
 
-public class RemoteRepo {
+public class RemoteRepo implements Closeable {
 	final HttpClient	client;
 	final String		base;
 
@@ -112,6 +114,14 @@ public class RemoteRepo {
 		}
 
 		throw new HttpRequestException(go);
+	}
+
+	public void close() {
+
+	}
+
+	public URI toURI(String remotePath) throws Exception {
+		return new URI(base + remotePath);
 	}
 
 }

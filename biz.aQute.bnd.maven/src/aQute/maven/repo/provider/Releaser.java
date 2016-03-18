@@ -1,6 +1,7 @@
 package aQute.maven.repo.provider;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -34,7 +35,7 @@ class Releaser implements Release {
 		tmpBase.mkdirs();
 
 		this.tmp = Files.createTempDirectory(tmpBase.toPath(), revision.toString()).toFile();
-		this.dir = home.toFile(revision.path);
+		this.dir = home.toLocalFile(revision.path);
 
 		if (dir.exists() && !force)
 			throw new IllegalArgumentException("The target directory already exists " + dir);
@@ -67,8 +68,8 @@ class Releaser implements Release {
 		int n = 0;
 		while (true)
 			try {
-				File metafile = home.toFile(revision.program.metadata(home.id));
-				home.remote.fetch(revision.program.metadata(), metafile);
+				File metafile = home.toLocalFile(revision.program.metadata(home.id));
+				home.release.fetch(revision.program.metadata(), metafile);
 
 				long lastModified = metafile.lastModified();
 
@@ -79,12 +80,12 @@ class Releaser implements Release {
 						return;
 
 					throw new IllegalStateException(
-							"Revision already exists on remote system " + revision + " " + home.remote);
+							"Revision already exists on remote system " + revision + " " + home.release);
 
 				} else {
 					metadata.versions.add(revision.version);
 					IO.store(metadata.toString(), metafile);
-					home.remote.store(metafile, revision.program.metadata());
+					home.release.store(metafile, revision.program.metadata());
 					return;
 				}
 
@@ -103,12 +104,12 @@ class Releaser implements Release {
 		File file = iterator.next();
 		try {
 
-			home.remote.store(file, revision.path + "/" + file.getName());
+			home.release.store(file, revision.path + "/" + file.getName());
 			uploadAll(iterator);
 		} catch (Exception e) {
 
 			try {
-				home.remote.delete(revision.path + "/" + file.getName());
+				home.release.delete(revision.path + "/" + file.getName());
 			} catch (Exception ee) {
 				// We ignore this one, best effort, but need to throw the
 				// original
@@ -123,6 +124,16 @@ class Releaser implements Release {
 			File to = IO.getFile(tmp, archive.getName());
 			IO.copy(in, to);
 			upload.add(to);
+		} catch (Exception e) {
+			aborted = true;
+			throw e;
+		}
+	}
+
+	@Override
+	public void add(Archive archive, File in) throws Exception {
+		try (FileInputStream fin = new FileInputStream(in)) {
+			add(archive, in);
 		} catch (Exception e) {
 			aborted = true;
 			throw e;

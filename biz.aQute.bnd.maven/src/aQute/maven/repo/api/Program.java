@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import aQute.bnd.version.MavenVersion;
+import aQute.lib.strings.Strings;
 
 public class Program {
 	public final String	group;
@@ -115,5 +116,17 @@ public class Program {
 
 	public String metadata(String id) {
 		return path + "/maven-metadata-" + id + ".xml";
+	}
+
+	public String getCoordinate() {
+		return group + ":" + artifact;
+	}
+
+	public static Program valueOf(String bsn) {
+		String parts[] = Strings.trim(bsn).split(":");
+		if (parts.length != 2)
+			return null;
+
+		return valueOf(parts[0], parts[1]);
 	}
 }

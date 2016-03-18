@@ -1,14 +1,25 @@
 package aQute.maven.repo.provider;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+
+import org.osgi.util.promise.Deferred;
+import org.osgi.util.promise.Promise;
 
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.maven.repo.api.Archive;
 import aQute.maven.repo.api.IMavenRepo;
 import aQute.maven.repo.api.Program;
@@ -17,20 +28,29 @@ import aQute.maven.repo.api.Revision;
 import aQute.maven.repo.provider.MetadataParser.ProgramMetadata;
 import aQute.maven.repo.provider.MetadataParser.RevisionMetadata;
 import aQute.maven.repo.provider.MetadataParser.SnapshotVersion;
+import aQute.service.reporter.Reporter;
 
-public class MavenStorage implements IMavenRepo {
+public class MavenStorage implements IMavenRepo, Closeable {
 	final File								base;
 	final String							id;
-	final RemoteRepo						remote;
+	final RemoteRepo						release;
+	final RemoteRepo						snapshot;
 	final Map<Revision,RevisionMetadata>	revisions	= new ConcurrentHashMap<>();
 	final Map<Program,ProgramMetadata>		programs	= new ConcurrentHashMap<>();
+	final Executor							executor;
+	private final LocalRepoWatcher			repoWatcher;
 
 	long STALE_TIME = TimeUnit.DAYS.toMillis(1);
 
-	public MavenStorage(File base, String id, RemoteRepo remote) {
+	public MavenStorage(File base, String id, RemoteRepo release, RemoteRepo snapshot, Executor executor,
+			Reporter reporter, Callable<Boolean> callback) throws Exception {
 		this.base = base;
 		this.id = id;
-		this.remote = remote;
+		this.release = release;
+		this.snapshot = snapshot == null ? release : snapshot;
+		this.executor = executor == null ? Executors.newCachedThreadPool() : executor;
+		repoWatcher = new LocalRepoWatcher(executor, base, reporter, callback);
+		repoWatcher.open();
 	}
 
 	@Override
@@ -78,7 +98,7 @@ public class MavenStorage implements IMavenRepo {
 
 	@Override
 	public Release release(final Revision revision) throws Exception {
-		final File target = toFile(revision.path);
+		final File target = toLocalFile(revision.path);
 		final File temp = IO.createTempFile(base, revision.toString(), ".tmp");
 		temp.mkdirs();
 		Releaser r = revision.isSnapshot() ? new SnapshotReleaser(this, revision) : new Releaser(this, revision);
@@ -87,18 +107,31 @@ public class MavenStorage implements IMavenRepo {
 	}
 
 	@Override
-	public File get(Archive archive) throws Exception {
-		if (archive.isSnapshot())
-			archive = resolveSnapshot(archive);
+	public Promise<File> get(final Archive archive) throws Exception {
+		final Deferred<File> deferred = new Deferred<>();
+		executor.execute(new Runnable() {
 
-		File file = toFile(archive.localPath);
-		if (!file.isFile() || (archive.isSnapshot() && isStale(file)))
-			remote.fetch(archive.remotePath, file);
+			@Override
+			public void run() {
+				try {
+					Archive local = resolveSnapshot(archive);
 
-		if (file.isFile())
-			return file;
+					File file = toLocalFile(archive);
+					if (!file.isFile() || (archive.isSnapshot() && isStale(file)))
+						release.fetch(archive.remotePath, file);
 
-		return null;
+					if (file.isFile())
+						deferred.resolve(file);
+					else
+						deferred.resolve(null);
+
+				} catch (Throwable e) {
+					deferred.fail(e);
+				}
+			}
+
+		});
+		return deferred.getPromise();
 	}
 
 	@Override
@@ -113,12 +146,12 @@ public class MavenStorage implements IMavenRepo {
 	}
 
 	RevisionMetadata getMetadata(Revision revision) throws Exception {
-		File metafile = toFile(revision.metadata(id));
+		File metafile = toLocalFile(revision.metadata(id));
 		RevisionMetadata metadata = revisions.get(revision);
 
 		if (isStale(metafile)) {
 
-			if (!remote.fetch(revision.metadata(), metafile))
+			if (!release.fetch(revision.metadata(), metafile))
 				return metadata;
 
 			metadata = null;
@@ -131,12 +164,12 @@ public class MavenStorage implements IMavenRepo {
 	}
 
 	ProgramMetadata getMetadata(Program program) throws Exception {
-		File metafile = toFile(program.metadata(id));
+		File metafile = toLocalFile(program.metadata(id));
 		ProgramMetadata metadata = programs.get(program);
 
 		if (isStale(metafile)) {
 
-			if (!remote.fetch(program.metadata(), metafile))
+			if (!release.fetch(program.metadata(), metafile))
 				return metadata;
 
 			metadata = null;
@@ -156,19 +189,55 @@ public class MavenStorage implements IMavenRepo {
 		return System.currentTimeMillis() > lastModified + STALE_TIME;
 	}
 
-	File toFile(String path) {
+	public File toLocalFile(String path) {
 		return IO.getFile(base, path);
+	}
+
+	@Override
+	public File toLocalFile(Archive archive) {
+		return toLocalFile(archive.localPath);
 	}
 
 	@Override
 	public long getLastUpdated(Revision revision) throws Exception {
 		if (revision.isSnapshot()) {
-			File metafile = toFile(revision.metadata(id));
+			File metafile = toLocalFile(revision.metadata(id));
 			return metafile.lastModified();
 		} else {
-			File dir = toFile(revision.path);
+			File dir = toLocalFile(revision.path);
 			return dir.lastModified();
 		}
+	}
+
+	@Override
+	public Archive getArchive(String s) throws Exception {
+		Matcher matcher = ARCHIVE_P.matcher(Strings.trim(s));
+		if (!matcher.matches())
+			return null;
+
+		String group = Strings.trim(matcher.group("group"));
+		String artifact = Strings.trim(matcher.group("artifact"));
+		String extension = Strings.trim(matcher.group("extension"));
+		String classifier = Strings.trim(matcher.group("classifier"));
+		String version = Strings.trim(matcher.group("version"));
+
+		return Program.valueOf(group, artifact).version(version).archive(extension, classifier);
+	}
+
+	@Override
+	public List<Program> getLocalPrograms() throws Exception {
+		return repoWatcher.getLocalPrograms();
+	}
+
+	@Override
+	public void close() throws IOException {
+		if (release != null)
+			release.close();
+	}
+
+	@Override
+	public URI toRemoteURI(Archive archive) throws Exception {
+		return archive.revision.isSnapshot() ? snapshot.toURI(archive.remotePath) : release.toURI(archive.remotePath);
 	}
 
 }
