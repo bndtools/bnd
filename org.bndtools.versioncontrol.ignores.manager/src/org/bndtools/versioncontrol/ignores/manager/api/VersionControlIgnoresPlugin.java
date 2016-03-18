@@ -4,8 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import org.bndtools.api.NamedPlugin;
-
-import aQute.bnd.annotation.ConsumerType;
+import org.osgi.annotation.versioning.ConsumerType;
 
 /**
  * <p>

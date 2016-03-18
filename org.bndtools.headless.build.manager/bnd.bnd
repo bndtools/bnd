@@ -3,7 +3,8 @@
 
 -buildpath:  \
     bndtools.api;version=latest,\
-	biz.aQute.bnd.annotation
+	osgi.annotation;version=${osgi.annotation.version},\
+	osgi.cmpn;version=${osgi.cmpn.version}
 	
 -testpath: \
 	${junit}

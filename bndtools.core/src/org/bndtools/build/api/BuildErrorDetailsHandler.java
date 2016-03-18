@@ -6,8 +6,8 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ui.IMarkerResolution;
+import org.osgi.annotation.versioning.ProviderType;
 
-import aQute.bnd.annotation.ProviderType;
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Processor;
 import aQute.service.reporter.Report.Location;

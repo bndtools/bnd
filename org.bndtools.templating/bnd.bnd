@@ -2,6 +2,7 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath:\
+	osgi.annotation;version=${osgi.annotation.version},\
 	${bndlib},\
 	${aQute-repository},\
 	osgi.core; version=${osgi.core.version},\
@@ -16,6 +17,6 @@
 
 
 Private-Package: org.bndtools.templating.*
-Export-Package: ${packages;ANNOTATED;aQute.bnd.annotation.Version}
+Export-Package: ${packages;ANNOTATED;org.osgi.annotation.versioning.Version}
 
 Conditional-Package: org.stringtemplate.*, st4hidden.*, aQute.lib.*, aQute.libg.*

@@ -14,9 +14,10 @@ import org.bndtools.api.Logger;
 import org.bndtools.api.NamedPlugin;
 import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
 import org.bndtools.headless.build.manager.api.HeadlessBuildPlugin;
-
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Reference;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 
 @Component
 public class HeadlessBuildManagerImpl implements HeadlessBuildManager {
@@ -25,7 +26,7 @@ public class HeadlessBuildManagerImpl implements HeadlessBuildManager {
     private final Map<String,HeadlessBuildPlugin> plugins = new TreeMap<String,HeadlessBuildPlugin>();
     private final Map<String,NamedPlugin> pluginsInformation = new TreeMap<String,NamedPlugin>();
 
-    @Reference(type = '+')
+    @Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC)
     void addPlugin(HeadlessBuildPlugin plugin) {
         if (plugin == null) {
             return;

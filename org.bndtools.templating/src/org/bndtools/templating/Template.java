@@ -5,10 +5,9 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
+import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Version;
 import org.osgi.service.metatype.ObjectClassDefinition;
-
-import aQute.bnd.annotation.ProviderType;
 
 @ProviderType
 public interface Template extends Closeable {
