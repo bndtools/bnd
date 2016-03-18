@@ -19,10 +19,11 @@ public class MavenVersion implements Comparable<MavenVersion> {
 
 	private static final Pattern VERSION = Pattern.compile(VERSION_STRING);
 
-	private static final String QUALIFIER_SNAPSHOT = "SNAPSHOT";
+	static final String SNAPSHOT = "SNAPSHOT";
 
 	private final Version	version;
 	private final String	literal;
+
 	private final boolean	snapshot;
 
 	public MavenVersion(Version osgiVersion) {
@@ -32,13 +33,13 @@ public class MavenVersion implements Comparable<MavenVersion> {
 			qual += "-" + this.version.qualifier;
 
 		this.literal = osgiVersion.getWithoutQualifier().toString() + qual;
-		this.snapshot = QUALIFIER_SNAPSHOT.equals(osgiVersion.qualifier);
+		this.snapshot = osgiVersion.isSnapshot();
 	}
 
 	public MavenVersion(String maven) {
 		this.version = new Version(cleanupVersion(maven));
 		this.literal = maven;
-		this.snapshot = maven.endsWith("-" + QUALIFIER_SNAPSHOT);
+		this.snapshot = maven.endsWith("-" + SNAPSHOT);
 	}
 
 	public static final MavenVersion parseString(String versionStr) {
@@ -62,6 +63,11 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	public Version getOSGiVersion() {
 		return version;
 	}
+
+	/**
+	 * If the qualifier ends with -SNAPSHOT or for an OSGI version with a
+	 * qualifier that is SNAPSHOT
+	 */
 
 	public boolean isSnapshot() {
 		return snapshot;
@@ -97,7 +103,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	}
 
 	public MavenVersion toSnapshot() {
-		Version newv = new Version(version.getMajor(), version.getMinor(), version.getMicro(), QUALIFIER_SNAPSHOT);
+		Version newv = new Version(version.getMajor(), version.getMinor(), version.getMicro(), SNAPSHOT);
 		return new MavenVersion(newv);
 	}
 
