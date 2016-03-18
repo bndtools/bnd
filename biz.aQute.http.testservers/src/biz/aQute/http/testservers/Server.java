@@ -84,6 +84,7 @@ class Server extends NanoHTTPD {
 			request.headers.putAll(session.getHeaders());
 			request.args = session.getParms();
 			request.ip = session.getHeaders().get("remote-addr");
+			request.method = session.getMethod().name();
 
 			String path = request.uri.getPath().substring(context.path.length());
 			if (path.startsWith("/"))
