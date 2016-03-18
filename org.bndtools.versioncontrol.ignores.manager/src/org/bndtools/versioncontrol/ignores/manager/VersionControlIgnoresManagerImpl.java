@@ -15,9 +15,10 @@ import org.bndtools.api.Logger;
 import org.bndtools.api.NamedPlugin;
 import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresPlugin;
-
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Reference;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 
 @Component
 public class VersionControlIgnoresManagerImpl implements VersionControlIgnoresManager {
@@ -26,7 +27,7 @@ public class VersionControlIgnoresManagerImpl implements VersionControlIgnoresMa
     private final Map<String,VersionControlIgnoresPlugin> plugins = new TreeMap<String,VersionControlIgnoresPlugin>();
     private final Map<String,NamedPlugin> pluginsInformation = new TreeMap<String,NamedPlugin>();
 
-    @Reference(type = '+')
+    @Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC)
     void addPlugin(VersionControlIgnoresPlugin plugin) {
         if (plugin == null) {
             return;

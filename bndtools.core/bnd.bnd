@@ -86,6 +86,7 @@ eclipse.deps: \
 	org.eclipse.core.contenttype
 
 -buildpath: \
+	osgi.annotation;version=${osgi.annotation.version},\
 	${bndlib},\
 	${aQute-repository},\
 	${aQute-resolve},\

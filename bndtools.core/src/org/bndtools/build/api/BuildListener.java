@@ -2,8 +2,7 @@ package org.bndtools.build.api;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
-
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * A listener for phases in the Bndtools build lifecycle.

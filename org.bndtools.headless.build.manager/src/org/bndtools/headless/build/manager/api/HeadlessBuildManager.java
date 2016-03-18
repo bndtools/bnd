@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.bndtools.api.NamedPlugin;
-
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>

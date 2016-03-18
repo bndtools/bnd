@@ -13,8 +13,7 @@ import java.util.List;
 
 import org.bndtools.api.NamedPlugin;
 import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresPlugin;
-
-import aQute.bnd.annotation.component.Component;
+import org.osgi.service.component.annotations.Component;
 
 @Component
 public class GitVersionControlIgnoresPlugin implements VersionControlIgnoresPlugin {

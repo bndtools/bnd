@@ -14,11 +14,13 @@ import org.bndtools.utils.copy.bundleresource.BundleResourceCopier;
 import org.bndtools.utils.copy.bundleresource.CopyMode;
 import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 
@@ -26,7 +28,7 @@ import aQute.bnd.osgi.Constants;
 public class GradleHeadlessBuildPlugin implements HeadlessBuildPlugin {
     private final AtomicReference<VersionControlIgnoresManager> versionControlIgnoresManager = new AtomicReference<VersionControlIgnoresManager>();
 
-    @Reference(type = '?')
+    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
     public void setVersionControlIgnoresManager(VersionControlIgnoresManager versionControlIgnoresManager) {
         this.versionControlIgnoresManager.set(versionControlIgnoresManager);
     }

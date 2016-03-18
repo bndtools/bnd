@@ -12,10 +12,9 @@ import org.bndtools.headless.build.manager.api.HeadlessBuildPlugin;
 import org.bndtools.utils.copy.bundleresource.BundleResourceCopier;
 import org.bndtools.utils.copy.bundleresource.CopyMode;
 import org.osgi.framework.BundleContext;
-
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 
 @Component
 public class AntHeadlessBuildPlugin implements HeadlessBuildPlugin {
