@@ -75,6 +75,9 @@ public class Strings {
 	}
 
 	public static String trim(String s) {
+		if (s == null)
+			return null;
+
 		if (s.isEmpty())
 			return s;
 
