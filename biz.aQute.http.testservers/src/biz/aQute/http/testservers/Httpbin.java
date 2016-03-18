@@ -185,7 +185,7 @@ public class Httpbin extends HttpTestServer {
 		String requestedTag = rq.headers.get("If-None-Match");
 		String requestedDate = rq.headers.get("If-Modified-Since");
 
-		String qetag = "\"" + etag + "\"";
+		String qetag = etag;
 		if (!etag.isEmpty())
 			rsp.headers.put("ETag", qetag);
 

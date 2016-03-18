@@ -134,11 +134,23 @@ public class HttpClientTest extends TestCase {
 
 	public void testModifiedSince() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
-			TaggedData data = hc.build().get(TaggedData.class).ifNoneMatch("*").ifModifiedSince(10000).go(
+			TaggedData data = hc.build()
+					.get(TaggedData.class)
+					.ifModifiedSince(10000)
+					.go(
 					httpServer.getBaseURI("etag/1234/20000"));
 			assertNotNull(data);
 			assertEquals("1234", data.getTag());
 			assertEquals(200, data.getResponseCode());
+		}
+		try (HttpClient hc = new HttpClient();) {
+			TaggedData data = hc.build()
+					.get(TaggedData.class)
+					.ifModifiedSince(20000)
+					.go(httpServer.getBaseURI("etag/1234/10000"));
+			assertNotNull(data);
+			assertEquals("1234", data.getTag());
+			assertEquals(304, data.getResponseCode());
 		}
 	}
 }
