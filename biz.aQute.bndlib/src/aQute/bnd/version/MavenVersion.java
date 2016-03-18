@@ -1,17 +1,21 @@
 package aQute.bnd.version;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import aQute.bnd.osgi.Verifier;
 
 public class MavenVersion implements Comparable<MavenVersion> {
-	static Pattern				fuzzyVersion		= Pattern
+	static Pattern					fuzzyVersion		= Pattern
 			.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([^a-zA-Z0-9](.*))?", Pattern.DOTALL);
-	static Pattern				fuzzyVersionRange	= Pattern
+	static Pattern					fuzzyVersionRange	= Pattern
 			.compile("(\\(|\\[)\\s*([-\\da-zA-Z.]+)\\s*,\\s*([-\\da-zA-Z.]+)\\s*(\\]|\\))", Pattern.DOTALL);
-	static Pattern				fuzzyModifier		= Pattern.compile("(\\d+[.-])*(.*)", Pattern.DOTALL);
-	public static final String	VERSION_STRING		= "(\\d{1,9})(\\.(\\d{1,9})(\\.(\\d{1,9}))?)?([-\\.]?([-_\\.\\da-zA-Z]+))?";
+	static Pattern					fuzzyModifier		= Pattern.compile("(\\d+[.-])*(.*)", Pattern.DOTALL);
+	public static final String		VERSION_STRING		= "(\\d{1,9})(\\.(\\d{1,9})(\\.(\\d{1,9}))?)?([-\\.]?([-_\\.\\da-zA-Z]+))?";
+	final static SimpleDateFormat	snapshotTimestamp	= new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.US);
 
 	private static final Pattern VERSION = Pattern.compile(VERSION_STRING);
 
@@ -93,8 +97,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	}
 
 	public MavenVersion toSnapshot() {
-		Version newv = new Version(version.getMajor(), version.getMinor(), version.getMicro(),
-				QUALIFIER_SNAPSHOT);
+		Version newv = new Version(version.getMajor(), version.getMinor(), version.getMicro(), QUALIFIER_SNAPSHOT);
 		return new MavenVersion(newv);
 	}
 
@@ -108,19 +111,24 @@ public class MavenVersion implements Comparable<MavenVersion> {
 		return null;
 	}
 
-	public MavenVersion toSnapshot(String timestamp, String buildnumber) {
-		if (!isSnapshot())
-			throw new IllegalArgumentException("Not a snapshot " + this);
+	public MavenVersion toSnapshot(long epoch, String build) {
+		String datestamp;
+		synchronized (snapshotTimestamp) {
+			datestamp = snapshotTimestamp.format(new Date(epoch));
+		}
 
-		String qualifier = timestamp;
-
-		if (buildnumber != null)
-			qualifier += "-" + buildnumber;
-
-		String v = literal.replaceAll("SNAPSHOT$", qualifier);
-		return new MavenVersion(v);
+		return toSnapshot(datestamp, build);
 	}
 
+	public MavenVersion toSnapshot(String tstamp, String build) {
+		// -SNAPSHOT == 9 characters
+		String clean = literal.substring(0, literal.length() - 9);
+		String result = clean + "-" + tstamp;
+		if (build != null)
+			result += "-" + build;
+		
+		return new MavenVersion(result);
+	}
 	static public String cleanupVersion(String version) {
 
 		if (version == null)
