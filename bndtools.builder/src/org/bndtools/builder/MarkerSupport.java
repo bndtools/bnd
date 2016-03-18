@@ -68,6 +68,7 @@ class MarkerSupport {
             deleteMarkers(MARKER_BND_PATH_PROBLEM);
             deleteMarkers(MARKER_BND_WORKSPACE_PROBLEM);
             deleteMarkers(MARKER_BND_MISSING_WORKSPACE);
+            deleteMarkers(MARKER_JAVA_BASELINE);
         } else
             project.deleteMarkers(markerType, true, IResource.DEPTH_INFINITE);
     }
@@ -88,7 +89,8 @@ class MarkerSupport {
             for (MarkerData markerData : markers) {
                 IResource resource = markerData.getResource();
                 if (resource != null && resource.exists()) {
-                    IMarker marker = resource.createMarker(markerType);
+                    String typeOverride = markerData.getTypeOverride();
+                    IMarker marker = resource.createMarker(typeOverride != null ? typeOverride : markerType);
                     marker.setAttribute(IMarker.SEVERITY, severity);
                     marker.setAttribute("$bndType", type);
 
