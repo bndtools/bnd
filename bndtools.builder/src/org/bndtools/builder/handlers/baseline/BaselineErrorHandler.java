@@ -2,16 +2,17 @@ package org.bndtools.builder.handlers.baseline;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.build.api.AbstractBuildErrorDetailsHandler;
 import org.bndtools.build.api.MarkerData;
+import org.bndtools.builder.utils.MemberValuePairLocationRetriever;
 import org.bndtools.utils.jdt.ASTUtil;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -21,10 +22,18 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageDeclaration;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.ISourceRange;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -34,6 +43,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ui.IMarkerResolution;
+import org.osgi.util.function.Function;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.differ.Baseline.Info;
@@ -50,7 +60,14 @@ import aQute.service.reporter.Report.Location;
 public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 
     private static final String PACKAGEINFO = "packageinfo";
+    private static final String PACKAGEINFOJAVA = "package-info.java";
     private static final String PROP_SUGGESTED_VERSION = "suggestedVersion";
+
+    private static final String ANNOTATION_VERSION_BND_PKG = aQute.bnd.annotation.Version.class.getPackage().getName();
+    private static final String ANNOTATION_VERSION_OSGI_PKG = "org.osgi.annotation.versioning";
+    private static final String ANNOTATION_VERSION_NO_PKG = "Version";
+    private static final String ANNOTATION_VERSION_BND = aQute.bnd.annotation.Version.class.getName();
+    private static final String ANNOTATION_VERSION_OSGI = ANNOTATION_VERSION_OSGI_PKG + "." + ANNOTATION_VERSION_NO_PKG;
 
     private static final ILogger logger = Logger.getLogger(BaselineErrorHandler.class);
 
@@ -68,13 +85,13 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
     }
 
     List<MarkerData> generatePackageInfoMarkers(Info baselineInfo, IJavaProject javaProject, String message) throws JavaModelException {
+        List<MarkerData> markers = new LinkedList<>();
         for (IClasspathEntry entry : javaProject.getRawClasspath()) {
             if (IClasspathEntry.CPE_SOURCE == entry.getEntryKind()) {
                 IPath entryPath = entry.getPath();
                 IPath pkgPath = entryPath.append(baselineInfo.packageName.replace('.', '/'));
 
-                // TODO: handle package-info.java
-
+                // Find in packageinfo file
                 IPath pkgInfoPath = pkgPath.append(PACKAGEINFO);
                 IFile pkgInfoFile = javaProject.getProject().getWorkspace().getRoot().getFile(pkgInfoPath);
                 if (pkgInfoFile != null && pkgInfoFile.exists()) {
@@ -89,12 +106,61 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
                         attribs.put(IMarker.CHAR_END, lineLoc.end);
                     }
 
-                    return Collections.singletonList(new MarkerData(pkgInfoFile, attribs, true));
+                    markers.add(new MarkerData(pkgInfoFile, attribs, true));
+                }
+
+                // Find in package-info.java
+                IPackageFragment pkg = javaProject.findPackageFragment(pkgPath);
+                ICompilationUnit pkgInfoJava = pkg.getCompilationUnit(PACKAGEINFOJAVA);
+                if (pkgInfoJava != null && pkgInfoJava.exists()) {
+                    ISourceRange range = findPackageInfoJavaVersionLocation(baselineInfo.packageName, pkgInfoJava);
+
+                    Map<String,Object> attribs = new HashMap<String,Object>();
+                    attribs.put(IMarker.MESSAGE, message.trim());
+                    attribs.put(IJavaModelMarker.ID, 8088);
+                    attribs.put(PROP_SUGGESTED_VERSION, baselineInfo.suggestedVersion.toString());
+                    if (range != null) {
+                        attribs.put(IMarker.CHAR_START, range.getOffset());
+                        attribs.put(IMarker.CHAR_END, range.getOffset() + range.getLength());
+                        markers.add(new MarkerData(pkgInfoJava.getResource(), attribs, true, BndtoolsConstants.MARKER_JAVA_BASELINE));
+                    }
                 }
             }
         }
+        return markers;
+    }
 
-        return Collections.emptyList();
+    ISourceRange findPackageInfoJavaVersionLocation(String packageName, ICompilationUnit compUnit) throws JavaModelException {
+        ISourceRange range = null;
+        IPackageDeclaration[] pkgDecls = compUnit.getPackageDeclarations();
+        if (pkgDecls != null) {
+            for (IPackageDeclaration pkgDecl : pkgDecls) {
+                if (packageName.equals(pkgDecl.getElementName())) {
+                    IAnnotation[] annots = pkgDecl.getAnnotations();
+                    for (IAnnotation annot : annots) {
+                        String name = annot.getElementName();
+                        if (ANNOTATION_VERSION_NO_PKG.equals(name) || ANNOTATION_VERSION_OSGI.equals(name) || ANNOTATION_VERSION_BND.equals(name)) {
+                            ASTParser parser = ASTParser.newParser(AST.JLS8);
+                            parser.setKind(ASTParser.K_COMPILATION_UNIT);
+                            parser.setSource(compUnit);
+                            parser.setResolveBindings(true);
+                            CompilationUnit ast = (CompilationUnit) parser.createAST(null);
+
+                            MemberValuePairLocationRetriever mvpRetriever = new MemberValuePairLocationRetriever(annot, new Function<String,Boolean>() {
+                                @Override
+                                public Boolean apply(String t) {
+                                    return ANNOTATION_VERSION_BND.equals(t) || ANNOTATION_VERSION_OSGI.equals(t);
+                                }
+                            }, "value");
+                            ast.accept(mvpRetriever);
+                            range = mvpRetriever.getMemberValuePairSourceRange();
+
+                        }
+                    }
+                }
+            }
+        }
+        return range;
     }
 
     List<MarkerData> generateStructuralChangeMarkers(Info baselineInfo, IJavaProject javaProject) throws JavaModelException {

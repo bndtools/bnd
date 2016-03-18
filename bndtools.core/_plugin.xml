@@ -185,6 +185,23 @@
 		/>
 	</extension>
 
+	<extension point="org.eclipse.jdt.ui.quickFixProcessors">
+		<quickFixProcessor id="PackageInfoBaselineQuickFixProcessor"
+			name="Package Info Baseline Quick Fix" requiredSourceLevel="1.5"
+			class="org.bndtools.core.editors.PackageInfoBaselineQuickFixProcessor">
+			<handledMarkerTypes>
+				<markerType id="bndtools.builder.packageInfoBaseline" />
+			</handledMarkerTypes>
+			<enablement>
+				<with variable="projectNatures">
+					<iterate operator="or">
+						<equals value="org.eclipse.jdt.core.javanature" />
+					</iterate>
+				</with>
+			</enablement>
+		</quickFixProcessor>
+	</extension>
+
    <extension
          point="org.eclipse.ui.views">
       <category
