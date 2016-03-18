@@ -34,7 +34,7 @@ public class MissingWorkspaceMarkerResolutionGenerator implements IMarkerResolut
 
                     @Override
                     public String getLabel() {
-                        return "Open New Bnd/OSGi Workspace Wizard";
+                        return "Open 'New Bnd OSGi Workspace' Wizard";
                     }
                 }
         };
