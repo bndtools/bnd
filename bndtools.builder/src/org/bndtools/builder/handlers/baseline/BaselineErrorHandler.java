@@ -63,10 +63,10 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
     private static final String PACKAGEINFOJAVA = "package-info.java";
     private static final String PROP_SUGGESTED_VERSION = "suggestedVersion";
 
-    private static final String ANNOTATION_VERSION_BND_PKG = aQute.bnd.annotation.Version.class.getPackage().getName();
+    private static final String ANNOTATION_VERSION_BND_PKG = "aQute.bnd.annotation";
     private static final String ANNOTATION_VERSION_OSGI_PKG = "org.osgi.annotation.versioning";
     private static final String ANNOTATION_VERSION_NO_PKG = "Version";
-    private static final String ANNOTATION_VERSION_BND = aQute.bnd.annotation.Version.class.getName();
+    private static final String ANNOTATION_VERSION_BND = ANNOTATION_VERSION_BND_PKG + "." + ANNOTATION_VERSION_NO_PKG;
     private static final String ANNOTATION_VERSION_OSGI = ANNOTATION_VERSION_OSGI_PKG + "." + ANNOTATION_VERSION_NO_PKG;
 
     private static final ILogger logger = Logger.getLogger(BaselineErrorHandler.class);
