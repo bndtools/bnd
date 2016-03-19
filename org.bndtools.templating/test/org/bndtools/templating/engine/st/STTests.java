@@ -1,4 +1,4 @@
-package org.bndtools.templating.engine;
+package org.bndtools.templating.engine.st;
 
 
 import org.junit.Test;
