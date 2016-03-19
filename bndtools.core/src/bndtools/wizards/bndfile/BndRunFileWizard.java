@@ -43,6 +43,8 @@ import bndtools.Plugin;
 
 public class BndRunFileWizard extends Wizard implements INewWizard {
 
+    public static final String DEFAULT_TEMPLATE_ENGINE = "stringtemplate"; //$NON-NLS-1$
+
     protected TemplateSelectionWizardPage templatePage;
 
     protected IStructuredSelection selection;
@@ -118,7 +120,7 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
         mainPage.setFileExtension("bndrun"); //$NON-NLS-1$
         mainPage.setAllowExistingResources(false);
 
-        BuiltInTemplate baseTemplate = new BuiltInTemplate("\u00abEmpty\u00bb");
+        BuiltInTemplate baseTemplate = new BuiltInTemplate("\u00abEmpty\u00bb", DEFAULT_TEMPLATE_ENGINE);
         baseTemplate.addInputResource("$fileName$", new StringResource(""));
         baseTemplate.setHelpPath("docs/empty_run.xml");
 

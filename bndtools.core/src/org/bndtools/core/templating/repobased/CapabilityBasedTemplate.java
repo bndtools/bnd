@@ -15,7 +15,7 @@ import org.bndtools.templating.FolderResource;
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
-import org.bndtools.templating.engine.StringTemplateEngine;
+import org.bndtools.templating.TemplateEngine;
 import org.bndtools.templating.util.AttributeDefinitionImpl;
 import org.bndtools.templating.util.ObjectClassDefinitionImpl;
 import org.osgi.framework.Version;
@@ -33,12 +33,13 @@ public class CapabilityBasedTemplate implements Template {
     private static final String DEFAULT_DIR = "template/";
 
     private final Capability capability;
+    private final BundleLocator locator;
+    private final TemplateEngine engine;
 
     private final String name;
     private final String category;
     private final String description;
     private final Version version;
-    private final BundleLocator locator;
 
     private final String dir;
     private final URI iconUri;
@@ -48,9 +49,10 @@ public class CapabilityBasedTemplate implements Template {
     private File _bundleFile = null;
     private ResourceMap _inputResources = null;
 
-    public CapabilityBasedTemplate(Capability capability, BundleLocator locator) {
+    public CapabilityBasedTemplate(Capability capability, BundleLocator locator, TemplateEngine engine) {
         this.capability = capability;
         this.locator = locator;
+        this.engine = engine;
 
         Map<String,Object> attrs = capability.getAttributes();
 
@@ -121,7 +123,7 @@ public class CapabilityBasedTemplate implements Template {
         ObjectClassDefinitionImpl ocd = new ObjectClassDefinitionImpl(name, description, null);
 
         ResourceMap inputs = getInputSources();
-        Collection<String> names = new StringTemplateEngine().getTemplateParameterNames(inputs);
+        Collection<String> names = engine.getTemplateParameterNames(inputs);
         for (String name : names) {
             AttributeDefinitionImpl ad = new AttributeDefinitionImpl(name, name, 0, AttributeDefinition.STRING);
             ocd.addAttribute(ad, true);
@@ -133,7 +135,7 @@ public class CapabilityBasedTemplate implements Template {
     @Override
     public ResourceMap generateOutputs(Map<String,List<Object>> parameters) throws Exception {
         ResourceMap inputs = getInputSources();
-        return new StringTemplateEngine().generateOutputs(inputs, parameters);
+        return engine.generateOutputs(inputs, parameters);
     }
 
     @Override
