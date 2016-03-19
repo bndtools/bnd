@@ -1,4 +1,4 @@
-package org.bndtools.templating.engine;
+package org.bndtools.templating.engine.st;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,6 +23,7 @@ import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.ResourceType;
 import org.bndtools.templating.StringResource;
 import org.bndtools.templating.TemplateEngine;
+import org.osgi.service.component.annotations.Component;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.compiler.CompiledST;
@@ -35,10 +36,14 @@ import aQute.bnd.osgi.Instructions;
 import st4hidden.org.antlr.runtime.ANTLRInputStream;
 import st4hidden.org.antlr.runtime.CommonToken;
 
+@Component(name = "org.bndtools.templating.engine.st", property = {
+        "name=stringtemplate", "version=4.0.8"
+})
 public class StringTemplateEngine implements TemplateEngine {
 
     private static final String TEMPLATE_PROPERTIES = "_template.properties";
     private static final String TEMPLATE_DEFS_PREFIX = "_defs/";
+    private static final String TEMPLATE_FILE_SUFFIX = ".st";
 
     private static class TemplateSettings {
         char leftDelim = '$';
@@ -200,12 +205,14 @@ public class StringTemplateEngine implements TemplateEngine {
         PrintWriter bufPrint = new PrintWriter(buf);
         for (String inputPath : inputs.getPaths()) {
             if (inputPath.startsWith(TEMPLATE_DEFS_PREFIX)) {
-                // Definition... load into StringTemplate group and don't generate output
-                String inputPathRelative = inputPath.substring(TEMPLATE_DEFS_PREFIX.length());
+                if (inputPath.endsWith(TEMPLATE_FILE_SUFFIX)) {
+                    // Definition... load into StringTemplate group and don't generate output
+                    String inputPathRelative = inputPath.substring(TEMPLATE_DEFS_PREFIX.length());
 
-                Resource resource = inputs.get(inputPath);
-                if (resource != null && resource.getType() == ResourceType.File)
-                    loadTemplate(stg, inputPathRelative, resource.getContent(), resource.getTextEncoding());
+                    Resource resource = inputs.get(inputPath);
+                    if (resource != null && resource.getType() == ResourceType.File)
+                        loadTemplate(stg, inputPathRelative, resource.getContent(), resource.getTextEncoding());
+                }
             } else {
                 // Mapping to output file
                 String outputPath = inputPath;
@@ -236,7 +243,11 @@ public class StringTemplateEngine implements TemplateEngine {
     private void loadTemplate(STGroup stg, String fileName, InputStream is, String encoding) throws IOException {
         ANTLRInputStream charStream = new ANTLRInputStream(is, encoding);
         charStream.name = fileName;
-        stg.loadTemplateFile("/", fileName, charStream);
+        try {
+            stg.loadTemplateFile("/", fileName, charStream);
+        } catch (NullPointerException e) {
+            throw new IOException(String.format("Error loading template file %s. Ensure the template contains a template definition matching the file name.", fileName), e);
+        }
     }
 
     private CompiledST loadRawTemplate(STGroup stg, String name, Resource resource) throws IOException {

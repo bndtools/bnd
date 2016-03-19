@@ -12,8 +12,10 @@ import java.util.Map.Entry;
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
+import org.bndtools.templating.engine.st.StringTemplateEngine;
 import org.bndtools.utils.progress.ProgressMonitorReporter;
 import org.eclipse.core.runtime.NullProgressMonitor;
+
 import aQute.bnd.build.Run;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
@@ -28,6 +30,10 @@ public class ReposTemplateLoaderTest extends TestCase {
         Run project = Run.createRun(null, IO.getFile("testdata/ws.bndrun"));
         loader = new ReposTemplateLoader();
         loader.workspace = project.getWorkspace();
+
+        Map<String,Object> engineProps = new HashMap<>();
+        engineProps.put("name", "stringtemplate");
+        loader.addTemplateEngine(new StringTemplateEngine(), engineProps);
     }
 
     public void testLoad() throws Exception {

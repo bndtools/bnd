@@ -37,16 +37,20 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbench;
 
+import aQute.bnd.build.Project;
 import bndtools.Plugin;
 
 class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
-    public static final String DEFAULT_BUNDLE_VERSION = "0.0.0.${tstamp}";
+    public static final String DEFAULT_TEMPLATE_ENGINE = "stringtemplate"; //$NON-NLS-1$
+    public static final String DEFAULT_BUNDLE_VERSION = "0.0.0.${tstamp}"; //$NON-NLS-1$
+    public static final String EMPTY_TEMPLATE_NAME = "\u00abEmpty\u00bb";
 
     private TemplateSelectionWizardPage templatePage;
 
@@ -58,9 +62,9 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
     public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
         super.init(workbench, currentSelection);
 
-        BuiltInTemplate baseTemplate = new BuiltInTemplate("\u00abEmpty\u00bb");
-        baseTemplate.addInputResource("bnd.bnd", new StringResource(""));
-        baseTemplate.setHelpPath("docs/empty_project.xml");
+        BuiltInTemplate baseTemplate = new BuiltInTemplate(EMPTY_TEMPLATE_NAME, DEFAULT_TEMPLATE_ENGINE);
+        baseTemplate.addInputResource(Project.BNDFILE, new StringResource("")); //$NON-NLS-1$
+        baseTemplate.setHelpPath("docs/empty_project.xml"); //$NON-NLS-1$
 
         templatePage = new TemplateSelectionWizardPage("projectTemplateSelection", "project", baseTemplate);
         templatePage.setTitle("Select Project Template");

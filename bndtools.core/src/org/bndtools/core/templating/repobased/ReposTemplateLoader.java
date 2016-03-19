@@ -8,8 +8,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.bndtools.templating.Template;
+import org.bndtools.templating.TemplateEngine;
 import org.bndtools.templating.TemplateLoader;
 import org.eclipse.osgi.framework.internal.core.Constants;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -17,6 +20,9 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Workspace;
@@ -37,8 +43,21 @@ public class ReposTemplateLoader implements TemplateLoader {
 
     private static final String NS_TEMPLATE = "org.bndtools.template";
 
+    private final ConcurrentMap<String,TemplateEngine> engines = new ConcurrentHashMap<>();
+
     // for testing
     Workspace workspace = null;
+
+    @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
+    void addTemplateEngine(TemplateEngine engine, Map<String,Object> svcProps) {
+        String name = (String) svcProps.get("name");
+        engines.put(name, engine);
+    }
+
+    void removeTemplateEngine(TemplateEngine engine, Map<String,Object> svcProps) {
+        String name = (String) svcProps.get("name");
+        engines.remove(name);
+    }
 
     @Override
     public List<Template> findTemplates(String templateType, Reporter reporter) {
@@ -72,12 +91,19 @@ public class ReposTemplateLoader implements TemplateLoader {
                 Collection<Capability> candidates = providerMap.get(requirement);
                 if (candidates != null) {
                     for (Capability cap : candidates) {
+                        IdentityCapability idcap = ResourceUtils.getIdentityCapability(cap.getResource());
+                        Object id = idcap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+                        Object ver = idcap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
                         try {
-                            templates.add(new CapabilityBasedTemplate(cap, locator));
+                            String engineName = (String) cap.getAttributes().get("engine");
+                            if (engineName == null)
+                                engineName = "stringtemplate";
+                            TemplateEngine engine = engines.get(engineName);
+                            if (engine != null)
+                                templates.add(new CapabilityBasedTemplate(cap, locator, engine));
+                            else
+                                reporter.error("Error loading template from resource '%s' version %s: no Template Engine available matching '%s'", id, ver, engineName);
                         } catch (Exception e) {
-                            IdentityCapability idcap = ResourceUtils.getIdentityCapability(cap.getResource());
-                            Object id = idcap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
-                            Object ver = idcap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
                             reporter.error("Error loading template from resource '%s' version %s: %s", id, ver, e.getMessage());
                         }
                     }
