@@ -6,5 +6,10 @@
 -testpath: \
 	\${junit}
 
+$if(javaLevel)$
+javac.source: $javaLevel$
+javac.target: $javaLevel$
+$endif$
+
 Bundle-Version: 0.0.0.\${tstamp}
 Private-Package: $basePackageName$

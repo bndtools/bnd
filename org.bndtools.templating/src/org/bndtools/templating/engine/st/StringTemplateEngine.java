@@ -246,7 +246,7 @@ public class StringTemplateEngine implements TemplateEngine {
         try {
             stg.loadTemplateFile("/", fileName, charStream);
         } catch (NullPointerException e) {
-            throw new IOException(String.format("Error loading template file %s. Ensure the template contains a template definition matching the file name.", fileName), e);
+            throw new IOException(String.format("Error loading template file: %s. Ensure the file contains a template definition matching the file name.", fileName), e);
         }
     }
 

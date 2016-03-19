@@ -108,7 +108,8 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
             params.put(ProjectTemplateParam.VERSION, DEFAULT_BUNDLE_VERSION);
         }
 
-        Map<String,String> sourceOutputLocations = JavaProjectUtils.getSourceOutputLocations(pageTwo.getJavaProject());
+        IJavaProject javaProject = pageTwo.getJavaProject();
+        Map<String,String> sourceOutputLocations = JavaProjectUtils.getSourceOutputLocations(javaProject);
         int nr = 1;
         for (Map.Entry<String,String> entry : sourceOutputLocations.entrySet()) {
             String src = entry.getKey();
@@ -132,6 +133,14 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
                 // model.genericSet("X-WARN-" + nr, "Ignoring source path " + src + " -> " + bin);
                 nr++;
             }
+        }
+
+        try {
+            String javaLevel = JavaProjectUtils.getJavaLevel(javaProject);
+            if (javaLevel != null)
+                params.put(ProjectTemplateParam.JAVA_LEVEL, javaLevel);
+        } catch (Exception e) {
+            Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Unable to get Java level for project %s", javaProject.getProject().getName()), e));
         }
 
         Map<String,String> params_ = new HashMap<>();
