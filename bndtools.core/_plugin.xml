@@ -184,6 +184,13 @@
 			class="bndtools.wizards.workspace.MissingWorkspaceMarkerResolutionGenerator"
 		/>
 	</extension>
+	
+	<extension point="bndtools.core.buildErrorDetailsHandlers">
+		<handler
+			typeMatch="bndtools.builder.missingworkspace"
+			class="bndtools.wizards.workspace.MissingWorkspaceBuildErrorHandler"
+		/>
+	</extension>
 
 	<extension point="org.eclipse.jdt.ui.quickFixProcessors">
 		<quickFixProcessor id="PackageInfoBaselineQuickFixProcessor"

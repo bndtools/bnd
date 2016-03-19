@@ -14,6 +14,7 @@ import java.util.concurrent.TimeoutException;
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.build.api.BuildErrorDetailsHandler;
 import org.bndtools.builder.classpath.BndContainerInitializer;
 import org.bndtools.builder.decorator.ui.PackageDecorator;
 import org.bndtools.utils.workspace.WorkspaceUtils;
@@ -118,7 +119,16 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                     model = Central.getProject(myProject.getLocation().toFile());
                 } catch (Exception e) {
                     markers.deleteMarkers("*");
-                    markers.createMarker(null, IMarker.SEVERITY_ERROR, "No bnd Workspace found. Create a new workspace with the Bnd OSGi Workspace wizard.", BndtoolsConstants.MARKER_BND_MISSING_WORKSPACE);
+
+                    // Add a marker to the bnd.bnd file if available, or the project if not.
+                    IResource markerTarget = myProject.getFile(Project.BNDFILE);
+                    if (markerTarget == null || markerTarget.getType() != IResource.FILE || !markerTarget.exists())
+                        markerTarget = myProject;
+                    IMarker marker = markerTarget.createMarker(BndtoolsConstants.MARKER_BND_MISSING_WORKSPACE);
+                    marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+                    marker.setAttribute(IMarker.MESSAGE, "Missing Bnd Workspace. Create a new workspace with the 'New Bnd OSGi Workspace' wizard.");
+                    marker.setAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, true);
+                    marker.setAttribute("$bndType", BndtoolsConstants.MARKER_BND_MISSING_WORKSPACE);
                 }
                 if (model == null)
                     return noreport();

@@ -2,6 +2,7 @@ package bndtools.editor.pages;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,6 +21,7 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -31,6 +33,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IManagedForm;
@@ -204,7 +207,7 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
     }
 
     // look for available quick-fixes from the bnd build error details
-    private void generateFixes(String message, IMarker marker) {
+    private void generateFixes(String message, final IMarker marker) {
         boolean fixable = marker.getAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, false);
         if (!fixable)
             return;
@@ -221,17 +224,29 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
         if (handler == null)
             return;
 
+        List<IAction> fixes = new LinkedList<>();
         List<ICompletionProposal> proposals = handler.getProposals(marker);
-        if (proposals.isEmpty())
-            return;
+        if (proposals != null) {
+            for (ICompletionProposal proposal : proposals) {
+                fixes.add(new ApplyCompletionProposalAction(proposal, editor.getSourcePage(), editor, BndEditor.SOURCE_PAGE));
+            }
+        }
 
-        IAction[] fixes = new IAction[proposals.size()];
+        // If no source completion fixes were found, add the marker resolution actions.
+        if (fixes.isEmpty()) {
+            List<IMarkerResolution> resolutions = handler.getResolutions(marker);
+            for (final IMarkerResolution resolution : resolutions) {
+                Action action = new Action(resolution.getLabel()) {
+                    @Override
+                    public void run() {
+                        resolution.run(marker);
+                    }
+                };
+                fixes.add(action);
+            }
+        }
 
-        int i = 0;
-        for (ICompletionProposal proposal : proposals)
-            fixes[i++] = new ApplyCompletionProposalAction(proposal, editor.getSourcePage(), editor, BndEditor.SOURCE_PAGE);
-
-        messageFixesMap.put(message, fixes);
+        messageFixesMap.put(message, fixes.toArray(new IAction[fixes.size()]));
     }
 
     void reportProblemsInHeader() {
