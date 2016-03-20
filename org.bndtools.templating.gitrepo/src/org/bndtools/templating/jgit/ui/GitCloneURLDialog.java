@@ -2,6 +2,7 @@ package org.bndtools.templating.jgit.ui;
 
 import java.net.URISyntaxException;
 
+import org.bndtools.templating.jgit.GitCloneTemplateParams;
 import org.eclipse.jgit.transport.URIish;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -24,7 +25,9 @@ public class GitCloneURLDialog extends AbstractNewEntryDialog {
 
     private String cloneUri = null;
     private String name = null;
+    private String branch = null;
     private Text txtRepository;
+    private Text txtBranch;
 
     private Text txtName;
 
@@ -59,6 +62,13 @@ public class GitCloneURLDialog extends AbstractNewEntryDialog {
         if (name != null)
             txtName.setText(name);
 
+        new Label(container, SWT.NONE).setText("Branch:");
+        txtBranch = new Text(container, SWT.BORDER);
+        txtBranch.setMessage(GitCloneTemplateParams.DEFAULT_BRANCH);
+        txtBranch.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        if (branch != null)
+            txtBranch.setText(branch);
+
         ModifyListener modifyListener = new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent ev) {
@@ -68,6 +78,7 @@ public class GitCloneURLDialog extends AbstractNewEntryDialog {
         };
         txtRepository.addModifyListener(modifyListener);
         txtName.addModifyListener(modifyListener);
+        txtBranch.addModifyListener(modifyListener);
 
         return area;
     }
@@ -85,6 +96,7 @@ public class GitCloneURLDialog extends AbstractNewEntryDialog {
         try {
             cloneUri = txtRepository.getText().trim();
             name = txtName.getText().trim();
+            branch = txtBranch.getText().trim();
             setErrorMessage(null);
 
             @SuppressWarnings("unused") // for validation
@@ -102,11 +114,14 @@ public class GitCloneURLDialog extends AbstractNewEntryDialog {
     public void setEntry(Pair<String,Attrs> entry) {
         cloneUri = entry.getFirst();
         name = entry.getSecond().get("name");
+        branch = entry.getSecond().get("branch");
 
         if (txtRepository != null && !txtRepository.isDisposed())
             txtRepository.setText(cloneUri);
         if (txtName != null && !txtName.isDisposed())
             txtName.setText(name);
+        if (txtBranch != null && !txtBranch.isDisposed())
+            txtBranch.setText(branch);
     }
 
     @Override
@@ -114,6 +129,8 @@ public class GitCloneURLDialog extends AbstractNewEntryDialog {
         Attrs attrs = new Attrs();
         if (name != null && !name.isEmpty())
             attrs.put("name", name);
+        if (branch != null && !branch.isEmpty())
+            attrs.put("branch", branch);
         return cloneUri != null ? new Pair<>(cloneUri.toString(), attrs) : null;
     }
 
