@@ -9,14 +9,23 @@
 	osgi.cmpn; version=${osgi.cmpn.version},\
 	org.eclipse.equinox.common,\
 	ST4-4.0.8-complete.jar; version=file,\
-	org.eclipse.equinox.ds
+	mustache-compiler-0.8.18.jar; version=file,\
+	guava-16.0.1.jar; version=file
 
 -testpath: \
 	${junit},\
 	bndtools.utils; packages=*
 
 
-Private-Package: org.bndtools.templating.*
+-privatepackage: org.bndtools.templating.*
 Export-Package: ${packages;ANNOTATED;org.osgi.annotation.versioning.Version}
-Conditional-Package: org.stringtemplate.*, st4hidden.*, aQute.lib.*, aQute.libg.*
+-conditionalpackage: \
+	org.stringtemplate.*, \
+	st4hidden.*, \
+	aQute.lib.*, \
+	aQute.libg.*,\
+	com.github.mustachejava.*,\
+	com.google.common.*
 Bundle-ActivationPolicy: lazy
+
+Import-Package: sun.misc; resolution:=optional, *
