@@ -51,7 +51,17 @@ public class GitHubWorkspaceTemplateLoader implements TemplateLoader {
                 String name = attribs.get("name");
                 if (name == null)
                     name = repo;
-                GitCloneTemplate template = new GitCloneTemplate(detailsDTO.clone_url, name, detailsDTO.description, "GitHub", avatarUri);
+                String branch = attribs.get("branch");
+                GitCloneTemplateParams params = new GitCloneTemplateParams();
+                params.cloneUrl = detailsDTO.clone_url;
+                if (branch != null)
+                    params.branch = branch;
+                else
+                    params.branch = "origin/" + detailsDTO.default_branch;
+                params.name = name;
+                params.category = "GitHub";
+                params.iconUri = avatarUri;
+                GitCloneTemplate template = new GitCloneTemplate(params);
                 templates.add(template);
             } catch (Exception e) {
                 reporter.exception(e, "Error loading template from Github repository %s", repo);

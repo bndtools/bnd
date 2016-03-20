@@ -29,7 +29,9 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
     private final String title;
 
     private String repository = null;
+    private String branch = null;
     private Text txtRepository;
+    private Text txtBranch;
 
     public GitHubRepoDialog(Shell parentShell, String title) {
         super(parentShell);
@@ -53,17 +55,28 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
         txtRepository.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
         if (repository != null)
             txtRepository.setText(repository);
-        txtRepository.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent ev) {
-                repository = txtRepository.getText().trim();
-                updateButtons();
-            }
-        });
+
+        new Label(container, SWT.NONE).setText("Branch:");
+        txtBranch = new Text(container, SWT.BORDER);
+        txtBranch.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        txtBranch.setMessage("default branch");
+        if (branch != null)
+            txtBranch.setText(branch);
 
         Button btnValidate = new Button(container, SWT.PUSH);
         btnValidate.setText("Validate");
         btnValidate.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 2, 1));
+        ModifyListener modifyListener = new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent ev) {
+                repository = txtRepository.getText().trim();
+                branch = txtBranch.getText().trim();
+                updateButtons();
+            }
+        };
+        txtRepository.addModifyListener(modifyListener);
+        txtBranch.addModifyListener(modifyListener);
+
         btnValidate.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -73,12 +86,13 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
                     GithubRepoDetailsDTO dto = new GitHub(cache).loadRepoDetails(repository);
                     URI cloneUri = URI.create(dto.clone_url);
                     setErrorMessage(null);
-                    setMessage("Validated, clone URL is " + cloneUri, IMessageProvider.INFORMATION);
+                    setMessage(String.format("Validated! Clone URL is '%s'. Default branch 'origin/%s'", cloneUri, dto.default_branch), IMessageProvider.INFORMATION);
                 } catch (Exception ex) {
                     setErrorMessage(ex.getMessage());
                 }
             }
         });
+
         return area;
     }
 
@@ -98,13 +112,20 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
     @Override
     public void setEntry(Pair<String,Attrs> entry) {
         repository = entry.getFirst();
+        Attrs attrs = entry.getSecond();
+        branch = attrs.get("branch");
         if (txtRepository != null && !txtRepository.isDisposed())
             txtRepository.setText(repository);
+        if (txtBranch != null && !txtBranch.isDisposed())
+            txtBranch.setText(branch);
     }
 
     @Override
     public Pair<String,Attrs> getEntry() {
-        return repository != null ? new Pair<String,Attrs>(repository.trim(), new Attrs()) : null;
+        Attrs attrs = new Attrs();
+        if (branch != null && !branch.trim().isEmpty())
+            attrs.put("branch", branch);
+        return repository != null ? new Pair<String,Attrs>(repository.trim(), attrs) : null;
     }
 
 }

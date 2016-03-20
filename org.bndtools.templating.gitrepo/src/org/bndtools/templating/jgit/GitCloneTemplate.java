@@ -5,6 +5,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +14,7 @@ import org.bndtools.templating.FolderResource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
 import org.bndtools.templating.util.ObjectClassDefinitionImpl;
+import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Repository;
 import org.osgi.framework.Version;
@@ -22,35 +24,34 @@ import aQute.lib.io.IO;
 
 public class GitCloneTemplate implements Template {
 
-    private final String cloneUrl;
-    private final String name;
-    private final String description;
-    private final String category;
-    private final URI iconUri;
+    private final GitCloneTemplateParams params;
 
     private Repository checkedOut = null;
 
-    public GitCloneTemplate(String cloneUrl, String name, String description, String category, URI iconUri) {
-        this.cloneUrl = cloneUrl;
-        this.name = name;
-        this.description = description;
-        this.category = category;
-        this.iconUri = iconUri;
+    public GitCloneTemplate(GitCloneTemplateParams params) {
+        this.params = params;
     }
 
     @Override
     public String getName() {
-        return name;
+        return params.name != null ? params.name : params.cloneUrl;
     }
 
     @Override
     public String getShortDescription() {
-        return description;
+        String desc;
+        String branch = params.branch != null ? params.branch : GitCloneTemplateParams.DEFAULT_BRANCH;
+        if (params.name == null) {
+            desc = branch;
+        } else {
+            desc = params.cloneUrl + " " + branch;
+        }
+        return desc;
     }
 
     @Override
     public String getCategory() {
-        return category;
+        return params.category;
     }
 
     @Override
@@ -85,9 +86,14 @@ public class GitCloneTemplate implements Template {
             // Need to do a new checkout
             workingDir = Files.createTempDirectory("checkout").toFile();
             gitDir = new File(workingDir, ".git");
+            String branch = params.branch != null ? params.branch : GitCloneTemplateParams.DEFAULT_BRANCH;
 
-            Git call = Git.cloneRepository().setURI(cloneUrl).setBranch("master").setDirectory(workingDir).call();
-            checkedOut = call.getRepository();
+            CloneCommand cloneCmd = Git.cloneRepository().setURI(params.cloneUrl).setDirectory(workingDir).setNoCheckout(true);
+            cloneCmd.setBranchesToClone(Collections.singleton(branch));
+            Git git = cloneCmd.call();
+
+            git.checkout().setCreateBranch(true).setName("_tmp").setStartPoint(branch).call();
+            checkedOut = git.getRepository();
         }
 
         final File exclude = gitDir;
@@ -113,7 +119,7 @@ public class GitCloneTemplate implements Template {
 
     @Override
     public URI getIcon() {
-        return iconUri;
+        return params.iconUri;
     }
 
     @Override

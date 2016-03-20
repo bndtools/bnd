@@ -44,15 +44,14 @@ public class PlainGitWorkspaceTemplateLoader implements TemplateLoader {
             Attrs attribs = entry.getValue();
 
             try {
-                String name = attribs.get("name");
-                String description;
-                if (name == null) {
-                    name = cloneUrl;
-                    description = null;
-                } else {
-                    description = cloneUrl;
-                }
-                GitCloneTemplate template = new GitCloneTemplate(cloneUrl, name, description, "Git Repositories", iconUrl.toURI());
+                GitCloneTemplateParams params = new GitCloneTemplateParams();
+                params.cloneUrl = cloneUrl;
+                params.category = "Git Repositories";
+                params.name = attribs.get("name");
+                params.iconUri = iconUrl.toURI();
+                params.branch = attribs.get("branch");
+
+                GitCloneTemplate template = new GitCloneTemplate(params);
                 templates.add(template);
             } catch (Exception e) {
                 reporter.exception(e, "Error loading template from Git clone URL %s", cloneUrl);
