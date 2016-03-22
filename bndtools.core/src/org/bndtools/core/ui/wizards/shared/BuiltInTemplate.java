@@ -13,6 +13,8 @@ import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
 import org.bndtools.templating.TemplateEngine;
 import org.bndtools.templating.util.ObjectClassDefinitionImpl;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -65,11 +67,21 @@ public class BuiltInTemplate implements Template {
 
     @Override
     public ObjectClassDefinition getMetadata() throws Exception {
+        return getMetadata(new NullProgressMonitor());
+    }
+
+    @Override
+    public ObjectClassDefinition getMetadata(IProgressMonitor monitor) throws Exception {
         return new ObjectClassDefinitionImpl(name, getShortDescription(), null);
     }
 
     @Override
     public ResourceMap generateOutputs(Map<String,List<Object>> parameters) throws Exception {
+        return generateOutputs(parameters, new NullProgressMonitor());
+    }
+
+    @Override
+    public ResourceMap generateOutputs(Map<String,List<Object>> parameters, IProgressMonitor monitor) throws Exception {
         BundleContext context = bundle.getBundleContext();
         Collection<ServiceReference<TemplateEngine>> svcRefs = context.getServiceReferences(TemplateEngine.class, String.format("(name=%s)", engineName));
         if (svcRefs == null || svcRefs.isEmpty())

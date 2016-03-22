@@ -14,8 +14,11 @@ import org.bndtools.templating.FolderResource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.Template;
 import org.bndtools.templating.util.ObjectClassDefinitionImpl;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.lib.Repository;
 import org.osgi.framework.Version;
 import org.osgi.service.metatype.ObjectClassDefinition;
@@ -66,11 +69,21 @@ public class GitCloneTemplate implements Template {
 
     @Override
     public ObjectClassDefinition getMetadata() throws Exception {
+        return getMetadata(new NullProgressMonitor());
+    }
+
+    @Override
+    public ObjectClassDefinition getMetadata(IProgressMonitor monitor) throws Exception {
         return new ObjectClassDefinitionImpl(getName(), getShortDescription(), null);
     }
 
     @Override
     public ResourceMap generateOutputs(Map<String,List<Object>> parameters) throws Exception {
+        return generateOutputs(parameters, new NullProgressMonitor());
+    }
+
+    @Override
+    public ResourceMap generateOutputs(Map<String,List<Object>> parameters, IProgressMonitor monitor) throws Exception {
         File workingDir = null;
         File gitDir = null;
 
@@ -88,12 +101,20 @@ public class GitCloneTemplate implements Template {
             gitDir = new File(workingDir, ".git");
             String branch = params.branch != null ? params.branch : GitCloneTemplateParams.DEFAULT_BRANCH;
 
-            CloneCommand cloneCmd = Git.cloneRepository().setURI(params.cloneUrl).setDirectory(workingDir).setNoCheckout(true);
-            cloneCmd.setBranchesToClone(Collections.singleton(branch));
-            Git git = cloneCmd.call();
+            try {
+                CloneCommand cloneCmd = Git.cloneRepository().setURI(params.cloneUrl).setDirectory(workingDir).setNoCheckout(true);
+                cloneCmd.setProgressMonitor(new EclipseGitProgressTransformer(monitor));
+                cloneCmd.setBranchesToClone(Collections.singleton(branch));
+                Git git = cloneCmd.call();
 
-            git.checkout().setCreateBranch(true).setName("_tmp").setStartPoint(branch).call();
-            checkedOut = git.getRepository();
+                git.checkout().setCreateBranch(true).setName("_tmp").setStartPoint(branch).call();
+                checkedOut = git.getRepository();
+            } catch (JGitInternalException e) {
+                Throwable cause = e.getCause();
+                if (cause instanceof Exception)
+                    throw (Exception) cause;
+                throw e;
+            }
         }
 
         final File exclude = gitDir;

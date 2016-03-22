@@ -2,10 +2,12 @@
 
 -buildpath: \
 	${bndlib},\
+	bndtools.api; version=latest,\
 	org.bndtools.templating; version=latest,\
 	bndtools.utils; version=latest; packages=*,\
-	org.eclipse.jgit,\
-	javaewah,\
+	org.eclipse.jgit; version=3.4.2,\
+	javaewah; version=0.7.9,\
+	com.jcraft.jsch; version=0.1.51,\
 	osgi.core;version=${osgi.core.version},\
 	osgi.cmpn;version=${osgi.cmpn.version},\
 	org.eclipse.jface,\

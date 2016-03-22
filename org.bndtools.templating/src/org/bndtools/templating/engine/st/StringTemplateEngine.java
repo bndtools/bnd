@@ -23,6 +23,8 @@ import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.ResourceType;
 import org.bndtools.templating.StringResource;
 import org.bndtools.templating.TemplateEngine;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.osgi.service.component.annotations.Component;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
@@ -84,6 +86,11 @@ public class StringTemplateEngine implements TemplateEngine {
 
     @Override
     public Collection<String> getTemplateParameterNames(ResourceMap inputs) throws Exception {
+        return getTemplateParameterNames(inputs, new NullProgressMonitor());
+    }
+
+    @Override
+    public Collection<String> getTemplateParameterNames(ResourceMap inputs, IProgressMonitor monitor) throws Exception {
         Set<String> names = new HashSet<>();
 
         // Initialise the engine
@@ -159,6 +166,11 @@ public class StringTemplateEngine implements TemplateEngine {
 
     @Override
     public ResourceMap generateOutputs(ResourceMap inputs, Map<String,List<Object>> parameters) throws Exception {
+        return generateOutputs(inputs, parameters, new NullProgressMonitor());
+    }
+
+    @Override
+    public ResourceMap generateOutputs(ResourceMap inputs, Map<String,List<Object>> parameters, IProgressMonitor monitor) throws Exception {
         TemplateSettings settings = readSettings(inputs);
         STGroup stg = new STGroup(settings.leftDelim, settings.rightDelim);
 

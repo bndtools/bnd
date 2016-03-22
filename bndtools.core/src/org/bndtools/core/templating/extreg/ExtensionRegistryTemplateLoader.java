@@ -17,6 +17,8 @@ import org.eclipse.core.runtime.Status;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Promises;
 
 import aQute.service.reporter.Reporter;
 import bndtools.Plugin;
@@ -35,7 +37,7 @@ public class ExtensionRegistryTemplateLoader implements TemplateLoader {
     }
 
     @Override
-    public List<Template> findTemplates(String type, Reporter reporter) {
+    public Promise<List<Template>> findTemplates(String type, Reporter reporter) {
         List<Template> templates;
         String extPoint = typeToExtPoint.get(type);
         if (extPoint != null) {
@@ -63,7 +65,7 @@ public class ExtensionRegistryTemplateLoader implements TemplateLoader {
         } else {
             templates = Collections.emptyList();
         }
-        return templates;
+        return Promises.resolved(templates);
     }
 
 }

@@ -18,6 +18,8 @@ import org.bndtools.templating.Template;
 import org.bndtools.templating.TemplateEngine;
 import org.bndtools.templating.util.AttributeDefinitionImpl;
 import org.bndtools.templating.util.ObjectClassDefinitionImpl;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -120,6 +122,11 @@ public class CapabilityBasedTemplate implements Template {
 
     @Override
     public ObjectClassDefinition getMetadata() throws Exception {
+        return getMetadata(new NullProgressMonitor());
+    }
+
+    @Override
+    public ObjectClassDefinition getMetadata(IProgressMonitor monitor) throws Exception {
         ObjectClassDefinitionImpl ocd = new ObjectClassDefinitionImpl(name, description, null);
 
         ResourceMap inputs = getInputSources();
@@ -134,6 +141,11 @@ public class CapabilityBasedTemplate implements Template {
 
     @Override
     public ResourceMap generateOutputs(Map<String,List<Object>> parameters) throws Exception {
+        return generateOutputs(parameters, new NullProgressMonitor());
+    }
+
+    @Override
+    public ResourceMap generateOutputs(Map<String,List<Object>> parameters, IProgressMonitor monitor) throws Exception {
         ResourceMap inputs = getInputSources();
         return engine.generateOutputs(inputs, parameters);
     }

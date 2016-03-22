@@ -24,7 +24,9 @@ import org.bndtools.templating.util.ObjectClassDefinitionImpl;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.spi.RegistryContributor;
 import org.osgi.framework.Bundle;
@@ -140,6 +142,11 @@ public class EnrouteProjectTemplate implements Template, IExecutableExtension {
 
     @Override
     public ObjectClassDefinition getMetadata() throws Exception {
+        return getMetadata(new NullProgressMonitor());
+    }
+
+    @Override
+    public ObjectClassDefinition getMetadata(IProgressMonitor monitor) throws Exception {
         ObjectClassDefinitionImpl ocd = new ObjectClassDefinitionImpl(name, description, iconUri);
         for (Entry<String,String> entry : parameters.entrySet())
             ocd.addAttribute(new AttributeDefinitionImpl(entry.getKey(), entry.getValue(), 0, AttributeDefinition.STRING), true);
@@ -159,7 +166,12 @@ public class EnrouteProjectTemplate implements Template, IExecutableExtension {
     }
 
     @Override
-    public ResourceMap generateOutputs(Map<String,List<Object>> params) throws Exception {
+    public ResourceMap generateOutputs(Map<String,List<Object>> parameters) throws Exception {
+        return generateOutputs(parameters, new NullProgressMonitor());
+    }
+
+    @Override
+    public ResourceMap generateOutputs(Map<String,List<Object>> params, IProgressMonitor monitor) throws Exception {
 
         String projectName = param(PROP_PROJECT_NAME, params);
         String pkg = param(PROP_BASE_PACKAGE_NAME, params);

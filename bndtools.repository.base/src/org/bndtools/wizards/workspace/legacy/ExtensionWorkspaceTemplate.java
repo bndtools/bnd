@@ -19,8 +19,10 @@ import org.bndtools.utils.osgi.BundleUtils;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.InvalidRegistryObjectException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
@@ -93,11 +95,21 @@ public class ExtensionWorkspaceTemplate implements Template, IExecutableExtensio
 
     @Override
     public ObjectClassDefinition getMetadata() throws Exception {
+        return getMetadata(new NullProgressMonitor());
+    }
+
+    @Override
+    public ObjectClassDefinition getMetadata(IProgressMonitor monitor) throws Exception {
         return new ObjectClassDefinitionImpl(name, "", null);
     }
 
     @Override
     public ResourceMap generateOutputs(Map<String,List<Object>> parameters) throws Exception {
+        return generateOutputs(parameters, new NullProgressMonitor());
+    }
+
+    @Override
+    public ResourceMap generateOutputs(Map<String,List<Object>> parameters, IProgressMonitor monitor) throws Exception {
         ResourceMap resourceMap = new ResourceMap();
 
         if (templatePath != null) {
