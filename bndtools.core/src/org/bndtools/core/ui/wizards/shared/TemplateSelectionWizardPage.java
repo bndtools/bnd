@@ -20,7 +20,7 @@ import java.util.Set;
 
 import org.bndtools.templating.Template;
 import org.bndtools.templating.TemplateLoader;
-import org.bndtools.utils.progress.ProgressMonitorReporter;
+import org.bndtools.utils.jface.ProgressRunner;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -60,11 +60,15 @@ import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.ScrolledFormText;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
-
+import org.osgi.service.component.ComponentConstants;
+import org.osgi.util.promise.Promise;
+import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
+import aQute.libg.tuple.Pair;
 import bndtools.Plugin;
 
 public class TemplateSelectionWizardPage extends WizardPage {
@@ -248,33 +252,52 @@ public class TemplateSelectionWizardPage extends WizardPage {
 
         @Override
         public void run(IProgressMonitor progress) throws InvocationTargetException {
-            SubMonitor monitor = SubMonitor.convert(progress, 3);
-            monitor.setTaskName("Loading Templates...");
+            SubMonitor monitor = SubMonitor.convert(progress);
             try {
                 final Set<Template> templates = new LinkedHashSet<>();
-                final List<String> errors = new LinkedList<>();
 
+                // Fire all the template loaders and get their promises
                 List<ServiceReference<TemplateLoader>> templateLoaderSvcRefs = new ArrayList<>(context.getServiceReferences(TemplateLoader.class, null));
+                monitor.beginTask("Loading templates...", templateLoaderSvcRefs.size());
                 Collections.sort(templateLoaderSvcRefs);
-
+                List<Pair<String,Promise< ? extends Collection<Template>>>> promises = new LinkedList<>();
                 for (ServiceReference<TemplateLoader> templateLoaderSvcRef : templateLoaderSvcRefs) {
+                    String label = (String) templateLoaderSvcRef.getProperty(Constants.SERVICE_DESCRIPTION);
+                    if (label == null)
+                        label = (String) templateLoaderSvcRef.getProperty(ComponentConstants.COMPONENT_NAME);
+                    if (label == null)
+                        label = String.format("Template Loader service ID " + templateLoaderSvcRef.getProperty(Constants.SERVICE_ID));
+
                     TemplateLoader templateLoader = context.getService(templateLoaderSvcRef);
                     try {
-                        ProgressMonitorReporter reporter = new ProgressMonitorReporter(monitor.newChild(1, SubMonitor.SUPPRESS_NONE), "Finding templates");
-                        templates.addAll(templateLoader.findTemplates(templateType, reporter));
-                        errors.addAll(reporter.getErrors());
+                        Promise< ? extends Collection<Template>> promise = templateLoader.findTemplates(templateType, new Processor());
+                        promises.add(new Pair<String,Promise< ? extends Collection<Template>>>(label, promise));
                     } finally {
                         context.ungetService(templateLoaderSvcRef);
+                    }
+                }
+
+                // Force the promises in sequence
+                for (Pair<String,Promise< ? extends Collection<Template>>> namedPromise : promises) {
+                    String name = namedPromise.getFirst();
+                    SubMonitor childMonitor = monitor.newChild(1, SubMonitor.SUPPRESS_NONE);
+                    childMonitor.beginTask(name, 1);
+                    try {
+                        Throwable failure = namedPromise.getSecond().getFailure();
+                        if (failure != null)
+                            Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to load from template loader: " + name, failure));
+                        else {
+                            Collection<Template> loadedTemplates = namedPromise.getSecond().getValue();
+                            templates.addAll(loadedTemplates);
+                        }
+                    } catch (InterruptedException e) {
+                        Plugin.getDefault().getLog().log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "Interrupted while loading from template loader: " + name, e));
                     }
                 }
 
                 // Add empty template if provided
                 if (emptyTemplate != null)
                     templates.add(emptyTemplate);
-
-                // Log errors
-                for (String error : errors)
-                    Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, error, null));
 
                 // Display results
                 Control control = viewer.getControl();
@@ -293,7 +316,6 @@ public class TemplateSelectionWizardPage extends WizardPage {
             } catch (InvalidSyntaxException ex) {
                 throw new InvocationTargetException(ex);
             } finally {
-                monitor.done();
                 // Restore the original message to the page
                 if (!shell.isDisposed())
                     shell.getDisplay().asyncExec(new Runnable() {
@@ -302,6 +324,8 @@ public class TemplateSelectionWizardPage extends WizardPage {
                             setMessage(originalMessage);
                         }
                     });
+                if (progress != null)
+                    progress.done();
             }
         }
 
@@ -313,9 +337,7 @@ public class TemplateSelectionWizardPage extends WizardPage {
 
         setMessage("Loading templates...");
         try {
-            getContainer().run(true, true, new LoadTemplatesJob(shell, oldMessage));
-        } catch (InterruptedException e) {
-            // ignore
+            ProgressRunner.execute(true, new LoadTemplatesJob(shell, oldMessage), getContainer(), getContainer().getShell().getDisplay());
         } catch (InvocationTargetException e) {
             Throwable exception = e.getTargetException();
             ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading templates.", exception));

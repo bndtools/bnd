@@ -20,6 +20,8 @@ import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.ResourceType;
 import org.bndtools.templating.StringResource;
 import org.bndtools.templating.TemplateEngine;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.osgi.service.component.annotations.Component;
 
 import com.github.mustachejava.DefaultMustacheFactory;
@@ -66,6 +68,11 @@ public class MustacheTemplateEngine implements TemplateEngine {
 
     @Override
     public Collection<String> getTemplateParameterNames(ResourceMap inputs) throws Exception {
+        return getTemplateParameterNames(inputs, new NullProgressMonitor());
+    }
+
+    @Override
+    public Collection<String> getTemplateParameterNames(ResourceMap inputs, IProgressMonitor monitor) throws Exception {
         final List<String> paramNames = new LinkedList<>();
         TemplateSettings settings = readSettings(inputs);
         DefaultMustacheFactory factory = new DefaultMustacheFactory();
@@ -93,6 +100,11 @@ public class MustacheTemplateEngine implements TemplateEngine {
 
     @Override
     public ResourceMap generateOutputs(ResourceMap inputs, Map<String,List<Object>> parameters) throws Exception {
+        return generateOutputs(inputs, parameters, new NullProgressMonitor());
+    }
+
+    @Override
+    public ResourceMap generateOutputs(ResourceMap inputs, Map<String,List<Object>> parameters, IProgressMonitor monitor) throws Exception {
         TemplateSettings settings = readSettings(inputs);
 
         ResourceMap outputs = new ResourceMap();

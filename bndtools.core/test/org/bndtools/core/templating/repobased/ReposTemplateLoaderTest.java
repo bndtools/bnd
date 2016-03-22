@@ -21,6 +21,7 @@ import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import junit.framework.TestCase;
 
+@SuppressWarnings("restriction")
 public class ReposTemplateLoaderTest extends TestCase {
 
     private ReposTemplateLoader loader;
@@ -30,6 +31,7 @@ public class ReposTemplateLoaderTest extends TestCase {
         Run project = Run.createRun(null, IO.getFile("testdata/ws.bndrun"));
         loader = new ReposTemplateLoader();
         loader.workspace = project.getWorkspace();
+        loader.activate();
 
         Map<String,Object> engineProps = new HashMap<>();
         engineProps.put("name", "stringtemplate");
@@ -37,7 +39,7 @@ public class ReposTemplateLoaderTest extends TestCase {
     }
 
     public void testLoad() throws Exception {
-        List<Template> templates = loader.findTemplates("test1", new ProgressMonitorReporter(new NullProgressMonitor(), ""));
+        List<Template> templates = loader.findTemplates("test1", new ProgressMonitorReporter(new NullProgressMonitor(), "")).getValue();
         assertEquals(1, templates.size());
         Template template = templates.get(0);
         assertEquals("Hello", template.getName());
@@ -46,7 +48,7 @@ public class ReposTemplateLoaderTest extends TestCase {
     }
 
     public void testProcessTemplate() throws Exception {
-        List<Template> templates = loader.findTemplates("test1", new ProgressMonitorReporter(new NullProgressMonitor(), ""));
+        List<Template> templates = loader.findTemplates("test1", new ProgressMonitorReporter(new NullProgressMonitor(), "")).getValue();
         assertEquals(1, templates.size());
         Template template = templates.get(0);
 
@@ -86,7 +88,7 @@ public class ReposTemplateLoaderTest extends TestCase {
     }
 
     public void testAlternateDelimiters() throws Exception {
-        List<Template> templates = loader.findTemplates("test2", new ProgressMonitorReporter(new NullProgressMonitor(), ""));
+        List<Template> templates = loader.findTemplates("test2", new ProgressMonitorReporter(new NullProgressMonitor(), "")).getValue();
         assertEquals(1, templates.size());
         Template template = templates.get(0);
 
@@ -126,7 +128,7 @@ public class ReposTemplateLoaderTest extends TestCase {
     }
 
     public void testReferTemplateDefinitions() throws Exception {
-        List<Template> templates = loader.findTemplates("test3", new ProgressMonitorReporter(new NullProgressMonitor(), ""));
+        List<Template> templates = loader.findTemplates("test3", new ProgressMonitorReporter(new NullProgressMonitor(), "")).getValue();
         assertEquals(1, templates.size());
         Template template = templates.get(0);
 
@@ -145,7 +147,7 @@ public class ReposTemplateLoaderTest extends TestCase {
     }
 
     public void testExtendUnprocessedPatternAndIgnore() throws Exception {
-        List<Template> templates = loader.findTemplates("test4", new ProgressMonitorReporter(new NullProgressMonitor(), ""));
+        List<Template> templates = loader.findTemplates("test4", new ProgressMonitorReporter(new NullProgressMonitor(), "")).getValue();
         assertEquals(1, templates.size());
         Template template = templates.get(0);
 

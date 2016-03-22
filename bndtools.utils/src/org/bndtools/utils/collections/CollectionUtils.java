@@ -26,7 +26,7 @@ import aQute.lib.collections.MultiMap;
 public class CollectionUtils {
     /**
      * Move the selected items down one position in the list.
-     * 
+     *
      * @param list
      *            The list of items, which will be altered in-place.
      * @param selectionIndexes
@@ -64,7 +64,7 @@ public class CollectionUtils {
 
     /**
      * Move the selected items up one position in the list.
-     * 
+     *
      * @param list
      *            The list of items, which will be altered in-place.
      * @param selectionIndexes
@@ -162,6 +162,37 @@ public class CollectionUtils {
             T item = (T) obj;
             result.add(item);
         }
+        return result;
+    }
+
+    public static <T> List<T> flatten(Collection< ? extends Collection<T>> listList) {
+        int size = 0;
+        for (Collection<T> list : listList)
+            size += list.size();
+        List<T> result = new ArrayList<>(size);
+        for (Collection<T> list : listList)
+            result.addAll(list);
+        return result;
+    }
+
+    public static <T> T[] flatten(List<T[]> arrayList) {
+        int size = 0;
+        for (T[] array : arrayList)
+            size += array.length;
+        @SuppressWarnings("unchecked")
+        T[] result = (T[]) new Object[size];
+        int copied = 0;
+        for (T[] array : arrayList) {
+            System.arraycopy(array, 0, result, copied, array.length);
+            copied += array.length;
+        }
+        return result;
+    }
+
+    public static <T> List<T> append(Collection<T> first, Collection<T> second) {
+        List<T> result = new ArrayList<>(first.size() + second.size());
+        result.addAll(first);
+        result.addAll(second);
         return result;
     }
 

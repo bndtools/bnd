@@ -12,6 +12,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Promises;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
@@ -32,9 +34,9 @@ public class PlainGitWorkspaceTemplateLoader implements TemplateLoader {
     }
 
     @Override
-    public List<Template> findTemplates(String type, Reporter reporter) {
+    public Promise<List<Template>> findTemplates(String type, Reporter reporter) {
         if (!TEMPLATE_TYPE.equals(type))
-            return Collections.emptyList();
+            return Promises.resolved(Collections.<Template> emptyList());
 
         List<Template> templates = new LinkedList<>();
 
@@ -57,8 +59,7 @@ public class PlainGitWorkspaceTemplateLoader implements TemplateLoader {
                 reporter.exception(e, "Error loading template from Git clone URL %s", cloneUrl);
             }
         }
-
-        return templates;
+        return Promises.resolved(templates);
     }
 
 }

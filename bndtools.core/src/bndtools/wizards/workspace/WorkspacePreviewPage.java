@@ -84,7 +84,7 @@ public class WorkspacePreviewPage extends WizardPage {
                         existingFiles.clear();
                         resourceErrors.clear();
 
-                        templateOutputs = template.generateOutputs(Collections.<String, List<Object>> emptyMap());
+                        templateOutputs = template.generateOutputs(Collections.<String, List<Object>> emptyMap(), monitor);
 
                         IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 
@@ -357,7 +357,7 @@ public class WorkspacePreviewPage extends WizardPage {
         super.setVisible(visible);
         if (visible) {
             try {
-                getContainer().run(true, false, calculatePreviewTask);
+                getContainer().run(true, true, calculatePreviewTask);
             } catch (InvocationTargetException e) {
                 errorMessage = e.getTargetException().getMessage();
             } catch (InterruptedException e) {

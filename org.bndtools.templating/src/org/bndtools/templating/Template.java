@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Version;
 import org.osgi.service.metatype.ObjectClassDefinition;
@@ -45,9 +46,19 @@ public interface Template extends Closeable {
     ObjectClassDefinition getMetadata() throws Exception;
 
     /**
+     * Get the definition of required and optional parameters.
+     */
+    ObjectClassDefinition getMetadata(IProgressMonitor monitor) throws Exception;
+
+    /**
      * Generate the output resources.
      */
     ResourceMap generateOutputs(Map<String,List<Object>> parameters) throws Exception;
+
+    /**
+     * Generate the output resources.
+     */
+    ResourceMap generateOutputs(Map<String,List<Object>> parameters, IProgressMonitor monitor) throws Exception;
 
     /**
      * An icon representing the template, or null if not available.
