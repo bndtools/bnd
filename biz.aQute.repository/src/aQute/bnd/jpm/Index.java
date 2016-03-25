@@ -209,7 +209,11 @@ public class Index {
 	}
 
 	public void save() throws Exception {
-		if (dirty)
+		save(false);
+	}
+
+	void save(boolean force) throws Exception {
+		if (dirty || force)
 			save(indexFile);
 		dirty = false;
 	}
