@@ -2,6 +2,7 @@ package aQute.bnd.jpm;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
@@ -10,6 +11,7 @@ import org.osgi.service.indexer.impl.util.Hex;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
+import aQute.service.library.Library.RevisionRef;
 import junit.framework.TestCase;
 
 public class JPMTest extends TestCase {
@@ -59,4 +61,15 @@ public class JPMTest extends TestCase {
 
 		assertEquals(new Version("2.3.0.201404170725"), versions.iterator().next());
 	}
+
+	public void testDropUrl() throws Exception {
+		repo.dropTarget(IO.getFile("testdata/ws/cnf/jar/biz.aQute.bnd.annotation-2.3.0.jar").toURI());
+		assertFalse("index should not be dirty after drop", repo.index.isDirty());
+
+		// Read the index, check only one resource with one mirror URL is listed
+		List<RevisionRef> refs = new Index(IO.getFile(tmp, "index")).getRevisionRefs();
+		assertEquals(1, refs.size());
+		assertEquals(1, refs.get(0).urls.size());
+	}
+
 }

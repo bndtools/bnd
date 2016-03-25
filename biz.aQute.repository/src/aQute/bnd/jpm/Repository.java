@@ -1660,7 +1660,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				getLocal(ref, null, new LocalDownloadListener());
 			}
 		}
-		index.save(indexFile);
+		index.save();
 	}
 
 	/**
