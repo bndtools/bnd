@@ -1660,7 +1660,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				getLocal(ref, null, new LocalDownloadListener());
 			}
 		}
-		index.save(indexFile);
+		index.save();
 	}
 
 	/**
@@ -1760,7 +1760,8 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			Library.RevisionRef resource = index.getRevisionRef(ref.revision);
 			if (resource != null) {
 				resource.urls.add(uri);
-				index.save();
+				// we know that we modified a resource so the index is dirty
+				index.save(true);
 				reporter.trace("resource already loaded " + uri);
 				return true;
 			}

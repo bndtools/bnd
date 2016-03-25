@@ -209,7 +209,11 @@ public class Index {
 	}
 
 	public void save() throws Exception {
-		if (dirty)
+		save(false);
+	}
+
+	void save(boolean force) throws Exception {
+		if (dirty || force)
 			save(indexFile);
 		dirty = false;
 	}
@@ -236,7 +240,8 @@ public class Index {
 		return null;
 	}
 
-	public List<RevisionRef> getRevisionRefs() {
+	public List<RevisionRef> getRevisionRefs() throws Exception {
+		init();
 		List<RevisionRef> refs = new ArrayList<Library.RevisionRef>();
 		for (SortedMap<Version, ? extends RevisionRef> list : cache.values()) {
 			refs.addAll(list.values());
