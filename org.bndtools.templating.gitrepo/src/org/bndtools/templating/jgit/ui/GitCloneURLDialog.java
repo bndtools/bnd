@@ -3,6 +3,8 @@ package org.bndtools.templating.jgit.ui;
 import java.net.URISyntaxException;
 
 import org.bndtools.templating.jgit.GitCloneTemplateParams;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jgit.transport.URIish;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -64,10 +66,15 @@ public class GitCloneURLDialog extends AbstractNewEntryDialog {
 
         new Label(container, SWT.NONE).setText("Branch:");
         txtBranch = new Text(container, SWT.BORDER);
-        txtBranch.setMessage(GitCloneTemplateParams.DEFAULT_BRANCH);
+        txtBranch.setMessage("default: " + GitCloneTemplateParams.DEFAULT_BRANCH);
         txtBranch.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
         if (branch != null)
             txtBranch.setText(branch);
+
+        ControlDecoration branchDecor = new ControlDecoration(txtBranch, SWT.LEFT, container);
+        branchDecor.setDescriptionText("Specify the branch, tag or commit ID you would like to clone from the\nrepository. The default is 'origin/master'.");
+        branchDecor.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
+        branchDecor.setShowHover(true);
 
         ModifyListener modifyListener = new ModifyListener() {
             @Override

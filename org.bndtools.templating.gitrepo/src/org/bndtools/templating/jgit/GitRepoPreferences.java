@@ -9,6 +9,8 @@ import aQute.bnd.header.Parameters;
 
 public class GitRepoPreferences {
 
+    public static final String INITIAL_GITHUB_REPOS = "osgi/workspace, bndtools/workspace;branch=OSGi_R6";
+
     private static final String PREF_GITHUB_REPOS = "githubRepos";
     private static final String PREF_GIT_REPOS = "gitRepos";
 
@@ -18,8 +20,7 @@ public class GitRepoPreferences {
     public GitRepoPreferences() {
         store = new ScopedPreferenceStore(InstanceScope.INSTANCE, bundle.getSymbolicName());
 
-        store.setDefault(PREF_GITHUB_REPOS, "osgi/workspace");
-        store.setDefault(PREF_GIT_REPOS, "https://github.com/osgi/workspace.git; name='OSGi enRoute'");
+        store.setDefault(PREF_GITHUB_REPOS, INITIAL_GITHUB_REPOS);
     }
 
     public Parameters getGithubRepos() {

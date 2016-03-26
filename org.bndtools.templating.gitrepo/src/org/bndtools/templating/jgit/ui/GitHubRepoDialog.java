@@ -12,6 +12,8 @@ import org.bndtools.utils.jface.ProgressRunner;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -75,6 +77,11 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
         txtBranch.setMessage("default branch");
         if (branch != null)
             txtBranch.setText(branch);
+
+        ControlDecoration branchDecor = new ControlDecoration(txtBranch, SWT.LEFT, container);
+        branchDecor.setDescriptionText("Specify the branch, tag or commit ID you would like to clone from the\nrepository. We use the default branch specified in GitHub settings.");
+        branchDecor.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
+        branchDecor.setShowHover(true);
 
         final Button btnValidate = new Button(container, SWT.PUSH);
         btnValidate.setText("Validate");
