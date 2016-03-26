@@ -11,5 +11,6 @@ public class GitCloneTemplateParams {
     String name;
     String category;
     URI iconUri;
+    URI helpUri;
 
 }

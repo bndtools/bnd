@@ -145,7 +145,7 @@ public class GitCloneTemplate implements Template {
 
     @Override
     public URI getHelpContent() {
-        return null;
+        return params.helpUri;
     }
 
     private static ResourceMap toResourceMap(File baseDir, FileFilter filter) {
