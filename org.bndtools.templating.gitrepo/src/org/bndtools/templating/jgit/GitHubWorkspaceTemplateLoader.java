@@ -22,6 +22,7 @@ import org.osgi.util.promise.Success;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.lib.base64.Base64;
 import aQute.service.reporter.Reporter;
 
 @Component(name = "org.bndtools.core.templating.workspace.github", property = {
@@ -59,7 +60,7 @@ public class GitHubWorkspaceTemplateLoader implements TemplateLoader {
             final Attrs attribs = entry.getValue();
 
             try {
-                GitHub gitHub = new GitHub(cache, executor);
+                final GitHub gitHub = new GitHub(cache, executor);
                 promises.add(gitHub.loadRepoDetails(repo).then(new Success<GithubRepoDetailsDTO,Template>() {
                     @Override
                     public Promise<Template> call(Promise<GithubRepoDetailsDTO> resolved) throws Exception {
@@ -77,7 +78,7 @@ public class GitHubWorkspaceTemplateLoader implements TemplateLoader {
                         if (name == null)
                             name = repo;
                         String branch = attribs.get("branch");
-                        GitCloneTemplateParams params = new GitCloneTemplateParams();
+                        final GitCloneTemplateParams params = new GitCloneTemplateParams();
                         params.cloneUrl = detailsDTO.clone_url;
                         if (branch != null)
                             params.branch = branch;
@@ -87,9 +88,13 @@ public class GitHubWorkspaceTemplateLoader implements TemplateLoader {
                         params.category = "GitHub";
                         params.iconUri = avatarUri;
 
-                        Template template = new GitCloneTemplate(params);
-                        return Promises.resolved(template);
+                        if (detailsDTO.html_url != null) {
+                            params.helpUri = createHelpUri(repo, detailsDTO.html_url);
+                        }
+
+                        return Promises.<Template> resolved(new GitCloneTemplate(params));
                     }
+
                 }));
             } catch (Exception e) {
                 reporter.exception(e, "Error loading template from Github repository %s", repo);
@@ -97,6 +102,16 @@ public class GitHubWorkspaceTemplateLoader implements TemplateLoader {
         }
 
         return Promises.all(promises);
+    }
+
+    private static URI createHelpUri(String repoName, String linkUri) {
+        try {
+            String formText = String.format("<form><p>This is a GitHub template using the repository %s. See the <a href='%s'>project homepage</a> for more information.</p></form>", repoName, new URI(linkUri));
+            String encodedFormText = Base64.encodeBase64(formText.getBytes("UTF-8"));
+            return new URI("data:text/xml;base64," + encodedFormText);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 }

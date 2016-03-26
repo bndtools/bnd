@@ -5,8 +5,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.osgi.framework.internal.core.Constants;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
@@ -26,8 +28,22 @@ public final class ResourceUtils {
         List<Capability> caps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
         if (caps == null || caps.isEmpty())
             throw new IllegalArgumentException("Resource has no identity");
-        if (caps.size() > 1)
-            throw new IllegalArgumentException("Resource is schizophrenic");
+        if (caps.size() > 1) {
+            // Remove the alias identity "system.bundle"
+            List<Capability> filtered = new ArrayList<>(caps.size());
+            List<String> ids = new ArrayList<>(caps.size());
+            for (Capability cap : caps) {
+                String id = getIdentity(cap);
+                if (!Constants.SYSTEM_BUNDLE_SYMBOLICNAME.equals(id)) {
+                    filtered.add(cap);
+                    ids.add(id);
+                }
+            }
+            caps = filtered;
+
+            if (caps.size() > 1)
+                throw new IllegalArgumentException("Resource is has multiple identity capabilities: " + ids);
+        }
         return caps.get(0);
     }
 

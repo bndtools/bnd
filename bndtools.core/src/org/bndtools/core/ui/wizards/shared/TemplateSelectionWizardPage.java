@@ -236,6 +236,16 @@ public class TemplateSelectionWizardPage extends WizardPage {
                 }
             }
         });
+        txtDescription.getFormText().addHyperlinkListener(new HyperlinkAdapter() {
+            @Override
+            public void linkActivated(HyperlinkEvent ev) {
+                try {
+                    PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL((String) ev.getHref()));
+                } catch (Exception ex) {
+                    log.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Browser open error", ex));
+                }
+            }
+        });
     }
 
     private class LoadTemplatesJob implements IRunnableWithProgress {

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.io.IO;
 
 public class RepoPluginsBundleLocator implements BundleLocator {
 
@@ -32,7 +33,14 @@ public class RepoPluginsBundleLocator implements BundleLocator {
                 // ignore
             }
         }
-        return null;
+
+        // Fall back to direct download
+        // TODO: need some kind of download/cache service to avoid repeated downloads
+        File tempFile = File.createTempFile("download", "jar");
+        tempFile.deleteOnExit();
+
+        IO.copy(location.toURL(), tempFile);
+        return tempFile;
     }
 
 }
