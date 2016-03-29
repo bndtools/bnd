@@ -113,6 +113,12 @@ public class BndMavenPlugin extends AbstractMojo {
 			loadProjectProperties(builder, project);
 			builder.setProperty("project.output", targetDir.getCanonicalPath());
 
+			// If no bundle to be built, we have nothing to do
+			if (Builder.isTrue(builder.getProperty(Constants.NOBUNDLES))) {
+				log.debug(Constants.NOBUNDLES + ": true");
+				return;
+			}
+
 			// Reject sub-bundle projects
 			List<Builder> subs = builder.getSubBuilders();
 			if ((subs.size() != 1) || !builder.equals(subs.get(0))) {
