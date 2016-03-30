@@ -14,6 +14,7 @@ import java.util.Set;
 import org.bndtools.core.ui.wizards.shared.TemplateSelectionWizardPage;
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
+import org.bndtools.templating.Template;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
@@ -43,7 +44,6 @@ import bndtools.Plugin;
 public class WorkspaceSetupWizard extends Wizard implements IWorkbenchWizard {
 
     private IWorkbench workbench;
-    private IStructuredSelection selection;
 
     private WorkspaceSetupWizardPage setupPage;
     private TemplateSelectionWizardPage templatePage;
@@ -56,7 +56,6 @@ public class WorkspaceSetupWizard extends Wizard implements IWorkbenchWizard {
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.workbench = workbench;
-        this.selection = selection;
 
         setupPage = new WorkspaceSetupWizardPage();
         updateSetupPageForExistingProjects();
@@ -74,7 +73,8 @@ public class WorkspaceSetupWizard extends Wizard implements IWorkbenchWizard {
         templatePage.addPropertyChangeListener(TemplateSelectionWizardPage.PROP_TEMPLATE, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                previewPage.setTemplate(templatePage.getTemplate());
+                Template template = templatePage.getTemplate();
+                previewPage.setTemplate(template);
             }
         });
     }
