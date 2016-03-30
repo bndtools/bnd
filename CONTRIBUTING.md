@@ -1,24 +1,24 @@
-# Contributing to bnd
+# Contributing to Bnd
 
-Want to hack on bnd? Here are instructions to get you
+Want to hack on Bnd? Here are instructions to get you
 started. They are probably not perfect, please let us know if anything
 feels wrong or incomplete.
 
 ## Reporting Issues
 
 When reporting [issues](https://github.com/bndtools/bnd/issues) 
-on GitHub please include the version of bnd you are using, `bnd version`,
+on GitHub please include the version of Bnd you are using, `bnd version`,
 as well as the version of Java, `java -version`, and your OS. Also, please
-provide the `Git-SHA` and `Git-Descriptor` headers from the bnd jar file.
+provide the `Git-SHA` and `Git-Descriptor` headers from the Bnd jar file.
 Please include the steps required to reproduce the problem if possible and applicable.
 This information will help us review and fix your issue faster.
 
 ## Build Environment
 
-The only thing you need to build bnd is Java. We use Java 7 but most
+The only thing you need to build Bnd is Java. We use Java 7 but most
 projects only require Java 6. We use Gradle to build and the repo 
 includes `gradlew`. You can use your system `gradle` but we require 
-at least version 2.8.
+at least version 2.12.
 
 `./gradlew`              - Assembles, tests and releases the projects into dist/bundles  
 `./gradlew :dist:build`  - Assembles and tests the projects  
@@ -30,15 +30,15 @@ We use [Travis CI](https://travis-ci.org/bndtools/bnd) and the repo includes a
 ## Workflow
 
 We use [git triangular workflow](https://www.sociomantic.com/blog/2014/05/git-triangular-workflow/).
-This means that no one, not even the bnd maintainers, push contributions directly into the [main bnd
+This means that no one, not even the Bnd maintainers, push contributions directly into the [main Bnd
 repo](https://github.com/bndtools/bnd). All contribution come in through pull requests.
-So each contribtor will need to [fork the main bnd repo](https://github.com/bndtools/bnd/fork)
+So each contributor will need to [fork the main Bnd repo](https://github.com/bndtools/bnd/fork)
 on GitHub. All contributions are made as commits to your fork. Then you submit a
-pull request to have them considered for merging into the main bnd repo.
+pull request to have them considered for merging into the main Bnd repo.
 
 ### Setting up the triangular workflow
 
-After forking the main bnd repo on GitHub, you can clone the main repo to your system:
+After forking the main Bnd repo on GitHub, you can clone the main repo to your system:
 
     git clone https://github.com/bndtools/bnd.git
 
@@ -79,10 +79,10 @@ If your pull request is not accepted on the first try, don't be
 discouraged! If there's a problem with the implementation, hopefully you
 received feedback on what to improve.
 
-We're trying very hard to keep bnd lean and focused. We don't want it
+We're trying very hard to keep Bnd lean and focused. We don't want it
 to do everything for everybody. This means that we might decide against
 incorporating a new feature. However, there might be a way to implement
-that feature *on top of* bnd.
+that feature *on top of* Bnd.
 
 ### Create issues...
 
@@ -210,7 +210,7 @@ There are some exceptions to the signing requirement. Currently these are:
 
 ### Merge approval
 
-The bnd maintainers will review your pull request and, if approved, will merge into
+The Bnd maintainers will review your pull request and, if approved, will merge into
 the main repo.
 
 ### How can I become a maintainer?
