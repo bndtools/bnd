@@ -1,4 +1,9 @@
-# Gradle Plugin for Workspace Builds
+
+# bnd Gradle Plugin
+
+bnd Gradle Plugin can be used for Workspace and non-Workspace Builds
+
+## Gradle Plugin for Workspace Builds
 
 Bnd includes a [bnd Gradle plugin][17] for [Gradle][1] users to build
 bnd projects in Workspace builds. The [`biz.aQute.bnd.gradle`][2] jar
@@ -118,7 +123,7 @@ example property name `foo`, you can use the [`bnd` function][15],
 `bnd.foo`. To access Bnd properties without any macro processing you can
 use the [`bndUnprocessed` function][15], `bndUnprocessed('foo', 'defaultValue')`.
 
-# Gradle Plugin for non-Workspace Builds
+## Gradle Plugin for non-Workspace Builds
 
 Sometimes developers want to build bundles but they don't use a full Bnd
 Workspace based build environment! Go figure?!
