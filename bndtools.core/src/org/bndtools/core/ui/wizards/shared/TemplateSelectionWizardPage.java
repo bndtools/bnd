@@ -211,7 +211,7 @@ public class TemplateSelectionWizardPage extends WizardPage {
                 setTemplate(element instanceof Template ? (Template) element : null);
                 getContainer().updateButtons();
                 IWizardPage nextPage = getNextPage();
-                if (nextPage != null)
+                if (nextPage != null && selected != null)
                     getContainer().showPage(nextPage);
             }
         });

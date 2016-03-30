@@ -23,6 +23,8 @@ import java.util.Map.Entry;
 import org.bndtools.api.ProjectLayout;
 import org.bndtools.api.ProjectPaths;
 import org.bndtools.core.ui.wizards.shared.BuiltInTemplate;
+import org.bndtools.core.ui.wizards.shared.ISkippableWizardPage;
+import org.bndtools.core.ui.wizards.shared.TemplateParamsWizardPage;
 import org.bndtools.core.ui.wizards.shared.TemplateSelectionWizardPage;
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
@@ -41,6 +43,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
 
 import aQute.bnd.build.Project;
@@ -53,6 +56,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
     public static final String EMPTY_TEMPLATE_NAME = "\u00abEmpty\u00bb";
 
     private TemplateSelectionWizardPage templatePage;
+    private TemplateParamsWizardPage paramsPage;
 
     NewBndProjectWizard(final NewBndProjectWizardPageOne pageOne, final NewJavaProjectWizardPageTwo pageTwo) {
         super(pageOne, pageTwo);
@@ -69,10 +73,14 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
         templatePage = new TemplateSelectionWizardPage("projectTemplateSelection", "project", baseTemplate);
         templatePage.setTitle("Select Project Template");
 
+        paramsPage = new TemplateParamsWizardPage(ProjectTemplateParam.valueStrings());
+
         templatePage.addPropertyChangeListener(TemplateSelectionWizardPage.PROP_TEMPLATE, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                pageOne.setTemplate(templatePage.getTemplate());
+                Template template = templatePage.getTemplate();
+                pageOne.setTemplate(template);
+                paramsPage.setTemplate(template);
             }
         });
     }
@@ -81,6 +89,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
     public void addPages() {
         addPage(templatePage);
         addPage(pageOne);
+        addPage(paramsPage);
         addPage(pageTwo);
     }
 
@@ -146,6 +155,11 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
         Map<String,String> params_ = new HashMap<>();
         for (Entry<ProjectTemplateParam,String> entry : params.entrySet())
             params_.put(entry.getKey().getString(), entry.getValue());
+
+        Map<String,String> editedParams = paramsPage.getValues();
+        for (Entry<String,String> editedEntry : editedParams.entrySet()) {
+            params_.put(editedEntry.getKey(), editedEntry.getValue());
+        }
         return params_;
     }
 
@@ -199,6 +213,28 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
             String message = MessageFormat.format("Error generating project contents from template \"{0}\".", template != null ? template.getName() : "<null>");
             ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, e));
         }
+    }
+
+    @Override
+    public IWizardPage getPreviousPage(IWizardPage page) {
+        IWizardPage prev = super.getPreviousPage(page);
+        if (prev instanceof ISkippableWizardPage) {
+            if (((ISkippableWizardPage) prev).shouldSkip()) {
+                return getPreviousPage(prev);
+            }
+        }
+        return prev;
+    }
+
+    @Override
+    public IWizardPage getNextPage(IWizardPage page) {
+        IWizardPage next = super.getNextPage(page);
+        if (next instanceof ISkippableWizardPage) {
+            if (((ISkippableWizardPage) next).shouldSkip()) {
+                return getNextPage(next);
+            }
+        }
+        return next;
     }
 
 }

@@ -1,6 +1,5 @@
 package org.bndtools.templating.engine.st;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -13,6 +12,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -26,6 +26,9 @@ import org.bndtools.templating.TemplateEngine;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.osgi.service.component.annotations.Component;
+import org.stringtemplate.v4.AutoIndentWriter;
+import org.stringtemplate.v4.InstanceScope;
+import org.stringtemplate.v4.Interpreter;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.compiler.CompiledST;
@@ -99,69 +102,31 @@ public class StringTemplateEngine implements TemplateEngine {
 
         // Assemble a mapping properties file of outputPath=sourcePath
         String mappingTemplate = loadMappingTemplate(inputs, settings, stg);
-        Properties contentProps = new Properties();
-        contentProps.load(new StringReader(mappingTemplate));
+        extractAttrs(compile(stg, "_mapping", new StringResource(mappingTemplate)), names);
 
         // Iterate the entries
+        Properties contentProps = new Properties();
+        contentProps.load(new StringReader(mappingTemplate));
         @SuppressWarnings("unchecked")
         Enumeration<String> contentEnum = (Enumeration<String>) contentProps.propertyNames();
         while (contentEnum.hasMoreElements()) {
             String outputPath = contentEnum.nextElement().trim();
-            collectTemplateParamNames(names, outputPath, settings);
-
             String sourcePath = contentProps.getProperty(outputPath);
+
+            Resource source = inputs.get(sourcePath);
+            if (source == null)
+                throw new RuntimeException(String.format("Internal error in template engine: could not find input resource '%s'", sourcePath));
+
             if (settings.ignore == null || !settings.ignore.matches(sourcePath)) {
-                if (settings.preprocessMatch.matches(sourcePath)) {
-                    Resource resource = inputs.get(sourcePath);
-                    if (resource != null && resource.getType() == ResourceType.File) {
-                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getContent(), resource.getTextEncoding()))) {
-                            String line = reader.readLine();
-                            while (line != null) {
-                                collectTemplateParamNames(names, line, settings);
-                                line = reader.readLine();
-                            }
-                        }
+                if (source.getType() == ResourceType.File) {
+                    if (settings.preprocessMatch.matches(sourcePath)) {
+                        extractAttrs(compile(stg, sourcePath, source), names);
                     }
                 }
             }
         }
 
         return names;
-    }
-
-    private void collectTemplateParamNames(Set<String> names, String input, TemplateSettings settings) {
-        StringBuilder builder = new StringBuilder();
-
-        boolean inParamName = false;
-        boolean inEscape = false;
-
-        for (int i = 0; i < input.length(); i++) {
-            char c = input.charAt(i);
-
-            if (inEscape) {
-                if (inParamName)
-                    builder.append(c);
-                inEscape = false;
-            } else {
-                if (c == '\\')
-                    inEscape = true;
-                else if (inParamName) {
-                    if (c == settings.rightDelim) {
-                        // Completed a name. Add it to the result.
-                        names.add(builder.toString());
-                        inParamName = false;
-                    } else {
-                        builder.append(c);
-                    }
-                } else {
-                    if (c == settings.leftDelim) {
-                        // Starting a name. Reset the StringBuilder.
-                        builder.setLength(0);
-                        inParamName = true;
-                    }
-                }
-            }
-        }
     }
 
     @Override
@@ -176,7 +141,7 @@ public class StringTemplateEngine implements TemplateEngine {
 
         // Assemble a mapping properties file of outputPath=sourcePath
         String mappingTemplate = loadMappingTemplate(inputs, settings, stg);
-        String renderedMapping = compileAndRender(stg, "_mapping", new StringResource(mappingTemplate), parameters);
+        String renderedMapping = render(compile(stg, "_mapping", new StringResource(mappingTemplate)), parameters);
 
         Properties contentProps = new Properties();
         contentProps.load(new StringReader(renderedMapping));
@@ -199,7 +164,7 @@ public class StringTemplateEngine implements TemplateEngine {
                     output = source;
                 } else if (settings.preprocessMatch.matches(sourceName)) {
                     // This file is a candidate for preprocessing with ST
-                    String rendered = compileAndRender(stg, sourceName, source, parameters);
+                    String rendered = render(compile(stg, sourceName, source), parameters);
                     output = new StringResource(rendered);
                 } else {
                     // This file should be directly copied
@@ -277,7 +242,28 @@ public class StringTemplateEngine implements TemplateEngine {
         }
     }
 
-    private String compileAndRender(STGroup group, String name, Resource resource, Map<String,List<Object>> params) throws Exception {
+    private void extractAttrs(ST st, final Collection< ? super String> attrs) throws Exception {
+        Interpreter interpreter = new Interpreter(st.groupThatCreatedThisInstance, Locale.getDefault(), true) {
+            @Override
+            public Object getAttribute(InstanceScope scope, String name) {
+                attrs.add(name);
+                return "X";
+            }
+        };
+        StringWriter writer = new StringWriter();
+        interpreter.exec(new AutoIndentWriter(writer), new InstanceScope(null, st));
+    }
+
+    private String render(ST st, Map<String,List<Object>> params) throws Exception {
+        for (Entry<String,List<Object>> entry : params.entrySet()) {
+            for (Object value : entry.getValue()) {
+                st.add(entry.getKey(), value);
+            }
+        }
+        return st.render();
+    }
+
+    private ST compile(STGroup group, String name, Resource resource) throws Exception {
         ErrorBuffer errors = new ErrorBuffer();
         group.setListener(errors);
 
@@ -292,13 +278,7 @@ public class StringTemplateEngine implements TemplateEngine {
 
         if (st == null)
             throw new Exception("Template name not loaded: " + name);
-
-        for (Entry<String,List<Object>> entry : params.entrySet()) {
-            for (Object value : entry.getValue()) {
-                st.add(entry.getKey(), value);
-            }
-        }
-        return st.render();
+        return st;
     }
 
     static String escapeDelimiters(String string, TemplateSettings settings) {

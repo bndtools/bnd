@@ -15,4 +15,13 @@ public enum ProjectTemplateParam {
         return string;
     }
 
+    public static String[] valueStrings() {
+        ProjectTemplateParam[] vals = values();
+        String[] strings = new String[vals.length];
+        for (int i = 0; i < vals.length; i++) {
+            strings[i] = vals[i].getString();
+        }
+        return strings;
+    }
+
 }
