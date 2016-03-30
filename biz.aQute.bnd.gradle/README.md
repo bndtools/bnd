@@ -196,8 +196,10 @@ bundle will not be very interesting.
 ### configuration
 
 This is the Configuration object to use as the classpath for the Bnd
-builder. The default value is the `project.configurations.compile`
-Configuration. You will only need to specify this property if you want
+builder. The default value is the `project.configurations.compileClasspath`
+Configuration (or the `project.configurations.compile` Configuration in
+Gradle versions prior to 2.12).
+You will only need to specify this property if you want
 to use a different Configuration for the classpath or the default
 Configuration does not exist.
 

@@ -244,7 +244,8 @@ public class BndPlugin implements Plugin<Project> {
           }
           /* project dependencies' artifacts should trigger jar task */
           inputs.files {
-            configurations.compile.dependencies.withType(ProjectDependency.class).collect {
+            def configuration = configurations.findByName('compileClasspath') ?: configurations.compile
+            configuration.dependencies.withType(ProjectDependency.class).collect {
               it.dependencyProject.jar
             }
           }

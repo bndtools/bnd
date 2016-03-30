@@ -11,7 +11,7 @@
  * This defaults to 'bnd.bnd' in the projectDir. The bndfile does not need
  * to exist. It supersedes any information in the jar task's manifest.</li>
  * <li>configuration - This is the Configuration to use for the buildpath
- * for the bnd builder. It defaults to the 'compile' Configuration.</li>
+ * for the bnd builder. It defaults to the 'compileClasspath' Configuration.</li>
  * <li>sourceSet - This is the SourceSet to use for the sourcepath for the
  * bnd builder. It defaults to the 'main' SourceSet.</li>
  * </ul>
@@ -72,7 +72,7 @@ class BundleTaskConvention {
    */
   public Configuration getConfiguration() {
     if (configuration == null) {
-      setConfiguration(task.project.configurations.compile)
+      setConfiguration(task.project.configurations.findByName('compileClasspath') ?: task.project.configurations.compile)
     }
     return configuration
   }
