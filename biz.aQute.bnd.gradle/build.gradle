@@ -15,6 +15,13 @@ dependencies {
     compileOnly 'org.gradle:gradle-native:2.0'
     compileOnly 'org.codehaus.groovy:groovy-all:2.3.3'
     compileOnly 'org.slf4j:slf4j-api:1.7.5'
+
+    testCompile gradleTestKit()
+    testCompile('org.spockframework:spock-core:1.0-groovy-2.4')  {
+        exclude module: 'groovy-all'
+    }
+    testCompile localGroovy()
+    testCompile gradleApi()
 }
 
 sourceSets {
@@ -31,4 +38,17 @@ apply from: cnf.file('gradle/maven-artifacts.gradle')
 javadocJar {
   dependsOn groovydoc
   from groovydoc.destinationDir
+}
+
+test {
+    def source = file('testresources')
+    def target = file("${buildDir}/testresources")
+    inputs.dir source
+    doFirst { // copy test resources into build dir
+        project.delete(target)
+        copy {
+            from source
+            into target
+        }
+    }
 }
