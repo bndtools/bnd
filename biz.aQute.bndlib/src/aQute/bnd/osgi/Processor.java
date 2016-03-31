@@ -41,6 +41,9 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -80,6 +83,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	boolean							pedantic;
 	boolean							trace;
+	private final Logger			logger				= LoggerFactory.getLogger(getClass().getName());
 	boolean							exceptions;
 	boolean							fileMustExist		= true;
 
@@ -763,10 +767,21 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		fixupMessages = false;
 	}
 
+	public Logger getLogger() {
+		return logger;
+	}
+
 	public void trace(String msg, Object... parms) {
 		Processor p = current();
+		Logger l = p.getLogger();
 		if (p.trace) {
-			System.err.printf("# " + msg + "%n", parms);
+			if (l.isInfoEnabled()) {
+				l.info(String.format(msg, parms));
+			}
+		} else {
+			if (l.isDebugEnabled()) {
+				l.debug(String.format(msg, parms));
+			}
 		}
 	}
 
