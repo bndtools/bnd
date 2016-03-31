@@ -41,6 +41,7 @@ javadocJar {
 }
 
 test {
+    dependsOn jar
     def source = file('testresources')
     def target = file("${buildDir}/testresources")
     inputs.dir source
