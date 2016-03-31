@@ -7,7 +7,6 @@
              biz.aQute.bnd.test, \
              biz.aQute.bnd.testextension, \
              biz.aQute.bnd.gradle, \
-             biz.aQute.bnd.gradle.tests, \
              biz.aQute.bndlib, \
              biz.aQute.bndlib.tests, \
              biz.aQute.bndlib.comm.tests, \

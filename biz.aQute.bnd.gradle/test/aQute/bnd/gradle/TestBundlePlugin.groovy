@@ -13,7 +13,7 @@ class TestBundlePlugin extends Specification {
     List<File> pluginClasspath
 
     def setup() {
-      File plugin = new File('../biz.aQute.bnd.gradle/generated/biz.aQute.bnd.gradle.jar').getCanonicalFile()
+      File plugin = new File('generated/biz.aQute.bnd.gradle.jar').getCanonicalFile()
       assert plugin.isFile()
       pluginClasspath = Collections.singletonList(plugin)
     }
