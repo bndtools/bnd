@@ -4,11 +4,13 @@
 -buildpath: biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
 	osgi.core;version=4.3.1,\
+	slf4j.api,\
 	ee.j2se;version=${javac.compliance}
 
 -testpath: \
 	${junit},\
-	biz.aQute.bnd.annotation;version=project
+	biz.aQute.bnd.annotation;version=project,\
+	slf4j.simple
 
 Launcher-Plugin: aQute.launcher.plugin.ProjectLauncherImpl
 

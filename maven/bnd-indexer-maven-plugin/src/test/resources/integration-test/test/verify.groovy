@@ -14,7 +14,6 @@ public Repository check(String xmlFile, String gzipFile, int size, boolean local
 	
 	// Load repository
 	XMLResourceParser xrp = new XMLResourceParser(xml.toURI());
-	xrp.setTrace(true);
 	List<Resource> resources = xrp.parse();
 	assert xrp.check();
 	assert resources != null;

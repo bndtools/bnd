@@ -15,11 +15,13 @@
     osgi.annotation;version=6.0.1,\
 	osgi.core;version=@5,\
 	osgi.cmpn;version=@5,\
+	slf4j.api,\
 	${junit},\
 	${mockito}
 
 -testpath: \
-    biz.aQute.repository;version=snapshot
+    biz.aQute.repository;version=snapshot,\
+    slf4j.simple
 
 -runtrace: true
 

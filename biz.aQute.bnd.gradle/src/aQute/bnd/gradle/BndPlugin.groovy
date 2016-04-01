@@ -54,10 +54,6 @@ public class BndPlugin implements Plugin<Project> {
       if (bndProject == null) {
         throw new GradleException("Unable to load bnd project ${name} from workspace ${rootDir}")
       }
-      if (logger.isDebugEnabled()) {
-        bndProject.setTrace(true)
-        logging.captureStandardError LogLevel.DEBUG
-      }
       bndProject.prepare();
       if (!bndProject.isValid()) {
         checkErrors(logger)
@@ -230,7 +226,6 @@ public class BndPlugin implements Plugin<Project> {
         deleteAllActions() /* Replace the standard task actions */
         enabled !bndProject.isNoBundles()
         if (enabled) {
-          logging.captureStandardError project.logging.standardErrorCaptureLevel
           /* bnd can include any class on the buildpath */
           inputs.files compilePath().collect {
             it.file ? it : fileTree(it)
@@ -274,7 +269,6 @@ public class BndPlugin implements Plugin<Project> {
         group 'release'
         enabled !bndProject.isNoBundles() && !bnd(Constants.RELEASEREPO, 'unset').empty
         if (enabled) {
-          logging.captureStandardError project.logging.standardErrorCaptureLevel
           inputs.files jar
           doLast {
             try {
@@ -305,7 +299,6 @@ public class BndPlugin implements Plugin<Project> {
         enabled !parseBoolean(bnd(Constants.NOJUNITOSGI, 'false')) && !bndUnprocessed(Constants.TESTCASES, '').empty
         ext.ignoreFailures = false
         if (enabled) {
-          logging.captureStandardError project.logging.standardErrorCaptureLevel
           inputs.files jar
           outputs.dir testResultsDir
           doLast {
@@ -348,7 +341,6 @@ public class BndPlugin implements Plugin<Project> {
               description "Export the ${bndrun}.bndrun file to an executable jar."
               dependsOn assemble
               group 'export'
-              logging.captureStandardError project.logging.standardErrorCaptureLevel
               def executableJar = new File(distsDir, "executable/${bndrun}.jar")
               doFirst {
                 project.mkdir(executableJar.parent)
@@ -386,7 +378,6 @@ public class BndPlugin implements Plugin<Project> {
               description "Create a distribution of the runbundles in the ${bndrun}.bndrun file."
               dependsOn assemble
               group 'export'
-              logging.captureStandardError project.logging.standardErrorCaptureLevel
               def runbundlesDir = new File(distsDir, "runbundles/${bndrun}")
               doFirst {
                 project.delete(runbundlesDir)

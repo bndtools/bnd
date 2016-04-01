@@ -54,7 +54,8 @@ Conditional-Package:	        aQute.service.*, aQute.configurable
 	aQute.libg;version=project, \
 	org.osgi.util.function;version=1, \
 	org.osgi.util.promise;version=1,\
-	biz.aQute.bnd.annotation;version=project
+	biz.aQute.bnd.annotation;version=project,\
+	slf4j.api
 
 Import-Package: junit.framework;resolution:=optional,\
 	org.osgi.resource;resolution:=optional,\
