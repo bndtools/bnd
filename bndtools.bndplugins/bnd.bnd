@@ -9,6 +9,8 @@
 	org.osgi.impl.bundle.bindex;packages=org.osgi.impl.bundle.bindex
 	
 -testpath: \
+	slf4j.api,\
+	slf4j.simple,\
 	${junit}
 
 -sub: *.bnd
