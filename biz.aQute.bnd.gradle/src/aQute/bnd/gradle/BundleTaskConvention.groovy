@@ -103,10 +103,6 @@ class BundleTaskConvention {
     task.configure {
       // create Builder and set trace level from gradle
       new Builder().withCloseable { builder ->
-        if (logger.isDebugEnabled()) {
-          builder.setTrace(true)
-          logging.captureStandardError LogLevel.DEBUG
-        }
         // load bnd properties
         File temporaryBndFile = File.createTempFile('bnd', '.bnd', temporaryDir)
         temporaryBndFile.withWriter('UTF-8') { writer ->
