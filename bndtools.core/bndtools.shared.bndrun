@@ -76,6 +76,8 @@ crossplatform.bundles: \
 	javax.inject,\
 	javax.xml,\
 	javax.xml.stream,\
+	slf4j.api,\
+	slf4j.simple,\
 	org.apache.batik.css,\
 	org.apache.batik.util,\
 	org.apache.batik.util.gui,\
