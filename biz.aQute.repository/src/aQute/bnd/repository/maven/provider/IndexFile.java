@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -304,7 +306,7 @@ class IndexFile {
 		return descriptor;
 	}
 
-	private void saveIndexFile() throws IOException {
+	private void saveIndexFile() throws Exception {
 		File tmp = new File(indexFile.getParentFile(), indexFile.getName() + ".tmp");
 		try (PrintWriter pw = new PrintWriter(tmp);) {
 			List<Archive> archives = new ArrayList<>(this.descriptors.keySet());
@@ -313,8 +315,8 @@ class IndexFile {
 				pw.println(archive);
 			}
 		}
-		if (!tmp.renameTo(indexFile))
-			throw new IOException("Cannot rename " + tmp + " " + indexFile);
+		Files.move(tmp.toPath(), indexFile.toPath(), 
+				StandardCopyOption.REPLACE_EXISTING);
 
 		lastModified = indexFile.lastModified();
 	}
