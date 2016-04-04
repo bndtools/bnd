@@ -88,7 +88,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	public Release release(final Revision revision) throws Exception {
 		reporter.trace("Release %s to %s", revision, this);
 		final File target = toLocalFile(revision.path);
-		final File temp = IO.createTempFile(base, revision.toString(), ".tmp");
+		final File temp = IO.createTempFile(base, IO.toSafeFileName(revision.toString()), ".tmp");
 		temp.mkdirs();
 		Releaser r = revision.isSnapshot() ? new SnapshotReleaser(this, revision, snapshot)
 				: new Releaser(this, revision, release);
