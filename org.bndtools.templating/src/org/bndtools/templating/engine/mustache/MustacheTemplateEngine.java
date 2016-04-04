@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.osgi.service.component.annotations.Component;
 
 import com.github.mustachejava.DefaultMustacheFactory;
-import com.github.mustachejava.MustacheFactory;
 import com.github.mustachejava.reflect.ReflectionObjectHandler;
 import com.github.mustachejava.util.Wrapper;
 
@@ -38,8 +37,12 @@ import aQute.bnd.osgi.Instructions;
 public class MustacheTemplateEngine implements TemplateEngine {
 
     private static final String TEMPLATE_PROPERTIES = "_template.properties";
+    private static final String DEFAULT_LEFT_DELIM = "{{";
+    private static final String DEFAULT_RIGHT_DELIM = "}}";
 
     private static class TemplateSettings {
+        String leftDelim = DEFAULT_LEFT_DELIM;
+        String rightDelim = DEFAULT_RIGHT_DELIM;
         Instructions preprocessMatch = new Instructions("*");
         Instructions ignore = null;
 
@@ -48,6 +51,8 @@ public class MustacheTemplateEngine implements TemplateEngine {
         static TemplateSettings readFrom(Properties props) {
             TemplateSettings settings = new TemplateSettings();
             if (props != null) {
+                settings.leftDelim = props.getProperty("leftDelim", DEFAULT_LEFT_DELIM);
+                settings.rightDelim = props.getProperty("leftDelim", DEFAULT_RIGHT_DELIM);
                 String process = props.getProperty("process", Constants.DEFAULT_PREPROCESSS_MATCHERS);
                 String processBefore = props.getProperty("process.before", null);
                 if (processBefore != null)
@@ -64,7 +69,7 @@ public class MustacheTemplateEngine implements TemplateEngine {
         }
     }
 
-    private final MustacheFactory mustacheFactory = new DefaultMustacheFactory();
+    private final DefaultMustacheFactory mustacheFactory = new DefaultMustacheFactory();
 
     @Override
     public Collection<String> getTemplateParameterNames(ResourceMap inputs) throws Exception {
@@ -86,12 +91,12 @@ public class MustacheTemplateEngine implements TemplateEngine {
         int counter = 0;
         for (Entry<String,Resource> entry : inputs.entries()) {
             String inputPath = entry.getKey();
-            factory.compile(new StringReader(inputPath), "mapping").execute(new StringWriter(), Collections.emptyMap());
+            factory.compile(new StringReader(inputPath), "mapping", settings.leftDelim, settings.rightDelim).execute(new StringWriter(), Collections.emptyMap());
             Resource source = entry.getValue();
             if (settings.ignore == null || !settings.ignore.matches(inputPath)) {
                 if (source.getType() == ResourceType.File && settings.preprocessMatch.matches(inputPath)) {
                     InputStreamReader reader = new InputStreamReader(source.getContent(), source.getTextEncoding());
-                    factory.compile(reader, "temp" + (counter++)).execute(new StringWriter(), Collections.emptyMap()).toString();
+                    factory.compile(reader, "temp" + (counter++), settings.leftDelim, settings.rightDelim).execute(new StringWriter(), Collections.emptyMap()).toString();
                 }
             }
         }
@@ -113,7 +118,7 @@ public class MustacheTemplateEngine implements TemplateEngine {
         for (Entry<String,Resource> entry : inputs.entries()) {
             String inputPath = entry.getKey();
             Resource source = entry.getValue();
-            String outputPath = mustacheFactory.compile(new StringReader(inputPath), "mapping").execute(new StringWriter(), flattenedParams).toString();
+            String outputPath = mustacheFactory.compile(new StringReader(inputPath), "mapping", settings.leftDelim, settings.rightDelim).execute(new StringWriter(), flattenedParams).toString();
 
             if (settings.ignore == null || !settings.ignore.matches(inputPath)) {
                 Resource output;
@@ -125,7 +130,7 @@ public class MustacheTemplateEngine implements TemplateEngine {
                     if (settings.preprocessMatch.matches(inputPath)) {
                         // This file should be processed with the template engine
                         InputStreamReader reader = new InputStreamReader(source.getContent(), source.getTextEncoding());
-                        String rendered = mustacheFactory.compile(reader, outputPath).execute(new StringWriter(), flattenedParams).toString();
+                        String rendered = mustacheFactory.compile(reader, outputPath, settings.leftDelim, settings.rightDelim).execute(new StringWriter(), flattenedParams).toString();
                         output = new StringResource(rendered);
                     } else {
                         // This file should be directly copied

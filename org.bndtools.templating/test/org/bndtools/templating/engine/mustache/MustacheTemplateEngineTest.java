@@ -115,6 +115,22 @@ public class MustacheTemplateEngineTest {
     }
 
     @Test
+    public void testAlternativeDelimiters2() throws Exception {
+        MustacheTemplateEngine engine = new MustacheTemplateEngine();
+
+        ResourceMap input = new ResourceMap();
+        input.put("_template.properties", new StringResource("leftDelim=_\nrightDelim=_"));
+        input.put("readme.txt", new StringResource("Unprocessed: {{packageName}}. Processed: _packageName_"));
+
+        Map<String,List<Object>> params = new HashMap<>();
+        params.put("packageName", Collections.<Object> singletonList("org.example.foo"));
+        ResourceMap output = engine.generateOutputs(input, params);
+
+        assertEquals(1, output.size());
+        assertEquals("Unprocessed: {{packageName}}. Processed: org.example.foo", IO.collect(output.get("readme.txt").getContent()));
+    }
+
+    @Test
     public void testGetParamNames() throws Exception {
         MustacheTemplateEngine engine = new MustacheTemplateEngine();
 
