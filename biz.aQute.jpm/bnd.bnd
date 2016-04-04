@@ -21,7 +21,7 @@ Bundle-Icon: 					images/icon.png;size=64
 Conditional-Package: 			aQute.libg.*, aQute.lib.*
 
 -buildpath: \
-	aQute.libg;version=project,\
+	aQute.libg;version=project;packages=*,\
 	biz.aQute.bndlib;version=latest,\
 	aQute.jpm.clnt;version=2.1,\
 	lib/WinRun4J.jar;version=file

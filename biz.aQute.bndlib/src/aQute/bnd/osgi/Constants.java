@@ -143,7 +143,6 @@ public interface Constants {
 	String							EXPORTTYPE									= "-exporttype";
 	String							FAIL_OK										= "-failok";
 	String							FIXUPMESSAGES								= "-fixupmessages";
-
 	String							GESTALT										= "-gestalt";
 	String							GESTALT_INTERACTIVE							= "interactive";
 	String							GESTALT_BATCH								= "batch";
@@ -155,6 +154,7 @@ public interface Constants {
 	String							INCLUDERESOURCE								= "-includeresource";
 	String							INVALIDFILENAMES							= "-invalidfilenames";
 	String							INIT										= "-init";
+	String	INSTALLREPO						= "-installrepo";
 	String							JAVAAGENT									= "-javaagent";
 	String							JAVAC_SOURCE								= "javac.source";
 	String							JAVAC_TARGET								= "javac.target";
@@ -162,13 +162,12 @@ public interface Constants {
 	String							JAVAC										= "javac";
 	String							JAVA										= "java";
 	String							JAVA_DEBUG									= "java.debug";
-
 	String							MAKE										= "-make";
 	String							METATYPE									= "-metatype";
 	String							METATYPE_ANNOTATIONS						= "-metatypeannotations";
 	String							METATYPE_ANNOTATIONS_OPTIONS				= "-metatypeannotations-options";
-
 	String							MANIFEST									= "-manifest";
+	String	MAVEN_RELEASE					= "-maven-release";
 	String							PROFILE										= "-profile";
 	String							SAVEMANIFEST								= "-savemanifest";
 	String							NAMESECTION									= "-namesection";
@@ -311,7 +310,7 @@ public interface Constants {
 																						JAVAC, JAVA, JAVA_DEBUG,
 																						EXPORTTYPE, RUNREMOTE, TESTER,
 																						AUGMENT, REQUIRE_BND, GROUPID,
-																						STANDALONE, INIT
+			STANDALONE, INIT, MAVEN_RELEASE
 
 																					};
 

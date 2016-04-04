@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -37,6 +38,34 @@ class T3 extends T2 {}
 @SuppressWarnings("resource")
 public class AnalyzerTest extends BndTestCase {
 	static File cwd = new File(System.getProperty("user.dir"));
+
+	/**
+	 * #1352 support globbing during includeresource's buildpath reference
+	 * resolution
+	 * 
+	 * @throws Exception
+	 */
+
+	public void testIncludeResourceFromClasspathWithGlobbing() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
+		b.addClasspath(IO.getFile("jar/asm.jar"));
+		b.addClasspath(IO.getFile("jar/bcel.jar"));
+		b.setProperty("-includeresource", "@o*i.jar, a*m.jar");
+		Jar jar = b.build();
+		assertTrue(b.check());
+		assertNotNull(jar.getResource("LICENSE"));
+		assertNotNull(jar.getResource("asm.jar"));
+	}
+
+	public void testIncludeResourceFromClasspathWithGlobbingMultiple() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(IO.getFile("jar/osgi.jar"));
+		b.addClasspath(IO.getFile("jar/asm.jar"));
+		b.addClasspath(IO.getFile("jar/bcel.jar"));
+		List<Jar> jars = b.getJarsFromName("*.jar", "");
+		assertEquals(3, jars.size());
+	}
 
 	/**
 	 * #525 Test if exceptions are imported

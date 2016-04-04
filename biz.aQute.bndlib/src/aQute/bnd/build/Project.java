@@ -72,6 +72,7 @@ import aQute.bnd.service.CommandPlugin;
 import aQute.bnd.service.DependencyContributor;
 import aQute.bnd.service.Deploy;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.RepositoryPlugin.PutOptions;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.service.Scripter;
 import aQute.bnd.service.Strategy;
@@ -493,7 +494,6 @@ public class Project extends Processor {
 	 * Bundles are listed in repo specific names. So we just let our repo
 	 * plugins iterate over the list of bundles and we get the highest version
 	 * from them.
-	 *
 	 */
 
 	private List<Container> parseBuildpath() throws Exception {
@@ -993,7 +993,10 @@ public class Project extends Processor {
 		}
 
 		try {
-			PutResult r = repo.put(jarStream, new RepositoryPlugin.PutOptions());
+			PutOptions putOptions = new RepositoryPlugin.PutOptions();
+			// TODO find sub bnd that is associated with this thing
+			putOptions.context = this;
+			PutResult r = repo.put(jarStream, putOptions);
 			trace("Released %s to %s in repository %s", jarName, r.artifact, repo);
 			return r.artifact;
 		} catch (Exception e) {
@@ -1533,9 +1536,35 @@ public class Project extends Processor {
 		if (isStale()) {
 			trace("building " + this);
 			files = buildLocal(underTest);
+
+			install(files);
 		}
 
 		return files;
+	}
+
+	private void install(File[] files) throws Exception {
+		Parameters p = new Parameters(mergeProperties(INSTALLREPO));
+		for (Map.Entry<String,Attrs> e : p.entrySet()) {
+			RepositoryPlugin rp = getWorkspace().getRepository(e.getKey());
+			if (rp != null) {
+				for (File f : files) {
+					install(f, rp, e.getValue());
+				}
+			} else
+				warning("No such repository to install into: %s", e.getKey());
+		}
+	}
+
+	private void install(File f, RepositoryPlugin repo, Attrs value) throws Exception {
+		try (Processor p = new Processor();) {
+			p.getProperties().putAll(value);
+			PutOptions options = new PutOptions();
+			options.context = p;
+			try (FileInputStream in = new FileInputStream(f)) {
+				repo.put(in, options);
+			}
+		}
 	}
 
 	/**
@@ -1610,7 +1639,6 @@ public class Project extends Processor {
 	 * build before in the same session. It is a bit yucky, but ant creates
 	 * different class spaces which makes it hard to detect we already build it.
 	 * This method remembers the files in the appropriate instance vars.
-	 * 
 	 */
 
 	public File[] getBuildFiles() throws Exception {
@@ -1728,7 +1756,6 @@ public class Project extends Processor {
 
 	/**
 	 * Answer if this project does not have any output
-	 * 
 	 */
 	public boolean isNoBundles() {
 		return isTrue(getProperty(NOBUNDLES));

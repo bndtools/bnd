@@ -16,6 +16,12 @@ public class ConsoleProgress implements ProgressPlugin {
 				if (e != null)
 					e.printStackTrace();
 			}
+
+			@Override
+			public boolean isCanceled() {
+				// TODO Auto-generated method stub
+				return false;
+			}
 		};
 	}
 

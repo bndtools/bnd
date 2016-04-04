@@ -1,10 +1,13 @@
 package aQute.bnd.service.progress;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * A plugin for reporting progress on long-running jobs.
  * 
  * @author Neil Bartlett <njbartlett@gmail.com>
  */
+@ProviderType
 public interface ProgressPlugin {
 
 	/**
@@ -19,6 +22,7 @@ public interface ProgressPlugin {
 	/**
 	 * Represents an ongoing task.
 	 */
+	@ProviderType
 	static interface Task {
 		/**
 		 * The specified number of units out of the total have been worked. If
@@ -39,6 +43,11 @@ public interface ProgressPlugin {
 		 * @param e An exception thrown by the task; may be null;
 		 */
 		void done(String message, Throwable e);
+
+		/**
+		 * Check if this task is canceled.
+		 */
+		boolean isCanceled();
 	}
 
 }

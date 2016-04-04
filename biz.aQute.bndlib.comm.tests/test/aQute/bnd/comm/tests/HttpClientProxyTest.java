@@ -18,11 +18,12 @@ import aQute.bnd.connection.settings.ProxyDTO;
 import aQute.bnd.connection.settings.ServerDTO;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
+import aQute.http.testservers.HttpTestServer;
+import aQute.http.testservers.Httpbin;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
-import biz.aQute.http.testservers.HttpTestServer;
-import biz.aQute.http.testservers.Httpbin;
 import junit.framework.TestCase;
 import sockslib.common.AuthenticationException;
 import sockslib.common.Credentials;
@@ -256,9 +257,8 @@ public class HttpClientProxyTest extends TestCase {
 	void assertHttpProxy(String password, boolean authenticationCalled) throws MalformedURLException, Exception {
 		Processor p = new Processor();
 		p.setProperty("-connectionsettings", "" + false);
-		ConnectionSettings cs = new ConnectionSettings(p);
-
-		HttpClient hc = new HttpClient(p);
+		HttpClient hc = new HttpClient();
+		ConnectionSettings cs = new ConnectionSettings(p, hc);
 
 		if (httpProxy != null) {
 			ProxyDTO proxy = new ProxyDTO();
@@ -270,7 +270,7 @@ public class HttpClientProxyTest extends TestCase {
 				proxy.username = "proxyuser";
 				proxy.password = password;
 			}
-			p.addBasicPlugin(ConnectionSettings.createProxyHandler(proxy));
+			hc.addProxyHandler(ConnectionSettings.createProxyHandler(proxy));
 		}
 
 		ServerDTO server = new ServerDTO();
@@ -282,7 +282,8 @@ public class HttpClientProxyTest extends TestCase {
 		URL url = new URL(httpTestServer.getBaseURI() + "/get-tag/ABCDEFGH");
 		TaggedData tag = hc.connectTagged(url);
 		assertNotNull(tag);
-		assertEquals("ABCDEFGH", tag.getTag());
+		if (tag.getState() != State.OTHER)
+			assertEquals("ABCDEFGH", tag.getTag());
 		String s = IO.collect(tag.getInputStream());
 		assertNotNull(s);
 		assertTrue(s.trim().startsWith("{"));
@@ -294,9 +295,9 @@ public class HttpClientProxyTest extends TestCase {
 	void assertSocks5Proxy(String password, boolean authenticationCalled) throws MalformedURLException, Exception {
 		Processor p = new Processor();
 		p.setProperty("-connectionsettings", "" + false);
-		ConnectionSettings cs = new ConnectionSettings(p);
+		HttpClient hc = new HttpClient();
+		ConnectionSettings cs = new ConnectionSettings(p, hc);
 
-		HttpClient hc = new HttpClient(p);
 
 		if (socks5Proxy != null) {
 			ProxyDTO proxy = new ProxyDTO();
@@ -308,7 +309,7 @@ public class HttpClientProxyTest extends TestCase {
 				proxy.username = "proxyuser";
 				proxy.password = password;
 			}
-			p.addBasicPlugin(ConnectionSettings.createProxyHandler(proxy));
+			hc.addProxyHandler(ConnectionSettings.createProxyHandler(proxy));
 		}
 
 		ServerDTO server = new ServerDTO();

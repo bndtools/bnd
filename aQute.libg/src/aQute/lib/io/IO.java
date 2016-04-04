@@ -53,6 +53,14 @@ public class IO {
 		home = tmp;
 	}
 
+	public static String getExtension(String fileName, String deflt) {
+		int n = fileName.lastIndexOf('.');
+		if (n < 0)
+			return deflt;
+
+		return fileName.substring(n + 1);
+	}
+
 	public static Collection<File> tree(File current) {
 		Set<File> files = new LinkedHashSet<File>();
 		traverse(files, current, null);
@@ -406,6 +414,18 @@ public class IO {
 		} catch (IOException e) {
 			// Ignore a failed delete
 		}
+	}
+
+	/**
+	 * Deletes and creates directories
+	 */
+	public static void initialize(File f) {
+		try {
+			deleteWithException(f);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		f.mkdirs();
 	}
 
 	/**

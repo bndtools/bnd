@@ -14,7 +14,9 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -61,7 +63,12 @@ public class BndAuthentication extends DefaultURLConnectionHandler {
 	private static final String		PRIVATE_KEY				= "privateKey";
 	private static final String		PUBLIC_KEY				= "publicKey";
 	private static final String		EMAIL					= "email";
-	private static SimpleDateFormat	httpFormat				= new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+	private static SimpleDateFormat	httpFormat				= new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz",
+			Locale.US);
+
+	static {
+		httpFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+	}
 	private static final String		X_A_QUTE_AUTHORIZATION	= "X-aQute-Authorization";
 	private String					identity;
 	private String					email;

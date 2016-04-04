@@ -453,4 +453,32 @@ public abstract class Domain implements Iterable<String> {
 			}
 		}
 	}
+
+	public String getBundleName() {
+		return get(Constants.BUNDLE_NAME);
+	}
+
+	public String getBundleDescription() {
+		return get(Constants.BUNDLE_DESCRIPTION);
+	}
+
+	public String getBundleCopyright() {
+		return get(Constants.BUNDLE_COPYRIGHT);
+	}
+
+	public String getBundleDocURL() {
+		return get(Constants.BUNDLE_COPYRIGHT);
+	}
+
+	public String getBundleVendor() {
+		return get(Constants.BUNDLE_VENDOR);
+	}
+
+	public String getBundleContactAddress() {
+		return get(Constants.BUNDLE_CONTACTADDRESS);
+	}
+
+	public String getBundleCategory() {
+		return get(Constants.BUNDLE_CATEGORY);
+	}
 }

@@ -1,0 +1,27 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>group</groupId>
+  <artifactId>use-snap</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <dependencies>
+  	<dependency>
+  		<groupId>biz.aQute.bnd</groupId>
+  		<artifactId>biz.aQute.bnd.maven</artifactId>
+  		<version>3.2.0-SNAPSHOT</version>
+  	</dependency>
+	<dependency>
+		<groupId>group</groupId>
+		<artifactId>artifact</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</dependency>
+  </dependencies>
+  
+  <repositories>
+    <repository>
+      <id>local-nexus</id>
+      <name>Expects a Nexus with admin:admin123 at 8081</name>
+      <url>http://localhost:8081/nexus/content/repositories/snapshots/</url>
+    </repository>
+  </repositories>
+
+</project>
