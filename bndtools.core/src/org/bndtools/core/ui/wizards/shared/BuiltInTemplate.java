@@ -91,7 +91,7 @@ public class BuiltInTemplate implements Template {
         if (engine == null)
             throw new Exception(String.format("Unable to generate built-in template '%s': no Template Engine available matching '%s'", name, engineName));
         try {
-            return engine.generateOutputs(inputResources, parameters);
+            return engine.generateOutputs(inputResources, parameters, monitor);
         } finally {
             context.ungetService(svcRef);
         }
