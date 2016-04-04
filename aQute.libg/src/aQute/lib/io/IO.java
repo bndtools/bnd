@@ -700,6 +700,7 @@ public class IO {
 					case '\\' :
 					case '|' :
 					case '*' :
+					case ':' :
 						sb.append('%');
 						break;
 					default :
