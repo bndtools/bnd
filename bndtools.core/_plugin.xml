@@ -164,7 +164,7 @@
             finalPerspective="bndtools.perspective"
             preferredPerspectives="bndtools.perspective"
             icon="icons/bricks.png"
-            name="Bndtools Project"
+            name="Bnd OSGi Project"
             project="true">
       </wizard>
       <wizard
