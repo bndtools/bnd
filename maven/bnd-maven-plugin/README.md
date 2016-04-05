@@ -19,7 +19,7 @@ path which can be absolute or relative to the base directory of the project.
 In the following example, the `project.bnd` file in the `bnd` folder of the project
 will be used.
 
-```
+```xml
 <plugin>
     <groupId>biz.aQute.bnd</groupId>
     <artifactId>bnd-maven-plugin</artifactId>
@@ -33,7 +33,7 @@ It is also supported to specify the Bnd instructions embedded in the pom file. T
 is not recommended but can be useful when the parent project is a repository based
 pom. Bnd instructions in the pom are not used if the project has a bnd file.
 
-```
+```xml
 <plugin>
     <groupId>biz.aQute.bnd</groupId>
     <artifactId>bnd-maven-plugin</artifactId>
@@ -67,7 +67,7 @@ MANIFEST.MF file when using its default configuration. We anticipate a [patch][1
 to the JAR plugin that will do this.
 In the meantime it is necessary to configure the plugin as follows:
 
-```
+```xml
 <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-jar-plugin</artifactId>
