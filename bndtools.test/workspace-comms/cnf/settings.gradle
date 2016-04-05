@@ -1,0 +1,111 @@
+/*
+ * Master Gradle initialization script
+ *
+ * Depends on bnd_* values from gradle.properties.
+ */
+
+import aQute.bnd.build.Workspace
+import aQute.bnd.osgi.Constants
+
+/* Add bnd gradle plugin as a script dependency */
+buildscript {
+  repositories {
+    jcenter()
+  }
+  dependencies {
+    classpath bnd_plugin
+  }
+  /* Pass bnd gradle plugin classpath to rootProject once created */
+  def bndPlugin = files(configurations.classpath.files)
+  gradle.rootProject { rootProject ->
+    rootProject.ext.bndPlugin = bndPlugin
+  }
+}
+
+/* Initialize the bnd workspace */
+Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
+Workspace.addGestalt(Constants.GESTALT_BATCH, null)
+def workspace = new Workspace(rootDir, bnd_cnf)
+if (workspace == null) {
+  throw new GradleException("Unable to load workspace ${rootDir}/${bnd_cnf}")
+}
+
+/* Add cnf project to the graph */
+include bnd_cnf
+
+/* Start with the declared build project name */
+def defaultProjectName = bnd_build
+
+/* If in a subproject, use the subproject name */
+for (def currentDir = startParameter.currentDir; currentDir != rootDir; currentDir = currentDir.parentFile) {
+  defaultProjectName = currentDir.name
+}
+
+/* Build a set of project names we need to include from the specified tasks */
+def projectNames = startParameter.taskNames.collect { taskName ->
+  def elements = taskName.split(':')
+  switch (elements.length) {
+    case 1:
+      return defaultProjectName
+    case 2:
+      return elements[0].empty ? bnd_build : elements[0]
+    default:
+      return elements[0].empty ? elements[1] : elements[0]
+  }
+}.toSet()
+
+/* Include the default project name if in a subproject or no tasks specified */
+if ((startParameter.currentDir != rootDir) || projectNames.empty) {
+  projectNames += defaultProjectName
+}
+
+/* If bnd_build used but declared empty, add all non-private folders of rootDir */
+if (projectNames.remove('')) {
+  rootDir.eachDir {
+    def projectName = it.name
+    if (!projectName.startsWith('.')) {
+      projectNames += projectName
+    }
+  }
+}
+
+/* Add each project and its dependencies to the graph */
+projectNames.each { projectName ->
+  include projectName
+  def project = getBndProject(workspace, projectName)
+  project?.getDependson()*.getName().each {
+    include it
+  }
+}
+
+/* Get the bnd project for the specified project name */
+def getBndProject(Workspace workspace, String projectName) {
+  def project = workspace.getProject(projectName)
+  if (project == null) {
+    return null
+  }
+  project.prepare()
+  if (project.isValid()) {
+    return project
+  }
+
+  project.getInfo(workspace, "${rootDir} :")
+  def errorCount = 0
+  project.getWarnings().each {
+    println "Warning: ${it}"
+  }
+  project.getErrors().each {
+    println "Error  : ${it}"
+    errorCount++
+  }
+  if (!project.isOk()) {
+    def str = 'even though no errors were reported'
+    if (errorCount == 1) {
+      str = 'one error was reported'
+    } else if (errorCount > 1) {
+      str = "${errorCount} errors were reported"
+    }
+    throw new GradleException("Project ${rootDir}/${projectName} is invalid, ${str}")
+  }
+  throw new GradleException("Project ${rootDir}/${projectName} is not a valid bnd project")
+}
