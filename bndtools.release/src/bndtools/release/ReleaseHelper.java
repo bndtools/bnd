@@ -237,7 +237,8 @@ public class ReleaseHelper {
     private static void displayErrors(ReleaseContext context) {
 
         final String name = context.getProject().getName();
-        final List<Error> errors = context.getErrorHandler().getErrors();
+        final List<Error> errors = new ArrayList<>(context.getErrorHandler().getErrors());
+        context.getErrorHandler().clear();
         if (errors.size() > 0) {
             Runnable runnable = new Runnable() {
                 @Override
@@ -290,6 +291,14 @@ public class ReleaseHelper {
         InputStream is = new BufferedInputStream(jr.openInputStream());
         try {
             context.getProject().release(context.getReleaseRepository().getName(), jar.getName(), is);
+
+            if (!context.getProject().isOk()) {
+                handleBuildErrors(context, context.getProject(), jar);
+                displayErrors(context);
+                context.getProject().clear();
+                return false;
+            }
+
         } finally {
             is.close();
         }
