@@ -203,7 +203,7 @@ class IndexFile {
 
 					Domain m = Domain.domain(file);
 					if (m == null)
-						m = Domain.domain(Collections.EMPTY_MAP);
+						m = Domain.domain(Collections.<String, String> emptyMap());
 
 					Entry<String,Attrs> bsn = m.getBundleSymbolicName();
 					descriptor.bsn = bsn != null ? bsn.getKey() : null;
