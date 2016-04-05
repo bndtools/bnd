@@ -47,7 +47,14 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	}
 
 	public static final MavenVersion parseString(String versionStr) {
-		versionStr = versionStr.trim();
+		if (versionStr == null) {
+			versionStr = "0";
+		} else {
+			versionStr = versionStr.trim();
+			if (versionStr.isEmpty()) {
+				versionStr = "0";
+			}
+		}
 		Matcher m = VERSION.matcher(versionStr);
 		if (!m.matches())
 			throw new IllegalArgumentException("Invalid syntax for version: " + versionStr);

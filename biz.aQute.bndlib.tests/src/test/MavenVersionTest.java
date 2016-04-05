@@ -94,6 +94,21 @@ public class MavenVersionTest extends TestCase {
 		assertFalse(mv.isSnapshot());
 	}
 
+	public void testNull() {
+		MavenVersion mv = MavenVersion.parseString(null);
+		assertEquals(new Version(0, 0, 0), mv.getOSGiVersion());
+		assertFalse(mv.isSnapshot());
+	}
+
+	public void testEmptyString() {
+		MavenVersion mv = MavenVersion.parseString("");
+		assertEquals(new Version(0, 0, 0), mv.getOSGiVersion());
+		assertFalse(mv.isSnapshot());
+		mv = MavenVersion.parseString("      	");
+		assertEquals(new Version(0, 0, 0), mv.getOSGiVersion());
+		assertFalse(mv.isSnapshot());
+	}
+
 	public void testInvalidVersion() {
 		try {
 			MavenVersion mv = MavenVersion.parseString("Not a number");
