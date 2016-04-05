@@ -3,66 +3,71 @@ package org.bndtools.templating.util;
 import org.osgi.service.metatype.AttributeDefinition;
 
 public class AttributeDefinitionImpl implements AttributeDefinition {
-	
-	private final String name;
-	private final String description;
-	private final int cardinality;
-	private final int type;
 
-	public AttributeDefinitionImpl(String name, String description, int cardinality, int type) {
-		this.name = name;
-		this.description = description;
-		this.cardinality = cardinality;
-		this.type = type;
-	}
+    private final String name;
+    private final String description;
+    private final int cardinality;
+    private final int type;
 
-	@Override
-	public String getName() {
-		return name;
-	}
+    private String[] defaultValue;
 
-	@Override
-	public String getID() {
-		return name;
-	}
+    public AttributeDefinitionImpl(String name, String description, int cardinality, int type) {
+        this.name = name;
+        this.description = description;
+        this.cardinality = cardinality;
+        this.type = type;
+    }
 
-	@Override
-	public String getDescription() {
-		return description;
-	}
+    @Override
+    public String getName() {
+        return name;
+    }
 
-	@Override
-	public int getCardinality() {
-		return cardinality;
-	}
+    @Override
+    public String getID() {
+        return name;
+    }
 
-	@Override
-	public int getType() {
-		return type;
-	}
+    @Override
+    public String getDescription() {
+        return description;
+    }
 
-	@Override
-	public String[] getOptionValues() {
-		// TODO Not implemented
-		return null;
-	}
+    @Override
+    public int getCardinality() {
+        return cardinality;
+    }
 
-	@Override
-	public String[] getOptionLabels() {
-		// TODO Not implemented
-		return null;
-	}
+    @Override
+    public int getType() {
+        return type;
+    }
 
-	@Override
-	public String validate(String value) {
-		// TODO Not implemented
-		return null;
-	}
+    @Override
+    public String[] getOptionValues() {
+        // TODO Not implemented
+        return null;
+    }
 
-	@Override
-	public String[] getDefaultValue() {
-		// TODO Not implemented
-		return null;
-	}
+    @Override
+    public String[] getOptionLabels() {
+        // TODO Not implemented
+        return null;
+    }
+
+    @Override
+    public String validate(String value) {
+        // TODO Not implemented
+        return null;
+    }
+
+    @Override
+    public String[] getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String[] defaultValue) {
+        this.defaultValue = defaultValue;
+    }
 
 }

@@ -8,23 +8,19 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
-
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.ResourceType;
 import org.bndtools.templating.StringResource;
 import org.bndtools.templating.TemplateEngine;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.osgi.service.component.annotations.Component;
 import org.stringtemplate.v4.AutoIndentWriter;
 import org.stringtemplate.v4.InstanceScope;
@@ -88,13 +84,8 @@ public class StringTemplateEngine implements TemplateEngine {
     }
 
     @Override
-    public Collection<String> getTemplateParameterNames(ResourceMap inputs) throws Exception {
-        return getTemplateParameterNames(inputs, new NullProgressMonitor());
-    }
-
-    @Override
-    public Collection<String> getTemplateParameterNames(ResourceMap inputs, IProgressMonitor monitor) throws Exception {
-        Set<String> names = new HashSet<>();
+    public Map<String,String> getTemplateParameters(ResourceMap inputs, IProgressMonitor monitor) throws Exception {
+        Map<String,String> params = new HashMap<>();
 
         // Initialise the engine
         TemplateSettings settings = readSettings(inputs);
@@ -102,7 +93,7 @@ public class StringTemplateEngine implements TemplateEngine {
 
         // Assemble a mapping properties file of outputPath=sourcePath
         String mappingTemplate = loadMappingTemplate(inputs, settings, stg);
-        extractAttrs(compile(stg, "_mapping", new StringResource(mappingTemplate)), names);
+        extractAttrs(compile(stg, "_mapping", new StringResource(mappingTemplate)), params);
 
         // Iterate the entries
         Properties contentProps = new Properties();
@@ -120,18 +111,13 @@ public class StringTemplateEngine implements TemplateEngine {
             if (settings.ignore == null || !settings.ignore.matches(sourcePath)) {
                 if (source.getType() == ResourceType.File) {
                     if (settings.preprocessMatch.matches(sourcePath)) {
-                        extractAttrs(compile(stg, sourcePath, source), names);
+                        extractAttrs(compile(stg, sourcePath, source), params);
                     }
                 }
             }
         }
 
-        return names;
-    }
-
-    @Override
-    public ResourceMap generateOutputs(ResourceMap inputs, Map<String,List<Object>> parameters) throws Exception {
-        return generateOutputs(inputs, parameters, new NullProgressMonitor());
+        return params;
     }
 
     @Override
@@ -242,11 +228,11 @@ public class StringTemplateEngine implements TemplateEngine {
         }
     }
 
-    private void extractAttrs(ST st, final Collection< ? super String> attrs) throws Exception {
+    private void extractAttrs(ST st, final Map<String,String> attrs) throws Exception {
         Interpreter interpreter = new Interpreter(st.groupThatCreatedThisInstance, Locale.getDefault(), true) {
             @Override
             public Object getAttribute(InstanceScope scope, String name) {
-                attrs.add(name);
+                attrs.put(name, null);
                 return "X";
             }
         };

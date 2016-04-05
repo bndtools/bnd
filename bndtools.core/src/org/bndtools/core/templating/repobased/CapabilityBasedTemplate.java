@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
@@ -130,9 +130,13 @@ public class CapabilityBasedTemplate implements Template {
         ObjectClassDefinitionImpl ocd = new ObjectClassDefinitionImpl(name, description, null);
 
         ResourceMap inputs = getInputSources();
-        Collection<String> names = engine.getTemplateParameterNames(inputs);
-        for (String name : names) {
-            AttributeDefinitionImpl ad = new AttributeDefinitionImpl(name, name, 0, AttributeDefinition.STRING);
+        Map<String,String> params = engine.getTemplateParameters(inputs, monitor);
+        for (Entry<String,String> entry : params.entrySet()) {
+            AttributeDefinitionImpl ad = new AttributeDefinitionImpl(entry.getKey(), entry.getKey(), 0, AttributeDefinition.STRING);
+            if (entry.getValue() != null)
+                ad.setDefaultValue(new String[] {
+                        entry.getValue()
+                });
             ocd.addAttribute(ad, true);
         }
 
@@ -147,7 +151,7 @@ public class CapabilityBasedTemplate implements Template {
     @Override
     public ResourceMap generateOutputs(Map<String,List<Object>> parameters, IProgressMonitor monitor) throws Exception {
         ResourceMap inputs = getInputSources();
-        return engine.generateOutputs(inputs, parameters);
+        return engine.generateOutputs(inputs, parameters, monitor);
     }
 
     @Override
