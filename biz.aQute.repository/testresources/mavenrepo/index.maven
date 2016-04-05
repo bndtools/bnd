@@ -1,0 +1,5 @@
+commons-cli:commons-cli:1.0
+commons-cli:commons-cli:1.2
+commons-cli:commons-cli:1.4-SNAPSHOT
+commons-beanutils:commons-beanutils:1.8.4-SNAPSHOT
+org.apache.aries:aries:1.0.0-incubating-SNAPSHOT

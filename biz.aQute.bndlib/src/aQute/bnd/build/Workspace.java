@@ -567,11 +567,11 @@ public class Workspace extends Processor {
 			list.add(new SubsystemExporter());
 
 			try {
-				try (ConnectionSettings cs = new ConnectionSettings(this);) {
+				HttpClient client = new HttpClient();
+				try (ConnectionSettings cs = new ConnectionSettings(this, client);) {
 					cs.readSettings();
 				}
 
-				HttpClient client = new HttpClient(this);
 				list.add(client);
 			} catch( Exception e) {
 				exception(e, "Failed to load the communication settings");

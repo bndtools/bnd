@@ -3,6 +3,8 @@ package aQute.bnd.http;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+
+import aQute.bnd.service.url.TaggedData;
 import aQute.lib.io.IO;
 
 public class HttpRequestException extends RuntimeException {
@@ -13,6 +15,11 @@ public class HttpRequestException extends RuntimeException {
 		super(conn.getURL() + ":" + conn.getResponseCode() + ":" + conn.getResponseMessage() == null ? getMessage(conn)
 				: conn.getResponseMessage());
 		this.responseCode = conn.getResponseCode();
+	}
+
+	public HttpRequestException(TaggedData tag) throws IOException {
+		super(tag.getUrl() + ":" + tag.getResponseCode() + ":" + tag.getTag());
+		this.responseCode = tag.getResponseCode();
 	}
 
 	private static String getMessage(HttpURLConnection conn) {

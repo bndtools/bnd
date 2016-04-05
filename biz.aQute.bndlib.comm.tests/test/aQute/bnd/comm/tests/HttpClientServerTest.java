@@ -8,10 +8,10 @@ import aQute.bnd.connection.settings.ServerDTO;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.url.TaggedData;
+import aQute.http.testservers.HttpTestServer.Config;
+import aQute.http.testservers.Httpbin;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
-import biz.aQute.http.testservers.HttpTestServer.Config;
-import biz.aQute.http.testservers.Httpbin;
 import junit.framework.TestCase;
 
 /**
@@ -41,8 +41,9 @@ public class HttpClientServerTest extends TestCase {
 		Processor p = new Processor();
 		p.setProperty("-connection-log", log.toURI().getPath());
 
-		HttpClient hc = new HttpClient(p);
-		ConnectionSettings cs = new ConnectionSettings(p);
+		HttpClient hc = new HttpClient();
+		hc.setLog(log);
+		ConnectionSettings cs = new ConnectionSettings(p, hc);
 
 		ServerDTO server = new ServerDTO();
 		server.id = httpServer.getBaseURI().toString();

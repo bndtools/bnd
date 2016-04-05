@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.url.ProxyHandler;
 import aQute.bnd.service.url.URLConnectionHandler;
@@ -29,9 +30,11 @@ public class ConnectionSettings extends Processor {
 	private static final String	M2_SETTINGS_XML				= "~/.m2/settings.xml";
 	private static final String	BND_CONNECTION_SETTINGS_XML	= "~/.bnd/connection-settings.xml";
 	private static final String	CONNECTION_SETTINGS			= "-connection-settings";
+	private HttpClient			client;
 
-	public ConnectionSettings(Processor processor) throws Exception {
+	public ConnectionSettings(Processor processor, HttpClient client) throws Exception {
 		super(processor);
+		this.client = client;
 	}
 
 	public void readSettings() throws Exception {
@@ -337,11 +340,11 @@ public class ConnectionSettings extends Processor {
 	}
 
 	public void add(ServerDTO server) {
-		getParent().addBasicPlugin(createUrlConnectionHandler(server));
+		client.addURLConnectionHandler(createUrlConnectionHandler(server));
 	}
 
 	public void add(ProxyDTO proxy) {
-		getParent().addBasicPlugin(createProxyHandler(proxy));
+		client.addProxyHandler(createProxyHandler(proxy));
 	}
 
 }

@@ -33,6 +33,7 @@ import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import aQute.libg.glob.Glob;
 
@@ -51,6 +52,14 @@ public class IO {
 			tmp = new File(System.getProperty("user.home"));
 		}
 		home = tmp;
+	}
+
+	public static String getExtension(String fileName, String deflt) {
+		int n = fileName.lastIndexOf('.');
+		if (n < 0)
+			return deflt;
+
+		return fileName.substring(n + 1);
 	}
 
 	public static Collection<File> tree(File current) {
@@ -409,6 +418,18 @@ public class IO {
 	}
 
 	/**
+	 * Deletes and creates directories
+	 */
+	public static void initialize(File f) {
+		try {
+			deleteWithException(f);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		f.mkdirs();
+	}
+
+	/**
 	 * Deletes the specified file. Folders are recursively deleted.<br>
 	 * Throws exception if any of the files could not be deleted.
 	 * 
@@ -661,4 +682,50 @@ public class IO {
 
 												public void flush() throws IOException {}
 											};
+
+	public static String toSafeFileName(String string) {
+		StringBuilder sb = new StringBuilder();
+
+		for (int i = 0; i < string.length(); i++) {
+			char c = string.charAt(i);
+			if (c < ' ')
+				continue;
+
+			if (isWindows()) {
+				switch (c) {
+					case '<' :
+					case '>' :
+					case '"' :
+					case '/' :
+					case '\\' :
+					case '|' :
+					case '*' :
+					case ':' :
+						sb.append('%');
+						break;
+					default :
+						sb.append(c);
+				}
+			} else {
+				switch (c) {
+					case '/' :
+						sb.append('%');
+						break;
+					default :
+						sb.append(c);
+				}
+			}
+		}
+		if (sb.length() == 0 || (isWindows() && RESERVED_WINDOWS_P.matcher(sb).matches()))
+			sb.append("_");
+
+		return sb.toString();
+	}
+
+	final static Pattern RESERVED_WINDOWS_P = Pattern.compile(
+			"CON|PRN|AUX|NUL|COM1|COM2|COM3|COM4|COM5|COM6|COM7|COM8|COM9|LPT1|LPT2|LPT3|LPT4|LPT5|LPT6|LPT7|LPT8|LPT9");
+
+	static boolean isWindows() {
+		return File.separatorChar == '\\';
+	}
 }

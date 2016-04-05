@@ -1129,13 +1129,17 @@ public class Builder extends Analyzer {
 
 	private void noSuchFile(Jar jar, @SuppressWarnings("unused") String clause, Map<String,String> extra, String source,
 			String destinationPath) throws Exception {
-		Jar src = getJarFromName(source, Constants.INCLUDE_RESOURCE + " " + source);
-		if (src != null) {
-			// Do not touch the manifest so this also
-			// works for signed files.
-			src.setDoNotTouchManifest();
-			JarResource jarResource = new JarResource(src);
-			jar.putResource(destinationPath, jarResource);
+		List<Jar> src = getJarsFromName(source, Constants.INCLUDE_RESOURCE + " " + source);
+		if (!src.isEmpty()) {
+			for (Jar j : src) {
+				String quoted = j.getSource() != null ? j.getSource().getName() : j.getName();
+				// Do not touch the manifest so this also
+				// works for signed files.
+				j.setDoNotTouchManifest();
+				JarResource jarResource = new JarResource(j);
+				String path = destinationPath.replace(source, quoted);
+				jar.putResource(path, jarResource);
+			}
 		} else {
 			Resource lastChance = make.process(source);
 			if (lastChance != null) {
@@ -1170,20 +1174,15 @@ public class Builder extends Analyzer {
 			source = source.substring(0, n);
 		}
 
-		// Pattern filter = null;
-		// if (n > 0) {
-		// String fstring = source.substring(n + 2);
-		// source = source.substring(0, n);
-		// filter = wildcard(fstring);
-		// }
-		Jar sub = getJarFromName(source, "extract from jar");
-		if (sub == null) {
+		List<Jar> sub = getJarsFromName(source, "extract from jar");
+		if (sub.isEmpty()) {
 			if (absentIsOk)
 				return;
 
 			error("Can not find JAR file '" + source + "'");
 		} else {
-			addAll(jar, sub, instr, destination);
+			for (Jar j : sub)
+				addAll(jar, j, instr, destination);
 		}
 	}
 

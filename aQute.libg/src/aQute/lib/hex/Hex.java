@@ -3,6 +3,8 @@ package aQute.lib.hex;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
+import aQute.lib.strings.Strings;
+
 /*
  * Hex converter.
  * 
@@ -16,7 +18,7 @@ public class Hex {
 									};
 
 	public final static byte[] toByteArray(String string) {
-		string = string.trim();
+		string = Strings.trim(string);
 		if ((string.length() & 1) != 0)
 			throw new IllegalArgumentException("a hex string must have an even length");
 
@@ -64,5 +66,26 @@ public class Hex {
 
 	public static boolean isHex(String pub) {
 		return HEX_P.matcher(pub).matches();
+	}
+
+	public static boolean isHexCharacter(char c) {
+		if (c < '0')
+			return false;
+
+		if (c <= '9')
+			return true;
+
+		if (c < 'A')
+			return false;
+
+		if (c <= 'F')
+			return true;
+
+		// lower case are higher than upper case in Unicode!
+
+		if (c < 'a')
+			return false;
+
+		return c <= 'f';
 	}
 }
