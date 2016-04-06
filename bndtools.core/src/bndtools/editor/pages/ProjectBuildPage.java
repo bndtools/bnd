@@ -246,7 +246,7 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
             }
         }
 
-        messageFixesMap.put(message, fixes.toArray(new IAction[fixes.size()]));
+        messageFixesMap.put(message, fixes.toArray(new IAction[0]));
     }
 
     void reportProblemsInHeader() {

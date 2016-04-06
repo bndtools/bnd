@@ -379,7 +379,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
             }
         }
 
-        return files.toArray(new File[files.size()]);
+        return files.toArray(new File[0]);
     }
 
     @Override

@@ -145,11 +145,11 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 
         private final ImportRewrite fImportsRewrite;
 
-        /* package */ImportsManager(CompilationUnit astRoot) {
+        /* package */ ImportsManager(CompilationUnit astRoot) {
             fImportsRewrite = StubUtility.createImportRewrite(astRoot, true);
         }
 
-        /* package */ICompilationUnit getCompilationUnit() {
+                /* package */ICompilationUnit getCompilationUnit() {
             return fImportsRewrite.getCompilationUnit();
         }
 
@@ -198,16 +198,16 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
             return fImportsRewrite.addStaticImport(declaringTypeName, simpleName, isField);
         }
 
-        /* package */void create(boolean needsSave, IProgressMonitor monitor) throws CoreException {
+                /* package */void create(boolean needsSave, IProgressMonitor monitor) throws CoreException {
             TextEdit edit = fImportsRewrite.rewriteImports(monitor);
             JavaModelUtil.applyEdit(fImportsRewrite.getCompilationUnit(), edit, needsSave, null);
         }
 
-        /* package */void removeImport(String qualifiedName) {
+                /* package */void removeImport(String qualifiedName) {
             fImportsRewrite.removeImport(qualifiedName);
         }
 
-        /* package */void removeStaticImport(String qualifiedName) {
+                /* package */void removeStaticImport(String qualifiedName) {
             fImportsRewrite.removeStaticImport(qualifiedName);
         }
     }
@@ -408,8 +408,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         fSuperClassDialogField.setButtonLabel(NewWizardMessages.NewTypeWizardPage_superclass_button);
 
         String[] addButtons = new String[] {
-                NewWizardMessages.NewTypeWizardPage_interfaces_add,
-                /* 1 */null, NewWizardMessages.NewTypeWizardPage_interfaces_remove
+                NewWizardMessages.NewTypeWizardPage_interfaces_add, /* 1 */null, NewWizardMessages.NewTypeWizardPage_interfaces_remove
         };
         fSuperInterfacesDialogField = new ListDialogField<InterfaceWrapper>(adapter, addButtons, new InterfacesListLabelProvider());
         fSuperInterfacesDialogField.setDialogFieldListener(adapter);
@@ -772,7 +771,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         fSuperInterfacesDialogField.doFillIntoGrid(composite, nColumns);
         final TableViewer tableViewer = fSuperInterfacesDialogField.getTableViewer();
         tableViewer.setColumnProperties(new String[] {
-            INTERFACE
+                INTERFACE
         });
 
         TableTextCellEditor cellEditor = new TableTextCellEditor(tableViewer, 0) {
@@ -805,7 +804,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         cellEditor.setContentAssistant(contentAssistant);
 
         tableViewer.setCellEditors(new CellEditor[] {
-            cellEditor
+                cellEditor
         });
         tableViewer.setCellModifier(new ICellModifier() {
             @Override
@@ -1811,7 +1810,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         IPackageFragment pack = getPackageFragment();
         if (pack != null) {
             dialog.setInitialSelections(new Object[] {
-                pack
+                    pack
             });
         }
 
@@ -1838,7 +1837,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         }
 
         IJavaSearchScope scope = SearchEngine.createJavaSearchScope(new IJavaElement[] {
-            root
+                root
         });
 
         FilteredTypesSelectionDialog dialog = new FilteredTypesSelectionDialog(getShell(), false, getWizard().getContainer(), scope, IJavaSearchConstants.TYPE);
@@ -1869,7 +1868,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         }
 
         IJavaElement[] elements = new IJavaElement[] {
-            project
+                project
         };
         IJavaSearchScope scope = SearchEngine.createJavaSearchScope(elements);
 
@@ -2250,7 +2249,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
             } else {
                 buf.append(" extends "); //$NON-NLS-1$
             }
-            String[] intfs = interfaces.toArray(new String[interfaces.size()]);
+            String[] intfs = interfaces.toArray(new String[0]);
             ITypeBinding[] bindings;
             if (fCurrType != null) {
                 bindings = TypeContextChecker.resolveSuperInterfaces(intfs, fCurrType, getSuperInterfacesStubTypeContext());
@@ -2551,8 +2550,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         for (int index = 0; index < typeMethods.length; index++)
             if (!handleIds.contains(typeMethods[index].getHandleIdentifier()))
                 newMethods.add(typeMethods[index]);
-        IMethod[] methods = new IMethod[newMethods.size()];
-        newMethods.toArray(methods);
+        IMethod[] methods = newMethods.toArray(new IMethod[0]);
         return methods;
     }
 

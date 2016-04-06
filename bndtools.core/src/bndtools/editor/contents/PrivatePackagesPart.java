@@ -204,7 +204,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
             return;
         }
         IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[] {
-            javaProject
+                javaProject
         });
         JavaSearchScopePackageLister packageLister = new JavaSearchScopePackageLister(searchScope, window);
 
@@ -226,7 +226,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
 
             // Update the model and view
             if (!added.isEmpty()) {
-                viewer.add(added.toArray(new String[added.size()]));
+                viewer.add(added.toArray());
                 markDirty();
             }
         }
@@ -244,7 +244,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
             }
 
             if (!removed.isEmpty()) {
-                viewer.remove(removed.toArray(new String[removed.size()]));
+                viewer.remove(removed.toArray());
                 markDirty();
             }
         }

@@ -250,7 +250,7 @@ public class WorkspacePreviewPage extends WizardPage {
                             if (!existingFiles.contains(path))
                                 checkedPaths.add(path);
                         }
-                        vwrOutputs.setCheckedElements(checkedPaths.toArray(new Object[checkedPaths.size()]));
+                        vwrOutputs.setCheckedElements(checkedPaths.toArray());
                     }
                 });
             }

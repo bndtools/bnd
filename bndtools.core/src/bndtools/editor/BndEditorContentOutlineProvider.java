@@ -41,6 +41,7 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
         this.viewer = viewer;
     }
 
+    @Override
     public Object[] getElements(Object inputElement) {
         Object[] result;
         if (model.isProjectFile()) {
@@ -63,11 +64,13 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
         return result;
     }
 
+    @Override
     public void dispose() {
         if (model != null)
             model.removePropertyChangeListener(this);
     }
 
+    @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         if (model != null)
             model.removePropertyChangeListener(this);
@@ -77,6 +80,7 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
             model.addPropertyChangeListener(this);
     }
 
+    @Override
     public Object[] getChildren(Object parentElement) {
         Object[] result = new Object[0];
 
@@ -84,7 +88,7 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
             if (EXPORTS.equals(parentElement)) {
                 List<ExportedPackage> exports = model.getExportedPackages();
                 if (exports != null)
-                    result = exports.toArray(new Object[exports.size()]);
+                    result = exports.toArray();
             } else if (PRIVATE_PKGS.equals(parentElement)) {
                 List<String> packages = model.getPrivatePackages();
                 if (packages != null) {
@@ -92,29 +96,31 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
                     for (String pkg : packages) {
                         wrapped.add(new PrivatePkg(pkg));
                     }
-                    result = wrapped.toArray(new Object[wrapped.size()]);
+                    result = wrapped.toArray();
                 }
             } else if (IMPORT_PATTERNS.equals(parentElement)) {
                 List<ImportPattern> imports = model.getImportPatterns();
                 if (imports != null)
-                    result = imports.toArray(new Object[imports.size()]);
+                    result = imports.toArray();
             } else if (PLUGINS.equals(parentElement)) {
                 List<HeaderClause> plugins = model.getPlugins();
                 if (plugins != null) {
                     List<PluginClause> wrapped = new ArrayList<PluginClause>(plugins.size());
                     for (HeaderClause header : plugins)
                         wrapped.add(new PluginClause(header));
-                    result = wrapped.toArray(new PluginClause[wrapped.size()]);
+                    result = wrapped.toArray(new PluginClause[0]);
                 }
             }
         }
         return result;
     }
 
+    @Override
     public Object getParent(Object element) {
         return null;
     }
 
+    @Override
     public boolean hasChildren(Object element) {
         if (element instanceof String) {
             if (EXPORTS.equals(element)) {
@@ -137,6 +143,7 @@ public class BndEditorContentOutlineProvider implements ITreeContentProvider, Pr
         return false;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (Constants.EXPORT_PACKAGE.equals(evt.getPropertyName())) {
             viewer.refresh(EXPORTS);

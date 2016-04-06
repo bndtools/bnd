@@ -131,6 +131,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
 
         // LISTENERS
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 ISelection selection = event.getSelection();
                 boolean enabled = selection != null && !selection.isEmpty();
@@ -141,6 +142,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
             }
         });
         viewer.addOpenListener(new IOpenListener() {
+            @Override
             public void open(OpenEvent event) {
                 String name = (String) ((IStructuredSelection) event.getSelection()).getFirstElement();
                 if (name != null)
@@ -148,7 +150,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
             }
         });
         viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
-            ResourceTransfer.getInstance()
+                ResourceTransfer.getInstance()
         }, new TestSuiteListDropAdapter());
         addItem.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -226,6 +228,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
 
         // Create a filter from the exclusion list
         ITestCaseFilter filter = new ITestCaseFilter() {
+            @Override
             public boolean select(String testCaseName) {
                 return !testSuitesSet.contains(testCaseName);
             }
@@ -241,7 +244,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
         }
 
         IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[] {
-            javaProject
+                javaProject
         });
         JavaSearchScopeTestCaseLister testCaseLister = new JavaSearchScopeTestCaseLister(searchScope, window);
 
@@ -263,7 +266,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
 
             // Update the model and view
             if (!added.isEmpty()) {
-                viewer.add(added.toArray(new String[added.size()]));
+                viewer.add(added.toArray());
                 markDirty();
             }
         }
@@ -336,6 +339,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
         if (Constants.TESTCASES.equals(propertyName)) {
@@ -422,7 +426,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
             if (!addedNames.isEmpty()) {
                 if (insertionIndex == -1 || insertionIndex == testSuites.size()) {
                     testSuites.addAll(addedNames);
-                    viewer.add(addedNames.toArray(new String[addedNames.size()]));
+                    viewer.add(addedNames.toArray());
                 } else {
                     testSuites.addAll(insertionIndex, addedNames);
                     viewer.refresh();

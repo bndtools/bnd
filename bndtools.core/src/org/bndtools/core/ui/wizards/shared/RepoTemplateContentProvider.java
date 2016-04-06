@@ -39,10 +39,10 @@ public class RepoTemplateContentProvider implements ITreeContentProvider {
         }
 
         if (flat) {
-            roots = templates.toArray(new Object[templates.size()]);
+            roots = templates.toArray();
         } else {
             List<Category> categories = Category.categorise(templates);
-            roots = categories.toArray(new Object[categories.size()]);
+            roots = categories.toArray();
         }
     }
 
@@ -65,7 +65,7 @@ public class RepoTemplateContentProvider implements ITreeContentProvider {
     public Object[] getChildren(Object parentElement) {
         if (parentElement instanceof Category) {
             Collection<Template> templates = ((Category) parentElement).getTemplates();
-            return templates.toArray(new Object[templates.size()]);
+            return templates.toArray();
         }
         return EMPTY_ARRAY;
     }

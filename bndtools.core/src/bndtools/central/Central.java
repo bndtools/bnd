@@ -621,7 +621,7 @@ public class Central implements IStartupParticipant {
             severity = IStatus.WARNING;
         }
 
-        IStatus[] array = statuses.toArray(new IStatus[statuses.size()]);
+        IStatus[] array = statuses.toArray(new IStatus[0]);
         return new MultiStatus(//
                 BndtoolsConstants.CORE_PLUGIN_ID, //
                 severity, //

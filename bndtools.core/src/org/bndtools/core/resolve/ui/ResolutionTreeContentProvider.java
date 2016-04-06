@@ -46,7 +46,7 @@ public class ResolutionTreeContentProvider implements ITreeContentProvider {
             List<Wire> wires = resolution.get(parentResource);
             processWires(wires, items);
 
-            result = items.values().toArray(new Object[items.size()]);
+            result = items.values().toArray();
         } else if (parent instanceof Requirement) {
             result = getChildren(((Requirement) parent).getResource());
         } else if (parent instanceof ResolutionTreeItem) {
@@ -55,7 +55,7 @@ public class ResolutionTreeContentProvider implements ITreeContentProvider {
             List<Requirement> reqs = new ArrayList<Requirement>();
             for (Wire wire : wires)
                 reqs.add(wire.getRequirement());
-            result = reqs.toArray(new Object[reqs.size()]);
+            result = reqs.toArray();
         } else {
             result = null;
         }

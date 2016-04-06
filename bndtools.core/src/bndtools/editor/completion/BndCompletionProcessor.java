@@ -15,6 +15,7 @@ public class BndCompletionProcessor implements IContentAssistProcessor {
 
     private static final Pattern PREFIX_PATTERN = Pattern.compile("^(?:.*\\s)*(.*)$");
 
+    @Override
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
         try {
             String pre = viewer.getDocument().get(0, offset);
@@ -41,39 +42,45 @@ public class BndCompletionProcessor implements IContentAssistProcessor {
             if (prefix == null || s.getHeader().startsWith(prefix)) {
                 IContextInformation info = new ContextInformation(s.getHeader(), s.getHeader());
                 String text = prefix == null ? s.getHeader() : s.getHeader().substring(prefix.length());
-                results.add(new CompletionProposal(text + ": ", offset, 0, text.length() + 2, null, s.getHeader(), info, s.getLead())); //$NON-NLS-1$                
+                results.add(new CompletionProposal(text + ": ", offset, 0, text.length() + 2, null, s.getHeader(), info, s.getLead())); //$NON-NLS-1$
             }
         }
         Collections.sort(results, new Comparator<ICompletionProposal>() {
+            @Override
             public int compare(ICompletionProposal p1, ICompletionProposal p2) {
                 return p1.getDisplayString().compareTo(p2.getDisplayString());
             }
         });
-        return results.toArray(new ICompletionProposal[results.size()]);
+        return results.toArray(new ICompletionProposal[0]);
     }
 
+    @Override
     public IContextInformation[] computeContextInformation(ITextViewer viewer, int offset) {
         // TODO Auto-generated method stub
         return null;
     }
 
+    @Override
     public char[] getCompletionProposalAutoActivationCharacters() {
         return new char[] {
-            '-'
+                '-'
         };
     }
 
+    @Override
     public char[] getContextInformationAutoActivationCharacters() {
         return new char[] {
-            '-'
+                '-'
         };
     }
 
+    @Override
     public IContextInformationValidator getContextInformationValidator() {
         // TODO Auto-generated method stub
         return null;
     }
 
+    @Override
     public String getErrorMessage() {
         // TODO Auto-generated method stub
         return null;

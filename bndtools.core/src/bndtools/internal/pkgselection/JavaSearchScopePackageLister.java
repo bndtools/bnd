@@ -41,6 +41,7 @@ public class JavaSearchScopePackageLister implements IPackageLister {
         this.runContext = runContext;
     }
 
+    @Override
     public String[] getPackages(boolean includeNonSource, IPackageFilter filter) throws PackageListException {
         final List<IJavaElement> packageList = new LinkedList<IJavaElement>();
         final SearchRequestor requestor = new SearchRequestor() {
@@ -56,6 +57,7 @@ public class JavaSearchScopePackageLister implements IPackageLister {
         final SearchPattern pattern = SearchPattern.createPattern("*", IJavaSearchConstants.PACKAGE, IJavaSearchConstants.DECLARATIONS, SearchPattern.R_PATTERN_MATCH | SearchPattern.R_CASE_SENSITIVE);
 
         IRunnableWithProgress operation = new IRunnableWithProgress() {
+            @Override
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 try {
                     new SearchEngine().search(pattern, SearchUtils.getDefaultSearchParticipants(), scope, requestor, monitor);
@@ -97,7 +99,7 @@ public class JavaSearchScopePackageLister implements IPackageLister {
             }
         }
 
-        return packageNames.toArray(new String[packageNames.size()]);
+        return packageNames.toArray(new String[0]);
     }
 
 }

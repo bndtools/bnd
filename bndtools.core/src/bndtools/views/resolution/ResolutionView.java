@@ -374,7 +374,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
         if (loaderList.isEmpty())
             return;
 
-        CapReqLoader[] loaders = loaderList.toArray(new CapReqLoader[loaderList.size()]);
+        CapReqLoader[] loaders = loaderList.toArray(new CapReqLoader[0]);
         if (!Arrays.equals(this.loaders, loaders)) {
             this.loaders = loaders;
 

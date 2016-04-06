@@ -193,7 +193,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
             ILaunchConfiguration[] all = manager.getLaunchConfigurations(type);
             List<ILaunchConfiguration> result = new ArrayList<ILaunchConfiguration>(all.length);
 
-            return result.toArray(new ILaunchConfiguration[result.size()]);
+            return result.toArray(new ILaunchConfiguration[0]);
         } catch (CoreException e) {
             logger.logError("Error retrieving launch configurations.", e);
             return null;

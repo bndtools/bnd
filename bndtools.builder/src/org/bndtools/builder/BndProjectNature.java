@@ -29,20 +29,24 @@ public class BndProjectNature implements IProjectNature {
 
     private IProject project;
 
+    @Override
     public IProject getProject() {
         return project;
     }
 
+    @Override
     public void setProject(IProject project) {
         this.project = project;
     }
 
+    @Override
     public void configure() throws CoreException {
         final IProjectDescription desc = project.getDescription();
         addBuilder(desc);
         updateProject(desc, true);
     }
 
+    @Override
     public void deconfigure() throws CoreException {
         IProjectDescription desc = project.getDescription();
         removeBuilder(desc);
@@ -73,7 +77,7 @@ public class BndProjectNature implements IProjectNature {
                 nu.add(command);
             }
         }
-        desc.setBuildSpec(nu.toArray(new ICommand[nu.size()]));
+        desc.setBuildSpec(nu.toArray(new ICommand[0]));
     }
 
     private void installBndClasspath() throws CoreException {
@@ -106,11 +110,12 @@ public class BndProjectNature implements IProjectNature {
         }
 
         if (changed)
-            javaProject.setRawClasspath(newEntries.toArray(new IClasspathEntry[newEntries.size()]), null);
+            javaProject.setRawClasspath(newEntries.toArray(new IClasspathEntry[0]), null);
     }
 
     private void updateProject(final IProjectDescription desc, final boolean adding) throws CoreException {
         IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
+            @Override
             public void run(IProgressMonitor monitor) throws CoreException {
                 project.setDescription(desc, monitor);
                 if (adding) {

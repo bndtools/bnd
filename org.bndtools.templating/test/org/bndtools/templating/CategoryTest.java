@@ -24,7 +24,7 @@ public class CategoryTest {
         set.add(b);
         set.add(c);
 
-        Category[] array = set.toArray(new Category[set.size()]);
+        Category[] array = set.toArray(new Category[0]);
         assertEquals("aaa", array[0].getPrefix());
         assertEquals("Foobar", array[0].getName());
 

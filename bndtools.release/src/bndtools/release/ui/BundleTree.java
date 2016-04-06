@@ -53,68 +53,70 @@ import bndtools.release.nl.Messages;
 
 public class BundleTree extends Composite {
 
-	public final static String VERSION_STRING = "(\\d+)(\\.(\\d+)(\\.(\\d+)(\\.([-_\\da-zA-Z]+))?)?)?"; //$NON-NLS-1$
-	public final static Pattern VERSION = Pattern.compile(VERSION_STRING);
+    public final static String VERSION_STRING = "(\\d+)(\\.(\\d+)(\\.(\\d+)(\\.([-_\\da-zA-Z]+))?)?)?"; //$NON-NLS-1$
+    public final static Pattern VERSION = Pattern.compile(VERSION_STRING);
 
-	protected SashForm sashForm;
-	protected Button showAll;
-	protected Combo options;
+    protected SashForm sashForm;
+    protected Button showAll;
+    protected Combo options;
 
-	protected TreeViewer infoViewer;
-	protected Composite infoViewerComposite;
+    protected TreeViewer infoViewer;
+    protected Composite infoViewerComposite;
 
-	protected TreeViewer bundleTreeViewer;
-	protected Composite bundleTreeViewerComposite;
+    protected TreeViewer bundleTreeViewer;
+    protected Composite bundleTreeViewerComposite;
 
-	protected TreeContentProvider bundleTreeViewerProvider = new TreeContentProvider();
-	protected InfoContentProvider infoTreeViewerProvider = new InfoContentProvider();
+    protected TreeContentProvider bundleTreeViewerProvider = new TreeContentProvider();
+    protected InfoContentProvider infoTreeViewerProvider = new InfoContentProvider();
 
-	private Map<Object, Version> initialSuggested;
+    private Map<Object,Version> initialSuggested;
 
-	public BundleTree(Composite composite) {
-		this(composite, SWT.NONE);
-	}
+    public BundleTree(Composite composite) {
+        this(composite, SWT.NONE);
+    }
 
-	public BundleTree(Composite composite, int style) {
-		super(composite, style);
-		createControl();
-	}
+    public BundleTree(Composite composite, int style) {
+        super(composite, style);
+        createControl();
+    }
 
-	public void createControl() {
+    public void createControl() {
 
-	    setLayout(createGridLayout());
-	    setLayoutData(createFillGridData());
+        setLayout(createGridLayout());
+        setLayoutData(createFillGridData());
 
-		sashForm = new SashForm(this, SWT.VERTICAL);
-		sashForm.setLayout(createGridLayout());
+        sashForm = new SashForm(this, SWT.VERTICAL);
+        sashForm.setLayout(createGridLayout());
         sashForm.setLayoutData(createFillGridData());
 
-		createInfoViewer(sashForm);
+        createInfoViewer(sashForm);
 
-		Composite composite = new Composite(sashForm, SWT.NONE);
-		composite.setLayout(createGridLayout());
-		composite.setLayoutData(createFillGridData());
+        Composite composite = new Composite(sashForm, SWT.NONE);
+        composite.setLayout(createGridLayout());
+        composite.setLayoutData(createFillGridData());
 
-		createBundleTreeViewer(composite);
+        createBundleTreeViewer(composite);
 
-		createButtons(composite);
+        createButtons(composite);
 
-		sashForm.setWeights(new int[] { 30, 70 });
-	}
+        sashForm.setWeights(new int[] {
+                30, 70
+        });
+    }
 
-	private void createInfoViewer(Composite container) {
+    private void createInfoViewer(Composite container) {
 
-		infoViewerComposite = new Composite(container, SWT.NONE);
-		infoViewerComposite.setLayoutData(createFillGridData());
+        infoViewerComposite = new Composite(container, SWT.NONE);
+        infoViewerComposite.setLayoutData(createFillGridData());
 
-		TreeColumnLayout layout = new TreeColumnLayout();
-		infoViewerComposite.setLayout(layout);
+        TreeColumnLayout layout = new TreeColumnLayout();
+        infoViewerComposite.setLayout(layout);
 
-		infoViewer = new TreeViewer(infoViewerComposite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
-		infoViewer.setUseHashlookup(true);
-		infoViewer.getTree().setHeaderVisible(true);
+        infoViewer = new TreeViewer(infoViewerComposite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
+        infoViewer.setUseHashlookup(true);
+        infoViewer.getTree().setHeaderVisible(true);
 
-		TreeViewerColumn treeViewerColumn = new TreeViewerColumn(infoViewer, SWT.NONE);
+        TreeViewerColumn treeViewerColumn = new TreeViewerColumn(infoViewer, SWT.NONE);
         TreeColumn treeColumn = treeViewerColumn.getColumn();
         layout.setColumnData(treeColumn, new ColumnWeightData(450, 180, true));
         treeColumn.setText(Messages.bundleAndPackageName);
@@ -155,126 +157,124 @@ public class BundleTree extends Composite {
         });
         treeViewerColumn.setEditingSupport(new InlineComboEditingSupport(infoViewer));
 
-		infoViewer.setContentProvider(infoTreeViewerProvider);
-		infoViewer.setAutoExpandLevel(2);
+        infoViewer.setContentProvider(infoTreeViewerProvider);
+        infoViewer.setAutoExpandLevel(2);
 
-	}
+    }
 
-	private void createBundleTreeViewer(Composite container) {
+    private void createBundleTreeViewer(Composite container) {
 
-		bundleTreeViewerComposite = new Composite(container, SWT.NONE);
-		bundleTreeViewerComposite.setLayoutData(createFillGridData());
+        bundleTreeViewerComposite = new Composite(container, SWT.NONE);
+        bundleTreeViewerComposite.setLayoutData(createFillGridData());
 
-		TreeColumnLayout layout = new TreeColumnLayout();
-		bundleTreeViewerComposite.setLayout(layout);
+        TreeColumnLayout layout = new TreeColumnLayout();
+        bundleTreeViewerComposite.setLayout(layout);
 
-		bundleTreeViewer = new TreeViewer(bundleTreeViewerComposite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
-		bundleTreeViewer.setUseHashlookup(true);
-		bundleTreeViewer.getTree().setHeaderVisible(true);
+        bundleTreeViewer = new TreeViewer(bundleTreeViewerComposite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
+        bundleTreeViewer.setUseHashlookup(true);
+        bundleTreeViewer.getTree().setHeaderVisible(true);
 
-		TreeViewerColumn treeViewerColumn = new TreeViewerColumn(bundleTreeViewer, SWT.NONE);
-		TreeColumn treeColumn = treeViewerColumn.getColumn();
-		layout.setColumnData(treeColumn, new ColumnWeightData(100, 340, true));
-		treeColumn.setText(Messages.symbNameResources);
-		treeViewerColumn.setLabelProvider(new TreeLabelProvider());
+        TreeViewerColumn treeViewerColumn = new TreeViewerColumn(bundleTreeViewer, SWT.NONE);
+        TreeColumn treeColumn = treeViewerColumn.getColumn();
+        layout.setColumnData(treeColumn, new ColumnWeightData(100, 340, true));
+        treeColumn.setText(Messages.symbNameResources);
+        treeViewerColumn.setLabelProvider(new TreeLabelProvider());
 
-		bundleTreeViewer.setContentProvider(bundleTreeViewerProvider);
-		bundleTreeViewer.setAutoExpandLevel(3);
-	}
+        bundleTreeViewer.setContentProvider(bundleTreeViewerProvider);
+        bundleTreeViewer.setAutoExpandLevel(3);
+    }
 
-	private void createButtons(Composite parent) {
+    private void createButtons(Composite parent) {
 
-	    GridLayout gridLayout = new GridLayout(3, false);
-	    gridLayout.marginWidth = 0;
+        GridLayout gridLayout = new GridLayout(3, false);
+        gridLayout.marginWidth = 0;
 
-	    Composite composite = new Composite(parent, SWT.NONE);
-	    composite.setLayout(gridLayout);
-	    
-	    GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
-	    gridData.grabExcessHorizontalSpace = true;
-	    composite.setLayoutData(gridData);
+        Composite composite = new Composite(parent, SWT.NONE);
+        composite.setLayout(gridLayout);
 
-		showAll = new Button(composite, SWT.CHECK);
-		showAll.setText(Messages.showAllPackages);
-		showAll.setFont(getFont());
-		showAll.addSelectionListener(new SelectionAdapter() {
-			@Override
+        GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
+        gridData.grabExcessHorizontalSpace = true;
+        composite.setLayoutData(gridData);
+
+        showAll = new Button(composite, SWT.CHECK);
+        showAll.setText(Messages.showAllPackages);
+        showAll.setFont(getFont());
+        showAll.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent event) {
-				Widget widget = event.widget;
-				if (widget == showAll) {
+                Widget widget = event.widget;
+                if (widget == showAll) {
 
-					bundleTreeViewerProvider.setShowAll(!bundleTreeViewerProvider.isShowAll());
-					infoTreeViewerProvider.setShowAll(!infoTreeViewerProvider.isShowAll());
+                    bundleTreeViewerProvider.setShowAll(!bundleTreeViewerProvider.isShowAll());
+                    infoTreeViewerProvider.setShowAll(!infoTreeViewerProvider.isShowAll());
 
-					if (bundleTreeViewer.getInput() != null || infoViewer.getInput() != null) {
-    					bundleTreeViewer.setSelection(null, false);
-    					infoViewer.setSelection(null, false);
+                    if (bundleTreeViewer.getInput() != null || infoViewer.getInput() != null) {
+                        bundleTreeViewer.setSelection(null, false);
+                        infoViewer.setSelection(null, false);
 
-    					boolean showInfoView = showInfoView(bundleTreeViewer.getInput());
-    					if (showInfoView) {
-    						sashForm.setMaximizedControl(null);
-    					} else {
-    						sashForm.setMaximizedControl(bundleTreeViewerComposite);
-    					}
-    					bundleTreeViewer.refresh();
-    					infoViewer.refresh();
-    					sashForm.redraw();
-					}
-				}
-			}
-		});
-		
+                        boolean showInfoView = showInfoView(bundleTreeViewer.getInput());
+                        if (showInfoView) {
+                            sashForm.setMaximizedControl(null);
+                        } else {
+                            sashForm.setMaximizedControl(bundleTreeViewerComposite);
+                        }
+                        bundleTreeViewer.refresh();
+                        infoViewer.refresh();
+                        sashForm.redraw();
+                    }
+                }
+            }
+        });
+
         gridData = new GridData(SWT.END, SWT.CENTER, true, true);
 
-	    Label label = new Label(composite, SWT.NONE);
-	    label.setText(Messages.releaseOption);
-	    label.setLayoutData(gridData);
+        Label label = new Label(composite, SWT.NONE);
+        label.setText(Messages.releaseOption);
+        label.setLayoutData(gridData);
 
-		options = new Combo(composite, SWT.DROP_DOWN | SWT.READ_ONLY);
-		options.setItems(new String[] {
-		        Messages.updateVersionsAndRelease,
-		        Messages.updateVersions,
-		        Messages.release
-		});
-		options.add(Messages.comboSelectText, 0);
-		options.select(0);
+        options = new Combo(composite, SWT.DROP_DOWN | SWT.READ_ONLY);
+        options.setItems(new String[] {
+                Messages.updateVersionsAndRelease, Messages.updateVersions, Messages.release
+        });
+        options.add(Messages.comboSelectText, 0);
+        options.select(0);
 
-	}
+    }
 
-	public void setInput(Object input) {
+    public void setInput(Object input) {
 
-	    boolean showInfoView = showInfoView(input);
-		if (showInfoView) {
-			sashForm.setMaximizedControl(null);
-		} else {
-			sashForm.setMaximizedControl(bundleTreeViewerComposite);
-		}
+        boolean showInfoView = showInfoView(input);
+        if (showInfoView) {
+            sashForm.setMaximizedControl(null);
+        } else {
+            sashForm.setMaximizedControl(bundleTreeViewerComposite);
+        }
 
-		if (input == null) {
-			bundleTreeViewer.setInput(Collections.emptyList());
-			infoViewer.setInput(Collections.emptyList());
-		} else {
+        if (input == null) {
+            bundleTreeViewer.setInput(Collections.emptyList());
+            infoViewer.setInput(Collections.emptyList());
+        } else {
             bundleTreeViewer.getTree().setRedraw(false);
             bundleTreeViewer.setSelection(null, false);
             bundleTreeViewer.setInput(input);
-    		bundleTreeViewer.getTree().setRedraw(true);
+            bundleTreeViewer.getTree().setRedraw(true);
             infoViewer.getTree().setRedraw(false);
             infoViewer.setSelection(null, false);
-    		infoViewer.setInput(input);
+            infoViewer.setInput(input);
             infoViewer.getTree().setRedraw(true);
-		}
-		sashForm.redraw();
-	}
+        }
+        sashForm.redraw();
+    }
 
-	private static boolean showInfoView(Object input) {
-	    if (input instanceof List && ((List<?>)input).size() > 0) {
-	        Object obj = ((List<?>)input).get(0);
-	        if (obj instanceof Baseline) {
-	            return true;
-	        }
-	    }
-		return false;
-	}
+    private static boolean showInfoView(Object input) {
+        if (input instanceof List && ((List< ? >) input).size() > 0) {
+            Object obj = ((List< ? >) input).get(0);
+            if (obj instanceof Baseline) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     protected Version getInitialSuggestedVersion(Object obj) {
         if (initialSuggested == null) {
@@ -295,37 +295,38 @@ public class BundleTree extends Composite {
         return version;
     }
 
-	class InlineComboEditingSupport extends EditingSupport {
+    class InlineComboEditingSupport extends EditingSupport {
 
-		protected ComboBoxCellEditor editor;
+        protected ComboBoxCellEditor editor;
 
-		public InlineComboEditingSupport(ColumnViewer viewer) {
-			super(viewer);
-			this.editor = new ComboBoxCellEditor((Composite) viewer.getControl(), new String[] {});
+        public InlineComboEditingSupport(ColumnViewer viewer) {
+            super(viewer);
+            this.editor = new ComboBoxCellEditor((Composite) viewer.getControl(), new String[] {});
 
-			Control control = editor.getControl();
-			((CCombo) control).addSelectionListener(new SelectionListener() {
-				public void widgetSelected(SelectionEvent e) {
-					editor.deactivate();
-				}
+            Control control = editor.getControl();
+            ((CCombo) control).addSelectionListener(new SelectionListener() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    editor.deactivate();
+                }
 
-				public void widgetDefaultSelected(SelectionEvent e) {
-				}
-			});
-		}
+                @Override
+                public void widgetDefaultSelected(SelectionEvent e) {}
+            });
+        }
 
-		@Override
+        @Override
         protected boolean canEdit(Object element) {
             if (element instanceof Baseline) {
                 return true;
             }
-			return false;
-		}
+            return false;
+        }
 
-		@Override
+        @Override
         protected CellEditor getCellEditor(Object element) {
 
-			Set<String> versions = new TreeSet<String>();
+            Set<String> versions = new TreeSet<String>();
             if (element instanceof Baseline) {
                 Baseline info = (Baseline) element;
                 versions.add(getInitialSuggestedVersion(info).toString());
@@ -333,85 +334,85 @@ public class BundleTree extends Composite {
                     versions.add(Version.ONE.toString());
                 }
             }
-			if (element instanceof Info) {
-				Info info = (Info) element;
-				versions.add(getInitialSuggestedVersion(info).toString());
+            if (element instanceof Info) {
+                Info info = (Info) element;
+                versions.add(getInitialSuggestedVersion(info).toString());
                 if (getInitialSuggestedVersion(info).compareTo(Version.ONE) < 0) {
                     versions.add(Version.ONE.toString());
                 }
-			}
+            }
 
-			editor.setItems(versions.toArray(new String[versions.size()]));
-			return editor;
-		}
+            editor.setItems(versions.toArray(new String[0]));
+            return editor;
+        }
 
-		@Override
+        @Override
         protected Object getValue(Object element) {
-			return null;
-			// Not needed
-		}
+            return null;
+            // Not needed
+        }
 
-		@Override
+        @Override
         protected void setValue(Object element, Object value) {
-			// Not needed
-		}
+            // Not needed
+        }
 
-		@Override
+        @Override
         protected void initializeCellEditorValue(CellEditor cellEditor, ViewerCell cell) {
 
-			 String selectedVersion = ""; //$NON-NLS-1$
-			 if (cell.getElement() instanceof Baseline) {
-			     selectedVersion = ((Baseline) cell.getElement()).getSuggestedVersion().toString();
-			 } else if (cell.getElement() instanceof Info) {
-                 selectedVersion = ((Info) cell.getElement()).suggestedVersion.toString();
-			 }
+            String selectedVersion = ""; //$NON-NLS-1$
+            if (cell.getElement() instanceof Baseline) {
+                selectedVersion = ((Baseline) cell.getElement()).getSuggestedVersion().toString();
+            } else if (cell.getElement() instanceof Info) {
+                selectedVersion = ((Info) cell.getElement()).suggestedVersion.toString();
+            }
 
-			 String[] items = ((ComboBoxCellEditor)cellEditor).getItems();
-			 int idx = -1;
-			 for (int i = 0; i < items.length; i++) {
-			     if (items[i].equals(selectedVersion)) {
-			         idx = i;
-			         break;
-			     }
-			 }
-			 if (idx > -1)
-			     cellEditor.setValue(idx);
-			 cell.setText(selectedVersion);
-		}
+            String[] items = ((ComboBoxCellEditor) cellEditor).getItems();
+            int idx = -1;
+            for (int i = 0; i < items.length; i++) {
+                if (items[i].equals(selectedVersion)) {
+                    idx = i;
+                    break;
+                }
+            }
+            if (idx > -1)
+                cellEditor.setValue(idx);
+            cell.setText(selectedVersion);
+        }
 
-		@Override
+        @Override
         protected void saveCellEditorValue(CellEditor cellEditor, ViewerCell cell) {
-			int idx = ((Integer) cellEditor.getValue()).intValue();
-			String[] items = ((ComboBoxCellEditor) cellEditor).getItems();
+            int idx = ((Integer) cellEditor.getValue()).intValue();
+            String[] items = ((ComboBoxCellEditor) cellEditor).getItems();
 
-			String selectedVersion;
-			if (idx > -1) {
-			    selectedVersion = items[idx];
-			} else {
-			    selectedVersion = ((CCombo) cellEditor.getControl()).getText();
-			}
+            String selectedVersion;
+            if (idx > -1) {
+                selectedVersion = items[idx];
+            } else {
+                selectedVersion = ((CCombo) cellEditor.getControl()).getText();
+            }
 
-			Version version;
-			try {
-			    version = Version.parseVersion(selectedVersion);
-			} catch (IllegalArgumentException e) {
-			    Activator.message(String.format(Messages.versionInvalid, selectedVersion));
-			    return;
-			}
+            Version version;
+            try {
+                version = Version.parseVersion(selectedVersion);
+            } catch (IllegalArgumentException e) {
+                Activator.message(String.format(Messages.versionInvalid, selectedVersion));
+                return;
+            }
 
-			cell.setText(selectedVersion);
+            cell.setText(selectedVersion);
 
             if (cell.getElement() instanceof Baseline) {
-                ((Baseline)cell.getElement()).setSuggestedVersion(version);
+                ((Baseline) cell.getElement()).setSuggestedVersion(version);
             } else if (cell.getElement() instanceof Info) {
-			    ((Info)cell.getElement()).suggestedVersion = version;
-			}
-		}
-	}
+                ((Info) cell.getElement()).suggestedVersion = version;
+            }
+        }
+    }
 
-	public ReleaseOption getReleaseOption() {
-	    return ReleaseOption.parse(options.getText());
-	}
+    public ReleaseOption getReleaseOption() {
+        return ReleaseOption.parse(options.getText());
+    }
 
     private static GridLayout createGridLayout() {
         GridLayout gridLayout = new GridLayout();

@@ -27,7 +27,7 @@ public class LatestTemplateFilter extends ViewerFilter {
                     // existing selected template for this name is lower -> replace
                     selected.put(template.getName(), template);
             }
-            result = selected.values().toArray(new Object[selected.size()]);
+            result = selected.values().toArray();
         } else {
             result = elements;
         }

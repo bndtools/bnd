@@ -190,7 +190,7 @@ public class EditableParametersPart {
         for (int index : indices)
             selected.add(entries.get(index));
         entries.removeAll(selected);
-        viewer.remove(selected.toArray(new Object[selected.size()]));
+        viewer.remove(selected.toArray());
     }
 
     void doEdit() {

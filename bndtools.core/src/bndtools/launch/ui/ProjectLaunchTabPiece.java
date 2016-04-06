@@ -134,7 +134,7 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
         dialog.setMessage("Select a project to constrain your search.");
 
         List<IProject> projects = loadProjects();
-        dialog.setElements(projects.toArray(new IProject[projects.size()]));
+        dialog.setElements(projects.toArray());
 
         if (Window.OK == dialog.open()) {
             IProject selected = (IProject) dialog.getFirstResult();

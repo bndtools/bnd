@@ -107,7 +107,7 @@ public class IconLoaderJob extends Job {
                         }
                     }
 
-                    viewer.update(toUpdate.toArray(new Object[toUpdate.size()]), null);
+                    viewer.update(toUpdate.toArray(), null);
                 }
             });
         }

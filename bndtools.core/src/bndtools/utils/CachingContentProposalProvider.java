@@ -24,6 +24,7 @@ public abstract class CachingContentProposalProvider implements IContentProposal
     protected String initialContent = null;
     protected Collection< ? extends IContentProposal> initialProposals = null;
 
+    @Override
     public final IContentProposal[] getProposals(String contents, int position) {
         Collection< ? extends IContentProposal> currentProposals;
 
@@ -41,7 +42,7 @@ public abstract class CachingContentProposalProvider implements IContentProposal
             currentProposals = temp;
         }
 
-        return currentProposals.toArray(new IContentProposal[currentProposals.size()]);
+        return currentProposals.toArray(new IContentProposal[0]);
     }
 
     protected abstract Collection< ? extends IContentProposal> doGenerateProposals(String contents, int position);
@@ -53,9 +54,11 @@ public abstract class CachingContentProposalProvider implements IContentProposal
         initialProposals = null;
     }
 
+    @Override
     public void proposalPopupClosed(ContentProposalAdapter adapter) {
         reset();
     }
 
+    @Override
     public void proposalPopupOpened(ContentProposalAdapter adapter) {}
 }

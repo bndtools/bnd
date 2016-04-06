@@ -26,43 +26,44 @@ import aQute.bnd.service.diff.Type;
 
 public class TreeContentProvider implements ITreeContentProvider {
 
-	private boolean showAll = false;
+    private boolean showAll = false;
 
+    @Override
     public Object[] getChildren(Object parent) {
-		if (parent instanceof List) {
-			return ((List<?>) parent).toArray();
-		}
-		if (parent instanceof Baseline) {
-			Collection<? extends Diff> diffs = ((Baseline) parent).getDiff().getChildren();
-			List<Diff> filteredDiffs = new ArrayList<Diff>();
-			for (Diff diff : diffs) {
-				switch (diff.getType()) {
-				case API :
-				case MANIFEST :
-				case RESOURCES :
-				    if (getChildren(diff).length == 0)
-				        continue;
-				    break;
-			    default:
-			        break;
-				}
-				filteredDiffs.add(diff);
-			}
-			return filteredDiffs.toArray(new Diff[filteredDiffs.size()]);
-		}
-		if (parent instanceof Tree) {
-			return ((Tree) parent).getChildren();
-		}
+        if (parent instanceof List) {
+            return ((List< ? >) parent).toArray();
+        }
+        if (parent instanceof Baseline) {
+            Collection< ? extends Diff> diffs = ((Baseline) parent).getDiff().getChildren();
+            List<Diff> filteredDiffs = new ArrayList<Diff>();
+            for (Diff diff : diffs) {
+                switch (diff.getType()) {
+                case API :
+                case MANIFEST :
+                case RESOURCES :
+                    if (getChildren(diff).length == 0)
+                        continue;
+                    break;
+                default :
+                    break;
+                }
+                filteredDiffs.add(diff);
+            }
+            return filteredDiffs.toArray(new Diff[0]);
+        }
+        if (parent instanceof Tree) {
+            return ((Tree) parent).getChildren();
+        }
 
-		if (parent instanceof Diff) {
-			return getChildren((Diff) parent);
-		}
+        if (parent instanceof Diff) {
+            return getChildren((Diff) parent);
+        }
 
-		return new Object[0];
-	}
+        return new Object[0];
+    }
 
-	private Object[] getChildren(Diff parent) {
-        Collection<? extends Diff> diffs = parent.getChildren();
+    private Object[] getChildren(Diff parent) {
+        Collection< ? extends Diff> diffs = parent.getChildren();
         List<Diff> filteredDiffs = new ArrayList<Diff>();
         for (Diff diff : diffs) {
             if (!showAll && (diff.getDelta() == Delta.IGNORED || diff.getDelta() == Delta.UNCHANGED)) {
@@ -79,60 +80,63 @@ public class TreeContentProvider implements ITreeContentProvider {
             }
             filteredDiffs.add(diff);
         }
-        return filteredDiffs.toArray(new Diff[filteredDiffs.size()]);
-	}
+        return filteredDiffs.toArray(new Diff[0]);
+    }
 
-	public Object getParent(Object item) {
-		return null;
-	}
+    @Override
+    public Object getParent(Object item) {
+        return null;
+    }
 
-	/*
-	 * @see org.eclipse.jface.viewers.ITreeContentProvider#hasChildren(java.lang.Object)
-	 */
-	public boolean hasChildren(Object parent) {
-		if (parent instanceof Baseline) {
-			for (Diff diff : ((Baseline) parent).getDiff().getChildren()) {
-				switch (diff.getType()) {
-				case API :
-				case MANIFEST :
-				case RESOURCES :
-					if (getChildren(diff).length > 0)
-					    return true;
+    /*
+     * @see org.eclipse.jface.viewers.ITreeContentProvider#hasChildren(java.lang.Object)
+     */
+    @Override
+    public boolean hasChildren(Object parent) {
+        if (parent instanceof Baseline) {
+            for (Diff diff : ((Baseline) parent).getDiff().getChildren()) {
+                switch (diff.getType()) {
+                case API :
+                case MANIFEST :
+                case RESOURCES :
+                    if (getChildren(diff).length > 0)
+                        return true;
                     break;
-                default:
+                default :
                     break;
-				}
-			}
-			return false;
-		}
+                }
+            }
+            return false;
+        }
 
-		if (parent instanceof Tree) {
-			return ((Tree) parent).getChildren().length > 0;
-		}
+        if (parent instanceof Tree) {
+            return ((Tree) parent).getChildren().length > 0;
+        }
 
-		if (parent instanceof Diff) {
-			Diff diff = (Diff) parent;
+        if (parent instanceof Diff) {
+            Diff diff = (Diff) parent;
             return getChildren(diff).length > 0;
-		}
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	public Object[] getElements(Object inputElement) {
-		return getChildren(inputElement);
-	}
+    @Override
+    public Object[] getElements(Object inputElement) {
+        return getChildren(inputElement);
+    }
 
-	public void dispose() {
-	}
+    @Override
+    public void dispose() {}
 
-	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-	}
+    @Override
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
 
-	public boolean isShowAll() {
-		return showAll;
-	}
+    public boolean isShowAll() {
+        return showAll;
+    }
 
-	public void setShowAll(boolean showAll) {
-		this.showAll = showAll;
-	}
+    public void setShowAll(boolean showAll) {
+        this.showAll = showAll;
+    }
 }

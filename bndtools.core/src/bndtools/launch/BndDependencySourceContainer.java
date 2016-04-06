@@ -94,6 +94,6 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
             logger.logError("Error querying bnd dependency source containers.", e);
         }
 
-        return result.toArray(new ISourceContainer[result.size()]);
+        return result.toArray(new ISourceContainer[0]);
     }
 }
