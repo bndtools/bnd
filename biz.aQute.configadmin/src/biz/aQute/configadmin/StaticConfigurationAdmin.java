@@ -155,7 +155,7 @@ public class StaticConfigurationAdmin implements ConfigurationAdmin {
 				result.add(config);
 		}
 
-		return result.toArray(new Configuration[result.size()]);
+		return result.toArray(new Configuration[0]);
 	}
 
 }

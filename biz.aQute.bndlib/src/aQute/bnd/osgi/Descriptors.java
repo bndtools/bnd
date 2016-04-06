@@ -453,7 +453,7 @@ public class Descriptors {
 					index = parse(types, descriptor, index);
 				}
 				index++; // skip )
-				prototype = types.toArray(new TypeRef[types.size()]);
+				prototype = types.toArray(new TypeRef[0]);
 				types.clear();
 			} else
 				prototype = null;

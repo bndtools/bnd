@@ -295,7 +295,7 @@ public class HeaderReader extends Processor {
 				// TODO verifies the impl. class extends or implements the
 				// interface
 			}
-			cd.service = provide.toArray(new TypeRef[provide.size()]);
+			cd.service = provide.toArray(new TypeRef[0]);
 		}
 	}
 

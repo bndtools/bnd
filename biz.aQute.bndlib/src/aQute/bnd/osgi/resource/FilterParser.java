@@ -568,7 +568,7 @@ public class FilterParser {
 
 	public static class And extends SubExpression {
 		private And(List<Expression> exprs) {
-			this.expressions = exprs.toArray(new Expression[exprs.size()]);
+			this.expressions = exprs.toArray(new Expression[0]);
 		}
 
 		public boolean eval(Map<String, ? > map) {
@@ -661,7 +661,7 @@ public class FilterParser {
 
 	public static class Or extends SubExpression {
 		private Or(List<Expression> exprs) {
-			this.expressions = exprs.toArray(new Expression[exprs.size()]);
+			this.expressions = exprs.toArray(new Expression[0]);
 		}
 
 		public boolean eval(Map<String, ? > map) {

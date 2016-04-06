@@ -148,8 +148,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	}
 
 	public Bundle[] getBundles() {
-		Bundle[] bs = new Bundle[bundles.size()];
-		return bundles.values().toArray(bs);
+		return bundles.values().toArray(new Bundle[0]);
 	}
 
 	public File getDataFile(String filename) {

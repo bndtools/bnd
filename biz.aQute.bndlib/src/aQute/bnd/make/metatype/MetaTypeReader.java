@@ -185,7 +185,7 @@ public class MetaTypeReader extends WriteResource {
 				}
 			}
 		});
-		return values.toArray(new String[values.size()]);
+		return values.toArray(new String[0]);
 	}
 
 	Meta.Type getType(String rtype) {

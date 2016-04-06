@@ -858,7 +858,7 @@ public class ProjectTest extends TestCase {
 		Project p = ws.getProject("p7");
 		Collection<String> c = p.getRunVM();
 
-		String[] arr = c.toArray(new String[] {});
+		String[] arr = c.toArray(new String[0]);
 		assertEquals("-XX:+UnlockCommercialFeatures", arr[0]);
 		assertEquals("-XX:+FlightRecorder", arr[1]);
 		assertEquals("-XX:FlightRecorderOptions=defaultrecording=true,dumponexit=true", arr[2]);

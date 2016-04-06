@@ -56,8 +56,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 			}
 		}
 
-		File[] result = new File[foundVersion.size()];
-		result = foundVersion.values().toArray(result);
+		File[] result = foundVersion.values().toArray(new File[0]);
 		if (!Constants.VERSION_ATTR_LATEST.equals(range)) {
 			return result;
 		}

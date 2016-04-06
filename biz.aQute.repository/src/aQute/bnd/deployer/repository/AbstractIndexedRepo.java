@@ -356,7 +356,7 @@ public abstract class AbstractIndexedRepo
 		List<Resource> resources = identityMap.getRange(bsn, rangeStr);
 		List<ResourceHandle> handles = mapResourcesToHandles(resources);
 
-		return handles.toArray(new ResourceHandle[handles.size()]);
+		return handles.toArray(new ResourceHandle[0]);
 	}
 
 	public synchronized void setReporter(Reporter reporter) {

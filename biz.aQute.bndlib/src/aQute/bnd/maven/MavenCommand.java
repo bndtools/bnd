@@ -595,7 +595,7 @@ public class MavenCommand extends Processor {
 			i++;
 		}
 
-		URI[] urls2 = urls.toArray(new URI[urls.size()]);
+		URI[] urls2 = urls.toArray(new URI[0]);
 		PrintWriter pw = IO.writer(out);
 
 		while (i < args.length) {

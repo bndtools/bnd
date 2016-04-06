@@ -28,7 +28,7 @@ public class ObjectHandler extends Handler {
 			fields.add(f);
 		}
 
-		this.fields = fields.toArray(new Field[fields.size()]);
+		this.fields = fields.toArray(new Field[0]);
 
 		// Sort the fields so the output is canonical
 		Arrays.sort(this.fields, new Comparator<Field>() {

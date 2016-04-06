@@ -260,7 +260,7 @@ public class PersistentResource extends DTO implements Resource {
 			data.directives++;
 		}
 		Collections.sort(props);
-		data.properties = props.toArray(new Attr[props.size()]);
+		data.properties = props.toArray(new Attr[0]);
 
 		return data;
 	}

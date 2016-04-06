@@ -89,7 +89,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		} else
 			return null;
 
-		return result.toArray(new File[result.size()]);
+		return result.toArray(new File[0]);
 	}
 
 	public List<String> list(String regex) {

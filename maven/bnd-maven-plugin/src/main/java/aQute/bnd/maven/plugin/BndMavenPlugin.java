@@ -197,7 +197,7 @@ public class BndMavenPlugin extends AbstractMojo {
 			if (delta || (builder.getJar() == null) || (builder.lastModified() > builder.getJar().lastModified())) {
 				// Set builder paths
 				builder.setClasspath(buildpath);
-				builder.setSourcepath(sourcepath.toArray(new File[sourcepath.size()]));
+				builder.setSourcepath(sourcepath.toArray(new File[0]));
 
 				// Build bnd Jar (in memory)
 				Jar bndJar = builder.build();

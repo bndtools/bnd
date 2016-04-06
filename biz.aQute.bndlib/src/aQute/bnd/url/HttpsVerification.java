@@ -74,7 +74,7 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 			CertificateException, IOException {
 		if (factory == null) {
 			List<X509Certificate> certificates = createCertificates(certificatesPath);
-			final X509Certificate trusted[] = certificates.toArray(new X509Certificate[certificates.size()]);
+			final X509Certificate trusted[] = certificates.toArray(new X509Certificate[0]);
 
 			TrustManager[] trustAllCerts = new TrustManager[] {
 					getTrustManager(trusted)

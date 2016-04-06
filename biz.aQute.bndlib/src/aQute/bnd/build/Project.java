@@ -1266,7 +1266,7 @@ public class Project extends Processor {
 			patterns.add(Glob.toPattern(token));
 			token = tokenize.nextToken();
 		}
-		return new RepoFilter(patterns.toArray(new Pattern[patterns.size()]));
+		return new RepoFilter(patterns.toArray(new Pattern[0]));
 	}
 
 	/**
@@ -1669,7 +1669,7 @@ public class Project extends Processor {
 					}
 					files.add(ff);
 				}
-				return this.files = files.toArray(new File[files.size()]);
+				return this.files = files.toArray(new File[0]);
 			} finally {
 				rdr.close();
 			}

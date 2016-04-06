@@ -196,7 +196,7 @@ public class Builder extends Analyzer {
 		if (ps.isEmpty())
 			return;
 		trace("digests %s", ps);
-		String[] digests = ps.keySet().toArray(new String[ps.size()]);
+		String[] digests = ps.keySet().toArray(new String[0]);
 		dot.setDigestAlgorithms(digests);
 	}
 
@@ -1307,7 +1307,7 @@ public class Builder extends Analyzer {
 			if (builder != this)
 				getInfo(builder, builder.getBsn() + ": ");
 		}
-		return result.toArray(new Jar[result.size()]);
+		return result.toArray(new Jar[0]);
 	}
 
 	/**

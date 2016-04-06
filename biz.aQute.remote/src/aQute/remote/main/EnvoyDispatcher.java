@@ -145,7 +145,7 @@ public class EnvoyDispatcher implements Closeable {
 
 			DispatcherInfo info = new DispatcherInfo();
 			info.name = name;
-			info.cl = new URLClassLoader(files.toArray(new URL[files.size()]));
+			info.cl = new URLClassLoader(files.toArray(new URL[0]));
 			info.properties = new HashMap<String,Object>(properties);
 			info.runpath = runpath;
 			info.storage = new File(storage, name);
