@@ -31,12 +31,10 @@ public class GitRepoTemplatePreferencePage extends PreferencePage implements IWo
         }
     });
 
-    private IWorkbench workbench;
     private GitRepoPreferences prefs;
 
     @Override
     public void init(IWorkbench workbench) {
-        this.workbench = workbench;
         this.prefs = new GitRepoPreferences();
 
         githubReposPart.setParameters(prefs.getGithubRepos());
