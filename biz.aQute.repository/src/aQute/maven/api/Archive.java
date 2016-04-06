@@ -212,4 +212,8 @@ public class Archive implements Comparable<Archive> {
 		return revision.archive(extension, classifier);
 	}
 
+	public static Archive valueOf(String group, String artifact, String version, String extension, String classifier) {
+		return Program.valueOf(group, artifact).version(version).archive(extension, classifier);
+	}
+
 }

@@ -48,6 +48,7 @@ class IndexFile {
 	public static class BundleDescriptor extends ResourceDescriptor {
 		public long		lastModified;
 		public Archive	archive;
+		public boolean	merged;
 		String			error;
 		Promise<File>	promise;
 	}
@@ -87,11 +88,12 @@ class IndexFile {
 		System.out.println("synced");
 	}
 
-	void add(Archive archive) throws Exception {
+	BundleDescriptor add(Archive archive) throws Exception {
 		descriptors.putIfAbsent(archive, createInitialDescriptor(archive));
 		BundleDescriptor descriptor = descriptors.get(archive);
 		updateDescriptor(descriptor, repo.get(archive).getValue());
 		saveIndexFile();
+		return descriptor;
 	}
 
 	BundleDescriptor remove(Archive archive) throws Exception {
@@ -100,6 +102,14 @@ class IndexFile {
 			saveIndexFile();
 		}
 		return descriptor;
+	}
+
+	public void remove(String bsn) throws Exception {
+		for (Iterator<BundleDescriptor> bd = descriptors.values().iterator(); bd.hasNext();) {
+			if (isBsn(bsn, bd.next()))
+				bd.remove();
+		}
+		saveIndexFile();
 	}
 
 	Collection<String> list() {
@@ -319,6 +329,10 @@ class IndexFile {
 				StandardCopyOption.REPLACE_EXISTING);
 
 		lastModified = indexFile.lastModified();
+	}
+
+	public void save() throws Exception {
+		saveIndexFile();
 	}
 
 }

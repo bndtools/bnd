@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.ProtocolException;
 import java.net.SocketTimeoutException;
@@ -304,14 +305,23 @@ public class HttpClient implements Closeable, URLConnector {
 	private URLConnection getProxiedAndConfiguredConnection(URL url, ProxySetup proxy) throws IOException, Exception {
 		final URLConnection urlc = proxy != null ? url.openConnection(proxy.proxy) : url.openConnection();
 
+		URLConnectionHandler matching = findMatchingHandler(url);
+		if (matching == null)
+			return urlc;
+
+		matching.handle(urlc);
+		return urlc;
+	}
+
+	public URLConnectionHandler findMatchingHandler(URL url) throws Exception {
 		for (URLConnectionHandler urlh : getURLConnectionHandlers()) {
 			if (urlh.matches(url)) {
 				reporter.trace("Decorate %s with handler %s", url, urlh);
-				urlh.handle(urlc);
+				return urlh;
 			} else
 				reporter.trace("No match for %s, handler %s", url, urlh);
 		}
-		return urlc;
+		return null;
 	}
 
 	private synchronized Collection< ? extends URLConnectionHandler> getURLConnectionHandlers() throws Exception {
@@ -524,5 +534,13 @@ public class HttpClient implements Closeable, URLConnector {
 	public void setLog(File log) throws IOException {
 		log.getParentFile().mkdirs();
 		reporter = new ReporterAdapter(IO.writer(log));
+	}
+
+	public String getUserFor(String base) throws MalformedURLException, Exception {
+		URLConnectionHandler handler = findMatchingHandler(new URL(base));
+		if (handler == null)
+			return null;
+
+		return handler.toString();
 	}
 }

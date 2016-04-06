@@ -11,7 +11,7 @@ import aQute.lib.io.IO;
 import aQute.libg.cryptography.MD5;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.reporter.ReporterAdapter;
-import aQute.maven.provider.MaventRemoteRepository;
+import aQute.maven.provider.MavenRemoteRepository;
 import junit.framework.TestCase;
 
 public class RemoteRepoTest extends TestCase {
@@ -19,7 +19,7 @@ public class RemoteRepoTest extends TestCase {
 	File		local	= IO.getFile("generated/local");
 	File		remote	= IO.getFile("generated/remote");
 	FakeNexus	fnx;
-	MaventRemoteRepository	repo;
+	MavenRemoteRepository	repo;
 	ReporterAdapter	reporter	= new ReporterAdapter(System.err);
 
 	@Override
@@ -33,7 +33,7 @@ public class RemoteRepoTest extends TestCase {
 		remote.mkdirs();
 		local.mkdirs();
 		reporter.setTrace(true);
-		repo = new MaventRemoteRepository(local, new HttpClient(), fnx.getBaseURI() + "/repo/", reporter);
+		repo = new MavenRemoteRepository(local, new HttpClient(), fnx.getBaseURI() + "/repo/", reporter);
 	}
 
 	@Override

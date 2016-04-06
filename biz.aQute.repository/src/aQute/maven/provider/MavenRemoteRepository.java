@@ -2,6 +2,7 @@ package aQute.maven.provider;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -30,7 +31,7 @@ import aQute.maven.provider.MetadataParser.RevisionMetadata;
 import aQute.maven.provider.MetadataParser.SnapshotVersion;
 import aQute.service.reporter.Reporter;
 
-public class MaventRemoteRepository implements Closeable {
+public class MavenRemoteRepository implements Closeable {
 	final HttpClient						client;
 	final String							base;
 	final Map<Revision,RevisionMetadata>	revisions	= new ConcurrentHashMap<>();
@@ -39,7 +40,7 @@ public class MaventRemoteRepository implements Closeable {
 	final File								root;
 	final Reporter							reporter;
 
-	public MaventRemoteRepository(File root, HttpClient client, String base, Reporter reporter) throws Exception {
+	public MavenRemoteRepository(File root, HttpClient client, String base, Reporter reporter) throws Exception {
 		this.root = root;
 		this.client = client;
 		this.base = base;
@@ -200,13 +201,23 @@ public class MaventRemoteRepository implements Closeable {
 		ProgramMetadata metadata = programs.get(program);
 
 		TaggedData tag = client.build().useCache(metafile).asTag().go(new URI(base + program.metadata()));
-		if (tag == null || tag.isOk() || metadata == null) {
-			metadata = MetadataParser.parseProgramMetadata(metafile);
-			programs.put(program, metadata);
-		} else if (!tag.isNotModified())
-			throw new IOException("HTTP failed:" + tag.getResponseCode());
+		switch (tag.getState()) {
+			case NOT_FOUND :
+				throw new FileNotFoundException();
+			case OTHER :
+				throw new IOException("Failed " + tag.getResponseCode());
+			case UNMODIFIED :
+				if (metadata != null)
+					return metadata;
 
-		return metadata;
+				// fall thru
+
+			case UPDATED :
+			default :
+				metadata = MetadataParser.parseProgramMetadata(metafile);
+				programs.put(program, metadata);
+				return metadata;
+		}
 	}
 
 	public List<Archive> getSnapshotArchives(Revision revision) throws Exception {
@@ -236,5 +247,9 @@ public class MaventRemoteRepository implements Closeable {
 	@Override
 	public String toString() {
 		return "RemoteRepo [base=" + base + ", id=" + id + "]";
+	}
+
+	public String getUser() throws Exception {
+		return client.getUserFor(base);
 	}
 }

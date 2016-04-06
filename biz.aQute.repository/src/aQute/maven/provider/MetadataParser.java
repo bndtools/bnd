@@ -438,6 +438,9 @@ public class MetadataParser {
 	public static ProgramMetadata parseProgramMetadata(File metafile) throws Exception {
 		try (FileInputStream in = new FileInputStream(metafile)) {
 			return parseProgramMetadata(in);
+		} catch (Exception e) {
+			System.out.println("File " + metafile + " failed");
+			throw e;
 		}
 	}
 

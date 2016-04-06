@@ -21,6 +21,7 @@ import aQute.lib.io.IO;
 import junit.framework.TestCase;
 
 public class AgainstNexusTest extends TestCase {
+	private static final String	HTTP_LOCALHOST_8081	= "http://localhost:8081/nexus/content/repositories/snapshots/";
 	File	tmp		= IO.getFile("generated/tmp");
 	File	local	= IO.getFile(tmp, "local");
 	File	remote	= IO.getFile(tmp, "remote");
@@ -38,7 +39,7 @@ public class AgainstNexusTest extends TestCase {
 		Config config = new HttpTestServer.Config();
 
 		try {
-			new URL("http://localhost:8081/").openStream();
+			new URL(HTTP_LOCALHOST_8081).openStream();
 			skip = false;
 		} catch (FileNotFoundException e) {
 			skip = false;
@@ -77,7 +78,7 @@ public class AgainstNexusTest extends TestCase {
 			config = new HashMap<>();
 		config.put("local", "generated/tmp/local");
 		config.put("index", "generated/tmp/index");
-		config.put("releaseUrl", "http://localhost:8081/nexus/content/repositories/snapshots/");
+		config.put("releaseUrl", HTTP_LOCALHOST_8081);
 
 		Processor reporter = new Processor();
 		reporter.setTrace(true);

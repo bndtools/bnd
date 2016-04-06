@@ -11,7 +11,7 @@ public class ReleaseDTO extends DTO {
 	}
 
 	public enum JavadocPackages {
-		ALL, NONE, EXPORT;
+		ALL, EXPORT;
 	}
 
 	public static class JavadocDTO extends DTO {

@@ -52,7 +52,7 @@ public class Tool extends Processor {
 		return sources.isDirectory();
 	}
 
-	public Jar doJavadoc(Map<String,String> options) throws Exception {
+	public Jar doJavadoc(Map<String,String> options, boolean exportsOnly) throws Exception {
 
 		if (!hasSources())
 			return new Jar("empty");
@@ -125,9 +125,11 @@ public class Tool extends Processor {
 			}
 		}
 
-		Parameters exports = manifest.getExportPackage();
-		for (String packageName : exports.keySet()) {
-			command.add(packageName);
+		if (exportsOnly) {
+			Parameters exports = manifest.getExportPackage();
+			for (String packageName : exports.keySet()) {
+				command.add(packageName);
+			}
 		}
 
 		StringBuilder out = new StringBuilder();

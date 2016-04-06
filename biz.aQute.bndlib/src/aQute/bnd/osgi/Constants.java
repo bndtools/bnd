@@ -310,7 +310,7 @@ public interface Constants {
 																						JAVAC, JAVA, JAVA_DEBUG,
 																						EXPORTTYPE, RUNREMOTE, TESTER,
 																						AUGMENT, REQUIRE_BND, GROUPID,
-			STANDALONE, INIT, MAVEN_RELEASE
+			STANDALONE, INIT, MAVEN_RELEASE, INSTALLREPO
 
 																					};
 

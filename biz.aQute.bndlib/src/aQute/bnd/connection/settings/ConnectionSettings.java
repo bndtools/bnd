@@ -105,7 +105,7 @@ public class ConnectionSettings extends Processor {
 				StringBuilder address = new StringBuilder();
 				address.append(scheme).append("://").append(url.getHost());
 
-				if (url.getPort() != url.getDefaultPort())
+				if (url.getPort() > 0 && url.getPort() != url.getDefaultPort())
 					address.append(":").append(url.getPort());
 
 				return match.matcher(address).matches();

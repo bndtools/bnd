@@ -14,7 +14,7 @@ import aQute.maven.api.Program;
 import aQute.maven.api.Release;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenRepository;
-import aQute.maven.provider.MaventRemoteRepository;
+import aQute.maven.provider.MavenRemoteRepository;
 import junit.framework.TestCase;
 
 public class MavenRepoTest extends TestCase {
@@ -23,7 +23,7 @@ public class MavenRepoTest extends TestCase {
 	File			local	= IO.getFile("generated/local");
 	File			remote	= IO.getFile("generated/remote");
 	FakeNexus		fnx;
-	MaventRemoteRepository		repo;
+	MavenRemoteRepository		repo;
 	MavenRepository	storage;
 	ReporterAdapter	reporter	= new ReporterAdapter(System.err);
 
@@ -39,7 +39,7 @@ public class MavenRepoTest extends TestCase {
 		IO.copy(IO.getFile("testresources/mavenrepo"), remote);
 		remote.mkdirs();
 		local.mkdirs();
-		repo = new MaventRemoteRepository(local, new HttpClient(), fnx.getBaseURI() + "/repo/", reporter);
+		repo = new MavenRemoteRepository(local, new HttpClient(), fnx.getBaseURI() + "/repo/", reporter);
 		storage = new MavenRepository(local, "fnexus", this.repo, null, null, new ReporterAdapter(System.out), null);
 	}
 

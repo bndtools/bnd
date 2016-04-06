@@ -21,14 +21,14 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	static {
 		snapshotTimestamp.setTimeZone(TimeZone.getTimeZone("UTC"));
 	}
-	private static final Pattern VERSION = Pattern.compile(VERSION_STRING);
+	private static final Pattern	VERSION		= Pattern.compile(VERSION_STRING);
 
-	static final String SNAPSHOT = "SNAPSHOT";
+	static final String				SNAPSHOT	= "SNAPSHOT";
 
-	private final Version	version;
-	private final String	literal;
+	private final Version			version;
+	private final String			literal;
 
-	private final boolean	snapshot;
+	private final boolean			snapshot;
 
 	public MavenVersion(Version osgiVersion) {
 		this.version = osgiVersion;
@@ -68,7 +68,11 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	}
 
 	public static final MavenVersion parseMavenString(String versionStr) {
-		return new MavenVersion(versionStr);
+		try {
+			return new MavenVersion(versionStr);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	public Version getOSGiVersion() {
@@ -228,7 +232,10 @@ public class MavenVersion implements Comparable<MavenVersion> {
 				return result.toString();
 			}
 		}
-		return version;
+		StringBuilder sb = new StringBuilder();
+		sb.append("0.0.0.");
+		cleanupModifier(sb, version);
+		return sb.toString();
 	}
 
 	/**
