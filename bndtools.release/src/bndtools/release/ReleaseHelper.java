@@ -372,7 +372,7 @@ public class ReleaseHelper {
                 }
             }
         }
-        return ret.toArray(new String[ret.size()]);
+        return ret.toArray(new String[0]);
     }
 
     public static RepositoryPlugin getReleaseRepo(Project project) {

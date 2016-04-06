@@ -144,7 +144,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
     @Override
     public String[] getClasspath(ILaunchConfiguration configuration) throws CoreException {
         Collection<String> paths = getProjectLauncher().getClasspath();
-        return paths.toArray(new String[paths.size()]);
+        return paths.toArray(new String[0]);
     }
 
     @Override

@@ -39,7 +39,7 @@ public class AbstractViewerDropAdapter extends ViewerDropAdapter {
         if (supportedTransfers.contains(SupportedTransfer.LocalSelection))
             transfers.add(LocalSelectionTransfer.getTransfer());
 
-        viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, transfers.toArray(new Transfer[transfers.size()]), this);
+        viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, transfers.toArray(new Transfer[0]), this);
     }
 
     // Turn all move events into copy events

@@ -256,7 +256,7 @@ public class JpmDependencyWizardPage extends WizardPage {
     }
 
     private void updateSelectedCheckboxes() {
-        Object[] selectedArray = selectedIndirectResources != null ? selectedIndirectResources.toArray(new Object[selectedIndirectResources.size()]) : new Object[0];
+        Object[] selectedArray = selectedIndirectResources != null ? selectedIndirectResources.toArray() : new Object[0];
         viewerIndirect.setCheckedElements(selectedArray);
     }
 

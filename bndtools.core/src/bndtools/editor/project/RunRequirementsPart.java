@@ -290,7 +290,7 @@ public class RunRequirementsPart extends BndEditorPart implements PropertyChange
             }
 
             if (!removed.isEmpty()) {
-                viewer.remove(removed.toArray(new Object[removed.size()]));
+                viewer.remove(removed.toArray());
                 markDirty();
             }
         }
@@ -468,7 +468,7 @@ public class RunRequirementsPart extends BndEditorPart implements PropertyChange
             return false;
         }
         requires.addAll(adding);
-        viewer.add(adding.toArray(new Object[adding.size()]));
+        viewer.add(adding.toArray());
         markDirty();
         return true;
     }

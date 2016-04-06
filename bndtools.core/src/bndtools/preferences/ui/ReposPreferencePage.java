@@ -150,7 +150,7 @@ public class ReposPreferencePage extends PreferencePage implements IWorkbenchPre
             selected.add(templateRepos.get(index));
         }
         templateRepos.removeAll(selected);
-        vwrRepos.remove(selected.toArray(new Object[selected.size()]));
+        vwrRepos.remove(selected.toArray());
         validate();
     }
 

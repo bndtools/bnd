@@ -215,7 +215,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 }
             }
 
-            setClasspathEntries(newClasspath.toArray(new IClasspathEntry[newClasspath.size()]));
+            setClasspathEntries(newClasspath.toArray(new IClasspathEntry[0]));
         }
 
         boolean suggestClasspathContainerUpdate() throws Exception {
@@ -417,7 +417,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 if ((mf != null) && (mf.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION) != null)) {
                     Parameters exportPkgs = new Parameters(mf.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
                     Set<String> exports = exportPkgs.keySet();
-                    info.exports = exports.toArray(new String[exports.size()]);
+                    info.exports = exports.toArray(new String[0]);
                 }
                 for (String entry = jar.nextEntry(); entry != null; entry = jar.nextEntry()) {
                     if (entry.startsWith("OSGI-OPT/src/")) {
@@ -571,8 +571,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             if (attrs == null) {
                 return null;
             }
-            final int size = attrs.size();
-            IClasspathAttribute[] attrsArray = attrs.toArray(new IClasspathAttribute[size]);
+            IClasspathAttribute[] attrsArray = attrs.toArray(new IClasspathAttribute[0]);
             return attrsArray;
         }
 

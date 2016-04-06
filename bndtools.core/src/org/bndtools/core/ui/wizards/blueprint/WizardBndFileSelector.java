@@ -24,7 +24,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
-
 public class WizardBndFileSelector extends WizardPage {
 
     private static final ILogger logger = Logger.getLogger(WizardBndFileSelector.class);
@@ -42,11 +41,13 @@ public class WizardBndFileSelector extends WizardPage {
         super.setVisible(visible);
     }
 
+    @Override
     public void createControl(Composite composite) {
         checkboxTreeViewer = new CheckboxTreeViewer(composite);
 
         checkboxTreeViewer.addCheckStateListener(new ICheckStateListener() {
 
+            @Override
             public void checkStateChanged(CheckStateChangedEvent event) {
                 Object element = event.getElement();
                 ITreeContentProvider contentProvider = (ITreeContentProvider) checkboxTreeViewer.getContentProvider();
@@ -104,7 +105,7 @@ public class WizardBndFileSelector extends WizardPage {
             if (o instanceof IFile)
                 files.add((IFile) o);
         }
-        return files.toArray(new IFile[files.size()]);
+        return files.toArray(new IFile[0]);
     }
 
     public void updateControls(IPath containerFullPath) {
@@ -117,6 +118,7 @@ public class WizardBndFileSelector extends WizardPage {
         try {
             project.accept(new IResourceProxyVisitor() {
 
+                @Override
                 public boolean visit(IResourceProxy res) throws CoreException {
                     if (res.getType() == IResource.FILE && res.getName().endsWith(".bnd")) {
                         bndFiles.add(res.requestResource());

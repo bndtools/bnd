@@ -97,7 +97,7 @@ public class AnalyseBundleResolutionJob extends Job {
 
         // Generate the final results
         //        Set<File> resultFiles = builderMap.keySet();
-        //        resultFileArray = resultFiles.toArray(new File[resultFiles.size()]);
+        //        resultFileArray = resultFiles.toArray(new File[0]);
 
         this.requirements = allReqs;
         this.capabilities = allCaps;

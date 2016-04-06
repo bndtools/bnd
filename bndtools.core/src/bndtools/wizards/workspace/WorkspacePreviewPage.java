@@ -233,7 +233,6 @@ public class WorkspacePreviewPage extends WizardPage {
         lblDetails.setText(MSG_NOTHING_SELECTED);
 
         // Button Panel
-        @SuppressWarnings("unused")
         Label spacer1 = new Label(composite, SWT.NONE);
         spacer1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
         Button btnSelectNonConflict = new Button(composite, SWT.PUSH);
@@ -250,7 +249,7 @@ public class WorkspacePreviewPage extends WizardPage {
                             if (!existingFiles.contains(path))
                                 checkedPaths.add(path);
                         }
-                        vwrOutputs.setCheckedElements(checkedPaths.toArray(new Object[checkedPaths.size()]));
+                        vwrOutputs.setCheckedElements(checkedPaths.toArray());
                     }
                 });
             }

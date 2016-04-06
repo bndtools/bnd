@@ -476,7 +476,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
         }
 
         buildLog.full("Calculated dependsOn list: %s", result);
-        return result.toArray(new IProject[result.size()]);
+        return result.toArray(new IProject[0]);
     }
 
     private CompileErrorAction getActionOnCompileError() {

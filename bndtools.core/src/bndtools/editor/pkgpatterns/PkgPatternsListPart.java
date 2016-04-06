@@ -264,7 +264,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
      *            The index at which to insert the new clauses OR -1 to append at the end.
      */
     protected void doAddClauses(Collection< ? extends C> newClauses, int index, boolean select) {
-        Object[] newClausesArray = newClauses.toArray(new Object[newClauses.size()]);
+        Object[] newClausesArray = newClauses.toArray();
 
         if (index == -1 || index == this.clauses.size()) {
             clauses.addAll(newClauses);

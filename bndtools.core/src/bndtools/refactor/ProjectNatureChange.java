@@ -38,7 +38,7 @@ public abstract class ProjectNatureChange extends Change {
         Set<String> natures = new HashSet<String>(Arrays.asList(desc.getNatureIds()));
         boolean changed = modifyNatures(natures);
         if (changed) {
-            desc.setNatureIds(natures.toArray(new String[natures.size()]));
+            desc.setNatureIds(natures.toArray(new String[0]));
             project.setDescription(desc, pm);
         }
 

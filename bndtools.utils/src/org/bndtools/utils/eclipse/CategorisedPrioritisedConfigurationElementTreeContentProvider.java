@@ -62,9 +62,9 @@ public class CategorisedPrioritisedConfigurationElementTreeContentProvider imple
         Set<ConfigurationElementCategory> keys = data.keySet();
         if (keys.size() == 1 && flattenSingleCategory) {
             List<IConfigurationElement> elements = data.get(keys.iterator().next());
-            result = elements.toArray(new Object[elements.size()]);
+            result = elements.toArray();
         } else {
-            result = keys.toArray(new Object[keys.size()]);
+            result = keys.toArray();
         }
         return result;
     }
@@ -75,7 +75,7 @@ public class CategorisedPrioritisedConfigurationElementTreeContentProvider imple
     @Override
     public Object[] getChildren(Object parentElement) {
         List<IConfigurationElement> list = data.get(parentElement);
-        return list.toArray(new IConfigurationElement[list.size()]);
+        return list.toArray();
     }
 
     @Override

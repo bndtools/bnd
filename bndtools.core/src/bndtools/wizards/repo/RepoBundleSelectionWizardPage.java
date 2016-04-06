@@ -307,7 +307,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
             for (VersionedClause clause : adding) {
                 selectedBundles.put(clause.getName(), clause);
             }
-            selectedViewer.add(adding.toArray(new Object[adding.size()]));
+            selectedViewer.add(adding.toArray());
             availableViewer.refresh();
             propSupport.firePropertyChange(PROP_SELECTION, null, selectedBundles);
         }
@@ -348,7 +348,7 @@ class MapValuesContentProvider implements IStructuredContentProvider {
         Map< ? , ? > map = (Map< ? , ? >) inputElement;
 
         Collection< ? > values = map.values();
-        return values.toArray(new Object[values.size()]);
+        return values.toArray();
     }
 
     @Override

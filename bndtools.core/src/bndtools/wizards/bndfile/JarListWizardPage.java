@@ -80,6 +80,7 @@ public class JarListWizardPage extends WizardPage {
         super(pageName);
     }
 
+    @Override
     public void createControl(final Composite parent) {
         setTitle("Select JARs");
         final Composite composite = new Composite(parent, SWT.NONE);
@@ -126,7 +127,7 @@ public class JarListWizardPage extends WizardPage {
 
                     if (!added.isEmpty()) {
                         addToPaths(added);
-                        viewer.add(added.toArray(new IPath[added.size()]));
+                        viewer.add(added.toArray());
 
                         update();
                     }
@@ -138,9 +139,10 @@ public class JarListWizardPage extends WizardPage {
         dropAdapter.setFeedbackEnabled(false);
         dropAdapter.setSelectionFeedbackEnabled(false);
         viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
-            FileTransfer.getInstance()
+                FileTransfer.getInstance()
         }, dropAdapter);
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(final SelectionChangedEvent event) {
                 update();
             }
@@ -152,6 +154,7 @@ public class JarListWizardPage extends WizardPage {
                 // if(newFile != null) {
                 ElementTreeSelectionDialog dialog = new ElementTreeSelectionDialog(getShell(), new WorkbenchLabelProvider(), new WorkbenchContentProvider());
                 dialog.setValidator(new ISelectionStatusValidator() {
+                    @Override
                     public IStatus validate(Object[] selection) {
                         if (selection.length > 0 && selection[0] instanceof IFile) {
                             return new Status(IStatus.OK, Plugin.PLUGIN_ID, IStatus.OK, "", null); //$NON-NLS-1$
@@ -173,7 +176,7 @@ public class JarListWizardPage extends WizardPage {
                     }
                     if (!added.isEmpty()) {
                         addToPaths(added);
-                        viewer.add(added.toArray(new IPath[added.size()]));
+                        viewer.add(added.toArray());
                     }
                 }
                 // }
@@ -185,7 +188,8 @@ public class JarListWizardPage extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.MULTI);
                 dialog.setFilterExtensions(new String[] {
-                    "*.jar"}); //$NON-NLS-1$
+                        "*.jar" //$NON-NLS-1$
+                });
                 String res = dialog.open();
                 if (res != null) {
                     IPath filterPath = new Path(dialog.getFilterPath());
@@ -197,7 +201,7 @@ public class JarListWizardPage extends WizardPage {
                     }
                     if (!added.isEmpty()) {
                         addToPaths(added);
-                        viewer.add(added.toArray(new IPath[added.size()]));
+                        viewer.add(added.toArray());
                     }
                 }
                 update();

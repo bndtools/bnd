@@ -19,14 +19,17 @@ import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 public class BndMarkerQuickAssistProcessor implements IQuickAssistProcessor {
 
+    @Override
     public boolean canAssist(IQuickAssistInvocationContext context) {
         return false;
     }
 
+    @Override
     public String getErrorMessage() {
         return null;
     }
 
+    @Override
     public boolean canFix(Annotation annotation) {
         if (annotation instanceof MarkerAnnotation) {
             IMarker marker = ((MarkerAnnotation) annotation).getMarker();
@@ -39,6 +42,7 @@ public class BndMarkerQuickAssistProcessor implements IQuickAssistProcessor {
         return (pos != null) && (offset >= pos.getOffset() && offset <= (pos.getOffset() + pos.getLength()));
     }
 
+    @Override
     public ICompletionProposal[] computeQuickAssistProposals(IQuickAssistInvocationContext context) {
         List<ICompletionProposal> proposals = new LinkedList<ICompletionProposal>();
 
@@ -70,7 +74,7 @@ public class BndMarkerQuickAssistProcessor implements IQuickAssistProcessor {
             proposals.add(new NoCompletionsProposal());
         }
 
-        return proposals.toArray(new ICompletionProposal[proposals.size()]);
+        return proposals.toArray(new ICompletionProposal[0]);
     }
 
 }

@@ -571,7 +571,7 @@ public class RepositorySelectionPart extends BndEditorPart {
             selected.add(standaloneLinks.get(index));
         }
         standaloneLinks.removeAll(selected);
-        standaloneLinksViewer.remove(selected.toArray(new Object[selected.size()]));
+        standaloneLinksViewer.remove(selected.toArray());
         markDirty();
     }
 

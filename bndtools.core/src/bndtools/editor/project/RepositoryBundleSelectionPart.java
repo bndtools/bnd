@@ -353,7 +353,7 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
                 }
 
                 bundles.addAll(toAdd);
-                viewer.add(toAdd.toArray(new Object[toAdd.size()]));
+                viewer.add(toAdd.toArray());
 
                 markDirty();
             }
@@ -450,7 +450,7 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
             }
 
             if (!removed.isEmpty()) {
-                viewer.remove(removed.toArray(new Object[removed.size()]));
+                viewer.remove(removed.toArray());
                 markDirty();
             }
         }

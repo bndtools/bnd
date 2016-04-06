@@ -28,15 +28,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
-
 import aQute.bnd.header.Attrs;
 import aQute.libg.tuple.Pair;
 
 public class GitHubRepoDialog extends AbstractNewEntryDialog {
-
-    private final BundleContext context = FrameworkUtil.getBundle(GitHubRepoDialog.class).getBundleContext();
 
     private final Cache cache = new Cache();
     private final String title;

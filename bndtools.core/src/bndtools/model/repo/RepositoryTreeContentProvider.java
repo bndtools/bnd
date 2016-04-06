@@ -99,7 +99,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
             result = Collections.emptyList();
         }
 
-        return result.toArray(new Object[result.size()]);
+        return result.toArray();
     }
 
     @Override
@@ -272,7 +272,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
                 resultSet.add(new RepositoryResourceElement(repoPlugin, providerCap.getResource()));
         }
 
-        result = resultSet.toArray(new Object[resultSet.size()]);
+        result = resultSet.toArray();
         return result;
     }
 }

@@ -47,6 +47,7 @@ public class JavaSearchScopeTestCaseLister implements ITestCaseLister {
         this.runContext = runContext;
     }
 
+    @Override
     public String[] getTestCases(boolean includeNonSource, ITestCaseFilter filter) throws TestCaseListException {
         final List<IJavaElement> testCaseList = new LinkedList<IJavaElement>();
 
@@ -83,7 +84,7 @@ public class JavaSearchScopeTestCaseLister implements ITestCaseLister {
             }
         }
 
-        return testCaseNames.toArray(new String[testCaseNames.size()]);
+        return testCaseNames.toArray(new String[0]);
     }
 
     private static String getClassName(IJavaElement element) {
@@ -153,6 +154,7 @@ public class JavaSearchScopeTestCaseLister implements ITestCaseLister {
             return typesFound;
         }
 
+        @Override
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
             try {
                 search(types, testCaseList, monitor);

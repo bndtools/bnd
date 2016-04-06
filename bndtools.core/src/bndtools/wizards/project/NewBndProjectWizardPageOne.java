@@ -147,7 +147,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
         IClasspathEntry bndContainerEntry = JavaCore.newContainerEntry(bndContainerPath, false);
         result.add(bndContainerEntry);
 
-        return result.toArray(new IClasspathEntry[result.size()]);
+        return result.toArray(new IClasspathEntry[0]);
     }
 
     @Override
@@ -174,7 +174,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
         if (enableTestSrcDir)
             newEntries.add(JavaCore.newSourceEntry(projectPath.append(projectPaths.getTestSrc()), null, projectPath.append(projectPaths.getTestBin())));
 
-        return newEntries.toArray(new IClasspathEntry[newEntries.size()]);
+        return newEntries.toArray(new IClasspathEntry[0]);
     }
 
     private AttributeDefinition findAttribute(ObjectClassDefinition ocd, String name) {

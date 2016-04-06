@@ -52,7 +52,7 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
         for (String namespace : NAMESPACE_ORDER) {
             List<Object> listForNs = map.get(namespace);
             if (listForNs != null) {
-                Object[] array = listForNs.toArray(new Object[listForNs.size()]);
+                Object[] array = listForNs.toArray();
                 Arrays.sort(array, comparator);
                 arrays.add(array);
             }
@@ -65,7 +65,7 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
                 continue;
 
             List<Object> listForNs = entry.getValue();
-            Object[] array = listForNs.toArray(new Object[listForNs.size()]);
+            Object[] array = listForNs.toArray();
             Arrays.sort(array, comparator);
             arrays.add(array);
         }
@@ -113,7 +113,7 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
         if (parent instanceof RequirementWrapper) {
             Collection< ? extends Object> requirers = ((RequirementWrapper) parent).requirers;
             if (requirers != null)
-                result = requirers.toArray(new Object[requirers.size()]);
+                result = requirers.toArray();
         }
         return result;
     }

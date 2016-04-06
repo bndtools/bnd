@@ -117,7 +117,7 @@ public class GitCredentialsProvider extends CredentialsProvider {
                 continue;
             }
         }
-        return components.toArray(new JComponent[components.size()]);
+        return components.toArray(new JComponent[0]);
     }
 
     private static void updateCredentialItems(JComponent[] components) {
