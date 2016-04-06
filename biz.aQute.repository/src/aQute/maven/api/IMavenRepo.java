@@ -2,6 +2,7 @@ package aQute.maven.api;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -147,5 +148,9 @@ public interface IMavenRepo extends Closeable {
 	 * @return the name
 	 */
 	String getName();
+
+	IPom getPom(InputStream pomFile) throws Exception;
+
+	IPom getPom(Revision revision) throws Exception;
 
 }

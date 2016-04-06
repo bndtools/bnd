@@ -6,6 +6,11 @@ import junit.framework.TestCase;
 
 public class MavenVersionTest extends TestCase {
 
+	public void testCleanupWithMajor() {
+		assertEquals("0.0.0.usedbypico", MavenVersion.cleanupVersion("usedbypico"));
+		assertEquals("0.0.0.usedbypico", MavenVersion.cleanupVersion("use^%$#@dbypico"));
+		assertEquals("0.0.0.usedbypico", MavenVersion.cleanupVersion("0.use^%$#@dbypico"));
+	}
 	public void testMajorMinorMicro() {
 		MavenVersion mv = MavenVersion.parseString("1.2.3");
 		assertEquals(new Version(1, 2, 3), mv.getOSGiVersion());

@@ -27,9 +27,9 @@ class Releaser implements Release {
 	boolean					aborted;
 	private File			dir;
 	protected boolean		localOnly;
-	protected MaventRemoteRepository	repo;
+	protected MavenRemoteRepository	repo;
 
-	Releaser(MavenRepository home, Revision revision, MaventRemoteRepository repo) throws Exception {
+	Releaser(MavenRepository home, Revision revision, MavenRemoteRepository repo) throws Exception {
 		this.home = home;
 		this.revision = revision;
 		this.repo = repo;

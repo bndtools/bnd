@@ -8,13 +8,13 @@ import aQute.bnd.url.BasicAuthentication;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
-import aQute.maven.provider.MaventRemoteRepository;
+import aQute.maven.provider.MavenRemoteRepository;
 import junit.framework.TestCase;
 
 public class NexusTest extends TestCase {
 
 	File		local	= IO.getFile("generated/local");
-	MaventRemoteRepository	repo;
+	MavenRemoteRepository	repo;
 	ReporterAdapter	reporter	= new ReporterAdapter(System.err);
 
 	@Override
@@ -26,7 +26,7 @@ public class NexusTest extends TestCase {
 		local.mkdirs();
 		HttpClient httpClient = new HttpClient();
 		httpClient.addURLConnectionHandler(new BasicAuthentication("deployment", "deployment123", Workspace.log));
-		repo = new MaventRemoteRepository(local, httpClient, "http://localhost:8081/nexus/content/repositories/snapshots/",
+		repo = new MavenRemoteRepository(local, httpClient, "http://localhost:8081/nexus/content/repositories/snapshots/",
 				reporter);
 	}
 

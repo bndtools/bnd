@@ -1,12 +1,9 @@
 package aQute.bnd.repository.maven.provider;
 
-import java.util.Set;
-
 public interface Configuration {
 
 	/**
-	 * The url to the remote release repository. If this is not specified,
-	 * the repository is only local.
+	 * The url to the remote release repository.
 	 */
 	String releaseUrl();
 
@@ -22,13 +19,6 @@ public interface Configuration {
 	 */
 	// default "~/.m2/repository"
 	String local(String deflt);
-
-	/**
-	 * The classifiers to release. These will be generated automatically if
-	 * sufficient information is available.
-	 */
-	// default { Classifiers.BINARY}
-	Set<Classifiers> generate();
 
 	// default false
 	boolean readOnly();

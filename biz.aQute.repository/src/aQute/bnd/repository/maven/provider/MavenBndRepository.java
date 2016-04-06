@@ -2,6 +2,7 @@ package aQute.bnd.repository.maven.provider;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,10 +34,12 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.repository.maven.provider.IndexFile.BundleDescriptor;
+import aQute.bnd.repository.maven.provider.ReleaseDTO.JavadocPackages;
 import aQute.bnd.repository.maven.provider.ReleaseDTO.ReleaseType;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Plugin;
@@ -54,11 +57,11 @@ import aQute.libg.cryptography.SHA1;
 import aQute.libg.glob.Glob;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
-import aQute.maven.api.POM;
+import aQute.maven.api.IPom;
 import aQute.maven.api.Release;
 import aQute.maven.api.Revision;
+import aQute.maven.provider.MavenRemoteRepository;
 import aQute.maven.provider.MavenRepository;
-import aQute.maven.provider.MaventRemoteRepository;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -68,19 +71,20 @@ import aQute.service.reporter.Reporter;
 public class MavenBndRepository
 		implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable, Refreshable, InfoRepository, Actionable {
 
-
+	private static final String		NONE	= "NONE";
 	private Configuration			configuration;
 	private Registry				registry;
 	private File					localRepo;
 	Reporter						reporter;
 	IMavenRepo						storage;
 	private boolean					inited;
-	private boolean					ok	= true;
+	private boolean					ok		= true;
 	IndexFile						index;
 	private ScheduledFuture< ? >	indexPoller;
 	private RepoActions				actions	= new RepoActions(this);
-	private MaventRemoteRepository				snapshot;
-	private MaventRemoteRepository				release;
+	private MavenRemoteRepository	snapshot;
+	private MavenRemoteRepository	release;
+	private String					name;
 
 	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
@@ -101,20 +105,38 @@ public class MavenBndRepository
 					throw new IllegalArgumentException("The given sha-1 does not match the contents sha-1");
 			}
 
-			try (Jar binary = new Jar(binaryFile);) {
+			if (options.context == null)
+				options.context = new Processor();
 
-				Resource pomResource = getPomResource(binary);
-				if (pomResource == null)
-					throw new IllegalArgumentException(
-							"No POM resource in META-INF/maven/... The Maven Bnd Repository requires this pom.");
+			ReleaseDTO instructions = getReleaseDTO(options.context);
+
+			try (Jar binary = new Jar(binaryFile);) {
+				Resource pomResource;
+
+				if (instructions.pom.path != null) {
+					File f = options.context.getFile(instructions.pom.path);
+					if (!f.isFile())
+						throw new IllegalArgumentException(
+								"-maven-release specifies " + f + " as pom file but this file is not found");
+
+					pomResource = new FileResource(f);
+				} else {
+
+					pomResource = getPomResource(binary);
+					if (pomResource == null) {
+						throw new IllegalArgumentException(
+								"No POM resource in META-INF/maven/... The Maven Bnd Repository requires this pom.");
+					}
+				}
 
 				IO.copy(pomResource.openInputStream(), pomFile);
-				POM pom = new POM(pomFile);
+				IPom pom;
+				try (FileInputStream fin = new FileInputStream(pomFile)) {
+					pom = storage.getPom(fin);
+				}
 				Archive binaryArchive = pom.binaryArchive();
 
 				try (Release releaser = storage.release(pom.getRevision());) {
-
-					ReleaseDTO instructions = getReleaseDTO(options.context);
 
 					if (instructions.snapshot >= 0)
 						releaser.setBuild(instructions.snapshot, "1");
@@ -133,15 +155,20 @@ public class MavenBndRepository
 						try (Tool tool = new Tool(options.context, binary);) {
 
 							if (instructions.javadoc != null) {
-								try (Jar jar = getJavadoc(tool, options.context, instructions.javadoc.path,
-										instructions.javadoc.options);) {
-									save(releaser, pom.getRevision(), jar, "javadoc");
+								if (!NONE.equals(instructions.javadoc.path)) {
+									try (Jar jar = getJavadoc(tool, options.context, instructions.javadoc.path,
+											instructions.javadoc.options,
+											instructions.javadoc.packages == JavadocPackages.EXPORT);) {
+										save(releaser, pom.getRevision(), jar, "javadoc");
+									}
 								}
 							}
 
 							if (instructions.sources != null) {
-								try (Jar jar = getSource(tool, options.context, instructions.javadoc.path);) {
-									save(releaser, pom.getRevision(), jar, "sources");
+								if (!NONE.equals(instructions.javadoc.path)) {
+									try (Jar jar = getSource(tool, options.context, instructions.javadoc.path);) {
+										save(releaser, pom.getRevision(), jar, "sources");
+									}
 								}
 							}
 						}
@@ -169,12 +196,13 @@ public class MavenBndRepository
 		return tool.doSource();
 	}
 
-	private Jar getJavadoc(Tool tool, Processor context, String path, Map<String,String> options) throws Exception {
+	private Jar getJavadoc(Tool tool, Processor context, String path, Map<String,String> options, boolean exports)
+			throws Exception {
 		Jar jar = toJar(context, path);
 		if (jar != null)
 			return jar;
 
-		return tool.doJavadoc(options);
+		return tool.doJavadoc(options, exports);
 	}
 
 	private Jar toJar(Processor context, String path) {
@@ -210,30 +238,35 @@ public class MavenBndRepository
 
 		Parameters p = new Parameters(context.getProperty(Constants.MAVEN_RELEASE));
 
-		if (p.containsKey("local"))
-			release.type = ReleaseType.LOCAL;
-		else if (p.containsKey("remote"))
-			release.type = ReleaseType.REMOTE;
+		Attrs attrs = p.remove("remote");
+		if (attrs != null) {
 
-		p.remove("local");
-		Attrs remote = p.remove("remote");
-		if (remote != null) {
-			// for testing snapshots
-			String s = remote.get("snapshot");
+			release.type = ReleaseType.REMOTE;
+			String s = attrs.get("snapshot");
 			if (s != null)
 				release.snapshot = Long.parseLong(s);
+
+		} else {
+			release.type = ReleaseType.LOCAL;
+			attrs = p.remove("local");
+			if (attrs == null)
+				attrs = new Attrs();
 		}
 
 		Attrs javadoc = p.remove("javadoc");
 		if (javadoc != null) {
 			release.javadoc.path = javadoc.get("path");
-			release.javadoc.options = javadoc;
-
+			if (NONE.equals(release.javadoc.path))
+				release.javadoc = null;
+			else
+				release.javadoc.options = javadoc;
 		}
 
 		Attrs sources = p.remove("sources");
 		if (sources != null) {
 			release.sources.path = sources.get("path");
+			if (NONE.equals(release.sources.path))
+				release.sources = null;
 		}
 
 		Attrs pom = p.remove("pom");
@@ -271,6 +304,19 @@ public class MavenBndRepository
 
 		if (archive != null) {
 			final File file = storage.toLocalFile(archive);
+
+			final File withSources = new File(file.getParentFile(), "+" + file.getName());
+			if (withSources.isFile()) {
+
+				if (listeners.length == 0)
+					return withSources;
+
+				for (DownloadListener dl : listeners)
+					dl.success(withSources);
+
+				return withSources;
+			}
+
 			Promise<File> promise = index.updateAsync(descriptor, storage.get(archive));
 
 			if (listeners.length == 0)
@@ -316,7 +362,7 @@ public class MavenBndRepository
 	@Override
 	public String getName() {
 		init();
-		return configuration.name("local");
+		return name;
 	}
 
 	private synchronized void init() {
@@ -324,19 +370,17 @@ public class MavenBndRepository
 			if (inited)
 				return;
 
-
 			inited = true;
-			String name = configuration.name("local");
-
+			name = configuration.name("Maven");
 
 			localRepo = IO.getFile(configuration.local("~/.m2/repository"));
 
 			HttpClient client = registry.getPlugin(HttpClient.class);
 			Executor executor = registry.getPlugin(Executor.class);
 			release = configuration.releaseUrl() != null
-					? new MaventRemoteRepository(localRepo, client, clean(configuration.releaseUrl()), reporter) : null;
+					? new MavenRemoteRepository(localRepo, client, clean(configuration.releaseUrl()), reporter) : null;
 			snapshot = configuration.snapshotUrl() != null
-					? new MaventRemoteRepository(localRepo, client, clean(configuration.snapshotUrl()), reporter) : null;
+					? new MavenRemoteRepository(localRepo, client, clean(configuration.snapshotUrl()), reporter) : null;
 			storage = new MavenRepository(localRepo, getName(), release, snapshot, executor, reporter,
 					getRefreshCallback());
 
@@ -346,7 +390,7 @@ public class MavenBndRepository
 				if (ws != null)
 					base = ws.getBase();
 			}
-			File indexFile = IO.getFile(base, configuration.index("maven-" + name + ".properties"));
+			File indexFile = IO.getFile(base, configuration.index(name.toLowerCase() + ".mvn"));
 			IndexFile ixf = new IndexFile(reporter, indexFile, storage);
 			ixf.open();
 			ixf.sync();
@@ -509,7 +553,7 @@ public class MavenBndRepository
 			case 0 :
 				return null;
 			case 1 :
-				return null;
+				return actions.getProgramActions((String) target[0]);
 			case 2 :
 				BundleDescriptor bd = getBundleDescriptor(target);
 				return actions.getRevisionActions(bd);
@@ -525,15 +569,15 @@ public class MavenBndRepository
 				try (Formatter f = new Formatter()) {
 					f.format("%s\n", getName());
 					f.format("Revisions %s\n", index.descriptors.size());
-					f.format("Release %s\n", release);
-					f.format("Snapshot %s\n", snapshot);
+					f.format("Release %s  (%s)\n", release, getUser(release));
+					f.format("Snapshot %s (%s)\n", snapshot, getUser(snapshot));
 					f.format("Storage %s\n", localRepo);
 					f.format("Index %s\n", index.indexFile);
 					f.format("Index Cache %s\n", index.cacheDir);
 					return f.toString();
 				}
 			case 1 :
-				
+
 				try (Formatter f = new Formatter()) {
 					String name = (String) target[0];
 					Set<aQute.maven.api.Program> programs = index.getProgramsForBsn(name);
@@ -556,6 +600,17 @@ public class MavenBndRepository
 			default :
 		}
 		return null;
+	}
+
+	private Object getUser(MavenRemoteRepository remote) {
+		if (remote == null)
+			return "";
+
+		try {
+			return remote.getUser();
+		} catch (Exception e) {
+			return "error: " + e.getMessage();
+		}
 	}
 
 	BundleDescriptor getBundleDescriptor(Object... target) throws Exception {
@@ -615,7 +670,7 @@ public class MavenBndRepository
 	private boolean addPom(URI uri) throws Exception {
 		try {
 			// http://search.maven.org/remotecontent?filepath=com/netflix/governator/governator-commons-cli/1.12.10/governator-commons-cli-1.12.10.pom
-			POM pom = new POM(uri.toURL().openStream());
+			IPom pom = storage.getPom(uri.toURL().openStream());
 			Archive binaryArchive = pom.binaryArchive();
 			index.add(binaryArchive);
 			return true;

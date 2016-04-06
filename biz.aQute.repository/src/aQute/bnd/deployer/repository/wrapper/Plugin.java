@@ -38,8 +38,6 @@ public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, Registr
 		boolean reindex();
 
 		String augments();
-
-		boolean reset_cache();
 	}
 
 	public void setRegistry(Registry registry) {
