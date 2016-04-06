@@ -48,7 +48,7 @@ class Element implements Tree {
 		this.remove = remove;
 		this.comment = comment;
 		if (children != null && children.size() > 0) {
-			this.children = children.toArray(new Element[children.size()]);
+			this.children = children.toArray(new Element[0]);
 			Arrays.sort(this.children);
 		} else
 			this.children = EMPTY;

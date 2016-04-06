@@ -29,8 +29,7 @@ public class FindProvidersTest extends TestCase {
 		assertNotNull(result);
 		assertTrue(result.containsKey(req));
 		Collection<Capability> caps = result.get(req);
-		Capability[] capsArray = new Capability[1];
-		capsArray = caps.toArray(capsArray);
+		Capability[] capsArray = caps.toArray(new Capability[0]);
 		Capability identityCap = capsArray[0].getResource().getCapabilities("osgi.identity").get(0);
 		Object identityAttrValue = identityCap.getAttributes().get("osgi.identity");
 		assertEquals("dummybundle", identityAttrValue);

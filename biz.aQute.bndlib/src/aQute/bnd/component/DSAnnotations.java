@@ -111,7 +111,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 			maxVersion = ComponentDef.max(maxVersion, AnnotationReader.V1_3);
 			addExtenderRequirement(requires, maxVersion);
 		}
-		sc = Processor.append(names.toArray(new String[names.size()]));
+		sc = Processor.append(names.toArray(new String[0]));
 		analyzer.setProperty(Constants.SERVICE_COMPONENT, sc);
 		updateHeader(analyzer, Constants.REQUIRE_CAPABILITY, requires);
 		updateHeader(analyzer, Constants.PROVIDE_CAPABILITY, provides);

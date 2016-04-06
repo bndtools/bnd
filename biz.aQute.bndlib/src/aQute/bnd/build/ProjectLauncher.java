@@ -342,7 +342,7 @@ public abstract class ProjectLauncher extends Processor {
 			cp.add(new File(path).toURI().toURL());
 		}
 		@SuppressWarnings("resource")
-		URLClassLoader cl = new URLClassLoader(cp.toArray(new URL[cp.size()]), fcl);
+		URLClassLoader cl = new URLClassLoader(cp.toArray(new URL[0]), fcl);
 
 		String[] args = getRunProgramArgs().toArray(new String[0]);
 

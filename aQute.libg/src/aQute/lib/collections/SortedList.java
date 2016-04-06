@@ -111,12 +111,12 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 
 	@SuppressWarnings("cast")
 	public SortedList(T... x) {
-		this((T[]) x.clone(), 0, x.length, (Comparator<T>) comparator);
+		this(x.clone(), 0, x.length, (Comparator<T>) comparator);
 	}
 
 	@SuppressWarnings("cast")
 	public SortedList(Comparator<T> cmp, T... x) {
-		this((T[]) x.clone(), 0, x.length, cmp);
+		this(x.clone(), 0, x.length, cmp);
 	}
 
 	private SortedList(SortedList<T> other, int start, int end) {
@@ -200,7 +200,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		if (type != null)
 			return (Object[]) Array.newInstance(type, size());
 
-		return toArray(new Object[size()]);
+		return toArray(new Object[0]);
 	}
 
 	@SuppressWarnings("hiding")

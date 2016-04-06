@@ -154,7 +154,7 @@ public class BaselineCommands {
 		Set<Info> infos = baseline.baseline(newer, older, null);
 		BundleInfo bundleInfo = baseline.getBundleInfo();
 
-		Info[] sorted = infos.toArray(new Info[infos.size()]);
+		Info[] sorted = infos.toArray(new Info[0]);
 		Arrays.sort(sorted, new Comparator<Info>() {
 			public int compare(Info o1, Info o2) {
 				return o1.packageName.compareTo(o2.packageName);

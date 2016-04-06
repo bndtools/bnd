@@ -74,7 +74,7 @@ public enum EE {
 	 */
 	public EE[] getCompatible() {
 		EnumSet<EE> set = getCompatibleSet();
-		return set.toArray(new EE[set.size()]);
+		return set.toArray(new EE[0]);
 	}
 
 	private EnumSet<EE> getCompatibleSet() {

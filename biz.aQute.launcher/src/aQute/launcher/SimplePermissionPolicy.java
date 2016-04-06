@@ -142,8 +142,7 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 			}
 			int size = permissions.size();
 			if (size > 0) {
-				info = new PermissionInfo[size];
-				info = permissions.toArray(info);
+				info = permissions.toArray(new PermissionInfo[0]);
 			}
 		}
 		return info;

@@ -17,7 +17,7 @@ public class AggregateRepository implements Repository {
 	private final Repository repositories[];
 
 	public AggregateRepository(Collection< ? extends Repository> repositories) {
-		this(repositories.toArray(new Repository[repositories.size()]));
+		this(repositories.toArray(new Repository[0]));
 	}
 
 	public AggregateRepository(Repository... repositories) {
