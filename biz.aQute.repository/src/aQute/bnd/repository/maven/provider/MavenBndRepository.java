@@ -586,11 +586,12 @@ public class MavenBndRepository
 			case 2 :
 				BundleDescriptor bd = getBundleDescriptor(target);
 				try (Formatter f = new Formatter()) {
+					f.format("%s\n", bd.archive);
+					f.format("Bundle-Version %s\n", bd.version);
 					f.format("Last Modified %s\n", new Date(bd.lastModified));
-					f.format("Archive %s\n", bd.archive);
+					f.format("URL %s\n", bd.url);
 					f.format("SHA-1 %s\n", Hex.toHexString(bd.id).toLowerCase());
 					f.format("SHA-256 %s\n", Hex.toHexString(bd.sha256).toLowerCase());
-					f.format("URL %s\n", bd.url);
 					File localFile = storage.toLocalFile(bd.archive);
 					f.format("Local %s%s\n", localFile, localFile.isFile() ? "" : " ?");
 					if (bd.description != null)
@@ -642,9 +643,9 @@ public class MavenBndRepository
 				if (bd.error != null)
 					return bd.version + " [" + bd.error + "]";
 				else if (isLocal(bd.archive)) {
-					return bd.version.toString();
+					return bd.version.getWithoutQualifier().toString();
 				} else
-					return bd.version.toString() + " ?";
+					return bd.version.getWithoutQualifier().toString() + " ?";
 
 			default :
 		}

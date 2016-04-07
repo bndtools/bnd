@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -89,11 +90,14 @@ class IndexFile {
 	}
 
 	BundleDescriptor add(Archive archive) throws Exception {
-		descriptors.putIfAbsent(archive, createInitialDescriptor(archive));
+		BundleDescriptor old = descriptors.putIfAbsent(archive, createInitialDescriptor(archive));
 		BundleDescriptor descriptor = descriptors.get(archive);
 		updateDescriptor(descriptor, repo.get(archive).getValue());
-		saveIndexFile();
-		return descriptor;
+		if (old == null || !Arrays.equals(descriptor.id, old.id)) {
+			saveIndexFile();
+			return descriptor;
+		}
+		return null;
 	}
 
 	BundleDescriptor remove(Archive archive) throws Exception {
