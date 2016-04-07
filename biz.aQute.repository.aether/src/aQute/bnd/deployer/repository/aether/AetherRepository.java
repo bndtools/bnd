@@ -255,7 +255,7 @@ public class AetherRepository implements Plugin, RegistryPlugin, RepositoryPlugi
 			// Get basic info about the bundle we're deploying
 			Jar jar = new Jar(tmpFile);
 			Artifact artifact = ConversionUtils.fromBundleJar(jar);
-			artifact.setFile(tmpFile);
+			artifact = artifact.setFile(tmpFile);
 
 			// Setup the Aether repo session and create the deployment request
 			DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
