@@ -1,0 +1,27 @@
+
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                          http://maven.apache.org/xsd/settings-1.0.0.xsd">
+	<servers>
+		<server>
+			<id>http://localhost:*</id>
+			<username>user</username>
+			<password>good</password>
+		</server>
+	</servers>
+	<proxies>
+		<proxy>
+			<id>proxy</id>
+			<active>true</active>
+			<protocol>socks</protocol>
+			<host>localhost</host>
+			<port>9090</port>
+			<username>proxyuser</username>
+			<password>good</password>
+			<nonProxyHosts>*.google.com</nonProxyHosts>
+		</proxy>
+	</proxies>
+	<profiles />
+	<activeProfiles />
+</settings>

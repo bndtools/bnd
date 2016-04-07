@@ -1,0 +1,11 @@
+Bundle-Version: 1.0.3.SNAPSHOT
+
+-resourceonly: true
+-includeresource: foo;literal='X'
+
+-releaserepo: Nexus
+
+-groupid:               test
+-pom:                   version=${versionmask;===s;${@version}}
+-maven-release: 		remote
+-snapshot:				RELEASE

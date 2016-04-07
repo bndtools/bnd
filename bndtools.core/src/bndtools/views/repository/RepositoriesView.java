@@ -27,11 +27,13 @@ import org.bndtools.utils.swt.FilterPanelPart;
 import org.bndtools.utils.swt.SWTUtil;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -203,7 +205,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
             @Override
             public boolean performDrop(Object data) {
-                if (RepositoriesView.this.performDrop(getCurrentTarget(), getCurrentEvent().currentDataType)) {
+                if (RepositoriesView.this.performDrop(getCurrentTarget(), getCurrentEvent().currentDataType, data)) {
                     viewer.refresh(getCurrentTarget(), true);
                     return true;
                 }
@@ -719,13 +721,17 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
      *            the target being dropped upon
      * @param data
      *            the data
+     * @param data2
      * @return true if dropped and processed, false if not
      */
-    boolean performDrop(Object target, TransferData data) {
+    boolean performDrop(Object target, TransferData data, Object dropped) {
         try {
             Object java = toJava(data);
-            if (java == null)
-                return false;
+            if (java == null) {
+                java = toJava(dropped);
+                if (java == null)
+                    return false;
+            }
 
             Method m = target.getClass().getMethod(DROP_TARGET, java.getClass());
             Object invoke = m.invoke(target, java);
@@ -737,6 +743,25 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private Object toJava(Object dropped) {
+        if (dropped instanceof IStructuredSelection) {
+            IStructuredSelection selection = (IStructuredSelection) dropped;
+            if (!selection.isEmpty()) {
+                Object firstElement = selection.getFirstElement();
+                if (firstElement instanceof Resource) {
+                    Resource resource = (Resource) firstElement;
+                    IPath path = resource.getRawLocation();
+                    if (path != null) {
+                        File file = path.toFile();
+                        if (file != null)
+                            return file;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**

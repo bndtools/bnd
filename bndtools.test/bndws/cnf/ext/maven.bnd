@@ -1,0 +1,23 @@
+
+-plugin.maven = \
+	aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		releaseUrl=http://localhost:8081/nexus/content/repositories/releases/; \
+		snapshotUrl=http://localhost:8081/nexus/content/repositories/snapshots/; \
+		index=${.}/../maven.properties; \
+		name="Nexus"
+
+-plugin.central = \
+	aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		releaseUrl=https://repo.maven.apache.org/maven2/; \
+		index=${.}/central.properties; \
+		name="Central"
+		
+
+-plugin.wrapper = \
+        aQute.bnd.deployer.repository.wrapper.Plugin; \
+            location            =	"${build}/cache/wrapper"; \
+            reindex				=	true, \
+
+-releaserepo: Nexus
+
+-connection-settings: ${.}/settings.txt
