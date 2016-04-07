@@ -903,7 +903,7 @@ public class Macro {
 	 */
 
 	static Pattern	RANGE_MASK		= Pattern.compile("(\\[|\\()(" + MASK_STRING + "),(" + MASK_STRING + ")(\\]|\\))");
-	static String	_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookyp ${@}\n"
+	static String	_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookup ${@}\n"
 			+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
 	static Pattern	_rangePattern[]	= new Pattern[] {
 											null, RANGE_MASK
@@ -921,7 +921,7 @@ public class Macro {
 		}
 		else {
 			String v = domain.getProperty("@");
-			if (v == null || v.contains("@"))
+			if (v == null)
 				return LITERALVALUE;
 
 			version = new Version(v);
