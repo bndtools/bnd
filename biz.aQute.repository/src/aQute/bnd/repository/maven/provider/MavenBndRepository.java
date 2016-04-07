@@ -306,7 +306,7 @@ public class MavenBndRepository
 			final File file = storage.toLocalFile(archive);
 
 			final File withSources = new File(file.getParentFile(), "+" + file.getName());
-			if (withSources.isFile()) {
+			if (withSources.isFile() && withSources.lastModified() > file.lastModified()) {
 
 				if (listeners.length == 0)
 					return withSources;
