@@ -16,6 +16,76 @@ import junit.framework.TestCase;
 @SuppressWarnings("resource")
 public class MacroTest extends TestCase {
 
+
+	public void testUnknownMacroDelimeters() throws IOException {
+		Processor p = new Processor();
+		assertEquals("${unknown}", p.getReplacer().process("${unknown}"));
+		assertEquals("$<unknown>", p.getReplacer().process("$<unknown>"));
+		assertEquals("$(unknown)", p.getReplacer().process("$(unknown)"));
+		assertEquals("$[unknown]", p.getReplacer().process("$[unknown]"));
+		assertEquals("$«unknown»", p.getReplacer().process("$«unknown»"));
+		assertEquals("$‹unknown›", p.getReplacer().process("$‹unknown›"));
+		assertTrue(p.check("No translation found for macro: unknown"));
+	}
+
+	public void testVersionMaskWithTarget() throws IOException {
+		Processor p = new Processor();
+		assertEquals("${version;===;$<@>}", p.getReplacer().process("${version;===;$<@>}"));
+		assertTrue(p.check());
+	}
+
+	public void testVersionMaskWithoutTarget() throws IOException {
+		Processor p = new Processor();
+		assertEquals("${version;===}", p.getReplacer().process("${version;===}"));
+		assertTrue(p.check());
+	}
+
+	public void testVersionMask() throws IOException {
+		Processor p = new Processor();
+		assertEquals("1.2.3", p.getReplacer().process("${version;===;1.2.3}"));
+		assertTrue(p.check());
+	}
+
+	public void testVersionMaskWithSetExplicitTarget() throws IOException {
+		Processor p = new Processor();
+		p.setProperty("@", "1.2.3");
+		assertEquals("1.2.3", p.getReplacer().process("${version;===;${@}}"));
+		assertTrue(p.check());
+	}
+
+	public void testVersionMaskWithSetTarget() throws IOException {
+		Processor p = new Processor();
+		p.setProperty("@", "1.2.3");
+		assertEquals("1.2.3", p.getReplacer().process("${version;===}"));
+		assertTrue(p.check());
+	}
+
+	public void testRangeWithSetTarget() throws IOException {
+		Processor p = new Processor();
+		p.setProperty("@", "1.2.3");
+		assertEquals("[1.2.3,2.2.3)", p.getReplacer().process("${range;[===,+===)}"));
+		assertTrue(p.check());
+	}
+
+	public void testRangeWithSetExplicitTarget() throws IOException {
+		Processor p = new Processor();
+		p.setProperty("@", "1.2.3");
+		assertEquals("[1.2.3,2.2.3)", p.getReplacer().process("${range;[===,+===);${@}}"));
+		assertTrue(p.check());
+	}
+
+	public void testRangeWithTarget() throws IOException {
+		Processor p = new Processor();
+		assertEquals("${range;[===,+===)}", p.getReplacer().process("${range;[===,+===)}"));
+		assertTrue(p.check());
+	}
+
+	public void testRangeWithExplicitTarget() throws IOException {
+		Processor p = new Processor();
+		assertEquals("${range;[===,+===);${@}}", p.getReplacer().process("${range;[===,+===);${@}}"));
+		assertTrue(p.check());
+	}
+
 	public void testGlobToRegExp() {
 		Processor p = new Processor();
 		Macro m = p.getReplacer();

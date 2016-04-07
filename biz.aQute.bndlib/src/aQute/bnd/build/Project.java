@@ -99,7 +99,9 @@ import aQute.libg.tuple.Pair;
  */
 
 public class Project extends Processor {
-
+	static class RefreshData {
+		Parameters installRepositories;
+	}
 	final static String			DEFAULT_ACTIONS			= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
 	public final static String	BNDFILE					= "bnd.bnd";
 	public final static String	BNDCNF					= "cnf";
@@ -130,6 +132,7 @@ public class Project extends Processor {
 	final Packages				containedPackages		= new Packages();
 	final PackageInfo			packageInfo				= new PackageInfo(this);
 	private Makefile			makefile;
+	private volatile RefreshData	data					= new RefreshData();
 
 	public Project(Workspace workspace, File unused, File buildFile) throws Exception {
 		super(workspace);
@@ -1536,15 +1539,18 @@ public class Project extends Processor {
 		if (isStale()) {
 			trace("building " + this);
 			files = buildLocal(underTest);
-
-			install(files);
+			if (files != null)
+				install(files);
 		}
 
 		return files;
 	}
 
 	private void install(File[] files) throws Exception {
-		Parameters p = new Parameters(mergeProperties(INSTALLREPO));
+		if (files == null)
+			return;
+
+		Parameters p = getInstallRepositories();
 		for (Map.Entry<String,Attrs> e : p.entrySet()) {
 			RepositoryPlugin rp = getWorkspace().getRepository(e.getKey());
 			if (rp != null) {
@@ -1556,6 +1562,13 @@ public class Project extends Processor {
 		}
 	}
 
+	public Parameters getInstallRepositories() {
+		if (data.installRepositories == null) {
+			data.installRepositories = new Parameters(mergeProperties(INSTALLREPO));
+		}
+		return data.installRepositories;
+	}
+
 	private void install(File f, RepositoryPlugin repo, Attrs value) throws Exception {
 		try (Processor p = new Processor();) {
 			p.getProperties().putAll(value);
@@ -1563,6 +1576,8 @@ public class Project extends Processor {
 			options.context = p;
 			try (FileInputStream in = new FileInputStream(f)) {
 				repo.put(in, options);
+			} catch (Exception e) {
+				exception(e, "Cannot install %s into %s because %s", f, repo.getName(), e.getMessage());
 			}
 		}
 	}
@@ -1858,6 +1873,7 @@ public class Project extends Processor {
 	@Override
 	public boolean refresh() {
 		versionMap.clear();
+		data = new RefreshData();
 		boolean changed = false;
 		if (isCnf()) {
 			changed = workspace.refresh();
@@ -1880,7 +1896,7 @@ public class Project extends Processor {
 		files = null;
 		makefile = null;
 		versionMap.clear();
-
+		data = new RefreshData();
 	}
 
 	public String getName() {

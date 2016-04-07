@@ -60,20 +60,21 @@ import aQute.libg.glob.Glob;
  * pattern. ${parameter##word} Remove largest prefix pattern.
  */
 public class Macro {
-	final static String		NULLVALUE	= "c29e43048791e250dfd5723e7b8aa048df802c9262cfa8fbc4475b2e392a8ad2";
-	final static Pattern	NUMERIC_P	= Pattern.compile("[-+]?(\\d*\\.?\\d+|\\d+\\.)(e[-+]?[0-9]+)?");
-	final static Pattern	PRINTF_P	= Pattern.compile(
+	final static String		NULLVALUE		= "c29e43048791e250dfd5723e7b8aa048df802c9262cfa8fbc4475b2e392a8ad2";
+	final static String		LITERALVALUE	= "017a3ddbfc0fcd27bcdb2590cdb713a379ae59ef";
+	final static Pattern	NUMERIC_P		= Pattern.compile("[-+]?(\\d*\\.?\\d+|\\d+\\.)(e[-+]?[0-9]+)?");
+	final static Pattern	PRINTF_P		= Pattern.compile(
 			"%(?:(\\d+)\\$)?(-|\\+|0|\\(|,|\\^|#| )*(\\d*)?(?:\\.(\\d+))?(a|A|b|B|h|H|d|f|c|s|x|X|u|o|z|Z|e|E|g|G|p|n|b|B|%)");
 	Processor				domain;
 	Object					targets[];
 	boolean					flattening;
 	String					profile;
 	private boolean			nosystem;
-	ScriptEngine			engine		= null;
-	ScriptContext			context		= null;
-	Bindings				bindings	= null;
-	StringWriter			stdout		= new StringWriter();
-	StringWriter			stderr		= new StringWriter();
+	ScriptEngine			engine			= null;
+	ScriptContext			context			= null;
+	Bindings				bindings		= null;
+	StringWriter			stdout			= new StringWriter();
+	StringWriter			stderr			= new StringWriter();
 
 	public Macro(Processor domain, Object... targets) {
 		this.domain = domain;
@@ -108,7 +109,7 @@ public class Macro {
 			char c1 = line.charAt(index++);
 			if (c1 == end) {
 				if (--nesting == 0) {
-					result.append(replace(variable.toString(), link));
+					result.append(replace(variable.toString(), link, begin, end));
 					return index;
 				}
 			} else if (c1 == begin)
@@ -162,6 +163,10 @@ public class Macro {
 	}
 
 	protected String getMacro(String key, Link link) {
+		return getMacro(key, link, '{', '}');
+	}
+
+	private String getMacro(String key, Link link, char begin, char end) {
 		if (link != null && link.contains(key))
 			return "${infinite:" + link.toString() + "}";
 
@@ -179,7 +184,7 @@ public class Macro {
 						String del = "";
 						for (String k : sortedList) {
 							if (ins.matches(k)) {
-								String v = replace(k, new Link(source, link, key));
+								String v = replace(k, new Link(source, link, key), begin, end);
 								if (v != null) {
 									sb.append(del);
 									del = ",";
@@ -202,6 +207,8 @@ public class Macro {
 				if (value != null) {
 					if (value == NULLVALUE)
 						return null;
+					if (value == LITERALVALUE)
+						return LITERALVALUE;
 					return process(value, new Link(source, link, key));
 				}
 
@@ -249,7 +256,7 @@ public class Macro {
 			if (profile == null)
 				profile = domain.get(Constants.PROFILE);
 			if (profile != null) {
-				String replace = getMacro("[" + profile + "]" + key, link);
+				String replace = getMacro("[" + profile + "]" + key, link, begin, end);
 				if (replace != null)
 					return replace;
 			}
@@ -258,18 +265,23 @@ public class Macro {
 	}
 
 	public String replace(String key, Link link) {
-		String value = getMacro(key, link);
-		if (value != null)
-			return value;
-		if (!flattening && !key.startsWith("@"))
-			domain.warning("No translation found for macro: %s", key);
-		return "${" + key + "}";
+		return replace(key, link, '{', '}');
+	}
+
+	private String replace(String key, Link link, char begin, char end) {
+		String value = getMacro(key, link, begin, end);
+		if (value != LITERALVALUE) {
+			if (value != null)
+				return value;
+			if (!flattening && !key.startsWith("@"))
+				domain.warning("No translation found for macro: %s", key);
+		}
+		return "$" + begin + key + end;
 	}
 
 	/**
 	 * Parse the key as a command. A command consist of parameters separated by
 	 * ':'.
-	 * 
 	 */
 	static Pattern commands = Pattern.compile("(?<!\\\\);");
 
@@ -813,8 +825,12 @@ public class Macro {
 		String mask = args[1];
 
 		Version version = null;
-		if (args.length >= 3)
+		if (args.length >= 3) {
+			if (isLocalTarget(args[2]))
+				return LITERALVALUE;
+
 			version = new Version(args[2]);
+		}
 
 		return version(version, mask);
 	}
@@ -823,10 +839,7 @@ public class Macro {
 		if (version == null) {
 			String v = domain.getProperty("@");
 			if (v == null) {
-				domain.error(
-						"No version specified for ${version} or ${range} and no implicit version ${@} either, mask=%s",
-						mask);
-				v = "0";
+				return LITERALVALUE;
 			}
 			version = new Version(v);
 		}
@@ -890,7 +903,7 @@ public class Macro {
 	 */
 
 	static Pattern	RANGE_MASK		= Pattern.compile("(\\[|\\()(" + MASK_STRING + "),(" + MASK_STRING + ")(\\]|\\))");
-	static String	_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookyp ${@}\n"
+	static String	_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookup ${@}\n"
 			+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
 	static Pattern	_rangePattern[]	= new Pattern[] {
 											null, RANGE_MASK
@@ -899,12 +912,18 @@ public class Macro {
 	public String _range(String args[]) {
 		verifyCommand(args, _rangeHelp, _rangePattern, 2, 3);
 		Version version = null;
-		if (args.length >= 3)
-			version = new Version(args[2]);
+		if (args.length >= 3) {
+			String string = args[2];
+			if (isLocalTarget(string))
+				return LITERALVALUE;
+
+			version = new Version(string);
+		}
 		else {
 			String v = domain.getProperty("@");
 			if (v == null)
-				return null;
+				return LITERALVALUE;
+
 			version = new Version(v);
 		}
 		String spec = args[1];
@@ -931,6 +950,10 @@ public class Macro {
 			domain.error("${range} macro created an invalid range %s from %s and mask %s", s, version, spec);
 		}
 		return sb.toString();
+	}
+
+	boolean isLocalTarget(String string) {
+		return string.matches("\\$(\\{@\\}|\\[@\\]|\\(@\\)|<@>|«@»|‹@›)");
 	}
 
 	/**
