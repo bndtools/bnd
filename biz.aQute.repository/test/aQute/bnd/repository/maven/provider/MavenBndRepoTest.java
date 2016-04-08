@@ -57,6 +57,17 @@ public class MavenBndRepoTest extends TestCase {
 
 	}
 
+	public void testPutLocalTwiceNoSnapshot() throws Exception {
+		Map<String,String> map = new HashMap<>();
+		map.put("releaseUrl", remote.toURI().toString());
+		config(map);
+		File jar = IO.getFile("testresources/release.jar");
+		PutResult put = repo.put(new FileInputStream(jar), null);
+
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar");
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.pom");
+		put = repo.put(new FileInputStream(jar), null);
+	}
 
 	public void testNoIndexFile() throws Exception {
 		Map<String,String> map = new HashMap<>();

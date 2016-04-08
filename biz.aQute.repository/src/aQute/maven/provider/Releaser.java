@@ -35,15 +35,12 @@ class Releaser implements Release {
 		this.repo = repo;
 		this.dir = home.toLocalFile(revision.path);
 
-		if (force)
-			IO.delete(this.dir);
+		IO.delete(this.dir);
 		check();
 		this.dir.mkdirs();
 	}
 
 	protected void check() {
-		if (dir.exists())
-			throw new IllegalArgumentException("The target directory already exists " + dir);
 	}
 
 	@Override
