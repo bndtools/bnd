@@ -25,6 +25,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.osgi.util.promise.Promise;
 
@@ -33,6 +35,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.jpm.util.JSONRPCProxy;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
@@ -50,6 +53,7 @@ import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.repository.InfoRepository;
 import aQute.bnd.version.Version;
+import aQute.jpm.facade.repo.JpmRepo;
 import aQute.lib.converter.Converter;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
@@ -58,8 +62,11 @@ import aQute.libg.glob.Glob;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
 import aQute.maven.api.IPom;
+import aQute.maven.api.Program;
 import aQute.maven.api.Release;
 import aQute.maven.api.Revision;
+import aQute.maven.provider.MavenBackingRepository;
+import aQute.maven.provider.MavenFileRepository;
 import aQute.maven.provider.MavenRemoteRepository;
 import aQute.maven.provider.MavenRepository;
 import aQute.service.reporter.Reporter;
@@ -71,20 +78,23 @@ import aQute.service.reporter.Reporter;
 public class MavenBndRepository
 		implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable, Refreshable, InfoRepository, Actionable {
 
-	private static final String		NONE	= "NONE";
+	private final Pattern			JPM_REVISION_URL_PATTERN_P	= Pattern
+			.compile("https?://.+#!?/p/sha/(?<sha>([0-9A-F][0-9A-F]){20,20})/.*", Pattern.CASE_INSENSITIVE);
+	private static final String		NONE						= "NONE";
 	private Configuration			configuration;
 	private Registry				registry;
 	private File					localRepo;
 	Reporter						reporter;
 	IMavenRepo						storage;
 	private boolean					inited;
-	private boolean					ok		= true;
+	private boolean					ok							= true;
 	IndexFile						index;
 	private ScheduledFuture< ? >	indexPoller;
-	private RepoActions				actions	= new RepoActions(this);
-	private MavenRemoteRepository	snapshot;
-	private MavenRemoteRepository	release;
+	private RepoActions				actions						= new RepoActions(this);
+	private MavenBackingRepository	snapshot;
+	private MavenBackingRepository	release;
 	private String					name;
+	private JpmRepo					libraryx;
 
 	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
@@ -375,12 +385,11 @@ public class MavenBndRepository
 
 			localRepo = IO.getFile(configuration.local("~/.m2/repository"));
 
-			HttpClient client = registry.getPlugin(HttpClient.class);
 			Executor executor = registry.getPlugin(Executor.class);
 			release = configuration.releaseUrl() != null
-					? new MavenRemoteRepository(localRepo, client, clean(configuration.releaseUrl()), reporter) : null;
+					? getBackingRepository(configuration.releaseUrl()) : null;
 			snapshot = configuration.snapshotUrl() != null
-					? new MavenRemoteRepository(localRepo, client, clean(configuration.snapshotUrl()), reporter) : null;
+					? getBackingRepository(configuration.snapshotUrl()) : null;
 			storage = new MavenRepository(localRepo, getName(), release, snapshot, executor, reporter,
 					getRefreshCallback());
 
@@ -388,8 +397,10 @@ public class MavenBndRepository
 			if (registry != null) {
 				Workspace ws = registry.getPlugin(Workspace.class);
 				if (ws != null)
-					base = ws.getBase();
+					base = ws.getBuildDir();
 			}
+
+			Workspace ws = registry.getPlugin(Workspace.class);
 			File indexFile = IO.getFile(base, configuration.index(name.toLowerCase() + ".mvn"));
 			IndexFile ixf = new IndexFile(reporter, indexFile, storage);
 			ixf.open();
@@ -403,6 +414,20 @@ public class MavenBndRepository
 			throw new RuntimeException(e);
 		}
 	}
+
+	private MavenBackingRepository getBackingRepository(String url) throws Exception {
+		url = clean(url);
+		URI uri = new URI(url);
+
+		if (uri.getScheme().equalsIgnoreCase("file")) {
+			File remote = new File(uri);
+			return new MavenFileRepository(localRepo, remote, reporter);
+		} else {
+			HttpClient client = registry.getPlugin(HttpClient.class);
+			return new MavenRemoteRepository(localRepo, client, url, reporter);
+		}
+	}
+
 
 	private void startPoll(final IndexFile index) {
 		final AtomicBoolean busy = new AtomicBoolean();
@@ -603,7 +628,7 @@ public class MavenBndRepository
 		return null;
 	}
 
-	private Object getUser(MavenRemoteRepository remote) {
+	private Object getUser(MavenBackingRepository remote) {
 		if (remote == null)
 			return "";
 
@@ -657,6 +682,14 @@ public class MavenBndRepository
 	}
 
 	public boolean dropTarget(URI uri) throws Exception {
+
+		String t = uri.toString().trim();
+		int n = t.indexOf('\n');
+		if (n > 0) {
+			uri = new URI(t.substring(0, n));
+			reporter.trace("dropTarget cleaned up from " + t + " to " + uri);
+		}
+
 		if (uri.getHost().equals("search.maven.org") && uri.getPath().equals("/remotecontent")) {
 			return doSearchMaven(uri);
 		}
@@ -664,7 +697,28 @@ public class MavenBndRepository
 		if (uri.getPath().endsWith(".pom"))
 			return addPom(uri);
 
-		System.out.println("Data " + uri);
+		if (uri.getPath().endsWith(".jar")) {
+
+			String s = uri.toString();
+			if (s.endsWith(".jar")) {
+				s = s.substring(0, s.length() - 4) + ".pom";
+				if (addPom(new URI(s))) {
+					return true;
+				}
+			}
+
+		}
+
+		if (doJpm(uri))
+			return true;
+
+		return false;
+	}
+
+	public boolean dropTarget(File file) throws Exception {
+		if (file.getName().equals("pom.xml")) {
+			return addPom(file.toURI());
+		}
 		return false;
 	}
 
@@ -715,4 +769,34 @@ public class MavenBndRepository
 		}
 		return map;
 	}
+
+	JpmRepo getLibrary() throws Exception {
+		if (libraryx == null) {
+			HttpClient client = registry.getPlugin(HttpClient.class);
+			libraryx = JSONRPCProxy.createRPC(JpmRepo.class, client,
+					new URI("http://repo.jpm4j.org/" + JSONRPCProxy.JSONRPC_2_0 + "jpm"));
+		}
+		return libraryx;
+	}
+
+	boolean doJpm(URI uri) {
+		Matcher m = JPM_REVISION_URL_PATTERN_P.matcher(uri.toString());
+		if (m.matches())
+			try {
+				byte[] sha1 = Hex.toByteArray(m.group("sha"));
+				aQute.service.library.Library.Revision revision = getLibrary().getRevision(sha1);
+				if (revision != null) {
+					Archive a = Program.valueOf(revision.groupId, revision.artifactId)
+							.version(revision.version)
+							.archive("jar", revision.classifier);
+					index.add(a);
+					return true;
+				}
+
+			} catch (Exception e) {
+				reporter.exception(e, "Cannot drop JPM ", uri);
+			}
+		return false;
+	}
+
 }

@@ -34,15 +34,15 @@ import aQute.service.reporter.Reporter;
 public class MavenRepository implements IMavenRepo, Closeable {
 	final File						base;
 	final String					id;
-	final MavenRemoteRepository	release;
-	final MavenRemoteRepository	snapshot;
+	final MavenBackingRepository	release;
+	final MavenBackingRepository	snapshot;
 	final Executor					executor;
 	final boolean					localOnly;
 	final Reporter					reporter;
 	final WeakHashMap<Revision,POM>	poms		= new WeakHashMap<>();
 	long							STALE_TIME	= TimeUnit.DAYS.toMillis(1);
 
-	public MavenRepository(File base, String id, MavenRemoteRepository release, MavenRemoteRepository snapshot,
+	public MavenRepository(File base, String id, MavenBackingRepository release, MavenBackingRepository snapshot,
 			Executor executor, Reporter reporter, Callable<Boolean> callback) throws Exception {
 		this.base = base;
 		this.id = id;

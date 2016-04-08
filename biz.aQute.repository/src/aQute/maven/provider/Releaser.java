@@ -19,31 +19,28 @@ import aQute.maven.provider.MetadataParser.ProgramMetadata;
 import aQute.maven.provider.MetadataParser.RevisionMetadata;
 
 class Releaser implements Release {
-	final List<Archive>		upload			= new ArrayList<>();
-	final MavenRepository		home;
-	final Revision			revision;
-	final RevisionMetadata	programMetadata	= new RevisionMetadata();
-	boolean					force;
-	boolean					aborted;
-	private File			dir;
-	protected boolean		localOnly;
-	protected MavenRemoteRepository	repo;
+	final List<Archive>					upload			= new ArrayList<>();
+	final MavenRepository				home;
+	final Revision						revision;
+	final RevisionMetadata				programMetadata	= new RevisionMetadata();
+	boolean								force;
+	boolean								aborted;
+	private File						dir;
+	protected boolean					localOnly;
+	protected MavenBackingRepository	repo;
 
-	Releaser(MavenRepository home, Revision revision, MavenRemoteRepository repo) throws Exception {
+	Releaser(MavenRepository home, Revision revision, MavenBackingRepository repo) throws Exception {
 		this.home = home;
 		this.revision = revision;
 		this.repo = repo;
 		this.dir = home.toLocalFile(revision.path);
 
-		if (force)
-			IO.delete(this.dir);
+		IO.delete(this.dir);
 		check();
 		this.dir.mkdirs();
 	}
 
 	protected void check() {
-		if (dir.exists())
-			throw new IllegalArgumentException("The target directory already exists " + dir);
 	}
 
 	@Override

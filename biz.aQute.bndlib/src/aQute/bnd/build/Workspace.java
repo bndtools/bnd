@@ -71,44 +71,46 @@ import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter;
 
 public class Workspace extends Processor {
-	public static final String EXT = "ext";
+	public static final String	EXT						= "ext";
 
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
+	static final int			BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
 
-	public static final String	BUILDFILE	= "build.bnd";
-	public static final String	CNFDIR		= "cnf";
-	public static final String	BNDDIR		= "bnd";
-	public static final String	CACHEDIR	= "cache/" + About.CURRENT;
+	public static final String	BUILDFILE				= "build.bnd";
+	public static final String	CNFDIR					= "cnf";
+	public static final String	BNDDIR					= "bnd";
+	public static final String	CACHEDIR				= "cache/" + About.CURRENT;
 
-	public static final String STANDALONE_REPO_CLASS = "aQute.bnd.deployer.repository.FixedIndexedRepo";
+	public static final String	STANDALONE_REPO_CLASS	= "aQute.bnd.deployer.repository.FixedIndexedRepo";
 
-	private final Pattern EMBEDDED_REPO_TESTING_PATTERN = Pattern
+	static class WorkspaceData {
+		List<RepositoryPlugin> repositories;
+	}
+
+	private final Pattern						EMBEDDED_REPO_TESTING_PATTERN	= Pattern
 			.compile(".*biz\\.aQute\\.bnd\\.embedded-repo-(.*)\\.jar");
 
-	static Map<File,WeakReference<Workspace>>	cache			= newHashMap();
-	static Processor							defaults		= null;
-	final Map<String,Project>					models			= newHashMap();
-	final Map<String,Action>					commands		= newMap();
+	static Map<File,WeakReference<Workspace>>	cache							= newHashMap();
+	static Processor							defaults						= null;
+	final Map<String,Project>					models							= newHashMap();
+	final Map<String,Action>					commands						= newMap();
 	final File									buildDir;
-	final Maven									maven			= new Maven(Processor.getExecutor());
-	private boolean								offline			= true;
-	Settings									settings		= new Settings();
-	WorkspaceRepository							workspaceRepo	= new WorkspaceRepository(this);
-	static String								overallDriver	= "unset";
-	static Parameters							overallGestalt	= new Parameters();
+	final Maven									maven							= new Maven(Processor.getExecutor());
+	private boolean								offline							= true;
+	Settings									settings						= new Settings();
+	WorkspaceRepository							workspaceRepo					= new WorkspaceRepository(this);
+	static String								overallDriver					= "unset";
+	static Parameters							overallGestalt					= new Parameters();
 	/**
 	 * Signal a BndListener plugin. We ran an infinite bug loop :-(
 	 */
-	final ThreadLocal<Reporter>					signalBusy		= new ThreadLocal<Reporter>();
+	final ThreadLocal<Reporter>					signalBusy						= new ThreadLocal<Reporter>();
 	ResourceRepositoryImpl						resourceRepositoryImpl;
-
-	private Parameters gestalt;
-
-	private String driver;
-
-	private final WorkspaceLayout layout;
-
-	final Set<Project> trail = Collections.newSetFromMap(new ConcurrentHashMap<Project,Boolean>());
+	private Parameters							gestalt;
+	private String								driver;
+	private final WorkspaceLayout				layout;
+	final Set<Project>							trail							= Collections
+			.newSetFromMap(new ConcurrentHashMap<Project,Boolean>());
+	private WorkspaceData						data							= new WorkspaceData();
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -291,6 +293,7 @@ public class Workspace extends Processor {
 
 	@Override
 	public boolean refresh() {
+		data = new WorkspaceData();
 		if (super.refresh()) {
 			for (Project project : getCurrentProjects()) {
 				project.propertiesChanged();
@@ -302,6 +305,7 @@ public class Workspace extends Processor {
 
 	@Override
 	public void propertiesChanged() {
+		data = new WorkspaceData();
 		File extDir = new File(this.buildDir, EXT);
 		File[] extensions = extDir.listFiles();
 		if (extensions != null) {
@@ -502,7 +506,10 @@ public class Workspace extends Processor {
 	}
 
 	public List<RepositoryPlugin> getRepositories() {
-		return getPlugins(RepositoryPlugin.class);
+		if (data.repositories == null) {
+			data.repositories = getPlugins(RepositoryPlugin.class);
+		}
+		return data.repositories;
 	}
 
 	public Collection<Project> getBuildOrder() throws Exception {

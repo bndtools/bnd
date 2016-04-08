@@ -36,8 +36,8 @@ public class Archive implements Comparable<Archive> {
 
 	Archive(Revision revision, MavenVersion snapshot, String extension, String classifier) {
 		this.revision = revision;
-		this.extension = extension == null ? "jar" : extension;
-		this.classifier = classifier == null ? "" : classifier;
+		this.extension = extension == null || extension.isEmpty() ? "jar" : extension;
+		this.classifier = classifier == null || classifier.isEmpty() ? "" : classifier;
 		this.snapshot = snapshot;
 		this.localPath = revision.path + "/" + getName();
 		this.remotePath = revision.path + "/" + getName(snapshot);
