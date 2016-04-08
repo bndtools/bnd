@@ -65,6 +65,8 @@ import aQute.maven.api.IPom;
 import aQute.maven.api.Program;
 import aQute.maven.api.Release;
 import aQute.maven.api.Revision;
+import aQute.maven.provider.MavenBackingRepository;
+import aQute.maven.provider.MavenFileRepository;
 import aQute.maven.provider.MavenRemoteRepository;
 import aQute.maven.provider.MavenRepository;
 import aQute.service.reporter.Reporter;
@@ -89,8 +91,8 @@ public class MavenBndRepository
 	IndexFile						index;
 	private ScheduledFuture< ? >	indexPoller;
 	private RepoActions				actions						= new RepoActions(this);
-	private MavenRemoteRepository	snapshot;
-	private MavenRemoteRepository	release;
+	private MavenBackingRepository	snapshot;
+	private MavenBackingRepository	release;
 	private String					name;
 	private JpmRepo					libraryx;
 
@@ -383,12 +385,11 @@ public class MavenBndRepository
 
 			localRepo = IO.getFile(configuration.local("~/.m2/repository"));
 
-			HttpClient client = registry.getPlugin(HttpClient.class);
 			Executor executor = registry.getPlugin(Executor.class);
 			release = configuration.releaseUrl() != null
-					? new MavenRemoteRepository(localRepo, client, clean(configuration.releaseUrl()), reporter) : null;
+					? getBackingRepository(configuration.releaseUrl()) : null;
 			snapshot = configuration.snapshotUrl() != null
-					? new MavenRemoteRepository(localRepo, client, clean(configuration.snapshotUrl()), reporter) : null;
+					? getBackingRepository(configuration.snapshotUrl()) : null;
 			storage = new MavenRepository(localRepo, getName(), release, snapshot, executor, reporter,
 					getRefreshCallback());
 
@@ -411,6 +412,20 @@ public class MavenBndRepository
 			throw new RuntimeException(e);
 		}
 	}
+
+	private MavenBackingRepository getBackingRepository(String url) throws Exception {
+		url = clean(url);
+		URI uri = new URI(url);
+
+		if (uri.getScheme().equalsIgnoreCase("file")) {
+			File remote = new File(uri);
+			return new MavenFileRepository(localRepo, remote, reporter);
+		} else {
+			HttpClient client = registry.getPlugin(HttpClient.class);
+			return new MavenRemoteRepository(localRepo, client, url, reporter);
+		}
+	}
+
 
 	private void startPoll(final IndexFile index) {
 		final AtomicBoolean busy = new AtomicBoolean();
@@ -611,7 +626,7 @@ public class MavenBndRepository
 		return null;
 	}
 
-	private Object getUser(MavenRemoteRepository remote) {
+	private Object getUser(MavenBackingRepository remote) {
 		if (remote == null)
 			return "";
 

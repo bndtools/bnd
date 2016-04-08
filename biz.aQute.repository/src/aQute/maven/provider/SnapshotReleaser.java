@@ -16,7 +16,7 @@ public class SnapshotReleaser extends Releaser {
 	private String			build		= "1";
 	private String			dateStamp;
 
-	public SnapshotReleaser(MavenRepository home, Revision revision, MavenRemoteRepository snapshot) throws Exception {
+	public SnapshotReleaser(MavenRepository home, Revision revision, MavenBackingRepository snapshot) throws Exception {
 		super(home, revision, snapshot);
 		force();
 		assert revision.isSnapshot();

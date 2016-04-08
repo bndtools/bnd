@@ -1,15 +1,10 @@
 package aQute.maven.provider;
 
-import java.io.Closeable;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,38 +14,24 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequestException;
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
-import aQute.bnd.version.MavenVersion;
-import aQute.lib.io.IO;
 import aQute.libg.cryptography.MD5;
 import aQute.libg.cryptography.SHA1;
-import aQute.maven.api.Archive;
 import aQute.maven.api.Program;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MetadataParser.ProgramMetadata;
 import aQute.maven.provider.MetadataParser.RevisionMetadata;
-import aQute.maven.provider.MetadataParser.SnapshotVersion;
 import aQute.service.reporter.Reporter;
 
-public class MavenRemoteRepository implements Closeable {
+public class MavenRemoteRepository extends MavenBackingRepository {
 	final HttpClient						client;
-	final String							base;
 	final Map<Revision,RevisionMetadata>	revisions	= new ConcurrentHashMap<>();
 	final Map<Program,ProgramMetadata>		programs	= new ConcurrentHashMap<>();
-	final String							id;
-	final File								root;
-	final Reporter							reporter;
+	final String							base;
 
 	public MavenRemoteRepository(File root, HttpClient client, String base, Reporter reporter) throws Exception {
-		this.root = root;
+		super(root, base, reporter);
 		this.client = client;
 		this.base = base;
-		this.reporter = reporter;
-		this.id = toName(base);
-	}
-
-	public static String toName(String uri) throws Exception {
-		String s = SHA1.digest(uri.getBytes(StandardCharsets.UTF_8)).asHex();
-		return s.substring(0, 8);
 	}
 
 	public TaggedData fetch(String path, File file) throws Exception {
@@ -87,31 +68,6 @@ public class MavenRemoteRepository implements Closeable {
 					throw e;
 				Thread.sleep(1000 * n);
 			}
-	}
-
-	private void checkDigest(String fileSha, String remoteSha, File file) {
-		if (remoteSha == null)
-			return;
-
-		try {
-			int start = 0;
-			while (start < remoteSha.length() && Character.isWhitespace(remoteSha.charAt(start)))
-				start++;
-
-			for (int i = 0; i < fileSha.length(); i++) {
-				if (start + i < remoteSha.length()) {
-					char us = fileSha.charAt(i);
-					char them = remoteSha.charAt(start + i);
-					if (us == them || Character.toLowerCase(us) == Character.toLowerCase(them))
-						continue;
-				}
-				throw new IllegalArgumentException("Invalid checksum content " + remoteSha + " for " + file);
-			}
-
-		} catch (Exception e) {
-			file.delete();
-			throw e;
-		}
 	}
 
 	public void store(File file, String path) throws Exception {
@@ -161,89 +117,6 @@ public class MavenRemoteRepository implements Closeable {
 
 	}
 
-	public URI toURI(String remotePath) throws Exception {
-		return new URI(base + remotePath);
-	}
-
-	public void getRevisions(Program program, List<Revision> revisions) throws Exception {
-		ProgramMetadata meta = getMetadata(program);
-
-		for (MavenVersion v : meta.versions) {
-			revisions.add(program.version(v));
-		}
-	}
-
-	RevisionMetadata getMetadata(Revision revision) throws Exception {
-		File metafile = IO.getFile(root, revision.metadata(id));
-		RevisionMetadata metadata = revisions.get(revision);
-
-		URI url = new URI(base + revision.metadata());
-		TaggedData tag = client.build().useCache(metafile).asTag().headers("User-Agent", "bnd").go(url);
-		if (tag.getState() == State.NOT_FOUND || tag.getState() == State.OTHER) {
-			if (metadata == null) {
-				metadata = new RevisionMetadata();
-				revisions.put(revision, metadata);
-				return metadata;
-			}
-			throw new IOException("HTTP failed:" + tag.getResponseCode());
-		}
-
-		if (metadata == null || tag.getState() == State.UPDATED) {
-			metadata = MetadataParser.parseRevisionMetadata(metafile);
-			revisions.put(revision, metadata);
-		}
-
-		return metadata;
-	}
-
-	ProgramMetadata getMetadata(Program program) throws Exception {
-		File metafile = IO.getFile(root, program.metadata(id));
-		ProgramMetadata metadata = programs.get(program);
-
-		TaggedData tag = client.build().useCache(metafile).asTag().go(new URI(base + program.metadata()));
-		switch (tag.getState()) {
-			case NOT_FOUND :
-				throw new FileNotFoundException();
-			case OTHER :
-				throw new IOException("Failed " + tag.getResponseCode());
-			case UNMODIFIED :
-				if (metadata != null)
-					return metadata;
-
-				// fall thru
-
-			case UPDATED :
-			default :
-				metadata = MetadataParser.parseProgramMetadata(metafile);
-				programs.put(program, metadata);
-				return metadata;
-		}
-	}
-
-	public List<Archive> getSnapshotArchives(Revision revision) throws Exception {
-		RevisionMetadata metadata = getMetadata(revision);
-		List<Archive> archives = new ArrayList<>();
-		for (SnapshotVersion snapshotVersion : metadata.snapshotVersions) {
-			Archive archive = revision.archive(snapshotVersion.value, snapshotVersion.extension,
-					snapshotVersion.classifier);
-			archives.add(archive);
-		}
-
-		return archives;
-	}
-
-	public MavenVersion getVersion(Revision revision) throws Exception {
-		RevisionMetadata metadata = getMetadata(revision);
-		if (metadata.snapshotVersions.isEmpty())
-			return null;
-
-		return revision.version.toSnapshot(metadata.snapshot.timestamp, metadata.snapshot.buildNumber);
-	}
-
-	public String getId() {
-		return id;
-	}
-
 	@Override
 	public String toString() {
 		return "RemoteRepo [base=" + base + ", id=" + id + "]";
@@ -251,5 +124,10 @@ public class MavenRemoteRepository implements Closeable {
 
 	public String getUser() throws Exception {
 		return client.getUserFor(base);
+	}
+
+	@Override
+	public URI toURI(String remotePath) throws Exception {
+		return new URI(base + remotePath);
 	}
 }
