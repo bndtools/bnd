@@ -397,8 +397,10 @@ public class MavenBndRepository
 			if (registry != null) {
 				Workspace ws = registry.getPlugin(Workspace.class);
 				if (ws != null)
-					base = ws.getBase();
+					base = ws.getBuildDir();
 			}
+
+			Workspace ws = registry.getPlugin(Workspace.class);
 			File indexFile = IO.getFile(base, configuration.index(name.toLowerCase() + ".mvn"));
 			IndexFile ixf = new IndexFile(reporter, indexFile, storage);
 			ixf.open();
