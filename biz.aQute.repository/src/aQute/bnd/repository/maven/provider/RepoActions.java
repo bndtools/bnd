@@ -26,7 +26,6 @@ class RepoActions {
 		this.repo = mavenBndRepository;
 	}
 
-
 	Map<String,Runnable> getProgramActions(final String bsn) throws Exception {
 		Map<String,Runnable> map = new LinkedHashMap<>();
 		map.put("Delete All from Index", new Runnable() {
@@ -44,6 +43,7 @@ class RepoActions {
 
 		return map;
 	}
+
 	Map<String,Runnable> getRevisionActions(final BundleDescriptor bd) throws Exception {
 		Map<String,Runnable> map = new LinkedHashMap<>();
 		map.put("Clear from Cache", new Runnable() {
@@ -90,6 +90,18 @@ class RepoActions {
 				}
 			}
 
+		});
+
+		map.put("Refresh", new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					repo.index.updateAsync(bd.archive);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
 
 		});
 
@@ -99,7 +111,6 @@ class RepoActions {
 
 		return map;
 	}
-
 
 	void addSources(final BundleDescriptor bd, Map<String,Runnable> map)
 			throws Exception, InvocationTargetException, InterruptedException {
@@ -135,32 +146,35 @@ class RepoActions {
 		}
 	}
 
-
 	void addUpdate(final BundleDescriptor bd, Map<String,Runnable> map) throws Exception {
-		Revision rev = bd.archive.revision;
-		Program prog = rev.program;
+		try {
+			Revision rev = bd.archive.revision;
+			Program prog = rev.program;
 
-		List<Revision> revisions = repo.storage.getRevisions(prog);
-		if (revisions.size() > 1) {
-			final Revision last = revisions.get(revisions.size() - 1);
+			List<Revision> revisions = repo.storage.getRevisions(prog);
+			if (revisions.size() > 1) {
+				final Revision last = revisions.get(revisions.size() - 1);
 
-			if (!rev.equals(last)) {
-				map.put("Update to " + last, new Runnable() {
+				if (!rev.equals(last)) {
+					map.put("Update to " + last, new Runnable() {
 
-					@Override
-					public void run() {
-						try {
-							repo.index.remove(bd.archive);
-							repo.index.add(last.archive(bd.archive.extension, bd.archive.classifier));
-							addDependency(bd.archive, MavenScope.runtime);
-						} catch (Exception e) {
-							throw new RuntimeException(e);
+						@Override
+						public void run() {
+							try {
+								repo.index.remove(bd.archive);
+								repo.index.add(last.archive(bd.archive.extension, bd.archive.classifier));
+								addDependency(bd.archive, MavenScope.runtime);
+							} catch (Exception e) {
+								throw new RuntimeException(e);
+							}
 						}
-					}
 
-				});
-			} else
-				map.put("-Update", null);
+					});
+				} else
+					map.put("-Update", null);
+			}
+		} catch (Exception e) {
+			map.put("-Update [" + e.getMessage() + "]", null);
 		}
 	}
 

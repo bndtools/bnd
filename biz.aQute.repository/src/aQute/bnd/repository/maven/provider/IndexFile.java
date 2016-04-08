@@ -79,7 +79,8 @@ class IndexFile {
 		for (Iterator<Promise<File>> i = promises.values().iterator(); i.hasNext();) {
 			Promise<File> f = i.next();
 			try {
-				f.getValue();
+				if (!f.isDone())
+					f.getValue();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -166,9 +167,21 @@ class IndexFile {
 		return set;
 	}
 
+	long last = 0L;
 	boolean refresh() throws Exception {
-		if (indexFile.lastModified() != lastModified) {
+
+		if (indexFile.lastModified() != lastModified && last + 10000 < System.currentTimeMillis()) {
 			loadIndexFile();
+			last = System.currentTimeMillis();
+
+			for (BundleDescriptor bd : descriptors.values()) {
+				if (bd.promise != null && bd.promise.isDone() && bd.promise.getFailure() == null) {
+					File f = bd.promise.getValue();
+					if (f.isFile() && f.lastModified() != bd.lastModified) {
+						updateDescriptor(bd, f);
+					}
+				}
+			}
 			return true;
 		} else
 			return refresh.getAndSet(false);
@@ -278,7 +291,7 @@ class IndexFile {
 		return false;
 	}
 
-	private Promise<File> updateAsync(final Archive archive) throws Exception {
+	Promise<File> updateAsync(final Archive archive) throws Exception {
 		Promise<File> promise = repo.get(archive);
 		return updateAsync(archive, promise);
 	}

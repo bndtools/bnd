@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import aQute.bnd.build.Workspace;
-import aQute.bnd.osgi.Processor;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
 import aQute.maven.provider.FakeNexus;
@@ -21,7 +20,6 @@ public class WorkspaceTest extends TestCase {
 
 	private MavenBndRepository	repo;
 	private FakeNexus			fnx;
-	private Processor			reporter;
 	private Workspace			workspace;
 
 	@Override
