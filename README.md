@@ -57,7 +57,8 @@ bnd is continuously built and released on [CloudBees](https://bndtools.ci.cloudb
 [![Built on DEV@cloud](http://www.cloudbees.com/sites/default/files/Button-Built-on-CB-1.png)](http://www.cloudbees.com/foss/foss-dev.cb)
 
 ## Feedback
-Feedback is always welcome, for general discussions use the <bndtools-users@googlegroups.com> list. We also have the <bndtools-dev@googlegroups.com> list for discussions on the development of bnd.
+Feedback is always welcome, for general discussions use the <bndtools-users@googlegroups.com> list. We also have the <bndtools-dev@googlegroups.com> list for discussions on the development of bnd.  
+One can subscribe to the mail list by sending an email to `bndtools-users+subscribe@googlegroups.com` and unsubscribe by sending an email to `bndtools-users+unsubscribe@googlegroups.com`.
 
 Bugs and issues should go to <https://github.com/bndtools/bnd/issues>
 
