@@ -669,7 +669,7 @@ public class MavenBndRepository
 				else if (isLocal(bd.archive)) {
 					return bd.version.toString();
 				} else
-					return bd.version.toString() + " ?";
+					return bd.version.toString() + " [?]";
 
 			default :
 		}
