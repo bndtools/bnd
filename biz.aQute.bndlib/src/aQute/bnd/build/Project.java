@@ -1049,19 +1049,24 @@ public class Project extends Processor {
 	 */
 	public void release(String name, boolean test) throws Exception {
 		trace("release");
-		File[] jars = build(test);
-		// If build fails jars will be null
-		if (jars == null) {
-			trace("no jars being build");
-			return;
-		}
-		Parameters repos = new Parameters(name);
-		trace("build %s - %s", Arrays.toString(jars), repos);
-
-		for (Map.Entry<String,Attrs> entry : repos.entrySet()) {
-			for (File jar : jars) {
-				release(entry.getKey(), jar.getName(), new BufferedInputStream(new FileInputStream(jar)));
+		setProperty("@releasing", "true");
+		try {
+			File[] jars = build(test);
+			// If build fails jars will be null
+			if (jars == null) {
+				trace("no jars being build");
+				return;
 			}
+			Parameters repos = new Parameters(name);
+			trace("build %s - %s", Arrays.toString(jars), repos);
+
+			for (Map.Entry<String,Attrs> entry : repos.entrySet()) {
+				for (File jar : jars) {
+					release(entry.getKey(), jar.getName(), new BufferedInputStream(new FileInputStream(jar)));
+				}
+			}
+		} finally {
+			getProperties().remove("@releasing");
 		}
 	}
 
@@ -1564,7 +1569,7 @@ public class Project extends Processor {
 
 	public Parameters getInstallRepositories() {
 		if (data.installRepositories == null) {
-			data.installRepositories = new Parameters(mergeProperties(INSTALLREPO));
+			data.installRepositories = new Parameters(mergeProperties(BUILDREPO));
 		}
 		return data.installRepositories;
 	}
