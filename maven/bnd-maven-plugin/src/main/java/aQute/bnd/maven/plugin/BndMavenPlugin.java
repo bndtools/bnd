@@ -156,7 +156,7 @@ public class BndMavenPlugin extends AbstractMojo {
 			}
 
 			// Compute bnd sourcepath
-			boolean delta = !buildContext.isIncremental();
+			boolean delta = !buildContext.isIncremental() || !manifestPath.exists();
 			List<File> sourcepath = new ArrayList<File>();
 			if (sourceDir.exists()) {
 				sourcepath.add(sourceDir.getCanonicalFile());
