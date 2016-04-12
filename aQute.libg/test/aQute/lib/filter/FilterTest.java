@@ -4,7 +4,7 @@ import junit.framework.TestCase;
 
 public class FilterTest extends TestCase {
 
-	public void testFilters() {
+	public void testFilters() throws IllegalArgumentException, Exception {
 		verify("(&(test=aName)(version>=1.1.0))");
 		verify("(&(version>=1.1)(string~=astring))");
 		verify("(&(version>=1.1)(long>=99))");
@@ -18,7 +18,7 @@ public class FilterTest extends TestCase {
 		verify("(willResolve=false)");
 	}
 
-	private void verify(String string) {
+	private void verify(String string) throws IllegalArgumentException, Exception {
 		assertNull("Invalid filter", new Filter(string).verify());
 
 	}

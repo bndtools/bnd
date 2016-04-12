@@ -44,6 +44,8 @@ import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.ExtList;
 import aQute.lib.collections.SortedList;
+import aQute.lib.filter.ExtendedFilter;
+import aQute.lib.filter.Get;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -358,7 +360,6 @@ public class Macro {
 
 	/**
 	 * Return a unique list where the duplicates are removed.
-	 * 
 	 */
 	static String _uniqHelp = "${uniq;<list> ...}";
 
@@ -402,7 +403,7 @@ public class Macro {
 	String filter(String[] args, boolean include) {
 		verifyCommand(args, String.format(_filterHelp, args[0]), null, 3, 3);
 
-		Collection<String> list = new ArrayList<String>(Processor.split(args[1]));
+		Collection<String> list = toCollection(args[1]);
 		Pattern pattern = Pattern.compile(args[2]);
 
 		for (Iterator<String> i = list.iterator(); i.hasNext();) {
@@ -410,6 +411,10 @@ public class Macro {
 				i.remove();
 		}
 		return Processor.join(list);
+	}
+
+	ArrayList<String> toCollection(String arg) {
+		return new ArrayList<String>(Processor.split(arg));
 	}
 
 	static String _sortHelp = "${sort;<list>...}";
@@ -480,18 +485,31 @@ public class Macro {
 		return Processor.join(args[1], result);
 	}
 
-	static String _ifHelp = "${if;<condition>;<iftrue> [;<iffalse>] }";
+	static String _ifHelp = "${if;<condition>;<iftrue> [;<iffalse>] } condition is either a filter expression or truthy";
 
-	public String _if(String args[]) {
-		verifyCommand(args, _ifHelp, null, 3, 4);
-		String condition = args[1].trim();
-		if (!condition.equalsIgnoreCase("false") && !condition.equals("0") && !condition.equals("0.0")
-				&& condition.length() != 0)
-			return args[2];
+	public String _if(String args[]) throws Exception {
+		verifyCommand(args, _ifHelp, null, 2, 4);
+		String condition = args[1];
+		if (isTruthy(condition))
+			return args.length > 2 ? args[2] : "true";
 
 		if (args.length > 3)
 			return args[3];
 		return "";
+	}
+
+	public boolean isTruthy(String condition) throws Exception {
+		if (condition == null)
+			return false;
+
+		condition = condition.trim();
+
+		if (condition.startsWith("(") && condition.endsWith(")")) {
+			return doCondition(condition);
+		}
+
+		return !condition.equalsIgnoreCase("false") && !condition.equals("0") && !condition.equals("0.0")
+				&& condition.length() != 0;
 	}
 
 	public final static String _nowHelp = "${now;pattern|'long'}, returns current time";
@@ -600,7 +618,6 @@ public class Macro {
 
 	/**
 	 * toclassname ; <path>.class ( , <path>.class ) *
-	 * 
 	 */
 	static String _toclassnameHelp = "${classname;<list of class names>}, convert class paths to FQN class names ";
 
@@ -625,7 +642,6 @@ public class Macro {
 
 	/**
 	 * toclassname ; <path>.class ( , <path>.class ) *
-	 * 
 	 */
 
 	static String _toclasspathHelp = "${toclasspath;<list>[;boolean]}, convert a list of class names to paths";
@@ -812,8 +828,8 @@ public class Macro {
 	final static String		_versionHelp		= "${version;<mask>;<version>}, modify a version\n"
 			+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
 	final static Pattern	_versionPattern[]	= new Pattern[] {
-														null, null, MASK, Verifier.VERSION
-													};
+			null, null, MASK, Verifier.VERSION
+	};
 
 	public String _versionmask(String args[]) {
 		return _version(args);
@@ -899,15 +915,14 @@ public class Macro {
 	 *  -provide-policy : ${policy;[==,=+)}
 	 * -consume-policy : ${policy;[==,+)}
 	 * </pre>
-	 * 
 	 */
 
 	static Pattern	RANGE_MASK		= Pattern.compile("(\\[|\\()(" + MASK_STRING + "),(" + MASK_STRING + ")(\\]|\\))");
 	static String	_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookup ${@}\n"
 			+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
 	static Pattern	_rangePattern[]	= new Pattern[] {
-											null, RANGE_MASK
-										};
+			null, RANGE_MASK
+	};
 
 	public String _range(String args[]) {
 		verifyCommand(args, _rangeHelp, _rangePattern, 2, 3);
@@ -918,8 +933,7 @@ public class Macro {
 				return LITERALVALUE;
 
 			version = new Version(string);
-		}
-		else {
+		} else {
 			String v = domain.getProperty("@");
 			if (v == null)
 				return LITERALVALUE;
@@ -958,7 +972,6 @@ public class Macro {
 
 	/**
 	 * System command. Execute a command and insert the result.
-	 * 
 	 */
 	public String system_internal(boolean allowFail, String args[]) throws Exception {
 		if (nosystem)
@@ -2029,4 +2042,22 @@ public class Macro {
 		else
 			return pattern.pattern();
 	}
+
+	public boolean doCondition(String arg) throws Exception {
+		ExtendedFilter f = new ExtendedFilter(arg);
+		return f.match(new Get() {
+
+			@Override
+			public Object get(String key) throws Exception {
+				if (key.endsWith("[]")) {
+					key = key.substring(0, key.length() - 2);
+					return toCollection(domain.getProperty(key));
+				} else
+
+					return domain.getProperty(key);
+			}
+
+		});
+	}
+
 }

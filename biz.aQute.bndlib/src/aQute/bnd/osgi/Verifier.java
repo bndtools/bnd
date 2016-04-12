@@ -723,7 +723,7 @@ public class Verifier extends Processor {
 		}
 	}
 
-	private void verifyRequirements() {
+	private void verifyRequirements() throws IllegalArgumentException, Exception {
 		Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.REQUIRE_CAPABILITY));
 		for (String key : map.keySet()) {
 
