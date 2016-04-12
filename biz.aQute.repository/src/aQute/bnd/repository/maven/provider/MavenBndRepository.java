@@ -184,7 +184,8 @@ public class MavenBndRepository
 						}
 					}
 				}
-				index.add(binaryArchive);
+				if (!binaryArchive.isSnapshot())
+					index.add(binaryArchive);
 			}
 			return result;
 		} finally {
