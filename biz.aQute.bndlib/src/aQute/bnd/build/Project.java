@@ -102,36 +102,37 @@ public class Project extends Processor {
 	static class RefreshData {
 		Parameters installRepositories;
 	}
-	final static String			DEFAULT_ACTIONS			= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
-	public final static String	BNDFILE					= "bnd.bnd";
-	public final static String	BNDCNF					= "cnf";
-	public final static String	SHA_256					= "SHA-256";
-	final Workspace				workspace;
-	private final AtomicBoolean	preparedPaths			= new AtomicBoolean();
-	final Collection<Project>	dependson				= new LinkedHashSet<Project>();
-	final Collection<Container>	classpath				= new LinkedHashSet<Container>();
-	final Collection<Container>	buildpath				= new LinkedHashSet<Container>();
-	final Collection<Container>	testpath				= new LinkedHashSet<Container>();
-	final Collection<Container>	runpath					= new LinkedHashSet<Container>();
-	final Collection<Container>	runbundles				= new LinkedHashSet<Container>();
-	final Collection<Container>	runfw					= new LinkedHashSet<Container>();
-	File						runstorage;
-	final Map<File,Attrs>		sourcepath				= new LinkedHashMap<File,Attrs>();
-	final Collection<File>		allsourcepath			= new LinkedHashSet<File>();
-	final Collection<Container>	bootclasspath			= new LinkedHashSet<Container>();
-	final Map<String,Version>	versionMap				= new LinkedHashMap<String,Version>();
-	File						output;
-	File						target;
-	private final AtomicInteger	revision				= new AtomicInteger();
-	File						files[];
-	boolean						delayRunDependencies	= true;
-	final ProjectMessages		msgs					= ReporterMessages.base(this, ProjectMessages.class);
-	private Properties			ide;
-	final Packages				exportedPackages		= new Packages();
-	final Packages				importedPackages		= new Packages();
-	final Packages				containedPackages		= new Packages();
-	final PackageInfo			packageInfo				= new PackageInfo(this);
-	private Makefile			makefile;
+
+	final static String				DEFAULT_ACTIONS			= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
+	public final static String		BNDFILE					= "bnd.bnd";
+	public final static String		BNDCNF					= "cnf";
+	public final static String		SHA_256					= "SHA-256";
+	final Workspace					workspace;
+	private final AtomicBoolean		preparedPaths			= new AtomicBoolean();
+	final Collection<Project>		dependson				= new LinkedHashSet<Project>();
+	final Collection<Container>		classpath				= new LinkedHashSet<Container>();
+	final Collection<Container>		buildpath				= new LinkedHashSet<Container>();
+	final Collection<Container>		testpath				= new LinkedHashSet<Container>();
+	final Collection<Container>		runpath					= new LinkedHashSet<Container>();
+	final Collection<Container>		runbundles				= new LinkedHashSet<Container>();
+	final Collection<Container>		runfw					= new LinkedHashSet<Container>();
+	File							runstorage;
+	final Map<File,Attrs>			sourcepath				= new LinkedHashMap<File,Attrs>();
+	final Collection<File>			allsourcepath			= new LinkedHashSet<File>();
+	final Collection<Container>		bootclasspath			= new LinkedHashSet<Container>();
+	final Map<String,Version>		versionMap				= new LinkedHashMap<String,Version>();
+	File							output;
+	File							target;
+	private final AtomicInteger		revision				= new AtomicInteger();
+	File							files[];
+	boolean							delayRunDependencies	= true;
+	final ProjectMessages			msgs					= ReporterMessages.base(this, ProjectMessages.class);
+	private Properties				ide;
+	final Packages					exportedPackages		= new Packages();
+	final Packages					importedPackages		= new Packages();
+	final Packages					containedPackages		= new Packages();
+	final PackageInfo				packageInfo				= new PackageInfo(this);
+	private Makefile				makefile;
 	private volatile RefreshData	data					= new RefreshData();
 
 	public Project(Workspace workspace, File unused, File buildFile) throws Exception {
@@ -1049,24 +1050,19 @@ public class Project extends Processor {
 	 */
 	public void release(String name, boolean test) throws Exception {
 		trace("release");
-		setProperty("@releasing", "true");
-		try {
-			File[] jars = build(test);
-			// If build fails jars will be null
-			if (jars == null) {
-				trace("no jars being build");
-				return;
-			}
-			Parameters repos = new Parameters(name);
-			trace("build %s - %s", Arrays.toString(jars), repos);
+		File[] jars = build(test);
+		// If build fails jars will be null
+		if (jars == null) {
+			trace("no jars being build");
+			return;
+		}
+		Parameters repos = new Parameters(name);
+		trace("build %s - %s", Arrays.toString(jars), repos);
 
-			for (Map.Entry<String,Attrs> entry : repos.entrySet()) {
-				for (File jar : jars) {
-					release(entry.getKey(), jar.getName(), new BufferedInputStream(new FileInputStream(jar)));
-				}
+		for (Map.Entry<String,Attrs> entry : repos.entrySet()) {
+			for (File jar : jars) {
+				release(entry.getKey(), jar.getName(), new BufferedInputStream(new FileInputStream(jar)));
 			}
-		} finally {
-			unsetProperty("@releasing");
 		}
 	}
 
