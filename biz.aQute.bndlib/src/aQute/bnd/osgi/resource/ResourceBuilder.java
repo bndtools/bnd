@@ -402,7 +402,7 @@ public class ResourceBuilder {
 		}
 	}
 
-	public List<Capability> findCapabilities(String ns, String filter) {
+	public List<Capability> findCapabilities(String ns, String filter) throws Exception {
 		if (filter == null || capabilities.isEmpty())
 			return Collections.emptyList();
 

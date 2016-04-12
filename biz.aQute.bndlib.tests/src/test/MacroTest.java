@@ -16,6 +16,73 @@ import junit.framework.TestCase;
 @SuppressWarnings("resource")
 public class MacroTest extends TestCase {
 
+	public void testFilterExpression() throws Exception {
+		Processor p = new Processor();
+		p.setProperty("a", "A");
+		p.setProperty("b", "1");
+
+		assertEquals("true", p.getReplacer().process("${if;(a=A)}"));
+		assertEquals("true", p.getReplacer().process("${if;(a>=A)}"));
+		assertEquals("true", p.getReplacer().process("${if;(a<=A)}"));
+		assertEquals("", p.getReplacer().process("${if;(a<A)}"));
+		assertEquals("", p.getReplacer().process("${if;(a>A)}"));
+		assertEquals("", p.getReplacer().process("${if;(a!=A)}"));
+
+		assertEquals("true", p.getReplacer().process("${if;(a=${a})}"));
+
+		assertEquals("true", p.getReplacer().process("${if;(a>=A)}"));
+		assertEquals("true", p.getReplacer().process("${if;(a<=A)}"));
+		assertEquals("", p.getReplacer().process("${if;(a<=${b})}"));
+
+	}
+
+	public void testFilterSubExpression() throws Exception {
+		Processor p = new Processor();
+		p.setProperty("a", "A");
+		p.setProperty("b", "1");
+
+		assertEquals("true", p.getReplacer().process("${if;(&(a=A)(b=1))}"));
+		assertEquals("true", p.getReplacer().process("${if;(&(a=A)(b=1)(|(a!=A)(a=A)))}"));
+	}
+
+	public void testFilterWithArrays() throws Exception {
+		Processor p = new Processor();
+		p.setProperty("a", "A,B,C,D");
+		p.setProperty("b", "1");
+
+		assertEquals("", p.getReplacer().process("${if;(a=A)}"));
+		assertEquals("true", p.getReplacer().process("${if;(a[]=A)}"));
+		assertEquals("true", p.getReplacer().process("${if;(a[]=B)}"));
+		assertEquals("true", p.getReplacer().process("${if;(a[]=D)}"));
+		assertEquals("", p.getReplacer().process("${if;(a[]=E)}"));
+		assertEquals("", p.getReplacer().process("${if;(a[]!=E)}"));
+	}
+
+	public void testFilterWithInheritance() throws Exception {
+		Processor p = new Processor();
+		Processor p1 = new Processor(p);
+		Processor p2 = new Processor(p1);
+		p.setProperty("a", "A,B,C,D");
+		p.setProperty("b", "1");
+
+		assertEquals("", p.getReplacer().process("${if;(a=A)}"));
+		assertEquals("true", p.getReplacer().process("${if;(a[]=A)}"));
+		assertEquals("true", p.getReplacer().process("${if;(a[]=B)}"));
+		assertEquals("true", p.getReplacer().process("${if;(a[]=D)}"));
+		assertEquals("", p.getReplacer().process("${if;(a[]=E)}"));
+		assertEquals("", p.getReplacer().process("${if;(a[]!=E)}"));
+	}
+
+	public void testFilterExpressionWithReplacement() throws Exception {
+		Processor p = new Processor();
+		p.setProperty("a", "A");
+		p.setProperty("b", "1");
+
+		assertEquals("YES", p.getReplacer().process("${if;(a=A);YES}"));
+		assertEquals("", p.getReplacer().process("${if;(a!=A);YES}"));
+		assertEquals("YES", p.getReplacer().process("${if;(a=A);YES;NO}"));
+		assertEquals("NO", p.getReplacer().process("${if;(a!=A);YES;NO}"));
+	}
 
 	public void testUnknownMacroDelimeters() throws IOException {
 		Processor p = new Processor();
@@ -92,6 +159,7 @@ public class MacroTest extends TestCase {
 		assertEquals(".*x", m.process("${glob;*x}"));
 		assertEquals("(?!.*x)", m.process("${glob;!*x}"));
 	}
+
 	/**
 	 * A macro to get an attribute from a package
 	 * 

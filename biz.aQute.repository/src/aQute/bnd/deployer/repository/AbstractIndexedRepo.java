@@ -429,7 +429,7 @@ public abstract class AbstractIndexedRepo
 	}
 
 	static List<Resource> narrowVersionsByFilter(String pkgName, SortedMap<Version,Resource> versionMap,
-			Filter filter) {
+			Filter filter) throws Exception {
 		List<Resource> result = new ArrayList<Resource>(versionMap.size());
 
 		Dictionary<String,String> dict = new Hashtable<String,String>();

@@ -184,7 +184,8 @@ public class MavenBndRepository
 						}
 					}
 				}
-				index.add(binaryArchive);
+				if (!binaryArchive.isSnapshot())
+					index.add(binaryArchive);
 			}
 			return result;
 		} finally {
@@ -400,7 +401,6 @@ public class MavenBndRepository
 					base = ws.getBuildDir();
 			}
 
-			Workspace ws = registry.getPlugin(Workspace.class);
 			File indexFile = IO.getFile(base, configuration.index(name.toLowerCase() + ".mvn"));
 			IndexFile ixf = new IndexFile(reporter, indexFile, storage);
 			ixf.open();
@@ -668,9 +668,9 @@ public class MavenBndRepository
 				if (bd.error != null)
 					return bd.version + " [" + bd.error + "]";
 				else if (isLocal(bd.archive)) {
-					return bd.version.getWithoutQualifier().toString();
+					return bd.version.toString();
 				} else
-					return bd.version.getWithoutQualifier().toString() + " ?";
+					return bd.version.toString() + " [?]";
 
 			default :
 		}

@@ -19,9 +19,16 @@ public class Filter {
 	final static int	EQ			= 0;
 	final static int	LE			= 1;
 	final static int	GE			= 2;
+
+	// Extended operators
+	final static int	NEQ			= 100;
+	final static int	LT			= 101;
+	final static int	GT			= 102;
+
 	final static int	APPROX		= 3;
 
-	String				filter;
+	final String		filter;
+	final boolean		extended;
 
 	abstract class Query {
 		static final String	GARBAGE		= "Trailing garbage";
@@ -34,7 +41,7 @@ public class Filter {
 
 		private String		tail;
 
-		boolean match() throws IllegalArgumentException {
+		boolean match() throws Exception {
 			tail = filter;
 			boolean val = doQuery();
 			if (tail.length() > 0)
@@ -42,7 +49,7 @@ public class Filter {
 			return val;
 		}
 
-		private boolean doQuery() throws IllegalArgumentException {
+		private boolean doQuery() throws Exception {
 			if (tail.length() < 3 || !prefix("("))
 				error(MALFORMED);
 			boolean val;
@@ -67,7 +74,7 @@ public class Filter {
 			return val;
 		}
 
-		private boolean doAnd() throws IllegalArgumentException {
+		private boolean doAnd() throws Exception {
 			tail = tail.substring(1);
 			boolean val = true;
 			if (!tail.startsWith("("))
@@ -79,7 +86,7 @@ public class Filter {
 			return val;
 		}
 
-		private boolean doOr() throws IllegalArgumentException {
+		private boolean doOr() throws Exception {
 			tail = tail.substring(1);
 			boolean val = false;
 			if (!tail.startsWith("("))
@@ -91,14 +98,14 @@ public class Filter {
 			return val;
 		}
 
-		private boolean doNot() throws IllegalArgumentException {
+		private boolean doNot() throws Exception {
 			tail = tail.substring(1);
 			if (!tail.startsWith("("))
 				error(SUBEXPR);
 			return !doQuery();
 		}
 
-		private boolean doSimple() throws IllegalArgumentException {
+		boolean doSimple() throws Exception {
 			int op = 0;
 			Object attr = getAttr();
 
@@ -110,20 +117,26 @@ public class Filter {
 				op = GE;
 			else if (prefix("~="))
 				op = APPROX;
+			else if (extended && prefix("!="))
+				op = NEQ;
+			else if (extended && prefix(">"))
+				op = GT;
+			else if (extended && prefix("<"))
+				op = LT;
 			else
 				error(OPERATOR);
 
 			return compare(attr, op, getValue());
 		}
 
-		private boolean prefix(String pre) {
+		boolean prefix(String pre) {
 			if (!tail.startsWith(pre))
 				return false;
 			tail = tail.substring(pre.length());
 			return true;
 		}
 
-		private Object getAttr() {
+		Object getAttr() throws Exception {
 			int len = tail.length();
 			int ix = 0;
 			label: for (; ix < len; ix++) {
@@ -144,7 +157,7 @@ public class Filter {
 			return getProp(attr);
 		}
 
-		abstract Object getProp(String key);
+		abstract Object getProp(String key) throws Exception;
 
 		private String getValue() {
 			StringBuilder sb = new StringBuilder();
@@ -173,12 +186,12 @@ public class Filter {
 			return sb.toString();
 		}
 
-		private void error(String m) throws IllegalArgumentException {
+		void error(String m) throws IllegalArgumentException {
 			throw new IllegalArgumentException(m + " " + tail);
 		}
 
 		@SuppressWarnings("unchecked")
-		private <T> boolean compare(T obj, int op, String s) {
+		<T> boolean compare(T obj, int op, String s) {
 			if (obj == null)
 				return false;
 			try {
@@ -258,14 +271,31 @@ public class Filter {
 		}
 	}
 
-	public Filter(String filter) throws IllegalArgumentException {
-		// NYI: Normalize the filter string?
+	class GetQuery extends Query {
+		private Get get;
+
+		GetQuery(Get get) {
+			this.get = get;
+		}
+
+		@Override
+		Object getProp(String key) throws Exception {
+			return get.get(key);
+		}
+	}
+
+	public Filter(String filter, boolean extended) throws IllegalArgumentException {
 		this.filter = filter;
+		this.extended = extended;
 		if (filter == null || filter.length() == 0)
 			throw new IllegalArgumentException("Null query");
 	}
 
-	public boolean match(Dictionary< ? , ? > dict) {
+	public Filter(String filter) throws IllegalArgumentException {
+		this(filter, false);
+	}
+
+	public boolean match(Dictionary< ? , ? > dict) throws Exception {
 		try {
 			return new DictQuery(dict).match();
 		} catch (IllegalArgumentException e) {
@@ -273,7 +303,7 @@ public class Filter {
 		}
 	}
 
-	public boolean matchMap(Map< ? , ? > dict) {
+	public boolean matchMap(Map< ? , ? > dict) throws Exception {
 		try {
 			return new MapQuery(dict).match();
 		} catch (IllegalArgumentException e) {
@@ -281,7 +311,15 @@ public class Filter {
 		}
 	}
 
-	public String verify() {
+	public boolean match(Get get) throws Exception {
+		try {
+			return new GetQuery(get).match();
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
+	}
+
+	public String verify() throws Exception {
 		try {
 			new DictQuery(new Hashtable<Object,Object>()).match();
 		} catch (IllegalArgumentException e) {
@@ -324,6 +362,12 @@ public class Filter {
 				return cmp <= 0;
 			case EQ :
 				return cmp == 0;
+			case NEQ :
+				return cmp != 0;
+			case LT :
+				return cmp > 0;
+			case GT :
+				return cmp < 0;
 			default : /* APPROX */
 				return cmp == 0;
 		}

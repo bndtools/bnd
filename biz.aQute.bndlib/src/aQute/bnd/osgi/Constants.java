@@ -67,37 +67,15 @@ public interface Constants {
 	String							REPOSITORIES								= "Repositories";
 
 	String							headers[]									= {
-																						BUNDLE_ACTIVATOR,
-																						BUNDLE_CONTACTADDRESS,
-																						BUNDLE_COPYRIGHT,
-																						BUNDLE_DESCRIPTION,
-																						BUNDLE_DOCURL,
-																						BUNDLE_LOCALIZATION,
-																						BUNDLE_NATIVECODE,
-																						BUNDLE_VENDOR, BUNDLE_VERSION,
-																						BUNDLE_LICENSE,
-																						BUNDLE_CLASSPATH,
-																						SERVICE_COMPONENT,
-																						EXPORT_PACKAGE, IMPORT_PACKAGE,
-																						BUNDLE_LOCALIZATION,
-																						BUNDLE_MANIFESTVERSION,
-																						BUNDLE_NAME, BUNDLE_NATIVECODE,
-																						BUNDLE_REQUIREDEXECUTIONENVIRONMENT,
-																						BUNDLE_SYMBOLICNAME,
-																						BUNDLE_VERSION, FRAGMENT_HOST,
-																						PRIVATE_PACKAGE, IGNORE_PACKAGE,
-																						INCLUDE_RESOURCE,
-																						REQUIRE_BUNDLE, IMPORT_SERVICE,
-																						EXPORT_SERVICE,
-																						CONDITIONAL_PACKAGE,
-																						BND_LASTMODIFIED, TESTCASES,
-																						REQUIRE_CAPABILITY,
-																						PROVIDE_CAPABILITY, BUNDLE_ICON,
-																						REPOSITORIES, META_PERSISTENCE,
-																						BUNDLE_DEVELOPERS,
-																						BUNDLE_CONTRIBUTORS, BUNDLE_SCM,
-																						LAUNCHER_PLUGIN, TESTER_PLUGIN
-																					};
+			BUNDLE_ACTIVATOR, BUNDLE_CONTACTADDRESS, BUNDLE_COPYRIGHT, BUNDLE_DESCRIPTION, BUNDLE_DOCURL,
+			BUNDLE_LOCALIZATION, BUNDLE_NATIVECODE, BUNDLE_VENDOR, BUNDLE_VERSION, BUNDLE_LICENSE, BUNDLE_CLASSPATH,
+			SERVICE_COMPONENT, EXPORT_PACKAGE, IMPORT_PACKAGE, BUNDLE_LOCALIZATION, BUNDLE_MANIFESTVERSION, BUNDLE_NAME,
+			BUNDLE_NATIVECODE, BUNDLE_REQUIREDEXECUTIONENVIRONMENT, BUNDLE_SYMBOLICNAME, BUNDLE_VERSION, FRAGMENT_HOST,
+			PRIVATE_PACKAGE, IGNORE_PACKAGE, INCLUDE_RESOURCE, REQUIRE_BUNDLE, IMPORT_SERVICE, EXPORT_SERVICE,
+			CONDITIONAL_PACKAGE, BND_LASTMODIFIED, TESTCASES, REQUIRE_CAPABILITY, PROVIDE_CAPABILITY, BUNDLE_ICON,
+			REPOSITORIES, META_PERSISTENCE, BUNDLE_DEVELOPERS, BUNDLE_CONTRIBUTORS, BUNDLE_SCM, LAUNCHER_PLUGIN,
+			TESTER_PLUGIN
+	};
 
 	String							BASELINE									= "-baseline";
 	String							BASELINEREPO								= "-baselinerepo";
@@ -123,6 +101,7 @@ public interface Constants {
 	@Deprecated
 	String							CACHEDIR									= "-cachedir";
 	String							CONDITIONALPACKAGE							= "-conditionalpackage";
+	String							CONNECTION_SETTINGS							= "-connection-settings";
 	String							DIFFIGNORE									= "-diffignore";
 	String							DEPENDSON									= "-dependson";
 	String							DEPLOY										= "-deploy";
@@ -154,7 +133,7 @@ public interface Constants {
 	String							INCLUDERESOURCE								= "-includeresource";
 	String							INVALIDFILENAMES							= "-invalidfilenames";
 	String							INIT										= "-init";
-	String	INSTALLREPO						= "-installrepo";
+	String							BUILDREPO									= "-buildrepo";
 	String							JAVAAGENT									= "-javaagent";
 	String							JAVAC_SOURCE								= "javac.source";
 	String							JAVAC_TARGET								= "javac.target";
@@ -167,7 +146,7 @@ public interface Constants {
 	String							METATYPE_ANNOTATIONS						= "-metatypeannotations";
 	String							METATYPE_ANNOTATIONS_OPTIONS				= "-metatypeannotations-options";
 	String							MANIFEST									= "-manifest";
-	String	MAVEN_RELEASE					= "-maven-release";
+	String							MAVEN_RELEASE								= "-maven-release";
 	String							PROFILE										= "-profile";
 	String							SAVEMANIFEST								= "-savemanifest";
 	String							NAMESECTION									= "-namesection";
@@ -264,77 +243,30 @@ public interface Constants {
 	String							OUTPUT										= "-output";
 
 	String							options[]									= {
-																						BASELINE, BUILDPATH, BUMPPOLICY,
-																						CONDUIT, CLASSPATH,
-																						CONSUMER_POLICY, DEPENDSON,
-																						DONOTCOPY, EXPORT_CONTENTS,
-																						FAIL_OK, INCLUDE,
-																						INCLUDERESOURCE, MAKE, MANIFEST,
-																						NOEXTRAHEADERS, NOUSES,
-																						NOBUNDLES, PEDANTIC, PLUGIN,
-																						POM, PROVIDER_POLICY,
-																						REMOVEHEADERS, RESOURCEONLY,
-																						SOURCES, SOURCEPATH, SOURCES,
-																						SOURCEPATH, SUB, RUNBUNDLES,
-																						RUNPATH, RUNSYSTEMPACKAGES,
-																						RUNSYSTEMCAPABILITIES,
-																						RUNPROPERTIES, REPORTNEWER,
-																						UNDERTEST, TESTPATH,
-																						TESTPACKAGES, NOMANIFEST,
-																						DEPLOYREPO, RELEASEREPO,
-																						SAVEMANIFEST, RUNVM,
-																						RUNPROGRAMARGS, WAB, WABLIB,
-																						RUNFRAMEWORK, RUNFW, RUNKEEP,
-																						RUNTRACE, RUNBLACKLIST,
-																						TESTCONTINUOUS, SNAPSHOT,
-																						NAMESECTION, DIGESTS,
-																						DSANNOTATIONS,
-																						DSANNOTATIONS_OPTIONS, BASELINE,
-																						BASELINEREPO, PROFILE, PACKAGE,
-																						RUNNOREFERENCES, JAVAAGENT,
-																						STRICT, DIFFIGNORE, CONTRACT,
-																						NOBUILDINCACHE, EXTENSION,
-																						NOJUNIT, NOJUNITOSGI,
-																						PREPROCESSMATCHERS, UPTO,
-																						INVALIDFILENAMES, FIXUPMESSAGES,
-																						PRIVATEPACKAGE,
-																						CONDITIONALPACKAGE, NOEE,
-																						OUTPUTMASK, TESTUNRESOLVED,
-																						RUNJDB, RUNENV, RUNEE,
-																						EEPROFILE, RUNREQUIRES, EXPORT,
-																						GESTALT, BNDDRIVER, CHECK,
-																						DISTRO, METATYPE_ANNOTATIONS,
-																						METATYPE_ANNOTATIONS_OPTIONS,
-																						PACKAGEINFOTYPE, JAVAC_SOURCE,
-																						JAVAC_TARGET, JAVAC_PROFILE,
-																						JAVAC, JAVA, JAVA_DEBUG,
-																						EXPORTTYPE, RUNREMOTE, TESTER,
-																						AUGMENT, REQUIRE_BND, GROUPID,
-			STANDALONE, INIT, MAVEN_RELEASE, INSTALLREPO
+			BASELINE, BUILDPATH, BUMPPOLICY, CONDUIT, CLASSPATH, CONSUMER_POLICY, DEPENDSON, DONOTCOPY, EXPORT_CONTENTS,
+			FAIL_OK, INCLUDE, INCLUDERESOURCE, MAKE, MANIFEST, NOEXTRAHEADERS, NOUSES, NOBUNDLES, PEDANTIC, PLUGIN, POM,
+			PROVIDER_POLICY, REMOVEHEADERS, RESOURCEONLY, SOURCES, SOURCEPATH, SOURCES, SOURCEPATH, SUB, RUNBUNDLES,
+			RUNPATH, RUNSYSTEMPACKAGES, RUNSYSTEMCAPABILITIES, RUNPROPERTIES, REPORTNEWER, UNDERTEST, TESTPATH,
+			TESTPACKAGES, NOMANIFEST, DEPLOYREPO, RELEASEREPO, SAVEMANIFEST, RUNVM, RUNPROGRAMARGS, WAB, WABLIB,
+			RUNFRAMEWORK, RUNFW, RUNKEEP, RUNTRACE, RUNBLACKLIST, TESTCONTINUOUS, SNAPSHOT, NAMESECTION, DIGESTS,
+			DSANNOTATIONS, DSANNOTATIONS_OPTIONS, BASELINE, BASELINEREPO, PROFILE, PACKAGE, RUNNOREFERENCES, JAVAAGENT,
+			STRICT, DIFFIGNORE, CONTRACT, NOBUILDINCACHE, EXTENSION, NOJUNIT, NOJUNITOSGI, PREPROCESSMATCHERS, UPTO,
+			INVALIDFILENAMES, FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE, NOEE, OUTPUTMASK, TESTUNRESOLVED,
+			RUNJDB, RUNENV, RUNEE, EEPROFILE, RUNREQUIRES, EXPORT, GESTALT, BNDDRIVER, CHECK, DISTRO,
+			METATYPE_ANNOTATIONS, METATYPE_ANNOTATIONS_OPTIONS, PACKAGEINFOTYPE, JAVAC_SOURCE, JAVAC_TARGET,
+			JAVAC_PROFILE, JAVAC, JAVA, JAVA_DEBUG, EXPORTTYPE, RUNREMOTE, TESTER, AUGMENT, REQUIRE_BND, GROUPID,
+			STANDALONE, INIT, MAVEN_RELEASE, BUILDREPO, CONNECTION_SETTINGS
 
-																					};
+	};
 
 	// Ignore bundle specific headers. These bundles do not make
 	// a lot of sense to inherit
 	String[]						BUNDLE_SPECIFIC_HEADERS						= new String[] {
-																						INCLUDE_RESOURCE,
-																						BUNDLE_ACTIVATOR,
-																						BUNDLE_CLASSPATH, BUNDLE_NAME,
-																						BUNDLE_NATIVECODE,
-																						BUNDLE_SYMBOLICNAME,
-																						IMPORT_PACKAGE, EXPORT_PACKAGE,
-																						DYNAMICIMPORT_PACKAGE,
-																						FRAGMENT_HOST, REQUIRE_BUNDLE,
-																						PRIVATE_PACKAGE, PRIVATEPACKAGE,
-																						EXPORT_CONTENTS, TESTCASES,
-																						NOMANIFEST, WAB, WABLIB,
-																						REQUIRE_CAPABILITY,
-																						PROVIDE_CAPABILITY,
-																						DSANNOTATIONS,
-																						SERVICE_COMPONENT,
-																						SIGNATURE_TEST,
-																						METATYPE_ANNOTATIONS
-																					};
+			INCLUDE_RESOURCE, BUNDLE_ACTIVATOR, BUNDLE_CLASSPATH, BUNDLE_NAME, BUNDLE_NATIVECODE, BUNDLE_SYMBOLICNAME,
+			IMPORT_PACKAGE, EXPORT_PACKAGE, DYNAMICIMPORT_PACKAGE, FRAGMENT_HOST, REQUIRE_BUNDLE, PRIVATE_PACKAGE,
+			PRIVATEPACKAGE, EXPORT_CONTENTS, TESTCASES, NOMANIFEST, WAB, WABLIB, REQUIRE_CAPABILITY, PROVIDE_CAPABILITY,
+			DSANNOTATIONS, SERVICE_COMPONENT, SIGNATURE_TEST, METATYPE_ANNOTATIONS
+	};
 
 	char							DUPLICATE_MARKER							= '~';
 	String							INTERNAL_EXPORTED_DIRECTIVE					= "-internal-exported:";
@@ -394,47 +326,25 @@ public interface Constants {
 	String							NONE										= "none";
 
 	String							directives[]								= {
-																						SPLIT_PACKAGE_DIRECTIVE,
-																						NO_IMPORT_DIRECTIVE,
-																						IMPORT_DIRECTIVE,
-																						RESOLUTION_DIRECTIVE,
-																						INCLUDE_DIRECTIVE,
-																						USES_DIRECTIVE,
-																						EXCLUDE_DIRECTIVE,
-																						KEYSTORE_LOCATION_DIRECTIVE,
-																						KEYSTORE_PROVIDER_DIRECTIVE,
-																						KEYSTORE_PASSWORD_DIRECTIVE,
-																						SIGN_PASSWORD_DIRECTIVE,
-																						COMMAND_DIRECTIVE,
-																						NOANNOTATIONS, LIB_DIRECTIVE,
-																						FROM_DIRECTIVE,
-																						PRIVATE_DIRECTIVE,
-																						LITERAL_ATTRIBUTE,
-																						EFFECTIVE_DIRECTIVE,
-																						FILTER_DIRECTIVE,
-																						FIXUPMESSAGES_RESTRICT_DIRECTIVE,
-																						FIXUPMESSAGES_REPLACE_DIRECTIVE,
-																						FIXUPMESSAGES_IS_DIRECTIVE,
-																						BNDDRIVER_GRADLE,
-																						BNDDRIVER_GRADLE_NATIVE,
-																						BNDDRIVER_ANT,
-																						BNDDRIVER_ECLIPSE,
-																						BNDDRIVER_MAVEN,
-																						BNDDRIVER_INTELLIJ,
-																						BNDDRIVER_SBT, BNDDRIVER_OSMORC,
-																						AUGMENT_CAPABILITY_DIRECTIVE,
-																						AUGMENT_REQUIREMENT_DIRECTIVE
+			SPLIT_PACKAGE_DIRECTIVE, NO_IMPORT_DIRECTIVE, IMPORT_DIRECTIVE, RESOLUTION_DIRECTIVE, INCLUDE_DIRECTIVE,
+			USES_DIRECTIVE, EXCLUDE_DIRECTIVE, KEYSTORE_LOCATION_DIRECTIVE, KEYSTORE_PROVIDER_DIRECTIVE,
+			KEYSTORE_PASSWORD_DIRECTIVE, SIGN_PASSWORD_DIRECTIVE, COMMAND_DIRECTIVE, NOANNOTATIONS, LIB_DIRECTIVE,
+			FROM_DIRECTIVE, PRIVATE_DIRECTIVE, LITERAL_ATTRIBUTE, EFFECTIVE_DIRECTIVE, FILTER_DIRECTIVE,
+			FIXUPMESSAGES_RESTRICT_DIRECTIVE, FIXUPMESSAGES_REPLACE_DIRECTIVE, FIXUPMESSAGES_IS_DIRECTIVE,
+			BNDDRIVER_GRADLE, BNDDRIVER_GRADLE_NATIVE, BNDDRIVER_ANT, BNDDRIVER_ECLIPSE, BNDDRIVER_MAVEN,
+			BNDDRIVER_INTELLIJ, BNDDRIVER_SBT, BNDDRIVER_OSMORC, AUGMENT_CAPABILITY_DIRECTIVE,
+			AUGMENT_REQUIREMENT_DIRECTIVE
 
-																							// TODO
-																					};
+			// TODO
+	};
 
 	String							USES_USES									= "<<USES>>";
 	String							CURRENT_USES								= "@uses";
 	String							IMPORT_REFERENCE							= "reference";
 	String							IMPORT_PRIVATE								= "private";
 	String[]						importDirectives							= {
-																						IMPORT_REFERENCE, IMPORT_PRIVATE
-																					};
+			IMPORT_REFERENCE, IMPORT_PRIVATE
+	};
 
 	static final Pattern			VALID_PROPERTY_TYPES						= Pattern
 			.compile("(String|Long|Double|Float|Integer|Byte|Character|Boolean|Short)");
@@ -444,9 +354,8 @@ public interface Constants {
 	String							DEFAULT_BAR_EXTENSION						= ".bar";
 	String							DEFAULT_BNDRUN_EXTENSION					= ".bndrun";
 	String[]						METAPACKAGES								= {
-																						"META-INF", "OSGI-INF",
-																						"OSGI-OPT"
-																					};
+			"META-INF", "OSGI-INF", "OSGI-OPT"
+	};
 
 	String							CURRENT_VERSION								= "@";
 	String							CURRENT_PACKAGE								= "@package";
@@ -498,39 +407,19 @@ public interface Constants {
 	final static Map<String,String>	EMPTY										= Collections.emptyMap();
 
 	String[]						componentDirectives							= new String[] {
-																						COMPONENT_FACTORY,
-																						COMPONENT_IMMEDIATE,
-																						COMPONENT_ENABLED,
-																						COMPONENT_DYNAMIC,
-																						COMPONENT_MULTIPLE,
-																						COMPONENT_PROVIDE,
-																						COMPONENT_OPTIONAL,
-																						COMPONENT_PROPERTIES,
-																						COMPONENT_IMPLEMENTATION,
-																						COMPONENT_SERVICEFACTORY,
-																						COMPONENT_VERSION,
-																						COMPONENT_CONFIGURATION_POLICY,
-																						COMPONENT_MODIFIED,
-																						COMPONENT_ACTIVATE,
-																						COMPONENT_DEACTIVATE,
-																						COMPONENT_NAME,
-																						COMPONENT_DESCRIPTORS,
-																						COMPONENT_DESIGNATE,
-																						COMPONENT_DESIGNATEFACTORY,
-																						COMPONENT_GREEDY,
-																						COMPONENT_NAMESPACE
-																					};
+			COMPONENT_FACTORY, COMPONENT_IMMEDIATE, COMPONENT_ENABLED, COMPONENT_DYNAMIC, COMPONENT_MULTIPLE,
+			COMPONENT_PROVIDE, COMPONENT_OPTIONAL, COMPONENT_PROPERTIES, COMPONENT_IMPLEMENTATION,
+			COMPONENT_SERVICEFACTORY, COMPONENT_VERSION, COMPONENT_CONFIGURATION_POLICY, COMPONENT_MODIFIED,
+			COMPONENT_ACTIVATE, COMPONENT_DEACTIVATE, COMPONENT_NAME, COMPONENT_DESCRIPTORS, COMPONENT_DESIGNATE,
+			COMPONENT_DESIGNATEFACTORY, COMPONENT_GREEDY, COMPONENT_NAMESPACE
+	};
 
 	Set<String>						SET_COMPONENT_DIRECTIVES					= new HashSet<String>(
 			Arrays.asList(componentDirectives));
 
 	Set<String>						SET_COMPONENT_DIRECTIVES_1_1				=																																										//
-																				new HashSet<String>(
-																						Arrays.asList(COMPONENT_VERSION,
-																								COMPONENT_CONFIGURATION_POLICY,
-																								COMPONENT_MODIFIED,
-																								COMPONENT_ACTIVATE,
-																								COMPONENT_DEACTIVATE));
+			new HashSet<String>(Arrays.asList(COMPONENT_VERSION, COMPONENT_CONFIGURATION_POLICY, COMPONENT_MODIFIED,
+					COMPONENT_ACTIVATE, COMPONENT_DEACTIVATE));
 
 	Set<String>						SET_COMPONENT_DIRECTIVES_1_2				= new HashSet<String>(
 			Arrays.asList(COMPONENT_GREEDY));

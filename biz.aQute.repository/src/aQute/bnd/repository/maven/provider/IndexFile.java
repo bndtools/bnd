@@ -168,23 +168,31 @@ class IndexFile {
 	}
 
 	long last = 0L;
+
 	boolean refresh() throws Exception {
+
+		refresh.getAndSet(false);
 
 		if (indexFile.lastModified() != lastModified && last + 10000 < System.currentTimeMillis()) {
 			loadIndexFile();
 			last = System.currentTimeMillis();
 
+			return true;
+		} else {
+			boolean refreshed = false;
 			for (BundleDescriptor bd : descriptors.values()) {
 				if (bd.promise != null && bd.promise.isDone() && bd.promise.getFailure() == null) {
 					File f = bd.promise.getValue();
 					if (f.isFile() && f.lastModified() != bd.lastModified) {
 						updateDescriptor(bd, f);
+						refreshed = true;
 					}
 				}
 			}
-			return true;
-		} else
-			return refresh.getAndSet(false);
+			if (refreshed)
+				return true;
+		}
+		return false;
 	}
 
 	private void loadIndexFile() throws Exception {
@@ -342,8 +350,7 @@ class IndexFile {
 				pw.println(archive);
 			}
 		}
-		Files.move(tmp.toPath(), indexFile.toPath(), 
-				StandardCopyOption.REPLACE_EXISTING);
+		Files.move(tmp.toPath(), indexFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
 		lastModified = indexFile.lastModified();
 	}
