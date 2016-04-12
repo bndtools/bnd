@@ -202,7 +202,7 @@ public class MavenBndRepository
 			if (snapshot) {
 				if (this.snapshot == null)
 					throw new IllegalArgumentException(
-						"Remote snapshot release requested but no snapshot repository set for " + getName());
+							"Remote snapshot release requested but no snapshot repository set for " + getName());
 			} else if (release == null)
 				throw new IllegalArgumentException(
 						"Remote release requested but no release repository set for " + getName());
@@ -273,11 +273,13 @@ public class MavenBndRepository
 				release.snapshot = Long.parseLong(s);
 
 		} else {
-			release.type = ReleaseType.LOCAL;
 			attrs = p.remove("local");
-			if (attrs == null)
-				attrs = new Attrs();
+			if (attrs != null) {
+				release.type = ReleaseType.LOCAL;
+			}
 		}
+		if (attrs == null)
+			attrs = new Attrs();
 
 		Attrs javadoc = p.remove("javadoc");
 		if (javadoc != null) {
@@ -403,10 +405,8 @@ public class MavenBndRepository
 			localRepo = IO.getFile(configuration.local("~/.m2/repository"));
 
 			Executor executor = registry.getPlugin(Executor.class);
-			release = configuration.releaseUrl() != null
-					? getBackingRepository(configuration.releaseUrl()) : null;
-			snapshot = configuration.snapshotUrl() != null
-					? getBackingRepository(configuration.snapshotUrl()) : null;
+			release = configuration.releaseUrl() != null ? getBackingRepository(configuration.releaseUrl()) : null;
+			snapshot = configuration.snapshotUrl() != null ? getBackingRepository(configuration.snapshotUrl()) : null;
 			storage = new MavenRepository(localRepo, getName(), release, snapshot, executor, reporter,
 					getRefreshCallback());
 
@@ -443,7 +443,6 @@ public class MavenBndRepository
 			return new MavenRemoteRepository(localRepo, client, url, reporter);
 		}
 	}
-
 
 	private void startPoll(final IndexFile index) {
 		final AtomicBoolean busy = new AtomicBoolean();
