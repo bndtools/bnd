@@ -146,6 +146,8 @@ public class MavenBndRepository
 				}
 				Archive binaryArchive = pom.binaryArchive();
 
+				checkRemotePossible(instructions, binaryArchive.isSnapshot());
+
 				try (Release releaser = storage.release(pom.getRevision());) {
 
 					if (instructions.snapshot >= 0)
@@ -193,6 +195,18 @@ public class MavenBndRepository
 			pomFile.delete();
 		}
 
+	}
+
+	void checkRemotePossible(ReleaseDTO instructions, boolean snapshot) {
+		if (instructions.type == ReleaseType.REMOTE) {
+			if (snapshot) {
+				if (this.snapshot == null)
+					throw new IllegalArgumentException(
+						"Remote snapshot release requested but no snapshot repository set for " + getName());
+			} else if (release == null)
+				throw new IllegalArgumentException(
+						"Remote release requested but no release repository set for " + getName());
+		}
 	}
 
 	boolean isLocal(ReleaseDTO instructions) {
@@ -249,9 +263,10 @@ public class MavenBndRepository
 
 		Parameters p = new Parameters(context.getProperty(Constants.MAVEN_RELEASE));
 
+		release.type = this.release == null && this.snapshot == null ? ReleaseType.LOCAL : ReleaseType.REMOTE;
+
 		Attrs attrs = p.remove("remote");
 		if (attrs != null) {
-
 			release.type = ReleaseType.REMOTE;
 			String s = attrs.get("snapshot");
 			if (s != null)
@@ -288,6 +303,7 @@ public class MavenBndRepository
 		if (!p.isEmpty()) {
 			reporter.warning("The -maven-release instruction contains unrecognized options: ", p);
 		}
+
 		return release;
 	}
 
