@@ -156,7 +156,10 @@ public class MavenBndRepoTest extends TestCase {
 	}
 
 	public void testPutRemoteSnapshot() throws Exception {
-		config(null);
+		Map<String,String> map = new HashMap<>();
+		map.put("releaseUrl", null);
+		map.put("snapshotUrl", fnx.getBaseURI() + "/repo/");
+		config(map);
 
 		File jar = IO.getFile("testresources/snapshot.jar");
 		try (Processor context = new Processor();) {
@@ -238,7 +241,7 @@ public class MavenBndRepoTest extends TestCase {
 
 	public void testPutRemoteSnapshotFileRepo() throws Exception {
 		Map<String,String> map = new HashMap<>();
-		map.put("releaseUrl", remote.toURI().toString());
+		map.put("snapshotUrl", remote.toURI().toString());
 		config(map);
 
 		File jar = IO.getFile("testresources/snapshot.jar");

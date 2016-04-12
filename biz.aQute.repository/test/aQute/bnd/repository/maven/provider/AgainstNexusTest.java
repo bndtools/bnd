@@ -46,6 +46,7 @@ public class AgainstNexusTest extends TestCase {
 		} catch (Exception e) {
 			skip = true;
 		}
+		skip = true;
 	}
 
 	public void testBasic() throws Exception {
