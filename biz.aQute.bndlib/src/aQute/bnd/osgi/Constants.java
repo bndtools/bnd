@@ -101,6 +101,7 @@ public interface Constants {
 	@Deprecated
 	String							CACHEDIR									= "-cachedir";
 	String							CONDITIONALPACKAGE							= "-conditionalpackage";
+	String							CONNECTION_SETTINGS							= "-connection-settings";
 	String							DIFFIGNORE									= "-diffignore";
 	String							DEPENDSON									= "-dependson";
 	String							DEPLOY										= "-deploy";
@@ -254,7 +255,7 @@ public interface Constants {
 			RUNJDB, RUNENV, RUNEE, EEPROFILE, RUNREQUIRES, EXPORT, GESTALT, BNDDRIVER, CHECK, DISTRO,
 			METATYPE_ANNOTATIONS, METATYPE_ANNOTATIONS_OPTIONS, PACKAGEINFOTYPE, JAVAC_SOURCE, JAVAC_TARGET,
 			JAVAC_PROFILE, JAVAC, JAVA, JAVA_DEBUG, EXPORTTYPE, RUNREMOTE, TESTER, AUGMENT, REQUIRE_BND, GROUPID,
-			STANDALONE, INIT, MAVEN_RELEASE, BUILDREPO
+			STANDALONE, INIT, MAVEN_RELEASE, BUILDREPO, CONNECTION_SETTINGS
 
 	};
 
