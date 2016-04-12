@@ -135,7 +135,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.pom");
 
 		String s = IO.collect(index);
-		assertTrue(s.contains("biz.aQute.bnd.maven"));
+		assertFalse(s.contains("biz.aQute.bnd.maven"));
 	}
 
 	public void testPutDefaultLocalSnapshotFileRepo() throws Exception {
@@ -151,7 +151,8 @@ public class MavenBndRepoTest extends TestCase {
 		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.pom");
 
 		String s = IO.collect(index);
-		assertTrue(s.contains("biz.aQute.bnd.maven"));
+		// snapshots not added to index
+		assertFalse(s.contains("biz.aQute.bnd.maven"));
 	}
 
 	public void testPutRemoteSnapshot() throws Exception {
