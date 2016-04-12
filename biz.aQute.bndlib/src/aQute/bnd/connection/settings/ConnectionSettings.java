@@ -24,6 +24,7 @@ import aQute.bnd.service.url.ProxyHandler;
 import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.url.BasicAuthentication;
 import aQute.bnd.url.HttpsVerification;
+import aQute.lib.io.IO;
 import aQute.libg.glob.Glob;
 
 public class ConnectionSettings extends Processor {
@@ -38,54 +39,80 @@ public class ConnectionSettings extends Processor {
 	}
 
 	public void readSettings() throws Exception {
-		Parameters connectionSettings = new Parameters(mergeProperties(CONNECTION_SETTINGS));
-		if (connectionSettings.isEmpty()) {
+		File tmp = null;
+		try {
+			Parameters connectionSettings = new Parameters(mergeProperties(CONNECTION_SETTINGS));
+			if (connectionSettings.isEmpty()) {
 
-			File file = aQute.lib.io.IO.getFile(BND_CONNECTION_SETTINGS_XML);
-			if (!file.isFile()) {
-				file = aQute.lib.io.IO.getFile(M2_SETTINGS_XML);
+				File file = aQute.lib.io.IO.getFile(BND_CONNECTION_SETTINGS_XML);
 				if (!file.isFile()) {
-					return;
+					file = aQute.lib.io.IO.getFile(M2_SETTINGS_XML);
+					if (!file.isFile()) {
+						return;
+					}
 				}
-			}
-			parse(file);
-			return;
-		}
-
-		for (Map.Entry<String, Attrs> entry : connectionSettings.entrySet()) {
-
-			String key = entry.getKey();
-			if ("false".equalsIgnoreCase(key))
-				continue;
-
-			switch (key) {
-			case "maven":
-				key = M2_SETTINGS_XML;
-				break;
-
-			case "bnd":
-				key = BND_CONNECTION_SETTINGS_XML;
-				break;
-			}
-
-			boolean ignoreError = false;
-			if (key.startsWith("-")) {
-				ignoreError = true;
-				key = key.substring(1);
-			}
-
-			File file = aQute.lib.io.IO.getFile(getParent().getPropertiesFile().getParentFile(), key);
-			if (!file.isFile()) {
-
-				if (!ignoreError) {
-					SetLocation error = getParent()
-							.error("Specified -connection-settings: %s, but no such file or is directory", file);
-					FileLine header = getParent().getHeader(CONNECTION_SETTINGS, key);
-					if (header != null)
-						header.set(error);
-				}
-			} else
 				parse(file);
+				return;
+			}
+
+			for (Map.Entry<String,Attrs> entry : connectionSettings.entrySet()) {
+
+				String key = entry.getKey();
+				if ("false".equalsIgnoreCase(key))
+					continue;
+
+				switch (key) {
+					case "maven" :
+						key = M2_SETTINGS_XML;
+						break;
+
+					case "bnd" :
+						key = BND_CONNECTION_SETTINGS_XML;
+						break;
+
+					case "env" :
+						Attrs attrs = entry.getValue();
+						String variable = attrs.get("var");
+						if (variable == null) {
+							getParent().error(
+									"Specified -connection-settings: %s, with 'env' but the 'var' parameter is no found",
+									connectionSettings);
+						} else {
+							String value = System.getenv(key);
+							if (value != null) {
+								tmp = File.createTempFile("tmp", ".bnd");
+								IO.store(value, tmp);
+								key = tmp.getAbsolutePath();
+							} else
+								getParent().error(
+										"Specified -connection-settings: %s, but no such environment variable %s is found",
+										connectionSettings, key);
+						}
+						break;
+				}
+
+				boolean ignoreError = false;
+				if (key.startsWith("-")) {
+					ignoreError = true;
+					key = key.substring(1);
+				}
+
+				File file = aQute.lib.io.IO.getFile(getParent().getPropertiesFile().getParentFile(), key);
+				if (!file.isFile()) {
+
+					if (!ignoreError) {
+						SetLocation error = getParent()
+								.error("Specified -connection-settings: %s, but no such file or is directory", file);
+						FileLine header = getParent().getHeader(CONNECTION_SETTINGS, key);
+						if (header != null)
+							header.set(error);
+					}
+				} else
+					parse(file);
+			}
+		} finally {
+			if (tmp != null)
+				tmp.delete();
 		}
 
 	}
