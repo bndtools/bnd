@@ -56,54 +56,58 @@ public class AnalyseBundleResolutionJob extends Job {
 
     @Override
     protected IStatus run(IProgressMonitor monitor) {
-        // Load  all the capabilities and requirements
-        Map<String,List<Capability>> allCaps = new HashMap<String,List<Capability>>();
-        Map<String,List<RequirementWrapper>> allReqs = new HashMap<String,List<RequirementWrapper>>();
-        for (CapReqLoader loader : loaders) {
-            try {
-                Map<String,List<Capability>> caps = loader.loadCapabilities();
-                mergeMaps(caps, allCaps);
+        try {
+            // Load  all the capabilities and requirements
+            Map<String,List<Capability>> allCaps = new HashMap<String,List<Capability>>();
+            Map<String,List<RequirementWrapper>> allReqs = new HashMap<String,List<RequirementWrapper>>();
+            for (CapReqLoader loader : loaders) {
+                try {
+                    Map<String,List<Capability>> caps = loader.loadCapabilities();
+                    mergeMaps(caps, allCaps);
 
-                Map<String,List<RequirementWrapper>> reqs = loader.loadRequirements();
-                mergeMaps(reqs, allReqs);
-            } catch (Exception e) {
-                logger.logError("Error in bnd resolution analysis.", e);
-            } finally {
-                IO.close(loader);
+                    Map<String,List<RequirementWrapper>> reqs = loader.loadRequirements();
+                    mergeMaps(reqs, allReqs);
+                } catch (Exception e) {
+                    logger.logError("Error in bnd resolution analysis.", e);
+                } finally {
+                    IO.close(loader);
+                }
             }
-        }
 
-        // Check for resolved requirements
-        for (String namespace : allReqs.keySet()) {
-            List<RequirementWrapper> rws = allReqs.get(namespace);
-            List<Capability> candidates = allCaps.get(namespace);
+            // Check for resolved requirements
+            for (String namespace : allReqs.keySet()) {
+                List<RequirementWrapper> rws = allReqs.get(namespace);
+                List<Capability> candidates = allCaps.get(namespace);
 
-            if (candidates == null)
-                continue;
+                if (candidates == null)
+                    continue;
 
-            for (RequirementWrapper rw : rws) {
-                String filterStr = rw.requirement.getDirectives().get("filter");
-                if (filterStr != null) {
-                    aQute.lib.filter.Filter filter = new aQute.lib.filter.Filter(filterStr);
-                    for (Capability cand : candidates) {
-                        if (filter.matchMap(cand.getAttributes())) {
-                            rw.resolved = true;
-                            break;
+                for (RequirementWrapper rw : rws) {
+                    String filterStr = rw.requirement.getDirectives().get("filter");
+                    if (filterStr != null) {
+                        aQute.lib.filter.Filter filter = new aQute.lib.filter.Filter(filterStr);
+                        for (Capability cand : candidates) {
+                            if (filter.matchMap(cand.getAttributes())) {
+                                rw.resolved = true;
+                                break;
+                            }
                         }
                     }
                 }
             }
+
+            // Generate the final results
+            //        Set<File> resultFiles = builderMap.keySet();
+            //        resultFileArray = resultFiles.toArray(new File[0]);
+
+            this.requirements = allReqs;
+            this.capabilities = allCaps;
+
+            // showResults(resultFileArray, importResults, exportResults);
+            return Status.OK_STATUS;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
-        // Generate the final results
-        //        Set<File> resultFiles = builderMap.keySet();
-        //        resultFileArray = resultFiles.toArray(new File[0]);
-
-        this.requirements = allReqs;
-        this.capabilities = allCaps;
-
-        // showResults(resultFileArray, importResults, exportResults);
-        return Status.OK_STATUS;
     }
 
     public Map<String,List<RequirementWrapper>> getRequirements() {
