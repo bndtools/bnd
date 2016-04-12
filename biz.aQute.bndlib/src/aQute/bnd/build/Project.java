@@ -1066,7 +1066,7 @@ public class Project extends Processor {
 				}
 			}
 		} finally {
-			getProperties().remove("@releasing");
+			unsetProperty("@releasing");
 		}
 	}
 
