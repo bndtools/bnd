@@ -419,7 +419,7 @@ public class MetadataParser {
 
 	private static MavenVersion getVersion(XMLStreamReader sr) throws Exception {
 		String version = getText(sr);
-		if (version == null)
+		if (version == null || version.trim().isEmpty())
 			return null;
 
 		return new MavenVersion(version);

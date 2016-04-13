@@ -96,9 +96,8 @@ public abstract class MavenBackingRepository implements Closeable {
 			if (metadata == null) {
 				metadata = new RevisionMetadata();
 				revisions.put(revision, metadata);
-				return metadata;
 			}
-			throw new IOException("HTTP failed:" + tag.getResponseCode());
+			return metadata;
 		}
 
 		if (metadata == null || tag.getState() == State.UPDATED) {

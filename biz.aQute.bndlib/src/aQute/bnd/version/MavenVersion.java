@@ -169,7 +169,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 
 	static public String cleanupVersion(String version) {
 
-		if (version == null)
+		if (version == null || version.trim().isEmpty())
 			return "0";
 
 		Matcher m = Verifier.VERSIONRANGE.matcher(version);
@@ -235,6 +235,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 		StringBuilder sb = new StringBuilder();
 		sb.append("0.0.0.");
 		cleanupModifier(sb, version);
+
 		return sb.toString();
 	}
 
@@ -269,6 +270,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	}
 
 	static void cleanupModifier(StringBuilder result, String modifier) {
+		int l = result.length();
 		Matcher m = fuzzyModifier.matcher(modifier);
 		if (m.matches())
 			modifier = m.group(2);
@@ -278,6 +280,8 @@ public class MavenVersion implements Comparable<MavenVersion> {
 			if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || c == '-')
 				result.append(c);
 		}
+		if (l == result.length())
+			result.append("_");
 	}
 
 }
