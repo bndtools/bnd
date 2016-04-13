@@ -125,7 +125,10 @@ public class MavenBndRepoTest extends TestCase {
 	}
 
 	public void testPutDefaultLocalSnapshot() throws Exception {
-		config(null);
+		Map<String,String> map = new HashMap<>();
+		map.put("releaseUrl", null);
+		map.put("snapshotUrl", null);
+		config(map);
 
 		File jar = IO.getFile("testresources/snapshot.jar");
 
@@ -140,7 +143,7 @@ public class MavenBndRepoTest extends TestCase {
 
 	public void testPutDefaultLocalSnapshotFileRepo() throws Exception {
 		Map<String,String> map = new HashMap<>();
-		map.put("releaseUrl", remote.toURI().toString());
+		map.put("snapshotUrl", remote.toURI().toString());
 		config(map);
 
 		File jar = IO.getFile("testresources/snapshot.jar");
