@@ -4,6 +4,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.IManagedForm;
@@ -17,6 +18,7 @@ public abstract class BndEditorPart extends SectionPart implements PropertyChang
 
     protected BndEditModel model;
 
+    private final AtomicBoolean committing = new AtomicBoolean(false);
     private final List<String> subscribedProps = new LinkedList<String>();
 
     public BndEditorPart(Composite parent, FormToolkit toolkit, int style) {
@@ -57,12 +59,16 @@ public abstract class BndEditorPart extends SectionPart implements PropertyChang
 
     @Override
     public final void commit(boolean onSave) {
+        committing.compareAndSet(false, true);
         super.commit(onSave);
         commitToModel(onSave);
+        committing.compareAndSet(true, false);
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
+        if (committing.get())
+            return;
         IFormPage page = (IFormPage) getManagedForm().getContainer();
         if (page.isActive()) {
             refresh();
