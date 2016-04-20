@@ -18,5 +18,3 @@ Bundle-Description: Embedded Repo for bnd workspace.
     biz.aQute.tester
 
 -digests: MD5, SHA1
-
--pom: false
