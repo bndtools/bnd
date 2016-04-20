@@ -402,7 +402,7 @@ public class MavenBndRepository
 			inited = true;
 			name = configuration.name("Maven");
 
-			localRepo = IO.getFile(configuration.local("~/.m2/repository"));
+			localRepo = IO.getFile(configuration.local(System.getProperty("maven.repo.local", "~/.m2/repository")));
 
 			Executor executor = registry.getPlugin(Executor.class);
 			release = configuration.releaseUrl() != null ? getBackingRepository(configuration.releaseUrl()) : null;
