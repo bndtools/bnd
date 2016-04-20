@@ -583,7 +583,7 @@ public class MavenBndRepository
 
 	@Override
 	public String toString() {
-		return "MavenBndRepository [localRepo=" + localRepo + ", storage=" + storage.getName() + ", inited=" + inited
+		return "MavenBndRepository [localRepo=" + localRepo + ", storage=" + getName() + ", inited=" + inited
 				+ "]";
 	}
 
