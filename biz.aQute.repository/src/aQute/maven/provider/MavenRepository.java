@@ -269,7 +269,6 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	public POM getPom(InputStream pomFile) throws Exception {
 		POM pom = new POM(this, pomFile);
 		synchronized (poms) {
-			System.out.print(pom.getRevision());
 			poms.put(pom.getRevision(), pom);
 		}
 		return pom;
@@ -288,8 +287,6 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		File pomFile = get(pomArchive).getValue();
 		if (pomFile == null)
 			return null;
-
-		System.out.println("vi " + pomFile);
 
 		try (FileInputStream fin = new FileInputStream(pomFile)) {
 			return getPom(fin);
