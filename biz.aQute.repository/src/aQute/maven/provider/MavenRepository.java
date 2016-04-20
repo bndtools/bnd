@@ -51,6 +51,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		this.executor = executor == null ? Executors.newCachedThreadPool() : executor;
 		this.localOnly = release == null && snapshot == null;
 		this.reporter = reporter;
+		base.mkdirs();
 	}
 
 	@Override
