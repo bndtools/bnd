@@ -72,18 +72,19 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
         IPath projectPath = element.getJavaProject().getProject().getFullPath().makeRelative();
 
         ILaunchConfiguration config = findLaunchConfig(projectPath);
-        if (config == null) {
-            ILaunchConfigurationWorkingCopy wc = createConfiguration(projectPath);
-            wc.doSave();
+        ILaunchConfigurationWorkingCopy wc = null;
 
-            customise(element, wc);
-            config = wc;
+        if (config == null) {
+            wc = createConfiguration(projectPath);
         } else {
-            ILaunchConfigurationWorkingCopy wc = config.getWorkingCopy();
-            customise(element, wc);
-            config = wc;
+            wc = config.getWorkingCopy();
         }
-        DebugUITools.launch(config, mode);
+
+        if (wc != null) {
+            customise(element, wc);
+            config = wc.doSave();
+            DebugUITools.launch(config, mode);
+        }
     }
 
     /*
