@@ -87,7 +87,6 @@ class IndexFile {
 			}
 			i.remove();
 		}
-		System.out.println("synced");
 	}
 
 	BundleDescriptor add(Archive archive) throws Exception {
@@ -246,7 +245,6 @@ class IndexFile {
 							: Version.parseVersion(m.getBundleVersion());
 
 					if (descriptor.bsn == null) {
-						System.out.println("No bsn");
 						descriptor.bsn = descriptor.archive.getWithoutVersion();
 						descriptor.version = descriptor.archive.revision.version.getOSGiVersion();
 					} else if (descriptor.version == null)
@@ -316,7 +314,6 @@ class IndexFile {
 
 			@Override
 			public File apply(File file) {
-				System.out.println("Async update " + descriptor.archive);
 				updateDescriptor(descriptor, file);
 				return file;
 			}

@@ -1,5 +1,6 @@
 package test;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
@@ -231,6 +232,23 @@ public class ProcessorTest extends TestCase {
 			p.setProperty("urix", "${uri;dist/bundles}");
 			String uri = p.getProperty("urix");
 			assertTrue(p.check("No base dir set", "No translation found for macro: uri"));
+		}
+	}
+
+	public void testFileUriMacro() throws Exception {
+		try (Processor p = new Processor()) {
+			String baseURI = p.getBaseURI().toString();
+			File some = new File("generated");
+			p.setProperty("uri1", "${fileuri;dist/bundles}");
+			p.setProperty("uri2", "${fileuri;" + some.getCanonicalPath() + "/dist/bundles}");
+			p.setProperty("uri3", "${fileuri;.}");
+			String uri1 = p.getProperty("uri1");
+			String uri2 = p.getProperty("uri2");
+			String uri3 = p.getProperty("uri3");
+			assertEquals(baseURI + "dist/bundles", uri1);
+			assertEquals(some.toURI() + "dist/bundles", uri2);
+			assertEquals(baseURI, uri3);
+			assertTrue(p.check());
 		}
 	}
 

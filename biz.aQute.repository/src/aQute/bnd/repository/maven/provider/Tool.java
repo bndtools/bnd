@@ -135,8 +135,6 @@ public class Tool extends Processor {
 		StringBuilder out = new StringBuilder();
 		StringBuilder err = new StringBuilder();
 
-		System.err.println(command);
-
 		int result = command.execute(out, err);
 		if (result != 0) {
 			warning("Error during execution of javadoc command: %s\n******************\n%s", out, err);

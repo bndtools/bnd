@@ -891,6 +891,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return uri.toString();
 	}
 
+	static String _fileuri = "${fileuri;<path>}, Return a file uri for the specified path. Relative paths are resolved against the processor base.";
+
+	public String _fileuri(String args[]) throws Exception {
+		Macro.verifyCommand(args, _fileuri, null, 2, 2);
+
+		File f = IO.getFile(getBase(), args[1]).getCanonicalFile();
+		return f.toURI().toString();
+	}
+
 	/**
 	 * Property handling ...
 	 * 
