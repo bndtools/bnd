@@ -300,17 +300,33 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
             public void doubleClick(DoubleClickEvent event) {
                 if (!event.getSelection().isEmpty()) {
                     IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-                    Object element = selection.getFirstElement();
+                    final Object element = selection.getFirstElement();
                     if (element instanceof IAdaptable) {
-                        URI uri = (URI) ((IAdaptable) element).getAdapter(URI.class);
-                        if (uri != null) {
-                            IWorkbenchPage page = getSite().getPage();
-                            try {
-                                IFileStore fileStore = EFS.getLocalFileSystem().getStore(uri);
-                                IDE.openEditorOnFileStore(page, fileStore);
-                            } catch (PartInitException e) {
-                                logger.logError("Error opening editor for " + uri, e);
+                        final URI uri = (URI) ((IAdaptable) element).getAdapter(URI.class);
+                        if (uri == null && element instanceof RepositoryEntry) {
+                            boolean download = MessageDialog.openQuestion(getSite().getShell(), "Repositories", "This repository entry is unable to be opened because it has not been downloaded. Download and open it now?");
+                            if (download) {
+                                final RepositoryEntry entry = (RepositoryEntry) element;
+                                Job downloadJob = new Job("Downloading repository entry " + entry.getBsn()) {
+                                    @Override
+                                    protected IStatus run(IProgressMonitor monitor) {
+                                        final File repoFile = entry.getFile(true);
+                                        if (repoFile.exists()) {
+                                            getSite().getShell().getDisplay().asyncExec(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    openURI(repoFile.toURI());
+                                                }
+                                            });
+                                        }
+                                        return Status.OK_STATUS;
+                                    }
+                                };
+                                downloadJob.setUser(true);
+                                downloadJob.schedule();
                             }
+                        } else if (uri != null) {
+                            openURI(uri);
                         }
                     } else if (element instanceof ContinueSearchElement) {
                         ContinueSearchElement searchElement = (ContinueSearchElement) element;
@@ -349,6 +365,16 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         createActions();
         fillToolBar(getViewSite().getActionBars().getToolBarManager());
 
+    }
+
+    protected void openURI(URI uri) {
+        IWorkbenchPage page = getSite().getPage();
+        try {
+            IFileStore fileStore = EFS.getLocalFileSystem().getStore(uri);
+            IDE.openEditorOnFileStore(page, fileStore);
+        } catch (PartInitException e) {
+            logger.logError("Error opening editor for " + uri, e);
+        }
     }
 
     @Override
