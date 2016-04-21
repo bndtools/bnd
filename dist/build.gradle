@@ -34,6 +34,8 @@ task('index') {
   def bundles = fileTree(releaserepo) {
     include '**/*.jar'
     exclude '**/*-latest.jar'
+    exclude '**/*-sources.jar'
+    exclude '**/*-javadoc.jar'
   }
 
   inputs.files bundles
