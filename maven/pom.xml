@@ -165,6 +165,11 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>2.8.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
 					<version>2.4</version>
 					<executions>
@@ -241,6 +246,10 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
 				<executions>
 					<execution>
@@ -271,5 +280,16 @@
             </plugin>
 		</plugins>
 	</build>
-
+    <distributionManagement>
+        <repository>
+            <id>Release</id>
+            <name>Bnd Release Repository</name>
+            <url>file:dist/bundles</url>
+        </repository>
+        <snapshotRepository>
+            <id>Snapshot</id>
+            <name>Bnd Snapshot Repository</name>
+            <url>file:dist/bundles</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>

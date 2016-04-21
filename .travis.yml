@@ -12,9 +12,7 @@ install:
 
 script:
   - ./gradlew -Dmaven.repo.local=maven/target/m2 --continue
-  - mvn --batch-mode --quiet -Dmaven.repo.local=maven/target/m2 -Dfile=dist/bundles/org.osgi.impl.bundle.repoindex.cli/org.osgi.impl.bundle.repoindex.cli-latest.jar org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file
-  - mvn --batch-mode --quiet -Dmaven.repo.local=maven/target/m2 -Dfile=dist/bundles/biz.aQute.bndlib/biz.aQute.bndlib-latest.jar org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file
-  - mvn -f maven --batch-mode --quiet -Dmaven.repo.local=maven/target/m2 install
+  - mvn -f maven --batch-mode --quiet -Dmaven.repo.local=maven/target/m2 deploy
 
 after_success:
   - git status
