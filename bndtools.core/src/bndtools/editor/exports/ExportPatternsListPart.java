@@ -161,15 +161,19 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
     private Collection<FileVersionTuple> findSourcePackagesWithoutPackageInfo(Collection< ? extends ExportedPackage> pkgs) throws Exception {
         Map<String,FileVersionTuple> result = new HashMap<String,FileVersionTuple>();
 
-        Collection<File> sourceDirs = getProject().getSourcePath();
-        for (File sourceDir : sourceDirs) {
-            for (ExportedPackage pkg : pkgs) {
-                if (!result.containsKey(pkg.getName())) {
-                    File pkgDir = new File(sourceDir, pkg.getName().replace('.', '/'));
-                    if (pkgDir.isDirectory()) {
-                        PackageInfoStyle existingPkgInfo = PackageInfoStyle.findExisting(pkgDir);
-                        if (existingPkgInfo == null)
-                            result.put(pkg.getName(), new FileVersionTuple(pkg.getName(), pkgDir));
+        Project project = getProject();
+
+        if (project != null) {
+            Collection<File> sourceDirs = project.getSourcePath();
+            for (File sourceDir : sourceDirs) {
+                for (ExportedPackage pkg : pkgs) {
+                    if (!result.containsKey(pkg.getName())) {
+                        File pkgDir = new File(sourceDir, pkg.getName().replace('.', '/'));
+                        if (pkgDir.isDirectory()) {
+                            PackageInfoStyle existingPkgInfo = PackageInfoStyle.findExisting(pkgDir);
+                            if (existingPkgInfo == null)
+                                result.put(pkg.getName(), new FileVersionTuple(pkg.getName(), pkgDir));
+                        }
                     }
                 }
             }
