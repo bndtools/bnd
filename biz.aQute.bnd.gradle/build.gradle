@@ -33,13 +33,6 @@ sourceSets {
     }
 }
 
-apply from: cnf.file('gradle/maven-artifacts.gradle')
-
-javadocJar {
-  dependsOn groovydoc
-  from groovydoc.destinationDir
-}
-
 test {
     dependsOn jar
     def source = file('testresources')
