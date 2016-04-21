@@ -7,4 +7,5 @@ Extension-Activator: aQute.bnd.ext.test.TestExtension
 -buildpath: \
 	biz.aQute.bndlib;version=project
 
+-buildrepo:
 -releaserepo:

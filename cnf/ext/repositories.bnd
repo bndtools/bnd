@@ -4,7 +4,12 @@ baselinerepo:           https://dl.bintray.com/bnd/dist/${baseline.version}
 
 -plugin:\
 	aQute.lib.deployer.FileRepo;name='Main'   ;location=${mainrepo}; latest=false,\
-	aQute.lib.deployer.FileRepo;name='Release';location=${releaserepo},\
+    aQute.bnd.repository.maven.provider.MavenBndRepository;\
+        name='Local',\
+    aQute.bnd.repository.maven.provider.MavenBndRepository;\
+        name='Release';\
+        releaseUrl="${fileuri;${releaserepo}}";\
+        snapshotUrl="${fileuri;${releaserepo}}",\
 	aQute.bnd.signing.JartoolSigner, \
     aQute.bnd.jpm.Repository; \
         includeStaged=true; \
@@ -15,5 +20,6 @@ baselinerepo:           https://dl.bintray.com/bnd/dist/${baseline.version}
         depository.name=dist, \
     aQute.bnd.deployer.repository.FixedIndexedRepo; name='Baseline'; locations=${baselinerepo}/index.xml.gz
 
--releaserepo:  Release
+-buildrepo: Local
+-releaserepo: Release
 -baselinerepo: Baseline

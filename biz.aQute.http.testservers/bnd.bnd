@@ -30,6 +30,7 @@ Conditional-Package: aQute.lib*, fi.*, org.bouncycastle.*
 
 Export-Package: aQute.http.testservers
 
+-buildrepo:
 -releaserepo:
 
 -fixupmessages: "private references"
