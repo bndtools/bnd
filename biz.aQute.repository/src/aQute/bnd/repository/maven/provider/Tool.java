@@ -9,6 +9,7 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.jar.Manifest;
 
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
@@ -17,6 +18,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.version.Version;
+import aQute.lib.fileset.FileSet;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.tag.Tag;
@@ -70,60 +72,65 @@ public class Tool extends Processor {
 		command.add("-sourcepath");
 		command.add(sources.getAbsolutePath());
 
-		Properties pp = new UTF8Properties();
-		pp.putAll(options);
-
-		String name = manifest.getBundleName();
-		if (name == null)
-			name = manifest.getBundleSymbolicName().getKey();
-
-		String version = manifest.getBundleVersion();
-		if (version == null)
-			version = Version.LOWEST.toString();
-
-		String bundleDescription = manifest.getBundleDescription();
-
-		if (bundleDescription != null && !Strings.trim(bundleDescription).isEmpty()) {
-			printOverview(name, version, bundleDescription);
-		}
-
-		set(pp, "-doctitle", name);
-		set(pp, "-windowtitle", name);
-		set(pp, "-header", manifest.getBundleVendor());
-		set(pp, "-bottom", manifest.getBundleCopyright());
-		set(pp, "-footer", manifest.getBundleDocURL());
-
-		command.add("-tag");
-		command.add("Immutable:t:Immutable");
-		command.add("-tag");
-		command.add("ThreadSafe:t:ThreadSafe");
-		command.add("-tag");
-		command.add("NotThreadSafe:t:NotThreadSafe");
-		command.add("-tag");
-		command.add("GuardedBy:mf:Guarded By:");
-		command.add("-tag");
-		command.add("security:m:Required Permissions");
-		command.add("-tag");
-		command.add("noimplement:t:Consumers of this API must not implement this interface");
-
-		for (Enumeration< ? > e = pp.propertyNames(); e.hasMoreElements();) {
-			String key = (String) e.nextElement();
-			String value = pp.getProperty(key);
-
-			if (key.startsWith("-")) {
-				//
-				// Allow people to add the same command multiple times
-				// by suffixing it with '.' something
-				//
-				int n = key.lastIndexOf('.');
-				if (n > 0) {
-					key = key.substring(0, n);
-				}
-
-				command.add(key);
-				command.add(value);
-			}
-		}
+		 Properties pp = new UTF8Properties();
+		 pp.putAll(options);
+		
+		 String name = manifest.getBundleName();
+		 if (name == null)
+		 name = manifest.getBundleSymbolicName().getKey();
+		
+		 String version = manifest.getBundleVersion();
+		 if (version == null)
+		 version = Version.LOWEST.toString();
+		
+		 String bundleDescription = manifest.getBundleDescription();
+		
+		 if (bundleDescription != null &&
+		 !Strings.trim(bundleDescription).isEmpty()) {
+		 printOverview(name, version, bundleDescription);
+		 }
+		
+		 set(pp, "-doctitle", name);
+		 set(pp, "-windowtitle", name);
+		 set(pp, "-header", manifest.getBundleVendor());
+		 set(pp, "-bottom", manifest.getBundleCopyright());
+		 set(pp, "-footer", manifest.getBundleDocURL());
+		
+		 command.add("-tag");
+		 command.add("Immutable:t:Immutable");
+		 command.add("-tag");
+		 command.add("ThreadSafe:t:ThreadSafe");
+		 command.add("-tag");
+		 command.add("NotThreadSafe:t:NotThreadSafe");
+		 command.add("-tag");
+		 command.add("GuardedBy:mf:\"Guarded By:\"");
+		 command.add("-tag");
+		 command.add("security:m:\"Required Permissions\"");
+		 command.add("-tag");
+		command.add("noimplement:t:\"Consumers of this API must not implement this interface\"");
+		
+		 for (Enumeration< ? > e = pp.propertyNames(); e.hasMoreElements();) {
+		 String key = (String) e.nextElement();
+		 String value = pp.getProperty(key);
+		
+		 if (key.startsWith("-")) {
+		 //
+		 // Allow people to add the same command multiple times
+		 // by suffixing it with '.' something
+		 //
+		 int n = key.lastIndexOf('.');
+		 if (n > 0) {
+		 key = key.substring(0, n);
+		 }
+		
+		 command.add(key);
+		 command.add("\"" + value + "\"");
+		 }
+		 }
+		
+		FileSet set = new FileSet(sources, "**.java");
+		for (File f : set.getFiles())
+			command.add(f.getAbsolutePath());
 
 		if (exportsOnly) {
 			Parameters exports = manifest.getExportPackage();
@@ -139,7 +146,8 @@ public class Tool extends Processor {
 		if (result != 0) {
 			warning("Error during execution of javadoc command: %s\n******************\n%s", out, err);
 		}
-		Jar jar = new Jar(tmp);
+		Jar jar = new Jar(javadoc);
+		jar.setManifest(new Manifest());
 		addClose(jar);
 		return jar;
 	}
@@ -181,7 +189,9 @@ public class Tool extends Processor {
 		if (!hasSources())
 			return new Jar("empty");
 
-		return new Jar(sources);
+		Jar jar = new Jar(sources);
+		jar.setManifest(new Manifest());
+		return jar;
 	}
 
 	public void close() throws IOException {
