@@ -310,6 +310,10 @@ public class MavenBndRepoTest extends TestCase {
 			assertIsFile(remote,
 					"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-1.pom");
 			assertIsFile(remote,
+					"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-1.pom.sha1");
+			assertIsFile(remote,
+					"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-1.pom.md5");
+			assertIsFile(remote,
 					"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-1.jar");
 			assertIsFile(remote,
 					"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-19700101.000010-1-sources.jar");

@@ -5,6 +5,8 @@ import java.net.URI;
 
 import aQute.bnd.service.url.TaggedData;
 import aQute.lib.io.IO;
+import aQute.libg.cryptography.MD5;
+import aQute.libg.cryptography.SHA1;
 import aQute.service.reporter.Reporter;
 
 public class MavenFileRepository extends MavenBackingRepository {
@@ -30,12 +32,18 @@ public class MavenFileRepository extends MavenBackingRepository {
 
 	@Override
 	public void store(File source, String path) throws Exception {
-		File dest = getFile(path);
 		if (!source.isFile())
 			throw new IllegalArgumentException("File does not exist: " + source);
 
+		File dest = getFile(path);
+
 		dest.getParentFile().mkdirs();
 		IO.copy(source, dest);
+
+		SHA1 sha1 = SHA1.digest(source);
+		MD5 md5 = MD5.digest(source);
+		IO.store(sha1.asHex() + "\n", new File(dest.getParentFile(), dest.getName() + ".sha1"));
+		IO.store(md5.asHex() + "\n", new File(dest.getParentFile(), dest.getName() + ".md5"));
 	}
 
 	@Override
