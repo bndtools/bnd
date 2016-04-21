@@ -10,19 +10,20 @@ import aQute.bnd.osgi.Constants
 /* Add bnd gradle plugin as a script dependency */
 buildscript {
   repositories {
-    ivy { /* Configure the repository as an "ivy" repository */
+    maven {
       url uri(bnd_repourl)
-      layout 'pattern', {
-            artifact '[module]/[artifact]-[revision].[ext]' /* OSGi repo pattern */
-            artifact '[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier])(.[ext])' /* maven pattern */
-      }
     }
   }
   dependencies {
     classpath bnd_plugin
   }
   /* Since the files in the repository change with each build, we need to recheck for changes */
-  configurations.classpath.resolutionStrategy.cacheChangingModulesFor 30, 'minutes'
+  configurations.classpath {
+    resolutionStrategy {
+      cacheChangingModulesFor 30, 'minutes'
+      cacheDynamicVersionsFor 30, 'minutes'
+    }
+  }
   dependencies {
     components {
       all { ComponentMetadataDetails details ->
