@@ -87,7 +87,7 @@ public class Workspace extends Processor {
 	}
 
 	private final Pattern						EMBEDDED_REPO_TESTING_PATTERN	= Pattern
-			.compile(".*biz\\.aQute\\.bnd\\.embedded-repo-(.*)\\.jar");
+			.compile(".*biz\\.aQute\\.bnd\\.embedded-repo(-.*)?\\.jar");
 
 	static Map<File,WeakReference<Workspace>>	cache							= newHashMap();
 	static Processor							defaults						= null;
@@ -447,7 +447,7 @@ public class Workspace extends Processor {
 						unzip(in, root);
 					else {
 						// We may be in unit test, look for
-						// biz.aQute.bnd.embedded-repo-<version>.jar on the
+						// biz.aQute.bnd.embedded-repo.jar on the
 						// classpath
 						StringTokenizer classPathTokenizer = new StringTokenizer(
 								System.getProperty("java.class.path", ""), File.pathSeparator);
