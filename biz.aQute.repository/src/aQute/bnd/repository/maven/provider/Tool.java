@@ -5,7 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -31,6 +33,7 @@ public class Tool extends Processor {
 	private final File			tmp;
 	private final File			sources;
 	private final File			javadoc;
+	private final File			javadocOptions;
 	private final Domain		manifest;
 
 	public Tool(Processor parent, Jar jar) throws Exception {
@@ -38,6 +41,7 @@ public class Tool extends Processor {
 		tmp = Files.createTempDirectory("tool").toFile();
 		sources = new File(tmp, "sources");
 		javadoc = new File(tmp, "javadoc");
+		javadocOptions = new File(tmp, "javadoc.options");
 		manifest = Domain.domain(jar.getManifest());
 
 		for (Entry<String,Resource> e : jar.getResources().entrySet()) {
@@ -54,94 +58,98 @@ public class Tool extends Processor {
 		return sources.isDirectory();
 	}
 
+	private Jar emptyJar() {
+		Jar jar = new Jar("empty");
+		jar.setManifest(new Manifest());
+		addClose(jar);
+		return jar;
+	}
+
 	public Jar doJavadoc(Map<String,String> options, boolean exportsOnly) throws Exception {
-
 		if (!hasSources())
-			return new Jar("empty");
+			return emptyJar();
 
-		Command command = new Command();
-		command.add(getProperty("javadoc", "javadoc"));
-		command.add("-quiet");
-		command.add("-protected");
-		// command.add("-classpath");
-		// command.add(binary.getAbsolutePath());
-		command.add("-d");
-		command.add(javadoc.getAbsolutePath());
-		command.add("-charset");
-		command.add("UTF-8");
-		command.add("-sourcepath");
-		command.add(sources.getAbsolutePath());
+		javadoc.mkdirs();
+		List<String> args = new ArrayList<>();
+		args.add("-quiet");
+		args.add("-protected");
+		args.add(String.format("%s '%s'", "-d", javadoc.getAbsolutePath()));
+		args.add("-charset 'UTF-8'");
+		args.add(String.format("%s '%s'", "-sourcepath", sources.getAbsolutePath()));
 
-		 Properties pp = new UTF8Properties();
-		 pp.putAll(options);
-		
-		 String name = manifest.getBundleName();
-		 if (name == null)
-		 name = manifest.getBundleSymbolicName().getKey();
-		
-		 String version = manifest.getBundleVersion();
-		 if (version == null)
-		 version = Version.LOWEST.toString();
-		
-		 String bundleDescription = manifest.getBundleDescription();
-		
-		 if (bundleDescription != null &&
-		 !Strings.trim(bundleDescription).isEmpty()) {
-		 printOverview(name, version, bundleDescription);
-		 }
-		
-		 set(pp, "-doctitle", name);
-		 set(pp, "-windowtitle", name);
-		 set(pp, "-header", manifest.getBundleVendor());
-		 set(pp, "-bottom", manifest.getBundleCopyright());
-		 set(pp, "-footer", manifest.getBundleDocURL());
-		
-		 command.add("-tag");
-		 command.add("Immutable:t:Immutable");
-		 command.add("-tag");
-		 command.add("ThreadSafe:t:ThreadSafe");
-		 command.add("-tag");
-		 command.add("NotThreadSafe:t:NotThreadSafe");
-		 command.add("-tag");
-		 command.add("GuardedBy:mf:\"Guarded By:\"");
-		 command.add("-tag");
-		 command.add("security:m:\"Required Permissions\"");
-		 command.add("-tag");
-		command.add("noimplement:t:\"Consumers of this API must not implement this interface\"");
-		
-		 for (Enumeration< ? > e = pp.propertyNames(); e.hasMoreElements();) {
-		 String key = (String) e.nextElement();
-		 String value = pp.getProperty(key);
-		
-		 if (key.startsWith("-")) {
-		 //
-		 // Allow people to add the same command multiple times
-		 // by suffixing it with '.' something
-		 //
-		 int n = key.lastIndexOf('.');
-		 if (n > 0) {
-		 key = key.substring(0, n);
-		 }
-		
-		 command.add(key);
-		 command.add("\"" + value + "\"");
-		 }
-		 }
-		
+		Properties pp = new UTF8Properties();
+		pp.putAll(options);
+
+		String name = manifest.getBundleName();
+		if (name == null)
+			name = manifest.getBundleSymbolicName().getKey();
+
+		String version = manifest.getBundleVersion();
+		if (version == null)
+			version = Version.LOWEST.toString();
+
+		String bundleDescription = manifest.getBundleDescription();
+
+		if (bundleDescription != null && !Strings.trim(bundleDescription).isEmpty()) {
+			printOverview(name, version, bundleDescription);
+		}
+
+		set(pp, "-doctitle", name);
+		set(pp, "-windowtitle", name);
+		set(pp, "-header", manifest.getBundleVendor());
+		set(pp, "-bottom", manifest.getBundleCopyright());
+		set(pp, "-footer", manifest.getBundleDocURL());
+
+		args.add("-tag 'Immutable:t:\"Immutable\"'");
+		args.add("-tag 'ThreadSafe:t:\"ThreadSafe\"'");
+		args.add("-tag 'NotThreadSafe:t:\"NotThreadSafe\"'");
+		args.add("-tag 'GuardedBy:mf:\"Guarded By:\"'");
+		args.add("-tag 'security:m:\"Required Permissions\"'");
+		args.add("-tag 'noimplement:t:\"Consumers of this API must not implement this interface\"'");
+
+		for (Enumeration< ? > e = pp.propertyNames(); e.hasMoreElements();) {
+			String key = (String) e.nextElement();
+			String value = pp.getProperty(key);
+
+			if (key.startsWith("-")) {
+				//
+				// Allow people to add the same command multiple times
+				// by suffixing it with '.' something
+				//
+				int n = key.lastIndexOf('.');
+				if (n > 0) {
+					key = key.substring(0, n);
+				}
+
+				args.add(String.format("%s '%s'", key, value));
+			}
+		}
+
 		FileSet set = new FileSet(sources, "**.java");
-		for (File f : set.getFiles())
-			command.add(f.getAbsolutePath());
+		for (File f : set.getFiles()) {
+			args.add(String.format("'%s'", f.getAbsolutePath()));
+		}
 
 		if (exportsOnly) {
 			Parameters exports = manifest.getExportPackage();
 			for (String packageName : exports.keySet()) {
-				command.add(packageName);
+				args.add(String.format("'%s'", packageName));
 			}
 		}
 
+		StringBuilder sb = new StringBuilder();
+		for (String arg : args) {
+			sb.append(arg);
+			sb.append('\n');
+		}
+		IO.store(sb, javadocOptions);
+
+		Command command = new Command();
+		command.add(getProperty("javadoc", "javadoc"));
+		command.add("@" + javadocOptions.getAbsolutePath());
+
 		StringBuilder out = new StringBuilder();
 		StringBuilder err = new StringBuilder();
-
 		int result = command.execute(out, err);
 		if (result != 0) {
 			warning("Error during execution of javadoc command: %s\n******************\n%s", out, err);
@@ -187,10 +195,11 @@ public class Tool extends Processor {
 
 	public Jar doSource() throws IOException {
 		if (!hasSources())
-			return new Jar("empty");
+			return emptyJar();
 
 		Jar jar = new Jar(sources);
 		jar.setManifest(new Manifest());
+		addClose(jar);
 		return jar;
 	}
 
