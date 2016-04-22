@@ -73,9 +73,9 @@ public class Tool extends Processor {
 		List<String> args = new ArrayList<>();
 		args.add("-quiet");
 		args.add("-protected");
-		args.add(String.format("%s '%s'", "-d", javadoc.getAbsolutePath()));
+		args.add(String.format("%s '%s'", "-d", fileName(javadoc)));
 		args.add("-charset 'UTF-8'");
-		args.add(String.format("%s '%s'", "-sourcepath", sources.getAbsolutePath()));
+		args.add(String.format("%s '%s'", "-sourcepath", fileName(sources)));
 
 		Properties pp = new UTF8Properties();
 		pp.putAll(options);
@@ -127,7 +127,7 @@ public class Tool extends Processor {
 
 		FileSet set = new FileSet(sources, "**.java");
 		for (File f : set.getFiles()) {
-			args.add(String.format("'%s'", f.getAbsolutePath()));
+			args.add(String.format("'%s'", fileName(f)));
 		}
 
 		if (exportsOnly) {
@@ -146,8 +146,7 @@ public class Tool extends Processor {
 
 		Command command = new Command();
 		command.add(getProperty("javadoc", "javadoc"));
-		command.add("@" + javadocOptions.getAbsolutePath());
-
+		command.add("@" + fileName(javadocOptions));
 		StringBuilder out = new StringBuilder();
 		StringBuilder err = new StringBuilder();
 		int result = command.execute(out, err);
@@ -160,6 +159,13 @@ public class Tool extends Processor {
 		return jar;
 	}
 
+	private String fileName(File f) {
+		String result = f.getAbsolutePath();
+		if (File.separatorChar != '/') {
+			result = result.replace(File.separatorChar, '/');
+		}
+		return result;
+	}
 	void printOverview(String name, String version, String bundleDescription) throws FileNotFoundException {
 		Tag body = new Tag("body");
 		new Tag(body, "h1", name);
