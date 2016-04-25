@@ -63,11 +63,14 @@ import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
+import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.permissionadmin.PermissionInfo;
 
 import aQute.launcher.agent.LauncherAgent;
 import aQute.launcher.constants.LauncherConstants;
 import aQute.launcher.minifw.MiniFramework;
+
 
 /**
  * This is the primary bnd launcher. It implements a launcher that runs on Java
@@ -754,8 +757,12 @@ public class Launcher implements ServiceListener {
 
 	@SuppressWarnings("deprecation")
 	private boolean isFragment(Bundle b) {
-		return padmin != null
-				&& padmin.getBundleType(b) == org.osgi.service.packageadmin.PackageAdmin.BUNDLE_TYPE_FRAGMENT;
+		if(padmin != null){
+			return padmin.getBundleType(b) == PackageAdmin.BUNDLE_TYPE_FRAGMENT;
+		} else {
+			BundleRevision rev = b.adapt(BundleRevision.class);
+			return !rev.getDeclaredRequirements("osgi.wiring.host").isEmpty();
+		}
 	}
 
 	public void deactivate() throws Exception {
