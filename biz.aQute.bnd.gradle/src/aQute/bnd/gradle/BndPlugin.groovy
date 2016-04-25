@@ -342,6 +342,7 @@ public class BndPlugin implements Plugin<Project> {
               dependsOn assemble
               group 'export'
               def executableJar = new File(distsDir, "executable/${bndrun}.jar")
+              outputs.file executableJar
               doFirst {
                 project.mkdir(executableJar.parent)
               }
@@ -379,6 +380,7 @@ public class BndPlugin implements Plugin<Project> {
               dependsOn assemble
               group 'export'
               def runbundlesDir = new File(distsDir, "runbundles/${bndrun}")
+              outputs.dir runbundlesDir
               doFirst {
                 project.delete(runbundlesDir)
                 project.mkdir(runbundlesDir)
