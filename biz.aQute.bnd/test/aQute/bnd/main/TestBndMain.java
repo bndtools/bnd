@@ -55,13 +55,14 @@ public class TestBndMain extends TestCase {
 	}
 
 	public void testPackageBndrunStandalone() throws Exception {
+		String output = "generated/tmp/export-standalone.jar";
 		bnd.mainNoExit(new String[] {
-				"package", "-o", "generated/export-standalone.jar", "testdata/standalone/standalone.bndrun"
+				"package", "-o", output, "testdata/standalone/standalone.bndrun"
 		});
 		expectNoError();
 
 		// validate exported jar content
-		try (Jar result = new Jar(new File("generated/export-standalone.jar"))) {
+		try (Jar result = new Jar(new File(output))) {
 			expectJarEntry(result, "jar/biz.aQute.launcher-" + version + ".jar");
 			expectJarEntry(result, "jar/org.apache.felix.framework-5.2.0.jar");
 			expectJarEntry(result, "jar/printAndExit-1.0.0.jar");
@@ -69,14 +70,14 @@ public class TestBndMain extends TestCase {
 	}
 
 	public void testPackageBndrunWorkspace() throws Exception {
+		String output = "generated/tmp/export-workspace.jar";
 		bnd.mainNoExit(new String[] {
-				"package", "-o", "generated/export-workspace.jar", "testdata/workspace/p/workspace.bndrun"
+				"package", "-o", output, "testdata/workspace/p/workspace.bndrun"
 		});
 		expectNoError();
 
 		// validate exported jar content
-		try (Jar result = new Jar(new File("generated/export-workspace.jar"))) {
-
+		try (Jar result = new Jar(new File(output))) {
 			expectJarEntry(result, "jar/biz.aQute.launcher-" + version + ".jar");
 			expectJarEntry(result, "jar/org.apache.felix.framework-5.2.0.jar");
 			expectJarEntry(result, "jar/printAndExit-1.0.0.jar");
@@ -84,13 +85,14 @@ public class TestBndMain extends TestCase {
 	}
 
 	public void testPackageProject() throws Exception {
+		String output = "generated/tmp/export-workspace-project.jar";
 		bnd.mainNoExit(new String[] {
-				"package", "-o", "generated/export-workspace-project.jar", "testdata/workspace/p2"
+				"package", "-o", output, "testdata/workspace/p2"
 		});
 		expectNoError();
 
 		// validate exported jar content
-		try (Jar result = new Jar(new File("generated/export-workspace-project.jar"))) {
+		try (Jar result = new Jar(new File(output))) {
 			expectJarEntry(result, "jar/biz.aQute.launcher-" + version + ".jar");
 			expectJarEntry(result, "jar/org.apache.felix.framework-5.2.0.jar");
 			expectJarEntry(result, "jar/p2.jar");
