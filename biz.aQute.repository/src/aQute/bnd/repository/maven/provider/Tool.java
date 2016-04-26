@@ -121,7 +121,7 @@ public class Tool extends Processor {
 					key = key.substring(0, n);
 				}
 
-				args.add(String.format("%s '%s'", key, value));
+				args.add(String.format("%s '%s'", key, escape(value)));
 			}
 		}
 
@@ -166,6 +166,12 @@ public class Tool extends Processor {
 		}
 		return result;
 	}
+
+	private String escape(String input) {
+		return input.replace("\\", "\\\\").replace(System.getProperty("line.separator"),
+				"\\" + System.getProperty("line.separator"));
+	}
+
 	void printOverview(String name, String version, String bundleDescription) throws FileNotFoundException {
 		Tag body = new Tag("body");
 		new Tag(body, "h1", name);
