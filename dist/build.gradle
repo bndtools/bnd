@@ -27,9 +27,6 @@ task('index') {
   dependsOn releaseNeeded
   group 'release'
 
-  /* indexer */
-  def repoindexJar = bnd.project.getBundle('org.osgi.impl.bundle.repoindex.cli', 'latest', null, ['strategy':'highest']).getFile()
-
   /* Bundles to index. */
   def bundles = fileTree(releaserepo) {
     include '**/*.jar'
@@ -47,7 +44,11 @@ task('index') {
   outputs.files index_uncompressed, index_compressed
 
   doLast {
+    /* indexer */
+    def repoindexJar = bnd.project.getBundle('org.osgi.impl.bundle.repoindex.cli', 'latest', null, ['strategy':'highest']).getFile()
+
     def bundlesToIndex = bundles*.absolutePath
+
     /* index uncompressed. */
     javaexec {
       main = '-jar' // first arg must be the jar
