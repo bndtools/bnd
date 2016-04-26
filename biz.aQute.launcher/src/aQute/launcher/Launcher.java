@@ -60,9 +60,10 @@ import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
-import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
+import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.framework.wiring.FrameworkWiring;
 import org.osgi.service.permissionadmin.PermissionInfo;
 
 import aQute.launcher.agent.LauncherAgent;
@@ -86,8 +87,6 @@ public class Launcher implements ServiceListener {
 	private boolean										security;
 	private SimplePermissionPolicy						policy;
 	private Callable<Integer>							mainThread;
-	@SuppressWarnings("deprecation")
-	private org.osgi.service.packageadmin.PackageAdmin	padmin;
 	private final List<BundleActivator>					embedded							= new ArrayList<BundleActivator>();
 	private final Map<Bundle,Throwable>					errors								= new HashMap<Bundle,Throwable>();
 	private final Map<File,Bundle>						installedBundles					= new LinkedHashMap<File,Bundle>();
@@ -356,14 +355,6 @@ public class Launcher implements ServiceListener {
 		trace("system bundle started ok");
 
 		BundleContext systemContext = systemBundle.getBundleContext();
-		@SuppressWarnings("deprecation")
-		ServiceReference<org.osgi.service.packageadmin.PackageAdmin> ref = systemContext
-				.getServiceReference(org.osgi.service.packageadmin.PackageAdmin.class);
-		if (ref != null) {
-			padmin = systemContext.getService(ref);
-		} else
-			trace("could not get package admin");
-
 		systemContext.addServiceListener(this, "(&(|(objectclass=" + Runnable.class.getName() + ")(objectclass="
 				+ Callable.class.getName() + "))(main.thread=true))");
 
@@ -429,7 +420,6 @@ public class Launcher implements ServiceListener {
 	 * 
 	 * @param begin
 	 */
-	@SuppressWarnings("deprecation")
 	void update(long before) throws Exception {
 
 		trace("Updating framework with %s", parms.runbundles);
@@ -439,9 +429,10 @@ public class Launcher implements ServiceListener {
 		else
 			synchronizeFiles(tobestarted, before);
 
-		if (padmin != null) {
+		FrameworkWiring fwkWiring = systemBundle.adapt(FrameworkWiring.class);
+		if (fwkWiring != null) {
 			inrefresh = true;
-			padmin.refreshPackages(null);
+			fwkWiring.refreshBundles(null);
 			trace("Waiting for refresh to finish");
 
 			// Will be reset by the Framework listener we added
@@ -450,7 +441,7 @@ public class Launcher implements ServiceListener {
 				Thread.sleep(100);
 
 		} else
-			trace("cannot refresh the bundles because there is no Package Admin");
+			trace("cannot refresh the bundles because there is no FrameworkWiring");
 
 		trace("bundles administered %s", installedBundles.keySet());
 
@@ -461,7 +452,7 @@ public class Launcher implements ServiceListener {
 			policy.setDefaultPermissions(null);
 
 		// Get the resolved status
-		if (padmin != null && padmin.resolveBundles(null) == false) {
+		if (fwkWiring != null && fwkWiring.resolveBundles(null) == false) {
 			List<String> failed = new ArrayList<String>();
 
 			for (Bundle b : installedBundles.values()) {
@@ -752,10 +743,9 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	private boolean isFragment(Bundle b) {
-		return padmin != null
-				&& padmin.getBundleType(b) == org.osgi.service.packageadmin.PackageAdmin.BUNDLE_TYPE_FRAGMENT;
+		BundleRevision rev = b.adapt(BundleRevision.class);
+		return (rev != null) && ((rev.getTypes() & BundleRevision.TYPE_FRAGMENT) != 0);
 	}
 
 	public void deactivate() throws Exception {
