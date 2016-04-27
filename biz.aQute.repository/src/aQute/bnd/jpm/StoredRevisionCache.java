@@ -1,6 +1,7 @@
 package aQute.bnd.jpm;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -97,6 +98,8 @@ public class StoredRevisionCache {
 			Download d = null;
 			try {
 				d = doDownload(url);
+				if (d == null)
+					continue;
 
 				if (!Arrays.equals(sha, d.sha))
 					throw new Exception("Shas did not match (expected)" + Hex.toHexString(sha) + " (downloaded)" + d.tmp
@@ -125,6 +128,7 @@ public class StoredRevisionCache {
 					d.tmp.delete();
 			}
 		}
+		throw new FileNotFoundException(urls.toString());
 	}
 
 	/*
@@ -132,9 +136,12 @@ public class StoredRevisionCache {
 	 * connection uses the normal protections
 	 */
 	Download doDownload(URI url) throws Exception {
+		InputStream connect = httpc.connect(url.toURL());
+		if (connect == null)
+			return null;
+
 		Download d = new Download();
 		d.tmp = IO.createTempFile(tmpdir, "tmp", ".tmp");
-		InputStream connect = httpc.connect(url.toURL());
 
 		MessageDigest sha = MessageDigest.getInstance("SHA1");
 		MessageDigest md5 = MessageDigest.getInstance("MD5");
