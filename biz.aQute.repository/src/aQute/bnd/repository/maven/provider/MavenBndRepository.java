@@ -177,8 +177,8 @@ public class MavenBndRepository
 							}
 
 							if (instructions.sources != null) {
-								if (!NONE.equals(instructions.javadoc.path)) {
-									try (Jar jar = getSource(tool, options.context, instructions.javadoc.path);) {
+								if (!NONE.equals(instructions.sources.path)) {
+									try (Jar jar = getSource(tool, options.context, instructions.sources.path);) {
 										save(releaser, pom.getRevision(), jar, "sources");
 									}
 								}
