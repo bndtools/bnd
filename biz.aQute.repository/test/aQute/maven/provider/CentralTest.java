@@ -14,7 +14,8 @@ import junit.framework.TestCase;
 
 public class CentralTest extends TestCase {
 	private static final String	REPO_URL		= "http://repo2.maven.org/maven2/";
-	File						local		= IO.getFile("generated/local");
+	String						tmpName;
+	File						local;
 
 	MavenRemoteRepository		repo;
 	MavenRepository				storage;
@@ -23,6 +24,8 @@ public class CentralTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
+		tmpName = "generated/tmp/test/" + getName();
+		local = IO.getFile(tmpName + "/local");
 		reporter.setTrace(true);
 		Config config = new Config();
 		IO.delete(local);

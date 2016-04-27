@@ -13,15 +13,14 @@ import aQute.maven.api.Archive;
 import aQute.maven.api.Program;
 import aQute.maven.api.Release;
 import aQute.maven.api.Revision;
-import aQute.maven.provider.MavenRepository;
-import aQute.maven.provider.MavenRemoteRepository;
 import junit.framework.TestCase;
 
 public class MavenRepoTest extends TestCase {
 	File aFile = IO.getFile("testresources/empty");
 
-	File			local	= IO.getFile("generated/local");
-	File			remote	= IO.getFile("generated/remote");
+	String					tmpName;
+	File					local;
+	File					remote;
 	FakeNexus		fnx;
 	MavenRemoteRepository		repo;
 	MavenRepository	storage;
@@ -30,6 +29,9 @@ public class MavenRepoTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
+		tmpName = "generated/tmp/test/" + getName();
+		local = IO.getFile(tmpName + "/local");
+		remote = IO.getFile(tmpName + "/remote");
 		reporter.setTrace(true);
 		Config config = new Config();
 		fnx = new FakeNexus(config, remote);
