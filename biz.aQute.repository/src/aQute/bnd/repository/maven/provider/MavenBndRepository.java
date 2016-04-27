@@ -234,13 +234,13 @@ public class MavenBndRepository
 		return jar;
 	}
 
-	private Jar toJar(Processor context, String path) {
+	private Jar toJar(Processor context, String path) throws Exception {
 		if (path == null)
 			return null;
 
 		File f = context.getFile(path);
 		if (f.exists())
-			return new Jar(path);
+			return new Jar(f);
 
 		return null;
 	}
