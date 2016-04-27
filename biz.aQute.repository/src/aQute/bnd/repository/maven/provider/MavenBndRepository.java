@@ -215,19 +215,23 @@ public class MavenBndRepository
 
 	private Jar getSource(Tool tool, Processor context, String path) throws Exception {
 		Jar jar = toJar(context, path);
-		if (jar != null)
-			return jar;
-
-		return tool.doSource();
+		if (jar == null) {
+			jar = tool.doSource();
+		}
+		jar.ensureManifest();
+		tool.addClose(jar);
+		return jar;
 	}
 
 	private Jar getJavadoc(Tool tool, Processor context, String path, Map<String,String> options, boolean exports)
 			throws Exception {
 		Jar jar = toJar(context, path);
-		if (jar != null)
-			return jar;
-
-		return tool.doJavadoc(options, exports);
+		if (jar == null) {
+			jar = tool.doJavadoc(options, exports);
+		}
+		jar.ensureManifest();
+		tool.addClose(jar);
+		return jar;
 	}
 
 	private Jar toJar(Processor context, String path) {
