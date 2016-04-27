@@ -11,13 +11,13 @@ import aQute.lib.io.IO;
 import aQute.libg.cryptography.MD5;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.reporter.ReporterAdapter;
-import aQute.maven.provider.MavenRemoteRepository;
 import junit.framework.TestCase;
 
 public class RemoteRepoTest extends TestCase {
 
-	File		local	= IO.getFile("generated/local");
-	File		remote	= IO.getFile("generated/remote");
+	String					tmpName;
+	File					local;
+	File					remote;
 	FakeNexus	fnx;
 	MavenRemoteRepository	repo;
 	ReporterAdapter	reporter	= new ReporterAdapter(System.err);
@@ -25,6 +25,9 @@ public class RemoteRepoTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
+		tmpName = "generated/tmp/test/" + getName();
+		local = IO.getFile(tmpName + "/local");
+		remote = IO.getFile(tmpName + "/remote");
 		Config config = new Config();
 		fnx = new FakeNexus(config, remote);
 		fnx.start();

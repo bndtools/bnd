@@ -12,11 +12,12 @@ import aQute.maven.provider.FakeNexus;
 import junit.framework.TestCase;
 
 public class WorkspaceTest extends TestCase {
-	File	tmp		= IO.getFile("generated/tmp");
-	File	local	= IO.getFile(tmp, "local");
-	File	remote	= IO.getFile(tmp, "remote");
-	File	index	= IO.getFile(tmp, "index");
-	File	build	= IO.getFile(tmp, "workspace/cnf/build.bnd");
+	String						tmpName;
+	File						tmp;
+	File						local;
+	File						remote;
+	File						index;
+	File						build;
 
 	private MavenBndRepository	repo;
 	private FakeNexus			fnx;
@@ -25,7 +26,13 @@ public class WorkspaceTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
+		tmpName = "generated/tmp/test/" + getName();
+		tmp = IO.getFile(tmpName);
 		IO.delete(tmp);
+		local = IO.getFile(tmp, "local");
+		remote = IO.getFile(tmp, "remote");
+		index = IO.getFile(tmp, "index");
+		build = IO.getFile(tmp, "workspace/cnf/build.bnd");
 		remote.mkdirs();
 		local.mkdirs();
 
@@ -62,8 +69,8 @@ public class WorkspaceTest extends TestCase {
 
 	void config(Map<String,String> override) throws Exception {
 		Map<String,String> config = new HashMap<>();
-		config.put("local", "generated/tmp/local");
-		config.put("index", "generated/tmp/index");
+		config.put("local", tmpName + "/local");
+		config.put("index", tmpName + "/index");
 		config.put("releaseUrl", fnx.getBaseURI() + "/repo/");
 
 		if (override != null)

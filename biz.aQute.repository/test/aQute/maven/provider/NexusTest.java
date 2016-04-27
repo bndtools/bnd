@@ -8,18 +8,20 @@ import aQute.bnd.url.BasicAuthentication;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
-import aQute.maven.provider.MavenRemoteRepository;
 import junit.framework.TestCase;
 
 public class NexusTest extends TestCase {
 
-	File		local	= IO.getFile("generated/local");
+	String					tmpName;
+	File					local;
 	MavenRemoteRepository	repo;
 	ReporterAdapter	reporter	= new ReporterAdapter(System.err);
 
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
+		tmpName = "generated/tmp/test/" + getName();
+		local = IO.getFile(tmpName + "/local");
 		reporter.setTrace(true);
 		Config config = new Config();
 		IO.delete(local);

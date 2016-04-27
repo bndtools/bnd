@@ -32,7 +32,7 @@ public class TestWrapper extends TestCase {
 	private File tmp;
 
 	public void setUp() throws Exception {
-		tmp = IO.getFile("generated/test/" + getName());
+		tmp = IO.getFile("generated/tmp/test/" + getName());
 		System.setProperty("jpm4j.in.test", "true");
 		tmp.mkdirs();
 		IO.delete(tmp);

@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.jar.Manifest;
 
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
@@ -58,16 +57,9 @@ public class Tool extends Processor {
 		return sources.isDirectory();
 	}
 
-	private Jar emptyJar() {
-		Jar jar = new Jar("empty");
-		jar.setManifest(new Manifest());
-		addClose(jar);
-		return jar;
-	}
-
 	public Jar doJavadoc(Map<String,String> options, boolean exportsOnly) throws Exception {
 		if (!hasSources())
-			return emptyJar();
+			return new Jar("javadoc");
 
 		javadoc.mkdirs();
 		List<String> args = new ArrayList<>();
@@ -153,10 +145,7 @@ public class Tool extends Processor {
 		if (result != 0) {
 			warning("Error during execution of javadoc command: %s\n******************\n%s", out, err);
 		}
-		Jar jar = new Jar(javadoc);
-		jar.setManifest(new Manifest());
-		addClose(jar);
-		return jar;
+		return new Jar(javadoc);
 	}
 
 	private String fileName(File f) {
@@ -207,12 +196,9 @@ public class Tool extends Processor {
 
 	public Jar doSource() throws IOException {
 		if (!hasSources())
-			return emptyJar();
+			return new Jar("sources");
 
-		Jar jar = new Jar(sources);
-		jar.setManifest(new Manifest());
-		addClose(jar);
-		return jar;
+		return new Jar(sources);
 	}
 
 	public void close() throws IOException {

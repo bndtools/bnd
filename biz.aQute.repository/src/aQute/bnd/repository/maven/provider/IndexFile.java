@@ -339,7 +339,7 @@ class IndexFile {
 	}
 
 	private void saveIndexFile() throws Exception {
-		File tmp = new File(indexFile.getParentFile(), indexFile.getName() + ".tmp");
+		File tmp = File.createTempFile("index", null);
 		try (PrintWriter pw = new PrintWriter(tmp);) {
 			List<Archive> archives = new ArrayList<>(this.descriptors.keySet());
 			Collections.sort(archives);

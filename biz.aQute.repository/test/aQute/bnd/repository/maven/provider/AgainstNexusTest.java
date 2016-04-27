@@ -22,10 +22,11 @@ import junit.framework.TestCase;
 
 public class AgainstNexusTest extends TestCase {
 	private static final String	HTTP_LOCALHOST_8081	= "http://localhost:8081/nexus/content/repositories/snapshots/";
-	File	tmp		= IO.getFile("generated/tmp");
-	File	local	= IO.getFile(tmp, "local");
-	File	remote	= IO.getFile(tmp, "remote");
-	File	index	= IO.getFile(tmp, "index");
+	String						tmpName;
+	File						tmp;
+	File						local;
+	File						remote;
+	File						index;
 	boolean	skip	= false;
 
 	private MavenBndRepository repo;
@@ -33,7 +34,12 @@ public class AgainstNexusTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
+		tmpName = "generated/tmp/test/" + getName();
+		tmp = IO.getFile(tmpName);
 		IO.delete(tmp);
+		local = IO.getFile(tmp, "local");
+		remote = IO.getFile(tmp, "remote");
+		index = IO.getFile(tmp, "index");
 		local.mkdirs();
 		IO.copy(IO.getFile("testresources/nexus/index.maven"), index);
 		Config config = new HttpTestServer.Config();
@@ -77,8 +83,8 @@ public class AgainstNexusTest extends TestCase {
 	void config(Map<String,String> config) throws Exception {
 		if (config == null)
 			config = new HashMap<>();
-		config.put("local", "generated/tmp/local");
-		config.put("index", "generated/tmp/index");
+		config.put("local", tmpName + "/local");
+		config.put("index", tmpName + "/index");
 		config.put("releaseUrl", HTTP_LOCALHOST_8081);
 
 		Processor reporter = new Processor();

@@ -19,7 +19,7 @@ public class TestFixedIndexedRepo extends TestCase {
 	private File tmp;
 
 	public void setUp() {
-		tmp = IO.getFile("generated/tmp/" + getName());
+		tmp = IO.getFile("generated/tmp/test/" + getName());
 		IO.delete(tmp);
 		tmp.mkdirs();
 	}

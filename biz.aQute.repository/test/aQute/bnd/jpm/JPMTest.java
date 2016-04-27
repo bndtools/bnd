@@ -23,7 +23,7 @@ public class JPMTest extends TestCase {
 	public void setUp() {
 		System.setProperty("jpm4j.in.test", "true");
 
-		tmp = IO.getFile("generated/tmp");
+		tmp = IO.getFile("generated/tmp/test/" + getName());
 		IO.delete(tmp);
 		tmp.mkdirs();
 
