@@ -22,6 +22,9 @@ Bundle-Description: The bnd gradle plugin.
   @${repo;biz.aQute.repository;latest}!/!META-INF/*, \
   embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}
 
+# Use groovydoc task generated doc for -javadoc.jar
+-maven-release: javadoc;path=${target}/docs/groovydoc
+
 #
 # The groovy compiler must be run from the gradle build
 #

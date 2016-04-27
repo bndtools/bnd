@@ -46,3 +46,7 @@ test {
         }
     }
 }
+
+release {
+  dependsOn groovydoc
+}
