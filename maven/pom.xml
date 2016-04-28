@@ -280,16 +280,4 @@
             </plugin>
 		</plugins>
 	</build>
-    <distributionManagement>
-        <repository>
-            <id>Release</id>
-            <name>Bnd Release Repository</name>
-            <url>file:dist/bundles</url>
-        </repository>
-        <snapshotRepository>
-            <id>Snapshot</id>
-            <name>Bnd Snapshot Repository</name>
-            <url>file:dist/bundles</url>
-        </snapshotRepository>
-    </distributionManagement>
 </project>

@@ -15,7 +15,7 @@ install:
 
 build_script:
   - gradlew.bat -Dmaven.repo.local=maven/target/m2 --continue
-  - mvn -f maven --batch-mode --quiet -Dmaven.repo.local=maven/target/m2 deploy
+  - mvn -f maven --batch-mode --quiet -Dmaven.repo.local=maven/target/m2 -DaltDeploymentRepository=dist::default::file:dist/bundles/ deploy
 
 on_success:
   - git status
