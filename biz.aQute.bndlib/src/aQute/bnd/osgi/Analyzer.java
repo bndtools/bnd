@@ -1713,7 +1713,9 @@ public class Analyzer extends Processor {
 					exportVersion = cleanupVersion(exportVersion);
 
 					importRange = applyVersionPolicy(exportVersion, importRange, provider);
-					importAttributes.put(VERSION_ATTRIBUTE, importRange);
+					if(!importRange.trim().isEmpty()) {
+						importAttributes.put(VERSION_ATTRIBUTE, importRange);
+					}
 				}
 
 				//
