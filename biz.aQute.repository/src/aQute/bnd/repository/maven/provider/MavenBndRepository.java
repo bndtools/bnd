@@ -282,8 +282,6 @@ public class MavenBndRepository
 				release.type = ReleaseType.LOCAL;
 			}
 		}
-		if (attrs == null)
-			attrs = new Attrs();
 
 		Attrs javadoc = p.remove("javadoc");
 		if (javadoc != null) {
