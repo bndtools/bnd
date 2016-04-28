@@ -11,8 +11,7 @@ install:
   - mvn --version
 
 script:
-  - ./gradlew -Dmaven.repo.local=maven/target/m2 --continue
-  - mvn -f maven --batch-mode --quiet -Dmaven.repo.local=maven/target/m2 -DaltDeploymentRepository=dist::default::file:dist/bundles/ deploy
+  - ./gradlew -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
 
 after_success:
   - git status
