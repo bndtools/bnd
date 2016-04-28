@@ -33,9 +33,9 @@ version of the module.
 # Building the Maven Plugins
 
 See the [.travis.yml][4] file in the root of the repo for the `script` section
-detailing the commands to build the Maven plugins. After using `./gradlew` to
-build the Bnd bundles, you will need to install some of the bundles into the
-`maven/target/m2` repo and then build the Maven plugins against that repo.
+detailing the commands to build the Maven plugins. You must first run `./gradlew`
+to build the Bnd bundles and install them in your local maven repo. You can then
+run Maven to build the Maven plugins.
 
 [1]: bnd-maven-plugin/README.md
 [2]: bnd-indexer-maven-plugin/README.md
