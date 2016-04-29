@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
+import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,7 +60,10 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 	}
 
 	public void analyzeResource(Resource resource, List<Capability> caps, List<Requirement> reqs) throws Exception {
-		String header = resource.getManifest().getMainAttributes().getValue(ComponentConstants.SERVICE_COMPONENT);
+		String header = null;
+		Manifest manifest = resource.getManifest();
+		if (manifest != null)
+			header = manifest.getMainAttributes().getValue(ComponentConstants.SERVICE_COMPONENT);
 		if (header == null)
 			return;
 

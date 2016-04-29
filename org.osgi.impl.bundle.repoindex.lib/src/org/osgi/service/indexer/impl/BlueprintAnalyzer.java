@@ -1,6 +1,7 @@
 package org.osgi.service.indexer.impl;
 
 import java.util.List;
+import java.util.jar.Manifest;
 
 import org.osgi.service.indexer.Builder;
 import org.osgi.service.indexer.Capability;
@@ -25,7 +26,10 @@ public class BlueprintAnalyzer implements ResourceAnalyzer {
 			throws Exception {
 		boolean blueprintEnabled = false;
 
-		String header = resource.getManifest().getMainAttributes().getValue(BUNDLE_BLUEPRINT_HEADER);
+		String header = null;
+		Manifest manifest = resource.getManifest();
+		if (manifest != null)
+			header = manifest.getMainAttributes().getValue(BUNDLE_BLUEPRINT_HEADER);
 		if (header != null) {
 			blueprintEnabled = true;
 		} else {
