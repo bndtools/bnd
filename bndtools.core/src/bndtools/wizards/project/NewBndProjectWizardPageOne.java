@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.bndtools.api.BndtoolsConstants;
-import org.bndtools.api.ProjectLayout;
 import org.bndtools.api.ProjectPaths;
 import org.bndtools.templating.Template;
 import org.eclipse.core.filesystem.URIUtil;
@@ -44,7 +43,6 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
     private final ProjectNameGroup nameGroup = new ProjectNameGroup();
     private final ProjectLocationGroup locationGroup = new ProjectLocationGroup("Location");
-    private final ProjectLayoutGroup layoutGroup = new ProjectLayoutGroup("Project Layout");
     private Template template;
 
     NewBndProjectWizardPageOne() {
@@ -124,9 +122,6 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
         Control jreControl = createJRESelectionControl(composite);
         jreControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        Control layoutControl = layoutGroup.createControl(composite);
-        layoutControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
         Control workingSetControl = createWorkingSetControl(composite);
         workingSetControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -154,7 +149,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
     public IClasspathEntry[] getSourceClasspathEntries() {
         IPath projectPath = new Path(getProjectName()).makeAbsolute();
 
-        ProjectPaths projectPaths = ProjectPaths.get(layoutGroup.getProjectLayout());
+        ProjectPaths projectPaths = ProjectPaths.DEFAULT;
 
         List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(2);
         newEntries.add(JavaCore.newSourceEntry(projectPath.append(projectPaths.getSrc()), null, projectPath.append(projectPaths.getBin())));
@@ -192,11 +187,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
     @Override
     public IPath getOutputLocation() {
-        return new Path(getProjectName()).makeAbsolute().append(ProjectPaths.get(layoutGroup.getProjectLayout()).getBin());
-    }
-
-    public ProjectLayout getProjectLayout() {
-        return layoutGroup.getProjectLayout();
+        return new Path(getProjectName()).makeAbsolute().append(ProjectPaths.DEFAULT.getBin());
     }
 
     public void setTemplate(Template template) {

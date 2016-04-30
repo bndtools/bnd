@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.bndtools.api.ProjectLayout;
-import org.bndtools.api.ProjectPaths;
 import org.bndtools.core.ui.wizards.shared.BuiltInTemplate;
 import org.bndtools.core.ui.wizards.shared.ISkippableWizardPage;
 import org.bndtools.core.ui.wizards.shared.TemplateParamsWizardPage;
@@ -95,28 +93,22 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
     @Override
     protected Map<String,String> getProjectTemplateParams() {
+        // Project Name
         Map<ProjectTemplateParam,String> params = new HashMap<>();
         params.put(ProjectTemplateParam.PROJECT_NAME, pageOne.getProjectName());
+
+        // Package Name
         String packageName = pageOne.getPackageName();
         params.put(ProjectTemplateParam.BASE_PACKAGE_NAME, packageName);
+
+        // Package Dir
         String packageDir = packageName.replace('.', '/');
         params.put(ProjectTemplateParam.BASE_PACKAGE_DIR, packageDir);
 
-        ProjectPaths bndPaths = ProjectPaths.get(ProjectLayout.BND);
-        ProjectPaths projectPaths = ProjectPaths.get(pageOne.getProjectLayout());
+        // Version
+        params.put(ProjectTemplateParam.VERSION, DEFAULT_BUNDLE_VERSION);
 
-        String projectTargetDir = projectPaths.getTargetDir();
-        if (!bndPaths.getTargetDir().equals(projectTargetDir)) {
-            params.put(ProjectTemplateParam.TARGET_DIR, projectTargetDir);
-        }
-
-        if (ProjectLayout.MAVEN == projectPaths.getLayout()) {
-            params.put(ProjectTemplateParam.VERSION, "1.0.0.SNAPSHOT");
-            params.put(ProjectTemplateParam.VERSION_OUTPUTMASK, "${@bsn}-${version;===S;${@version}}.jar");
-        } else {
-            params.put(ProjectTemplateParam.VERSION, DEFAULT_BUNDLE_VERSION);
-        }
-
+        // Source Folders
         IJavaProject javaProject = pageTwo.getJavaProject();
         Map<String,String> sourceOutputLocations = JavaProjectUtils.getSourceOutputLocations(javaProject);
         int nr = 1;
