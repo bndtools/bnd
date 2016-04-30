@@ -44,7 +44,7 @@ public class ProjectLayoutGroup {
         };
 
         for (ProjectLayout projectLayout : ProjectLayout.values()) {
-            ProjectPaths projectPaths = ProjectPaths.get(projectLayout);
+            ProjectPaths projectPaths = ProjectPaths.DEFAULT;
             final Button radioButton = new Button(group, SWT.RADIO);
             radioButton.setText(projectPaths.getTitle());
             radioButton.setData(projectLayout);
