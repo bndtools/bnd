@@ -193,7 +193,7 @@ public class TestWrapper extends TestCase {
 
 	public void testAugment2() throws Exception {
 
-		File cache = new File("cache");
+		File cache = new File("generated/tmp/test/cache");
 		IO.deleteWithException(cache);
 
 		Workspace ws = Workspace.getWorkspace(IO.getFile("testdata/ws"));

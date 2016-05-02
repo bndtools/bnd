@@ -1,5 +1,7 @@
 package aQute.launcher.plugin;
 
+import java.io.File;
+
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.lib.io.IO;
@@ -8,16 +10,18 @@ import junit.framework.TestCase;
 public class ProjectLaunchImplTest extends TestCase {
 
 	private Workspace ws;
+	private File		tmp;
 
 	protected void setUp() throws Exception {
-		ws = new Workspace(IO.getFile("test/ws"));
+		tmp = new File("generated/tmp/test/" + getName());
+		tmp.mkdirs();
+		IO.copy(IO.getFile("test/ws"), tmp);
+		ws = new Workspace(tmp);
 	}
 
 	protected void tearDown() throws Exception {
-		for (Project project : ws.getAllProjects()) {
-			project.clean();
-		}
-		IO.delete(ws.getFile("cnf/cache"));
+		ws.close();
+		IO.delete(tmp);
 	}
 
 	public void testParseSystemCapabilities() throws Exception {

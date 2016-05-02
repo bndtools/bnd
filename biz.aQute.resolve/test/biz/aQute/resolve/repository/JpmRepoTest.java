@@ -33,11 +33,12 @@ import test.lib.NullLogService;
 		"restriction", "deprecation"
 })
 public class JpmRepoTest extends TestCase {
-	File							tmp	= new File("tmp");
+	File							tmp;
 	private Workspace				ws;
 	private static final LogService	log	= new NullLogService();
 
 	public void setUp() throws Exception {
+		tmp = new File("generated/tmp/test/" + getName());
 		tmp.mkdirs();
 		IO.copy(IO.getFile("testdata/ws"), tmp);
 		ws = new Workspace(tmp);

@@ -2,10 +2,10 @@
 \
     aQute.bnd.jpm.Repository; \
         name=JPM; \
-        location=cache/shas; \
+        location="generated/tmp/test/cache/shas"; \
         index=${workspace}/cnf/jpm4j.json, \
 \
 	aQute.bnd.deployer.repository.wrapper.Plugin; \
-		location="cache/wrapper"; \
+		location="generated/tmp/test/cache/wrapper"; \
 		augments=augments.properties; \
 		reset.cache=true
