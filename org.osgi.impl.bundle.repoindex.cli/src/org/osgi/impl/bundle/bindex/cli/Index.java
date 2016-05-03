@@ -21,12 +21,15 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URL;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.jar.Manifest;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -58,7 +61,6 @@ public class Index {
 	 */
 	public static void main(String args[]) {
 		try {
-
 			// Configure PojoSR
 			Map<String,Object> pojoSrConfig = new HashMap<String,Object>();
 			pojoSrConfig.put(PojoServiceRegistryFactory.BUNDLE_DESCRIPTORS, new ClasspathScanner());
@@ -106,6 +108,7 @@ public class Index {
 				}
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.err.println(e.getMessage());
 			System.exit(1);
 		}
@@ -222,8 +225,22 @@ public class Index {
 		return props;
 	}
 
-	public static void printCopyright(PrintStream out) {
-		out.println("Bindex2 | Resource Indexer v1.0");
-		out.println("(c) 2012 OSGi, All Rights Reserved");
+	public static void printCopyright(PrintStream out) throws IOException {
+		String version = "";
+		String copyright = "(c) OSGi, All Rights Reserved";
+		Enumeration<URL> urls = Index.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
+		while (urls.hasMoreElements()) {
+			URL url = urls.nextElement();
+			Manifest m = new Manifest(url.openStream());
+			String bsn = m.getMainAttributes().getValue("Bundle-SymbolicName");
+			if (bsn != null && bsn.equals("org.osgi.impl.bundle.repoindex.cli")) {
+				version = m.getMainAttributes().getValue("Bundle-Version");
+				copyright = m.getMainAttributes().getValue("Bundle-Copyright");
+				break;
+			}
+		}
+
+		out.println("RepoIndex | Resource Indexer v" + version);
+		out.println(copyright);
 	}
 }
