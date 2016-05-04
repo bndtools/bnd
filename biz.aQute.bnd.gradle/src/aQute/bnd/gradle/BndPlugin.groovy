@@ -225,22 +225,33 @@ public class BndPlugin implements Plugin<Project> {
         description 'Assemble the project bundles.'
         deleteAllActions() /* Replace the standard task actions */
         enabled !bndProject.isNoBundles()
+        ext.projectDirInputsExcludes = [] /* Additional excludes for projectDir inputs */
         if (enabled) {
-          /* bnd can include any class on the buildpath */
-          inputs.files compilePath().collect {
-            it.file ? it : fileTree(it)
-          }
           /* all other files in the project like bnd and resources */
-          inputs.files fileTree(projectDir) {
-            exclude sourceSets.main.java.srcDirs.collect { relativePath(it) }
-            exclude sourceSets.test.java.srcDirs.collect { relativePath(it) }
-            exclude sourceSets.test.output.files.collect { relativePath(it) }
-            exclude relativePath(buildDir)
+          inputs.files {
+            fileTree(projectDir) { tree ->
+              sourceSets.each { sourceSet -> /* exclude sourceSet dirs */
+                sourceSet.allSource.srcDirs.each {
+                  tree.exclude project.relativePath(it)
+                }
+                sourceSet.output.each {
+                  tree.exclude project.relativePath(it)
+                }
+              }
+              tree.exclude project.relativePath(buildDir) /* exclude buildDir */
+              tree.exclude projectDirInputsExcludes /* user specified excludes */
+            }
+          }
+          /* bnd can include any class on the buildpath */
+          def compileConfiguration = configurations.findByName('compileClasspath') ?: configurations.compile
+          inputs.files {
+            compileConfiguration.files.collect {
+              it.directory ? fileTree(it) : it
+            }
           }
           /* project dependencies' artifacts should trigger jar task */
           inputs.files {
-            def configuration = configurations.findByName('compileClasspath') ?: configurations.compile
-            configuration.dependencies.withType(ProjectDependency.class).collect {
+            compileConfiguration.dependencies.withType(ProjectDependency.class).collect {
               it.dependencyProject.jar
             }
           }
