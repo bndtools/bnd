@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -103,37 +104,39 @@ public class Project extends Processor {
 		Parameters installRepositories;
 	}
 
-	final static String				DEFAULT_ACTIONS			= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
-	public final static String		BNDFILE					= "bnd.bnd";
-	public final static String		BNDCNF					= "cnf";
-	public final static String		SHA_256					= "SHA-256";
+	final static String				DEFAULT_ACTIONS					= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
+	public final static String		BNDFILE							= "bnd.bnd";
+	public final static String		BNDCNF							= "cnf";
+	public final static String		SHA_256							= "SHA-256";
 	final Workspace					workspace;
-	private final AtomicBoolean		preparedPaths			= new AtomicBoolean();
-	final Collection<Project>		dependson				= new LinkedHashSet<Project>();
-	final Collection<Container>		classpath				= new LinkedHashSet<Container>();
-	final Collection<Container>		buildpath				= new LinkedHashSet<Container>();
-	final Collection<Container>		testpath				= new LinkedHashSet<Container>();
-	final Collection<Container>		runpath					= new LinkedHashSet<Container>();
-	final Collection<Container>		runbundles				= new LinkedHashSet<Container>();
-	final Collection<Container>		runfw					= new LinkedHashSet<Container>();
+	private final AtomicBoolean		preparedPaths					= new AtomicBoolean();
+	final Collection<Project>		dependson						= new LinkedHashSet<Project>();
+	final Collection<Container>		classpath						= new LinkedHashSet<Container>();
+	final Collection<Container>		buildpath						= new LinkedHashSet<Container>();
+	final Collection<Container>		testpath						= new LinkedHashSet<Container>();
+	final Collection<Container>		runpath							= new LinkedHashSet<Container>();
+	final Collection<Container>		runbundles						= new LinkedHashSet<Container>();
+	final Collection<Container>		runfw							= new LinkedHashSet<Container>();
 	File							runstorage;
-	final Map<File,Attrs>			sourcepath				= new LinkedHashMap<File,Attrs>();
-	final Collection<File>			allsourcepath			= new LinkedHashSet<File>();
-	final Collection<Container>		bootclasspath			= new LinkedHashSet<Container>();
-	final Map<String,Version>		versionMap				= new LinkedHashMap<String,Version>();
+	final Map<File,Attrs>			sourcepath						= new LinkedHashMap<File,Attrs>();
+	final Collection<File>			allsourcepath					= new LinkedHashSet<File>();
+	final Collection<Container>		bootclasspath					= new LinkedHashSet<Container>();
+	final Map<String,Version>		versionMap						= new LinkedHashMap<String,Version>();
 	File							output;
 	File							target;
-	private final AtomicInteger		revision				= new AtomicInteger();
+	private final AtomicInteger		revision						= new AtomicInteger();
 	File							files[];
-	boolean							delayRunDependencies	= true;
-	final ProjectMessages			msgs					= ReporterMessages.base(this, ProjectMessages.class);
+	boolean							delayRunDependencies			= true;
+	final ProjectMessages			msgs							= ReporterMessages.base(this,
+			ProjectMessages.class);
 	private Properties				ide;
-	final Packages					exportedPackages		= new Packages();
-	final Packages					importedPackages		= new Packages();
-	final Packages					containedPackages		= new Packages();
-	final PackageInfo				packageInfo				= new PackageInfo(this);
+	final Packages					exportedPackages				= new Packages();
+	final Packages					importedPackages				= new Packages();
+	final Packages					containedPackages				= new Packages();
+	final PackageInfo				packageInfo						= new PackageInfo(this);
 	private Makefile				makefile;
-	private volatile RefreshData	data					= new RefreshData();
+	private volatile RefreshData	data							= new RefreshData();
+	public Map<String,Container>	unreferencedClasspathEntries	= new HashMap<>();
 
 	public Project(Workspace workspace, File unused, File buildFile) throws Exception {
 		super(workspace);
@@ -1734,6 +1737,10 @@ public class Project extends Processor {
 
 			getInfo(builder);
 
+			if (isPedantic() && !unreferencedClasspathEntries.isEmpty()) {
+				warning("Unreferenced class path entries %s", unreferencedClasspathEntries.keySet());
+			}
+
 			if (isOk()) {
 				this.files = files;
 
@@ -2574,6 +2581,7 @@ public class Project extends Processor {
 
 	public void clearClasspath() {
 		classpath.clear();
+		unreferencedClasspathEntries.clear();
 	}
 
 	public Collection<Container> getClasspath() {

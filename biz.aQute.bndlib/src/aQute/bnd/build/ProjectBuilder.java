@@ -1,6 +1,7 @@
 package aQute.bnd.build;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -23,6 +24,7 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.repository.InfoRepository;
@@ -78,15 +80,15 @@ public class ProjectBuilder extends Builder {
 				initialized = true;
 				doRequireBnd();
 				for (Container file : project.getClasspath()) {
-					addClasspath(file.getFile());
+					addClasspath(file);
 				}
 
 				for (Container file : project.getBuildpath()) {
-					addClasspath(file.getFile());
+					addClasspath(file);
 				}
 
 				for (Container file : project.getBootclasspath()) {
-					addClasspath(file.getFile());
+					addClasspath(file);
 				}
 
 				for (File file : project.getAllsourcepath()) {
@@ -97,6 +99,12 @@ public class ProjectBuilder extends Builder {
 		} catch (Exception e) {
 			msgs.Unexpected_Error_("ProjectBuilder init", e);
 		}
+	}
+
+	public void addClasspath(Container c) throws IOException {
+		Jar jar = new Jar(c.getFile());
+		super.addClasspath(jar);
+		project.unreferencedClasspathEntries.put(jar.getName(), c);
 	}
 
 	@Override
@@ -536,6 +544,7 @@ public class ProjectBuilder extends Builder {
 		project.containedPackages.clear();
 
 		Jar[] jars = super.builds();
+
 		if (isOk()) {
 			for (Run export : getExportedRuns()) {
 				addClose(export);
@@ -602,6 +611,9 @@ public class ProjectBuilder extends Builder {
 		project.importedPackages.putAll(builder.getImports());
 		project.containedPackages.putAll(builder.getContained());
 
+		xrefClasspath(project.unreferencedClasspathEntries, builder.getImports());
+		xrefClasspath(project.unreferencedClasspathEntries, builder.getContained());
+
 		//
 		// For the workspace repo, we maintain a map
 		// of bsn -> version for this project. So here
@@ -612,6 +624,15 @@ public class ProjectBuilder extends Builder {
 		Version version = new Version(cleanupVersion(builder.getVersion()));
 		project.versionMap.put(builder.getBsn(), version);
 		super.doneBuild(builder);
+	}
+
+	private void xrefClasspath(Map<String,Container> unreferencedClasspathEntries, Packages packages) {
+		for (Attrs attrs : packages.values()) {
+			String from = attrs.get(Constants.FROM_DIRECTIVE);
+			if (from != null) {
+				unreferencedClasspathEntries.remove(from);
+			}
+		}
 	}
 
 	/**
