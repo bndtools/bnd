@@ -1,3 +1,5 @@
+Bundle-Copyright	(c) ${tstamp;YYYY}, OSGi Alliance All Rights Reserved
+
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
@@ -45,7 +47,9 @@ Private-Package: \
 	${osgi-pkgs}
 
 # Main headers
-Bundle-Name: BIndex2 CLI
-Bundle-Description: BIndex2: Repository Index Generator (Standalone)
+Bundle-Name: RepoIndex CLI
+Bundle-Description: RepoIndex: Repository Index Generator (Standalone)
 Main-Class: org.osgi.impl.bundle.bindex.cli.Index
 Bundle-Activator: org.osgi.service.indexer.osgi.Activator
+JPM-Command: repoindex
+
