@@ -162,8 +162,13 @@ public class RepoIndex implements ResourceIndexer {
 			}
 
 			pw.print(Schema.XML_PROCESSING_INSTRUCTION);
-			Tag repoTag = new Tag(Schema.ELEM_REPOSITORY);
+			String stylesheet = config.get(STYLESHEET);
+			if (stylesheet != null) {
+				indent.print(pw);
+				pw.printf(Schema.XML_STYLESHEET_INSTRUCTION, stylesheet, "text/xsl");
+			}
 
+			Tag repoTag = new Tag(Schema.ELEM_REPOSITORY);
 			String repoName = config.get(REPOSITORY_NAME);
 			if (repoName == null)
 				repoName = REPOSITORYNAME_DEFAULT;
