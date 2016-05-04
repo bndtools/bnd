@@ -227,7 +227,7 @@ public class Index {
 
 	public static void printCopyright(PrintStream out) throws IOException {
 		String version = "";
-		String copyright = "(c) OSGi, All Rights Reserved";
+		String copyright = "";
 		Enumeration<URL> urls = Index.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
 		while (urls.hasMoreElements()) {
 			URL url = urls.nextElement();
