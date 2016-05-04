@@ -227,8 +227,11 @@ public class BndPlugin implements Plugin<Project> {
         enabled !bndProject.isNoBundles()
         if (enabled) {
           /* bnd can include any class on the buildpath */
-          inputs.files compilePath().collect {
-            it.file ? it : fileTree(it)
+          def compileConfiguration = configurations.findByName('compileClasspath') ?: configurations.compile
+          inputs.files {
+            compileConfiguration.files.collect {
+              it.directory ? fileTree(it) : it
+            }
           }
           /* all other files in the project like bnd and resources */
           inputs.files fileTree(projectDir) {
@@ -239,8 +242,7 @@ public class BndPlugin implements Plugin<Project> {
           }
           /* project dependencies' artifacts should trigger jar task */
           inputs.files {
-            def configuration = configurations.findByName('compileClasspath') ?: configurations.compile
-            configuration.dependencies.withType(ProjectDependency.class).collect {
+            compileConfiguration.dependencies.withType(ProjectDependency.class).collect {
               it.dependencyProject.jar
             }
           }
