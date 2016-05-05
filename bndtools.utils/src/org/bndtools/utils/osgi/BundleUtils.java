@@ -30,6 +30,10 @@ public class BundleUtils {
     private static final String FILE_URL_PREFIX = "file:";
 
     public static final Bundle findBundle(BundleContext context, String symbolicName, VersionRange range) {
+
+        if (context == null)
+            return null;
+
         Bundle matched = null;
         Version matchedVersion = null;
         Bundle[] bundles = context.getBundles();
