@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.build.api.AbstractBuildErrorDetailsHandler;
 import org.bndtools.build.api.MarkerData;
 import org.bndtools.utils.parse.properties.LineType;
@@ -76,7 +77,7 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
                     }
                     attribs.put(PROP_SUGGESTED_VERSION, info.suggestedVersion.toString() + (qualifier != null ? '.' + qualifier : ""));
 
-                    result.add(new MarkerData(bndFile, attribs, true));
+                    result.add(new MarkerData(bndFile, attribs, true, BndtoolsConstants.MARKER_JAVA_BASELINE));
                 }
             }
         }
