@@ -77,26 +77,25 @@ import aQute.launcher.minifw.MiniFramework;
 public class Launcher implements ServiceListener {
 
 	// Use our own constant for this rather than depend on OSGi core 4.3
-	private static final String							FRAMEWORK_SYSTEM_CAPABILITIES_EXTRA	= "org.osgi.framework.system.capabilities.extra";
+	private static final String FRAMEWORK_SYSTEM_CAPABILITIES_EXTRA = "org.osgi.framework.system.capabilities.extra";
 
-	private PrintStream									out;
-	LauncherConstants									parms;
-	Framework											systemBundle;
-	volatile boolean									inrefresh;
-	private final Properties							properties;
-	private boolean										security;
-	private SimplePermissionPolicy						policy;
-	private Callable<Integer>							mainThread;
-	private final List<BundleActivator>					embedded							= new ArrayList<BundleActivator>();
-	private final Map<Bundle,Throwable>					errors								= new HashMap<Bundle,Throwable>();
-	private final Map<File,Bundle>						installedBundles					= new LinkedHashMap<File,Bundle>();
-	private File										home								= new File(
-			System.getProperty("user.home"));
-	private File										bnd									= new File(home, "bnd");
-	private List<Bundle>								wantsToBeStarted					= new ArrayList<Bundle>();
-	AtomicBoolean										active								= new AtomicBoolean();
+	private PrintStream					out;
+	LauncherConstants					parms;
+	Framework							systemBundle;
+	volatile boolean					inrefresh;
+	private final Properties			properties;
+	private boolean						security;
+	private SimplePermissionPolicy		policy;
+	private Callable<Integer>			mainThread;
+	private final List<BundleActivator>	embedded			= new ArrayList<BundleActivator>();
+	private final Map<Bundle,Throwable>	errors				= new HashMap<Bundle,Throwable>();
+	private final Map<File,Bundle>		installedBundles	= new LinkedHashMap<File,Bundle>();
+	private File						home				= new File(System.getProperty("user.home"));
+	private File						bnd					= new File(home, "bnd");
+	private List<Bundle>				wantsToBeStarted	= new ArrayList<Bundle>();
+	AtomicBoolean						active				= new AtomicBoolean();
 
-	private AtomicReference<DatagramSocket>				commsSocket							= new AtomicReference<DatagramSocket>();
+	private AtomicReference<DatagramSocket> commsSocket = new AtomicReference<DatagramSocket>();
 
 	public static void main(String[] args) {
 		try {
@@ -496,18 +495,17 @@ public class Launcher implements ServiceListener {
 	void synchronizeFiles(List<Bundle> tobestarted, long before) {
 		// Turn the bundle location paths into files
 		List<File> desired = new ArrayList<File>();
+
 		for (Object o : parms.runbundles) {
 			String s = (String) o;
 			s = toNativePath(s);
 			File file = new File(s).getAbsoluteFile();
-			if (!file.exists())
-				error("Bundle files does not exist: " + file);
-			else
-				desired.add(file);
+			desired.add(file);
 		}
 
 		// deleted = old - new
 		List<File> tobedeleted = new ArrayList<File>(installedBundles.keySet());
+
 		tobedeleted.removeAll(desired);
 
 		// updated = old /\ new
@@ -530,34 +528,40 @@ public class Launcher implements ServiceListener {
 		for (File f : tobeinstalled)
 			try {
 				trace("installing %s", f);
-				Bundle b = install(f);
-				installedBundles.put(f, b);
-				tobestarted.add(b);
+				if (f.exists()) {
+					Bundle b = install(f);
+					installedBundles.put(f, b);
+					tobestarted.add(b);
+				} else
+					error("should installing %s but file does not exist", f);
 			} catch (Exception e) {
 				error("Failed to uninstall bundle %s, exception %s", f, e);
 			}
 
 		for (File f : tobeupdated)
 			try {
-				Bundle b = installedBundles.get(f);
+				if (f.exists()) {
+					Bundle b = installedBundles.get(f);
 
-				//
-				// Ensure we only update bundles that
-				// we're modified before the properties file was modified.
-				// Otherwise we might update bundles that are still being
-				// written by bnd
-				//
-				if (f.lastModified() <= before) {
-					if (b.getLastModified() < f.lastModified()) {
-						trace("updating %s", f);
-						if (b.getState() == Bundle.ACTIVE) {
-							tobestarted.add(b);
-							b.stop();
-						}
-						b.update();
-					} else
-						trace("bundle is still current according to timestamp %s", f);
-				}
+					//
+					// Ensure we only update bundles that
+					// we're modified before the properties file was modified.
+					// Otherwise we might update bundles that are still being
+					// written by bnd
+					//
+					if (f.lastModified() <= before) {
+						if (b.getLastModified() < f.lastModified()) {
+							trace("updating %s", f);
+							if (b.getState() == Bundle.ACTIVE) {
+								tobestarted.add(b);
+								b.stop();
+							}
+							b.update();
+						} else
+							trace("bundle is still current according to timestamp %s", f);
+					}
+				} else
+					error("should update %s but file does not exist", f);
 			} catch (Exception e) {
 				error("Failed to update bundle %s, exception %s", f, e);
 			}
