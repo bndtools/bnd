@@ -461,9 +461,6 @@ public class Builder extends Analyzer {
 			String sourcePath = typeRef.getSourcePath();
 			String packagePath = packageRef.getPath();
 
-			if (dot.getDirectories().containsKey("OSGI-OPT/src/" + packageRef.binaryName))
-				continue;
-
 			boolean found = false;
 			String[] fixed = {
 					"packageinfo", "package.html", "module-info.java", "package-info.java"
