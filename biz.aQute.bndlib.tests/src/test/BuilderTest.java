@@ -56,15 +56,20 @@ public class BuilderTest extends BndTestCase {
 
 		Builder bmaker = new Builder();
 		try {
+			bmaker.addClasspath(new File("bin"));
 			bmaker.addClasspath(new File("jar/osgi.jar"));
 			bmaker.addClasspath(new File("jar/osgi-3.0.0.jar"));
 			bmaker.setSourcepath(new File[] {
 					new File("src")
 			});
 			bmaker.setProperty("-sources", "true");
-			bmaker.setProperty("Export-Package", "org.osgi.framework;-split-package:=first");
+			bmaker.setProperty("Export-Package", "org.osgi.framework;-split-package:=first, a");
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
+
+			assertNotNull(jar.getResource("OSGI-OPT/src/a/A.java"));
+			assertNotNull(jar.getResource("OSGI-OPT/src/a/B.java"));
+
 			InputStream in = jar.getResource("OSGI-OPT/src/org/osgi/framework/Bundle.java").openInputStream();
 			assertNotNull(in);
 			byte[] fw = IO.read(in);
@@ -79,14 +84,19 @@ public class BuilderTest extends BndTestCase {
 
 		Builder bmaker = new Builder();
 		try {
+			bmaker.addClasspath(new File("bin"));
 			bmaker.addClasspath(new File("jar/osgi.jar"));
 			bmaker.addClasspath(new File("jar/osgi-3.0.0.jar"));
 			bmaker.setSourcepath(new File[] {
 					new File("src")
 			});
 			bmaker.setProperty("-sources", "true");
-			bmaker.setProperty("Export-Package", "org.osgi.framework;-split-package:=merge-last");
+			bmaker.setProperty("Export-Package", "org.osgi.framework;-split-package:=merge-last, a");
 			Jar jar = bmaker.build();
+
+			assertNotNull(jar.getResource("OSGI-OPT/src/a/A.java"));
+			assertNotNull(jar.getResource("OSGI-OPT/src/a/B.java"));
+
 			assertTrue(bmaker.check("Version for package org.osgi.framework is set to different values"));
 			InputStream in = jar.getResource("OSGI-OPT/src/org/osgi/framework/Bundle.java").openInputStream();
 			assertNotNull(in);
