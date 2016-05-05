@@ -1,9 +1,12 @@
 package bndtools.wizards.workspace;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,6 +50,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.utils.ModificationLock;
 
@@ -97,7 +101,8 @@ public class WorkspacePreviewPage extends WizardPage {
                                     resourceErrors.put(entry.getKey(), String.format("Path already exists and is not a directory: %s", entry.getKey()));
                                 break;
                             case File :
-                                if (file.exists()) {
+                                if (file.exists() && !isEqualContent(file, entry.getValue().getContent())) {
+
                                     existingFiles.add(entry.getKey());
                                     if (!file.isFile())
                                         resourceErrors.put(entry.getKey(), String.format("Path already exists and is not a plain file: %s", entry.getKey()));
@@ -133,6 +138,7 @@ public class WorkspacePreviewPage extends WizardPage {
 
             SWTConcurrencyUtil.execForControl(tblOutputs, true, updateDisplayTask);
         }
+
     };
 
     private final Runnable updateDisplayTask = new Runnable() {
@@ -402,4 +408,9 @@ public class WorkspacePreviewPage extends WizardPage {
         return Collections.unmodifiableSet(checkedPaths);
     }
 
+    private boolean isEqualContent(File file, InputStream content) throws IOException {
+        byte[] a = IO.read(file);
+        byte[] b = IO.read(content);
+        return Arrays.equals(a, b);
+    }
 }

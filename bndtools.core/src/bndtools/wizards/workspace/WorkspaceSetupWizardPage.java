@@ -43,7 +43,7 @@ public class WorkspaceSetupWizardPage extends WizardPage {
 
     @Override
     public void createControl(Composite parent) {
-        setTitle("Setup Bnd/OSGi Workspace");
+        setTitle("Setup bnd Workspace");
         setDescription("Create a workspace folder with initial configuration");
         setImageDescriptor(Plugin.imageDescriptorFromPlugin("icons/bndtools-wizban.png")); //$NON-NLS-1$
 
