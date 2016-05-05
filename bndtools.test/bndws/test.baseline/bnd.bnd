@@ -1,4 +1,4 @@
-Bundle-Version: 2.3.4.${tstamp}
+Bundle-Version: 2.3.5.${tstamp}
 Export-Package: \
 	test.baseline
 
