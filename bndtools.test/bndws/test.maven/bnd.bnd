@@ -1,11 +1,10 @@
-Bundle-Version: 1.0.3.SNAPSHOT
+Bundle-Version: 1.0.0.${tstamp}`
 
 -resourceonly: true
 -includeresource: foo;literal='X'
 
 -releaserepo: Nexus
 
--groupid:               test
--pom:                   version=${versionmask;===s;${@version}}
--maven-release: 		remote
--snapshot:				RELEASE
+-pom: 					groupid	=	osgi.enroute.examples,\
+						version =	${versionmask;===;${@version}}-SNAPSHOT
+						

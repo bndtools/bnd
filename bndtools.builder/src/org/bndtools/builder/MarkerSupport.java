@@ -40,13 +40,13 @@ class MarkerSupport {
 
     boolean hasBlockingErrors(DeltaWrapper dw) {
         try {
-            if (containsError(dw, project.findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, true, IResource.DEPTH_INFINITE)))
+            if (containsError(dw, findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER)))
                 return true;
 
-            if (containsError(dw, project.findMarkers(MARKER_BND_PATH_PROBLEM, true, IResource.DEPTH_INFINITE)))
+            if (containsError(dw, findMarkers(MARKER_BND_PATH_PROBLEM)))
                 return true;
 
-            if (containsError(dw, project.findMarkers(MARKER_BND_MISSING_WORKSPACE, true, IResource.DEPTH_INFINITE)))
+            if (containsError(dw, findMarkers(MARKER_BND_MISSING_WORKSPACE)))
                 return true;
 
             return false;
@@ -54,6 +54,11 @@ class MarkerSupport {
             logger.logError("Error looking for project problem markers", e);
             return false;
         }
+    }
+
+    private IMarker[] findMarkers(String markerType) throws CoreException {
+        IMarker[] markers = project.findMarkers(markerType, false, IResource.DEPTH_INFINITE);
+        return markers;
     }
 
     void setMarkers(Processor model, String markerType) throws Exception {
@@ -122,7 +127,7 @@ class MarkerSupport {
         }
     }
 
-    private static boolean containsError(DeltaWrapper dw, IMarker[] markers) {
+    private static boolean containsError(DeltaWrapper dw, IMarker[] markers) throws CoreException {
         if (markers != null)
             for (IMarker marker : markers) {
 
@@ -137,7 +142,8 @@ class MarkerSupport {
 
                     if (dw.isTestBin(marker.getResource()))
                         continue;
-
+                    System.out.println(marker.getType());
+                    System.out.println(marker.getAttributes().values());
                     return true;
                 }
             }

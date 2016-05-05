@@ -111,18 +111,20 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 
                 // Find in package-info.java
                 IPackageFragment pkg = javaProject.findPackageFragment(pkgPath);
-                ICompilationUnit pkgInfoJava = pkg.getCompilationUnit(PACKAGEINFOJAVA);
-                if (pkgInfoJava != null && pkgInfoJava.exists()) {
-                    ISourceRange range = findPackageInfoJavaVersionLocation(baselineInfo.packageName, pkgInfoJava);
+                if (pkg != null) {
+                    ICompilationUnit pkgInfoJava = pkg.getCompilationUnit(PACKAGEINFOJAVA);
+                    if (pkgInfoJava != null && pkgInfoJava.exists()) {
+                        ISourceRange range = findPackageInfoJavaVersionLocation(baselineInfo.packageName, pkgInfoJava);
 
-                    Map<String,Object> attribs = new HashMap<String,Object>();
-                    attribs.put(IMarker.MESSAGE, message.trim());
-                    attribs.put(IJavaModelMarker.ID, 8088);
-                    attribs.put(PROP_SUGGESTED_VERSION, baselineInfo.suggestedVersion.toString());
-                    if (range != null) {
-                        attribs.put(IMarker.CHAR_START, range.getOffset());
-                        attribs.put(IMarker.CHAR_END, range.getOffset() + range.getLength());
-                        markers.add(new MarkerData(pkgInfoJava.getResource(), attribs, true, BndtoolsConstants.MARKER_JAVA_BASELINE));
+                        Map<String,Object> attribs = new HashMap<String,Object>();
+                        attribs.put(IMarker.MESSAGE, message.trim());
+                        attribs.put(IJavaModelMarker.ID, 8088);
+                        attribs.put(PROP_SUGGESTED_VERSION, baselineInfo.suggestedVersion.toString());
+                        if (range != null) {
+                            attribs.put(IMarker.CHAR_START, range.getOffset());
+                            attribs.put(IMarker.CHAR_END, range.getOffset() + range.getLength());
+                            markers.add(new MarkerData(pkgInfoJava.getResource(), attribs, true, BndtoolsConstants.MARKER_JAVA_BASELINE));
+                        }
                     }
                 }
             }
