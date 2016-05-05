@@ -461,6 +461,9 @@ public class Builder extends Analyzer {
 			String sourcePath = typeRef.getSourcePath();
 			String packagePath = packageRef.getPath();
 
+			if (dot.getDirectories().containsKey("OSGI-OPT/src/" + packageRef.binaryName))
+				continue;
+
 			boolean found = false;
 			String[] fixed = {
 					"packageinfo", "package.html", "module-info.java", "package-info.java"
@@ -487,19 +490,6 @@ public class Builder extends Analyzer {
 					if (packageRef.isDefaultPackage())
 						System.err.println("Duh?");
 					dot.putResource("OSGI-OPT/src/" + sourcePath, new FileResource(f));
-				}
-			}
-			if (!found) {
-				for (Jar jar : getClasspath()) {
-					Resource resource = jar.getResource(sourcePath);
-					if (resource != null) {
-						dot.putResource("OSGI-OPT/src/" + sourcePath, resource);
-					} else {
-						resource = jar.getResource("OSGI-OPT/src/" + sourcePath);
-						if (resource != null) {
-							dot.putResource("OSGI-OPT/src/" + sourcePath, resource);
-						}
-					}
 				}
 			}
 			if (getSourcePath().isEmpty())
@@ -726,6 +716,8 @@ public class Builder extends Analyzer {
 	private void copy(Jar dest, Jar srce, String path, boolean overwrite) {
 		trace("copy d=" + dest + " s=" + srce + " p=" + path);
 		dest.copy(srce, path, overwrite);
+		if (hasSources())
+			dest.copy(srce, "OSGI-OPT/src/" + path, overwrite);
 
 		// bnd.info sources must be preprocessed
 		String bndInfoPath = path + "/bnd.info";

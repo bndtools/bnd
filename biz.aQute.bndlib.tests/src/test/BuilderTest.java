@@ -3,6 +3,7 @@ package test;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,6 +42,61 @@ import aQute.service.reporter.Report.Location;
 @SuppressWarnings("resource")
 public class BuilderTest extends BndTestCase {
 
+	/**
+	 * In the bnd file for bndlib, we include DS annotations 1.3 and osgi.cmpn 5
+	 * (which includes DS annotations 1.2) on the -buildpath. We use a
+	 * -split-package directive to select the first package (DS annotations 1.3)
+	 * for the bundle. However during -sources: true processing, bnd ignores the
+	 * -split-package directive and includes the sources from all the -buildpath
+	 * entries. The means that the DS annotations 1.2 source, coming later in
+	 * the -buildpath, overlays the DS annotations 1.3 source. The result is a
+	 * mish-mash of DS annotations 1.2 and 1.3 source in OSGI-OPT/src.
+	 */
+	public static void testSplitSourcesFirst() throws Exception {
+
+		Builder bmaker = new Builder();
+		try {
+			bmaker.addClasspath(new File("jar/osgi.jar"));
+			bmaker.addClasspath(new File("jar/osgi-3.0.0.jar"));
+			bmaker.setSourcepath(new File[] {
+					new File("src")
+			});
+			bmaker.setProperty("-sources", "true");
+			bmaker.setProperty("Export-Package", "org.osgi.framework;-split-package:=first");
+			Jar jar = bmaker.build();
+			assertTrue(bmaker.check());
+			InputStream in = jar.getResource("OSGI-OPT/src/org/osgi/framework/Bundle.java").openInputStream();
+			assertNotNull(in);
+			byte[] fw = IO.read(in);
+			assertEquals(39173, fw.length);
+		} finally {
+			bmaker.close();
+		}
+
+	}
+
+	public static void testSplitSourcesMergeLast() throws Exception {
+
+		Builder bmaker = new Builder();
+		try {
+			bmaker.addClasspath(new File("jar/osgi.jar"));
+			bmaker.addClasspath(new File("jar/osgi-3.0.0.jar"));
+			bmaker.setSourcepath(new File[] {
+					new File("src")
+			});
+			bmaker.setProperty("-sources", "true");
+			bmaker.setProperty("Export-Package", "org.osgi.framework;-split-package:=merge-last");
+			Jar jar = bmaker.build();
+			assertTrue(bmaker.check("Version for package org.osgi.framework is set to different values"));
+			InputStream in = jar.getResource("OSGI-OPT/src/org/osgi/framework/Bundle.java").openInputStream();
+			assertNotNull(in);
+			byte[] fw = IO.read(in);
+			assertEquals(25783, fw.length);
+		} finally {
+			bmaker.close();
+		}
+
+	}
 	/**
 	 * #1017 Wrong import version range being generated On one project I depend
 	 * on bundle A and bundle B. Both only export packages in version 1.0. No

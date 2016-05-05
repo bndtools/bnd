@@ -203,9 +203,15 @@ public class Jar implements Closeable {
 
 		for (Map.Entry<String,Resource> entry : directory.entrySet()) {
 			String key = entry.getKey();
-			if (!key.endsWith(".java")) {
-				duplicates |= putResource(key, entry.getValue(), overwrite);
-			}
+
+			//
+			// Previous version did not copy JAVA files but
+			// I think this is very old (everybody seems to separate the
+			// sources from the binaries nowadays) and it is a fix
+			// on the wrong level. Lets see if someone whines.
+			//
+
+			duplicates |= putResource(key, entry.getValue(), overwrite);
 		}
 		return duplicates;
 	}
