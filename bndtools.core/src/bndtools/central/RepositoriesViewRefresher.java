@@ -111,7 +111,6 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
                             synchronized (RepositoriesViewRefresher.this) {
                                 busy = false;
                                 if (redo) {
-                                    System.out.println("Found redo ");
                                     refreshRepositories(null);
                                 }
                             }

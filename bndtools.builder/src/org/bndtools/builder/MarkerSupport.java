@@ -127,7 +127,7 @@ class MarkerSupport {
         }
     }
 
-    private static boolean containsError(DeltaWrapper dw, IMarker[] markers) throws CoreException {
+    private static boolean containsError(DeltaWrapper dw, IMarker[] markers) {
         if (markers != null)
             for (IMarker marker : markers) {
 
@@ -142,8 +142,6 @@ class MarkerSupport {
 
                     if (dw.isTestBin(marker.getResource()))
                         continue;
-                    System.out.println(marker.getType());
-                    System.out.println(marker.getAttributes().values());
                     return true;
                 }
             }
