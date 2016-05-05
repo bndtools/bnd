@@ -2,6 +2,9 @@ package bndtools.wizards.workspace;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
+
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -18,6 +21,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
+import aQute.bnd.build.Project;
 import bndtools.utils.ModificationLock;
 
 public class WorkspaceLocationPart {
@@ -39,70 +43,95 @@ public class WorkspaceLocationPart {
         GridLayout layout = new GridLayout(3, false);
         group.setLayout(layout);
 
-        final Button btnCreateInEclipseWorkspace = new Button(group, SWT.RADIO);
-        btnCreateInEclipseWorkspace.setText("Create in current Eclipse Workspace");
-        btnCreateInEclipseWorkspace.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
+        File workspace = getUpdate();
+        if (workspace == null) {
 
-        Label lblEclipseWorkspace = new Label(group, SWT.NONE);
-        lblEclipseWorkspace.setText(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
-        lblEclipseWorkspace.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
+            final Button btnCreateInEclipseWorkspace = new Button(group, SWT.RADIO);
+            btnCreateInEclipseWorkspace.setText("Create in current Eclipse Workspace");
+            btnCreateInEclipseWorkspace.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
 
-        final Button btnCreateExternal = new Button(group, SWT.RADIO);
-        btnCreateExternal.setText("Create in:");
+            Label lblEclipseWorkspace = new Label(group, SWT.NONE);
+            lblEclipseWorkspace.setText(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
+            lblEclipseWorkspace.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
 
-        final Text txtExternalLocation = new Text(group, SWT.BORDER);
-        txtExternalLocation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+            final Button btnCreateExternal = new Button(group, SWT.RADIO);
+            btnCreateExternal.setText("Create in:");
 
-        final Button btnBrowseExternal = new Button(group, SWT.PUSH);
-        btnBrowseExternal.setText("Browse");
+            final Text txtExternalLocation = new Text(group, SWT.BORDER);
+            txtExternalLocation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-        updateFields = new Runnable() {
-            @Override
-            public void run() {
-                btnCreateInEclipseWorkspace.setSelection(location.eclipseWorkspace);
-                btnCreateExternal.setSelection(!location.eclipseWorkspace);
-                txtExternalLocation.setText(location.externalPath != null ? location.externalPath : "");
-            }
-        };
-        updateEnablement = new Runnable() {
-            @Override
-            public void run() {
-                txtExternalLocation.setEnabled(!location.eclipseWorkspace);
-                btnBrowseExternal.setEnabled(!location.eclipseWorkspace);
-            }
-        };
+            final Button btnBrowseExternal = new Button(group, SWT.PUSH);
+            btnBrowseExternal.setText("Browse");
 
-        // Load initial state
-        updateFields.run();
-        updateEnablement.run();
+            updateFields = new Runnable() {
+                @Override
+                public void run() {
+                    btnCreateInEclipseWorkspace.setSelection(location.eclipseWorkspace);
+                    btnCreateExternal.setSelection(!location.eclipseWorkspace);
+                    txtExternalLocation.setText(location.externalPath != null ? location.externalPath : "");
+                }
+            };
+            updateEnablement = new Runnable() {
+                @Override
+                public void run() {
+                    txtExternalLocation.setEnabled(!location.eclipseWorkspace);
+                    btnBrowseExternal.setEnabled(!location.eclipseWorkspace);
+                }
+            };
 
-        // Event listeners
-        final Listener locationListener = new Listener() {
-            @Override
-            public void handleEvent(Event ev) {
-                modifyLock.modifyOperation(new Runnable() {
-                    @Override
-                    public void run() {
-                        setLocation(new LocationSelection(btnCreateInEclipseWorkspace.getSelection(), txtExternalLocation.getText()));
-                    }
-                });
-            }
-        };
-        btnCreateExternal.addListener(SWT.Selection, locationListener);
-        btnCreateInEclipseWorkspace.addListener(SWT.Selection, locationListener);
-        txtExternalLocation.addListener(SWT.Modify, locationListener);
+            // Load initial state
+            updateFields.run();
+            updateEnablement.run();
 
-        btnBrowseExternal.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                DirectoryDialog dialog = new DirectoryDialog(parent.getShell());
-                String path = dialog.open();
-                if (path != null)
-                    txtExternalLocation.setText(path);
-            }
-        });
+            // Event listeners
+            final Listener locationListener = new Listener() {
+                @Override
+                public void handleEvent(Event ev) {
+                    modifyLock.modifyOperation(new Runnable() {
+                        @Override
+                        public void run() {
+                            setLocation(new LocationSelection(btnCreateInEclipseWorkspace.getSelection(), txtExternalLocation.getText()));
+                        }
+                    });
+                }
+            };
+            btnCreateExternal.addListener(SWT.Selection, locationListener);
+            btnCreateInEclipseWorkspace.addListener(SWT.Selection, locationListener);
+            txtExternalLocation.addListener(SWT.Modify, locationListener);
+
+            btnBrowseExternal.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    DirectoryDialog dialog = new DirectoryDialog(parent.getShell());
+                    String path = dialog.open();
+                    if (path != null)
+                        txtExternalLocation.setText(path);
+                }
+            });
+        } else {
+            final Label txtUpdateLocation = new Label(group, SWT.BORDER);
+            txtUpdateLocation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+            txtUpdateLocation.setText("Update in current bnd Workspace");
+
+            Label lblEclipseWorkspace = new Label(group, SWT.NONE);
+            lblEclipseWorkspace.setText(workspace.getAbsolutePath());
+            lblEclipseWorkspace.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
+            setLocation(new LocationSelection(false, workspace.getAbsolutePath()));
+        }
 
         return group;
+    }
+
+    private File getUpdate() {
+        IProject cnfProject = ResourcesPlugin.getWorkspace().getRoot().getProject(Project.BNDCNF);
+        if (cnfProject != null && cnfProject.exists()) {
+            File cnf = cnfProject.getLocation().toFile();
+            if (cnf == null || !cnf.exists())
+                return null;
+
+            return cnf.getParentFile();
+        }
+        return null;
     }
 
     public LocationSelection getLocation() {
@@ -112,7 +141,7 @@ public class WorkspaceLocationPart {
     public void setLocation(LocationSelection location) {
         LocationSelection oldLoc = this.location;
         this.location = location;
-        if (group != null && !group.isDisposed()) {
+        if (group != null && !group.isDisposed() && updateFields != null) {
             modifyLock.ifNotModifying(updateFields);
             updateEnablement.run();
             propertySupport.firePropertyChange(PROP_LOCATION, oldLoc, location);

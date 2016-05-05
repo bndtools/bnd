@@ -24,8 +24,10 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -38,6 +40,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
 
+import aQute.bnd.build.Project;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
 
@@ -144,10 +147,18 @@ public class WorkspaceSetupWizard extends Wizard implements IWorkbenchWizard {
                                 if (projectFile.exists()) {
                                     IProject project = workspace.getRoot().getProject(projectName);
                                     if (!project.exists()) {
+
                                         // No existing project in the workspace, so import the generated project.
                                         SubMonitor subProgress = progress.newChild(1);
                                         project.create(subProgress.newChild(1));
                                         project.open(subProgress.newChild(1));
+
+                                        // Now make sure it is associated with the right location
+                                        IProjectDescription description = project.getDescription();
+                                        IPath path = Path.fromOSString(projectFile.getParentFile().getAbsolutePath());
+                                        description.setLocation(path);
+                                        project.move(description, IResource.REPLACE, progress);
+
                                     } else {
                                         // If a project with the same name exists, does it live in the same location? If not, we can't import the generated project.
                                         File existingLocation = project.getLocation().toFile();
@@ -211,7 +222,7 @@ public class WorkspaceSetupWizard extends Wizard implements IWorkbenchWizard {
 
             try {
                 IProjectNature bndNature = project.getNature(Plugin.BNDTOOLS_NATURE);
-                if (bndNature != null) {
+                if (bndNature != null || project.getName().equals(Project.BNDCNF)) {
                     File projectLocation = project.getLocation().toFile();
                     existingBndLocation = projectLocation.getParentFile();
                     break;
