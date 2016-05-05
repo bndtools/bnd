@@ -202,6 +202,10 @@ public class ProjectLocationGroup {
 
             if (loc.lastSegment() == null || !loc.lastSegment().equals(projectName))
                 return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Project location must end with specified project name", null);
+
+            if (workspaceLocation != null && !workspaceLocation.isPrefixOf(loc)) {
+                return new Status(IStatus.INFO, Plugin.PLUGIN_ID, 0, "Project location will NOT work with the bnd support because it is in another directory than the cnf directory (" + workspaceLocation + ")", null);
+            }
         }
 
         // Check valid name
