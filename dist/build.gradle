@@ -47,7 +47,7 @@ task('index') {
     /* indexer */
     def repoindexJar = bnd.project.getBundle('org.osgi.impl.bundle.repoindex.cli', 'latest', null, ['strategy':'highest']).getFile()
 
-    def bundlesToIndex = bundles*.absolutePath
+    def bundlesToIndex = bundles*.absolutePath.sort()
 
     /* index uncompressed. */
     javaexec {

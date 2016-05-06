@@ -9,9 +9,9 @@
 	${junit},\
 	${mockito}
 
-Bundle-Name: BIndex2: Repository Index Generator
+Bundle-Name: RepoIndex lib
+Bundle-Description: RepoIndex: Repository Index Generator Library
 Bundle-Activator: org.osgi.service.indexer.osgi.Activator
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
 
 # We embed org.osgi.framework so that our use of Filter resolves when running under plain Java...
 Private-Package: \

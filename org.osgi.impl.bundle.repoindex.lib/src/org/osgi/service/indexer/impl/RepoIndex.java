@@ -31,7 +31,7 @@ import org.osgi.service.indexer.Capability;
 import org.osgi.service.indexer.Requirement;
 import org.osgi.service.indexer.ResourceAnalyzer;
 import org.osgi.service.indexer.ResourceIndexer;
-import org.osgi.service.indexer.impl.types.TypedAttribute;
+import org.osgi.service.indexer.impl.types.TypedValue;
 import org.osgi.service.indexer.impl.util.AddOnlyList;
 import org.osgi.service.indexer.impl.util.Indent;
 import org.osgi.service.indexer.impl.util.Pair;
@@ -345,9 +345,9 @@ public class RepoIndex implements ResourceIndexer {
 		for (Entry<String,Object> attribEntry : attribs.entrySet()) {
 			Tag attribTag = new Tag(Schema.ELEM_ATTRIBUTE);
 			attribTag.addAttribute(Schema.ATTR_NAME, attribEntry.getKey());
-
-			TypedAttribute typedAttrib = TypedAttribute.create(attribEntry.getKey(), attribEntry.getValue());
-			parentTag.addContent(typedAttrib.toXML());
+			TypedValue value = TypedValue.valueOf(attribEntry.getValue());
+			value.addTo(attribTag);
+			parentTag.addContent(attribTag);
 		}
 
 		for (Entry<String,String> directiveEntry : directives.entrySet()) {

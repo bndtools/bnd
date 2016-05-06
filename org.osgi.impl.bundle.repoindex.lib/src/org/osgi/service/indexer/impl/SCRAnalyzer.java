@@ -25,6 +25,8 @@ import org.osgi.service.indexer.Namespaces;
 import org.osgi.service.indexer.Requirement;
 import org.osgi.service.indexer.Resource;
 import org.osgi.service.indexer.ResourceAnalyzer;
+import org.osgi.service.indexer.impl.types.ScalarType;
+import org.osgi.service.indexer.impl.types.TypedValue;
 import org.osgi.service.indexer.impl.types.VersionKey;
 import org.osgi.service.indexer.impl.types.VersionRange;
 import org.osgi.service.log.LogService;
@@ -148,8 +150,8 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 
 		private Map<String,Object>	properties				= null;
 		private String				currentPropertyName		= null;
-		private String				currentPropertyType		= null;
-		private String				currentPropertyAttrib	= null;
+		private ScalarType			currentPropertyType		= null;
+		private String				currentPropertyValue	= null;
 		private StringBuilder		currentPropertyText		= null;
 
 		public SCRContentHandler(List<Capability> caps, List<Requirement> reqs) {
@@ -199,12 +201,10 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 				currentPropertyName = attribs.getValue(ATTRIB_NAME);
 				if (currentPropertyName == null)
 					throw new SAXException("Missing required attribute '" + ATTRIB_NAME + "'.");
-				currentPropertyType = attribs.getValue(ATTRIB_TYPE);
-				if (currentPropertyType == null)
-					currentPropertyType = String.class.getSimpleName();
+				currentPropertyType = typeOf(attribs.getValue(ATTRIB_TYPE));
 				String value = attribs.getValue(ATTRIB_VALUE);
 				if (value != null) {
-					currentPropertyAttrib = value;
+					currentPropertyValue = value;
 				} else {
 					currentPropertyText = new StringBuilder();
 				}
@@ -226,9 +226,9 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 			String localNameLowerCase = localName.toLowerCase();
 
 			if (ELEMENT_PROPERTY.equals(localNameLowerCase)) {
-				if (currentPropertyAttrib != null) {
-					Object value = readTyped(currentPropertyType, currentPropertyAttrib);
-					properties.put(currentPropertyName, value);
+				if (currentPropertyValue != null) {
+					Object value = readTyped(currentPropertyType, currentPropertyValue);
+					properties.put(currentPropertyName, new TypedValue(currentPropertyType, value));
 				} else if (currentPropertyText != null) {
 					String[] lines = currentPropertyText.toString().split("\n");
 					List<Object> values = new ArrayList<Object>(lines.length);
@@ -239,11 +239,11 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 							values.add(value);
 						}
 					}
-					properties.put(currentPropertyName, values);
+					properties.put(currentPropertyName, new TypedValue(currentPropertyType, values));
 				}
 				currentPropertyName = null;
 				currentPropertyType = null;
-				currentPropertyAttrib = null;
+				currentPropertyValue = null;
 				currentPropertyText = null;
 			}
 
@@ -328,15 +328,26 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 			return builder.buildRequirement();
 		}
 
-		private static Object readTyped(String type, String string) {
-			if (Long.class.getSimpleName().equals(type) || Integer.class.getSimpleName().equals(type)
-					|| Short.class.getSimpleName().equals(type) || Byte.class.getSimpleName().equals(type))
-				return Long.parseLong(string);
+		private static ScalarType typeOf(String name) {
+			if (name == null)
+				return ScalarType.String;
+			if (Long.class.getSimpleName().equals(name) || Integer.class.getSimpleName().equals(name)
+					|| Short.class.getSimpleName().equals(name) || Byte.class.getSimpleName().equals(name))
+				return ScalarType.Long;
+			if (Float.class.getSimpleName().equals(name) || Double.class.getSimpleName().equals(name))
+				return ScalarType.Double;
+			return ScalarType.String;
+		}
 
-			if (Float.class.getSimpleName().equals(type) || Double.class.getSimpleName().equals(type))
-				return Double.parseDouble(string);
-
-			return string;
+		private static Object readTyped(ScalarType type, String string) {
+			switch (type) {
+				case Long :
+					return Long.parseLong(string);
+				case Double :
+					return Double.parseDouble(string);
+				default :
+					return string;
+			}
 		}
 	}
 }
