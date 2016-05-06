@@ -23,7 +23,8 @@ Private-Package:  \
 Conditional-Package:\
 	aQute.lib.*;-split-package:=merge-first,\
 	aQute.libg.*;-split-package:=merge-first, \
-	org.bndtools.utils.*
+	org.bndtools.utils.*,\
+	org.apache.felix.metatype, org.kxml2.*, org.xmlpull.v1
 
 Export-Package: \
 	bndtools.central, \
