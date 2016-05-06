@@ -99,7 +99,7 @@ You can also add instructions to process (or not process) certain filetypes
 (this will be in addition to the recognised file types in bnd):
 
 	# don't process .img files
-	process.extra: !*.img
+	process.before: !*.img
 
 	# don't process OR copy readme.* files
 	ignore: readme.*
