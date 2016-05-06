@@ -63,7 +63,9 @@ public class About {
 			"Added HttpClient. bnd now reads ~/.bnd/bnd-settings.xml or ~/.m2/settings.xml to find out proxy & authentication settings",
 			"version macro: Use MavenVersion to test for SNAPSHOT version",
 			"-pom: Add support for @bsn and @version scoped properties",
-			"Bnd DS, metatype, and versioning annotations are deprecated; support to be removed in Bnd 4.0"
+			"Bnd DS, metatype, and versioning annotations are deprecated; support to be removed in Bnd 4.0",
+			"Added a ${fileuri;file} macro which converts a file path into a file: URI",
+			"Processor.trace calls now log the trace information via SLF4J"
 	};
 	public static String[]				CHANGES_3_1	= {
 															"The embedded repo is expanded into cnf/cache/<bnd-version> folder to avoid potential conflicts.",
