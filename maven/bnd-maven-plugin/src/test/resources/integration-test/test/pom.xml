@@ -55,9 +55,9 @@ Project-Buildpath: ${project.buildpath}
 				<artifactId>maven-jar-plugin</artifactId>
                 <version>2.6</version>
 				<configuration>
-					<useDefaultManifestFile>
-						true
-					</useDefaultManifestFile>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
 				</configuration>
 			</plugin>
 		</plugins>
