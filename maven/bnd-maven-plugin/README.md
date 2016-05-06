@@ -72,7 +72,9 @@ In the meantime it is necessary to configure the plugin as follows:
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-jar-plugin</artifactId>
     <configuration>
-        <useDefaultManifestFile>true</useDefaultManifestFile>
+        <archive>
+            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+        </archive>
     </configuration>
 </plugin>
 ```
