@@ -21,16 +21,8 @@ final class ConversionUtils {
 		String bsn = jar.getBsn();
 
 		groupId = jar.getManifest().getMainAttributes().getValue("Maven-GroupId");
-		if (groupId != null) {
-			String groupPrefix = groupId + ".";
-			if (bsn.startsWith(groupPrefix)) {
-				if (bsn.length() <= groupPrefix.length())
-					throw new IllegalArgumentException("Artifact ID appears to be empty");
-				artifactId = bsn.substring(groupPrefix.length());
-			} else {
-				artifactId = bsn;
-			}
-		} else {
+		artifactId = jar.getManifest().getMainAttributes().getValue("Maven-ArtifactId");
+		if (groupId == null && artifactId == null) {
 			int lastDot = bsn.lastIndexOf('.');
 			if (lastDot < 0)
 				throw new IllegalArgumentException(
@@ -42,6 +34,17 @@ final class ConversionUtils {
 
 			groupId = bsn.substring(0, lastDot);
 			artifactId = bsn.substring(lastDot + 1);
+		} else if (groupId != null && artifactId == null) {
+			String groupPrefix = groupId + ".";
+			if (bsn.startsWith(groupPrefix)) {
+				if (bsn.length() <= groupPrefix.length())
+					throw new IllegalArgumentException("Artifact ID appears to be empty");
+				artifactId = bsn.substring(groupPrefix.length());
+			} else {
+				artifactId = bsn;
+			}
+		} else if (groupId == null) {
+			throw new IllegalArgumentException("Group ID appears to be empty");
 		}
 
 		String versionString = jar.getVersion();
