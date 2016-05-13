@@ -112,154 +112,154 @@ This Agreement is governed by the laws of the State of New York and the intellec
          id="biz.aQute.bndlib"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@biz.aQute.bndlib-version@"
          unpack="false"/>
-   
+
    <plugin
          id="biz.aQute.repository"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@biz.aQute.repository-version@"
          unpack="false"/>
 
    <plugin
          id="biz.aQute.resolve"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@biz.aQute.resolve-version@"
          unpack="false"/>
 
    <plugin
          id="bndtools.api"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@bndtools.api-version@"
          unpack="false"/>
 
    <plugin
          id="bndtools.core"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@bndtools.core-version@"
          unpack="false"/>
 
    <plugin
          id="bndtools.builder"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@bndtools.builder-version@"
          unpack="false"/>
 
    <plugin
          id="bndtools.repository.base"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@bndtools.repository.base-version@"
          unpack="false"/>
 
    <plugin
          id="bndtools.jareditor"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@bndtools.jareditor-version@"
          unpack="false"/>
 
    <plugin
          id="bndtools.release"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@bndtools.release-version@"
          unpack="false"/>
 
    <plugin
          id="org.bndtools.embeddedrepo"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@org.bndtools.embeddedrepo-version@"
          unpack="false"/>
 
    <plugin
          id="org.osgi.impl.bundle.repoindex.lib"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@org.osgi.impl.bundle.repoindex.lib-version@"
          unpack="false"/>
 
    <plugin
          id="org.bndtools.headless.build.manager"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@org.bndtools.headless.build.manager-version@"
          unpack="false"/>
 
    <plugin
          id="org.bndtools.headless.build.plugin.ant"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@org.bndtools.headless.build.plugin.ant-version@"
          unpack="false"/>
 
    <plugin
          id="org.bndtools.headless.build.plugin.gradle"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@org.bndtools.headless.build.plugin.gradle-version@"
          unpack="false"/>
 
    <plugin
          id="org.bndtools.versioncontrol.ignores.manager"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@org.bndtools.versioncontrol.ignores.manager-version@"
          unpack="false"/>
 
    <plugin
          id="org.bndtools.versioncontrol.ignores.plugin.git"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@org.bndtools.versioncontrol.ignores.plugin.git-version@"
          unpack="false"/>
-   
+
    <plugin
          id="org.bndtools.templating"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@org.bndtools.templating-version@"
          unpack="false"/>
 
    <plugin
          id="org.bndtools.templating.gitrepo"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@org.bndtools.templating.gitrepo-version@"
          unpack="false"/>
 
    <plugin
          id="slf4j.api"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@slf4j.api-version@"
          unpack="false"/>
 
    <plugin
          id="slf4j.simple"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@slf4j.simple-version@"
          unpack="false"/>
 
    <plugin
          id="javax.xml"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@javax.xml-version@"
          unpack="false"/>
 
    <plugin
          id="javax.xml.stream"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="@javax.xml.stream-version@"
          unpack="false"/>
 
 </feature>

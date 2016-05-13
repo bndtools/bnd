@@ -20,7 +20,7 @@ configure(rootProject) {
 }
 
 import org.apache.tools.ant.filters.ReplaceTokens
-
+import aQute.bnd.osgi.Jar
 
 /*
  * Copy the bundle outputs of the specified projects into a directory
@@ -112,29 +112,20 @@ void generateP2Repository(String title, String antTarget, String metadataReposit
   delete(file("${bnd_eclipseDirectory}/p2"                                    ))
 }
 
-
-/*
- * Setup tasks (p2 features)
- */
-task p2FeatureTree(type: Copy) {
+def generateFeatureXmlTokens() {
   def masterVersion = String.format('%s.%s-%tY%<tm%<td-%<tH%<tM%<tS-g%.7s',
                        bnd('base-version'),
                        bnd('base-version-qualifier'),
                        new Date(),
                        bnd('Git-SHA'))
-  from    'feature'
-  into    "${buildDir}/features"
-  filter(ReplaceTokens, tokens: ['master-version' : masterVersion, 'base-version' : bnd('base-version')])
-  include '**/category.xml'
-  include '**/feature.xml'
-}
-
-task p2Feature(type: Zip) {
-  dependsOn p2FeatureTree
-  destinationDir = file("${buildDir}/features")
-  archiveName    = 'bndtools.feature.jar'
-  from             "${buildDir}/features/bndtools"
-  include          'feature.xml'
+  def tokens = ['master-version' : masterVersion, 'base-version' : bnd('base-version')]
+  def plugins = fileTree("${buildDir}/plugins").getFiles()
+  plugins.each {
+    new Jar(it).withCloseable { jar ->
+      tokens.put(jar.getBsn() + '-version', jar.getVersion())
+    }
+  }
+  tokens
 }
 
 /*
@@ -151,6 +142,28 @@ task p2Plugins(type: Copy) {
   }
 }
 
+/*
+ * Setup tasks (p2 features)
+ */
+task p2FeatureTree(type: Copy) {
+    dependsOn p2Plugins
+    from    'feature'
+    into    "${buildDir}/features"
+    doFirst {
+      filter(ReplaceTokens, tokens: generateFeatureXmlTokens() )
+    }
+    include '**/category.xml'
+    include '**/feature.xml'
+    inputs.files file("${buildDir}/plugins")
+}
+
+task p2Feature(type: Zip) {
+  dependsOn p2FeatureTree
+  destinationDir = file("${buildDir}/features")
+  archiveName    = 'bndtools.feature.jar'
+  from             "${buildDir}/features/bndtools"
+  include          'feature.xml'
+}
 
 /*
  * Setup tasks (p2 repositories)
@@ -158,14 +171,14 @@ task p2Plugins(type: Copy) {
 task p2 {
   description 'Generate the p2 repositories.'
   group       'release'
-  dependsOn p2Feature, p2Plugins
+  dependsOn p2Plugins, p2Feature
 
   inputs.files file('p2.xml'),
                fileTree(buildDir)
                    .include('p2/**')
                    .include('features/category.xml')
   outputs.dir "${buildDir}/p2"
-  
+
   doLast {
     generateP2Repository('Bndtools', 'p2Bndtools', 'p2', 'features/category.xml')
     delete("${buildDir}/features")
