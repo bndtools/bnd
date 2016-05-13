@@ -363,7 +363,7 @@ public class HttpClient implements Closeable, URLConnector {
 			con.setReadTimeout((int) (5000 > request.timeout ? request.timeout : 5000));
 		} else {
 			con.setConnectTimeout(120000);
-			con.setReadTimeout(5000);
+			con.setReadTimeout(60000);
 		}
 
 		try {
