@@ -122,7 +122,7 @@ def generateFeatureXmlTokens() {
   def plugins = fileTree("${buildDir}/plugins").getFiles()
   plugins.each {
     new Jar(it).withCloseable { jar ->
-      tokens.put(jar.getBsn() + '-version', jar.getVersion())
+      tokens["${jar.getBsn()}-version"] = jar.getVersion()
     }
   }
   tokens
