@@ -81,6 +81,8 @@ public class MavenBndRepository
 	private final Pattern			JPM_REVISION_URL_PATTERN_P	= Pattern
 			.compile("https?://.+#!?/p/sha/(?<sha>([0-9A-F][0-9A-F]){20,20})/.*", Pattern.CASE_INSENSITIVE);
 	private static final String		NONE						= "NONE";
+	private static final String		MAVEN_REPO_LOCAL			= System.getProperty("maven.repo.local",
+			"~/.m2/repository");
 	private Configuration			configuration;
 	private Registry				registry;
 	private File					localRepo;
@@ -404,7 +406,7 @@ public class MavenBndRepository
 			inited = true;
 			name = configuration.name("Maven");
 
-			localRepo = IO.getFile(configuration.local(System.getProperty("maven.repo.local", "~/.m2/repository")));
+			localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
 
 			Executor executor = registry.getPlugin(Executor.class);
 			release = configuration.releaseUrl() != null ? getBackingRepository(configuration.releaseUrl()) : null;
@@ -483,8 +485,7 @@ public class MavenBndRepository
 
 	@Override
 	public String getLocation() {
-		return configuration.releaseUrl() == null ? configuration.local("~/.m2/repository")
-				: configuration.releaseUrl();
+		return configuration.releaseUrl() == null ? configuration.local(MAVEN_REPO_LOCAL) : configuration.releaseUrl();
 	}
 
 	@Override
