@@ -134,6 +134,7 @@ class RepoActions {
 									bin.putResource("OSGI-OPT/src/" + path, src.getResource(path));
 								bin.write(out);
 							}
+							out.setLastModified(System.currentTimeMillis());
 						}
 					} catch (Exception e) {
 						throw new RuntimeException(e);
