@@ -235,17 +235,10 @@ This Agreement is governed by the laws of the State of New York and the intellec
          unpack="false"/>
 
    <plugin
-         id="slf4j.api"
+         id="org.slf4j.api"
          download-size="0"
          install-size="0"
-         version="@slf4j.api-version@"
-         unpack="false"/>
-
-   <plugin
-         id="slf4j.simple"
-         download-size="0"
-         install-size="0"
-         version="@slf4j.simple-version@"
+         version="@org.slf4j.api-version@"
          unpack="false"/>
 
    <plugin

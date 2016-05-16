@@ -1,7 +1,12 @@
 #
 # Eclipse Repository. Eclipse 4.4.2
 #
-eclipse-repo: aQute.bnd.deployer.repository.FixedIndexedRepo; name="Eclipse IDE for Eclipse Committers 4.4.2"; locations=https://dl.bintray.com/bndtools/eclipse-repo/4.4.2/index.xml.gz
+eclipse-repo: aQute.bnd.deployer.repository.FixedIndexedRepo;\
+ name="Eclipse IDE for Eclipse Committers 4.4.2";\
+ locations=https://dl.bintray.com/bndtools/eclipse-repo/4.4.2/index.xml.gz
+eclipse-orbit: aQute.bnd.deployer.repository.FixedIndexedRepo;\
+ name="Eclipse Orbit 4.4.2";\
+ locations=http://download.eclipse.org/tools/orbit/downloads/drops/R20150124073747/repository/index.xml.gz
 
 #
 # Bnd Repository. See ${workspace}/gradle.properties for the bnd_repourl property.
@@ -34,6 +39,7 @@ jpm:\
 	,\
 	${jpm},\
 	${eclipse-repo},\
+	${eclipse-orbit},\
 	aQute.bnd.deployer.repository.LocalIndexedRepo; \
 		name='Release'; \
 		local=${workspace}/build/releaserepo; \
