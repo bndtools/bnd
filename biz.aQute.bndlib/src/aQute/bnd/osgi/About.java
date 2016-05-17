@@ -43,7 +43,10 @@ public class About {
 	public static Version				_3_0		= new Version(3, 0, 0);
 	public static Version				_3_1		= new Version(3, 1, 0);
 	public static Version				_3_2		= new Version(3, 2, 0);
-	public static Version				CURRENT		= _3_2;
+	public static Version				_3_3		= new Version(3, 3, 0);
+	public static Version				CURRENT		= _3_3;
+
+	public static String[]				CHANGES_3_3	= {};
 
 	public static String[]				CHANGES_3_2	= {
 			"Default content for bundle", "bndlib: Remove synchronization which causes deadlocks",
