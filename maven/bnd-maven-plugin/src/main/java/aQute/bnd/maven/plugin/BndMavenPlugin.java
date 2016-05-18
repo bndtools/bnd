@@ -85,6 +85,9 @@ public class BndMavenPlugin extends AbstractMojo {
 	@Parameter(defaultValue = "${settings}", readonly = true)
 	private Settings			settings;
 
+    @Parameter(defaultValue = "false", readonly = true)
+    private boolean				skip;
+    
 	@Component
 	private BuildContext		buildContext;
 
@@ -93,6 +96,11 @@ public class BndMavenPlugin extends AbstractMojo {
 	public void execute() throws MojoExecutionException {
 		log = getLog();
 
+        if ( skip ) {
+			log.debug("skip project as configured");
+			return;
+		}
+        
 		// Exit without generating anything if this is a pom-packaging project.
 		// Probably it's just a parent project.
 		if (PACKAGING_POM.equals(project.getPackaging())) {

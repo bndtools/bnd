@@ -61,10 +61,17 @@ public class BaselineMojo extends AbstractMojo {
 	@Parameter(readonly = true, required = false)
 	private Base					base;
 
+    @Parameter(defaultValue = "false", readonly = true)
+    private boolean				skip;
+    
 	@Component
 	private RepositorySystem		system;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
+        if ( skip ) {
+			getLog().debug("skip project as configured");
+			return;
+		}
 
 		Artifact artifact = RepositoryUtils.toArtifact(project.getArtifact());
 

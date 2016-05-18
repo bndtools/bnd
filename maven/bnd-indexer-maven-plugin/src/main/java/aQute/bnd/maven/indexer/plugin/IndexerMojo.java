@@ -92,6 +92,9 @@ public class IndexerMojo extends AbstractMojo {
 	@Parameter(property = "bnd.indexer.scopes", readonly = true, required = false)
 	private List<String>				scopes;
 
+    @Parameter(defaultValue = "false", readonly = true)
+    private boolean				skip;
+    
 	@Component
 	private RepositorySystem			system;
 
@@ -107,6 +110,11 @@ public class IndexerMojo extends AbstractMojo {
 	private boolean						fail;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
+
+        if ( skip ) {
+			getLog().debug("skip project as configured");
+			return;
+		}
 
 		if (scopes == null || scopes.isEmpty()) {
 			scopes = Arrays.asList("compile", "runtime");
