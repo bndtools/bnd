@@ -223,6 +223,7 @@ public class About {
 	public static Map<Version,String[]>	CHANGES		= new TreeMap<Version,String[]>(Collections.reverseOrder());
 
 	static {
+		CHANGES.put(_3_3, CHANGES_3_3);
 		CHANGES.put(_3_2, CHANGES_3_2);
 		CHANGES.put(_3_1, CHANGES_3_1);
 		CHANGES.put(_3_0, CHANGES_3_0);
