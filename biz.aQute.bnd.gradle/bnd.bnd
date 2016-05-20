@@ -20,6 +20,7 @@ Bundle-Description: The bnd gradle plugin.
   resources, \
   @${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
   @${repo;biz.aQute.repository;latest}!/!META-INF/*, \
+  @${repo;biz.aQute.resolve;latest}!/!META-INF/*, \
   embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}
 
 # Use groovydoc task generated doc for -javadoc.jar
