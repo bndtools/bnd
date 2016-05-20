@@ -3236,43 +3236,6 @@ public class Analyzer extends Processor {
 	}
 
 	/**
-	 * Return a range expression for a filter from a version. By default this is
-	 * based on consumer compatibility. You can specify a third argument (true)
-	 * to get provider compatibility.
-	 * 
-	 * <pre>
-	 *  ${frange;1.2.3} ->
-	 * (&(version>=1.2.3)(!(version>=2.0.0)) ${frange;1.2.3, true} ->
-	 * (&(version>=1.2.3)(!(version>=1.3.0)) ${frange;[1.2.3,2.3.4)} ->
-	 * (&(version>=1.2.3)(!(version>=2.3.4))
-	 * </pre>
-	 */
-	public String _frange(String[] args) {
-		if (args.length < 2 || args.length > 3) {
-			error("Invalid filter range, 2 or 3 args ${frange;<version>[;true|false]}");
-			return null;
-		}
-
-		String v = args[1];
-		boolean isProvider = args.length == 3 && isTrue(args[2]);
-		VersionRange vr;
-
-		if (Verifier.isVersion(v)) {
-			Version l = new Version(v);
-			Version h = isProvider ? new Version(l.getMajor(), l.getMinor() + 1, 0)
-					: new Version(l.getMajor() + 1, 0, 0);
-			vr = new VersionRange(true, l, h, false);
-		} else if (Verifier.isVersionRange(v)) {
-			vr = new VersionRange(v);
-		} else {
-			error("The _frange parameter %s is neither a version nor a version range", v);
-			return null;
-		}
-
-		return vr.toFilter();
-	}
-
-	/**
 	 * @param name
 	 */
 	public String validResourcePath(String name, String reportIfWrong) {
