@@ -118,7 +118,7 @@ public class ResourceBuilder {
 
 			identity.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn.getKey());
 			identity.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE,
-					fragment ? IdentityNamespace.TYPE_FRAGMENT : IdentityNamespace.TYPE_FRAGMENT);
+					fragment ? IdentityNamespace.TYPE_FRAGMENT : IdentityNamespace.TYPE_BUNDLE);
 
 			if ("true".equals(singleton)) {
 				identity.addDirective(IdentityNamespace.CAPABILITY_SINGLETON_DIRECTIVE, "true");
