@@ -845,7 +845,7 @@ public class Macro {
 			if (isLocalTarget(args[2]))
 				return LITERALVALUE;
 
-			version = new Version(args[2]);
+			version = Version.parseVersion(args[2]);
 		}
 
 		return version(version, mask);
