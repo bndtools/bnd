@@ -1,7 +1,6 @@
 package aQute.bnd.main;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,12 +24,10 @@ import aQute.bnd.build.model.OSGI_CORE;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.main.bnd.projectOptions;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
-import aQute.bnd.osgi.resource.CapabilityImpl;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
 import aQute.bnd.osgi.resource.ResourceBuilder;
@@ -291,18 +288,6 @@ public class ResolveCommand extends Processor {
 								CapabilityBuilder.createCapReqBuilder(ContentNamespace.CONTENT_NAMESPACE, attrs));
 						Resource resource = rb.build();
 
-						// Fix bug in addManifest = all bundles become fragments
-
-						if (manifest.get(Constants.FRAGMENT_HOST) == null) {
-							for (Capability c : resource.getCapabilities("osgi.identity")) {
-								CapabilityImpl ci = (CapabilityImpl) c;
-								Field attributes = ci.getClass().getSuperclass().getDeclaredField("attributes");
-								attributes.setAccessible(true);
-								Map<String,Object> map = (Map<String,Object>) attributes.get(ci);
-								map.put("type", "osgi.bundle");
-							}
-						}
-						//
 						resources.add(resource);
 					}
 				}
