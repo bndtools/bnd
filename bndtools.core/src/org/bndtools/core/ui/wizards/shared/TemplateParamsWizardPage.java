@@ -2,10 +2,14 @@ package org.bndtools.core.ui.wizards.shared;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.bndtools.templating.Template;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.wizard.WizardPage;
@@ -34,6 +38,8 @@ public class TemplateParamsWizardPage extends WizardPage implements ISkippableWi
     private boolean skip = false;
 
     private final Map<String,String> values = new HashMap<>();
+
+    private ObjectClassDefinition ocd;
 
     public TemplateParamsWizardPage(String[] fixedAttribs) {
         super("templateParams");
@@ -74,19 +80,36 @@ public class TemplateParamsWizardPage extends WizardPage implements ISkippableWi
             setErrorMessage(null);
             setMessage("No template is loaded", WARNING);
         } else {
-            panel.setLayout(new GridLayout(2, false));
+            GridLayout layout = new GridLayout(2, false);
+            layout.horizontalSpacing = 15;
+            panel.setLayout(layout);
+
+            List<Control> fieldControls = new LinkedList<>();
             try {
-                ObjectClassDefinition ocd = template.getMetadata();
-                AttributeDefinition[] ads = ocd.getAttributeDefinitions(ObjectClassDefinition.ALL);
+                ocd = template.getMetadata();
                 int count = 0;
+
+                Set<String> requiredIds = new HashSet<>();
+                for (AttributeDefinition ad : ocd.getAttributeDefinitions(ObjectClassDefinition.REQUIRED)) {
+                    requiredIds.add(ad.getID());
+                }
+
+                AttributeDefinition[] ads = ocd.getAttributeDefinitions(ObjectClassDefinition.ALL);
                 for (AttributeDefinition ad : ads) {
-                    String attrib = ad.getName();
+                    String attrib = ad.getID();
                     if (!fixedAttribs.contains(attrib)) {
                         Label label = new Label(panel, SWT.NONE);
-                        label.setText(ad.getDescription());
+
+                        String labelText = ad.getID();
+                        if (requiredIds.contains(ad.getID())) {
+                            label.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
+                        }
+                        label.setText(labelText);
 
                         Control fieldControl = createFieldControl(panel, ad);
                         fieldControl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+                        fieldControls.add(fieldControl);
+                        skip = false;
                         count++;
                     }
                 }
@@ -94,33 +117,77 @@ public class TemplateParamsWizardPage extends WizardPage implements ISkippableWi
                 if (count == 0) {
                     setMessage("No editable parameters for template: " + ocd.getName(), INFORMATION);
                 } else {
-                    setMessage("Edit parameters for template: " + ocd.getName(), INFORMATION);
-                    skip = false;
+                    setMessage("Edit parameters for template: " + ocd.getDescription(), INFORMATION);
                 }
                 setErrorMessage(null);
             } catch (Exception e) {
                 setErrorMessage("Error loading template metadata: " + e.getMessage());
+                for (Control fieldControl : fieldControls) {
+                    fieldControl.setEnabled(false);
+                }
             }
         }
         currentPanel = panel;
         container.layout(true, true);
+        updateValidation();
+    }
+
+    private void updateValidation() {
+        boolean complete = true;
+
+        // Check required attribs
+        AttributeDefinition[] ads = ocd != null ? ocd.getAttributeDefinitions(ObjectClassDefinition.REQUIRED) : new AttributeDefinition[0];
+        for (AttributeDefinition ad : ads) {
+            // Skip attribs provided the wizard
+            if (fixedAttribs.contains(ad.getID()))
+                continue;
+            String value = values.get(ad.getID());
+            if (value == null || value.trim().isEmpty()) {
+                complete = false;
+                break;
+            }
+        }
+
+        // Validate values
+        // TODO
+
+        setPageComplete(complete);
     }
 
     private Control createFieldControl(Composite parent, final AttributeDefinition ad) {
         switch (ad.getType()) {
         case AttributeDefinition.STRING :
+        case AttributeDefinition.INTEGER :
             final Text text = new Text(parent, SWT.BORDER);
-            text.setMessage(ad.getDescription());
+            if (ad.getName() != null)
+                text.setMessage(ad.getName());
+
+            if (ad.getDescription() != null) {
+                ControlDecoration decor = new ControlDecoration(text, SWT.LEFT, parent);
+                decor.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
+                decor.setShowHover(true);
+                decor.setDescriptionText(ad.getDescription());
+                decor.setMarginWidth(5);
+            }
+
+            String[] defaultValue = ad.getDefaultValue();
+            if (defaultValue != null && defaultValue.length == 1) {
+                text.setText(defaultValue[0]);
+                values.put(ad.getID(), defaultValue[0]);
+            }
             text.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent ev) {
-                    values.put(ad.getName(), text.getText());
+                    values.put(ad.getID(), text.getText());
+                    updateValidation();
                 }
             });
+
             return text;
+
         default :
             Label label = new Label(parent, SWT.NONE);
-            label.setText("< Unknown Attribute Type >");
+            label.setText("<Unknown Attribute Type>");
             label.setFont(JFaceResources.getFontRegistry().getItalic(JFaceResources.DEFAULT_FONT));
             label.setForeground(JFaceResources.getColorRegistry().get(JFacePreferences.ERROR_COLOR));
             return label;
