@@ -2666,11 +2666,11 @@ public class Analyzer extends Processor {
 
 		Attrs attrs = contained.getByFQN(packageName);
 		if (attrs == null)
-			return "";
+			return "version".equals(attrName) ? "0" : "";
 
 		String value = attrs.get(attrName);
 		if (value == null)
-			return "";
+			return "version".equals(attrName) ? "0" : "";
 		else
 			return value;
 	}
