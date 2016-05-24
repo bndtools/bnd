@@ -441,6 +441,18 @@ public class ResourceUtils {
 		return sb.toString();
 	}
 
+	public static String toProvideCapability(Capability cap) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(cap.getNamespace());
+
+		CapReqBuilder r = new CapReqBuilder(cap.getNamespace());
+		r.addAttributes(cap.getAttributes());
+		r.addDirectives(cap.getDirectives());
+		Attrs attrs = r.toAttrs();
+		sb.append(";").append(attrs);
+		return sb.toString();
+	}
+
 	public static Map<URI,String> getLocations(Resource resource) {
 		Map<URI,String> locations = new HashMap<>();
 		for (ContentCapability c : getContentCapabilities(resource)) {

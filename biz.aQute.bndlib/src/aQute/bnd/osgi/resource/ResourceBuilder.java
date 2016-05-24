@@ -282,6 +282,10 @@ public class ResourceBuilder {
 		return added;
 	}
 
+	public List<Capability> addProvideCapabilities(String clauses) throws Exception {
+		return addProvideCapabilities(new Parameters(clauses));
+	}
+
 	public Capability addProvideCapability(String namespace, Attrs attrs) throws Exception {
 		CapReqBuilder capb = new CapReqBuilder(resource, namespace);
 		capb.addAttributesOrDirectives(attrs);
