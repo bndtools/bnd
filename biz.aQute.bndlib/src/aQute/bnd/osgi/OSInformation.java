@@ -9,13 +9,11 @@ import java.util.regex.Pattern;
 
 import org.osgi.resource.Capability;
 
-import aQute.bnd.osgi.Processor.FileLine;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import aQute.lib.strings.Strings;
-import aQute.service.reporter.Reporter.SetLocation;
 
 /**
  * OS specific information, used by the native_capability macro for
@@ -112,8 +110,8 @@ public class OSInformation {
 	 * 
 	 * @param sysPropOsVersion the system property "os.version"
 	 */
-	void convertUnixKernelVersion(String sysPropOsVersion) {
-		osversion = new Version(0, 0, 0);
+	static Version convertUnixKernelVersion(String sysPropOsVersion) {
+		Version osversion = new Version(0, 0, 0);
 		String s = sysPropOsVersion.trim();
 		int index = 0;
 		do {
@@ -162,6 +160,7 @@ public class OSInformation {
 			String qualifier = s.replaceAll(regexQualifierNotAllowedChars, "_");
 			osversion = new Version(osversion.getMajor(), osversion.getMinor(), osversion.getMicro(), qualifier);
 		}
+		return osversion;
 	}
 
 	/**
@@ -179,68 +178,13 @@ public class OSInformation {
 				|| sysPropOsVersion.length() == 0) {
 			return;
 		}
+		OSNameVersion pair = getOperatingSystemAliases(sysPropOsName, sysPropOsVersion);
+		if (pair == null)
+			throw new IllegalArgumentException(
+					"Unknown OS/version combination: " + sysPropOsName + " " + sysPropOsVersion);
 
-		if (sysPropOsName.startsWith("Windows")) {
-			if (sysPropOsVersion.startsWith("10.0")) {
-				osversion = new Version(10, 0, 0);
-				osnames = "Windows10,Windows 10,Win32";
-			} else if (sysPropOsVersion.startsWith("6.3")) {
-				osversion = new Version(6, 3, 0);
-				osnames = "Windows8.1,Windows 8.1,Win32";
-			} else if (sysPropOsVersion.startsWith("6.2")) {
-				osversion = new Version(6, 2, 0);
-				osnames = "Windows8,Windows 8,Win32";
-			} else if (sysPropOsVersion.startsWith("6.1")) {
-				osversion = new Version(6, 1, 0);
-				osnames = "Windows7,Windows 7,Win32";
-			} else if (sysPropOsVersion.startsWith("6.0")) {
-				osversion = new Version(6, 0, 0);
-				osnames = "WindowsVista,WinVista,Windows Vista,Win32";
-			} else if (sysPropOsVersion.startsWith("5.1")) {
-				osversion = new Version(5, 1, 0);
-				osnames = "WindowsXP,WinXP,Windows XP,Win32";
-			} else {
-				throw new IllegalArgumentException(String.format(
-						"Unrecognised or unsupported Windows version while processing ${native_capability} macro: %s version %s. Supported: XP, Vista, Win7, Win8, Win8.1, Win10.",
-						sysPropOsName, sysPropOsVersion));
-			}
-
-			return;
-		}
-
-		if (sysPropOsName.startsWith("Mac OS X")) {
-			convertUnixKernelVersion(sysPropOsVersion);
-			osnames = "MacOSX,Mac OS X";
-			return;
-		}
-
-		if (sysPropOsName.toLowerCase().startsWith("linux")) {
-			convertUnixKernelVersion(sysPropOsVersion);
-			osnames = "Linux";
-			return;
-		}
-
-		if (sysPropOsName.startsWith("Solaris")) {
-			convertUnixKernelVersion(sysPropOsVersion);
-			osnames = "Solaris";
-			return;
-		}
-
-		if (sysPropOsName.startsWith("AIX")) {
-			convertUnixKernelVersion(sysPropOsVersion);
-			osnames = "AIX";
-			return;
-		}
-
-		if (sysPropOsName.startsWith("HP-UX")) {
-			convertUnixKernelVersion(sysPropOsVersion);
-			osnames = "HPUX,hp-ux";
-			return;
-		}
-
-		throw new IllegalArgumentException(String.format(
-				"Unrecognised or unsupported OS while processing ${native_capability} macro: %s version %s. Supported: Windows, Mac OS X, Linux, Solaris, AIX, HP-UX.",
-				sysPropOsName, sysPropOsVersion));
+		osversion = pair.osversion;
+		osnames = pair.osnames;
 	}
 
 	static class NativeCapability {
@@ -267,7 +211,6 @@ public class OSInformation {
 
 		return ResourceUtils.toProvideCapability(cap);
 	}
-
 
 	static Capability createCapability(NativeCapability clause) throws Exception {
 		CapabilityBuilder c = new CapabilityBuilder("osgi.native");
@@ -303,14 +246,6 @@ public class OSInformation {
 			sb.append(";").append("processor=").append(System.getProperty("os.arch"));
 			sb.append(";").append("lang=").append(clause.language);
 			String advice = sb.toString();
-
-			SetLocation warning = p.warning(
-					"A ${native_capability} macro withtout arguments makes the bndrun dependent on your machine. Suggest to replace it with ${native_capability;%s}",
-					advice);
-			FileLine header = p.getHeader(".*", Pattern.quote("${native_capability}"));
-			if (header != null) {
-				header.set(warning);
-			}
 		} else {
 
 			String osname = null;
@@ -387,5 +322,55 @@ public class OSInformation {
 				}
 			}
 		}
+	}
+
+	public static class OSNameVersion {
+		public Version	osversion;
+		public String	osnames;
+	}
+
+	public static OSNameVersion getOperatingSystemAliases(String sysPropOsName, String sysPropOsVersion) {
+		OSNameVersion nc = new OSNameVersion();
+
+		if (sysPropOsName.startsWith("Windows")) {
+			if (sysPropOsVersion.startsWith("10.0")) {
+				nc.osversion = new Version(10, 0, 0);
+				nc.osnames = "Windows10,Windows 10,Win32";
+			} else if (sysPropOsVersion.startsWith("6.3")) {
+				nc.osversion = new Version(6, 3, 0);
+				nc.osnames = "Windows8.1,Windows 8.1,Win32";
+			} else if (sysPropOsVersion.startsWith("6.2")) {
+				nc.osversion = new Version(6, 2, 0);
+				nc.osnames = "Windows8,Windows 8,Win32";
+			} else if (sysPropOsVersion.startsWith("6.1")) {
+				nc.osversion = new Version(6, 1, 0);
+				nc.osnames = "Windows7,Windows 7,Win32";
+			} else if (sysPropOsVersion.startsWith("6.0")) {
+				nc.osversion = new Version(6, 0, 0);
+				nc.osnames = "WindowsVista,WinVista,Windows Vista,Win32";
+			} else if (sysPropOsVersion.startsWith("5.1")) {
+				nc.osversion = new Version(5, 1, 0);
+				nc.osnames = "WindowsXP,WinXP,Windows XP,Win32";
+			} else {
+				nc = null;
+			}
+		} else if (sysPropOsName.startsWith("Mac OS X")) {
+			nc.osversion = convertUnixKernelVersion(sysPropOsVersion);
+			nc.osnames = "MacOSX,Mac OS X";
+			return nc;
+		} else if (sysPropOsName.toLowerCase().startsWith("linux")) {
+			nc.osversion = convertUnixKernelVersion(sysPropOsVersion);
+			nc.osnames = "Linux";
+		} else if (sysPropOsName.startsWith("Solaris")) {
+			nc.osversion = convertUnixKernelVersion(sysPropOsVersion);
+			nc.osnames = "Solaris";
+		} else if (sysPropOsName.startsWith("AIX")) {
+			nc.osversion = convertUnixKernelVersion(sysPropOsVersion);
+			nc.osnames = "AIX";
+		} else if (sysPropOsName.startsWith("HP-UX")) {
+			nc.osversion = convertUnixKernelVersion(sysPropOsVersion);
+			nc.osnames = "HPUX,hp-ux";
+		}
+		return nc;
 	}
 }
