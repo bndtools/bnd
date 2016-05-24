@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
@@ -28,7 +28,9 @@ import org.bndtools.templating.TemplateEngine;
 import org.bndtools.templating.util.AttributeDefinitionImpl;
 import org.bndtools.templating.util.ObjectClassDefinitionImpl;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -38,6 +40,7 @@ import org.osgi.service.repository.ContentNamespace;
 
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.lib.io.IO;
+import bndtools.Plugin;
 
 public class CapabilityBasedTemplate implements Template {
 
@@ -56,7 +59,7 @@ public class CapabilityBasedTemplate implements Template {
     private final URI iconUri;
 
     private final String metaTypePath;
-    private final String ocd;
+    private final String ocdRef;
 
     private final String helpPath;
 
@@ -109,7 +112,7 @@ public class CapabilityBasedTemplate implements Template {
         metaTypePath = metaTypeObj instanceof String ? (String) metaTypeObj : null;
 
         Object ocdObj = attrs.get("ocd");
-        ocd = ocdObj instanceof String ? ((String) ocdObj).trim() : null;
+        ocdRef = ocdObj instanceof String ? ((String) ocdObj).trim() : null;
     }
 
     @Override
@@ -145,33 +148,53 @@ public class CapabilityBasedTemplate implements Template {
 
     @Override
     public ObjectClassDefinition getMetadata(IProgressMonitor monitor) throws Exception {
-        ObjectClassDefinition result;
+        String resourceId = ResourceUtils.getIdentityCapability(capability.getResource()).osgi_identity();
 
-        if (metaTypePath != null && ocd != null) {
+        if (metaTypePath != null) {
             try (JarFile bundleJarFile = new JarFile(fetchBundle())) {
                 JarEntry metaTypeEntry = bundleJarFile.getJarEntry(metaTypePath);
                 try (InputStream entryInput = bundleJarFile.getInputStream(metaTypeEntry)) {
                     MetaData metaData = new MetaDataReader().parse(entryInput);
-                    OCD felixOcd = (OCD) metaData.getObjectClassDefinitions().get(ocd);
-                    result = new FelixOCDAdapter(felixOcd);
+
+                    @SuppressWarnings("rawtypes")
+                    Map ocdMap = metaData.getObjectClassDefinitions();
+                    if (ocdMap != null) {
+                        if (ocdMap.size() == 1) {
+                            @SuppressWarnings("unchecked")
+                            Entry<String,OCD> entry = (Entry<String,OCD>) ocdMap.entrySet().iterator().next();
+                            // There is exactly one OCD, but if the capability specified the 'ocd' property then it must match.
+                            if (ocdRef == null || ocdRef.equals(entry.getKey()))
+                                return new FelixOCDAdapter(entry.getValue());
+                            log(IStatus.WARNING, String.format("MetaType entry '%s' from resource '%s' did not contain an Object Class Definition with id '%s'", metaTypePath, resourceId, ocdRef), null);
+                        } else {
+                            // There are multiple OCDs in the MetaType record, so the capability must have specified the 'ocd' property.
+                            if (ocdRef != null) {
+                                OCD ocd = (OCD) ocdMap.get(ocdRef);
+                                if (ocd != null)
+                                    return new FelixOCDAdapter(ocd);
+                                log(IStatus.WARNING, String.format("MetaType entry '%s' from resource '%s' did not contain an Object Class Definition with id '%s'", metaTypePath, resourceId, ocdRef), null);
+                            } else {
+                                log(IStatus.WARNING, String.format("MetaType entry '%s' from resource '%s' contains multiple Object Class Definitions, and no 'ocd' property was specified.", metaTypePath, resourceId), null);
+                            }
+                        }
+                    }
                 }
             }
-        } else {
-            ObjectClassDefinitionImpl ocdImpl = new ObjectClassDefinitionImpl(name, description, null);
-
-            ResourceMap inputs = getInputSources();
-            Map<String,String> params = engine.getTemplateParameters(inputs, monitor);
-            for (Entry<String,String> entry : params.entrySet()) {
-                AttributeDefinitionImpl ad = new AttributeDefinitionImpl(entry.getKey(), entry.getKey(), 0, AttributeDefinition.STRING);
-                if (entry.getValue() != null)
-                    ad.setDefaultValue(new String[] {
-                            entry.getValue()
-                    });
-                ocdImpl.addAttribute(ad, true);
-            }
-            result = ocdImpl;
         }
-        return result;
+
+        // No MetaType could be loaded, so build one automatically from the parameters used in the templates.
+        ObjectClassDefinitionImpl ocdImpl = new ObjectClassDefinitionImpl(name, description, null);
+        ResourceMap inputs = getInputSources();
+        Map<String,String> params = engine.getTemplateParameters(inputs, monitor);
+        for (Entry<String,String> entry : params.entrySet()) {
+            AttributeDefinitionImpl ad = new AttributeDefinitionImpl(entry.getKey(), entry.getKey(), 0, AttributeDefinition.STRING);
+            if (entry.getValue() != null)
+                ad.setDefaultValue(new String[] {
+                        entry.getValue()
+                });
+            ocdImpl.addAttribute(ad, true);
+        }
+        return ocdImpl;
     }
 
     @Override
@@ -300,6 +323,10 @@ public class CapabilityBasedTemplate implements Template {
         // nothing to do
     }
 
+    private static void log(int level, String message, Throwable e) {
+        Plugin.getDefault().getLog().log(new Status(level, Plugin.PLUGIN_ID, 0, message, e));
+    }
+
     private static class FelixADAdapter implements AttributeDefinition {
 
         private final AD ad;
@@ -352,13 +379,15 @@ public class CapabilityBasedTemplate implements Template {
         public String[] getDefaultValue() {
             return ad.getDefaultValue();
         }
-    };
+    }
 
     private static class FelixOCDAdapter implements ObjectClassDefinition {
 
         private final OCD ocd;
 
         public FelixOCDAdapter(OCD ocd) {
+            if (ocd == null)
+                throw new NullPointerException();
             this.ocd = ocd;
         }
 
@@ -377,12 +406,12 @@ public class CapabilityBasedTemplate implements Template {
             return ocd.getDescription();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public AttributeDefinition[] getAttributeDefinitions(int filter) {
             if (ocd.getAttributeDefinitions() == null)
                 return null;
 
-            @SuppressWarnings("unchecked")
             Iterator<AD> iter = ocd.getAttributeDefinitions().values().iterator();
             if (filter == ObjectClassDefinition.OPTIONAL || filter == ObjectClassDefinition.REQUIRED) {
                 boolean required = (filter == ObjectClassDefinition.REQUIRED);
@@ -407,6 +436,7 @@ public class CapabilityBasedTemplate implements Template {
             return null;
         }
 
+        @SuppressWarnings("rawtypes")
         private static class RequiredFilterIterator implements Iterator {
 
             private final Iterator base;
