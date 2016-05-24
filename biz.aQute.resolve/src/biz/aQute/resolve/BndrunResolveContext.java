@@ -183,6 +183,16 @@ public class BndrunResolveContext extends AbstractResolveContext {
 				system.addProvideCapabilities(systemCapabilities);
 
 				//
+				// Some capabilities are provided by the runtime, like native
+				// code.
+				// We need to add them here so the resolver is aware of them
+				//
+
+				Parameters providedCapabilities = new Parameters(
+						properties.mergeProperties(Constants.RUNPROVIDEDCAPABILITIES));
+				system.addProvideCapabilities(providedCapabilities);
+
+				//
 				// Load the frameworks capabilities
 				//
 
