@@ -3,10 +3,15 @@ package test;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
+
+import org.osgi.resource.Capability;
 
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.OSInformation;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.resource.RequirementBuilder;
+import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.lib.strings.Strings;
 import junit.framework.TestCase;
 
@@ -32,22 +37,40 @@ public class ProcessorTest extends TestCase {
 		p.close();
 	}
 
-	public void testNative() throws IOException {
-		Processor p = new Processor();
+	public void testNativeWarning() throws Exception {
+		try (Processor p = new Processor();) {
+			String s = p._native_capability("native_capability");
+			assertTrue(p.check());
+		}
+	}
+	public void testNative() throws Exception {
+		assertNative("osname=linux;osversion=2.3;processor=arm_le", "(osgi.native.osname~=LINUX)");
+		assertNative("osname=Windows;osversion=10.0;processor=x86", "(osgi.native.osname~=Win32)");
+		assertNative("osname=Windows;osversion=10.0;processor=x86", "(osgi.native.processor~=pentium)");
+		assertNative("osname=Windows;osversion=10.0;processor=x86-64", "(osgi.native.processor~=amd64)");
+		assertNative("osname=Linux;osversion=5.1.0;processor=arm", "(osgi.native.processor~=arm)",
+				"The 'arm' processor is deprecated");
 
-		String s = p._native_capability(new String[] {
-				"_native_capability"
-		});
-		System.out.println(s);
-		assertNotNull(s);
+	}
 
-		s = Strings.join(OSInformation.getProcessorAliases("x86-64"));
-		assertEquals(s, Strings.join(OSInformation.getProcessorAliases("X86-64")));
-		assertEquals(s, Strings.join(OSInformation.getProcessorAliases("x86_64")));
-		assertEquals(s, Strings.join(OSInformation.getProcessorAliases("AMD64")));
-		assertEquals(s, Strings.join(OSInformation.getProcessorAliases("em64t")));
+	private void assertNative(String in, String filter, String... fixup) throws Exception {
+		List<String> split = Strings.split("\\s*;\\s*", in);
+		split.add(0, "native_capability");
+		try (Processor p = new Processor();) {
+			String s = p._native_capability(split.toArray(new String[0]));
+			assertNotNull(s);
+			System.out.println(s);
 
-		p.close();
+			ResourceBuilder rb = new ResourceBuilder();
+			List<Capability> capabilities = rb.addProvideCapabilities(s);
+
+			RequirementBuilder qb = new RequirementBuilder("osgi.native");
+			qb.addDirective("filter", filter);
+			List<Capability> found = ResourceUtils.findProviders(qb.synthetic(), capabilities);
+			assertTrue(!found.isEmpty());
+
+			assertTrue(p.check(fixup));
+		}
 	}
 
 	public static void testPlugins() {

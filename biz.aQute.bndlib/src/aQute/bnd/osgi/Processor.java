@@ -59,7 +59,6 @@ import aQute.lib.collections.SortedList;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
-import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.generics.Create;
@@ -77,46 +76,46 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		log = reporterAdapter;
 	}
 
-	static final int				BUFFER_SIZE			= IOConstants.PAGE_SIZE * 1;
+	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
 
-	static Pattern					PACKAGES_IGNORED	= Pattern.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
+	static Pattern PACKAGES_IGNORED = Pattern.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
-	static ThreadLocal<Processor>	current				= new ThreadLocal<Processor>();
+	static ThreadLocal<Processor>	current			= new ThreadLocal<Processor>();
 	static ScheduledExecutorService	executor		= Executors.newScheduledThreadPool(10);
-	static Random					random				= new Random();
+	static Random					random			= new Random();
 	// TODO handle include files out of date
 	// TODO make splitter skip eagerly whitespace so trim is not necessary
-	public final static String		LIST_SPLITTER		= "\\s*,\\s*";
-	final List<String>				errors				= new ArrayList<String>();
-	final List<String>				warnings			= new ArrayList<String>();
-	final Set<Object>				basicPlugins		= new HashSet<Object>();
-	private final Set<Closeable>	toBeClosed			= new HashSet<Closeable>();
+	public final static String		LIST_SPLITTER	= "\\s*,\\s*";
+	final List<String>				errors			= new ArrayList<String>();
+	final List<String>				warnings		= new ArrayList<String>();
+	final Set<Object>				basicPlugins	= new HashSet<Object>();
+	private final Set<Closeable>	toBeClosed		= new HashSet<Closeable>();
 	Set<Object>						plugins;
 
-	boolean							pedantic;
-	boolean							trace;
-	private final Logger			logger				= LoggerFactory.getLogger(getClass().getName());
-	boolean							exceptions;
-	boolean							fileMustExist		= true;
+	boolean					pedantic;
+	boolean					trace;
+	private final Logger	logger			= LoggerFactory.getLogger(getClass().getName());
+	boolean					exceptions;
+	boolean					fileMustExist	= true;
 
-	private File					base				= new File("").getAbsoluteFile();
-	private URI						baseURI				= base.toURI();
+	private File	base	= new File("").getAbsoluteFile();
+	private URI		baseURI	= base.toURI();
 
-	Properties						properties;
-	String							profile;
-	private Macro					replacer;
-	private long					lastModified;
-	private File					propertiesFile;
-	private boolean					fixup				= true;
-	long							modified;
-	Processor						parent;
-	List<File>						included;
+	Properties		properties;
+	String			profile;
+	private Macro	replacer;
+	private long	lastModified;
+	private File	propertiesFile;
+	private boolean	fixup	= true;
+	long			modified;
+	Processor		parent;
+	List<File>		included;
 
-	CL								pluginLoader;
-	Collection<String>				filter;
-	HashSet<String>					missingCommand;
-	Boolean							strict;
-	boolean							fixupMessages;
+	CL					pluginLoader;
+	Collection<String>	filter;
+	HashSet<String>		missingCommand;
+	Boolean				strict;
+	boolean				fixupMessages;
 
 	public static class FileLine {
 		public static final FileLine	DUMMY	= new FileLine(null, 0, 0);
@@ -222,7 +221,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * A processor can mark itself current for a thread.
-	 * 
 	 */
 	private Processor current() {
 		Processor p = current.get();
@@ -450,7 +448,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * They are class names, optionally associated with attributes. Plugins can
 	 * implement the Plugin interface to see these attributes. Any object can be
 	 * a plugin.
-	 * 
 	 */
 	public Set<Object> getPlugins() {
 		synchronized (this) {
@@ -903,7 +900,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Property handling ...
-	 * 
 	 */
 
 	public Properties getProperties() {
@@ -1445,7 +1441,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * This should be overridden by subclasses to add extra macro command
 	 * domains on the search list.
-	 * 
 	 */
 	protected Object[] getMacroDomains() {
 		return new Object[] {};
@@ -1454,7 +1449,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Return the properties but expand all macros. This always returns a new
 	 * Properties object that can be used in any way.
-	 * 
 	 */
 	public Properties getFlattenedProperties() {
 		return getReplacer().getFlattenedProperties();
@@ -1464,7 +1458,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Return the properties but expand all macros. This always returns a new
 	 * Properties object that can be used in any way.
-	 * 
 	 */
 	public Properties getFlattenedProperties(boolean ignoreInstructions) {
 		return getReplacer().getFlattenedProperties(ignoreInstructions);
@@ -1472,7 +1465,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Return all inherited property keys
-	 * 
 	 */
 	public Set<String> getPropertyKeys(boolean inherit) {
 		Set<String> result;
@@ -1558,7 +1550,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Join a list.
-	 * 
 	 */
 	public static String join(Collection< ? > list, String delimeter) {
 		return join(delimeter, list);
@@ -2074,11 +2065,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return new String(array);
 	}
 
-	private static final String	OSGI_NATIVE		= "osgi.native";
-	private static final String	OS_NAME			= "osname";
-	private static final String	OS_VERSION		= "osversion";
-	private static final String	OS_PROCESSOR	= "processor";
-
 	/**
 	 * <p>
 	 * Generates a Capability string, in the format specified by the OSGi
@@ -2099,98 +2085,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 *            [native_capability,&nbsp;osversion=3.2.4,&nbsp;osname=Linux]
 	 */
 
-	public String _native_capability(String[] args) throws IllegalArgumentException {
-		StringBuilder builder = new StringBuilder().append(OSGI_NATIVE);
-
-		String processorNames = null;
-		OSInformation osInformation = null;
-		IllegalArgumentException osInformationException = null;
-		/*
-		 * Determine the processor information
-		 */
-		String[] aliases = OSInformation.getProcessorAliases(System.getProperty("os.arch"));
-		if (aliases != null)
-			processorNames = Strings.join(aliases);
-
-		/*
-		 * Determine the OS information
-		 */
-
-		try {
-			osInformation = new OSInformation();
-		} catch (IllegalArgumentException e) {
-			osInformationException = e;
-		}
-
-		/*
-		 * Determine overrides
-		 */
-
-		String osnameOverride = null;
-		Version osversionOverride = null;
-		String processorNamesOverride = null;
-
-		if (args.length > 1) {
-			assert ("native_capability".equals(args[0]));
-			for (int i = 1; i < args.length; i++) {
-				String arg = args[i];
-				String[] fields = arg.split("=", 2);
-				if (fields.length != 2) {
-					throw new IllegalArgumentException("Illegal property syntax in \"" + arg + "\", use \"key=value\"");
-				}
-				String key = fields[0];
-				String value = fields[1];
-				if (OS_NAME.equals(key)) {
-					osnameOverride = value;
-				} else if (OS_VERSION.equals(key)) {
-					osversionOverride = new Version(value);
-				} else if (OS_PROCESSOR.equals(key)) {
-					processorNamesOverride = value;
-				} else {
-					throw new IllegalArgumentException("Unrecognised/unsupported property. Supported: " + OS_NAME + ", "
-							+ OS_VERSION + ", " + OS_PROCESSOR + ".");
-				}
-			}
-		}
-
-		/*
-		 * Determine effective values: put determined value into override if
-		 * there is no override
-		 */
-
-		if (osnameOverride == null && osInformation != null) {
-			osnameOverride = osInformation.osnames;
-		}
-		if (osversionOverride == null && osInformation != null) {
-			osversionOverride = osInformation.osversion;
-		}
-		if (processorNamesOverride == null && processorNames != null) {
-			processorNamesOverride = processorNames;
-		}
-
-		/*
-		 * Construct result string
-		 */
-
-		builder.append(";" + OSGI_NATIVE + "." + OS_NAME + ":List<String>=\"").append(osnameOverride).append('"');
-		builder.append(";" + OSGI_NATIVE + "." + OS_VERSION + ":Version=").append(osversionOverride);
-		builder.append(";" + OSGI_NATIVE + "." + OS_PROCESSOR + ":List<String>=\"")
-				.append(processorNamesOverride)
-				.append('"');
-
-		/*
-		 * Report error if needed
-		 */
-
-		if (osnameOverride == null || osversionOverride == null || processorNamesOverride == null) {
-			throw new IllegalArgumentException(
-					"At least one of the required parameters could not be detected; specify an override. Detected: "
-							+ builder.toString(),
-					osInformationException);
-		}
-
-		return builder.toString();
+	public String _native_capability(String... args) throws Exception {
+		return OSInformation.getNativeCapabilityClause(this, args);
 	}
+
 
 	/**
 	 * Set the current command thread. This must be balanced with the
@@ -2331,7 +2229,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Create a location object and add it to the locations
-	 * 
 	 */
 	List<Location> locations = new ArrayList<Location>();
 
