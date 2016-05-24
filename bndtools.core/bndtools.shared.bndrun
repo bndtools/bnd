@@ -43,12 +43,9 @@ help.bundles: \
 	org.eclipse.equinox.http.jetty,\
 	org.eclipse.equinox.http.registry,\
 	org.eclipse.equinox.http.servlet,\
-	org.eclipse.equinox.jsp.jasper,\
-	org.eclipse.equinox.jsp.jasper.registry,\
 	org.eclipse.help,\
 	org.eclipse.help.base,\
 	org.eclipse.help.ui,\
-	org.eclipse.help.webapp,\
 	org.eclipse.platform.doc.user,\
 	org.eclipse.search,\
 	org.eclipse.ui.cheatsheets,\
