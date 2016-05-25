@@ -118,7 +118,7 @@ public class ResourceBuilder {
 
 			identity.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn.getKey());
 			identity.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE,
-					fragment ? IdentityNamespace.TYPE_FRAGMENT : IdentityNamespace.TYPE_FRAGMENT);
+					fragment ? IdentityNamespace.TYPE_FRAGMENT : IdentityNamespace.TYPE_BUNDLE);
 
 			if ("true".equals(singleton)) {
 				identity.addDirective(IdentityNamespace.CAPABILITY_SINGLETON_DIRECTIVE, "true");
@@ -280,6 +280,10 @@ public class ResourceBuilder {
 			added.add(addedCapability);
 		}
 		return added;
+	}
+
+	public List<Capability> addProvideCapabilities(String clauses) throws Exception {
+		return addProvideCapabilities(new Parameters(clauses));
 	}
 
 	public Capability addProvideCapability(String namespace, Attrs attrs) throws Exception {

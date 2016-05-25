@@ -1,79 +1,88 @@
 package aQute.bnd.osgi;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.osgi.resource.Capability;
+
+import aQute.bnd.osgi.resource.CapabilityBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
+import aQute.lib.strings.Strings;
 
 /**
  * OS specific information, used by the native_capability macro for
  * osgi.native.* bundle properties.
  */
 public class OSInformation {
-	String					osnames							= null;
-	Version					osversion						= null;
+	String	osnames		= null;
+	Version	osversion	= null;
 
 	static private String	regexQualifierNotAllowedChars	= "[^\\p{Alnum}-_]";
 	static private Pattern	digitPattern					= Pattern.compile("(\\d+).*");
 
-	final static String[][]	processorFamilies				= {
-																	new String[] {
-																			"x86-64", "amd64", "em64t", "x86_64"
-																		},
-																	new String[] {
-																			"x86", "pentium", "i386", "i486", "i586",
-																			"i686"
-																		},
-																	new String[] {
-																			"68k"
-																		},
-																	new String[] {
-																			"ARM"
-																		},
-																	new String[] {
-																			"ARM_be"
-																		},
-																	new String[] {
-																			"ARM_le"
-																		},
-																	new String[] {
-																			"Alpha"
-																		},
-																	new String[] {
-																			"ia64n"
-																		},
-																	new String[] {
-																			"ia64w"
-																		},
-																	new String[] {
-																			"Ignite", "psc1k"
-																		},
-																	new String[] {
-																			"Mips"
-																		},
-																	new String[] {
-																			"PARisc"
-																		},
-																	new String[] {
-																			"PowerPC", "power", "ppc"
-																		},
-																	new String[] {
-																			"Sh4"
-																		},
-																	new String[] {
-																			"Sparc"
-																		},
-																	new String[] {
-																			"Sparcv9"
-																		},
-																	new String[] {
-																			"S390"
-																		},
-																	new String[] {
-																			"V850e"
-																		},
-																};
-	static String[]			osarch							= getProcessorAliases(System.getProperty("os.arch"));
+	final static String[][]	processorFamilies	= {
+			new String[] {
+					"x86-64", "amd64", "em64t", "x86_64"
+															},
+			new String[] {
+					"x86", "pentium", "i386", "i486", "i586", "i686"
+															},
+			new String[] {
+					"68k"
+															},
+			new String[] {
+					"ARM"
+															},
+			new String[] {
+					"ARM_be"
+															},
+			new String[] {
+					"ARM_le"
+															},
+			new String[] {
+					"Alpha"
+															},
+			new String[] {
+					"ia64n"
+															},
+			new String[] {
+					"ia64w"
+															},
+			new String[] {
+					"Ignite", "psc1k"
+															},
+			new String[] {
+					"Mips"
+															},
+			new String[] {
+					"PARisc"
+															},
+			new String[] {
+					"PowerPC", "power", "ppc"
+															},
+			new String[] {
+					"Sh4"
+															},
+			new String[] {
+					"Sparc"
+															},
+			new String[] {
+					"Sparcv9"
+															},
+			new String[] {
+					"S390"
+															},
+			new String[] {
+					"V850e"
+															},
+													};
+	static String[]			osarch				= getProcessorAliases(System.getProperty("os.arch"));
 
 	public static String[] getProcessorAliases(String osArch) {
 		for (String[] pnames : processorFamilies) {
@@ -101,8 +110,8 @@ public class OSInformation {
 	 * 
 	 * @param sysPropOsVersion the system property "os.version"
 	 */
-	void convertUnixKernelVersion(String sysPropOsVersion) {
-		osversion = new Version(0, 0, 0);
+	static Version convertUnixKernelVersion(String sysPropOsVersion) {
+		Version osversion = new Version(0, 0, 0);
 		String s = sysPropOsVersion.trim();
 		int index = 0;
 		do {
@@ -113,7 +122,7 @@ public class OSInformation {
 				try {
 					matchedDigitNumber = Integer.parseInt(matchedDigit);
 				} catch (NumberFormatException e) {
-					assert (false);
+					assert(false);
 					break;
 				}
 
@@ -131,7 +140,7 @@ public class OSInformation {
 						break;
 
 					default :
-						assert (false);
+						assert(false);
 						break;
 				}
 
@@ -151,6 +160,7 @@ public class OSInformation {
 			String qualifier = s.replaceAll(regexQualifierNotAllowedChars, "_");
 			osversion = new Version(osversion.getMajor(), osversion.getMinor(), osversion.getMicro(), qualifier);
 		}
+		return osversion;
 	}
 
 	/**
@@ -159,74 +169,208 @@ public class OSInformation {
 	 * @throws IllegalArgumentException
 	 */
 	public OSInformation() throws IllegalArgumentException {
-		String sysPropOsName = System.getProperty("os.name");
-		String sysPropOsVersion = System.getProperty("os.version");
+		this(System.getProperty("os.name"), System.getProperty("os.version"));
+	}
+
+	public OSInformation(String sysPropOsName, String sysPropOsVersion) throws IllegalArgumentException {
 
 		if (sysPropOsName == null || sysPropOsName.length() == 0 || sysPropOsVersion == null
 				|| sysPropOsVersion.length() == 0) {
 			return;
 		}
+		OSNameVersion pair = getOperatingSystemAliases(sysPropOsName, sysPropOsVersion);
+		if (pair == null)
+			throw new IllegalArgumentException(
+					"Unknown OS/version combination: " + sysPropOsName + " " + sysPropOsVersion);
+
+		osversion = pair.osversion;
+		osnames = pair.osnames;
+	}
+
+	static class NativeCapability {
+		public List<String>	processor	= new ArrayList<>();
+		public List<String>	osname		= new ArrayList<>();
+		public Version		osversion;
+		public String		language	= "en";
+	}
+
+	/**
+	 * Helper for the Processor._native_capability macro
+	 * 
+	 * @param args the arguments of the macro
+	 * @return a provide capability clause for the native environment
+	 */
+	public static String getNativeCapabilityClause(Processor p, String args[]) throws Exception {
+		NativeCapability clause = new NativeCapability();
+
+		parseNativeCapabilityArgs(p, args, clause);
+
+		validateNativeCapability(clause);
+
+		Capability cap = createCapability(clause);
+
+		return ResourceUtils.toProvideCapability(cap);
+	}
+
+	static Capability createCapability(NativeCapability clause) throws Exception {
+		CapabilityBuilder c = new CapabilityBuilder("osgi.native");
+		c.addAttribute("osgi.native.osname", clause.osname);
+		c.addAttribute("osgi.native.osversion", clause.osversion);
+		c.addAttribute("osgi.native.processor", clause.processor);
+		c.addAttribute("osgi.native.language", clause.language);
+		Capability cap = c.synthetic();
+		return cap;
+	}
+
+	static void validateNativeCapability(NativeCapability clause) {
+		if (clause.osversion == null)
+			throw new IllegalArgumentException("osversion/osgi.native.osversion not set in ${native_capability}");
+		if (clause.osname.isEmpty())
+			throw new IllegalArgumentException("osname/osgi.native.osname not set in ${native_capability}");
+		if (clause.processor.isEmpty())
+			throw new IllegalArgumentException("processor/osgi.native.processor not set in ${native_capability}");
+	}
+
+	static void parseNativeCapabilityArgs(Processor p, String[] args, NativeCapability clause) throws Exception {
+		if (args.length == 1) {
+
+			OSInformation osi = new OSInformation();
+			clause.osname.addAll(Strings.split(osi.osnames));
+			clause.osversion = osi.osversion;
+			clause.processor.addAll(Arrays.asList(getProcessorAliases(System.getProperty("os.arch"))));
+			clause.language = Locale.getDefault().toString();
+
+			StringBuilder sb = new StringBuilder();
+			sb.append("osname=").append(System.getProperty("os.name"));
+			sb.append(";").append("osversion=").append(MavenVersion.cleanupVersion(System.getProperty("os.version")));
+			sb.append(";").append("processor=").append(System.getProperty("os.arch"));
+			sb.append(";").append("lang=").append(clause.language);
+			String advice = sb.toString();
+		} else {
+
+			String osname = null;
+
+			for (int i = 1; i < args.length; i++) {
+
+				String parts[] = args[i].split("\\s*=\\s*");
+				if (parts.length != 2)
+					throw new IllegalArgumentException(
+							"Illegal property syntax in \"" + args[i] + "\", use \"key=value\"");
+
+				String key = Strings.trim(parts[0]);
+				String value = Strings.trim(parts[1]);
+				boolean isList = value.indexOf(',') > 0;
+
+				switch (key) {
+					case "processor" :
+					case "osgi.native.processor" :
+						if (isList)
+							clause.processor.addAll(Strings.split(value));
+						else {
+							if ("arm".equals(value)) {
+								p.warning("The 'arm' processor is deprecated. Specify either 'arm_le' or 'arm_be'");
+							}
+							String[] processorAliases = getProcessorAliases(value);
+							if (processorAliases != null && processorAliases.length > 0) {
+								clause.processor.addAll(Arrays.asList(processorAliases));
+							} else {
+								clause.processor.add(value);
+							}
+						}
+						break;
+
+					case "osname" :
+					case "osgi.native.osname" :
+						if (isList)
+							clause.osname.addAll(Strings.split(value));
+						else {
+							if (osname == null) {
+								osname = value;
+							} else {
+								clause.osname.add(osname);
+								osname = value;
+							}
+						}
+						break;
+
+					case "osversion" :
+					case "osgi.native.osversion" :
+						if (clause.osversion == null) {
+							clause.osversion = Version.parseVersion(value);
+						} else
+							throw new IllegalArgumentException(
+									"osversion/osgi.native.osversion can only be set once in ${native_capability}");
+						break;
+
+					case "osgi.native.language" :
+					case "lang" :
+						if (clause.language != null)
+							throw new IllegalArgumentException(
+									"lang/osgi.native.lang can only be set once in ${native_capability}");
+
+						clause.language = value;
+						break;
+				}
+
+			}
+			if (osname != null) {
+				try {
+					OSInformation osi = new OSInformation(osname, clause.osversion.toString());
+					clause.osname.addAll(Strings.split(osi.osnames));
+				} catch (Exception e) {
+					clause.osname.add(osname);
+				}
+			}
+		}
+	}
+
+	public static class OSNameVersion {
+		public Version	osversion;
+		public String	osnames;
+	}
+
+	public static OSNameVersion getOperatingSystemAliases(String sysPropOsName, String sysPropOsVersion) {
+		OSNameVersion nc = new OSNameVersion();
 
 		if (sysPropOsName.startsWith("Windows")) {
 			if (sysPropOsVersion.startsWith("10.0")) {
-				osversion = new Version(10, 0, 0);
-				osnames = "Windows10,Windows 10,Win32";
+				nc.osversion = new Version(10, 0, 0);
+				nc.osnames = "Windows10,Windows 10,Win32";
 			} else if (sysPropOsVersion.startsWith("6.3")) {
-				osversion = new Version(6, 3, 0);
-				osnames = "Windows8.1,Windows 8.1,Win32";
+				nc.osversion = new Version(6, 3, 0);
+				nc.osnames = "Windows8.1,Windows 8.1,Win32";
 			} else if (sysPropOsVersion.startsWith("6.2")) {
-				osversion = new Version(6, 2, 0);
-				osnames = "Windows8,Windows 8,Win32";
+				nc.osversion = new Version(6, 2, 0);
+				nc.osnames = "Windows8,Windows 8,Win32";
 			} else if (sysPropOsVersion.startsWith("6.1")) {
-				osversion = new Version(6, 1, 0);
-				osnames = "Windows7,Windows 7,Win32";
+				nc.osversion = new Version(6, 1, 0);
+				nc.osnames = "Windows7,Windows 7,Win32";
 			} else if (sysPropOsVersion.startsWith("6.0")) {
-				osversion = new Version(6, 0, 0);
-				osnames = "WindowsVista,WinVista,Windows Vista,Win32";
+				nc.osversion = new Version(6, 0, 0);
+				nc.osnames = "WindowsVista,WinVista,Windows Vista,Win32";
 			} else if (sysPropOsVersion.startsWith("5.1")) {
-				osversion = new Version(5, 1, 0);
-				osnames = "WindowsXP,WinXP,Windows XP,Win32";
+				nc.osversion = new Version(5, 1, 0);
+				nc.osnames = "WindowsXP,WinXP,Windows XP,Win32";
 			} else {
-				throw new IllegalArgumentException(String.format(
-						"Unrecognised or unsupported Windows version while processing ${native_capability} macro: %s version %s. Supported: XP, Vista, Win7, Win8, Win8.1, Win10.",
-						sysPropOsName, sysPropOsVersion));
+				nc = null;
 			}
-
-			return;
+		} else if (sysPropOsName.startsWith("Mac OS X")) {
+			nc.osversion = convertUnixKernelVersion(sysPropOsVersion);
+			nc.osnames = "MacOSX,Mac OS X";
+			return nc;
+		} else if (sysPropOsName.toLowerCase().startsWith("linux")) {
+			nc.osversion = convertUnixKernelVersion(sysPropOsVersion);
+			nc.osnames = "Linux";
+		} else if (sysPropOsName.startsWith("Solaris")) {
+			nc.osversion = convertUnixKernelVersion(sysPropOsVersion);
+			nc.osnames = "Solaris";
+		} else if (sysPropOsName.startsWith("AIX")) {
+			nc.osversion = convertUnixKernelVersion(sysPropOsVersion);
+			nc.osnames = "AIX";
+		} else if (sysPropOsName.startsWith("HP-UX")) {
+			nc.osversion = convertUnixKernelVersion(sysPropOsVersion);
+			nc.osnames = "HPUX,hp-ux";
 		}
-
-		if (sysPropOsName.startsWith("Mac OS X")) {
-			convertUnixKernelVersion(sysPropOsVersion);
-			osnames = "MacOSX,Mac OS X";
-			return;
-		}
-
-		if (sysPropOsName.toLowerCase().startsWith("linux")) {
-			convertUnixKernelVersion(sysPropOsVersion);
-			osnames = "Linux";
-			return;
-		}
-
-		if (sysPropOsName.startsWith("Solaris")) {
-			convertUnixKernelVersion(sysPropOsVersion);
-			osnames = "Solaris";
-			return;
-		}
-
-		if (sysPropOsName.startsWith("AIX")) {
-			convertUnixKernelVersion(sysPropOsVersion);
-			osnames = "AIX";
-			return;
-		}
-
-		if (sysPropOsName.startsWith("HP-UX")) {
-			convertUnixKernelVersion(sysPropOsVersion);
-			osnames = "HPUX,hp-ux";
-			return;
-		}
-
-		throw new IllegalArgumentException(String.format(
-				"Unrecognised or unsupported OS while processing ${native_capability} macro: %s version %s. Supported: Windows, Mac OS X, Linux, Solaris, AIX, HP-UX.",
-				sysPropOsName, sysPropOsVersion));
+		return nc;
 	}
 }

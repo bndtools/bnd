@@ -1,5 +1,7 @@
 package aQute.lib.strings;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -93,5 +95,17 @@ public class Strings {
 			return s;
 
 		return s.substring(start, end);
+	}
+
+	public static List<String> split(String s) {
+		return split("\\s*,\\s*", s);
+	}
+
+	public static List<String> split(String regex, String s) {
+		String[] split = s.split(regex);
+		List<String> l = new ArrayList<String>(split.length);
+		for (int i = 0; i < split.length; i++)
+			l.add(split[i]);
+		return l;
 	}
 }

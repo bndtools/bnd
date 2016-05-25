@@ -1,6 +1,7 @@
 package aQute.bnd.main;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,6 +11,8 @@ import java.util.Set;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
+import org.osgi.resource.Wire;
+import org.osgi.service.repository.ContentNamespace;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Container;
@@ -18,18 +21,25 @@ import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.OSGI_CORE;
+import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.main.bnd.projectOptions;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.repository.ResourcesRepository;
+import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.lib.getopt.Arguments;
+import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.libg.cryptography.SHA256;
 import biz.aQute.resolve.ProjectResolver;
 import biz.aQute.resolve.ResolverValidator;
 import biz.aQute.resolve.ResolverValidator.Resolution;
@@ -44,11 +54,11 @@ public class ResolveCommand extends Processor {
 		getSettings(bnd);
 	}
 
-	interface ResolveOptions extends projectOptions {
+	interface FindOptions extends projectOptions {
 		String workspace();
 	}
 
-	public void _find(ResolveOptions options, bnd bnd) throws Exception {
+	public void _find(FindOptions options, bnd bnd) throws Exception {
 
 		List<String> args = options._arguments();
 
@@ -222,4 +232,108 @@ public class ResolveCommand extends Processor {
 
 	}
 
+	@Arguments(arg = "<path>...")
+	interface ResolveOptions extends Options {
+		@Description("Use the following workspace")
+		String workspace();
+
+		@Description("Specify the project directory if not in a project directory")
+		String project();
+
+		@Description("Print out the bundles")
+		boolean bundles();
+	}
+
+	@Description("Resolve a bndrun file")
+	public void _resolve(ResolveOptions options) throws Exception {
+		Project project = bnd.getProject(options.project());
+		Workspace ws = null;
+
+		if (options.workspace() != null) {
+			File file = bnd.getFile(options.workspace());
+			if (file.isDirectory()) {
+				ws = Workspace.getWorkspace(file);
+				if (!ws.isValid()) {
+					error("Invalid workspace %s", file);
+					return;
+				}
+			} else {
+				error("Workspace directory %s is not a directory", file);
+				return;
+			}
+		} else {
+			if (project != null)
+				ws = project.getWorkspace();
+		}
+
+		ResourcesRepository workspaceRepository = null;
+
+		List<Resource> resources = new ArrayList<>();
+
+		if (ws != null) {
+
+			for (Project p : ws.getAllProjects()) {
+				File[] files = p.getBuildFiles(false);
+				if (files != null) {
+					for (File file : files) {
+						Domain manifest = Domain.domain(file);
+						ResourceBuilder rb = new ResourceBuilder();
+						rb.addManifest(manifest);
+
+						Attrs attrs = new Attrs();
+						attrs.put(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, file.toURI().toString());
+						attrs.putTyped(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, file.length());
+						attrs.put(ContentNamespace.CONTENT_NAMESPACE, SHA256.digest(file).asHex());
+						rb.addCapability(
+								CapabilityBuilder.createCapReqBuilder(ContentNamespace.CONTENT_NAMESPACE, attrs));
+						Resource resource = rb.build();
+
+						resources.add(resource);
+					}
+				}
+			}
+
+		}
+
+		workspaceRepository = new ResourcesRepository(resources) {
+			public String toString() {
+				return "Workspace";
+			}
+		};
+
+		List<String> paths = options._arguments();
+		for (String path : paths) {
+			File f = getFile(path);
+			if (!f.isFile()) {
+				error("Missing bndrun file: %s", f);
+			} else {
+
+				Run run = Run.createRun(ws, f);
+
+				if (workspaceRepository != null)
+					run.addBasicPlugin(workspaceRepository);
+
+				try (ProjectResolver pr = new ProjectResolver(run);) {
+					try {
+						Map<Resource,List<Wire>> resolution = pr.resolve();
+						if (pr.isOk()) {
+							System.out.printf("# %-50s ok\n", f.getName());
+							if (options.bundles()) {
+								for (Resource r : resolution.keySet()) {
+									IdentityCapability id = ResourceUtils.getIdentityCapability(r);
+									List<ContentCapability> content = ResourceUtils.getContentCapabilities(r);
+									System.out.printf("  %-50s %40s %s\n", id.osgi_identity(),
+											content.get(0).osgi_content(), content.get(0).url());
+								}
+							}
+						}
+					} catch (Exception e) {
+						System.out.printf("%-50s %s\n", f.getName(), e.getMessage());
+						error("Failed to resolve %s: %s", f, e);
+					}
+					getInfo(pr);
+				}
+			}
+		}
+	}
 }
