@@ -20,8 +20,9 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	lib/javax.xml.stream-1.0.1.jar;version=file,\
 	${jetty.libs},\
 	slf4j.api,\
-	aQute.jpm.clnt;version=1.0;packages=*, \
-	biz.aQute.http.testservers;version=latest
+	aQute.jpm.clnt;version=1.0;packages=*,\
+	biz.aQute.http.testservers;version=latest,\
+	org.tukaani.xz;version=1.5
 	
 -testpath: \
 	${junit},\
