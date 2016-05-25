@@ -481,4 +481,8 @@ public abstract class Domain implements Iterable<String> {
 	public String getBundleCategory() {
 		return get(Constants.BUNDLE_CATEGORY);
 	}
+
+	public String getBundleNative() {
+		return get(Constants.BUNDLE_NATIVECODE);
+	}
 }
