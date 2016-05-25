@@ -12,6 +12,7 @@ import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.cryptography.SHA256;
+import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.service.reporter.Reporter;
 
 public class URLCache {
@@ -19,7 +20,7 @@ public class URLCache {
 	private final static JSONCodec	codec	= new JSONCodec();
 
 	private final File	root;
-	private Reporter	reporter;
+	private Reporter	reporter	= new Slf4jReporter(URLCache.class);
 
 	public static class InfoDTO {
 		public String	etag;
@@ -88,10 +89,10 @@ public class URLCache {
 			if (lockFile.isFile())
 				IO.delete(lockFile);
 
-			long deadline = System.currentTimeMillis() + TIMEOUT;
+			long deadline = lockFile.lastModified() + TIMEOUT;
 			while (lockFile.mkdirs() == false) {
 				if (System.currentTimeMillis() > deadline) {
-					lockFile.delete();
+					IO.delete(lockFile);
 					reporter.error("Had to delete lockfile %s due to timeout for %s", lockFile, dto);
 				}
 				reporter.trace("Waiting on lock %s for %s", lockFile, dto);

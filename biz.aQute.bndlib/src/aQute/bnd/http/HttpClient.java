@@ -131,8 +131,7 @@ public class HttpClient implements Closeable, URLConnector {
 				return null;
 
 			case OTHER :
-				HttpURLConnection connection = (HttpURLConnection) tag.getConnection();
-				throw new HttpRequestException(connection);
+				throw new HttpRequestException(tag);
 
 			case UNMODIFIED :
 			case UPDATED :
