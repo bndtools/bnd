@@ -15,6 +15,7 @@ import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.framework.namespace.NativeNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
@@ -27,6 +28,7 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.VersionRange;
+import aQute.lib.converter.Converter;
 import aQute.lib.filter.Filter;
 
 public class ResourceBuilder {
@@ -35,7 +37,7 @@ public class ResourceBuilder {
 	private final List<Capability>	capabilities	= new LinkedList<Capability>();
 	private final List<Requirement>	requirements	= new LinkedList<Requirement>();
 
-	private boolean					built			= false;
+	private boolean built = false;
 
 	public ResourceBuilder(Resource source) throws Exception {
 		addCapabilities(source.getCapabilities(null));
@@ -199,6 +201,104 @@ public class ResourceBuilder {
 		//
 
 		addRequireCapabilities(manifest.getRequireCapability());
+
+		addNativeCode(new Parameters(manifest.getBundleNative()));
+	}
+
+	private void addNativeCode(Parameters bundleNative) throws Exception {
+
+		if (bundleNative.isEmpty())
+			return;
+
+		boolean optional = false;
+		List<String> options = new LinkedList<String>();
+
+		RequirementBuilder rb = new RequirementBuilder(NativeNamespace.NATIVE_NAMESPACE);
+		FilterBuilder sb = new FilterBuilder();
+		sb.or();
+
+		for (Entry<String,Attrs> entry : bundleNative.entrySet()) {
+
+			String name = entry.getKey();
+			if ("*".equals(name)) {
+				optional = true;
+				continue;
+			}
+
+			sb.and();
+			for (String key : entry.getValue().keySet()) {
+				Object value = entry.getValue().getTyped(key);
+
+				switch (key) {
+					/**
+					 * • osname - Name of the operating system. The value of
+					 * this attribute must be the name of the op- erating system
+					 * upon which the native libraries run. A number of
+					 * canonical names are defined in Table 4.3.
+					 */
+					case "osname" :
+						String osnames[] = Converter.cnv(String[].class, value);
+						sb.or();
+						for (String osname : osnames) {
+							sb.eq(NativeNamespace.CAPABILITY_OSNAME_ATTRIBUTE, osname);
+						}
+						sb.end();
+						break;
+
+					/**
+					 * • osversion - The operating system version. The value of
+					 * this attribute must be a version range as defined in
+					 * Version Ranges on page 36.
+					 */
+					case "osversion" :
+						sb.eq(NativeNamespace.CAPABILITY_OSVERSION_ATTRIBUTE, value);
+						break;
+
+					/**
+					 * • processor - The processor architecture. The value of
+					 * this attribute must be the name of the processor
+					 * architecture upon which the native libraries run. A
+					 * number of canonical names are de- fined in Table 4.2.
+					 */
+					case "processor" :
+						String processors[] = Converter.cnv(String[].class, value);
+						sb.or();
+						for (String processor : processors) {
+							sb.eq(NativeNamespace.CAPABILITY_PROCESSOR_ATTRIBUTE, processor);
+						}
+						sb.end();
+						break;
+
+					/**
+					 * • language - The ISO code for a language. The value of
+					 * this attribute must be the name of the lan- guage for
+					 * which the native libraries have been localized.
+					 */
+					case "language" :
+						sb.eq(NativeNamespace.CAPABILITY_LANGUAGE_ATTRIBUTE, value);
+						break;
+
+					/**
+					 * • selection-filter - A selection filter. The value of
+					 * this attribute must be a filter expression that in-
+					 * dicates if the native code clause should be selected or
+					 * not.
+					 */
+					case "selection-filter" :
+						sb.literal(value.toString());
+						break;
+
+					default :
+						// ignore?? TODO
+				}
+			}
+			sb.end();
+		}
+
+		if (optional)
+			rb.addDirective("resolution", "optional");
+
+		rb.addFilter(sb.toString());
 	}
 
 	/**

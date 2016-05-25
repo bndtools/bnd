@@ -12,7 +12,7 @@ import org.osgi.resource.Resource;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.lib.collections.MultiMap;
 
-public class ResourcesRepository implements org.osgi.service.repository.Repository {
+public class ResourcesRepository extends BaseRepository {
 	final List<Resource> resources = new ArrayList<>();
 
 	public ResourcesRepository(Resource resource) {

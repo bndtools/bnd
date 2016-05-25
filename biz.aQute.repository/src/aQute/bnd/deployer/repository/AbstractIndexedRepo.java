@@ -47,6 +47,7 @@ import aQute.bnd.deployer.repository.api.Referral;
 import aQute.bnd.deployer.repository.providers.ObrContentProvider;
 import aQute.bnd.deployer.repository.providers.R5RepoContentProvider;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.Plugin;
@@ -76,7 +77,7 @@ import aQute.service.reporter.Reporter;
  * @author Neil Bartlett
  */
 @SuppressWarnings("synthetic-access")
-public abstract class AbstractIndexedRepo
+public abstract class AbstractIndexedRepo extends BaseRepository
 		implements RegistryPlugin, Plugin, RemoteRepositoryPlugin, IndexProvider, Repository, Refreshable {
 
 	private static final String								SHA_256							= "SHA-256";

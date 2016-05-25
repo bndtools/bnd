@@ -12,7 +12,7 @@ import org.osgi.service.repository.Repository;
 
 import aQute.lib.collections.MultiMap;
 
-public class AggregateRepository implements Repository {
+public class AggregateRepository extends BaseRepository {
 
 	private final Repository repositories[];
 

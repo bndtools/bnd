@@ -13,6 +13,7 @@ import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryDonePlugin;
@@ -24,7 +25,8 @@ import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
-public class Plugin implements aQute.bnd.service.Plugin, RegistryPlugin, RegistryDonePlugin, Repository, Closeable {
+public class Plugin extends BaseRepository
+		implements aQute.bnd.service.Plugin, RegistryPlugin, RegistryDonePlugin, Repository, Closeable {
 
 	private Registry				registry;
 	private Config					config;
