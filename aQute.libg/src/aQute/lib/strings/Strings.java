@@ -69,7 +69,7 @@ public class Strings {
 	}
 
 	public static String getLastSegment(String name, char c) {
-		return name.substring(name.indexOf(c) + 1);
+		return name.substring(name.lastIndexOf(c) + 1);
 	}
 
 	public static String getLastSegment(String name) {
