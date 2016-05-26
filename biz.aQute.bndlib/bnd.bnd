@@ -38,9 +38,7 @@ Export-Package: \
 	aQute.bnd.util.dto;-noimport:=true,\
 	aQute.bnd.component.error;-noimport:=true,\
 	org.osgi.service.repository,\
-	org.osgi.resource,\
-	org.osgi.util.function,\
-	org.osgi.util.promise
+	org.osgi.resource
 
 Conditional-Package:	        aQute.service.*, aQute.configurable
 -includeresource: 				${workspace}/LICENSE, img/=img/, {readme.md}
