@@ -158,6 +158,9 @@ public class VerifierTest extends TestCase {
 		bmaker.setProperty("-strict", "true");
 		Jar jar = bmaker.build();
 		assertTrue(bmaker.check(
+"\\QInvalid syntax for version: x13, for cmd: range, arguments; [range, [==,+)]\\E",
+				"\\QImport Package org.osgi.framework has an invalid version range syntax ${range;[==,+)}\\E",
+				"\\QNo translation found for macro: range;[==,+)\\E",
 				"\\QExport-Package or -exportcontents refers to missing package 'org.osgi.service.eventadmin'\\E",
 				"Import Package clauses without version range \\(excluding javax\\.\\*\\):",
 				"Import Package bar has an invalid version range syntax \\[1,x2\\)",
