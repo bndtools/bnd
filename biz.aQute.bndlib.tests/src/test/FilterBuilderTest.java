@@ -94,6 +94,6 @@ public class FilterBuilderTest extends TestCase {
 		fb.end();
 		fb.end();
 
-		assertEquals("", fb.toString());
+		assertEquals("(|(a=b)(c=d))", fb.toString());
 	}
 }
