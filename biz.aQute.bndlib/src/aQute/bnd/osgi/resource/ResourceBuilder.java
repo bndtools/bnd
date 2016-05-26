@@ -24,14 +24,17 @@ import org.osgi.resource.Resource;
 
 import aQute.bnd.build.model.EE;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
 import aQute.lib.filter.Filter;
+import aQute.libg.reporter.ReporterAdapter;
 
-public class ResourceBuilder {
+public class ResourceBuilder extends ReporterAdapter {
 
 	private final ResourceImpl		resource		= new ResourceImpl();
 	private final List<Capability>	capabilities	= new LinkedList<Capability>();
@@ -67,6 +70,9 @@ public class ResourceBuilder {
 	}
 
 	public ResourceBuilder addRequirement(Requirement requirement) throws Exception {
+		if (requirement == null)
+			return this;
+
 		CapReqBuilder builder = CapReqBuilder.clone(requirement);
 		return addRequirement(builder);
 	}
@@ -110,56 +116,59 @@ public class ResourceBuilder {
 		Entry<String,Attrs> bsn = manifest.getBundleSymbolicName();
 		CapReqBuilder identity = new CapReqBuilder(resource, IdentityNamespace.IDENTITY_NAMESPACE);
 
-		if (bsn != null) {
-			boolean singleton = "true".equals(bsn.getValue().get(Constants.SINGLETON_DIRECTIVE + ":"));
-			boolean fragment = manifest.getFragmentHost() != null;
-
-			//
-			// First the identity
-			//
-
-			identity.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn.getKey());
-			identity.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE,
-					fragment ? IdentityNamespace.TYPE_FRAGMENT : IdentityNamespace.TYPE_BUNDLE);
-
-			if ("true".equals(singleton)) {
-				identity.addDirective(IdentityNamespace.CAPABILITY_SINGLETON_DIRECTIVE, "true");
-			}
-
-			//
-			// Now the provide bundle ns
-			//
-
-			CapReqBuilder provideBundle = new CapReqBuilder(resource, BundleNamespace.BUNDLE_NAMESPACE);
-			provideBundle.addAttributesOrDirectives(bsn.getValue());
-			addCapability(provideBundle.buildCapability());
-
-			String version = manifest.getBundleVersion();
-			if (version != null)
-				identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, new Version(version));
-
-			String copyright = manifest.get(Constants.BUNDLE_COPYRIGHT);
-			if (copyright != null) {
-				identity.addAttribute(IdentityNamespace.CAPABILITY_COPYRIGHT_ATTRIBUTE, copyright);
-			}
-
-			String description = manifest.get(Constants.BUNDLE_DESCRIPTION);
-			if (description != null) {
-				identity.addAttribute(IdentityNamespace.CAPABILITY_DESCRIPTION_ATTRIBUTE, description);
-			}
-
-			String docurl = manifest.get(Constants.BUNDLE_DOCURL);
-			if (docurl != null) {
-				identity.addAttribute(IdentityNamespace.CAPABILITY_DOCUMENTATION_ATTRIBUTE, docurl);
-			}
-
-			String license = manifest.get("Bundle-License");
-			if (license != null) {
-				identity.addAttribute(IdentityNamespace.CAPABILITY_LICENSE_ATTRIBUTE, license);
-			}
-
-			addCapability(identity.buildCapability());
+		if (bsn == null) {
+			warning("No BSN set, not a bundle");
+			return;
 		}
+
+		boolean singleton = "true".equals(bsn.getValue().get(Constants.SINGLETON_DIRECTIVE + ":"));
+		boolean fragment = manifest.getFragmentHost() != null;
+
+		//
+		// First the identity
+		//
+
+		identity.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn.getKey());
+		identity.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE,
+				fragment ? IdentityNamespace.TYPE_FRAGMENT : IdentityNamespace.TYPE_BUNDLE);
+
+		if ("true".equals(singleton)) {
+			identity.addDirective(IdentityNamespace.CAPABILITY_SINGLETON_DIRECTIVE, "true");
+		}
+
+		//
+		// Now the provide bundle ns
+		//
+
+		CapReqBuilder provideBundle = new CapReqBuilder(resource, BundleNamespace.BUNDLE_NAMESPACE);
+		provideBundle.addAttributesOrDirectives(bsn.getValue());
+		addCapability(provideBundle.buildCapability());
+
+		String version = manifest.getBundleVersion();
+		if (version != null)
+			identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, new Version(version));
+
+		String copyright = manifest.get(Constants.BUNDLE_COPYRIGHT);
+		if (copyright != null) {
+			identity.addAttribute(IdentityNamespace.CAPABILITY_COPYRIGHT_ATTRIBUTE, copyright);
+		}
+
+		String description = manifest.get(Constants.BUNDLE_DESCRIPTION);
+		if (description != null) {
+			identity.addAttribute(IdentityNamespace.CAPABILITY_DESCRIPTION_ATTRIBUTE, description);
+		}
+
+		String docurl = manifest.get(Constants.BUNDLE_DOCURL);
+		if (docurl != null) {
+			identity.addAttribute(IdentityNamespace.CAPABILITY_DOCUMENTATION_ATTRIBUTE, docurl);
+		}
+
+		String license = manifest.get("Bundle-License");
+		if (license != null) {
+			identity.addAttribute(IdentityNamespace.CAPABILITY_LICENSE_ATTRIBUTE, license);
+		}
+
+		addCapability(identity.buildCapability());
 
 		//
 		// Handle Require Bundle
@@ -202,13 +211,27 @@ public class ResourceBuilder {
 
 		addRequireCapabilities(manifest.getRequireCapability());
 
-		addNativeCode(new Parameters(manifest.getBundleNative()));
+		//
+		// Manage native code header
+		//
+
+		addRequirement(getNativeCode(manifest.getBundleNative()));
 	}
 
-	private void addNativeCode(Parameters bundleNative) throws Exception {
+	/**
+	 * Caclulate the requirement from a native code header
+	 * 
+	 * @param header the Bundle-NativeCode header or null
+	 * @return a Requirement Builder set to the requirements according tot he
+	 *         core spec
+	 */
+	public RequirementBuilder getNativeCode(String header) throws Exception {
+		if (header == null || header.isEmpty())
+			return null;
 
+		Parameters bundleNative = OSGiHeader.parseHeader(header, null, new Parameters(true));
 		if (bundleNative.isEmpty())
-			return;
+			return null;
 
 		boolean optional = false;
 		List<String> options = new LinkedList<String>();
@@ -219,33 +242,45 @@ public class ResourceBuilder {
 
 		for (Entry<String,Attrs> entry : bundleNative.entrySet()) {
 
-			String name = entry.getKey();
+			String name = Processor.removeDuplicateMarker(entry.getKey());
 			if ("*".equals(name)) {
 				optional = true;
 				continue;
 			}
 
 			sb.and();
+			/*
+			 * • osname - Name of the operating system. The value of this
+			 * attribute must be the name of the operating system upon which the
+			 * native libraries run. A number of canonical names are defined in
+			 * Table 4.3.
+			 */
+			doOr(sb, "osname", NativeNamespace.CAPABILITY_OSNAME_ATTRIBUTE, entry.getValue());
+			/*
+			 * • processor - The processor architecture. The value of this
+			 * attribute must be the name of the processor architecture upon
+			 * which the native libraries run. A number of canonical names are
+			 * defined in Table 4.2.
+			 */
+			doOr(sb, "processor", NativeNamespace.CAPABILITY_PROCESSOR_ATTRIBUTE, entry.getValue());
+			/*
+			 * • language - The ISO code for a language. The value of this
+			 * attribute must be the name of the language for which the native
+			 * libraries have been localized.
+			 */
+			doOr(sb, "language", NativeNamespace.CAPABILITY_LANGUAGE_ATTRIBUTE, entry.getValue());
+
 			for (String key : entry.getValue().keySet()) {
 				Object value = entry.getValue().getTyped(key);
+				key = Processor.removeDuplicateMarker(key);
 
 				switch (key) {
-					/**
-					 * • osname - Name of the operating system. The value of
-					 * this attribute must be the name of the op- erating system
-					 * upon which the native libraries run. A number of
-					 * canonical names are defined in Table 4.3.
-					 */
 					case "osname" :
-						String osnames[] = Converter.cnv(String[].class, value);
-						sb.or();
-						for (String osname : osnames) {
-							sb.eq(NativeNamespace.CAPABILITY_OSNAME_ATTRIBUTE, osname);
-						}
-						sb.end();
+					case "processor" :
+					case "language" :
 						break;
 
-					/**
+					/*
 					 * • osversion - The operating system version. The value of
 					 * this attribute must be a version range as defined in
 					 * Version Ranges on page 36.
@@ -254,51 +289,48 @@ public class ResourceBuilder {
 						sb.eq(NativeNamespace.CAPABILITY_OSVERSION_ATTRIBUTE, value);
 						break;
 
-					/**
-					 * • processor - The processor architecture. The value of
-					 * this attribute must be the name of the processor
-					 * architecture upon which the native libraries run. A
-					 * number of canonical names are de- fined in Table 4.2.
-					 */
-					case "processor" :
-						String processors[] = Converter.cnv(String[].class, value);
-						sb.or();
-						for (String processor : processors) {
-							sb.eq(NativeNamespace.CAPABILITY_PROCESSOR_ATTRIBUTE, processor);
-						}
-						sb.end();
-						break;
-
-					/**
-					 * • language - The ISO code for a language. The value of
-					 * this attribute must be the name of the lan- guage for
-					 * which the native libraries have been localized.
-					 */
-					case "language" :
-						sb.eq(NativeNamespace.CAPABILITY_LANGUAGE_ATTRIBUTE, value);
-						break;
-
-					/**
+					/*
 					 * • selection-filter - A selection filter. The value of
 					 * this attribute must be a filter expression that in-
 					 * dicates if the native code clause should be selected or
 					 * not.
 					 */
 					case "selection-filter" :
+						String filter = value.toString();
+						String validateFilter = Verifier.validateFilter(filter);
+						if (validateFilter != null) {
+							error("Invalid 'selection-filter' on Bundle-NativeCode %s", filter);
+						}
 						sb.literal(value.toString());
 						break;
 
 					default :
-						// ignore?? TODO
+						warning("Unknown attribute on Bundle-NativeCode header %s=%s", key, value);
+						break;
 				}
 			}
-			sb.end();
+			sb.endAnd();
 		}
-
+		sb.endOr();
 		if (optional)
 			rb.addDirective("resolution", "optional");
 
 		rb.addFilter(sb.toString());
+		return rb;
+	}
+
+	private static void doOr(FilterBuilder sb, String key, String attribute, Attrs attrs) throws Exception {
+		sb.or();
+
+		while (attrs.containsKey(key)) {
+			String[] names = Converter.cnv(String[].class, attrs.getTyped(key));
+			for (String name : names) {
+				sb.eq(attribute, name);
+			}
+			key += "~";
+		}
+
+		sb.endOr();
 	}
 
 	/**
