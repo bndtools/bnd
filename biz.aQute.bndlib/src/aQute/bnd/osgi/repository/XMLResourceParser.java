@@ -55,6 +55,12 @@ public class XMLResourceParser extends Processor {
 
 	private int						depth;
 
+	public static List<Resource> getResources(URI uri) throws Exception {
+		try (XMLResourceParser parser = new XMLResourceParser(uri)) {
+			return parser.parse();
+		}
+	}
+
 	public XMLResourceParser(URI url) throws Exception {
 		this(url.toURL().openStream(), url.toString(), url);
 	}
