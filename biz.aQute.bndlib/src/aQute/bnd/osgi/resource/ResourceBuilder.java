@@ -33,12 +33,14 @@ import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
 import aQute.lib.filter.Filter;
 import aQute.libg.reporter.ReporterAdapter;
+import aQute.service.reporter.Reporter;
 
-public class ResourceBuilder extends ReporterAdapter {
+public class ResourceBuilder {
 
 	private final ResourceImpl		resource		= new ResourceImpl();
 	private final List<Capability>	capabilities	= new LinkedList<Capability>();
 	private final List<Requirement>	requirements	= new LinkedList<Requirement>();
+	private ReporterAdapter			reporter		= new ReporterAdapter();
 
 	private boolean built = false;
 
@@ -78,6 +80,9 @@ public class ResourceBuilder extends ReporterAdapter {
 	}
 
 	public ResourceBuilder addRequirement(CapReqBuilder builder) {
+		if (builder == null)
+			return this;
+
 		if (built)
 			throw new IllegalStateException("Resource already built");
 
@@ -117,7 +122,7 @@ public class ResourceBuilder extends ReporterAdapter {
 		CapReqBuilder identity = new CapReqBuilder(resource, IdentityNamespace.IDENTITY_NAMESPACE);
 
 		if (bsn == null) {
-			warning("No BSN set, not a bundle");
+			reporter.warning("No BSN set, not a bundle");
 			return;
 		}
 
@@ -299,13 +304,13 @@ public class ResourceBuilder extends ReporterAdapter {
 						String filter = value.toString();
 						String validateFilter = Verifier.validateFilter(filter);
 						if (validateFilter != null) {
-							error("Invalid 'selection-filter' on Bundle-NativeCode %s", filter);
+							reporter.error("Invalid 'selection-filter' on Bundle-NativeCode %s", filter);
 						}
 						sb.literal(value.toString());
 						break;
 
 					default :
-						warning("Unknown attribute on Bundle-NativeCode header %s=%s", key, value);
+						reporter.warning("Unknown attribute on Bundle-NativeCode header %s=%s", key, value);
 						break;
 				}
 			}
@@ -571,4 +576,7 @@ public class ResourceBuilder extends ReporterAdapter {
 		return mapping;
 	}
 
+	public Reporter getReporter() {
+		return reporter;
+	}
 }
