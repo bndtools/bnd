@@ -2,7 +2,8 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -dependson: biz.aQute.bnd.embedded-repo, \
-  biz.aQute.repository
+  biz.aQute.repository, \
+  biz.aQute.resolve
 
 Private-Package: \
     aQute.bnd.gradle.*
