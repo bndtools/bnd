@@ -165,6 +165,8 @@ public class ResolverValidator extends Processor {
 					resolution.system.add(r);
 				}
 			}
+
+			error("resolving %s failed with %s", resource, resolution.message);
 		} catch (Exception e) {
 			e.printStackTrace();
 			error("resolving %s failed with %s", context.getInputResource().getRequirements(null), e);
