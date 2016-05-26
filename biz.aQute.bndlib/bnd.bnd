@@ -38,7 +38,9 @@ Export-Package: \
 	aQute.bnd.util.dto;-noimport:=true,\
 	aQute.bnd.component.error;-noimport:=true,\
 	org.osgi.service.repository,\
-	org.osgi.resource
+	org.osgi.resource, \
+	org.osgi.util.promise;-noimport:=true, \
+	org.osgi.util.function;-noimport:=true
 
 Conditional-Package:	        aQute.service.*, aQute.configurable
 -includeresource: 				${workspace}/LICENSE, img/=img/, {readme.md}
@@ -50,8 +52,6 @@ Conditional-Package:	        aQute.service.*, aQute.configurable
 	osgi.core;version=@6,\
 	osgi.cmpn;version=@6,\
 	aQute.libg;version=project, \
-	org.osgi.util.function;version=1, \
-	org.osgi.util.promise;version=1,\
 	biz.aQute.bnd.annotation;version=project,\
 	slf4j.api
 
