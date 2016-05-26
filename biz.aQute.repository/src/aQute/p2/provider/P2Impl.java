@@ -74,7 +74,7 @@ public class P2Impl implements P2 {
 		return new URI(base.toString() + "/");
 	}
 
-	List<Artifact> getArtifacts() throws Exception {
+	public List<Artifact> getArtifacts() throws Exception {
 		Set<URI> cycles = new LinkedHashSet<>();
 		return getArtifacts(cycles, base).getValue();
 	}
@@ -102,6 +102,7 @@ public class P2Impl implements P2 {
 			return parseIndexArtifacts(cycles, uri);
 		}
 	}
+
 
 	private Promise<List<Artifact>> parseArtifacts(final InputStream in, final URI uri) throws Exception {
 		if (in == null)

@@ -1,5 +1,6 @@
 package aQute.bnd.osgi.resource;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
+import org.osgi.service.repository.ContentNamespace;
 
 import aQute.bnd.build.model.EE;
 import aQute.bnd.header.Attrs;
@@ -578,5 +580,19 @@ public class ResourceBuilder {
 
 	public Reporter getReporter() {
 		return reporter;
+	}
+
+	public void addContentCapability(URI uri, String sha256, long length, String mime) throws Exception {
+
+		assert uri != null;
+		assert sha256 != null && sha256.length() == 64;
+		assert length >= 0;
+
+		CapabilityBuilder c = new CapabilityBuilder(ContentNamespace.CONTENT_NAMESPACE);
+		c.addAttribute(ContentNamespace.CONTENT_NAMESPACE, sha256);
+		c.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, uri.toString());
+		c.addAttribute(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, length);
+		c.addAttribute(ContentNamespace.CAPABILITY_MIME_ATTRIBUTE, mime == null ? "vnd.osgi.bundle" : mime);
+		addCapability(c);
 	}
 }

@@ -13,6 +13,7 @@ import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.ProtocolException;
 import java.net.SocketTimeoutException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.SimpleDateFormat;
@@ -541,5 +542,9 @@ public class HttpClient implements Closeable, URLConnector {
 			return null;
 
 		return handler.toString();
+	}
+
+	public String toName(URI url) throws Exception {
+		return URLCache.toName(url);
 	}
 }

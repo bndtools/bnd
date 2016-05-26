@@ -129,7 +129,7 @@ public class URLCache {
 		return new Info(file, uri);
 	}
 
-	private String toName(URI uri) throws Exception {
+	public static String toName(URI uri) throws Exception {
 		return SHA1.digest(uri.toASCIIString().getBytes(StandardCharsets.UTF_8)).asHex();
 	}
 
