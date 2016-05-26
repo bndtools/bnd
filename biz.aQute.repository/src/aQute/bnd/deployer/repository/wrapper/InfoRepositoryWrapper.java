@@ -20,9 +20,9 @@ import org.osgi.resource.Resource;
 import org.osgi.service.indexer.ResourceIndexer.IndexResult;
 import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
 import org.osgi.service.indexer.impl.RepoIndex;
-import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.DownloadBlocker;
+import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.PersistentResource;
 import aQute.bnd.osgi.resource.ResourceBuilder;
@@ -34,7 +34,7 @@ import aQute.lib.filter.Filter;
 import aQute.lib.hex.Hex;
 import aQute.lib.persistentmap.PersistentMap;
 
-public class InfoRepositoryWrapper implements Repository {
+public class InfoRepositoryWrapper extends BaseRepository {
 	final RepoIndex								repoIndexer;
 	final PersistentMap<PersistentResource>		persistent;
 	final Collection< ? extends InfoRepository>	repos;;

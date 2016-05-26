@@ -13,14 +13,23 @@ public class Parameters implements Map<String,Attrs> {
 	private LinkedHashMap<String,Attrs>	map;
 	static Map<String,Attrs>			EMPTY	= Collections.emptyMap();
 	String								error;
+	private final boolean				allowDuplicateAttributes;
 
-	public Parameters() {}
+	public Parameters(boolean allowDuplicateAttributes) {
+		this.allowDuplicateAttributes = allowDuplicateAttributes;
+	}
+
+	public Parameters() {
+		allowDuplicateAttributes = false;
+	}
 
 	public Parameters(String header) {
+		allowDuplicateAttributes = false;
 		OSGiHeader.parseHeader(header, null, this);
 	}
 
 	public Parameters(String header, Reporter reporter) {
+		allowDuplicateAttributes = false;
 		OSGiHeader.parseHeader(header, reporter, this);
 	}
 
@@ -236,5 +245,9 @@ public class Parameters implements Map<String,Attrs> {
 			} else
 				existing.mergeWith(e.getValue(), override);
 		}
+	}
+
+	public boolean allowDuplicateAttributes() {
+		return allowDuplicateAttributes;
 	}
 }

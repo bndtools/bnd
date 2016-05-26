@@ -30,6 +30,51 @@ import junit.framework.TestCase;
 public class AnnotationHeadersTest extends TestCase {
 
 	/**
+	 * Say I want to define a capability namespace for web applications, e.g.
+	 * Provide-Capability: webapp; webapp=Petstore. Web application components
+	 * necessarily require an HTTP implementation so they should
+	 * Require-Capability: osgi.implementation;
+	 * filter:="(osgi.implementation=osgi.http)". I want to define an annotation
+	 * that I can put onto a component that implies both the above provide and
+	 * require. I tried the following:
+	 * 
+	 * <pre>
+	 * &#64;ProvideCapability(ns = "webapp")
+	 * &#64;RequireCapability(ns = "osgi.implementation", filter = "(osgi.implementation=osgi.http)")
+	 * &#64;interface WebApplication {
+	 * 	String name();
+	 * }
+	 * 
+	 * &#64;WebApplication(name = "Petstore")
+	 * &#64;Component
+	 * public class PetstoreAppComponent {
+	 * 	// ..
+	 * }
+	 * </pre>
+	 * 
+	 * However this only generated the Provide, it did not generate the Require.
+	 * If I switch the order of annotations so that @RequireCapability is first,
+	 * then it only generates the Require.
+	 */
+
+
+	public void testMultipleManifestHeaders() throws Exception {
+		// try (Builder b = new Builder();) {
+		// b.addClasspath(IO.getFile("bin"));
+		// b.setPrivatePackage("test.annotationheaders.multiple");
+		// b.build();
+		// assertTrue(b.check());
+		// b.getJar().getManifest().write(System.out);
+		// Parameters req = new Parameters(
+		// b.getJar().getManifest().getMainAttributes().getValue(Constants.REQUIRE_CAPABILITY));
+		// Parameters cap = new Parameters(
+		// b.getJar().getManifest().getMainAttributes().getValue(Constants.PROVIDE_CAPABILITY));
+		// assertTrue(req.get("foo") != null);
+		// assertTrue(cap.get("foo") != null);
+		// }
+	}
+
+	/**
 	 * Default values of annotation attributes not included for customized
 	 * webresource annotations #976
 	 * <p>

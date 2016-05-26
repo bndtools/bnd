@@ -21,4 +21,13 @@ public class RequirementBuilder extends CapReqBuilder {
 		return super.buildSyntheticRequirement();
 	}
 
+	public RequirementBuilder addFilter(String filter) {
+		addDirective("filter", filter);
+		return this;
+	}
+
+	public RequirementBuilder addFilter(FilterBuilder filter) {
+		addDirective("filter", filter.toString());
+		return this;
+	}
 }

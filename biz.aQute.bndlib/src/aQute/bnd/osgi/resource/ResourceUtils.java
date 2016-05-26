@@ -394,6 +394,13 @@ public class ResourceUtils {
 		return capabilityEffective.equals(requirementEffective);
 	}
 
+	public static boolean matches(Requirement r, Resource resource) {
+		for (Capability c : resource.getCapabilities(r.getNamespace())) {
+			if (matches(r, c))
+				return true;
+		}
+		return false;
+	}
 	public static boolean matches(Requirement r, Capability c) {
 		if (!isEffective(r, c))
 			return false;

@@ -20,7 +20,7 @@ import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.lib.collections.MultiMap;
 
-public class AugmentRepository implements Repository {
+public class AugmentRepository extends BaseRepository {
 
 	private final Repository					repository;
 	private final Map<Capability,Capability>	wrapped					= new HashMap<Capability,Capability>();
