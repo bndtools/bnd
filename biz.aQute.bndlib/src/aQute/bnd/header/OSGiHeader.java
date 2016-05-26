@@ -67,9 +67,14 @@ public class OSGiHeader {
 					} else {
 						String advalue = qt.nextToken();
 						if (clause.containsKey(adname)) {
+							if (result.allowDuplicateAttributes()) {
+								while (clause.containsKey(adname))
+									adname += "~";
+							} else {
 							if (logger != null && logger.isPedantic())
 								logger.warning("Duplicate attribute/directive name " + adname + " in " + value
 										+ ". This attribute/directive will be ignored");
+							}
 						}
 						if (advalue == null) {
 							if (logger != null)
