@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<repository increment='1340620345555' name='Untitled' xmlns='http://www.osgi.org/xmlns/repository/v1.0.0'>
+  <resource>
+    <capability namespace='osgi.identity'>
+      <attribute name='osgi.identity' value='dummy-missingreq'/>
+      <attribute name='type' value='osgi.bundle'/>
+      <attribute name='version' type='Version' value='1.0.0'/>
+    </capability>
+    <capability namespace='osgi.content'>
+      <attribute name='osgi.content' value='dummy'/>
+      <attribute name='url' value='repo4/dummy.jar'/>
+      <attribute name='size' type='Long' value='0'/>
+    </capability>
+    <requirement namespace='osgi.wiring.package'>
+      <directive name='filter' value='(osgi.wiring.package=org.apache.felix.gogo.api)'/>
+    </requirement>
+  </resource>
+</repository>
