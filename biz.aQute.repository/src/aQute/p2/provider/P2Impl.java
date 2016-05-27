@@ -190,28 +190,33 @@ public class P2Impl implements P2 {
 
 	private InputStream hideAndSeek(URI uri) throws Exception {
 		if (uri.getPath().endsWith(".xz")) {
-			File f = client.build().useCache().go(uri);
+			File f = getFile(uri);
 			if (f != null)
 				return tzStream(f);
 			else
 				return null;
 		}
 
-		File f = client.build().useCache().go(replace(uri, "$", ".xz"));
+		URI xzname = replace(uri, "$", ".xz");
+		File f = getFile(xzname);
 		if (f != null)
 			return tzStream(f);
 
-		f = client.build().useCache().go(replace(uri, ".xml$", ".jar"));
+		f = getFile(replace(uri, ".xml$", ".jar"));
 		if (f != null)
 			return jarStream(f, Strings.getLastSegment(uri.getPath(), '/'));
 
-		f = client.build().useCache().go(uri);
+		f = getFile(uri);
 		if (f != null)
 			return new FileInputStream(f);
 
 		if (!defaults.contains(uri))
 			logger.error("Invalid uri {}", uri);
 		return null;
+	}
+
+	File getFile(URI xzname) throws Exception {
+		return client.build().useCache().go(xzname);
 	}
 
 	private InputStream jarStream(File f, String name) throws IOException {
