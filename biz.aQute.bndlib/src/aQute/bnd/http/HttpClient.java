@@ -3,6 +3,7 @@ package aQute.bnd.http;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -367,55 +368,65 @@ public class HttpClient implements Closeable, URLConnector {
 		}
 
 		try {
-			con.connect();
 
-			if (hcon != null) {
 
-				int code = hcon.getResponseCode();
-
-				if (code == -1)
-					System.out.println("WTF?");
-
-				reporter.trace("response for %s is %s", con.getURL(), code);
-
-				//
-				// Though we ask Java to handle the redirects
-				// it does not do it for https <-> http :-(
-				//
-
-				if (code == HttpURLConnection.HTTP_MOVED_TEMP || code == HttpURLConnection.HTTP_MOVED_PERM
-						|| code == HttpURLConnection.HTTP_SEE_OTHER) {
-
-					if (request.redirects-- > 0) {
-
-						String location = hcon.getHeaderField("Location");
-						request.url = new URL(location);
-						return send0(request);
-
-					}
-
-				}
-
-				if (isUpdateInfo(con, request, code)) {
-					File file = (File) request.upload;
-					String etag = con.getHeaderField("ETag");
-					try (Info info = cache.get(file, con.getURL().toURI());) {
-						info.update(etag);
-					}
-				}
-
-				if ((code / 100) != 2) {
-					return new TaggedData(con, null, request.useCacheFile);
+			if (hcon == null) {
+				// not http
+				try {
+					con.connect();
+					InputStream in = con.getInputStream();
+					return new TaggedData(con, in, request.useCacheFile);
+				} catch (FileNotFoundException e) {
+					return new TaggedData(con.getURL().toURI(), 404, request.useCacheFile);
 				}
 			}
 
-			// Do not enclose in resource try! InputStream is potentially used
+			int code = hcon.getResponseCode();
+
+			if (code == -1)
+				System.out.println("WTF?");
+
+			reporter.trace("response for %s is %s", con.getURL(), code);
+
+			//
+			// Though we ask Java to handle the redirects
+			// it does not do it for https <-> http :-(
+			//
+
+			if (code == HttpURLConnection.HTTP_MOVED_TEMP || code == HttpURLConnection.HTTP_MOVED_PERM
+					|| code == HttpURLConnection.HTTP_SEE_OTHER) {
+
+				if (request.redirects-- > 0) {
+
+					String location = hcon.getHeaderField("Location");
+					request.url = new URL(location);
+					return send0(request);
+
+				}
+
+			}
+
+			if (isUpdateInfo(con, request, code)) {
+				File file = (File) request.upload;
+				String etag = con.getHeaderField("ETag");
+				try (Info info = cache.get(file, con.getURL().toURI());) {
+					info.update(etag);
+				}
+			}
+
+			if ((code / 100) != 2) {
+				return new TaggedData(con, null, request.useCacheFile);
+			}
+
+			// Do not enclose in resource try! InputStream is potentially
+			// used
 			// later
 
 			InputStream xin = con.getInputStream();
 			InputStream in = handleContentEncoding(hcon, xin);
 			in = createProgressWrappedStream(in, con.toString(), con.getContentLength(), task, request.timeout);
 			return new TaggedData(con, in, request.useCacheFile);
+
 		} catch (SocketTimeoutException ste) {
 			ste.printStackTrace();
 			return new TaggedData(request.url.toURI(), HttpURLConnection.HTTP_GATEWAY_TIMEOUT, request.useCacheFile);
@@ -483,8 +494,7 @@ public class HttpClient implements Closeable, URLConnector {
 				IO.copy((byte[]) put, out);
 			else if (put instanceof File) {
 				IO.copy((File) put, out);
-			}
-			else {
+			} else {
 				codec.enc().to(out).put(put).flush();
 			}
 		}
@@ -546,5 +556,10 @@ public class HttpClient implements Closeable, URLConnector {
 
 	public String toName(URI url) throws Exception {
 		return URLCache.toName(url);
+	}
+
+	public File getCacheFileFor(URI url) throws Exception {
+
+		return cache.getCacheFileFor(url);
 	}
 }
