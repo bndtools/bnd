@@ -481,4 +481,12 @@ public class ResourceUtils {
 		return result;
 	}
 
+	public static boolean isFragment(Resource resource) {
+		IdentityCapability identity = getIdentityCapability(resource);
+		if (identity == null)
+			return false;
+		return IdentityNamespace.TYPE_FRAGMENT
+				.equals(identity.getAttributes().get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE));
+	}
+
 }
