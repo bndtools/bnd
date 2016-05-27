@@ -12,6 +12,7 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 
 -buildpath: \
 	osgi.core;version=@6,\
+	osgi.annotation;version=@6,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
 	org.osgi.impl.bundle.bindex;packages=org.osgi.*.bindex.*,\
@@ -45,22 +46,25 @@ repoindex-pkgs: \
 	aQute.bnd.osgi.resource,\
 	org.osgi.resource;-split-package:=first
 
-Export-Package:\
+Export-Package: \
 	aQute.bnd.deployer.http;bnd-plugins=true,\
+	aQute.p2.api,\
 	aQute.bnd.deployer.obr;bnd-plugins=true,\
 	aQute.bnd.deployer.repository;bnd-plugins=true,\
 	aQute.bnd.deployer.repository.api,\
 	aQute.bnd.deployer.repository.providers;bnd-plugins=true,\
 	aQute.bnd.deployer.repository.wrapper;bnd-plugins=true,\
-	aQute.bnd.repository.maven.provider;bnd-plugins=true, \
+	aQute.bnd.repository.maven.provider;bnd-plugins=true,\
 	aQute.bnd.jpm;bnd-plugins=true,\
 	org.osgi.service.coordinator,\
-	org.osgi.service.indexer, \
+	org.osgi.service.indexer,\
 	aQute.maven.*
 
 # NB: `org.osgi.*` API is included in Private-Package for running outside of OSGi.
 Private-Package: \
+	aQute.bnd.repository.p2.provider,\
 	${bindex-pkgs},\
+	aQute.p2.provider,\
 	${repoindex-pkgs},\
 	org.osgi.service.log;-split-package:=first,\
 	org.osgi.framework;-split-package:=first,\
