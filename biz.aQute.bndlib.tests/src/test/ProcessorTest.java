@@ -50,53 +50,54 @@ public class ProcessorTest extends TestCase {
 	}
 
 	public void testNativeDefaults() throws Exception {
-		Processor p = new Processor();
-		p.setProperty("a", "${native_capability}");
+		try (Processor p = new Processor();) {
+			p.setProperty("a", "${native_capability}");
 
-		//
-		// Mac OS
-		//
+			//
+			// Mac OS
+			//
 
-		assertNativeDefault("Mac OS X", "10.8.2", "x86_64",
-				"(&(osgi.native.osname~=MacOSX)(osgi.native.osname~=Mac OS X))");
-		assertNativeDefault("Mac OS X", "10.8.2", "x86_64", "(osgi.native.osversion=0010.8.2)");
-		assertNativeDefault("Mac OS X", "10.8.2", "x86_64",
-				"(&(osgi.native.processor=x86-64)(osgi.native.processor=amd64)(osgi.native.processor=em64t)(osgi.native.processor=x86_64))");
+			assertNativeDefault("Mac OS X", "10.8.2", "x86_64",
+					"(&(osgi.native.osname~=MacOSX)(osgi.native.osname~=Mac OS X))");
+			assertNativeDefault("Mac OS X", "10.8.2", "x86_64", "(osgi.native.osversion=0010.8.2)");
+			assertNativeDefault("Mac OS X", "10.8.2", "x86_64",
+					"(&(osgi.native.processor=x86-64)(osgi.native.processor=amd64)(osgi.native.processor=em64t)(osgi.native.processor=x86_64))");
 
-		//
-		// Linux
-		//
+			//
+			// Linux
+			//
 
-		assertNativeDefault("Linux", "3.8.8-202.fc18.x86_64", "amd64",
-				"(&(osgi.native.osname~=linux)(osgi.native.processor=*)(osgi.native.osversion=3.8.8.-202_fc18_x86_64))");
+			assertNativeDefault("Linux", "3.8.8-202.fc18.x86_64", "amd64",
+					"(&(osgi.native.osname~=linux)(osgi.native.processor=*)(osgi.native.osversion=3.8.8.-202_fc18_x86_64))");
 
-		assertNativeDefault("Linux", "3.8.8-202.fc18.x86_64", "em64t",
-				"(&(osgi.native.osname~=linux)(osgi.native.processor=em64t)(osgi.native.osversion=3.8.8.-202_fc18_x86_64))");
+			assertNativeDefault("Linux", "3.8.8-202.fc18.x86_64", "em64t",
+					"(&(osgi.native.osname~=linux)(osgi.native.processor=em64t)(osgi.native.osversion=3.8.8.-202_fc18_x86_64))");
 
-		//
-		// Windows
-		//
+			//
+			// Windows
+			//
 
-		assertNativeDefault("Windows XP", "5.1.7601.17514", "x86",
-				"(&(osgi.native.osname~=WindowsXP)(osgi.native.osname~=WinXP)(osgi.native.osname~=Windows XP)(osgi.native.osname~=Win32))");
+			assertNativeDefault("Windows XP", "5.1.7601.17514", "x86",
+					"(&(osgi.native.osname~=WindowsXP)(osgi.native.osname~=WinXP)(osgi.native.osname~=Windows XP)(osgi.native.osname~=Win32))");
 
-		assertNativeDefault("Windows XP", "5.1.7601.17514", "x86",
-				"(&(osgi.native.processor~=x86)(osgi.native.processor~=pentium)(osgi.native.processor~=i386)(osgi.native.processor~=i486)(osgi.native.processor~=i686)(osgi.native.processor~=i586))");
+			assertNativeDefault("Windows XP", "5.1.7601.17514", "x86",
+					"(&(osgi.native.processor~=x86)(osgi.native.processor~=pentium)(osgi.native.processor~=i386)(osgi.native.processor~=i486)(osgi.native.processor~=i686)(osgi.native.processor~=i586))");
 
-		assertNativeDefault("Windows XP", "5.1.7601.17514", "x86", "(&(osgi.native.osversion=5.1.0))");
+			assertNativeDefault("Windows XP", "5.1.7601.17514", "x86", "(&(osgi.native.osversion=5.1.0))");
 
-		assertNativeDefault("Windows Vista", "6.0.7601.17514", "x86",
-				"(&(osgi.native.osname~=WindowsVista)(osgi.native.osname~=WinVista)(osgi.native.osname~=Windows Vista)(osgi.native.osname~=Win32))");
+			assertNativeDefault("Windows Vista", "6.0.7601.17514", "x86",
+					"(&(osgi.native.osname~=WindowsVista)(osgi.native.osname~=WinVista)(osgi.native.osname~=Windows Vista)(osgi.native.osname~=Win32))");
 
-		assertNativeDefault("Windows 7", "6.1.7601.17514", "x86",
-				"(&(osgi.native.osname~=Windows7)(osgi.native.osname~=Windows 7)(osgi.native.osname~=Win32)(osgi.native.osversion=6.1.0))");
+			assertNativeDefault("Windows 7", "6.1.7601.17514", "x86",
+					"(&(osgi.native.osname~=Windows7)(osgi.native.osname~=Windows 7)(osgi.native.osname~=Win32)(osgi.native.osversion=6.1.0))");
 
-		assertNativeDefault("Windows 8", "6.2.7601.17514", "x86",
-				"(&(osgi.native.osname~=Windows8)(osgi.native.osname~=Windows 8)(osgi.native.osname~=Win32)(osgi.native.osversion=6.2.0))");
+			assertNativeDefault("Windows 8", "6.2.7601.17514", "x86",
+					"(&(osgi.native.osname~=Windows8)(osgi.native.osname~=Windows 8)(osgi.native.osname~=Win32)(osgi.native.osversion=6.2.0))");
+		}
 	}
 
 	public void testOperatingSystems() {
-		
+
 		assertIn(OSInformation.getOperatingSystemAliases("Windows XP", "5.1.x").osnames, "WindowsXP", "Windows XP",
 				"WinXP", "Win32");
 		assertIn(OSInformation.getOperatingSystemAliases("Windows Vista", "6.0.x").osnames, "WindowsVista",
@@ -138,7 +139,6 @@ public class ProcessorTest extends TestCase {
 		}
 
 	}
-
 
 	private void assertNativeDefault(String osname, String osversion, String processor, String filter)
 			throws Exception {
