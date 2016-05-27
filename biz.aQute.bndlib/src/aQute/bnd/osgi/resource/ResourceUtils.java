@@ -172,6 +172,14 @@ public class ResourceUtils {
 		String mime();
 	}
 
+	public interface BundleCap extends Capability {
+		String osgi_wiring_bundle();
+
+		boolean singleton();
+
+		Version bundle_version();
+	}
+
 	public static ContentCapability getContentCapability(Resource resource) {
 		List<ContentCapability> caps = getContentCapabilities(resource);
 		if (caps.isEmpty())
@@ -206,6 +214,14 @@ public class ResourceUtils {
 			return null;
 
 		return v.toString();
+	}
+
+	public static BundleCap getBundleCapability(Resource resource) {
+		List<Capability> caps = resource.getCapabilities(BundleNamespace.BUNDLE_NAMESPACE);
+		if (caps == null || caps.isEmpty())
+			return null;
+
+		return as(caps.get(0), BundleCap.class);
 	}
 
 	public static Version toVersion(Object v) {

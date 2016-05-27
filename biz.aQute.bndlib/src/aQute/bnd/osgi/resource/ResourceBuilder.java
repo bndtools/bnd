@@ -1,5 +1,6 @@
 package aQute.bnd.osgi.resource;
 
+import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +35,7 @@ import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
 import aQute.lib.filter.Filter;
+import aQute.libg.cryptography.SHA256;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
@@ -594,5 +596,14 @@ public class ResourceBuilder {
 		c.addAttribute(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, length);
 		c.addAttribute(ContentNamespace.CAPABILITY_MIME_ATTRIBUTE, mime == null ? "vnd.osgi.bundle" : mime);
 		addCapability(c);
+	}
+
+	public ResourceBuilder addFile(File file, URI uri) throws Exception {
+		Domain manifest = Domain.domain(file);
+		addManifest(manifest);
+
+		String sha256 = SHA256.digest(file).asHex();
+		addContentCapability(uri, sha256, file.length(), "vnd.osgi.bundle");
+		return this;
 	}
 }
