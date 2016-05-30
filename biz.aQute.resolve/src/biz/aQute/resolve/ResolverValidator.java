@@ -5,10 +5,13 @@ import static aQute.bnd.osgi.resource.ResourceUtils.createWildcardRequirement;
 import static aQute.bnd.osgi.resource.ResourceUtils.getIdentityCapability;
 import static java.util.Collections.singleton;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,6 +28,7 @@ import org.osgi.service.resolver.Resolver;
 import aQute.bnd.deployer.repository.FixedIndexedRepo;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
+import aQute.bnd.osgi.repository.XMLResourceParser;
 import aQute.bnd.osgi.resource.ResolutionDirective;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
@@ -42,6 +46,7 @@ public class ResolverValidator extends Processor {
 		public Resource				resource;
 		public boolean				succeeded;
 		public String				message;
+		public Set<Resource>		resolved	= new LinkedHashSet<>();
 		public List<Requirement>	system		= new ArrayList<>();
 		public List<Requirement>	repos		= new ArrayList<>();
 		public List<Requirement>	missing		= new ArrayList<>();
@@ -65,21 +70,43 @@ public class ResolverValidator extends Processor {
 	}
 
 	public List<Resolution> validate() throws Exception {
-
-		FixedIndexedRepo repository = new FixedIndexedRepo();
-		repository.setLocations(Strings.join(repositories));
-
+		FixedIndexedRepo repository = getRepository();
 		Set<Resource> resources = getAllResources(repository);
-		setProperty("-runfw", "dummy");
-
 		return validateResources(repository, resources);
 	}
 
-	public List<Resolution> validateResources(Repository repository, Set<Resource> resources) throws Exception {
+	public List<Resolution> validate(Collection<Resource> toBeChecked) throws Exception {
+		Set<Resource> allResources = new LinkedHashSet<Resource>();
+		for (URI uri : repositories) {
+			allResources.addAll(XMLResourceParser.getResources(uri));
+		}
+		allResources.addAll(toBeChecked);
+		ResourcesRepository repository = new ResourcesRepository(allResources);
+		return validateResources(repository, toBeChecked);
+	}
+
+	FixedIndexedRepo getRepository() throws MalformedURLException, URISyntaxException {
+		FixedIndexedRepo repository = new FixedIndexedRepo();
+		repository.setLocations(Strings.join(repositories));
+		return repository;
+	}
+
+	public List<Resolution> validateResources(Repository repository, Collection<Resource> resources) throws Exception {
+		setProperty("-runfw", "dummy");
 		List<Resolution> result = new ArrayList<>();
-		for (Resource resource : resources) {
+		List<Resource> resourceList = new ArrayList<>(resources);
+		while (!resourceList.isEmpty()) {
+			Resource resource = resourceList.remove(0);
 			Resolution resolution = resolve(repository, resource);
 			result.add(resolution);
+			for (Resource resolved : resolution.resolved) {
+				if (resourceList.remove(resolved)) {
+					Resolution curResolution = new Resolution();
+					curResolution.resource = resolved;
+					curResolution.succeeded = true;
+					result.add(curResolution);
+				}
+			}
 		}
 		return result;
 	}
@@ -123,6 +150,7 @@ public class ResolverValidator extends Processor {
 		try {
 			Map<Resource,List<Wire>> resolve2 = resolver.resolve(context);
 			resolution.succeeded = true;
+			resolution.resolved = resolve2.keySet();
 
 			trace("resolving %s succeeded", resource);
 		} catch (ResolutionException e) {
