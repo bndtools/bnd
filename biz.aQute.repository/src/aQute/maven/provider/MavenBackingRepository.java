@@ -147,8 +147,10 @@ public abstract class MavenBackingRepository implements Closeable {
 
 	public MavenVersion getVersion(Revision revision) throws Exception {
 		RevisionMetadata metadata = getMetadata(revision);
-		if (metadata.snapshotVersions.isEmpty())
+		if (metadata.snapshot.timestamp == null || metadata.snapshot.buildNumber == null) {
+			reporter.warning("Snapshot and/or buildnumber not set %s in %s", metadata.snapshot, revision);
 			return null;
+		}
 
 		return revision.version.toSnapshot(metadata.snapshot.timestamp, metadata.snapshot.buildNumber);
 	}
