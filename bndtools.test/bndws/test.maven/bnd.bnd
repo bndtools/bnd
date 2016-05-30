@@ -8,3 +8,5 @@ Bundle-Version: 1.0.0.${tstamp}
 -pom: 					groupid	=	osgi.enroute.examples,\
 						version =	${versionmask;===;${@version}}-SNAPSHOT
 						
+-buildpath: \
+	commons-cli:commons-cli;version=1.2
