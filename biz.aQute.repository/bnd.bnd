@@ -78,7 +78,8 @@ Private-Package: \
 
 Conditional-Package:\
 	aQute.lib.*;-split-package:=first,\
-	aQute.libg.*;-split-package:=first
+	aQute.libg.*;-split-package:=first, \
+	org.tukaani.xz.*
 
 # We must also explicitly import `org.osgi.framework` etc. for when we *are* running in OSGi.
 Import-Package:\

@@ -101,6 +101,7 @@ public class P2Repository extends BaseRepository implements Plugin, RegistryPlug
 	@Override
 	public void setProperties(Map<String,String> map) throws Exception {
 		this.config = Converter.cnv(P2Config.class, map);
+		this.name = this.config.name("p2-" + config.url());
 	}
 
 	@Override

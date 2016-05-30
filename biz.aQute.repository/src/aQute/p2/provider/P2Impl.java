@@ -30,10 +30,10 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.osgi.util.function.Function;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.Promises;
-import org.osgi.util.promise.Success;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tukaani.xz.XZInputStream;
@@ -102,7 +102,6 @@ public class P2Impl implements P2 {
 			return parseIndexArtifacts(cycles, uri);
 		}
 	}
-
 
 	private Promise<List<Artifact>> parseArtifacts(final InputStream in, final URI uri) throws Exception {
 		if (in == null)
@@ -254,11 +253,15 @@ public class P2Impl implements P2 {
 	 */
 	private Promise<List<Artifact>> parseIndexArtifacts(final Set<URI> cycles, final URI uri) throws Exception {
 		Promise<File> file = client.build().useCache().get().async(uri.toURL());
-		return file.then(new Success<File,List<Artifact>>() {
+		return file.flatMap(new Function<File,Promise< ? extends List<Artifact>>>() {
 
 			@Override
-			public Promise<List<Artifact>> call(Promise<File> file) throws Exception {
-				return parseIndexArtifacts(cycles, uri, file.getValue());
+			public Promise<List<Artifact>> apply(File t) {
+				try {
+					return parseIndexArtifacts(cycles, uri, t);
+				} catch (Throwable e) {
+					return Promises.failed(e);
+				}
 			}
 		});
 	}
