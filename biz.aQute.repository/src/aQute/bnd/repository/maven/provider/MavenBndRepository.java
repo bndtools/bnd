@@ -25,6 +25,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,6 +37,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.jpm.util.JSONRPCProxy;
+import aQute.bnd.maven.PomResource;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
@@ -136,8 +138,10 @@ public class MavenBndRepository
 
 					pomResource = getPomResource(binary);
 					if (pomResource == null) {
-						throw new IllegalArgumentException(
-								"No POM resource in META-INF/maven/... The Maven Bnd Repository requires this pom.");
+						pomResource = createPomResource(binary, options.context);
+						if (pomResource == null)
+							throw new IllegalArgumentException(
+									"No POM resource in META-INF/maven/... The Maven Bnd Repository requires this pom.");
 					}
 				}
 
@@ -322,6 +326,18 @@ public class MavenBndRepository
 			}
 		}
 		return null;
+	}
+
+	private Resource createPomResource(Jar binary, Processor context) throws Exception {
+		Manifest manifest = binary.getManifest();
+		if (manifest == null)
+			return null;
+
+		try (Processor scoped = context == null ? new Processor() : new Processor(context);) {
+			if (scoped.getProperty(Constants.GROUPID) == null)
+				scoped.setProperty(Constants.GROUPID, "osgi-bundle");
+			return new PomResource(scoped, manifest);
+		}
 	}
 
 	@Override
@@ -586,8 +602,7 @@ public class MavenBndRepository
 
 	@Override
 	public String toString() {
-		return "MavenBndRepository [localRepo=" + localRepo + ", storage=" + getName() + ", inited=" + inited
-				+ "]";
+		return "MavenBndRepository [localRepo=" + localRepo + ", storage=" + getName() + ", inited=" + inited + "]";
 	}
 
 	@Override
