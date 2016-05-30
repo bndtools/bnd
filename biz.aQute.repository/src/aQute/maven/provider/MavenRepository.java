@@ -3,6 +3,7 @@ package aQute.maven.provider;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -80,6 +81,9 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	public Archive getResolvedArchive(Revision revision, String extension, String classifier) throws Exception {
 		if (revision.isSnapshot()) {
 			MavenVersion v = snapshot.getVersion(revision);
+			if (v == null)
+				return null;
+
 			return revision.archive(v, extension, classifier);
 
 		} else {
@@ -119,6 +123,9 @@ public class MavenRepository implements IMavenRepo, Closeable {
 					try {
 
 						File f = get0(archive, file);
+						if (f == null)
+							throw new FileNotFoundException("" + archive);
+
 						deferred.resolve(f);
 					} catch (Throwable e) {
 						deferred.fail(e);

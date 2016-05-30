@@ -41,7 +41,7 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 			try {
 				reporter.trace("Fetching %s", path);
 
-				TaggedData tag = client.build().useCache(file).asTag().go(url);
+				TaggedData tag = client.build().headers("User-Agent", "Bnd").useCache(file).asTag().go(url);
 				reporter.trace("Fetched %s", tag);
 				if (tag.getState() == State.UPDATED) {
 
