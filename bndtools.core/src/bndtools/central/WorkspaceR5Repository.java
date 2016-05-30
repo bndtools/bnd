@@ -23,7 +23,6 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.log.LogService;
-import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -32,9 +31,10 @@ import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
 import aQute.bnd.deployer.repository.api.IRepositoryIndexProcessor;
 import aQute.bnd.deployer.repository.api.Referral;
 import aQute.bnd.deployer.repository.providers.R5RepoContentProvider;
+import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.lib.io.IO;
 
-public class WorkspaceR5Repository implements Repository {
+public class WorkspaceR5Repository extends BaseRepository {
 
     private static final String NAME = "Workspace";
 
