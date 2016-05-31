@@ -1,9 +1,16 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
+-nobundles: true
+
 -buildpath: \
-	biz.aQute.bndlib;version=snapshot,\
-	biz.aQute.resolve;version=latest
+	biz.aQute.bndlib;version=latest,\
+	biz.aQute.resolve;version=latest,\
+    biz.aQute.repository;version=latest,\
+    osgi.annotation;version=6.0.1,\
+    osgi.core;version=@6,\
+    osgi.cmpn;version=@6,\
+	slf4j.api
 
 -testpath: \
 	${junit},\
