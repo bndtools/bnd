@@ -17,6 +17,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.libg.gzip.GZipUtils;
 
 public class XMLResourceParser extends Processor {
 	final static XMLInputFactory inputFactory = XMLInputFactory.newInstance();
@@ -54,6 +55,12 @@ public class XMLResourceParser extends Processor {
 
 	private int						depth;
 
+	public static List<Resource> getResources(URI uri) throws Exception {
+		try (XMLResourceParser parser = new XMLResourceParser(uri)) {
+			return parser.parse();
+		}
+	}
+
 	public XMLResourceParser(URI url) throws Exception {
 		this(url.toURL().openStream(), url.toString(), url);
 	}
@@ -71,7 +78,7 @@ public class XMLResourceParser extends Processor {
 		this.depth = depth;
 		this.traversed = traversed;
 		this.url = url;
-		reader = inputFactory.createXMLStreamReader(in);
+		reader = inputFactory.createXMLStreamReader(GZipUtils.detectCompression(in));
 	}
 
 	List<Resource> getResources() {

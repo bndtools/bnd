@@ -2,8 +2,10 @@ package aQute.bnd.osgi.repository;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -13,7 +15,7 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.lib.collections.MultiMap;
 
 public class ResourcesRepository extends BaseRepository {
-	final List<Resource> resources = new ArrayList<>();
+	final Set<Resource> resources = new LinkedHashSet<>();
 
 	public ResourcesRepository(Resource resource) {
 		add(resource);

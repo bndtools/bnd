@@ -1,0 +1,11 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
+-buildpath: \
+	biz.aQute.bndlib;version=snapshot,\
+	biz.aQute.resolve;version=latest
+
+-testpath: \
+	${junit},\
+	${mockito},\
+	slf4j.simple
