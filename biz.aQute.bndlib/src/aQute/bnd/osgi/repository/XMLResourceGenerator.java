@@ -97,7 +97,7 @@ public class XMLResourceGenerator {
 		return this;
 	}
 
-	public XMLResourceGenerator resources(Collection<Resource> resources) throws Exception {
+	public XMLResourceGenerator resources(Collection< ? extends Resource> resources) throws Exception {
 		for (Resource resource : resources) {
 			resource(resource);
 		}

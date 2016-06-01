@@ -61,4 +61,12 @@ public class ResourcesRepository extends BaseRepository {
 		resources.addAll(resource);
 	}
 
+	protected void set(Collection< ? extends Resource> resources) {
+		this.resources.clear();
+		this.resources.addAll(resources);
+	}
+
+	public List<Resource> getResources() {
+		return new ArrayList<>(resources);
+	}
 }

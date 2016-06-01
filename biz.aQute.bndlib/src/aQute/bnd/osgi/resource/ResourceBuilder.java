@@ -116,7 +116,7 @@ public class ResourceBuilder {
 	 * @param manifest The manifest to parse
 	 * @throws Exception
 	 */
-	public void addManifest(Domain manifest) throws Exception {
+	public boolean addManifest(Domain manifest) throws Exception {
 
 		//
 		// Do the Bundle Identity Ns
@@ -127,7 +127,7 @@ public class ResourceBuilder {
 
 		if (bsn == null) {
 			reporter.warning("No BSN set, not a bundle");
-			return;
+			return false;
 		}
 
 		boolean singleton = "true".equals(bsn.getValue().get(Constants.SINGLETON_DIRECTIVE + ":"));
@@ -154,8 +154,12 @@ public class ResourceBuilder {
 		addCapability(provideBundle.buildCapability());
 
 		String version = manifest.getBundleVersion();
-		if (version != null)
-			identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, new Version(version));
+		if (version == null)
+			version = "0";
+		else if (!aQute.bnd.version.Version.isVersion(version))
+			throw new IllegalArgumentException("Invalid version in bundle " + bsn + ": " + version);
+
+		identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, new Version(version));
 
 		String copyright = manifest.get(Constants.BUNDLE_COPYRIGHT);
 		if (copyright != null) {
@@ -225,6 +229,8 @@ public class ResourceBuilder {
 		//
 
 		addRequirement(getNativeCode(manifest.getBundleNative()));
+
+		return true;
 	}
 
 	/**
@@ -598,12 +604,17 @@ public class ResourceBuilder {
 		addCapability(c);
 	}
 
-	public ResourceBuilder addFile(File file, URI uri) throws Exception {
+	public boolean addFile(File file, URI uri) throws Exception {
 		Domain manifest = Domain.domain(file);
-		addManifest(manifest);
+		String mime = "vnd.osgi.bundle";
+		boolean hasIdentity = false;
+		if (manifest != null)
+			hasIdentity = addManifest(manifest);
+		else
+			mime = "application/java-archive";
 
 		String sha256 = SHA256.digest(file).asHex();
-		addContentCapability(uri, sha256, file.length(), "vnd.osgi.bundle");
-		return this;
+		addContentCapability(uri, sha256, file.length(), mime);
+		return hasIdentity;
 	}
 }
