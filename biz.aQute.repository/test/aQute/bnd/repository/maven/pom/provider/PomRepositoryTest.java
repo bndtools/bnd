@@ -32,6 +32,7 @@ public class PomRepositoryTest extends TestCase {
 		IO.delete(tmp);
 		tmp.mkdirs();
 	}
+
 	public void testPom() throws Exception {
 		MavenRepository mr = getRepo();
 
@@ -53,9 +54,10 @@ public class PomRepositoryTest extends TestCase {
 
 		assertTrue(location.isFile());
 
-		XMLResourceParser xp = new XMLResourceParser(location);
-		List<Resource> parse = xp.parse();
-		assertEquals(parse.size(), pom.getResources().size());
+		try (XMLResourceParser xp = new XMLResourceParser(location);) {
+			List<Resource> parse = xp.parse();
+			assertEquals(parse.size(), pom.getResources().size());
+		}
 	}
 
 	MavenRepository getRepo() throws Exception {
