@@ -183,7 +183,8 @@ class RepoActions {
 		IPom pom = repo.storage.getPom(archive.revision);
 		Map<Program,Dependency> dependencies = pom.getDependencies(scope, false);
 		for (Dependency d : dependencies.values()) {
-			BundleDescriptor add = repo.index.add(d.archive);
+
+			BundleDescriptor add = repo.index.add(d.program.version(d.version).archive("jar", null));
 			if (d.error != null)
 				add.error = d.error;
 		}

@@ -48,10 +48,10 @@ public class Archive implements Comparable<Archive> {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((classifier == null) ? 0 : classifier.hashCode());
-		result = prime * result + ((extension == null) ? 0 : extension.hashCode());
-		result = prime * result + ((revision == null) ? 0 : revision.hashCode());
-		result = prime * result + ((snapshot == null) ? 0 : snapshot.hashCode());
+		result = prime * result + classifier.hashCode();
+		result = prime * result + extension.hashCode();
+		result = prime * result + revision.hashCode();
+		result = prime * result + (snapshot == null ? 0 : snapshot.hashCode());
 		return result;
 	}
 
@@ -64,27 +64,23 @@ public class Archive implements Comparable<Archive> {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
+
 		Archive other = (Archive) obj;
-		if (classifier == null) {
-			if (other.classifier != null)
-				return false;
-		} else if (!classifier.equals(other.classifier))
+		if (!classifier.equals(other.classifier))
 			return false;
-		if (extension == null) {
-			if (other.extension != null)
-				return false;
-		} else if (!extension.equals(other.extension))
+
+		if (!extension.equals(other.extension))
 			return false;
-		if (revision == null) {
-			if (other.revision != null)
-				return false;
-		} else if (!revision.equals(other.revision))
+
+		if (!revision.equals(other.revision))
 			return false;
+
 		if (snapshot == null) {
 			if (other.snapshot != null)
 				return false;
 		} else if (!snapshot.equals(other.snapshot))
 			return false;
+
 		return true;
 	}
 

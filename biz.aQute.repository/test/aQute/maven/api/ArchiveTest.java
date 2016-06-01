@@ -29,11 +29,19 @@ public class ArchiveTest extends TestCase {
 	}
 
 	public void testEquals() {
-		Archive a = Archive.valueOf("a.b.c:def:1.3");
+		Archive a = Archive.valueOf("a.b.c:def:jar:1.3");
 		Archive b = Archive.valueOf("a.b.c:def:1.3");
 		assertTrue(a.equals(b));
 		assertTrue(a.hashCode() == b.hashCode());
 	}
+
+	public void testEqualsDefault() {
+		Archive a = new Archive("org.slf4j:slf4j-api:1.7.5");
+		Archive b = Archive.valueOf("org.slf4j:slf4j-api:1.7.5");
+		assertTrue(a.equals(b));
+		assertTrue(a.hashCode() == b.hashCode());
+	}
+
 
 	public void testValueOf() {
 		Archive a = Archive.valueOf("a.b.c:def:1.3");

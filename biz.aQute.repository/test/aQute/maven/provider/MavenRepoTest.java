@@ -22,7 +22,7 @@ public class MavenRepoTest extends TestCase {
 	File					local;
 	File					remote;
 	FakeNexus		fnx;
-	MavenRemoteRepository		repo;
+	List<MavenBackingRepository>	repo;
 	MavenRepository	storage;
 	ReporterAdapter	reporter	= new ReporterAdapter(System.err);
 
@@ -41,8 +41,9 @@ public class MavenRepoTest extends TestCase {
 		IO.copy(IO.getFile("testresources/mavenrepo"), remote);
 		remote.mkdirs();
 		local.mkdirs();
-		repo = new MavenRemoteRepository(local, new HttpClient(), fnx.getBaseURI() + "/repo/", reporter);
-		storage = new MavenRepository(local, "fnexus", this.repo, null, null, new ReporterAdapter(System.out), null);
+		repo = MavenBackingRepository.create(fnx.getBaseURI() + "/repo/", reporter, local, new HttpClient());
+		storage = new MavenRepository(local, "fnexus", this.repo, this.repo, null, new ReporterAdapter(System.out),
+				null);
 	}
 
 	@Override

@@ -139,7 +139,8 @@ class P2Indexer implements Closeable {
 						public Resource apply(File file) {
 							try {
 								ResourceBuilder rb = new ResourceBuilder();
-								return rb.addFile(file, a.uri).build();
+								rb.addFile(file, a.uri);
+								return rb.build();
 							} catch (Exception e) {
 								throw new RuntimeException(e);
 							}

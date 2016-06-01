@@ -124,6 +124,7 @@ public class Program implements Comparable<Program> {
 	 * @return the Program
 	 */
 	public static Program valueOf(String group, String artifact) {
+
 		synchronized (programCache) {
 			String key = group + ":" + artifact;
 			Program p = programCache.get(key);

@@ -1,6 +1,7 @@
 package aQute.maven.provider;
 
 import java.io.File;
+import java.util.List;
 
 import aQute.bnd.http.HttpClient;
 import aQute.http.testservers.HttpTestServer.Config;
@@ -13,11 +14,11 @@ import aQute.maven.api.Revision;
 import junit.framework.TestCase;
 
 public class CentralTest extends TestCase {
-	private static final String	REPO_URL		= "http://repo2.maven.org/maven2/";
+	private static final String	REPO_URL	= "https://repo1.maven.org/maven2/";
 	String						tmpName;
 	File						local;
 
-	MavenRemoteRepository		repo;
+	List<MavenBackingRepository>	repo;
 	MavenRepository				storage;
 	ReporterAdapter				reporter	= new ReporterAdapter(System.err);
 
@@ -30,8 +31,9 @@ public class CentralTest extends TestCase {
 		Config config = new Config();
 		IO.delete(local);
 		local.mkdirs();
-		repo = new MavenRemoteRepository(local, new HttpClient(), REPO_URL, reporter);
-		storage = new MavenRepository(local, "central", this.repo, null, null, new ReporterAdapter(System.out), null);
+		repo = MavenRemoteRepository.create(REPO_URL, reporter, local, new HttpClient());
+		storage = new MavenRepository(local, "central", this.repo, null, null,
+				new ReporterAdapter(System.out), null);
 	}
 
 	@Override

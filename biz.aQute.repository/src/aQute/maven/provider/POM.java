@@ -2,7 +2,8 @@ package aQute.maven.provider;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.w3c.dom.NodeList;
 
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom;
 import aQute.maven.api.MavenScope;
@@ -37,7 +39,7 @@ import aQute.maven.api.Revision;
  * Parser and placeholder for POM information.
  */
 public class POM implements IPom {
-	static Logger					l				= LoggerFactory.getLogger(POM.class);
+	static Logger l = LoggerFactory.getLogger(POM.class);
 
 	static DocumentBuilderFactory	dbf				= DocumentBuilderFactory.newInstance();
 	static XPathFactory				xpf				= XPathFactory.newInstance();
@@ -46,9 +48,10 @@ public class POM implements IPom {
 	private final Properties		properties;
 	private final POM				parent;
 	private Map<Program,Dependency>	dependencies	= new LinkedHashMap<>();
+	private Map<Program,Dependency>	dependencyManagement	= new LinkedHashMap<>();
 	private XPath					xp;
 
-	private MavenRepository			repo;
+	private MavenRepository repo;
 
 	public static POM parse(MavenRepository repo, File file) throws Exception {
 		try {
@@ -76,10 +79,10 @@ public class POM implements IPom {
 
 		this.repo = repo;
 		xp = xpf.newXPath();
-		String parentGroup = xp.evaluate("project/parent/groupId", doc);
-		String parentArtifact = xp.evaluate("project/parent/artifactId", doc);
-		String parentVersion = xp.evaluate("project/parent/version", doc);
-		String relativePath = xp.evaluate("project/parent/relativePath", doc);
+		String parentGroup = Strings.trim(xp.evaluate("project/parent/groupId", doc));
+		String parentArtifact = Strings.trim(xp.evaluate("project/parent/artifactId", doc));
+		String parentVersion = Strings.trim(xp.evaluate("project/parent/version", doc));
+		String relativePath = Strings.trim(xp.evaluate("project/parent/relativePath", doc));
 		if (!parentGroup.isEmpty() && !parentArtifact.isEmpty() && !parentVersion.isEmpty()) {
 
 			Program program = Program.valueOf(parentGroup, parentArtifact);
@@ -110,13 +113,15 @@ public class POM implements IPom {
 		Element project = doc.getDocumentElement();
 		index(project, "project.", "modelVersion", "groupId", "artifactId", "version", "packaging");
 
-		NodeList props = project.getElementsByTagName("properties");
+		NodeList props = (NodeList) xp.evaluate("properties", project, XPathConstants.NODESET);
 		for (int i = 0; i < props.getLength(); i++)
 			index((Element) props.item(i), "");
 
 		String group = get("project.groupId", null);
 		String artifact = get("project.artifactId", null);
 		String version = get("project.version", null);
+		if (version == null)
+			version = parent.getVersion().toString();
 		this.packaging = get("project.packaging", "jar");
 
 		Program program = Program.valueOf(group, artifact);
@@ -129,14 +134,36 @@ public class POM implements IPom {
 
 		this.revision = program.version(v);
 
+		properties.put("pom.groupId", group);
+		properties.put("pom.artifactId", artifact);
+		properties.put("pom.version", version);
+		if (parent.revision != null)
+			properties.put("parent.version", parent.getVersion().toString());
+		else
+			properties.put("parent.version", "parent version from " + revision + " but not parent?");
+		properties.put("version", version);
+		properties.put("pom.currentVersion", version);
+		properties.put("pom.packaging", this.packaging);
+
 		NodeList dependencies = (NodeList) xp.evaluate("project/dependencies/dependency", doc, XPathConstants.NODESET);
 		for (int i = 0; i < dependencies.getLength(); i++) {
 			Element dependency = (Element) dependencies.item(i);
 			Dependency d = dependency(dependency);
-			this.dependencies.put(d.archive.revision.program, d);
+			this.dependencies.put(d.program, d);
 		}
 
+		NodeList dependencyManagement = (NodeList) xp.evaluate("project/dependencyManagement/dependencies/dependency",
+				doc, XPathConstants.NODESET);
+		for (int i = 0; i < dependencyManagement.getLength(); i++) {
+			Element dependency = (Element) dependencyManagement.item(i);
+			Dependency d = dependency(dependency);
+			this.dependencyManagement.put(d.program, d);
+		}
 		xp = null;
+	}
+
+	private MavenVersion getVersion() {
+		return revision.version;
 	}
 
 	private Dependency dependency(Element dependency) throws Exception {
@@ -155,37 +182,23 @@ public class POM implements IPom {
 			throw new IllegalArgumentException(
 					"Invalid dependency in " + revision + " to " + groupId + ":" + artifactId);
 
-		MavenVersion v = MavenVersion.parseMavenString(version);
-		if (v == null) {
-			Dependency dep = parent.getDirectDependency(program);
-			if (dep != null)
-				v = dep.archive.revision.version;
-			else {
-				List<Revision> revisions = repo.getRevisions(program);
-				if (!revisions.isEmpty())
-					v = revisions.get(revisions.size() - 1).version;
-			}
-		}
-
-		if (v == null)
-			throw new IllegalArgumentException(
-					"Invalid version in " + revision + " to " + groupId + ":" + artifactId + ":" + version);
-
-		d.archive = program.version(v).archive(extension, classifier);
-		try {
-			d.scope = MavenScope.valueOf(scope.toLowerCase());
-		} catch (Exception e) {
-			throw new IllegalArgumentException("Invalid scope in dependency from " + revision + " to " + d.archive);
-		}
+		d.program = program;
+		d.version = version;
+		d.scope = MavenScope.getScope(scope);
 
 		// TODO exclusions
 
 		return d;
 	}
 
+
 	private Dependency getDirectDependency(Program program) {
 
 		Dependency dependency = dependencies.get(program);
+		if (dependency != null)
+			return dependency;
+
+		dependency = dependencyManagement.get(program);
 		if (dependency != null)
 			return dependency;
 
@@ -201,9 +214,9 @@ public class POM implements IPom {
 	private String get(Element dependency, String name, String deflt) throws XPathExpressionException {
 		String value = xp.evaluate(name, dependency);
 		if (value == null || value.isEmpty())
-			return deflt;
+			return Strings.trim(deflt);
 
-		return replaceMacros(value);
+		return Strings.trim(replaceMacros(value));
 	}
 
 	private String get(String key, String deflt) {
@@ -223,9 +236,18 @@ public class POM implements IPom {
 		while (m.find()) {
 			String key = m.group("key");
 			if (m.group("env") != null)
-				m.appendReplacement(sb, System.getenv(key));
-			else
-				m.appendReplacement(sb, this.properties.getProperty(key));
+				m.appendReplacement(sb, replaceMacros(System.getenv(key)));
+			else {
+				String property = this.properties.getProperty(key);
+				if (property != null && property.indexOf('$') >= 0)
+					property = replaceMacros(property);
+
+				if (property == null) {
+					System.out.println("?? prop: " + key);
+					m.appendReplacement(sb, "\\$\\{" + key + "\\}");
+				} else
+					m.appendReplacement(sb, property);
+			}
 		}
 		m.appendTail(sb);
 		return sb.toString();
@@ -262,19 +284,39 @@ public class POM implements IPom {
 	}
 
 	public Archive binaryArchive() {
-		return revision.archive(packaging == null || packaging.isEmpty() || packaging.equals("pom") ? "jar" : packaging,
+		return revision.archive(
+				packaging == null || packaging.isEmpty() || packaging.equals("bundle") || packaging.equals("pom")
+						? "jar" : packaging,
 				null);
 	}
 
 	@Override
 	public Map<Program,Dependency> getDependencies(MavenScope scope, boolean transitive) throws Exception {
-		Map<Program,Dependency> deps = new HashMap<>();
+		return getDependencies(EnumSet.of(scope), transitive);
+	}
+
+	public Map<Program,Dependency> getDependencies(EnumSet<MavenScope> scope, boolean transitive) throws Exception {
+		Map<Program,Dependency> deps = new LinkedHashMap<>();
 		Set<Program> visited = new HashSet<>();
 		getDependencies(deps, scope, transitive, visited);
 		return deps;
 	}
 
-	private void getDependencies(Map<Program,Dependency> deps, MavenScope scope, boolean transitive,
+	private void resolve(Dependency d) {
+		if (d.version == null) {
+			Dependency dependency = dependencyManagement.get(d.program);
+			if (dependency != null && dependency.version != null) {
+				d.version = dependency.version;
+				return;
+			}
+			Dependency directDependency = parent.getDirectDependency(d.program);
+			if (directDependency == null) {
+				d.error = "Cannot resolve ...";
+			} else
+				d.version = directDependency.version;
+		}
+	}
+	private void getDependencies(Map<Program,Dependency> deps, EnumSet<MavenScope> scope, boolean transitive,
 			Set<Program> visited) throws Exception {
 
 		if (revision == null)
@@ -288,19 +330,32 @@ public class POM implements IPom {
 		if (parent != null)
 			parent.getDependencies(deps, scope, transitive, visited);
 
+		List<Dependency> breadthFirst = new ArrayList<>();
+
 		for (Map.Entry<Program,Dependency> e : dependencies.entrySet()) {
 			Dependency d = e.getValue();
-			if (d.scope == scope && !deps.containsKey(d.archive.revision.program)) {
+			
+			resolve(d);
+
+			if (deps.containsKey(d.program))
+				continue;
+
+			if (scope.contains(d.scope)) {
+
 				deps.put(e.getKey(), d);
-				if (transitive)
-					try {
-						POM pom = repo.getPom(d.archive.revision);
-						pom.getDependencies(deps, scope, transitive, visited);
-					} catch (Exception ee) {
-						d.error = ee.getMessage();
-					}
+				if (transitive && d.scope.isTransitive())
+					breadthFirst.add(d);
 			}
 		}
+
+		for (Dependency d : breadthFirst)
+			try {
+				POM pom = repo.getPom(d.program.version(d.version));
+				pom.getDependencies(deps, scope, transitive, visited);
+			} catch (Exception ee) {
+				ee.printStackTrace();
+				d.error = ee.getMessage();
+			}
 	}
 
 	@Override
@@ -336,6 +391,10 @@ public class POM implements IPom {
 		} else if (!revision.equals(other.revision))
 			return false;
 		return true;
+	}
+
+	public boolean isPomOnly() {
+		return "pom".equals(packaging);
 	}
 
 }

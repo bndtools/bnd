@@ -2,19 +2,21 @@ package aQute.maven.provider;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.libg.cryptography.SHA1;
 import aQute.maven.api.Archive;
 import aQute.maven.api.Program;
@@ -81,6 +83,8 @@ public abstract class MavenBackingRepository implements Closeable {
 
 	public void getRevisions(Program program, List<Revision> revisions) throws Exception {
 		ProgramMetadata meta = getMetadata(program);
+		if (meta == null)
+			return;
 
 		for (MavenVersion v : meta.versions) {
 			revisions.add(program.version(v));
@@ -116,7 +120,7 @@ public abstract class MavenBackingRepository implements Closeable {
 
 		switch (tag.getState()) {
 			case NOT_FOUND :
-				throw new FileNotFoundException();
+				return null;
 			case OTHER :
 				throw new IOException("Failed " + tag.getResponseCode());
 			case UNMODIFIED :
@@ -165,4 +169,40 @@ public abstract class MavenBackingRepository implements Closeable {
 	public String getUser() throws Exception {
 		return null;
 	}
+
+	static public List<MavenBackingRepository> create(String urls, Reporter reporter, File localRepo,
+			HttpClient client) throws Exception {
+		if (urls == null)
+			return Collections.emptyList();
+
+		List<MavenBackingRepository> result = new ArrayList<>();
+		List<String> parts = Strings.split(urls);
+		for (String part : parts) {
+			MavenBackingRepository mbr = getBackingRepository(part, reporter, localRepo, client);
+			result.add(mbr);
+		}
+		return result;
+	}
+
+	static public MavenBackingRepository getBackingRepository(String url, Reporter reporter, File localRepo,
+			HttpClient client)
+			throws Exception {
+		url = clean(url);
+		URI uri = new URI(url);
+
+		if (uri.getScheme().equalsIgnoreCase("file")) {
+			File remote = new File(uri);
+			return new MavenFileRepository(localRepo, remote, reporter);
+		} else {
+			return new MavenRemoteRepository(localRepo, client, url, reporter);
+		}
+	}
+
+	static public String clean(String url) {
+		if (url.endsWith("/"))
+			return url;
+
+		return url + "/";
+	}
+
 }

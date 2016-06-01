@@ -6,9 +6,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
@@ -20,7 +20,7 @@ import java.util.regex.Matcher;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 
-import aQute.bnd.http.HttpRequestException;
+import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
@@ -33,24 +33,28 @@ import aQute.maven.api.Revision;
 import aQute.service.reporter.Reporter;
 
 public class MavenRepository implements IMavenRepo, Closeable {
-	final File						base;
-	final String					id;
-	final MavenBackingRepository	release;
-	final MavenBackingRepository	snapshot;
-	final Executor					executor;
-	final boolean					localOnly;
-	final Reporter					reporter;
-	final WeakHashMap<Revision,POM>	poms		= new WeakHashMap<>();
-	long							STALE_TIME	= TimeUnit.DAYS.toMillis(1);
+	final File									base;
+	final String								id;
+	final List<MavenBackingRepository>			release		= new ArrayList<>();
+	final List<MavenBackingRepository>			snapshot	= new ArrayList<>();
+	final Executor								executor;
+	final boolean								localOnly;
+	final Reporter								reporter;
+	final WeakHashMap<Revision,Promise<POM>>	poms		= new WeakHashMap<>();
+	long										STALE_TIME	= TimeUnit.DAYS.toMillis(1);
 
-	public MavenRepository(File base, String id, MavenBackingRepository release, MavenBackingRepository snapshot,
-			Executor executor, Reporter reporter, Callable<Boolean> callback) throws Exception {
+	public MavenRepository(File base, String id, List<MavenBackingRepository> release,
+			List<MavenBackingRepository> snapshot, Executor executor, Reporter reporter, Callable<Boolean> callback)
+					throws Exception {
 		this.base = base;
 		this.id = id;
-		this.release = release;
-		this.snapshot = snapshot == null ? release : snapshot;
+		if (release != null)
+			this.release.addAll(release);
+		if (snapshot != null)
+			this.snapshot.addAll(snapshot);
+
 		this.executor = executor == null ? Executors.newCachedThreadPool() : executor;
-		this.localOnly = release == null && snapshot == null;
+		this.localOnly = this.release.isEmpty() && this.snapshot.isEmpty();
 		this.reporter = reporter;
 		base.mkdirs();
 	}
@@ -59,11 +63,12 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	public List<Revision> getRevisions(Program program) throws Exception {
 		List<Revision> revisions = new ArrayList<>();
 
-		if (release != null)
-			release.getRevisions(program, revisions);
+		for (MavenBackingRepository mbr : release)
+			mbr.getRevisions(program, revisions);
 
-		if (snapshot != null && snapshot != release)
-			snapshot.getRevisions(program, revisions);
+		for (MavenBackingRepository mbr : snapshot)
+			if (!release.contains(mbr))
+				mbr.getRevisions(program, revisions);
 
 		return revisions;
 	}
@@ -71,21 +76,27 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	@Override
 	public List<Archive> getSnapshotArchives(Revision revision) throws Exception {
 
-		if (!revision.isSnapshot() || snapshot == null)
+		if (!revision.isSnapshot())
 			return null;
 
-		return snapshot.getSnapshotArchives(revision);
+		List<Archive> archives = new ArrayList<>();
+		for (MavenBackingRepository mbr : snapshot) {
+			List<Archive> snapshotArchives = mbr.getSnapshotArchives(revision);
+			archives.addAll(snapshotArchives);
+		}
+
+		return archives;
 	}
 
 	@Override
 	public Archive getResolvedArchive(Revision revision, String extension, String classifier) throws Exception {
 		if (revision.isSnapshot()) {
-			MavenVersion v = snapshot.getVersion(revision);
-			if (v == null)
-				return null;
-
-			return revision.archive(v, extension, classifier);
-
+			for (MavenBackingRepository mbr : snapshot) {
+				MavenVersion v = mbr.getVersion(revision);
+				if (v != null)
+					return revision.archive(v, extension, classifier);
+			}
+			return null;
 		} else {
 			return revision.archive(extension, classifier);
 		}
@@ -94,8 +105,9 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	@Override
 	public Release release(final Revision revision) throws Exception {
 		reporter.trace("Release %s to %s", revision, this);
-		Releaser r = revision.isSnapshot() ? new SnapshotReleaser(this, revision, snapshot)
-				: new Releaser(this, revision, release);
+		Releaser r = revision.isSnapshot()
+				? new SnapshotReleaser(this, revision, snapshot.isEmpty() ? null : snapshot.get(0))
+				: new Releaser(this, revision, release.get(0));
 		r.force();
 		return r;
 	}
@@ -147,7 +159,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	}
 
 	private File get0(Archive archive, File file) throws Exception {
-		TaggedData result = null;
+		State result = null;
 
 		if (archive.isSnapshot()) {
 			Archive resolved = resolveSnapshot(archive);
@@ -157,22 +169,22 @@ public class MavenRepository implements IMavenRepo, Closeable {
 					return file;
 				return null;
 			}
-			if (snapshot != null && resolved != null) {
-				result = snapshot.fetch(resolved.remotePath, file);
+			if (resolved != null) {
+				result = fetch(snapshot, resolved.remotePath, file);
 			}
 		}
 
 		if (result == null && release != null)
-			result = release.fetch(archive.remotePath, file);
+			result = fetch(release, archive.remotePath, file);
 
 		if (result == null)
 			throw new IllegalStateException("Neither release nor remote repo set");
 
-		switch (result.getState()) {
+		switch (result) {
 			case NOT_FOUND :
 				return null;
 			case OTHER :
-				throw new HttpRequestException((HttpURLConnection) result.getConnection());
+				throw new IOException("Could not fetch " + archive.toString());
 
 			case UNMODIFIED :
 			case UPDATED :
@@ -181,19 +193,39 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		}
 	}
 
+	private State fetch(List<MavenBackingRepository> mbrs, String remotePath, File file) throws Exception {
+		State error = State.NOT_FOUND;
+
+		for (MavenBackingRepository mbr : mbrs) {
+			TaggedData fetch = mbr.fetch(remotePath, file);
+			switch (fetch.getState()) {
+				case NOT_FOUND :
+					break;
+				case OTHER :
+					error = State.OTHER;
+					reporter.error("Fetching artifact gives error %s", remotePath);
+					break;
+
+				case UNMODIFIED :
+				case UPDATED :
+					return fetch.getState();
+			}
+		}
+		return error;
+	}
+
 	@Override
 	public Archive resolveSnapshot(Archive archive) throws Exception {
 		if (archive.isResolved())
 			return archive;
 
-		if (snapshot == null)
-			return null;
+		for (MavenBackingRepository mbr : snapshot) {
+			MavenVersion version = mbr.getVersion(archive.revision);
+			if (version != null)
+				return archive.resolveSnapshot(version);
+		}
 
-		MavenVersion version = snapshot.getVersion(archive.revision);
-		if (version == null)
-			return null;
-
-		return archive.resolveSnapshot(version);
+		return null;
 	}
 
 	public File toLocalFile(String path) {
@@ -232,19 +264,21 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public void close() throws IOException {
-		if (release != null)
-			release.close();
+		for (MavenBackingRepository mbr : snapshot)
+			IO.close(mbr);
+		for (MavenBackingRepository mbr : release)
+			IO.close(mbr);
 	}
 
 	@Override
 	public URI toRemoteURI(Archive archive) throws Exception {
-		if (archive.revision.isSnapshot()) {
-			if (snapshot != null)
-				return snapshot.toURI(archive.remotePath);
-		} else {
-			if (release != null)
-				return release.toURI(archive.remotePath);
-		}
+		// if (archive.revision.isSnapshot()) {
+		// if (snapshot != null)
+		// return snapshot.toURI(archive.remotePath);
+		// } else {
+		// if (release != null)
+		// return release.toURI(archive.remotePath);
+		// }
 		return toLocalFile(archive).toURI();
 	}
 
@@ -261,7 +295,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public String toString() {
-		return "MavenStorage [base=" + base + ", id=" + id + ", release=" + release + ", snapshot=" + snapshot
+		return "MavenRepository [base=" + base + ", id=" + id + ", release=" + release + ", snapshot=" + snapshot
 				+ ", localOnly=" + localOnly + "]";
 	}
 
@@ -272,33 +306,52 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public POM getPom(InputStream pomFile) throws Exception {
-		POM pom = new POM(this, pomFile);
-		synchronized (poms) {
-			poms.put(pom.getRevision(), pom);
-		}
-		return pom;
+		return new POM(this, pomFile);
 	}
 
 	@Override
 	public POM getPom(Revision revision) throws Exception {
-		POM pom;
+		Deferred<POM> deferred;
 		synchronized (poms) {
-			pom = poms.get(revision);
-			if (pom != null)
-				return pom;
+			Promise<POM> p = poms.get(revision);
+			if (p != null)
+				return p.getValue();
+
+			deferred = new Deferred<>();
+			poms.put(revision, deferred.getPromise());
 		}
+		try {
+			Archive pomArchive = revision.getPomArchive();
+			File pomFile = get(pomArchive).getValue();
 
-		Archive pomArchive = revision.getPomArchive();
-		File pomFile = get(pomArchive).getValue();
-		if (pomFile == null)
-			return null;
+			if (pomFile == null) {
+				deferred.resolve(null);
+			} else {
 
-		try (FileInputStream fin = new FileInputStream(pomFile)) {
-			return getPom(fin);
-		} catch (Exception e) {
-
-			throw new Exception("Failed to parse " + pomFile, e);
+				try (FileInputStream fin = new FileInputStream(pomFile)) {
+					POM pom = getPom(fin);
+					deferred.resolve(pom);
+				}
+			}
+		} catch (Throwable t) {
+			deferred.fail(t);
 		}
+		return deferred.getPromise().getValue();
+	}
+
+	@Override
+	public List<MavenBackingRepository> getSnapshotRepositories() {
+		return Collections.unmodifiableList(snapshot);
+	}
+
+	@Override
+	public List<MavenBackingRepository> getReleaseRepositories() {
+		return Collections.unmodifiableList(release);
+	}
+
+	@Override
+	public boolean isLocalOnly() {
+		return localOnly;
 	}
 
 }

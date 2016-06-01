@@ -50,14 +50,16 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 					if (!path.endsWith("/maven-metadata.xml")) {
 						URL shaUrl = new URL(base + path + ".sha1");
 						URL md5Url = new URL(base + path + ".md5");
-						Promise<String> sha = client.build().asString().timeout(15000).async(shaUrl);
-						Promise<String> md5 = client.build().asString().timeout(15000).async(md5Url);
-						if (sha.getFailure() == null) {
+						String sha = client.build().asString().timeout(15000).go(shaUrl);
+						if (sha != null) {
 							String fileSha = SHA1.digest(file).asHex();
-							checkDigest(fileSha, sha.getValue(), file);
-						} else if (md5.getFailure() == null) {
-							String fileMD5 = MD5.digest(file).asHex();
-							checkDigest(fileMD5, md5.getValue(), file);
+							checkDigest(fileSha, sha, file);
+						} else {
+							String md5 = client.build().asString().timeout(15000).go(md5Url);
+							if (md5 != null) {
+								String fileMD5 = MD5.digest(file).asHex();
+								checkDigest(fileMD5, md5, file);
+							}
 						}
 					}
 				}

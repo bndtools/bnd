@@ -68,8 +68,6 @@ import aQute.maven.api.Program;
 import aQute.maven.api.Release;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenBackingRepository;
-import aQute.maven.provider.MavenFileRepository;
-import aQute.maven.provider.MavenRemoteRepository;
 import aQute.maven.provider.MavenRepository;
 import aQute.service.reporter.Reporter;
 
@@ -83,7 +81,7 @@ public class MavenBndRepository
 	private final Pattern			JPM_REVISION_URL_PATTERN_P	= Pattern
 			.compile("https?://.+#!?/p/sha/(?<sha>([0-9A-F][0-9A-F]){20,20})/.*", Pattern.CASE_INSENSITIVE);
 	private static final String		NONE						= "NONE";
-	private static final String		MAVEN_REPO_LOCAL			= System.getProperty("maven.repo.local",
+	static final String				MAVEN_REPO_LOCAL			= System.getProperty("maven.repo.local",
 			"~/.m2/repository");
 	private Configuration			configuration;
 	private Registry				registry;
@@ -95,10 +93,9 @@ public class MavenBndRepository
 	IndexFile						index;
 	private ScheduledFuture< ? >	indexPoller;
 	private RepoActions				actions						= new RepoActions(this);
-	private MavenBackingRepository	snapshot;
-	private MavenBackingRepository	release;
 	private String					name;
 	private JpmRepo					libraryx;
+	private HttpClient				client;
 
 	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
@@ -206,10 +203,10 @@ public class MavenBndRepository
 	void checkRemotePossible(ReleaseDTO instructions, boolean snapshot) {
 		if (instructions.type == ReleaseType.REMOTE) {
 			if (snapshot) {
-				if (this.snapshot == null)
+				if (this.storage.getSnapshotRepositories().isEmpty())
 					throw new IllegalArgumentException(
 							"Remote snapshot release requested but no snapshot repository set for " + getName());
-			} else if (release == null)
+			} else if (this.storage.getReleaseRepositories().isEmpty())
 				throw new IllegalArgumentException(
 						"Remote release requested but no release repository set for " + getName());
 		}
@@ -273,7 +270,7 @@ public class MavenBndRepository
 
 		Parameters p = new Parameters(context.getProperty(Constants.MAVEN_RELEASE));
 
-		release.type = this.release == null && this.snapshot == null ? ReleaseType.LOCAL : ReleaseType.REMOTE;
+		release.type = storage.isLocalOnly() ? ReleaseType.LOCAL : ReleaseType.REMOTE;
 
 		Attrs attrs = p.remove("remote");
 		if (attrs != null) {
@@ -419,14 +416,17 @@ public class MavenBndRepository
 			if (inited)
 				return;
 
+			client = registry.getPlugin(HttpClient.class);
 			inited = true;
 			name = configuration.name("Maven");
 
 			localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
 
 			Executor executor = registry.getPlugin(Executor.class);
-			release = configuration.releaseUrl() != null ? getBackingRepository(configuration.releaseUrl()) : null;
-			snapshot = configuration.snapshotUrl() != null ? getBackingRepository(configuration.snapshotUrl()) : null;
+			List<MavenBackingRepository> release = MavenBackingRepository.create(configuration.releaseUrl(), reporter,
+					localRepo, client);
+			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(configuration.snapshotUrl(), reporter,
+					localRepo, client);
 			storage = new MavenRepository(localRepo, getName(), release, snapshot, executor, reporter,
 					getRefreshCallback());
 
@@ -448,19 +448,6 @@ public class MavenBndRepository
 		} catch (Exception e) {
 			reporter.exception(e, "Init for maven repo failed %s", configuration);
 			throw new RuntimeException(e);
-		}
-	}
-
-	private MavenBackingRepository getBackingRepository(String url) throws Exception {
-		url = clean(url);
-		URI uri = new URI(url);
-
-		if (uri.getScheme().equalsIgnoreCase("file")) {
-			File remote = new File(uri);
-			return new MavenFileRepository(localRepo, remote, reporter);
-		} else {
-			HttpClient client = registry.getPlugin(HttpClient.class);
-			return new MavenRemoteRepository(localRepo, client, url, reporter);
 		}
 	}
 
@@ -490,13 +477,6 @@ public class MavenBndRepository
 			for (RepositoryListenerPlugin listener : registry.getPlugins(RepositoryListenerPlugin.class))
 				listener.repositoryRefreshed(this);
 		}
-	}
-
-	private String clean(String url) {
-		if (url.endsWith("/"))
-			return url;
-
-		return url + "/";
 	}
 
 	@Override
@@ -627,8 +607,10 @@ public class MavenBndRepository
 				try (Formatter f = new Formatter()) {
 					f.format("%s\n", getName());
 					f.format("Revisions %s\n", index.descriptors.size());
-					f.format("Release %s  (%s)\n", release, getUser(release));
-					f.format("Snapshot %s (%s)\n", snapshot, getUser(snapshot));
+					for (MavenBackingRepository mbr : storage.getReleaseRepositories())
+						f.format("Release %s  (%s)\n", mbr, getUser(mbr));
+					for (MavenBackingRepository mbr : storage.getSnapshotRepositories())
+						f.format("Snapshot %s (%s)\n", mbr, getUser(mbr));
 					f.format("Storage %s\n", localRepo);
 					f.format("Index %s\n", index.indexFile);
 					f.format("Index Cache %s\n", index.cacheDir);
