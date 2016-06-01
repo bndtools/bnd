@@ -116,6 +116,19 @@ public class HttpClient implements Closeable, URLConnector {
 			if (request.download == TaggedData.class)
 				return in;
 
+			switch (in.getState()) {
+				case NOT_FOUND :
+					return null;
+				case OTHER :
+					in.throwIt();
+					return null;
+
+				case UNMODIFIED :
+				case UPDATED :
+				default :
+					break;
+
+			}
 			return convert(request.download, in.getInputStream());
 		}
 	}

@@ -91,9 +91,6 @@ public class URLCache {
 
 		private synchronized void lock() throws InterruptedException {
 
-			if (Thread.currentThread().getName().equals("main")) {
-				System.out.println("main");
-			}
 			if (lockFile.isFile())
 				IO.delete(lockFile);
 
@@ -107,7 +104,6 @@ public class URLCache {
 				Thread.sleep(5000);
 			}
 			whom = Thread.currentThread().getName();
-			reporter.trace("locked by %s", whom);
 		}
 
 		public void delete() {
