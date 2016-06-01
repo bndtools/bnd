@@ -350,7 +350,7 @@ public class POM implements IPom {
 
 		for (Dependency d : breadthFirst)
 			try {
-				POM pom = repo.getPom(d.program.version(d.version));
+				POM pom = repo.getPom(d.getRevision());
 				pom.getDependencies(deps, scope, transitive, visited);
 			} catch (Exception ee) {
 				ee.printStackTrace();

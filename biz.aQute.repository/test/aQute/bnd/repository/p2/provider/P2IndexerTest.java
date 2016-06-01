@@ -1,6 +1,7 @@
 package aQute.bnd.repository.p2.provider;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,6 +51,7 @@ public class P2IndexerTest extends TestCase {
 		client.setCache(IO.getFile(tmp, "cache"));
 
 		File input = IO.getFile("testdata/p2/macbadge");
+		assertTrue("File must be dir", input.isDirectory());
 
 		try (P2Indexer p2 = new P2Indexer(new Slf4jReporter(), tmp, client, input.toURI(),
 				"test");) {
@@ -115,6 +117,9 @@ public class P2IndexerTest extends TestCase {
 			if (result.get() != null)
 				throw result.get();
 
+		} catch (InvocationTargetException ite) {
+			ite.getTargetException().printStackTrace();
+			throw ite.getTargetException();
 		}
 
 		try (P2Indexer p3 = new P2Indexer(new Slf4jReporter(), tmp, client, input.toURI(),

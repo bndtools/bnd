@@ -187,7 +187,4 @@ public class Version implements Comparable<Version> {
 		return snapshot;
 	}
 
-	public org.osgi.framework.Version toFrameworkVersion() {
-		return new org.osgi.framework.Version(major, minor, micro, qualifier);
-	}
 }

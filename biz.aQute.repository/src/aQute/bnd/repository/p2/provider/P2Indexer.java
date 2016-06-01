@@ -97,7 +97,6 @@ class P2Indexer implements Closeable {
 
 			@Override
 			public File apply(File t) {
-				assert t == source;
 				return link;
 			}
 		});

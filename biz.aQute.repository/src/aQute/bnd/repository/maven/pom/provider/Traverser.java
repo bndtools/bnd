@@ -84,7 +84,7 @@ class Traverser {
 				} catch (Throwable throwable) {
 					ResourceBuilder rb = new ResourceBuilder();
 					String bsn = archive.revision.program.toString();
-					Version version = archive.revision.version.getOSGiVersion().toFrameworkVersion();
+					Version version = toFrameworkVersion(archive.revision.version.getOSGiVersion());
 					addReserveIdentity(rb, bsn, version);
 					addInformationCapability(rb, archive.toString(), parent, throwable);
 					resources.put(archive, rb.build());
@@ -100,6 +100,11 @@ class Traverser {
 			}
 
 		});
+	}
+
+	private Version toFrameworkVersion(aQute.bnd.version.Version v) {
+
+		return new Version(v.getMajor(), v.getMinor(), v.getMicro(), v.getQualifier());
 	}
 
 	void finish() {
@@ -137,7 +142,7 @@ class Traverser {
 	private void parseResource(Archive archive, String parent) throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
 
-		Version frameworkVersion = archive.revision.version.getOSGiVersion().toFrameworkVersion();
+		Version frameworkVersion = toFrameworkVersion(archive.revision.version.getOSGiVersion());
 		String bsn = archive.revision.program.toString();
 
 		try {
