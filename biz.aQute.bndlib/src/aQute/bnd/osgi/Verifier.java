@@ -1181,7 +1181,7 @@ public class Verifier extends Processor {
 	// }
 
 	public static boolean isVersion(String version) {
-		return VERSION.matcher(version).matches();
+		return version != null && VERSION.matcher(version).matches();
 	}
 
 	public static boolean isIdentifier(String value) {
