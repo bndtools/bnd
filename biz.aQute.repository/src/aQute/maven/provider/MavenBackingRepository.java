@@ -189,7 +189,10 @@ public abstract class MavenBackingRepository implements Closeable {
 			throws Exception {
 		url = clean(url);
 		URI uri = new URI(url);
-
+		if (uri.getScheme() == null) {
+			File file = IO.getFile(uri.getPath());
+			uri = file.toURI();
+		}
 		if (uri.getScheme().equalsIgnoreCase("file")) {
 			File remote = new File(uri);
 			return new MavenFileRepository(localRepo, remote, reporter);
