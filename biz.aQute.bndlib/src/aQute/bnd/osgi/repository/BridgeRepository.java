@@ -36,14 +36,15 @@ public class BridgeRepository {
 	private final Repository							repository;
 	private final Map<String,Map<Version,ResourceInfo>>	index	= new HashMap<>();
 
-	interface InfoCapability extends Capability {
+	public interface InfoCapability extends Capability {
 		String error();
 
 		String name();
 
 		String from();
 	}
-	static class ResourceInfo {
+
+	static public class ResourceInfo {
 		public ResourceInfo(Resource resource) {
 			this.resource = resource;
 		}
@@ -70,12 +71,7 @@ public class BridgeRepository {
 			Version version = ic.version();
 			String sha256 = cc.osgi_content();
 			
-			List<Capability> capabilities = resource.getCapabilities("bnd.info");
-			InfoCapability info;
-			if ( capabilities.size() >= 1) {
-				 info = ResourceUtils.as(capabilities.get(0), InfoCapability.class);
-			} else
-				info = null;
+			InfoCapability info = getInfo();
 
 			String error = null;
 			String name = null;
@@ -115,6 +111,16 @@ public class BridgeRepository {
 				tsb.append("\n");
 			}
 			this.tooltip = tsb.toString();
+		}
+
+		public InfoCapability getInfo() {
+			List<Capability> capabilities = resource.getCapabilities("bnd.info");
+			InfoCapability info;
+			if ( capabilities.size() >= 1) {
+				 info = ResourceUtils.as(capabilities.get(0), InfoCapability.class);
+			} else
+				info = null;
+			return info;
 		}
 
 		public String getTitle() {

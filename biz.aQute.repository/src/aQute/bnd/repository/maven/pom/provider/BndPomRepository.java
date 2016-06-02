@@ -9,7 +9,6 @@ import java.util.SortedSet;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
-import org.osgi.resource.Resource;
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
@@ -18,6 +17,7 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.repository.BridgeRepository;
+import aQute.bnd.osgi.repository.BridgeRepository.ResourceInfo;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Refreshable;
@@ -30,6 +30,7 @@ import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.slf4j.Slf4jReporter;
+import aQute.maven.api.Archive;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenBackingRepository;
 import aQute.maven.provider.MavenRepository;
@@ -116,9 +117,14 @@ public class BndPomRepository extends BaseRepository
 	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
 			throws Exception {
 		init();
-		Resource resource = bridge.get(bsn, version);
+		ResourceInfo resource = bridge.getInfo(bsn, version);
+		if (resource == null)
+			return null;
 
-		Promise<File> p = pomRepo.getFile(resource);
+		String name = resource.getInfo().name();
+		Archive archive = Archive.valueOf(name);
+
+		Promise<File> p = pomRepo.repo.get(archive);
 
 		if (listeners.length == 0)
 			return p.getValue();

@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 import org.osgi.util.promise.Promise;
 
@@ -63,11 +62,5 @@ class PomRepository extends ResourcesRepository {
 				addAll(resources);
 			}
 		}
-	}
-
-	Promise<File> getFile(Resource resource) throws Exception {
-		Capability cap = resource.getCapabilities(BND_MAVEN).get(0);
-		Archive archive = Archive.valueOf((String) cap.getAttributes().get(BND_MAVEN_ARCHIVE_ATTRIBUTE));
-		return repo.get(archive);
 	}
 }
