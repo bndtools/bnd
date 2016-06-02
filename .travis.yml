@@ -11,7 +11,7 @@ install:
   - mvn --version
 
 script:
-  - ./gradlew -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
+  - ./gradlew -Dmaven.repo.local=maven/target/m2 --continue --info :build :maven:deploy
 
 after_success:
   - git status
