@@ -2,7 +2,9 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
-	ee.j2se;version=${javac.compliance}
+	ee.j2se;version=${javac.compliance},\
+	slf4j.api;version=1.7,\
+	org.osgi.util.function
 
 -testpath: \
     ${junit}

@@ -1,5 +1,7 @@
 package aQute.bnd.osgi.resource;
 
+import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,6 +23,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
+import org.osgi.service.repository.ContentNamespace;
 
 import aQute.bnd.build.model.EE;
 import aQute.bnd.header.Attrs;
@@ -32,6 +35,7 @@ import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.converter.Converter;
 import aQute.lib.filter.Filter;
+import aQute.libg.cryptography.SHA256;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
@@ -112,7 +116,7 @@ public class ResourceBuilder {
 	 * @param manifest The manifest to parse
 	 * @throws Exception
 	 */
-	public void addManifest(Domain manifest) throws Exception {
+	public boolean addManifest(Domain manifest) throws Exception {
 
 		//
 		// Do the Bundle Identity Ns
@@ -123,7 +127,7 @@ public class ResourceBuilder {
 
 		if (bsn == null) {
 			reporter.warning("No BSN set, not a bundle");
-			return;
+			return false;
 		}
 
 		boolean singleton = "true".equals(bsn.getValue().get(Constants.SINGLETON_DIRECTIVE + ":"));
@@ -150,8 +154,12 @@ public class ResourceBuilder {
 		addCapability(provideBundle.buildCapability());
 
 		String version = manifest.getBundleVersion();
-		if (version != null)
-			identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, new Version(version));
+		if (version == null)
+			version = "0";
+		else if (!aQute.bnd.version.Version.isVersion(version))
+			throw new IllegalArgumentException("Invalid version in bundle " + bsn + ": " + version);
+
+		identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, new Version(version));
 
 		String copyright = manifest.get(Constants.BUNDLE_COPYRIGHT);
 		if (copyright != null) {
@@ -221,6 +229,8 @@ public class ResourceBuilder {
 		//
 
 		addRequirement(getNativeCode(manifest.getBundleNative()));
+
+		return true;
 	}
 
 	/**
@@ -578,5 +588,33 @@ public class ResourceBuilder {
 
 	public Reporter getReporter() {
 		return reporter;
+	}
+
+	public void addContentCapability(URI uri, String sha256, long length, String mime) throws Exception {
+
+		assert uri != null;
+		assert sha256 != null && sha256.length() == 64;
+		assert length >= 0;
+
+		CapabilityBuilder c = new CapabilityBuilder(ContentNamespace.CONTENT_NAMESPACE);
+		c.addAttribute(ContentNamespace.CONTENT_NAMESPACE, sha256);
+		c.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, uri.toString());
+		c.addAttribute(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, length);
+		c.addAttribute(ContentNamespace.CAPABILITY_MIME_ATTRIBUTE, mime == null ? "vnd.osgi.bundle" : mime);
+		addCapability(c);
+	}
+
+	public boolean addFile(File file, URI uri) throws Exception {
+		Domain manifest = Domain.domain(file);
+		String mime = "vnd.osgi.bundle";
+		boolean hasIdentity = false;
+		if (manifest != null)
+			hasIdentity = addManifest(manifest);
+		else
+			mime = "application/java-archive";
+
+		String sha256 = SHA256.digest(file).asHex();
+		addContentCapability(uri, sha256, file.length(), mime);
+		return hasIdentity;
 	}
 }

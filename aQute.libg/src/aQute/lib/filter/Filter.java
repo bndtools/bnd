@@ -75,7 +75,7 @@ public class Filter {
 		}
 
 		private boolean doAnd() throws Exception {
-			tail = tail.substring(1);
+			tail = skip();
 			boolean val = true;
 			if (!tail.startsWith("("))
 				error(EMPTY);
@@ -86,8 +86,16 @@ public class Filter {
 			return val;
 		}
 
+		String skip() {
+			String a = tail;
+			do {
+				a = a.substring(1);
+			} while (a.length() > 0 && Character.isWhitespace(a.charAt(0)));
+			return a;
+		}
+
 		private boolean doOr() throws Exception {
-			tail = tail.substring(1);
+			tail = skip();
 			boolean val = false;
 			if (!tail.startsWith("("))
 				error(EMPTY);
@@ -99,7 +107,7 @@ public class Filter {
 		}
 
 		private boolean doNot() throws Exception {
-			tail = tail.substring(1);
+			tail = skip();
 			if (!tail.startsWith("("))
 				error(SUBEXPR);
 			return !doQuery();

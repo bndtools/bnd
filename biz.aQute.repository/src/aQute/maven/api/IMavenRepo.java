@@ -9,6 +9,8 @@ import java.util.regex.Pattern;
 
 import org.osgi.util.promise.Promise;
 
+import aQute.maven.provider.MavenBackingRepository;
+
 /**
  * This is an abstraction of a Maven repository. It is a repository backed by a
  * local directory (usually ~/.m2/repository) and a remote release and/or
@@ -152,5 +154,11 @@ public interface IMavenRepo extends Closeable {
 	IPom getPom(InputStream pomFile) throws Exception;
 
 	IPom getPom(Revision revision) throws Exception;
+
+	List<MavenBackingRepository> getSnapshotRepositories();
+
+	List<MavenBackingRepository> getReleaseRepositories();
+
+	boolean isLocalOnly();
 
 }

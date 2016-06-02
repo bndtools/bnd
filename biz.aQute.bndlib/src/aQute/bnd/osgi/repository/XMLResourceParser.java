@@ -1,5 +1,6 @@
 package aQute.bnd.osgi.repository;
 
+import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.osgi.resource.Resource;
+import org.osgi.service.repository.ContentNamespace;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Processor;
@@ -79,6 +81,10 @@ public class XMLResourceParser extends Processor {
 		this.traversed = traversed;
 		this.url = url;
 		reader = inputFactory.createXMLStreamReader(GZipUtils.detectCompression(in));
+	}
+
+	public XMLResourceParser(File location) throws Exception {
+		this(location.toURI());
 	}
 
 	List<Resource> getResources() {
@@ -202,11 +208,13 @@ public class XMLResourceParser extends Processor {
 		while (reader.isStartElement()) {
 			parseAttributesOrDirectives(capReqBuilder);
 		}
+
 		if (TAG_REQUIREMENT.equals(name)) {
 			resourceBuilder.addRequirement(capReqBuilder);
 		} else {
 			resourceBuilder.addCapability(capReqBuilder);
 		}
+
 		tagEnd(name);
 	}
 
@@ -243,8 +251,17 @@ public class XMLResourceParser extends Processor {
 		String attributeName = reader.getAttributeValue(null, ATTR_NAME);
 		String attributeValue = reader.getAttributeValue(null, ATTR_VALUE);
 		String attributeType = reader.getAttributeValue(null, ATTR_TYPE);
+
+		if (isContent(capReqBuilder) && attributeName.equals("url")) {
+			attributeValue = url.resolve(attributeValue).toString();
+		}
+
 		Object value = Attrs.convert(attributeType, attributeValue);
 		capReqBuilder.addAttribute(attributeName, value);
+	}
+
+	private boolean isContent(CapReqBuilder capReqBuilder) {
+		return ContentNamespace.CONTENT_NAMESPACE.equals(capReqBuilder.getNamespace());
 	}
 
 	private void parseDirective(CapReqBuilder capReqBuilder) throws XMLStreamException {

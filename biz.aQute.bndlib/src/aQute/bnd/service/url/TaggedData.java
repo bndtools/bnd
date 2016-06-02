@@ -45,7 +45,8 @@ public class TaggedData {
 	}
 	public TaggedData(URLConnection con, InputStream in, File file) throws Exception {
 		this.con = con;
-		this.responseCode = con instanceof HttpURLConnection ? ((HttpURLConnection) con).getResponseCode() : -1;
+		this.responseCode = con instanceof HttpURLConnection ? ((HttpURLConnection) con).getResponseCode()
+				: (in != null ? 200 : -1);
 		this.in = in == null && con != null && (responseCode / 100 == 2) ? con.getInputStream() : in;
 		this.file = file;
 		this.etag = con.getHeaderField("ETag");

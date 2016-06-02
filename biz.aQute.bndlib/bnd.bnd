@@ -36,6 +36,7 @@ Export-Package: \
 	aQute.bnd.maven.support;-noimport:=true,\
 	aQute.bnd.url;-noimport:=true,\
 	aQute.bnd.util.dto;-noimport:=true,\
+	aQute.bnd.util.repository;-noimport:=true,\
 	aQute.bnd.component.error;-noimport:=true,\
 	org.osgi.service.repository,\
 	org.osgi.resource, \

@@ -31,6 +31,11 @@ public enum MavenScope {
 	 * looked up in a repository.
 	 */
 	system(false), //
+
+	/**
+	 * 
+	 */
+	import_(false),
 	;
 
 	private boolean transitive;
@@ -42,4 +47,28 @@ public enum MavenScope {
 	public boolean isTransitive() {
 		return transitive;
 	}
+
+	public static MavenScope getScope(String scope) {
+		switch (scope.toLowerCase()) {
+			case "import" :
+				return MavenScope.import_;
+
+			case "provided" :
+				return MavenScope.provided;
+
+			case "runtime" :
+				return MavenScope.runtime;
+
+			case "system" :
+				return MavenScope.system;
+
+			case "test" :
+				return MavenScope.test;
+
+			case "compile" :
+			default :
+				return MavenScope.compile;
+		}
+	}
+
 }

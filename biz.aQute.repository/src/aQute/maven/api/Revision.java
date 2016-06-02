@@ -23,7 +23,7 @@ public class Revision {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + super.hashCode();
+		result = prime * result + program.hashCode();
 		result = prime * result + version.hashCode();
 		return result;
 	}
@@ -104,5 +104,17 @@ public class Revision {
 			return n;
 
 		return version.compareTo(o.version);
+	}
+
+	public static Revision valueOf(String s) {
+		if (s == null)
+			return null;
+
+		String[] parts = s.split(":");
+		if (parts.length != 3)
+			return null;
+
+		return Program.valueOf(parts[0], parts[1]).version(parts[2]);
+
 	}
 }

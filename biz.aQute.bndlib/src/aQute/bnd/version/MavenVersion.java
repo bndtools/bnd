@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import aQute.bnd.osgi.Verifier;
 
 public class MavenVersion implements Comparable<MavenVersion> {
+
 	static Pattern					fuzzyVersion		= Pattern
 			.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([^a-zA-Z0-9](.*))?", Pattern.DOTALL);
 	static Pattern					fuzzyVersionRange	= Pattern
@@ -21,14 +22,16 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	static {
 		snapshotTimestamp.setTimeZone(TimeZone.getTimeZone("UTC"));
 	}
-	private static final Pattern	VERSION		= Pattern.compile(VERSION_STRING);
 
-	static final String				SNAPSHOT	= "SNAPSHOT";
+	private static final Pattern VERSION = Pattern.compile(VERSION_STRING);
+	public static MavenVersion		UNRESOLVED	= new MavenVersion("0-UNRESOLVED");
 
-	private final Version			version;
-	private final String			literal;
+	static final String SNAPSHOT = "SNAPSHOT";
 
-	private final boolean			snapshot;
+	private final Version	version;
+	private final String	literal;
+
+	private final boolean snapshot;
 
 	public MavenVersion(Version osgiVersion) {
 		this.version = osgiVersion;

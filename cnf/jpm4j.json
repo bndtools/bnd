@@ -14,6 +14,8 @@
  },{
   "artifactId":"nanohttpd","baseline":"2.2.0","bsn":"org.nanohttpd__nanohttpd","created":1447566793000,"description":"NanoHttpd is a light-weight HTTP server designed for embedding in other applications.","errors":1,"groupId":"org.nanohttpd","md5":"E82482633561419B98283E09219E069B","name":"NanoHttpd-Core","phase":"MASTER","revision":"073A02117620B6CC7683A1ED6AE24C2F36E2A715","size":46742,"tag":"nanohttpd-project-2.2.0","urls":["http://repo1.maven.org/maven2/org/nanohttpd/nanohttpd/2.2.0/nanohttpd-2.2.0.jar"],"version":"2.2.0"
  },{
+  "artifactId":"xz","baseline":"1.5.0","bsn":"org.tukaani.xz","created":1394278764000,"description":"XZ data compression","groupId":"org.tukaani","md5":"51050E595B308C4AEC8AC314F66E18BC","name":"XZ data compression","phase":"MASTER","revision":"9C64274B7DBB65288237216E3FAE7877FD3F2BEE","size":99555,"urls":["http://repo1.maven.org/maven2/org/tukaani/xz/1.5/xz-1.5.jar"],"version":"1.5"
+ },{
   "artifactId":"snakeyaml","baseline":"1.15.0","bsn":"org.yaml.snakeyaml","created":1424352310155,"description":"YAML 1.1 parser and emitter for Java","groupId":"org.yaml","md5":"C6502713FF649A557B767B990830C786","name":"SnakeYAML","phase":"MASTER","revision":"3B132BEA69E8EE099F416044970997BDE80F4EA6","size":269295,"urls":["http://repo1.maven.org/maven2/org/yaml/snakeyaml/1.15/snakeyaml-1.15.jar"],"version":"1.15"
  },{
   "artifactId":"slf4j-api","baseline":"1.7.13","bsn":"slf4j.api","created":1447186451000,"description":"The slf4j API","groupId":"org.slf4j","md5":"A5168034046D95E07F4AAE3F5E2D1C67","name":"slf4j-api","phase":"MASTER","revision":"7FCF30C25B8F4A9379B9DAD0D3F487B25272C026","size":33088,"urls":["http://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.13/slf4j-api-1.7.13.jar"],"version":"1.7.13"

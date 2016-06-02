@@ -196,7 +196,7 @@ public class HttpRequest<T> {
 		return this;
 	}
 
-	public Promise<T> async(final URL url) {
+	public Promise<T> async(final URL url) throws InterruptedException {
 		this.url = url;
 		final Deferred<T> deferred = new Deferred<>();
 		Executor e = Processor.getExecutor();
@@ -204,11 +204,14 @@ public class HttpRequest<T> {
 
 			@Override
 			public void run() {
+				System.out.println("begin " + url);
 				try {
 					T result = (T) client.send(HttpRequest.this);
 					deferred.resolve(result);
-				} catch (Exception t) {
+					System.out.println("success " + " " + url);
+				} catch (Throwable t) {
 					deferred.fail(t);
+					System.out.println("failed " + t + " " + url);
 				}
 			}
 

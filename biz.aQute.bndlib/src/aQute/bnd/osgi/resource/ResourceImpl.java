@@ -3,6 +3,7 @@ package aQute.bnd.osgi.resource;
 import static aQute.bnd.osgi.resource.ResourceUtils.getLocations;
 import static aQute.lib.collections.Logic.retain;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,11 +16,13 @@ import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
+import org.osgi.service.repository.RepositoryContent;
 
+import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.version.Version;
 
-class ResourceImpl implements Resource, Comparable<Resource> {
+class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent {
 
 	private List<Capability>				allCapabilities;
 	private Map<String,List<Capability>>	capabilityMap;
@@ -177,5 +180,16 @@ class ResourceImpl implements Resource, Comparable<Resource> {
 	@Override
 	public int hashCode() {
 		return getContentURIs().hashCode();
+	}
+
+	@Override
+	public InputStream getContent() {
+		try {
+			ContentCapability c = ResourceUtils.getContentCapability(this);
+			URI url = c.url();
+			return url.toURL().openStream();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

@@ -44,7 +44,8 @@ public class RepositoryTest extends TestCase {
 					ResourceUtils.getIdentityCapability(res).getAttributes().get("osgi.identity"));
 
 			String location = ResourceUtils.getContentCapability(res).getAttributes().get("url").toString();
-			assertFalse(location, location.contains("file:"));
+			String base = url.toURI().toString();
+			assertFalse(location, location.startsWith(base));
 		}
 	}
 

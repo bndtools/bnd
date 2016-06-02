@@ -12,6 +12,7 @@ import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.cryptography.SHA256;
+import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.service.reporter.Reporter;
 
 public class URLCache {
@@ -19,7 +20,8 @@ public class URLCache {
 	private final static JSONCodec	codec	= new JSONCodec();
 
 	private final File	root;
-	private Reporter	reporter;
+	private Reporter	reporter	= new Slf4jReporter(URLCache.class);
+	private static String	whom;
 
 	public static class InfoDTO {
 		public String	etag;
@@ -34,13 +36,15 @@ public class URLCache {
 		File	lockFile;
 		File	jsonFile;
 		InfoDTO	dto;
+		URI		url;
 
 		public Info(URI url) throws Exception {
-			this(new File(root, toName(url) + ".content"), url);
+			this(getCacheFileFor(url), url);
 		}
 
 		public Info(File content, URI url) throws Exception {
 			this.file = content;
+			this.url = url;
 			this.lockFile = new File(content.getParentFile(), content.getName() + ".lock");
 			this.jsonFile = new File(content.getParentFile(), content.getName() + ".json");
 			if (this.jsonFile.isFile()) {
@@ -59,6 +63,7 @@ public class URLCache {
 
 		@Override
 		public synchronized void close() throws IOException {
+			whom = null;
 			IO.delete(lockFile);
 		}
 
@@ -84,19 +89,21 @@ public class URLCache {
 			return file.isFile() && jsonFile.isFile() && dto.etag != null;
 		}
 
-		private void lock() throws InterruptedException {
+		private synchronized void lock() throws InterruptedException {
+
 			if (lockFile.isFile())
 				IO.delete(lockFile);
 
-			long deadline = System.currentTimeMillis() + TIMEOUT;
+			long deadline = lockFile.lastModified() + TIMEOUT;
 			while (lockFile.mkdirs() == false) {
 				if (System.currentTimeMillis() > deadline) {
-					lockFile.delete();
+					IO.delete(lockFile);
 					reporter.error("Had to delete lockfile %s due to timeout for %s", lockFile, dto);
 				}
-				reporter.trace("Waiting on lock %s for %s", lockFile, dto);
-				Thread.sleep(500);
+				reporter.trace("Waiting on lock %s we=%s whom=%s", lockFile, Thread.currentThread().getName(), whom);
+				Thread.sleep(5000);
 			}
+			whom = Thread.currentThread().getName();
 		}
 
 		public void delete() {
@@ -128,13 +135,17 @@ public class URLCache {
 		return new Info(file, uri);
 	}
 
-	private String toName(URI uri) throws Exception {
+	public static String toName(URI uri) throws Exception {
 		return SHA1.digest(uri.toASCIIString().getBytes(StandardCharsets.UTF_8)).asHex();
 	}
 
 	public static void update(File file, String tag) {
 		// TODO Auto-generated method stub
 
+	}
+
+	public File getCacheFileFor(URI url) throws Exception {
+		return new File(root, toName(url) + ".content");
 	}
 
 }

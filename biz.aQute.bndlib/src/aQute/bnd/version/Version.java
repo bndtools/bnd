@@ -186,4 +186,5 @@ public class Version implements Comparable<Version> {
 	public boolean isSnapshot() {
 		return snapshot;
 	}
+
 }
