@@ -116,8 +116,13 @@ public class MavenBndRepository
 					throw new IllegalArgumentException("The given sha-1 does not match the contents sha-1");
 			}
 
-			if (options.context == null)
-				options.context = new Processor();
+			if (options.context == null) {
+
+				options.context = registry.getPlugin(Workspace.class);
+
+				if (options.context == null)
+					options.context = new Processor();
+			}
 
 			ReleaseDTO instructions = getReleaseDTO(options.context);
 
