@@ -8,9 +8,11 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
 
@@ -46,6 +48,7 @@ class P2Indexer implements Closeable {
 	final String				name;
 	final File					indexFile;
 	volatile BridgeRepository	bridge;
+	public Set<URI>				visited		= new HashSet<>();
 
 	P2Indexer(Reporter reporter, File location, HttpClient client, URI url, String name) throws Exception {
 		this.reporter = reporter;
@@ -128,6 +131,10 @@ class P2Indexer implements Closeable {
 		List<URI> uris = new ArrayList<>();
 
 		for (final Artifact a : p2.getArtifacts()) {
+			if (visited.contains(a.uri))
+				continue;
+
+			visited.add(a.uri);
 
 			Promise<Resource> promise = client.build()
 					.useCache(MAX_STALE)
