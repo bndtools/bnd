@@ -36,13 +36,12 @@ public class PomRepositoryTest extends TestCase {
 	public void testPom() throws Exception {
 		MavenRepository mr = getRepo();
 
-		Revision revision = Program.valueOf("org.apache.activemq", "activemq-camel").version("5.9.1");
+		Revision revision = Program.valueOf("org.apache.aries.blueprint", "org.apache.aries.blueprint.cm")
+				.version("1.0.8");
 
 		Traverser t = new Traverser(mr, revision, Processor.getExecutor());
 		Map<Archive,Resource> value = t.getResources().getValue();
-		// System.out.println(value.size());
-		// System.out.println(Strings.join("\n", value.keySet()));
-		assertEquals(294, value.size());
+		assertEquals(8, value.size());
 		assertAllBndCap(value);
 	}
 
