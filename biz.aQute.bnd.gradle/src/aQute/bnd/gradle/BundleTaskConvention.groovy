@@ -21,6 +21,8 @@ package aQute.bnd.gradle
 
 import java.util.Properties
 import java.util.jar.Manifest
+import java.util.zip.ZipException
+import java.util.zip.ZipFile
 
 import aQute.bnd.osgi.Builder
 import aQute.bnd.osgi.Constants
@@ -144,7 +146,16 @@ class BundleTaskConvention {
         builder.setJar(archiveCopyJar)
 
         // set builder classpath
-        def buildpath = project.files(configuration.resolvedConfiguration.resolvedArtifacts.findAll{it.type == 'jar'}*.file)
+        def buildpath = project.files(configuration.files.findAll { file ->
+          try {
+            new ZipFile(file).withCloseable { zip ->
+              zip.entries() // make sure it is a valid zip file and not a pom
+            }
+          } catch (ZipException e) {
+            return false
+          }
+          return true
+        })
         builder.setProperty('project.buildpath', buildpath.asPath)
         builder.setClasspath(buildpath as File[])
         logger.debug 'builder classpath: {}', builder.getClasspath()*.getSource()
