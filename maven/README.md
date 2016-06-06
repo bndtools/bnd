@@ -1,5 +1,7 @@
 # Maven Plugins
 
+The Maven Plugins require at least Maven 3.1.0. This is because bndlib uses SLF4J and Maven 3.1.0 or later [provides the SLF4J API][5].
+
 ## bnd-plugin-parent
 
 This project builds the various Maven plugins provided by the Bnd project,
@@ -41,3 +43,4 @@ run Maven to build the Maven plugins.
 [2]: bnd-indexer-maven-plugin/README.md
 [3]: bnd-baseline-maven-plugin/README.md
 [4]: ../.travis.yml
+[5]: https://maven.apache.org/maven-logging.html
