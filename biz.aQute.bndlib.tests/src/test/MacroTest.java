@@ -541,8 +541,14 @@ public class MacroTest extends TestCase {
 		Processor proc = new Processor();
 		String s = proc.getReplacer().process("${env;USER}");
 		assertNotNull(s);
+		assertTrue(s.length() > 0);
 	}
 
+	public static void testEnvAlt() {
+		Processor proc = new Processor();
+		String s = proc.getReplacer().process("${env;FOOBAR;hello}");
+		assertEquals("hello", s);
+	}
 	/**
 	 * Test the random macro
 	 */

@@ -1028,14 +1028,20 @@ public class Macro {
 	}
 
 	public String _env(String args[]) {
-		verifyCommand(args, "${env;<name>}, get the environmet variable", null, 2, 2);
+		verifyCommand(args, "${env;<name>[;alternative]}, get the environmet variable", null, 2, 3);
 
 		try {
 			String ret = System.getenv(args[1]);
-			return ret != null ? ret : "";
+			if (ret != null)
+				return ret;
+
+			if (args.length > 2)
+				return args[2];
+
 		} catch (Throwable t) {
-			return "";
+			// ignore
 		}
+		return "";
 	}
 
 	/**
