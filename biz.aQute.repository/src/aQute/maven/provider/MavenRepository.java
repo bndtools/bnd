@@ -10,6 +10,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
@@ -103,11 +104,11 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	}
 
 	@Override
-	public Release release(final Revision revision) throws Exception {
+	public Release release(final Revision revision, final Properties context) throws Exception {
 		reporter.trace("Release %s to %s", revision, this);
 		Releaser r = revision.isSnapshot()
-				? new SnapshotReleaser(this, revision, snapshot.isEmpty() ? null : snapshot.get(0))
-				: new Releaser(this, revision, release.get(0));
+				? new SnapshotReleaser(this, revision, snapshot.isEmpty() ? null : snapshot.get(0), context)
+				: new Releaser(this, revision, release.get(0), context);
 		r.force();
 		return r;
 	}
@@ -353,5 +354,4 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	public boolean isLocalOnly() {
 		return localOnly;
 	}
-
 }

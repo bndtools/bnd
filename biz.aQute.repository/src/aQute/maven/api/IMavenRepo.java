@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.osgi.util.promise.Promise;
@@ -111,7 +112,7 @@ public interface IMavenRepo extends Closeable {
 	 * @param revision the revision to release
 	 * @return the Release object
 	 */
-	Release release(Revision revision) throws Exception;
+	Release release(Revision revision, Properties context) throws Exception;
 
 	/**
 	 * Take a generic snapshot archive and resolve it to the latest released

@@ -156,7 +156,7 @@ public class MavenBndRepository
 
 				checkRemotePossible(instructions, binaryArchive.isSnapshot());
 
-				try (Release releaser = storage.release(pom.getRevision());) {
+				try (Release releaser = storage.release(pom.getRevision(), options.context.getProperties());) {
 
 					if (instructions.snapshot >= 0)
 						releaser.setBuild(instructions.snapshot, "1");
@@ -710,24 +710,12 @@ public class MavenBndRepository
 			reporter.trace("dropTarget cleaned up from " + t + " to " + uri);
 		}
 
-		if (uri.getHost().equals("search.maven.org") && uri.getPath().equals("/remotecontent")) {
+		if ("search.maven.org".equals(uri.getHost()) && "/remotecontent".equals(uri.getPath())) {
 			return doSearchMaven(uri);
 		}
 
-		if (uri.getPath().endsWith(".pom"))
+		if (uri.getPath() != null && uri.getPath().endsWith(".pom"))
 			return addPom(uri);
-
-		if (uri.getPath().endsWith(".jar")) {
-
-			String s = uri.toString();
-			if (s.endsWith(".jar")) {
-				s = s.substring(0, s.length() - 4) + ".pom";
-				if (addPom(new URI(s))) {
-					return true;
-				}
-			}
-
-		}
 
 		if (doJpm(uri))
 			return true;
