@@ -24,6 +24,7 @@ import aQute.bnd.service.url.ProxyHandler;
 import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.url.BasicAuthentication;
 import aQute.bnd.url.HttpsVerification;
+import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
 import aQute.libg.glob.Glob;
 
@@ -97,24 +98,45 @@ public class ConnectionSettings extends Processor {
 					key = key.substring(1);
 				}
 
-				File file = aQute.lib.io.IO.getFile(getParent().getPropertiesFile().getParentFile(), key);
-				if (!file.isFile()) {
+				key = Processor.removeDuplicateMarker(key);
+				if ("server".equals(key)) {
+					parseServer(entry.getValue());
+				} else {
 
-					if (!ignoreError) {
-						SetLocation error = getParent()
-								.error("Specified -connection-settings: %s, but no such file or is directory", file);
-						FileLine header = getParent().getHeader(CONNECTION_SETTINGS, key);
-						if (header != null)
-							header.set(error);
-					}
-				} else
-					parse(file);
+					File file = aQute.lib.io.IO.getFile(getParent().getPropertiesFile().getParentFile(), key);
+					if (!file.isFile()) {
+
+							if (!ignoreError) {
+								SetLocation error = getParent().error(
+										"Specified -connection-settings: %s, but no such file or is directory", file);
+								FileLine header = getParent().getHeader(CONNECTION_SETTINGS, key);
+								if (header != null)
+									header.set(error);
+							}
+					} else
+						parse(file);
+				}
 			}
 		} finally {
 			if (tmp != null)
 				tmp.delete();
 		}
 
+	}
+
+	/**
+	 * Set the parameters from within, i.e. not via file
+	 * 
+	 * @param uri the uri that must match
+	 * @param value the values
+	 * @throws Exception
+	 */
+	private void parseServer(Attrs value) throws Exception {
+		ServerDTO server = Converter.cnv(ServerDTO.class, value);
+		if (server.id == null && server.username != null)
+			server.id = "*";
+		System.out.println(server);
+		add(server);
 	}
 
 	public URLConnectionHandler createUrlConnectionHandler(ServerDTO serverDTO) {
@@ -178,23 +200,23 @@ public class ConnectionSettings extends Processor {
 			public ProxySetup forURL(URL url) throws Exception {
 				switch (proxyDTO.protocol) {
 
-				case DIRECT:
-					break;
+					case DIRECT :
+						break;
 
-				case HTTP:
-					String scheme = url.getProtocol();
-					if (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https")) {
-						// ok
-					} else
-						return null;
+					case HTTP :
+						String scheme = url.getProtocol();
+						if (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https")) {
+							// ok
+						} else
+							return null;
 
-					break;
+						break;
 
-				case SOCKS:
-					break;
+					case SOCKS :
+						break;
 
-				default:
-					break;
+					default :
+						break;
 				}
 
 				String host = url.getHost();

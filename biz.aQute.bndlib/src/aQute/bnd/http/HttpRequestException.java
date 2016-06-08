@@ -17,7 +17,7 @@ public class HttpRequestException extends RuntimeException {
 		this.responseCode = conn.getResponseCode();
 	}
 
-	public HttpRequestException(TaggedData tag) throws IOException {
+	public HttpRequestException(TaggedData tag) {
 		super(tag.getUrl() + ":" + tag.getResponseCode() + ":" + tag.getTag());
 		this.responseCode = tag.getResponseCode();
 	}
