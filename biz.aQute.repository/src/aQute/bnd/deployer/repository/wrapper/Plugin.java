@@ -16,17 +16,17 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.service.Registry;
-import aQute.bnd.service.RegistryDonePlugin;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.repository.InfoRepository;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.converter.Converter;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
 public class Plugin extends BaseRepository
-		implements aQute.bnd.service.Plugin, RegistryPlugin, RegistryDonePlugin, Repository, Closeable {
+ implements aQute.bnd.service.Plugin, RegistryPlugin, Repository, Closeable {
 
 	private Registry				registry;
 	private Config					config;
@@ -64,7 +64,7 @@ public class Plugin extends BaseRepository
 	 * This is called when all initialization is done for the plugins, now we
 	 * can obtain a list of appropriate repos.
 	 */
-	public void done() throws Exception {
+	public void init() {
 		try {
 
 			//
@@ -123,7 +123,7 @@ public class Plugin extends BaseRepository
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw e;
+			throw Exceptions.duck(e);
 		}
 	}
 
@@ -140,6 +140,7 @@ public class Plugin extends BaseRepository
 			"unchecked", "rawtypes"
 	})
 	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
+		init();
 		MultiMap<Requirement,Capability> result = new MultiMap<Requirement,Capability>();
 		try {
 			wrapper.findProviders(result, requirements);

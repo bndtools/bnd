@@ -8,7 +8,7 @@ import java.net.URI;
 import java.net.URLConnection;
 import java.util.Date;
 
-import javax.xml.ws.http.HTTPException;
+import aQute.bnd.http.HttpRequestException;
 
 /**
  * Represents a data stream that has a tag associated with it; the primary
@@ -116,7 +116,7 @@ public class TaggedData {
 	}
 
 	public void throwIt() {
-		throw new HTTPException(responseCode);
+		throw new HttpRequestException(this);
 	}
 
 	public State getState() {

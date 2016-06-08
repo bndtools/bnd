@@ -15,6 +15,7 @@ import java.net.PasswordAuthentication;
 import java.net.ProtocolException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.SimpleDateFormat;
@@ -30,7 +31,9 @@ import java.util.concurrent.Callable;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
+import aQute.bnd.connection.settings.ConnectionSettings;
 import aQute.bnd.http.URLCache.Info;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.progress.ProgressPlugin;
 import aQute.bnd.service.progress.ProgressPlugin.Task;
@@ -323,7 +326,9 @@ public class HttpClient implements Closeable, URLConnector {
 		if (matching == null)
 			return urlc;
 
+
 		matching.handle(urlc);
+
 		return urlc;
 	}
 
@@ -381,7 +386,6 @@ public class HttpClient implements Closeable, URLConnector {
 		}
 
 		try {
-
 
 			if (hcon == null) {
 				// not http
@@ -574,5 +578,20 @@ public class HttpClient implements Closeable, URLConnector {
 	public File getCacheFileFor(URI url) throws Exception {
 
 		return cache.getCacheFileFor(url);
+	}
+
+	public void readSettings(Processor processor) throws IOException, Exception {
+		try (ConnectionSettings cs = new ConnectionSettings(processor, this);) {
+			cs.readSettings();
+		}
+	}
+
+	public URI makeDir(URI uri) throws URISyntaxException {
+		if (uri.getPath() != null && uri.getPath().endsWith("/")) {
+			String string = uri.toString();
+			return new URI(string.substring(0, string.length() - 1));
+		}
+		else
+			return uri;
 	}
 }
