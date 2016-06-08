@@ -173,8 +173,13 @@ public class Builder extends Analyzer {
 				scoped.setProperty("@version", version);
 			String pom = scoped.getProperty(POM);
 			if (pom != null && !pom.equalsIgnoreCase("false")) {
+				dot.removePrefix("META-INF/maven/");
 				scoped.addProperties(OSGiHeader.parseProperties(pom));
 				PomResource pomXml = new PomResource(scoped, dot.getManifest());
+				String v = pomXml.validate();
+				if (v != null) {
+					error("Invalid pom for %s: %s", getBundleSymbolicName(), v);
+				}
 				PomPropertiesResource pomProperties = new PomPropertiesResource(pomXml);
 				dot.putResource(pomXml.getWhere(), pomXml);
 				if (!pomProperties.getWhere().equals(pomXml.getWhere())) {
@@ -315,7 +320,6 @@ public class Builder extends Analyzer {
 	/**
 	 * Sign the jar file. -sign : <alias> [ ';' 'password:=' <password> ] [ ';'
 	 * 'keystore:=' <keystore> ] [ ';' 'sign-password:=' <pw> ] ( ',' ... )*
-	 * 
 	 */
 
 	void sign(@SuppressWarnings("unused") Jar jar) throws Exception {
@@ -1301,14 +1305,12 @@ public class Builder extends Analyzer {
 	/**
 	 * Called when we start to build a builder
 	 */
-	protected void startBuild(Builder builder) throws Exception {
-	}
+	protected void startBuild(Builder builder) throws Exception {}
 
 	/**
 	 * Called when we're done with a builder
 	 */
-	protected void doneBuild(Builder builder) throws Exception {
-	}
+	protected void doneBuild(Builder builder) throws Exception {}
 
 	/**
 	 * Answer a list of builders that represent this file or a list of files
@@ -1430,7 +1432,6 @@ public class Builder extends Analyzer {
 	 * checks if the Include-Resource includes this resource or if it is a class
 	 * file it is on the class path and the Export-Package or Private-Package
 	 * include this resource.
-	 * 
 	 */
 	public boolean isInScope(Collection<File> resources) throws Exception {
 		Parameters clauses = parseHeader(mergeProperties(Constants.EXPORT_PACKAGE));
@@ -1472,7 +1473,6 @@ public class Builder extends Analyzer {
 	/**
 	 * Extra the paths for the directories and files that are used in the
 	 * Include-Resource header.
-	 *
 	 */
 	private Collection<String> getIncludedResourcePrefixes() {
 		List<String> prefixes = new ArrayList<String>();
@@ -1551,7 +1551,9 @@ public class Builder extends Analyzer {
 		if (xdoNotCopy == null) {
 			String string = null;
 			try {
-				string = getProperty(DONOTCOPY, DEFAULT_DO_NOT_COPY);
+				string = mergeProperties(DONOTCOPY);
+				if (string == null || string.isEmpty())
+					string = DEFAULT_DO_NOT_COPY;
 				xdoNotCopy = Pattern.compile(string);
 			} catch (Exception e) {
 				error("Invalid value for %s, value is %s", DONOTCOPY, string).header(DONOTCOPY);
@@ -1689,11 +1691,10 @@ public class Builder extends Analyzer {
 	 * #388 Manifest header to get GIT head Get the head commit number. Look for
 	 * a .git/HEAD file, going up in the file hierarchy. Then get this file, and
 	 * resolve any symbolic reference.
-	 * 
 	 */
-	static Pattern	GITREF_P		= Pattern.compile("ref:\\s*(refs/(heads|tags|remotes)/([^\\s]+))\\s*");
+	static Pattern GITREF_P = Pattern.compile("ref:\\s*(refs/(heads|tags|remotes)/([^\\s]+))\\s*");
 
-	static String	_githeadHelp	= "${githead}, provide the SHA for the current git head";
+	static String _githeadHelp = "${githead}, provide the SHA for the current git head";
 
 	public String _githead(String[] args) throws IOException {
 		Macro.verifyCommand(args, _githeadHelp, null, 1, 1);
