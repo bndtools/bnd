@@ -236,6 +236,9 @@ public class PomResource extends WriteResource {
 				}
 			}
 		}
+		String validate = project.validate();
+		if (validate != null)
+			throw new IllegalArgumentException(validate);
 
 		pw.print("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 		project.print(0, pw);
@@ -265,5 +268,9 @@ public class PomResource extends WriteResource {
 
 	public void setProperties(Map<String,String> scm) {
 		this.scm = scm;
+	}
+
+	public String validate() {
+		return null;
 	}
 }

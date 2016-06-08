@@ -6,9 +6,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Formatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * The Tag class represents a minimal XML tree. It consist of a named element
@@ -17,6 +19,12 @@ import java.util.Map;
  * objects or other Tag objects.
  */
 public class Tag {
+
+	final static String			NameStartChar	= ":A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF]\uFDF0-\uFFFD";
+	final static String			NameChar		= "[" + NameStartChar + "0-9.\u00B7\u0300-\u036F\u203F-\u2040\\-]";
+	final static String			Name			= "[" + NameStartChar + "]" + NameChar + "*";
+	final public static Pattern	NAME_P			= Pattern.compile(Name);
+
 	Tag								parent;														// Parent
 	String							name;														// Name
 	final Map<String,String>		attributes	= new LinkedHashMap<String,String>();
@@ -453,4 +461,37 @@ public class Tag {
 		return sw.toString();
 	}
 
+	public String validate() {
+		Formatter f = new Formatter();
+		try {
+			if (invalid(f))
+				return f.toString();
+			else
+				return null;
+		} finally {
+			f.close();
+		}
+	}
+
+	boolean invalid(Formatter f) {
+		boolean invalid = false;
+
+		if (!NAME_P.matcher(name).matches()) {
+			f.format("%s: Invalid name %s\n", getPath(), name);
+		}
+
+		for (Object o : content) {
+			if (o instanceof Tag) {
+				invalid |= ((Tag) o).invalid(f);
+			}
+		}
+		return invalid;
+	}
+
+	private String getPath() {
+		if (parent == null)
+			return name;
+		else
+			return parent.getPath() + "/" + name;
+	}
 }
