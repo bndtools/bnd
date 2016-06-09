@@ -7,8 +7,11 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URLConnection;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import aQute.bnd.http.HttpRequestException;
+import aQute.lib.io.IO;
 
 /**
  * Represents a data stream that has a tag associated with it; the primary
@@ -24,6 +27,7 @@ public class TaggedData {
 	private final InputStream	in;
 	private final URI			url;
 	private final File			file;
+	private final String		message;
 
 	@Deprecated
 	public TaggedData(String tag, InputStream inputStream, int responseCode, long modified, URI url) {
@@ -43,6 +47,7 @@ public class TaggedData {
 	public TaggedData(URLConnection con, InputStream in) throws Exception {
 		this(con, in, null);
 	}
+
 	public TaggedData(URLConnection con, InputStream in, File file) throws Exception {
 		this.con = con;
 		this.responseCode = con instanceof HttpURLConnection ? ((HttpURLConnection) con).getResponseCode()
@@ -51,6 +56,101 @@ public class TaggedData {
 		this.file = file;
 		this.etag = con.getHeaderField("ETag");
 		this.url = con.getURL().toURI();
+		this.message = getMessage(con);
+	}
+
+	private String getMessage(URLConnection con) {
+		try {
+			if (con == null || !(con instanceof HttpURLConnection))
+				return null;
+
+			HttpURLConnection h = (HttpURLConnection) con;
+			if (h.getResponseCode() / 100 < 4)
+				return null;
+
+			StringBuffer sb = new StringBuffer();
+
+			try {
+				InputStream in = con.getInputStream();
+				if (in != null)
+					sb.append(IO.collect(in));
+			} catch (Exception e) {
+				// ignore
+			}
+
+			try {
+				InputStream errorStream = h.getErrorStream();
+				if (errorStream != null)
+					sb.append(IO.collect(errorStream));
+			} catch (Exception e) {
+				// ignore
+			}
+			return cleanHtml(sb);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	final static Pattern	HTML_TAGS_P	= Pattern.compile("<!--.*-->|<[^>]+>");
+	final static Pattern	NEWLINES_P	= Pattern.compile("(\\s*\n\r?\\s*)+");
+	final static Pattern	ENTITIES_P	= Pattern.compile("&(#(?<nr>[0-9]+))|(?<name>[a-z]+);",
+			Pattern.CASE_INSENSITIVE);
+
+	private String cleanHtml(CharSequence sb) {
+		sb = HTML_TAGS_P.matcher(sb).replaceAll("");
+		sb = NEWLINES_P.matcher(sb).replaceAll("\n");
+		StringBuffer x = new StringBuffer();
+		Matcher m = ENTITIES_P.matcher(sb);
+		while (m.find()) {
+			if (m.group("nr") != null) {
+				char c = (char) Integer.parseInt(m.group("nr"));
+				m.appendReplacement(x, "");
+				x.append(c);
+			} else {
+				m.appendReplacement(x, entity(m.group("name")));
+			}
+		}
+		m.appendTail(x);
+		return x.toString();
+	}
+
+	private String entity(String name) {
+		switch (name) {
+			case "nbsp" :
+				return "\u00A0";
+			case "lt" :
+				return "<";
+			case "gt" :
+				return "<";
+			case "amp" :
+				return "&";
+			case "cent" :
+				return "¢";
+			case "pound" :
+				return "£";
+			case "euro" :
+				return "€";
+			case "copy" :
+				return "©";
+			case "reg" :
+				return "®";
+			case "quot" :
+				return "\"";
+			case "apos" :
+				return "'";
+			case "yen" :
+				return "¥";
+			case "sect" :
+				return "§";
+			case "not" :
+				return "¬";
+			case "para" :
+				return "¶";
+			case "curren" :
+				return "¤";
+			default :
+				return "&" + name + ";";
+		}
 	}
 
 	public TaggedData(URI url, int responseCode, File file) throws Exception {
@@ -60,6 +160,7 @@ public class TaggedData {
 		this.etag = "";
 		this.responseCode = responseCode;
 		this.url = url;
+		this.message = null;
 	}
 
 	/**
@@ -104,7 +205,7 @@ public class TaggedData {
 	@Override
 	public String toString() {
 		return "TaggedData [tag=" + getTag() + ", code=" + getResponseCode() + ", modified=" + new Date(getModified())
-				+ ", url=" + getUrl() + ", state=" + getState() + "]";
+				+ ", url=" + getUrl() + ", state=" + getState() + (message == null ? "" : ", msg=" + message) + "]";
 	}
 
 	public boolean isOk() {
