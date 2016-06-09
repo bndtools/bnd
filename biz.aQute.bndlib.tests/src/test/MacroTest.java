@@ -539,7 +539,7 @@ public class MacroTest extends TestCase {
 
 	public static void testEnv() {
 		Processor proc = new Processor();
-		String s = proc.getReplacer().process("${env;USER}");
+		String s = proc.getReplacer().process("${env;PATH}");
 		assertNotNull(s);
 		assertTrue(s.length() > 0);
 	}
