@@ -103,15 +103,12 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 
 			public void checkServerTrusted(X509Certificate[] certs, String authType)
 					throws CertificateException {
-				System.out.println("certs " + certs + " " + authType);
 			}
 
 			public void checkClientTrusted(X509Certificate[] certs, String authType)
 					throws CertificateException {
-				System.out.println("certs " + certs + " " + authType);
 			}
 		};
-		System.out.print(tm.getAcceptedIssuers());
 		return tm;
 	}
 

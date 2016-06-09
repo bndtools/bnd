@@ -204,14 +204,11 @@ public class HttpRequest<T> {
 
 			@Override
 			public void run() {
-				System.out.println("begin " + url);
 				try {
 					T result = (T) client.send(HttpRequest.this);
 					deferred.resolve(result);
-					System.out.println("success " + " " + url);
 				} catch (Throwable t) {
 					deferred.fail(t);
-					System.out.println("failed " + t + " " + url);
 				}
 			}
 

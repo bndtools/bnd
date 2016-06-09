@@ -106,13 +106,13 @@ public class ConnectionSettings extends Processor {
 					File file = aQute.lib.io.IO.getFile(getParent().getPropertiesFile().getParentFile(), key);
 					if (!file.isFile()) {
 
-							if (!ignoreError) {
-								SetLocation error = getParent().error(
-										"Specified -connection-settings: %s, but no such file or is directory", file);
-								FileLine header = getParent().getHeader(CONNECTION_SETTINGS, key);
-								if (header != null)
-									header.set(error);
-							}
+						if (!ignoreError) {
+							SetLocation error = getParent().error(
+									"Specified -connection-settings: %s, but no such file or is directory", file);
+							FileLine header = getParent().getHeader(CONNECTION_SETTINGS, key);
+							if (header != null)
+								header.set(error);
+						}
 					} else
 						parse(file);
 				}
@@ -133,10 +133,31 @@ public class ConnectionSettings extends Processor {
 	 */
 	private void parseServer(Attrs value) throws Exception {
 		ServerDTO server = Converter.cnv(ServerDTO.class, value);
-		if (server.id == null && server.username != null)
-			server.id = "*";
-		System.out.println(server);
-		add(server);
+		if (isPassword(server) || isPrivateKey(server)) {
+
+			if (server.id == null)
+				server.id = "*";
+
+			add(server);
+		}
+	}
+
+	private boolean isPrivateKey(ServerDTO server) {
+		if (isEmpty(server.privateKey) || isEmpty(server.passphrase))
+			return false;
+		else
+			return true;
+	}
+
+	private boolean isPassword(ServerDTO server) {
+		if (isEmpty(server.username) || isEmpty(server.password))
+			return false;
+		else
+			return true;
+	}
+
+	private boolean isEmpty(String s) {
+		return s == null || s.trim().isEmpty();
 	}
 
 	public URLConnectionHandler createUrlConnectionHandler(ServerDTO serverDTO) {

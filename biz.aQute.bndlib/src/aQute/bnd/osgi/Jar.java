@@ -46,25 +46,25 @@ public class Jar implements Closeable {
 		DEFLATE, STORE
 	}
 
-	static final String						DEFAULT_MANIFEST_NAME	= "META-INF/MANIFEST.MF";
+	static final String DEFAULT_MANIFEST_NAME = "META-INF/MANIFEST.MF";
 
-	public static final Object[]			EMPTY_ARRAY				= new Jar[0];
-	final Map<String,Resource>				resources				= new TreeMap<String,Resource>();
-	final Map<String,Map<String,Resource>>	directories				= new TreeMap<String,Map<String,Resource>>();
-	Manifest								manifest;
-	boolean									manifestFirst;
-	String									manifestName			= DEFAULT_MANIFEST_NAME;
-	String									name;
-	File									source;
-	ZipFile									zipFile;
-	long									lastModified;
-	String									lastModifiedReason;
-	Reporter								reporter;
-	boolean									doNotTouchManifest;
-	boolean									nomanifest;
-	Compression								compression				= Compression.DEFLATE;
-	boolean									closed;
-	String[]								algorithms;
+	public static final Object[]				EMPTY_ARRAY		= new Jar[0];
+	final TreeMap<String,Resource>				resources		= new TreeMap<String,Resource>();
+	final TreeMap<String,Map<String,Resource>>	directories		= new TreeMap<String,Map<String,Resource>>();
+	Manifest									manifest;
+	boolean										manifestFirst;
+	String										manifestName	= DEFAULT_MANIFEST_NAME;
+	String										name;
+	File										source;
+	ZipFile										zipFile;
+	long										lastModified;
+	String										lastModifiedReason;
+	Reporter									reporter;
+	boolean										doNotTouchManifest;
+	boolean										nomanifest;
+	Compression									compression		= Compression.DEFLATE;
+	boolean										closed;
+	String[]									algorithms;
 
 	public Jar(String name) {
 		this.name = name;
@@ -463,10 +463,10 @@ public class Jar implements Closeable {
 	 * As a bonus, we can now sort the manifest!
 	 */
 	private final static byte[]	EOL			= new byte[] {
-													'\r', '\n'
+			'\r', '\n'
 												};
 	private final static byte[]	SEPARATOR	= new byte[] {
-													':', ' '
+			':', ' '
 												};
 
 	/**
@@ -1010,5 +1010,13 @@ public class Jar implements Closeable {
 					remove(file);
 			}
 		}
+	}
+
+	public void removePrefix(String prefixLow) {
+		String prefixHigh = prefixLow + "\uFFFF";
+		resources.navigableKeySet().subSet(prefixLow, prefixHigh).clear();
+		if (prefixLow.endsWith("/"))
+			prefixLow = prefixLow.substring(0, prefixLow.length() - 1);
+		directories.navigableKeySet().subSet(prefixLow, prefixHigh).clear();
 	}
 }

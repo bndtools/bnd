@@ -23,6 +23,28 @@ import junit.framework.TestCase;
 
 public class JarTest extends TestCase {
 
+	public void testDeletePrefix() {
+		Resource r = new EmbeddedResource(new byte[1], 0);
+
+		Jar jar = new Jar("test");
+		jar.putResource("META-INF/maven/org/osgi/test/test.pom", r);
+		jar.putResource("META-INF/maven/org/osgi/test/test.properties", r);
+		jar.putResource("META-INF/MANIFEST.MF", r);
+		jar.putResource("com/example/foo.jar", r);
+
+		assertTrue(jar.getDirectories().containsKey("META-INF/maven/org/osgi/test"));
+		assertTrue(jar.getDirectories().containsKey("META-INF/maven"));
+		jar.removePrefix("META-INF/maven/");
+
+		assertNotNull(jar.getResource("META-INF/MANIFEST.MF"));
+		assertNotNull(jar.getResource("com/example/foo.jar"));
+		assertNull(jar.getResource("META-INF/maven/org/osgi/test/test.pom"));
+		assertNull(jar.getResource("META-INF/maven/org/osgi/test/test.properties"));
+
+		assertFalse(jar.getDirectories().containsKey("META-INF/maven"));
+		assertFalse(jar.getDirectories().containsKey("META-INF/maven/org/osgi/test"));
+	}
+
 	public static void testWriteFolder() throws Exception {
 		File tmp = IO.getFile("generated/tmp");
 		IO.delete(tmp);
