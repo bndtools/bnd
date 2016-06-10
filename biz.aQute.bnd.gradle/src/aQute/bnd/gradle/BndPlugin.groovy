@@ -61,7 +61,6 @@ public class BndPlugin implements Plugin<Project> {
       }
       this.preCompileRefresh = project.hasProperty('bnd_preCompileRefresh') ? parseBoolean(bnd_preCompileRefresh) : false
       extensions.create('bnd', BndProperties, bndProject)
-      bnd.ext.project = bndProject
       convention.plugins.bnd = new BndPluginConvention(this)
 
       buildDir = relativePath(bndProject.getTargetDir())

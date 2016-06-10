@@ -8,33 +8,47 @@
 
 package aQute.bnd.gradle
 
+import aQute.bnd.build.Project
+import org.gradle.api.plugins.ExtraPropertiesExtension
+
 class BndProperties {
-  private final bndProject
-  BndProperties(bndProject) {
-    this.bndProject = bndProject
+  final Project project
+  BndProperties(Project bndProject) {
+    this.project = bndProject
   }
-  String get(String name) {
-    String value = bndProject.getProperty(name)
-    if (value instanceof String) {
-      value = value.trim()
-    }
-    return value
+
+  def get(String name) {
+    return trimmed(project.getProperty(name))
   }
-  Object get(String name, Object defaultValue) {
+
+  def get(String name, Object defaultValue) {
     def value = get(name)
-    if (value == null) {
-      value = defaultValue
-      if (value instanceof String) {
-        value = value.trim()
-      }
+    if (value != null) {
+      return value
     }
-    return value
+    return trimmed(defaultValue)
   }
-  String propertyMissing(String name) {
-    String value = get(name)
-    if (value == null) {
-      value = get(name.replace('_', '.'))
+
+  def propertyMissing(String name) {
+    if (name == 'ext') {
+      throw new MissingPropertyException(name, String)
     }
-    return value
+    ExtraPropertiesExtension ext = extensions.extraProperties
+    if (ext.has(name)) {
+      return ext.get(name)
+    }
+    def value = extensions.findByName(name)
+    if (value != null) {
+      return value
+    }
+    value = get(name)
+    if (value != null) {
+      return value
+    }
+    return get(name.replace('_', '.'))
+  }
+
+  def trimmed(value) {
+    return (value instanceof String) ? value.trim() : value
   }
 }
