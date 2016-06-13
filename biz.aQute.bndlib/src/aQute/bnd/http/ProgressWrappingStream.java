@@ -29,7 +29,10 @@ public class ProgressWrappingStream extends InputStream {
 
 	@Override
 	public int read() throws IOException {
-		while (!isTimeout())
+		while (!isTimeout()) {
+			if (task.isCanceled()) {
+				throw new EOFException("Canceled");
+			}
 			try {
 				int data = delegate.read();
 				update(data == -1 ? -1 : 1);
@@ -38,6 +41,7 @@ public class ProgressWrappingStream extends InputStream {
 				if (task.isCanceled())
 					throw new EOFException("Canceled");
 			}
+		}
 		throw new EOFException("Timeout");
 	}
 
@@ -55,7 +59,10 @@ public class ProgressWrappingStream extends InputStream {
 
 	@Override
 	public int read(byte[] buffer) throws IOException {
-		while (!isTimeout())
+		while (!isTimeout()) {
+			if (task.isCanceled()) {
+				throw new EOFException("Canceled");
+			}
 			try {
 				int count = delegate.read(buffer);
 				return update(count);
@@ -63,12 +70,16 @@ public class ProgressWrappingStream extends InputStream {
 				if (task.isCanceled())
 					throw new EOFException("Canceled");
 			}
+		}
 		throw new EOFException("Timeout");
 	}
 
 	@Override
 	public int read(byte[] buffer, int offset, int length) throws IOException {
-		while (!isTimeout())
+		while (!isTimeout()) {
+			if (task.isCanceled()) {
+				throw new EOFException("Canceled");
+			}
 			try {
 				int count = delegate.read(buffer, offset, length);
 				return update(count);
@@ -76,6 +87,7 @@ public class ProgressWrappingStream extends InputStream {
 				if (task.isCanceled())
 					throw new EOFException("Canceled");
 			}
+		}
 		throw new EOFException("Timeout");
 	}
 
@@ -103,6 +115,7 @@ public class ProgressWrappingStream extends InputStream {
 
 	@Override
 	public void close() throws IOException {
+		task.done("Finished", null);
 		delegate.close();
 	}
 
