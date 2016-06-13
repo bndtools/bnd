@@ -575,6 +575,7 @@ public class Workspace extends Processor {
 
 			try {
 				HttpClient client = new HttpClient();
+				client.setRegistry(this);
 				try (ConnectionSettings cs = new ConnectionSettings(this, client);) {
 					cs.readSettings();
 				}
