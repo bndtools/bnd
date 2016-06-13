@@ -3,7 +3,7 @@ package aQute.maven.dto;
 import java.net.URI;
 import java.util.Map;
 
-import aQute.bnd.util.dto.DTO;
+import org.osgi.dto.DTO;
 
 /**
  * Information about one of the committers on this project.

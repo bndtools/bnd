@@ -2,7 +2,7 @@ package aQute.maven.dto;
 
 import java.util.Map;
 
-import aQute.bnd.util.dto.DTO;
+import org.osgi.dto.DTO;
 
 /**
  * Modifications to the build process which is activated based on environmental

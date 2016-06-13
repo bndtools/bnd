@@ -2,7 +2,7 @@ package aQute.maven.dto;
 
 import java.net.URI;
 
-import aQute.bnd.util.dto.DTO;
+import org.osgi.dto.DTO;
 
 /**
  * Specifies the organization that produces this project.

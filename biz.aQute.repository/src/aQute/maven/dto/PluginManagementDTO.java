@@ -1,6 +1,6 @@
 package aQute.maven.dto;
 
-import aQute.bnd.util.dto.DTO;
+import org.osgi.dto.DTO;
 
 /**
  * Section for management of default plugin information for use in a group of POMs.

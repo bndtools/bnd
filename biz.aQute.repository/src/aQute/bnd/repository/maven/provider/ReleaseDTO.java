@@ -3,7 +3,7 @@ package aQute.bnd.repository.maven.provider;
 import java.util.HashMap;
 import java.util.Map;
 
-import aQute.bnd.util.dto.DTO;
+import org.osgi.dto.DTO;
 
 public class ReleaseDTO extends DTO {
 	public enum ReleaseType {

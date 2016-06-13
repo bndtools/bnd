@@ -14,7 +14,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 
-import aQute.bnd.util.dto.DTO;
+import org.osgi.dto.DTO;
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.tag.Tag;
 

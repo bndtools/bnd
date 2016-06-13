@@ -2,7 +2,7 @@ package aQute.maven.dto;
 
 import java.net.URI;
 
-import aQute.bnd.util.dto.DTO;
+import org.osgi.dto.DTO;
 
 public class IssueManagementDTO extends DTO {
 

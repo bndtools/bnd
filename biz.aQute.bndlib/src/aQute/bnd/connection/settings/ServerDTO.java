@@ -1,6 +1,6 @@
 package aQute.bnd.connection.settings;
 
-import aQute.bnd.util.dto.DTO;
+import org.osgi.dto.DTO;
 
 public class ServerDTO extends DTO {
 	public String	id	= "default";

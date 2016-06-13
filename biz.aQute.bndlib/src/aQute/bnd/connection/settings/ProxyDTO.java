@@ -3,7 +3,7 @@ package aQute.bnd.connection.settings;
 import java.net.Proxy.Type;
 import java.util.List;
 
-import aQute.bnd.util.dto.DTO;
+import org.osgi.dto.DTO;
 import aQute.libg.glob.Glob;
 
 public class ProxyDTO extends DTO {

@@ -1,6 +1,6 @@
 package aQute.maven.dto;
 
-import aQute.bnd.util.dto.DTO;
+import org.osgi.dto.DTO;
 
 /**
  * The <code>&lt;exclusion&gt;</code> element contains informations required to

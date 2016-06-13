@@ -1,6 +1,6 @@
 package aQute.maven.dto;
 
-import aQute.bnd.util.dto.DTO;
+import org.osgi.dto.DTO;
 
 /**
  * This element describes all of the classpath resources associated with a
