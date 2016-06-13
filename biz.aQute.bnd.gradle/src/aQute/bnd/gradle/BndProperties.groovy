@@ -9,7 +9,6 @@
 package aQute.bnd.gradle
 
 import aQute.bnd.build.Project
-import org.gradle.api.plugins.ExtraPropertiesExtension
 
 class BndProperties {
   final Project project
@@ -30,18 +29,10 @@ class BndProperties {
   }
 
   def propertyMissing(String name) {
-    if (name == 'ext') {
+    if ((name == 'ext') || extensions.extraProperties.has(name) || extensions.findByName(name)) {
       throw new MissingPropertyException(name, String)
     }
-    ExtraPropertiesExtension ext = extensions.extraProperties
-    if (ext.has(name)) {
-      return ext.get(name)
-    }
-    def value = extensions.findByName(name)
-    if (value != null) {
-      return value
-    }
-    value = get(name)
+    def value = get(name)
     if (value != null) {
       return value
     }

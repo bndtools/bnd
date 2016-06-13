@@ -1,0 +1,25 @@
+class MyExtension {
+  String foo
+
+  MyExtension(String foo) {
+    this.foo = foo
+  }
+}
+
+assert bnd instanceof ExtensionAware
+assert bnd.project instanceof aQute.bnd.build.Project
+
+bnd.ext.bar = 'baz'
+assert bnd.bar == 'baz'
+
+assert bnd.fuz == 'buz'
+assert bnd.bing == 'bang'
+assert !bnd.nosuchproperty
+
+bnd.extensions.create('custom', MyExtension, 'boof')
+
+assert bnd.custom instanceof ExtensionAware
+assert bnd.custom.foo == 'boof'
+
+bnd.custom.ext.bar = 'barf'
+assert bnd.custom.bar == 'barf'
