@@ -1,0 +1,5 @@
+-nobundles: true
+
+fuz: buz
+bar: wrongValue
+custom: wrongValue

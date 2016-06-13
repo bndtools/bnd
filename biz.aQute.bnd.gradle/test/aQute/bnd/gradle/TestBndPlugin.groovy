@@ -69,4 +69,21 @@ class TestBndPlugin extends Specification {
           result.task(":test.simple:bndproperties").outcome == SUCCESS
           result.task(":tasks").outcome == SUCCESS
     }
+
+    def "Bnd Workspace Plugin extra properties/extentions Test"() {
+        given:
+          String testProject = 'workspaceplugin2'
+          File testProjectDir = new File(testResources, testProject)
+          assert testProjectDir.isDirectory()
+
+        when:
+          def result = GradleRunner.create()
+            .withProjectDir(testProjectDir)
+            .withArguments('--stacktrace', ':tasks')
+            .forwardOutput()
+            .build()
+
+        then:
+          result.task(":tasks").outcome == SUCCESS
+    }
 }
