@@ -24,8 +24,7 @@ jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
 	aQute.jpm.clnt;version=1.0;packages=*,\
 	biz.aQute.http.testservers;version=latest,\
 	org.tukaani.xz;version=1.5,\
-	biz.aQute.bnd.annotation;version=latest,\
-	bcpg;version=1.54
+	biz.aQute.bnd.annotation;version=latest
 	
 -testpath: \
 	${junit},\
@@ -76,7 +75,8 @@ Private-Package: \
 	aQute.service.library,\
 	aQute.jsonrpc.domain,\
 	aQute.struct,\
-	aQute.bnd.jpm.util
+	aQute.bnd.jpm.util, \
+	org.bouncycastle.*
 
 Conditional-Package:\
 	aQute.lib.*;-split-package:=first,\

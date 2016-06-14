@@ -100,6 +100,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.eclipse.EclipseClasspath;
+import aQute.bnd.repository.maven.provider.NexusCommand;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.action.Action;
@@ -193,12 +194,20 @@ public class bnd extends Processor {
 
 	}
 
+	public bnd(Workspace ws) {
+		super(ws);
+	}
+
+	public bnd() {
+	}
+
 	public static void main(String args[]) throws Exception {
 		Workspace.setDriver(Constants.BNDDRIVER_BND);
 		Workspace.addGestalt(Constants.GESTALT_SHELL, null);
 		Workspace.addGestalt(Constants.GESTALT_INTERACTIVE, null);
 
-		bnd main = new bnd();
+		Workspace ws = Workspace.findWorkspace(IO.work);
+		bnd main = ws == null ? new bnd() : new bnd(ws);
 		try {
 			main.start(args);
 		} finally {
@@ -4155,6 +4164,20 @@ public class bnd extends Processor {
 		rc.close();
 	}
 
+	/**
+	 * Nexus commands
+	 * 
+	 * @throws Exception
+	 */
+
+	public void _nexus(NexusCommand.NexusOptions options) throws Exception {
+		NexusCommand rc = new NexusCommand(this, options);
+		String help = options._command().subCmd(options, rc);
+		if (help != null)
+			out.println(help);
+		getInfo(rc);
+		rc.close();
+	}
 	/**
 	 * Export a bndrun file
 	 */

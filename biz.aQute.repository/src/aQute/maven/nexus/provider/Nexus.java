@@ -1,12 +1,15 @@
 package aQute.maven.nexus.provider;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequest;
+import aQute.bnd.service.url.TaggedData;
 
 public class Nexus {
 	private URI			uri;
@@ -51,14 +54,26 @@ public class Nexus {
 	}
 
 	private boolean isReal(URI uri) {
-		return !(uri.getPath().endsWith(".sha1") || uri.getPath().endsWith(".md5"));
+		return !(uri.getPath().endsWith(".sha1") || uri.getPath().endsWith(".asc") || uri.getPath().endsWith(".md5"));
 	}
 
-	public void sign() {
+
+	public File download(URI uri) throws Exception {
+		return request().useCache().age(30, TimeUnit.SECONDS).go(uri);
 	}
 
-	private void sign(URI uri2) {
+	public void upload(URI uri, byte[] data) throws Exception {
+		TaggedData tag = request().put().upload(data).asTag().go(uri);
+		switch (tag.getState()) {
+			case NOT_FOUND :
+			case OTHER :
+			default :
+				tag.throwIt();
+				break;
 
+			case UNMODIFIED :
+			case UPDATED :
+				break;
+		}
 	}
-
 }
