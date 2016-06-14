@@ -2,7 +2,7 @@ package aQute.maven.nexus.provider;
 
 import java.net.URI;
 
-import org.osgi.dto.DTO;
+import aQute.bnd.util.dto.DTO;
 
 public class StagingProfileRepositoryDTO extends DTO {
 	public String	profileId;

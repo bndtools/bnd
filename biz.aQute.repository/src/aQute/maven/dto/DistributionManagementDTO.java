@@ -2,7 +2,7 @@ package aQute.maven.dto;
 
 import java.net.URI;
 
-import org.osgi.dto.DTO;
+import aQute.bnd.util.dto.DTO;
 
 /**
  * This elements describes all that pertains to distribution for a project. It

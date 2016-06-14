@@ -4,7 +4,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.dto.DTO;
+import aQute.bnd.util.dto.DTO;
 
 /**
  * Description of a person who has contributed to the project, but who does not

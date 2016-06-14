@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.osgi.dto.DTO;
+import aQute.bnd.util.dto.DTO;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA1;

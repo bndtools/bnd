@@ -1,6 +1,6 @@
 package aQute.maven.dto;
 
-import org.osgi.dto.DTO;
+import aQute.bnd.util.dto.DTO;
 
 /**
  * Generic informations for a build.

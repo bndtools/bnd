@@ -2,7 +2,7 @@ package aQute.maven.dto;
 
 import java.util.Map;
 
-import org.osgi.dto.DTO;
+import aQute.bnd.util.dto.DTO;
 
 /**
  * Represents a set of reports and configuration to be used to generate them.

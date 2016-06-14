@@ -16,7 +16,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import org.osgi.dto.DTO;
+import aQute.bnd.util.dto.DTO;
 import aQute.lib.converter.Converter;
 
 public class SettingsParser {

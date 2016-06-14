@@ -2,7 +2,7 @@ package aQute.maven.dto;
 
 import java.net.URI;
 
-import org.osgi.dto.DTO;
+import aQute.bnd.util.dto.DTO;
 
 /**
  * Repository contains the information needed for deploying to the remote

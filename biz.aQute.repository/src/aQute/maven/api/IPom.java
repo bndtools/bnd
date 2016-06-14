@@ -2,7 +2,7 @@ package aQute.maven.api;
 
 import java.util.Map;
 
-import org.osgi.dto.DTO;
+import aQute.bnd.util.dto.DTO;
 
 public interface IPom {
 	class Dependency extends DTO {

@@ -1,6 +1,6 @@
 package aQute.bnd.service.maven;
 
-import org.osgi.dto.DTO;
+import aQute.bnd.util.dto.DTO;
 
 public class PomOptions extends DTO {
 	public String	gav;

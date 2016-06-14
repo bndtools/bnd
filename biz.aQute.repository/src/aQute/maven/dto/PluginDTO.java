@@ -2,7 +2,7 @@ package aQute.maven.dto;
 
 import java.util.Map;
 
-import org.osgi.dto.DTO;
+import aQute.bnd.util.dto.DTO;
 import aQute.bnd.version.MavenVersion;
 
 /**

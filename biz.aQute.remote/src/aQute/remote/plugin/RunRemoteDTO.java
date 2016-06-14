@@ -2,7 +2,7 @@ package aQute.remote.plugin;
 
 import java.util.Map;
 
-import org.osgi.dto.DTO;
+import aQute.bnd.util.dto.DTO;
 
 /**
  * Definition of the -runremote header

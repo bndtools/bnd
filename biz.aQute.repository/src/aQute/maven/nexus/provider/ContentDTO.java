@@ -3,7 +3,7 @@ package aQute.maven.nexus.provider;
 import java.net.URI;
 import java.util.List;
 
-import org.osgi.dto.DTO;
+import aQute.bnd.util.dto.DTO;
 
 /**
  * @formatter:off
