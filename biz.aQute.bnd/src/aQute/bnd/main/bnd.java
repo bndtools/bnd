@@ -2706,9 +2706,15 @@ public class bnd extends Processor {
 		}
 
 		if (f.isFile()) {
+			if (f.getName().endsWith(Run.DEFAULT_BNDRUN_EXTENSION)) {
+				Workspace ws = Workspace.findWorkspace(f.getParentFile());
+				Run run = Run.createRun(ws, f);
+				return run;
+			}
+
 			File projectDir = f.getParentFile();
 			File workspaceDir = projectDir.getParentFile();
-			ws = getWorkspace(workspaceDir);
+			ws = Workspace.findWorkspace(workspaceDir);
 			Project project = ws.getProject(projectDir.getName());
 			if (project.isValid()) {
 				project.use(this);
@@ -2725,24 +2731,20 @@ public class bnd extends Processor {
 	}
 
 	public Workspace getWorkspace(String where) throws Exception {
-		Project p = getProject(where);
-		if (p != null)
-			return p.getWorkspace();
-
-		File dir;
-		if (where != null) {
-			dir = getFile(where);
-		} else
-			dir = getBase();
-
-		if (!dir.isDirectory())
-			return null;
-
-		File buildBnd = getFile(dir, "cnf/build.bnd");
-		if (!buildBnd.isFile())
-			return null;
-
-		return getWorkspace(dir);
+		Workspace ws;
+		if (where == null) {
+			ws = Workspace.findWorkspace(IO.work);
+			if (ws == null)
+				ws = Workspace.createStandaloneWorkspace(new Processor(), IO.work.toURI());
+		} else {
+			File f = getFile(where);
+			ws = Workspace.findWorkspace(f);
+			if (f.isFile() && f.getName().endsWith(Run.DEFAULT_BNDRUN_EXTENSION)) {
+				Run run = Run.createRun(ws, f);
+				ws = run.getWorkspace();
+			}
+		}
+		return ws;
 	}
 
 	/**

@@ -3,7 +3,9 @@ package aQute.bnd.main;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -26,6 +28,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.differ.DiffImpl;
 import aQute.bnd.differ.RepositoryElement;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.main.bnd.projectOptions;
 import aQute.bnd.maven.support.MavenRemoteRepository;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Instruction;
@@ -37,6 +40,7 @@ import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Tree;
+import aQute.bnd.service.maven.ToDependencyPom;
 import aQute.bnd.service.repository.ResourceRepository;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
@@ -62,6 +66,9 @@ public class RepoCommand {
 			"sub-cmd", "..."
 	})
 	interface repoOptions extends Options {
+		@Description("Workspace (a standalone bndrun file or a sbdirectory of a workspace (default is the cwd)")
+		String workspace();
+
 		@Description("Add a File Repository")
 		Collection<String> filerepo();
 
@@ -84,6 +91,7 @@ public class RepoCommand {
 	final repoOptions				opts;
 	final RepositoryPlugin			writable;
 	final List<RepositoryPlugin>	repos	= new ArrayList<RepositoryPlugin>();
+	final Workspace					workspace;
 
 	/**
 	 * Called from the command line
@@ -95,6 +103,10 @@ public class RepoCommand {
 	public RepoCommand(bnd bnd, repoOptions opts) throws Exception {
 		this.opts = opts;
 		this.bnd = bnd;
+
+		this.workspace = bnd.getWorkspace(opts.workspace());
+		if (workspace == null)
+			throw new IllegalArgumentException("Cannot find workspace from " + opts.workspace());
 
 		// We can include the maven repository
 
@@ -529,34 +541,39 @@ public class RepoCommand {
 	@Arguments(arg = {
 			"source", "dest"
 	})
-	interface CopyOptions extends Options {
+	interface CopyOptions extends projectOptions {
+
+		@Description("A stanalone bndrun file")
+		String standalone();
 
 		@Description("Do not really copy but trace the steps")
 		boolean dry();
 	}
 
 	public void _copy(CopyOptions options) throws Exception {
+
 		List<String> args = options._arguments();
-		Workspace ws = Workspace.findWorkspace(bnd.getBase());
-		if (ws == null) {
-			bnd.error("Cannot find a workspace from " + bnd.getBase());
-			return;
+
+		String srcName = args.remove(0);
+		String dstName = args.remove(0);
+		RepositoryPlugin source = workspace.getRepository(srcName);
+		RepositoryPlugin dest = workspace.getRepository(dstName);
+
+		if (source == null) {
+			bnd.error("No such source repository: %s, available repos %s", srcName, workspace.getRepositories());
 		}
 
-		RepositoryPlugin source = ws.getRepository(args.remove(0));
-		RepositoryPlugin dest = ws.getRepository(args.remove(0));
-
-		if (source == null)
-			bnd.error("No such source repository: %s", source);
-
-		if (dest == null)
-			bnd.error("No such destination repository: %s", dest);
-		else if (!dest.canWrite())
+		if (dest == null) {
+			bnd.error("No such destination repository: %s, available repos %s", dstName, workspace.getRepositories());
+		} else if (!dest.canWrite())
 			bnd.error("Destination repository cannot write: %s", dest);
 
 		if (!bnd.isOk() || source == null || dest == null) {
 			return;
 		}
+
+		bnd.trace("src = %s -> %s", srcName, source);
+		bnd.trace("dst = %s -> %s", dstName, dest);
 
 		@SuppressWarnings("unused")
 		class Spec {
@@ -575,6 +592,8 @@ public class RepoCommand {
 
 		for (String bsn : source.list(null)) {
 			for (Version version : source.versions(bsn)) {
+				bnd.trace("src: %s %s", bsn, version);
+
 				Spec spec = new Spec();
 				spec.bsn = bsn;
 				spec.version = version;
@@ -643,13 +662,82 @@ public class RepoCommand {
 						}
 					}
 				} catch (Exception e) {
-					bnd.error("Exception %s in upload %s", e, src);
+					bnd.exception(e, "Exception %s in upload %s", e, src);
 				} finally {
 					fin.close();
 				}
 			}
 		}
 
+		for (String bsn : source.list(null)) {
+			for (Version version : source.versions(bsn)) {
+				System.out.println(bsn + ";version=" + version);
+			}
+		}
+	}
+
+	@Description("Create a POM out of a bnd repository")
+	@Arguments(arg = {
+			"repo", "name"
+	})
+	interface PomOptions extends Options {
+
+		@Description("The parent of the pom (default none.xml)")
+		String parent();
+
+		@Description("Use the dependency management section")
+		boolean dependencyManagement();
+
+		@Description("Output file")
+		String output();
+	}
+
+	/**
+	 * Read a repository and turn all bundles that have a pom into a dependency
+	 * POM
+	 * 
+	 * @throws Exception
+	 */
+	public void _topom(PomOptions opts) throws Exception {
+		List<String> args = opts._arguments();
+
+		String repoName = args.remove(0);
+		String name = args.remove(0);
+
+		RepositoryPlugin source = workspace.getRepository(repoName);
+
+		if (source == null) {
+			bnd.error("No such source repository: %s, available repos %s", repoName, workspace.getRepositories());
+			return;
+		}
+
+		if (!(source instanceof ToDependencyPom)) {
+			bnd.error("The repository %s cannot generate a dependency pom", source);
+			return;
+		}
+
+		String sout = opts.output();
+		if (sout == null)
+			sout = "console";
+
+		OutputStream out;
+		if ("console".equals(sout))
+			out = System.out;
+		else {
+			File f = bnd.getFile(sout);
+			out = new FileOutputStream(f);
+		}
+		try {
+
+			ToDependencyPom r = (ToDependencyPom) source;
+			aQute.bnd.service.maven.PomOptions po = new aQute.bnd.service.maven.PomOptions();
+			po.dependencyManagement = opts.dependencyManagement();
+			po.parent = opts.parent();
+			po.gav = name;
+			r.toPom(out, po);
+		} finally {
+			out.close();
+		}
 	}
 
 	private DownloadBlocker findMatchingVersion(RepositoryPlugin dest, String bsn, Version version) throws Exception {
