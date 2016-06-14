@@ -46,6 +46,7 @@ import aQute.bnd.service.url.URLConnector;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.libg.reporter.ReporterAdapter;
+import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -67,7 +68,7 @@ public class HttpClient implements Closeable, URLConnector {
 	private static JSONCodec					codec					= new JSONCodec();
 	private URLCache							cache					= new URLCache(IO.getFile("~/.bnd/urlcache"));
 	private Registry							registry				= null;
-	private Reporter							reporter				= new ReporterAdapter(System.out);
+	private Reporter							reporter				= new Slf4jReporter(HttpClient.class);
 	private ProgressPlugin						progress;
 
 	public HttpClient() {}
@@ -160,6 +161,7 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	TaggedData doCached0(final HttpRequest< ? > request) throws Exception, IOException {
+		reporter.trace("cached %s", request.url);
 		try (Info info = cache.get(request.useCacheFile, request.url.toURI())) {
 			request.useCacheFile = info.file;
 			if (info.isPresent()) {
@@ -212,7 +214,6 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	public TaggedData send0(final HttpRequest< ? > request) throws Exception {
-		reporter.trace("%s", request);
 
 		final ProxySetup proxy = getProxySetup(request.url);
 		final URLConnection con = getProxiedAndConfiguredConnection(request.url, proxy);
@@ -255,7 +256,7 @@ public class HttpClient implements Closeable, URLConnector {
 					return doConnect(request.upload, request.download, con, hcon, request, task);
 				}
 			});
-
+			reporter.trace("result %s", td);
 			task.done(td.toString(), null);
 			return td;
 		} catch (Throwable t) {
@@ -375,7 +376,8 @@ public class HttpClient implements Closeable, URLConnector {
 		if (put != null) {
 			task.worked(1);
 			doOutput(put, con, request);
-		}
+		} else
+			reporter.trace("%s %s", request.verb, request.url);
 
 		if (request.timeout > 0) {
 			con.setConnectTimeout((int) request.timeout * 10);
@@ -402,8 +404,6 @@ public class HttpClient implements Closeable, URLConnector {
 
 			if (code == -1)
 				System.out.println("WTF?");
-
-			reporter.trace("response for %s is %s", con.getURL(), code);
 
 			//
 			// Though we ask Java to handle the redirects
@@ -499,19 +499,22 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	private void doOutput(Object put, final URLConnection con, HttpRequest< ? > rq) throws IOException, Exception {
-		reporter.trace("doOutput");
 		con.setDoOutput(true);
 		try (OutputStream out = con.getOutputStream();) {
-			reporter.trace("go stream");
 			if (put instanceof InputStream) {
+				reporter.trace("out %s input stream %s", rq.verb, rq.url);
 				IO.copy((InputStream) put, out);
-			} else if (put instanceof String)
+			} else if (put instanceof String) {
+				reporter.trace("out %s string %s", rq.verb, rq.url);
 				IO.store(put, out);
-			else if (put instanceof byte[])
+			} else if (put instanceof byte[]) {
+				reporter.trace("out %s byte[] 5s", rq.verb, rq.url);
 				IO.copy((byte[]) put, out);
-			else if (put instanceof File) {
+			} else if (put instanceof File) {
+				reporter.trace("out %s file %s %s", rq.verb, put, rq.url);
 				IO.copy((File) put, out);
 			} else {
+				reporter.trace("out %s JSON %s %s", rq.verb, put, rq.url);
 				codec.enc().to(out).put(put).flush();
 			}
 		}
