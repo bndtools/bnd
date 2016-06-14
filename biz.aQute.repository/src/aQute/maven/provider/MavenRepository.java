@@ -26,6 +26,7 @@ import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
 import aQute.maven.api.Program;
@@ -40,7 +41,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	final List<MavenBackingRepository>			snapshot	= new ArrayList<>();
 	final Executor								executor;
 	final boolean								localOnly;
-	final Reporter								reporter;
+	final Reporter								reporter	= new Slf4jReporter();
 	final WeakHashMap<Revision,Promise<POM>>	poms		= new WeakHashMap<>();
 	long										STALE_TIME	= TimeUnit.DAYS.toMillis(1);
 
@@ -56,7 +57,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 		this.executor = executor == null ? Executors.newCachedThreadPool() : executor;
 		this.localOnly = this.release.isEmpty() && this.snapshot.isEmpty();
-		this.reporter = reporter;
+		// this.reporter = reporter;
 		base.mkdirs();
 	}
 
@@ -106,15 +107,18 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	@Override
 	public Release release(final Revision revision, final Properties context) throws Exception {
 		reporter.trace("Release %s to %s", revision, this);
-		Releaser r = revision.isSnapshot()
-				? new SnapshotReleaser(this, revision, snapshot.isEmpty() ? null : snapshot.get(0), context)
-				: new Releaser(this, revision, release.get(0), context);
-		r.force();
-		return r;
+		if (revision.isSnapshot()) {
+			return new SnapshotReleaser(this, revision, snapshot.isEmpty() ? null : snapshot.get(0), context);
+		}
+		return new Releaser(this, revision, release.get(0), context);
 	}
 
 	@Override
 	public Promise<File> get(final Archive archive) throws Exception {
+		return get(archive, true);
+	}
+
+	public Promise<File> get(final Archive archive, final boolean thrw) throws Exception {
 		final Deferred<File> deferred = new Deferred<>();
 		final File file = toLocalFile(archive);
 
@@ -136,7 +140,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 					try {
 
 						File f = get0(archive, file);
-						if (f == null)
+						if (thrw && f == null)
 							throw new FileNotFoundException("" + archive);
 
 						deferred.resolve(f);
@@ -323,7 +327,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		}
 		try {
 			Archive pomArchive = revision.getPomArchive();
-			File pomFile = get(pomArchive).getValue();
+			File pomFile = get(pomArchive, false).getValue();
 
 			if (pomFile == null) {
 				deferred.resolve(null);
@@ -332,6 +336,9 @@ public class MavenRepository implements IMavenRepo, Closeable {
 				try (FileInputStream fin = new FileInputStream(pomFile)) {
 					POM pom = getPom(fin);
 					deferred.resolve(pom);
+				} catch (Exception e) {
+					reporter.exception(e, "Failed to parse pom %s from file %s", revision, pomFile);
+					deferred.resolve(null);
 				}
 			}
 		} catch (Throwable t) {
@@ -353,5 +360,11 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	@Override
 	public boolean isLocalOnly() {
 		return localOnly;
+	}
+
+	@Override
+	public boolean exists(Archive archive) throws Exception {
+		POM pom = getPom(archive.revision);
+		return pom != null;
 	}
 }

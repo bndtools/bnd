@@ -1,7 +1,11 @@
 package aQute.bnd.repository.maven.provider;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,10 +17,15 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.RepositoryPlugin.PutOptions;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
+import aQute.bnd.service.maven.PomOptions;
 import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
+import aQute.maven.api.MavenScope;
+import aQute.maven.api.Revision;
 import aQute.maven.provider.FakeNexus;
+import aQute.maven.provider.MavenRepository;
+import aQute.maven.provider.POM;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
@@ -51,6 +60,22 @@ public class MavenBndRepoTest extends TestCase {
 		fnx.start();
 	}
 
+	public void testPomGenerate() throws Exception {
+		config(null);
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		PomOptions po = new PomOptions();
+		po.gav = "test:test:1.0";
+		po.parent = null;
+		po.dependencyManagement = false;
+
+		repo.toPom(bout, po);
+		ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
+		POM pom = new POM((MavenRepository) repo.storage, bin);
+
+		assertEquals(Revision.valueOf("test:test:1.0"), pom.getRevision());
+		assertEquals(3, pom.getDependencies(EnumSet.of(MavenScope.runtime), false).size());
+		System.out.println(new String(bout.toByteArray(), StandardCharsets.UTF_8));
+	}
 	public void testSnapshotGetInRelease() {
 
 	}

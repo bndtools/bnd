@@ -162,4 +162,6 @@ public interface IMavenRepo extends Closeable {
 
 	boolean isLocalOnly();
 
+	boolean exists(Archive binaryArchive) throws Exception;
+
 }

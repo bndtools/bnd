@@ -356,4 +356,8 @@ class IndexFile {
 		saveIndexFile();
 	}
 
+	public Collection<Archive> getArchives() {
+		return descriptors.keySet();
+	}
+
 }

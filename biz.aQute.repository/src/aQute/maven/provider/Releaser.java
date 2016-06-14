@@ -136,7 +136,6 @@ class Releaser implements Release {
 			sign(archive, f);
 			uploadAll(iterator);
 		} catch (Exception e) {
-
 			try {
 				repo.delete(archive.remotePath);
 			} catch (Exception ee) {
@@ -148,9 +147,9 @@ class Releaser implements Release {
 	}
 
 	public void sign(Archive archive, File f) throws Exception {
-		File sign = sign(f);
-		repo.store(sign, archive.remotePath + ".asc");
-		IO.delete(sign);
+		// File sign = sign(f);
+		// repo.store(sign, archive.remotePath + ".asc");
+		// IO.delete(sign);
 	}
 
 	@Override
@@ -210,7 +209,7 @@ class Releaser implements Release {
 		localOnly = true;
 	}
 
-	private File sign(File file) throws Exception {
+	File sign(File file) throws Exception {
 		File asc = new File(file.getParentFile(), file.getName() + ".asc");
 		asc.delete();
 
