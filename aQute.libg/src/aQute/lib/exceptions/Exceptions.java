@@ -1,9 +1,11 @@
 package aQute.lib.exceptions;
 
 public class Exceptions {
+	static RuntimeException singleton = new RuntimeException();
 
 	public static RuntimeException duck(Throwable t) {
-		return Exceptions.<RuntimeException> asUncheckedException0(t);
+		Exceptions.<RuntimeException> asUncheckedException0(t);
+		return singleton;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -19,7 +21,7 @@ public class Exceptions {
 				try {
 					run.run();
 				} catch (Exception e) {
-					throw duck(e);
+					duck(e);
 				}
 			}
 
@@ -34,7 +36,8 @@ public class Exceptions {
 				try {
 					return run.apply(value);
 				} catch (Exception e) {
-					throw duck(e);
+					duck(e);
+					return null; // will never happen
 				}
 			}
 		};
