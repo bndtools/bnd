@@ -9,9 +9,6 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -27,6 +24,7 @@ import org.osgi.service.repository.Repository;
 
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.TypedAttribute;
+import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
 
 /**
@@ -49,11 +47,13 @@ public class XMLResourceGenerator {
 		if (location.getName().endsWith(".gz"))
 			compress = true;
 
-		Path tmp = Files.createTempFile(location.toPath().getParent(), "index", ".xml");
-		try (FileOutputStream out = new FileOutputStream(tmp.toFile())) {
+		location.getParentFile().mkdirs();
+		File tmp = IO.createTempFile(location.getParentFile(), "index", ".xml");
+
+		try (FileOutputStream out = new FileOutputStream(tmp)) {
 			save(out);
 		}
-		Files.move(tmp, location.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+		tmp.renameTo(location);
 	}
 
 	public void save(OutputStream out) throws IOException {
