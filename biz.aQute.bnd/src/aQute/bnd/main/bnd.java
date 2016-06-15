@@ -157,6 +157,7 @@ public class bnd extends Processor {
 																	return false;
 																};
 															};
+	private static final String					DEFAULT_LOG_LEVEL_KEY	= "org.slf4j.simpleLogger.defaultLogLevel";
 
 	static Pattern								JARCOMMANDS	= Pattern
 			.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
@@ -341,9 +342,9 @@ public class bnd extends Processor {
 			setExceptions(options.exceptions());
 			setTrace(options.trace());
 			if (options.trace()) {
-				System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "trace");
+				System.setProperty(DEFAULT_LOG_LEVEL_KEY, "trace");
 			} else {
-				System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "warn");
+				System.setProperty(DEFAULT_LOG_LEVEL_KEY, "warn");
 			}
 			setPedantic(options.pedantic());
 
