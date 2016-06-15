@@ -56,6 +56,7 @@ class Releaser implements Release {
 					uploadAll(upload.iterator());
 					updateMetadata();
 				}
+				home.clear(revision);
 			}
 		} catch (IOException e) {
 			throw e;

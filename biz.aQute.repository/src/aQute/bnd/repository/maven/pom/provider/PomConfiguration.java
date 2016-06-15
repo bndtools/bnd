@@ -23,4 +23,8 @@ public interface PomConfiguration {
 	String revision();
 
 	String location(String deflt);
+
+	String pom();
+
+	String name();
 }

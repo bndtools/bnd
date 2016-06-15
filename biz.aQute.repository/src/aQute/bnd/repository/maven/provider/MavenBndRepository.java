@@ -161,6 +161,8 @@ public class MavenBndRepository implements RepositoryPlugin, RegistryPlugin, Plu
 
 				if (storage.exists(binaryArchive)) {
 					reporter.trace("Alrady released %s", pom.getRevision());
+					result.alreadyReleased = true;
+					return result;
 				}
 
 				reporter.trace("Put release %s", pom.getRevision());

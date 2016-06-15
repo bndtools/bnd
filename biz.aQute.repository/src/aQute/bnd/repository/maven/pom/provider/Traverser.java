@@ -5,6 +5,9 @@ import static org.osgi.framework.namespace.IdentityNamespace.CAPABILITY_TYPE_ATT
 import static org.osgi.framework.namespace.IdentityNamespace.IDENTITY_NAMESPACE;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -37,6 +40,7 @@ class Traverser {
 	final ConcurrentHashMap<Archive,Resource>	resources	= new ConcurrentHashMap<>();
 	final Executor								executor;
 	final Revision								revision;
+	final URI									resource;
 	final AtomicInteger							count		= new AtomicInteger(0);
 	final Deferred<Map<Archive,Resource>>		deferred	= new Deferred<>();
 	final MavenRepository						repo;
@@ -46,14 +50,26 @@ class Traverser {
 		this.repo = repo;
 		this.revision = revision;
 		this.executor = executor;
+		this.resource = null;
 	}
 
-	Promise<Map<Archive,Resource>> getResources() {
+	Traverser(MavenRepository repo, URI revision, Executor executor) {
+		this.repo = repo;
+		this.revision = null;
+		this.executor = executor;
+		this.resource = revision;
+	}
+
+	Promise<Map<Archive,Resource>> getResources() throws MalformedURLException, IOException, Exception {
 		if (deferred.getPromise().isDone())
 			throw new IllegalStateException();
 
-		parse(revision.archive("jar", null), "<>");
-
+		if (resource != null) {
+			POM pom = new POM(repo, resource.toURL().openStream());
+			parsePom(pom, "<>");
+		} else {
+			parse(revision.archive("jar", null), "<>");
+		}
 		return deferred.getPromise();
 	}
 
@@ -129,14 +145,18 @@ class Traverser {
 		POM pom = repo.getPom(archive.revision);
 		String parent = archive.revision.toString();
 
+		parsePom(pom, parent);
+
+		if (!pom.isPomOnly())
+			parseResource(archive, parent);
+	}
+
+	public void parsePom(POM pom, String parent) throws Exception {
 		Map<Program,Dependency> dependencies = pom.getDependencies(EnumSet.of(MavenScope.compile, MavenScope.runtime),
 				false);
 		for (Dependency d : dependencies.values()) {
 			parse(d.getArchive(), parent);
 		}
-
-		if (!pom.isPomOnly())
-			parseResource(archive, parent);
 	}
 
 	private void parseResource(Archive archive, String parent) throws Exception {
