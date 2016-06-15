@@ -1,8 +1,8 @@
--connection-settings: settings.xml
+-connection-settings: ${.}/settings.xml
 
 -plugin.indexed = \
 	aQute.bnd.jpm.Repository; \
 		name='JPM'; \
 		url=${repo}; \
-		index=${workspace}/cnf/jpm4j.json; \
+		index=${build}/jpm4j.json; \
 		location=${tmp}
