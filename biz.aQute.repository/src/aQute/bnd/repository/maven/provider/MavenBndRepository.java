@@ -159,7 +159,7 @@ public class MavenBndRepository implements RepositoryPlugin, RegistryPlugin, Plu
 
 				checkRemotePossible(instructions, binaryArchive.isSnapshot());
 
-				if (storage.exists(binaryArchive)) {
+				if (!binaryArchive.isSnapshot() && storage.exists(binaryArchive)) {
 					reporter.trace("Alrady released %s", pom.getRevision());
 					result.alreadyReleased = true;
 					return result;
