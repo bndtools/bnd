@@ -207,7 +207,7 @@ public class bnd extends Processor {
 		Workspace.addGestalt(Constants.GESTALT_INTERACTIVE, null);
 
 		Workspace ws = Workspace.findWorkspace(IO.work);
-		bnd main = ws == null ? new bnd() : new bnd(ws);
+		bnd main = new bnd(); // ws == null ? new bnd() : new bnd(ws);
 		try {
 			main.start(args);
 		} finally {
