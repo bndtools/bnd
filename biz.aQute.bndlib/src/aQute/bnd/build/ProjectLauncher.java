@@ -106,7 +106,7 @@ public abstract class ProjectLauncher extends Processor {
 		}
 
 		if (project.getRunBuilds()) {
-			File[] builds = project.build();
+			File[] builds = project.getBuildFiles(true);
 			if (builds != null)
 				for (File file : builds)
 					runbundles.add(file.getAbsolutePath());
