@@ -1,6 +1,6 @@
 package aQute.p2.api;
 
-import org.osgi.dto.DTO;
+import aQute.bnd.util.dto.DTO;
 
 public class Content extends DTO {
 

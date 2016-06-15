@@ -212,4 +212,12 @@ public class Archive implements Comparable<Archive> {
 		return Program.valueOf(group, artifact).version(version).archive(extension, classifier);
 	}
 
+	public boolean hasClassifier() {
+		return classifier != null && !classifier.isEmpty();
+	}
+
+	public boolean hasExtension() {
+		return extension != null && !extension.isEmpty() && !extension.equals("jar");
+	}
+
 }

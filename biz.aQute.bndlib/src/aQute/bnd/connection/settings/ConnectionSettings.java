@@ -103,7 +103,7 @@ public class ConnectionSettings extends Processor {
 					parseServer(entry.getValue());
 				} else {
 
-					File file = aQute.lib.io.IO.getFile(getParent().getPropertiesFile().getParentFile(), key);
+					File file = getParent() != null ? IO.getFile(key) : getParent().getFile(key);
 					if (!file.isFile()) {
 
 						if (!ignoreError) {

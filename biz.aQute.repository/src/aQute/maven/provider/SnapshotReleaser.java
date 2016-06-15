@@ -1,6 +1,7 @@
 package aQute.maven.provider;
 
 import java.io.File;
+import java.util.Properties;
 
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
@@ -16,8 +17,9 @@ public class SnapshotReleaser extends Releaser {
 	private String			build		= "1";
 	private String			dateStamp;
 
-	public SnapshotReleaser(MavenRepository home, Revision revision, MavenBackingRepository snapshot) throws Exception {
-		super(home, revision, snapshot);
+	public SnapshotReleaser(MavenRepository home, Revision revision, MavenBackingRepository snapshot,
+			Properties context) throws Exception {
+		super(home, revision, snapshot, context);
 		force();
 		assert revision.isSnapshot();
 		setBuild(timestamp, build);
@@ -65,4 +67,9 @@ public class SnapshotReleaser extends Releaser {
 		return resolved;
 	}
 
+	protected boolean isUpdateProgramMetadata() {
+		return true;
+	}
+
+	public void sign(Archive archive, File f) throws Exception {}
 }

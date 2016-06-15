@@ -1,1 +1,1 @@
--connection-settings: settings.xml
+-connection-settings: ${.}/settings.xml

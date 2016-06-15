@@ -4,7 +4,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osgi.dto.DTO;
+import aQute.bnd.util.dto.DTO;
 
 public class P2Index extends DTO {
 	public long			modified;

@@ -83,6 +83,11 @@ public interface RepositoryPlugin {
 		 * repository rewrote the stream for optimization reason. If the
 		 */
 		public byte[] digest = null;
+
+		/**
+		 * Set to true if this artifact was already released
+		 */
+		public boolean alreadyReleased;
 	}
 
 	/**

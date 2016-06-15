@@ -208,4 +208,6 @@ public abstract class MavenBackingRepository implements Closeable {
 		return url + "/";
 	}
 
+	public abstract boolean isFile();
+
 }

@@ -8,8 +8,6 @@ import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.osgi.util.promise.Promise;
-
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequestException;
 import aQute.bnd.service.url.State;
@@ -79,23 +77,13 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 		SHA1 sha1 = SHA1.digest(file);
 		MD5 md5 = MD5.digest(file);
 
-		Promise<String> psha = client.build()
-				.put()
-				.upload(sha1.asHex())
-				.asString()
-				.async(new URL(base + path + ".sha1"));
-		Promise<String> pmd5 = client.build().put().upload(md5.asHex()).asString().async(new URL(base + path + ".md5"));
-
 		TaggedData go = client.build().put().upload(file).updateTag().asTag().go(url);
 
 		if (go.getResponseCode() != HttpURLConnection.HTTP_CREATED && go.getResponseCode() != HttpURLConnection.HTTP_OK)
 			throw new IOException("Could not store " + path + " from " + file + " with " + go);
 
-		if (psha.getFailure() != null)
-			throw (Exception) psha.getFailure();
-
-		if (pmd5.getFailure() != null)
-			throw (Exception) psha.getFailure();
+		client.build().put().upload(sha1.asHex()).asTag().go(new URL(base + path + ".sha1"));
+		client.build().put().upload(md5.asHex()).asTag().go(new URL(base + path + ".md5"));
 
 	}
 
@@ -131,5 +119,9 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 	@Override
 	public URI toURI(String remotePath) throws Exception {
 		return new URI(base + remotePath);
+	}
+
+	public boolean isFile() {
+		return false;
 	}
 }

@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
@@ -53,6 +54,8 @@ import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.maven.PomOptions;
+import aQute.bnd.service.maven.ToDependencyPom;
 import aQute.bnd.service.repository.InfoRepository;
 import aQute.bnd.version.Version;
 import aQute.jpm.facade.repo.JpmRepo;
@@ -69,14 +72,15 @@ import aQute.maven.api.Release;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenBackingRepository;
 import aQute.maven.provider.MavenRepository;
+import aQute.maven.provider.PomGenerator;
 import aQute.service.reporter.Reporter;
 
 /**
  * This is the Bnd repository for Maven.
  */
 @BndPlugin(name = "MavenBndRepository")
-public class MavenBndRepository
-		implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable, Refreshable, InfoRepository, Actionable {
+public class MavenBndRepository implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable, Refreshable,
+		InfoRepository, Actionable, ToDependencyPom {
 
 	private final Pattern			JPM_REVISION_URL_PATTERN_P	= Pattern
 			.compile("https?://.+#!?/p/sha/(?<sha>([0-9A-F][0-9A-F]){20,20})/.*", Pattern.CASE_INSENSITIVE);
@@ -99,7 +103,6 @@ public class MavenBndRepository
 
 	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
-
 		init();
 		File binaryFile = File.createTempFile("put", ".jar");
 		File pomFile = File.createTempFile("pom", ".xml");
@@ -156,8 +159,18 @@ public class MavenBndRepository
 
 				checkRemotePossible(instructions, binaryArchive.isSnapshot());
 
-				try (Release releaser = storage.release(pom.getRevision());) {
+				if (!binaryArchive.isSnapshot() && storage.exists(binaryArchive)) {
+					reporter.trace("Alrady released %s", pom.getRevision());
+					result.alreadyReleased = true;
+					return result;
+				}
 
+				reporter.trace("Put release %s", pom.getRevision());
+				try (Release releaser = storage.release(pom.getRevision(), options.context.getProperties());) {
+					if (releaser == null) {
+						reporter.trace("already released %s", pom.getRevision());
+						return result;
+					}
 					if (instructions.snapshot >= 0)
 						releaser.setBuild(instructions.snapshot, "1");
 
@@ -294,9 +307,9 @@ public class MavenBndRepository
 		Attrs javadoc = p.remove("javadoc");
 		if (javadoc != null) {
 			release.javadoc.path = javadoc.get("path");
-			if (NONE.equals(release.javadoc.path))
+			if (NONE.equals(release.javadoc.path)) {
 				release.javadoc = null;
-			else
+			} else
 				release.javadoc.options = javadoc;
 		}
 
@@ -710,24 +723,12 @@ public class MavenBndRepository
 			reporter.trace("dropTarget cleaned up from " + t + " to " + uri);
 		}
 
-		if (uri.getHost().equals("search.maven.org") && uri.getPath().equals("/remotecontent")) {
+		if ("search.maven.org".equals(uri.getHost()) && "/remotecontent".equals(uri.getPath())) {
 			return doSearchMaven(uri);
 		}
 
-		if (uri.getPath().endsWith(".pom"))
+		if (uri.getPath() != null && uri.getPath().endsWith(".pom"))
 			return addPom(uri);
-
-		if (uri.getPath().endsWith(".jar")) {
-
-			String s = uri.toString();
-			if (s.endsWith(".jar")) {
-				s = s.substring(0, s.length() - 4) + ".pom";
-				if (addPom(new URI(s))) {
-					return true;
-				}
-			}
-
-		}
 
 		if (doJpm(uri))
 			return true;
@@ -817,6 +818,17 @@ public class MavenBndRepository
 				reporter.exception(e, "Cannot drop JPM ", uri);
 			}
 		return false;
+	}
+
+	@Override
+	public void toPom(OutputStream out, PomOptions options) throws Exception {
+		init();
+		PomGenerator pg = new PomGenerator(index.getArchives());
+		pg.name(Revision.valueOf(options.gav))
+				.parent(Revision.valueOf(options.parent))
+				.dependencyManagement(options.dependencyManagement)
+				.out(out);
+		
 	}
 
 }

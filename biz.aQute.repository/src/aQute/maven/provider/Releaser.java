@@ -8,10 +8,12 @@ import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 
 import aQute.bnd.http.HttpRequestException;
 import aQute.bnd.service.url.TaggedData;
 import aQute.lib.io.IO;
+import aQute.libg.command.Command;
 import aQute.maven.api.Archive;
 import aQute.maven.api.Release;
 import aQute.maven.api.Revision;
@@ -28,11 +30,14 @@ class Releaser implements Release {
 	private File						dir;
 	protected boolean					localOnly;
 	protected MavenBackingRepository	repo;
+	private Properties					context;
 
-	Releaser(MavenRepository home, Revision revision, MavenBackingRepository repo) throws Exception {
+	Releaser(MavenRepository home, Revision revision, MavenBackingRepository repo, Properties context)
+			throws Exception {
 		this.home = home;
 		this.revision = revision;
 		this.repo = repo;
+		this.context = context;
 		this.dir = home.toLocalFile(revision.path);
 
 		IO.delete(this.dir);
@@ -40,8 +45,7 @@ class Releaser implements Release {
 		this.dir.mkdirs();
 	}
 
-	protected void check() {
-	}
+	protected void check() {}
 
 	@Override
 	public void close() throws IOException {
@@ -52,6 +56,7 @@ class Releaser implements Release {
 					uploadAll(upload.iterator());
 					updateMetadata();
 				}
+				home.clear(revision);
 			}
 		} catch (IOException e) {
 			throw e;
@@ -61,6 +66,9 @@ class Releaser implements Release {
 	}
 
 	protected void updateMetadata() throws Exception, InterruptedException {
+		if (!isUpdateProgramMetadata())
+			return;
+
 		int n = 0;
 		while (true)
 			try {
@@ -107,6 +115,16 @@ class Releaser implements Release {
 			}
 	}
 
+	/**
+	 * Nexus does not like us to update the program metadata but we should do
+	 * this for file repos
+	 * 
+	 * @return
+	 */
+	protected boolean isUpdateProgramMetadata() {
+		return repo.isFile();
+	}
+
 	void uploadAll(Iterator<Archive> iterator) throws Exception {
 
 		if (!iterator.hasNext())
@@ -116,9 +134,9 @@ class Releaser implements Release {
 		File f = home.toLocalFile(archive);
 		try {
 			repo.store(f, archive.remotePath);
+			sign(archive, f);
 			uploadAll(iterator);
 		} catch (Exception e) {
-
 			try {
 				repo.delete(archive.remotePath);
 			} catch (Exception ee) {
@@ -129,11 +147,16 @@ class Releaser implements Release {
 		}
 	}
 
+	public void sign(Archive archive, File f) throws Exception {
+		// File sign = sign(f);
+		// repo.store(sign, archive.remotePath + ".asc");
+		// IO.delete(sign);
+	}
+
 	@Override
 	public void add(Archive archive, InputStream in) throws Exception {
 		try {
 			archive = resolve(archive);
-
 			home.store(archive, in);
 			upload.add(archive);
 		} catch (Exception e) {
@@ -186,4 +209,38 @@ class Releaser implements Release {
 	public void setLocalOnly() {
 		localOnly = true;
 	}
+
+	File sign(File file) throws Exception {
+		File asc = new File(file.getParentFile(), file.getName() + ".asc");
+		asc.delete();
+
+		Command command = new Command();
+		command.setTrace();
+
+		command.add(context.getProperty("gpg", "gpg"));
+
+		String passphrase = getPassphrase();
+		if (passphrase != null)
+			command.add("--passphrase", passphrase);
+		else
+			throw new IOException(
+					"gpg signing %s failed because no passphrase was set (either context, System property `gpg.passphrase`, or env var GPG_PASSPHRASE");
+
+		command.add("-ab", "--sign"); // not the -b!!
+		command.add(file.getAbsolutePath());
+		System.err.println(command);
+		StringBuilder stdout = new StringBuilder();
+		StringBuilder stderr = new StringBuilder();
+		int result = command.execute(stdout, stderr);
+		if (result != 0)
+			throw new IOException("gpg signing %s failed because " + file + stdout + stderr);
+
+		return asc;
+	}
+
+	private String getPassphrase() {
+		return context.getProperty("gpg.passphrase",
+				System.getProperties().getProperty("gpg.passphrase", System.getenv("GPG_PASSPHRASE")));
+	}
+
 }

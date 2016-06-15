@@ -75,7 +75,8 @@ Private-Package: \
 	aQute.service.library,\
 	aQute.jsonrpc.domain,\
 	aQute.struct,\
-	aQute.bnd.jpm.util
+	aQute.bnd.jpm.util, \
+	org.bouncycastle.*
 
 Conditional-Package:\
 	aQute.lib.*;-split-package:=first,\

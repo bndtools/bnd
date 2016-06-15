@@ -54,7 +54,7 @@ public class HttpClientTest extends TestCase {
 	}
 
 	public void testCancel() throws Exception {
-		final long deadline = System.currentTimeMillis() + 8000L;
+		final long deadline = System.currentTimeMillis() + 1000L;
 
 		try (HttpClient hc = new HttpClient();) {
 			Processor p = new Processor();
@@ -85,7 +85,7 @@ public class HttpClientTest extends TestCase {
 			});
 			hc.setRegistry(p);
 
-			TaggedData tag = hc.build().asTag().go(httpServer.getBaseURI("timeout/500"));
+			TaggedData tag = hc.build().asTag().go(httpServer.getBaseURI("timeout/50"));
 			assertNotNull(tag);
 			assertEquals(200, tag.getResponseCode());
 			try {

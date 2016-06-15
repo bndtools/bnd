@@ -100,6 +100,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.osgi.eclipse.EclipseClasspath;
+import aQute.bnd.repository.maven.provider.NexusCommand;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.action.Action;
@@ -156,6 +157,7 @@ public class bnd extends Processor {
 																	return false;
 																};
 															};
+	private static final String					DEFAULT_LOG_LEVEL_KEY	= "org.slf4j.simpleLogger.defaultLogLevel";
 
 	static Pattern								JARCOMMANDS	= Pattern
 			.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
@@ -193,12 +195,20 @@ public class bnd extends Processor {
 
 	}
 
+	public bnd(Workspace ws) {
+		super(ws);
+	}
+
+	public bnd() {
+	}
+
 	public static void main(String args[]) throws Exception {
 		Workspace.setDriver(Constants.BNDDRIVER_BND);
 		Workspace.addGestalt(Constants.GESTALT_SHELL, null);
 		Workspace.addGestalt(Constants.GESTALT_INTERACTIVE, null);
 
-		bnd main = new bnd();
+		Workspace ws = Workspace.findWorkspace(IO.work);
+		bnd main = new bnd(); // ws == null ? new bnd() : new bnd(ws);
 		try {
 			main.start(args);
 		} finally {
@@ -331,6 +341,11 @@ public class bnd extends Processor {
 			set(FAIL_OK, options.failok() + "");
 			setExceptions(options.exceptions());
 			setTrace(options.trace());
+			if (options.trace()) {
+				System.setProperty(DEFAULT_LOG_LEVEL_KEY, "trace");
+			} else {
+				System.setProperty(DEFAULT_LOG_LEVEL_KEY, "warn");
+			}
 			setPedantic(options.pedantic());
 
 			if (options.base() != null)
@@ -2706,9 +2721,15 @@ public class bnd extends Processor {
 		}
 
 		if (f.isFile()) {
+			if (f.getName().endsWith(Run.DEFAULT_BNDRUN_EXTENSION)) {
+				Workspace ws = Workspace.findWorkspace(f.getParentFile());
+				Run run = Run.createRun(ws, f);
+				return run;
+			}
+
 			File projectDir = f.getParentFile();
 			File workspaceDir = projectDir.getParentFile();
-			ws = getWorkspace(workspaceDir);
+			ws = Workspace.findWorkspace(workspaceDir);
 			Project project = ws.getProject(projectDir.getName());
 			if (project.isValid()) {
 				project.use(this);
@@ -2725,24 +2746,20 @@ public class bnd extends Processor {
 	}
 
 	public Workspace getWorkspace(String where) throws Exception {
-		Project p = getProject(where);
-		if (p != null)
-			return p.getWorkspace();
-
-		File dir;
-		if (where != null) {
-			dir = getFile(where);
-		} else
-			dir = getBase();
-
-		if (!dir.isDirectory())
-			return null;
-
-		File buildBnd = getFile(dir, "cnf/build.bnd");
-		if (!buildBnd.isFile())
-			return null;
-
-		return getWorkspace(dir);
+		Workspace ws;
+		if (where == null) {
+			ws = Workspace.findWorkspace(IO.work);
+			if (ws == null)
+				ws = Workspace.createStandaloneWorkspace(new Processor(), IO.work.toURI());
+		} else {
+			File f = getFile(where);
+			ws = Workspace.findWorkspace(f);
+			if (f.isFile() && f.getName().endsWith(Run.DEFAULT_BNDRUN_EXTENSION)) {
+				Run run = Run.createRun(ws, f);
+				ws = run.getWorkspace();
+			}
+		}
+		return ws;
 	}
 
 	/**
@@ -4153,6 +4170,20 @@ public class bnd extends Processor {
 		rc.close();
 	}
 
+	/**
+	 * Nexus commands
+	 * 
+	 * @throws Exception
+	 */
+
+	public void _nexus(NexusCommand.NexusOptions options) throws Exception {
+		NexusCommand rc = new NexusCommand(this, options);
+		String help = options._command().subCmd(options, rc);
+		if (help != null)
+			out.println(help);
+		getInfo(rc);
+		rc.close();
+	}
 	/**
 	 * Export a bndrun file
 	 */

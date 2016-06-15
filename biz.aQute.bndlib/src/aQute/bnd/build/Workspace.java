@@ -1130,9 +1130,12 @@ public class Workspace extends Processor {
 	 * @param run
 	 */
 	public static Workspace createStandaloneWorkspace(Processor run, URI base) throws Exception {
-		Workspace ws = new Workspace(WorkspaceLayout.STANDALONE);
+		String property = run.getProperty("-standalone", "");
 
-		Parameters standalone = new Parameters(run.getProperty("-standalone", ""));
+		Workspace ws = new Workspace(WorkspaceLayout.STANDALONE);
+		ws.getProperties().putAll(run.getProperties());
+
+		Parameters standalone = new Parameters(property);
 
 		int counter = 1;
 		for (Map.Entry<String,Attrs> e : standalone.entrySet()) {

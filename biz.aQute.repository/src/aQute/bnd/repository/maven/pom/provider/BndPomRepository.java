@@ -2,6 +2,7 @@ package aQute.bnd.repository.maven.pom.provider;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,7 @@ public class BndPomRepository extends BaseRepository
 	private PomRepository		pomRepo;
 	private Revision			revision;
 	private BridgeRepository	bridge;
+	private URI					pomFile;
 
 	public synchronized void init() {
 		try {
@@ -69,9 +71,11 @@ public class BndPomRepository extends BaseRepository
 			MavenRepository repository = new MavenRepository(localRepo, name, release, snapshot,
 					Processor.getExecutor(), reporter, null);
 
-			pomRepo = new PomRepository(repository, location, revision);
+			pomRepo = pomFile != null ? new PomRepository(repository, location, pomFile)
+					: new PomRepository(repository, location, revision);
 			bridge = new BridgeRepository(pomRepo);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw Exceptions.duck(e);
 		}
 	}
@@ -85,11 +89,38 @@ public class BndPomRepository extends BaseRepository
 
 	@Override
 	public void setProperties(Map<String,String> map) throws Exception {
+
 		configuration = Converter.cnv(PomConfiguration.class, map);
-		revision = Revision.valueOf(configuration.revision());
-		if (revision == null)
-			throw new IllegalArgumentException("Revision is mandatory on PomRepository");
-		name = revision.toString().replace(':', '_');
+
+		if (configuration.name() == null)
+			throw new IllegalArgumentException("Must get a name");
+
+		this.name = configuration.name();
+
+		if (configuration.pom() != null) {
+
+			File f = IO.getFile(configuration.pom());
+			if (f.isFile()) {
+				this.pomFile = f.toURI();
+				if (name == null)
+					name = f.getParentFile().getName();
+			} else {
+
+				// TODO check uri?
+
+				throw new IllegalArgumentException("pom property is not a file" + f);
+			}
+		} else if (configuration.revision() != null) {
+			revision = Revision.valueOf(configuration.revision());
+			if (revision == null)
+				throw new IllegalArgumentException(
+						"Revision is neither a file nor a revision " + configuration.revision());
+
+			if (name == null)
+				name = revision.toString().replace(':', '_');
+		} else {
+			throw new IllegalArgumentException("Neither pom property nor revision are set");
+		}
 	}
 
 	@Override

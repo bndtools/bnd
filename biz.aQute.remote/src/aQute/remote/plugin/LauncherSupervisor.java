@@ -3,7 +3,7 @@ package aQute.remote.plugin;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import org.osgi.dto.DTO;
+import aQute.bnd.util.dto.DTO;
 
 import aQute.remote.api.Agent;
 import aQute.remote.api.Event;

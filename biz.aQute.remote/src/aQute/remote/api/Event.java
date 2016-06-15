@@ -1,6 +1,6 @@
 package aQute.remote.api;
 
-import org.osgi.dto.DTO;
+import aQute.bnd.util.dto.DTO;
 import org.osgi.framework.dto.BundleDTO;
 import org.osgi.framework.dto.ServiceReferenceDTO;
 

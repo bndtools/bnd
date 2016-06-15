@@ -3,6 +3,7 @@ package aQute.maven.provider;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.List;
+import java.util.Properties;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.version.MavenVersion;
@@ -132,7 +133,7 @@ public class MavenRepoTest extends TestCase {
 		Archive apom = revision.archive("pom", null);
 		assertFalse(fpom.exists());
 
-		Release r = storage.release(revision);
+		Release r = storage.release(revision, new Properties());
 		r.setBuild(10000, null);
 		r.add("pom", null, new ByteArrayInputStream(new byte[0]));
 

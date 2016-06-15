@@ -18,6 +18,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.WriteResource;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
+import aQute.libg.glob.Glob;
 
 public class PomResource extends WriteResource {
 	private static final String	VERSION		= "version";
@@ -57,13 +58,19 @@ public class PomResource extends WriteResource {
 		if (bsn == null) {
 			throw new RuntimeException("Cannot create POM unless bsn is set");
 		}
+
+		groupId = augmentManifest(domain, bsn);
+
 		name = domain.get(Constants.BUNDLE_NAME);
 		where = processor.get(WHERE);
 
-		groupId = processor.get(GROUPID);
+		if (groupId == null)
+			groupId = processor.get(GROUPID);
+
 		if (groupId == null) {
 			groupId = processor.get(Constants.GROUPID);
 		}
+
 		if (groupId != null) {
 			artifactId = processor.get(ARTIFACTID);
 			if (artifactId == null)
@@ -95,6 +102,41 @@ public class PomResource extends WriteResource {
 		if (version == null)
 			version = "0";
 
+
+	}
+
+	public String augmentManifest(Domain domain, String bsn) {
+		String groupid = null;
+		Parameters augments = new Parameters(processor.mergeProperties("-pomaugment"));
+
+		for (Entry<String,Attrs> augment : augments.entrySet()) {
+			Glob g = new Glob(augment.getKey());
+
+			if (g.matcher(bsn).matches()) {
+				Attrs attrs = augment.getValue();
+				for (Entry<String,String> attr : attrs.entrySet()) {
+					String key = attr.getKey();
+					boolean mandatory = false;
+					if (key.startsWith("+")) {
+						key = key.substring(1);
+						mandatory = true;
+					}
+
+					if (key.length() > 0 && Character.isUpperCase(key.charAt(0))) {
+
+						if (mandatory || domain.get(key) == null) {
+							domain.set(key, attr.getValue());
+						}
+
+					} else {
+						if ("groupid".equals(key))
+							groupid = attr.getValue();
+					}
+				}
+				break;
+			}
+		}
+		return groupid;
 	}
 
 	public String getWhere() {
@@ -199,7 +241,7 @@ public class PomResource extends WriteResource {
 			tagFromMap(l, attrs, "description", "comments", null);
 		}
 
-		String scm = processor.get(Constants.BUNDLE_SCM);
+		String scm = manifest.getMainAttributes().getValue(Constants.BUNDLE_SCM);
 		if (scm != null && scm.length() > 0) {
 			Attrs pscm = OSGiHeader.parseProperties(scm);
 
@@ -209,8 +251,10 @@ public class PomResource extends WriteResource {
 			}
 		}
 
-		Parameters developers = new Parameters(processor.get(Constants.BUNDLE_DEVELOPERS));
+		Parameters developers = new Parameters(manifest.getMainAttributes().getValue(Constants.BUNDLE_DEVELOPERS));
+
 		if (developers.size() > 0) {
+
 			Tag tdevelopers = new Tag(project, "developers");
 
 			for (String id : developers.keySet()) {

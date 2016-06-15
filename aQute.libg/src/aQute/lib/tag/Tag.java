@@ -235,21 +235,25 @@ public class Tag {
 			pw.print('>');
 			Object last = null;
 			for (Object c : content) {
-				if (c instanceof String) {
-					if (cdata) {
-						pw.print("<![CDATA[");
-						String s = (String) c;
-						s = s.replaceAll("]]>", "]]]]><![CDATA[>");
-						pw.print(s);
-						pw.print("]]>");
-					} else
-						pw.print(escape((String) c));
-				} else if (c instanceof Tag) {
+				if (c instanceof Tag) {
 					if ((last == null) && (indent >= 0)) {
 						pw.print('\n');
 					}
 					Tag tag = (Tag) c;
 					tag.print(indent + 2, pw);
+				} else {
+					if (c == null)
+						continue;
+
+					String s = c.toString();
+
+					if (cdata) {
+						pw.print("<![CDATA[");
+						s = s.replaceAll("]]>", "]]]]><![CDATA[>");
+						pw.print(s);
+						pw.print("]]>");
+					} else
+						pw.print(escape(s));
 				}
 				last = c;
 			}
