@@ -24,6 +24,8 @@ import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Resource;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
@@ -36,6 +38,7 @@ import aQute.maven.provider.MavenRepository;
 import aQute.maven.provider.POM;
 
 class Traverser {
+	final static Logger							logger		= LoggerFactory.getLogger(Traverser.class);
 	static final Resource						DUMMY		= new ResourceBuilder().build();
 	final ConcurrentHashMap<Archive,Resource>	resources	= new ConcurrentHashMap<>();
 	final Executor								executor;
@@ -96,8 +99,10 @@ class Traverser {
 			@Override
 			public void run() {
 				try {
+					logger.trace("parse archive {}", archive);
 					parseArchive(archive);
 				} catch (Throwable throwable) {
+					logger.trace(" failed to parse archive {}: {}", archive, throwable);
 					ResourceBuilder rb = new ResourceBuilder();
 					String bsn = archive.revision.program.toString();
 					Version version = toFrameworkVersion(archive.revision.version.getOSGiVersion());
