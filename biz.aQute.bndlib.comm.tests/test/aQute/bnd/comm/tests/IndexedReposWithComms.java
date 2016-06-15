@@ -98,7 +98,7 @@ public class IndexedReposWithComms extends TestCase {
 
 			Workspace ws = Workspace.getWorkspace(aQute.lib.io.IO.getFile("workspaces/indexed"));
 			assertNotNull(ws);
-			ws.setProperty("-connection-settings", "settings-withpassword.xml");
+			ws.setProperty("-connection-settings", "${build}/settings-withpassword.xml");
 			ws.setProperty("repo", ht.getBaseURI().toASCIIString() + "/index-auth/user/good");
 			FixedIndexedRepo plugin = ws.getPlugin(FixedIndexedRepo.class);
 			assertTrue(ws.check());
