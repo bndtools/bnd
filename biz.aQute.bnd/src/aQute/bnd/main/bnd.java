@@ -340,6 +340,11 @@ public class bnd extends Processor {
 			set(FAIL_OK, options.failok() + "");
 			setExceptions(options.exceptions());
 			setTrace(options.trace());
+			if (options.trace()) {
+				System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "trace");
+			} else {
+				System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "warn");
+			}
 			setPedantic(options.pedantic());
 
 			if (options.base() != null)
