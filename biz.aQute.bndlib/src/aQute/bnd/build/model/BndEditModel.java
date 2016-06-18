@@ -104,6 +104,7 @@ public class BndEditModel {
 																										aQute.bnd.osgi.Constants.RUNREPOS,
 																										aQute.bnd.osgi.Constants.RUNREQUIRES,
 																										aQute.bnd.osgi.Constants.RUNEE,
+																										aQute.bnd.osgi.Constants.RUNBLACKLIST,
 																										Constants.BUNDLE_BLUEPRINT,
 																										Constants.INCLUDE_RESOURCE,
 																										"-standalone"
