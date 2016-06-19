@@ -28,6 +28,7 @@ import bndtools.Plugin;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.project.AvailableBundlesPart;
 import bndtools.editor.project.RepositorySelectionPart;
+import bndtools.editor.project.RunBlacklistPart;
 import bndtools.editor.project.RunBundlesPart;
 import bndtools.editor.project.RunFrameworkPart;
 import bndtools.editor.project.RunPropertiesPart;
@@ -168,6 +169,11 @@ public class ProjectRunPage extends FormPage {
             managedForm.addPart(requirementsPart);
             requirementsPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
             requirementsPart.getSection().addExpansionListener(new ResizeExpansionAdapter(requirementsPart.getSection()));
+
+            RunBlacklistPart blacklistPart = new RunBlacklistPart(right, tk, Section.TITLE_BAR | Section.TWISTIE | Section.COMPACT | Section.DESCRIPTION);
+            managedForm.addPart(blacklistPart);
+            blacklistPart.getSection().setLayoutData(PageLayoutUtils.createCollapsed());
+            blacklistPart.getSection().addExpansionListener(new ResizeExpansionAdapter(blacklistPart.getSection()));
 
             RunBundlesPart runBundlesPart = new RunBundlesPart(right, tk, Section.TITLE_BAR | Section.TWISTIE);
             managedForm.addPart(runBundlesPart);
