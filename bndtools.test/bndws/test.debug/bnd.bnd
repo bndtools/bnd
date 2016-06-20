@@ -1,0 +1,10 @@
+
+-buildpath: \
+	osgi.enroute.junit.wrapper,\
+	test.debug.dep;version=latest
+-runfw: org.apache.felix.framework;version='[4.4.0,4.4.0]'
+-runrequires: osgi.identity;filter:='(osgi.identity=test.bottom)'
+-runee: JavaSE-1.7
+-runbundles: \
+	osgi.enroute.junit.wrapper,\
+	test.debug.dep;version=latest
