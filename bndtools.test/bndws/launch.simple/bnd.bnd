@@ -5,9 +5,7 @@ Bundle-Version: 1.0.0.${tstamp}
 -buildpath: \
 	osgi.core,\
 	../cnf/cache/biz.aQute.launcher/biz.aQute.launcher-latest.jar;version=file,\
-	../../../../bnd/biz.aQute.remote/generated/biz.aQute.remote.launcher-3.0.0.jar;version=file,\
-	../../../../bnd/biz.aQute.remote/generated/biz.aQute.remote.agent-3.0.0.jar;version=file,\
-	../../../../bnd/biz.aQute.remote/generated/biz.aQute.remote.main-3.0.0.jar;version=file,\
+	../cnf/cache/biz.aQute.remote.launcher/biz.aQute.remote.launcher-latest.jar;version=file,\
 	javax.servlet;version=3.0,\
 	osgi.cmpn;version=4.3, \
 	pi4j-core.jar;version=file
@@ -20,9 +18,7 @@ Bundle-Version: 1.0.0.${tstamp}
 	wlp;host=192.168.67.122;jdb=1044
 		
 -runbundles: \
-	launch.simple.really
-	
-, \
+	launch.simple.really, \
 	org.apache.felix.gogo.command,\
 	org.apache.felix.gogo.runtime,\
 	org.apache.felix.gogo.shell
