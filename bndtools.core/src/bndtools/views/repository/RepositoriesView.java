@@ -759,14 +759,21 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                     return false;
             }
 
-            Method m = target.getClass().getMethod(DROP_TARGET, java.getClass());
-            Object invoke = m.invoke(target, java);
+            try {
+                Method m = target.getClass().getMethod(DROP_TARGET, java.getClass());
+                Boolean invoke = (Boolean) m.invoke(target, java);
+                if (!invoke)
+                    return false;
+            } catch (NoSuchMethodException e) {
+                return false;
+            }
 
             RepositoryPlugin repositoryPlugin = getRepositoryPlugin(target);
             if (repositoryPlugin != null && repositoryPlugin instanceof Refreshable)
                 Central.refreshPlugin((Refreshable) repositoryPlugin);
-            return invoke == null || invoke == Boolean.FALSE ? false : true;
+            return true;
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }
@@ -811,8 +818,23 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
             return URI.class;
         if (FileTransfer.getInstance().isSupportedType(data))
             return File[].class;
+
         if (TextTransfer.getInstance().isSupportedType(data))
             return String.class;
+
+        if (ResourceTransfer.getInstance().isSupportedType(data))
+            return String.class;
+
+        if (LocalSelectionTransfer.getTransfer().isSupportedType(data)) {
+            ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
+            if (selection instanceof IStructuredSelection) {
+                Object firstElement = ((IStructuredSelection) selection).getFirstElement();
+                if (firstElement instanceof IFile)
+                    return File.class;
+            }
+            return null;
+        }
+
         //        if (ImageTransfer.getInstance().isSupportedType(data))
         //            return Image.class;
         return null;
@@ -835,6 +857,17 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
      *             upon error
      */
     Object toJava(TransferData data) throws Exception {
+        LocalSelectionTransfer local = LocalSelectionTransfer.getTransfer();
+        if (local.isSupportedType(data)) {
+            ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
+            if (selection instanceof IStructuredSelection) {
+                Object firstElement = ((IStructuredSelection) selection).getFirstElement();
+                if (firstElement instanceof IFile) {
+                    IFile f = (IFile) firstElement;
+                    return f.getLocationURI();
+                }
+            }
+        }
         if (URLTransfer.getInstance().isSupportedType(data))
             return Converter.cnv(URI.class, URLTransfer.getInstance().nativeToJava(data));
         else if (FileTransfer.getInstance().isSupportedType(data)) {

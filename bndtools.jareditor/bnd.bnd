@@ -5,7 +5,7 @@ Bundle-SymbolicName: bndtools.jareditor;singleton:=true
 Include-Resource: resources
 
 -buildpath:  \
-	${bndlib},\
+	${bndlib};packages=*,\
 	osgi.core;version=${osgi.core.version},\
 	org.eclipse.jface.text,\
 	org.eclipse.core.resources,\

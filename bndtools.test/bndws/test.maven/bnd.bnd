@@ -3,10 +3,11 @@ Bundle-Version: 1.0.0.${tstamp}
 -resourceonly: true
 -includeresource: foo;literal='X'
 
--releaserepo: Nexus
+-releaserepo: Sonatype
 
--pom: 					groupid	=	osgi.enroute.examples,\
-						version =	${versionmask;===;${@version}}-SNAPSHOT
+-pom: 					groupid	=	biz.aQute.bnd,\
+						version =	${versionmask;===;${@version}}
+						
 						
 -buildpath: \
 	commons-cli:commons-cli;version=1.2
