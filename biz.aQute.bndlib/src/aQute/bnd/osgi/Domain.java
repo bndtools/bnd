@@ -30,6 +30,8 @@ import java.util.Properties;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
@@ -447,10 +449,19 @@ public abstract class Domain implements Iterable<String> {
 
 			try (JarInputStream jin = new JarInputStream(in);) {
 				Manifest m = jin.getManifest();
-				if (m == null)
-					return null;
-				return domain(m);
+				if (m != null)
+					return domain(m);
 			}
+		}
+
+		// BUT WAIT! Maybe it's just a zip file (bad jar, bad jar...)
+
+		try (ZipFile zf = new ZipFile(file)) {
+			ZipEntry entry = zf.getEntry("META-INF/MANIFEST.MF");
+			if (entry == null)
+				return null;
+			Manifest m = new Manifest(zf.getInputStream(entry));
+			return domain(m);
 		}
 	}
 
