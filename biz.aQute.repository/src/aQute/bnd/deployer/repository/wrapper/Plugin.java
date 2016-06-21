@@ -33,6 +33,7 @@ public class Plugin extends BaseRepository
 	private Reporter				reporter	= new ReporterAdapter();
 	private File					dir;
 	private InfoRepositoryWrapper	wrapper;
+	private boolean					init		= false;
 
 	interface Config {
 		String location();
@@ -65,6 +66,11 @@ public class Plugin extends BaseRepository
 	 * can obtain a list of appropriate repos.
 	 */
 	public void init() {
+		if (init)
+			return;
+
+		init = true;
+
 		try {
 
 			//
