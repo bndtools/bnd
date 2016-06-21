@@ -267,7 +267,7 @@ public class HttpClient implements Closeable, URLConnector {
 	ProgressPlugin.Task getTask(final HttpRequest< ? > request) {
 		final ProgressPlugin.Task task;
 		if (progress != null) {
-			task = progress.startTask("Downloading " + request.url, 100);
+			task = progress.startTask("Download " + request.url, 100);
 		} else {
 			task = new ProgressPlugin.Task() {
 
