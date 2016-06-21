@@ -257,7 +257,6 @@ public class HttpClient implements Closeable, URLConnector {
 				}
 			});
 			reporter.trace("result %s", td);
-			task.done(td.toString(), null);
 			return td;
 		} catch (Throwable t) {
 			task.done("Failed " + t.getMessage(), t);
@@ -268,7 +267,7 @@ public class HttpClient implements Closeable, URLConnector {
 	ProgressPlugin.Task getTask(final HttpRequest< ? > request) {
 		final ProgressPlugin.Task task;
 		if (progress != null) {
-			task = progress.startTask("Download " + request.url, 100);
+			task = progress.startTask("Downloading " + request.url, 100);
 		} else {
 			task = new ProgressPlugin.Task() {
 
@@ -396,6 +395,7 @@ public class HttpClient implements Closeable, URLConnector {
 					InputStream in = con.getInputStream();
 					return new TaggedData(con, in, request.useCacheFile);
 				} catch (FileNotFoundException e) {
+					task.done("file not found", e);
 					return new TaggedData(con.getURL().toURI(), 404, request.useCacheFile);
 				}
 			}
@@ -417,6 +417,7 @@ public class HttpClient implements Closeable, URLConnector {
 
 					String location = hcon.getHeaderField("Location");
 					request.url = new URL(location);
+					task.done("redirected", null);
 					return send0(request);
 
 				}
@@ -432,6 +433,7 @@ public class HttpClient implements Closeable, URLConnector {
 			}
 
 			if ((code / 100) != 2) {
+				task.done("finished", null);
 				return new TaggedData(con, null, request.useCacheFile);
 			}
 
@@ -446,6 +448,7 @@ public class HttpClient implements Closeable, URLConnector {
 
 		} catch (SocketTimeoutException ste) {
 			ste.printStackTrace();
+			task.done("timed out", ste);
 			return new TaggedData(request.url.toURI(), HttpURLConnection.HTTP_GATEWAY_TIMEOUT, request.useCacheFile);
 		}
 	}

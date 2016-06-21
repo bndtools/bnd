@@ -54,7 +54,7 @@ class IndexFile {
 		Promise<File>	promise;
 	}
 
-	final ConcurrentHashMap<Archive,Promise<File>>	promises	= new ConcurrentHashMap<>();
+	final ConcurrentMap<Archive,Promise<File>>		promises	= new ConcurrentHashMap<>();
 	final ConcurrentMap<Archive,BundleDescriptor>	descriptors	= new ConcurrentHashMap<>();
 	final File										indexFile;
 	final File										cacheDir;
