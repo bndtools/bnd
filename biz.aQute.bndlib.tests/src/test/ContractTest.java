@@ -22,7 +22,7 @@ public class ContractTest extends TestCase {
 	 * @throws Exception
 	 */
 	public void testWarningVersion() throws Exception {
-		Jar bjara = getContractExporter("abc", null, "${exports}");
+		Jar bjara = getContractExporter("abc", (String[]) null, "${exports}");
 
 		Builder a = newBuilder();
 		a.setTrace(true);
@@ -167,15 +167,57 @@ public class ContractTest extends TestCase {
 		assertNull(attrs.getVersion());
 	}
 
+	public void testMultiple() throws Exception {
+		Jar bjar = getContractExporter("abc", new String[] {
+				"2.5", "2.6", "3.0", "3.1"
+		}, "${exports}");
+
+		Builder a = newBuilder();
+		a.setTrace(true);
+		a.addClasspath(bjar);
+		a.setProperty(Constants.CONTRACT, "*");
+		a.setImportPackage("org.osgi.service.cm,*");
+		a.setProperty("Export-Package", "test.refer");
+		Jar ajar = a.build();
+		assertTrue(a.check());
+		Domain domain = Domain.domain(ajar.getManifest());
+		Parameters rc = domain.getRequireCapability();
+		rc.remove("osgi.ee");
+		System.out.println(rc);
+		assertEquals(1, rc.size());
+		assertNotNull(rc);
+		assertEquals(1, rc.size());
+		Attrs attrs = rc.get("osgi.contract");
+		assertEquals("(&(osgi.contract=abc)(version=3.1.0))", attrs.get("filter:"));
+	}
+
 	private Jar getContractExporter(String name, String version, String uses) throws IOException, Exception {
+		return getContractExporter(name, new String[] {
+				version
+		}, uses);
+	}
+
+	private Jar getContractExporter(String name, String[] versions, String uses) throws IOException, Exception {
 		Builder b = newBuilder();
 		Formatter sb = new Formatter();
 		try {
 			sb.format("osgi.contract");
 			if (name != null)
 				sb.format(";osgi.contract=%s", name);
-			if (version != null)
-				sb.format(";version:Version=%s", version);
+			if (versions != null) {
+				if (versions.length > 1) {
+					StringBuilder s = new StringBuilder(";version:List<Version>=\"");
+					for (String version : versions) {
+						s.append(version);
+						s.append(",");
+					}
+					s.setLength(s.length() - 1);
+					s.append("\"");
+					sb.format(s.toString());
+				}
+				else
+					sb.format(";version:Version=%s", versions[0]);
+			}
 			if (uses != null)
 				sb.format(";uses:='%s'", uses);
 
