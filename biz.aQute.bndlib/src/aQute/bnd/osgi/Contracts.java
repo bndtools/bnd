@@ -104,7 +104,25 @@ class Contracts {
 
 						c.uses = Processor.split(list);
 
-						c.version = (Version) capabilityAttrs.getTyped(ContractNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+						try {
+							Version version = capabilityAttrs.getTyped(Attrs.VERSION,
+									ContractNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+
+							if (version != null)
+								c.version = version;
+						} catch (IllegalArgumentException iae) {
+							// choose the highest version from the list
+							List<Version> versions = capabilityAttrs.getTyped(Attrs.LIST_VERSION,
+									ContractNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+
+							c.version = versions.get(0);
+
+							for (Version version : versions) {
+								if (version.compareTo(c.version) > 0) {
+									c.version = version;
+								}
+							}
+						}
 						c.from = from;
 
 						if (c.version == null) {
