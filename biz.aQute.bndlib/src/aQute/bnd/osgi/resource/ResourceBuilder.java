@@ -368,7 +368,7 @@ public class ResourceBuilder {
 
 	public void addRequireBundle(String bsn, Attrs attrs) throws Exception {
 		CapReqBuilder rbb = new CapReqBuilder(resource, BundleNamespace.BUNDLE_NAMESPACE);
-		rbb.addAttributesOrDirectives(attrs);
+		rbb.addDirectives(attrs);
 
 		StringBuilder filter = new StringBuilder();
 		filter.append("(").append(BundleNamespace.BUNDLE_NAMESPACE).append("=").append(bsn).append(")");
@@ -387,7 +387,7 @@ public class ResourceBuilder {
 
 	public void addFragmentHost(String bsn, Attrs attrs) throws Exception {
 		CapReqBuilder rbb = new CapReqBuilder(resource, HostNamespace.HOST_NAMESPACE);
-		rbb.addAttributesOrDirectives(attrs);
+		rbb.addDirectives(attrs);
 
 		StringBuilder filter = new StringBuilder();
 		filter.append("(").append(HostNamespace.HOST_NAMESPACE).append("=").append(bsn).append(")");

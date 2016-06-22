@@ -108,4 +108,170 @@ public class Strings {
 			l.add(split[i]);
 		return l;
 	}
+
+	public static boolean in(String[] skip, String key) {
+		for (String s : skip) {
+			if (key.equals(s))
+				return true;
+		}
+		return false;
+	}
+
+	public static char charAt(String s, int n) {
+		return s.charAt(adjustBegin(s, n));
+	}
+
+	public static String from(String s, int n) {
+		return s.substring(adjustBegin(s, n));
+	}
+
+	public static String substring(String s, int begin, int end) {
+		return s.substring(adjustBegin(s, begin), adjustEnd(s, end));
+	}
+
+	public static String substring(String s, int begin, int end, int stride) {
+		StringBuilder sb = new StringBuilder();
+		begin = adjustBegin(s, begin);
+		end = adjustEnd(s, end);
+		if (stride == 0)
+			stride = 1;
+
+		if (stride < 0)
+			for (int i = end - 1; i >= begin; i += stride) {
+				sb.append(s.charAt(i));
+			}
+		else
+			for (int i = begin; i < end; i += stride) {
+				sb.append(s.charAt(i));
+			}
+
+		return sb.toString();
+	}
+
+	public static String delete(String s, int begin, int end) {
+		return s.substring(0, adjustBegin(s, begin)) + s.substring(adjustEnd(s, end));
+	}
+
+	public static String to(String s, int end) {
+		return s.substring(0, adjustEnd(s, end));
+	}
+
+	public static int adjustBegin(String s, int n) {
+		if (n < 0)
+			n = s.length() + n;
+
+		return n;
+	}
+
+	public static int adjustEnd(String s, int n) {
+		if (n <= 0)
+			n = s.length() + n;
+
+		return n;
+	}
+
+	/**
+	 * Split a string into a base and an extension.
+	 * 
+	 * @param s the string that contains an extension
+	 * @return null if no extension or an array of 2 elements, first is the
+	 *         prefix and second is the extension without a '.'
+	 */
+	public static String[] extension(String s) {
+		return last(s, '.');
+	}
+
+	/**
+	 * Split a path (/ based) into a prefix and a last segment
+	 * 
+	 * @param s the string that contains a path
+	 * @return null if no extension or an array of 2 elements, first is the
+	 *         prefix and second is the last segment without a '/' at the start
+	 */
+	public static String[] lastPathSegment(String s) {
+		return last(s, '/');
+	}
+
+	/**
+	 * Split a string into a prefix and a suffix based on the last time the
+	 * separator appears
+	 * 
+	 * @param s the string that contains a path
+	 * @return null if no extension or an array of 2 elements, first is the
+	 *         prefix and second is the last segment without the separator at
+	 *         the start
+	 */
+	public static String[] last(String s, char separator) {
+		int n = s.lastIndexOf(separator);
+		if (n >= 0) {
+			String[] answer = new String[2];
+			answer[0] = s.substring(0, n);
+			answer[1] = s.substring(n + 1);
+			return answer;
+		}
+		return null;
+	}
+
+	public static String[] first(String s, char separator) {
+		int n = s.indexOf(separator);
+		if (n >= 0) {
+			String[] answer = new String[2];
+			answer[0] = s.substring(0, n);
+			answer[1] = s.substring(n + 1);
+			return answer;
+		}
+		return null;
+	}
+
+	public static String stripPrefix(String s, String prefix) {
+		Pattern p = Pattern.compile(prefix);
+		return stripPrefix(s, p);
+	}
+
+	public static String stripPrefix(String s, Pattern p) {
+		Matcher matcher = p.matcher(s);
+		if (matcher.lookingAt()) {
+			return s.substring(matcher.end());
+		}
+		return null;
+	}
+
+	public static String stripSuffix(String s, String prefix) {
+		Pattern p = Pattern.compile(prefix);
+		return stripSuffix(s, p);
+	}
+
+	public static String stripSuffix(String s, Pattern p) {
+		Matcher matcher = p.matcher(s);
+		while (matcher.find()) {
+			if (matcher.end() == s.length())
+				return s.substring(0, matcher.start());
+		}
+		return null;
+	}
+
+	public static String ensureSuffix(String s, String suffix) {
+		if (s.endsWith(suffix))
+			return s;
+
+		return s + suffix;
+	}
+
+	public static String ensurePrefix(String s, String prefix) {
+		if (s.startsWith(prefix))
+			return s;
+
+		return prefix + s;
+	}
+
+	public static String times(String s, int times) {
+		if (times <= 1)
+			return s;
+
+		StringBuilder sb = new StringBuilder(times * s.length());
+		for (int i = 0; i < times; i++) {
+			sb.append(s);
+		}
+		return sb.toString();
+	}
 }

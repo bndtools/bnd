@@ -37,6 +37,7 @@ import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.Converter.Hook;
 import aQute.lib.filter.Filter;
+import aQute.lib.strings.Strings;
 
 public class ResourceUtils {
 
@@ -503,6 +504,12 @@ public class ResourceUtils {
 			return false;
 		return IdentityNamespace.TYPE_FRAGMENT
 				.equals(identity.getAttributes().get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE));
+	}
+
+	public static String stripDirective(String name) {
+		if (Strings.charAt(name, -1) == ':')
+			return Strings.substring(name, 0, -1);
+		return name;
 	}
 
 }

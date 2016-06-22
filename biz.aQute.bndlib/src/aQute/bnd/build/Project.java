@@ -2289,30 +2289,6 @@ public class Project extends Processor {
 		}
 	}
 
-	public String _findfile(String args[]) {
-		File f = getFile(args[1]);
-		List<String> files = new ArrayList<String>();
-		tree(files, f, "", new Instruction(args[2]));
-		return join(files);
-	}
-
-	void tree(List<String> list, File current, String path, Instruction instr) {
-		if (path.length() > 0)
-			path = path + "/";
-
-		String subs[] = current.list();
-		if (subs != null) {
-			for (String sub : subs) {
-				File f = new File(current, sub);
-				if (f.isFile()) {
-					if (instr.matches(sub) && !instr.isNegated())
-						list.add(path + sub);
-				} else
-					tree(list, f, path + sub, instr);
-			}
-		}
-	}
-
 	public void refreshAll() {
 		workspace.refresh();
 		refresh();
