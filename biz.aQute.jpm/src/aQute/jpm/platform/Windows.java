@@ -134,13 +134,15 @@ public class Windows extends Platform {
 				del = ",";
 			}
 
+			pw.printf("%n");
+
 			//
 			// And the vm arguments.
 			//
 			if (data.jvmArgs != null && data.jvmArgs.length() != 0) {
 				String parts[] = data.jvmArgs.split("\\s+");
 				for (int i = 0; i < parts.length; i++)
-					pw.printf("vmarg.%d=%s%n", i, data.jvmArgs);
+					pw.printf("vmarg.%d=%s%n", i + 1, parts[i]);
 			}
 		} finally {
 			pw.close();
