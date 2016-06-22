@@ -5,7 +5,6 @@
  */
 
 import aQute.bnd.build.Workspace
-import aQute.bnd.gradle.BndProgress
 import aQute.bnd.osgi.Constants
 
 /* Add bnd gradle plugin as a script dependency */
@@ -43,7 +42,6 @@ buildscript {
 Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
 Workspace.addGestalt(Constants.GESTALT_BATCH, null)
 def workspace = new Workspace(rootDir, bnd_cnf)
-workspace.addBasicPlugin(new BndProgress(gradle))
 if (workspace == null) {
   throw new GradleException("Unable to load workspace ${rootDir}/${bnd_cnf}")
 }
