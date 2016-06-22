@@ -116,4 +116,110 @@ public class Strings {
 		}
 		return false;
 	}
+
+	public static char charAt(String s, int n) {
+		return s.charAt(adjustBegin(s, n));
+	}
+
+	public static String from(String s, int n) {
+		return s.substring(adjustBegin(s, n));
+	}
+
+	public static String substring(String s, int begin, int end) {
+		return s.substring(adjustBegin(s, begin), adjustEnd(s, end));
+	}
+
+	public static String substring(String s, int begin, int end, int stride) {
+		StringBuilder sb = new StringBuilder();
+		begin = adjustBegin(s, begin);
+		end = adjustEnd(s, end);
+		if (stride == 0)
+			stride = 1;
+
+		if (stride < 0)
+			for (int i = end - 1; i >= begin; i += stride) {
+				sb.append(s.charAt(i));
+			}
+		else
+			for (int i = begin; i < end; i += stride) {
+				sb.append(s.charAt(i));
+			}
+
+		return sb.toString();
+	}
+
+	public static String delete(String s, int begin, int end) {
+		return s.substring(0, adjustBegin(s, begin)) + s.substring(adjustEnd(s, end));
+	}
+
+	public static String to(String s, int end) {
+		return s.substring(0, adjustEnd(s, end));
+	}
+
+	public static int adjustBegin(String s, int n) {
+		if (n < 0)
+			n = s.length() + n;
+
+		return n;
+	}
+
+	public static int adjustEnd(String s, int n) {
+		if (n <= 0)
+			n = s.length() + n;
+
+		return n;
+	}
+
+	/**
+	 * Split a string into a base and an extension.
+	 * 
+	 * @param s the string that contains an extension
+	 * @return null if no extension or an array of 2 elements, first is the
+	 *         prefix and second is the extension without a '.'
+	 */
+	public static String[] extension(String s) {
+		return last(s, '.');
+	}
+
+	/**
+	 * Split a path (/ based) into a prefix and a last segment
+	 * 
+	 * @param s the string that contains a path
+	 * @return null if no extension or an array of 2 elements, first is the
+	 *         prefix and second is the last segment without a '/' at the start
+	 */
+	public static String[] lastPathSegment(String s) {
+		return last(s, '/');
+	}
+
+	/**
+	 * Split a string into a prefix and a suffix based on the last time the
+	 * separator appears
+	 * 
+	 * @param s the string that contains a path
+	 * @return null if no extension or an array of 2 elements, first is the
+	 *         prefix and second is the last segment without the separator at
+	 *         the start
+	 */
+	public static String[] last(String s, char separator) {
+		int n = s.lastIndexOf(separator);
+		if (n >= 0) {
+			String[] answer = new String[2];
+			answer[0] = s.substring(0, n);
+			answer[1] = s.substring(n + 1);
+			return answer;
+		}
+		return null;
+	}
+
+	public static String[] first(String s, char separator) {
+		int n = s.indexOf(separator);
+		if (n >= 0) {
+			String[] answer = new String[2];
+			answer[0] = s.substring(0, n);
+			answer[1] = s.substring(n + 1);
+			return answer;
+		}
+		return null;
+	}
 }
