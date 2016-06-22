@@ -129,8 +129,19 @@ public class CapReqBuilder {
 	}
 
 	public CapReqBuilder addDirective(String name, String value) {
-		if (value != null)
-			directives.put(name, value);
+		if (value == null)
+			return this;
+
+		directives.put(ResourceUtils.stripDirective(name), value);
+		return this;
+	}
+
+	public CapReqBuilder addDirectives(Attrs directives) {
+		for (Entry<String,String> e : directives.entrySet()) {
+			String key = Attrs.toDirective(e.getKey());
+			if (key != null)
+				addDirective(key, e.getValue());
+		}
 		return this;
 	}
 
