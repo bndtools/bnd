@@ -108,4 +108,12 @@ public class Strings {
 			l.add(split[i]);
 		return l;
 	}
+
+	public static boolean in(String[] skip, String key) {
+		for (String s : skip) {
+			if (key.equals(s))
+				return true;
+		}
+		return false;
+	}
 }
