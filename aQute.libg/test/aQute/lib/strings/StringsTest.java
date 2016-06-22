@@ -4,6 +4,18 @@ import junit.framework.TestCase;
 
 public class StringsTest extends TestCase {
 
+	public void testTimes() {
+		assertEquals("----", Strings.times("-", 4));
+		assertEquals("-", Strings.times("-", -100));
+
+	}
+	public void testStrip() {
+		assertEquals("abcd", Strings.stripSuffix("abcdef", "ef"));
+		assertEquals("a", Strings.stripSuffix("abcdef", "b.*f"));
+		assertEquals("", Strings.stripPrefix("abcdef", "a.*f"));
+		assertEquals("cdef", Strings.stripPrefix("abcdef", "ab"));
+	}
+
 	public void testSubstrings() {
 		assertEquals("abcdef", Strings.from("abcdef", 0));
 		assertEquals("bcdef", Strings.from("abcdef", 1));

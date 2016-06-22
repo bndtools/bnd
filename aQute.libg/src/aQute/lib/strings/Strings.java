@@ -222,4 +222,56 @@ public class Strings {
 		}
 		return null;
 	}
+
+	public static String stripPrefix(String s, String prefix) {
+		Pattern p = Pattern.compile(prefix);
+		return stripPrefix(s, p);
+	}
+
+	public static String stripPrefix(String s, Pattern p) {
+		Matcher matcher = p.matcher(s);
+		if (matcher.lookingAt()) {
+			return s.substring(matcher.end());
+		}
+		return null;
+	}
+
+	public static String stripSuffix(String s, String prefix) {
+		Pattern p = Pattern.compile(prefix);
+		return stripSuffix(s, p);
+	}
+
+	public static String stripSuffix(String s, Pattern p) {
+		Matcher matcher = p.matcher(s);
+		while (matcher.find()) {
+			if (matcher.end() == s.length())
+				return s.substring(0, matcher.start());
+		}
+		return null;
+	}
+
+	public static String ensureSuffix(String s, String suffix) {
+		if (s.endsWith(suffix))
+			return s;
+
+		return s + suffix;
+	}
+
+	public static String ensurePrefix(String s, String prefix) {
+		if (s.startsWith(prefix))
+			return s;
+
+		return prefix + s;
+	}
+
+	public static String times(String s, int times) {
+		if (times <= 1)
+			return s;
+
+		StringBuilder sb = new StringBuilder(times * s.length());
+		for (int i = 0; i < times; i++) {
+			sb.append(s);
+		}
+		return sb.toString();
+	}
 }
