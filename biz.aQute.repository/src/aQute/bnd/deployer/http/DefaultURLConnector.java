@@ -8,6 +8,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.security.GeneralSecurityException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -133,11 +134,11 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 	private InputStream createProgressWrappedStream(InputStream inputStream, String name, int size) {
 		if (registry == null)
 			return inputStream;
-		ProgressPlugin progressPlugin = registry.getPlugin(ProgressPlugin.class);
-		if (progressPlugin == null)
+		List<ProgressPlugin> progressPlugins = registry.getPlugins(ProgressPlugin.class);
+		if (progressPlugins == null || progressPlugins.size() == 0)
 			return inputStream;
 
-		return new ProgressWrappingStream(inputStream, name, size, progressPlugin);
+		return new ProgressWrappingStream(inputStream, name, size, progressPlugins);
 	}
 
 	public void setRegistry(Registry registry) {

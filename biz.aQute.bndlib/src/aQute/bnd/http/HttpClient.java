@@ -69,7 +69,7 @@ public class HttpClient implements Closeable, URLConnector {
 	private URLCache							cache					= new URLCache(IO.getFile("~/.bnd/urlcache"));
 	private Registry							registry				= null;
 	private Reporter							reporter				= new Slf4jReporter(HttpClient.class);
-	private ProgressPlugin						progress;
+	private List<ProgressPlugin>				progressPlugins;
 
 	public HttpClient() {}
 
@@ -78,7 +78,7 @@ public class HttpClient implements Closeable, URLConnector {
 			return;
 
 		inited = true;
-		progress = registry != null ? registry.getPlugin(ProgressPlugin.class) : null;
+		progressPlugins = registry != null ? registry.getPlugins(ProgressPlugin.class) : null;
 
 		Authenticator.setDefault(new Authenticator() {
 			@Override
@@ -247,29 +247,35 @@ public class HttpClient implements Closeable, URLConnector {
 
 		configureHttpConnection(request.verb, hcon);
 
-		final ProgressPlugin.Task task = getTask(request);
+		final List<Task> tasks = getTasks(request);
 		try {
 
 			TaggedData td = connectWithProxy(proxy, new Callable<TaggedData>() {
 				@Override
 				public TaggedData call() throws Exception {
-					return doConnect(request.upload, request.download, con, hcon, request, task);
+					return doConnect(request.upload, request.download, con, hcon, request, tasks);
 				}
 			});
 			reporter.trace("result %s", td);
 			return td;
 		} catch (Throwable t) {
-			task.done("Failed " + t.getMessage(), t);
+			for (ProgressPlugin.Task task : tasks) {
+				task.done("Failed " + t.getMessage(), t);
+			}
 			throw t;
 		}
 	}
 
-	ProgressPlugin.Task getTask(final HttpRequest< ? > request) {
-		final ProgressPlugin.Task task;
-		if (progress != null) {
-			task = progress.startTask("Download " + request.url, 100);
+	List<Task> getTasks(final HttpRequest< ? > request) {
+		final List<Task> task = new ArrayList<>();
+		if (progressPlugins != null) {
+			final String name = "Download " + request.url;
+			final int size = 100;
+			for (ProgressPlugin plugin : progressPlugins) {
+				task.add(plugin.startTask(name, size));
+			}
 		} else {
-			task = new ProgressPlugin.Task() {
+			Task noop = new Task() {
 
 				@Override
 				public void worked(int units) {}
@@ -282,6 +288,7 @@ public class HttpClient implements Closeable, URLConnector {
 					return Thread.currentThread().isInterrupted();
 				}
 			};
+			task.add(noop);
 		}
 		return task;
 	}
@@ -361,19 +368,21 @@ public class HttpClient implements Closeable, URLConnector {
 		return proxyHandlers;
 	}
 
-	private InputStream createProgressWrappedStream(InputStream inputStream, String name, int size, Task task,
+	private InputStream createProgressWrappedStream(InputStream inputStream, String name, int size, List<Task> tasks,
 			long timeout) {
 		if (registry == null)
 			return inputStream;
 
-		return new ProgressWrappingStream(inputStream, name, size, task, timeout);
+		return new ProgressWrappingStream(inputStream, name, size, tasks, timeout);
 	}
 
 	private TaggedData doConnect(Object put, Type ref, final URLConnection con, final HttpURLConnection hcon,
-			HttpRequest< ? > request, ProgressPlugin.Task task) throws IOException, Exception {
+			HttpRequest< ? > request, List<Task> tasks) throws IOException, Exception {
 
 		if (put != null) {
-			task.worked(1);
+			for (Task task : tasks) {
+				task.worked(1);
+			}
 			doOutput(put, con, request);
 		} else
 			reporter.trace("%s %s", request.verb, request.url);
@@ -395,7 +404,9 @@ public class HttpClient implements Closeable, URLConnector {
 					InputStream in = con.getInputStream();
 					return new TaggedData(con, in, request.useCacheFile);
 				} catch (FileNotFoundException e) {
-					task.done("file not found", e);
+					for (Task task : tasks) {
+						task.done("file not found", e);
+					}
 					return new TaggedData(con.getURL().toURI(), 404, request.useCacheFile);
 				}
 			}
@@ -417,7 +428,9 @@ public class HttpClient implements Closeable, URLConnector {
 
 					String location = hcon.getHeaderField("Location");
 					request.url = new URL(location);
-					task.done("redirected", null);
+					for (Task task : tasks) {
+						task.done("redirected", null);
+					}
 					return send0(request);
 
 				}
@@ -433,7 +446,9 @@ public class HttpClient implements Closeable, URLConnector {
 			}
 
 			if ((code / 100) != 2) {
-				task.done("finished", null);
+				for (Task task : tasks) {
+					task.done("finished", null);
+				}
 				return new TaggedData(con, null, request.useCacheFile);
 			}
 
@@ -443,12 +458,14 @@ public class HttpClient implements Closeable, URLConnector {
 
 			InputStream xin = con.getInputStream();
 			InputStream in = handleContentEncoding(hcon, xin);
-			in = createProgressWrappedStream(in, con.toString(), con.getContentLength(), task, request.timeout);
+			in = createProgressWrappedStream(in, con.toString(), con.getContentLength(), tasks, request.timeout);
 			return new TaggedData(con, in, request.useCacheFile);
 
 		} catch (SocketTimeoutException ste) {
 			ste.printStackTrace();
-			task.done("timed out", ste);
+			for (Task task : tasks) {
+				task.done("timed out", ste);
+			}
 			return new TaggedData(request.url.toURI(), HttpURLConnection.HTTP_GATEWAY_TIMEOUT, request.useCacheFile);
 		}
 	}
