@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import aQute.lib.strings.Strings;
 import aQute.libg.generics.Create;
 import aQute.service.reporter.Report;
 import aQute.service.reporter.Reporter;
@@ -122,7 +123,7 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 	}
 
 	public SetLocation error(String s, Object... args) {
-		String e = String.format(s, args);
+		String e = Strings.format(s, args);
 		errors.add(e);
 		trace("ERROR: %s", e);
 		return location(e);
@@ -132,7 +133,7 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 		StackTraceElement[] stackTrace = t.getStackTrace();
 		String method = stackTrace[0].getMethodName();
 		String cname = stackTrace[0].getClassName();
-		String e = String.format("[" + shorten(cname) + "." + method + "] " + s, args);
+		String e = "[" + shorten(cname) + "." + method + "] " + Strings.format(s, args);
 		errors.add(e);
 		trace("ERROR: %s", e);
 		if (isExceptions() || isTrace())
@@ -152,7 +153,7 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 	}
 
 	public SetLocation warning(String s, Object... args) {
-		String e = String.format(s, args);
+		String e = Strings.format(s, args);
 		warnings.add(e);
 		trace("warning: %s", e);
 		return location(e);

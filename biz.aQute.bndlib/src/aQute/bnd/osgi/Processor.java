@@ -59,6 +59,7 @@ import aQute.lib.collections.SortedList;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
+import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.generics.Create;
@@ -255,12 +256,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void progress(float progress, String format, Object... args) {
+		String message = formatArrays(format, args);
 		if (progress > 0)
-			format = String.format("[%2d] %s%n", (int) progress, format);
+			System.err.printf("[%2d] %s%n", (int) progress, message);
 		else
-			format = String.format("%s%n", format);
-
-		System.err.printf(format, args);
+			System.err.printf("%s%n", message);
 	}
 
 	public void progress(String format, Object... args) {
@@ -277,11 +277,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			if (p.exceptions) {
 				printExceptionSummary(t, System.err);
 			}
+			String s = formatArrays(string, args);
 			if (p.isFailOk()) {
-				return p.warning(string + ": " + t, args);
+				return p.warning("%s: %s", s, t);
 			}
 			p.errors.add("Exception: " + t.getMessage());
-			String s = formatArrays(string, args);
 			if (!p.errors.contains(s))
 				p.errors.add(s);
 			return location(s);
@@ -785,11 +785,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		Logger l = p.getLogger();
 		if (p.trace) {
 			if (l.isInfoEnabled()) {
-				l.info(String.format(msg, parms));
+				l.info(formatArrays(msg, parms));
 			}
 		} else {
 			if (l.isDebugEnabled()) {
-				l.debug(String.format(msg, parms));
+				l.debug(formatArrays(msg, parms));
 			}
 		}
 	}
@@ -1959,10 +1959,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param parms
 	 */
 	public static String formatArrays(String string, Object... parms) {
-		if (parms == null) {
-			parms = new Object[0];
-		}
-		return String.format(string, makePrintableArray(parms));
+		return Strings.format(string, parms);
 	}
 
 	/**
