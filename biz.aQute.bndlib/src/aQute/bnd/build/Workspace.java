@@ -246,6 +246,7 @@ public class Workspace extends Processor {
 			System.setProperty(e.getKey(), e.getValue());
 		}
 
+		addBasicPlugin(new LoggingProgressPlugin());
 	}
 
 	Workspace(WorkspaceLayout layout) {
