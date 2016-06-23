@@ -18,7 +18,7 @@ import org.bndtools.templating.Template;
 import org.bndtools.templating.TemplateEngine;
 import org.bndtools.templating.TemplateLoader;
 import org.bndtools.utils.collections.CollectionUtils;
-import org.eclipse.osgi.framework.internal.core.Constants;
+import org.osgi.framework.Constants;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
