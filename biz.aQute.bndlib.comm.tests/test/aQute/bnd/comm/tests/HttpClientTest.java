@@ -214,4 +214,64 @@ public class HttpClientTest extends TestCase {
 			assertEquals(304, data.getResponseCode());
 		}
 	}
+
+	public void testMultipleProgressPlugins() throws Exception {
+		final long deadline = System.currentTimeMillis() + 1000L;
+
+		try (HttpClient hc = new HttpClient();) {
+			Processor p = new Processor();
+
+			final int[] counts = new int[2];
+			counts[0] = counts[1] = 0;
+
+			p.addBasicPlugin(new ProgressPlugin() {
+				@Override
+				public Task startTask(String name, int size) {
+					return new Task() {
+						@Override
+						public void worked(int units) {
+							counts[0]++;
+						}
+
+						@Override
+						public void done(String message, Throwable e) {
+							counts[0]++;
+						}
+
+						@Override
+						public boolean isCanceled() {
+							return false;
+						}
+					};
+				}
+			});
+			p.addBasicPlugin(new ProgressPlugin() {
+				@Override
+				public Task startTask(String name, int size) {
+					return new Task() {
+						@Override
+						public void worked(int units) {
+							counts[1]++;
+						}
+
+						@Override
+						public void done(String message, Throwable e) {
+							counts[1]++;
+						}
+
+						@Override
+						public boolean isCanceled() {
+							return false;
+						}
+					};
+				}
+			});
+			hc.setRegistry(p);
+
+			String text = hc.build().get(String.class).go(httpServer.getBaseURI("get"));
+			assertNotNull(text);
+			assertTrue(counts[0] > 0);
+			assertEquals(counts[0], counts[1]);
+		}
+	}
 }
