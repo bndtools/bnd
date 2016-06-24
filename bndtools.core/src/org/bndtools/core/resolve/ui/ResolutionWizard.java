@@ -132,7 +132,16 @@ public class ResolutionWizard extends Wizard {
                     return r1.compareTo(r2);
                 }
             });
-            model.setRunBundles(runBundles);
+            // Do not change the order of existing runbundles because they migh have been ordered manually
+            List<VersionedClause> diffAddBundles = new ArrayList<>(runBundles);
+            diffAddBundles.removeAll(model.getRunBundles());
+            List<VersionedClause> diffRemvedBundles = new ArrayList<>(model.getRunBundles());
+            diffRemvedBundles.removeAll(runBundles);
+            List<VersionedClause> updatedRunBundles = new ArrayList<>(model.getRunBundles());
+            updatedRunBundles.addAll(diffAddBundles);
+            updatedRunBundles.removeAll(diffRemvedBundles);
+            // do not use getRunBundles().addAll, because it will not reflect in UI or File
+            model.setRunBundles(updatedRunBundles);
         } finally {
             if (pathsStream != null) {
                 IO.close(pathsStream);
