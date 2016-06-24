@@ -346,12 +346,10 @@ public class Macro {
 							Arrays.toString(args));
 				} else {
 					domain.warning("Exception in replace: %s", e.getCause());
-					e.getCause().printStackTrace();
 				}
 				return NULLVALUE;
 			} catch (Exception e) {
-				domain.warning("Exception in replace: " + e + " method=" + method);
-				e.printStackTrace();
+				domain.warning("Exception in replace: %s method=%s", e, method);
 				return NULLVALUE;
 			}
 		}
@@ -579,7 +577,7 @@ public class Macro {
 	 */
 	public String _replace(String args[]) {
 		if (args.length < 4 || args.length > 5) {
-			domain.warning("Invalid nr of arguments to replace " + Arrays.asList(args));
+			domain.warning("Invalid nr of arguments to replace %s", Arrays.asList(args));
 			return null;
 		}
 
@@ -604,14 +602,14 @@ public class Macro {
 
 	public String _warning(String args[]) {
 		for (int i = 1; i < args.length; i++) {
-			domain.warning(process(args[i]));
+			domain.warning("%s", process(args[i]));
 		}
 		return "";
 	}
 
 	public String _error(String args[]) {
 		for (int i = 1; i < args.length; i++) {
-			domain.error(process(args[i]));
+			domain.error("%s", process(args[i]));
 		}
 		return "";
 	}
@@ -634,7 +632,7 @@ public class Macro {
 				String name = path.substring(0, path.length() - 5).replace('/', '.');
 				names.add(name);
 			} else {
-				domain.warning("in toclassname, " + args[1] + " is not a class path because it does not end in .class");
+				domain.warning("in toclassname, %s is not a class path because it does not end in .class", args[1]);
 			}
 		}
 		return Processor.join(names, ",");
@@ -746,7 +744,7 @@ public class Macro {
 			now = Long.parseLong(args[3]);
 		}
 		if (args.length > 4) {
-			domain.warning("Too many arguments for tstamp: " + Arrays.toString(args));
+			domain.warning("Too many arguments for tstamp: %s", Arrays.toString(args));
 		}
 
 		SimpleDateFormat sdf = new SimpleDateFormat(format, Locale.US);
@@ -1001,9 +999,9 @@ public class Macro {
 
 		if (exitValue != 0) {
 			if (!allowFail) {
-				domain.error("System command " + command + " failed with exit code " + exitValue);
+				domain.error("System command %s failed with exit code %d", command, exitValue);
 			} else {
-				domain.warning("System command " + command + " failed with exit code " + exitValue + " (allowed)");
+				domain.warning("System command %s failed with exit code %d (allowed)", command, exitValue);
 
 			}
 			return null;

@@ -182,7 +182,7 @@ public class ResolveCommand extends Processor {
 		if (options.system() != null) {
 			File f = IO.getFile(options.system());
 			if (!f.isFile()) {
-				error("Specified system file but not found: " + f);
+				error("Specified system file but not found: %s", f);
 				return;
 			}
 			Domain domain = Domain.domain(f);

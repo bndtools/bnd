@@ -44,7 +44,7 @@ public class Signer extends Processor {
 			error("Need at least one digest algorithm name, none are specified");
 
 		if (keystoreFile == null || !keystoreFile.getAbsoluteFile().exists()) {
-			error("No such keystore file: " + keystoreFile);
+			error("No such keystore file: %s", keystoreFile);
 			return;
 		}
 
@@ -93,8 +93,8 @@ public class Signer extends Processor {
 				keystoreInputStream.close();
 				privateKeyEntry = (PrivateKeyEntry) keystore.getEntry(alias, new KeyStore.PasswordProtection(pw));
 			} catch (Exception e) {
-				error("No able to load the private key from the give keystore(" + keystoreFile.getAbsolutePath()
-						+ ") with alias " + alias + " : " + e);
+				error("Not able to load the private key from the given keystore(%s) with alias %s", e,
+						keystoreFile.getAbsolutePath(), alias);
 				return;
 			} finally {
 				IO.close(keystoreInputStream);
@@ -116,7 +116,7 @@ public class Signer extends Processor {
 			ByteArrayOutputStream tmpStream = new ByteArrayOutputStream();
 			jar.putResource("META-INF/BND.RSA", new EmbeddedResource(tmpStream.toByteArray(), 0));
 		} catch (Exception e) {
-			error("During signing: " + e);
+			error("During signing: %s", e, e);
 		}
 	}
 
@@ -180,7 +180,7 @@ public class Signer extends Processor {
 			try {
 				algorithms[i] = MessageDigest.getInstance(name);
 			} catch (NoSuchAlgorithmException e) {
-				error("Specified digest algorithm " + digestNames[i] + ", but not such algorithm was found: " + e);
+				error("Specified digest algorithm %s, but not such algorithm was found", e, digestNames[i]);
 			}
 		}
 	}

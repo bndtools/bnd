@@ -268,7 +268,7 @@ public class BndTask extends BaseTask {
 					} else {
 						msg = "(not modified)";
 					}
-					trace(jar.getName() + " (" + output.getName() + ") " + jar.getResources().size() + " " + msg);
+					trace("%s (%s) %s %s", jar.getName(), output.getName(), jar.getResources().size(), msg);
 					report();
 					jar.close();
 				}

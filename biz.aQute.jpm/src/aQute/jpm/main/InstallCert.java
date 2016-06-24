@@ -103,7 +103,7 @@ public class InstallCert {
 			return;
 		}
 
-		reporter.trace("Server sent " + chain.length + " certificate(s):");
+		reporter.trace("Server sent %d certificate(s):", chain.length);
 
 		System.out.println("Chain");
 		String trusted = null;

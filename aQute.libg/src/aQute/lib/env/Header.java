@@ -261,8 +261,8 @@ public class Header implements Map<String,Props> {
 			if (name == null || name.length() == 0) {
 				if (logger != null && logger.isPedantic()) {
 					logger.warning(
-							"Empty clause, usually caused by repeating a comma without any name field or by having spaces after the backslash of a property file: "
-									+ value);
+							"Empty clause, usually caused by repeating a comma without any name field or by having spaces after the backslash of a property file: %s",
+							value);
 				}
 				if (name == null)
 					break;
@@ -275,9 +275,9 @@ public class Header implements Map<String,Props> {
 					if ((del = qt.getSeparator()) != '=') {
 						if (hadAttribute)
 							if (logger != null) {
-								logger.error("Header contains name field after attribute or directive: " + adname
-										+ " from " + value
-										+ ". Name fields must be consecutive, separated by a ';' like a;b;c;x=3;y=4");
+								logger.error(
+										"Header contains name field after attribute or directive: %s from %s. Name fields must be consecutive, separated by a ';' like a;b;c;x=3;y=4",
+										adname, value);
 							}
 						if (adname != null && adname.length() > 0)
 							aliases.add(adname.trim());
@@ -285,12 +285,13 @@ public class Header implements Map<String,Props> {
 						String advalue = qt.nextToken();
 						if (clause.containsKey(adname)) {
 							if (logger != null && logger.isPedantic())
-								logger.warning("Duplicate attribute/directive name " + adname + " in " + value
-										+ ". This attribute/directive will be ignored");
+								logger.warning(
+										"Duplicate attribute/directive name %s in %s. This attribute/directive will be ignored",
+										adname, value);
 						}
 						if (advalue == null) {
 							if (logger != null)
-								logger.error("No value after '=' sign for attribute " + adname);
+								logger.error("No value after '=' sign for attribute %s", adname);
 							advalue = "";
 						}
 						clause.put(adname.trim(), advalue);
@@ -305,8 +306,9 @@ public class Header implements Map<String,Props> {
 				for (String clauseName : aliases) {
 					if (result.containsKey(clauseName)) {
 						if (logger != null && logger.isPedantic())
-							logger.warning("Duplicate name " + clauseName + " used in header: '" + clauseName
-									+ "'. Duplicate names are specially marked in Bnd with a ~ at the end (which is stripped at printing time).");
+							logger.warning(
+									"Duplicate name %s used in header: '%s'. Duplicate names are specially marked in Bnd with a ~ at the end (which is stripped at printing time).",
+									clauseName, clauseName);
 						while (result.containsKey(clauseName))
 							clauseName += "~";
 					}
@@ -344,7 +346,7 @@ public class Header implements Map<String,Props> {
 		if (del != 0) {
 			if (logger == null)
 				throw new IllegalArgumentException("Invalid syntax for properties: " + input);
-			logger.error("Invalid syntax for properties: " + input);
+			logger.error("Invalid syntax for properties: %s", input);
 		}
 
 		return result;

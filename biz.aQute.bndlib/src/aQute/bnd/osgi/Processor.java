@@ -921,13 +921,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				Properties properties = loadProperties(file);
 				mergeProperties(properties, override);
 			} catch (Exception e) {
-				error("Error loading properties file: " + file);
+				error("Error loading properties file: %s", file);
 			}
 		} else {
 			if (!file.exists())
-				error("Properties file does not exist: " + file);
+				error("Properties file does not exist: %s", file);
 			else
-				error("Properties file must a file, not a directory: " + file);
+				error("Properties file must a file, not a directory: %s", file);
 		}
 	}
 
@@ -1024,12 +1024,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 							// ignore
 						}
 						if (fileMustExist)
-							error("Included file " + file + (file.isDirectory() ? " is directory" : " does not exist"));
+							error("Included file %s %s", file,
+									(file.isDirectory() ? "is directory" : "does not exist"));
 					} else
 						doIncludeFile(file, overwrite, p);
 				} catch (Exception e) {
 					if (fileMustExist)
-						error("Error in processing included file: " + value, e);
+						error("Error in processing included file: %s", e, value);
 				}
 			}
 		}
@@ -1054,7 +1055,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	public void doIncludeFile(File file, boolean overwrite, Properties target, String extensionName) throws Exception {
 		if (included != null && included.contains(file)) {
-			error("Cyclic or multiple include of " + file);
+			error("Cyclic or multiple include of %s", file);
 		} else {
 			addIncluded(file);
 			updateModified(file.lastModified(), file.toString());
@@ -1166,11 +1167,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				setProperties(p);
 			} else {
 				if (fileMustExist) {
-					error("No such properties file: " + propertiesFile);
+					error("No such properties file: %s", propertiesFile);
 				}
 			}
 		} catch (IOException e) {
-			error("Could not load properties " + propertiesFile);
+			error("Could not load properties %s", propertiesFile);
 		}
 	}
 
@@ -1345,7 +1346,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			p.load(in, file, this);
 			return replaceAll0(p, "\\$\\{\\.\\}", name);
 		} catch (Exception e) {
-			error("Error during loading properties file: " + name + ", error:" + e);
+			error("Error during loading properties file: %s, error: %s", name, e);
 			return new UTF8Properties();
 		}
 	}
@@ -2550,7 +2551,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				addClose(jar);
 				return jar;
 			} catch (Exception e) {
-				error("Exception in parsing jar file for " + from + ": " + name + " " + e);
+				error("Exception in parsing jar file for %s: %s %s", from, name, e);
 			}
 		// It is not a file ...
 		try {

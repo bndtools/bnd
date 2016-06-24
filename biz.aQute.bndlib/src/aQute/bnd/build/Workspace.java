@@ -229,7 +229,7 @@ public class Workspace extends Processor {
 
 		File buildFile = new File(buildDir, BUILDFILE).getAbsoluteFile();
 		if (!buildFile.isFile())
-			warning("No Build File in " + dir);
+			warning("No Build File in %s", dir);
 
 		setProperties(buildFile, dir);
 		propertiesChanged();
@@ -316,7 +316,7 @@ public class Workspace extends Processor {
 					try {
 						doIncludeFile(extension, false, getProperties(), "ext." + extensionName);
 					} catch (Exception e) {
-						error("PropertiesChanged: " + e.getMessage());
+						error("PropertiesChanged: %s", e.getMessage());
 					}
 				}
 			}

@@ -303,7 +303,7 @@ public class AnnotationReader extends ClassDataCollector {
 		DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
 				member.getName(), methodDescriptor, ErrorType.ACTIVATE_SIGNATURE_ERROR);
 		if (!(member instanceof MethodDef)) {
-			analyzer.error("Activate annotation on a field", clazz, member.getDescriptor()).details(details);
+			analyzer.error("Activate annotation on a field %s.%s", clazz, member.getDescriptor()).details(details);
 			return;
 		}
 		boolean hasMapReturnType = false;
@@ -344,7 +344,7 @@ public class AnnotationReader extends ClassDataCollector {
 				member.getName(), methodDescriptor, ErrorType.DEACTIVATE_SIGNATURE_ERROR);
 
 		if (!(member instanceof MethodDef)) {
-			analyzer.error("Deactivate annotation on a field", clazz, member.getDescriptor()).details(details);
+			analyzer.error("Deactivate annotation on a field %s.%s", clazz, member.getDescriptor()).details(details);
 			return;
 		}
 		boolean hasMapReturnType = false;
@@ -384,7 +384,7 @@ public class AnnotationReader extends ClassDataCollector {
 				member.getName(), methodDescriptor, ErrorType.MODIFIED_SIGNATURE_ERROR);
 
 		if (!(member instanceof MethodDef)) {
-			analyzer.error("Modified annotation on a field", clazz, member.getDescriptor()).details(details);
+			analyzer.error("Modified annotation on a field %s.%s", clazz, member.getDescriptor()).details(details);
 			return;
 		}
 		boolean hasMapReturnType = false;
@@ -445,7 +445,7 @@ public class AnnotationReader extends ClassDataCollector {
 										try {
 											Clazz r = analyzer.findClass(type);
 											if (r.isAnnotation()) {
-												analyzer.warning("Nested annotation type found in field % s, %s",
+												analyzer.warning("Nested annotation type found in field %s, %s",
 														defined.getName(), type.getFQN()).details(details);
 												return;
 											}
@@ -957,7 +957,7 @@ public class AnnotationReader extends ClassDataCollector {
 					String value = m.group(3);
 					props.add(key, value);
 				} else
-					analyzer.error("Malformed property '" + p + "' on component: " + className);
+					analyzer.error("Malformed property '%s' on component: %s", p, className);
 			}
 			component.property.putAll(props);
 		}

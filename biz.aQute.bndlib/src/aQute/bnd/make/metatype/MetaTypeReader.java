@@ -347,7 +347,7 @@ public class MetaTypeReader extends WriteResource {
 		Clazz ec = reporter.findClass(ref);
 		if (ec == null) {
 			reporter.error(
-					"Missing inherited class for Metatype annotations: " + ref + " from " + child.getClassName());
+					"Missing inherited class for Metatype annotations: %s from %s", ref, child.getClassName());
 		} else {
 			MetaTypeReader mtr = new MetaTypeReader(ec, reporter);
 			mtr.setDesignate(designatePid, factory);

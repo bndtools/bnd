@@ -319,11 +319,11 @@ public class NanoHTTPD {
 		try {
 			new NanoHTTPD(port, wwwroot, ssl, keyStoreFile, keyStorePass);
 		} catch (Exception ioe) {
-			System.err.printf("Couldn't start server:%n" + ioe + "%n");
+			System.err.printf("Couldn't start server:%n%s%n", ioe);
 			System.exit(-1);
 		}
 
-		myOut.println("Now serving files in port " + port + " from \"" + wwwroot + "\"");
+		myOut.printf("Now serving files in port %d from \"%s\"%n", port, wwwroot);
 		myOut.printf("Hit Enter to stop.%n");
 
 		try {
@@ -937,7 +937,7 @@ public class NanoHTTPD {
 				String mime = null;
 				int dot = f.getCanonicalPath().lastIndexOf('.');
 				if (dot >= 0)
-					mime = (String) theMimeTypes.get(f.getCanonicalPath().substring(dot + 1).toLowerCase());
+					mime = theMimeTypes.get(f.getCanonicalPath().substring(dot + 1).toLowerCase());
 				if (mime == null)
 					mime = MIME_DEFAULT_BINARY;
 

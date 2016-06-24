@@ -97,12 +97,12 @@ public class SpringComponent implements AnalyzerPlugin {
 						PackageRef pack = analyzer.getPackageRef((String) r.next());
 						if (!QN.matcher(pack.getFQN()).matches())
 							analyzer.warning(
-									"Package does not seem a package in spring resource (" + path + "): " + pack);
+									"Package does not seem a package in spring resource (%s): %s", path, pack);
 						if (!analyzer.getReferred().containsKey(pack))
 							analyzer.getReferred().put(pack, new Attrs());
 					}
 				} catch (Exception e) {
-					analyzer.error("Unexpected exception in processing spring resources(" + path + "): " + e);
+					analyzer.error("Unexpected exception in processing spring resources(%s): %s", path, e);
 				}
 			}
 		}

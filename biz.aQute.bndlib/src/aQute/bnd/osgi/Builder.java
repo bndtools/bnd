@@ -47,6 +47,7 @@ import aQute.bnd.version.Version;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.libg.generics.Create;
 
 /**
@@ -117,7 +118,7 @@ public class Builder extends Analyzer {
 					error(MANIFEST + " while reading manifest file", e);
 				}
 			} else {
-				error(MANIFEST + ", no such file " + mf);
+				error(MANIFEST + ", no such file %s", mf);
 			}
 		}
 
@@ -513,7 +514,8 @@ public class Builder extends Analyzer {
 					if (!isDuplicate(file)) {
 						File f = getFile(file);
 						if (!f.isDirectory()) {
-							error("Adding a sourcepath that is not a directory: " + f).header(SOURCEPATH).context(file);
+							error("Adding a sourcepath that is not a directory: %s", f).header(SOURCEPATH)
+									.context(file);
 						} else {
 							sourcePath.add(f);
 						}
@@ -689,7 +691,7 @@ public class Builder extends Analyzer {
 				break;
 
 			case SPLIT_ERROR :
-				error(diagnostic(path, providers));
+				error("%s", diagnostic(path, providers));
 				break;
 
 			case SPLIT_FIRST :
@@ -715,7 +717,7 @@ public class Builder extends Analyzer {
 	 * @param overwriteResource
 	 */
 	private void copy(Jar dest, Jar srce, String path, boolean overwrite) {
-		trace("copy d=" + dest + " s=" + srce + " p=" + path);
+		trace("copy d=%s s=%s p=%s", dest, srce, path);
 		dest.copy(srce, path, overwrite);
 		if (hasSources())
 			dest.copy(srce, "OSGI-OPT/src/" + path, overwrite);
@@ -769,7 +771,7 @@ public class Builder extends Analyzer {
 		if (type.equals("first"))
 			return SPLIT_FIRST;
 
-		error("Invalid strategy for split-package: " + type);
+		error("Invalid strategy for split-package: %s", type);
 		return SPLIT_DEFAULT;
 	}
 
@@ -1140,7 +1142,7 @@ public class Builder extends Analyzer {
 					lastChance.setExtra(x);
 				jar.putResource(destinationPath, lastChance);
 			} else
-				error("Input file does not exist: " + source).header(source).context(clause);
+				error("Input file does not exist: %s", source).header(source).context(clause);
 		}
 	}
 
@@ -1171,7 +1173,7 @@ public class Builder extends Analyzer {
 			if (absentIsOk)
 				return;
 
-			error("Can not find JAR file '" + source + "'");
+			error("Can not find JAR file '%s'", source);
 		} else {
 			for (Jar j : sub)
 				addAll(jar, j, instr, destination);
@@ -1236,7 +1238,7 @@ public class Builder extends Analyzer {
 			} else if (from.getName().equals(Constants.EMPTY_HEADER)) {
 				jar.putResource(path, new EmbeddedResource(new byte[0], 0));
 			} else {
-				error("Input file does not exist: " + from).header(INCLUDERESOURCE + "|" + INCLUDE_RESOURCE);
+				error("Input file does not exist: %s", from).header(INCLUDERESOURCE + "|" + INCLUDE_RESOURCE);
 			}
 		}
 	}
@@ -1248,7 +1250,7 @@ public class Builder extends Analyzer {
 
 	public void addSourcepath(File cp) {
 		if (!cp.exists())
-			warning("File on sourcepath that does not exist: " + cp);
+			warning("File on sourcepath that does not exist: %s", cp);
 
 		sourcePath.add(cp);
 	}
@@ -1294,7 +1296,7 @@ public class Builder extends Analyzer {
 				result.add(jar);
 				doneBuild(builder);
 			} catch (Exception e) {
-				builder.error("Sub Building " + builder.getBsn(), e);
+				builder.error("Sub Building %s", e, builder.getBsn());
 			}
 			if (builder != this)
 				getInfo(builder, builder.getBsn() + ": ");
@@ -1406,7 +1408,7 @@ public class Builder extends Analyzer {
 
 	public String _maven_version(String args[]) {
 		if (args.length > 2)
-			error("${maven_version} macro receives too many arguments " + Arrays.toString(args));
+			error("${maven_version} macro receives too many arguments %s", Arrays.toString(args));
 		else if (args.length < 2)
 			error("${maven_version} macro has no arguments, use ${maven_version;1.2.3-SNAPSHOT}");
 		else {

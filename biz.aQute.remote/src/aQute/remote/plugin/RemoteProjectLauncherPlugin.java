@@ -235,7 +235,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 						if (bsn.equals(jar.getBsn())) {
 							long bundleId = jmxBundleDeployer.deploy(bsn, file);
 
-							trace("agent installed with bundleId=", bundleId);
+							trace("agent installed with bundleId=%s", bundleId);
 							break;
 						}
 					} finally {

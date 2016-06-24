@@ -82,7 +82,7 @@ public class HeaderReader extends Processor {
 
 		if (cd.scope == ServiceScope.BUNDLE && cd.immediate != null && cd.immediate) {
 			// TODO can become error() if it is up to me
-			warning("For a Service Component, the immediate option and the servicefactory option are mutually exclusive for %(%s)",
+			warning("For a Service Component, the immediate option and the servicefactory option are mutually exclusive for %s(%s)",
 					name, impl);
 		}
 
@@ -210,7 +210,7 @@ public class HeaderReader extends Processor {
 				Version v = new Version(version);
 				cd.updateVersion(v);
 			} catch (Exception e) {
-				error("version: specified on component header but not a valid version: " + version);
+				error("version: specified on component header but not a valid version: %s", version);
 				return;
 			}
 		}
@@ -368,7 +368,7 @@ public class HeaderReader extends Processor {
 			String referenceName = entry.getKey();
 			if (referenceName.endsWith(":")) {
 				if (!SET_COMPONENT_DIRECTIVES.contains(referenceName))
-					error("Unrecognized directive in " + Constants.SERVICE_COMPONENT + " header: " + referenceName);
+					error("Unrecognized directive in " + Constants.SERVICE_COMPONENT + " header: %s", referenceName);
 				continue;
 			}
 
@@ -413,8 +413,8 @@ public class HeaderReader extends Processor {
 
 			String interfaceName = entry.getValue();
 			if (interfaceName == null || interfaceName.length() == 0) {
-				error("Invalid Interface Name for references in Service Component: " + referenceName + "="
-						+ interfaceName);
+				error("Invalid Interface Name for references in Service Component: %s=%s", referenceName,
+						interfaceName);
 				continue;
 			}
 

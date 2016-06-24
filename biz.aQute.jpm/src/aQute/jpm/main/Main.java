@@ -837,7 +837,7 @@ public class Main extends ReporterAdapter {
 
 					String completionInstallResult = jpm.getPlatform().installCompletion(this);
 					if (completionInstallResult != null)
-						trace(completionInstallResult);
+						trace("%s", completionInstallResult);
 
 					settings.put(JPM_CONFIG_BIN, jpm.getBinDir().getAbsolutePath());
 					settings.put(JPM_CONFIG_HOME, jpm.getHomeDir().getAbsolutePath());
@@ -1370,7 +1370,7 @@ public class Main extends ReporterAdapter {
 
 						String value = m.group(2);
 						if (value == null) {
-							trace("list wildcard " + instr + " " + select + " " + settings.keySet());
+							trace("list wildcard %s %s %s", instr, select, settings.keySet());
 							list(select, settings);
 						} else {
 							trace("assignment 	");

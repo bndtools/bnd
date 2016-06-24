@@ -168,7 +168,7 @@ public class CommandLine {
 
 			Description descr = specification.getAnnotation(Description.class);
 			if (descr != null) {
-				f.format(descr.value() + "%n%n");
+				f.format("%s%n%n", descr.value());
 			}
 
 			f.h3("Synopsis:");

@@ -123,7 +123,7 @@ public class Container {
 				return true;
 
 			case ERROR :
-				reporter.error(error);
+				reporter.error("%s", error);
 				return false;
 		}
 		return false;

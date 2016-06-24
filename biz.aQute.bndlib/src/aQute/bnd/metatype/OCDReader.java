@@ -191,7 +191,7 @@ public class OCDReader extends ClassDataCollector {
 						try {
 							Clazz r = analyzer.findClass(type);
 							if (r.isAnnotation()) {
-								analyzer.warning("Nested annotation type found in field % s, %s", defined.getName(),
+								analyzer.warning("Nested annotation type found in field %s, %s", defined.getName(),
 										type.getFQN());
 								return;
 							}

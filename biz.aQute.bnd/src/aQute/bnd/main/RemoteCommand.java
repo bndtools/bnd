@@ -189,7 +189,7 @@ class RemoteCommand extends Processor {
 		}
 
 		if (output.isFile() && !output.canWrite()) {
-			error("Cannot write to ", output);
+			error("Cannot write to %s", output);
 		}
 
 		bnd.trace("Starting distro %s;%s", bsn, version);

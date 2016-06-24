@@ -23,7 +23,7 @@ public class Make {
 
 	public Resource process(String source) {
 		Map<Instruction,Map<String,String>> make = getMakeHeader();
-		builder.trace("make " + source);
+		builder.trace("make %s", source);
 
 		for (Map.Entry<Instruction,Map<String,String>> entry : make.entrySet()) {
 			Instruction instr = entry.getKey();
@@ -35,12 +35,12 @@ public class Make {
 					try {
 						Resource resource = plugin.make(builder, source, arguments);
 						if (resource != null) {
-							builder.trace("Made " + source + " from args " + arguments + " with " + plugin);
+							builder.trace("Made %s from args %s with %s", source, arguments, plugin);
 							return resource;
 						}
 					} catch (Exception e) {
-						builder.error("Plugin " + plugin + " generates error when use in making " + source
-								+ " with args " + arguments, e);
+						builder.error("Plugin %s generates error when use in making %s with args %s", e, plugin, source,
+								arguments);
 					}
 				}
 			}

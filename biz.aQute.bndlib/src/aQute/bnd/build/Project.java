@@ -470,7 +470,7 @@ public class Project extends Processor {
 			Collection<Container> bootclasspath, boolean noproject, String name) {
 		for (Container cpe : entries) {
 			if (cpe.getError() != null)
-				error(cpe.getError()).header(name).context(cpe.getBundleSymbolicName());
+				error("%s", cpe.getError()).header(name).context(cpe.getBundleSymbolicName());
 			else {
 				if (cpe.getType() == Container.TYPE.PROJECT) {
 					projects.add(cpe.getProject());
@@ -617,7 +617,7 @@ public class Project extends Processor {
 					Container x = new Container(this, bsn, versionRange, Container.TYPE.ERROR, null,
 							bsn + ";version=" + versionRange + " not found", attrs, null);
 					result.add(x);
-					error("Can not find URL for bsn " + bsn).context(bsn).header(source);
+					error("Can not find URL for bsn %s", bsn).context(bsn).header(source);
 				}
 			}
 		} catch (CircularDependencyException e) {
@@ -1415,7 +1415,7 @@ public class Project extends Processor {
 			}
 			return;
 		}
-		trace("No repo found " + file);
+		trace("No repo found %s", file);
 		throw new IllegalArgumentException("No repository found for " + file);
 	}
 
@@ -1541,7 +1541,7 @@ public class Project extends Processor {
 		}
 
 		if (isStale()) {
-			trace("building " + this);
+			trace("building %s", this);
 			files = buildLocal(underTest);
 			if (files != null)
 				install(files);
@@ -1828,7 +1828,7 @@ public class Project extends Processor {
 			} else {
 				msg = "(not modified since " + new Date(f.lastModified()) + ")";
 			}
-			trace(jar.getName() + " (" + f.getName() + ") " + jar.getResources().size() + " " + msg);
+			trace("%s (%s) %s %s", jar.getName(), f.getName(), jar.getResources().size(), msg);
 			return f;
 		} finally {
 			jar.close();
@@ -1871,7 +1871,7 @@ public class Project extends Processor {
 				}
 			}
 			if (sb.length() > 0)
-				warning(sb.toString());
+				warning("%s", sb.toString());
 		}
 	}
 
@@ -2775,8 +2775,8 @@ public class Project extends Processor {
 		StringBuilder stderr = new StringBuilder();
 
 		int n = javac.execute(stdout, stderr);
-		trace("javac stdout: ", stdout);
-		trace("javac stderr: ", stderr);
+		trace("javac stdout: %s", stdout);
+		trace("javac stderr: %s", stderr);
 
 		if (n != 0) {
 			error("javac failed %s", stderr);

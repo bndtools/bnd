@@ -77,7 +77,7 @@ class ComponentDef extends ExtensionDef {
 		prepareVersion(analyzer);
 
 		if (implementation == null) {
-			analyzer.error("No Implementation defined for component " + name);
+			analyzer.error("No Implementation defined for component %s", name);
 			return;
 		}
 

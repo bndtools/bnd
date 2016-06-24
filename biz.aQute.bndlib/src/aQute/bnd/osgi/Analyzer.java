@@ -351,11 +351,11 @@ public class Analyzer extends Processor {
 			// Checks
 			//
 			if (referred.containsKey(Descriptors.DEFAULT_PACKAGE)) {
-				error("The default package '.' is not permitted by the " + Constants.IMPORT_PACKAGE + " syntax. \n"
-						+ " This can be caused by compile errors in Eclipse because Eclipse creates \n"
-						+ "valid class files regardless of compile errors.\n"
-						+ "The following package(s) import from the default package "
-						+ uses.transpose().get(Descriptors.DEFAULT_PACKAGE));
+				error("The default package '.' is not permitted by the " + Constants.IMPORT_PACKAGE + " syntax.%n"
+						+ " This can be caused by compile errors in Eclipse because Eclipse creates%n"
+						+ "valid class files regardless of compile errors.%n"
+						+ "The following package(s) import from the default package %s",
+						uses.transpose().get(Descriptors.DEFAULT_PACKAGE));
 			}
 
 		}
@@ -797,7 +797,7 @@ public class Analyzer extends Processor {
 			for (Enumeration< ? > h = getProperties().propertyNames(); h.hasMoreElements();) {
 				String header = (String) h.nextElement();
 				if (header.trim().length() == 0) {
-					warning("Empty property set with value: " + getProperties().getProperty(header));
+					warning("Empty property set with value: %s", getProperties().getProperty(header));
 					continue;
 				}
 
@@ -1483,8 +1483,8 @@ public class Analyzer extends Processor {
 			String header = (String) i.next();
 			for (int j = 0; j < headers.length; j++) {
 				if (!headers[j].equals(header) && headers[j].equalsIgnoreCase(header)) {
-					warning("Using a standard OSGi header with the wrong case (bnd is case sensitive!), using: "
-							+ header + " and expecting: " + headers[j]);
+					warning("Using a standard OSGi header with the wrong case (bnd is case sensitive!), using: %s and expecting: %s",
+							header, headers[j]);
 					break;
 				}
 			}
@@ -1633,8 +1633,7 @@ public class Analyzer extends Processor {
 				contracts.collectContracts(jar.getName(), pcs);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-			warning("Erroneous Manifest for " + jar + " " + e);
+			warning("Erroneous Manifest for %s %s", jar, e);
 		}
 	}
 
@@ -2120,8 +2119,8 @@ public class Analyzer extends Processor {
 
 	String findPath(String name, String[] args, boolean fullPathName) {
 		if (args.length > 3) {
-			warning("Invalid nr of arguments to " + name + " " + Arrays.asList(args) + ", syntax: ${" + name
-					+ " (; reg-expr (; replacement)? )? }");
+			warning("Invalid nr of arguments to %s %s, syntax: ${%s (; reg-expr (; replacement)? )? }", name,
+					Arrays.asList(args), name);
 			return null;
 		}
 
@@ -2189,7 +2188,7 @@ public class Analyzer extends Processor {
 
 	public void addClasspath(Jar jar) {
 		if (isPedantic() && jar.getResources().isEmpty())
-			warning("There is an empty jar or directory on the classpath: " + jar.getName());
+			warning("There is an empty jar or directory on the classpath: %s", jar.getName());
 
 		addClose(jar);
 		classpath.add(jar);
@@ -2211,7 +2210,7 @@ public class Analyzer extends Processor {
 
 	public void addClasspath(File cp) throws IOException {
 		if (!cp.exists())
-			warning("File on classpath that does not exist: " + cp);
+			warning("File on classpath that does not exist: %s", cp);
 		Jar jar = new Jar(cp);
 		addClasspath(jar);
 	}
@@ -2268,7 +2267,7 @@ public class Analyzer extends Processor {
 						EmbeddedResource.build(jar, resource);
 						analyzeJar(jar, "", true);
 					} catch (Exception e) {
-						warning("Invalid bundle classpath entry: " + path + " " + e);
+						warning("Invalid bundle classpath entry: %s: %s", path, e);
 					}
 				} else {
 					if (dot.getDirectories().containsKey(path)) {
@@ -2278,11 +2277,11 @@ public class Analyzer extends Processor {
 						if (bcp.containsKey("."))
 							warning(Constants.BUNDLE_CLASSPATH
 									+ " uses a directory '%s' as well as '.'. This means bnd does not know if a directory is a package.",
-									path, path);
+									path);
 						analyzeJar(dot, Processor.appendPath(path) + "/", true);
 					} else {
 						if (!"optional".equals(info.get(RESOLUTION_DIRECTIVE)))
-							warning("No sub JAR or directory " + path);
+							warning("No sub JAR or directory %s", path);
 					}
 				}
 			}
@@ -3017,7 +3016,7 @@ public class Analyzer extends Processor {
 			if (nm.endsWith(Constants.DEFAULT_BND_EXTENSION)) {
 				nm = nm.substring(0, nm.length() - Constants.DEFAULT_BND_EXTENSION.length())
 						+ Constants.DEFAULT_JAR_EXTENSION;
-				trace("name is " + nm);
+				trace("name is %s", nm);
 				return new File(outputDir, nm);
 			}
 		}
@@ -3069,7 +3068,7 @@ public class Analyzer extends Processor {
 				getJar().write(output);
 			} catch (Exception e) {
 				output.delete();
-				error("Cannot write JAR file to %s due to %s", e, output, e.getMessage());
+				error("Cannot write JAR file to %s due to %s", e, output, e);
 			}
 			return true;
 		}
@@ -3206,7 +3205,7 @@ public class Analyzer extends Processor {
 		if (args == null || args.length <= 1)
 			return list;
 		if (args.length > 2)
-			warning("Too many arguments for ${" + args[0] + "} macro");
+			warning("Too many arguments for ${%s} macro", args[0]);
 		Instructions instrs = new Instructions(args[1]);
 		return instrs.select(list, false);
 	}
