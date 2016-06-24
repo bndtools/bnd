@@ -69,6 +69,7 @@ import org.osgi.service.permissionadmin.PermissionInfo;
 import aQute.launcher.agent.LauncherAgent;
 import aQute.launcher.constants.LauncherConstants;
 import aQute.launcher.minifw.MiniFramework;
+import aQute.lib.strings.Strings;
 
 /**
  * This is the primary bnd launcher. It implements a launcher that runs on Java
@@ -185,7 +186,7 @@ public class Launcher implements ServiceListener {
 	}
 
 	private static void errorAndExit(String message, Object... args) {
-		System.err.println(String.format(message, args));
+		System.err.println(Strings.format(message, args));
 		System.exit(ERROR);
 	}
 

@@ -116,7 +116,7 @@ public class MavenDeployCmd extends Processor {
 				if (!jdoc.exists() && !jdoc.mkdirs()) {
 					throw new IOException("Could not create directory " + jdoc);
 				}
-				project.progress("Generating Javadoc for: " + exports.keySet());
+				project.progress("Generating Javadoc for: %s", exports.keySet());
 				Jar javadoc = javadoc(jdoc, project, exports.keySet());
 				project.progress("Writing javadoc jar");
 				File javadocFile = write(tmp, new JarResource(javadoc), "javadoc.jar");

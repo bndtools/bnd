@@ -326,7 +326,7 @@ public class MavenBndRepository implements RepositoryPlugin, RegistryPlugin, Plu
 		}
 
 		if (!p.isEmpty()) {
-			reporter.warning("The -maven-release instruction contains unrecognized options: ", p);
+			reporter.warning("The -maven-release instruction contains unrecognized options: %s", p);
 		}
 
 		return release;
@@ -559,7 +559,7 @@ public class MavenBndRepository implements RepositoryPlugin, RegistryPlugin, Plu
 					try {
 						dl.success(file);
 					} catch (Exception e) {
-						reporter.exception(e, "Download listener failed in success callback %s ", dl);
+						reporter.exception(e, "Download listener failed in success callback %s", dl);
 					}
 			}
 
@@ -720,7 +720,7 @@ public class MavenBndRepository implements RepositoryPlugin, RegistryPlugin, Plu
 		int n = t.indexOf('\n');
 		if (n > 0) {
 			uri = new URI(t.substring(0, n));
-			reporter.trace("dropTarget cleaned up from " + t + " to " + uri);
+			reporter.trace("dropTarget cleaned up from %s to %s", t, uri);
 		}
 
 		if ("search.maven.org".equals(uri.getHost()) && "/remotecontent".equals(uri.getPath())) {
@@ -815,7 +815,7 @@ public class MavenBndRepository implements RepositoryPlugin, RegistryPlugin, Plu
 				}
 
 			} catch (Exception e) {
-				reporter.exception(e, "Cannot drop JPM ", uri);
+				reporter.exception(e, "Cannot drop JPM %s", uri);
 			}
 		return false;
 	}

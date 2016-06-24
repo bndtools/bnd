@@ -291,7 +291,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 					}
 				}
 				if (!flattening && !key.equals("@"))
-					reporter.warning("No translation found for macro: " + key);
+					reporter.warning("No translation found for macro: %s", key);
 			} else {
 				reporter.warning("Found empty macro key");
 			}
@@ -375,11 +375,11 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 					reporter.error("%s, for cmd: %s, arguments; %s", e.getCause().getMessage(), method,
 							Arrays.toString(args));
 				} else {
-					reporter.warning("Exception in replace: " + e.getCause());
+					reporter.warning("Exception in replace: %s", e.getCause());
 					e.getCause().printStackTrace();
 				}
 			} catch (Exception e) {
-				reporter.warning("Exception in replace: " + e + " method=" + method);
+				reporter.warning("Exception in replace: %s method=%s", e, method);
 				e.printStackTrace();
 			}
 		}
@@ -560,7 +560,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	 */
 	public String _replace(String args[]) {
 		if (args.length != 4) {
-			reporter.warning("Invalid nr of arguments to replace " + Arrays.asList(args));
+			reporter.warning("Invalid nr of arguments to replace %s", Arrays.asList(args));
 			return null;
 		}
 
@@ -581,14 +581,14 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	public String _warning(String args[]) {
 		for (int i = 1; i < args.length; i++) {
-			reporter.warning(process(args[i]));
+			reporter.warning("%s", process(args[i]));
 		}
 		return "";
 	}
 
 	public String _error(String args[]) {
 		for (int i = 1; i < args.length; i++) {
-			reporter.error(process(args[i]));
+			reporter.error("%s", process(args[i]));
 		}
 		return "";
 	}
@@ -719,7 +719,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 			now = Long.parseLong(args[3]);
 		}
 		if (args.length > 4) {
-			reporter.warning("Too many arguments for tstamp: " + Arrays.toString(args));
+			reporter.warning("Too many arguments for tstamp: %s", Arrays.toString(args));
 		}
 
 		SimpleDateFormat sdf = new SimpleDateFormat(format);
@@ -805,9 +805,9 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 		if (exitValue != 0) {
 			if (!allowFail) {
-				reporter.error("System command " + command + " failed with exit code " + exitValue);
+				reporter.error("System command %s failed with exit code %d", command, exitValue);
 			} else {
-				reporter.warning("System command " + command + " failed with exit code " + exitValue + " (allowed)");
+				reporter.warning("System command %s failed with exit code %d (allowed)", command, exitValue);
 
 			}
 		}

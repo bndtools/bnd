@@ -207,7 +207,7 @@ class IndexFile {
 
 					Archive a = Archive.valueOf(line);
 					if (a == null) {
-						reporter.error("MavenBndRepository: invalid entry %s in file", line, indexFile);
+						reporter.error("MavenBndRepository: invalid entry %s in file %s", line, indexFile);
 					} else {
 						toBeDeleted.remove(a);
 						loadDescriptorAsync(a);

@@ -1,6 +1,8 @@
 package aQute.lib.strings;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -273,5 +275,38 @@ public class Strings {
 			sb.append(s);
 		}
 		return sb.toString();
+	}
+
+	/**
+	 * This method is the same as String.format but it makes sure that any
+	 * arrays are transformed to strings.
+	 * 
+	 * @param string
+	 * @param parms
+	 */
+	public static String format(String string, Object... parms) {
+		if (parms == null) {
+			parms = new Object[0];
+		}
+		return String.format(string, makePrintableArray(parms));
+	}
+
+	private static Object[] makePrintableArray(Object array) {
+		final int length = Array.getLength(array);
+		Object[] output = new Object[length];
+		for (int i = 0; i < length; i++) {
+			output[i] = makePrintable(Array.get(array, i));
+		}
+		return output;
+	}
+
+	private static Object makePrintable(Object object) {
+		if (object == null) {
+			return null;
+		}
+		if (object.getClass().isArray()) {
+			return Arrays.toString(makePrintableArray(object));
+		}
+		return object;
 	}
 }

@@ -122,7 +122,7 @@ public class RepoCommand {
 
 		if (opts.filerepo() != null) {
 			for (String r : opts.filerepo()) {
-				bnd.trace("file repo " + r);
+				bnd.trace("file repo %s", r);
 				FileRepo repo = new FileRepo();
 				repo.setReporter(bnd);
 				File location = bnd.getFile(r);
@@ -145,7 +145,7 @@ public class RepoCommand {
 				}
 			}
 		}
-		bnd.trace("repos " + repos);
+		bnd.trace("repos %s", repos);
 
 		// Clean up and find first writable
 		RepositoryPlugin w = null;
@@ -162,7 +162,7 @@ public class RepoCommand {
 			}
 		}
 		this.writable = w;
-		bnd.trace("writable " + w);
+		bnd.trace("writable %s", w);
 
 		List<String> args = opts._arguments();
 		if (args.size() == 0) {
@@ -229,13 +229,13 @@ public class RepoCommand {
 			if (from.matches(repo.getName()))
 				bsns.addAll(repo.list(opts.query()));
 		}
-		bnd.trace("list " + bsns);
+		bnd.trace("list %s", bsns);
 
 		for (String bsn : new SortedList<String>(bsns)) {
 			if (!opts.noversions()) {
 				Set<Version> versions = new TreeSet<Version>();
 				for (RepositoryPlugin repo : repos) {
-					bnd.trace("get " + bsn + " from " + repo);
+					bnd.trace("get %s from %s", bsn, repo);
 					if (from.matches(repo.getName())) {
 						SortedSet<Version> result = repo.versions(bsn);
 						if (result != null)

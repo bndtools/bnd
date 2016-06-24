@@ -155,7 +155,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 		@Override
 		public boolean progress(File file, int percentage) throws Exception {
-			reporter.trace("Downloadedin %s %s%", file, percentage);
+			reporter.trace("Downloading %s %s%%", file, percentage);
 			return true;
 		}
 
@@ -279,7 +279,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			}
 			reporter.error("found file but of different length %s, will refetch", file);
 		} else {
-			reporter.trace("not in cache %s", file + " " + queues);
+			reporter.trace("not in cache %s %s", file, queues);
 		}
 
 		if (!isConnected()) {
@@ -309,12 +309,12 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			if (!first) {
 				// return, file is being downloaded by another and that
 				// other will signal the download listener.
-				reporter.trace("someone else is downloading our file " + queues.get(file));
+				reporter.trace("someone else is downloading our file %s", queues.get(file));
 				return;
 			}
 		}
 		try {
-			reporter.trace("starting thread for " + file);
+			reporter.trace("starting thread for %s", file);
 
 			// Limit the total downloads going on at the same time
 			limitDownloads.acquire();
@@ -322,7 +322,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			Thread t = new Thread("Downloading " + file) {
 				public void run() {
 					try {
-						reporter.trace("downloading in background " + file);
+						reporter.trace("downloading in background %s", file);
 						getCache().download(file, urls, sha);
 						success(queues.get(file).toArray(EMPTY_LISTENER), file);
 					} catch (FileNotFoundException e) {
@@ -343,7 +343,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 						synchronized (queues) {
 							queues.remove(file);
 						}
-						reporter.trace("downloaded " + file);
+						reporter.trace("downloaded %s", file);
 
 						// Allow other downloads to start
 						limitDownloads.release();
@@ -398,14 +398,14 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			reporter.trace("creating tmp copy");
 			copy(in, file);
 			if (depository == null) {
-				reporter.trace("send to url " + url);
+				reporter.trace("send to url %s", url);
 				depository = getLibrary().depository(depositoryGroup, depositoryName);
-				reporter.trace("credentials " + depository);
+				reporter.trace("credentials %s", depository);
 			}
 
 			byte[] digest = options.digest == null ? SHA1.digest(file).digest() : options.digest;
 			String path = Hex.toHexString(digest);
-			reporter.trace("putting " + path);
+			reporter.trace("putting %s", path);
 
 			URI uri = getDepository(path);
 
@@ -495,7 +495,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 					phase = Library.Phase.WITHDRAWN;
 					break;
 			}
-			reporter.trace("Phase is " + c + " " + phase);
+			reporter.trace("Phase is %s %s", c, phase);
 		}
 
 		Glob glob = null;
@@ -1610,7 +1610,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 	private void init() throws Exception {
 		if (index == null) {
-			reporter.trace("init " + indexFile);
+			reporter.trace("init %s", indexFile);
 			index = new Index(indexFile);
 			index.setRecurse(indexRecurse);
 			index.setReporter(reporter);
@@ -1633,7 +1633,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		// We remove everything between [mask(v), v)
 
 		Version newVersion = toVersion(ref.baseline, ref.qualifier);
-		reporter.trace("New version " + ref.bsn + " " + newVersion);
+		reporter.trace("New version %s %s", ref.bsn, newVersion);
 		Version newMask = mask(newVersion);
 		List<Version> toBeDeleted = new ArrayList<Version>();
 
@@ -1677,7 +1677,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		Library.RevisionRef resource = index.getRevisionRef(bsn, version);
 		if (resource != null) {
 			boolean removed = index.delete(bsn, version);
-			reporter.trace("Was present " + removed);
+			reporter.trace("Was present %s", removed);
 			index.save();
 		} else
 			reporter.trace("No such resource");
@@ -1706,12 +1706,12 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			int n = t.indexOf('\n');
 			if (n > 0) {
 				uri = new URI(t.substring(0, n));
-				reporter.trace("dropTarget cleaned up from " + t + " to " + uri);
+				reporter.trace("dropTarget cleaned up from %s to %s", t, uri);
 			}
 
 			RevisionRef ref;
 
-			reporter.trace("dropTarget " + uri);
+			reporter.trace("dropTarget %s", uri);
 			String uriString = uri.toString();
 
 			Matcher m = JPM_REVISION_URL_PATTERN.matcher(uriString);
@@ -1739,7 +1739,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 				ref = analyze(d.tmp, uri);
 				if (ref == null) {
-					reporter.trace("not a proper url to drop " + uri);
+					reporter.trace("not a proper url to drop %s", uri);
 					d.tmp.delete();
 					return false;
 				}
@@ -1762,11 +1762,11 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				resource.urls.add(uri);
 				// we know that we modified a resource so the index is dirty
 				index.save(true);
-				reporter.trace("resource already loaded " + uri);
+				reporter.trace("resource already loaded %s", uri);
 				return true;
 			}
 
-			reporter.trace("adding revision " + ref);
+			reporter.trace("adding revision %s", ref);
 			add(ref);
 			return true;
 		} catch (Exception e) {
@@ -1927,7 +1927,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				});
 
 			} else
-				reporter.trace("Open " + url);
+				reporter.trace("Open %s", url);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -2199,7 +2199,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 		for (Container libOrRev : set) {
 			for (Container c : libOrRev.getMembers()) {
-				reporter.trace("Dependency " + c);
+				reporter.trace("Dependency %s", c);
 
 				if (!Verifier.isVersion(c.getVersion()))
 					continue;
@@ -2209,7 +2209,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 					refs.remove(ref);
 				else {
 					// missing!
-					reporter.trace("Missing " + c.getBundleSymbolicName());
+					reporter.trace("Missing %s", c.getBundleSymbolicName());
 					Coordinate coord = new Coordinate(c.getBundleSymbolicName());
 					Revision rev = getLibrary().getRevisionByCoordinate(coord);
 					if (rev != null) {

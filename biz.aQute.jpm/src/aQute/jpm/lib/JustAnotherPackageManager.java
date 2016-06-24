@@ -368,7 +368,7 @@ public class JustAnotherPackageManager {
 				if (toDelete.size() > count) {
 					count = toDelete.size();
 					if (!cache.canWrite()) {
-						reporter.error(PERMISSION_ERROR + " (" + cache + ")");
+						reporter.error(PERMISSION_ERROR + " (%s)", cache);
 						return;
 					}
 					toDelete.add(cache);
@@ -378,7 +378,7 @@ public class JustAnotherPackageManager {
 
 			for (File f : toDelete) {
 				if (f.exists() && !f.canWrite()) {
-					reporter.error(PERMISSION_ERROR + " (" + f + ")");
+					reporter.error(PERMISSION_ERROR + " (%s)", f);
 				}
 			}
 			if (reporter.getErrors().size() > 0) {
@@ -611,7 +611,7 @@ public class JustAnotherPackageManager {
 								return "Invalid digest for " + je.getName() + ", " + expected + " != "
 										+ Base64.encodeBase64(md.digest());
 						} else
-							reporter.error("could not find digest for " + algorithm + "-Digest");
+							reporter.error("could not find digest for %s-Digest", algorithm);
 					} catch (NoSuchAlgorithmException nsae) {
 						return "Missing digest algorithm " + algorithm;
 					}
@@ -655,9 +655,9 @@ public class JustAnotherPackageManager {
 
 				for (Service service : startedByDaemon) {
 					try {
-						reporter.error("Stopping " + service);
+						reporter.error("Stopping %s", service);
 						service.stop();
-						reporter.error("Stopped " + service);
+						reporter.error("Stopped %s", service);
 					} catch (Exception e) {
 						// Ignore
 					}
@@ -681,13 +681,13 @@ public class JustAnotherPackageManager {
 		for (ServiceData sd : start) {
 			try {
 				Service service = getService(sd.name);
-				reporter.trace("Starting " + service);
+				reporter.trace("Starting %s", service);
 				String result = service.start(true);
 				if (result != null)
-					reporter.error("Started error " + result);
+					reporter.error("Started error %s", result);
 				else
 					startedByDaemon.add(service);
-				reporter.trace("Started " + service);
+				reporter.trace("Started %s", service);
 			} catch (Exception e) {
 				reporter.error("Cannot start daemon %s, due to %s", sd.name, e);
 			}
@@ -697,10 +697,10 @@ public class JustAnotherPackageManager {
 			for (Service sd : startedByDaemon) {
 				try {
 					if (!sd.isRunning()) {
-						reporter.error("Starting due to failure " + sd);
+						reporter.error("Starting due to failure %s", sd);
 						String result = sd.start();
 						if (result != null)
-							reporter.error("Started error " + result);
+							reporter.error("Started error %s", result);
 					}
 				} catch (Exception e) {
 					reporter.error("Cannot start daemon %s, due to %s", sd, e);
@@ -717,7 +717,7 @@ public class JustAnotherPackageManager {
 			return;
 
 		if (cyclic.contains(sd)) {
-			reporter.error("Cyclic dependency for " + sd.name);
+			reporter.error("Cyclic dependency for %s", sd.name);
 			return;
 		}
 
@@ -729,7 +729,7 @@ public class JustAnotherPackageManager {
 
 			ServiceData deps = map.get(dependsOn);
 			if (deps == null) {
-				reporter.error("No such service " + dependsOn + " but " + sd.name + " depends on it");
+				reporter.error("No such service %s but %s depends on it", dependsOn, sd.name);
 			} else {
 				checkStartup(map, start, deps, cyclic);
 			}
@@ -796,7 +796,7 @@ public class JustAnotherPackageManager {
 			} else
 				data.name = Strings.display(cmddata.title, cmddata.bsn, cmddata.name, uri);
 			codec.enc().to(meta).put(data);
-			reporter.trace("TD = " + data);
+			reporter.trace("TD = %s", data);
 		} finally {
 			tmp.delete();
 			reporter.trace("puted %s %s", uri, data);
@@ -1255,7 +1255,7 @@ public class JustAnotherPackageManager {
 				}
 			}
 
-			reporter.trace("name " + data.name + " " + data.main + " " + data.title);
+			reporter.trace("name %s %s %s", data.name, data.main, data.title);
 			DependencyCollector path = new DependencyCollector(this);
 			path.add(artifact);
 			DependencyCollector bundles = new DependencyCollector(this);

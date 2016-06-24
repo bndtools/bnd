@@ -63,6 +63,7 @@ import aQute.bnd.service.url.URLConnector;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.filter.Filter;
+import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
 import aQute.libg.gzip.GZipUtils;
 import aQute.service.reporter.Reporter;
@@ -636,14 +637,14 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		if (reporter != null)
 			reporter.error(format, args);
 		else
-			System.err.println(String.format(format, args));
+			System.err.println(Strings.format(format, args));
 	}
 
 	private void warning(String format, Object... args) {
 		if (reporter != null)
 			reporter.warning(format, args);
 		else
-			System.err.println(String.format(format, args));
+			System.err.println(Strings.format(format, args));
 	}
 
 	public boolean refresh() throws Exception {

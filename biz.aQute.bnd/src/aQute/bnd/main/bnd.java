@@ -1446,7 +1446,7 @@ public class bnd extends Processor {
 			dir = getFile(options.dir());
 
 		if (!dir.isDirectory())
-			error("Eclipse requires a path to a directory: " + dir.getAbsolutePath());
+			error("Eclipse requires a path to a directory: %s", dir.getAbsolutePath());
 
 		if (options._arguments().size() != 0)
 			error("Unnecessary arguments %s", options._arguments());
@@ -1456,7 +1456,7 @@ public class bnd extends Processor {
 
 		File cp = new File(dir, ".classpath");
 		if (!cp.exists()) {
-			error("Cannot find .classpath in project directory: " + dir.getAbsolutePath());
+			error("Cannot find .classpath in project directory: %s", dir.getAbsolutePath());
 		} else {
 			EclipseClasspath eclipse = new EclipseClasspath(this, dir.getParentFile(), dir);
 			err.println("Classpath    " + eclipse.getClasspath());
@@ -1811,7 +1811,7 @@ public class bnd extends Processor {
 				if (file.getName().endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
 					Run run = Workspace.getRun(file);
 					if (run == null) {
-						error("No such run file", file);
+						error("No such run file %s", file);
 					} else {
 						report(justif, "bndrun", run);
 						getInfo(run);
@@ -1991,7 +1991,7 @@ public class bnd extends Processor {
 			if ((options & MANIFEST) != 0) {
 				Manifest manifest = jar.getManifest();
 				if (manifest == null)
-					warning("JAR has no manifest " + jar);
+					warning("JAR has no manifest %s", jar);
 				else {
 					err.println("[MANIFEST " + jar.getName() + "]");
 					printManifest(manifest);
@@ -2209,7 +2209,7 @@ public class bnd extends Processor {
 				}
 			} else {
 				out.println("  - no resource");
-				warning("No Resource found for service component: " + path);
+				warning("No Resource found for service component: %s", path);
 			}
 		}
 		out.println();
@@ -2506,7 +2506,7 @@ public class bnd extends Processor {
 			}
 		} catch (Exception e) {
 			test.addAttribute("failed", e);
-			error("Exception in run %s", e);
+			error("Exception in run %s", e, e);
 			return 1;
 		} finally {
 			long duration = System.currentTimeMillis() - start;
@@ -2587,7 +2587,7 @@ public class bnd extends Processor {
 		for (String path : opts._arguments()) {
 			File f = getFile(path);
 			if (!f.isFile()) {
-				error("No such file: %ss", f);
+				error("No such file: %s", f);
 			} else {
 				Jar jar = new Jar(f);
 				if (jar.getManifest() == null || jar.getBsn() == null)
@@ -2740,7 +2740,7 @@ public class bnd extends Processor {
 		if (where.equals(Project.BNDFILE)) {
 			return null;
 		}
-		error("Project not found: " + f);
+		error("Project not found: %s", f);
 
 		return null;
 	}
@@ -3820,7 +3820,7 @@ public class bnd extends Processor {
 
 						List<Version> versions = revisions.get(bsn);
 						if (versions == null) {
-							error("No for versions for " + bsn);
+							error("No for versions for %s", bsn);
 							break nextLine;
 						}
 
@@ -4097,7 +4097,7 @@ public class bnd extends Processor {
 			for (String pname : args) {
 				Project project = ws.getProject(pname);
 				if (project == null) {
-					error("No such project " + pname);
+					error("No such project %s", pname);
 				} else
 					project.remove();
 			}

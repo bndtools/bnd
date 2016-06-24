@@ -123,9 +123,9 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 		StringBuilder err = new StringBuilder();
 		int exitValue = command.execute(out, err);
 		if (exitValue != 0) {
-			builder.error("Signing Jar out: %s\nerr: %s", out, err);
+			builder.error("Signing Jar out: %s%nerr: %s", out, err);
 		} else {
-			builder.trace("Signing Jar out: %s \nerr: %s", out, err);
+			builder.trace("Signing Jar out: %s%nerr: %s", out, err);
 		}
 
 		Jar signed = new Jar(tmp);

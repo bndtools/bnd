@@ -73,19 +73,19 @@ public class MavenCommand extends Processor {
 
 		while (i < args.length && args[i].startsWith("-")) {
 			String option = args[i];
-			trace("option " + option);
+			trace("option %s", option);
 			if (option.equals("-temp"))
 				temp = getFile(args[++i]);
 			else {
 				help();
-				error("Invalid option " + option);
+				error("Invalid option %s", option);
 			}
 			i++;
 		}
 
 		String cmd = args[i++];
 
-		trace("temp dir " + temp);
+		trace("temp dir %s", temp);
 		IO.delete(temp);
 		if (!temp.exists() && !temp.mkdirs()) {
 			throw new IOException("Could not create directory " + temp);
@@ -261,7 +261,7 @@ public class MavenCommand extends Processor {
 			pom.setGroup(group);
 		if (version != null)
 			pom.setVersion(version);
-		trace(url);
+		trace("%s", url);
 		for (String d : developers)
 			pom.addDeveloper(d);
 
@@ -313,7 +313,7 @@ public class MavenCommand extends Processor {
 		File sourceFile = new File(bundle, prefix + "-sources.jar");
 		File javadocFile = new File(bundle, prefix + "-javadoc.jar");
 		File pomFile = new File(bundle, "pom.xml").getAbsoluteFile();
-		trace("creating output files %s, %s,%s, and %s", binaryFile, sourceFile, javadocFile, pomFile);
+		trace("creating output files %s, %s, %s, and %s", binaryFile, sourceFile, javadocFile, pomFile);
 
 		IO.copy(pom.openInputStream(), pomFile);
 		trace("copied pom");
@@ -369,12 +369,12 @@ public class MavenCommand extends Processor {
 	private void copyInfoHeader(Manifest sm, Manifest dm, String key, String value) {
 		String v = sm.getMainAttributes().getValue(key);
 		if (v == null) {
-			trace("no source for " + key);
+			trace("no source for %s", key);
 			return;
 		}
 
 		if (dm.getMainAttributes().getValue(key) != null) {
-			trace("already have " + key);
+			trace("already have %s", key);
 			return;
 		}
 

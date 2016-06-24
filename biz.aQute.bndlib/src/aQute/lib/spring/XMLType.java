@@ -111,12 +111,12 @@ public class XMLType {
 			for (Iterator<String> r = set.iterator(); r.hasNext();) {
 				PackageRef pack = analyzer.getPackageRef(r.next());
 				if (!QN.matcher(pack.getFQN()).matches())
-					analyzer.warning("Package does not seem a package in spring resource (" + path + "): " + pack);
+					analyzer.warning("Package does not seem a package in spring resource (%s): %s", path, pack);
 				if (!analyzer.getReferred().containsKey(pack))
 					analyzer.getReferred().put(pack);
 			}
 		} catch (Exception e) {
-			analyzer.error("Unexpected exception in processing spring resources(" + path + "): " + e);
+			analyzer.error("Unexpected exception in processing spring resources(%s): %s", path, e);
 		}
 	}
 

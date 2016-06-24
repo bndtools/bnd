@@ -14,7 +14,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -60,8 +59,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		project.trace("created a aQute launcher plugin");
 		this.project = project;
 		propertiesFile = File.createTempFile("launch", ".properties", project.getTarget());
-		project.trace(
-				MessageFormat.format("launcher plugin using temp launch file {0}", propertiesFile.getAbsolutePath()));
+		project.trace("launcher plugin using temp launch file %s", propertiesFile.getAbsolutePath());
 		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=\"" + propertiesFile.getAbsolutePath() + "\"");
 
 		if (project.getRunProperties().get("noframework") != null) {
@@ -100,7 +98,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			listenerComms = null;
 		}
 		prepared = false;
-		project.trace("Deleted ", propertiesFile.getAbsolutePath());
+		project.trace("Deleted %s", propertiesFile.getAbsolutePath());
 	}
 
 	@Override

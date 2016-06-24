@@ -3,6 +3,7 @@ package aQute.lib.utf8properties;
 import java.util.Properties;
 
 import aQute.lib.hex.Hex;
+import aQute.lib.strings.Strings;
 import aQute.service.reporter.Reporter;
 import aQute.service.reporter.Reporter.SetLocation;
 
@@ -271,7 +272,7 @@ final class PropertiesParser {
 		if (reporter != null) {
 			int line = this.line;
 			String context = context();
-			SetLocation loc = reporter.error(msg + ": <<" + context + ">>", args);
+			SetLocation loc = reporter.error("%s: <<%s>>", Strings.format(msg, args), context);
 			loc.line(line);
 			loc.context(context);
 			if (file != null)

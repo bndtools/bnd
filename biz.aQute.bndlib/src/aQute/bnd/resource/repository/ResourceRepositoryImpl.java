@@ -270,7 +270,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 			if (!first) {
 				// return, file is being downloaded by another and that
 				// other will signal the download listener.
-				reporter.trace("someone else is downloading our file " + queues.get(path));
+				reporter.trace("someone else is downloading our file %s", queues.get(path));
 				return path;
 			}
 		}

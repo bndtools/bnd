@@ -22,7 +22,7 @@ public class MakeBnd implements MakePlugin, Constants {
 
 		String recipe = argumentsOnMake.get("recipe");
 		if (recipe == null) {
-			builder.error("No recipe specified on a make instruction for " + destination);
+			builder.error("No recipe specified on a make instruction for %s", destination);
 			return null;
 		}
 		File bndfile = builder.getFile(recipe);

@@ -225,7 +225,7 @@ public class Verifier extends Processor {
 	private void verifyHeaders() {
 		for (String h : main) {
 			if (!HEADER_PATTERN.matcher(h).matches())
-				error("Invalid Manifest header: " + h + ", pattern=" + HEADER_PATTERN);
+				error("Invalid Manifest header: %s, pattern=%s", h, HEADER_PATTERN);
 		}
 	}
 
@@ -247,13 +247,13 @@ public class Verifier extends Processor {
 				do {
 					String name = qt.nextToken();
 					if (name == null) {
-						error("Can not parse name from bundle native code header: " + nc);
+						error("Can not parse name from bundle native code header: %s", nc);
 						return;
 					}
 					del = qt.getSeparator();
 					if (del == ';') {
 						if (dot != null && !dot.exists(name)) {
-							error("Native library not found in JAR: " + name);
+							error("Native library not found in JAR: %s", name);
 						}
 					} else {
 						String value = null;
@@ -276,9 +276,9 @@ public class Verifier extends Processor {
 						} else if (name.equals("*") && value == null) {
 							// Wildcard must be at end.
 							if (qt.nextToken() != null)
-								error("Bundle-Native code header may only END in wildcard: nc");
+								error("Bundle-Native code header may only END in wildcard %s", nc);
 						} else {
-							warning("Unknown attribute in native code: " + name + "=" + value);
+							warning("Unknown attribute in native code: %s=%s", name, value);
 						}
 						del = qt.getSeparator();
 					}
@@ -292,7 +292,7 @@ public class Verifier extends Processor {
 		if (s == null)
 			return true;
 
-		error(s);
+		error("%s", s);
 		return false;
 	}
 
@@ -328,32 +328,32 @@ public class Verifier extends Processor {
 
 				if (activatorClazz.isInterface()) {
 					registerActivatorErrorLocation(
-							error("The Bundle Activator " + bactivator
-									+ " is an interface and therefore cannot be instantiated."),
+							error("The Bundle Activator %s is an interface and therefore cannot be instantiated.",
+									bactivator),
 							bactivator, ActivatorErrorType.IS_INTERFACE);
 				} else {
 					if (activatorClazz.isAbstract()) {
 						registerActivatorErrorLocation(
-								error("The Bundle Activator " + bactivator
-										+ " is abstract and therefore cannot be instantiated."),
+								error("The Bundle Activator %s is abstract and therefore cannot be instantiated.",
+										bactivator),
 								bactivator, ActivatorErrorType.IS_ABSTRACT);
 					}
 					if (!activatorClazz.isPublic()) {
 						registerActivatorErrorLocation(
-								error("Bundle Activator classes must be public, and " + bactivator + " is not."),
+								error("Bundle Activator classes must be public, and %s is not.", bactivator),
 								bactivator, ActivatorErrorType.NOT_PUBLIC);
 					}
 					if (!activatorClazz.hasPublicNoArgsConstructor()) {
 						registerActivatorErrorLocation(
-								error("Bundle Activator classes must have a public zero-argument constructor and "
-										+ bactivator + " does not."),
+								error("Bundle Activator classes must have a public zero-argument constructor and %s does not.",
+										bactivator),
 								bactivator, ActivatorErrorType.NO_SUITABLE_CONSTRUCTOR);
 					}
 
 					if ( !analyzer.assignable(activatorClazz.getFQN() , "org.osgi.framework.BundleActivator")) {
 						
 						registerActivatorErrorLocation(
-								error("The Bundle Activator " + bactivator + " does not implement BundleActivator."),
+								error("The Bundle Activator %s does not implement BundleActivator.", bactivator),
 								bactivator, ActivatorErrorType.NOT_AN_ACTIVATOR);
 					}
 				}
@@ -367,12 +367,13 @@ public class Verifier extends Processor {
 						bactivator, ActivatorErrorType.DEFAULT_PACKAGE);
 			else if (!analyzer.isImported(packageRef)) {
 				registerActivatorErrorLocation(error(Constants.BUNDLE_ACTIVATOR
-						+ " not found on the bundle class path nor in imports: " + bactivator), bactivator,
+						+ " not found on the bundle class path nor in imports: %s", bactivator), bactivator,
 						ActivatorErrorType.NOT_ACCESSIBLE);
 			} else {
 				registerActivatorErrorLocation(
-						warning(Constants.BUNDLE_ACTIVATOR + " " + bactivator
-								+ " is being imported into the bundle rather than being contained inside it. This is usually a bundle packaging error"),
+						warning(Constants.BUNDLE_ACTIVATOR
+								+ " %s is being imported into the bundle rather than being contained inside it. This is usually a bundle packaging error",
+								bactivator),
 						bactivator, ActivatorErrorType.IS_IMPORTED);
 			}
 		}
@@ -394,7 +395,7 @@ public class Verifier extends Processor {
 			Parameters map = parseHeader(serviceComponent);
 			for (String component : map.keySet()) {
 				if (component.indexOf("*") < 0 && !dot.exists(component)) {
-					error(Constants.SERVICE_COMPONENT + " entry can not be located in JAR: " + component);
+					error(Constants.SERVICE_COMPONENT + " entry can not be located in JAR: %s", component);
 				} else {
 					// validate component ...
 				}
@@ -972,12 +973,12 @@ public class Verifier extends Processor {
 		for (String name : map.keySet()) {
 			name = name.trim();
 			if (!verify(name, WILDCARDPACKAGE))
-				error(Constants.DYNAMICIMPORT_PACKAGE + " header contains an invalid package name: " + name);
+				error(Constants.DYNAMICIMPORT_PACKAGE + " header contains an invalid package name: %s", name);
 
 			Map<String,String> sub = map.get(name);
 			if (r3 && sub.size() != 0) {
-				error("DynamicPackage-Import has attributes on import: " + name
-						+ ". This is however, an <=R3 bundle and attributes on this header were introduced in R4. ");
+				error("DynamicPackage-Import has attributes on import: %s. This is however, an <=R3 bundle and attributes on this header were introduced in R4.",
+						name);
 			}
 		}
 	}
@@ -992,11 +993,11 @@ public class Verifier extends Processor {
 		Parameters bsn = parseHeader(main.get(Analyzer.BUNDLE_SYMBOLICNAME));
 		if (!bsn.isEmpty()) {
 			if (bsn.size() > 1)
-				error("More than one BSN specified " + bsn);
+				error("More than one BSN specified %s", bsn);
 
 			String name = bsn.keySet().iterator().next();
 			if (!isBsn(name)) {
-				error("Symbolic Name has invalid format: " + name);
+				error("Symbolic Name has invalid format: %s", name);
 			}
 		}
 	}
@@ -1140,11 +1141,10 @@ public class Verifier extends Processor {
 		QuotedTokenizer st = new QuotedTokenizer(value.trim(), ",");
 		for (Iterator<String> i = st.getTokenSet().iterator(); i.hasNext();) {
 			if (!verify(i.next(), regex)) {
-				String msg = "Invalid value for " + name + ", " + value + " does not match " + regex.pattern();
 				if (error)
-					error(msg);
+					error("Invalid value for %s, %s does not match %s", name, value, regex.pattern());
 				else
-					warning(msg);
+					warning("Invalid value for %s, %s does not match %s", name, value, regex.pattern());
 			}
 		}
 		return true;
@@ -1162,11 +1162,10 @@ public class Verifier extends Processor {
 		Parameters map = parseHeader(value);
 		for (String header : map.keySet()) {
 			if (!regex.matcher(header).matches()) {
-				String msg = "Invalid value for " + name + ", " + value + " does not match " + regex.pattern();
 				if (error)
-					error(msg);
+					error("Invalid value for %s, %s does not match %s", name, value, regex.pattern());
 				else
-					warning(msg);
+					warning("Invalid value for %s, %s does not match %s", name, value, regex.pattern());
 			}
 		}
 		return true;

@@ -194,9 +194,9 @@ public class EclipseClasspath {
 				File f = new File(b, remainder.replace('/', File.separatorChar));
 				return f;
 			}
-			reporter.error("Can't find replacement variable for: " + path);
+			reporter.error("Can't find replacement variable for: %s", path);
 		} else
-			reporter.error("Cant split variable path: " + path);
+			reporter.error("Cant split variable path: %s", path);
 		return null;
 	}
 

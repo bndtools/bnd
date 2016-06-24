@@ -19,6 +19,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.lib.strings.Strings;
 import aQute.libg.gzip.GZipUtils;
 
 public class XMLResourceParser extends Processor {
@@ -241,7 +242,7 @@ public class XMLResourceParser extends Processor {
 		if (check)
 			return true;
 
-		String message = String.format(format, args);
+		String message = Strings.format(format, args);
 		error("%s: %s", what, message);
 
 		return false;
