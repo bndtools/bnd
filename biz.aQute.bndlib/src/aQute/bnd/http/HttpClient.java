@@ -69,7 +69,6 @@ public class HttpClient implements Closeable, URLConnector {
 	private URLCache							cache					= new URLCache(IO.getFile("~/.bnd/urlcache"));
 	private Registry							registry				= null;
 	private Reporter							reporter				= new Slf4jReporter(HttpClient.class);
-	private ProgressPlugin						progress;
 
 	public HttpClient() {}
 
@@ -78,7 +77,6 @@ public class HttpClient implements Closeable, URLConnector {
 			return;
 
 		inited = true;
-		progress = registry != null ? registry.getPlugin(ProgressPlugin.class) : null;
 
 		Authenticator.setDefault(new Authenticator() {
 			@Override
@@ -265,12 +263,48 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	ProgressPlugin.Task getTask(final HttpRequest< ? > request) {
+		final String name = "Download " + request.url;
+		final int size = 100;
 		final ProgressPlugin.Task task;
-		if (progress != null) {
-			task = progress.startTask("Download " + request.url, 100);
+		final List<ProgressPlugin> progressPlugins = registry != null ? registry.getPlugins(ProgressPlugin.class)
+				: null;
+
+		if (progressPlugins != null && progressPlugins.size() > 1) {
+			final List<ProgressPlugin.Task> multiplexedTasks = new ArrayList<>();
+
+			for (ProgressPlugin progressPlugin : progressPlugins) {
+				multiplexedTasks.add(progressPlugin.startTask(name, size));
+			}
+
+			task = new ProgressPlugin.Task() {
+				@Override
+				public void worked(int units) {
+					for (ProgressPlugin.Task task : multiplexedTasks) {
+						task.worked(units);
+					}
+				}
+
+				@Override
+				public void done(String message, Throwable e) {
+					for (ProgressPlugin.Task task : multiplexedTasks) {
+						task.done(message, e);
+					}
+				}
+
+				@Override
+				public boolean isCanceled() {
+					for (ProgressPlugin.Task task : multiplexedTasks) {
+						if (task.isCanceled()) {
+							return true;
+						}
+					}
+					return false;
+				}
+			};
+		} else if (progressPlugins != null && progressPlugins.size() == 1) {
+			task = progressPlugins.get(0).startTask(name, size);
 		} else {
 			task = new ProgressPlugin.Task() {
-
 				@Override
 				public void worked(int units) {}
 
