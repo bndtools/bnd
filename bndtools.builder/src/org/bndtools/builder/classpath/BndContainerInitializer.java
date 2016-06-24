@@ -38,9 +38,12 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JavaModelManager;
+import org.osgi.util.function.Function;
+
 import aQute.bnd.build.CircularDependencyException;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
@@ -61,15 +64,31 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
     public BndContainerInitializer() {
         super();
-        Central.getInstance().addModelListener(this);
+        Central.onWorkspaceInit(new Function<Workspace,Void>() {
+            @Override
+            public Void apply(Workspace t) {
+                Central.getInstance().addModelListener(BndContainerInitializer.this);
+                return null;
+            }
+        });
     }
 
     @Override
-    public void initialize(IPath containerPath, IJavaProject javaProject) throws CoreException {
-        IProject project = javaProject.getProject();
+    public void initialize(IPath containerPath, final IJavaProject javaProject) throws CoreException {
+        Central.onWorkspaceInit(new Function<Workspace,Void>() {
+            @Override
+            public Void apply(Workspace a) {
+                try {
+                    IProject project = javaProject.getProject();
 
-        Updater updater = new Updater(project, javaProject);
-        updater.updateClasspathContainer(true);
+                    Updater updater = new Updater(project, javaProject);
+                    updater.updateClasspathContainer(true);
+                } catch (CoreException e) {
+                    logger.logError("Error initializing classpath container", e);
+                }
+                return null;
+            }
+        });
     }
 
     @Override

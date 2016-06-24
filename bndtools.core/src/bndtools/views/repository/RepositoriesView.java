@@ -58,10 +58,12 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerDropAdapter;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.FileTransfer;
@@ -71,10 +73,12 @@ import org.eclipse.swt.dnd.TransferData;
 import org.eclipse.swt.dnd.URLTransfer;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
@@ -116,7 +120,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
     private static final ILogger logger = Logger.getLogger(RepositoriesView.class);
 
     private final FilterPanelPart filterPart = new FilterPanelPart(Plugin.getDefault().getScheduler());
-    private final SearchableRepositoryTreeContentProvider contentProvider = new SearchableRepositoryTreeContentProvider();
+    private SearchableRepositoryTreeContentProvider contentProvider;
     private TreeViewer viewer;
     private Control filterPanel;
 
@@ -128,14 +132,42 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
     private String advancedSearchState;
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(final Composite parent) {
         // CREATE CONTROLS
-        Composite mainPanel = new Composite(parent, SWT.NONE);
+
+        final StackLayout stackLayout = new StackLayout();
+        parent.setLayout(stackLayout);
+
+        Composite labelParent = new Composite(parent, SWT.NONE);
+        FillLayout fillLayout = new FillLayout();
+        fillLayout.marginHeight = fillLayout.marginWidth = 10;
+        labelParent.setLayout(fillLayout);
+        Label label = new Label(labelParent, SWT.NONE);
+        label.setText("Workspace is loading, please wait...");
+        label.setBackground(parent.getBackground());
+        label.setForeground(parent.getForeground());
+
+        stackLayout.topControl = labelParent;
+        parent.layout();
+
+        final Composite mainPanel = new Composite(parent, SWT.NONE);
         filterPanel = filterPart.createControl(mainPanel, 5, 5);
         Tree tree = new Tree(mainPanel, SWT.FULL_SELECTION | SWT.MULTI);
         filterPanel.setBackground(tree.getBackground());
 
         viewer = new TreeViewer(tree);
+
+        contentProvider = new SearchableRepositoryTreeContentProvider() {
+            @Override
+            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+                super.inputChanged(viewer, oldInput, newInput);
+
+                if (newInput != null) {
+                    stackLayout.topControl = mainPanel;
+                    parent.layout();
+                }
+            }
+        };
         viewer.setContentProvider(contentProvider);
         ColumnViewerToolTipSupport.enableFor(viewer);
 
@@ -365,6 +397,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         createActions();
         fillToolBar(getViewSite().getActionBars().getToolBarManager());
 
+        // call refresh action once to make sure someone is trying to load repositories in this view
+        refreshAction.run();
     }
 
     protected void openURI(URI uri) {
@@ -457,7 +491,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                         try {
                             Central.refreshPlugins();
                         } catch (Exception e) {
-                            return new Status(Status.ERROR, Plugin.PLUGIN_ID, "Failed to refresh plugins");
+                            return new Status(Status.ERROR, Plugin.PLUGIN_ID, "Failed to refresh plugins", e);
                         }
                         return Status.OK_STATUS;
                     }

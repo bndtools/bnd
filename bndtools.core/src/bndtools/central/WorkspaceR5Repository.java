@@ -15,7 +15,6 @@ import java.util.Map.Entry;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
-import org.bndtools.utils.Function;
 import org.bndtools.utils.log.LogServiceAdapter;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -23,6 +22,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.log.LogService;
+import org.osgi.util.function.Function;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -53,7 +53,7 @@ public class WorkspaceR5Repository extends BaseRepository {
         Central.onWorkspaceInit(new Function<Workspace,Void>() {
 
             @Override
-            public Void run(Workspace a) {
+            public Void apply(Workspace a) {
                 try {
                     setupProjects();
                 } catch (Exception e) {

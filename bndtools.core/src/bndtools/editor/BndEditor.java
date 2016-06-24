@@ -46,11 +46,13 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
@@ -59,6 +61,7 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.editor.IFormPage;
+import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -66,6 +69,7 @@ import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.IElementStateListener;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
+import org.osgi.util.function.Function;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
@@ -88,7 +92,9 @@ import bndtools.preferences.BndPreferences;
 import bndtools.types.Pair;
 
 public class BndEditor extends ExtendedFormEditor implements IResourceChangeListener {
+
     private static final ILogger logger = Logger.getLogger(BndEditor.class);
+    private static final String SYNC_MESSAGE = "Workspace is loading, please wait...";
 
     public static final String WORKSPACE_EDITOR = "bndtools.bndWorkspaceConfigEditor";
 
@@ -359,6 +365,15 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         updateIncludedPages();
 
         showHighestPriorityPage();
+
+        for (int i = 0; i < getPageCount(); i++) {
+            Control control = getControl(i);
+
+            if (control instanceof ScrolledForm) {
+                ScrolledForm form = (ScrolledForm) control;
+                form.setMessage(SYNC_MESSAGE, IMessageProvider.WARNING);
+            }
+        }
     }
 
     void showHighestPriorityPage() {
@@ -443,11 +458,22 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         setPartNameForInput(input);
         sourcePage.getDocumentProvider().addElementStateListener(new ElementStateListener());
 
-        try {
-            loadEditModel();
-        } catch (Exception e) {
-            throw new PartInitException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading bnd edit model", e));
-        }
+        Central.onWorkspaceInit(new Function<Workspace,Void>() {
+            @Override
+            public Void apply(Workspace a) {
+                Display.getDefault().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            loadEditModel();
+                        } catch (Exception e) {
+                            logger.logError("Error initializing workspace repository", e);
+                        }
+                    }
+                });
+                return null;
+            }
+        });
     }
 
     private void loadEditModel() throws Exception {
@@ -461,6 +487,18 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         IDocument document = sourcePage.getDocumentProvider().getDocument(getEditorInput());
         model.loadFrom(new IDocumentWrapper(document));
         model.setBndResource(inputFile);
+
+        for (int i = 0; i < getPageCount(); i++) {
+            Control control = getControl(i);
+
+            if (control instanceof ScrolledForm) {
+                ScrolledForm form = (ScrolledForm) control;
+
+                if (SYNC_MESSAGE.equals(form.getMessage())) {
+                    form.setMessage(null, IMessageProvider.NONE);
+                }
+            }
+        }
     }
 
     private void initPages(IEditorSite site, IEditorInput input) throws PartInitException {

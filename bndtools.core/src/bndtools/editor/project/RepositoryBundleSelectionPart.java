@@ -45,6 +45,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
@@ -415,9 +416,14 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
         return bundles;
     }
 
-    protected void setBundles(List<VersionedClause> bundles) {
+    protected void setBundles(final List<VersionedClause> bundles) {
         this.bundles = bundles;
-        viewer.setInput(bundles);
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                viewer.setInput(bundles);
+            }
+        });
     }
 
     private void doAdd() {
