@@ -47,7 +47,6 @@ import aQute.bnd.version.Version;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
-import aQute.lib.strings.Strings;
 import aQute.libg.generics.Create;
 
 /**
