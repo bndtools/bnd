@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.bndtools.core.ui.icons.Icons;
-import org.bndtools.utils.Function;
 import org.bndtools.utils.jface.BoldStyler;
 import org.bndtools.utils.jface.StrikeoutStyler;
 import org.bndtools.utils.swt.AddRemoveButtonBarPart;
@@ -72,6 +71,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.service.repository.Repository;
+import org.osgi.util.function.Function;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
@@ -529,7 +529,7 @@ public class RepositorySelectionPart extends BndEditorPart {
             // Load the repos and clear the error message if the Workspace is initialised later.
             Central.onWorkspaceInit(new Function<Workspace,Void>() {
                 @Override
-                public Void run(final Workspace ws) {
+                public Void apply(final Workspace ws) {
                     SWTConcurrencyUtil.execForControl(runReposViewer.getControl(), true, new Runnable() {
                         @Override
                         public void run() {

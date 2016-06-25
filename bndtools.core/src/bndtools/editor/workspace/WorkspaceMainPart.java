@@ -1,5 +1,7 @@
 package bndtools.editor.workspace;
 
+import java.util.Collections;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -9,11 +11,14 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
@@ -27,7 +32,9 @@ import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.util.function.Function;
 
+import aQute.bnd.build.Workspace;
 import bndtools.Plugin;
 import bndtools.central.Central;
 
@@ -86,47 +93,81 @@ public class WorkspaceMainPart extends SectionPart {
     }
 
     @Override
-    public void initialize(IManagedForm form) {
+    public void initialize(final IManagedForm form) {
         super.initialize(form);
 
-        try {
-            Composite container = (Composite) getSection().getClient();
+        final Composite container = (Composite) getSection().getClient();
 
-            IFile buildFile = Central.getWorkspaceBuildFile();
-            if (buildFile == null)
-                return;
+        // create a layout stack and the first visible component will be an empty component with "waiting" message
+        // this will be replaced by real composite once workspace completes
+        final StackLayout stackLayout = new StackLayout();
+        container.setLayout(stackLayout);
 
-            if (!mainFile) {
-                ImageHyperlink link = form.getToolkit().createImageHyperlink(container, SWT.CENTER);
-                link.setText("Open main build.bnd file.");
-                link.setImage(bndFileImg);
-                link.addHyperlinkListener(new FileOpenLinkListener(buildFile.getFullPath()));
-            } else {
-                IResource[] extFiles;
+        Composite labelParent = new Composite(container, SWT.NONE);
+        FillLayout fillLayout = new FillLayout();
+        fillLayout.marginHeight = fillLayout.marginWidth = 10;
+        labelParent.setLayout(fillLayout);
+        Label label = new Label(labelParent, SWT.NONE);
+        label.setText("Workspace is loading, please wait...");
+        label.setBackground(container.getBackground());
+        label.setForeground(container.getForeground());
 
-                IContainer cnfDir = buildFile.getParent();
-                IFolder extDir = cnfDir.getFolder(new Path("ext"));
-                if (extDir.exists())
-                    extFiles = extDir.members();
-                else
-                    extFiles = new IResource[0];
+        stackLayout.topControl = labelParent;
+        container.layout();
 
-                if (extFiles.length > 0) {
-                    for (IResource extFile : extFiles) {
-                        if (extFile.getType() == IResource.FILE && "bnd".equalsIgnoreCase(extFile.getFileExtension())) {
-                            ImageHyperlink link = form.getToolkit().createImageHyperlink(container, SWT.CENTER);
-                            link.setText("Open " + extFile.getName());
-                            link.setImage(extFileImg);
-                            link.addHyperlinkListener(new FileOpenLinkListener(extFile.getFullPath()));
+        Central.onWorkspaceInit(new Function<Workspace,Void>() {
+
+            @Override
+            public Void apply(Workspace a) {
+                Display.getDefault().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            IFile buildFile = Central.getWorkspaceBuildFile();
+                            if (buildFile == null)
+                                return;
+
+                            Composite contents = new Composite(container, SWT.NONE);
+
+                            if (!mainFile) {
+                                ImageHyperlink link = form.getToolkit().createImageHyperlink(contents, SWT.CENTER);
+                                link.setText("Open main build.bnd file.");
+                                link.setImage(bndFileImg);
+                                link.addHyperlinkListener(new FileOpenLinkListener(buildFile.getFullPath()));
+                            } else {
+                                IResource[] extFiles;
+
+                                IContainer cnfDir = buildFile.getParent();
+                                IFolder extDir = cnfDir.getFolder(new Path("ext"));
+                                if (extDir.exists())
+                                    extFiles = extDir.members();
+                                else
+                                    extFiles = new IResource[0];
+
+                                if (extFiles.length > 0) {
+                                    for (IResource extFile : extFiles) {
+                                        if (extFile.getType() == IResource.FILE && "bnd".equalsIgnoreCase(extFile.getFileExtension())) {
+                                            ImageHyperlink link = form.getToolkit().createImageHyperlink(contents, SWT.CENTER);
+                                            link.setText("Open " + extFile.getName());
+                                            link.setImage(extFileImg);
+                                            link.addHyperlinkListener(new FileOpenLinkListener(extFile.getFullPath()));
+                                        }
+                                    }
+                                } else {
+                                    createMissingExtsWarningPanel(contents, form.getToolkit(), extDir.getFullPath());
+                                }
+                            }
+
+                            stackLayout.topControl = contents;
+                            container.layout();
+                        } catch (Exception e) {
+                            Plugin.error(Collections.singletonList(e.getMessage()));
                         }
                     }
-                } else {
-                    createMissingExtsWarningPanel(container, form.getToolkit(), extDir.getFullPath());
-                }
+                });
+                return null;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     private void createMissingExtsWarningPanel(Composite parent, FormToolkit tk, IPath extPath) {

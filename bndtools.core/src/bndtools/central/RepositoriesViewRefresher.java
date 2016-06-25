@@ -2,9 +2,11 @@ package bndtools.central;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,6 +19,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Display;
@@ -24,7 +27,9 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.util.function.Function;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
@@ -88,6 +93,14 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 
                     ensureLoaded(monitor, repos);
 
+                    // get repositories first, then do UI thread work
+
+                    final Map<Entry<TreeViewer,RefreshModel>,List<RepositoryPlugin>> entryRepos = new HashMap<>();
+
+                    for (Map.Entry<TreeViewer,RefreshModel> entry : viewers.entrySet()) {
+                        entryRepos.put(entry, entry.getValue().getRepositories());
+                    }
+
                     //
                     // And now back to the UI thread
                     //
@@ -104,7 +117,7 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 
                                 TreePath[] expandedTreePaths = entry.getKey().getExpandedTreePaths();
 
-                                entry.getKey().setInput(entry.getValue().getRepositories());
+                                entry.getKey().setInput(entryRepos.get(entry));
                                 if (expandedTreePaths != null && expandedTreePaths.length > 0)
                                     entry.getKey().setExpandedTreePaths(expandedTreePaths);
                             }
@@ -156,9 +169,27 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
         return Status.OK_STATUS;
     }
 
-    public void addViewer(TreeViewer viewer, RefreshModel model) {
+    public void addViewer(final TreeViewer viewer, final RefreshModel model) {
         this.viewers.put(viewer, model);
-        viewer.setInput(model.getRepositories());
+        Central.onWorkspaceInit(new Function<Workspace,Void>() {
+            @Override
+            public Void apply(Workspace a) {
+                new Job("Updating repositories") {
+                    @Override
+                    protected IStatus run(IProgressMonitor monitor) {
+                        final List<RepositoryPlugin> repositories = model.getRepositories();
+                        Display.getDefault().asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                viewer.setInput(repositories);
+                            }
+                        });
+                        return Status.OK_STATUS;
+                    }
+                }.schedule();
+                return null;
+            }
+        });
     }
 
     public void removeViewer(TreeViewer viewer) {

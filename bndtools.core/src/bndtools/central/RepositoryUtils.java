@@ -12,6 +12,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.model.repo.DependencyPhase;
 import bndtools.model.repo.RepositoryBundle;
@@ -51,6 +52,14 @@ public class RepositoryUtils {
                         if (!hideCache || !CACHE_REPO.equals(plugin.getName()))
                             repos.add(plugin);
                     }
+
+                    for (RepositoryPlugin repo : repos) {
+                        if (repo instanceof RegistryPlugin) {
+                            RegistryPlugin registry = (RegistryPlugin) repo;
+                            registry.setRegistry(bndWorkspace);
+                        }
+                    }
+
                     return repos;
                 }
             });

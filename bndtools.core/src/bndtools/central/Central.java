@@ -3,7 +3,6 @@ package bndtools.central;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -18,7 +17,6 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.IStartupParticipant;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ModelListener;
-import org.bndtools.utils.Function;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -42,6 +40,11 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.util.function.Function;
+import org.osgi.util.promise.Deferred;
+import org.osgi.util.promise.Failure;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -56,10 +59,10 @@ public class Central implements IStartupParticipant {
 
     private static final ILogger logger = Logger.getLogger(Central.class);
 
-    private static Central instance = null;
+    private static volatile Central instance = null;
 
-    static Workspace workspace = null;
-    static final List<Function<Workspace,Void>> workspaceInitCallbackQueue = new LinkedList<Function<Workspace,Void>>();
+    private static volatile Workspace workspace = null;
+    private static final Deferred<Workspace> workspaceQueue = new Deferred<>();
 
     static WorkspaceR5Repository r5Repository = null;
 
@@ -99,9 +102,7 @@ public class Central implements IStartupParticipant {
 
     @Override
     public void start() {
-        synchronized (Central.class) {
-            instance = this;
-        }
+        instance = this;
 
         repoListenerTracker = new RepositoryListenerPluginTracker(bundleContext);
         repoListenerTracker.open();
@@ -112,11 +113,12 @@ public class Central implements IStartupParticipant {
     public void stop() {
         repoListenerTracker.close();
 
-        synchronized (Central.class) {
-            instance = null;
-        }
+        instance = null;
 
-        workspace.close();
+        Workspace ws = workspace;
+        if (ws != null) {
+            ws.close();
+        }
 
         if (auxiliary != null)
             try {
@@ -127,9 +129,7 @@ public class Central implements IStartupParticipant {
     }
 
     public static Central getInstance() {
-        synchronized (Central.class) {
-            return instance;
-        }
+        return instance;
     }
 
     public Project getModel(IJavaProject project) {
@@ -194,57 +194,66 @@ public class Central implements IStartupParticipant {
         }
     }
 
-    public synchronized static Workspace getWorkspace() throws Exception {
-        if (instance == null)
-            throw new IllegalStateException("Central has not been initialised");
-
-        if (workspace != null)
-            return workspace;
-
-        Workspace newWorkspace = null;
-
-        try {
-            Workspace.setDriver(Constants.BNDDRIVER_ECLIPSE);
-            Workspace.addGestalt(Constants.GESTALT_INTERACTIVE, new Attrs());
-
-            newWorkspace = Workspace.getWorkspace(getWorkspaceDirectory());
-
-            newWorkspace.addBasicPlugin(new WorkspaceListener(newWorkspace));
-            newWorkspace.addBasicPlugin(instance.repoListenerTracker);
-            newWorkspace.addBasicPlugin(getWorkspaceR5Repository());
-
-            // Initialize projects in synchronized block
-            newWorkspace.getBuildOrder();
-
-            // Monitor changes in cnf so we can refresh the workspace
-            addCnfChangeListener(newWorkspace);
-
-            // The workspace has been initialized fully, set the field now
-            workspace = newWorkspace;
-
-            workspaceRepositoryChangeDetector = new WorkspaceRepositoryChangeDetector(workspace);
-
-            // Call the queued workspace init callbacks
-            while (!workspaceInitCallbackQueue.isEmpty()) {
-                Function<Workspace,Void> callback = workspaceInitCallbackQueue.remove(0);
-                callback.run(workspace);
-            }
-
-            return workspace;
-        } catch (final Exception e) {
-            if (newWorkspace != null) {
-                newWorkspace.close();
-            }
-            throw e;
+    public static Workspace getWorkspace() throws Exception {
+        if (getInstance() == null) {
+            throw new IllegalStateException("Central is not initialised");
         }
+        Workspace ws;
+        synchronized (workspaceQueue) {
+            ws = workspace;
+            if (ws != null) { // early check for workspace
+                return ws;
+            }
+            try {
+                Workspace.setDriver(Constants.BNDDRIVER_ECLIPSE);
+                Workspace.addGestalt(Constants.GESTALT_INTERACTIVE, new Attrs());
+
+                ws = Workspace.getWorkspace(getWorkspaceDirectory());
+
+                ws.addBasicPlugin(new WorkspaceListener(ws));
+                ws.addBasicPlugin(getInstance().repoListenerTracker);
+                ws.addBasicPlugin(getWorkspaceR5Repository());
+                ws.addBasicPlugin(new JobProgress());
+
+                // Initialize projects in synchronized block
+                ws.getBuildOrder();
+
+                // Monitor changes in cnf so we can refresh the workspace
+                addCnfChangeListener(ws);
+
+                workspaceRepositoryChangeDetector = new WorkspaceRepositoryChangeDetector(ws);
+
+                // The workspace has been initialized fully, set the field now
+                workspace = ws;
+            } catch (final Exception e) {
+                if (ws != null) {
+                    ws.close();
+                }
+                throw e;
+            }
+        }
+
+        workspaceQueue.resolve(ws); // notify onWorkspaceInit callbacks
+        return ws;
     }
 
-    public synchronized static void onWorkspaceInit(Function<Workspace,Void> callback) {
-        if (workspace != null)
-            callback.run(workspace);
-        else
-            workspaceInitCallbackQueue.add(callback);
+    public static void onWorkspaceInit(final Function<Workspace,Void> callback) {
+        Promise<Workspace> p = workspaceQueue.getPromise();
+        p.then(new Success<Workspace,Void>() {
+            @Override
+            public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
+                callback.apply(resolved.getValue());
+                return null;
+            }
+        }).then(null, callbackFailure);
     }
+
+    private static final Failure callbackFailure = new Failure() {
+        @Override
+        public void fail(Promise< ? > resolved) throws Exception {
+            logger.logError("onWorkspaceInit callback failed", resolved.getFailure());
+        }
+    };
 
     private static File getWorkspaceDirectory() throws CoreException {
         IWorkspaceRoot eclipseWorkspace = ResourcesPlugin.getWorkspace().getRoot();
@@ -310,7 +319,7 @@ public class Central implements IStartupParticipant {
                                 return false;
                             }
                             // Check files included by the -include directive in build.bnd
-                            List<File> includedFiles = workspace.getIncluded();
+                            List<File> includedFiles = getWorkspace().getIncluded();
                             if (includedFiles == null) {
                                 return false;
                             }

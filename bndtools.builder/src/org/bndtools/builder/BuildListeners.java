@@ -9,7 +9,6 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.build.api.BuildListener;
 import org.bndtools.build.api.BuildListener.BuildState;
-import org.bndtools.utils.Function;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IPath;
@@ -17,6 +16,7 @@ import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
+import org.osgi.util.function.Function;
 import org.osgi.util.tracker.ServiceTracker;
 
 import bndtools.central.Central;
@@ -80,7 +80,7 @@ public class BuildListeners {
         this.project = project;
         forEachListener(new Function<BuildListener,Object>() {
             @Override
-            public Object run(BuildListener listener) {
+            public Object apply(BuildListener listener) {
                 listener.buildStarting(project);
                 return null;
             }
@@ -92,7 +92,7 @@ public class BuildListeners {
         this.paths = paths;
         forEachListener(new Function<BuildListener,Object>() {
             @Override
-            public Object run(BuildListener listener) {
+            public Object apply(BuildListener listener) {
                 listener.builtBundles(project, paths);
                 return null;
             }
@@ -102,7 +102,7 @@ public class BuildListeners {
     public void fireReleased(final IProject project) {
         forEachListener(new Function<BuildListener,Object>() {
             @Override
-            public Object run(BuildListener listener) {
+            public Object apply(BuildListener listener) {
                 listener.released(project);
                 return null;
             }
@@ -112,7 +112,7 @@ public class BuildListeners {
     private void forEachListener(Function<BuildListener, ? extends Object> function) {
         synchronized (listeners) {
             for (BuildListener listener : listeners)
-                function.run(listener);
+                function.apply(listener);
         }
     }
 

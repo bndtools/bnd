@@ -4,7 +4,8 @@ import java.io.File;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
-import org.bndtools.utils.Function;
+import org.osgi.util.function.Function;
+
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.BndListener;
 import aQute.service.reporter.Reporter;
@@ -21,7 +22,7 @@ public final class WorkspaceListener extends BndListener {
             if (job.needsToSchedule()) {
                 Central.onWorkspaceInit(new Function<Workspace,Void>() {
                     @Override
-                    public Void run(final Workspace ws) {
+                    public Void apply(final Workspace ws) {
                         job.schedule();
                         return null;
                     }
