@@ -286,6 +286,7 @@ public class POM implements IPom {
 	public Archive binaryArchive() {
 		return revision.archive(
 				packaging == null || packaging.isEmpty() || packaging.equals("bundle") || packaging.equals("pom")
+						|| packaging.equals("eclipse-plugin")
 						? "jar" : packaging,
 				null);
 	}
