@@ -36,6 +36,7 @@ import java.util.zip.ZipFile;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.maven.PomParser;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -443,6 +444,16 @@ public abstract class Domain implements Iterable<String> {
 				Processor p = new Processor();
 				p.setProperties(file);
 				return domain(p);
+			}
+
+			if (file.getName().endsWith(".pom")) {
+				try {
+					PomParser p = new PomParser();
+					p.setProperties(p.getProperties(file));
+					return domain(p);
+				} catch (Exception e) {
+					throw new IllegalStateException(e);
+				}
 			}
 
 			// default & last. Assume JAR
