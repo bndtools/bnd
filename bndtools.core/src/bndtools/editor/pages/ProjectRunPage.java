@@ -13,6 +13,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
@@ -21,10 +22,12 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.util.function.Function;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.Plugin;
+import bndtools.central.Central;
 import bndtools.editor.common.MDSashForm;
 import bndtools.editor.project.AvailableBundlesPart;
 import bndtools.editor.project.RepositorySelectionPart;
@@ -86,7 +89,19 @@ public class ProjectRunPage extends FormPage {
         FormToolkit tk = managedForm.getToolkit();
         final ScrolledForm form = managedForm.getForm();
         form.setText("Resolve/Run");
-        updateFormImage(form);
+
+        Central.onWorkspaceInit(new Function<Workspace,Void>() {
+            @Override
+            public Void apply(Workspace t) {
+                Display.getDefault().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateFormImage(form);
+                    }
+                });
+                return null;
+            }
+        });
 
         tk.decorateFormHeading(form.getForm());
         form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
