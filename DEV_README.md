@@ -8,8 +8,8 @@ Bndtools aims to be a thin wrapper over bnd. This means that it is comparatively
 should be creating errors or warnings. In most cases bnd is responsible for generating errors at
 build time, it's then bndtools job to display them nicely to the user.
 
-Step 1 - Customise the bnd error
---------------------------------
+### Step 1 - Customise the bnd error
+
 
 Make sure that bnd is generating an appropriate error or warning using bnd's reporting API. By default
 all build errors are displayed as markers on the bnd.bnd file. This isn't usually the right file, and
@@ -26,8 +26,8 @@ e.g.
         .details(new org.bndtools.example.MyCustomizedLocationObject());
 
 
-Step 2 - Create a BuildErrorHandler
------------------------------------
+### Step 2 - Create a BuildErrorHandler
+
 
 Once bnd is generating extra error information then bndtools can use it to generate appropriate 
 markers. This is achieved through the use of the org.bndtools.build.api.BuildErrorDetailsHandler
@@ -70,8 +70,7 @@ e.g.
     return result;
     
     
-Step 3 - Hook in to the Eclipse plugin registry
------------------------------------------------
+### Step 3 - Hook in to the Eclipse plugin registry
 
 Bndtools uses the Eclipse plugin registry to discover BuildErrorDetailsHandler instances. To hook
 in to this you need to add the following to your plugin.xml
@@ -83,8 +82,20 @@ in to this you need to add the following to your plugin.xml
     </extension>
     
     
-Step 4 - You're done!
----------------------
+### Step 4 - You're done!
 
 Error markers will now appear in the right places. More work can be done to add quick fixes, but
 it's much harder than adding the markers.
+
+Build against local Bnd-Lib
+----------------------------
+
+Since BndTools relies on Bnd, it is sometimes necessary to use a local version of Bnd.
+
+The Repository for Bnd is configured with `bnd_repourl` in `gradle.properties`, located at the workspace-root. This file already contains a commented entry to point to a local distribution.
+
+	#bnd_repourl=../bnd/dist/bundles
+
+Assuming Bnd is located next to BndTools, just uncomment this line (otherwise adjust the relative path to your Bnd workspace location). Now you can do a local release of Bnd (see [documentation](https://github.com/bndtools/bnd) on how to release).
+
+Restart Eclipse or change some file in `cnf/ext`, which will cause the Eclipse workspace to pick-up the changes.
