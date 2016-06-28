@@ -75,6 +75,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
     @Override
     public void initialize(IPath containerPath, final IJavaProject javaProject) throws CoreException {
+        Updater.emptyClasspathEntries(javaProject); // We must initialize the container when this method is called
         Central.onWorkspaceInit(new Function<Workspace,Void>() {
             @Override
             public Void apply(Workspace a) {
@@ -271,6 +272,14 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 }
             }
             return false;
+        }
+
+        static void emptyClasspathEntries(IJavaProject javaProject) throws JavaModelException {
+            JavaCore.setClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, new IJavaProject[] {
+                    javaProject
+            }, new IClasspathContainer[] {
+                    new BndContainer(EMPTY_ENTRIES, 0L)
+            }, null);
         }
 
         private void setClasspathEntries(IClasspathEntry[] entries) throws JavaModelException {
