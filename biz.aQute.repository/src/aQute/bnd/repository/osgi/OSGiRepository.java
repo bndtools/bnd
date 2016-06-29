@@ -19,6 +19,7 @@ import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.repository.Prepare;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.configurable.Config;
@@ -29,7 +30,7 @@ import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.service.reporter.Reporter;
 
 @BndPlugin(name = "OSGiRepository", parameters = Config.class)
-public class OSGiRepository implements Plugin, RepositoryPlugin, Actionable, Refreshable, RegistryPlugin {
+public class OSGiRepository implements Plugin, RepositoryPlugin, Actionable, Refreshable, RegistryPlugin, Prepare {
 
 	interface Config {
 		/**
@@ -162,6 +163,11 @@ public class OSGiRepository implements Plugin, RepositoryPlugin, Actionable, Ref
 	@Override
 	public void setRegistry(Registry registry) {
 		this.registry = registry;
+	}
+
+	@Override
+	public void prepare() throws Exception {
+		getIndex();
 	}
 
 }

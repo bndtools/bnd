@@ -54,6 +54,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.action.Action;
 import aQute.bnd.service.extension.ExtensionActivator;
 import aQute.bnd.service.lifecycle.LifeCyclePlugin;
+import aQute.bnd.service.repository.Prepare;
 import aQute.bnd.service.repository.RepositoryDigest;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.url.MultiURLConnectionHandler;
@@ -506,9 +507,14 @@ public class Workspace extends Processor {
 		cf.close();
 	}
 
-	public List<RepositoryPlugin> getRepositories() {
+	public List<RepositoryPlugin> getRepositories() throws Exception {
 		if (data.repositories == null) {
 			data.repositories = getPlugins(RepositoryPlugin.class);
+			for (RepositoryPlugin repo : data.repositories) {
+				if (repo instanceof Prepare) {
+					((Prepare) repo).prepare();
+				}
+			}
 		}
 		return data.repositories;
 	}
@@ -582,7 +588,7 @@ public class Workspace extends Processor {
 				}
 
 				list.add(client);
-			} catch( Exception e) {
+			} catch (Exception e) {
 				exception(e, "Failed to load the communication settings");
 			}
 
@@ -680,7 +686,6 @@ public class Workspace extends Processor {
 	 * Return if we're in offline mode. Offline mode is defined as an
 	 * environment where nobody tells us the resources are out of date (refresh
 	 * or changed). This is currently defined as having bndlisteners.
-	 * 
 	 */
 	public boolean isOffline() {
 		return offline;
@@ -821,7 +826,7 @@ public class Workspace extends Processor {
 		return IO.getFile(buildDir, BUILDFILE).isFile();
 	}
 
-	public RepositoryPlugin getRepository(String repo) {
+	public RepositoryPlugin getRepository(String repo) throws Exception {
 		for (RepositoryPlugin r : getRepositories()) {
 			if (repo.equals(r.getName())) {
 				return r;
