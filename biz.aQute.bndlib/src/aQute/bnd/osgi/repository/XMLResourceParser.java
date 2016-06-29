@@ -158,7 +158,7 @@ public class XMLResourceParser extends Processor {
 
 			if (check(urlString != null, "Expected URL in referral")) {
 				// TODO resolve url
-				URI url = new URI(urlString);
+				URI url = this.url.resolve(urlString);
 				traversed.add(url);
 
 				int depth = 100;
