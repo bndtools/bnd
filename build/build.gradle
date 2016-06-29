@@ -116,7 +116,7 @@ def generateFeatureXmlTokens() {
   def masterVersion = String.format('%s.%s-%tY%<tm%<td-%<tH%<tM%<tS-g%.7s',
                        bnd('base-version'),
                        bnd('base-version-qualifier'),
-                       new Date(),
+                       Calendar.getInstance(TimeZone.getTimeZone("UTC")),
                        bnd('Git-SHA'))
   def tokens = ['master-version' : masterVersion, 'base-version' : bnd('base-version')]
   def plugins = fileTree("${buildDir}/plugins").getFiles()
