@@ -3,6 +3,7 @@ package aQute.lib.strings;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -104,6 +105,9 @@ public class Strings {
 	}
 
 	public static List<String> split(String regex, String s) {
+		if (s == null)
+			return Collections.emptyList();
+
 		String[] split = s.split(regex);
 		List<String> l = new ArrayList<String>(split.length);
 		for (int i = 0; i < split.length; i++)
