@@ -4,6 +4,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketTimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import aQute.bnd.service.progress.ProgressPlugin.Task;
 
@@ -16,6 +17,7 @@ public class ProgressWrappingStream extends InputStream {
 	private int			read;
 	private long		timeout;
 	private long		deadline;
+	private final AtomicBoolean	closed	= new AtomicBoolean();
 
 	public ProgressWrappingStream(InputStream delegate, String name, int size, Task task, long timeout) {
 		this.delegate = delegate;
@@ -51,7 +53,7 @@ public class ProgressWrappingStream extends InputStream {
 
 		long now = System.currentTimeMillis();
 		if (this.deadline < now) {
-			delegate.close();
+			close();
 			return true;
 		}
 		return false;
@@ -94,7 +96,7 @@ public class ProgressWrappingStream extends InputStream {
 	public int update(int count) throws IOException {
 
 		if (task.isCanceled()) {
-			delegate.close();
+			close();
 			throw new EOFException("Canceled");
 		}
 
@@ -109,14 +111,20 @@ public class ProgressWrappingStream extends InputStream {
 				task.worked(delta);
 			this.reported = where;
 		} else
-			delegate.close();
+			close();
 		return count;
 	}
 
 	@Override
 	public void close() throws IOException {
-		task.done("Finished", null);
-		delegate.close();
+		if (closed.getAndSet(true)) {
+			return;
+		}
+		try {
+			task.done("Finished", null);
+		} finally {
+			delegate.close();
+		}
 	}
 
 }
