@@ -1,0 +1,49 @@
+package aQute.bnd.repository.osgi;
+
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.List;
+import java.util.SortedSet;
+
+import aQute.bnd.http.HttpClient;
+import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
+import junit.framework.TestCase;
+
+public class OSGiIndexTest extends TestCase {
+	File	tmp		= IO.getFile("generated/tmp");
+	File	cache	= IO.getFile(tmp, "name");
+
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		IO.delete(tmp);
+	}
+	public void testIndex() throws Exception {
+		HttpClient client = new HttpClient();
+		client.setCache(tmp);
+		OSGiIndex oi = getIndex(client);
+
+		List<String> list = oi.getBridge().list("osgi.enroute.*");
+		assertNotNull(list);
+		assertEquals(32, list.size());
+
+		oi = getIndex(client);
+		list = oi.getBridge().list("osgi.enroute.*");
+		assertNotNull(list);
+		assertEquals(32, list.size());
+
+		System.out.println(list);
+
+		SortedSet<Version> versions = oi.getBridge().versions("osgi.enroute.rest.simple.provider");
+		assertEquals(1, versions.size());
+
+	}
+
+	public OSGiIndex getIndex(HttpClient client) throws Exception, URISyntaxException {
+		return new OSGiIndex("name", client, cache, Collections.singleton(
+				new URI("https://raw.githubusercontent.com/osgi/osgi.enroute/v1.0.0/cnf/distro/index.xml")), 0);
+	}
+}
