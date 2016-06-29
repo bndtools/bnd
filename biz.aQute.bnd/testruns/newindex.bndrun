@@ -1,0 +1,7 @@
+-plugin.foo = \
+    aQute.bnd.repository.osgi.OSGiRepository; \
+	name=enroute; \
+	locations=https://raw.githubusercontent.com/osgi/osgi.enroute/v1.0.0/cnf/distro/index.xml
+
+-standalone: 
+

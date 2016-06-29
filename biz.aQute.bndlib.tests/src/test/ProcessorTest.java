@@ -127,6 +127,9 @@ public class ProcessorTest extends TestCase {
 	public void testUnknownOsname() throws Exception {
 		try (Processor p = new Processor();) {
 			assertNative("osname=Beos;osversion=2.3;processor=FOO;processor=BLA", "(&(osgi.native.osname~=beos))");
+			fail("Expected failure because we use an unknown name");
+		} catch (IllegalArgumentException e) {
+			// ok
 		}
 	}
 

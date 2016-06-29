@@ -1,6 +1,7 @@
 package aQute.bnd.util.repository;
 
 import java.io.File;
+import java.nio.file.Files;
 
 import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
@@ -19,6 +20,7 @@ public class DownloadListenerPromise implements Success<File,Void>, Failure {
 	Promise<File>		promise;
 	private Reporter	reporter;
 	private String		task;
+	private File		linked;
 
 	/**
 	 * Use the promise to signal the Download Listeners
@@ -41,6 +43,12 @@ public class DownloadListenerPromise implements Success<File,Void>, Failure {
 	@Override
 	public Promise<Void> call(Promise<File> resolved) throws Exception {
 		reporter.trace("%s: success", task);
+		File file = resolved.getValue();
+
+		if (linked != null) {
+			Files.createLink(linked.toPath(), file.toPath());
+		}
+
 		for (DownloadListener dl : dls) {
 			try {
 				dl.success(resolved.getValue());
@@ -67,5 +75,9 @@ public class DownloadListenerPromise implements Success<File,Void>, Failure {
 	@Override
 	public String toString() {
 		return task;
+	}
+
+	public void linkTo(File linked) {
+		this.linked = linked;
 	}
 }
