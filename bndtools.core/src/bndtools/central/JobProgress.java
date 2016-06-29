@@ -53,7 +53,7 @@ public class JobProgress implements ProgressPlugin {
 
         @Override
         public void worked(int units) {
-            if (!isDone() && !_progressMonitor.isCanceled()) {
+            if (!isDone() && _progressMonitor != null && !_progressMonitor.isCanceled()) {
                 _progressMonitor.worked(units);
             }
         }
