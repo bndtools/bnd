@@ -19,6 +19,7 @@ import org.osgi.framework.Bundle;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
+import aQute.lib.exceptions.Exceptions;
 import bndtools.Plugin;
 
 public class OSGiFrameworkContentProvider implements IStructuredContentProvider {
@@ -26,6 +27,7 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
 
     List<OSGiFramework> frameworks = new ArrayList<OSGiFramework>();
 
+    @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         frameworks.clear();
 
@@ -44,7 +46,13 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
                     iconUrl = contributorBundle.getEntry(iconPath);
             }
 
-            List<RepositoryPlugin> repositories = (workspace != null) ? workspace.getRepositories() : Collections.<RepositoryPlugin> emptyList();
+            List<RepositoryPlugin> repositories;
+            try {
+                repositories = (workspace != null) ? workspace.getRepositories() : Collections.<RepositoryPlugin> emptyList();
+            } catch (Exception e) {
+                throw Exceptions.duck(e);
+            }
+
             for (RepositoryPlugin repo : repositories) {
                 try {
                     SortedSet<Version> versions = repo.versions(bsn);
@@ -65,8 +73,10 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
         }
     }
 
+    @Override
     public void dispose() {}
 
+    @Override
     public Object[] getElements(Object inputElement) {
         return frameworks.toArray();
     }
