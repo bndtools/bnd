@@ -2,6 +2,7 @@ package aQute.bnd.http;
 
 import java.io.File;
 import java.lang.reflect.Type;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
@@ -216,6 +217,9 @@ public class HttpRequest<T> {
 		return deferred.getPromise();
 	}
 
+	public Promise<T> async(URI url) throws MalformedURLException, InterruptedException {
+		return async(url.toURL());
+	}
 	@Override
 	public String toString() {
 		return "HttpRequest [verb=" + verb + ", upload=" + upload + ", download=" + download + ", headers=" + headers
@@ -284,4 +288,5 @@ public class HttpRequest<T> {
 		updateTag = true;
 		return this;
 	}
+
 }
