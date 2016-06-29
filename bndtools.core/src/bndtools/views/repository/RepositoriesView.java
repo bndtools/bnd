@@ -92,7 +92,9 @@ import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.resource.Requirement;
+import org.osgi.util.function.Function;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RemoteRepositoryPlugin;
@@ -398,7 +400,13 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         fillToolBar(getViewSite().getActionBars().getToolBarManager());
 
         // call refresh action once to make sure someone is trying to load repositories in this view
-        refreshAction.run();
+        Central.onWorkspaceInit(new Function<Workspace,Void>() {
+            @Override
+            public Void apply(Workspace t) {
+                refreshAction.run();
+                return null;
+            }
+        });
     }
 
     protected void openURI(URI uri) {
