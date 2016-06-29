@@ -16,7 +16,9 @@ public class LoggingProgressPlugin implements ProgressPlugin {
 		return new Task() {
 			@Override
 			public void done(String message, Throwable e) {
-				logger.warn(message, e);
+				if (e != null) {
+					logger.error(message, e);
+				}
 			}
 
 			@Override
