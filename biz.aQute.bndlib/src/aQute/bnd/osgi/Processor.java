@@ -1020,12 +1020,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 							} finally {
 								tmp.delete();
 							}
-						} catch (Exception mue) {
-							// ignore
+						} catch (MalformedURLException mue) {
+							if (fileMustExist)
+								error("Included file %s %s", file,
+										(file.isDirectory() ? "is directory" : "does not exist"));
+						} catch (Exception e) {
+							if (fileMustExist)
+								error("Error in processing included URL: %s", e, value);
 						}
-						if (fileMustExist)
-							error("Included file %s %s", file,
-									(file.isDirectory() ? "is directory" : "does not exist"));
 					} else
 						doIncludeFile(file, overwrite, p);
 				} catch (Exception e) {
