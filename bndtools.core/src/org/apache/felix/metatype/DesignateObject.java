@@ -26,6 +26,9 @@ import java.util.List;
  *
  * @author <a href="mailto:dev@felix.apache.org">Felix Project Team</a>
  */
+@SuppressWarnings({
+        "rawtypes", "unchecked"
+})
 public class DesignateObject extends OptionalAttributes {
 
     private String ocdRef;

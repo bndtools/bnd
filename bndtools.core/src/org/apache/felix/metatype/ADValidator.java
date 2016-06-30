@@ -29,6 +29,9 @@ import org.osgi.service.metatype.AttributeDefinition;
  *
  * @author <a href="mailto:dev@felix.apache.org">Felix Project Team</a>
  */
+@SuppressWarnings({
+        "rawtypes", "unchecked", "deprecation"
+})
 final class ADValidator {
     /**
      * Validates a given input string according to the type specified by the given attribute definition.

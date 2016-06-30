@@ -27,6 +27,9 @@ import java.util.Map;
  *
  * @author <a href="mailto:dev@felix.apache.org">Felix Project Team</a>
  */
+@SuppressWarnings({
+        "rawtypes", "unchecked"
+})
 public class OCD extends OptionalAttributes {
 
     private String id;

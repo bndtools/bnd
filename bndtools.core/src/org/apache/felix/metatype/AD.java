@@ -34,6 +34,9 @@ import bndtools.Plugin;
  *
  * @author <a href="mailto:dev@felix.apache.org">Felix Project Team</a>
  */
+@SuppressWarnings({
+        "rawtypes", "unchecked"
+})
 public class AD extends OptionalAttributes {
 
     /**

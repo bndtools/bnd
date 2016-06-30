@@ -21,6 +21,9 @@ package org.apache.felix.metatype;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings({
+        "rawtypes", "unchecked"
+})
 public class OptionalAttributes {
     private Map optionalAttributes;
 
