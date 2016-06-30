@@ -1,87 +1,88 @@
 package bndtools.central;
 
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-
 import aQute.bnd.service.progress.ProgressPlugin;
 import bndtools.Plugin;
 
 public class JobProgress implements ProgressPlugin {
+    static final ILogger logger = Logger.getLogger(JobProgress.class);
 
     @Override
-    public Task startTask(final String name, final int size) {
-        final ProgressTask task = new ProgressTask(name, size);
+    public Task startTask(String name, int size) {
+        TaskJob taskjob = new TaskJob(name, size);
+        taskjob.schedule();
+        return taskjob;
+    }
 
-        new Job("Bnd workspace build") {
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                task.setProgressMonitor(monitor);
-                monitor.beginTask(name, size);
+    private static class TaskJob extends Job implements Task {
+        private final String name;
+        private final int size;
+        private final AtomicReference<IStatus> status = new AtomicReference<>();
+        private volatile IProgressMonitor monitor;
 
-                while (!task.isDone() && !task.isCanceled()) {
+        TaskJob(String name, int size) {
+            super(name);
+            this.name = name;
+            this.size = size;
+            logger.logInfo(name, null);
+        }
+
+        @Override
+        protected IStatus run(IProgressMonitor monitor) {
+            this.monitor = monitor;
+
+            monitor.beginTask(name, size);
+            while (status.get() == null) {
+                if (!isCanceled(monitor)) {
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {}
                 }
-
-                Throwable error = task.getError();
-
-                if (error != null) {
-                    return new Status(Status.ERROR, Plugin.PLUGIN_ID, error.getMessage(), error);
-                }
-
-                return Status.OK_STATUS;
             }
-        }.schedule();
+            monitor.done();
 
-        return task;
-    }
+            return status.get();
+        }
 
-    private static class ProgressTask implements Task {
-        private final String _name;
-        private final int _size;
-        private IProgressMonitor _progressMonitor;
-        private boolean _done;
-        private Throwable _error;
-
-        public ProgressTask(String name, int size) {
-            _name = name;
-            _size = size;
+        /**
+         * Must ensure task is done if true is returned.
+         */
+        private boolean isCanceled(IProgressMonitor m) {
+            boolean canceled = m.isCanceled();
+            if (canceled) {
+                status.compareAndSet(null, new Status(Status.CANCEL, Plugin.PLUGIN_ID, "Canceled"));
+            }
+            return canceled;
         }
 
         @Override
         public void worked(int units) {
-            if (!isDone() && _progressMonitor != null && !_progressMonitor.isCanceled()) {
-                _progressMonitor.worked(units);
+            IProgressMonitor m = monitor;
+            if (m == null || (status.get() != null)) {
+                return;
             }
+            m.worked(units);
         }
 
         @Override
-        public void done(String message, Throwable e) {
-            _done = true;
-            _progressMonitor.done();
-            _error = e;
+        public void done(String message, Throwable error) {
+            status.compareAndSet(null, new Status(error == null ? Status.OK : Status.ERROR, Plugin.PLUGIN_ID, message, error));
         }
 
         @Override
         public boolean isCanceled() {
-            return _progressMonitor.isCanceled();
-        }
-
-        public boolean isDone() {
-            return _done;
-        }
-
-        public void setProgressMonitor(IProgressMonitor monitor) {
-            _progressMonitor = monitor;
-            _progressMonitor.beginTask(_name, _size);
-        }
-
-        public Throwable getError() {
-            return _error;
+            IProgressMonitor m = monitor;
+            if (m == null) {
+                return false;
+            }
+            return isCanceled(m);
         }
     }
-
 }
