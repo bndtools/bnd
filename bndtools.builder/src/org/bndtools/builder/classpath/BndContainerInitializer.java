@@ -275,7 +275,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
 
         static void ensureClasspathContainer(IJavaProject javaProject) throws JavaModelException {
-            if (getClasspathContainer(javaProject) != null) {
+            if (getClasspathContainer(javaProject) instanceof BndContainer) {
                 return;
             }
             JavaCore.setClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, new IJavaProject[] {
