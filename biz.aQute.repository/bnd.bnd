@@ -60,8 +60,8 @@ Export-Package: \
 	org.osgi.service.indexer,\
 	aQute.bnd.repository.p2.provider;bnd-plugins=true,\
 	aQute.bnd.repository.maven.pom.provider;bnd-plugins=true,\
+	aQute.bnd.repository.osgi;bnd-plugins=true,  \
 	aQute.maven.*, \
-	aQute.bnd.repository.osgi
 	
 
 # NB: `org.osgi.*` API is included in Private-Package for running outside of OSGi.
