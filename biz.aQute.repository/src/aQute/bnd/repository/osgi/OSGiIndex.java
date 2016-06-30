@@ -1,6 +1,8 @@
 package aQute.bnd.repository.osgi;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,8 +34,7 @@ class OSGiIndex {
 	private final File						cache;
 	private final String					name;
 
-	OSGiIndex(String name, HttpClient client, File cache, Collection<URI> urls, int staleTime)
-			throws Exception {
+	OSGiIndex(String name, HttpClient client, File cache, Collection<URI> urls, int staleTime) throws Exception {
 		this.name = name;
 		this.client = client;
 		this.cache = cache;
@@ -91,16 +92,20 @@ class OSGiIndex {
 		} else {
 			req = client.build().useCache(TimeUnit.DAYS.toMillis(365));
 		}
-		return req.async(url).map(toResources());
+		return req.async(url).map(toResources(url));
 	}
 
-	private Function<File,List<Resource>> toResources() {
+	private Function<File,List<Resource>> toResources(final URI url) {
 		return new Function<File,List<Resource>>() {
 
 			@Override
 			public List<Resource> apply(File file) {
 				try {
-					return XMLResourceParser.getResources(file.toURI());
+					try (InputStream in = new FileInputStream(file)) {
+						try (XMLResourceParser xmlp = new XMLResourceParser(in, name, url);) {
+							return xmlp.parse();
+						}
+					}
 				} catch (Exception e) {
 					throw Exceptions.duck(e);
 				}
@@ -119,15 +124,13 @@ class OSGiIndex {
 			return null;
 		}
 
-		String s = content.osgi_content();
-		if (s == null) {
+		URI url = content.url();
+		if (url == null) {
 			log.warn(name + ": No URL in content capability for " + resource);
 			return null;
 		}
 
-		URI uri = new URI(s);
-
-		return client.build().useCache(file, staleTime).async(uri);
+		return client.build().useCache(file, staleTime).async(url);
 	}
 
 	BridgeRepository getBridge() throws Exception {

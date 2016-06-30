@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 
+import org.osgi.util.promise.Promise;
+
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
@@ -39,7 +41,15 @@ public class OSGiIndexTest extends TestCase {
 
 		SortedSet<Version> versions = oi.getBridge().versions("osgi.enroute.rest.simple.provider");
 		assertEquals(1, versions.size());
+		System.out.println(versions);
 
+		File f = new File(tmp, "f");
+		Promise<File> promise = oi.get("osgi.enroute.rest.simple.provider", new Version("2.0.2.201509211431"), f);
+		assertNotNull(promise);
+		File value = promise.getValue();
+		assertEquals(value, f);
+		promise = oi.get("osgi.enroute.rest.simple.provider", new Version("2.0.2.201509211431"), f);
+		assertNotNull(promise);
 	}
 
 	public OSGiIndex getIndex(HttpClient client) throws Exception, URISyntaxException {
