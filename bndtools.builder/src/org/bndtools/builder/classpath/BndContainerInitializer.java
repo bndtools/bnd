@@ -75,21 +75,10 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
     @Override
     public void initialize(IPath containerPath, final IJavaProject javaProject) throws CoreException {
-        Updater.ensureClasspathContainer(javaProject); // We must ensure the container exists before this method returns
-        Central.onWorkspaceInit(new Function<Workspace,Void>() {
-            @Override
-            public Void apply(Workspace a) {
-                try {
-                    IProject project = javaProject.getProject();
+        IProject project = javaProject.getProject();
 
-                    Updater updater = new Updater(project, javaProject);
-                    updater.updateClasspathContainer(true);
-                } catch (CoreException e) {
-                    logger.logError("Error initializing classpath container", e);
-                }
-                return null;
-            }
-        });
+        Updater updater = new Updater(project, javaProject);
+        updater.updateClasspathContainer(true);
     }
 
     @Override
@@ -272,17 +261,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 }
             }
             return false;
-        }
-
-        static void ensureClasspathContainer(IJavaProject javaProject) throws JavaModelException {
-            if (getClasspathContainer(javaProject) instanceof BndContainer) {
-                return;
-            }
-            JavaCore.setClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, new IJavaProject[] {
-                    javaProject
-            }, new IClasspathContainer[] {
-                    new BndContainer(EMPTY_ENTRIES, 0L)
-            }, null);
         }
 
         private void setClasspathEntries(IClasspathEntry[] entries) throws JavaModelException {
