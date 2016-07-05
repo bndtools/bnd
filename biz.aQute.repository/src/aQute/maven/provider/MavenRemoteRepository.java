@@ -79,9 +79,16 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 
 		TaggedData go = client.build().put().upload(file).updateTag().asTag().go(url);
 
-		if (go.getResponseCode() != HttpURLConnection.HTTP_CREATED && go.getResponseCode() != HttpURLConnection.HTTP_OK)
-			throw new IOException("Could not store " + path + " from " + file + " with " + go);
+		switch (go.getState()) {
+			case NOT_FOUND :
+			case OTHER :
+				throw new IOException("Could not store " + path + " from " + file + " with " + go);
 
+			case UNMODIFIED :
+			case UPDATED :
+			default :
+				break;
+		}
 		client.build().put().upload(sha1.asHex()).asTag().go(new URL(base + path + ".sha1"));
 		client.build().put().upload(md5.asHex()).asTag().go(new URL(base + path + ".md5"));
 
