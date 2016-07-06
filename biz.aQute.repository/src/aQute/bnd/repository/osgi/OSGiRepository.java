@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -24,6 +25,7 @@ import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.configurable.Config;
 import aQute.lib.converter.Converter;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.reporter.slf4j.Slf4jReporter;
@@ -125,8 +127,41 @@ public class OSGiRepository implements Plugin, RepositoryPlugin, Actionable, Ref
 	}
 
 	@Override
-	public Map<String,Runnable> actions(Object... target) throws Exception {
-		return null;
+	public Map<String,Runnable> actions(final Object... target) throws Exception {
+		Map<String,Runnable> menu = new LinkedHashMap<>();
+		switch (target.length) {
+			case 0 :
+				menu.put("Reload Index & Bundles", new Runnable() {
+
+					@Override
+					public void run() {
+						try {
+							getIndex(true);
+						} catch (Exception e) {
+							throw Exceptions.duck(e);
+						}
+					}
+				});
+				break;
+			case 2 :
+				menu.put("Reload Bundle", new Runnable() {
+
+					@Override
+					public void run() {
+						try {
+							String bsn = (String) target[0];
+							Version version = (Version) target[1];
+							File f = get(bsn, version, null);
+							if (f != null)
+								IO.delete(f);
+						} catch (Exception e) {
+							throw Exceptions.duck(e);
+						}
+					}
+				});
+				break;
+		}
+		return menu;
 	}
 
 	@Override
@@ -141,7 +176,7 @@ public class OSGiRepository implements Plugin, RepositoryPlugin, Actionable, Ref
 
 	@Override
 	public synchronized boolean refresh() throws Exception {
-		getIndex(true);
+		getIndex(false);
 		return true;
 	}
 
@@ -170,4 +205,8 @@ public class OSGiRepository implements Plugin, RepositoryPlugin, Actionable, Ref
 		getIndex();
 	}
 
+	@Override
+	public String toString() {
+		return "OSGi[name=" + config.name() + "]";
+	}
 }
