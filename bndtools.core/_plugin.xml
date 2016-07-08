@@ -522,6 +522,13 @@
       />
    </extension>
 
+   <extension point="org.eclipse.jdt.launching.runtimeClasspathEntryResolvers">
+      <runtimeClasspathEntryResolver
+         id="bndtools.core.BndContainerRuntimeClasspathEntryResolver"
+         class="bndtools.launch.BndContainerRuntimeClasspathEntryResolver"
+         container="aQute.bnd.classpath.container" />
+    </extension>
+
    <extension point="org.eclipse.core.expressions.propertyTesters">
       <propertyTester id="org.bndtools.core.launchPropertyTester"
          namespace="org.bndtools.core"
