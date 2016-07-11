@@ -93,6 +93,7 @@ public class Workspace extends Processor {
 	static Map<File,WeakReference<Workspace>>	cache							= newHashMap();
 	static Processor							defaults						= null;
 	final Map<String,Project>					models							= newHashMap();
+	private final Set<String>					modelsUnderConstruction			= newSet();
 	final Map<String,Action>					commands						= newMap();
 	final File									buildDir;
 	final Maven									maven							= new Maven(Processor.getExecutor());
@@ -263,12 +264,18 @@ public class Workspace extends Processor {
 			if (project != null)
 				return project;
 
-			File projectDir = getFile(bsn);
-			project = new Project(this, projectDir);
-			if (!project.isValid())
-				return null;
+			if (modelsUnderConstruction.add(bsn)) {
+				try {
+					File projectDir = getFile(bsn);
+					project = new Project(this, projectDir);
+					if (!project.isValid())
+						return null;
 
-			models.put(bsn, project);
+					models.put(bsn, project);
+				} finally {
+					modelsUnderConstruction.remove(bsn);
+				}
+			}
 			return project;
 		}
 	}
