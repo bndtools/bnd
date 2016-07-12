@@ -70,10 +70,14 @@ public class Annotation {
 	}
 
 	public <T extends java.lang.annotation.Annotation> T getAnnotation() throws Exception {
+		return getAnnotation(getClass().getClassLoader());
+	}
+
+	public <T extends java.lang.annotation.Annotation> T getAnnotation(ClassLoader cl) throws Exception {
 		String cname = name.getFQN();
 		try {
 			@SuppressWarnings("unchecked")
-			Class<T> c = (Class<T>) getClass().getClassLoader().loadClass(cname);
+			Class<T> c = (Class<T>) cl.loadClass(cname);
 			return getAnnotation(c);
 		} catch (ClassNotFoundException e) {} catch (NoClassDefFoundError e) {}
 		return null;
