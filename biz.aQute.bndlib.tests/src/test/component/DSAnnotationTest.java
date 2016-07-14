@@ -1997,16 +1997,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	public void testBasic13() throws Exception {
-		Builder b = new Builder();
-		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13_*");
-		b.setProperty("Private-Package", "test.component");
-		b.addClasspath(new File("bin"));
-
-		Jar jar = b.build();
-		assertOk(b);
-		Attributes a = getAttr(jar);
-		checkProvides(a, SERIALIZABLE_RUNNABLE);
-		checkRequires(a, true, LogService.class.getName());
+		Jar jar = setupBasic13(null, LogService.class.getName(), SERIALIZABLE_RUNNABLE);
 
 		// Test 1.3 signature methods give 1.3 namespace
 		checkDS13(jar, "test.component.DSAnnotationTest$DS13_activate_basic", "", "");
@@ -2019,6 +2010,36 @@ public class DSAnnotationTest extends BndTestCase {
 		checkDS13(jar, "test.component.DSAnnotationTest$DS13_pids_basic", "pid1 pid2", "");
 		checkDS13(jar, "test.component.DSAnnotationTest$DS13_dollar_pids_basic",
 				"test.component.DSAnnotationTest$DS13_dollar_pids_basic pid2", "");
+		// suppress cap/req
+		setupBasic13("nocapabilities", LogService.class.getName());
+		setupBasic13("norequirements", null, SERIALIZABLE_RUNNABLE);
+		setupBasic13("nocapabilities,norequirements", null);
+
+	}
+
+	private Jar setupBasic13(String options, String requires, String... provides) throws IOException, Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13_*");
+		if (options != null) {
+			b.setProperty(Constants.DSANNOTATIONS_OPTIONS, options);
+		}
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+		Attributes a = getAttr(jar);
+		if (provides == null || provides.length == 0) {
+			checkProvides(a);
+		} else {
+			checkProvides(a, provides);
+		}
+		if (requires == null) {
+			checkRequires(a, true);
+		} else {
+			checkRequires(a, true, requires);
+		}
+		return jar;
 	}
 
 	private void checkDS13(Jar jar, String name, String pids, String scope) throws Exception, XPathExpressionException {
