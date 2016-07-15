@@ -61,6 +61,7 @@ import aQute.service.reporter.Report.Location;
 @Mojo(name = "bnd-process", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class BndMavenPlugin extends AbstractMojo {
 
+	private static final String						MANIFEST_LAST_MODIFIED	= "aQute.bnd.maven.plugin.BndMavenPlugin.manifestLastModified";
 	private static final String	PACKAGING_POM	= "pom";
 	private static final String	TSTAMP			= "${tstamp}";
 
@@ -87,7 +88,7 @@ public class BndMavenPlugin extends AbstractMojo {
 
     @Parameter(defaultValue = "false", readonly = true)
     private boolean				skip;
-    
+
 	@Component
 	private BuildContext		buildContext;
 
@@ -100,7 +101,7 @@ public class BndMavenPlugin extends AbstractMojo {
 			log.debug("skip project as configured");
 			return;
 		}
-        
+
 		// Exit without generating anything if this is a pom-packaging project.
 		// Probably it's just a parent project.
 		if (PACKAGING_POM.equals(project.getPackaging())) {
@@ -164,7 +165,7 @@ public class BndMavenPlugin extends AbstractMojo {
 			}
 
 			// Compute bnd sourcepath
-			boolean delta = !buildContext.isIncremental() || !manifestPath.exists();
+			boolean delta = !buildContext.isIncremental() || manifestOutOfDate();
 			List<File> sourcepath = new ArrayList<File>();
 			if (sourceDir.exists()) {
 				sourcepath.add(sourceDir.getCanonicalFile());
@@ -342,9 +343,9 @@ public class BndMavenPlugin extends AbstractMojo {
 			}
 		}
 
-		if (!manifestPath.exists() || manifestPath.lastModified() < lastModified) {
+		if (manifestOutOfDate() || manifestPath.lastModified() < lastModified) {
 			if (log.isDebugEnabled()) {
-				if (manifestPath.exists())
+				if (!manifestOutOfDate())
 					log.debug(String.format("Updating lastModified: %tF %<tT.%<tL '%s'", manifestPath.lastModified(),
 							manifestPath));
 				else
@@ -354,7 +355,20 @@ public class BndMavenPlugin extends AbstractMojo {
 			try (OutputStream manifestOut = buildContext.newFileOutputStream(manifestPath)) {
 				jar.writeManifest(manifestOut);
 			}
+			buildContext.setValue(MANIFEST_LAST_MODIFIED, manifestPath.lastModified());
 		}
+	}
+
+	private boolean manifestOutOfDate() {
+		if (!manifestPath.isFile()) {
+			return true;
+		}
+
+		long manifestLastModified = 0L;
+		if (buildContext.getValue(MANIFEST_LAST_MODIFIED) != null) {
+			manifestLastModified = (Long) buildContext.getValue(MANIFEST_LAST_MODIFIED);
+		}
+		return manifestPath.lastModified() != manifestLastModified;
 	}
 
 	private class BeanProperties extends Properties {
