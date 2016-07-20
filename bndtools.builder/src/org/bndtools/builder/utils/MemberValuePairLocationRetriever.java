@@ -13,7 +13,7 @@ import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
-import org.osgi.util.function.Function;
+import org.osgi.util.function.Predicate;
 
 /**
  * Visitor that will "visit" an ASTNode and its children until it finds the expected MemberValue pair to retain its
@@ -22,7 +22,7 @@ import org.osgi.util.function.Function;
 public class MemberValuePairLocationRetriever extends ASTVisitor {
 
     private final IAnnotation javaAnnotation;
-    private final Function<String,Boolean> annotationNameMatch;
+    private final Predicate<String> annotationNameMatch;
     private final String memberName;
 
     private ISourceRange locatedSourceRange = null;
@@ -30,7 +30,7 @@ public class MemberValuePairLocationRetriever extends ASTVisitor {
     /**
      * Constructor
      */
-    public MemberValuePairLocationRetriever(final IAnnotation javaAnnotation, final Function<String,Boolean> annotationNameMatch, final String memberName) {
+    public MemberValuePairLocationRetriever(final IAnnotation javaAnnotation, final Predicate<String> annotationNameMatch, final String memberName) {
         this.javaAnnotation = javaAnnotation;
         this.annotationNameMatch = annotationNameMatch;
         this.memberName = memberName;
@@ -104,7 +104,13 @@ public class MemberValuePairLocationRetriever extends ASTVisitor {
         final IAnnotationBinding annotationBinding = node.resolveAnnotationBinding();
         if (annotationBinding != null) {
             final String nodeName = annotationBinding.getAnnotationType().getQualifiedName();
-            if (this.annotationNameMatch.apply(nodeName)) {
+            boolean match;
+            try {
+                match = this.annotationNameMatch.test(nodeName);
+            } catch (Exception e) {
+                match = false;
+            }
+            if (match) {
                 this.locatedSourceRange = new SourceRange(node.getValue().getStartPosition(), node.getValue().getLength());
             }
         }
