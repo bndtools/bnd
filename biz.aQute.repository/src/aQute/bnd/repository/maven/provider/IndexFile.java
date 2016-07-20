@@ -80,7 +80,7 @@ class IndexFile {
 			Promise<File> f = i.next();
 			try {
 				if (!f.isDone())
-					f.getValue();
+					f.getFailure();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
