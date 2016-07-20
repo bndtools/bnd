@@ -16,14 +16,14 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.bndtools.utils.Predicate;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.osgi.util.function.Predicate;
 
 public class SelectionUtils {
 
-    public static <T> Collection<T> getSelectionMembers(ISelection selection, Class<T> clazz) {
+    public static <T> Collection<T> getSelectionMembers(ISelection selection, Class<T> clazz) throws Exception {
         return getSelectionMembers(selection, clazz, null);
     }
 
@@ -43,7 +43,7 @@ public class SelectionUtils {
         return null;
     }
 
-    public static <T> Collection<T> getSelectionMembers(ISelection selection, Class<T> clazz, Predicate< ? super T> filter) {
+    public static <T> Collection<T> getSelectionMembers(ISelection selection, Class<T> clazz, Predicate< ? super T> filter) throws Exception {
         if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
             return Collections.emptyList();
         }
@@ -56,14 +56,14 @@ public class SelectionUtils {
             if (clazz.isInstance(element)) {
                 @SuppressWarnings("unchecked")
                 T casted = (T) element;
-                if (filter == null || filter.select(casted)) {
+                if (filter == null || filter.test(casted)) {
                     result.add(casted);
                 }
             } else if (element instanceof IAdaptable) {
                 @SuppressWarnings("unchecked")
                 T adapted = (T) ((IAdaptable) element).getAdapter(clazz);
                 if (adapted != null) {
-                    if (filter == null || filter.select(adapted)) {
+                    if (filter == null || filter.test(adapted)) {
                         result.add(adapted);
                     }
                 }

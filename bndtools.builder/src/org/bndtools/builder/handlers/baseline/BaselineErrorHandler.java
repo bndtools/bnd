@@ -43,7 +43,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ui.IMarkerResolution;
-import org.osgi.util.function.Function;
+import org.osgi.util.function.Predicate;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.differ.Baseline.Info;
@@ -148,9 +148,9 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
                             parser.setResolveBindings(true);
                             CompilationUnit ast = (CompilationUnit) parser.createAST(null);
 
-                            MemberValuePairLocationRetriever mvpRetriever = new MemberValuePairLocationRetriever(annot, new Function<String,Boolean>() {
+                            MemberValuePairLocationRetriever mvpRetriever = new MemberValuePairLocationRetriever(annot, new Predicate<String>() {
                                 @Override
-                                public Boolean apply(String t) {
+                                public boolean test(String t) {
                                     return ANNOTATION_VERSION_BND.equals(t) || ANNOTATION_VERSION_OSGI.equals(t);
                                 }
                             }, "value");

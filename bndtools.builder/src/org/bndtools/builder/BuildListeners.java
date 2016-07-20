@@ -78,9 +78,9 @@ public class BuildListeners {
 
     public void fireBuildStarting(final IProject project) {
         this.project = project;
-        forEachListener(new Function<BuildListener,Object>() {
+        forEachListener(new Function<BuildListener,Void>() {
             @Override
-            public Object apply(BuildListener listener) {
+            public Void apply(BuildListener listener) {
                 listener.buildStarting(project);
                 return null;
             }
@@ -90,9 +90,9 @@ public class BuildListeners {
     public void fireBuiltBundles(final IProject project, final IPath[] paths) {
         this.project = project;
         this.paths = paths;
-        forEachListener(new Function<BuildListener,Object>() {
+        forEachListener(new Function<BuildListener,Void>() {
             @Override
-            public Object apply(BuildListener listener) {
+            public Void apply(BuildListener listener) {
                 listener.builtBundles(project, paths);
                 return null;
             }
@@ -100,19 +100,24 @@ public class BuildListeners {
     }
 
     public void fireReleased(final IProject project) {
-        forEachListener(new Function<BuildListener,Object>() {
+        forEachListener(new Function<BuildListener,Void>() {
             @Override
-            public Object apply(BuildListener listener) {
+            public Void apply(BuildListener listener) {
                 listener.released(project);
                 return null;
             }
         });
     }
 
-    private void forEachListener(Function<BuildListener, ? extends Object> function) {
+    private void forEachListener(Function<BuildListener,Void> function) {
         synchronized (listeners) {
-            for (BuildListener listener : listeners)
-                function.apply(listener);
+            for (BuildListener listener : listeners) {
+                try {
+                    function.apply(listener);
+                } catch (Exception e) {
+                    logger.logError("BuildListener error", e);
+                }
+            }
         }
     }
 
