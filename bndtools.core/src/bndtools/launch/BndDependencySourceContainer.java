@@ -17,7 +17,6 @@ import org.eclipse.debug.core.sourcelookup.ISourceContainerType;
 import org.eclipse.debug.core.sourcelookup.ISourceLookupDirector;
 import org.eclipse.debug.core.sourcelookup.containers.ArchiveSourceContainer;
 import org.eclipse.debug.core.sourcelookup.containers.CompositeSourceContainer;
-import org.eclipse.debug.core.sourcelookup.containers.DefaultSourceContainer;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.launching.sourcelookup.containers.JavaProjectSourceContainer;
@@ -35,7 +34,7 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof DefaultSourceContainer;
+        return obj instanceof BndDependencySourceContainer;
     }
 
     @Override
