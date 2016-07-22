@@ -134,10 +134,16 @@ public class ResolutionWizard extends Wizard {
             });
             // Do not change the order of existing runbundles because they migh have been ordered manually
             List<VersionedClause> diffAddBundles = new ArrayList<>(runBundles);
-            diffAddBundles.removeAll(model.getRunBundles());
-            List<VersionedClause> diffRemvedBundles = new ArrayList<>(model.getRunBundles());
+
+            List<VersionedClause> oldRunBundles = model.getRunBundles();
+            if (oldRunBundles == null)
+                oldRunBundles = Collections.emptyList();
+            else
+                diffAddBundles.removeAll(oldRunBundles);
+
+            List<VersionedClause> diffRemvedBundles = new ArrayList<>(oldRunBundles);
             diffRemvedBundles.removeAll(runBundles);
-            List<VersionedClause> updatedRunBundles = new ArrayList<>(model.getRunBundles());
+            List<VersionedClause> updatedRunBundles = new ArrayList<>(oldRunBundles);
             updatedRunBundles.addAll(diffAddBundles);
             updatedRunBundles.removeAll(diffRemvedBundles);
             // do not use getRunBundles().addAll, because it will not reflect in UI or File
