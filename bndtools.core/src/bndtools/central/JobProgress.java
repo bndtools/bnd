@@ -43,7 +43,11 @@ public class JobProgress implements ProgressPlugin {
                 if (!isCanceled(monitor)) {
                     try {
                         Thread.sleep(100);
-                    } catch (InterruptedException e) {}
+                    } catch (InterruptedException e) {
+                        monitor.setCanceled(true);
+                        status.compareAndSet(null, new Status(Status.CANCEL, Plugin.PLUGIN_ID, "InterruptedException", e));
+                        Thread.currentThread().interrupt();
+                    }
                 }
             }
             monitor.done();
