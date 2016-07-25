@@ -7,7 +7,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.osgi.resource.Resource;
 import org.osgi.util.function.Function;
@@ -87,11 +86,7 @@ class OSGiIndex {
 
 	private Promise<List<Resource>> download(URI url) throws Exception {
 		HttpRequest<File> req;
-		if (staleTime > 0) {
-			req = client.build().useCache(staleTime);
-		} else {
-			req = client.build().useCache(TimeUnit.DAYS.toMillis(365));
-		}
+		req = client.build().useCache(staleTime);
 		return req.async(url).map(toResources(url));
 	}
 

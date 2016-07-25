@@ -33,14 +33,14 @@ import aQute.service.reporter.Reporter;
 
 @BndPlugin(name = "OSGiRepository", parameters = Config.class)
 public class OSGiRepository implements Plugin, RepositoryPlugin, Actionable, Refreshable, RegistryPlugin, Prepare {
-
+	final static int YEAR = 365 * 24 * 60 * 60;
 	interface Config {
 		/**
 		 * A Comma separate list of URLs point to an OSGi Resource file.
 		 */
 		String locations();
 
-		int max_stale();
+		int max_stale(int n);
 
 		String cache(String deflt);
 
@@ -97,7 +97,7 @@ public class OSGiRepository implements Plugin, RepositoryPlugin, Actionable, Ref
 		for (String s : strings) {
 			urls.add(new URI(s));
 		}
-		index = new OSGiIndex(config.name(), client, cache, urls, config.max_stale());
+		index = new OSGiIndex(config.name(), client, cache, urls, config.max_stale(YEAR));
 		return index;
 	}
 
