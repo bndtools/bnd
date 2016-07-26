@@ -37,7 +37,7 @@ class OSGiIndex {
 		this.name = name;
 		this.client = client;
 		this.cache = cache;
-		this.staleTime = staleTime * 1000;
+		this.staleTime = staleTime * 1000L;
 
 		checkCache(cache);
 

@@ -42,7 +42,7 @@ public class DownloadListenerPromise implements Success<File,Void>, Failure {
 
 	@Override
 	public Promise<Void> call(Promise<File> resolved) throws Exception {
-		reporter.trace("%s: success", task);
+		reporter.trace("%s: success", this);
 		File file = resolved.getValue();
 
 		if (linked != null) {
@@ -61,12 +61,11 @@ public class DownloadListenerPromise implements Success<File,Void>, Failure {
 
 	@Override
 	public void fail(Promise< ? > resolved) throws Exception {
-		reporter.trace("%s: fail", task);
+		reporter.trace("%s: fail: %s", this, resolved.getFailure());
 		for (DownloadListener dl : dls) {
 			try {
-				reporter.warning("%s: Download failed: %s", this, resolved.getFailure());
+				dl.failure(null, resolved.getFailure().getMessage());
 			} catch (Throwable e) {
-				e.printStackTrace(); // TODO
 				reporter.warning("%s: Fail callback failed to %s: %s", this, dl, e);
 			}
 		}
