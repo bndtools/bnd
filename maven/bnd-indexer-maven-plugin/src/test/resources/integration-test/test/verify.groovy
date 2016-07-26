@@ -68,6 +68,8 @@ println "basedir ${basedir}"
 println "localRepositoryPath ${localRepositoryPath}"
 println "mavenVersion ${mavenVersion}"
 
+System.setProperty('jsse.enableSNIExtension', 'false')
+
 check("${basedir}/transitive/target/index.xml", "${basedir}/transitive/target/index.xml.gz", 21, false, true);
 check("${basedir}/non-transitive/target/index.xml", "${basedir}/non-transitive/target/index.xml.gz", 3, false, true);
 check("${basedir}/scoped/target/index.xml", "${basedir}/scoped/target/index.xml.gz", 24, false, true);
