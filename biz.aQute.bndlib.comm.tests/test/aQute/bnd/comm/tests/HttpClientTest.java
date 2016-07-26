@@ -66,7 +66,7 @@ public class HttpClientTest extends TestCase {
 		httpsServer = new Httpbin(configs);
 		httpsServer.start();
 
-		tmp = new File("generated/tmp").getAbsoluteFile();
+		tmp = IO.getFile("generated/tmp");
 		IO.delete(tmp);
 		tmp.mkdirs();
 	}
