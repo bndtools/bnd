@@ -622,10 +622,17 @@ public class AnnotationReader extends ClassDataCollector {
 						}
 					} else if ("Ljava/util/Map$Entry".equals(sigs[index])
 							&& sufficientGenerics(index++ + 5, sigLength, def, sig)) {
-						if ("Ljava/util/Map".equals(sigs[index++]) && "Ljava/lang/String".equals(sigs[index++])
-								&& "Ljava/lang/Object".equals(sigs[index++])) {
-							fieldCollectionType = FieldCollectionType.tuple;
-							index += 2; // ;>;
+						if ("Ljava/util/Map".equals(sigs[index++]) && "Ljava/lang/String".equals(sigs[index++])) {
+							if ("Ljava/lang/Object".equals(sigs[index]) || "+Ljava/lang/Object".equals(sigs[index])) {
+								fieldCollectionType = FieldCollectionType.tuple;
+								index += 3; // ;>;
+							} else if ("*".equals(sigs[index])) {
+								fieldCollectionType = FieldCollectionType.tuple;
+								index += 2; // >;
+							} else {
+								index = sigLength;// no idea what service might
+													// be.
+							}
 						}
 					} else {
 						fieldCollectionType = FieldCollectionType.service;
@@ -645,7 +652,7 @@ public class AnnotationReader extends ClassDataCollector {
 								.details(getDetails(def, ErrorType.DYNAMIC_FINAL_FIELD_WITH_REPLACE));
 					def.fieldOption = FieldOption.UPDATE;
 				}
-				if (annoService == null && index <= sigs.length) {
+				if (annoService == null && index < sigs.length) {
 					annoService = sigs[index].substring(1).replace('/', '.');
 				}
 				def.service = annoService;
