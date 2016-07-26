@@ -2536,6 +2536,12 @@ public class DSAnnotationTest extends BndTestCase {
 		@Reference
 		private Map.Entry<Map<String,Object>,LogService>	tupleField;
 
+		@Reference
+		private Map.Entry<Map<String, ? >,LogService>				tupleField2;
+
+		@Reference
+		private Map.Entry<Map<String, ? extends Object>,LogService>	tupleField3;
+
 	}
 
 	public void testFieldInjection() throws Exception {
@@ -2575,6 +2581,14 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("tupleField", "scr:component/reference[5]/@name");
 		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[5]/@interface");
 		xt.assertAttribute("tupleField", "scr:component/reference[5]/@field");
+
+		xt.assertAttribute("tupleField2", "scr:component/reference[6]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[6]/@interface");
+		xt.assertAttribute("tupleField2", "scr:component/reference[6]/@field");
+
+		xt.assertAttribute("tupleField3", "scr:component/reference[7]/@name");
+		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[7]/@interface");
+		xt.assertAttribute("tupleField3", "scr:component/reference[7]/@field");
 	}
 
 	@Component
