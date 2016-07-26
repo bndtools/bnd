@@ -32,7 +32,7 @@ import aQute.lib.strings.Strings;
 public class DSAnnotations implements AnalyzerPlugin {
 
 	public enum Options {
-		inherit, felixExtensions, extender
+		inherit, felixExtensions, extender, nocapabilities, norequirements
 	};
 
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
@@ -85,7 +85,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 						names.add(name);
 						analyzer.getJar().putResource(name, new TagResource(definition.getTag()));
 
-						if (definition.service != null) {
+						if (definition.service != null && !options.contains(Options.nocapabilities)) {
 							String[] objectClass = new String[definition.service.length];
 
 							for (int i = 0; i < definition.service.length; i++) {
@@ -96,12 +96,13 @@ public class DSAnnotations implements AnalyzerPlugin {
 							addServiceCapability(objectClass, provides);
 						}
 
-						MergedRequirement serviceReqMerge = new MergedRequirement("osgi.service");
-						for (ReferenceDef ref : definition.references.values()) {
-							addServiceRequirement(ref, serviceReqMerge);
+						if (!options.contains(Options.norequirements)) {
+							MergedRequirement serviceReqMerge = new MergedRequirement("osgi.service");
+							for (ReferenceDef ref : definition.references.values()) {
+								addServiceRequirement(ref, serviceReqMerge);
+							}
+							requires.addAll(serviceReqMerge.toStringList());
 						}
-						requires.addAll(serviceReqMerge.toStringList());
-
 						maxVersion = ComponentDef.max(maxVersion, definition.version);
 					}
 				}
