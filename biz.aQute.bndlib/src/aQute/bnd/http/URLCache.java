@@ -6,7 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
@@ -16,12 +19,13 @@ import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.service.reporter.Reporter;
 
 public class URLCache {
-	private static final long		TIMEOUT	= TimeUnit.MINUTES.toMillis(5);
-	private final static JSONCodec	codec	= new JSONCodec();
+	private static final long			TIMEOUT		= TimeUnit.MINUTES.toMillis(5);
+	private final static JSONCodec		codec		= new JSONCodec();
 
-	private final File	root;
-	private Reporter	reporter	= new Slf4jReporter(URLCache.class);
-	private static String	whom;
+	private final File					root;
+	private Reporter					reporter	= new Slf4jReporter(URLCache.class);
+
+	private ConcurrentMap<File,Info>	infos		= new ConcurrentHashMap<>();
 
 	public static class InfoDTO {
 		public String	etag;
@@ -32,12 +36,13 @@ public class URLCache {
 	}
 
 	public class Info implements Closeable {
-		File	file;
-		File	lockFile;
-		File	jsonFile;
-		InfoDTO	dto;
-		URI		url;
+		File			file;
+		File			jsonFile;
+		InfoDTO			dto;
+		URI				url;
+		ReentrantLock	lock	= new ReentrantLock();
 
+		@Deprecated
 		public Info(URI url) throws Exception {
 			this(getCacheFileFor(url), url);
 		}
@@ -45,7 +50,6 @@ public class URLCache {
 		public Info(File content, URI url) throws Exception {
 			this.file = content;
 			this.url = url;
-			this.lockFile = new File(content.getParentFile(), content.getName() + ".lock");
 			this.jsonFile = new File(content.getParentFile(), content.getName() + ".json");
 			if (this.jsonFile.isFile()) {
 				try {
@@ -58,13 +62,12 @@ public class URLCache {
 				this.dto = new InfoDTO();
 			}
 			this.dto.uri = url;
-			lock();
 		}
 
 		@Override
-		public synchronized void close() throws IOException {
-			whom = null;
-			IO.delete(lockFile);
+		public void close() throws IOException {
+			reporter.trace("Unlocking url cache %s", url);
+			lock.unlock();
 		}
 
 		public void update(InputStream inputStream, String etag, long modified) throws Exception {
@@ -89,23 +92,6 @@ public class URLCache {
 			return file.isFile() && jsonFile.isFile() && dto.etag != null;
 		}
 
-		private synchronized void lock() throws InterruptedException {
-
-			if (lockFile.isFile())
-				IO.delete(lockFile);
-
-			long deadline = lockFile.lastModified() + TIMEOUT;
-			while (lockFile.mkdirs() == false) {
-				if (System.currentTimeMillis() > deadline) {
-					IO.delete(lockFile);
-					reporter.error("Had to delete lockfile %s due to timeout for %s", lockFile, dto);
-				}
-				reporter.trace("Waiting on lock %s we=%s whom=%s", lockFile, Thread.currentThread().getName(), whom);
-				Thread.sleep(5000);
-			}
-			whom = Thread.currentThread().getName();
-		}
-
 		public void delete() {
 			IO.delete(file);
 			IO.delete(jsonFile);
@@ -122,17 +108,32 @@ public class URLCache {
 
 	public URLCache(File root) {
 		this.root = new File(root, "shas");
+		this.root.mkdirs();
 	}
 
 	public Info get(URI uri) throws Exception {
-		return new Info(uri);
+		return get(null, uri);
 	}
 
 	public Info get(File file, URI uri) throws Exception {
-		if (file == null)
-			return get(uri);
+		synchronized (this) {
+			if (file == null)
+				file = getCacheFileFor(uri);
+			Info info = infos.get(file);
+			if (info == null) {
+				info = new Info(file, uri);
+				infos.put(file, info);
+			}
 
-		return new Info(file, uri);
+			reporter.trace("Locking url cache %s - %s", uri, info);
+			if (info.lock.tryLock(5, TimeUnit.MINUTES)) {
+				reporter.trace("Locked url cache %s - %s", uri, info);
+			} else {
+				reporter.trace("Could not locked url cache %s - %s", uri, info);
+			}
+
+			return info;
+		}
 	}
 
 	public static String toName(URI uri) throws Exception {
@@ -140,8 +141,7 @@ public class URLCache {
 	}
 
 	public static void update(File file, String tag) {
-		// TODO Auto-generated method stub
-
+		throw new UnsupportedOperationException();
 	}
 
 	public File getCacheFileFor(URI url) throws Exception {
