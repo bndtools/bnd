@@ -17,6 +17,7 @@ import org.eclipse.debug.core.sourcelookup.ISourceContainerType;
 import org.eclipse.debug.core.sourcelookup.ISourceLookupDirector;
 import org.eclipse.debug.core.sourcelookup.containers.ArchiveSourceContainer;
 import org.eclipse.debug.core.sourcelookup.containers.CompositeSourceContainer;
+import org.eclipse.debug.core.sourcelookup.containers.ExternalArchiveSourceContainer;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.launching.sourcelookup.containers.JavaProjectSourceContainer;
@@ -79,12 +80,16 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
                         }
                     } else if (runbundle.getType() == TYPE.REPO) {
                         IPath bundlePath = Central.toPath(runbundle.getFile());
+                        IFile bundleFile = null;
                         if (bundlePath != null) {
-                            IFile bundleFile = ResourcesPlugin.getWorkspace().getRoot().getFile(bundlePath);
-                            if (bundleFile != null) {
-                                ArchiveSourceContainer tempArchiveCont = new ArchiveSourceContainer(bundleFile, false);
-                                result.add(tempArchiveCont);
-                            }
+                            bundleFile = ResourcesPlugin.getWorkspace().getRoot().getFile(bundlePath);
+                        }
+                        if (bundleFile != null) {
+                            ArchiveSourceContainer tempArchiveCont = new ArchiveSourceContainer(bundleFile, false);
+                            result.add(tempArchiveCont);
+                        } else {
+                            ExternalArchiveSourceContainer container = new ExternalArchiveSourceContainer(runbundle.getFile().toString(), false);
+                            result.add(container);
                         }
                     }
                 }
