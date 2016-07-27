@@ -32,7 +32,9 @@ import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.osgi.util.function.Function;
+import org.osgi.util.promise.Deferred;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.Workspace;
 import bndtools.Plugin;
@@ -115,10 +117,10 @@ public class WorkspaceMainPart extends SectionPart {
         stackLayout.topControl = labelParent;
         container.layout();
 
-        Central.onWorkspaceInit(new Function<Workspace,Void>() {
-
+        Central.onWorkspaceInit(new Success<Workspace,Void>() {
             @Override
-            public Void apply(Workspace a) {
+            public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
+                final Deferred<Void> completion = new Deferred<>();
                 Display.getDefault().asyncExec(new Runnable() {
                     @Override
                     public void run() {
@@ -160,12 +162,14 @@ public class WorkspaceMainPart extends SectionPart {
 
                             stackLayout.topControl = contents;
                             container.layout();
+                            completion.resolve(null);
                         } catch (Exception e) {
                             Plugin.error(Collections.singletonList(e.getMessage()));
+                            completion.fail(e);
                         }
                     }
                 });
-                return null;
+                return completion.getPromise();
             }
         });
     }

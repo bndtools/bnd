@@ -40,7 +40,6 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
-import org.osgi.util.function.Function;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
@@ -237,15 +236,9 @@ public class Central implements IStartupParticipant {
         return ws;
     }
 
-    public static void onWorkspaceInit(final Function<Workspace,Void> callback) {
+    public static void onWorkspaceInit(final Success<Workspace,Void> callback) {
         Promise<Workspace> p = workspaceQueue.getPromise();
-        p.then(new Success<Workspace,Void>() {
-            @Override
-            public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
-                callback.apply(resolved.getValue());
-                return null;
-            }
-        }).then(null, callbackFailure);
+        p.then(callback, null).then(null, callbackFailure);
     }
 
     private static final Failure callbackFailure = new Failure() {

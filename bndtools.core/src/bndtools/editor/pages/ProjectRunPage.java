@@ -22,7 +22,9 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.osgi.util.function.Function;
+import org.osgi.util.promise.Deferred;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
@@ -90,16 +92,22 @@ public class ProjectRunPage extends FormPage {
         final ScrolledForm form = managedForm.getForm();
         form.setText("Resolve/Run");
 
-        Central.onWorkspaceInit(new Function<Workspace,Void>() {
+        Central.onWorkspaceInit(new Success<Workspace,Void>() {
             @Override
-            public Void apply(Workspace t) {
+            public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
+                final Deferred<Void> completion = new Deferred<>();
                 Display.getDefault().asyncExec(new Runnable() {
                     @Override
                     public void run() {
-                        updateFormImage(form);
+                        try {
+                            updateFormImage(form);
+                            completion.resolve(null);
+                        } catch (Exception e) {
+                            completion.fail(e);
+                        }
                     }
                 });
-                return null;
+                return completion.getPromise();
             }
         });
 

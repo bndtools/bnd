@@ -71,7 +71,9 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.service.repository.Repository;
-import org.osgi.util.function.Function;
+import org.osgi.util.promise.Deferred;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
@@ -527,18 +529,24 @@ public class RepositorySelectionPart extends BndEditorPart {
             messages.addMessage(MESSAGE_KEY, "Repository List: Unable to load OSGi Repositories. " + e.getMessage(), e, IMessageProvider.ERROR, runReposViewer.getControl());
 
             // Load the repos and clear the error message if the Workspace is initialised later.
-            Central.onWorkspaceInit(new Function<Workspace,Void>() {
+            Central.onWorkspaceInit(new Success<Workspace,Void>() {
                 @Override
-                public Void apply(final Workspace ws) {
+                public Promise<Void> call(final Promise<Workspace> resolved) throws Exception {
+                    final Deferred<Void> completion = new Deferred<>();
                     SWTConcurrencyUtil.execForControl(runReposViewer.getControl(), true, new Runnable() {
                         @Override
                         public void run() {
-                            allRepos.clear();
-                            allRepos.addAll(ws.getPlugins(Repository.class));
-                            messages.removeMessage(MESSAGE_KEY, runReposViewer.getControl());
+                            try {
+                                allRepos.clear();
+                                allRepos.addAll(resolved.getValue().getPlugins(Repository.class));
+                                messages.removeMessage(MESSAGE_KEY, runReposViewer.getControl());
+                                completion.resolve(null);
+                            } catch (Exception e) {
+                                completion.fail(e);
+                            }
                         }
                     });
-                    return null;
+                    return completion.getPromise();
                 }
             });
         }

@@ -38,7 +38,8 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JavaModelManager;
-import org.osgi.util.function.Function;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.CircularDependencyException;
 import aQute.bnd.build.Container;
@@ -64,9 +65,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
     public BndContainerInitializer() {
         super();
-        Central.onWorkspaceInit(new Function<Workspace,Void>() {
+        Central.onWorkspaceInit(new Success<Workspace,Void>() {
             @Override
-            public Void apply(Workspace t) {
+            public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
                 Central.getInstance().addModelListener(BndContainerInitializer.this);
                 return null;
             }
