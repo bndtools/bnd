@@ -1,8 +1,10 @@
 package bndtools.launch;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -65,6 +67,7 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
         List<ISourceContainer> result = new LinkedList<ISourceContainer>();
 
         ILaunchConfiguration config = getLaunchConfiguration();
+        Set<String> projectsAdded = new HashSet<>();
         try {
             Project project = LaunchUtils.getBndProject(config);
             if (project != null) {
@@ -72,10 +75,12 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
                 for (Container runbundle : runbundles) {
                     if (runbundle.getType() == TYPE.PROJECT) {
                         String targetProjName = runbundle.getProject().getName();
-                        IProject targetProj = ResourcesPlugin.getWorkspace().getRoot().getProject(targetProjName);
-                        if (targetProj != null) {
-                            IJavaProject targetJavaProj = JavaCore.create(targetProj);
-                            result.add(new JavaProjectSourceContainer(targetJavaProj));
+                        if (projectsAdded.add(targetProjName)) {
+                            IProject targetProj = ResourcesPlugin.getWorkspace().getRoot().getProject(targetProjName);
+                            if (targetProj != null) {
+                                IJavaProject targetJavaProj = JavaCore.create(targetProj);
+                                result.add(new JavaProjectSourceContainer(targetJavaProj));
+                            }
                         }
                     } else if (runbundle.getType() == TYPE.REPO) {
                         IPath bundlePath = Central.toPath(runbundle.getFile());
