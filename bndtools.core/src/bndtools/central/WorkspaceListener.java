@@ -4,7 +4,8 @@ import java.io.File;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
-import org.osgi.util.function.Function;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.BndListener;
@@ -20,9 +21,9 @@ public final class WorkspaceListener extends BndListener {
         try {
             final RefreshFileJob job = new RefreshFileJob(file, true);
             if (job.needsToSchedule()) {
-                Central.onWorkspaceInit(new Function<Workspace,Void>() {
+                Central.onWorkspaceInit(new Success<Workspace,Void>() {
                     @Override
-                    public Void apply(final Workspace ws) {
+                    public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
                         job.schedule();
                         return null;
                     }

@@ -92,7 +92,8 @@ import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.resource.Requirement;
-import org.osgi.util.function.Function;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.Actionable;
@@ -400,9 +401,9 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         fillToolBar(getViewSite().getActionBars().getToolBarManager());
 
         // call refresh action once to make sure someone is trying to load repositories in this view
-        Central.onWorkspaceInit(new Function<Workspace,Void>() {
+        Central.onWorkspaceInit(new Success<Workspace,Void>() {
             @Override
-            public Void apply(Workspace t) {
+            public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
                 refreshAction.run();
                 return null;
             }

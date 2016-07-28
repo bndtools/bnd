@@ -27,7 +27,8 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.util.function.Function;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
@@ -171,9 +172,9 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 
     public void addViewer(final TreeViewer viewer, final RefreshModel model) {
         this.viewers.put(viewer, model);
-        Central.onWorkspaceInit(new Function<Workspace,Void>() {
+        Central.onWorkspaceInit(new Success<Workspace,Void>() {
             @Override
-            public Void apply(Workspace a) {
+            public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
                 new Job("Updating repositories") {
                     @Override
                     protected IStatus run(IProgressMonitor monitor) {

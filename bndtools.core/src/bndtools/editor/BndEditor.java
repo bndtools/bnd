@@ -69,7 +69,9 @@ import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.IElementStateListener;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
-import org.osgi.util.function.Function;
+import org.osgi.util.promise.Deferred;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
@@ -458,20 +460,22 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         setPartNameForInput(input);
         sourcePage.getDocumentProvider().addElementStateListener(new ElementStateListener());
 
-        Central.onWorkspaceInit(new Function<Workspace,Void>() {
+        Central.onWorkspaceInit(new Success<Workspace,Void>() {
             @Override
-            public Void apply(Workspace a) {
+            public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
+                final Deferred<Void> completion = new Deferred<>();
                 Display.getDefault().asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         try {
                             loadEditModel();
+                            completion.resolve(null);
                         } catch (Exception e) {
-                            logger.logError("Error initializing workspace repository", e);
+                            completion.fail(e);
                         }
                     }
                 });
-                return null;
+                return completion.getPromise();
             }
         });
     }

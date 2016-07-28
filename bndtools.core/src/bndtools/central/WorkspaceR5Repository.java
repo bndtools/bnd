@@ -22,7 +22,8 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.log.LogService;
-import org.osgi.util.function.Function;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -50,15 +51,10 @@ public class WorkspaceR5Repository extends BaseRepository {
     WorkspaceR5Repository() {}
 
     void init() throws Exception {
-        Central.onWorkspaceInit(new Function<Workspace,Void>() {
-
+        Central.onWorkspaceInit(new Success<Workspace,Void>() {
             @Override
-            public Void apply(Workspace a) {
-                try {
-                    setupProjects();
-                } catch (Exception e) {
-                    logger.logError("Error initializing workspace repository", e);
-                }
+            public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
+                setupProjects();
                 return null;
             }
         });
