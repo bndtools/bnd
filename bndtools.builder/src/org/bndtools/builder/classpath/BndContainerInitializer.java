@@ -62,6 +62,7 @@ import bndtools.preferences.BndPreferences;
 public class BndContainerInitializer extends ClasspathContainerInitializer implements ModelListener {
 
     static final ILogger logger = Logger.getLogger(BndContainerInitializer.class);
+    static final ClasspathContainerSerializationHelper<BndContainer> serializationHelper = new ClasspathContainerSerializationHelper<>();
 
     public BndContainerInitializer() {
         super();
@@ -78,8 +79,31 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     public void initialize(IPath containerPath, final IJavaProject javaProject) throws CoreException {
         IProject project = javaProject.getProject();
 
-        Updater updater = new Updater(project, javaProject);
-        updater.updateClasspathContainer(true);
+        /* If workspace is already initialized or there is no
+         * saved container information, then update the container
+         * now.
+         */
+        File containerFile = getContainerFile(project);
+        if (Central.isWorkspaceInited() || !containerFile.isFile()) {
+            Updater updater = new Updater(project, javaProject);
+            updater.updateClasspathContainer(true);
+            return;
+        }
+
+        /*
+         * Read the saved container information and update the container now.
+         * Request an update using the project information after the
+         * workspace is initialized.
+         */
+        BndContainer container = readContainer(project);
+        Updater.setClasspathEntries(javaProject, container);
+        Central.onWorkspaceInit(new Success<Workspace,Void>() {
+            @Override
+            public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
+                requestClasspathContainerUpdate(BndtoolsConstants.BND_CLASSPATH_ID, javaProject, null);
+                return null;
+            }
+        });
     }
 
     @Override
@@ -164,8 +188,35 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         return updater.suggestClasspathContainerUpdate();
     }
 
+    private static BndContainer readContainer(IProject project) {
+        File containerFile = getContainerFile(project);
+        if (!containerFile.isFile()) {
+            return new BndContainer(Updater.EMPTY_ENTRIES, 0L);
+        }
+        try {
+            return serializationHelper.readContainer(containerFile);
+        } catch (IOException | ClassNotFoundException e) {
+            logger.logError("Unable to read container", e);
+            return new BndContainer(Updater.EMPTY_ENTRIES, 0L);
+        }
+    }
+
+    private static void writeContainer(IProject project, BndContainer container) {
+        File containerFile = getContainerFile(project);
+        try {
+            serializationHelper.writeContainer(container, containerFile);
+        } catch (IOException e) {
+            logger.logError("Unable to write container", e);
+            IO.delete(containerFile);
+        }
+    }
+
+    private static File getContainerFile(IProject p) {
+        return IO.getFile(BuilderPlugin.getInstance().getStateLocation().toFile(), p.getName() + ".container");
+    }
+
     private static class Updater {
-        private static final IClasspathEntry[] EMPTY_ENTRIES = new IClasspathEntry[0];
+        static final IClasspathEntry[] EMPTY_ENTRIES = new IClasspathEntry[0];
         private static final IAccessRule DISCOURAGED = JavaCore.newAccessRule(new Path("**"), IAccessRule.K_DISCOURAGED | IAccessRule.IGNORE_IF_BETTER);
         private static final IClasspathAttribute EMPTY_INDEX = JavaCore.newClasspathAttribute(IClasspathAttribute.INDEX_LOCATION_ATTRIBUTE_NAME,
                 "platform:/plugin/" + BndtoolsBuilder.PLUGIN_ID + "/org/bndtools/builder/classpath/empty.index");
@@ -197,7 +248,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
         void updateClasspathContainer(boolean init) throws CoreException {
             if (model == null) { // this can happen during new project creation
-                setClasspathEntries(EMPTY_ENTRIES);
+                setClasspathEntries(javaProject, new BndContainer(EMPTY_ENTRIES, 0L));
                 return;
             }
 
@@ -217,15 +268,22 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             newClasspath = BndContainerSourceManager.loadAttachedSources(project, newClasspath);
 
             if (!init) {
-                BndContainer container = (BndContainer) JavaCore.getClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, javaProject);
-                List<IClasspathEntry> currentClasspath = Arrays.asList(container.getClasspathEntries());
-                if (newClasspath.equals(currentClasspath)) {
-                    container.updateLastModified(lastModified);
-                    return; // no change; so no need to set entries
+                IClasspathContainer container = getClasspathContainer(javaProject);
+                if (container instanceof BndContainer) {
+                    BndContainer bndContainer = (BndContainer) container;
+                    List<IClasspathEntry> currentClasspath = Arrays.asList(bndContainer.getClasspathEntries());
+                    if (newClasspath.equals(currentClasspath)) {
+                        if (bndContainer.updateLastModified(lastModified)) {
+                            writeContainer(project, bndContainer);
+                        }
+                        return; // no change; so no need to set entries
+                    }
                 }
             }
 
-            setClasspathEntries(newClasspath.toArray(new IClasspathEntry[0]));
+            BndContainer bndContainer = new BndContainer(newClasspath.toArray(new IClasspathEntry[0]), lastModified);
+            setClasspathEntries(javaProject, bndContainer);
+            writeContainer(project, bndContainer);
         }
 
         boolean suggestClasspathContainerUpdate() throws Exception {
@@ -264,18 +322,18 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             return false;
         }
 
-        private void setClasspathEntries(IClasspathEntry[] entries) throws JavaModelException {
+        static void setClasspathEntries(IJavaProject javaProject, BndContainer container) throws JavaModelException {
             JavaCore.setClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, new IJavaProject[] {
                     javaProject
             }, new IClasspathContainer[] {
-                    new BndContainer(entries, lastModified)
+                    container
             }, null);
 
             BndPreferences prefs = new BndPreferences();
             if (prefs.getBuildLogging() == BuildLogger.LOG_FULL) {
                 StringBuilder sb = new StringBuilder();
-                sb.append("ClasspathEntries ").append(project.getName());
-                for (IClasspathEntry cpe : entries) {
+                sb.append("ClasspathEntries ").append(javaProject.getProject().getName());
+                for (IClasspathEntry cpe : container.getClasspathEntries()) {
                     sb.append("\n--- ").append(cpe);
                 }
                 logger.logInfo(sb.append("\n").toString(), null);
@@ -564,7 +622,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
 
         private File getAccessPatternsFile(Project p) {
-            return new File(BuilderPlugin.getInstance().getStateLocation().toFile(), p.getName() + ".accesspatterns");
+            return IO.getFile(BuilderPlugin.getInstance().getStateLocation().toFile(), p.getName() + ".accesspatterns");
         }
 
         private IAccessRule[] toAccessRulesArray(List<IAccessRule> rules) {

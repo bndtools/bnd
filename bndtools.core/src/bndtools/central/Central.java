@@ -241,6 +241,10 @@ public class Central implements IStartupParticipant {
         p.then(callback, null).then(null, callbackFailure);
     }
 
+    public static boolean isWorkspaceInited() {
+        return workspace != null;
+    }
+
     private static final Failure callbackFailure = new Failure() {
         @Override
         public void fail(Promise< ? > resolved) throws Exception {
