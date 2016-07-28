@@ -152,7 +152,7 @@ task p2FeatureTree(type: Copy) {
     doFirst {
       filter(ReplaceTokens, tokens: generateFeatureXmlTokens() )
     }
-    include '**/category.xml'
+    include 'category.xml'
     include '**/feature.xml'
     inputs.files file("${buildDir}/plugins")
 }
