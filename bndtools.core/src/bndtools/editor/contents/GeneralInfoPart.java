@@ -88,7 +88,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
     };
 
     private static enum ComponentChoice {
-        None("None/Undefined"), Bnd("Bnd Annotations"), DS("OSGi DS Annotations");
+        None("None"), Bnd("Bnd Annotations"), DS("OSGi DS Annotations");
 
         private final String label;
 
@@ -328,9 +328,9 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                     model.setServiceComponents(Collections.singletonList(SERVICE_COMPONENT_STAR));
                     model.setDSAnnotationPatterns(null);
                     break;
-                case DS :
+                case None :
                     model.setServiceComponents(null);
-                    model.setDSAnnotationPatterns(Collections.singletonList(DSANNOTATIONS_STAR));
+                    model.setDSAnnotationPatterns(Collections.singletonList(""));
                     break;
                 default :
                     model.setServiceComponents(null);
@@ -360,14 +360,18 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                 List<ServiceComponent> bndPatterns = model.getServiceComponents();
                 List<String> dsPatterns = model.getDSAnnotationPatterns();
 
-                if (bndPatterns != null && bndPatterns.size() == 1 && SERVICE_COMPONENT_STAR.equals(bndPatterns.get(0)) && dsPatterns == null) {
-                    componentChoice = ComponentChoice.Bnd;
-                } else if (dsPatterns != null && dsPatterns.size() == 1 && DSANNOTATIONS_STAR.equals(dsPatterns.get(0)) && bndPatterns == null) {
+                componentChoice = null;
+
+                if (bndPatterns == null && dsPatterns == null) {
                     componentChoice = ComponentChoice.DS;
-                } else if (bndPatterns == null && dsPatterns == null) {
-                    componentChoice = ComponentChoice.None;
-                } else {
-                    componentChoice = null;
+                } else if (bndPatterns != null && bndPatterns.size() == 1 && SERVICE_COMPONENT_STAR.equals(bndPatterns.get(0)) && dsPatterns == null) {
+                    componentChoice = ComponentChoice.Bnd;
+                } else if (dsPatterns != null && bndPatterns == null) {
+                    if (dsPatterns.isEmpty()) {
+                        componentChoice = ComponentChoice.None;
+                    } else if (dsPatterns.size() == 1 && DSANNOTATIONS_STAR.equals(dsPatterns.get(0))) {
+                        componentChoice = ComponentChoice.DS;
+                    }
                 }
 
                 cmbComponents.setItems(ComponentChoice.getLabels());
