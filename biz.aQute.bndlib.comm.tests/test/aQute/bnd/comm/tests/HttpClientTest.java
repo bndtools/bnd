@@ -1,12 +1,17 @@
 package aQute.bnd.comm.tests;
 
+import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
+
+import org.osgi.util.promise.Promise;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.progress.ProgressPlugin;
+import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.url.HttpsVerification;
 import aQute.http.testservers.HttpTestServer.Config;
@@ -15,14 +20,37 @@ import aQute.lib.io.IO;
 import junit.framework.TestCase;
 
 public class HttpClientTest extends TestCase {
-	private Httpbin	httpServer;
+	private TestServer	httpServer;
 	private Httpbin	httpsServer;
+	private File	tmp;
 
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		httpServer.close();
 		httpsServer.close();
+		IO.delete(tmp);
+	}
+
+	public static class TestServer extends Httpbin {
+		boolean second = false;
+
+		public TestServer(Config config) throws Exception {
+			super(config);
+		}
+
+		public void _mftch(Request rq, Response rsp) throws Exception {
+			Thread.sleep(1000);
+			rsp.headers.put("ETag", "FOO");
+			if (second) {
+				rsp.code = 304;
+				return;
+			}
+			rsp.code = 200;
+			rsp.content = "OK!".getBytes();
+			second = true;
+		}
+
 	}
 
 	@Override
@@ -30,13 +58,17 @@ public class HttpClientTest extends TestCase {
 		super.setUp();
 		Config config = new Config();
 		config.https = false;
-		httpServer = new Httpbin(config);
+		httpServer = new TestServer(config);
 		httpServer.start();
 
 		Config configs = new Config();
 		configs.https = true;
 		httpsServer = new Httpbin(configs);
 		httpsServer.start();
+
+		tmp = IO.getFile("generated/tmp");
+		IO.delete(tmp);
+		tmp.mkdirs();
 	}
 
 	public void testTimeout() throws Exception {
@@ -95,6 +127,41 @@ public class HttpClientTest extends TestCase {
 				e.printStackTrace();
 			}
 
+		}
+	}
+
+	public void testCachingMultipleFetch() throws Exception {
+		try (HttpClient hc = new HttpClient();) {
+			hc.setCache(tmp);
+
+			Promise<TaggedData> a = hc.build()
+					.useCache()
+					.age(1, TimeUnit.DAYS)
+					.asTag()
+					.async(httpServer.getBaseURI("mftch"));
+			Thread.sleep(100);
+
+			Promise<TaggedData> b = hc.build()
+					.useCache()
+					.age(1, TimeUnit.DAYS)
+					.asTag()
+					.async(httpServer.getBaseURI("mftch"));
+
+			TaggedData ta = a.getValue();
+			assertEquals("FOO", ta.getTag());
+			assertEquals(200, ta.getResponseCode());
+			assertEquals(true, ta.hasPayload());
+			assertEquals(true, ta.isOk());
+			assertEquals(State.UPDATED, ta.getState());
+
+			TaggedData tb = b.getValue();
+			assertEquals("FOO", tb.getTag());
+			assertEquals(304, tb.getResponseCode());
+			assertEquals(false, tb.hasPayload());
+			assertEquals(State.UNMODIFIED, tb.getState());
+
+			System.out.println(a.getValue());
+			System.out.println(b.getValue());
 		}
 	}
 

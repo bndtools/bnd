@@ -76,14 +76,13 @@ class IndexFile {
 	}
 
 	void sync() {
-		for (Iterator<Promise<File>> i = promises.values().iterator(); i.hasNext();) {
-			Promise<File> f = i.next();
+		for (Iterator<Entry<Archive,Promise<File>>> i = promises.entrySet().iterator(); i.hasNext();) {
+			Entry<Archive,Promise<File>> entry = i.next();
 			try {
-				if (!f.isDone())
-					f.getFailure();
+				Promise<File> f = entry.getValue();
+				f.getValue();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				reporter.exception(e, "Failed to sync %s", entry.getKey());
 			}
 			i.remove();
 		}
