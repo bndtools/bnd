@@ -317,6 +317,8 @@ class JavaElement {
 											|| n.startsWith("notifyAll("))
 										continue;
 								}
+								if (isStatic(child))
+									continue;
 								OBJECT.add(child);
 							}
 						}
@@ -330,12 +332,21 @@ class JavaElement {
 					}
 					Element s = classElement(c);
 					for (Element child : s.children) {
+
+						if (isStatic(child))
+							continue;
+
 						if (INHERITED.contains(child.type) && !child.name.startsWith("<")) {
 							members.add(child);
 						}
 					}
 				}
 				return null;
+			}
+
+			private boolean isStatic(Element child) {
+				boolean isStatic = child.get("static") != null;
+				return isStatic;
 			}
 
 			/**
