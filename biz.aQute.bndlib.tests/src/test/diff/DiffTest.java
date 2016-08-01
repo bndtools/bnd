@@ -4,10 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 
+import aQute.bnd.differ.Baseline;
+import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Tree;
@@ -16,12 +19,6 @@ import junit.framework.TestCase;
 
 public class DiffTest extends TestCase {
 	static DiffPluginImpl differ = new DiffPluginImpl();
-
-	/**
-	 * Test API differences. We have a package in the /demo workspace project
-	 * and we have the same package in our test.api package. If you make
-	 * changes, copy the demo.jar in the testresources directory.
-	 */
 
 	public void testBaselineDiffs() throws Exception {
 
@@ -77,6 +74,29 @@ public class DiffTest extends TestCase {
 
 		assertEquals(Delta.ADDED, diff.get("foo(Ljava/util/List<Ljava/lang/Integer;>;)").getDelta());
 		assertEquals(Delta.REMOVED, diff.get("foo(Ljava/util/List<Ljava/lang/String;>;)").getDelta());
+
+		b.close();
+	}
+
+	public void testAPIStaticSuperClassChange() throws Exception {
+		Jar older = new Jar(IO.getFile("testresources/demo.jar"));
+		Builder b = new Builder();
+		b.addClasspath(IO.getFile("bin"));
+		b.setExportPackage("test.api");
+		b.build();
+		assertTrue(b.check());
+		Jar newer = b.getJar();
+
+		Processor processor = new Processor();
+
+		DiffPluginImpl differ = new DiffPluginImpl();
+		Baseline baseline = new Baseline(processor, differ);
+
+		Info info = baseline.baseline(newer, older, null).iterator().next();
+
+		Diff field = info.packageDiff.get("test.api.B");
+		show(field, 2);
+		assertEquals(Delta.UNCHANGED, field.getDelta());
 
 		b.close();
 	}
