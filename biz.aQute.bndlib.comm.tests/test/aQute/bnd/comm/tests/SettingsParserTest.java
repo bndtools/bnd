@@ -1,9 +1,7 @@
 package aQute.bnd.comm.tests;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.Proxy.Type;
-import java.net.URL;
 
 import aQute.bnd.connection.settings.ProxyDTO;
 import aQute.bnd.connection.settings.ServerDTO;
@@ -77,11 +75,5 @@ public class SettingsParserTest extends TestCase {
 		SettingsParser msp = new SettingsParser(f);
 		SettingsDTO settings = msp.getSettings();
 		return settings;
-	}
-
-	public void testAuthority() throws IOException {
-		URL url = new URL("http://abc:def@httpbin.org/headers");
-		System.out.println(url.getUserInfo());
-		System.out.println(aQute.lib.io.IO.collect(url.openStream()));
 	}
 }
