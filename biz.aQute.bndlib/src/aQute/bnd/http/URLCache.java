@@ -71,6 +71,7 @@ public class URLCache {
 		}
 
 		public void update(InputStream inputStream, String etag, long modified) throws Exception {
+			this.file.getParentFile().mkdirs();
 			IO.copy(inputStream, this.file);
 			codec.enc().to(jsonFile).put(this.dto);
 			if (modified > 0) {
