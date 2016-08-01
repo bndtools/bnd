@@ -47,7 +47,7 @@ public Capability check(Repository repo, String namespace, String filter, String
 	
 	String location = content.getAttributes().get("url").toString();
 
-	if(localURL) {
+	if(localURL || location.contains("test-repo")) {
 		assert location.startsWith("file:") ? new File(URI.create(location)).isFile() : 
 				new File(location).isFile();	
 	} else {
