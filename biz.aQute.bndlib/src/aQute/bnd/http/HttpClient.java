@@ -169,7 +169,8 @@ public class HttpClient implements Closeable, URLConnector {
 				// our accepted stale period
 				//
 
-				if (request.maxStale < 0 || info.file.lastModified() + request.maxStale < System.currentTimeMillis()) {
+				if (request.maxStale < 0
+						|| info.jsonFile.lastModified() + request.maxStale < System.currentTimeMillis()) {
 
 					//
 					// Ok, expired. So check if there is a newer one on the

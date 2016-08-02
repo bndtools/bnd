@@ -34,6 +34,7 @@ import aQute.service.reporter.Reporter;
 @BndPlugin(name = "OSGiRepository", parameters = Config.class)
 public class OSGiRepository implements Plugin, RepositoryPlugin, Actionable, Refreshable, RegistryPlugin, Prepare {
 	final static int YEAR = 365 * 24 * 60 * 60;
+
 	interface Config {
 		/**
 		 * A Comma separate list of URLs point to an OSGi Resource file.
@@ -42,7 +43,7 @@ public class OSGiRepository implements Plugin, RepositoryPlugin, Actionable, Ref
 
 		int max_stale(int n);
 
-		String cache(String deflt);
+		String cache();
 
 		String name();
 	}
@@ -60,7 +61,7 @@ public class OSGiRepository implements Plugin, RepositoryPlugin, Actionable, Ref
 	@Override
 	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
 			throws Exception {
-		File target = IO.getFile(getIndex().getCache(), bsn + "-" + version);
+		File target = IO.getFile(getIndex().getCache(), bsn + "-" + version + ".jar");
 
 		Promise<File> promise = getIndex().get(bsn, version, target);
 		if (promise == null)
@@ -85,9 +86,19 @@ public class OSGiRepository implements Plugin, RepositoryPlugin, Actionable, Ref
 	private synchronized OSGiIndex getIndex(boolean refresh) throws Exception {
 
 		HttpClient client = registry.getPlugin(HttpClient.class);
+
+		File cache;
+
 		Workspace ws = registry.getPlugin(Workspace.class);
-		File defltCache = ws.getFile("cnf/cache" + config.name());
-		File cache = IO.getFile(defltCache, config.cache(config.name()));
+		if (ws == null) {
+			ws = Workspace.getWorkspace("~/.bnd/default-ws");
+		}
+		String cachePath = config.cache();
+		if (cachePath == null) {
+			cache = ws.getFile("cnf/cache-" + config.name());
+		} else {
+			cache = ws.getFile(cachePath);
+		}
 
 		if (refresh)
 			IO.delete(cache);
