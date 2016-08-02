@@ -1,6 +1,6 @@
 # Maven Plugins
 
-The Maven Plugins require at least Maven 3.1.0. This is because bndlib uses SLF4J and Maven 3.1.0 or later [provides the SLF4J API][5].
+The Maven Plugins require at least Maven 3.1.0. This is because bndlib uses SLF4J and Maven 3.1.0 or later [provides the SLF4J API][6].
 
 ## bnd-plugin-parent
 
@@ -32,9 +32,13 @@ version of the module.
 * Any changes that have been made to the packages exported by the bundle.
 * Any internal changes within the bundle.
 
+## [bnd-export-maven-plugin][4]
+
+A plugin to export and optionally resolve bndrun files.
+
 # Building the Maven Plugins
 
-See the [.travis.yml][4] file in the root of the repo for the `script` section
+See the [.travis.yml][5] file in the root of the repo for the `script` section
 detailing the commands to build the Maven plugins. You must first run `./gradlew`
 to build the Bnd bundles and install them in your local maven repo. You can then
 run Maven to build the Maven plugins.
@@ -42,5 +46,7 @@ run Maven to build the Maven plugins.
 [1]: bnd-maven-plugin/README.md
 [2]: bnd-indexer-maven-plugin/README.md
 [3]: bnd-baseline-maven-plugin/README.md
-[4]: ../.travis.yml
-[5]: https://maven.apache.org/maven-logging.html
+[4]: bnd-export-maven-plugin/README.md
+[5]: ../.travis.yml
+[6]: https://maven.apache.org/maven-logging.html
+
