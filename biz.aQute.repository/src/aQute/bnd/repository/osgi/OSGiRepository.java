@@ -83,7 +83,7 @@ public class OSGiRepository implements Plugin, RepositoryPlugin, Actionable, Ref
 		return getIndex(false);
 	}
 
-	private synchronized OSGiIndex getIndex(boolean refresh) throws Exception {
+	synchronized OSGiIndex getIndex(boolean refresh) throws Exception {
 
 		HttpClient client = registry.getPlugin(HttpClient.class);
 
@@ -108,7 +108,7 @@ public class OSGiRepository implements Plugin, RepositoryPlugin, Actionable, Ref
 		for (String s : strings) {
 			urls.add(new URI(s));
 		}
-		index = new OSGiIndex(config.name(), client, cache, urls, config.max_stale(YEAR));
+		index = new OSGiIndex(config.name(), client, cache, urls, config.max_stale(YEAR), refresh);
 		return index;
 	}
 

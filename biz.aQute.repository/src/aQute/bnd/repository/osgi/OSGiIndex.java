@@ -33,7 +33,8 @@ class OSGiIndex {
 	private final File						cache;
 	private final String					name;
 
-	OSGiIndex(String name, HttpClient client, File cache, Collection<URI> urls, int staleTime) throws Exception {
+	OSGiIndex(String name, HttpClient client, File cache, Collection<URI> urls, int staleTime, boolean refresh)
+			throws Exception {
 		this.name = name;
 		this.client = client;
 		this.cache = cache;
@@ -41,14 +42,14 @@ class OSGiIndex {
 
 		checkCache(cache);
 
-		repository = readIndexes(urls);
+		repository = readIndexes(urls, refresh);
 	}
 
-	private Promise<BridgeRepository> readIndexes(Collection<URI> urls) throws Exception {
+	private Promise<BridgeRepository> readIndexes(Collection<URI> urls, boolean refresh) throws Exception {
 		List<Promise<List<Resource>>> promises = new ArrayList<>();
 
 		for (URI url : urls) {
-			promises.add(download(url));
+			promises.add(download(url, refresh));
 		}
 
 		Promise<List<List<Resource>>> all = Promises.all(promises);
@@ -84,9 +85,9 @@ class OSGiIndex {
 		return new BridgeRepository(rr);
 	}
 
-	private Promise<List<Resource>> download(URI url) throws Exception {
-		HttpRequest<File> req;
-		req = client.build().useCache(staleTime);
+	private Promise<List<Resource>> download(URI url, boolean refresh) throws Exception {
+		HttpRequest<File> req = refresh ? client.build().useCache(-1) : client.build().useCache(staleTime);
+
 		return req.async(url).map(toResources(url));
 	}
 

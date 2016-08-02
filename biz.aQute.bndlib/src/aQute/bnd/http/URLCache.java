@@ -19,7 +19,6 @@ import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.service.reporter.Reporter;
 
 public class URLCache {
-	private static final long			TIMEOUT		= TimeUnit.MINUTES.toMillis(5);
 	private final static JSONCodec		codec		= new JSONCodec();
 
 	private final File					root;
