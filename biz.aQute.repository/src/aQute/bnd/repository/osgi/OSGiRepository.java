@@ -95,7 +95,7 @@ public class OSGiRepository implements Plugin, RepositoryPlugin, Actionable, Ref
 		}
 		String cachePath = config.cache();
 		if (cachePath == null) {
-			cache = ws.getFile("cnf/cache-" + config.name());
+			cache = ws.getCache(config.name());
 		} else {
 			cache = ws.getFile(cachePath);
 		}
