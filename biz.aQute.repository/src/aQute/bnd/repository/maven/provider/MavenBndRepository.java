@@ -13,6 +13,7 @@ import java.net.URI;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Formatter;
 import java.util.HashMap;
@@ -30,6 +31,8 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
@@ -44,6 +47,7 @@ import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.repository.maven.provider.IndexFile.BundleDescriptor;
 import aQute.bnd.repository.maven.provider.ReleaseDTO.JavadocPackages;
 import aQute.bnd.repository.maven.provider.ReleaseDTO.ReleaseType;
@@ -56,7 +60,6 @@ import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.maven.PomOptions;
 import aQute.bnd.service.maven.ToDependencyPom;
-import aQute.bnd.service.repository.InfoRepository;
 import aQute.bnd.version.Version;
 import aQute.jpm.facade.repo.JpmRepo;
 import aQute.lib.converter.Converter;
@@ -79,8 +82,8 @@ import aQute.service.reporter.Reporter;
  * This is the Bnd repository for Maven.
  */
 @BndPlugin(name = "MavenBndRepository")
-public class MavenBndRepository implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable, Refreshable,
-		InfoRepository, Actionable, ToDependencyPom {
+public class MavenBndRepository extends BaseRepository
+		implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable, Refreshable, Actionable, ToDependencyPom {
 
 	private final Pattern			JPM_REVISION_URL_PATTERN_P	= Pattern
 			.compile("https?://.+#!?/p/sha/(?<sha>([0-9A-F][0-9A-F]){20,20})/.*", Pattern.CASE_INSENSITIVE);
@@ -593,7 +596,6 @@ public class MavenBndRepository implements RepositoryPlugin, RegistryPlugin, Plu
 		return localRepo;
 	}
 
-	@Override
 	public BundleDescriptor getDescriptor(String bsn, Version version) throws Exception {
 		return index.getDescriptor(bsn, version);
 	}
@@ -829,6 +831,12 @@ public class MavenBndRepository implements RepositoryPlugin, RegistryPlugin, Plu
 				.dependencyManagement(options.dependencyManagement)
 				.out(out);
 		
+	}
+
+	@Override
+	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
+		init();
+		return index.findProviders(requirements);
 	}
 
 }
