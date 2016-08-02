@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URL;
@@ -416,26 +415,18 @@ public class Workspace extends Processor {
 		signal(this);
 	}
 
-	void copy(InputStream in, OutputStream out) throws Exception {
-		byte data[] = new byte[BUFFER_SIZE];
-		int size = in.read(data);
-		while (size > 0) {
-			out.write(data, 0, size);
-			size = in.read(data);
-		}
-	}
-
 	class CachedFileRepo extends FileRepo {
+		static final String	REPONAME	= "bnd-cache";
 		final Lock	lock	= new ReentrantLock();
 		boolean		inited;
 
 		CachedFileRepo() {
-			super("cache", getFile(buildDir, CACHEDIR), false);
+			super(REPONAME, getCache(REPONAME), false);
 		}
 
 		@Override
 		public String toString() {
-			return "bnd-cache";
+			return REPONAME;
 		}
 
 		@Override
@@ -479,28 +470,30 @@ public class Workspace extends Processor {
 			}
 		}
 
-		void unzip(InputStream in, File dir) throws Exception {
-			try {
-				JarInputStream jin = new JarInputStream(in);
-				JarEntry jentry = jin.getNextJarEntry();
-				while (jentry != null) {
-					if (!jentry.isDirectory()) {
-						File dest = Processor.getFile(dir, jentry.getName());
-						long modifiedTime = ZipUtil.getModifiedTime(jentry);
-						if (!dest.isFile() || dest.lastModified() < modifiedTime || modifiedTime <= 0) {
-							File dp = dest.getParentFile();
-							if (!dp.exists() && !dp.mkdirs()) {
-								throw new IOException("Could not create directory " + dp);
-							}
-							FileOutputStream out = new FileOutputStream(dest);
-							try {
-								copy(jin, out);
-							} finally {
-								out.close();
+		private void unzip(InputStream in, File dir) throws Exception {
+			try (JarInputStream jin = new JarInputStream(in)) {
+				byte[] data = new byte[BUFFER_SIZE];
+				for (JarEntry jentry = jin.getNextJarEntry(); jentry != null; jentry = jin.getNextJarEntry()) {
+					if (jentry.isDirectory()) {
+						continue;
+					}
+					String jentryName = jentry.getName();
+					if (jentryName.startsWith("META-INF/")) {
+						continue;
+					}
+					File dest = getFile(dir, jentryName);
+					long modifiedTime = ZipUtil.getModifiedTime(jentry);
+					if (!dest.isFile() || dest.lastModified() < modifiedTime || modifiedTime <= 0) {
+						File dp = dest.getParentFile();
+						if (!dp.exists() && !dp.mkdirs()) {
+							throw new IOException("Could not create directory " + dp);
+						}
+						try (FileOutputStream out = new FileOutputStream(dest)) {
+							for (int size = jin.read(data); size > 0; size = jin.read(data)) {
+								out.write(data, 0, size);
 							}
 						}
 					}
-					jentry = jin.getNextJarEntry();
 				}
 			} finally {
 				in.close();
