@@ -70,6 +70,7 @@ public class OSGiRepositoryTest extends TestCase {
 			}
 		});
 		HttpClient httpClient = new HttpClient();
+		httpClient.setCache(cache);
 		httpClient.setRegistry(p);
 		p.addBasicPlugin(httpClient);
 		p.setBase(ws);
@@ -130,6 +131,7 @@ public class OSGiRepositoryTest extends TestCase {
 			}
 		});
 		HttpClient httpClient = new HttpClient();
+		httpClient.setCache(cache);
 		httpClient.setRegistry(p);
 		p.addBasicPlugin(httpClient);
 		p.setBase(ws);
@@ -146,6 +148,9 @@ public class OSGiRepositoryTest extends TestCase {
 		File f1 = r.get("aQute.libg", versions.first(), null);
 		assertNotNull(f1);
 		File f2 = r.get("aQute.libg", versions.first(), null);
+
+		r.getIndex(true);
+		File f3 = r.get("aQute.libg", versions.first(), null);
 	}
 
 }
