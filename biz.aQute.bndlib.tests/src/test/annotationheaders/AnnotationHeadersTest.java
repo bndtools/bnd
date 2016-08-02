@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Map.Entry;
+import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -59,19 +60,20 @@ public class AnnotationHeadersTest extends TestCase {
 
 
 	public void testMultipleManifestHeaders() throws Exception {
-		// try (Builder b = new Builder();) {
-		// b.addClasspath(IO.getFile("bin"));
-		// b.setPrivatePackage("test.annotationheaders.multiple");
-		// b.build();
-		// assertTrue(b.check());
-		// b.getJar().getManifest().write(System.out);
-		// Parameters req = new Parameters(
-		// b.getJar().getManifest().getMainAttributes().getValue(Constants.REQUIRE_CAPABILITY));
-		// Parameters cap = new Parameters(
-		// b.getJar().getManifest().getMainAttributes().getValue(Constants.PROVIDE_CAPABILITY));
-		// assertTrue(req.get("foo") != null);
-		// assertTrue(cap.get("foo") != null);
-		// }
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin"));
+			b.setPrivatePackage("test.annotationheaders.multiple");
+			b.build();
+			assertTrue(b.check());
+			b.getJar().getManifest().write(System.out);
+			Attributes mainAttributes = b.getJar().getManifest().getMainAttributes();
+			Parameters req = new Parameters(
+					mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
+			Parameters cap = new Parameters(
+					mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
+			assertTrue(cap.get("provide") != null);
+			assertTrue(req.get("require") != null);
+		}
 	}
 
 	/**

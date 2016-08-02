@@ -2,9 +2,7 @@ package aQute.bnd.osgi;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
@@ -127,11 +125,9 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	 * Called when an annotation is found. Dispatch on the known types.
 	 */
 	public void annotation(Annotation annotation) throws Exception {
-		annotation = tryMerge(annotation);
-		if (annotation == null)
-			return;
-
 		TypeRef name = annotation.getName();
+		if (name.isJava())
+			return;
 
 		if (name == bundleLicenseRef)
 			doLicense(annotation);
@@ -149,48 +145,35 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			doBundleContributors(annotation.getAnnotation(BundleContributors.class));
 		else if (name == bundleCopyrightRef)
 			doBundeCopyright(annotation.getAnnotation(BundleCopyright.class));
-		else
-			analyzer.error("Unknon annotation %s on %s", name, current.getClassName());
+		else {
+			doAnnotatedAnnotation(annotation, name);
+		}
 	}
 
-	/*
-	 * Since we can annotate the annotations we need to see if we can find an
-	 * annotation on our annotation that is a manifest annotation. In that case
-	 * we merge the properties of this annotation with the manifest annotation.
+	/**
+	 * Handle the case where an annotation is annotated by one of our header
+	 * annotations.
+	 * 
+	 * @param annotation
+	 * @param name
+	 * @throws Exception
 	 */
-	private Annotation tryMerge(Annotation annotation) throws Exception {
-		if (interesting.contains(annotation.getName()))
-			return annotation;
-
-		Clazz c = analyzer.findClass(annotation.getName());
-		if (c == null || c.annotations == null)
-			return null;
-
-		if (!containsAny(interesting, c.annotations))
-			return null;
-
-		final List<Annotation> parent = new ArrayList<Annotation>();
-
-		c.parseClassFileWithCollector(new ClassDataCollector() {
-			@Override
-			public void annotation(Annotation a) {
-				if (parent.isEmpty() && interesting.contains(a.getName())) {
-					parent.add(a);
-				}
+	void doAnnotatedAnnotation(final Annotation annotation, TypeRef name) throws Exception {
+		final Clazz c = analyzer.findClass(annotation.getName());
+		if (c != null && c.annotations != null) {
+			if (containsAny(interesting, c.annotations)) {
+				c.parseClassFileWithCollector(new ClassDataCollector() {
+					@Override
+					public void annotation(Annotation a) throws Exception {
+						if (interesting.contains(a.getName())) {
+							a.merge(annotation);
+							a.addDefaults(c);
+							AnnotationHeaders.this.annotation(a);
+						}
+					}
+				});
 			}
-		});
-
-		if (parent.isEmpty())
-			return null;
-
-		if (parent.size() > 1)
-			analyzer.error("Found that manifest annotated annotation %s has more than one parent",
-					annotation.getName());
-
-		Annotation root = parent.get(0);
-		root.merge(annotation);
-		root.addDefaults(c);
-		return root;
+		}
 	}
 
 	/*
@@ -351,11 +334,13 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				modified = true;
 				String key = matcher.group(1);
 				String substitution = attrs.get(key);
-
-				if (SIMPLE_PARAM_PATTERN.matcher(substitution).find())
+				if (substitution == null) {
+					matcher.appendReplacement(sb, "");
+					sb.append(matcher.group(0));
+				} else if (SIMPLE_PARAM_PATTERN.matcher(substitution).find())
 					throw new IllegalArgumentException("nested substitutions not permitted");
-
-				matcher.appendReplacement(sb, substitution);
+				else
+					matcher.appendReplacement(sb, substitution);
 			}
 
 			if (modified) {
