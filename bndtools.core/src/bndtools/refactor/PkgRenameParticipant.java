@@ -1,11 +1,26 @@
 package bndtools.refactor;
 
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.build.model.clauses.HeaderClause;
+import aQute.bnd.build.model.clauses.ImportPattern;
+import aQute.bnd.properties.Document;
+import aQute.bnd.properties.IDocument;
+import aQute.bnd.properties.IRegion;
+import aQute.bnd.properties.LineType;
+import aQute.bnd.properties.PropertiesLineReader;
+
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Map.Entry;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -35,7 +50,6 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
 
-
 public class PkgRenameParticipant extends RenameParticipant implements ISharableParticipant {
     private static final ILogger logger = Logger.getLogger(PkgRenameParticipant.class);
 
@@ -62,6 +76,7 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
         return true;
     }
 
+    @Override
     public void addElement(Object element, RefactoringArguments arguments) {
         this.pkgFragments.put((IPackageFragment) element, (RenameArguments) arguments);
     }
@@ -83,6 +98,7 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
         final Map<IFile,TextChange> fileChanges = new HashMap<IFile,TextChange>();
 
         IResourceProxyVisitor visitor = new IResourceProxyVisitor() {
+            @Override
             public boolean visit(IResourceProxy proxy) throws CoreException {
                 if ((proxy.getType() == IResource.FOLDER) || (proxy.getType() == IResource.PROJECT)) {
                     return true;
@@ -119,6 +135,17 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
                 }
                 TextEdit rootEdit = fileChange.getEdit();
 
+                BndEditModel model = new BndEditModel();
+                Document document = new Document(bndFileText);
+
+                try {
+                    model.loadFrom(document);
+                } catch (IOException e) {
+                    String str = "Could not load document " + proxy.getName();
+                    logger.logError(str, e);
+                    throw new OperationCanceledException(str);
+                }
+
                 /* loop over all renames to perform */
                 for (Map.Entry<IPackageFragment,RenameArguments> entry : pkgFragments.entrySet()) {
                     IPackageFragment pkgFragment = entry.getKey();
@@ -127,26 +154,42 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
                     final String oldName = pkgFragment.getElementName();
                     final String newName = arguments.getNewName();
 
-                    Pattern pattern = Pattern.compile(
-                    /* match start boundary */"(^|" + grammarSeparator + ")" +
-                    /* match itself / package name */"(" + Pattern.quote(oldName) + ")" +
-                    /* match end boundary */"(" + grammarSeparator + "|" + Pattern.quote(".*") + "|" + Pattern.quote("\\") + "|$)");
-
-                    /* find all matches to replace and add them to the root edit */
-                    Matcher matcher = pattern.matcher(bndFileText);
-                    while (matcher.find()) {
-                        rootEdit.addChild(new ReplaceEdit(matcher.start(2), matcher.group(2).length(), newName));
+                    List<ImportPattern> newImportedPackages = makeNewHeaders(model.getImportPatterns(), oldName, newName);
+                    if (newImportedPackages != null) {
+                        model.setImportPatterns(newImportedPackages);
                     }
 
-                    pattern = Pattern.compile(
-                    /* match start boundary */"(^|" + grammarSeparator + ")" +
+                    List<ExportedPackage> newExportedPackages = makeNewHeaders(model.getExportedPackages(), oldName, newName);
+                    if (newExportedPackages != null) {
+                        model.setExportedPackages(newExportedPackages);
+                    }
+
+                    List<String> newPrivatePackages = makeNewHeaders(model.getPrivatePackages(), oldName, newName);
+                    if (newPrivatePackages != null) {
+                        model.setPrivatePackages(newPrivatePackages);
+                    }
+
+                    Map<String,String> changes = model.getDocumentChanges();
+
+                    for (Iterator<Entry<String,String>> iter = changes.entrySet().iterator(); iter.hasNext();) {
+                        Entry<String,String> change = iter.next();
+
+                        String propertyName = change.getKey();
+                        String stringValue = change.getValue();
+
+                        addEdit(document, rootEdit, propertyName, stringValue);
+
+                        iter.remove();
+                    }
+
+                    Pattern pattern = Pattern.compile(/* match start boundary */"(^|" + grammarSeparator + ")" +
                     /* match bundle activator */"(Bundle-Activator\\s*:\\s*)" +
                     /* match itself / package name */"(" + Pattern.quote(oldName) + ")" +
                     /* match class name */"(\\.[^\\.]+)" +
                     /* match end boundary */"(" + grammarSeparator + "|" + Pattern.quote("\\") + "|$)");
 
                     /* find all matches to replace and add them to the root edit */
-                    matcher = pattern.matcher(bndFileText);
+                    Matcher matcher = pattern.matcher(bndFileText);
                     while (matcher.find()) {
                         rootEdit.addChild(new ReplaceEdit(matcher.start(3), matcher.group(3).length(), newName));
                     }
@@ -193,5 +236,95 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
         }
 
         return cs;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> List<T> makeNewHeaders(List<T> headers, String oldName, String newName) {
+        if (headers != null) {
+            boolean changed = false;
+            List<T> newHeaders = new ArrayList<>();
+
+            for (T header : headers) {
+                if (header instanceof HeaderClause) {
+                    HeaderClause newHeader = ((HeaderClause) header).clone();
+                    newHeaders.add((T) newHeader);
+
+                    if (newHeader.getName().equals(oldName)) {
+                        newHeader.setName(newName);
+                        changed = true;
+                    }
+                } else if (header instanceof String) {
+                    String newPrivatePackage = header.toString();
+
+                    if (newPrivatePackage.equals(oldName)) {
+                        newPrivatePackage = newName;
+                        changed = true;
+                    }
+
+                    newHeaders.add((T) newPrivatePackage);
+                }
+            }
+
+            if (changed) {
+                return newHeaders;
+            }
+        }
+
+        return null;
+    }
+
+    private static IRegion findEntry(IDocument document, String name) {
+        PropertiesLineReader reader = new PropertiesLineReader(document);
+        try {
+            LineType type = reader.next();
+            while (type != LineType.eof) {
+                if (type == LineType.entry) {
+                    String key = reader.key();
+                    if (name.equals(key))
+                        return reader.region();
+                }
+                type = reader.next();
+            }
+        } catch (Exception e) {}
+        return null;
+    }
+
+    /**
+     * Copied from BndEditModel#updateDocument
+     */
+    private static void addEdit(IDocument document, TextEdit rootEdit, String name, String value) {
+        String newEntry;
+        if (value != null) {
+            StringBuilder buffer = new StringBuilder();
+            buffer.append(name).append(": ").append(value);
+            newEntry = buffer.toString();
+        } else {
+            newEntry = "";
+        }
+
+        try {
+            IRegion region = findEntry(document, name);
+            if (region != null) {
+                // Replace an existing entry
+                int offset = region.getOffset();
+                int length = region.getLength();
+
+                // If the replacement is empty, remove one extra character to
+                // the right, i.e. the following newline,
+                // unless this would take us past the end of the document
+                if (newEntry.length() == 0 && offset + length + 1 < document.getLength()) {
+                    length++;
+                }
+                rootEdit.addChild(new ReplaceEdit(offset, length, newEntry));
+            } else if (newEntry.length() > 0) {
+                // This is a new entry, put it at the end of the file
+
+                // Does the last line of the document have a newline? If not,
+                // we need to add one.
+                if (document.getLength() > 0 && document.getChar(document.getLength() - 1) != '\n')
+                    newEntry = "\n" + newEntry;
+                rootEdit.addChild(new ReplaceEdit(document.getLength(), 0, newEntry));
+            }
+        } catch (Exception e) {}
     }
 }
