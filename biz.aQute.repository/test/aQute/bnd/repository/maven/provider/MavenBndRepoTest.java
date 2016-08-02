@@ -5,16 +5,25 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
+
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.RepositoryPlugin.PutOptions;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.service.maven.PomOptions;
@@ -98,6 +107,13 @@ public class MavenBndRepoTest extends TestCase {
 		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar");
 		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.pom");
 		put = repo.put(new FileInputStream(jar), null);
+
+		Requirement wc = ResourceUtils.createWildcardRequirement();
+		Collection<Capability> caps = repo.findProviders(Collections.singleton(wc)).get(wc);
+		Set<Resource> resources = ResourceUtils.getResources(caps);
+		assertEquals(2, resources.size());
+		IdentityCapability bc = ResourceUtils.getIdentityCapability(resources.iterator().next());
+		assertEquals("biz.aQute.bnd.maven", bc.osgi_identity());
 	}
 
 	public void testNoIndexFile() throws Exception {
@@ -153,6 +169,13 @@ public class MavenBndRepoTest extends TestCase {
 
 		versions = repo.versions("org.apache.commons.cli");
 		assertEquals("[1.2.0]", versions.toString());
+		
+		Requirement all = ResourceUtils.createWildcardRequirement();
+		Collection<Capability> providers = repo.findProviders( Collections.singleton(all)).get(all);
+		Set<Resource> resources = ResourceUtils.getResources(providers);
+
+		// there is only one bundle in the store
+		assertEquals(1, resources.size());
 	}
 
 	public void testPutDefaultLocalSnapshot() throws Exception {

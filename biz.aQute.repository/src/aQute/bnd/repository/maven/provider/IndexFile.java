@@ -13,21 +13,28 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
 import org.osgi.util.function.Function;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.Promises;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.repository.Phase;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
+import aQute.lib.collections.MultiMap;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.lib.strings.Strings;
@@ -46,12 +53,30 @@ class IndexFile {
 
 	private static final JSONCodec CODEC = new JSONCodec();
 
-	public static class BundleDescriptor extends ResourceDescriptor {
+	public class BundleDescriptor extends ResourceDescriptor {
 		public long		lastModified;
 		public Archive	archive;
 		public boolean	merged;
 		String			error;
 		Promise<File>	promise;
+		Resource		resource;
+
+		public synchronized Resource getResource() {
+			if (resource == null) {
+
+				try {
+					File f = promise.getValue();
+					ResourceBuilder rb = new ResourceBuilder();
+					rb.addFile(f, f.toURI());
+					resource = rb.build();
+				} catch (Exception e) {
+					e.printStackTrace();
+					reporter.exception(e, "Failed to get file for %s", archive);
+					return resource = ResourceUtils.DUMMY_RESOURCE;
+				}
+			}
+			return resource;
+		}
 	}
 
 	final ConcurrentMap<Archive,Promise<File>>		promises	= new ConcurrentHashMap<>();
@@ -256,6 +281,8 @@ class IndexFile {
 					saveDescriptor(descriptor);
 					refresh.set(true);
 				}
+				if (descriptor.promise == null && file != null)
+					descriptor.promise = Promises.resolved(file);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -286,6 +313,7 @@ class IndexFile {
 				try {
 					BundleDescriptor descriptor = CODEC.dec().from(descriptorFile).get(BundleDescriptor.class);
 					descriptor.promise = Promises.resolved(archiveFile);
+					descriptor.resource = null;
 					descriptors.put(archive, descriptor);
 					return true;
 				} catch (Exception e) {
@@ -318,6 +346,7 @@ class IndexFile {
 			}
 
 		});
+		descriptor.resource = null;
 		promises.put(descriptor.archive, descriptor.promise);
 		return descriptor.promise;
 	}
@@ -357,6 +386,24 @@ class IndexFile {
 
 	public Collection<Archive> getArchives() {
 		return descriptors.keySet();
+	}
+
+	@SuppressWarnings({
+			"unchecked", "rawtypes"
+	})
+	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
+		MultiMap<Requirement,Capability> providers = new MultiMap<>();
+		for (BundleDescriptor bd : descriptors.values()) {
+			Resource r = bd.getResource();
+			if (r != null) {
+				for (Requirement req : requirements) {
+					for (Capability cap : r.getCapabilities(req.getNamespace())) {
+						providers.add(req, cap);
+					}
+				}
+			}
+		}
+		return (Map) providers;
 	}
 
 }

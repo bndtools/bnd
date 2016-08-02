@@ -111,6 +111,8 @@ public class ResourceUtils {
 																						}
 																					};
 
+	public static final Resource						DUMMY_RESOURCE				= new ResourceBuilder().build();
+
 	static Converter									cnv							= new Converter();
 
 	static {
