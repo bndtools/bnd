@@ -177,16 +177,29 @@ public class HttpClient implements Closeable, URLConnector {
 					// server
 					//
 
-					request.ifNoneMatch(info.getETag());
+					//
+					// Use etag if present, otherwise time of file
+					//
+
+					if (info.dto.etag != null)
+						request.ifNoneMatch(info.getETag());
+					else {
+						long time = info.file.lastModified();
+						if (time > 0)
+							request.ifModifiedSince(time + 1);
+					}
+
 					TaggedData in = send0(request);
-					if (in.isOk()) {
+					if (in.getState() == State.UPDATED) {
 
 						//
 						// update the cache from the input stream
 						//
 
 						info.update(in.getInputStream(), in.getTag(), in.getModified());
-					}
+					} else if (in.getState() == State.UNMODIFIED)
+						info.jsonFile.setLastModified(System.currentTimeMillis());
+
 					return in;
 
 				} else {

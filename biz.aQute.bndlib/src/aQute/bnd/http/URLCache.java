@@ -90,7 +90,9 @@ public class URLCache {
 		}
 
 		public boolean isPresent() {
-			return file.isFile() && jsonFile.isFile() && dto.etag != null;
+			boolean f = file.isFile();
+			boolean j = jsonFile.isFile();
+			return f && j;
 		}
 
 		public void delete() {
