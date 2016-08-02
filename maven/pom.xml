@@ -107,6 +107,11 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>org.osgi.impl.bundle.repoindex.cli</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>3.8.2</version>
