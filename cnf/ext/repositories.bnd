@@ -32,7 +32,7 @@ jpm:\
 		location=${build}/buildrepo; \
 		latest=false \
 	,\
-	aQute.bnd.repository.osgi.OSGiRepository; \
+	aQute.bnd.deployer.repository.FixedIndexedRepo; \
 		name='bnd'; \
 		locations=${bndRepo}; \
 		cache=${build}/bndcache \
