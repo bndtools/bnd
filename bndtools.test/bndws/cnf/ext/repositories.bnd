@@ -5,3 +5,8 @@
 		
 	
 -releaserepo: Local
+
+-plugin.enroute.distro = \
+	aQute.bnd.repository.osgi.OSGiRepository; \
+	        name		=       Distro; \
+	        locations	=       https://raw.githubusercontent.com/osgi/osgi.enroute/master/cnf/distro/index.xml
