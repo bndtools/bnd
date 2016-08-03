@@ -147,16 +147,16 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
                             parser.setSource(compUnit);
                             parser.setResolveBindings(true);
                             CompilationUnit ast = (CompilationUnit) parser.createAST(null);
-
-                            MemberValuePairLocationRetriever mvpRetriever = new MemberValuePairLocationRetriever(annot, new Predicate<String>() {
-                                @Override
-                                public boolean test(String t) {
-                                    return ANNOTATION_VERSION_BND.equals(t) || ANNOTATION_VERSION_OSGI.equals(t);
-                                }
-                            }, "value");
-                            ast.accept(mvpRetriever);
-                            range = mvpRetriever.getMemberValuePairSourceRange();
-
+                            if (ast != null) {
+                                MemberValuePairLocationRetriever mvpRetriever = new MemberValuePairLocationRetriever(annot, new Predicate<String>() {
+                                    @Override
+                                    public boolean test(String t) {
+                                        return ANNOTATION_VERSION_BND.equals(t) || ANNOTATION_VERSION_OSGI.equals(t);
+                                    }
+                                }, "value");
+                                ast.accept(mvpRetriever);
+                                range = mvpRetriever.getMemberValuePairSourceRange();
+                            }
                         }
                     }
                 }
@@ -247,28 +247,29 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
     List<MarkerData> generateRemovedMethodMarker(IJavaProject javaProject, final String className, final String methodName, final Delta requiresDelta) throws JavaModelException {
         final List<MarkerData> markers = new LinkedList<MarkerData>();
         final CompilationUnit ast = createAST(javaProject, className);
-        ast.accept(new ASTVisitor() {
-            @Override
-            public boolean visit(TypeDeclaration typeDecl) {
-                ITypeBinding typeBinding = typeDecl.resolveBinding();
-                if (typeBinding != null) {
-                    if (typeBinding.getBinaryName().equals(className)) {
-                        Map<String,Object> attribs = new HashMap<String,Object>();
-                        SimpleName nameNode = typeDecl.getName();
-                        attribs.put(IMarker.CHAR_START, nameNode.getStartPosition());
-                        attribs.put(IMarker.CHAR_END, nameNode.getStartPosition() + nameNode.getLength());
+        if (ast != null) {
+            ast.accept(new ASTVisitor() {
+                @Override
+                public boolean visit(TypeDeclaration typeDecl) {
+                    ITypeBinding typeBinding = typeDecl.resolveBinding();
+                    if (typeBinding != null) {
+                        if (typeBinding.getBinaryName().equals(className)) {
+                            Map<String,Object> attribs = new HashMap<String,Object>();
+                            SimpleName nameNode = typeDecl.getName();
+                            attribs.put(IMarker.CHAR_START, nameNode.getStartPosition());
+                            attribs.put(IMarker.CHAR_END, nameNode.getStartPosition() + nameNode.getLength());
 
-                        String message = String.format("The method '%s' was removed, which requires a %s change to the package.", methodName, requiresDelta);
-                        attribs.put(IMarker.MESSAGE, message);
+                            String message = String.format("The method '%s' was removed, which requires a %s change to the package.", methodName, requiresDelta);
+                            attribs.put(IMarker.MESSAGE, message);
 
-                        markers.add(new MarkerData(ast.getJavaElement().getResource(), attribs, false));
-                        return false;
+                            markers.add(new MarkerData(ast.getJavaElement().getResource(), attribs, false));
+                            return false;
+                        }
                     }
+                    return true;
                 }
-                return true;
-            }
-        });
-
+            });
+        }
         return markers;
     }
 
