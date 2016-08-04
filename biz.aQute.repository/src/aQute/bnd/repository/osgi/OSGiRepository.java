@@ -65,6 +65,7 @@ public class OSGiRepository
 	private ScheduledFuture< ? >	poller;
 	private boolean					stale		= false;
 	private AtomicBoolean			inPoll		= new AtomicBoolean();
+	private File					cache;
 
 	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
@@ -100,8 +101,6 @@ public class OSGiRepository
 	synchronized OSGiIndex getIndex(boolean refresh) throws Exception {
 
 		HttpClient client = registry.getPlugin(HttpClient.class);
-
-		File cache;
 
 		Workspace ws = registry.getPlugin(Workspace.class);
 		if (ws == null) {
@@ -230,7 +229,7 @@ public class OSGiRepository
 					f.format("[stale] Needs reload, see menu\n");
 				}
 				f.format("Name             : %s\n", getName());
-				f.format("Cache            : %s\n", config.cache());
+				f.format("Cache            : %s\n", cache);
 				f.format("Max stale (secs) : %s\n", config.max_stale(YEAR));
 				f.format("\n" + "URLs            :\n");
 				for (URI url : getIndex().getUrls()) {
@@ -288,6 +287,7 @@ public class OSGiRepository
 
 	@Override
 	public void close() throws IOException {
-		poller.cancel(true);
+		if (poller != null)
+			poller.cancel(true);
 	}
 }
