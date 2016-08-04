@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequestException;
@@ -22,9 +23,10 @@ import aQute.service.reporter.Reporter;
 
 public class MavenRemoteRepository extends MavenBackingRepository {
 	final HttpClient						client;
-	final Map<Revision,RevisionMetadata>	revisions	= new ConcurrentHashMap<>();
-	final Map<Program,ProgramMetadata>		programs	= new ConcurrentHashMap<>();
+	final Map<Revision,RevisionMetadata>	revisions			= new ConcurrentHashMap<>();
+	final Map<Program,ProgramMetadata>		programs			= new ConcurrentHashMap<>();
 	final String							base;
+	final static long						DEFAULT_MAX_STALE	= TimeUnit.HOURS.toMillis(1);
 
 	public MavenRemoteRepository(File root, HttpClient client, String base, Reporter reporter) throws Exception {
 		super(root, base, reporter);
@@ -39,7 +41,11 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 			try {
 				reporter.trace("Fetching %s", path);
 
-				TaggedData tag = client.build().headers("User-Agent", "Bnd").useCache(file).asTag().go(url);
+				TaggedData tag = client.build()
+						.headers("User-Agent", "Bnd")
+						.useCache(file, DEFAULT_MAX_STALE)
+						.asTag()
+						.go(url);
 				reporter.trace("Fetched %s", tag);
 				if (tag.getState() == State.UPDATED) {
 
