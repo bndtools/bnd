@@ -398,7 +398,8 @@ class IndexFile {
 			if (r != null) {
 				for (Requirement req : requirements) {
 					for (Capability cap : r.getCapabilities(req.getNamespace())) {
-						providers.add(req, cap);
+						if (ResourceUtils.matches(req, cap))
+							providers.add(req, cap);
 					}
 				}
 			}
