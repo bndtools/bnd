@@ -6,14 +6,15 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.osgi.resource.Resource;
 import org.osgi.util.function.Function;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.Promises;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequest;
@@ -22,24 +23,28 @@ import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceParser;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
+import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.version.Version;
 import aQute.lib.exceptions.Exceptions;
+import aQute.libg.reporter.slf4j.Slf4jReporter;
+import aQute.service.reporter.Reporter;
 
 class OSGiIndex {
-	private Logger							log	= LoggerFactory.getLogger(OSGiIndex.class);
+	private Reporter						log	= new Slf4jReporter(OSGiIndex.class);
 	private final Promise<BridgeRepository>	repository;
 	private final HttpClient				client;
 	private final long						staleTime;
 	private final File						cache;
 	private final String					name;
+	private final Collection<URI>			urls;
 
 	OSGiIndex(String name, HttpClient client, File cache, Collection<URI> urls, int staleTime, boolean refresh)
 			throws Exception {
 		this.name = name;
+		this.urls = urls;
 		this.client = client;
 		this.cache = cache;
 		this.staleTime = staleTime * 1000L;
-
 		checkCache(cache);
 
 		repository = readIndexes(urls, refresh);
@@ -116,13 +121,13 @@ class OSGiIndex {
 
 		ContentCapability content = ResourceUtils.getContentCapability(resource);
 		if (content == null) {
-			log.warn(name + ": No content capability for " + resource);
+			log.warning("%s: No content capability for %s", name, resource);
 			return null;
 		}
 
 		URI url = content.url();
 		if (url == null) {
-			log.warn(name + ": No URL in content capability for " + resource);
+			log.warning("%s: No content capability for %s", name, resource);
 			return null;
 		}
 
@@ -135,5 +140,57 @@ class OSGiIndex {
 
 	public File getCache() {
 		return cache;
+	}
+
+	/**
+	 * Check any of the URL indexes are stale.
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	boolean isStale() throws Exception {
+
+		Map<URI,Promise<TaggedData>> promises = new HashMap<>();
+
+		for (URI uri : urls)
+			try {
+				Promise<TaggedData> async = client.build().useCache().asTag().async(uri);
+				promises.put(uri, async);
+			} catch (Exception e) {
+				log.trace("Checking stale status: %s: %s", e.getMessage(), uri);
+			}
+
+		for (Entry<URI,Promise<TaggedData>> entry : promises.entrySet()) {
+			URI uri = entry.getKey();
+			Promise<TaggedData> p = entry.getValue();
+			if (p.getFailure() != null) {
+				log.trace("Could not verify %s: %s", uri, p.getFailure().getMessage());
+				return true;
+			} else {
+				TaggedData tag = p.getValue();
+				switch (tag.getState()) {
+					case OTHER :
+						// in the offline case
+						// ignore might be best here
+						log.trace("Could not verify %s", uri);
+						break;
+
+					case UNMODIFIED :
+						break;
+
+					case NOT_FOUND :
+					case UPDATED :
+					default :
+						log.trace("Found %s to be stale", uri);
+						return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	public Collection<URI> getUrls() {
+		return urls;
 	}
 }

@@ -106,6 +106,12 @@ public class URLCache {
 		public long getModified() {
 			return dto.modified;
 		}
+
+		@Override
+		public String toString() {
+			return "Info [file=" + file.getName() + ", url=" + url + "]";
+		}
+
 	}
 
 	public URLCache(File root) {
