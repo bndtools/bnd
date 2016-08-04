@@ -48,7 +48,6 @@ class P2Indexer implements Closeable {
 	final String				name;
 	final File					indexFile;
 	volatile BridgeRepository	bridge;
-	public Set<URI>				visited		= new HashSet<>();
 
 	P2Indexer(Reporter reporter, File location, HttpClient client, URI url, String name) throws Exception {
 		this.reporter = reporter;
@@ -129,6 +128,7 @@ class P2Indexer implements Closeable {
 		P2Impl p2 = new P2Impl(client, this.url, Processor.getExecutor());
 		Map<Artifact,Promise<Resource>> fetched = new HashMap<>();
 		List<URI> uris = new ArrayList<>();
+		Set<URI> visited = new HashSet<>();
 
 		for (final Artifact a : p2.getArtifacts()) {
 			if (visited.contains(a.uri))

@@ -131,4 +131,19 @@ public class P2IndexerTest extends TestCase {
 		}
 
 	}
+
+	public void testRefresh() throws Exception {
+		HttpClient client = new HttpClient();
+		client.setCache(IO.getFile(tmp, "cache"));
+
+		try (P2Indexer p2 = new P2Indexer(new Slf4jReporter(), tmp, client,
+				new URI("http://macbadge-updates.s3.amazonaws.com"), "test");) {
+
+			assertEquals(1, p2.versions("name.njbartlett.eclipse.macbadge").size());
+
+			p2.refresh();
+
+			assertEquals(1, p2.versions("name.njbartlett.eclipse.macbadge").size());
+		}
+	}
 }
