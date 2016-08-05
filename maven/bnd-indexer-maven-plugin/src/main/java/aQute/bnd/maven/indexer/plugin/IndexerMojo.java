@@ -77,8 +77,8 @@ public class IndexerMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
 	private RepositorySystemSession		session;
 
-	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
-	private File						targetDir;
+	@Parameter(property = "bnd.indexer.output.file", defaultValue = "${project.build.directory}/index.xml", readonly = true)
+	private File						outputFile;
 
 	@Parameter(property = "bnd.indexer.localURLs", defaultValue = "FORBIDDEN", readonly = true)
 	private LocalURLs					localURLs;
@@ -92,8 +92,11 @@ public class IndexerMojo extends AbstractMojo {
 	@Parameter(property = "bnd.indexer.scopes", readonly = true, required = false)
 	private List<String>				scopes;
 
-    @Parameter(defaultValue = "false", readonly = true)
-    private boolean				skip;
+	@Parameter(property = "bnd.indexer.include.gzip", defaultValue = "true", readonly = true)
+	private boolean						includeGzip;
+
+	@Parameter(defaultValue = "false", readonly = true)
+	private boolean						skip;
     
 	@Component
 	private RepositorySystem			system;
@@ -174,10 +177,9 @@ public class IndexerMojo extends AbstractMojo {
 		Map<String,String> config = new HashMap<String,String>();
 		config.put(ResourceIndexer.PRETTY, "true");
 
-		File outputFile = new File(targetDir, "index.xml");
 		OutputStream output;
 		try {
-			targetDir.mkdirs();
+			outputFile.getParentFile().mkdirs();
 			output = new FileOutputStream(outputFile);
 		} catch (FileNotFoundException e) {
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -192,22 +194,24 @@ public class IndexerMojo extends AbstractMojo {
 		if (fail) {
 			throw new MojoExecutionException("One or more URI lookups failed");
 		}
+		attach(outputFile, "osgi-index", "xml");
 
-		File gzipOutputFile = new File(outputFile.getPath() + ".gz");
+		if (includeGzip) {
+			File gzipOutputFile = new File(outputFile.getPath() + ".gz");
 
-		try (InputStream is = new BufferedInputStream(new FileInputStream(outputFile));
-				OutputStream gos = new GZIPOutputStream(new FileOutputStream(gzipOutputFile))) {
-			byte[] bytes = new byte[4096];
-			int read;
-			while ((read = is.read(bytes)) != -1) {
-				gos.write(bytes, 0, read);
+			try (InputStream is = new BufferedInputStream(new FileInputStream(outputFile));
+					OutputStream gos = new GZIPOutputStream(new FileOutputStream(gzipOutputFile))) {
+				byte[] bytes = new byte[4096];
+				int read;
+				while ((read = is.read(bytes)) != -1) {
+					gos.write(bytes, 0, read);
+				}
+			} catch (IOException ioe) {
+				throw new MojoExecutionException("Unable to create the gzipped output file");
 			}
-		} catch (IOException ioe) {
-			throw new MojoExecutionException("Unable to create the gzipped output file");
+			attach(gzipOutputFile, "osgi-index", "xml.gz");
 		}
 
-		attach(outputFile, "osgi-index", "xml");
-		attach(gzipOutputFile, "osgi-index", "xml.gz");
 	}
 
 	private void attach(File file, String type, String extension) {
