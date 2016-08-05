@@ -80,6 +80,7 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.build.model.conversions.Converter;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.service.RepositoryPlugin;
 import bndtools.BndConstants;
 import bndtools.Plugin;
 import bndtools.central.Central;
@@ -401,6 +402,15 @@ public class RepositorySelectionPart extends BndEditorPart {
 
                 Repository repo = (Repository) element;
                 label = repo.toString();
+                if (repo instanceof RepositoryPlugin) {
+                    RepositoryPlugin repositoryPlugin = (RepositoryPlugin) repo;
+                    label = repositoryPlugin.getName();
+                } else if (repo instanceof aQute.bnd.deployer.repository.wrapper.Plugin) {
+                    @SuppressWarnings("resource")
+                    aQute.bnd.deployer.repository.wrapper.Plugin wrapper = (aQute.bnd.deployer.repository.wrapper.Plugin) repo;
+                    wrapper.init();
+                    label = wrapper.toString();
+                }
                 image = repoImg;
 
                 if (repo instanceof WorkspaceR5Repository) {
