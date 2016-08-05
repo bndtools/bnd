@@ -130,7 +130,8 @@ public class LocalIndexerMojo extends AbstractMojo {
 				Path relativePath = baseFile.getAbsoluteFile().toPath().relativize(file.getAbsoluteFile().toPath());
 				getLog().debug("Relative Path is: " + relativePath);
 				// Note that relativePath.toURI() gives the wrong answer for us!
-				URI relativeURI = URI.create(relativePath.toString());
+				// We have to do some Windows related mashing here too :(
+				URI relativeURI = URI.create(relativePath.toString().replace(File.separatorChar, '/'));
 				getLog().debug("Relative URI is: " + relativeURI);
 				return relativeURI;
 			} catch (Exception e) {
