@@ -112,6 +112,9 @@ assert 3 == caps.get(requirement).size();
 repo = check("${basedir}/local-repo-dependency/target/index.xml", "${basedir}/local-repo-dependency/target/index.xml.gz", 1, false, false);
 content = check(repo, "osgi.identity", "(osgi.identity=helloworld-for-indexer-testing)", "helloworld-for-indexer-testing", true);
 
-
+// Test a renamed repository
 check("${basedir}/rename-output/target/custom.xml", null, 21, false, true);
+
+// Test indexing a local folder
+check("${basedir}/index-folder/target/META-INF/index.xml", "${basedir}/index-folder/target/META-INF/index.xml.gz", 21, true, true);
 return;

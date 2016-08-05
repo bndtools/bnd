@@ -17,6 +17,7 @@
 		<module>add-mvn</module>
 		<module>local-repo-dependency</module>
 		<module>rename-output</module>
+		<module>index-folder</module>
 	</modules>
 
 	<dependencyManagement>

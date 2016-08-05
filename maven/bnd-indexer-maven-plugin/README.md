@@ -6,7 +6,14 @@ indexes of bundles.
 ## What does the `bnd-indexer-maven-plugin` do?
 
 This plugin creates an OSGi repository index (suitable for use in resolving 
-and provisioning) from a set of maven project dependencies. 
+and provisioning).
+
+The plugin has two goals. `index` and `local-index`.
+
+### The `index` goal
+
+The index goal creates an OSGi repository index from a set of maven project 
+dependencies. 
 
 The project dependencies are referenced in the remote repositories where 
 they are deployed (i.e. they are not republished in a single artifact as 
@@ -15,6 +22,20 @@ they would be when using the maven-assembly-plugin).
 The output is an XML file, and a parallel gzipped version of the XML. When
 deployed to a remote repository these can be used to efficiently host an
 OSGi repository system.
+
+### The `local-index` goal
+
+The `local-index` goal is used to create an OSGi repository index from a
+folder containing bundles. The repository index URIs can be set relative
+to the bundle location.
+
+The `local-index` goal can be usefully combined with the `copy-dependencies`
+goal of the `maven-dependency-plugin`, and then the whole output released
+using the `maven-assembly-plugin`. 
+
+Indexes produced using the `local-index` goal trade file size for the
+convenience of accessing all files at a single location, and should 
+therfore be used with care.
 
 ## How do I use the `bnd-indexer-maven-plugin` in my project?
 
@@ -31,7 +52,7 @@ type. Including the bnd-indexer-maven-plugin in your module is very easy:
             <execution>
                 <id>index</id>
                 <goals>
-                    <goal>index</goal>
+                    <goal>...</goal>
                 </goals>
             </execution>
         </executions>
@@ -39,16 +60,44 @@ type. Including the bnd-indexer-maven-plugin in your module is very easy:
     
 ### Running the `bnd-indexer-maven-plugin`
 
-The only goal of the `bnd-indexer-maven-plugin` is `index` which generates the
-OSGi index output files. By default the `bnd-indexer-maven-plugin` binds to the 
-package phase of your build.
+First you must select the type of index that you want to create:
 
-The outputs of the `bnd-indexer-maven-plugin` are `target/index.xml` and
-`target/index.xml.gz`. 
+ * Indexes with remote references using `index`
+ * Indexes using local references using `local-index`
+ 
+#### Common configuration for the plugin
 
-### Configuring the `bnd-indexer-maven-plugin`
+The output index file name can be changed very easily:
 
-The `bnd-indexer-maven-plugin` may be configured in several ways
+    <configuration>
+        <outputFile>${project.build.directory}/custom.xml</outputFile>
+    </configuration>
+    
+The gzip version of the output artifact can also be disabled if desired:    
+    
+    <configuration>
+        <includeGzip>false</includeGzip>
+    </configuration>					
+
+The plugin execution can be skipped if desired
+
+    <configuration>
+        <skip>false</skip>
+    </configuration>
+
+## Building indexes with `index`
+
+The `index` goal of the `bnd-indexer-maven-plugin` generates OSGi index 
+output files which are attached as deployable artifacts with the classifier
+`osgi-index`. By default this goal binds to the 
+`package` phase of your build.
+
+The default outputs of the `bnd-indexer-maven-plugin` are `target/index.xml` 
+and `target/index.xml.gz`. 
+
+### Configuring the `bnd-indexer-maven-plugin` `index` goal
+
+The `index` goal has a number of useful configuration parameters.
 
 #### Allowing local file locations
 
@@ -144,4 +193,37 @@ By default the `bnd-indexer-maven-plugin` will include dependencies with
             <scope>provided</scope>
             <scope>test</scope>
         </scopes>
+    </configuration>
+
+
+## Building indexes with `local-index`
+
+The `local-index` goal of the `bnd-indexer-maven-plugin` generates OSGi index 
+output files which are *not* attached as deployable artifacts. By default this 
+goal binds to the `process-resources` phase of your build.
+
+The default output files are `target/index.xml` and `target/index.xml.gz`. 
+
+### Configuring the `bnd-indexer-maven-plugin` `local-index` goal
+
+The `local-index` goal has a number of useful configuration parameters.
+
+#### Selecting the indexed directory
+
+The `local-index` goal indexes bundles in a local folder. The location
+of this folder is passed as configuration.
+
+    <configuration>
+        <inputDir>${project.build.directory}/bundles</inputDir>
+    </configuration>
+
+#### Changing relative directory
+
+All of the index URIs stored in the index use relative paths to 
+reference the bundles in the indexing folder. By default these relative 
+paths use the index output location as their base directory, but a
+different base directory can be supplied if needed
+
+    <configuration>
+        <baseFile>${project.build.directory}/some/folder</baseFile>
     </configuration>
