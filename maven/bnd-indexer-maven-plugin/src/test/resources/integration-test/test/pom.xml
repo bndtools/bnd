@@ -16,6 +16,7 @@
 		<module>in-build</module>
 		<module>add-mvn</module>
 		<module>local-repo-dependency</module>
+		<module>rename-output</module>
 	</modules>
 
 	<dependencyManagement>

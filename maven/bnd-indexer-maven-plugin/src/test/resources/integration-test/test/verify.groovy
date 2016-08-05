@@ -9,8 +9,11 @@ public Repository check(String xmlFile, String gzipFile, int size, boolean local
 	// Check the bundles exist!
 	File xml = new File(xmlFile);
 	assert xml.isFile();
-	File gzip = new File(gzipFile);
-	assert gzip.isFile();
+	
+	if(gzipFile != null) {
+		File gzip = new File(gzipFile);
+		assert gzip.isFile();
+	}
 	
 	// Load repository
 	XMLResourceParser xrp = new XMLResourceParser(xml.toURI());
@@ -47,7 +50,7 @@ public Capability check(Repository repo, String namespace, String filter, String
 	
 	String location = content.getAttributes().get("url").toString();
 
-	if(localURL || location.contains("test-repo")) {
+	if(localURL ^ location.contains("test-repo")) {
 		assert location.startsWith("file:") ? new File(URI.create(location)).isFile() : 
 				new File(location).isFile();	
 	} else {
@@ -109,4 +112,6 @@ assert 3 == caps.get(requirement).size();
 repo = check("${basedir}/local-repo-dependency/target/index.xml", "${basedir}/local-repo-dependency/target/index.xml.gz", 1, false, false);
 content = check(repo, "osgi.identity", "(osgi.identity=helloworld-for-indexer-testing)", "helloworld-for-indexer-testing", true);
 
+
+check("${basedir}/rename-output/target/custom.xml", null, 21, false, true);
 return;
