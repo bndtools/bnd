@@ -4,18 +4,23 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.deployer.repository.FixedIndexedRepo;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.lib.io.IO;
 import junit.framework.TestCase;
 
 public class ResourceTest extends TestCase {
@@ -100,6 +105,31 @@ public class ResourceTest extends TestCase {
 		Set<Resource> a = getResources(locations);
 		Set<Resource> b = getResources(locations);
 		assertEquals(a, b);
+	}
+
+	public void testOSGiWiringHostBundle() throws Exception {
+		ResourceBuilder rb = new ResourceBuilder();
+		rb.addManifest(Domain.domain(IO.getFile("testresources/demo.jar")));
+		Resource resource = rb.build();
+		List<Capability> capabilities = resource.getCapabilities(HostNamespace.HOST_NAMESPACE);
+		assertEquals(1, capabilities.size());
+		Map<String,Object> attributes = capabilities.get(0).getAttributes();
+		assertTrue(attributes.containsKey(HostNamespace.HOST_NAMESPACE));
+		assertTrue(attributes.containsKey(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE));
+		assertEquals("demo", attributes.get(HostNamespace.HOST_NAMESPACE));
+		assertNotNull(attributes.get(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE));
+		assertEquals(0, resource.getRequirements(HostNamespace.HOST_NAMESPACE).size());
+	}
+
+	public void testOSGiWiringHostFragment() throws Exception {
+		ResourceBuilder rb = new ResourceBuilder();
+		rb.addManifest(Domain.domain(IO.getFile("testresources/demo-fragment.jar")));
+		Resource resource = rb.build();
+		assertEquals(0, resource.getCapabilities(HostNamespace.HOST_NAMESPACE).size());
+		List<Requirement> requirements = resource.getRequirements(HostNamespace.HOST_NAMESPACE);
+		assertEquals(1, requirements.size());
+		Map<String,String> directives = requirements.get(0).getDirectives();
+		assertTrue(directives.containsKey(HostNamespace.REQUIREMENT_FILTER_DIRECTIVE));
 	}
 
 	private Set<Resource> getResources(String locations) throws MalformedURLException, URISyntaxException {
