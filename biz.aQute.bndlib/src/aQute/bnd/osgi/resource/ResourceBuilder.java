@@ -197,6 +197,9 @@ public class ResourceBuilder {
 		Entry<String,Attrs> fragmentHost = manifest.getFragmentHost();
 		if (fragmentHost != null)
 			addFragmentHost(fragmentHost.getKey(), fragmentHost.getValue());
+		else {
+			addFragmentHostCap(bsn.getKey(), version);
+		}
 
 		//
 		// Add the exported package. These need
@@ -383,6 +386,15 @@ public class ResourceBuilder {
 		rbb.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
 
 		addRequirement(rbb.buildRequirement());
+	}
+
+	void addFragmentHostCap(String bsn, String version) throws Exception {
+		CapReqBuilder rbb = new CapReqBuilder(resource, HostNamespace.HOST_NAMESPACE);
+		Attrs attrs = new Attrs();
+		attrs.put(HostNamespace.HOST_NAMESPACE, bsn);
+		attrs.putTyped("bundle-version", aQute.bnd.version.Version.parseVersion(version));
+		rbb.addAttributes(attrs);
+		addCapability(rbb.buildCapability());
 	}
 
 	public void addFragmentHost(String bsn, Attrs attrs) throws Exception {
