@@ -362,7 +362,7 @@ public class ResolveProcess {
 		for (Entry<Resource, ? extends Collection<Wire>> entry : wirings.entrySet()) {
 			Resource requirer = entry.getKey();
 			for (Wire wire : entry.getValue()) {
-				Resource provider = wire.getProvider();
+				Resource provider = wire.getCapability().getResource();
 
 				// Filter out self-capabilities, i.e. requirer and provider are
 				// same
