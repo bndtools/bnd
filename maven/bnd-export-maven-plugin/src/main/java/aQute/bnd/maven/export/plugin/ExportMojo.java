@@ -32,6 +32,7 @@ public class ExportMojo extends AbstractMojo {
 	@Parameter(readonly = true, required = false)
 	private boolean		resolve			= false;
 
+	@Parameter(readonly = true, required = false)
 	private boolean		failOnChanges	= true;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
