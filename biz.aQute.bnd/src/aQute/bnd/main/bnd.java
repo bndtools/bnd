@@ -687,8 +687,7 @@ public class bnd extends Processor {
 				return;
 			}
 
-			b.setTrace(isTrace());
-			b.setPedantic(isPedantic());
+			b.use(this);
 			b.setProperties(f);
 
 			List<Builder> subs = b.getSubBuilders();
@@ -2439,7 +2438,7 @@ public class bnd extends Processor {
 		}
 
 		Project project = new Project(ws, testFile.getAbsoluteFile().getParentFile(), testFile.getAbsoluteFile());
-		project.setTrace(isTrace());
+		project.use(this);
 		project.setProperty(NOBUNDLES, "true");
 
 		ProjectTester tester = project.getProjectTester();
@@ -2705,9 +2704,7 @@ public class bnd extends Processor {
 		if (ws == null)
 			return null;
 
-		ws.setTrace(isTrace());
-		ws.setPedantic(isPedantic());
-		ws.setExceptions(isExceptions());
+		ws.use(this);
 		return ws;
 	}
 
@@ -3393,9 +3390,7 @@ public class bnd extends Processor {
 	@Description("Maven bundle command")
 	public void _maven(Options options) throws Exception {
 		MavenCommand mc = new MavenCommand(this);
-		mc.setTrace(isTrace());
-		mc.setExceptions(isExceptions());
-		mc.setPedantic(isPedantic());
+		mc.use(this);
 		mc.run(options._arguments().toArray(new String[0]), 1);
 		getInfo(mc);
 	}
