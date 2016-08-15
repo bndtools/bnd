@@ -64,8 +64,6 @@ public class RequirementWrapperLabelProvider extends RequirementLabelProvider {
 
     @Override
     public String getToolTipText(Object element) {
-        String text;
-
         if (element instanceof RequirementWrapper) {
             RequirementWrapper rw = (RequirementWrapper) element;
             Requirement req = rw.requirement;
@@ -81,12 +79,10 @@ public class RequirementWrapperLabelProvider extends RequirementLabelProvider {
             for (Entry<String,String> directive : req.getDirectives().entrySet())
                 buf.append(";\n\t").append(directive.getKey()).append(" := ").append(directive.getValue());
 
-            text = buf.toString();
-        } else {
-            text = "";
+            return buf.toString();
         }
 
-        return text;
+        return null;
     }
 
 }
