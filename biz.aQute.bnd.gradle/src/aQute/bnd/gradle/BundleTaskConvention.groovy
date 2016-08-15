@@ -30,7 +30,6 @@ import aQute.bnd.osgi.Jar
 import aQute.bnd.version.MavenVersion
 import org.gradle.api.GradleException
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.SourceSet
 
 class BundleTaskConvention {
@@ -103,7 +102,7 @@ class BundleTaskConvention {
 
   void buildBundle() {
     task.configure {
-      // create Builder and set trace level from gradle
+      // create Builder
       new Builder().withCloseable { builder ->
         // load bnd properties
         File temporaryBndFile = File.createTempFile('bnd', '.bnd', temporaryDir)

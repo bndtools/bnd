@@ -26,7 +26,6 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
-import org.gradle.api.logging.LogLevel
 
 public class BndPlugin implements Plugin<Project> {
   public static final String PLUGINID = 'biz.aQute.bnd'
