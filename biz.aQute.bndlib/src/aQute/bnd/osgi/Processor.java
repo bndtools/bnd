@@ -401,6 +401,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void use(Processor reporter) {
 		setPedantic(reporter.isPedantic());
 		setTrace(reporter.isTrace());
+		setExceptions(reporter.isExceptions());
 		setFailOk(reporter.isFailOk());
 	}
 

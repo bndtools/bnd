@@ -207,8 +207,7 @@ public class Project extends Processor {
 			builder = new ProjectBuilder(parent);
 
 		builder.setBase(getBase());
-		builder.setPedantic(isPedantic());
-		builder.setTrace(isTrace());
+		builder.use(this);
 		return builder;
 	}
 

@@ -1391,8 +1391,7 @@ public class Builder extends Analyzer {
 	public Builder getSubBuilder() throws Exception {
 		Builder builder = new Builder(this);
 		builder.setBase(getBase());
-		builder.setPedantic(isPedantic());
-		builder.setTrace(isTrace());
+		builder.use(this);
 
 		for (Jar file : getClasspath()) {
 			builder.addClasspath(file);
