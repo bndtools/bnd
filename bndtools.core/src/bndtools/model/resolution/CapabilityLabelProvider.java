@@ -41,8 +41,6 @@ public class CapabilityLabelProvider extends ImageCachingLabelProvider {
 
     @Override
     public String getToolTipText(Object element) {
-        String text;
-
         if (element instanceof Capability) {
             Capability cap = (Capability) element;
 
@@ -54,12 +52,10 @@ public class CapabilityLabelProvider extends ImageCachingLabelProvider {
             for (Entry<String,String> directive : cap.getDirectives().entrySet())
                 buf.append(";\n\t").append(directive.getKey()).append(" := ").append(directive.getValue());
 
-            text = buf.toString();
-        } else {
-            text = "";
+            return buf.toString();
         }
 
-        return text;
+        return null;
     }
 
 }
