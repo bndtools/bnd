@@ -4,9 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 public interface Options {
-	@Deprecated
-	List<String> _();
-
 	List<String> _arguments();
 
 	CommandLine _command();
