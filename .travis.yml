@@ -20,7 +20,7 @@ matrix:
 
 install:
   - ./gradlew --version
-  - mvn --version
+  - ./mvnw --version
 
 script:
   - ./gradlew -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
@@ -30,4 +30,5 @@ after_success:
 
 cache:
   directories:
-    - $HOME/.gradle
+    - $HOME/.gradle/wrapper
+    - $HOME/.m2/wrapper

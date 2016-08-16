@@ -9,9 +9,7 @@ environment:
 
 install:
   - gradlew.bat --version
-  - choco install maven --version 3.2.5
-  - set PATH=%PATH%;C:\bin\apache-maven-3.2.5\bin
-  - mvn --version
+  - mvnw.cmd --version
 
 build_script:
   - gradlew.bat -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
@@ -20,6 +18,5 @@ on_success:
   - git status
 
 cache:
-  - C:\Users\appveyor\.gradle -> .gradle-wrapper\gradle-wrapper.properties
-  - C:\ProgramData\chocolatey\lib -> appveyor.yml
-  - C:\bin\apache-maven-3.2.5\ -> appveyor.yml
+  - C:\Users\appveyor\.gradle\wrapper -> .gradle-wrapper\gradle-wrapper.properties
+  - C:\Users\appveyor\.m2\wrapper -> .mvn\wrapper\maven-wrapper.properties
