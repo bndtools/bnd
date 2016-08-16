@@ -19,6 +19,8 @@ task deploy(type:Exec) {
   args '--batch-mode'
   if (!logger.isInfoEnabled()) {
     args '--quiet'
+  } else if (logger.isDebugEnabled()) {
+    args '--debug'
   }
   args "-DaltDeploymentRepository=dist::default::${releaserepo}"
   if (localrepo) {
