@@ -75,7 +75,7 @@ class PomRepository extends ResourcesRepository {
 	}
 
 	void read() throws Exception {
-		if (!location.isFile()) {
+		if (isStale()) {
 			refresh();
 		} else {
 			try (XMLResourceParser parser = new XMLResourceParser(location);) {
@@ -83,5 +83,29 @@ class PomRepository extends ResourcesRepository {
 				addAll(resources);
 			}
 		}
+	}
+
+	private boolean isStale() {
+		if (!location.isFile())
+			return true;
+
+		if (revisionUrl != null) {
+			if ("file".equalsIgnoreCase(revisionUrl.getScheme())) {
+				File file = new File(revisionUrl);
+				if (file.isFile() && file.lastModified() > location.lastModified()) {
+					return true;
+				}
+			}
+		} else {
+			try {
+				File file = repo.get(revision.getPomArchive(), false).getValue();
+				if (file.isFile() && file.lastModified() > location.lastModified()) {
+					return true;
+				}
+			} catch (Exception e) {
+				// ignore
+			}
+		}
+		return false;
 	}
 }
