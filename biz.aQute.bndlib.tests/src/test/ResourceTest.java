@@ -1,5 +1,7 @@
 package test;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -7,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.Manifest;
 
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.namespace.service.ServiceNamespace;
@@ -55,6 +58,11 @@ public class ResourceTest extends TestCase {
 		rb.addExportServices(new Parameters(es));
 		Resource build = rb.build();
 
+		assertConfigAdminServices(build);
+
+	}
+
+	public void assertConfigAdminServices(Resource build) throws Exception {
 		assertEquals(2, build.getCapabilities(ServiceNamespace.SERVICE_NAMESPACE).size());
 		List<Requirement> requireLog = build.getRequirements(ServiceNamespace.SERVICE_NAMESPACE);
 		assertEquals(1, requireLog.size());
@@ -76,8 +84,19 @@ public class ResourceTest extends TestCase {
 		findProviders = ResourceUtils.findProviders(requireLog.get(0),
 				Collections.singleton(rcb.buildSyntheticCapability()));
 		assertEquals(1, findProviders.size());
+	}
+
+	public void testImportExportServiceFromManifest() throws Exception {
+		ResourceBuilder rb = new ResourceBuilder();
+		File f = IO.getFile("testresources/manifest/configadmin-1.8.8.mf");
+		Manifest m = new Manifest(new FileInputStream(f));
+		Domain d = Domain.domain(m);
+		rb.addManifest(d);
+
+		assertConfigAdminServices(rb.build());
 
 	}
+
 
 	public void testEscapeFilterValue() throws Exception {
 		assertEquals("abc", CapReqBuilder.escapeFilterValue("abc"));
