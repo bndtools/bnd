@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import org.osgi.resource.Resource;
@@ -13,7 +12,6 @@ import org.osgi.util.promise.Promise;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
-import aQute.bnd.osgi.repository.XMLResourceParser;
 import aQute.maven.api.Archive;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenRepository;
@@ -78,10 +76,7 @@ class PomRepository extends ResourcesRepository {
 		if (!location.isFile()) {
 			refresh();
 		} else {
-			try (XMLResourceParser parser = new XMLResourceParser(location);) {
-				List<Resource> resources = parser.parse();
-				addAll(resources);
-			}
+			read(location.toURI());
 		}
 	}
 }
