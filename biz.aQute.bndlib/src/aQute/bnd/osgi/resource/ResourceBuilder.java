@@ -19,6 +19,7 @@ import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.framework.namespace.NativeNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.namespace.service.ServiceNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
@@ -184,6 +185,19 @@ public class ResourceBuilder {
 		addCapability(identity.buildCapability());
 
 		//
+		// Import/Export service
+		//
+
+		@SuppressWarnings("deprecation")
+		Parameters importServices = OSGiHeader.parseHeader(manifest.get(Constants.IMPORT_SERVICE));
+		addImportServices(importServices);
+
+
+		@SuppressWarnings("deprecation")
+		Parameters exportServices = OSGiHeader.parseHeader(manifest.get(Constants.EXPORT_SERVICE));
+		addExportServices(exportServices);
+
+		//
 		// Handle Require Bundle
 		//
 
@@ -234,6 +248,38 @@ public class ResourceBuilder {
 		addRequirement(getNativeCode(manifest.getBundleNative()));
 
 		return true;
+	}
+
+	public void addExportServices(Parameters exportServices) throws Exception {
+		for (Map.Entry<String,Attrs> e : exportServices.entrySet()) {
+			String service = Processor.removeDuplicateMarker(e.getKey());
+			CapabilityBuilder cb = new CapabilityBuilder(ServiceNamespace.SERVICE_NAMESPACE);
+
+			cb.addAttributesOrDirectives(e.getValue());
+			cb.addAttribute(Constants.OBJECTCLASS, service);
+			addCapability(cb);
+		}
+	}
+
+	public void addImportServices(Parameters importServices) {
+		for (Map.Entry<String,Attrs> e : importServices.entrySet()) {
+			String service = Processor.removeDuplicateMarker(e.getKey());
+			boolean optional = Constants.RESOLUTION_OPTIONAL.equals(e.getValue().get("availability:"));
+			boolean multiple = "true".equalsIgnoreCase(e.getValue().get("multiple:"));
+
+			StringBuilder filter = new StringBuilder();
+			filter.append('(').append(Constants.OBJECTCLASS).append('=').append(service).append(')');
+			RequirementBuilder rb = new RequirementBuilder(ServiceNamespace.SERVICE_NAMESPACE);
+			rb.addFilter(filter.toString());
+			rb.addDirective("effective", "active");
+			if (optional)
+				rb.addDirective(ServiceNamespace.REQUIREMENT_RESOLUTION_DIRECTIVE, Constants.RESOLUTION_OPTIONAL);
+
+			rb.addDirective(ServiceNamespace.REQUIREMENT_CARDINALITY_DIRECTIVE,
+					multiple ? ServiceNamespace.CARDINALITY_MULTIPLE : ServiceNamespace.CARDINALITY_SINGLE);
+
+			addRequirement(rb);
+		}
 	}
 
 	/**

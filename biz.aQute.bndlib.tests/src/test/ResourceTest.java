@@ -9,15 +9,19 @@ import java.util.Map;
 import java.util.Set;
 
 import org.osgi.framework.namespace.HostNamespace;
+import org.osgi.namespace.service.ServiceNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.deployer.repository.FixedIndexedRepo;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.FilterParser;
+import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.lib.io.IO;
@@ -34,6 +38,45 @@ public class ResourceTest extends TestCase {
 				Attrs.create("version", "1.2.3").with("mandatory:", "a,b").with("a", "1").with("b", "2"));
 		String filter = importPackage.getDirectives().get("filter");
 		assertEquals("(&(osgi.wiring.package=com.foo)(version>=1.2.3)(a=1)(b=2))", filter);
+	}
+
+	public String	is	= "org.osgi.service.log.LogService;availability:=optional;multiple:=false";
+	public String	es	= "org.osgi.service.cm.ConfigurationAdmin;"
+			+ "service.description=\"Configuration Admin Service Specification 1.5 Implementation\";"
+			+ "service.pid=\"org.osgi.service.cm.ConfigurationAdmin\";"
+			+ "service.vendor=\"Apache Software Foundation\"," + "org.apache.felix.cm.PersistenceManager;"
+			+ "service.description=\"Platform Filesystem Persistence Manager\";"
+			+ "service.pid=\"org.apache.felix.cm.file.FilePersistenceManager\";"
+			+ "service.vendor=\"Apache	Software Foundation\"";
+
+	public void testImportExportService() throws Exception {
+		ResourceBuilder rb = new ResourceBuilder();
+		rb.addImportServices(new Parameters(is));
+		rb.addExportServices(new Parameters(es));
+		Resource build = rb.build();
+
+		assertEquals(2, build.getCapabilities(ServiceNamespace.SERVICE_NAMESPACE).size());
+		List<Requirement> requireLog = build.getRequirements(ServiceNamespace.SERVICE_NAMESPACE);
+		assertEquals(1, requireLog.size());
+
+		RequirementBuilder rqb = new RequirementBuilder(ServiceNamespace.SERVICE_NAMESPACE);
+		rqb.addFilter("(objectClass=org.osgi.service.cm.ConfigurationAdmin)");
+		List<Capability> findProviders = ResourceUtils.findProviders(rqb.buildSyntheticRequirement(),
+				build.getCapabilities(ServiceNamespace.SERVICE_NAMESPACE));
+		assertEquals(1, findProviders.size());
+
+		rqb = new RequirementBuilder(ServiceNamespace.SERVICE_NAMESPACE);
+		rqb.addFilter("(objectClass=org.apache.felix.cm.PersistenceManager)");
+		findProviders = ResourceUtils.findProviders(rqb.buildSyntheticRequirement(),
+				build.getCapabilities(ServiceNamespace.SERVICE_NAMESPACE));
+		assertEquals(1, findProviders.size());
+
+		CapabilityBuilder rcb = new CapabilityBuilder(ServiceNamespace.SERVICE_NAMESPACE);
+		rcb.addAttribute("objectClass", "org.osgi.service.log.LogService");
+		findProviders = ResourceUtils.findProviders(requireLog.get(0),
+				Collections.singleton(rcb.buildSyntheticCapability()));
+		assertEquals(1, findProviders.size());
+
 	}
 
 	public void testEscapeFilterValue() throws Exception {
