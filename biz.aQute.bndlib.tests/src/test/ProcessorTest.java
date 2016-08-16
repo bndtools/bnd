@@ -53,6 +53,12 @@ public class ProcessorTest extends TestCase {
 		try (Processor p = new Processor();) {
 			p.setProperty("a", "${native_capability}");
 
+			// Use the current OS first to enable loading things like default
+			// file system before we change system properties.
+			assertNativeDefault(System.getProperty("os.name"), System.getProperty("os.version"),
+					System.getProperty("os.arch"),
+					"(&(osgi.native.osname=*)(osgi.native.osversion=*)(osgi.native.processor=*)(osgi.native.language=*))");
+
 			//
 			// Mac OS
 			//

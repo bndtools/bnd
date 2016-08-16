@@ -202,6 +202,8 @@ public class Filter {
 		<T> boolean compare(T obj, int op, String s) {
 			if (obj == null)
 				return false;
+			if ((op == EQ) && (s.length() == 1) && (s.charAt(0) == WILDCARD))
+				return true;
 			try {
 				Class<T> numClass = (Class<T>) obj.getClass();
 				if (numClass == String.class) {
