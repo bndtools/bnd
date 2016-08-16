@@ -12,9 +12,9 @@ task deploy(type:Exec) {
   dependsOn ':dist:build'
   if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
     executable 'cmd'
-    args '/c', 'mvn'
+    args '/c', rootProject.file('mvnw.cmd')
   } else {
-    executable 'mvn'
+    executable rootProject.file('mvnw')
   }
   args '--batch-mode'
   if (!logger.isInfoEnabled()) {
