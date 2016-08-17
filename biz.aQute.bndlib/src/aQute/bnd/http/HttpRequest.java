@@ -217,8 +217,8 @@ public class HttpRequest<T> {
 		return deferred.getPromise();
 	}
 
-	public Promise<T> async(URI url) throws MalformedURLException, InterruptedException {
-		return async(url.toURL());
+	public Promise<T> async(URI uri) throws MalformedURLException, InterruptedException {
+		return async(uri.toURL());
 	}
 	@Override
 	public String toString() {
