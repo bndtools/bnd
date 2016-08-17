@@ -267,27 +267,23 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		progress(-1f, format, args);
 	}
 
-	public SetLocation exception(Throwable t, String format, Object... args) {
-		return error(format, t, args);
+	public SetLocation error(String format, Throwable t, Object... args) {
+		return exception(t, format, args);
 	}
 
-	public SetLocation error(String string, Throwable t, Object... args) {
+	@Override
+	public SetLocation exception(Throwable t, String format, Object... args) {
 		Processor p = current();
-		try {
-			if (p.exceptions) {
-				printExceptionSummary(t, System.err);
-			}
-			String s = formatArrays(string, args);
-			if (p.isFailOk()) {
-				return p.warning("%s: %s", s, t);
-			}
-			p.errors.add("Exception: " + t.getMessage());
-			if (!p.errors.contains(s))
-				p.errors.add(s);
-			return location(s);
-		} finally {
-			p.signal();
+		if (p.exceptions) {
+			printExceptionSummary(t, System.err);
 		}
+		String s = formatArrays("Exception: %s", t);
+		if (p.isFailOk()) {
+			p.warnings.add(s);
+		} else {
+			p.errors.add(s);
+		}
+		return error(format, args);
 	}
 
 	public int printExceptionSummary(Throwable e, PrintStream out) {
