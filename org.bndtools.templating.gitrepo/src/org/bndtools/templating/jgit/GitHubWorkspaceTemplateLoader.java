@@ -16,10 +16,9 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
+import org.osgi.util.function.Function;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.Promises;
-import org.osgi.util.promise.Success;
-
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.lib.base64.Base64;
@@ -61,10 +60,9 @@ public class GitHubWorkspaceTemplateLoader implements TemplateLoader {
 
             try {
                 final GitHub gitHub = new GitHub(cache, executor);
-                promises.add(gitHub.loadRepoDetails(repo).then(new Success<GithubRepoDetailsDTO,Template>() {
+                promises.add(gitHub.loadRepoDetails(repo).map(new Function<GithubRepoDetailsDTO,Template>() {
                     @Override
-                    public Promise<Template> call(Promise<GithubRepoDetailsDTO> resolved) throws Exception {
-                        GithubRepoDetailsDTO detailsDTO = resolved.getValue();
+                    public Template apply(GithubRepoDetailsDTO detailsDTO) {
                         if (detailsDTO.clone_url == null)
                             throw new IllegalArgumentException("Missing clone URL");
 
@@ -92,7 +90,7 @@ public class GitHubWorkspaceTemplateLoader implements TemplateLoader {
                             params.helpUri = createHelpUri(repo, detailsDTO.html_url);
                         }
 
-                        return Promises.<Template> resolved(new GitCloneTemplate(params));
+                        return new GitCloneTemplate(params);
                     }
 
                 }));
