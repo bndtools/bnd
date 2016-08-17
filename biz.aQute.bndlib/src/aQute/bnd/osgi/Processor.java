@@ -277,6 +277,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (p.exceptions) {
 			printExceptionSummary(t, System.err);
 		}
+		p.getLogger().debug("Reported exception", t);
 		String s = formatArrays("Exception: %s", t);
 		if (p.isFailOk()) {
 			p.warnings.add(s);
