@@ -18,7 +18,7 @@ public class GitRepoTemplatePreferencePage extends PreferencePage implements IWo
 
     private final Bundle bundle = FrameworkUtil.getBundle(GitRepoTemplatePreferencePage.class);
 
-    private final EditableParametersPart githubReposPart = new EditableParametersPart("GitHub Repositores:", ImageDescriptor.createFromURL(bundle.getEntry("icons/github.png")), new NewEntryDialogFactory() {
+    private final EditableParametersPart githubReposPart = new EditableParametersPart("GitHub Repositories:", ImageDescriptor.createFromURL(bundle.getEntry("icons/github.png")), new NewEntryDialogFactory() {
         @Override
         public AbstractNewEntryDialog create(Shell parentShell) {
             return new GitHubRepoDialog(parentShell, "Add Repository");
