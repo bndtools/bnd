@@ -450,9 +450,9 @@ public class AnnotationReader extends ClassDataCollector {
 												return;
 											}
 										} catch (Exception e) {
-											analyzer.error(
+											analyzer.exception(e,
 													"Exception looking at annotation type to lifecycle method with descriptor %s,  type %s",
-													e, methodDescriptor, type).details(details);
+													methodDescriptor, type).details(details);
 										}
 									}
 								} else {
@@ -511,9 +511,9 @@ public class AnnotationReader extends ClassDataCollector {
 								methodDescriptor, type).details(details);
 					}
 				} catch (Exception e) {
-					analyzer.error(
+					analyzer.exception(e,
 							"Exception looking at annotation argument to lifecycle method with descriptor %s,  type %s",
-							e, methodDescriptor, type).details(details);
+							methodDescriptor, type).details(details);
 				}
 			}
 		}

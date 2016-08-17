@@ -2384,7 +2384,7 @@ public class bnd extends Processor {
 					printExceptionSummary(e, out);
 				}
 
-				error("FAILURE IN RUNTESTS", e);
+				exception(e, "FAILURE IN RUNTESTS");
 				errors++;
 			}
 
@@ -2505,7 +2505,7 @@ public class bnd extends Processor {
 			}
 		} catch (Exception e) {
 			test.addAttribute("failed", e);
-			error("Exception in run %s", e, e);
+			exception(e, "Exception in run %s", e);
 			return 1;
 		} finally {
 			long duration = System.currentTimeMillis() - start;
@@ -2915,9 +2915,9 @@ public class bnd extends Processor {
 			try {
 				return new Jar(f);
 			} catch (ZipException e) {
-				error("Not a jar/zip file: %s", f);
+				exception(e, "Not a jar/zip file: %s", f);
 			} catch (Exception e) {
-				error("Opening file: %s", e, f);
+				exception(e, "Opening file: %s", f);
 			}
 			return null;
 		}

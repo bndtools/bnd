@@ -1027,13 +1027,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 										(file.isDirectory() ? "is directory" : "does not exist"));
 						} catch (Exception e) {
 							if (fileMustExist)
-								error("Error in processing included URL: %s", e, value);
+								exception(e, "Error in processing included URL: %s", value);
 						}
 					} else
 						doIncludeFile(file, overwrite, p);
 				} catch (Exception e) {
 					if (fileMustExist)
-						error("Error in processing included file: %s", e, value);
+						exception(e, "Error in processing included file: %s", value);
 				}
 			}
 		}

@@ -2332,7 +2332,7 @@ public class Analyzer extends Processor {
 							in.close();
 						}
 					} catch (Throwable e) {
-						error("Invalid class file %s (%s)", e, relativePath, e);
+						exception(e, "Invalid class file %s (%s)", relativePath, e);
 						continue next;
 					}
 
@@ -2761,7 +2761,7 @@ public class Analyzer extends Processor {
 					continue;
 				error("%s fails for filter %s values=%s", REQUIRE_BND, require.get(filter), map);
 			} catch (Exception t) {
-				error("%s with value %s throws exception", t, REQUIRE_BND, require);
+				exception(t, "%s with value %s throws exception", REQUIRE_BND, require);
 			}
 		}
 	}
@@ -3068,7 +3068,7 @@ public class Analyzer extends Processor {
 				getJar().write(output);
 			} catch (Exception e) {
 				output.delete();
-				error("Cannot write JAR file to %s due to %s", e, output, e);
+				exception(e, "Cannot write JAR file to %s due to %s", output, e);
 			}
 			return true;
 		}

@@ -39,8 +39,8 @@ public class Make {
 							return resource;
 						}
 					} catch (Exception e) {
-						builder.error("Plugin %s generates error when use in making %s with args %s", e, plugin, source,
-								arguments);
+						builder.exception(e, "Plugin %s generates error when use in making %s with args %s", plugin,
+								source, arguments);
 					}
 				}
 			}

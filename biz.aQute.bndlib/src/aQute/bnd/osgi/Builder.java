@@ -114,10 +114,10 @@ public class Builder extends Analyzer {
 					manifest = new Manifest(in);
 					in.close();
 				} catch (Exception e) {
-					error(MANIFEST + " while reading manifest file", e);
+					exception(e, "%s: exception while reading manifest file", MANIFEST);
 				}
 			} else {
-				error(MANIFEST + ", no such file %s", mf);
+				error("%s: no such file %s", MANIFEST, mf);
 			}
 		}
 
@@ -1295,7 +1295,7 @@ public class Builder extends Analyzer {
 				result.add(jar);
 				doneBuild(builder);
 			} catch (Exception e) {
-				builder.error("Sub Building %s", e, builder.getBsn());
+				builder.exception(e, "Exception Building %s", builder.getBsn());
 			}
 			if (builder != this)
 				getInfo(builder, builder.getBsn() + ": ");
