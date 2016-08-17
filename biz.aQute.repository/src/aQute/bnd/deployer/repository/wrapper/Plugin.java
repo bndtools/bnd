@@ -128,7 +128,6 @@ public class Plugin extends BaseRepository
 			}
 
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw Exceptions.duck(e);
 		}
 	}
