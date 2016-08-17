@@ -99,7 +99,7 @@ public class GitCloneTemplate implements Template {
             // Need to do a new checkout
             workingDir = Files.createTempDirectory("checkout").toFile();
             gitDir = new File(workingDir, ".git");
-            String branch = params.branch != null ? params.branch : GitCloneTemplateParams.DEFAULT_BRANCH;
+            String branch = getRemoteBranch();
 
             try {
                 CloneCommand cloneCmd = Git.cloneRepository().setURI(params.cloneUrl).setDirectory(workingDir).setNoCheckout(true);
@@ -125,6 +125,16 @@ public class GitCloneTemplate implements Template {
             }
         };
         return toResourceMap(workingDir, filter);
+    }
+
+    private String getRemoteBranch() {
+        if (params.branch == null) {
+            return GitCloneTemplateParams.DEFAULT_BRANCH;
+        }
+        if (!params.branch.startsWith("origin/")) {
+            return "origin/" + params.branch;
+        }
+        return params.branch;
     }
 
     @Override
