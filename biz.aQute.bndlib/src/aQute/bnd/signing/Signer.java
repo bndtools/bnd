@@ -93,7 +93,7 @@ public class Signer extends Processor {
 				keystoreInputStream.close();
 				privateKeyEntry = (PrivateKeyEntry) keystore.getEntry(alias, new KeyStore.PasswordProtection(pw));
 			} catch (Exception e) {
-				error("Not able to load the private key from the given keystore(%s) with alias %s", e,
+				exception(e, "Not able to load the private key from the given keystore(%s) with alias %s",
 						keystoreFile.getAbsolutePath(), alias);
 				return;
 			} finally {
@@ -116,7 +116,7 @@ public class Signer extends Processor {
 			ByteArrayOutputStream tmpStream = new ByteArrayOutputStream();
 			jar.putResource("META-INF/BND.RSA", new EmbeddedResource(tmpStream.toByteArray(), 0));
 		} catch (Exception e) {
-			error("During signing: %s", e, e);
+			exception(e, "During signing: %s", e);
 		}
 	}
 
@@ -180,7 +180,7 @@ public class Signer extends Processor {
 			try {
 				algorithms[i] = MessageDigest.getInstance(name);
 			} catch (NoSuchAlgorithmException e) {
-				error("Specified digest algorithm %s, but not such algorithm was found", e, digestNames[i]);
+				exception(e, "Specified digest algorithm %s, but not such algorithm was found", digestNames[i]);
 			}
 		}
 	}

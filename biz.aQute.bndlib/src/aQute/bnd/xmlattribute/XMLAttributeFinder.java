@@ -81,7 +81,7 @@ public class XMLAttributeFinder extends ClassDataCollector {
 									return;
 								}
 							} catch (Exception e) {
-								analyzer.error("Exception extracting annotation defaults for type %s", e, type);
+								analyzer.exception(e, "Exception extracting annotation defaults for type %s", type);
 								return;
 							}
 						}
@@ -114,7 +114,7 @@ public class XMLAttributeFinder extends ClassDataCollector {
 			defaultsCache.put(name, props);
 			return props;
 		} catch (Exception e) {
-			analyzer.error("Exception extracting annotation defaults for type %s", e, name);
+			analyzer.exception(e, "Exception extracting annotation defaults for type %s", name);
 		}
 		return null;
 	}

@@ -196,9 +196,9 @@ public class OCDReader extends ClassDataCollector {
 								return;
 							}
 						} catch (Exception e) {
-							analyzer.error(
+							analyzer.exception(e,
 									"Exception looking at annotation type default for element with descriptor %s,  type %s",
-									e, defined, type);
+									defined, type);
 						}
 					}
 				}
