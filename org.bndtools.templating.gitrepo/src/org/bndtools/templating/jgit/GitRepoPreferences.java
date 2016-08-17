@@ -1,5 +1,7 @@
 package org.bndtools.templating.jgit;
 
+import java.io.IOException;
+
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.Bundle;
@@ -37,5 +39,17 @@ public class GitRepoPreferences {
 
     public void setGitRepos(Parameters params) {
         store.setValue(PREF_GIT_REPOS, params.toString());
+    }
+
+    public boolean save() {
+        if (store.needsSaving()) {
+            try {
+                store.save();
+            } catch (IOException e) {
+                // ignore
+                return false;
+            }
+        }
+        return true;
     }
 }

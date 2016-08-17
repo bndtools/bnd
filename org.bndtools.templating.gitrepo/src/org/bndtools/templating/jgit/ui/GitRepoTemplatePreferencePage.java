@@ -60,7 +60,7 @@ public class GitRepoTemplatePreferencePage extends PreferencePage implements IWo
     public boolean performOk() {
         prefs.setGithubRepos(githubReposPart.getParameters());
         prefs.setGitRepos(plainGitPart.getParameters());
-        return true;
+        return prefs.save();
     }
 
 }
