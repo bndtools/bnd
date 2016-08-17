@@ -77,7 +77,7 @@ public class WorkspaceSetupWizardPage extends WizardPage {
         buildGroup.setLayout(new GridLayout(1, false));
 
         final Button btnCleanBuild = new Button(buildGroup, SWT.CHECK);
-        btnCleanBuild.setText("Clean workspace after import (RECOMMENDED)");
+        btnCleanBuild.setText("Clean workspace after import (Recommended)");
         btnCleanBuild.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
         btnCleanBuild.setSelection(cleanBuild);
 
