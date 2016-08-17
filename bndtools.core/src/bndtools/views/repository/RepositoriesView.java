@@ -96,6 +96,7 @@ import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RemoteRepositoryPlugin;
@@ -259,7 +260,9 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                         }
 
                         File tmp = File.createTempFile("dwnl", ".jar");
-                        IO.copy(url, tmp);
+                        try (HttpClient client = new HttpClient()) {
+                            IO.copy(client.connect(url), tmp);
+                        }
 
                         if (isJarFile(tmp)) {
                             copied = addFilesToRepository((RepositoryPlugin) getCurrentTarget(), new File[] {
