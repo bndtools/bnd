@@ -52,6 +52,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.io.IO;
 import bndtools.central.RepositoriesViewRefresher.RefreshModel;
 
 public class Central implements IStartupParticipant {
@@ -207,7 +208,15 @@ public class Central implements IStartupParticipant {
                 Workspace.setDriver(Constants.BNDDRIVER_ECLIPSE);
                 Workspace.addGestalt(Constants.GESTALT_INTERACTIVE, new Attrs());
 
-                ws = Workspace.getWorkspace(getWorkspaceDirectory());
+                ws = Workspace.getWorkspaceWithoutException(getWorkspaceDirectory());
+                if (ws == null) {
+                    Processor p = new Processor();
+                    File defaultBase = IO.getFile("~/.bnd/default-ws");
+                    ws = Workspace.createStandaloneWorkspace(p, defaultBase.toURI());
+                    ws.setBase(defaultBase);
+                    ws.setProperty("-default-ws", "true");
+                    ws.warning("No bnd workspace found in %s; created default in ~/.bnd/default-ws", getWorkspaceDirectory());
+                }
 
                 ws.addBasicPlugin(new WorkspaceListener(ws));
                 ws.addBasicPlugin(getInstance().repoListenerTracker);
@@ -228,6 +237,7 @@ public class Central implements IStartupParticipant {
                 if (ws != null) {
                     ws.close();
                 }
+                workspaceQueue.fail(e); // notify onWorkspaceInit callbacks
                 throw e;
             }
         }
