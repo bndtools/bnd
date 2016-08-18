@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.eclipse.jface.viewers.IOpenListener;
@@ -49,6 +50,7 @@ import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.DependencyPhase;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
+import bndtools.model.repo.RepositoryBundleUtils;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryTreeContentProvider;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
@@ -293,9 +295,9 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         for (Iterator< ? > iter = selection.iterator(); iter.hasNext();) {
             Object item = iter.next();
             if (item instanceof RepositoryBundle) {
-                adding.add(RepositoryUtils.convertRepoBundle((RepositoryBundle) item));
+                adding.add(RepositoryBundleUtils.convertRepoBundle((RepositoryBundle) item));
             } else if (item instanceof RepositoryBundleVersion) {
-                adding.add(RepositoryUtils.convertRepoBundleVersion((RepositoryBundleVersion) item, phase));
+                adding.add(RepositoryBundleUtils.convertRepoBundleVersion((RepositoryBundleVersion) item, phase));
             } else if (item instanceof ProjectBundle) {
                 String bsn = ((ProjectBundle) item).getBsn();
                 Attrs attribs = new Attrs();
