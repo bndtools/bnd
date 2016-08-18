@@ -1,6 +1,5 @@
 package test;
 
-import java.applet.Applet;
 import java.awt.MenuContainer;
 import java.util.List;
 import java.util.Map;
@@ -55,9 +54,10 @@ public class PluginTest extends TestCase {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public static void testLoadPlugin() {
 		main.setProperty(Constants.PLUGIN, "thinlet.Thinlet;path:=jar/thinlet.jar");
-		for (Applet applet : main.getPlugins(Applet.class)) {
+		for (java.applet.Applet applet : main.getPlugins(java.applet.Applet.class)) {
 			assertEquals("thinlet.Thinlet", applet.getClass().getName());
 		}
 	}
