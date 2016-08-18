@@ -53,7 +53,7 @@ public class StandaloneTest extends TestCase {
 		assertTrue(repositories.get(1) instanceof FixedIndexedRepo);
 
 		FixedIndexedRepo f0 = (FixedIndexedRepo) repositories.get(0);
-		assertTrue(f0.getName().matches("file:.*/biz.aQute.resolve/testdata/larger-repo.xml"));
+		assertTrue(f0.getName().matches("../larger-repo.xml"));
 		String resolvedUrl = IO.getFile("testdata/larger-repo.xml").toURI().toString();
 		assertEquals(resolvedUrl, f0.getIndexLocations().get(0).toString());
 
