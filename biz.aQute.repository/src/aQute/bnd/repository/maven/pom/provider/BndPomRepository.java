@@ -75,7 +75,6 @@ public class BndPomRepository extends BaseRepository
 					: new PomRepository(repository, location, revision);
 			bridge = new BridgeRepository(pomRepo);
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw Exceptions.duck(e);
 		}
 	}

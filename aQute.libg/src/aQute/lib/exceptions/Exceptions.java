@@ -1,16 +1,15 @@
 package aQute.lib.exceptions;
 
 public class Exceptions {
-	static RuntimeException singleton = new RuntimeException();
-
+	private Exceptions() {}
 	public static RuntimeException duck(Throwable t) {
-		Exceptions.<RuntimeException> asUncheckedException0(t);
-		return singleton;
+		Exceptions.<RuntimeException> throwsUnchecked(t);
+		throw new AssertionError("unreachable");
 	}
 
 	@SuppressWarnings("unchecked")
-	private static <E extends Throwable> E asUncheckedException0(Throwable throwable) throws E {
-		return (E) throwable;
+	private static <E extends Throwable> void throwsUnchecked(Throwable throwable) throws E {
+		throw (E) throwable;
 	}
 
 	public static Runnable wrap(final RunnableWithException run) {
@@ -21,7 +20,7 @@ public class Exceptions {
 				try {
 					run.run();
 				} catch (Exception e) {
-					duck(e);
+					throw duck(e);
 				}
 			}
 
@@ -36,8 +35,7 @@ public class Exceptions {
 				try {
 					return run.apply(value);
 				} catch (Exception e) {
-					duck(e);
-					return null; // will never happen
+					throw duck(e);
 				}
 			}
 		};
