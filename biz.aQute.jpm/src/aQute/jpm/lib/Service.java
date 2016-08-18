@@ -58,7 +58,7 @@ public class Service {
 				return "Could not establish a link to the service, likely failed to start";
 			} catch (Throwable t) {
 				IO.delete(lock);
-				return String.format("Failed to start %s for %s", data.name, t.getMessage());
+				return String.format("Failed to start %s for %s", data.name, t);
 			}
 		}
 		return "Could not create lock file";

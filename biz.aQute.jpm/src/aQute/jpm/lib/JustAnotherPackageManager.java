@@ -618,7 +618,7 @@ public class JustAnotherPackageManager {
 				}
 			}
 		} catch (Exception e) {
-			return "Failed to verify due to exception: " + e.getMessage();
+			return "Failed to verify due to exception: " + e;
 		}
 		return null;
 	}

@@ -294,7 +294,7 @@ public class HttpClient implements Closeable, URLConnector {
 			reporter.trace("result %s", td);
 			return td;
 		} catch (Throwable t) {
-			task.done("Failed " + t.getMessage(), t);
+			task.done("Failed " + t, t);
 			throw t;
 		}
 	}

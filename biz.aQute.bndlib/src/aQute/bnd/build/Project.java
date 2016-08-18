@@ -1580,7 +1580,7 @@ public class Project extends Processor {
 			try (FileInputStream in = new FileInputStream(f)) {
 				repo.put(in, options);
 			} catch (Exception e) {
-				exception(e, "Cannot install %s into %s because %s", f, repo.getName(), e.getMessage());
+				exception(e, "Cannot install %s into %s because %s", f, repo.getName(), e);
 			}
 		}
 	}

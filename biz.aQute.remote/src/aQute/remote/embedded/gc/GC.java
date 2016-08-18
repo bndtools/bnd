@@ -38,7 +38,7 @@ public class GC implements BundleActivator {
 			try {
 				b.uninstall();
 			} catch (BundleException e) {
-				System.err.println("Oops, could not install sub bundle " + b + " " + e.getMessage());
+				System.err.println("Oops, could not install sub bundle " + b + " " + e);
 			}
 		}
 	}

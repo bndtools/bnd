@@ -72,7 +72,7 @@ public class Sed {
 
 						line = sb.toString();
 					} catch (Exception e) {
-						throw new IOException("where: " + line + ", pattern: " + p.pattern() + ": " + e.getMessage());
+						throw new IOException("where: " + line + ", pattern: " + p.pattern() + ": " + e, e);
 					}
 				}
 				pw.print(line);

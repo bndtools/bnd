@@ -179,7 +179,7 @@ public class RemoteRepoTest extends TestCase {
 			assertEquals(State.UPDATED, repo.fetch("foo/bar", localFoobar).getState());
 			fail("Expected exception with a false MD5 checksum");
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
+			System.out.println(e);
 			//
 		}
 	}

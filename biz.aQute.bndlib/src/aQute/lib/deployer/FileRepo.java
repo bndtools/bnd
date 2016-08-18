@@ -897,7 +897,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			reporter.exception(e, e.getMessage());
+			reporter.exception(e, "%s", e);
 		}
 	}
 

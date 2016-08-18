@@ -20,7 +20,7 @@ public class RequirementImpl extends CapReq implements Requirement {
 			}
 			return msg;
 		} catch (Exception e) {
-			return e.getMessage();
+			return e.toString();
 		}
 	}
 }

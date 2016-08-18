@@ -168,7 +168,7 @@ public class PropertiesParser {
 											if (code >= 0 && code <= 0xFFFF)
 												value.append((char) code);
 										} catch (Exception e) {
-											errors += file + "#" + line + ": " + e.getMessage() + "\n";
+											errors += file + "#" + line + ": " + e + "\n";
 										}
 										break;
 

@@ -80,7 +80,7 @@ public class Utils {
 				} else
 					rt.requirement = "[" + namespace + "] {" + attrs + "} {" + dirs + "}";
 			} catch (Exception e) {
-				rt.requirement = "[" + namespace + "] {" + attrs + "} {" + dirs + "} " + e.getMessage();
+				rt.requirement = "[" + namespace + "] {" + attrs + "} {" + dirs + "} " + e;
 			}
 			result.add(rt);
 		}

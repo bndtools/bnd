@@ -188,7 +188,7 @@ public class RepoIndex implements ResourceIndexer {
 					resourceTag.print(indent.next(), pw);
 				} catch (Exception e) {
 					log(LogService.LOG_WARNING,
-							MessageFormat.format("Could not index {0}, skipped ({1}).", file, e.getMessage()), null);
+							MessageFormat.format("Could not index {0}, skipped ({1}).", file, e), null);
 				}
 			}
 			repoTag.printClose(indent, pw);
@@ -227,7 +227,7 @@ public class RepoIndex implements ResourceIndexer {
 				resourceTag.print(Indent.PRETTY, pw);
 			} catch (Exception e) {
 				log(LogService.LOG_WARNING,
-						MessageFormat.format("Could not index {0}, skipped ({1}).", file, e.getMessage()), null);
+						MessageFormat.format("Could not index {0}, skipped ({1}).", file, e), null);
 			}
 		}
 	}

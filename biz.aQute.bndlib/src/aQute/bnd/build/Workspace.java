@@ -335,7 +335,7 @@ public class Workspace extends Processor {
 					try {
 						doIncludeFile(extension, false, getProperties(), "ext." + extensionName);
 					} catch (Exception e) {
-						error("PropertiesChanged: %s", e.getMessage());
+						exception(e, "PropertiesChanged: %s", e);
 					}
 				}
 			}

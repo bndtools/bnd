@@ -175,7 +175,7 @@ class RepoActions {
 					map.put("-Update", null);
 			}
 		} catch (Exception e) {
-			map.put("-Update [" + e.getMessage() + "]", null);
+			map.put("-Update [" + e + "]", null);
 		}
 	}
 

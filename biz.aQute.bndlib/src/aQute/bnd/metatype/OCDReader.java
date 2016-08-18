@@ -89,8 +89,8 @@ public class OCDReader extends ClassDataCollector {
 									clazz.getClassName().getFQN());
 						}
 					} catch (Exception e) {
-						analyzer.error("Could not obtain super class %s of class %s; exception %s", typeRef.getFQN(),
-								clazz.getClassName().getFQN(), e.getMessage());
+						analyzer.exception(e, "Could not obtain super class %s of class %s; exception %s",
+								typeRef.getFQN(), clazz.getClassName().getFQN(), e);
 					}
 				}
 
@@ -173,8 +173,8 @@ public class OCDReader extends ClassDataCollector {
 					parseOptionValues(c, ad.options);
 				}
 			} catch (Exception e) {
-				analyzer.error("AD for %s.%s Can not parse option values from type (%s), %s",
-						clazz.getClassName().getFQN(), defined.getName(), defined.getType().getFQN(), e.getMessage());
+				analyzer.exception(e, "AD for %s.%s Can not parse option values from type (%s), %s",
+						clazz.getClassName().getFQN(), defined.getName(), defined.getType().getFQN(), e);
 			}
 			if (ad.ad != null) {
 				doAD(ad);
@@ -363,7 +363,7 @@ public class OCDReader extends ClassDataCollector {
 			}
 			return false;
 		} catch (Exception e) {
-			analyzer.error("could not examine class for return type %s, exception message: %s", rtype, e.getMessage());
+			analyzer.exception(e, "could not examine class for return type %s, exception message: %s", rtype, e);
 			return false;
 		}
 	}

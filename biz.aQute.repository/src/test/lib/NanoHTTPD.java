@@ -666,7 +666,7 @@ public class NanoHTTPD {
 					fstream.close();
 					path = temp.getAbsolutePath();
 				} catch (Exception e) { // Catch exception if any
-					System.err.println("Error: " + e.getMessage());
+					System.err.println("Error: " + e);
 				}
 			}
 			return path;

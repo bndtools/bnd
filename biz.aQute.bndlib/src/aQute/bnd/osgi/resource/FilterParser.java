@@ -957,7 +957,7 @@ public class FilterParser {
 			if (c != ')')
 				throw new IllegalArgumentException("Expression must end with a )");
 		} catch (IllegalArgumentException ie) {
-			throw new RuntimeException("Parsing failed on " + s + " " + ie.getMessage());
+			throw new RuntimeException("Parsing failed on " + s + " " + ie.getMessage(), ie);
 		}
 		cache.put(s, e);
 		return e;

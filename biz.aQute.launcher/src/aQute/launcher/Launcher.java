@@ -177,7 +177,7 @@ public class Launcher implements ServiceListener {
 			}
 			return sb.toString();
 		} catch (Exception e) {
-			return "Cannot read manifest: " + e.getMessage();
+			return "Cannot read manifest: " + e;
 		}
 	}
 
@@ -461,7 +461,7 @@ public class Launcher implements ServiceListener {
 						b.start();
 					}
 				} catch (Exception e) {
-					failed.add(b.getSymbolicName() + "-" + b.getVersion() + "" + e.getMessage() + "\n");
+					failed.add(b.getSymbolicName() + "-" + b.getVersion() + " " + e + "\n");
 				}
 			}
 			error("could not resolve the bundles: " + failed);
@@ -996,7 +996,7 @@ public class Launcher implements ServiceListener {
 
 						if (errors.containsKey(bundles[i])) {
 							out.print(fill(loc, 50));
-							out.print(errors.get(bundles[i]).getMessage());
+							out.print(errors.get(bundles[i]).toString());
 						} else
 							out.print(bundles[i].getLocation());
 
@@ -1112,7 +1112,7 @@ public class Launcher implements ServiceListener {
 				Throwable t = e.getCause();
 				StackTraceElement[] stackTrace = t.getStackTrace();
 				if (stackTrace == null || stackTrace.length == 0)
-					return "activator error " + t.getMessage();
+					return "activator error " + t;
 				StackTraceElement top = stackTrace[0];
 				return "activator error " + t.getMessage() + " from: " + top.getClassName() + ":" + top.getMethodName()
 						+ "#" + top.getLineNumber();

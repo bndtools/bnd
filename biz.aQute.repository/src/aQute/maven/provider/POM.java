@@ -355,7 +355,7 @@ public class POM implements IPom {
 				pom.getDependencies(deps, scope, transitive, visited);
 			} catch (Exception ee) {
 				ee.printStackTrace();
-				d.error = ee.getMessage();
+				d.error = ee.toString();
 			}
 	}
 

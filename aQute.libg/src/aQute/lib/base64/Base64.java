@@ -90,7 +90,7 @@ public class Base64 {
 
 			return decodeBase64(fin, (int) file.length() * 2 / 3);
 		} catch (IllegalArgumentException iae) {
-			throw new IllegalArgumentException(iae.getMessage() + ": " + file);
+			throw new IllegalArgumentException(iae.getMessage() + ": " + file, iae);
 		} finally {
 			fin.close();
 		}
