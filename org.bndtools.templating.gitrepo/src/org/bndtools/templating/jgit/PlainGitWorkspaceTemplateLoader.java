@@ -42,7 +42,7 @@ public class PlainGitWorkspaceTemplateLoader implements TemplateLoader {
 
         Parameters gitRepos = new GitRepoPreferences().getGitRepos();
         for (Entry<String,Attrs> entry : gitRepos.entrySet()) {
-            String cloneUrl = entry.getKey();
+            String cloneUrl = GitRepoPreferences.removeDuplicateMarker(entry.getKey());
             Attrs attribs = entry.getValue();
 
             try {

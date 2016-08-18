@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.bndtools.templating.jgit.GitRepoPreferences;
 import org.bndtools.utils.jface.BoldStyler;
 import org.bndtools.utils.swt.AddRemoveButtonBarPart;
 import org.bndtools.utils.swt.AddRemoveButtonBarPart.AddRemoveListener;
@@ -64,7 +65,7 @@ public class EditableParametersPart {
     public void setParameters(Parameters params) {
         entries = new ArrayList<>(params.size());
         for (Entry<String,Attrs> entry : params.entrySet()) {
-            entries.add(new Pair<>(entry.getKey(), entry.getValue()));
+            entries.add(new Pair<>(GitRepoPreferences.removeDuplicateMarker(entry.getKey()), entry.getValue()));
         }
     }
 
