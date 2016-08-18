@@ -52,4 +52,8 @@ public class GitRepoPreferences {
         }
         return true;
     }
+
+    public static String removeDuplicateMarker(String s) {
+        return s.replaceAll("~+$", "");
+    }
 }

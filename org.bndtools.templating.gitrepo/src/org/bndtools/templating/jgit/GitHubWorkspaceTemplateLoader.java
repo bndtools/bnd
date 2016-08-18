@@ -55,7 +55,7 @@ public class GitHubWorkspaceTemplateLoader implements TemplateLoader {
 
         Parameters githubRepos = new GitRepoPreferences().getGithubRepos();
         for (Entry<String,Attrs> entry : githubRepos.entrySet()) {
-            final String repo = entry.getKey();
+            final String repo = GitRepoPreferences.removeDuplicateMarker(entry.getKey());
             final Attrs attribs = entry.getValue();
 
             try {
