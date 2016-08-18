@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import aQute.bnd.build.Workspace;
-import aQute.bnd.header.Attrs;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -107,21 +106,28 @@ public class OSGiRepositoryTest extends TestCase {
 
 	public void testNoPolling() throws Exception {
 		try {
-			Workspace.addGestalt(Constants.GESTALT_BATCH, new Attrs());
-			testPolling();
+			Processor p = new Processor();
+			p.setProperty(Constants.GESTALT, Constants.GESTALT_BATCH);
+			Workspace workspace = Workspace.createStandaloneWorkspace(p, ws.toURI());
+			testPolling(workspace);
 			fail();
 		} catch (Error e) {
 			return;
 		}
 	}
 	public void testPolling() throws Exception {
+		Processor p = new Processor();
+		testPolling(Workspace.createStandaloneWorkspace(p, ws.toURI()));
+	}
+
+	public void testPolling(Workspace workspace) throws Exception {
 		try (OSGiRepository r = new OSGiRepository();) {
 			Map<String,String> map = new HashMap<>();
 			map.put("locations", fnx.getBaseURI("/repo/minir5.xml").toString());
 			map.put("cache", "generated/tmp/cache");
 			map.put("max.stale", "10000");
 			map.put("name", "test");
-			map.put("poll.time", "10");
+			map.put("poll.time", "1");
 			r.setProperties(map);
 			Processor p = new Processor();
 			HttpClient httpClient = new HttpClient();
@@ -129,7 +135,7 @@ public class OSGiRepositoryTest extends TestCase {
 			httpClient.setRegistry(p);
 			p.addBasicPlugin(httpClient);
 			p.setBase(ws);
-			p.addBasicPlugin(Workspace.createStandaloneWorkspace(p, ws.toURI()));
+			p.addBasicPlugin(workspace);
 			r.setRegistry(p);
 			r.setReporter(new Slf4jReporter());
 			final AtomicReference<RepositoryPlugin> refreshed = new AtomicReference<>();
@@ -163,7 +169,7 @@ public class OSGiRepositoryTest extends TestCase {
 			assertNull(r.title(new Object[0])); // not stale, default name
 
 			System.out.println("1");
-			Thread.sleep(1000);
+			Thread.sleep(3000);
 			System.out.println("2");
 			assertEquals(null, refreshed.get());
 			System.out.println("3");
@@ -175,7 +181,7 @@ public class OSGiRepositoryTest extends TestCase {
 			s += " "; // change the sha
 			IO.store(s, index);
 			System.out.println("5 " + index + " " + (index.lastModified() - time));
-			Thread.sleep(1000); // give the poller a chance
+			Thread.sleep(3000); // give the poller a chance
 			System.out.println("6");
 
 			assertEquals(r, refreshed.get());
@@ -191,7 +197,7 @@ public class OSGiRepositoryTest extends TestCase {
 			map.put("cache", "generated/tmp/cache");
 			map.put("max.stale", "10000");
 			map.put("name", "test");
-			map.put("poll.time", "100");
+			map.put("poll.time", "1");
 			r.setProperties(map);
 			Processor p = new Processor();
 			HttpClient httpClient = new HttpClient();
@@ -235,7 +241,7 @@ public class OSGiRepositoryTest extends TestCase {
 			File file = r.get("dummybundle", new Version("0"), null);
 			assertNotNull(file);
 
-			Thread.sleep(1000);
+			Thread.sleep(3000);
 			assertEquals(null, refreshed.get());
 
 			System.out.println("1");
@@ -243,7 +249,7 @@ public class OSGiRepositoryTest extends TestCase {
 			File index = IO.getFile(remote, "minir5.xml");
 			long time = index.lastModified();
 			do { 
-				Thread.sleep(100);
+				Thread.sleep(1000);
 				String s = IO.collect(index);
 				s += " "; // change the sha
 				IO.store(s, index);
@@ -251,7 +257,7 @@ public class OSGiRepositoryTest extends TestCase {
 			} while (index.lastModified() == time);
 			
 			System.out.println("2 ");
-			Thread.sleep(1000); // give the poller a chance
+			Thread.sleep(3000); // give the poller a chance
 			System.out.println("3 ");
 
 			assertEquals(r, refreshed.get());

@@ -48,7 +48,7 @@ import aQute.service.reporter.Reporter;
 public class OSGiRepository extends BaseRepository
 		implements Plugin, RepositoryPlugin, Actionable, Refreshable, RegistryPlugin, Prepare, Closeable {
 	final static int	YEAR		= 365 * 24 * 60 * 60;
-	static long			DEFAULT_POLL_TIME	= TimeUnit.MINUTES.toMillis(5);
+	static int			DEFAULT_POLL_TIME	= (int) TimeUnit.MINUTES.toSeconds(5);
 
 	interface Config {
 		/**
@@ -62,7 +62,7 @@ public class OSGiRepository extends BaseRepository
 
 		String name();
 
-		long poll_time(long pollTime);
+		int poll_time(int pollTimeInSecs);
 	}
 
 	private Config					config;
@@ -129,23 +129,26 @@ public class OSGiRepository extends BaseRepository
 					|| ws.getGestalt().containsKey(Constants.GESTALT_CI)
 					|| ws.getGestalt().containsKey(Constants.GESTALT_OFFLINE))) {
 
-				long polltime = config.poll_time(DEFAULT_POLL_TIME);
-				poller = Processor.getScheduledExecutor().scheduleAtFixedRate(new Runnable() {
+				int polltime = config.poll_time(DEFAULT_POLL_TIME);
+				if (polltime > 0) {
 
-					@Override
-					public void run() {
-						if (inPoll.getAndSet(true))
-							return;
+					poller = Processor.getScheduledExecutor().scheduleAtFixedRate(new Runnable() {
 
-						try {
-							poll();
-						} catch (Exception e) {
-							reporter.trace("During polling %s", e.getMessage());
-						} finally {
-							inPoll.set(false);
+						@Override
+						public void run() {
+							if (inPoll.getAndSet(true))
+								return;
+
+							try {
+								poll();
+							} catch (Exception e) {
+								reporter.trace("During polling %s", e.getMessage());
+							} finally {
+								inPoll.set(false);
+							}
 						}
-					}
-				}, polltime, polltime, TimeUnit.MILLISECONDS);
+					}, polltime, polltime, TimeUnit.SECONDS);
+				}
 			}
 		}
 		index = new OSGiIndex(config.name(), client, cache, urls, config.max_stale(YEAR), refresh);
