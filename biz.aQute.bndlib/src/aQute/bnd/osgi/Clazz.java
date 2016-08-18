@@ -84,8 +84,8 @@ public class Clazz {
 				return profiles;
 			}
 		}, //
-		UNKNOWN(Integer.MAX_VALUE, "<>", null)//
-		;
+		OpenJDK9(53, "JavaSE-9", "(&(osgi.ee=JavaSE)(version=9.0))"), //
+		UNKNOWN(Integer.MAX_VALUE, "<UNKNOWN>", "(osgi.ee=UNKNOWN)");
 
 		final int		major;
 		final String	ee;
