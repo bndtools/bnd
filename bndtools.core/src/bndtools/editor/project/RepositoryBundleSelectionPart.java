@@ -56,6 +56,7 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.ResourceTransfer;
+
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
@@ -63,12 +64,12 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
 import bndtools.Plugin;
-import bndtools.central.RepositoryUtils;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.model.clauses.VersionedClauseLabelProvider;
 import bndtools.model.repo.DependencyPhase;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
+import bndtools.model.repo.RepositoryBundleUtils;
 import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryResourceElement;
 import bndtools.preferences.BndPreferences;
@@ -282,15 +283,15 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
                 while (iterator.hasNext()) {
                     Object item = iterator.next();
                     if (item instanceof RepositoryBundle) {
-                        VersionedClause newClause = RepositoryUtils.convertRepoBundle((RepositoryBundle) item);
+                        VersionedClause newClause = RepositoryBundleUtils.convertRepoBundle((RepositoryBundle) item);
                         adding.add(newClause);
                     } else if (item instanceof RepositoryBundleVersion) {
                         RepositoryBundleVersion bundleVersion = (RepositoryBundleVersion) item;
-                        VersionedClause newClause = RepositoryUtils.convertRepoBundleVersion(bundleVersion, phase);
+                        VersionedClause newClause = RepositoryBundleUtils.convertRepoBundleVersion(bundleVersion, phase);
                         adding.add(newClause);
                     } else if (item instanceof RepositoryResourceElement) {
                         RepositoryResourceElement elt = (RepositoryResourceElement) item;
-                        VersionedClause newClause = RepositoryUtils.convertRepoBundleVersion(elt.getRepositoryBundleVersion(), phase);
+                        VersionedClause newClause = RepositoryBundleUtils.convertRepoBundleVersion(elt.getRepositoryBundleVersion(), phase);
                         adding.add(newClause);
                     }
                 }
