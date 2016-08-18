@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
@@ -139,14 +140,16 @@ public class XMLResourceParser extends Processor {
 	}
 
 	private void report() {
-		if (reader.isStartElement()) {
-			trace("<%s>", reader.getLocalName());
-		} else if (reader.isEndElement()) {
-			trace("</%s>", reader.getLocalName());
-		} else {
-			trace("** unknown element %s", reader.getEventType());
+		int type = reader.getEventType();
+		switch (type) {
+			case XMLStreamConstants.START_DOCUMENT :
+			case XMLStreamConstants.START_ELEMENT :
+			case XMLStreamConstants.END_ELEMENT :
+				break;
+			default :
+				trace("** unknown element, event type %s", type);
+				break;
 		}
-
 	}
 
 	private void parseReferral() throws Exception {
