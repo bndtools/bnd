@@ -7,6 +7,15 @@ jdk:
 env:
   - TERM=dumb
 
-install: ./gradlew --version
+install:
+  - ./gradlew --version
 
-script: ./gradlew --continue
+script:
+  - ./gradlew --continue
+
+after_success:
+  - git status
+
+cache:
+  directories:
+    - cnf/cache/stable
