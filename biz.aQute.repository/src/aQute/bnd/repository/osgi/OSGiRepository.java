@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Formatter;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,12 +16,16 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Refreshable;
@@ -40,10 +45,10 @@ import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.service.reporter.Reporter;
 
 @BndPlugin(name = "OSGiRepository", parameters = Config.class)
-public class OSGiRepository
+public class OSGiRepository extends BaseRepository
 		implements Plugin, RepositoryPlugin, Actionable, Refreshable, RegistryPlugin, Prepare, Closeable {
 	final static int	YEAR		= 365 * 24 * 60 * 60;
-	static long			POLL_TIME	= TimeUnit.MINUTES.toMillis(1);
+	static long			DEFAULT_POLL_TIME	= TimeUnit.MINUTES.toMillis(5);
 
 	interface Config {
 		/**
@@ -56,6 +61,8 @@ public class OSGiRepository
 		String cache();
 
 		String name();
+
+		long poll_time(long pollTime);
 	}
 
 	private Config					config;
@@ -118,22 +125,28 @@ public class OSGiRepository
 		}
 
 		if (poller == null) {
-			poller = Processor.getScheduledExecutor().scheduleAtFixedRate(new Runnable() {
+			if (!(ws.getGestalt().containsKey(Constants.GESTALT_BATCH)
+					|| ws.getGestalt().containsKey(Constants.GESTALT_CI)
+					|| ws.getGestalt().containsKey(Constants.GESTALT_OFFLINE))) {
 
-				@Override
-				public void run() {
-					if (inPoll.getAndSet(true))
-						return;
+				long polltime = config.poll_time(DEFAULT_POLL_TIME);
+				poller = Processor.getScheduledExecutor().scheduleAtFixedRate(new Runnable() {
 
-					try {
-						poll();
-					} catch (Exception e) {
-						reporter.trace("During polling %s", e);
-					} finally {
-						inPoll.set(false);
+					@Override
+					public void run() {
+						if (inPoll.getAndSet(true))
+							return;
+
+						try {
+							poll();
+						} catch (Exception e) {
+							reporter.trace("During polling %s", e.getMessage());
+						} finally {
+							inPoll.set(false);
+						}
 					}
-				}
-			}, POLL_TIME, POLL_TIME, TimeUnit.MILLISECONDS);
+				}, polltime, polltime, TimeUnit.MILLISECONDS);
+			}
 		}
 		index = new OSGiIndex(config.name(), client, cache, urls, config.max_stale(YEAR), refresh);
 		stale = false;
@@ -282,7 +295,7 @@ public class OSGiRepository
 
 	@Override
 	public String toString() {
-		return "OSGi[name=" + config.name() + "]";
+		return getName();
 	}
 
 	@Override
@@ -293,5 +306,14 @@ public class OSGiRepository
 		}
 		if (p != null)
 			p.cancel(true);
+	}
+
+	@Override
+	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
+		try {
+			return getIndex().findProviders(requirements);
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
 	}
 }

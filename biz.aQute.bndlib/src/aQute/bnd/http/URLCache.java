@@ -133,9 +133,7 @@ public class URLCache {
 				infos.put(file, info);
 			}
 
-			reporter.trace("Locking url cache %s - %s", uri, info);
 			if (info.lock.tryLock(5, TimeUnit.MINUTES)) {
-				reporter.trace("Locked url cache %s - %s", uri, info);
 			} else {
 				reporter.trace("Could not locked url cache %s - %s", uri, info);
 			}
