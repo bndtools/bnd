@@ -30,41 +30,40 @@ import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.service.reporter.Reporter;
 
 class OSGiIndex {
-	private Reporter						log	= new Slf4jReporter(OSGiIndex.class);
+	private final Reporter					log	= new Slf4jReporter(OSGiIndex.class);
 	private final Promise<BridgeRepository>	repository;
 	private final HttpClient				client;
 	private final long						staleTime;
 	private final File						cache;
 	private final String					name;
-	private final Collection<URI>			urls;
+	private final Collection<URI>			uris;
 
-	OSGiIndex(String name, HttpClient client, File cache, Collection<URI> urls, int staleTime, boolean refresh)
+	OSGiIndex(String name, HttpClient client, File cache, Collection<URI> uris, int staleTime, boolean refresh)
 			throws Exception {
 		this.name = name;
-		this.urls = urls;
+		this.uris = uris;
 		this.client = client;
-		this.cache = cache;
+		this.cache = checkCache(cache);
 		this.staleTime = staleTime * 1000L;
-		checkCache(cache);
-
-		repository = readIndexes(urls, refresh);
+		this.repository = readIndexes(refresh);
 	}
 
-	private Promise<BridgeRepository> readIndexes(Collection<URI> urls, boolean refresh) throws Exception {
+	private Promise<BridgeRepository> readIndexes(boolean refresh) throws Exception {
 		List<Promise<List<Resource>>> promises = new ArrayList<>();
 
-		for (URI url : urls) {
-			promises.add(download(url, refresh));
+		for (URI uri : getURIs()) {
+			promises.add(download(uri, refresh));
 		}
 
 		Promise<List<List<Resource>>> all = Promises.all(promises);
 		return all.map(collect());
 	}
 
-	private void checkCache(File cache) {
+	private static File checkCache(File cache) {
 		cache.mkdirs();
 		if (!cache.isDirectory())
 			throw new IllegalArgumentException("Cannot create directory for " + cache);
+		return cache;
 	}
 
 	private Function<List<List<Resource>>,BridgeRepository> collect() {
@@ -90,20 +89,20 @@ class OSGiIndex {
 		return new BridgeRepository(rr);
 	}
 
-	private Promise<List<Resource>> download(URI url, boolean refresh) throws Exception {
-		HttpRequest<File> req = refresh ? client.build().useCache(-1) : client.build().useCache(staleTime);
+	private Promise<List<Resource>> download(URI uri, boolean refresh) throws Exception {
+		HttpRequest<File> req = client.build().useCache(refresh ? -1 : staleTime);
 
-		return req.async(url).map(toResources(url));
+		return req.async(uri).map(toResources(uri));
 	}
 
-	private Function<File,List<Resource>> toResources(final URI url) {
+	private Function<File,List<Resource>> toResources(final URI uri) {
 		return new Function<File,List<Resource>>() {
 
 			@Override
 			public List<Resource> apply(File file) {
 				try {
 					try (InputStream in = new FileInputStream(file)) {
-						try (XMLResourceParser xmlp = new XMLResourceParser(in, name, url);) {
+						try (XMLResourceParser xmlp = new XMLResourceParser(in, name, uri);) {
 							return xmlp.parse();
 						}
 					}
@@ -115,7 +114,7 @@ class OSGiIndex {
 	}
 
 	Promise<File> get(String bsn, Version version, File file) throws Exception {
-		Resource resource = repository.getValue().get(bsn, version);
+		Resource resource = getBridge().get(bsn, version);
 		if (resource == null)
 			return null;
 
@@ -138,7 +137,7 @@ class OSGiIndex {
 		return repository.getValue();
 	}
 
-	public File getCache() {
+	File getCache() {
 		return cache;
 	}
 
@@ -152,19 +151,19 @@ class OSGiIndex {
 
 		Map<URI,Promise<TaggedData>> promises = new HashMap<>();
 
-		for (URI uri : urls)
+		for (URI uri : getURIs())
 			try {
 				Promise<TaggedData> async = client.build().useCache().asTag().async(uri);
 				promises.put(uri, async);
 			} catch (Exception e) {
-				log.trace("Checking stale status: %s: %s", e.getMessage(), uri);
+				log.trace("Checking stale status: %s: %s", uri, e);
 			}
 
 		for (Entry<URI,Promise<TaggedData>> entry : promises.entrySet()) {
 			URI uri = entry.getKey();
 			Promise<TaggedData> p = entry.getValue();
 			if (p.getFailure() != null) {
-				log.trace("Could not verify %s: %s", uri, p.getFailure().getMessage());
+				log.trace("Could not verify %s: %s", uri, p.getFailure());
 				return true;
 			} else {
 				TaggedData tag = p.getValue();
@@ -190,7 +189,7 @@ class OSGiIndex {
 		return false;
 	}
 
-	public Collection<URI> getUrls() {
-		return urls;
+	Collection<URI> getURIs() {
+		return uris;
 	}
 }

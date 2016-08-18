@@ -63,9 +63,8 @@ public class OSGiRepository
 	private Reporter				reporter	= new Slf4jReporter(OSGiRepository.class);
 	private Registry				registry;
 	private ScheduledFuture< ? >	poller;
-	private boolean					stale		= false;
-	private AtomicBoolean			inPoll		= new AtomicBoolean();
-	private File					cache;
+	private volatile boolean		stale		= false;
+	private final AtomicBoolean		inPoll		= new AtomicBoolean();
 
 	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
@@ -107,11 +106,7 @@ public class OSGiRepository
 			ws = Workspace.getWorkspace("~/.bnd/default-ws");
 		}
 		String cachePath = config.cache();
-		if (cachePath == null) {
-			cache = ws.getCache(config.name());
-		} else {
-			cache = ws.getFile(cachePath);
-		}
+		File cache = (cachePath == null) ? ws.getCache(config.name()) : ws.getFile(cachePath);
 
 		if (refresh)
 			IO.delete(cache);
@@ -133,7 +128,7 @@ public class OSGiRepository
 					try {
 						poll();
 					} catch (Exception e) {
-						reporter.trace("During polling %s", e.getMessage());
+						reporter.trace("During polling %s", e);
 					} finally {
 						inPoll.set(false);
 					}
@@ -146,12 +141,17 @@ public class OSGiRepository
 	}
 
 	void poll() throws Exception {
-		OSGiIndex ix = index;
-		if (ix == null || stale)
+		if (stale)
+			return;
+		OSGiIndex ix;
+		synchronized (this) {
+			ix = index;
+		}
+		if (ix == null)
 			return;
 
 		if (ix.isStale()) {
-			this.stale = true;
+			stale = true;
 			for (RepositoryListenerPlugin rp : registry.getPlugins(RepositoryListenerPlugin.class)) {
 				rp.repositoryRefreshed(this);
 			}
@@ -229,11 +229,11 @@ public class OSGiRepository
 					f.format("[stale] Needs reload, see menu\n");
 				}
 				f.format("Name             : %s\n", getName());
-				f.format("Cache            : %s\n", cache);
+				f.format("Cache            : %s\n", getRoot());
 				f.format("Max stale (secs) : %s\n", config.max_stale(YEAR));
 				f.format("\n" + "URLs            :\n");
-				for (URI url : getIndex().getUrls()) {
-					f.format("    %s\n", url);
+				for (URI uri : getIndex().getURIs()) {
+					f.format("    %s\n", uri);
 				}
 				return f.toString();
 			}
@@ -287,7 +287,11 @@ public class OSGiRepository
 
 	@Override
 	public void close() throws IOException {
-		if (poller != null)
-			poller.cancel(true);
+		ScheduledFuture< ? > p;
+		synchronized (this) {
+			p = poller;
+		}
+		if (p != null)
+			p.cancel(true);
 	}
 }
