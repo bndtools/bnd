@@ -1,0 +1,59 @@
+-runblacklist.enroute:	\
+	osgi.identity;filter:='(osgi.identity=osgi.enroute.base.api)', \
+	osgi.identity;filter:='(osgi.identity=osgi.cmpn)', \
+	osgi.identity;filter:='(osgi.identity=osgi.core)', \
+	osgi.identity;filter:='(osgi.identity=biz.aQute.junit)', \
+	osgi.identity;filter:='(osgi.identity=biz.aQute.launcher)', \
+	osgi.identity;filter:='(osgi.identity=biz.aQute.remote.launcher)'
+
+-augment.kn_ua: \
+	org.knopflerfish.bundle.useradmin; \
+		capability:="osgi.service;objectClass:List<String>=org.osgi.service.useradmin.UserAdmin;effective:=active, \
+					 osgi.implementation;osgi.implementation=osgi.useradmin"
+
+-augment.eq_ev: \
+	org.eclipse.equinox.event; \
+		capability:="  osgi.service;objectClass=org.osgi.service.event.EventAdmin;effective:=active, \
+					   osgi.implementation;osgi.implementation=osgi.event", \
+		requirement:= "osgi.extender;filter:='(osgi.extender=osgi.component)'"
+
+#
+-augment.fe_ht: \
+	org.apache.felix.http.api; \
+		requirement:="osgi.implementation;filter:='(&(osgi.implementation=osgi.http)(version>=1.0.0)(!(version>=2.0)))'"
+		
+-augment.os_rs: \
+	org.osgi.service.remoteserviceadmin; \
+		requirement:="osgi.remoteserviceadmin.distribution;filter:='(configs=*)', \
+		              osgi.remoteserviceadmin.topology;filter:='(policy=*)', \
+		              osgi.remoteserviceadmin.discovery;filter:='(protocols=*)'"
+
+
+-augment.os_me: \
+	org.osgi.service.metatype; \
+		requirement:="osgi.implementation;filter:='(osgi.implementation=osgi.metatype)'"
+		
+-augment.os_ev: \
+	org.osgi.service.event; \
+		requirement:="osgi.implementation;filter:='(osgi.implementation=osgi.event)'"
+
+
+-augment.eq_co: \
+	org.eclipse.equinox.coordinator; \
+		capability:= "osgi.service;objectClass=org.osgi.service.coordinator.Coordinator;effective:=active, \
+		              osgi.implementation;osgi.implementation=osgi.coordinator"
+
+-augment.fe_lo: \
+	org.apache.felix.log; \
+		capability:= "osgi.implementation;osgi.implementation=osgi.log"
+		
+
+-augment.fe_sc: \
+	org.apache.felix.scr; \
+		requirement:="osgi.implementation;filter:='(osgi.implementation=osgi.metatype)'"
+
+-augment.fe_je: \
+	org.apache.felix.http.jetty; \
+		capability:= "osgi.service;objectClass=org.osgi.service.http.HttpService;effective:=active, \
+		              osgi.implementation;osgi.implementation=osgi.http"
+	

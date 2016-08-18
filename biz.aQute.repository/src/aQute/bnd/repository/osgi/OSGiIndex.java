@@ -3,14 +3,18 @@ package aQute.bnd.repository.osgi;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.util.function.Function;
 import org.osgi.util.promise.Promise;
@@ -101,12 +105,17 @@ class OSGiIndex {
 			@Override
 			public List<Resource> apply(File file) {
 				try {
+					if (file == null) {
+						System.out.println("No such file");
+						return Collections.emptyList();
+					}
 					try (InputStream in = new FileInputStream(file)) {
 						try (XMLResourceParser xmlp = new XMLResourceParser(in, name, uri);) {
 							return xmlp.parse();
 						}
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
 					throw Exceptions.duck(e);
 				}
 			}
@@ -191,5 +200,10 @@ class OSGiIndex {
 
 	Collection<URI> getURIs() {
 		return uris;
+	}
+
+	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements)
+			throws InvocationTargetException, InterruptedException {
+			return repository.getValue().getRepository().findProviders(requirements);
 	}
 }

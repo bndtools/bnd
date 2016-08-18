@@ -307,6 +307,12 @@ class JavaElement {
 				if (name.isObject()) {
 					if (OBJECT.isEmpty()) {
 						Clazz c = analyzer.findClass(name);
+						if (c == null) {
+							// Bnd fails on Java 9 class files #1598
+							// Caused by Java 9 not making class rsources
+							// available
+							return null;
+						}
 						Element s = classElement(c);
 						for (Element child : s.children) {
 							if (INHERITED.contains(child.type)) {

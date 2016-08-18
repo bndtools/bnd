@@ -153,14 +153,37 @@ public class HttpClient implements Closeable, URLConnector {
 			case UNMODIFIED :
 			case UPDATED :
 			default :
-				return convert(request.download, request.useCacheFile, tag);
+				return convert(request.download, request.useCacheFile == null ? tag.getFile() : request.useCacheFile,
+						tag);
 
 		}
 	}
 
 	TaggedData doCached0(final HttpRequest< ? > request) throws Exception, IOException {
 		reporter.trace("cached %s", request.url);
+
+		URL url = request.url;
+
+
 		try (Info info = cache.get(request.useCacheFile, request.url.toURI())) {
+			//
+			// Do we have a file url?
+			//
+
+			if ("file".equalsIgnoreCase(url.getProtocol())) {
+				File sourceFile = new File(url.toURI());
+				if (!sourceFile.isFile())
+					return new TaggedData(url.toURI(), 404, null);
+
+				if (sourceFile.lastModified() <= info.getModified()) {
+					System.out.println((sourceFile.lastModified() - info.getModified()) + " : " + sourceFile);
+					return new TaggedData(url.toURI(), 304, info.file);
+				}
+
+				info.update(new FileInputStream(sourceFile), null, sourceFile.lastModified());
+				return new TaggedData(url.toURI(), 200, info.file);
+			}
+
 			request.useCacheFile = info.file;
 			if (info.isPresent()) {
 
@@ -339,8 +362,6 @@ public class HttpClient implements Closeable, URLConnector {
 			return entity;
 
 		return entity;
-
-		// return "\"" + entity + "\"";
 	}
 
 	public ProxySetup getProxySetup(URL url) throws Exception {
