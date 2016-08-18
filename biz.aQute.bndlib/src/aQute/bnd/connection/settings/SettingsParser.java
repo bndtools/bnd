@@ -54,7 +54,7 @@ public class SettingsParser {
 		NodeList proxies = (NodeList) xp.evaluate(what, doc, XPathConstants.NODESET);
 		for (int i = 0; i < proxies.getLength(); i++) {
 			Node node = proxies.item(i);
-			T dto = type.newInstance();
+			T dto = type.getConstructor().newInstance();
 			parse(node, dto);
 			map.add(dto);
 		}

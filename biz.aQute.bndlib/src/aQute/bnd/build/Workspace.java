@@ -672,7 +672,8 @@ public class Workspace extends Processor {
 					for (Entry<String,Attrs> e : activators.entrySet()) {
 						try {
 							Class< ? > c = cl.loadClass(e.getKey());
-							ExtensionActivator extensionActivator = (ExtensionActivator) c.newInstance();
+							ExtensionActivator extensionActivator = (ExtensionActivator) c.getConstructor()
+									.newInstance();
 							customize(extensionActivator, blocker.getValue());
 							List< ? > plugins = extensionActivator.activate(this, blocker.getValue());
 							list.add(extensionActivator);
@@ -1084,7 +1085,7 @@ public class Workspace extends Processor {
 			IO.delete(f);
 		}
 
-		Object l = plugin.newInstance();
+		Object l = plugin.getConstructor().newInstance();
 
 		Formatter setup = new Formatter();
 		try {

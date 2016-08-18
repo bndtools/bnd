@@ -367,14 +367,14 @@ public class Launcher implements ServiceListener {
 			for (Object token : parms.activators) {
 				try {
 					Class< ? > clazz = loader.loadClass((String) token);
-					BundleActivator activator = (BundleActivator) clazz.newInstance();
+					BundleActivator activator = (BundleActivator) clazz.getConstructor().newInstance();
 					if (isImmediate(activator)) {
 						start(systemContext, result, activator);
 					}
 					embedded.add(activator);
 					trace("adding activator %s", activator);
 				} catch (Exception e) {
-					throw new IllegalArgumentException("Embedded Bundle Activator incorrect: " + token + ", " + e);
+					throw new IllegalArgumentException("Embedded Bundle Activator incorrect: " + token, e);
 				}
 			}
 		}
@@ -850,7 +850,7 @@ public class Launcher implements ServiceListener {
 			String implementation = implementations.get(0);
 
 			Class< ? > clazz = loader.loadClass(implementation);
-			FrameworkFactory factory = (FrameworkFactory) clazz.newInstance();
+			FrameworkFactory factory = (FrameworkFactory) clazz.getConstructor().newInstance();
 			trace("Framework factory %s", factory);
 			@SuppressWarnings({
 					"unchecked", "rawtypes"

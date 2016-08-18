@@ -70,7 +70,7 @@ public class XML {
 	}
 
 	<T> T getFromType(Node item, Class<T> clazz) throws Exception {
-		T a = clazz.newInstance();
+		T a = clazz.getConstructor().newInstance();
 		for (Field f : clazz.getDeclaredFields()) {
 			String s = getAttribute(item, f.getName());
 			if (s != null) {

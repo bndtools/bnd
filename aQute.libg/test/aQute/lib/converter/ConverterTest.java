@@ -240,7 +240,7 @@ public class ConverterTest extends TestCase {
 	/**
 	 * Test collections
 	 */
-	static class XX {
+	public static class XX {
 		public ArrayList<String>				al;
 		public Collection<String>				col;
 		public Queue<String>					queue;
@@ -256,7 +256,7 @@ public class ConverterTest extends TestCase {
 
 	public void testCollections() throws Exception {
 		Class<XX> xx = XX.class;
-		Object xxx = xx.newInstance();
+		Object xxx = xx.getConstructor().newInstance();
 		int count = 11;
 		for (Field field : xx.getFields()) {
 			Object o = converter.convert(field.getGenericType(), 1);
@@ -272,7 +272,7 @@ public class ConverterTest extends TestCase {
 	/**
 	 * Test generic collections
 	 */
-	static class GC {
+	public static class GC {
 		public Collection<String>				strings;
 		public Collection<Collection<String>>	stringss;
 		public Collection<String>[]				stringsarray;
@@ -283,7 +283,7 @@ public class ConverterTest extends TestCase {
 
 	public void testGenericCollections() throws Exception {
 		Class<GC> xx = GC.class;
-		GC g = xx.newInstance();
+		GC g = xx.getConstructor().newInstance();
 
 		for (Field field : xx.getFields()) {
 			Object o = converter.convert(field.getGenericType(), 1);
@@ -318,8 +318,8 @@ public class ConverterTest extends TestCase {
 
 	public void testGenericMaps() throws Exception {
 		Class<GM> xx = GM.class;
-		GM gMap = xx.newInstance();
-		GM gSemiMap = xx.newInstance();
+		GM gMap = xx.getConstructor().newInstance();
+		GM gSemiMap = xx.getConstructor().newInstance();
 
 		GT semiMap = new GT();
 		Map map = new HashMap<String,Integer>();

@@ -137,7 +137,7 @@ public class AgentDispatcher {
 
 						// TODO check immediate
 
-						BundleActivator ba = (BundleActivator) activatorClass.newInstance();
+						BundleActivator ba = (BundleActivator) activatorClass.getConstructor().newInstance();
 						ba.start(framework.getBundleContext());
 						d.activators.add(ba);
 					}
