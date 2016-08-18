@@ -190,7 +190,6 @@ public interface Constants {
 	String	RUNPROVIDEDCAPABILITIES	= "-runprovidedcapabilities";
 
 	String							RUNBUNDLES									= "-runbundles";
-	String							RUNREPOS									= "-runrepos";
 	String							AUGMENT										= "-augment";
 	String							AUGMENT_RANGE_ATTRIBUTE						= "version:";
 	String							AUGMENT_CAPABILITY_DIRECTIVE				= "capability:";
@@ -214,6 +213,7 @@ public interface Constants {
 	String							RUNPROGRAMARGS								= "-runprogramargs";
 	String							RUNTRACE									= "-runtrace";
 	String							RUNFRAMEWORK								= "-runframework";
+	String							RUNREPOS									= "-runrepos";
 	String							RUNFW										= "-runfw";
 	String							RUNTIMEOUT									= "-runtimeout";
 	String							RUNJDB										= "-runjdb";
@@ -226,6 +226,7 @@ public interface Constants {
 	String							REPORTNEWER									= "-reportnewer";
 	String							SIGN										= "-sign";
 	String							STANDALONE									= "-standalone";
+	String							IGNORE_STANDALONE							= "-ignore-standalone";
 	String							TESTPACKAGES								= "-testpackages";
 	String							TESTPATH									= "-testpath";
 	String							TESTCONTINUOUS								= "-testcontinuous";
@@ -257,7 +258,8 @@ public interface Constants {
 			RUNJDB, RUNENV, RUNEE, EEPROFILE, RUNREQUIRES, EXPORT, GESTALT, BNDDRIVER, CHECK, DISTRO,
 			METATYPE_ANNOTATIONS, METATYPE_ANNOTATIONS_OPTIONS, PACKAGEINFOTYPE, JAVAC_SOURCE, JAVAC_TARGET,
 			JAVAC_PROFILE, JAVAC, JAVA, JAVA_DEBUG, EXPORTTYPE, RUNREMOTE, TESTER, AUGMENT, REQUIRE_BND, GROUPID,
-			STANDALONE, INIT, MAVEN_RELEASE, BUILDREPO, CONNECTION_SETTINGS, RUNPROVIDEDCAPABILITIES
+			STANDALONE, IGNORE_STANDALONE, RUNREPOS, INIT, MAVEN_RELEASE, BUILDREPO, CONNECTION_SETTINGS,
+			RUNPROVIDEDCAPABILITIES
 
 	};
 

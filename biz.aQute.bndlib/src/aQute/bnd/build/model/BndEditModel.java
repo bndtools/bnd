@@ -107,7 +107,7 @@ public class BndEditModel {
 																										aQute.bnd.osgi.Constants.RUNBLACKLIST,
 																										Constants.BUNDLE_BLUEPRINT,
 																										Constants.INCLUDE_RESOURCE,
-																										"-standalone"
+			Constants.STANDALONE
 																									};
 
 	public static final String										PROP_WORKSPACE				= "_workspace";
@@ -295,7 +295,7 @@ public class BndEditModel {
 		// converters.put(BndConstants.RESOLVE_MODE, resolveModeConverter);
 		converters.put(Constants.BUNDLE_BLUEPRINT, headerClauseListConverter);
 		converters.put(Constants.INCLUDE_RESOURCE, listConverter);
-		converters.put("-standalone", headerClauseListConverter);
+		converters.put(Constants.STANDALONE, headerClauseListConverter);
 
 		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_LICENSE, newlineEscapeFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_CATEGORY, newlineEscapeFormatter);
@@ -336,7 +336,7 @@ public class BndEditModel {
 		// formatters.put(BndConstants.RESOLVE_MODE, resolveModeFormatter);
 		formatters.put(Constants.BUNDLE_BLUEPRINT, headerClauseListFormatter);
 		formatters.put(Constants.INCLUDE_RESOURCE, stringListFormatter);
-		formatters.put("-standalone", standaloneLinkListFormatter);
+		formatters.put(Constants.STANDALONE, standaloneLinkListFormatter);
 	}
 
 	public BndEditModel(BndEditModel model) {
@@ -939,12 +939,34 @@ public class BndEditModel {
 	}
 
 	public List<HeaderClause> getStandaloneLinks() {
-		return doGetObject("-standalone", headerClauseListConverter);
+		return doGetObject(Constants.STANDALONE, headerClauseListConverter);
 	}
 
 	public void setStandaloneLinks(List<HeaderClause> headers) {
 		List<HeaderClause> old = getStandaloneLinks();
-		doSetObject("-standalone", old, headers, standaloneLinkListFormatter);
+		doSetObject(Constants.STANDALONE, old, headers, standaloneLinkListFormatter);
+	}
+
+	public List<HeaderClause> getIgnoreStandalone() {
+		List<HeaderClause> v = doGetObject(Constants.IGNORE_STANDALONE, headerClauseListConverter);
+		if (v != null)
+			return v;
+
+		//
+		// compatibility fixup
+		v = doGetObject("x-ignore-standalone", headerClauseListConverter);
+		if (v == null)
+			return null;
+
+		setIgnoreStandalone(v);
+		doSetObject("x-ignore-standalone", v, null, standaloneLinkListFormatter);
+
+		return doGetObject(Constants.IGNORE_STANDALONE, headerClauseListConverter);
+	}
+
+	public void setIgnoreStandalone(List<HeaderClause> headers) {
+		List<HeaderClause> old = getIgnoreStandalone();
+		doSetObject(Constants.IGNORE_STANDALONE, old, headers, standaloneLinkListFormatter);
 	}
 
 	private <R> R doGetObject(String name, Converter< ? extends R, ? super String> converter) {

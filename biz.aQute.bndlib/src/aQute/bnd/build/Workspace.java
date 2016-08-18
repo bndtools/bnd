@@ -71,6 +71,8 @@ import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter;
 
 public class Workspace extends Processor {
+	private static final String	PLUGIN_STANDALONE		= "-plugin.standalone_";
+
 	public static final String	EXT						= "ext";
 
 	static final int			BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
@@ -146,6 +148,15 @@ public class Workspace extends Processor {
 		defaults = new Processor(props, false);
 
 		return defaults;
+	}
+
+	public static Workspace getDefault() throws Exception {
+		Processor p = new Processor();
+		File defaultBase = IO.getFile("~/.bnd/default-ws");
+		Workspace ws = Workspace.createStandaloneWorkspace(p, defaultBase.toURI());
+		ws.setBase(defaultBase);
+		ws.setProperty("-default-ws", "true");
+		return ws;
 	}
 
 	public static Workspace getWorkspace(File parent) throws Exception {
@@ -417,8 +428,8 @@ public class Workspace extends Processor {
 
 	class CachedFileRepo extends FileRepo {
 		static final String	REPONAME	= "bnd-cache";
-		final Lock	lock	= new ReentrantLock();
-		boolean		inited;
+		final Lock			lock		= new ReentrantLock();
+		boolean				inited;
 
 		CachedFileRepo() {
 			super(REPONAME, getCache(REPONAME), false);
@@ -1137,29 +1148,44 @@ public class Workspace extends Processor {
 	 * @param run
 	 */
 	public static Workspace createStandaloneWorkspace(Processor run, URI base) throws Exception {
-		String property = run.getProperty("-standalone", "");
+		String property = run.getProperty(Constants.STANDALONE, "");
 
 		Workspace ws = new Workspace(WorkspaceLayout.STANDALONE);
-		ws.getProperties().putAll(run.getProperties());
+
+		//
+		// Copy all properties except the type we will add
+		//
+
+		for (Iterator<Map.Entry<Object,Object>> it = run.getProperties().entrySet().iterator(); it.hasNext();) {
+			Entry<Object,Object> entry = it.next();
+			String key = (String) entry.getKey();
+			if (key.startsWith(PLUGIN_STANDALONE))
+				it.remove();
+			else
+				ws.getProperties().put(key, entry.getValue());
+		}
 
 		Parameters standalone = new Parameters(property);
 
 		int counter = 1;
 		for (Map.Entry<String,Attrs> e : standalone.entrySet()) {
 			String locationStr = e.getKey();
+			if ("true".equalsIgnoreCase(locationStr))
+				break;
+
 			URI resolvedLocation = URIUtil.resolve(base, locationStr);
 
 			try (Formatter f = new Formatter();) {
 				String name = e.getValue().get("name");
 				if (name == null)
-					name = "_" + counter;
+					name = locationStr;
 				f.format("%s; name=%s; locations='%s'", STANDALONE_REPO_CLASS, name, resolvedLocation);
 				for (Map.Entry<String,String> attribEntry : e.getValue().entrySet()) {
 					if (!"name".equals(attribEntry.getKey()))
 						f.format(";%s='%s'", attribEntry.getKey(), attribEntry.getValue());
 				}
 				f.format("\n");
-				ws.setProperty("-plugin._" + counter, f.toString());
+				ws.setProperty(PLUGIN_STANDALONE + counter, f.toString());
 			}
 			counter++;
 		}
