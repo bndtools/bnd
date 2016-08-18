@@ -121,11 +121,11 @@ public class HttpConnectorTest extends TestCase {
 
 		HTTP_PORT = httpConnector.getLocalPort();
 		HTTPS_PORT = sslConnector.getLocalPort();
-		assertNotSame(new Integer(0), new Integer(HTTP_PORT));
-		assertNotSame(new Integer(-1), new Integer(HTTP_PORT));
-		assertNotSame(new Integer(0), new Integer(HTTPS_PORT));
-		assertNotSame(new Integer(-1), new Integer(HTTPS_PORT));
-		assertNotSame(new Integer(HTTP_PORT), new Integer(HTTPS_PORT));
+		assertNotSame(Integer.valueOf(0), Integer.valueOf(HTTP_PORT));
+		assertNotSame(Integer.valueOf(-1), Integer.valueOf(HTTP_PORT));
+		assertNotSame(Integer.valueOf(0), Integer.valueOf(HTTPS_PORT));
+		assertNotSame(Integer.valueOf(-1), Integer.valueOf(HTTPS_PORT));
+		assertNotSame(Integer.valueOf(HTTP_PORT), Integer.valueOf(HTTPS_PORT));
 
 		return server;
 	}

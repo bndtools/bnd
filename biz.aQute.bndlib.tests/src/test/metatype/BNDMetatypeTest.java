@@ -415,12 +415,12 @@ public class BNDMetatypeTest extends BndTestCase {
 					55
 			}, trt.rpaDouble()));
 			assertEquals(Arrays.asList(true), trt.rBooleans());
-			assertEquals(Arrays.asList(new Byte((byte) 55)), trt.rBytes());
-			assertEquals(Arrays.asList(new Short((short) 55)), trt.rShorts());
+			assertEquals(Arrays.asList(Byte.valueOf((byte) 55)), trt.rBytes());
+			assertEquals(Arrays.asList(Short.valueOf((short) 55)), trt.rShorts());
 			assertEquals(Arrays.asList(Integer.valueOf(55)), trt.rInts());
-			assertEquals(Arrays.asList(new Long(55L)), trt.rLongs());
-			assertEquals(Arrays.asList(new Float(55F)), trt.rFloats());
-			assertEquals(Arrays.asList(new Double(55D)), trt.rDoubles());
+			assertEquals(Arrays.asList(Long.valueOf(55L)), trt.rLongs());
+			assertEquals(Arrays.asList(Float.valueOf(55F)), trt.rFloats());
+			assertEquals(Arrays.asList(Double.valueOf(55D)), trt.rDoubles());
 			assertEquals(Arrays.asList("55"), trt.rStrings());
 			assertEquals(Arrays.asList(new URI("55")), trt.rURIs());
 
@@ -480,12 +480,12 @@ public class BNDMetatypeTest extends BndTestCase {
 					55
 			}, trt.rpaDouble()));
 			assertEquals(Arrays.asList(true), trt.rBooleans());
-			assertEquals(Arrays.asList(new Byte((byte) 55)), trt.rBytes());
-			assertEquals(Arrays.asList(new Short((short) 55)), trt.rShorts());
+			assertEquals(Arrays.asList(Byte.valueOf((byte) 55)), trt.rBytes());
+			assertEquals(Arrays.asList(Short.valueOf((short) 55)), trt.rShorts());
 			assertEquals(Arrays.asList(Integer.valueOf(55)), trt.rInts());
-			assertEquals(Arrays.asList(new Long(55L)), trt.rLongs());
-			assertEquals(Arrays.asList(new Float(55F)), trt.rFloats());
-			assertEquals(Arrays.asList(new Double(55D)), trt.rDoubles());
+			assertEquals(Arrays.asList(Long.valueOf(55L)), trt.rLongs());
+			assertEquals(Arrays.asList(Float.valueOf(55F)), trt.rFloats());
+			assertEquals(Arrays.asList(Double.valueOf(55D)), trt.rDoubles());
 			assertEquals(Arrays.asList("55"), trt.rStrings());
 			assertEquals(Arrays.asList(new URI("55")), trt.rURIs());
 
@@ -530,12 +530,12 @@ public class BNDMetatypeTest extends BndTestCase {
 			assertEquals(55.0D, trt.rpDouble());
 			assertEquals(55.0F, trt.rpFloat());
 			assertEquals((Boolean) true, trt.rBoolean());
-			assertEquals(new Byte((byte) 55), trt.rByte());
-			assertEquals(new Short((short) 55), trt.rShort());
+			assertEquals(Byte.valueOf((byte) 55), trt.rByte());
+			assertEquals(Short.valueOf((short) 55), trt.rShort());
 			assertEquals(Integer.valueOf(55), trt.rInt());
-			assertEquals(new Long(55L), trt.rLong());
-			assertEquals(new Float(55F), trt.rFloat());
-			assertEquals(new Double(55), trt.rDouble());
+			assertEquals(Long.valueOf(55L), trt.rLong());
+			assertEquals(Float.valueOf(55F), trt.rFloat());
+			assertEquals(Double.valueOf(55), trt.rDouble());
 			assertEquals("55", trt.rString());
 			assertEquals(new URI("55"), trt.rURI());
 			assertTrue(Arrays.equals(new boolean[] {
@@ -560,12 +560,12 @@ public class BNDMetatypeTest extends BndTestCase {
 					55
 			}, trt.rpaDouble()));
 			assertEquals(Arrays.asList(true), trt.rBooleans());
-			assertEquals(Arrays.asList(new Byte((byte) 55)), trt.rBytes());
-			assertEquals(Arrays.asList(new Short((short) 55)), trt.rShorts());
+			assertEquals(Arrays.asList(Byte.valueOf((byte) 55)), trt.rBytes());
+			assertEquals(Arrays.asList(Short.valueOf((short) 55)), trt.rShorts());
 			assertEquals(Arrays.asList(Integer.valueOf(55)), trt.rInts());
-			assertEquals(Arrays.asList(new Long(55L)), trt.rLongs());
-			assertEquals(Arrays.asList(new Float(55F)), trt.rFloats());
-			assertEquals(Arrays.asList(new Double(55D)), trt.rDoubles());
+			assertEquals(Arrays.asList(Long.valueOf(55L)), trt.rLongs());
+			assertEquals(Arrays.asList(Float.valueOf(55F)), trt.rFloats());
+			assertEquals(Arrays.asList(Double.valueOf(55D)), trt.rDoubles());
 			assertEquals(Arrays.asList("55"), trt.rStrings());
 			assertEquals(Arrays.asList(new URI("55")), trt.rURIs());
 

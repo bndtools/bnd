@@ -560,7 +560,7 @@ public class NanoHTTPD {
 						matchbyte = i;
 					matchcount++;
 					if (matchcount == boundary.length) {
-						matchbytes.addElement(new Integer(matchbyte));
+						matchbytes.addElement(Integer.valueOf(matchbyte));
 						matchcount = 0;
 						matchbyte = -1;
 					}
