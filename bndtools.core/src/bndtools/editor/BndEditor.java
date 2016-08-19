@@ -464,7 +464,6 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             setPartNameForInput(input);
             sourcePage.getDocumentProvider().addElementStateListener(new ElementStateListener());
 
-            loadEditModel();
             Central.onWorkspaceInit(new Success<Workspace,Void>() {
                 @Override
                 public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
