@@ -5,9 +5,9 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.bndtools.templating.FileResource;
 import org.bndtools.templating.FolderResource;
@@ -16,9 +16,13 @@ import org.bndtools.templating.Template;
 import org.bndtools.templating.util.ObjectClassDefinitionImpl;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand.ListMode;
 import org.eclipse.jgit.api.errors.JGitInternalException;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.osgi.framework.Version;
 import org.osgi.service.metatype.ObjectClassDefinition;
@@ -27,6 +31,7 @@ import aQute.lib.io.IO;
 
 public class GitCloneTemplate implements Template {
 
+    private static final Pattern SHA1_PATTERN = Pattern.compile("\\p{XDigit}{40}");
     private final GitCloneTemplateParams params;
 
     private Repository checkedOut = null;
@@ -99,15 +104,55 @@ public class GitCloneTemplate implements Template {
             // Need to do a new checkout
             workingDir = Files.createTempDirectory("checkout").toFile();
             gitDir = new File(workingDir, ".git");
-            String branch = getRemoteBranch();
 
             try {
                 CloneCommand cloneCmd = Git.cloneRepository().setURI(params.cloneUrl).setDirectory(workingDir).setNoCheckout(true);
                 cloneCmd.setProgressMonitor(new EclipseGitProgressTransformer(monitor));
-                cloneCmd.setBranchesToClone(Collections.singleton(branch));
                 Git git = cloneCmd.call();
 
-                git.checkout().setCreateBranch(true).setName("_tmp").setStartPoint(branch).call();
+                CheckoutCommand checkout = git.checkout().setCreateBranch(true).setName("_tmp");
+
+                if (params.branch == null) {
+                    checkout.setStartPoint(GitCloneTemplateParams.DEFAULT_BRANCH);
+                } else {
+                    String startPoint = null;
+
+                    if (params.branch.startsWith(Constants.DEFAULT_REMOTE_NAME + "/")) {
+                        startPoint = params.branch;
+                    } else {
+                        // Check for a matching tag
+                        for (Ref ref : git.tagList().call()) {
+                            if (ref.getName().endsWith("/" + params.branch)) {
+                                startPoint = params.branch;
+                                break;
+                            }
+                        }
+
+                        if (startPoint == null) {
+                            // Check remote branches
+                            for (Ref ref : git.branchList().setListMode(ListMode.REMOTE).call()) {
+                                if (ref.getName().endsWith("/" + params.branch)) {
+                                    startPoint = Constants.DEFAULT_REMOTE_NAME + "/" + params.branch;
+                                    break;
+                                }
+                            }
+
+                            if (startPoint == null) {
+                                if (SHA1_PATTERN.matcher(params.branch).matches()) {
+                                    startPoint = params.branch;
+
+                                    if (startPoint == null) {
+                                        throw new Exception("Unable to find requested ref \"" + params.branch + "\"");
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    checkout.setStartPoint(startPoint);
+                }
+
+                checkout.call();
                 checkedOut = git.getRepository();
             } catch (JGitInternalException e) {
                 Throwable cause = e.getCause();
@@ -125,16 +170,6 @@ public class GitCloneTemplate implements Template {
             }
         };
         return toResourceMap(workingDir, filter);
-    }
-
-    private String getRemoteBranch() {
-        if (params.branch == null) {
-            return GitCloneTemplateParams.DEFAULT_BRANCH;
-        }
-        if (!params.branch.startsWith("origin/")) {
-            return "origin/" + params.branch;
-        }
-        return params.branch;
     }
 
     @Override
