@@ -92,10 +92,6 @@ import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.resource.Requirement;
-import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Success;
-
-import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Refreshable;
@@ -146,10 +142,13 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         FillLayout fillLayout = new FillLayout();
         fillLayout.marginHeight = fillLayout.marginWidth = 10;
         labelParent.setLayout(fillLayout);
-        Label label = new Label(labelParent, SWT.NONE);
-        label.setText("Repositories are loading, please wait...");
-        label.setBackground(parent.getBackground());
-        label.setForeground(parent.getForeground());
+
+        if (!Central.isWorkspaceInited()) {
+            Label label = new Label(labelParent, SWT.NONE);
+            label.setText("Repositories are loading, please wait...");
+            label.setBackground(parent.getBackground());
+            label.setForeground(parent.getForeground());
+        }
 
         stackLayout.topControl = labelParent;
         parent.layout();
@@ -403,14 +402,18 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         createActions();
         fillToolBar(getViewSite().getActionBars().getToolBarManager());
 
-        // call refresh action once to make sure someone is trying to load repositories in this view
-        Central.onWorkspaceInit(new Success<Workspace,Void>() {
+        // synthenic call to "refresh" so that we can get the repositories to show up in the UI
+        new WorkspaceJob("Load repositories") {
             @Override
-            public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
-                refreshAction.run();
-                return null;
+            public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+                try {
+                    Central.refreshPlugins();
+                } catch (Exception e) {
+                    // ignore errors there may be no workspace yet
+                }
+                return Status.OK_STATUS;
             }
-        });
+        }.schedule();
     }
 
     protected void openURI(URI uri) {
