@@ -183,7 +183,7 @@ public class Central implements IStartupParticipant {
         return getWorkspace().getWorkspaceRepository();
     }
 
-    public synchronized static Workspace getWorkspaceIfPresent() {
+    public static Workspace getWorkspaceIfPresent() {
         try {
             return getWorkspace();
         } catch (IllegalStateException e) {
