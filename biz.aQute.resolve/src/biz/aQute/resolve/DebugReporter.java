@@ -98,7 +98,7 @@ public class DebugReporter {
 				Resolver resolver = new BndResolver(new ResolverLogger(4));
 				Map<Resource,List<Wire>> resolved = resolver.resolve(context);
 			} catch (Exception e) {
-				resolveError = e.getMessage();
+				resolveError = e.toString();
 			}
 
 		String s = resolveError == null ? " " : "!";

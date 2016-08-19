@@ -64,7 +64,7 @@ public class DownloadListenerPromise implements Success<File,Void>, Failure {
 		reporter.trace("%s: fail: %s", this, resolved.getFailure());
 		for (DownloadListener dl : dls) {
 			try {
-				dl.failure(null, resolved.getFailure().getMessage());
+				dl.failure(null, resolved.getFailure().toString());
 			} catch (Throwable e) {
 				reporter.warning("%s: Fail callback failed to %s: %s", this, dl, e);
 			}

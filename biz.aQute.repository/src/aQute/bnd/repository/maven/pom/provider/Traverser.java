@@ -102,7 +102,7 @@ class Traverser {
 					logger.trace("parse archive {}", archive);
 					parseArchive(archive);
 				} catch (Throwable throwable) {
-					logger.trace(" failed to parse archive {}: {}", archive, throwable);
+					logger.trace(" failed to parse archive {}: {}", archive, throwable, throwable);
 					ResourceBuilder rb = new ResourceBuilder();
 					String bsn = archive.revision.program.toString();
 					Version version = toFrameworkVersion(archive.revision.version.getOSGiVersion());
@@ -110,7 +110,7 @@ class Traverser {
 					addInformationCapability(rb, archive.toString(), parent, throwable);
 					resources.put(archive, rb.build());
 
-					error.add(archive + " from " + parent + throwable.getMessage());
+					error.add(archive + " from " + parent + " " + throwable);
 				} finally {
 					//
 					// If count goes to zero, then we

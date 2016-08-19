@@ -122,7 +122,7 @@ public class TestingLog implements LogService {
 				try {
 					f.format("%6s %-4s %s %s", (now - start + 500) / 1000,
 							(sr == null ? "" : sr.getProperty("service.id")), message,
-							(exception == null ? "" : exception.getMessage()));
+							(exception == null ? "" : exception));
 					return sb.toString();
 				} finally {
 					f.close();

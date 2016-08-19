@@ -171,10 +171,10 @@ public class P2Impl implements P2 {
 						} catch (InvocationTargetException ee) {
 							if (!defaults.contains(e.getKey())) {
 								ee.getTargetException().printStackTrace();
-								logger.info("Failed " + ee.getTargetException().getMessage());
+								logger.info("Failed", ee.getTargetException());
 							}
 						} catch (Exception eee) {
-							logger.info("Failed " + eee.getMessage());
+							logger.info("Failed", eee);
 						}
 					}
 					deferred.resolve(artifacts);

@@ -297,7 +297,7 @@ public class Converter {
 			String key = null;
 			try {
 				Map<Object,Object> map = (Map) o;
-				Object instance = resultType.newInstance();
+				Object instance = resultType.getConstructor().newInstance();
 				for (Map.Entry e : map.entrySet()) {
 					key = (String) e.getKey();
 					try {
@@ -376,7 +376,7 @@ public class Converter {
 			else
 				return (Collection) error("Cannot find a suitable collection for the collection interface " + rawClass);
 		} else
-			collection = rawClass.newInstance();
+			collection = rawClass.getConstructor().newInstance();
 
 		Type subType = Object.class;
 		if (collectionType instanceof ParameterizedType) {
@@ -405,7 +405,7 @@ public class Converter {
 				return (Map) error("Cannot find suitable map for map interface " + rawClass);
 			}
 		} else
-			result = rawClass.newInstance();
+			result = rawClass.getConstructor().newInstance();
 
 		Map< ? , ? > input = toMap(o);
 

@@ -251,7 +251,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 			return Hex.toHexString(digest.digest());
 		} catch (NoSuchAlgorithmException e) {
 			// Can't happen... hopefully...
-			throw new IOException(e.getMessage());
+			throw new IOException(e.getMessage(), e);
 		} finally {
 			IO.close(input);
 			IO.close(output);
@@ -321,7 +321,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 			}
 		} catch (NoSuchAlgorithmException e) {
 			// Can't happen... hopefully...
-			throw new IOException(e.getMessage());
+			throw new IOException(e.getMessage(), e);
 		} finally {
 			if (stream != null)
 				stream.close();
@@ -346,7 +346,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 			shaFile.delete();
 			// Errors saving the SHA should not interfere with the download
 			if (reporter != null)
-				reporter.error("Failed to save SHA file %s (%s)", shaFile, e.getMessage());
+				reporter.exception(e, "Failed to save SHA file %s (%s)", shaFile, e);
 		}
 	}
 

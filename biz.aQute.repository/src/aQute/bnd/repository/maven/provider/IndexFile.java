@@ -286,7 +286,7 @@ class IndexFile {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			descriptor.error = e.getMessage();
+			descriptor.error = e.toString();
 			refresh.set(true);
 
 		}

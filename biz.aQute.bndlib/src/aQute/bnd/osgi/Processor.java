@@ -696,7 +696,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private Object loadPlugin(ClassLoader loader, Attrs attrs, String className, boolean ignoreError) {
 		try {
 			Class< ? > c = loader.loadClass(className);
-			Object plugin = c.newInstance();
+			Object plugin = c.getConstructor().newInstance();
 			customize(plugin, attrs);
 			if (plugin instanceof Closeable) {
 				addClose((Closeable) plugin);
@@ -704,12 +704,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return plugin;
 		} catch (NoClassDefFoundError e) {
 			if (!ignoreError)
-				error("Failed to load plugin %s;%s, error: %s ", className, attrs, e.getMessage());
+				exception(e, "Failed to load plugin %s;%s, error: %s ", className, attrs, e);
 		} catch (ClassNotFoundException e) {
 			if (!ignoreError)
-				error("Failed to load plugin %s;%s, error: %s ", className, attrs, e.getMessage());
+				exception(e, "Failed to load plugin %s;%s, error: %s ", className, attrs, e);
 		} catch (Exception e) {
-			error("Unexpected error loading plugin %s-%s: %s", className, attrs, e);
+			exception(e, "Unexpected error loading plugin %s-%s: %s", className, attrs, e);
 		}
 		return null;
 	}

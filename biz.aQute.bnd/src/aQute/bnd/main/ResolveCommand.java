@@ -328,8 +328,8 @@ public class ResolveCommand extends Processor {
 							}
 						}
 					} catch (Exception e) {
-						System.out.printf("%-50s %s\n", f.getName(), e.getMessage());
-						error("Failed to resolve %s: %s", f, e);
+						System.out.printf("%-50s %s\n", f.getName(), e);
+						exception(e, "Failed to resolve %s: %s", f, e);
 					}
 					getInfo(pr);
 				}

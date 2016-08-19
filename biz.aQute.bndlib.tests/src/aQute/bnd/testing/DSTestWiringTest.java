@@ -24,7 +24,7 @@ public class DSTestWiringTest extends TestCase {
 	private List<Integer>	integers	= new ArrayList<Integer>();
 	private int				integer;
 
-	static class A {
+	public static class A {
 
 		Map<String,Object> map;
 

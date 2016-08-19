@@ -470,7 +470,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 				handle.sha = handle.getCachedSHA();
 			}
 		} catch (FileNotFoundException e) {
-			throw new FileNotFoundException("Broken link in repository index: " + e.getMessage());
+			throw new FileNotFoundException("Broken link in repository index: " + e);
 		}
 		if (handle.getLocation() == Location.local || getCacheDirectory() != null)
 			result = handle;

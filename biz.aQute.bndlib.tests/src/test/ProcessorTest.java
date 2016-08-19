@@ -144,7 +144,7 @@ public class ProcessorTest extends TestCase {
 			String cap = p._native_capability("native_capability", "processor=x86", "osname=Linux");
 			System.out.println(cap);
 		} catch (IllegalArgumentException e) {
-			System.out.println(e.getMessage());
+			System.out.println(e);
 		}
 
 	}

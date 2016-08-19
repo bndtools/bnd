@@ -142,7 +142,7 @@ public class OSGiRepository extends BaseRepository
 							try {
 								poll();
 							} catch (Exception e) {
-								reporter.trace("During polling %s", e.getMessage());
+								reporter.trace("During polling %s", e);
 							} finally {
 								inPoll.set(false);
 							}

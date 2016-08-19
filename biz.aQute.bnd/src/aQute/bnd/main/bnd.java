@@ -385,7 +385,7 @@ public class bnd extends Processor {
 		} catch (Throwable t) {
 			while (t instanceof InvocationTargetException)
 				t = t.getCause();
-			exception(t, "%s", t.getMessage());
+			exception(t, "%s", t);
 		}
 		out.flush();
 		err.flush();
@@ -2532,7 +2532,7 @@ public class bnd extends Processor {
 			doHtmlReport(report, file, doc, xpath);
 
 		} catch (Exception e) {
-			report.addAttribute("coverage-failed", e.getMessage());
+			report.addAttribute("coverage-failed", e.toString());
 		}
 	}
 

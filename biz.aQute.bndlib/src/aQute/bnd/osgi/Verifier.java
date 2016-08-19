@@ -301,7 +301,7 @@ public class Verifier extends Processor {
 			verifyFilter(value, 0);
 			return null;
 		} catch (Exception e) {
-			return "Not a valid filter: " + value + e.getMessage();
+			return "Not a valid filter: " + value + ": " + e;
 		}
 	}
 
@@ -575,8 +575,7 @@ public class Verifier extends Processor {
 			try {
 				pattern = Pattern.compile(p, Pattern.CASE_INSENSITIVE);
 			} catch (Exception e) {
-				SetLocation error = error("%s is not a valid regular expression %s: %s", INVALIDFILENAMES,
-						e.getMessage(), p);
+				SetLocation error = exception(e, "%s is not a valid regular expression %s: %s", INVALIDFILENAMES, e, p);
 				error.context(p).header(INVALIDFILENAMES);
 				return;
 			}
@@ -636,8 +635,9 @@ public class Verifier extends Processor {
 							}
 							// TODO check for exclude low, include high?
 						} catch (Exception ee) {
-							Location location = error("Import Package %s has an invalid version range syntax %s:%s",
-									e.getKey(), version, ee.getMessage()).location();
+							Location location = exception(ee,
+									"Import Package %s has an invalid version range syntax %s: %s", e.getKey(), version,
+									ee).location();
 							location.header = Constants.IMPORT_PACKAGE;
 							location.context = e.getKey();
 						}

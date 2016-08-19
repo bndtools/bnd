@@ -320,7 +320,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 					suite.run(result);
 
 				} catch (Throwable t) {
-					trace(t.getMessage());
+					trace("%s", t);
 					result.addError(null, t);
 				} finally {
 					for (TestReporter tr : reporters) {

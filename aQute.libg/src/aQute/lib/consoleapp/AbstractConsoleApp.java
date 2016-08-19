@@ -144,7 +144,7 @@ public abstract class AbstractConsoleApp extends Env {
 			while (tt instanceof InvocationTargetException)
 				tt = ((InvocationTargetException) tt).getTargetException();
 
-			exception(tt, "%s", tt.getMessage());
+			exception(tt, "%s", tt);
 		} catch (Throwable t) {
 			exception(t, "Failed %s", t);
 		} finally {

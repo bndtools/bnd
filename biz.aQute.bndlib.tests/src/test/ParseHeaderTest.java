@@ -45,7 +45,7 @@ public class ParseHeaderTest extends TestCase {
 		try {
 			a.mergeWith(b, false);
 		} catch (Exception e) {
-			fail(e.getMessage());
+			fail(e.toString());
 		}
 	}
 

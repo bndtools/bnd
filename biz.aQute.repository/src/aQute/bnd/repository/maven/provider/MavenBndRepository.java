@@ -549,7 +549,7 @@ public class MavenBndRepository extends BaseRepository
 			void doFailure(final File file, final Promise<File> promise, final DownloadListener... listeners) {
 				for (DownloadListener dl : listeners)
 					try {
-						dl.failure(file, promise.getFailure().getMessage());
+						dl.failure(file, promise.getFailure().toString());
 					} catch (Exception e) {
 						reporter.exception(e, "Download listener failed in failure callback %s", dl);
 					}
@@ -670,7 +670,7 @@ public class MavenBndRepository extends BaseRepository
 		try {
 			return remote.getUser();
 		} catch (Exception e) {
-			return "error: " + e.getMessage();
+			return "error: " + e.toString();
 		}
 	}
 

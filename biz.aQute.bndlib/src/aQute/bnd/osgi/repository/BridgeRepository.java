@@ -218,7 +218,7 @@ public class BridgeRepository {
 			if (from != null)
 				c.addAttribute("from", from);
 			if (error != null)
-				c.addAttribute("error", error.getMessage());
+				c.addAttribute("error", error.toString());
 
 			rb.addCapability(c);
 		} catch (Exception e) {

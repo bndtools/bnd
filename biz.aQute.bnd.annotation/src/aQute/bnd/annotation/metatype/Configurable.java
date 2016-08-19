@@ -219,7 +219,7 @@ public class Configurable<T> {
 								"Unknown interface for a collection, no concrete class found: " + resultType);
 				}
 
-				Collection<Object> result = (Collection<Object>) resultType.newInstance();
+				Collection<Object> result = (Collection<Object>) resultType.getConstructor().newInstance();
 				Type componentType = pType.getActualTypeArguments()[0];
 
 				for (Object i : input) {
@@ -240,7 +240,7 @@ public class Configurable<T> {
 						throw new IllegalArgumentException(
 								"Unknown interface for a collection, no concrete class found: " + resultType);
 				}
-				Map<Object,Object> result = (Map<Object,Object>) resultType.newInstance();
+				Map<Object,Object> result = (Map<Object,Object>) resultType.getConstructor().newInstance();
 				Type keyType = pType.getActualTypeArguments()[0];
 				Type valueType = pType.getActualTypeArguments()[1];
 

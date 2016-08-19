@@ -81,7 +81,7 @@ public class DSTestWiring {
 			// We can defer instantiating the type
 			//
 			if (instance == null)
-				instance = type.newInstance();
+				instance = type.getConstructor().newInstance();
 
 			//
 			// Are we already done?

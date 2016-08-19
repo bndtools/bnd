@@ -1,6 +1,5 @@
 package test;
 
-import java.applet.Applet;
 import java.awt.MenuContainer;
 import java.util.List;
 import java.util.Map;
@@ -15,9 +14,14 @@ import junit.framework.TestCase;
 @SuppressWarnings("resource")
 
 public class PluginTest extends TestCase {
-	static Processor main = new Processor();
+	private Processor main;
 
-	public static void testMissingPluginNotUsed() throws Exception {
+	@Override
+	protected void setUp() {
+		main = new Processor();
+	}
+
+	public void testMissingPluginNotUsed() throws Exception {
 		Builder p = new Builder();
 		p.setProperty("-plugin", "missing;command:=\"-abc,-def\"");
 		/* List<?> plugins = */p.getPlugins(Object.class);
@@ -33,6 +37,7 @@ public class PluginTest extends TestCase {
 
 	static class TPlugin implements Plugin {
 		Map<String,String> properties;
+		Reporter			reporter;
 
 		@Override
 		public void setProperties(Map<String,String> map) {
@@ -41,36 +46,39 @@ public class PluginTest extends TestCase {
 
 		@Override
 		public void setReporter(Reporter processor) {
-			assertEquals(main, processor);
+			reporter = processor;
 		}
 	}
 
-	public static void testPlugin() {
+	public void testPlugin() {
 		main.setProperty(Constants.PLUGIN, "test.PluginTest.TPlugin;a=1;b=2");
 
 		for (TPlugin plugin : main.getPlugins(TPlugin.class)) {
 			assertEquals(test.PluginTest.TPlugin.class, plugin.getClass());
 			assertEquals("1", plugin.properties.get("a"));
 			assertEquals("2", plugin.properties.get("b"));
+			assertSame(main, plugin.reporter);
 		}
 	}
 
-	public static void testLoadPlugin() {
+	@SuppressWarnings("deprecation")
+	public void testLoadPlugin() {
 		main.setProperty(Constants.PLUGIN, "thinlet.Thinlet;path:=jar/thinlet.jar");
-		for (Applet applet : main.getPlugins(Applet.class)) {
+		for (java.applet.Applet applet : main.getPlugins(java.applet.Applet.class)) {
 			assertEquals("thinlet.Thinlet", applet.getClass().getName());
 		}
 	}
 
-	public static void testLoadPluginFailsWithMissingPath() throws Exception {
+	public void testLoadPluginFailsWithMissingPath() throws Exception {
 		Builder p = new Builder();
 		p.setProperty(Constants.PLUGIN, "thinlet.Thinlet");
+		p.setProperty("-fixupmessages", "^Exception: ");
 
 		p.getPlugins(Object.class);
-		assertTrue(p.check("plugin thinlet.Thinlet"));
+		assertTrue(p.check("plugin thinlet\\.Thinlet"));
 	}
 
-	public static void testLoadPluginWithPath() {
+	public void testLoadPluginWithPath() {
 		Builder p = new Builder();
 		p.setProperty(Constants.PLUGIN, "thinlet.Thinlet;path:=jar/thinlet.jar");
 
@@ -80,7 +88,7 @@ public class PluginTest extends TestCase {
 		assertEquals("thinlet.Thinlet", plugins.get(0).getClass().getName());
 	}
 
-	public static void testLoadPluginWithGlobalPluginPath() {
+	public void testLoadPluginWithGlobalPluginPath() {
 		Builder p = new Builder();
 		p.setProperty(Constants.PLUGIN, "thinlet.Thinlet");
 		p.setProperty(Constants.PLUGINPATH, "jar/thinlet.jar");

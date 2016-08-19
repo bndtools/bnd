@@ -134,7 +134,7 @@ public class AnnotationHeadersTest extends TestCase {
 			Parameters p = new Parameters(m.getMainAttributes().getValue("Provide-Capability"));
 			Attrs attrs = p.get("nsx");
 			assertNotNull(attrs);
-			assertEquals(new Long(3), attrs.getTyped("foo"));
+			assertEquals(Long.valueOf(3), attrs.getTyped("foo"));
 
 			p = new Parameters(m.getMainAttributes().getValue("Bundle-License"));
 			attrs = p.get("license");

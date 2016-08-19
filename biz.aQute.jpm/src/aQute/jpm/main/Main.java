@@ -381,7 +381,7 @@ public class Main extends ReporterAdapter {
 			while (tt instanceof InvocationTargetException)
 				tt = ((InvocationTargetException) tt).getTargetException();
 
-			exception(tt, "%s", tt.getMessage());
+			exception(tt, "%s", tt);
 		} catch (Throwable t) {
 			exception(t, "Failed %s", t);
 		} finally {
@@ -869,7 +869,7 @@ public class Main extends ReporterAdapter {
 				} else
 					error("Cannot find the jpm jar from %s", f);
 			} catch (InvocationTargetException e) {
-				exception(e.getTargetException(), "Could not install jpm, %s", e.getTargetException().getMessage());
+				exception(e.getTargetException(), "Could not install jpm, %s", e.getTargetException());
 				if (isExceptions())
 					e.printStackTrace();
 			}
@@ -978,7 +978,7 @@ public class Main extends ReporterAdapter {
 						if (result != null)
 							error("Failed to start: %s", result);
 					} catch (Exception e) {
-						exception(e, "Could not start service %s due to %s", s, e.getMessage());
+						exception(e, "Could not start service %s due to %s", s, e);
 					}
 				} else
 					warning("Service %s already running", s);
@@ -1012,7 +1012,7 @@ public class Main extends ReporterAdapter {
 					if (result != null)
 						error("Failed to start: %s", result);
 				} catch (Exception e) {
-					exception(e, "Could not start service %s due to %s", s, e.getMessage());
+					exception(e, "Could not start service %s due to %s", s, e);
 				}
 			}
 		}
@@ -1050,7 +1050,7 @@ public class Main extends ReporterAdapter {
 						error("Failed to trace: %s", result);
 				}
 			} catch (Exception e) {
-				exception(e, "Could not trace service %s due to %s", s, e.getMessage());
+				exception(e, "Could not trace service %s due to %s", s, e);
 			}
 		}
 	}
@@ -1077,7 +1077,7 @@ public class Main extends ReporterAdapter {
 						if (result != null)
 							error("Failed to stop: %s", result);
 					} catch (Exception e) {
-						exception(e, "Could not stop service %s due to %s", s, e.getMessage());
+						exception(e, "Could not stop service %s due to %s", s, e);
 					}
 				} else
 					warning("Service %s not running", s);
@@ -1113,8 +1113,8 @@ public class Main extends ReporterAdapter {
 						status = service.status();
 					}
 				} catch (Exception e) {
-					status = e.getMessage();
-					exception(e, "could not fetch status information from service %s, due to %s", s, e.getMessage());
+					status = e.toString();
+					exception(e, "could not fetch status information from service %s, due to %s", s, status);
 				}
 				out.printf("%-40s %8s %s\r", s, runs, status);
 			}
