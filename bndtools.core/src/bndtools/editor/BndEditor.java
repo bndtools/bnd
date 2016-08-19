@@ -78,6 +78,7 @@ import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.properties.BadLocationException;
+import aQute.lib.exceptions.Exceptions;
 import bndtools.BndConstants;
 import bndtools.Plugin;
 import bndtools.central.Central;
@@ -435,49 +436,54 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         super.init(site, input);
+        try {
 
-        // Work out our input file and subscribe to resource changes
-        final String resourceName;
-        IResource inputResource = ResourceUtil.getResource(input);
-        if (inputResource != null) {
-            inputResource.getWorkspace().addResourceChangeListener(this);
-            resourceName = inputResource.getName();
-            inputFile = inputResource.getLocation().toFile();
-        } else {
-            IStorage storage = (IStorage) input.getAdapter(IStorage.class);
-            if (storage != null) {
-                resourceName = storage.getName();
+            // Work out our input file and subscribe to resource changes
+            final String resourceName;
+            IResource inputResource = ResourceUtil.getResource(input);
+            if (inputResource != null) {
+                inputResource.getWorkspace().addResourceChangeListener(this);
+                resourceName = inputResource.getName();
+                inputFile = inputResource.getLocation().toFile();
             } else {
-                resourceName = input.getName();
+                IStorage storage = (IStorage) input.getAdapter(IStorage.class);
+                if (storage != null) {
+                    resourceName = storage.getName();
+                } else {
+                    resourceName = input.getName();
+                }
+                inputFile = null;
             }
-            inputFile = null;
-        }
-        model.setBndResourceName(resourceName);
+            model.setBndResourceName(resourceName);
 
-        // Initialise pages and title
-        initPages(site, input);
-        setSourcePage(sourcePage);
-        setPartNameForInput(input);
-        sourcePage.getDocumentProvider().addElementStateListener(new ElementStateListener());
+            // Initialise pages and title
+            initPages(site, input);
+            setSourcePage(sourcePage);
+            setPartNameForInput(input);
+            sourcePage.getDocumentProvider().addElementStateListener(new ElementStateListener());
 
-        Central.onWorkspaceInit(new Success<Workspace,Void>() {
-            @Override
-            public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
-                final Deferred<Void> completion = new Deferred<>();
-                Display.getDefault().asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            loadEditModel();
-                            completion.resolve(null);
-                        } catch (Exception e) {
-                            completion.fail(e);
+            loadEditModel();
+            Central.onWorkspaceInit(new Success<Workspace,Void>() {
+                @Override
+                public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
+                    final Deferred<Void> completion = new Deferred<>();
+                    Display.getDefault().asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                loadEditModel();
+                                completion.resolve(null);
+                            } catch (Exception e) {
+                                completion.fail(e);
+                            }
                         }
-                    }
-                });
-                return completion.getPromise();
-            }
-        });
+                    });
+                    return completion.getPromise();
+                }
+            });
+        } catch (Exception e1) {
+            throw Exceptions.duck(e1);
+        }
     }
 
     private void loadEditModel() throws Exception {

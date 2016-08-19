@@ -25,7 +25,7 @@ public class UpDownButtonBarPart {
     private final Image imgDown = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png").createImage();
 
     public static interface UpDownListener {
-        void changed();
+        void changed(List<Object> list);
     }
 
     private final TableViewer viewer;
@@ -87,9 +87,9 @@ public class UpDownButtonBarPart {
         @SuppressWarnings("unchecked")
         List<Object> list = (List<Object>) viewer.getInput();
         if (CollectionUtils.moveUp(list, indexes)) {
-            viewer.refresh();
+            viewer.setInput(list);
             for (UpDownListener l : listeners) {
-                l.changed();
+                l.changed(list);
             }
         }
     }
@@ -100,9 +100,9 @@ public class UpDownButtonBarPart {
         @SuppressWarnings("unchecked")
         List<Object> list = (List<Object>) viewer.getInput();
         if (CollectionUtils.moveDown(list, indexes)) {
-            viewer.refresh();
+            viewer.setInput(list);
             for (UpDownListener l : listeners) {
-                l.changed();
+                l.changed(list);
             }
         }
     }

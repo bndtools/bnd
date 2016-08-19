@@ -191,7 +191,7 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
 
     @Override
     protected void refreshFromModel() {
-        // Nothing to do
+        viewer.setInput(getRepositories());
     }
 
     @Override
