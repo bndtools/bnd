@@ -3,22 +3,22 @@ package aQute.bnd.repository.osgi;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.util.function.Function;
+import org.osgi.util.promise.Deferred;
+import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.Promises;
+import org.osgi.util.promise.Success;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequest;
@@ -157,53 +157,61 @@ class OSGiIndex {
 	 * @throws Exception
 	 */
 	boolean isStale() throws Exception {
-
-		Map<URI,Promise<TaggedData>> promises = new HashMap<>();
-
-		for (URI uri : getURIs())
+		final Deferred<List<Void>> freshness = new Deferred<>();
+		List<Promise<Void>> promises = new ArrayList<>(getURIs().size());
+		for (final URI uri : getURIs()) {
+			if (freshness.getPromise().isDone()) {
+				break; // early exit if staleness already detected
+			}
 			try {
 				Promise<TaggedData> async = client.build().useCache().asTag().async(uri);
-				promises.put(uri, async);
+				promises.add(async.then(new Success<TaggedData,Void>() {
+					@Override
+					public Promise<Void> call(Promise<TaggedData> resolved) throws Exception {
+						switch (resolved.getValue().getState()) {
+							case OTHER :
+								// in the offline case
+								// ignore might be best here
+								log.trace("Could not verify %s", uri);
+								break;
+
+							case UNMODIFIED :
+								break;
+
+							case NOT_FOUND :
+							case UPDATED :
+							default :
+								log.trace("Found %s to be stale", uri);
+								freshness.fail(new Exception("stale"));
+						}
+						return null;
+					}
+				}, new Failure() {
+					@Override
+					public void fail(Promise< ? > resolved) throws Exception {
+						log.trace("Could not verify %s: %s", uri, resolved.getFailure());
+						freshness.fail(resolved.getFailure());
+					}
+				}));
 			} catch (Exception e) {
 				log.trace("Checking stale status: %s: %s", uri, e);
 			}
-
-		for (Entry<URI,Promise<TaggedData>> entry : promises.entrySet()) {
-			URI uri = entry.getKey();
-			Promise<TaggedData> p = entry.getValue();
-			if (p.getFailure() != null) {
-				log.trace("Could not verify %s: %s", uri, p.getFailure());
-				return true;
-			} else {
-				TaggedData tag = p.getValue();
-				switch (tag.getState()) {
-					case OTHER :
-						// in the offline case
-						// ignore might be best here
-						log.trace("Could not verify %s", uri);
-						break;
-
-					case UNMODIFIED :
-						break;
-
-					case NOT_FOUND :
-					case UPDATED :
-					default :
-						log.trace("Found %s to be stale", uri);
-						return true;
-				}
-			}
 		}
 
-		return false;
+		// Resolve when all uris checked
+		Promise<List<Void>> all = Promises.all(promises);
+		freshness.resolveWith(all);
+
+		// Block until freshness is resolved
+		return freshness.getPromise().getFailure() != null;
 	}
 
 	Collection<URI> getURIs() {
 		return uris;
 	}
 
-	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements)
-			throws InvocationTargetException, InterruptedException {
-			return repository.getValue().getRepository().findProviders(requirements);
+	Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements)
+			throws Exception {
+		return getBridge().getRepository().findProviders(requirements);
 	}
 }
