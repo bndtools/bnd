@@ -32,3 +32,4 @@ cache:
   directories:
     - $HOME/.gradle/wrapper
     - $HOME/.m2/wrapper
+    - cnf/cache/stable

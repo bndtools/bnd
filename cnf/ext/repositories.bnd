@@ -18,7 +18,10 @@ baselinerepo:           https://dl.bintray.com/bnd/dist/${baseline.version}
         index=${workspace}/cnf/jpm4j.json; \
         depository.group=bndtools; \
         depository.name=dist, \
-    aQute.bnd.deployer.repository.FixedIndexedRepo; name='Baseline'; locations=${baselinerepo}/index.xml.gz
+    aQute.bnd.repository.osgi.OSGiRepository; \
+        name='Baseline'; \
+        locations=${baselinerepo}/index.xml.gz; \
+        cache=${workspace}/cnf/cache/stable/Baseline
 
 -buildrepo: Local
 -releaserepo: Release
