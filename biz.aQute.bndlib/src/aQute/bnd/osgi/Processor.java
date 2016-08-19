@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -274,10 +275,18 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	@Override
 	public SetLocation exception(Throwable t, String format, Object... args) {
 		Processor p = current();
+		if (p.trace) {
+			p.getLogger().info("Reported exception", t);
+		} else {
+			p.getLogger().debug("Reported exception", t);
+		}
 		if (p.exceptions) {
 			printExceptionSummary(t, System.err);
 		}
-		p.getLogger().debug("Reported exception", t);
+		// unwrap InvocationTargetException
+		while ((t instanceof InvocationTargetException) && (t.getCause() != null)) {
+			t = t.getCause();
+		}
 		String s = formatArrays("Exception: %s", t);
 		if (p.isFailOk()) {
 			p.warnings.add(s);
