@@ -110,7 +110,7 @@ public class WorkspaceRepositoryChangeDetector implements Closeable, IResourceCh
                     Job job = new Job("Refresh Workspace Repository") {
                         @Override
                         protected IStatus run(IProgressMonitor monitor) {
-                            if (monitor != null)
+                            if (monitor == null)
                                 monitor = new NullProgressMonitor();
                             List<RepositoryListenerPlugin> plugins = workspace.getPlugins(RepositoryListenerPlugin.class);
                             monitor.beginTask("Refresh ", plugins.size());
