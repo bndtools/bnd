@@ -329,7 +329,18 @@ public class Macro {
 			; // System.err.println("Huh? Target should never be null " +
 		// domain);
 		else {
-			String cname = "_" + method.replaceAll("-", "_");
+			// Assume macro names do not start with '-'
+			if (method.startsWith("-")) {
+				return null;
+			}
+
+			String part = method.replaceAll("-", "_");
+			for (int i = 0; i < part.length(); i++) {
+				if (!Character.isJavaIdentifierPart(part.charAt(i)))
+					return null;
+			}
+
+			String cname = "_" + part;
 			try {
 				Method m = target.getClass().getMethod(cname, new Class[] {
 						String[].class
