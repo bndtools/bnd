@@ -66,6 +66,7 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.service.Actionable;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.exceptions.Exceptions;
 import bndtools.BndConstants;
 import bndtools.Plugin;
