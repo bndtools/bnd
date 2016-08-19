@@ -146,10 +146,13 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         FillLayout fillLayout = new FillLayout();
         fillLayout.marginHeight = fillLayout.marginWidth = 10;
         labelParent.setLayout(fillLayout);
-        Label label = new Label(labelParent, SWT.NONE);
-        label.setText("Repositories are loading, please wait...");
-        label.setBackground(parent.getBackground());
-        label.setForeground(parent.getForeground());
+
+        if (!Central.isWorkspaceInited()) {
+            Label label = new Label(labelParent, SWT.NONE);
+            label.setText("Repositories are loading, please wait...");
+            label.setBackground(parent.getBackground());
+            label.setForeground(parent.getForeground());
+        }
 
         stackLayout.topControl = labelParent;
         parent.layout();

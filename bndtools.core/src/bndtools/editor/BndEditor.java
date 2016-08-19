@@ -369,12 +369,14 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
         showHighestPriorityPage();
 
-        for (int i = 0; i < getPageCount(); i++) {
-            Control control = getControl(i);
+        if (!Central.isWorkspaceInited()) {
+            for (int i = 0; i < getPageCount(); i++) {
+                Control control = getControl(i);
 
-            if (control instanceof ScrolledForm) {
-                ScrolledForm form = (ScrolledForm) control;
-                form.setMessage(SYNC_MESSAGE, IMessageProvider.WARNING);
+                if (control instanceof ScrolledForm) {
+                    ScrolledForm form = (ScrolledForm) control;
+                    form.setMessage(SYNC_MESSAGE, IMessageProvider.WARNING);
+                }
             }
         }
     }

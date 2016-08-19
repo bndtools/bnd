@@ -109,10 +109,13 @@ public class WorkspaceMainPart extends SectionPart {
         FillLayout fillLayout = new FillLayout();
         fillLayout.marginHeight = fillLayout.marginWidth = 10;
         labelParent.setLayout(fillLayout);
-        Label label = new Label(labelParent, SWT.NONE);
-        label.setText("Workspace is loading, please wait...");
-        label.setBackground(container.getBackground());
-        label.setForeground(container.getForeground());
+
+        if (!Central.isWorkspaceInited()) {
+            Label label = new Label(labelParent, SWT.NONE);
+            label.setText("Workspace is loading, please wait...");
+            label.setBackground(container.getBackground());
+            label.setForeground(container.getForeground());
+        }
 
         stackLayout.topControl = labelParent;
         container.layout();
