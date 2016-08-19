@@ -199,6 +199,8 @@ public class Central implements IStartupParticipant {
             throw new IllegalStateException("Central is not initialised");
         }
         Workspace ws;
+        Exception exception = null;
+
         synchronized (workspaceQueue) {
             ws = workspace;
             if (ws != null) { // early check for workspace
@@ -237,9 +239,13 @@ public class Central implements IStartupParticipant {
                 if (ws != null) {
                     ws.close();
                 }
-                workspaceQueue.fail(e); // notify onWorkspaceInit callbacks
-                throw e;
+                exception = e;
             }
+        }
+
+        if (exception != null) {
+            workspaceQueue.fail(exception); // notify onWorkspaceInit callbacks
+            throw exception;
         }
 
         workspaceQueue.resolve(ws); // notify onWorkspaceInit callbacks
