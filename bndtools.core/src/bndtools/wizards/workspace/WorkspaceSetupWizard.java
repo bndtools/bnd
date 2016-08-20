@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -43,6 +44,7 @@ import org.eclipse.ui.IWorkbenchWizard;
 import aQute.bnd.build.Project;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
+import bndtools.central.Central;
 
 public class WorkspaceSetupWizard extends Wizard implements IWorkbenchWizard {
 
@@ -191,6 +193,18 @@ public class WorkspaceSetupWizard extends Wizard implements IWorkbenchWizard {
                     } catch (CoreException e) {
                         throw new InvocationTargetException(e);
                     }
+
+                    new WorkspaceJob("Load Repositories") {
+                        @Override
+                        public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+                            try {
+                                Central.refreshPlugins();
+                            } catch (Exception e) {
+                                // There may be no workspace yet
+                            }
+                            return Status.OK_STATUS;
+                        }
+                    }.schedule();
                 }
             });
 
