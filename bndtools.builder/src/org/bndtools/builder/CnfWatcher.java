@@ -16,6 +16,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.osgi.util.promise.Deferred;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -33,16 +36,36 @@ public class CnfWatcher implements IResourceChangeListener {
     private CnfWatcher() {}
 
     @Override
-    public void resourceChanged(IResourceChangeEvent event) {
+    public void resourceChanged(final IResourceChangeEvent event) {
+        if (Central.isWorkspaceInited()) {
+            processEvent(event);
+        } else {
+            Central.onWorkspaceInit(new Success<Workspace,Void>() {
+                @Override
+                public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
+                    final Deferred<Void> completion = new Deferred<>();
+                    try {
+                        processEvent(event);
+                        completion.resolve(null);
+                    } catch (Exception e) {
+                        completion.fail(e);
+                    }
+                    return completion.getPromise();
+                }
+            });
+        }
+    }
+
+    private void processEvent(IResourceChangeEvent event) {
         try {
-            final Workspace workspace;
-            try {
-                workspace = Central.getWorkspace();
-            } catch (Exception e1) {
+            final Workspace workspace = Central.getWorkspaceIfPresent();
+
+            if (workspace == null) {
                 // this can happen during first project creation in an empty workspace
-                logger.logInfo("Unable to get workspace", e1);
+                logger.logInfo("Unable to get workspace", null);
                 return;
             }
+
             final IProject cnfProject = WorkspaceUtils.findCnfProject(ResourcesPlugin.getWorkspace().getRoot(), workspace);
             if (cnfProject == null)
                 return;
