@@ -5,8 +5,6 @@ import static org.osgi.framework.namespace.IdentityNamespace.CAPABILITY_TYPE_ATT
 import static org.osgi.framework.namespace.IdentityNamespace.IDENTITY_NAMESPACE;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -16,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -40,11 +39,11 @@ import aQute.maven.provider.POM;
 class Traverser {
 	final static Logger							logger		= LoggerFactory.getLogger(Traverser.class);
 	static final Resource						DUMMY		= new ResourceBuilder().build();
-	final ConcurrentHashMap<Archive,Resource>	resources	= new ConcurrentHashMap<>();
+	final ConcurrentMap<Archive,Resource>	resources	= new ConcurrentHashMap<>();
 	final Executor								executor;
 	final Revision								revision;
 	final URI									resource;
-	final AtomicInteger							count		= new AtomicInteger(0);
+	final AtomicInteger							count		= new AtomicInteger(-1);
 	final Deferred<Map<Archive,Resource>>		deferred	= new Deferred<>();
 	final MavenRepository						repo;
 	final Set<String>							error		= Collections.synchronizedSet(new HashSet<String>());
@@ -63,17 +62,32 @@ class Traverser {
 		this.resource = revision;
 	}
 
-	Promise<Map<Archive,Resource>> getResources() throws MalformedURLException, IOException, Exception {
-		if (deferred.getPromise().isDone())
-			throw new IllegalStateException();
-
-		if (resource != null) {
-			POM pom = new POM(repo, resource.toURL().openStream());
-			parsePom(pom, "<>");
-		} else {
-			parse(revision.archive("jar", null), "<>");
+	Promise<Map<Archive,Resource>> getResources() throws Exception {
+		/*
+		 * We don't want to resolve until all the work is queued so we
+		 * initialize the count to 1 and call finish after queuing all the work.
+		 */
+		if (count.compareAndSet(-1, 1)) {
+			try {
+				if (resource != null) {
+					// TODO shouldn't we use HttpClient here to open the URL?
+					POM pom = new POM(repo, resource.toURL().openStream());
+					parsePom(pom, "<>");
+				} else {
+					parse(revision.archive("jar", null), "<>");
+				}
+			} finally {
+				finish();
+			}
 		}
 		return deferred.getPromise();
+	}
+
+	private void finish() {
+		// If count goes to zero, then we resolve
+		if (count.decrementAndGet() == 0) {
+			deferred.resolve(prune(resources));
+		}
 	}
 
 	private void parse(final Archive archive, final String parent) {
@@ -112,11 +126,7 @@ class Traverser {
 
 					error.add(archive + " from " + parent + " " + throwable);
 				} finally {
-					//
-					// If count goes to zero, then we
-					if (count.decrementAndGet() == 0) {
-						finish();
-					}
+					finish();
 				}
 			}
 
@@ -124,12 +134,7 @@ class Traverser {
 	}
 
 	private Version toFrameworkVersion(aQute.bnd.version.Version v) {
-
 		return new Version(v.getMajor(), v.getMinor(), v.getMicro(), v.getQualifier());
-	}
-
-	void finish() {
-		deferred.resolve(prune(resources));
 	}
 
 	/*
@@ -137,7 +142,7 @@ class Traverser {
 	 * @param resources the resources parsed
 	 * @return the pruned resources
 	 */
-	private Map<Archive,Resource> prune(ConcurrentHashMap<Archive,Resource> resources) {
+	private Map<Archive,Resource> prune(Map<Archive,Resource> resources) {
 		for (Iterator<Entry<Archive,Resource>> e = resources.entrySet().iterator(); e.hasNext();) {
 			Entry<Archive,Resource> next = e.next();
 			if (next.getValue() == DUMMY)
@@ -156,7 +161,7 @@ class Traverser {
 			parseResource(archive, parent);
 	}
 
-	public void parsePom(POM pom, String parent) throws Exception {
+	private void parsePom(POM pom, String parent) throws Exception {
 		Map<Program,Dependency> dependencies = pom.getDependencies(EnumSet.of(MavenScope.compile, MavenScope.runtime),
 				false);
 		for (Dependency d : dependencies.values()) {
@@ -185,7 +190,7 @@ class Traverser {
 		resources.put(archive, rb.build());
 	}
 
-	void addReserveIdentity(ResourceBuilder rb, String bsn, Version version) {
+	private void addReserveIdentity(ResourceBuilder rb, String bsn, Version version) {
 		try {
 			CapabilityBuilder c = new CapabilityBuilder(IDENTITY_NAMESPACE);
 			c.addAttribute(IDENTITY_NAMESPACE, bsn);
