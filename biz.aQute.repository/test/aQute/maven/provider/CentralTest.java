@@ -7,7 +7,6 @@ import aQute.bnd.http.HttpClient;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
-import aQute.maven.api.IPom;
 import aQute.maven.api.MavenScope;
 import aQute.maven.api.Program;
 import aQute.maven.api.Revision;
@@ -44,7 +43,7 @@ public class CentralTest extends TestCase {
 
 	public void testBasic() throws Exception {
 		Revision r = Program.valueOf("org.lunarray.model.extensions.descriptor", "spring").version("1.0");
-		IPom pom = storage.getPom(r);
+		POM pom = storage.getPom(r);
 		assertNotNull(pom);
 		System.out.println(pom.getDependencies(MavenScope.compile, true));
 	}
