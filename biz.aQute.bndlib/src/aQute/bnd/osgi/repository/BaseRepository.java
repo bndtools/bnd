@@ -21,8 +21,8 @@ import org.osgi.service.repository.OrExpression;
 import org.osgi.service.repository.Repository;
 import org.osgi.service.repository.RequirementBuilder;
 import org.osgi.service.repository.RequirementExpression;
-import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Promises;
 
 import aQute.bnd.osgi.resource.ResourceUtils;
 
@@ -49,15 +49,11 @@ public abstract class BaseRepository implements Repository {
 
 	@Override
 	public Promise<Collection<Resource>> findProviders(RequirementExpression expression) {
-		Deferred<Collection<Resource>> deferred = new Deferred<>();
-
 		Set<Resource> providers = new HashSet<>();
 
 		dispatch(expression, providers);
 
-		deferred.resolve(providers);
-
-		return deferred.getPromise();
+		return Promises.<Collection<Resource>> resolved(providers);
 	}
 
 	private void dispatch(RequirementExpression expression, Set<Resource> providers) {
