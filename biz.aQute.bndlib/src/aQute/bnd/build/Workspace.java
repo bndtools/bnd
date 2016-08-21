@@ -189,31 +189,28 @@ public class Workspace extends Processor {
 	public static Workspace getWorkspace(File parent, String bndDir) throws Exception {
 		File workspaceDir = parent.getAbsoluteFile();
 
-		// the cnf directory can actually be a
-		// file that redirects
-		while (workspaceDir.isDirectory()) {
-			File test = new File(workspaceDir, CNFDIR);
-
-			if (!test.exists())
-				test = new File(workspaceDir, bndDir);
-
-			if (test.isDirectory())
-				break;
-
-			if (test.isFile()) {
-				String redirect = IO.collect(test).trim();
-				test = getFile(test.getParentFile(), redirect).getAbsoluteFile();
-				workspaceDir = test;
-			}
-			if (!test.exists())
-				throw new IllegalArgumentException("No Workspace found from: " + parent);
-		}
-
 		synchronized (cache) {
 			WeakReference<Workspace> wsr = cache.get(workspaceDir);
 			Workspace ws;
 			if (wsr == null || (ws = wsr.get()) == null) {
-				ws = new Workspace(workspaceDir, bndDir);
+				/*
+				 * The cnf "directory" can actually be a file that redirects to
+				 * another workspace. We will look for the cnf folder there.
+				 */
+				File buildDir = null;
+				File cnfWorkspaceDir = workspaceDir;
+				while (cnfWorkspaceDir.isDirectory()) {
+					buildDir = new File(cnfWorkspaceDir, bndDir);
+					if (!buildDir.exists())
+						buildDir = new File(cnfWorkspaceDir, CNFDIR);
+					if (!buildDir.exists())
+						throw new IllegalArgumentException("No cnf directory found in: " + cnfWorkspaceDir);
+					if (buildDir.isDirectory())
+						break;
+					cnfWorkspaceDir = getFile(buildDir.getParentFile(), IO.collect(buildDir).trim());
+				}
+
+				ws = new Workspace(workspaceDir, buildDir);
 				cache.put(workspaceDir, new WeakReference<Workspace>(ws));
 			}
 			return ws;
@@ -225,6 +222,10 @@ public class Workspace extends Processor {
 	}
 
 	public Workspace(File dir, String bndDir) throws Exception {
+		this(dir, new File(dir, bndDir));
+	}
+
+	private Workspace(File dir, File buildDir) throws Exception {
 		super(getDefaults());
 		this.layout = WorkspaceLayout.BND;
 		dir = dir.getAbsoluteFile();
@@ -233,7 +234,7 @@ public class Workspace extends Processor {
 		}
 		assert dir.isDirectory();
 
-		File buildDir = new File(dir, bndDir).getAbsoluteFile();
+		buildDir = buildDir.getAbsoluteFile();
 		if (!buildDir.isDirectory())
 			buildDir = new File(dir, CNFDIR).getAbsoluteFile();
 
