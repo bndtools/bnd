@@ -10,6 +10,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
@@ -18,8 +19,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
+import org.osgi.util.function.Function;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Promises;
 
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
@@ -35,15 +38,14 @@ import aQute.maven.api.Revision;
 import aQute.service.reporter.Reporter;
 
 public class MavenRepository implements IMavenRepo, Closeable {
-	final File									base;
-	final String								id;
-	final List<MavenBackingRepository>			release		= new ArrayList<>();
-	final List<MavenBackingRepository>			snapshot	= new ArrayList<>();
-	final Executor								executor;
-	final boolean								localOnly;
-	final Reporter								reporter	= new Slf4jReporter();
-	final WeakHashMap<Revision,Promise<POM>>	poms		= new WeakHashMap<>();
-	long										STALE_TIME	= TimeUnit.DAYS.toMillis(1);
+	private final File									base;
+	private final String								id;
+	private final List<MavenBackingRepository>			release		= new ArrayList<>();
+	private final List<MavenBackingRepository>			snapshot	= new ArrayList<>();
+	private final Executor								executor;
+	private final boolean								localOnly;
+	private final Reporter								reporter	= new Slf4jReporter();
+	private final Map<Revision,Promise<POM>>	poms		= new WeakHashMap<>();
 
 	public MavenRepository(File base, String id, List<MavenBackingRepository> release,
 			List<MavenBackingRepository> snapshot, Executor executor, Reporter reporter, Callable<Boolean> callback)
@@ -119,38 +121,31 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	}
 
 	public Promise<File> get(final Archive archive, final boolean thrw) throws Exception {
-		final Deferred<File> deferred = new Deferred<>();
 		final File file = toLocalFile(archive);
 
 		if (file.isFile() && !archive.isSnapshot()) {
-			deferred.resolve(file);
-			return deferred.getPromise();
+			return Promises.resolved(file);
 		}
 
 		if (localOnly || isFresh(file)) {
-			if (file.isFile())
-				deferred.resolve(file);
-			else
-				deferred.resolve(null);
-		} else {
-			executor.execute(new Runnable() {
-
-				@Override
-				public void run() {
-					try {
-
-						File f = get0(archive, file);
-						if (thrw && f == null)
-							throw new FileNotFoundException("" + archive);
-
-						deferred.resolve(f);
-					} catch (Throwable e) {
-						deferred.fail(e);
-					}
-				}
-
-			});
+			return Promises.resolved(file.isFile() ? file : null);
 		}
+		final Deferred<File> deferred = new Deferred<>();
+		executor.execute(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					File f = get0(archive, file);
+					if (thrw && f == null) {
+						deferred.fail(new FileNotFoundException("" + archive));
+						return;
+					}
+					deferred.resolve(f);
+				} catch (Throwable e) {
+					deferred.fail(e);
+				}
+			}
+		});
 		return deferred.getPromise();
 	}
 
@@ -316,35 +311,38 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public POM getPom(Revision revision) throws Exception {
+		if (revision == null) {
+			return null;
+		}
+		return getPomPromise(revision).getValue();
+	}
+
+	private Promise<POM> getPomPromise(final Revision revision) throws Exception {
 		Deferred<POM> deferred;
 		synchronized (poms) {
-			Promise<POM> p = poms.get(revision);
-			if (p != null)
-				return p.getValue();
-
+			Promise<POM> promise = poms.get(revision);
+			if (promise != null) {
+				return promise;
+			}
 			deferred = new Deferred<>();
 			poms.put(revision, deferred.getPromise());
 		}
-		try {
-			Archive pomArchive = revision.getPomArchive();
-			File pomFile = get(pomArchive, false).getValue();
-
-			if (pomFile == null) {
-				deferred.resolve(null);
-			} else {
-
+		Archive pomArchive = revision.getPomArchive();
+		deferred.resolveWith(get(pomArchive, false).map(new Function<File,POM>() {
+			@Override
+			public POM apply(File pomFile) {
+				if (pomFile == null) {
+					return null;
+				}
 				try (FileInputStream fin = new FileInputStream(pomFile)) {
-					POM pom = getPom(fin);
-					deferred.resolve(pom);
+					return getPom(fin);
 				} catch (Exception e) {
 					reporter.exception(e, "Failed to parse pom %s from file %s", revision, pomFile);
-					deferred.resolve(null);
+					return null;
 				}
 			}
-		} catch (Throwable t) {
-			deferred.fail(t);
-		}
-		return deferred.getPromise().getValue();
+		}));
+		return deferred.getPromise();
 	}
 
 	@Override
@@ -365,6 +363,9 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	@Override
 	public boolean exists(Archive archive) throws Exception {
 		Promise<File> promise = get(archive.getPomArchive(), false);
+		if (promise.getFailure() != null) {
+			return false;
+		}
 		File value = promise.getValue();
 		return value != null;
 	}
