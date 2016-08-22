@@ -244,9 +244,9 @@ public class POM implements IPom {
 
 				if (property == null) {
 					System.out.println("?? prop: " + key);
-					m.appendReplacement(sb, "\\$\\{" + key + "\\}");
+					m.appendReplacement(sb, Matcher.quoteReplacement("${" + key + "}"));
 				} else
-					m.appendReplacement(sb, property);
+					m.appendReplacement(sb, Matcher.quoteReplacement(property));
 			}
 		}
 		m.appendTail(sb);
