@@ -81,6 +81,7 @@ public class BndPomRepository extends BaseRepository
 
 	@Override
 	public boolean refresh() throws Exception {
+		init();
 		pomRepo.refresh();
 		bridge = new BridgeRepository(pomRepo);
 		return true;
@@ -113,6 +114,7 @@ public class BndPomRepository extends BaseRepository
 		} else {
 			throw new IllegalArgumentException("Neither pom property nor revision are set");
 		}
+		inited = false;
 	}
 
 	@Override
