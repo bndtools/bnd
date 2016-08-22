@@ -52,9 +52,12 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.io.IO;
 import bndtools.central.RepositoriesViewRefresher.RefreshModel;
 
 public class Central implements IStartupParticipant {
+
+    private static final File DEFAULT_WS = IO.getFile("~/.bnd/default-ws");
 
     private static final ILogger logger = Logger.getLogger(Central.class);
 
@@ -198,41 +201,60 @@ public class Central implements IStartupParticipant {
             throw new IllegalStateException("Central is not initialised");
         }
         Workspace ws;
+        boolean resolve;
         synchronized (workspaceQueue) {
             ws = workspace;
-            if (ws != null) { // early check for workspace
-                return ws;
-            }
-            try {
-                Workspace.setDriver(Constants.BNDDRIVER_ECLIPSE);
-                Workspace.addGestalt(Constants.GESTALT_INTERACTIVE, new Attrs());
-
-                ws = Workspace.getWorkspace(getWorkspaceDirectory());
-
-                ws.addBasicPlugin(new WorkspaceListener(ws));
-                ws.addBasicPlugin(getInstance().repoListenerTracker);
-                ws.addBasicPlugin(getWorkspaceR5Repository());
-                ws.addBasicPlugin(new JobProgress());
-
-                // Initialize projects in synchronized block
-                ws.getBuildOrder();
-
-                // Monitor changes in cnf so we can refresh the workspace
-                addCnfChangeListener(ws);
-
-                workspaceRepositoryChangeDetector = new WorkspaceRepositoryChangeDetector(ws);
-
-                // The workspace has been initialized fully, set the field now
-                workspace = ws;
-            } catch (final Exception e) {
-                if (ws != null) {
-                    ws.close();
+            File workspaceDirectory = getWorkspaceDirectory();
+            if (ws != null) {
+                if (workspaceDirectory != null && ws.getBase().equals(DEFAULT_WS)) {
+                    ws.setFileSystem(workspaceDirectory, Workspace.CNFDIR);
+                    resolve = true;
+                    // TODO should be done in background??
+                    ws.refresh();
+                } else {
+                    // TODO handle case that the cnf is deleted?
+                    resolve = false;
                 }
-                throw e;
+            } else {
+                try {
+                    Workspace.setDriver(Constants.BNDDRIVER_ECLIPSE);
+                    Workspace.addGestalt(Constants.GESTALT_INTERACTIVE, new Attrs());
+
+                    if (workspaceDirectory == null) {
+                        // there is no cnf project. So
+                        // we create a temp workspace
+                        ws = Workspace.getWorkspace(DEFAULT_WS);
+                        resolve = false;
+                    } else {
+                        ws = Workspace.getWorkspace(workspaceDirectory);
+                        resolve = true;
+                    }
+
+                    ws.addBasicPlugin(new WorkspaceListener(ws));
+                    ws.addBasicPlugin(getInstance().repoListenerTracker);
+                    ws.addBasicPlugin(getWorkspaceR5Repository());
+                    ws.addBasicPlugin(new JobProgress());
+
+                    // Initialize projects in synchronized block
+                    ws.getBuildOrder();
+
+                    // Monitor changes in cnf so we can refresh the workspace
+                    addCnfChangeListener(ws);
+
+                    workspaceRepositoryChangeDetector = new WorkspaceRepositoryChangeDetector(ws);
+
+                    // The workspace has been initialized fully, set the field now
+                    workspace = ws;
+                } catch (final Exception e) {
+                    if (ws != null) {
+                        ws.close();
+                    }
+                    throw e;
+                }
             }
         }
-
-        workspaceQueue.resolve(ws); // notify onWorkspaceInit callbacks
+        if (resolve)
+            workspaceQueue.resolve(ws); // notify onWorkspaceInit callbacks
         return ws;
     }
 
@@ -265,9 +287,7 @@ public class Central implements IStartupParticipant {
             return cnfProject.getLocation().toFile().getParentFile();
         }
 
-        // Have to assume that the eclipse workspace == the bnd workspace,
-        // and cnf hasn't been imported yet.
-        return eclipseWorkspace.getLocation().toFile();
+        return null;
     }
 
     private static void addCnfChangeListener(final Workspace workspace) {
