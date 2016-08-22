@@ -16,8 +16,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Promises;
 import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.Project;
@@ -43,14 +43,12 @@ public class CnfWatcher implements IResourceChangeListener {
             Central.onWorkspaceInit(new Success<Workspace,Void>() {
                 @Override
                 public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
-                    final Deferred<Void> completion = new Deferred<>();
                     try {
                         processEvent(event);
-                        completion.resolve(null);
+                        return Promises.resolved(null);
                     } catch (Exception e) {
-                        completion.fail(e);
+                        return Promises.failed(e);
                     }
-                    return completion.getPromise();
                 }
             });
         }
