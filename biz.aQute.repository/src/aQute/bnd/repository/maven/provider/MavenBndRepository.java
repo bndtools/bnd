@@ -461,7 +461,6 @@ public class MavenBndRepository extends BaseRepository
 			File indexFile = IO.getFile(base, configuration.index(name.toLowerCase() + ".mvn"));
 			IndexFile ixf = new IndexFile(reporter, indexFile, storage);
 			ixf.open();
-			ixf.sync();
 			this.index = ixf;
 			startPoll(index);
 

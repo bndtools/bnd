@@ -24,6 +24,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.util.function.Function;
+import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.Promises;
 
@@ -79,12 +80,12 @@ class IndexFile {
 		}
 	}
 
-	final ConcurrentMap<Archive,Promise<File>>		promises	= new ConcurrentHashMap<>();
-	final ConcurrentMap<Archive,BundleDescriptor>	descriptors	= new ConcurrentHashMap<>();
-	final File										indexFile;
-	final File										cacheDir;
-	final IMavenRepo								repo;
-	final Reporter									reporter;
+	private final ConcurrentMap<Archive,Promise<File>>		promises	= new ConcurrentHashMap<>();
+	final ConcurrentMap<Archive,BundleDescriptor>		descriptors	= new ConcurrentHashMap<>();
+	final File											indexFile;
+	final File											cacheDir;
+	private final IMavenRepo								repo;
+	private final Reporter									reporter;
 	private long									lastModified;
 	private AtomicBoolean							refresh		= new AtomicBoolean();
 
@@ -100,17 +101,21 @@ class IndexFile {
 		sync();
 	}
 
-	void sync() {
+	private void sync() throws Exception {
+		List<Promise<Void>> sync = new ArrayList<>(promises.size());
 		for (Iterator<Entry<Archive,Promise<File>>> i = promises.entrySet().iterator(); i.hasNext();) {
 			Entry<Archive,Promise<File>> entry = i.next();
-			try {
-				Promise<File> f = entry.getValue();
-				f.getValue();
-			} catch (Exception e) {
-				reporter.exception(e, "Failed to sync %s", entry.getKey());
-			}
+			final Archive archive = entry.getKey();
+			Promise<File> promise = entry.getValue();
 			i.remove();
+			sync.add(promise.<Void> then(null, new Failure() {
+				@Override
+				public void fail(Promise< ? > resolved) throws Exception {
+					reporter.exception(resolved.getFailure(), "Failed to sync %s", archive);
+				}
+			}));
 		}
+		Promises.all(sync).getFailure(); // block until all promises resolved
 	}
 
 	BundleDescriptor add(Archive archive) throws Exception {
@@ -324,12 +329,12 @@ class IndexFile {
 		return false;
 	}
 
-	Promise<File> updateAsync(final Archive archive) throws Exception {
+	Promise<File> updateAsync(Archive archive) throws Exception {
 		Promise<File> promise = repo.get(archive);
 		return updateAsync(archive, promise);
 	}
 
-	Promise<File> updateAsync(final Archive archive, Promise<File> promise) throws Exception {
+	private Promise<File> updateAsync(Archive archive, Promise<File> promise) throws Exception {
 		BundleDescriptor descriptor = createInitialDescriptor(archive);
 		promise = updateAsync(descriptor, promise);
 		descriptors.put(archive, descriptor);
@@ -338,13 +343,11 @@ class IndexFile {
 
 	Promise<File> updateAsync(final BundleDescriptor descriptor, Promise<File> promise) throws Exception {
 		descriptor.promise = promise.map(new Function<File,File>() {
-
 			@Override
 			public File apply(File file) {
 				updateDescriptor(descriptor, file);
 				return file;
 			}
-
 		});
 		descriptor.resource = null;
 		promises.put(descriptor.archive, descriptor.promise);
