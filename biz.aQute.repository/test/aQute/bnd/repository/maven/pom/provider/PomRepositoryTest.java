@@ -1,18 +1,23 @@
 package aQute.bnd.repository.maven.pom.provider;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
+import org.osgi.service.repository.RequirementBuilder;
+import org.osgi.util.promise.Promise;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.XMLResourceParser;
+import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.maven.api.Archive;
@@ -84,6 +89,72 @@ public class PomRepositoryTest extends TestCase {
 		assertEquals(1, list.size());
 	}
 
+	public void testBndPomRepoFileNoDeps() throws Exception {
+		BndPomRepository bpr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		bpr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("pom", "testdata/pomrepo/simple-nodeps.xml");
+		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
+		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+		config.put("name", "test");
+		bpr.setProperties(config);
+
+		List<String> list = bpr.list(null);
+		assertNotNull(list);
+		assertEquals(0, list.size());
+	}
+
+	public void testBndPomRepoURI() throws Exception {
+		final BndPomRepository bpr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		bpr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("pom",
+				"https://repo1.maven.org/maven2/org/apache/felix/org.apache.felix.gogo.shell/0.12.0/org.apache.felix.gogo.shell-0.12.0.pom");
+		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
+		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+		config.put("name", "test");
+		bpr.setProperties(config);
+
+		List<String> list = bpr.list(null);
+		assertNotNull(list);
+		assertEquals(1, list.size());
+		RequirementBuilder builder = bpr.newRequirementBuilder("osgi.identity");
+		builder.addDirective("filter", "(osgi.identity=org.apache.felix.gogo.runtime)");
+		Promise<Collection<Resource>> providers = bpr.findProviders(builder.buildExpression());
+		Collection<Resource> resources = providers.getValue();
+		assertFalse(resources.isEmpty());
+		assertEquals(1, resources.size());
+	}
+
+	public void testBndPomRepoRefresh() throws Exception {
+		BndPomRepository bpr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		bpr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("pom", "testdata/pomrepo/simple.xml");
+		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
+		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+		config.put("name", "test");
+		bpr.setProperties(config);
+
+		List<String> list = bpr.list(null);
+		assertNotNull(list);
+		assertEquals(1, list.size());
+		try {
+			bpr.refresh();
+		} catch (Throwable t) {
+			fail();
+		}
+	}
+
 	public void testRepository() throws Exception {
 		MavenRepository repo = getRepo();
 		Revision revision = Revision.valueOf("bcel:bcel:5.1");
@@ -95,6 +166,91 @@ public class PomRepositoryTest extends TestCase {
 		try (XMLResourceParser xp = new XMLResourceParser(location);) {
 			List<Resource> parse = xp.parse();
 			assertEquals(parse.size(), pom.getResources().size());
+		}
+	}
+
+	public void testSearchRepoSimple() throws Exception {
+		BndPomRepository mcsr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		mcsr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("query", "q=g:biz.aQute.bnd+a:biz.aQute.bnd+AND+v:3.2.0");
+		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
+		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+		config.put("name", "test");
+		mcsr.setProperties(config);
+
+		List<String> list = mcsr.list(null);
+		assertNotNull(list);
+		assertEquals(1, list.size());
+	}
+
+	public void testSearchRepoNoUrls() throws Exception {
+		BndPomRepository mcsr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		mcsr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("query", "q=g:biz.aQute.bnd+a:biz.aQute.bnd+AND+v:3.2.0");
+		config.put("name", "test");
+		mcsr.setProperties(config);
+
+		List<String> list = mcsr.list(null);
+		assertNotNull(list);
+		assertEquals(1, list.size());
+	}
+
+	public void testSearchRepoAllVersions() throws Exception {
+		BndPomRepository mcsr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		mcsr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("query", "q=g:biz.aQute.bnd+AND+a:biz.aQute.bnd&core=gav&rows=100");
+		config.put("name", "test");
+		mcsr.setProperties(config);
+
+		List<String> list = mcsr.list(null);
+		assertNotNull(list);
+		// All the results are represented by a single bsn
+		assertEquals(1, list.size());
+		SortedSet<Version> versions = mcsr.versions("biz.aQute.bnd");
+		assertTrue(versions.size() >= 4);
+	}
+
+	public void testSearchRepoFailNoQuery() throws Exception {
+		BndPomRepository mcsr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		mcsr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("name", "test");
+		try {
+			mcsr.setProperties(config);
+			fail();
+		} catch (Exception e) {
+			assertEquals("Neither pom, revision nor query property are set", e.getMessage());
+		}
+	}
+
+	public void testSearchRepoFailNoName() throws Exception {
+		BndPomRepository mcsr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		mcsr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("query", "q=g:biz.aQute.bnd+a:biz.aQute.bnd+AND+v:3.2.0");
+		try {
+			mcsr.setProperties(config);
+			fail();
+		} catch (Exception e) {
+			assertEquals("Must get a name", e.getMessage());
 		}
 	}
 

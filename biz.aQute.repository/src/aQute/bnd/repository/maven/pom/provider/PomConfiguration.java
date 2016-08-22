@@ -40,4 +40,15 @@ public interface PomConfiguration {
 	 * The name of the repo. Required.
 	 */
 	String name();
+
+	/**
+	 * The query used to search Maven Central Search.
+	 */
+	String query();
+
+	/**
+	 * The url of the Maven Central Search.
+	 */
+	// default "http://search.maven.org/solrsearch/select"
+	String queryUrl(String deflf);
 }
