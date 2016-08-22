@@ -41,6 +41,7 @@ import aQute.maven.provider.POM;
 class Traverser {
 	final static Logger						logger		= LoggerFactory.getLogger(Traverser.class);
 	static final Resource					DUMMY		= new ResourceBuilder().build();
+	static final String						ROOT		= "<>";
 	final ConcurrentMap<Archive,Resource>	resources	= new ConcurrentHashMap<>();
 	final Executor							executor;
 	final Revision							revision;
@@ -80,9 +81,9 @@ class Traverser {
 							.age(1, TimeUnit.DAYS)
 							.go(resource);
 					POM pom = new POM(repo, in);
-					parsePom(pom, "<>");
+					parsePom(pom, ROOT);
 				} else {
-					parse(revision.archive("jar", null), "<>");
+					parse(revision.archive("jar", null), ROOT);
 				}
 			} finally {
 				finish();
@@ -172,6 +173,10 @@ class Traverser {
 	private void parsePom(POM pom, String parent) throws Exception {
 		Map<Program,Dependency> dependencies = pom.getDependencies(EnumSet.of(MavenScope.compile, MavenScope.runtime),
 				false);
+		if (ROOT.equals(parent) && dependencies.isEmpty()) {
+			finish();
+			return;
+		}
 		for (Dependency d : dependencies.values()) {
 			parse(d.getArchive(), parent);
 		}
