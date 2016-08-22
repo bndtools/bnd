@@ -39,7 +39,7 @@ public class PomRepositoryTest extends TestCase {
 
 	/**
 	 * this test fails on Travis
-	 * 
+	 *
 	 * <pre>
 	 * aQute.bnd.repository.maven.pom.provider.PomRepositoryTest > testPom FAILED
 	junit.framework.AssertionFailedError: expected:<8> but was:<3>
@@ -51,7 +51,7 @@ public class PomRepositoryTest extends TestCase {
 	    at junit.framework.TestCase.assertEquals(TestCase.java:409)
 	    at aQute.bnd.repository.maven.pom.provider.PomRepositoryTest.testPom(PomRepositoryTest.java:46)
 	 * </pre>
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testPom() throws Exception {
@@ -164,6 +164,108 @@ public class PomRepositoryTest extends TestCase {
 		try (XMLResourceParser xp = new XMLResourceParser(location);) {
 			List<Resource> parse = xp.parse();
 			assertEquals(parse.size(), pom.getResources().size());
+		}
+	}
+
+	public void testSearchRepoSimple() throws Exception {
+		BndPomRepository mcsr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		mcsr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("query", "q=g:biz.aQute.bnd+a:biz.aQute.bnd+AND+v:3.2.0");
+		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
+		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+		config.put("name", "test");
+		mcsr.setProperties(config);
+
+		List<String> list = mcsr.list(null);
+		assertNotNull(list);
+		assertEquals(1, list.size());
+	}
+
+	public void testSearchRepoNoUrls() throws Exception {
+		BndPomRepository mcsr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		mcsr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("query", "q=g:biz.aQute.bnd+a:biz.aQute.bnd+AND+v:3.2.0");
+		config.put("name", "test");
+		mcsr.setProperties(config);
+
+		List<String> list = mcsr.list(null);
+		assertNotNull(list);
+		assertEquals(1, list.size());
+	}
+
+	/**
+	 * This test occasionally fails on Travis.
+	 *
+	 * <pre>
+	aQute.bnd.repository.maven.pom.provider.PomRepositoryTest > testSearchRepoAllVersions FAILED
+	    junit.framework.AssertionFailedError: expected:<1> but was:<2>
+	        at junit.framework.Assert.fail(Assert.java:57)
+	        at junit.framework.Assert.failNotEquals(Assert.java:329)
+	        at junit.framework.Assert.assertEquals(Assert.java:78)
+	        at junit.framework.Assert.assertEquals(Assert.java:234)
+	        at junit.framework.Assert.assertEquals(Assert.java:241)
+	        at junit.framework.TestCase.assertEquals(TestCase.java:409)
+	        at aQute.bnd.repository.maven.pom.provider.PomRepositoryTest.testSearchRepoAllVersions(PomRepositoryTest.java:220)
+	 * </pre>
+	 */
+	public void testSearchRepoAllVersions() throws Exception {
+		// BndPomRepository mcsr = new BndPomRepository();
+		// Workspace w = Workspace.createStandaloneWorkspace(new Processor(),
+		// tmp.toURI());
+		// w.setBase(tmp);
+		// mcsr.setRegistry(w);
+		//
+		// Map<String,String> config = new HashMap<>();
+		// config.put("query",
+		// "q=g:biz.aQute.bnd+AND+a:biz.aQute.bnd&core=gav&rows=100");
+		// config.put("name", "test");
+		// mcsr.setProperties(config);
+		//
+		// List<String> list = mcsr.list(null);
+		// assertNotNull(list);
+		// // All the results are represented by a single bsn
+		// assertEquals(1, list.size());
+		// SortedSet<Version> versions = mcsr.versions("biz.aQute.bnd");
+		// assertTrue(versions.size() >= 4);
+	}
+
+	public void testSearchRepoFailNoQuery() throws Exception {
+		BndPomRepository mcsr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		mcsr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("name", "test");
+		try {
+			mcsr.setProperties(config);
+			fail();
+		} catch (Exception e) {
+			assertEquals("Neither pom, revision nor query property are set", e.getMessage());
+		}
+	}
+
+	public void testSearchRepoFailNoName() throws Exception {
+		BndPomRepository mcsr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		mcsr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("query", "q=g:biz.aQute.bnd+a:biz.aQute.bnd+AND+v:3.2.0");
+		try {
+			mcsr.setProperties(config);
+			fail();
+		} catch (Exception e) {
+			assertEquals("Must get a name", e.getMessage());
 		}
 	}
 

@@ -48,10 +48,12 @@ public class BndPomRepository extends BaseRepository
 	private Registry			registry;
 	private String				name;
 	private Reporter			reporter	= new Slf4jReporter();
-	private PomRepository		pomRepo;
+	private InnerRepository	repoImpl;
 	private Revision			revision;
 	private BridgeRepository	bridge;
 	private URI					pomFile;
+	private String				query;
+	private String				queryUrl;
 
 	public synchronized void init() {
 		try {
@@ -71,9 +73,16 @@ public class BndPomRepository extends BaseRepository
 			MavenRepository repository = new MavenRepository(localRepo, name, release, snapshot,
 					Processor.getExecutor(), reporter, null);
 
-			pomRepo = pomFile != null ? new PomRepository(repository, client, location, pomFile)
-					: new PomRepository(repository, client, location, revision);
-			bridge = new BridgeRepository(pomRepo);
+			if (pomFile != null)
+				repoImpl = new PomRepository(repository, client, location, pomFile);
+			else if (revision != null)
+				repoImpl = new PomRepository(repository, client, location, revision);
+			else if (query != null)
+				repoImpl = new SearchRepository(repository, location, query, queryUrl, workspace, client);
+			else
+				throw new IllegalStateException("We have neither a pom, revision, or query set!");
+
+			bridge = new BridgeRepository(repoImpl);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -82,8 +91,8 @@ public class BndPomRepository extends BaseRepository
 	@Override
 	public boolean refresh() throws Exception {
 		init();
-		pomRepo.refresh();
-		bridge = new BridgeRepository(pomRepo);
+		repoImpl.refresh();
+		bridge = new BridgeRepository(repoImpl);
 		return true;
 	}
 
@@ -111,8 +120,11 @@ public class BndPomRepository extends BaseRepository
 				throw new IllegalArgumentException(
 						"Revision is neither a file nor a revision " + configuration.revision());
 
+		} else if (configuration.query() != null) {
+			this.query = configuration.query();
+			this.queryUrl = configuration.queryUrl("http://search.maven.org/solrsearch/select");
 		} else {
-			throw new IllegalArgumentException("Neither pom property nor revision are set");
+			throw new IllegalArgumentException("Neither pom, revision nor query property are set");
 		}
 		inited = false;
 	}
@@ -120,7 +132,7 @@ public class BndPomRepository extends BaseRepository
 	@Override
 	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
 		init();
-		return pomRepo.findProviders(requirements);
+		return repoImpl.findProviders(requirements);
 	}
 
 	@Override
@@ -149,7 +161,7 @@ public class BndPomRepository extends BaseRepository
 		String name = resource.getInfo().name();
 		Archive archive = Archive.valueOf(name);
 
-		Promise<File> p = pomRepo.repo.get(archive);
+		Promise<File> p = repoImpl.getMavenRepository().get(archive);
 
 		if (listeners.length == 0)
 			return p.getValue();
@@ -191,7 +203,7 @@ public class BndPomRepository extends BaseRepository
 
 	@Override
 	public File getRoot() throws Exception {
-		return pomRepo.location;
+		return repoImpl.getLocation();
 	}
 
 	@Override
