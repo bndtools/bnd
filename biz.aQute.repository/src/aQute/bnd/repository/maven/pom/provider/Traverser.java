@@ -6,6 +6,7 @@ import static org.osgi.framework.namespace.IdentityNamespace.IDENTITY_NAMESPACE;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -44,7 +45,7 @@ class Traverser {
 	static final String						ROOT		= "<>";
 	final ConcurrentMap<Archive,Resource>	resources	= new ConcurrentHashMap<>();
 	final Executor							executor;
-	final Revision							revision;
+	final Collection<Revision>				revisions;
 	final URI								resource;
 	final AtomicInteger						count		= new AtomicInteger(-1);
 	final Deferred<Map<Archive,Resource>>	deferred	= new Deferred<>();
@@ -54,7 +55,15 @@ class Traverser {
 
 	Traverser(MavenRepository repo, Revision revision, HttpClient client, Executor executor) {
 		this.repo = repo;
-		this.revision = revision;
+		this.revisions = Collections.singleton(revision);
+		this.client = client;
+		this.executor = executor;
+		this.resource = null;
+	}
+
+	Traverser(MavenRepository repo, Collection<Revision> revisions, HttpClient client, Executor executor) {
+		this.repo = repo;
+		this.revisions = revisions;
 		this.client = client;
 		this.executor = executor;
 		this.resource = null;
@@ -63,7 +72,7 @@ class Traverser {
 	Traverser(MavenRepository repo, URI revision, HttpClient client, Executor executor) {
 		this.repo = repo;
 		this.client = client;
-		this.revision = null;
+		this.revisions = null;
 		this.executor = executor;
 		this.resource = revision;
 	}
@@ -83,7 +92,8 @@ class Traverser {
 					POM pom = new POM(repo, in);
 					parsePom(pom, ROOT);
 				} else {
-					parse(revision.archive("jar", null), ROOT);
+					for (Revision revision : revisions)
+						parse(revision.archive("jar", null), ROOT);
 				}
 			} finally {
 				finish();
