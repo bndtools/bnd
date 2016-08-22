@@ -227,7 +227,7 @@ public class POM implements IPom {
 		return replaceMacros(value);
 	}
 
-	final static Pattern MACRO_P = Pattern.compile("\\$\\{(?<env>env\\.)?(?<key>[\\-\\.a-z0-9$_]+)\\}",
+	final static Pattern MACRO_P = Pattern.compile("\\$\\{(?<env>env\\.)?(?<key>[.a-z0-9$_-]+)\\}",
 			Pattern.CASE_INSENSITIVE);
 
 	private String replaceMacros(String value) {
