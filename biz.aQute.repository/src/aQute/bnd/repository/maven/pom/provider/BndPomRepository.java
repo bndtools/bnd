@@ -189,7 +189,7 @@ public class BndPomRepository extends BaseRepository
 
 	@Override
 	public File getRoot() throws Exception {
-		return null;
+		return pomRepo.location;
 	}
 
 	@Override
