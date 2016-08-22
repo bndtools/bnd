@@ -123,8 +123,9 @@ public class ResourceBuilder {
 		// Do the Bundle Identity Ns
 		//
 
+		int bundleManifestVersion = Integer.parseInt(manifest.get(Constants.BUNDLE_MANIFESTVERSION));
+
 		Entry<String,Attrs> bsn = manifest.getBundleSymbolicName();
-		CapReqBuilder identity = new CapReqBuilder(resource, IdentityNamespace.IDENTITY_NAMESPACE);
 
 		if (bsn == null) {
 			reporter.warning("No BSN set, not a bundle");
@@ -134,33 +135,26 @@ public class ResourceBuilder {
 		boolean singleton = "true".equals(bsn.getValue().get(Constants.SINGLETON_DIRECTIVE + ":"));
 		boolean fragment = manifest.getFragmentHost() != null;
 
+		String versionString = manifest.getBundleVersion();
+		if (versionString == null)
+			versionString = "0";
+		else if (!aQute.bnd.version.Version.isVersion(versionString))
+			throw new IllegalArgumentException("Invalid version in bundle " + bsn + ": " + versionString);
+		aQute.bnd.version.Version version = aQute.bnd.version.Version.parseVersion(versionString);
+
 		//
 		// First the identity
 		//
 
+		CapReqBuilder identity = new CapReqBuilder(resource, IdentityNamespace.IDENTITY_NAMESPACE);
 		identity.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn.getKey());
 		identity.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE,
 				fragment ? IdentityNamespace.TYPE_FRAGMENT : IdentityNamespace.TYPE_BUNDLE);
+		identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
 
 		if ("true".equals(singleton)) {
 			identity.addDirective(IdentityNamespace.CAPABILITY_SINGLETON_DIRECTIVE, "true");
 		}
-
-		//
-		// Now the provide bundle ns
-		//
-
-		CapReqBuilder provideBundle = new CapReqBuilder(resource, BundleNamespace.BUNDLE_NAMESPACE);
-		provideBundle.addAttributesOrDirectives(bsn.getValue());
-		addCapability(provideBundle.buildCapability());
-
-		String version = manifest.getBundleVersion();
-		if (version == null)
-			version = "0";
-		else if (!aQute.bnd.version.Version.isVersion(version))
-			throw new IllegalArgumentException("Invalid version in bundle " + bsn + ": " + version);
-
-		identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, new Version(version));
 
 		String copyright = manifest.get(Constants.BUNDLE_COPYRIGHT);
 		if (copyright != null) {
@@ -183,6 +177,18 @@ public class ResourceBuilder {
 		}
 
 		addCapability(identity.buildCapability());
+
+		//
+		// Now the provide bundle ns
+		//
+
+		if (bundleManifestVersion >= 2) {
+			CapReqBuilder provideBundle = new CapReqBuilder(resource, BundleNamespace.BUNDLE_NAMESPACE);
+			provideBundle.addAttributesOrDirectives(bsn.getValue());
+			provideBundle.addAttribute(BundleNamespace.BUNDLE_NAMESPACE, bsn.getKey());
+			provideBundle.addAttribute(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
+			addCapability(provideBundle.buildCapability());
+		}
 
 		//
 		// Import/Export service
@@ -208,9 +214,10 @@ public class ResourceBuilder {
 		// Handle Fragment Host
 		//
 
-		Entry<String,Attrs> fragmentHost = manifest.getFragmentHost();
-		if (fragmentHost != null)
+		if (fragment) {
+			Entry<String,Attrs> fragmentHost = manifest.getFragmentHost();
 			addFragmentHost(fragmentHost.getKey(), fragmentHost.getValue());
+		}
 		else {
 			addFragmentHostCap(bsn.getKey(), version);
 		}
@@ -422,24 +429,28 @@ public class ResourceBuilder {
 		StringBuilder filter = new StringBuilder();
 		filter.append("(").append(BundleNamespace.BUNDLE_NAMESPACE).append("=").append(bsn).append(")");
 
-		String v = attrs.getVersion();
+		String v = attrs.get(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 		if (v != null && VersionRange.isOSGiVersionRange(v)) {
 			VersionRange range = VersionRange.parseOSGiVersionRange(v);
 			filter.insert(0, "(&");
-			filter.append(range.toFilter());
+			filter.append(toBundleVersionFilter(range));
 			filter.append(")");
 		}
+
 		rbb.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
 
 		addRequirement(rbb.buildRequirement());
 	}
 
-	void addFragmentHostCap(String bsn, String version) throws Exception {
+	Object toBundleVersionFilter(VersionRange range) {
+		return range.toFilter().replaceAll(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE,
+				HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+	}
+
+	void addFragmentHostCap(String bsn, aQute.bnd.version.Version version) throws Exception {
 		CapReqBuilder rbb = new CapReqBuilder(resource, HostNamespace.HOST_NAMESPACE);
-		Attrs attrs = new Attrs();
-		attrs.put(HostNamespace.HOST_NAMESPACE, bsn);
-		attrs.putTyped("bundle-version", aQute.bnd.version.Version.parseVersion(version));
-		rbb.addAttributes(attrs);
+		rbb.addAttribute(HostNamespace.HOST_NAMESPACE, bsn);
+		rbb.addAttribute(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
 		addCapability(rbb.buildCapability());
 	}
 
