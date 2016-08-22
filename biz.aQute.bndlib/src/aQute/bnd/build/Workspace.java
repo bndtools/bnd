@@ -71,49 +71,46 @@ import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter;
 
 public class Workspace extends Processor {
-	public static final String	BND_CACHE_REPONAME		= "bnd-cache";
-	public static final String	EXT						= "ext";
+	public static final File	BND_DEFAULT_WS					= IO.getFile("~/.bnd/default-ws");
+	public static final String	BND_CACHE_REPONAME				= "bnd-cache";
+	public static final String	EXT								= "ext";
+	public static final String	BUILDFILE						= "build.bnd";
+	public static final String	CNFDIR							= "cnf";
+	public static final String	BNDDIR							= "bnd";
+	public static final String	CACHEDIR						= "cache/" + About.CURRENT;
+	public static final String	STANDALONE_REPO_CLASS			= "aQute.bnd.deployer.repository.FixedIndexedRepo";
 
-	public static final String	BUILDFILE				= "build.bnd";
-	public static final String	CNFDIR					= "cnf";
-	public static final String	BNDDIR					= "bnd";
-	public static final String	CACHEDIR				= "cache/" + About.CURRENT;
-
-	public static final String	STANDALONE_REPO_CLASS	= "aQute.bnd.deployer.repository.FixedIndexedRepo";
-
-	static final int			BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
-	private static final String	PLUGIN_STANDALONE		= "-plugin.standalone_";
+	static final int			BUFFER_SIZE						= IOConstants.PAGE_SIZE * 16;
+	private static final String	PLUGIN_STANDALONE				= "-plugin.standalone_";
+	private final Pattern		EMBEDDED_REPO_TESTING_PATTERN	= Pattern
+			.compile(".*biz\\.aQute\\.bnd\\.embedded-repo(-.*)?\\.jar");
 
 	static class WorkspaceData {
 		List<RepositoryPlugin> repositories;
 	}
 
-	private final Pattern						EMBEDDED_REPO_TESTING_PATTERN	= Pattern
-			.compile(".*biz\\.aQute\\.bnd\\.embedded-repo(-.*)?\\.jar");
-
-	static Map<File,WeakReference<Workspace>>	cache							= newHashMap();
-	static Processor							defaults						= null;
-	final Map<String,Project>					models							= newHashMap();
-	private final Set<String>					modelsUnderConstruction			= newSet();
-	final Map<String,Action>					commands						= newMap();
-	final Maven									maven							= new Maven(Processor.getExecutor());
-	private boolean								offline							= true;
-	Settings									settings						= new Settings();
-	WorkspaceRepository							workspaceRepo					= new WorkspaceRepository(this);
-	static String								overallDriver					= "unset";
-	static Parameters							overallGestalt					= new Parameters();
+	static Map<File,WeakReference<Workspace>>	cache					= newHashMap();
+	static Processor							defaults				= null;
+	final Map<String,Project>					models					= newHashMap();
+	private final Set<String>					modelsUnderConstruction	= newSet();
+	final Map<String,Action>					commands				= newMap();
+	final Maven									maven					= new Maven(Processor.getExecutor());
+	private boolean								offline					= true;
+	Settings									settings				= new Settings();
+	WorkspaceRepository							workspaceRepo			= new WorkspaceRepository(this);
+	static String								overallDriver			= "unset";
+	static Parameters							overallGestalt			= new Parameters();
 	/**
 	 * Signal a BndListener plugin. We ran an infinite bug loop :-(
 	 */
-	final ThreadLocal<Reporter>					signalBusy						= new ThreadLocal<Reporter>();
+	final ThreadLocal<Reporter>					signalBusy				= new ThreadLocal<Reporter>();
 	ResourceRepositoryImpl						resourceRepositoryImpl;
 	private Parameters							gestalt;
 	private String								driver;
 	private final WorkspaceLayout				layout;
-	final Set<Project>							trail							= Collections
+	final Set<Project>							trail					= Collections
 			.newSetFromMap(new ConcurrentHashMap<Project,Boolean>());
-	private WorkspaceData						data							= new WorkspaceData();
-
+	private WorkspaceData						data					= new WorkspaceData();
 	private File								buildDir;
 
 	/**
@@ -151,12 +148,8 @@ public class Workspace extends Processor {
 		return defaults;
 	}
 
-	public static Workspace getDefault() throws Exception {
-		Processor p = new Processor();
-		File defaultBase = IO.getFile("~/.bnd/default-ws");
-		Workspace ws = Workspace.createStandaloneWorkspace(p, defaultBase.toURI());
-		ws.setBase(defaultBase);
-		ws.setProperty("-default-ws", "true");
+	public static Workspace createDefaultWorkspace() throws Exception {
+		Workspace ws = new Workspace(BND_DEFAULT_WS, Workspace.CNFDIR);
 		return ws;
 	}
 
@@ -432,8 +425,8 @@ public class Workspace extends Processor {
 	}
 
 	class CachedFileRepo extends FileRepo {
-		final Lock			lock		= new ReentrantLock();
-		boolean				inited;
+		final Lock	lock	= new ReentrantLock();
+		boolean		inited;
 
 		CachedFileRepo() {
 			super(BND_CACHE_REPONAME, getCache(BND_CACHE_REPONAME), false);
@@ -1202,4 +1195,7 @@ public class Workspace extends Processor {
 		return ws;
 	}
 
+	public boolean isDefaultWorkspace() {
+		return BND_DEFAULT_WS.equals(getBase());
+	}
 }
