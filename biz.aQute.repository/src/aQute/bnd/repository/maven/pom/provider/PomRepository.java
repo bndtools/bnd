@@ -12,27 +12,23 @@ import org.osgi.util.promise.Promise;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
-import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
 import aQute.bnd.osgi.repository.XMLResourceParser;
 import aQute.maven.api.Archive;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenRepository;
 
-class PomRepository extends ResourcesRepository {
+class PomRepository extends InnerRepository {
 	static final String		BND_MAVEN						= "bnd.maven";
 	static final String		BND_MAVEN_EXCEPTION_ATTRIBUTE	= "exception";
 	static final String		BND_MAVEN_ARCHIVE_ATTRIBUTE		= "archive";
 	static final String		BND_MAVEN_REVISION_ATTRIBUTE	= "revision";
-	final MavenRepository	repo;
-	final File				location;
 	final Revision			revision;
 	final URI				revisionUrl;
 	final HttpClient		client;
 
 	PomRepository(MavenRepository repo, HttpClient client, File location, Revision revision) throws Exception {
-		this.repo = repo;
-		this.location = location;
+		super(repo, location);
 		this.revision = revision;
 		this.revisionUrl = null;
 		this.client = client;
@@ -40,8 +36,7 @@ class PomRepository extends ResourcesRepository {
 	}
 
 	PomRepository(MavenRepository repo, HttpClient client, File location, URI revision) throws Exception {
-		this.repo = repo;
-		this.location = location;
+		super(repo, location);
 		this.revisionUrl = revision;
 		this.revision = null;
 		this.client = client;
@@ -56,19 +51,19 @@ class PomRepository extends ResourcesRepository {
 	}
 
 	void read(URI revision) throws Exception {
-		Traverser traverser = new Traverser(repo, revision, client, Processor.getExecutor());
+		Traverser traverser = new Traverser(getMavenRepository(), revision, client, Processor.getExecutor());
 		Promise<Map<Archive,Resource>> p = traverser.getResources();
 		Collection<Resource> resources = p.getValue().values();
 		set(resources);
-		save(revision.toString(), resources, location);
+		save(revision.toString(), resources, getLocation());
 	}
 
 	void read(Revision revision) throws Exception {
-		Traverser traverser = new Traverser(repo, revision, client, Processor.getExecutor());
+		Traverser traverser = new Traverser(getMavenRepository(), revision, client, Processor.getExecutor());
 		Promise<Map<Archive,Resource>> p = traverser.getResources();
 		Collection<Resource> resources = p.getValue().values();
 		set(resources);
-		save(revision.toString(), resources, location);
+		save(revision.toString(), resources, getLocation());
 	}
 
 	void save(String revision, Collection< ? extends Resource> resources, File location) throws Exception, IOException {
@@ -82,7 +77,7 @@ class PomRepository extends ResourcesRepository {
 		if (isStale()) {
 			refresh();
 		} else {
-			try (XMLResourceParser parser = new XMLResourceParser(location);) {
+			try (XMLResourceParser parser = new XMLResourceParser(getLocation());) {
 				List<Resource> resources = parser.parse();
 				addAll(resources);
 			}
@@ -90,20 +85,20 @@ class PomRepository extends ResourcesRepository {
 	}
 
 	private boolean isStale() {
-		if ( !location.isFile())
+		if (!getLocation().isFile())
 			return true;
 
 		if ( revisionUrl != null) {
 			if ( "file".equalsIgnoreCase(revisionUrl.getScheme())) {
 				File file = new File( revisionUrl);
-				if ( file.isFile() && file.lastModified() > location.lastModified()) {
+				if (file.isFile() && file.lastModified() > getLocation().lastModified()) {
 					return true;
 				}
 			}
 		} else {
 			try {
-				File file = repo.get(revision.getPomArchive(), false).getValue();
-				if ( file.isFile() && file.lastModified() > location.lastModified()) {
+				File file = getMavenRepository().get(revision.getPomArchive(), false).getValue();
+				if (file.isFile() && file.lastModified() > getLocation().lastModified()) {
 					return true;
 				}
 			} catch (Exception e) {
