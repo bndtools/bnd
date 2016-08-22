@@ -1,6 +1,7 @@
 package aQute.bnd.repository.maven.pom.provider;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,8 @@ import java.util.Map;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
+import org.osgi.service.repository.RequirementBuilder;
+import org.osgi.util.promise.Promise;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
@@ -82,6 +85,72 @@ public class PomRepositoryTest extends TestCase {
 		List<String> list = bpr.list(null);
 		assertNotNull(list);
 		assertEquals(1, list.size());
+	}
+
+	public void testBndPomRepoFileNoDeps() throws Exception {
+		BndPomRepository bpr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		bpr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("pom", "testdata/pomrepo/simple-nodeps.xml");
+		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
+		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+		config.put("name", "test");
+		bpr.setProperties(config);
+
+		List<String> list = bpr.list(null);
+		assertNotNull(list);
+		assertEquals(0, list.size());
+	}
+
+	public void testBndPomRepoURI() throws Exception {
+		final BndPomRepository bpr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		bpr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("pom",
+				"https://repo1.maven.org/maven2/org/apache/felix/org.apache.felix.gogo.shell/0.12.0/org.apache.felix.gogo.shell-0.12.0.pom");
+		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
+		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+		config.put("name", "test");
+		bpr.setProperties(config);
+
+		List<String> list = bpr.list(null);
+		assertNotNull(list);
+		assertEquals(1, list.size());
+		RequirementBuilder builder = bpr.newRequirementBuilder("osgi.identity");
+		builder.addDirective("filter", "(osgi.identity=org.apache.felix.gogo.runtime)");
+		Promise<Collection<Resource>> providers = bpr.findProviders(builder.buildExpression());
+		Collection<Resource> resources = providers.getValue();
+		assertFalse(resources.isEmpty());
+		assertEquals(1, resources.size());
+	}
+
+	public void testBndPomRepoRefresh() throws Exception {
+		BndPomRepository bpr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		bpr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("pom", "testdata/pomrepo/simple.xml");
+		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
+		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+		config.put("name", "test");
+		bpr.setProperties(config);
+
+		List<String> list = bpr.list(null);
+		assertNotNull(list);
+		assertEquals(1, list.size());
+		try {
+			bpr.refresh();
+		} catch (Throwable t) {
+			fail();
+		}
 	}
 
 	public void testRepository() throws Exception {
