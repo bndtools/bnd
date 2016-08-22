@@ -46,19 +46,21 @@ public class ResourcesRepository extends BaseRepository {
 		List<Capability> result = new ArrayList<Capability>();
 		String namespace = requirement.getNamespace();
 		for (Resource resource : resources) {
-			for (Capability capability : resource.getCapabilities(namespace))
-				if (ResourceUtils.matches(requirement, capability))
+			for (Capability capability : resource.getCapabilities(namespace)) {
+				if (ResourceUtils.matches(requirement, capability)) {
 					result.add(capability);
+				}
+			}
 		}
 		return result;
 	}
 
 	public void add(Resource resource) {
-		resources.add(resource);
+		this.resources.add(resource);
 	}
 
-	public void addAll(Collection< ? extends Resource> resource) {
-		resources.addAll(resource);
+	public void addAll(Collection< ? extends Resource> resources) {
+		this.resources.addAll(resources);
 	}
 
 	protected void set(Collection< ? extends Resource> resources) {

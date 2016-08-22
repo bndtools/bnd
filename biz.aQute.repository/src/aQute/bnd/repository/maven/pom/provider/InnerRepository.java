@@ -5,24 +5,24 @@ import java.io.File;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.maven.provider.MavenRepository;
 
-public abstract class InnerRepository extends ResourcesRepository {
+abstract class InnerRepository extends ResourcesRepository {
 
 	private final MavenRepository	mavenRepository;
 	private final File				location;
 
-	public InnerRepository(MavenRepository mavenRepository, File location) {
+	InnerRepository(MavenRepository mavenRepository, File location) {
+		super();
 		this.mavenRepository = mavenRepository;
 		this.location = location;
 	}
 
-	public File getLocation() {
+	File getLocation() {
 		return location;
 	}
 
-	public MavenRepository getMavenRepository() {
+	MavenRepository getMavenRepository() {
 		return mavenRepository;
 	}
 
 	abstract void refresh() throws Exception;
-
 }

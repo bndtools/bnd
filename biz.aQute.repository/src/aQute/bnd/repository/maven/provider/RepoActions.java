@@ -10,6 +10,7 @@ import org.osgi.util.promise.Promise;
 
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.repository.maven.provider.IndexFile.BundleDescriptor;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom;
@@ -114,37 +115,38 @@ class RepoActions {
 
 	void addSources(final BundleDescriptor bd, Map<String,Runnable> map)
 			throws Exception, InvocationTargetException, InterruptedException {
-		Archive a = bd.archive.revision.archive("jar", "sources");
-		Promise<File> pSources = repo.storage.get(a);
 		Promise<File> pBinary = repo.storage.get(bd.archive);
-		final File sources = pSources.getValue();
 		final File binary = pBinary.getValue();
 		final File out = new File(binary.getParentFile(), "+" + binary.getName());
 
-		if (!out.isFile() && sources != null && sources.isFile() && sources.length() > 1000) {
-			map.put("Add Sources", new Runnable() {
-
-				@Override
-				public void run() {
-					try {
-						try (Jar src = new Jar(sources)) {
-							try (Jar bin = new Jar(binary)) {
-								bin.setDoNotTouchManifest();
-								for (String path : src.getResources().keySet())
-									bin.putResource("OSGI-OPT/src/" + path, src.getResource(path));
-								bin.write(out);
+		if (!out.isFile()) {
+			Archive a = bd.archive.revision.archive("jar", "sources");
+			Promise<File> pSources = repo.storage.get(a);
+			final File sources = pSources.getValue();
+			if (sources != null && sources.isFile() && sources.length() > 1000) {
+				map.put("Add Sources", new Runnable() {
+					@Override
+					public void run() {
+						try {
+							try (Jar src = new Jar(sources)) {
+								try (Jar bin = new Jar(binary)) {
+									bin.setDoNotTouchManifest();
+									for (String path : src.getResources().keySet())
+										bin.putResource("OSGI-OPT/src/" + path, src.getResource(path));
+									bin.write(out);
+								}
+								out.setLastModified(System.currentTimeMillis());
 							}
-							out.setLastModified(System.currentTimeMillis());
+						} catch (Exception e) {
+							throw Exceptions.duck(e);
 						}
-					} catch (Exception e) {
-						throw new RuntimeException(e);
 					}
-				}
-			});
-
-		} else {
-			map.put("-Add Sources", null);
+				});
+				return;
+			}
 		}
+
+		map.put("-Add Sources", null);
 	}
 
 	void addUpdate(final BundleDescriptor bd, Map<String,Runnable> map) throws Exception {

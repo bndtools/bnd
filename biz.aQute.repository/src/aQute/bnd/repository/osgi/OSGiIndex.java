@@ -53,14 +53,27 @@ class OSGiIndex {
 	}
 
 	private Promise<BridgeRepository> readIndexes(boolean refresh) throws Exception {
-		List<Promise<List<Resource>>> promises = new ArrayList<>();
+		List<Promise<List<Resource>>> promises = new ArrayList<>(getURIs().size());
 
 		for (URI uri : getURIs()) {
 			promises.add(download(uri, refresh));
 		}
 
 		Promise<List<List<Resource>>> all = Promises.all(promises);
-		return all.map(collect());
+		return all.map(new Function<List<List<Resource>>,BridgeRepository>() {
+			@Override
+			public BridgeRepository apply(List<List<Resource>> resources) {
+				try {
+					ResourcesRepository rr = new ResourcesRepository();
+					for (List<Resource> p : resources) {
+						rr.addAll(p);
+					}
+					return new BridgeRepository(rr);
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				}
+			}
+		});
 	}
 
 	private static File checkCache(File cache) {
@@ -70,43 +83,15 @@ class OSGiIndex {
 		return cache;
 	}
 
-	private Function<List<List<Resource>>,BridgeRepository> collect() {
-		return new Function<List<List<Resource>>,BridgeRepository>() {
-
-			@Override
-			public BridgeRepository apply(List<List<Resource>> t) {
-				try {
-					return collect(t);
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
-				}
-			}
-
-		};
-	}
-
-	private BridgeRepository collect(List<List<Resource>> resources) throws Exception {
-		ResourcesRepository rr = new ResourcesRepository();
-		for (List<Resource> p : resources) {
-			rr.addAll(p);
-		}
-		return new BridgeRepository(rr);
-	}
-
-	private Promise<List<Resource>> download(URI uri, boolean refresh) throws Exception {
+	private Promise<List<Resource>> download(final URI uri, boolean refresh) throws Exception {
 		HttpRequest<File> req = client.build().useCache(refresh ? -1 : staleTime);
 
-		return req.async(uri).map(toResources(uri));
-	}
-
-	private Function<File,List<Resource>> toResources(final URI uri) {
-		return new Function<File,List<Resource>>() {
-
+		return req.async(uri).map(new Function<File,List<Resource>>() {
 			@Override
 			public List<Resource> apply(File file) {
 				try {
 					if (file == null) {
-						System.out.println("No such file");
+						log.trace("%s: No file downloaded for %s", name, uri);
 						return Collections.emptyList();
 					}
 					try (InputStream in = new FileInputStream(file)) {
@@ -115,11 +100,10 @@ class OSGiIndex {
 						}
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
 					throw Exceptions.duck(e);
 				}
 			}
-		};
+		});
 	}
 
 	Promise<File> get(String bsn, Version version, File file) throws Exception {

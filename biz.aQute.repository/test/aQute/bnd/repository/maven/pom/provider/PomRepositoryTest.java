@@ -30,11 +30,16 @@ public class PomRepositoryTest extends TestCase {
 	File		tmp			= IO.getFile("generated/tmp");
 	File		localRepo	= IO.getFile("~/.m2/repository");
 	File		location	= IO.getFile(tmp, "index.xml");
-	HttpClient	client		= new HttpClient();
+	HttpClient	client;
 
-	public void setUp() {
+	protected void setUp() {
 		IO.delete(tmp);
 		tmp.mkdirs();
+		client = new HttpClient();
+	}
+
+	protected void tearDown() {
+		client.close();
 	}
 
 	/**
@@ -156,7 +161,6 @@ public class PomRepositoryTest extends TestCase {
 	public void testRepository() throws Exception {
 		MavenRepository repo = getRepo();
 		Revision revision = Revision.valueOf("bcel:bcel:5.1");
-		HttpClient c = new HttpClient();
 		PomRepository pom = new PomRepository(repo, client, location, revision);
 
 		assertTrue(location.isFile());
