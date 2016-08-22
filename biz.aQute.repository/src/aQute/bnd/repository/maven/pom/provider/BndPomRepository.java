@@ -102,10 +102,7 @@ public class BndPomRepository extends BaseRepository
 			if (f.isFile()) {
 				this.pomFile = f.toURI();
 			} else {
-
-				// TODO check uri?
-
-				throw new IllegalArgumentException("pom property is not a file" + f);
+				this.pomFile = URI.create(configuration.pom());
 			}
 		} else if (configuration.revision() != null) {
 			revision = Revision.valueOf(configuration.revision());
