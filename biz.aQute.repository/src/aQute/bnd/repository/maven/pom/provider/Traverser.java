@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.osgi.framework.Version;
@@ -26,6 +27,7 @@ import org.osgi.util.promise.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.maven.api.Archive;
@@ -37,26 +39,29 @@ import aQute.maven.provider.MavenRepository;
 import aQute.maven.provider.POM;
 
 class Traverser {
-	final static Logger							logger		= LoggerFactory.getLogger(Traverser.class);
-	static final Resource						DUMMY		= new ResourceBuilder().build();
+	final static Logger						logger		= LoggerFactory.getLogger(Traverser.class);
+	static final Resource					DUMMY		= new ResourceBuilder().build();
 	final ConcurrentMap<Archive,Resource>	resources	= new ConcurrentHashMap<>();
-	final Executor								executor;
-	final Revision								revision;
-	final URI									resource;
-	final AtomicInteger							count		= new AtomicInteger(-1);
-	final Deferred<Map<Archive,Resource>>		deferred	= new Deferred<>();
-	final MavenRepository						repo;
-	final Set<String>							error		= Collections.synchronizedSet(new HashSet<String>());
+	final Executor							executor;
+	final Revision							revision;
+	final URI								resource;
+	final AtomicInteger						count		= new AtomicInteger(-1);
+	final Deferred<Map<Archive,Resource>>	deferred	= new Deferred<>();
+	final MavenRepository					repo;
+	final Set<String>						error		= Collections.synchronizedSet(new HashSet<String>());
+	final HttpClient						client;
 
-	Traverser(MavenRepository repo, Revision revision, Executor executor) {
+	Traverser(MavenRepository repo, Revision revision, HttpClient client, Executor executor) {
 		this.repo = repo;
 		this.revision = revision;
+		this.client = client;
 		this.executor = executor;
 		this.resource = null;
 	}
 
-	Traverser(MavenRepository repo, URI revision, Executor executor) {
+	Traverser(MavenRepository repo, URI revision, HttpClient client, Executor executor) {
 		this.repo = repo;
+		this.client = client;
 		this.revision = null;
 		this.executor = executor;
 		this.resource = revision;
@@ -70,8 +75,11 @@ class Traverser {
 		if (count.compareAndSet(-1, 1)) {
 			try {
 				if (resource != null) {
-					// TODO shouldn't we use HttpClient here to open the URL?
-					POM pom = new POM(repo, resource.toURL().openStream());
+					File in = client.build()
+							.useCache()
+							.age(1, TimeUnit.DAYS)
+							.go(resource);
+					POM pom = new POM(repo, in);
 					parsePom(pom, "<>");
 				} else {
 					parse(revision.archive("jar", null), "<>");
