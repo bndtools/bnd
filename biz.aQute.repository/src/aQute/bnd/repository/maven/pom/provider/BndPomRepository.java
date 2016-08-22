@@ -71,8 +71,8 @@ public class BndPomRepository extends BaseRepository
 			MavenRepository repository = new MavenRepository(localRepo, name, release, snapshot,
 					Processor.getExecutor(), reporter, null);
 
-			pomRepo = pomFile != null ? new PomRepository(repository, location, pomFile)
-					: new PomRepository(repository, location, revision);
+			pomRepo = pomFile != null ? new PomRepository(repository, client, location, pomFile)
+					: new PomRepository(repository, client, location, revision);
 			bridge = new BridgeRepository(pomRepo);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);

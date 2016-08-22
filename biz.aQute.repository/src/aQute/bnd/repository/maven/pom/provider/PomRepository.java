@@ -10,6 +10,7 @@ import java.util.Map;
 import org.osgi.resource.Resource;
 import org.osgi.util.promise.Promise;
 
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
@@ -27,20 +28,23 @@ class PomRepository extends ResourcesRepository {
 	final File				location;
 	final Revision			revision;
 	final URI				revisionUrl;
+	final HttpClient		client;
 
-	PomRepository(MavenRepository repo, File location, Revision revision) throws Exception {
+	PomRepository(MavenRepository repo, HttpClient client, File location, Revision revision) throws Exception {
 		this.repo = repo;
 		this.location = location;
 		this.revision = revision;
 		this.revisionUrl = null;
+		this.client = client;
 		read();
 	}
 
-	PomRepository(MavenRepository repo, File location, URI revision) throws Exception {
+	PomRepository(MavenRepository repo, HttpClient client, File location, URI revision) throws Exception {
 		this.repo = repo;
 		this.location = location;
 		this.revisionUrl = revision;
 		this.revision = null;
+		this.client = client;
 		read();
 	}
 
@@ -52,7 +56,7 @@ class PomRepository extends ResourcesRepository {
 	}
 
 	void read(URI revision) throws Exception {
-		Traverser traverser = new Traverser(repo, revision, Processor.getExecutor());
+		Traverser traverser = new Traverser(repo, revision, client, Processor.getExecutor());
 		Promise<Map<Archive,Resource>> p = traverser.getResources();
 		Collection<Resource> resources = p.getValue().values();
 		set(resources);
@@ -60,7 +64,7 @@ class PomRepository extends ResourcesRepository {
 	}
 
 	void read(Revision revision) throws Exception {
-		Traverser traverser = new Traverser(repo, revision, Processor.getExecutor());
+		Traverser traverser = new Traverser(repo, revision, client, Processor.getExecutor());
 		Promise<Map<Archive,Resource>> p = traverser.getResources();
 		Collection<Resource> resources = p.getValue().values();
 		set(resources);

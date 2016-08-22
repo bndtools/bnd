@@ -87,8 +87,8 @@ public class PomRepositoryTest extends TestCase {
 	public void testRepository() throws Exception {
 		MavenRepository repo = getRepo();
 		Revision revision = Revision.valueOf("bcel:bcel:5.1");
-
-		PomRepository pom = new PomRepository(repo, location, revision);
+		HttpClient c = new HttpClient();
+		PomRepository pom = new PomRepository(repo, client, location, revision);
 
 		assertTrue(location.isFile());
 
