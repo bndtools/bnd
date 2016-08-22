@@ -71,11 +71,8 @@ import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter;
 
 public class Workspace extends Processor {
-	private static final String	PLUGIN_STANDALONE		= "-plugin.standalone_";
-
+	public static final String	BND_CACHE_REPONAME		= "bnd-cache";
 	public static final String	EXT						= "ext";
-
-	static final int			BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
 
 	public static final String	BUILDFILE				= "build.bnd";
 	public static final String	CNFDIR					= "cnf";
@@ -83,6 +80,9 @@ public class Workspace extends Processor {
 	public static final String	CACHEDIR				= "cache/" + About.CURRENT;
 
 	public static final String	STANDALONE_REPO_CLASS	= "aQute.bnd.deployer.repository.FixedIndexedRepo";
+
+	static final int			BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
+	private static final String	PLUGIN_STANDALONE		= "-plugin.standalone_";
 
 	static class WorkspaceData {
 		List<RepositoryPlugin> repositories;
@@ -96,7 +96,6 @@ public class Workspace extends Processor {
 	final Map<String,Project>					models							= newHashMap();
 	private final Set<String>					modelsUnderConstruction			= newSet();
 	final Map<String,Action>					commands						= newMap();
-	final File									buildDir;
 	final Maven									maven							= new Maven(Processor.getExecutor());
 	private boolean								offline							= true;
 	Settings									settings						= new Settings();
@@ -114,6 +113,8 @@ public class Workspace extends Processor {
 	final Set<Project>							trail							= Collections
 			.newSetFromMap(new ConcurrentHashMap<Project,Boolean>());
 	private WorkspaceData						data							= new WorkspaceData();
+
+	private File								buildDir;
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -227,23 +228,29 @@ public class Workspace extends Processor {
 	public Workspace(File dir, String bndDir) throws Exception {
 		super(getDefaults());
 		this.layout = WorkspaceLayout.BND;
-		dir = dir.getAbsoluteFile();
-		if (!dir.exists() && !dir.mkdirs()) {
-			throw new IOException("Could not create directory " + dir);
+		addBasicPlugin(new LoggingProgressPlugin());
+		setFileSystem(dir, bndDir);
+	}
+
+	public void setFileSystem(File workspaceDir, String nameOfCnf) throws IOException {
+
+		workspaceDir = workspaceDir.getAbsoluteFile();
+		if (!workspaceDir.exists() && !workspaceDir.mkdirs()) {
+			throw new IOException("Could not create directory " + workspaceDir);
 		}
-		assert dir.isDirectory();
+		assert workspaceDir.isDirectory();
 
-		File buildDir = new File(dir, bndDir).getAbsoluteFile();
+		File buildDir = new File(workspaceDir, nameOfCnf).getAbsoluteFile();
 		if (!buildDir.isDirectory())
-			buildDir = new File(dir, CNFDIR).getAbsoluteFile();
+			buildDir = new File(workspaceDir, CNFDIR).getAbsoluteFile();
 
-		this.buildDir = buildDir;
+		setBuildDir(buildDir);
 
 		File buildFile = new File(buildDir, BUILDFILE).getAbsoluteFile();
 		if (!buildFile.isFile())
-			warning("No Build File in %s", dir);
+			warning("No Build File in %s", workspaceDir);
 
-		setProperties(buildFile, dir);
+		setProperties(buildFile, workspaceDir);
 		propertiesChanged();
 
 		//
@@ -258,14 +265,12 @@ public class Workspace extends Processor {
 			System.setProperty(e.getKey(), e.getValue());
 		}
 
-		addBasicPlugin(new LoggingProgressPlugin());
 	}
 
-	Workspace(WorkspaceLayout layout) {
+	Workspace(WorkspaceLayout layout) throws IOException {
 		super(getDefaults());
 		this.layout = layout;
-		this.buildDir = IO.getFile("~/.bnd/default-ws");
-		this.buildDir.mkdirs();
+		setBuildDir(IO.getFile("~/.bnd/default-ws/cnf"));
 	}
 
 	public Project getProject(String bsn) throws Exception {
@@ -325,7 +330,7 @@ public class Workspace extends Processor {
 	@Override
 	public void propertiesChanged() {
 		data = new WorkspaceData();
-		File extDir = new File(this.buildDir, EXT);
+		File extDir = new File(getBuildDir(), EXT);
 		File[] extensions = extDir.listFiles();
 		if (extensions != null) {
 			for (File extension : extensions) {
@@ -427,17 +432,16 @@ public class Workspace extends Processor {
 	}
 
 	class CachedFileRepo extends FileRepo {
-		static final String	REPONAME	= "bnd-cache";
 		final Lock			lock		= new ReentrantLock();
 		boolean				inited;
 
 		CachedFileRepo() {
-			super(REPONAME, getCache(REPONAME), false);
+			super(BND_CACHE_REPONAME, getCache(BND_CACHE_REPONAME), false);
 		}
 
 		@Override
 		public String toString() {
-			return REPONAME;
+			return BND_CACHE_REPONAME;
 		}
 
 		@Override
@@ -580,7 +584,7 @@ public class Workspace extends Processor {
 			resourceRepositoryImpl = new ResourceRepositoryImpl();
 			resourceRepositoryImpl.setCache(IO.getFile(getProperty(CACHEDIR, "~/.bnd/caches/shas")));
 			resourceRepositoryImpl.setExecutor(getExecutor());
-			resourceRepositoryImpl.setIndexFile(getFile(buildDir, "repo.json"));
+			resourceRepositoryImpl.setIndexFile(getFile(getBuildDir(), "repo.json"));
 			resourceRepositoryImpl.setURLConnector(new MultiURLConnectionHandler(this));
 			customize(resourceRepositoryImpl, null);
 			list.add(resourceRepositoryImpl);
@@ -820,12 +824,12 @@ public class Workspace extends Processor {
 	}
 
 	public void checkStructure() {
-		if (!buildDir.isDirectory())
-			error("No directory for cnf %s", buildDir);
+		if (!getBuildDir().isDirectory())
+			error("No directory for cnf %s", getBuildDir());
 		else {
-			File build = IO.getFile(buildDir, BUILDFILE);
+			File build = IO.getFile(getBuildDir(), BUILDFILE);
 			if (build.isFile()) {
-				error("No %s file in %s", BUILDFILE, buildDir);
+				error("No %s file in %s", BUILDFILE, getBuildDir());
 			}
 		}
 	}
@@ -834,8 +838,12 @@ public class Workspace extends Processor {
 		return buildDir;
 	}
 
+	public void setBuildDir(File buildDir) {
+		this.buildDir = buildDir;
+	}
+
 	public boolean isValid() {
-		return IO.getFile(buildDir, BUILDFILE).isFile();
+		return IO.getFile(getBuildDir(), BUILDFILE).isFile();
 	}
 
 	public RepositoryPlugin getRepository(String repo) throws Exception {
