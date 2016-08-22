@@ -52,12 +52,9 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.io.IO;
 import bndtools.central.RepositoriesViewRefresher.RefreshModel;
 
 public class Central implements IStartupParticipant {
-
-    private static final File DEFAULT_WS = IO.getFile("~/.bnd/default-ws");
 
     private static final ILogger logger = Logger.getLogger(Central.class);
 
@@ -206,13 +203,15 @@ public class Central implements IStartupParticipant {
             ws = workspace;
             File workspaceDirectory = getWorkspaceDirectory();
             if (ws != null) {
-                if (workspaceDirectory != null && ws.getBase().equals(DEFAULT_WS)) {
+                if (workspaceDirectory != null && ws.isDefaultWorkspace()) {
                     ws.setFileSystem(workspaceDirectory, Workspace.CNFDIR);
-                    resolve = true;
-                    // TODO should be done in background??
                     ws.refresh();
+                    resolve = !workspaceQueue.getPromise().isDone();
+                } else if (workspaceDirectory == null && !ws.isDefaultWorkspace()) {
+                    ws.setFileSystem(Workspace.BND_DEFAULT_WS, Workspace.CNFDIR);
+                    ws.refresh();
+                    resolve = false;
                 } else {
-                    // TODO handle case that the cnf is deleted?
                     resolve = false;
                 }
             } else {
@@ -223,7 +222,7 @@ public class Central implements IStartupParticipant {
                     if (workspaceDirectory == null) {
                         // there is no cnf project. So
                         // we create a temp workspace
-                        ws = Workspace.getWorkspace(DEFAULT_WS);
+                        ws = Workspace.createDefaultWorkspace();
                         resolve = false;
                     } else {
                         ws = Workspace.getWorkspace(workspaceDirectory);
