@@ -183,10 +183,6 @@ class Traverser {
 	private void parsePom(POM pom, String parent) throws Exception {
 		Map<Program,Dependency> dependencies = pom.getDependencies(EnumSet.of(MavenScope.compile, MavenScope.runtime),
 				false);
-		if (ROOT.equals(parent) && dependencies.isEmpty()) {
-			finish();
-			return;
-		}
 		for (Dependency d : dependencies.values()) {
 			parse(d.getArchive(), parent);
 		}
