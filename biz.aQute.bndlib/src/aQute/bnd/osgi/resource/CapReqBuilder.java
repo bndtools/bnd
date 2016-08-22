@@ -81,6 +81,10 @@ public class CapReqBuilder {
 		return namespace;
 	}
 
+	public Resource getResource() {
+		return resource;
+	}
+
 	public CapReqBuilder setResource(Resource resource) {
 		this.resource = resource;
 		return this;
