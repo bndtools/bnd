@@ -101,8 +101,6 @@ public class BndPomRepository extends BaseRepository
 			File f = IO.getFile(configuration.pom());
 			if (f.isFile()) {
 				this.pomFile = f.toURI();
-				if (name == null)
-					name = f.getParentFile().getName();
 			} else {
 
 				// TODO check uri?
@@ -115,8 +113,6 @@ public class BndPomRepository extends BaseRepository
 				throw new IllegalArgumentException(
 						"Revision is neither a file nor a revision " + configuration.revision());
 
-			if (name == null)
-				name = revision.toString().replace(':', '_');
 		} else {
 			throw new IllegalArgumentException("Neither pom property nor revision are set");
 		}
