@@ -1890,7 +1890,7 @@ public class Project extends Processor {
 
 	public boolean isCnf() {
 		try {
-			return getBase().getCanonicalPath().equals(getWorkspace().buildDir.getCanonicalPath());
+			return getBase().getCanonicalPath().equals(getWorkspace().getBuildDir().getCanonicalPath());
 		} catch (IOException e) {
 			return false;
 		}
