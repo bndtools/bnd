@@ -91,8 +91,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.XMLMemento;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
+import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
-import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.part.ViewPart;
@@ -150,6 +150,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         Composite defaultParent = toolkit.createComposite(parent, SWT.NONE);
         FillLayout fill = new FillLayout();
         fill.marginHeight = 5;
+        fill.marginWidth = 5;
         defaultParent.setLayout(fill);
 
         File workspaceDir = null;
@@ -159,8 +160,9 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         } catch (Exception e) {}
 
         if (workspaceDir == null) {
-            Hyperlink link = toolkit.createHyperlink(defaultParent, "No workspace configuration found. Create a new BND workspace...", SWT.WRAP);
-            link.addHyperlinkListener(new HyperlinkAdapter() {
+            FormText form = toolkit.createFormText(defaultParent, true);
+            form.setText("<form><p>No workspace configuration found. <a>Create a new BND workspace...</a></p></form>", true, false);
+            form.addHyperlinkListener(new HyperlinkAdapter() {
                 @Override
                 public void linkActivated(HyperlinkEvent e) {
                     IWorkbench workbench = PlatformUI.getWorkbench();
