@@ -28,14 +28,14 @@ public class Container {
 		REPO, PROJECT, EXTERNAL, LIBRARY, ERROR
 	}
 
-	private final File			file;
+	private File				file;
 	private final String		path;
 	final TYPE					type;
 	final String				bsn;
 	final String				version;
 	final String				error;
 	final Project				project;
-	final DownloadBlocker		db;
+	private DownloadBlocker		db;
 	volatile Map<String,String>	attributes;
 	private long				manifestTime;
 	private Manifest			manifest;
@@ -83,8 +83,11 @@ public class Container {
 	}
 
 	public File getFile() {
-		if (db != null && db.getReason() != null) {
-			return new File(db.getReason() + ": " + file);
+		if (db != null) {
+			if (db.getReason() != null)
+				return new File(db.getReason() + ": " + db.getFile());
+			this.file = db.getFile();
+			this.db = null;
 		}
 		return file;
 	}
