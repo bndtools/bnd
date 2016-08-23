@@ -93,7 +93,7 @@ public class ProjectLocationGroup {
             }
         }
 
-        if (ws != null)
+        if (ws != null && !ws.isDefaultWorkspace())
             p = Path.fromOSString(ws.getBase().getAbsolutePath());
 
         return p;
