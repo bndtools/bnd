@@ -55,6 +55,9 @@ The workspace root includes the gradle wrapper, `gradlew`, command.
 ## Release
 bnd is continuously built and released on [CloudBees](https://bndtools.ci.cloudbees.com/).
 
+A Maven repository of the latest build is available at <https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles/>.
+A snapshot version of all the bundles and Maven and Gradle plugins is there.
+
 [![Built on DEV@cloud](http://www.cloudbees.com/sites/default/files/Button-Built-on-CB-1.png)](http://www.cloudbees.com/foss/foss-dev.cb)
 
 ## Feedback
