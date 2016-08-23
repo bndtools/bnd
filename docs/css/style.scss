@@ -1,0 +1,134 @@
+---
+---
+
+@import url("//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,700");
+
+$font-family: 		Trebuchet MS, Verdana, sans;
+$font-size:			9pt;
+$line-height:		1.4em;
+$max-width:			960px;
+$min-column-width:	2.5em;
+$color:				black;
+$background:		white;
+$secondary-color:	#720F10;
+$icon-size:			2em;
+$text-mono: 		Courier New;
+$text-body: 		$font-family;
+$text-head: 		$font-family;
+$block-separation: 	1em;
+$text-separation: 	0.5em;
+$gutter:			1em;
+$rounded:			4px;
+$color-normal:		transparent;
+$color-ok:			#F0F0F0;
+$color-error:		rgb(201, 19, 11);
+$color-warning:		rgb(247, 237, 184);
+
+$staging-color:		#A6DC7C;
+$staging-background: white;
+$master-color:		white;
+$master-background:	#A6DC7C;
+
+$small-device:		40em;
+$medium-device:		65em;
+
+$reservation:		2em;
+$color-vignette:	#F0F0F0;
+
+@import "functions.scss";
+@import "layout.scss";
+@import "base.scss";
+
+
+/*
+	Styling of the main menu
+*/
+.menu-bar {
+	margin-top: 10px;
+	padding-top: $text-separation;
+	padding-bottom: $text-separation;
+	@include gradient( lightgrey, rgb(179,179,181), rgb(130,132,135));
+	@include drop-shadow(2px,2px,2px,0.1);
+   	@include rounded(3px);
+   	margin-bottom: $block-separation;
+   	> [span] {
+		vertical-align:middle;
+	    margin: 0px;
+   		> * {
+   			color: white;
+   		}
+		> a {
+		    font-size: $font-size * 1.4;
+			padding-top:3px;
+			margin-right: $gutter;
+		} 
+   		.menu-logo {
+   			height: $line-height;
+   		}
+		> img {
+		  padding-right: $gutter;
+		}
+   	}
+	.menu-link {
+		color: white;
+		vertical-align: middle;
+	}
+	
+	.menu-button {
+		float: right;
+	}
+	
+    @media screen and (max-width: $medium-device) {
+		[span]:last-child {
+   			width: 100%; 
+		}
+		[span] {
+			width: 50%;
+			min-width: 1em;
+		}
+	}
+	
+    @media screen and (max-width: $small-device) {
+		[span] {
+   			width: 100%; 
+			min-width: 1em;
+		}
+	}
+	
+}
+
+
+/*
+ * Styling of the side bar
+ */
+ 
+.side-nav {
+	@include vignette();
+}
+
+.enroute {
+	@include vignette();
+	margin-top: $block-separation;
+	img {
+		width: 4em;
+		float: left;
+		vertical-align: middle;
+		margin-right: $text-separation;
+	}
+	&::after {
+		float:clear;
+	}
+}
+
+
+.selected {
+    &:before { content: "\25B7\00A0"; }
+    font-weight: bolder;
+    color: $secondary-color;
+}
+
+embed.illustration {
+	display:block;
+	margin-left: auto;
+	margin-right: auto;
+}

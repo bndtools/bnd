@@ -1,0 +1,7 @@
+-classpath: 	jar/javax.activation-1.1.1.jar
+Export-Package: *		
+Bundle-Version:	1.1.1.${tstamp}
+
+
+
+

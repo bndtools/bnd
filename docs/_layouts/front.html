@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% include head.htm %}
+
+<body>
+
+	{% include nav.htm %}
+
+	<div class=container12>
+		<img span=12 src="{{ site.github.url }}/img/front-page.png">
+	</div>
+
+	<ul class=container12>
+		<li span=4>
+			<h1>What is bnd?</h1>
+			<blockquote style='margin-top:20px'>“If you want to teach people a new way of thinking, don't bother trying to teach them. Instead, give them a tool, the use of which will lead to new ways of thinking.”
+			<br><b>― R. Buckminster Fuller</b>
+			</blockquote>
+			<p>
+				bnd is the engine behind a number of popular software development
+				tools that support OSGi. It can be found in several maven plugins,
+				ant, gradle, and of course Eclipse (<a href="http://bndtools.org">bndtools</a>).
+				It actively seeks other build tool vendors to use bnd to improve the
+				quality of the generated OSGi metadata.
+			<p>bnd actually consists of 2 major parts, one part is really
+				good in creating a JAR with OSGi meta data based on instructions and
+				the information in the class files. Over time bnd has collected
+				hundreds of heuristics that provide for good bundles. This part is
+				therefore often used in build tools like maven or gradle that
+				already generate JARs. They mainly use the manifest generation
+				features of bnd.
+			<p>The other part is a IDE/build tool independent model of a
+				workspace with projects. This was the result of the frustration that
+				certain things could be done very well in Eclipse but that other
+				things are best done in a command line tool. Since IDEs are
+				incremental and very event driven, command line tools tend to run
+				everything from start to end. What was needed was an independent
+				model that could work with Eclipse, maven, ant, gradle, and
+				hopefully one day Intellij.
+			<p>So to use bnd, look at the the descriptions of the tools that
+				include bnd. Then when you want to find out what a certain command
+				does, or how to call a macro, then use this manual.
+		<li span=4>
+			<h1>How to get started?</h1>
+			<p>
+		<li span=4>
+			<h1>Table of contents</h1>
+			<ol>
+				{% for chapter in site.chapters %}
+				<li>
+				<a href="{{ chapter.url | prepend: site.github.url }}">{{chapter.title}}</a> {% endfor %}
+			</ol>
+	</ul>
+
+	{% include footer.htm %}
+
+</body>
+</html>

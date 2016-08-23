@@ -1,0 +1,38 @@
+gems:
+  - jekyll-seo-tag
+markdown: kramdown
+
+collections:
+  chapters:
+    output: true
+  macros:
+    output: true
+  heads:
+    output: true
+  tools:
+    output: true
+  commands:
+    output: true
+  plugins:
+    output: true
+  instructions:
+    output: true
+
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      layout: default
+
+exclude:
+  - 'Gemfile'
+  - 'Gemfile.lock'
+  - 'README.md'
+  - 'CONTRIBUTING.md'
+  - 'LICENSE'
+  - 'build'
+  - '.project'
+  - '.travis.yml'
+  - '/examples'
+  - '/bundler'

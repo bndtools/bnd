@@ -1,0 +1,3 @@
+-output: bundle
+-sub: javax.activation.bnd, javax.mail.bnd
+
