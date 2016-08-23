@@ -18,12 +18,20 @@ matrix:
   allow_failures:
     - jdk: oraclejdk9
 
+before_install:
+  - rvm --version
+  - rvm install 2.0.0
+
 install:
   - ./gradlew --version
   - ./mvnw --version
+  - ruby --version
+  - gem --version
+  - bundle --version
 
 script:
   - ./gradlew -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
+  - (cd docs && ./build.sh)
 
 after_success:
   - git status
@@ -33,3 +41,4 @@ cache:
     - $HOME/.gradle/wrapper
     - $HOME/.m2/wrapper
     - cnf/cache/stable
+    - docs/bundler

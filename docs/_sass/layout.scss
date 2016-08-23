@@ -1,0 +1,125 @@
+/**
+	iPhone					320 x 480	320 x 480, in both portrait and landscape mode
+	iPhone 4		(2)		640 x 960	320 x 480, in both portrait and landscape mode
+	iPad 1&2				768 x 1024	768 x 1024, in both portrait and landscape mode
+	iPad 3			(2)		1536 x 2048	768 x 1024, in both portrait and landscape mode
+	Samsung G S &II	(1.5)	480 x 800	320 x 533, in portrait mode
+	Samsung G S III			720 x 1280	360? x 640?, in portrait mode
+	HTC Evo 3D		(1.5)	540 x 960	360 x 640, portrait mode
+	Kindle Fire				1024 x 600	1024 x 600, landscape mode
+*/
+
+body {
+  height: 			100%;
+  min-width: 		10em;
+}
+
+.container12 {
+	padding-left: 			$gutter;
+	padding-right: 			0;
+	max-width:				$max-width;
+	margin-left: 			auto;
+	margin-right: 			auto;
+	
+	[span] {
+		overflow: 				hidden;
+		@include box-sizing(border-box);
+	  	display: 			inline-block;
+	  	padding-left: 		0;
+	  	padding-right: 		$gutter;
+	  	margin:             0;
+	  	vertical-align: 	top;
+		&[row] {
+	  		padding-right:  0;
+		}
+		margin-bottom: $block-separation;
+	}
+
+    [span='1'] 	{width: 100%*1/12; min-width: $min-column-width*1; }
+    [span='2'] 	{width: 100%*2/12; min-width: $min-column-width*2; }
+    [span='3'] 	{width: 100%*3/12; min-width: $min-column-width*3; }
+    [span='4'] 	{width: 100%*4/12; min-width: $min-column-width*4; }
+    [span='5'] 	{width: 100%*5/12; min-width: $min-column-width*5; }
+    [span='6'] 	{width: 100%*6/12; min-width: $min-column-width*6; }
+    [span='7'] 	{width: 100%*7/12; min-width: $min-column-width*7; }
+    [span='8'] 	{width: 100%*8/12; min-width: $min-column-width*8; }
+    [span='9'] 	{width: 100%*9/12; min-width: $min-column-width*9; }
+    [span='10'] {width:100%*10/12; min-width: $min-column-width*10; }
+    [span='11'] {width:100%*11/12; min-width: $min-column-width*11; }
+    [span='12'] {width:100%*12/12; min-width: $min-column-width*12; }
+    
+    
+     
+    @media screen and (max-width: $small-device) {
+    	body {
+    		width: 100%; 
+    	}
+    	[span] {
+    		width: 100%; 
+    	}
+		[span] {
+			min-width: 1em;
+		}
+	}
+}
+
+	
+[sidebar-left],[sidebar-right] {
+	@include box-sizing(border-box);
+	position: relative;
+	> [place] {
+		position: absolute;
+		top: 0; bottom:0;
+	}
+}
+[sidebar-left] > [place] { margin-left: 0; }
+[sidebar-right] > [place] { margin-right: 0; }
+
+[sidebar-left='1'] { padding-left: $gutter + $reservation; }
+[sidebar-left='2'] { padding-left: 2*($gutter + $reservation); }
+[sidebar-left='3'] { padding-left: 3*($gutter + $reservation); }
+[sidebar-left='4'] { padding-left: 4*($gutter + $reservation); }
+[sidebar-left='5'] { padding-left: 5*($gutter + $reservation); }
+[sidebar-left='6'] { padding-left: 6*($gutter + $reservation); }
+[sidebar-right='1'] { padding-right: $gutter + $reservation; }
+[sidebar-right='2'] { padding-right: 2*($gutter + $reservation); }
+[sidebar-right='3'] { padding-right: 3*($gutter + $reservation); }
+[sidebar-right='4'] { padding-right: 4*($gutter + $reservation); }
+[sidebar-right='5'] { padding-right: 5*($gutter + $reservation); }
+[sidebar-right='6'] { padding-right: 6*($gutter + $reservation); }
+
+[sidebar-left] {
+	> [place='0'] { left: 0*($reservation + $gutter); }
+	> [place='1'] { left: 1*($reservation + $gutter); }
+	> [place='2'] { left: 2*($reservation + $gutter); }
+	> [place='3'] { left: 3*($reservation + $gutter); }
+	> [place='4'] { left: 4*($reservation + $gutter); }
+	> [place='5'] { left: 5*($reservation + $gutter); }
+	> [place='6'] { left: 6*($reservation + $gutter); }
+} 
+
+[sidebar-right] {
+	> [place='0'] { right: 0*($reservation + $gutter); }
+	> [place='1'] { right: 1*($reservation + $gutter); }
+	> [place='2'] { right: 2*($reservation + $gutter); }
+	> [place='3'] { right: 3*($reservation + $gutter); }
+	> [place='4'] { right: 4*($reservation + $gutter); }
+	> [place='5'] { right: 5*($reservation + $gutter); }
+	> [place='6'] { right: 6*($reservation + $gutter); }
+} 
+
+
+
+.if-not-large-screen { display: none; }
+
+@media screen and (max-width: $medium-device) {
+	.if-large-screen { display: none; }
+	.if-not-large-screen { display: inherit; }
+}
+     
+@media screen and (max-width: $small-device) {
+	.if-large-screen { display: none; }
+	.if-medium-screen { display: none; }
+	.if-not-large-screen { display: inherit; }
+	.if-not-medium-screen { display: inherit; }
+}

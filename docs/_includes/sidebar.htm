@@ -1,0 +1,9 @@
+<ul class="side-nav">
+	{% for chapter in site.chapters %}
+		{% if chapter.title == page.title %}
+			<li class=selected>{{chapter.title}}
+	  	{% else %}
+			<li><a href="{{ chapter.url | prepend: site.github.url }}">{{chapter.title}}</a>
+	  	{% endif %}
+  	{% endfor %}
+</ul>

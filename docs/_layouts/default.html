@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	{% include head.htm %}
+
+<body>
+
+	{% include nav.htm %}
+
+					
+
+	<ul class=container12>
+		<li span=3>
+			<div>
+			{% include sidebar.htm %}
+			<div class=enroute><a href="http://enroute.osgi.org">Supported by OSGi enRoute <img src="{{ site.github.url }}/img/EnRouteIcon_CMYK.png"></a></div>
+			</div>
+			
+		<li span=9>
+			<div class=notes-margin>
+				<h1>{{h1}} {{page.title}}</h1>
+				{{content}}
+			</div>
+	</ul>
+
+	{% include footer.htm %}
+</body>
+</html>
