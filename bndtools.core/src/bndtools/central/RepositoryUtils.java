@@ -42,7 +42,7 @@ public class RepositoryUtils {
 
                     // Add the repos from the provided workspace
                     for (RepositoryPlugin plugin : plugins) {
-                        if (!hideCache || !CACHE_REPO.equals(plugin.getName()))
+                        if (hideCache == false || !Workspace.BND_CACHE_REPONAME.equals(plugin.getName()))
                             repos.add(plugin);
                     }
 
