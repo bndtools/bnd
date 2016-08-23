@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -33,7 +32,9 @@ import java.util.regex.Pattern;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
+import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Success;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Workspace;
@@ -389,7 +390,32 @@ public class MavenBndRepository extends BaseRepository
 			if (listeners.length == 0)
 				return promise.getValue();
 
-			promise.onResolve(getResolveable(file, promise, listeners));
+			promise.then(new Success<File,Void>() {
+				@Override
+				public Promise<Void> call(Promise<File> resolved) throws Exception {
+					File value = resolved.getValue();
+					for (DownloadListener dl : listeners) {
+						try {
+							dl.success(value);
+						} catch (Exception e) {
+							reporter.exception(e, "Download listener failed in success callback %s", dl);
+						}
+					}
+					return null;
+				}
+			}, new Failure() {
+				@Override
+				public void fail(Promise< ? > resolved) throws Exception {
+					String reason = resolved.getFailure().toString();
+					for (DownloadListener dl : listeners) {
+						try {
+							dl.failure(file, reason);
+						} catch (Exception e) {
+							reporter.exception(e, "Download listener failed in failure callback %s", dl);
+						}
+					}
+				}
+			});
 			return file;
 		}
 		return null;
@@ -526,46 +552,6 @@ public class MavenBndRepository extends BaseRepository
 			storage.close();
 		if (indexPoller != null)
 			indexPoller.cancel(true);
-	}
-
-	private Runnable getResolveable(final File file, final Promise<File> promise, final DownloadListener... listeners) {
-		return new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					if (promise.getFailure() == null) {
-						doSuccess(promise, listeners);
-					} else {
-						doFailure(file, promise, listeners);
-					}
-				} catch (Exception e) {
-					// can't happen, we checked
-					throw new RuntimeException(e);
-				}
-			}
-
-			void doFailure(final File file, final Promise<File> promise, final DownloadListener... listeners) {
-				for (DownloadListener dl : listeners)
-					try {
-						dl.failure(file, promise.getFailure().toString());
-					} catch (Exception e) {
-						reporter.exception(e, "Download listener failed in failure callback %s", dl);
-					}
-			}
-
-			void doSuccess(final Promise<File> promise, final DownloadListener... listeners)
-					throws InvocationTargetException, InterruptedException {
-				File file = promise.getValue();
-				for (DownloadListener dl : listeners)
-					try {
-						dl.success(file);
-					} catch (Exception e) {
-						reporter.exception(e, "Download listener failed in success callback %s", dl);
-					}
-			}
-
-		};
 	}
 
 	private Callable<Boolean> getRefreshCallback() {

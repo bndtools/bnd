@@ -124,7 +124,7 @@ public class P2Repository extends BaseRepository implements Plugin, RegistryPlug
 
 	@Override
 	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
-		return getP2Index().bridge.getRepository().findProviders(requirements);
+		return getP2Index().getBridge().getRepository().findProviders(requirements);
 	}
 
 	@Override

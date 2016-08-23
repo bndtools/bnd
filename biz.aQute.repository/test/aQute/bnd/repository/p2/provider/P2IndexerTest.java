@@ -69,7 +69,7 @@ public class P2IndexerTest extends TestCase {
 
 			String sha256 = SHA256.digest(f).asHex();
 
-			Repository repository = p2.bridge.getRepository();
+			Repository repository = p2.getBridge().getRepository();
 			RequirementBuilder rb = new RequirementBuilder("osgi.content");
 
 			rb.addDirective("filter", "(osgi.content~=" + sha256.toLowerCase() + ")");

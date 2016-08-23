@@ -7,11 +7,9 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
@@ -22,6 +20,7 @@ import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 import org.osgi.util.function.Function;
 import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Promises;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
@@ -41,13 +40,14 @@ import aQute.service.reporter.Reporter;
 
 class P2Indexer implements Closeable {
 	private static final long	MAX_STALE	= TimeUnit.DAYS.toMillis(100);
-	final Reporter				reporter;
-	final File					location;
-	final HttpClient			client;
-	final URI					url;
-	final String				name;
-	final File					indexFile;
-	volatile BridgeRepository	bridge;
+	private final Reporter					reporter;
+	final File								location;
+	private final HttpClient				client;
+	private final URI						url;
+	private final String					name;
+	private final File						indexFile;
+	private volatile BridgeRepository		bridge;
+	private static final Resource		RECOVERY	= new ResourceBuilder().build();
 
 	P2Indexer(Reporter reporter, File location, HttpClient client, URI url, String name) throws Exception {
 		this.reporter = reporter;
@@ -71,14 +71,14 @@ class P2Indexer implements Closeable {
 		bridge = new BridgeRepository(r);
 	}
 
-	void validate() {
+	private void validate() {
 		if (!this.location.isDirectory())
 			throw new IllegalArgumentException("%s cannot be made a directory" + this.location);
 	}
 
 	File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
 			throws Exception {
-		Resource resource = bridge.get(bsn, version);
+		Resource resource = getBridge().get(bsn, version);
 		if (resource == null)
 			return null;
 
@@ -96,12 +96,12 @@ class P2Indexer implements Closeable {
 		Files.createLink(link.toPath(), source.toPath());
 
 		Promise<File> go = client.build().useCache(MAX_STALE).async(url.toURL()).map(new Function<File,File>() {
-
 			@Override
 			public File apply(File t) {
 				return link;
 			}
 		});
+
 		if (listeners.length == 0)
 			return go.getValue();
 
@@ -110,37 +110,34 @@ class P2Indexer implements Closeable {
 	}
 
 	List<String> list(String pattern) throws Exception {
-		return bridge.list(pattern);
+		return getBridge().list(pattern);
 	}
 
 	SortedSet<Version> versions(String bsn) throws Exception {
-		return bridge.versions(bsn);
+		return getBridge().versions(bsn);
 	}
 
-	Repository readFile() throws Exception {
+	private Repository readFile() throws Exception {
 		try (XMLResourceParser xp = new XMLResourceParser(this.indexFile.toURI())) {
 			List<Resource> resources = xp.parse();
 			return new ResourcesRepository(resources);
 		}
 	}
 
-	Repository readRepository() throws Exception {
+	private Repository readRepository() throws Exception {
 		P2Impl p2 = new P2Impl(client, this.url, Processor.getExecutor());
-		Map<Artifact,Promise<Resource>> fetched = new HashMap<>();
-		List<URI> uris = new ArrayList<>();
-		Set<URI> visited = new HashSet<>();
+		List<Artifact> artifacts = p2.getArtifacts();
+		List<Promise<Resource>> fetched = new ArrayList<>(artifacts.size());
+		Set<URI> visited = new HashSet<>(artifacts.size());
 
-		for (final Artifact a : p2.getArtifacts()) {
-			if (visited.contains(a.uri))
+		for (final Artifact a : artifacts) {
+			if (!visited.add(a.uri))
 				continue;
-
-			visited.add(a.uri);
 
 			Promise<Resource> promise = client.build()
 					.useCache(MAX_STALE)
 					.async(a.uri.toURL())
 					.map(new Function<File,Resource>() {
-
 						@Override
 						public Resource apply(File file) {
 							try {
@@ -148,44 +145,60 @@ class P2Indexer implements Closeable {
 								rb.addFile(file, a.uri);
 								return rb.build();
 							} catch (Exception e) {
-								throw new RuntimeException(e);
+								reporter.trace("%s: Failed to create resource for %s from %s: %s", name, a, file, e);
+								return RECOVERY;
 							}
 						}
+					})
+					.recover(new Function<Promise< ? >,Resource>() {
+						@Override
+						public Resource apply(Promise< ? > failed) {
+							try {
+								reporter.trace("%s: Failed to create resource for %s: %s", name, a,
+										failed.getFailure());
+							} catch (InterruptedException e) {
+								// impossible
+							}
+							return RECOVERY;
+						}
 					});
-
-			fetched.put(a, promise);
+			fetched.add(promise);
 		}
 
-		ResourcesRepository repository = new ResourcesRepository();
-
-		for (Entry<Artifact,Promise<Resource>> e : fetched.entrySet()) {
-			Promise<Resource> resource = e.getValue();
-			Artifact a = e.getKey();
-
-			if (resource.getFailure() == null) {
-				repository.add(resource.getValue());
-			} else {
-				System.out.println(a + " : " + resource.getFailure());
+		Promise<List<Resource>> all = Promises.all(fetched);
+		return all.map(new Function<List<Resource>,ResourcesRepository>() {
+			@Override
+			public ResourcesRepository apply(List<Resource> resources) {
+				ResourcesRepository rr = new ResourcesRepository();
+				for (Resource resource : resources) {
+					if (resource != RECOVERY) {
+						rr.add(resource);
+					}
+				}
+				return rr;
 			}
-		}
-
-		return repository;
+		}).getValue();
 	}
 
-	void save(Repository repository) throws IOException, Exception {
+	private void save(Repository repository) throws IOException, Exception {
 		XMLResourceGenerator xrg = new XMLResourceGenerator();
 		xrg.repository(repository).name(name).save(indexFile);
 	}
 
 	Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
-		return bridge.getRepository().findProviders(requirements);
+		return getBridge().getRepository().findProviders(requirements);
 	}
 
 	public void refresh() throws Exception {
 		Repository repository = readRepository();
+		save(repository);
 		this.bridge = new BridgeRepository(repository);
 	}
 
 	@Override
 	public void close() throws IOException {}
+
+	BridgeRepository getBridge() {
+		return bridge;
+	}
 }

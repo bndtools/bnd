@@ -5,30 +5,20 @@ import java.io.FileInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
 import org.osgi.util.function.Function;
 import org.osgi.util.promise.Deferred;
@@ -43,21 +33,15 @@ import aQute.bnd.http.HttpClient;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.p2.api.Artifact;
-import aQute.p2.api.Metadata;
-import aQute.p2.api.P2;
 import aQute.p2.api.P2Index;
 
-public class P2Impl implements P2 {
-	final DocumentBuilder							db			= DocumentBuilderFactory.newInstance()
-			.newDocumentBuilder();
-	final XPath										xpath		= XPathFactory.newInstance().newXPath();
-	Logger											logger		= LoggerFactory.getLogger(P2Impl.class);
-	final HttpClient								client;
-	final URI										base;
-	P2Index											index;
-	static final List<Artifact>						emptyList	= Collections.emptyList();
-	private static final Promise<List<Artifact>>	RESOLVED	= Promises.resolved(emptyList);
-	final Set<URI>									defaults	= new HashSet<URI>();
+public class P2Impl {
+	private static final Logger						logger		= LoggerFactory.getLogger(P2Impl.class);
+	private final HttpClient						client;
+	private final URI								base;
+	private static final Promise<List<Artifact>>	RESOLVED	= Promises.resolved(Collections.<Artifact> emptyList());
+	private final Set<URI>							defaults	= Collections
+			.newSetFromMap(new ConcurrentHashMap<URI,Boolean>());
 	private Executor								executor;
 
 	public P2Impl(HttpClient c, URI base, Executor executor) throws Exception {
@@ -75,31 +59,32 @@ public class P2Impl implements P2 {
 	}
 
 	public List<Artifact> getArtifacts() throws Exception {
-		Set<URI> cycles = new LinkedHashSet<>();
+		Set<URI> cycles = Collections.newSetFromMap(new ConcurrentHashMap<URI,Boolean>());
 		return getArtifacts(cycles, base).getValue();
 	}
 
-	private Promise<List<Artifact>> getArtifacts(Set<URI> cycles, URI uri) throws Exception {
-		if (cycles.contains(uri))
-			throw new IllegalStateException("There is a cycle in the p2 setup : " + cycles + " -> " + uri);
+	private Promise<List<Artifact>> getArtifacts(Set<URI> cycles, URI uri) {
+		if (!cycles.add(uri)) {
+			return Promises
+					.failed(new IllegalStateException("There is a cycle in the p2 setup : " + cycles + " -> " + uri));
+		}
 
-		cycles.add(uri);
-
-		System.out.println(uri);
-		String type = uri.getPath();
-
-		if (type.endsWith("/compositeArtifacts.xml")) {
-			return parseCompositeArtifacts(cycles, hideAndSeek(uri), uri);
-		} else if (type.endsWith("/artifacts.xml.xz")) {
-			return parseArtifacts(hideAndSeek(uri), uri);
-		} else if (type.endsWith("/artifacts.xml")) {
-			return parseArtifacts(hideAndSeek(uri), uri);
-		} else if (type.endsWith("/p2.index"))
-			return parseIndexArtifacts(cycles, uri);
-		else {
+		try {
+			String type = uri.getPath();
+			if (type.endsWith("/compositeArtifacts.xml")) {
+				return parseCompositeArtifacts(cycles, hideAndSeek(uri), uri);
+			} else if (type.endsWith("/artifacts.xml.xz")) {
+				return parseArtifacts(hideAndSeek(uri), uri);
+			} else if (type.endsWith("/artifacts.xml")) {
+				return parseArtifacts(hideAndSeek(uri), uri);
+			} else if (type.endsWith("/p2.index")) {
+				return parseIndexArtifacts(cycles, uri);
+			}
 			uri = normalize(uri).resolve("p2.index");
 			defaults.add(uri);
 			return parseIndexArtifacts(cycles, uri);
+		} catch (Exception e) {
+			return Promises.failed(e);
 		}
 	}
 
@@ -108,16 +93,13 @@ public class P2Impl implements P2 {
 			return RESOLVED;
 
 		final Deferred<List<Artifact>> deferred = new Deferred<>();
-
 		executor.execute(new Runnable() {
-
 			@Override
 			public void run() {
 				try {
 					ArtifactRepository ar = new ArtifactRepository(in, uri);
 					deferred.resolve(ar.getArtifacts());
 				} catch (Throwable e) {
-					e.printStackTrace();
 					deferred.fail(e);
 				} finally {
 					IO.close(in);
@@ -143,43 +125,47 @@ public class P2Impl implements P2 {
 
 		CompositeArtifacts ca = new CompositeArtifacts(in);
 		ca.parse();
-		System.out.println("  composite: " + ca.uris);
 
 		return getArtifacts(cycles, ca.uris);
 	}
 
 	private Promise<List<Artifact>> getArtifacts(final Set<URI> cycles, final Collection<URI> uris) {
 		final Deferred<List<Artifact>> deferred = new Deferred<>();
-
 		executor.execute(new Runnable() {
-
 			@Override
 			public void run() {
 				try {
-					Map<URI,Promise<List<Artifact>>> promises = new HashMap<>();
-
-					for (URI uri : uris) {
+					List<Promise<List<Artifact>>> promises = new ArrayList<>(uris.size());
+					for (final URI uri : uris) {
 						URI nuri = base.resolve(uri);
-						promises.put(uri, getArtifacts(cycles, nuri));
+						promises.add(getArtifacts(cycles, nuri)
+								.recover(new Function<Promise< ? >,List<Artifact>>() {
+									@Override
+									public List<Artifact> apply(Promise< ? > failed) {
+										if (!defaults.contains(uri)) {
+											try {
+												logger.info("Failed to get artifacts for %s", uri, failed.getFailure());
+											} catch (InterruptedException e) {
+												// impossible
+											}
+										}
+										return Collections.emptyList();
+									}
+								}));
 					}
 
-					List<Artifact> artifacts = new ArrayList<>();
-					for (Map.Entry<URI,Promise<List<Artifact>>> e : promises.entrySet()) {
-						try {
-							List<Artifact> value = e.getValue().getValue();
-							artifacts.addAll(value);
-						} catch (InvocationTargetException ee) {
-							if (!defaults.contains(e.getKey())) {
-								ee.getTargetException().printStackTrace();
-								logger.info("Failed", ee.getTargetException());
+					Promise<List<List<Artifact>>> all = Promises.all(promises);
+					deferred.resolveWith(all.map(new Function<List<List<Artifact>>,List<Artifact>>() {
+						@Override
+						public List<Artifact> apply(List<List<Artifact>> lists) {
+							List<Artifact> result = new ArrayList<>();
+							for (List<Artifact> list : lists) {
+								result.addAll(list);
 							}
-						} catch (Exception eee) {
-							logger.info("Failed", eee);
+							return result;
 						}
-					}
-					deferred.resolve(artifacts);
+					}));
 				} catch (Throwable e) {
-					e.printStackTrace();
 					deferred.fail(e);
 				}
 			}
@@ -214,7 +200,7 @@ public class P2Impl implements P2 {
 		return null;
 	}
 
-	File getFile(URI xzname) throws Exception {
+	private File getFile(URI xzname) throws Exception {
 		return client.build().useCache().go(xzname);
 	}
 
@@ -254,11 +240,10 @@ public class P2Impl implements P2 {
 	private Promise<List<Artifact>> parseIndexArtifacts(final Set<URI> cycles, final URI uri) throws Exception {
 		Promise<File> file = client.build().useCache().get().async(uri.toURL());
 		return file.flatMap(new Function<File,Promise< ? extends List<Artifact>>>() {
-
 			@Override
-			public Promise<List<Artifact>> apply(File t) {
+			public Promise<List<Artifact>> apply(File file) {
 				try {
-					return parseIndexArtifacts(cycles, uri, t);
+					return parseIndexArtifacts(cycles, uri, file);
 				} catch (Throwable e) {
 					return Promises.failed(e);
 				}
@@ -278,7 +263,6 @@ public class P2Impl implements P2 {
 		canonicalize(index.artifacts);
 		canonicalize(index.content);
 
-		System.out.println("  index: " + index.artifacts);
 		return getArtifacts(cycles, index.artifacts);
 	}
 
@@ -292,7 +276,7 @@ public class P2Impl implements P2 {
 		}
 	}
 
-	P2Index getDefaultIndex(URI base) {
+	private P2Index getDefaultIndex(URI base) {
 		P2Index index = new P2Index();
 		index.artifacts.add(base.resolve("compositeArtifacts.xml"));
 		index.artifacts.add(base.resolve("artifacts.xml"));
@@ -300,7 +284,6 @@ public class P2Impl implements P2 {
 		index.content.add(base.resolve("content.xml"));
 		defaults.addAll(index.artifacts);
 		defaults.addAll(index.content);
-		this.index = index;
 		return index;
 	}
 
@@ -324,7 +307,7 @@ public class P2Impl implements P2 {
 		return index;
 	}
 
-	void addPaths(String p, List<URI> index, URI base) {
+	private void addPaths(String p, List<URI> index, URI base) {
 		Parameters content = new Parameters(p);
 		for (String path : content.keySet()) {
 			if ("!".equals(path)) {
@@ -334,22 +317,4 @@ public class P2Impl implements P2 {
 			index.add(sub);
 		}
 	}
-
-	@Override
-	public Metadata getRepository() {
-		return null;
-	}
-
-	public static void main(String args[]) throws Exception {
-		HttpClient c = new HttpClient();
-		ExecutorService pool = Executors.newCachedThreadPool();
-		try {
-			P2Impl p2 = new P2Impl(c, new URI("http://www.nodeclipse.org/updates/"), pool);
-			System.out.println(p2.getArtifacts());
-			System.out.println(p2.defaults);
-		} finally {
-			pool.shutdown();
-		}
-	}
-
 }

@@ -22,7 +22,7 @@ import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenRepository;
 import aQute.service.reporter.Reporter;
 
-public class SearchRepository extends InnerRepository {
+class SearchRepository extends InnerRepository {
 
 	final static long			DEFAULT_MAX_STALE	= TimeUnit.HOURS.toMillis(1);
 	final String				query;

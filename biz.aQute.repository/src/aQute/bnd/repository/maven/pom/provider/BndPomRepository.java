@@ -73,14 +73,16 @@ public class BndPomRepository extends BaseRepository
 			MavenRepository repository = new MavenRepository(localRepo, name, release, snapshot,
 					Processor.getExecutor(), reporter, null);
 
-			if (pomFile != null)
+			if (pomFile != null) {
 				repoImpl = new PomRepository(repository, client, location, pomFile);
-			else if (revision != null)
+			} else if (revision != null) {
 				repoImpl = new PomRepository(repository, client, location, revision);
-			else if (query != null)
+			} else if (query != null) {
 				repoImpl = new SearchRepository(repository, location, query, queryUrl, workspace, client);
-			else
+			} else {
+				repository.close();
 				throw new IllegalStateException("We have neither a pom, revision, or query set!");
+			}
 
 			bridge = new BridgeRepository(repoImpl);
 		} catch (Exception e) {
