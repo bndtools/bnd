@@ -4,7 +4,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
+import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
 class CapReq {
@@ -62,9 +64,47 @@ class CapReq {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (obj instanceof CapReq)
+			return equalsNative((CapReq) obj);
+		else if ((mode == MODE.Capability) && (obj instanceof Capability))
+			return equalsCap((Capability) obj);
+		else if ((mode == MODE.Requirement) && (obj instanceof Requirement))
+			return equalsReq((Requirement) obj);
+		return false;
+	}
+
+	private boolean equalsCap(Capability other) {
+		if (namespace == null) {
+			if (other.getNamespace() != null)
+				return false;
+		} else if (!namespace.equals(other.getNamespace()))
 			return false;
-		CapReq other = (CapReq) obj;
+		if (attributes == null) {
+			if (other.getAttributes() != null)
+				return false;
+		} else if (!attributes.equals(other.getAttributes()))
+			return false;
+		if (directives == null) {
+			if (other.getDirectives() != null)
+				return false;
+		} else if (!directives.equals(other.getDirectives()))
+			return false;
+		if (resource == null) {
+			if (other.getResource() != null)
+				return false;
+		} else if (!resource.equals(other.getResource()))
+			return false;
+		return true;
+	}
+
+	private boolean equalsNative(CapReq other) {
+		if (mode != other.mode)
+			return false;
+		if (namespace == null) {
+			if (other.namespace != null)
+				return false;
+		} else if (!namespace.equals(other.namespace))
+			return false;
 		if (attributes == null) {
 			if (other.attributes != null)
 				return false;
@@ -75,17 +115,34 @@ class CapReq {
 				return false;
 		} else if (!directives.equals(other.directives))
 			return false;
-		if (mode != other.mode)
-			return false;
-		if (namespace == null) {
-			if (other.namespace != null)
-				return false;
-		} else if (!namespace.equals(other.namespace))
-			return false;
 		if (resource == null) {
 			if (other.resource != null)
 				return false;
 		} else if (!resource.equals(other.resource))
+			return false;
+		return true;
+	}
+
+	private boolean equalsReq(Requirement other) {
+		if (namespace == null) {
+			if (other.getNamespace() != null)
+				return false;
+		} else if (!namespace.equals(other.getNamespace()))
+			return false;
+		if (attributes == null) {
+			if (other.getAttributes() != null)
+				return false;
+		} else if (!attributes.equals(other.getAttributes()))
+			return false;
+		if (directives == null) {
+			if (other.getDirectives() != null)
+				return false;
+		} else if (!directives.equals(other.getDirectives()))
+			return false;
+		if (resource == null) {
+			if (other.getResource() != null)
+				return false;
+		} else if (!resource.equals(other.getResource()))
 			return false;
 		return true;
 	}
