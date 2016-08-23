@@ -69,6 +69,10 @@ import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.IElementStateListener;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Promises;
+import org.osgi.util.promise.Success;
+
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
@@ -460,24 +464,26 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             setPartNameForInput(input);
             sourcePage.getDocumentProvider().addElementStateListener(new ElementStateListener());
 
-            //            Central.onWorkspaceInit(new Success<Workspace,Void>() {
-            //                @Override
-            //                public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
-            //                    final Deferred<Void> completion = new Deferred<>();
-            //                    Display.getDefault().asyncExec(new Runnable() {
-            //                        @Override
-            //                        public void run() {
-            //                            try {
-            loadEditModel();
-            //                                completion.resolve(null);
-            //                            } catch (Exception e) {
-            //                                completion.fail(e);
-            //                            }
-            //                        }
-            //                    });
-            //                    return completion.getPromise();
-            //                }
-            //            });
+            if (Central.getWorkspaceDirectory() == null) { // default ws will be created we can load immediately
+                loadEditModel();
+            } else { // a real ws will be resolved so we need to load async
+                Central.onWorkspaceInit(new Success<Workspace,Void>() {
+                    @Override
+                    public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
+                        Display.getDefault().asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    loadEditModel();
+                                } catch (Exception e) {
+                                    logger.logError("Failed to load edit model", e);
+                                }
+                            }
+                        });
+                        return Promises.resolved(null);
+                    }
+                });
+            }
         } catch (Exception e1) {
             throw Exceptions.duck(e1);
         }

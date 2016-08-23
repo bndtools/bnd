@@ -57,6 +57,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerDropAdapter;
@@ -78,20 +79,26 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.XMLMemento;
+import org.eclipse.ui.forms.events.HyperlinkAdapter;
+import org.eclipse.ui.forms.events.HyperlinkEvent;
+import org.eclipse.ui.forms.widgets.FormText;
+import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.resource.Requirement;
+
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Refreshable;
@@ -112,6 +119,7 @@ import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
 import bndtools.preferences.JpmPreferences;
 import bndtools.utils.SelectionDragAdapter;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
+import bndtools.wizards.workspace.WorkspaceSetupWizard;
 
 public class RepositoriesView extends ViewPart implements RepositoriesViewRefresher.RefreshModel {
     final static Pattern LABEL_PATTERN = Pattern.compile("(-)?(!)?([^{}]+)(?:\\{([^}]+)\\})?");
@@ -138,19 +146,39 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         final StackLayout stackLayout = new StackLayout();
         parent.setLayout(stackLayout);
 
-        Composite labelParent = new Composite(parent, SWT.NONE);
-        FillLayout fillLayout = new FillLayout();
-        fillLayout.marginHeight = fillLayout.marginWidth = 10;
-        labelParent.setLayout(fillLayout);
+        FormToolkit toolkit = new FormToolkit(parent.getDisplay());
+        Composite defaultParent = toolkit.createComposite(parent, SWT.NONE);
+        FillLayout fill = new FillLayout();
+        fill.marginHeight = 5;
+        fill.marginWidth = 5;
+        defaultParent.setLayout(fill);
 
-        if (!Central.isWorkspaceInited()) {
-            Label label = new Label(labelParent, SWT.NONE);
-            label.setText("Repositories are loading, please wait...");
-            label.setBackground(parent.getBackground());
-            label.setForeground(parent.getForeground());
+        File workspaceDir = null;
+
+        try {
+            workspaceDir = Central.getWorkspaceDirectory();
+        } catch (Exception e) {}
+
+        if (workspaceDir == null) {
+            FormText form = toolkit.createFormText(defaultParent, true);
+            form.setText("<form><p>No workspace configuration found. <a>Create a new BND workspace...</a></p></form>", true, false);
+            form.addHyperlinkListener(new HyperlinkAdapter() {
+                @Override
+                public void linkActivated(HyperlinkEvent e) {
+                    IWorkbench workbench = PlatformUI.getWorkbench();
+                    IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+
+                    WorkspaceSetupWizard wizard = new WorkspaceSetupWizard();
+                    wizard.init(workbench, StructuredSelection.EMPTY);
+                    WizardDialog dialog = new WizardDialog(window.getShell(), wizard);
+                    dialog.open();
+                }
+            });
+        } else {
+            toolkit.createLabel(defaultParent, "Repositories are loading, please wait...");
         }
 
-        stackLayout.topControl = labelParent;
+        stackLayout.topControl = defaultParent;
         parent.layout();
 
         final Composite mainPanel = new Composite(parent, SWT.NONE);
