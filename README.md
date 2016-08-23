@@ -20,6 +20,7 @@ The git repository contains all code. It contains the following projects:
 * cnf - Configuration directory
 * demo - Used in testing
 * dist - Contains the distribution after 'gradle'
+* docs - GitHub Pages manual for Bnd
 
 ## License
 All code is Apache 2.0 Licensed so you can do what you want with the source code. 
