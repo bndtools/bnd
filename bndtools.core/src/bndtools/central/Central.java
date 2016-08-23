@@ -273,7 +273,7 @@ public class Central implements IStartupParticipant {
         }
     };
 
-    private static File getWorkspaceDirectory() throws CoreException {
+    public static File getWorkspaceDirectory() throws CoreException {
         IWorkspaceRoot eclipseWorkspace = ResourcesPlugin.getWorkspace().getRoot();
 
         IProject cnfProject = eclipseWorkspace.getProject("bnd");
