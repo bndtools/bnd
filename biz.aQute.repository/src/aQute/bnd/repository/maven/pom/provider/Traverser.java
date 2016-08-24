@@ -9,11 +9,9 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
@@ -50,7 +48,6 @@ class Traverser {
 	final AtomicInteger						count		= new AtomicInteger(-1);
 	final Deferred<Map<Archive,Resource>>	deferred	= new Deferred<>();
 	final MavenRepository					repo;
-	final Set<String>						error		= Collections.synchronizedSet(new HashSet<String>());
 	final HttpClient						client;
 
 	Traverser(MavenRepository repo, Revision revision, HttpClient client, Executor executor) {
@@ -141,8 +138,6 @@ class Traverser {
 					addReserveIdentity(rb, bsn, version);
 					addInformationCapability(rb, archive.toString(), parent, throwable);
 					resources.put(archive, rb.build());
-
-					error.add(archive + " from " + parent + " " + throwable);
 				} finally {
 					finish();
 				}
