@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
@@ -22,14 +21,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import aQute.lib.io.IO;
+import aQute.libg.xml.DocumentBuilderFactory;
 
 public abstract class Pom {
-	static DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
 	static XPathFactory				xpf	= XPathFactory.newInstance();
-
-	static {
-		dbf.setNamespaceAware(false);
-	}
 
 	public enum Scope {
 		compile, runtime, system, import_, provided, test,;
@@ -130,7 +125,7 @@ public abstract class Pom {
 	}
 
 	void parse() throws Exception {
-		DocumentBuilder db = dbf.newDocumentBuilder();
+		DocumentBuilder db = DocumentBuilderFactory.safeInstance();
 		System.err.println("Parsing " + pomFile.getAbsolutePath());
 		Document doc = db.parse(pomFile);
 		XPath xp = xpf.newXPath();

@@ -37,7 +37,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
@@ -80,6 +79,7 @@ import aQute.libg.cryptography.SHA1;
 import aQute.libg.cryptography.SHA256;
 import aQute.libg.glob.Glob;
 import aQute.libg.reporter.ReporterAdapter;
+import aQute.libg.xml.DocumentBuilderFactory;
 import aQute.service.library.Coordinate;
 import aQute.service.library.Library;
 import aQute.service.library.Library.Program;
@@ -93,7 +93,6 @@ import aQute.service.reporter.Reporter;
  */
 public class Repository implements Plugin, RepositoryPlugin, Closeable, Refreshable, Actionable, RegistryPlugin,
 		SearchableRepository, InfoRepository {
-	private static final DocumentBuilderFactory	dbf							= DocumentBuilderFactory.newInstance();
 	private static final XPathFactory			xpf							= XPathFactory.newInstance();
 	public static final String					REPO_DEFAULT_URI			= "http://repo.jpm4j.org";
 	private static final PutOptions				DEFAULT_OPTIONS				= new PutOptions();
@@ -1837,7 +1836,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 					Resource r = jar.getResource("META-INF/maven/" + ref.groupId + "/" + ref.artifactId + "/pom.xml");
 					if (r != null) {
-						DocumentBuilder db = dbf.newDocumentBuilder();
+						DocumentBuilder db = DocumentBuilderFactory.safeInstance();
 						Document doc = db.parse(r.openInputStream());
 						XPath xp = xpf.newXPath();
 						if (ref.description == null) {

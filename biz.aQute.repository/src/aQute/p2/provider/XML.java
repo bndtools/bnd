@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -20,9 +19,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import aQute.lib.converter.Converter;
+import aQute.libg.xml.DocumentBuilderFactory;
 
 public class XML {
-	final static DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
 	final static XPathFactory			xpf	= XPathFactory.newInstance();
 	final XPath							xp	= xpf.newXPath();
 	final Document						document;
@@ -41,7 +40,7 @@ public class XML {
 	}
 
 	static Document getDocument(InputStream in) throws ParserConfigurationException, SAXException, IOException {
-		DocumentBuilder db = dbf.newDocumentBuilder();
+		DocumentBuilder db = DocumentBuilderFactory.safeInstance();
 		return db.parse(in);
 	}
 

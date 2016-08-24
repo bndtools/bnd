@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
@@ -18,9 +17,9 @@ import aQute.jpm.lib.CommandData;
 import aQute.jpm.lib.JVM;
 import aQute.jpm.lib.ServiceData;
 import aQute.lib.io.IO;
+import aQute.libg.xml.DocumentBuilderFactory;
 
 class MacOS extends Unix {
-	static DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
 	static XPathFactory				xpf	= XPathFactory.newInstance();
 
 	@Override
@@ -162,7 +161,7 @@ class MacOS extends Unix {
 			return null;
 		}
 
-		DocumentBuilder db = dbf.newDocumentBuilder();
+		DocumentBuilder db = DocumentBuilderFactory.safeInstance();
 		try {
 			Document doc = db.parse(plist);
 			XPath xp = xpf.newXPath();

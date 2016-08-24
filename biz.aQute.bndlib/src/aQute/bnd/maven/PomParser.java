@@ -6,7 +6,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
@@ -22,6 +21,7 @@ import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.xml.DocumentBuilderFactory;
 
 /**
  * Provides a way to parse a maven pom as properties. This provides most of the
@@ -31,14 +31,11 @@ import aQute.lib.utf8properties.UTF8Properties;
  * for this.
  */
 public class PomParser extends Processor {
-	static DocumentBuilderFactory	dbf			= DocumentBuilderFactory.newInstance();
 	static XPathFactory				xpathf		= XPathFactory.newInstance();
 	static Set<String>				multiple	= new HashSet<String>();
 	static Set<String>				skip		= new HashSet<String>();
 
 	static {
-		dbf.setNamespaceAware(false);
-
 		// Set all elements that need enumeration of their elements
 		// these will not use the name of the subelement but instead
 		// they use an index from 0..n
@@ -61,7 +58,7 @@ public class PomParser extends Processor {
 	}
 
 	public Properties getProperties(File pom) throws Exception {
-		DocumentBuilder db = dbf.newDocumentBuilder();
+		DocumentBuilder db = DocumentBuilderFactory.safeInstance();
 		XPath xpath = xpathf.newXPath();
 		pom = pom.getAbsoluteFile();
 		Document doc = db.parse(pom);
