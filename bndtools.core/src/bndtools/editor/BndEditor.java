@@ -464,23 +464,19 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             setPartNameForInput(input);
             sourcePage.getDocumentProvider().addElementStateListener(new ElementStateListener());
 
-            if (Central.getWorkspaceDirectory() == null) { // default ws will be created we can load immediately
+            if (!Central.hasWorkspaceDirectory()) { // default ws will be created we can load immediately
                 loadEditModel();
             } else { // a real ws will be resolved so we need to load async
                 Central.onWorkspaceInit(new Success<Workspace,Void>() {
                     @Override
                     public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
-                        Display.getDefault().asyncExec(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    loadEditModel();
-                                } catch (Exception e) {
-                                    logger.logError("Failed to load edit model", e);
-                                }
-                            }
-                        });
-                        return Promises.resolved(null);
+                        try {
+                            loadEditModel();
+                            return Promises.resolved(null);
+                        } catch (Exception e) {
+                            logger.logError("Failed to load edit model", e);
+                            return Promises.failed(e);
+                        }
                     }
                 });
             }
@@ -501,17 +497,23 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         model.loadFrom(new IDocumentWrapper(document));
         model.setBndResource(inputFile);
 
-        for (int i = 0; i < getPageCount(); i++) {
-            Control control = getControl(i);
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < getPageCount(); i++) {
+                    Control control = getControl(i);
 
-            if (control instanceof ScrolledForm) {
-                ScrolledForm form = (ScrolledForm) control;
+                    if (control instanceof ScrolledForm) {
+                        ScrolledForm form = (ScrolledForm) control;
 
-                if (SYNC_MESSAGE.equals(form.getMessage())) {
-                    form.setMessage(null, IMessageProvider.NONE);
+                        if (SYNC_MESSAGE.equals(form.getMessage())) {
+                            form.setMessage(null, IMessageProvider.NONE);
+                        }
+                    }
                 }
             }
-        }
+        });
+
     }
 
     private void initPages(IEditorSite site, IEditorInput input) throws PartInitException {
