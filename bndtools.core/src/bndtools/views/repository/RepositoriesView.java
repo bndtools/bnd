@@ -153,13 +153,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         fill.marginWidth = 5;
         defaultParent.setLayout(fill);
 
-        File workspaceDir = null;
-
-        try {
-            workspaceDir = Central.getWorkspaceDirectory();
-        } catch (Exception e) {}
-
-        if (workspaceDir == null) {
+        if (!Central.hasWorkspaceDirectory()) {
             FormText form = toolkit.createFormText(defaultParent, true);
             form.setText("<form><p>No workspace configuration found. <a>Create a new BND workspace...</a></p></form>", true, false);
             form.addHyperlinkListener(new HyperlinkAdapter() {
