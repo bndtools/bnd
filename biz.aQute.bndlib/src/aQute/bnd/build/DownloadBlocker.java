@@ -21,8 +21,8 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	};
 
 	private volatile Stage	stage	= Stage.INIT;
-	private String			failure;
-	private File			file;
+	private volatile String	failure;
+	private volatile File	file;
 	private final Reporter	reporter;
 
 	public DownloadBlocker(Reporter reporter) {
@@ -102,10 +102,8 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	}
 
 	public File getFile() {
-		if (getReason() == null)
-			return file;
-		else
-			return null;
+		getReason();
+		return file;
 	}
 
 	@Override

@@ -71,9 +71,8 @@ class IndexFile {
 					rb.addFile(f, f.toURI());
 					resource = rb.build();
 				} catch (Exception e) {
-					e.printStackTrace();
 					reporter.exception(e, "Failed to get file for %s", archive);
-					return resource = ResourceUtils.DUMMY_RESOURCE;
+					resource = ResourceUtils.DUMMY_RESOURCE;
 				}
 			}
 			return resource;

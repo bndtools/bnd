@@ -731,14 +731,14 @@ public class MavenBndRepository extends BaseRepository
 	private boolean addPom(URI uri) throws Exception {
 		try {
 			// http://search.maven.org/remotecontent?filepath=com/netflix/governator/governator-commons-cli/1.12.10/governator-commons-cli-1.12.10.pom
-			IPom pom = storage.getPom(uri.toURL().openStream());
+			IPom pom = storage.getPom(client.connect(uri.toURL()));
 			Archive binaryArchive = pom.binaryArchive();
 			index.add(binaryArchive);
 			return true;
 		} catch (FileNotFoundException e) {
 			return false;
 		} catch (Exception e) {
-			e.printStackTrace();
+			reporter.trace("Failure to parse %s: %s", uri, e);
 			return false;
 		}
 	}

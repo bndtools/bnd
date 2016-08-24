@@ -137,7 +137,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 				try {
 					File f = get0(archive, file);
 					if (thrw && f == null) {
-						deferred.fail(new FileNotFoundException("" + archive));
+						deferred.fail(new FileNotFoundException("For Maven artifact " + archive));
 						return;
 					}
 					deferred.resolve(f);
@@ -362,12 +362,8 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public boolean exists(Archive archive) throws Exception {
-		Promise<File> promise = get(archive.getPomArchive(), false);
-		if (promise.getFailure() != null) {
-			return false;
-		}
-		File value = promise.getValue();
-		return value != null;
+		Promise<File> promise = get(archive.getPomArchive());
+		return (promise.getFailure() == null) && (promise.getValue() != null);
 	}
 
 	public void clear(Revision revision) {

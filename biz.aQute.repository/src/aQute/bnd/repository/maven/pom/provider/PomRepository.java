@@ -97,7 +97,7 @@ class PomRepository extends InnerRepository {
 			}
 		} else {
 			try {
-				File file = getMavenRepository().get(revision.getPomArchive(), false).getValue();
+				File file = getMavenRepository().get(revision.getPomArchive()).getValue();
 				if (file.isFile() && file.lastModified() > getLocation().lastModified()) {
 					return true;
 				}

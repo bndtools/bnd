@@ -123,7 +123,7 @@ public class ResourceBuilder {
 		// Do the Bundle Identity Ns
 		//
 
-		int bundleManifestVersion = Integer.parseInt(manifest.get(Constants.BUNDLE_MANIFESTVERSION));
+		int bundleManifestVersion = Integer.parseInt(manifest.get(Constants.BUNDLE_MANIFESTVERSION, "1"));
 
 		Entry<String,Attrs> bsn = manifest.getBundleSymbolicName();
 
