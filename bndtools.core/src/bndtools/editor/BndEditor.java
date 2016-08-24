@@ -97,7 +97,7 @@ import bndtools.types.Pair;
 public class BndEditor extends ExtendedFormEditor implements IResourceChangeListener {
 
     private static final ILogger logger = Logger.getLogger(BndEditor.class);
-    private static final String SYNC_MESSAGE = "Workspace is loading, please wait...";
+    public static final String SYNC_MESSAGE = "Workspace is loading, please wait...";
 
     public static final String WORKSPACE_EDITOR = "bndtools.bndWorkspaceConfigEditor";
 

@@ -6,13 +6,22 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.ScrolledForm;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Promises;
+import org.osgi.util.promise.Success;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
+import bndtools.central.Central;
+import bndtools.editor.BndEditor;
 
 public abstract class BndEditorPart extends SectionPart implements PropertyChangeListener {
 
@@ -53,7 +62,30 @@ public abstract class BndEditorPart extends SectionPart implements PropertyChang
 
     @Override
     public final void refresh() {
-        refreshFromModel();
+        if (!Central.hasWorkspaceDirectory()) {
+            refreshFromModel();
+        } else {
+            Central.onWorkspaceInit(new Success<Workspace,Void>() {
+                @Override
+                public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
+                    try {
+                        Display.getDefault().asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                refreshFromModel();
+
+                                ScrolledForm form = getManagedForm().getForm();
+
+                                if (BndEditor.SYNC_MESSAGE.equals(form.getMessage())) {
+                                    form.setMessage(null, IMessageProvider.NONE);
+                                }
+                            }
+                        });
+                    } catch (Exception e) {}
+                    return Promises.resolved(null);
+                }
+            });
+        }
         super.refresh();
     }
 
