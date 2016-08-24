@@ -31,7 +31,7 @@ public class WizardBndFileSelector extends WizardPage {
     private CheckboxTreeViewer checkboxTreeViewer;
 
     protected WizardBndFileSelector() {
-        super("selectBndPage", "Select bnd files to update", null);
+        super("selectBndPage", "Select Bnd files to update", null);
         setPageComplete(false);
     }
 

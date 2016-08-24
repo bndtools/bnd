@@ -111,7 +111,7 @@ public class WorkspaceLocationPart {
         } else {
             final Label txtUpdateLocation = new Label(group, SWT.BORDER);
             txtUpdateLocation.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-            txtUpdateLocation.setText("Update in current bnd Workspace");
+            txtUpdateLocation.setText("Update in current Bnd Workspace");
 
             Label lblEclipseWorkspace = new Label(group, SWT.NONE);
             lblEclipseWorkspace.setText(workspace.getAbsolutePath());

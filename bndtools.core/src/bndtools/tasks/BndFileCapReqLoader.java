@@ -27,7 +27,7 @@ public class BndFileCapReqLoader extends BndBuilderCapReqLoader {
 
             IFile[] wsfiles = FileUtils.getWorkspaceFiles(file);
             if (wsfiles == null || wsfiles.length == 0)
-                throw new Exception("Unable to determine project owner for bnd file: " + file.getAbsolutePath());
+                throw new Exception("Unable to determine project owner for Bnd file: " + file.getAbsolutePath());
 
             IProject project = wsfiles[0].getProject();
 

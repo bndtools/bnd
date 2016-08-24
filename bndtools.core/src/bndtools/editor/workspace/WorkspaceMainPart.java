@@ -62,7 +62,7 @@ public class WorkspaceMainPart extends SectionPart {
         if (mainFile) {
             section.setDescription("This file is used to define your specific settings. Default settings are defined in the files linked below.");
         } else {
-            section.setDescription("This file is part of the default bnd workspace settings. It should not be edited, instead define overrides in the main build.bnd file.");
+            section.setDescription("This file is part of the default Bnd workspace settings. It should not be edited, instead define overrides in the main build.bnd file.");
             section.setTitleBarBackground(warningColor);
         }
 

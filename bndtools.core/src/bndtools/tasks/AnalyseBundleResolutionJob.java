@@ -68,7 +68,7 @@ public class AnalyseBundleResolutionJob extends Job {
                     Map<String,List<RequirementWrapper>> reqs = loader.loadRequirements();
                     mergeMaps(reqs, allReqs);
                 } catch (Exception e) {
-                    logger.logError("Error in bnd resolution analysis.", e);
+                    logger.logError("Error in Bnd resolution analysis.", e);
                 } finally {
                     IO.close(loader);
                 }

@@ -169,7 +169,7 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
             try {
                 updateBundleBlueprintAndIncludeResource(file, bndFile);
             } catch (Exception e) {
-                ErrorDialog.openError(getShell(), "New Blueprint XML File", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error updating bnd file", e));
+                ErrorDialog.openError(getShell(), "New Blueprint XML File", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error updating Bnd file", e));
             }
         }
 

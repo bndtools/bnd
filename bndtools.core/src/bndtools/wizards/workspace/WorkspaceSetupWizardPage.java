@@ -43,7 +43,7 @@ public class WorkspaceSetupWizardPage extends WizardPage {
 
     @Override
     public void createControl(Composite parent) {
-        setTitle("Setup bnd Workspace");
+        setTitle("Setup Bnd Workspace");
         setDescription("Create a workspace folder with initial configuration");
         setImageDescriptor(Plugin.imageDescriptorFromPlugin("icons/bndtools-wizban.png")); //$NON-NLS-1$
 
@@ -93,13 +93,13 @@ public class WorkspaceSetupWizardPage extends WizardPage {
     }
 
     private void updateUI() {
-        String warning = cleanBuild ? null : "Existing bnd projects may not build until the workspace is cleaned.";
+        String warning = cleanBuild ? null : "Existing Bnd projects may not build until the workspace is cleaned.";
 
         // Check for existing workspace/cnf
         IProject cnfProject = ResourcesPlugin.getWorkspace().getRoot().getProject(Project.BNDCNF);
         if (cnfProject != null && cnfProject.exists()) {
             File cnfDir = cnfProject.getLocation().toFile();
-            warning = String.format("This Eclipse workspace is already configured as a bnd workspace. You will not be able to create or import a bnd workspace from elsewhere.", cnfDir);
+            warning = String.format("This Eclipse workspace is already configured as a Bnd workspace. You will not be able to create or import a Bnd workspace from elsewhere.", cnfDir);
         }
         setMessage(warning, WARNING);
 
