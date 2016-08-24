@@ -155,7 +155,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
         if (!Central.hasWorkspaceDirectory()) {
             FormText form = toolkit.createFormText(defaultParent, true);
-            form.setText("<form><p>No workspace configuration found. <a>Create a new BND workspace...</a></p></form>", true, false);
+            form.setText("<form><p>No workspace configuration found. <a>Create a new Bnd workspace...</a></p></form>", true, false);
             form.addHyperlinkListener(new HyperlinkAdapter() {
                 @Override
                 public void linkActivated(HyperlinkEvent e) {
