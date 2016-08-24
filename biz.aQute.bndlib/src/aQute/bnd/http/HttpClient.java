@@ -516,7 +516,7 @@ public class HttpClient implements Closeable, URLConnector {
 			return new TaggedData(con, in, request.useCacheFile);
 
 		} catch (SocketTimeoutException ste) {
-			task.done("timed out", ste);
+			task.done(ste.toString(), null);
 			return new TaggedData(request.url.toURI(), HttpURLConnection.HTTP_GATEWAY_TIMEOUT, request.useCacheFile);
 		}
 	}
