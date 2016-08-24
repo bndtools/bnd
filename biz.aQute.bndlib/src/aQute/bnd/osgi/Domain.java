@@ -31,6 +31,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import aQute.bnd.header.Attrs;
@@ -473,6 +474,8 @@ public abstract class Domain implements Iterable<String> {
 				return null;
 			Manifest m = new Manifest(zf.getInputStream(entry));
 			return domain(m);
+		} catch (ZipException e) {
+			return null;
 		}
 	}
 
