@@ -67,8 +67,8 @@ public class OSGiRepository extends BaseRepository
 
 	private Config					config;
 	private OSGiIndex				index;
-	private Reporter				reporter	= new Slf4jReporter(OSGiRepository.class);
-	private Registry				registry;
+	protected Reporter				reporter	= new Slf4jReporter(OSGiRepository.class);
+	protected Registry				registry;
 	private ScheduledFuture< ? >	poller;
 	private volatile boolean		stale		= false;
 	private final AtomicBoolean		inPoll		= new AtomicBoolean();
