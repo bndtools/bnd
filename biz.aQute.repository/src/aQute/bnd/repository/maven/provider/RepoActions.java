@@ -1,7 +1,6 @@
 package aQute.bnd.repository.maven.provider;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +35,7 @@ class RepoActions {
 				try {
 					repo.index.remove(bsn);
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					throw Exceptions.duck(e);
 				}
 			}
 
@@ -63,7 +62,7 @@ class RepoActions {
 				try {
 					repo.index.remove(bd.archive);
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					throw Exceptions.duck(e);
 				}
 			}
 
@@ -75,7 +74,7 @@ class RepoActions {
 				try {
 					addDependency(bd.archive, MavenScope.compile);
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					throw Exceptions.duck(e);
 				}
 			}
 
@@ -87,7 +86,7 @@ class RepoActions {
 				try {
 					addDependency(bd.archive, MavenScope.runtime);
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					throw Exceptions.duck(e);
 				}
 			}
 
@@ -100,7 +99,7 @@ class RepoActions {
 				try {
 					repo.index.updateAsync(bd.archive);
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					throw Exceptions.duck(e);
 				}
 			}
 
@@ -113,36 +112,38 @@ class RepoActions {
 		return map;
 	}
 
-	void addSources(final BundleDescriptor bd, Map<String,Runnable> map)
-			throws Exception, InvocationTargetException, InterruptedException {
+	void addSources(final BundleDescriptor bd, Map<String,Runnable> map) throws Exception {
 		Promise<File> pBinary = repo.storage.get(bd.archive);
-		final File binary = pBinary.getValue();
-		final File out = new File(binary.getParentFile(), "+" + binary.getName());
-
-		if (!out.isFile()) {
-			Archive a = bd.archive.revision.archive("jar", "sources");
-			Promise<File> pSources = repo.storage.get(a);
-			final File sources = pSources.getValue();
-			if (sources != null && sources.isFile() && sources.length() > 1000) {
-				map.put("Add Sources", new Runnable() {
-					@Override
-					public void run() {
-						try {
-							try (Jar src = new Jar(sources)) {
-								try (Jar bin = new Jar(binary)) {
-									bin.setDoNotTouchManifest();
-									for (String path : src.getResources().keySet())
-										bin.putResource("OSGI-OPT/src/" + path, src.getResource(path));
-									bin.write(out);
+		if (pBinary.getFailure() == null) {
+			final File binary = pBinary.getValue();
+			final File out = new File(binary.getParentFile(), "+" + binary.getName());
+			if (!out.isFile()) {
+				Archive a = bd.archive.revision.archive("jar", "sources");
+				Promise<File> pSources = repo.storage.get(a);
+				if (pSources.getFailure() == null) {
+					final File sources = pSources.getValue();
+					if (sources.isFile() && sources.length() > 1000) {
+						map.put("Add Sources", new Runnable() {
+							@Override
+							public void run() {
+								try {
+									try (Jar src = new Jar(sources)) {
+										try (Jar bin = new Jar(binary)) {
+											bin.setDoNotTouchManifest();
+											for (String path : src.getResources().keySet())
+												bin.putResource("OSGI-OPT/src/" + path, src.getResource(path));
+											bin.write(out);
+										}
+										out.setLastModified(System.currentTimeMillis());
+									}
+								} catch (Exception e) {
+									throw Exceptions.duck(e);
 								}
-								out.setLastModified(System.currentTimeMillis());
 							}
-						} catch (Exception e) {
-							throw Exceptions.duck(e);
-						}
+						});
+						return;
 					}
-				});
-				return;
+				}
 			}
 		}
 
@@ -168,7 +169,7 @@ class RepoActions {
 								repo.index.add(last.archive(bd.archive.extension, bd.archive.classifier));
 								addDependency(bd.archive, MavenScope.runtime);
 							} catch (Exception e) {
-								throw new RuntimeException(e);
+								throw Exceptions.duck(e);
 							}
 						}
 
