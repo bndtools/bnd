@@ -15,8 +15,6 @@ import aQute.bnd.service.RepositoryPlugin;
 public class RepositoryUtils {
     private static final ILogger logger = Logger.getLogger(RepositoryUtils.class);
 
-    private static final String CACHE_REPO = "cache";
-
     public static List<RepositoryPlugin> listRepositories(boolean hideCache) {
         Workspace workspace;
         try {
