@@ -137,7 +137,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 				try {
 					File f = get0(archive, file);
 					if (thrw && f == null) {
-						deferred.fail(new FileNotFoundException("" + archive));
+						deferred.fail(new FileNotFoundException("For Maven artifact " + archive));
 						return;
 					}
 					deferred.resolve(f);
