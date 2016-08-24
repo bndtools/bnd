@@ -43,6 +43,8 @@ import aQute.service.reporter.Reporter;
 @BndPlugin(name = "PomRepository")
 public class BndPomRepository extends BaseRepository
 		implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Actionable {
+	static final String			MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
+
 	boolean						inited;
 	private PomConfiguration	configuration;
 	private Registry			registry;
@@ -62,7 +64,7 @@ public class BndPomRepository extends BaseRepository
 			inited = true;
 			Workspace workspace = registry.getPlugin(Workspace.class);
 			HttpClient client = registry.getPlugin(HttpClient.class);
-			File localRepo = IO.getFile(configuration.local("~/.m2/repository"));
+			File localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
 			File location = workspace.getFile(getLocation());
 
 			List<MavenBackingRepository> release = MavenBackingRepository.create(configuration.releaseUrls(), reporter,
