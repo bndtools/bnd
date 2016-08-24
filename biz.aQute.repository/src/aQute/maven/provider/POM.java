@@ -93,16 +93,15 @@ public class POM implements IPom {
 			if (v == null)
 				throw new IllegalArgumentException("Invalid version for parent pom " + program + ":" + v);
 
-			Archive parent = program.version(v).archive("pom", null);
-
 			File fp;
 			if (relativePath != null && !relativePath.isEmpty() && (fp = IO.getFile(relativePath)).isFile()) {
 				this.parent = new POM(repo, fp);
 			} else {
-				File file = repo.get(parent).getValue();
-				if (file == null)
-					throw new IllegalArgumentException("Parent not found" + parent);
-				this.parent = new POM(repo, file);
+				Revision revision = program.version(v);
+				POM pom = repo.getPom(revision);
+				if (pom == null)
+					throw new IllegalArgumentException("Parent not found" + revision.pomArchive());
+				this.parent = pom;
 			}
 		} else {
 			this.parent = new POM();
@@ -323,10 +322,8 @@ public class POM implements IPom {
 		if (revision == null)
 			return;
 
-		if (visited.contains(revision.program))
+		if (!visited.add(revision.program))
 			return;
-
-		visited.add(revision.program);
 
 		if (parent != null)
 			parent.getDependencies(deps, scope, transitive, visited);
@@ -357,7 +354,6 @@ public class POM implements IPom {
 				}
 				pom.getDependencies(deps, scope, transitive, visited);
 			} catch (Exception ee) {
-				ee.printStackTrace();
 				d.error = ee.toString();
 			}
 	}
