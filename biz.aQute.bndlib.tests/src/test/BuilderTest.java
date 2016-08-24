@@ -616,9 +616,8 @@ public class BuilderTest extends BndTestCase {
 				long lm1 = result.lastModified();
 				assertTrue("Last modified date of bundle > 0", lm1 > 0);
 
-				if (isWindows())
-					Thread.sleep(1000); // windows has a very low resolution
-										// sometimes
+				// windows has a very low resolution sometimes
+				Thread.sleep(isWindows() ? 1000 : 100);
 
 				IO.getFile("bin/a1/a/B.class").delete();
 				classpath.remove("a/B.class");
@@ -627,17 +626,15 @@ public class BuilderTest extends BndTestCase {
 				long lm2 = result.lastModified();
 				assertTrue("Last modified date of bundle has increased after deleting class from package", lm2 > lm1);
 
-				if (isWindows())
-					Thread.sleep(1000); // windows has a very low resolution
-										// sometimes
+				// windows has a very low resolution sometimes
+				Thread.sleep(isWindows() ? 1000 : 100);
 
 				IO.getFile("bin/a1/a/A.class").delete();
 				classpath.remove("a/A.class");
 				classpath.updateModified(System.currentTimeMillis(), "Removed file A");
 
-				if (isWindows())
-					Thread.sleep(1000); // windows has a very low resolution
-										// sometimes
+				// windows has a very low resolution sometimes
+				Thread.sleep(isWindows() ? 1000 : 100);
 
 				result = b.build();
 				long lm3 = result.lastModified();
