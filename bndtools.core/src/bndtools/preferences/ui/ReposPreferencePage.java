@@ -69,7 +69,7 @@ public class ReposPreferencePage extends PreferencePage implements IWorkbenchPre
         ControlDecoration decoration = new ControlDecoration(btnEnableTemplateRepo, SWT.RIGHT | SWT.TOP, composite);
         decoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
         decoration.setMarginWidth(3);
-        decoration.setDescriptionText("These repositories are used to load\ntemplates, in addition to repositories\nconfigured in the bnd workspace.");
+        decoration.setDescriptionText("These repositories are used to load\ntemplates, in addition to repositories\nconfigured in the Bnd OSGi Workspace.");
         decoration.setShowHover(true);
         decoration.setShowOnlyOnFocus(false);
 

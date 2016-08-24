@@ -12,14 +12,16 @@ import bndtools.central.Central;
 public class WorkspaceServiceFactory implements ServiceFactory<Workspace> {
     private static final ILogger logger = Logger.getLogger(WorkspaceServiceFactory.class);
 
+    @Override
     public Workspace getService(Bundle bundle, ServiceRegistration<Workspace> registration) {
         try {
             return Central.getWorkspace();
         } catch (Exception e) {
-            logger.logError("Unable to initialise bnd workspace.", e);
-            throw new IllegalArgumentException("Unable to initialise bnd workspace.", e);
+            logger.logError("Unable to initialise Bnd workspace.", e);
+            throw new IllegalArgumentException("Unable to initialise Bnd workspace.", e);
         }
     }
 
+    @Override
     public void ungetService(Bundle bundle, ServiceRegistration<Workspace> registration, Workspace service) {}
 }

@@ -85,7 +85,7 @@ public class NativeBndLaunchDelegate extends JavaRemoteApplicationLaunchConfigur
 
             Project parentModel = Central.getProject(parent);
             if (parentModel == null) {
-                p.error("Cannot locate bnd project for " + targetResource);
+                p.error("Cannot locate Bnd project for " + targetResource);
                 return;
             }
 

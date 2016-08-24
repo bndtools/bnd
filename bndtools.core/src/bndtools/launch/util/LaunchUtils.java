@@ -62,20 +62,20 @@ public final class LaunchUtils {
             // This is a bnd project --> find the bnd.bnd file
             IProject project = (IProject) targetResource;
             if (ws == null)
-                throw new Exception(String.format("Cannot load bnd project for directory %s: no bnd workspace found", project.getLocation()));
+                throw new Exception(String.format("Cannot load Bnd project for directory %s: no Bnd workspace found", project.getLocation()));
             File bndFile = project.getFile(Project.BNDFILE).getLocation().toFile();
             if (bndFile == null || !bndFile.isFile())
-                throw new Exception(String.format("Failed to load bnd project for directory %s: %s does not exist or is not a file.", project.getLocation(), Project.BNDFILE));
+                throw new Exception(String.format("Failed to load Bnd project for directory %s: %s does not exist or is not a file.", project.getLocation(), Project.BNDFILE));
 
             run = Run.createRun(ws, bndFile);
         } else if (targetResource.getType() == IResource.FILE) {
             // This is file, use directly
             File file = targetResource.getLocation().toFile();
             if (file == null || !file.isFile())
-                throw new Exception(String.format("Failed to create bnd launch configuration: %s does not exist or is not a file.", file));
+                throw new Exception(String.format("Failed to create Bnd launch configuration: %s does not exist or is not a file.", file));
             run = Run.createRun(ws, file);
         } else {
-            throw new Exception(String.format("Cannot create a bnd launch configuration for %s: not a project or file resource.", targetResource.getLocation()));
+            throw new Exception(String.format("Cannot create a Bnd launch configuration for %s: not a project or file resource.", targetResource.getLocation()));
         }
         return run;
     }

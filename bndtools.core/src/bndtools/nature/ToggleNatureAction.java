@@ -161,7 +161,7 @@ public class ToggleNatureAction implements IObjectActionDelegate {
 
             return createStatus("Some build files could not be generated. Please review the messages below.", Collections.<String> emptyList(), headlessBuildWarnings);
         } catch (CoreException e) {
-            return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error occurred while toggling bnd project nature", e);
+            return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error occurred while toggling Bnd project nature", e);
         }
     }
 

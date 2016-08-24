@@ -107,5 +107,5 @@ def getBndProject(Workspace workspace, String projectName) {
     }
     throw new GradleException("Project ${rootDir}/${projectName} is invalid, ${str}")
   }
-  throw new GradleException("Project ${rootDir}/${projectName} is not a valid bnd project")
+  throw new GradleException("Project ${rootDir}/${projectName} is not a valid Bnd project")
 }
