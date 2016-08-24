@@ -44,7 +44,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	private final List<MavenBackingRepository>			snapshot	= new ArrayList<>();
 	private final Executor								executor;
 	private final boolean								localOnly;
-	private final Reporter								reporter	= new Slf4jReporter();
+	private final Reporter						reporter	= new Slf4jReporter(MavenRepository.class);
 	private final Map<Revision,Promise<POM>>	poms		= new WeakHashMap<>();
 
 	public MavenRepository(File base, String id, List<MavenBackingRepository> release,

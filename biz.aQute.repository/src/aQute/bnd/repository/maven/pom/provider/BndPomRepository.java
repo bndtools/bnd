@@ -49,7 +49,7 @@ public class BndPomRepository extends BaseRepository
 	private PomConfiguration	configuration;
 	private Registry			registry;
 	private String				name;
-	private Reporter			reporter	= new Slf4jReporter();
+	private Reporter			reporter			= new Slf4jReporter(BndPomRepository.class);
 	private InnerRepository	repoImpl;
 	private Revision			revision;
 	private BridgeRepository	bridge;
