@@ -33,8 +33,13 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -83,7 +88,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	static Pattern PACKAGES_IGNORED = Pattern.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
 	static ThreadLocal<Processor>	current			= new ThreadLocal<Processor>();
-	static ScheduledExecutorService	executor		= Executors.newScheduledThreadPool(40);
+	private final static ScheduledExecutorService	sheduledExecutor;
+	private final static ExecutorService			executor;
+	static {
+		ThreadFactory threadFactory = Executors.defaultThreadFactory();
+		executor = new ThreadPoolExecutor(0, 1024, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
+				threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
+		sheduledExecutor = new ScheduledThreadPoolExecutor(
+				4, threadFactory);
+	}
 	static Random					random			= new Random();
 	// TODO handle include files out of date
 	// TODO make splitter skip eagerly whitespace so trim is not necessary
@@ -724,7 +737,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	protected void setTypeSpecificPlugins(Set<Object> list) {
-		list.add(executor);
+		list.add(getExecutor());
 		list.add(random);
 		list.addAll(basicPlugins);
 	}
@@ -2126,7 +2139,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public static ScheduledExecutorService getScheduledExecutor() {
-		return executor;
+		return sheduledExecutor;
 	}
 
 	/**

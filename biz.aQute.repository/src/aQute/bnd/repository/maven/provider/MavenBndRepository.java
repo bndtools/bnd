@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -469,12 +468,11 @@ public class MavenBndRepository extends BaseRepository
 
 			localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
 
-			Executor executor = registry.getPlugin(Executor.class);
 			List<MavenBackingRepository> release = MavenBackingRepository.create(configuration.releaseUrl(), reporter,
 					localRepo, client);
 			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(configuration.snapshotUrl(), reporter,
 					localRepo, client);
-			storage = new MavenRepository(localRepo, getName(), release, snapshot, executor, reporter,
+			storage = new MavenRepository(localRepo, getName(), release, snapshot, Processor.getExecutor(), reporter,
 					getRefreshCallback());
 
 			File base = IO.work;

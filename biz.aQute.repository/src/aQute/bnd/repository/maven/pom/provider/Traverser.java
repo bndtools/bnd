@@ -25,12 +25,11 @@ import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Resource;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom.Dependency;
 import aQute.maven.api.MavenScope;
@@ -38,9 +37,10 @@ import aQute.maven.api.Program;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenRepository;
 import aQute.maven.provider.POM;
+import aQute.service.reporter.Reporter;
 
 class Traverser {
-	final static Logger						logger		= LoggerFactory.getLogger(Traverser.class);
+	final Reporter							reporter	= new Slf4jReporter(Traverser.class);
 	static final Resource					DUMMY		= new ResourceBuilder().build();
 	static final String						ROOT		= "<>";
 	final ConcurrentMap<Archive,Resource>	resources	= new ConcurrentHashMap<>();
@@ -69,12 +69,12 @@ class Traverser {
 		this.resource = null;
 	}
 
-	Traverser(MavenRepository repo, URI revision, HttpClient client, Executor executor) {
+	Traverser(MavenRepository repo, URI resource, HttpClient client, Executor executor) {
 		this.repo = repo;
 		this.client = client;
 		this.revisions = null;
 		this.executor = executor;
-		this.resource = revision;
+		this.resource = resource;
 	}
 
 	Promise<Map<Archive,Resource>> getResources() throws Exception {
@@ -128,14 +128,13 @@ class Traverser {
 
 		count.incrementAndGet();
 		executor.execute(new Runnable() {
-
 			@Override
 			public void run() {
 				try {
-					logger.trace("parse archive {}", archive);
+					reporter.trace("parse archive %s", archive);
 					parseArchive(archive);
 				} catch (Throwable throwable) {
-					logger.trace(" failed to parse archive {}: {}", archive, throwable, throwable);
+					reporter.trace(" failed to parse archive %s: %s", archive, throwable);
 					ResourceBuilder rb = new ResourceBuilder();
 					String bsn = archive.revision.program.toString();
 					Version version = toFrameworkVersion(archive.revision.version.getOSGiVersion());
@@ -148,7 +147,6 @@ class Traverser {
 					finish();
 				}
 			}
-
 		});
 	}
 

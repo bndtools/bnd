@@ -26,9 +26,11 @@ import aQute.service.reporter.Reporter;
 import junit.framework.TestCase;
 
 public class PomRepositoryTest extends TestCase {
+	static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
+
 	Reporter	reporter	= new Slf4jReporter();
 	File		tmp			= IO.getFile("generated/tmp");
-	File		localRepo	= IO.getFile("~/.m2/repository");
+	File				localRepo			= IO.getFile(MAVEN_REPO_LOCAL);
 	File		location	= IO.getFile(tmp, "index.xml");
 	HttpClient	client;
 

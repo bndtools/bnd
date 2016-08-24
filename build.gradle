@@ -7,6 +7,7 @@
 
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
+import aQute.lib.io.IO
 
 /* Add bnd gradle plugin as a script dependency */
 buildscript {
@@ -59,6 +60,9 @@ subprojects {
             return false
           }
         }
+      }
+      if (System.properties['maven.repo.local']) {
+        systemProperty 'maven.repo.local', IO.getFile(rootProject.rootDir, System.properties['maven.repo.local'])
       }
     }
   }
