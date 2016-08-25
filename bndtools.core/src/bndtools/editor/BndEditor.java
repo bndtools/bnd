@@ -493,13 +493,17 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         model.setProject(bndProject);
 
         // Load content into the edit model
-        IDocument document = sourcePage.getDocumentProvider().getDocument(getEditorInput());
-        model.loadFrom(new IDocumentWrapper(document));
-        model.setBndResource(inputFile);
-
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
+                IDocument document = sourcePage.getDocumentProvider().getDocument(getEditorInput());
+                try {
+                    model.loadFrom(new IDocumentWrapper(document));
+                    model.setBndResource(inputFile);
+                } catch (IOException e) {
+                    logger.logError("Unable to load edit model", e);
+                }
+
                 for (int i = 0; i < getPageCount(); i++) {
                     Control control = getControl(i);
 
