@@ -1,19 +1,10 @@
 ---
 layout: default
 class: Macro
-title: env ';' KEY
-summary: The given environment variable or an empty string "" if not found
+title: env ';' KEY (';' STRING)?
+summary: The given environment variable or a default if the environment variable is not defined. The default is an empty string if not specified.
 ---
-layout: default
 
-	public String _env(String args[]) {
-		verifyCommand(args, "${env;<name>}, get the environmet variable", null, 2, 2);
-
-		try {
-			String ret = System.getenv(args[1]);
-			return ret != null ? ret : "";
-		}
-		catch (Throwable t) {
-			return "";
-		}
-	}
+The specified key is looked up in `System.env` and returned. If the environment variable specified
+by key is not set, then the default string is returned. The default is an empty string if not
+specified. 
