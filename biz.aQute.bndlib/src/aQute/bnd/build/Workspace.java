@@ -274,6 +274,16 @@ public class Workspace extends Processor {
 		setBuildDir(IO.getFile(BND_DEFAULT_WS, CNFDIR));
 	}
 
+	public Project getProjectFromFile(File projectDir) throws Exception {
+		projectDir = projectDir.getAbsoluteFile();
+		assert projectDir.isDirectory();
+
+		if (getBase().equals(projectDir.getParentFile())) {
+			return getProject(projectDir.getName());
+		}
+		return null;
+	}
+
 	public Project getProject(String bsn) throws Exception {
 		synchronized (models) {
 			Project project = models.get(bsn);
