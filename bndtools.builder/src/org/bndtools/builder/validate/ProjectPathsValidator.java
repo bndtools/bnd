@@ -23,7 +23,6 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.service.reporter.Reporter.SetLocation;
@@ -73,7 +72,7 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
         //
         Project w;
         try {
-            w = Workspace.getProject(model.getBase());
+            w = Central.getWorkspace().getProjectFromFile(model.getBase());
         } catch (Exception e) {
             w = null;
         }
