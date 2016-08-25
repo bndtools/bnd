@@ -110,7 +110,7 @@ public class OSGiRepository extends BaseRepository
 
 		Workspace ws = registry.getPlugin(Workspace.class);
 		if (ws == null) {
-			ws = Workspace.getWorkspace("~/.bnd/default-ws");
+			ws = Workspace.createDefaultWorkspace();
 		}
 		String cachePath = config.cache();
 		File cache = (cachePath == null) ? ws.getCache(config.name()) : ws.getFile(cachePath);

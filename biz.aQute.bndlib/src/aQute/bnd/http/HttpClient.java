@@ -176,7 +176,6 @@ public class HttpClient implements Closeable, URLConnector {
 					return new TaggedData(url.toURI(), 404, null);
 
 				if (sourceFile.lastModified() <= info.getModified()) {
-					System.out.println((sourceFile.lastModified() - info.getModified()) + " : " + sourceFile);
 					return new TaggedData(url.toURI(), 304, info.file);
 				}
 
