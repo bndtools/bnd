@@ -116,7 +116,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
             if (model == null) {
                 try {
-                    model = Central.getProject(myProject.getLocation().toFile());
+                    model = Central.getProject(myProject);
                 } catch (Exception e) {
                     markers.deleteMarkers("*");
 
@@ -325,7 +325,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             IProject myProject = getProject();
             final Project model;
             try {
-                model = Central.getProject(myProject.getLocation().toFile());
+                model = Central.getProject(myProject);
             } catch (Exception e) {
                 MarkerSupport markers = new MarkerSupport(myProject);
                 markers.deleteMarkers("*");

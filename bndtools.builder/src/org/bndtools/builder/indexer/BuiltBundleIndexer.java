@@ -69,7 +69,7 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
         File indexFile;
         OutputStream output = null;
         try {
-            Project model = Central.getProject(project.getLocation().toFile());
+            Project model = Central.getProject(project);
             File target = model.getTarget();
             indexFile = new File(target, INDEX_FILENAME);
 
@@ -84,6 +84,7 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
 
             // Use an analyzer to add a marker capability to workspace resources
             indexer.addAnalyzer(new ResourceAnalyzer() {
+                @Override
                 public void analyzeResource(Resource resource, List<Capability> capabilities, List<Requirement> requirements) throws Exception {
                     Capability cap = new Builder().setNamespace("bndtools.workspace").addAttribute("bndtools.workspace", workspaceRootUri.toString()).addAttribute("project.path", project.getFullPath().toString()).buildCapability();
                     capabilities.add(cap);

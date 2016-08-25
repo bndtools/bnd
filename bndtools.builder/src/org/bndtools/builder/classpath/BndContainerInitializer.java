@@ -238,7 +238,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
             Project p = null;
             try {
-                p = Central.getProject(project.getLocation().toFile());
+                p = Central.getProject(project);
             } catch (Exception e) {
                 // this can happen during first project creation in an empty workspace
                 logger.logInfo("Unable to get bnd project for project " + project.getName(), e);

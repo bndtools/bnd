@@ -135,9 +135,8 @@ public class Central implements IStartupParticipant {
         try {
             Project model = javaProjectToModel.get(project);
             if (model == null) {
-                File projectDir = project.getProject().getLocation().makeAbsolute().toFile();
                 try {
-                    model = getProject(projectDir);
+                    model = getProject(project.getProject());
                 } catch (IllegalArgumentException e) {
                     // initialiseWorkspace();
                     // model = Central.getProject(projectDir);
@@ -544,11 +543,7 @@ public class Central implements IStartupParticipant {
     }
 
     public static Project getProject(File projectDir) throws Exception {
-        File projectDirAbsolute = projectDir.getAbsoluteFile();
-        assert projectDirAbsolute.isDirectory();
-
-        Workspace ws = getWorkspace();
-        return ws.getProject(projectDir.getName());
+        return getWorkspace().getProjectFromFile(projectDir);
     }
 
     public static Project getProject(IProject p) throws Exception {
