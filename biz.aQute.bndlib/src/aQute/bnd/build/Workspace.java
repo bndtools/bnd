@@ -868,7 +868,10 @@ public class Workspace extends Processor {
 
 	public void close() {
 		synchronized (cache) {
-			cache.remove(getBase());
+			WeakReference<Workspace> wsr = cache.get(getBase());
+			if ((wsr != null) && (wsr.get() == this)) {
+				cache.remove(getBase());
+			}
 		}
 
 		try {
