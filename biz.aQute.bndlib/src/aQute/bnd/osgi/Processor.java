@@ -92,10 +92,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private final static ExecutorService			executor;
 	static {
 		ThreadFactory threadFactory = Executors.defaultThreadFactory();
-		executor = new ThreadPoolExecutor(0, 1024, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
+		executor = new ThreadPoolExecutor(0, 64, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
 				threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
-		sheduledExecutor = new ScheduledThreadPoolExecutor(
-				4, threadFactory);
+		sheduledExecutor = new ScheduledThreadPoolExecutor(4, threadFactory);
 	}
 	static Random					random			= new Random();
 	// TODO handle include files out of date
