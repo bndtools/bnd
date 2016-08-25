@@ -572,11 +572,7 @@ public class Macro {
 	}
 
 	public String _def(String args[]) {
-		if (args.length < 2)
-			throw new RuntimeException("Need a value for the ${def;<value>} macro");
-
-		if (args.length > 3)
-			throw new RuntimeException("Too many args for ${def;<value>} macro");
+		verifyCommand(args, "${def;<name>[;<value>]}, get the property or a default value if unset", null, 2, 3);
 
 		return domain.getProperty(args[1], args.length == 3 ? args[2] : "");
 	}
@@ -1037,7 +1033,7 @@ public class Macro {
 	}
 
 	public String _env(String args[]) {
-		verifyCommand(args, "${env;<name>[;alternative]}, get the environmet variable", null, 2, 3);
+		verifyCommand(args, "${env;<name>[;alternative]}, get the environment variable", null, 2, 3);
 
 		try {
 			String ret = System.getenv(args[1]);
