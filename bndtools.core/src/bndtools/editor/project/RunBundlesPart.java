@@ -57,7 +57,7 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
 
     private void loadBuilders(IProject project) {
         try {
-            Project model = Central.getProject(project.getLocation().toFile());
+            Project model = Central.getProject(project);
             if (model != null)
                 projectBuilders.addAll(model.getSubBuilders());
         } catch (Exception e) {

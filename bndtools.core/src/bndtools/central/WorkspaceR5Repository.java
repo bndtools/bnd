@@ -63,7 +63,7 @@ public class WorkspaceR5Repository extends BaseRepository {
     void setupProjects() throws Exception {
         IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
         for (IProject project : projects) {
-            Project model = Central.getProject(project.getLocation().toFile());
+            Project model = Central.getProject(project);
             if (model != null) {
                 File targetDir = getTarget(model);
                 if (targetDir != null) {
