@@ -35,6 +35,7 @@ import java.util.TreeSet;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.SynchronousQueue;
@@ -93,7 +94,29 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	static {
 		ThreadFactory threadFactory = Executors.defaultThreadFactory();
 		executor = new ThreadPoolExecutor(0, 64, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
-				threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
+				threadFactory, new RejectedExecutionHandler() {
+					/*
+					 * We are stealing another's thread because we have hit max
+					 * pool size, so we cannot let the runnable's exception
+					 * propagate back up this thread.
+					 */
+					@Override
+					public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+						if (executor.isShutdown()) {
+							return;
+						}
+						try {
+							r.run();
+						} catch (Throwable t) {
+							try {
+								Thread thread = Thread.currentThread();
+								thread.getUncaughtExceptionHandler().uncaughtException(thread, t);
+							} catch (Throwable for_real) {
+								// we will ignore this
+							}
+						}
+					}
+				});
 		sheduledExecutor = new ScheduledThreadPoolExecutor(4, threadFactory);
 	}
 	static Random					random			= new Random();
