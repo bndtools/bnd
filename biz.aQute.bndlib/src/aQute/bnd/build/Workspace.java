@@ -89,7 +89,7 @@ public class Workspace extends Processor {
 		List<RepositoryPlugin> repositories;
 	}
 
-	static Map<File,WeakReference<Workspace>>	cache					= newHashMap();
+	private final static Map<File,WeakReference<Workspace>>	cache					= newHashMap();
 	static Processor							defaults				= null;
 	final Map<String,Project>					models					= newHashMap();
 	private final Set<String>					modelsUnderConstruction	= newSet();
@@ -221,6 +221,7 @@ public class Workspace extends Processor {
 	public Workspace(File workspaceDir, String bndDir) throws Exception {
 		super(getDefaults());
 		workspaceDir = workspaceDir.getAbsoluteFile();
+		setBase(workspaceDir); // setBase before call to setFileSystem
 		this.layout = WorkspaceLayout.BND;
 		addBasicPlugin(new LoggingProgressPlugin());
 		setFileSystem(workspaceDir, bndDir);
@@ -232,6 +233,14 @@ public class Workspace extends Processor {
 			throw new IOException("Could not create directory " + workspaceDir);
 		}
 		assert workspaceDir.isDirectory();
+
+		synchronized (cache) {
+			WeakReference<Workspace> wsr = cache.get(getBase());
+			if ((wsr != null) && (wsr.get() == this)) {
+				cache.remove(getBase());
+				cache.put(workspaceDir, wsr);
+			}
+		}
 
 		File buildDir = new File(workspaceDir, bndDir).getAbsoluteFile();
 		if (!buildDir.isDirectory())
@@ -848,7 +857,9 @@ public class Workspace extends Processor {
 	}
 
 	public void close() {
-		cache.remove(getPropertiesFile().getParentFile().getParentFile());
+		synchronized (cache) {
+			cache.remove(getBase());
+		}
 
 		try {
 			super.close();
