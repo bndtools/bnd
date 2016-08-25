@@ -130,7 +130,6 @@ class ArtifactRepository extends XML {
 					if (r.matches(map)) {
 						String s = ra.process(r.output);
 						URI uri = new URI(s).normalize();
-						System.out.println(xmlArtifact.id + " " + xmlArtifact.version + ": " + uri);
 
 						Artifact artifact = new Artifact();
 						artifact.uri = uri;
