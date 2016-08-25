@@ -149,17 +149,17 @@ public class Workspace extends Processor {
 	}
 
 	public static Workspace createDefaultWorkspace() throws Exception {
-		Workspace ws = new Workspace(BND_DEFAULT_WS, Workspace.CNFDIR);
+		Workspace ws = new Workspace(BND_DEFAULT_WS, CNFDIR);
 		return ws;
 	}
 
-	public static Workspace getWorkspace(File parent) throws Exception {
-		return getWorkspace(parent, CNFDIR);
+	public static Workspace getWorkspace(File workspaceDir) throws Exception {
+		return getWorkspace(workspaceDir, CNFDIR);
 	}
 
-	public static Workspace getWorkspaceWithoutException(File parent) throws Exception {
+	public static Workspace getWorkspaceWithoutException(File workspaceDir) throws Exception {
 		try {
-			return getWorkspace(parent);
+			return getWorkspace(workspaceDir);
 		} catch (IllegalArgumentException e) {
 			return null;
 		}
@@ -180,8 +180,8 @@ public class Workspace extends Processor {
 		return null;
 	}
 
-	public static Workspace getWorkspace(File parent, String bndDir) throws Exception {
-		File workspaceDir = parent.getAbsoluteFile();
+	public static Workspace getWorkspace(File workspaceDir, String bndDir) throws Exception {
+		workspaceDir = workspaceDir.getAbsoluteFile();
 
 		// the cnf directory can actually be a
 		// file that redirects
@@ -200,7 +200,7 @@ public class Workspace extends Processor {
 				workspaceDir = test;
 			}
 			if (!test.exists())
-				throw new IllegalArgumentException("No Workspace found from: " + parent);
+				throw new IllegalArgumentException("No Workspace found from: " + workspaceDir);
 		}
 
 		synchronized (cache) {
@@ -214,26 +214,26 @@ public class Workspace extends Processor {
 		}
 	}
 
-	public Workspace(File dir) throws Exception {
-		this(dir, CNFDIR);
+	public Workspace(File workspaceDir) throws Exception {
+		this(workspaceDir, CNFDIR);
 	}
 
-	public Workspace(File dir, String bndDir) throws Exception {
+	public Workspace(File workspaceDir, String bndDir) throws Exception {
 		super(getDefaults());
+		workspaceDir = workspaceDir.getAbsoluteFile();
 		this.layout = WorkspaceLayout.BND;
 		addBasicPlugin(new LoggingProgressPlugin());
-		setFileSystem(dir, bndDir);
+		setFileSystem(workspaceDir, bndDir);
 	}
 
-	public void setFileSystem(File workspaceDir, String nameOfCnf) throws IOException {
-
+	public void setFileSystem(File workspaceDir, String bndDir) throws Exception {
 		workspaceDir = workspaceDir.getAbsoluteFile();
 		if (!workspaceDir.exists() && !workspaceDir.mkdirs()) {
 			throw new IOException("Could not create directory " + workspaceDir);
 		}
 		assert workspaceDir.isDirectory();
 
-		File buildDir = new File(workspaceDir, nameOfCnf).getAbsoluteFile();
+		File buildDir = new File(workspaceDir, bndDir).getAbsoluteFile();
 		if (!buildDir.isDirectory())
 			buildDir = new File(workspaceDir, CNFDIR).getAbsoluteFile();
 
@@ -257,13 +257,12 @@ public class Workspace extends Processor {
 		for (Entry<String,String> e : sysProps.entrySet()) {
 			System.setProperty(e.getKey(), e.getValue());
 		}
-
 	}
 
-	Workspace(WorkspaceLayout layout) throws IOException {
+	private Workspace(WorkspaceLayout layout) throws Exception {
 		super(getDefaults());
 		this.layout = layout;
-		setBuildDir(IO.getFile("~/.bnd/default-ws/cnf"));
+		setBuildDir(IO.getFile(BND_DEFAULT_WS, CNFDIR));
 	}
 
 	public Project getProject(String bsn) throws Exception {
