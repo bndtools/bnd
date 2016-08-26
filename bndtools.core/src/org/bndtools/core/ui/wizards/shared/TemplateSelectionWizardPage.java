@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.bndtools.templating.Category;
 import org.bndtools.templating.Template;
 import org.bndtools.templating.TemplateLoader;
 import org.bndtools.utils.jface.ProgressRunner;
@@ -377,8 +378,26 @@ public class TemplateSelectionWizardPage extends WizardPage {
         viewer.setInput(templates);
         viewer.expandAll();
 
-        Template first = contentProvider.getFirstTemplate();
-        viewer.setSelection(first != null ? new StructuredSelection(first) : StructuredSelection.EMPTY, true);
+        Template templateToSelect = null;
+
+        if (viewer.getFilters().length == 0) {
+            templateToSelect = contentProvider.getFirstTemplate();
+        } else {
+            for (Object element : contentProvider.getElements(null)) {
+                if (element instanceof Category) {
+                    Object[] filteredTemplates = latestFilter.filter(viewer, element, contentProvider.getChildren(element));
+                    if (filteredTemplates.length > 0) {
+                        templateToSelect = (Template) filteredTemplates[0];
+                        break;
+                    }
+                } else {
+                    templateToSelect = (Template) element;
+                    break;
+                }
+            }
+        }
+
+        viewer.setSelection(templateToSelect == null ? StructuredSelection.EMPTY : new StructuredSelection(templateToSelect));
     }
 
     public void setTemplate(final Template template) {
