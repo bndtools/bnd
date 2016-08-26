@@ -4,10 +4,12 @@
 eclipse-repo: aQute.bnd.repository.osgi.OSGiRepository;\
  name="Eclipse IDE for Eclipse Committers 4.4.2";\
  locations=https://dl.bintray.com/bndtools/eclipse-repo/4.4.2/index.xml.gz; \
+ poll.time=-1; \
  cache=${build}/cache/stable/EclipseIDE
 eclipse-orbit: aQute.bnd.repository.osgi.OSGiRepository;\
  name="Eclipse Orbit 4.4.2";\
  locations=http://download.eclipse.org/tools/orbit/downloads/drops/R20150124073747/repository/index.xml.gz; \
+ poll.time=-1; \
  cache=${build}/cache/stable/EclipseOrbit
 
 #
@@ -50,6 +52,7 @@ jpm:\
 	aQute.bnd.repository.osgi.OSGiRepository; \
 		name='Baseline'; \
 		locations=${baselinerepo}/index.xml.gz; \
+        poll.time=-1; \
 		cache=${build}/cache/stable/Baseline
 
 
