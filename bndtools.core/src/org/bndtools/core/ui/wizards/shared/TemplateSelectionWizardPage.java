@@ -397,7 +397,11 @@ public class TemplateSelectionWizardPage extends WizardPage {
             }
         }
 
-        viewer.setSelection(templateToSelect == null ? StructuredSelection.EMPTY : new StructuredSelection(templateToSelect));
+        if (templateToSelect == null) {
+            return;
+        }
+
+        viewer.setSelection(new StructuredSelection(templateToSelect));
     }
 
     public void setTemplate(final Template template) {
