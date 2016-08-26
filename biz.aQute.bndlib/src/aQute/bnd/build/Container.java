@@ -30,17 +30,17 @@ public class Container {
 
 	private volatile File				file;
 	private final String		path;
-	final TYPE					type;
-	final String				bsn;
-	final String				version;
-	final String				error;
-	final Project				project;
+	private final TYPE					type;
+	private final String				bsn;
+	private final String				version;
+	private volatile String				error;
+	private final Project				project;
 	private volatile DownloadBlocker	db;
-	volatile Map<String,String>	attributes;
+	private volatile Map<String,String>	attributes;
 	private long				manifestTime;
 	private Manifest			manifest;
-	private File[]				bundleClasspathExpansion;
-	public String				warning	= "";
+	private volatile File[]				bundleClasspathExpansion;
+	public String						warning	= "";
 
 	Container(Project project, String bsn, String version, TYPE type, File source, String error,
 			Map<String,String> attributes, DownloadBlocker db) {
@@ -53,17 +53,14 @@ public class Container {
 		this.project = project;
 		this.error = error;
 
-		if (attributes == null || attributes.isEmpty())
-			this.attributes = Collections.emptyMap();
-		else
-			this.attributes = attributes;
+		if (attributes == null || attributes.isEmpty()) {
+			attributes = Collections.emptyMap();
+		} else if (attributes.containsKey("expand-bcp")) {
+			this.bundleClasspathExpansion = new File[0];
+		}
+		this.attributes = attributes;
 		this.db = db;
 
-		if (!this.attributes.containsKey("expand-bcp")) {
-			this.bundleClasspathExpansion = new File[] {
-					this.file
-			};
-		}
 	}
 
 	public Container(Project project, File file, Map<String,String> attributes) {
@@ -85,19 +82,23 @@ public class Container {
 	public File getFile() {
 		DownloadBlocker blocker = db;
 		if (blocker != null) {
-			this.db = null;
 			String r = blocker.getReason();
 			File f = blocker.getFile();
 			if (r != null) {
+				if (error == null) {
+					error = r;
+				}
 				return new File(r + ": " + f);
 			}
 			this.file = f;
+			this.db = null;
 		}
 		return file;
 	}
 
 	/**
-	 * Iterate over the containers and get the files they represent
+	 * Iterate over the containers and get the files they represent. If a file
+	 * is already in the list, it is not added again.
 	 * 
 	 * @param files
 	 * @throws Exception
@@ -107,7 +108,9 @@ public class Container {
 			case EXTERNAL :
 			case REPO :
 				for (File f : getBundleClasspathFiles()) {
-					files.add(f);
+					if (!files.contains(f)) {
+						files.add(f);
+					}
 				}
 				return true;
 
@@ -117,8 +120,11 @@ public class Container {
 				if (fs == null)
 					return false;
 
-				for (File f : fs)
-					files.add(f);
+				for (File f : fs) {
+					if (!files.contains(f)) {
+						files.add(f);
+					}
+				}
 				return true;
 
 			case LIBRARY :
@@ -130,7 +136,7 @@ public class Container {
 				return true;
 
 			case ERROR :
-				reporter.error("%s", error);
+				reporter.error("%s", getError());
 				return false;
 		}
 		return false;
@@ -183,7 +189,7 @@ public class Container {
 		return attributes;
 	}
 
-	public void putAttribute(String name, String value) {
+	public synchronized void putAttribute(String name, String value) {
 		if (attributes == Collections.<String, String> emptyMap())
 			attributes = new HashMap<String,String>(1);
 		attributes.put(name, value);
@@ -301,63 +307,67 @@ public class Container {
 	 * @throws Exception
 	 */
 
-	File[] getBundleClasspathFiles() throws Exception {
-
-		if (this.bundleClasspathExpansion != null)
-			return bundleClasspathExpansion;
+	private File[] getBundleClasspathFiles() throws Exception {
+		File[] bce = bundleClasspathExpansion;
+		if (bce == null) {
+			return bundleClasspathExpansion = new File[] {
+					getFile()
+			};
+		}
+		if (bce.length != 0) {
+			return bce;
+		}
 
 		File file = getFile();
-
 		Manifest m = getManifest();
 		String bundleClassPath;
 		if (m == null || (bundleClassPath = m.getMainAttributes().getValue(Constants.BUNDLE_CLASSPATH)) == null) {
-			this.bundleClasspathExpansion = new File[] {
+			return bundleClasspathExpansion = new File[] {
 					file
 			};
-		} else {
-
-			File bundleClasspathDirectory = IO.getFile(file.getParentFile(), "." + file.getName() + "-bcp");
-			Parameters header = new Parameters(bundleClassPath);
-			this.bundleClasspathExpansion = new File[header.size()];
-			bundleClasspathDirectory.mkdir();
-
-			int n = 0;
-			Jar jar = null;
-			try {
-				for (Map.Entry<String,Attrs> entry : header.entrySet()) {
-					if (".".equals(entry.getKey())) {
-						this.bundleClasspathExpansion[n] = file;
-					} else {
-						File member = new File(bundleClasspathDirectory, n + "-" + toName(entry.getKey()));
-						if (!isCurrent(file, member)) {
-
-							if (jar == null) {
-								jar = new Jar(file);
-							}
-
-							Resource resource = jar.getResource(entry.getKey());
-							if (resource == null) {
-								warning += "Invalid bcp entry: " + entry.getKey() + "\n";
-							} else {
-								IO.copy(resource.openInputStream(), member);
-								member.setLastModified(file.lastModified());
-							}
-
-						}
-						this.bundleClasspathExpansion[n] = member;
-					}
-					n++;
-				}
-			} finally {
-				if (jar != null)
-					jar.close();
-			}
 		}
 
-		return this.bundleClasspathExpansion;
+		File bundleClasspathDirectory = IO.getFile(file.getParentFile(), "." + file.getName() + "-bcp");
+		Parameters header = new Parameters(bundleClassPath);
+		List<File> files = new ArrayList<>(header.size());
+		bundleClasspathDirectory.mkdir();
+
+		int n = 0;
+		Jar jar = null;
+		try {
+			for (Map.Entry<String,Attrs> entry : header.entrySet()) {
+				if (".".equals(entry.getKey())) {
+					files.add(file);
+				} else {
+					File member = new File(bundleClasspathDirectory, n + "-" + toName(entry.getKey()));
+					if (!isCurrent(file, member)) {
+
+						if (jar == null) {
+							jar = new Jar(file);
+						}
+
+						Resource resource = jar.getResource(entry.getKey());
+						if (resource == null) {
+							warning += "Invalid bcp entry: " + entry.getKey() + "\n";
+						} else {
+							IO.copy(resource.openInputStream(), member);
+							member.setLastModified(file.lastModified());
+						}
+
+					}
+					files.add(member);
+				}
+				n++;
+			}
+		} finally {
+			if (jar != null)
+				jar.close();
+		}
+
+		return bundleClasspathExpansion = files.toArray(bce);
 	}
 
-	boolean isCurrent(File file, File member) {
+	private boolean isCurrent(File file, File member) {
 		return member.isFile() && member.lastModified() == file.lastModified();
 	}
 

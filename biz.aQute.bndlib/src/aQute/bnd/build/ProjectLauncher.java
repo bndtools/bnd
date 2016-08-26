@@ -165,8 +165,8 @@ public abstract class ProjectLauncher extends Processor {
 						String agentClassName = manifest.getMainAttributes().getValue("Premain-Class");
 						if (agentClassName != null) {
 							String agent = path;
-							if (container.attributes != null && container.attributes.get("agent") != null) {
-								agent += "=" + container.attributes.get("agent");
+							if (container.getAttributes().get("agent") != null) {
+								agent += "=" + container.getAttributes().get("agent");
 							}
 							agents.add(path);
 						}

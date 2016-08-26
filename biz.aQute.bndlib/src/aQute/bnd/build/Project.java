@@ -476,7 +476,6 @@ public class Project extends Processor {
 
 					if (noproject //
 							&& since(About._2_3) //
-							&& cpe.getAttributes() != null
 							&& VERSION_ATTR_PROJECT.equals(cpe.getAttributes().get(VERSION_ATTRIBUTE))) {
 						//
 						// we're trying to put a project's output directory on
@@ -752,7 +751,7 @@ public class Project extends Processor {
 	static void addToPackageList(Container container, String newPackageNames) {
 		Set<String> merged = new HashSet<String>();
 
-		String packageListStr = container.attributes.get("packages");
+		String packageListStr = container.getAttributes().get("packages");
 		if (packageListStr != null)
 			mergeNames(packageListStr, merged);
 		if (newPackageNames != null)
