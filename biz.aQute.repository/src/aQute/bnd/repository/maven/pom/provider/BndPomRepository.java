@@ -171,7 +171,7 @@ public class BndPomRepository extends BaseRepository
 			return p.getValue();
 
 		new DownloadListenerPromise(reporter, name + ": get " + bsn + ";" + version, p, listeners);
-		return new File("does_not_yet_exist");
+		return repoImpl.getMavenRepository().toLocalFile(archive);
 	}
 
 	@Override
