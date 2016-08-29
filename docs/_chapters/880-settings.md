@@ -18,7 +18,7 @@ TBD
 
 ## Authorizing a New System
 
-The settings automatically generate a private and public key when they are initialized. However, in certain cases it is necessary to explicitly authorize a system. For example, [1](Travis) always starts a build from a completely freshly initialized VM. In such a case it is necessary to authorize the machine explicitly. Though it is possible to just copy an existing settings file to this machine, it is more elegant to use the bnd commands. Do the following steps to authorize a machine.
+The settings automatically generate a private and public key when they are initialized. However, in certain cases it is necessary to explicitly authorize a system. For example, [Travis][1] always starts a build from a completely freshly initialized VM. In such a case it is necessary to authorize the machine explicitly. Though it is possible to just copy an existing settings file to this machine, it is more elegant to use the bnd commands. Do the following steps to authorize a machine.
 
 On a trusted host, get the current private and public key and the email:
 
@@ -43,5 +43,5 @@ The output is a bit longer than shown because these keys are darned long, you kn
 
 
 
-[1]: https://travis-ci.org/   
+[1]: https://travis-ci.org/
 

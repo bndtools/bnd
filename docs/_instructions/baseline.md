@@ -17,6 +17,6 @@ By default a bundle's baseline is the revision with the highest version in the r
 
 Detected violations of the semantic versioning are reported as errors.
 
-See [baselining](/chapters/180-baselining.html) for more information.
+See [baselining](../chapters/180-baselining.html) for more information.
 
 	

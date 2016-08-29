@@ -12,7 +12,7 @@ APIs are compared for backward compatibility using the semantic versioning rules
 
 During the build, bnd will check the `-baseline` instruction at the end of the build when the JAR is ready. This instruction is a selector on the symbolic name of the building bundle. If it matches, the baselining is started with one exception: the bundle version must be more than 1.0.0. If the version is less no baselining is possible, the purpose is to allow the primordial baseline to be established without errors.
 
-By default the baseline is a bundle from one of the repositories with the same symbolic name as the building bundle and the highest possible version. However, it is possible to specify the version or to baseline against a file, see [-baseline](/instructions/baseline.html).
+By default the baseline is a bundle from one of the repositories with the same symbolic name as the building bundle and the highest possible version. However, it is possible to specify the version or to baseline against a file, see [-baseline](../instructions/baseline.html).
 
 It is recommended to enable baselining per project since not all project requires baselining. For example, baselining is overkill for a project that is always compiled with all its dependencies and thus has no external dependencies. The recommended practice is therefore to add the following instruction to a project that requires baselining (usually API bundles):
 
@@ -23,11 +23,11 @@ The default baseline is the bundle with the highest version in the _baseline rep
 * `version` – Baseline against the first bundle in the baseline repository that has the given version or higher.
 * `file` – The file is the baseline.
 
-The baseline bundle is looked up in the _baseline repository_. The baseline repository is by default the _release repository_ unless overridden by the [-baselinerepo](/instructions/baselinerepo.html) instruction. The release repository is set with the [-releaserepo](/instructions/releaserepo.html) instruction.
+The baseline bundle is looked up in the _baseline repository_. The baseline repository is by default the _release repository_ unless overridden by the [-baselinerepo](../instructions/baselinerepo.html) instruction. The release repository is set with the [-releaserepo](../instructions/releaserepo.html) instruction.
 
 Only bundles that are not _staging_ are considered for the baseline, this means that it is possible to release the current bundle and comapre against the previous version until the bundle is released and becomes master. 
 
-By default the bundle and baseline are compared (_diffed_) and then analyzed for semantic version violations. Certain headers always change because they contain time or digest information. Most of these headers are already automatically ignored but the [-diffignore](/instructions/diffignore.html) instruction can add more ignorance.
+By default the bundle and baseline are compared (_diffed_) and then analyzed for semantic version violations. Certain headers always change because they contain time or digest information. Most of these headers are already automatically ignored but the [-diffignore](../instructions/diffignore.html) instruction can add more ignorance.
 
 ## Example baselining Project Instructions
 

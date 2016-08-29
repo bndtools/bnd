@@ -20,11 +20,11 @@ production using only command line tools.
 arbitrary Java libraries as OSGi bundles, using bnd as a command line
 tool.
 
-As a running example, the [JDOM library] version [1.1.1] will be wrapped as
+As a running example, the [JDOM library][] version [1.1.1][] will be wrapped as
 an OSGi bundle.
 
 NB: Many of the tasks described here can be more easily performed with a
-full-featured OSGi IDE such as Bndtools, for example in the [OSGi enRoute Wrap Tutorial]. However, this document is
+full-featured OSGi IDE such as Bndtools, for example in the [OSGi enRoute Wrap Tutorial][]. However, this document is
 intended for users who perform these tasks infrequently and do not wish
 to download an IDE; instead a single, lightweight
 command-line tool is used. 
@@ -67,19 +67,18 @@ automatic process.
 
 ## Initial Wrapping
 
-We assume that the [JDOM library] has been downloaded, and `jdom.jar` is
+We assume that the [JDOM library][] has been downloaded, and `jdom.jar` is
 available in the current directory.
 
 In order to wrap as a bundle using bnd, we need an initial "recipe".
 Create a file named `jdom.bnd` containing the following:
 
-    ￼￼￼￼￼￼￼￼￼￼￼￼￼￼-classpath: jdom.jar
+    -classpath: jdom.jar
     Bundle-SymbolicName: org.jdom
     ver: 1.1.1
     -output: ${bsn}-${ver}.jar
     Bundle-Version: ${ver}
     Export-Package: *;version=${ver}
-    ￼￼￼￼￼￼￼￼￼￼￼￼￼￼
 
 This is a bnd descriptor, and it instructs bnd how to generate the OSGi
 bundle. To summarize the features used:
@@ -112,9 +111,9 @@ can be difficult due to the unusual formatting and line-wrapping rules
 of the manifest file format that make it quite inaccessible. For
 example:
 
-    ￼￼￼￼$ bnd jdom.bnd
-    ￼￼￼org.jdom-1.1.1.jar 79 154490
-    ￼￼￼￼￼Import-Package: javax.xml.parsers,javax.xml.transform,javax.xml.transf
+    $ bnd jdom.bnd
+    org.jdom-1.1.1.jar 79 154490
+    Import-Package: javax.xml.parsers,javax.xml.transform,javax.xml.transf
      orm.sax,javax.xml.transform.stream,oracle.xml.parser,oracle.xml.parse
      r.v2,org.apache.xerces.dom,org.apache.xerces.parsers,org.jaxen,org.ja
      xen.jdom,org.jdom;version="[1.1,2)",org.jdom.adapters;version="[1.1,2
@@ -127,7 +126,7 @@ Since this is so unreadable, Bnd offers a print command that formats in
 the manifest of a specified bundle JAR. We can request Bnd to print only
 the imports and exports by using the `-impexp` switch: ￼
 
-    ￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼$ bnd print -impexp org.jdom-1.1.1.jar
+    $ bnd print -impexp org.jdom-1.1.1.jar
     [IMPEXP]
     Import-Package
       javax.xml.parsers
@@ -143,8 +142,8 @@ the imports and exports by using the `-impexp` switch: ￼
       org.jdom                    {version=[1.1,2)}
       org.jdom.input              {version=[1.1,2)}
       org.w3c.dom
-    ￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼  ￼￼￼￼org.xml.sax
-    ￼￼￼  org.xml.sax.ext
+      org.xml.sax
+      org.xml.sax.ext
       org.xml.sax.helpers
     Export-Package
       org.jdom                    {version=1.1.1, imported-as=[1.1,2)}
@@ -177,7 +176,7 @@ available.
 To mark the two Oracle imports as optional, add the following line to
 the `jdom.bnd` file:
 
-    ￼￼￼Import-Package: \
+    Import-Package: \
     	oracle.xml.*;resolution:=optional, \
     	*
 
@@ -214,8 +213,8 @@ an optional dependency. To get further information to help us make this
 decision, we can use the Bnd `print` command again with the `-usedby`
 option: ￼￼￼
 
-    ￼￼￼￼￼$ bnd print -usedby org.jdom-1.1.1.jar
-    ￼￼￼[USEDBY]
+    $ bnd print -usedby org.jdom-1.1.1.jar
+    [USEDBY]
     java.sql                   org.jdom
     javax.xml.parsers          org.jdom.adapters
     ...
@@ -252,8 +251,7 @@ In order to separate the bundles, we first need to omit `org.jdom.xpath`
 from the exports of our main JDOM bundle. This is done by refining the
 `Export-Package` statement as follows:
 
-    ￼Export-Package: !org.jdom.xpath,\ *;version=${ver}
-    ￼￼￼￼￼￼￼￼￼￼
+    Export-Package: !org.jdom.xpath,\ *;version=${ver}
 
 The leading exclamation mark can be read as "not" and it simply excludes
 the named package from the generated bundle. Alternative we can just
@@ -270,7 +268,7 @@ version directive on each line:
 We will also need a Bnd descriptor named jdom.xpath.bnd to generate the
 JDOM XPath bundle. This is based on our original recipe:
 
-    ￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼-classpath: jdom.jar
+    -classpath: jdom.jar
     Bundle-SymbolicName: org.jdom.xpath
     ver: 1.1.1
     -output: ${bsn}-${ver}.jar
@@ -363,12 +361,12 @@ For example the JDOM version we are wrapping has been built against
 version 1.1.1. The Jaxen imports can be refined by adding the following
 `Import-Package` statement to `jdom.xpath.bnd`:
 
-	￼￼Import-Package: \
-    	org.jaxen.*;version="[1.1,2)",\
-		*
+    Import-Package: \
+        org.jaxen.*;version="[1.1,2)",\
+        *
 
 ￼Note the import range 1.1 through 2, exclusive of 2 — this is in
-compliance with OSGi [Semantic Versioning] guidelines. The
+compliance with OSGi [Semantic Versioning][] guidelines. The
 API library may not follow the OSGi guidelines so sometimes an
 alternative range may be required.
 
@@ -379,7 +377,11 @@ and note that its manifest indicates version 1.1.1. If the project is
 built with Apache Maven we can usually find a version in the POM. Other
 times we must resort to reading project documentation, if it exists.
 
-A great resource to find dependencies is [JPM4J]. With [JPM4J], you can look for symbolic names (prefix the bsn with `osgi:`) or packages that should be prefixed with (`p:`). For example, search for [p:org.jaxen](http://jpm4j.org/#!/search?q=p:org.jaxen). There are several more [search] options.
+A great resource to find dependencies is [JPM4J][]. With [JPM4J][],
+you can look for symbolic names (prefix the bsn with `osgi:`) or
+packages that should be prefixed with (`p:`). For example, search
+for [p:org.jaxen](http://jpm4j.org/#!/search?q=p:org.jaxen). There
+are several more [search][] options.
 
 Note that version ranges cannot be added for JRE packages, e.g.
 `javax.swing` or `org.xml.sax` because the Java specifications do not
@@ -412,7 +414,7 @@ class names:
 
     <bean id="myBean" class="org.example.beans.MyBean">
     </bean>
-   ￼￼￼￼￼￼
+
 Here the `org.example.beans` package is a dependency of the bundle that
 should be added to `Import-Package`. Bnd can discover this dependency by
 adding a Spring analyser plugin via a declaration in the descriptor

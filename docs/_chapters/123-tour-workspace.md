@@ -133,7 +133,7 @@ This is a classical Eclipse layout, with a separate `src` and `test` folder. How
 	$ more cnf/ext/maven.bnd
 	-plugin.maven = aQute.bnd.plugin.maven.MavenPlugin
 
-	-outputmask = ${@bsn}-${version;===S;${@version}}.jar
+	-outputmask = ${@bsn}-${versionmask;===S;${@version}}.jar
 	
 	src=src/main/java
 	bin=target/classes

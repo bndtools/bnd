@@ -89,7 +89,7 @@ You can override the different parts of the Maven coordinates:
 	  developerConnection=scm:git:git@github.com/bndtools/bnd
 	-pom: groupid=com.example,
 	  where=META-INF/maven/pom.xml,
-	  version=${version;==;${Bundle-Version}}
+	  version=${versionmask;==;${Bundle-Version}}
 	
 Generates the following pom in `META-INF/maven/pom.xml`:
 
