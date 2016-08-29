@@ -3,8 +3,10 @@ package aQute.bnd.comm.tests;
 import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.osgi.util.promise.Promise;
 
@@ -21,8 +23,8 @@ import junit.framework.TestCase;
 
 public class HttpClientTest extends TestCase {
 	private TestServer	httpServer;
-	private Httpbin	httpsServer;
-	private File	tmp;
+	private Httpbin		httpsServer;
+	private File		tmp;
 
 	@Override
 	protected void tearDown() throws Exception {
@@ -339,6 +341,44 @@ public class HttpClientTest extends TestCase {
 			assertNotNull(text);
 			assertTrue(counts[0] > 0);
 			assertEquals(counts[0], counts[1]);
+		}
+	}
+
+	public void testPut() throws URISyntaxException, Exception {
+		try (Processor p = new Processor();) {
+			final AtomicBoolean done = new AtomicBoolean();
+			p.addBasicPlugin(new ProgressPlugin() {
+
+				@Override
+				public Task startTask(final String name, int size) {
+					System.out.println("start " + name);
+					return new Task() {
+
+						@Override
+						public void worked(int units) {
+							System.out.println("worked " + name + " " + units);
+						}
+
+						@Override
+						public void done(String message, Throwable e) {
+							System.out.println("done " + name + " " + message + " " + e);
+							done.set(true);
+						}
+
+						@Override
+						public boolean isCanceled() {
+							return false;
+						}
+					};
+				}
+			});
+			try (HttpClient c = new HttpClient();) {
+				c.setRegistry(p);
+				TaggedData go = c.build().verb("PUT").upload("hello").asTag().go(httpServer.getBaseURI("put"));
+				go.getInputStream().close();
+				assertEquals(200, go.getResponseCode());
+				assertTrue(done.get());
+			}
 		}
 	}
 }

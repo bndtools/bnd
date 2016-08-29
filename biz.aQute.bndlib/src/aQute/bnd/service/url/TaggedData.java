@@ -1,5 +1,6 @@
 package aQute.bnd.service.url;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,7 +20,7 @@ import aQute.lib.io.IO;
  * 
  * @author Neil Bartlett
  */
-public class TaggedData {
+public class TaggedData implements Closeable {
 
 	private final URLConnection	con;
 	private final int			responseCode;
@@ -237,5 +238,10 @@ public class TaggedData {
 
 	public File getFile() {
 		return file;
+	}
+
+	@Override
+	public void close() throws IOException {
+		IO.close(getInputStream());
 	}
 }
