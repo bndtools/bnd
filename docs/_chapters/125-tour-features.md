@@ -52,7 +52,7 @@ The properties format we use in bnd is darned flexibile. A header is recognized 
 * A  colon (':'), white space around the colon is ignored
 * An equal sign ('='), white space around the equal sign is ignored
  
-Though lines can be as long as you want, it is better for your brains to keep them short. You can break a line with a backslash ('\') followed by a newline (\n). Be careful, the newline *must* follow the backslash or you will get whatever comes after the backslash in the header. Some examples that all set the variable `foo` to 3:
+Though lines can be as long as you want, it is better for your brains to keep them short. You can break a line with a backslash ('\\') followed by a newline ('\n'). Be careful, the newline *must* follow the backslash or you will get whatever comes after the backslash in the header. Some examples that all set the variable `foo` to 3:
 
 	foo				= 	3
 	foo:3
@@ -112,12 +112,12 @@ Since a software _program_ is an ephemeral product that changes over time these 
 * How do they make sure they do not get linked in runtime to a revision that is older than they they compiled against?
 * How do they know if a revision is backward compatible?
 
-The answer to these two questions is given to us by [semantic versioning][4], a prescriptive syntax for versions. Though semantic versions work for bundles, they really shine for packages. The basic idea is that when you compile against a version, this version is recorded in the OSGi metadata as an _range_ on the imported package. The floor of this range is the version in the revision use to compile against, the ceiling indicates the first version that would not be compatible anymore. For example, `[1.2,2)` indicates that any version that is larger or equal than 1.2 and less than 2 is compatible. Therefore, 1.5 would be compatible. Since OSGi supports version ranges on the Import-Package header it will be able to control what revisions get linked and how.
+The answer to these two questions is given to us by [semantic versioning][5], a prescriptive syntax for versions. Though semantic versions work for bundles, they really shine for packages. The basic idea is that when you compile against a version, this version is recorded in the OSGi metadata as an _range_ on the imported package. The floor of this range is the version in the revision use to compile against, the ceiling indicates the first version that would not be compatible anymore. For example, `[1.2,2)` indicates that any version that is larger or equal than 1.2 and less than 2 is compatible. Therefore, 1.5 would be compatible. Since OSGi supports version ranges on the Import-Package header it will be able to control what revisions get linked and how.
 
 Such a version scheme of course only works if you agree how to use the version syntax, this should explain the 'semantic' in semantic versioning. Therefore, the bnd/OSGi versions have a strictly defined syntax:
 
 * major – For breaking change
-* minor – For changes that break the provider of the package but are backward compatible for the consumer of the package. See [semantic versions][4] for more detail.
+* minor – For changes that break the provider of the package but are backward compatible for the consumer of the package. See [semantic versions][5] for more detail.
 * micro – Backward compatible changes, e.g. small bug fixes or documentation changes
 * qualifier – Identifying the build 
 
@@ -182,7 +182,7 @@ The 'Do Not Repeat Yourself' mantra encodes one of the more important lessons of
 
 bnd has a macro processor on board that is a life saver if you are addicted to DNRY (we are). This macro processor has access to all properties in the bnd file, including headers and instructions. Therefore `${Bundle-Version}` refers to whatever value the Bundle Version is set to. However, in this case the Bundle Version also contains the time stamp in the qualifier, which we do not need in the other places. That is, we do not want the output file name to contain the qualifier. 
 
-bnd also contains a large number of built-in macros that provide common utilities. The `${version;mask;version}` is for example such a utility for picking out the parts of a version, bumping it, as well as normalizing it. Normalizing (making sure all parts are present, leading zeros removed, etc.) is crucial to keep things workable.
+bnd also contains a large number of built-in macros that provide common utilities. The `${versionmask;mask;version}` is for example such a utility for picking out the parts of a version, bumping it, as well as normalizing it. Normalizing (making sure all parts are present, leading zeros removed, etc.) is crucial to keep things workable.
 
 We can try out the macro from the command line, the bnd command has a `macro` sub command:
 
@@ -193,9 +193,9 @@ We can try out the macro from the command line, the bnd command has a `macro` su
 
 To reuse the Bundle Version in the class path, the output, and the export package:  
 
-	-classpath:		jar/javax.activation-${version;===;${Bundle-Version}}.jar
+	-classpath:		jar/javax.activation-${versionmask;===;${Bundle-Version}}.jar
 
-	Export-Package: javax.activation;version=${version;===;${Bundle-Version}}
+	Export-Package: javax.activation;version=${versionmask;===;${Bundle-Version}}
 	Private-Package: com.sun.activation.*
 	Bundle-Version:	1.1.1.${tstamp}
    
@@ -250,7 +250,7 @@ Another option is to encode the text for the readme in the bnd file using the li
 
 	-includeresource: readme.md;literal=${unescape;#JAF\nThis is the Java Activation Framework}
 
-The `-includeresource` instruction is quite powerful, there are many more options to recurse directories, filter, etc. See [-includeresource](macros/includeresource.html).
+The `-includeresource` instruction is quite powerful, there are many more options to recurse directories, filter, etc. See [-includeresource](../macros/includeresource.html).
 
 ## Import Package
 
@@ -502,7 +502,7 @@ There are some common pitfalls that can be prevented by following the tips:
 * Not versioning an exported package is at your own peril. Sorry, that is false, it is at the peril of your users.
 * Do not use the Bundle-ClassPath, if you need to include whole JARs, see the @ option at Include-Resource
 * If you do not understand a header, remove it
-* If you have a problem, make an example that is as small as possible and send it to [me][mailto:Peter.Kriens@aQute.biz|me].
+* If you have a problem, make an example that is as small as possible and send it to [me](mailto:Peter.Kriens@aQute.biz).
 
 
 [1]: http://www.bndtools.org

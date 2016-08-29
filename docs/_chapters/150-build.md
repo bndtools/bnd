@@ -55,7 +55,7 @@ For example, the Maven plugin that is built-in to bndlib has an extension file c
 	# Change disk layout to fit maven
 	#
 	
-	-outputmask = ${@bsn}-${version;===S;${@version}}.jar
+	-outputmask = ${@bsn}-${versionmask;===S;${@version}}.jar
 	src=src/main/java
 	bin=target/classes
 	testsrc=src/test/java
@@ -210,7 +210,7 @@ Maintaining this list can be cumbersome and for that reason the `${classes}` mac
 
     Test-Cases : ${classes;extending;junit.framework.TestCase;concrete}
 
-See [classes macro][Macros#classes] for more information.
+See [classes macro](../macros/classes.html) for more information.
 
 ###Ant
 

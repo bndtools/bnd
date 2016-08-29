@@ -115,8 +115,8 @@ For example, a new method is added to an interface that is implemented by the pr
 
 This asymmetry creates the need for two version policies:
 
-    -provider-policy :    ${range;\[==,=+)}
-    -consumer-policy :    ${range;\[==,+)}
+    -provider-policy :    ${range;[==,=+)}
+    -consumer-policy :    ${range;[==,+)}
 
 The given values are the defaults. The value of the version policy will be used calculate the import based on the exported package. The `${range}` macro provides a convenient shortcut to do this using a version mask.
 
@@ -128,7 +128,7 @@ For example, a bundle that implements the OSGi Event Admin service can use the f
 The resulting manifest would look like:
 
     Manifest:
-        Import-Package:  org.osgi.service.event; version="\[1.1,2)", ...
+        Import-Package:  org.osgi.service.event; version="[1.1,2)", ...
         ...
 
 How does bnd know if a bundle is a provider or a consumer of a specific package? Well, the default is the consumer policy but this can be overridden with the `provide:=true` directive that works on the `Import-Package` clauses as well as on the `Export-Package` clauses. 
@@ -183,14 +183,13 @@ This should not be a problem because a micro version is a deployment issue since
 
 That said, this is bnd so obviously you can override it. You can override the default version policy is:
 
-	-provider-policy = ${range;\[==,=+)}
-	-consumer-policy = ${range;\[==,+)}
+	-provider-policy = ${range;[==,=+)}
+	-consumer-policy = ${range;[==,+)}
 
 Just set '===' instead of '==' for the floor version in your pom.xml in the <configuration> section and you should be ok.
 
 	<configuration>
-		<_provider-policy>${range;\[===,=+)}</_provider-policy>
-		<_consumer-policy>${range;\[===,+)}</_consumer-policy>
+		<_provider-policy>${range;[===,=+)}</_provider-policy>
+		<_consumer-policy>${range;[===,+)}</_consumer-policy>
 	</configuration>
 
-[range]: range
