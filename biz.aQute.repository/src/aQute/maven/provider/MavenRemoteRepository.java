@@ -83,20 +83,21 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 		SHA1 sha1 = SHA1.digest(file);
 		MD5 md5 = MD5.digest(file);
 
-		TaggedData go = client.build().put().upload(file).updateTag().asTag().go(url);
+		try (TaggedData go = client.build().put().upload(file).updateTag().asTag().go(url);) {
 
-		switch (go.getState()) {
-			case NOT_FOUND :
-			case OTHER :
-				throw new IOException("Could not store " + path + " from " + file + " with " + go);
+			switch (go.getState()) {
+				case NOT_FOUND :
+				case OTHER :
+					throw new IOException("Could not store " + path + " from " + file + " with " + go);
 
-			case UNMODIFIED :
-			case UPDATED :
-			default :
-				break;
+				case UNMODIFIED :
+				case UPDATED :
+				default :
+					break;
+			}
 		}
-		client.build().put().upload(sha1.asHex()).asTag().go(new URL(base + path + ".sha1"));
-		client.build().put().upload(md5.asHex()).asTag().go(new URL(base + path + ".md5"));
+		try (TaggedData tag = client.build().put().upload(sha1.asHex()).asTag().go(new URL(base + path + ".sha1"));) {}
+		try (TaggedData tag = client.build().put().upload(md5.asHex()).asTag().go(new URL(base + path + ".md5"));) {}
 
 	}
 

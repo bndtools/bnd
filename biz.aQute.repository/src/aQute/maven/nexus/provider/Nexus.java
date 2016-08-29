@@ -57,23 +57,23 @@ public class Nexus {
 		return !(uri.getPath().endsWith(".sha1") || uri.getPath().endsWith(".asc") || uri.getPath().endsWith(".md5"));
 	}
 
-
 	public File download(URI uri) throws Exception {
 		return request().useCache().age(30, TimeUnit.SECONDS).go(uri);
 	}
 
 	public void upload(URI uri, byte[] data) throws Exception {
-		TaggedData tag = request().put().upload(data).asTag().go(uri);
-		switch (tag.getState()) {
-			case NOT_FOUND :
-			case OTHER :
-			default :
-				tag.throwIt();
-				break;
+		try (TaggedData tag = request().put().upload(data).asTag().go(uri);) {
+			switch (tag.getState()) {
+				case NOT_FOUND :
+				case OTHER :
+				default :
+					tag.throwIt();
+					break;
 
-			case UNMODIFIED :
-			case UPDATED :
-				break;
+				case UNMODIFIED :
+				case UPDATED :
+					break;
+			}
 		}
 	}
 }

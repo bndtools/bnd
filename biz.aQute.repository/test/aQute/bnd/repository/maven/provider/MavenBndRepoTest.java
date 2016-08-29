@@ -27,6 +27,7 @@ import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.RepositoryPlugin.PutOptions;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.service.maven.PomOptions;
+import aQute.bnd.service.progress.ProgressPlugin;
 import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
@@ -399,7 +400,32 @@ public class MavenBndRepoTest extends TestCase {
 		reporter = new Processor();
 		reporter.setTrace(true);
 		reporter.trace("test");
+		reporter.addBasicPlugin(new ProgressPlugin() {
+
+			@Override
+			public Task startTask(final String name, int size) {
+				System.out.println("Starting " + name);
+				return new Task() {
+
+					@Override
+					public void worked(int units) {
+						System.out.println("Worked " + name + " " + units);
+					}
+
+					@Override
+					public void done(String message, Throwable e) {
+						System.out.println("Done " + name + " " + message + " " + e);
+					}
+
+					@Override
+					public boolean isCanceled() {
+						return false;
+					}
+				};
+			}
+		});
 		HttpClient client = new HttpClient();
+		client.setRegistry(reporter);
 		Executor executor = Executors.newCachedThreadPool();
 		reporter.addBasicPlugin(client);
 		reporter.setTrace(true);
