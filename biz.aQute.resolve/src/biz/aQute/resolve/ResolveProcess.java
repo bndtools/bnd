@@ -35,6 +35,7 @@ import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.WireImpl;
 import aQute.bnd.service.Registry;
 import aQute.libg.tuple.Pair;
@@ -362,7 +363,7 @@ public class ResolveProcess {
 		for (Entry<Resource, ? extends Collection<Wire>> entry : wirings.entrySet()) {
 			Resource requirer = entry.getKey();
 			for (Wire wire : entry.getValue()) {
-				Resource provider = wire.getCapability().getResource();
+				Resource provider = findResolvedProvider(wire, wirings.keySet());
 
 				// Filter out self-capabilities, i.e. requirer and provider are
 				// same
@@ -378,6 +379,31 @@ public class ResolveProcess {
 			}
 		}
 		return inverted;
+	}
+
+	private static Resource findResolvedProvider(Wire wire, Set<Resource> resources) {
+		// Make sure not to add new resources into the result. The resolver
+		// already created the closure of all the needed resources. We need to
+		// find the key in the result that already provides the capability
+		// defined by this wire.
+
+		Capability capability = wire.getCapability();
+		Resource resource = capability.getResource();
+		if (ResourceUtils.isFragment(resource) && resources.contains(resource)) {
+			return resource;
+		}
+
+		for (Resource resolved : resources) {
+			for (Capability resolvedCap : resolved.getCapabilities(capability.getNamespace())) {
+				if (ResourceUtils.matches(wire.getRequirement(), resolvedCap)) {
+					return resolved;
+				}
+			}
+		}
+
+		// It shouldn't be possible to arrive here!
+		throw new IllegalStateException(
+				"What?!? The capability was not found associated with any key! That is not possible at this stage.");
 	}
 
 	private static Map<Resource,List<Wire>> tidyUpOptional(Map<Resource,List<Wire>> required,
