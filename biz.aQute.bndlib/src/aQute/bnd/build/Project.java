@@ -521,7 +521,7 @@ public class Project extends Processor {
 	}
 
 	private List<Container> parseTestpath() throws Exception {
-		return getBundles(Strategy.LOWEST, mergeProperties(Constants.TESTPATH), Constants.TESTPATH);
+		return getBundles(Strategy.HIGHEST, mergeProperties(Constants.TESTPATH), Constants.TESTPATH);
 	}
 
 	/**
