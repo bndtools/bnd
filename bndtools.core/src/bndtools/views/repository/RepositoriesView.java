@@ -722,7 +722,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
                                         description = m.group(4);
                                     }
-                                    Action a = new Action(label) {
+                                    Action a = new Action(label.replace("&", "&&")) {
                                         @Override
                                         public void run() {
                                             Job backgroundJob = new Job("Repository Action '" + getText() + "'") {
