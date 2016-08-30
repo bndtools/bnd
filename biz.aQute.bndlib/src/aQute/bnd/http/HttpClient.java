@@ -18,6 +18,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,6 +58,8 @@ import aQute.service.reporter.Reporter;
 public class HttpClient implements Closeable, URLConnector {
 	public static final SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
 
+	private static final ThreadLocal<DateFormat>	HTTP_DATE_FORMATTER	= new ThreadLocal<>();
+
 	static {
 		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 	}
@@ -85,6 +88,16 @@ public class HttpClient implements Closeable, URLConnector {
 			}
 		});
 
+	}
+
+	private static DateFormat httpDateFormat() {
+		DateFormat format = HTTP_DATE_FORMATTER.get();
+		if (format == null) {
+			format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+			format.setTimeZone(TimeZone.getTimeZone("GMT"));
+			HTTP_DATE_FORMATTER.set(format);
+		}
+		return format;
 	}
 
 	public void close() {
@@ -262,19 +275,11 @@ public class HttpClient implements Closeable, URLConnector {
 		}
 
 		if (request.ifModifiedSince > 0) {
-			synchronized (sdf) {
-				sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
-				String format = sdf.format(new Date(request.ifModifiedSince));
-				request.headers.put("If-Modified-Since", format);
-			}
+			request.headers.put("If-Modified-Since", httpDateFormat().format(new Date(request.ifModifiedSince)));
 		}
 
 		if (request.ifUnmodifiedSince != 0) {
-			synchronized (sdf) {
-				sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
-				String format = sdf.format(new Date(request.ifUnmodifiedSince));
-				request.headers.put("If-Unmodified-Since", format);
-			}
+			request.headers.put("If-Unmodified-Since", httpDateFormat().format(new Date(request.ifUnmodifiedSince)));
 		}
 
 		setHeaders(request.headers, con);
