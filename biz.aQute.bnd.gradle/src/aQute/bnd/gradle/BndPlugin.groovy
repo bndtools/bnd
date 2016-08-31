@@ -48,6 +48,7 @@ public class BndPlugin implements Plugin<Project> {
         if (bndWorkspace == null) {
           throw new GradleException("Unable to load bnd workspace ${rootDir}")
         }
+        bndWorkspace.setOffline(project.gradle.startParameter.offline)
       }
       this.bndProject = bndWorkspace.getProject(name)
       if (bndProject == null) {
