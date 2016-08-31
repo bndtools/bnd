@@ -1,7 +1,6 @@
 package aQute.bnd.main;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -12,7 +11,6 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
-import org.osgi.service.repository.ContentNamespace;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Container;
@@ -21,13 +19,10 @@ import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.OSGI_CORE;
-import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.main.bnd.projectOptions;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
-import aQute.bnd.osgi.repository.ResourcesRepository;
-import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
 import aQute.bnd.osgi.resource.ResourceBuilder;
@@ -39,7 +34,6 @@ import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
-import aQute.libg.cryptography.SHA256;
 import biz.aQute.resolve.ProjectResolver;
 import biz.aQute.resolve.ResolverValidator;
 import biz.aQute.resolve.ResolverValidator.Resolution;
@@ -266,41 +260,6 @@ public class ResolveCommand extends Processor {
 				ws = project.getWorkspace();
 		}
 
-		ResourcesRepository workspaceRepository = null;
-
-		List<Resource> resources = new ArrayList<>();
-
-		if (ws != null) {
-
-			for (Project p : ws.getAllProjects()) {
-				File[] files = p.getBuildFiles(false);
-				if (files != null) {
-					for (File file : files) {
-						Domain manifest = Domain.domain(file);
-						ResourceBuilder rb = new ResourceBuilder();
-						rb.addManifest(manifest);
-
-						Attrs attrs = new Attrs();
-						attrs.put(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, file.toURI().toString());
-						attrs.putTyped(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, file.length());
-						attrs.put(ContentNamespace.CONTENT_NAMESPACE, SHA256.digest(file).asHex());
-						rb.addCapability(
-								CapabilityBuilder.createCapReqBuilder(ContentNamespace.CONTENT_NAMESPACE, attrs));
-						Resource resource = rb.build();
-
-						resources.add(resource);
-					}
-				}
-			}
-
-		}
-
-		workspaceRepository = new ResourcesRepository(resources) {
-			public String toString() {
-				return "Workspace";
-			}
-		};
-
 		List<String> paths = options._arguments();
 		for (String path : paths) {
 			File f = getFile(path);
@@ -309,9 +268,6 @@ public class ResolveCommand extends Processor {
 			} else {
 
 				Run run = Run.createRun(ws, f);
-
-				if (workspaceRepository != null)
-					run.addBasicPlugin(workspaceRepository);
 
 				try (ProjectResolver pr = new ProjectResolver(run);) {
 					try {

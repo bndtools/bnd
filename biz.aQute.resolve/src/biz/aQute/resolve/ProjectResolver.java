@@ -89,11 +89,11 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 
 		Workspace workspace = project.getWorkspace();
 		if (workspace != null)
-			project.addBasicPlugin(new WorkspaceResourcesRepository(workspace));
+			addBasicPlugin(new WorkspaceResourcesRepository(workspace));
 	}
 
 	public Map<Resource,List<Wire>> resolve() throws ResolutionException {
-		resolution = resolve.resolveRequired(project, project, project, resolver, cbs, log);
+		resolution = resolve.resolveRequired(project, project, this, resolver, cbs, log);
 		return resolution;
 	}
 
@@ -172,7 +172,7 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 	}
 
 	public BndrunResolveContext getContext() {
-		return new BndrunResolveContext(project, project, project, log);
+		return new BndrunResolveContext(project, project, this, log);
 	}
 
 	public IdentityCapability getResource(String bsn, String version) {
