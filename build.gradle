@@ -23,6 +23,7 @@ ext.bndWorkspace = new Workspace(rootDir, bnd_cnf)
 if (bndWorkspace == null) {
   throw new GradleException("Unable to load workspace ${rootDir}/${bnd_cnf}")
 }
+bndWorkspace.setOffline(project.gradle.startParameter.offline)
 
 ext.cnf = rootProject.project(bnd_cnf)
 
