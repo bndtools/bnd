@@ -468,9 +468,12 @@ public class MavenBndRepository extends BaseRepository
 
 			localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
 
-			List<MavenBackingRepository> release = MavenBackingRepository.create(configuration.releaseUrl(), reporter,
+			String releaseUrl = configuration.releaseUrl();
+			String snapshotUrl = configuration.snapshotUrl() != null ? configuration.snapshotUrl() : releaseUrl;
+
+			List<MavenBackingRepository> release = MavenBackingRepository.create(releaseUrl, reporter,
 					localRepo, client);
-			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(configuration.snapshotUrl(), reporter,
+			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(snapshotUrl, reporter,
 					localRepo, client);
 			storage = new MavenRepository(localRepo, getName(), release, snapshot, Processor.getExecutor(), reporter,
 					getRefreshCallback());
