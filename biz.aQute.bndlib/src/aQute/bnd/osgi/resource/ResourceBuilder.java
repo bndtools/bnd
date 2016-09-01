@@ -674,6 +674,9 @@ public class ResourceBuilder {
 	}
 
 	public boolean addFile(File file, URI uri) throws Exception {
+		if (uri == null)
+			uri = file.toURI();
+
 		Domain manifest = Domain.domain(file);
 		String mime = "vnd.osgi.bundle";
 		boolean hasIdentity = false;

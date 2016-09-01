@@ -76,9 +76,9 @@ public class POM implements IPom {
 	}
 
 	public POM(MavenRepository repo, Document doc) throws Exception {
-
 		this.repo = repo;
 		xp = xpf.newXPath();
+
 		String parentGroup = Strings.trim(xp.evaluate("project/parent/groupId", doc));
 		String parentArtifact = Strings.trim(xp.evaluate("project/parent/artifactId", doc));
 		String parentVersion = Strings.trim(xp.evaluate("project/parent/version", doc));
@@ -117,11 +117,9 @@ public class POM implements IPom {
 			index((Element) props.item(i), "");
 
 		String group = get("project.groupId", null);
-		String artifact = get("project.artifactId", null);
+		String artifact = getNoInheritance("project.artifactId", null);
 		String version = get("project.version", null);
-		if (version == null)
-			version = parent.getVersion().toString();
-		this.packaging = get("project.packaging", "jar");
+		this.packaging = getNoInheritance("project.packaging", "jar");
 
 		Program program = Program.valueOf(group, artifact);
 		if (program == null)
@@ -220,6 +218,14 @@ public class POM implements IPom {
 
 	private String get(String key, String deflt) {
 		String value = properties.getProperty(key);
+		if (value == null)
+			value = deflt;
+
+		return replaceMacros(value);
+	}
+
+	private String getNoInheritance(String key, String deflt) {
+		String value = (String) properties.get(key);
 		if (value == null)
 			value = deflt;
 

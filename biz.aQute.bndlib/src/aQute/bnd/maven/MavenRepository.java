@@ -20,6 +20,7 @@ import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.SortedList;
 import aQute.service.reporter.Reporter;
 
+@Deprecated
 public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath {
 
 	public final static String	NAME	= "name";
