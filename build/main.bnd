@@ -1,10 +1,10 @@
 # Only extra bundles that are needed for the feature are mentioned here
 -resourceonly: true
 -includeresource: \
-    ${repo;biz.aQute.bndlib;${bnd-version-base}},\
-    ${repo;org.osgi.impl.bundle.repoindex.lib;${bnd-version-base}},\
-    ${repo;biz.aQute.repository;${bnd-version-base}},\
-    ${repo;biz.aQute.resolve;${bnd-version-base}},\
+    ${repo;biz.aQute.bndlib;[${bnd-version-base},${bnd-version-ceiling})},\
+    ${repo;org.osgi.impl.bundle.repoindex.lib;[${bnd-version-base},${bnd-version-ceiling})},\
+    ${repo;biz.aQute.repository;[${bnd-version-base},${bnd-version-ceiling})},\
+    ${repo;biz.aQute.resolve;[${bnd-version-base},${bnd-version-ceiling})},\
     ${repo;org.slf4j.api;latest},\
     ${repo;javax.xml;latest},\
     ${repo;javax.xml.stream;latest}

@@ -20,7 +20,7 @@ bundlehub-template-resources: \
 	${bundlehub-template}/nonosgi-repo/=templates/repos/nonosgi-repo,\
 	${bundlehub-template}/localrepo/=templates/repos/localrepo,\
 	${bundlehub-template}/releaserepo/=templates/repos/releaserepo,\
-	${bundlehub-template}/plugins/biz.aQute.repository/biz.aQute.repository.jar=${repo;biz.aQute.repository;${bnd-version-base}}
+	${bundlehub-template}/plugins/biz.aQute.repository/biz.aQute.repository.jar=${repo;biz.aQute.repository;[${bnd-version-base},${bnd-version-ceiling})}
 
 jpm-template: templates/cnfs/jpm
 jpm-template-resources: \
@@ -28,7 +28,7 @@ jpm-template-resources: \
 	${jpm-template}=templates/unprocessed/jpm,\
 	${jpm-template}/localrepo/=templates/repos/localrepo,\
 	${jpm-template}/releaserepo/=templates/repos/releaserepo,\
-	${jpm-template}/plugins/biz.aQute.repository/biz.aQute.repository.jar=${repo;biz.aQute.repository;${bnd-version-base}}
+	${jpm-template}/plugins/biz.aQute.repository/biz.aQute.repository.jar=${repo;biz.aQute.repository;[${bnd-version-base},${bnd-version-ceiling})}
 
 -privatepackage: org.bndtools.wizards.workspace.legacy
 -includeresource:\
