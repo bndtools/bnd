@@ -1,5 +1,8 @@
 package biz.aQute.resolve;
 
+import java.io.File;
+import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -12,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.Manifest;
 
 import org.osgi.framework.Version;
@@ -29,17 +33,22 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.AggregateRepository;
 import aQute.bnd.osgi.repository.AugmentRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
+import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.lib.converter.Converter;
+import aQute.lib.utf8properties.UTF8Properties;
 
 /**
  * This class does the resolving for bundles. It loads the details from a
@@ -297,7 +306,6 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 	/**
 	 * Load the effective set from the properties
-	 *
 	 */
 	Map<String,Set<String>> loadEffectiveSet() {
 		String effective = properties.getProperty(RUN_EFFECTIVE_INSTRUCTION);
@@ -360,6 +368,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		}
 
 		Parameters augments = new Parameters(properties.mergeProperties(Constants.AUGMENT));
+		findAdditionalAugments(augments, orderedRepositories);
 		if (!augments.isEmpty()) {
 			AggregateRepository aggregate = new AggregateRepository(orderedRepositories);
 			AugmentRepository augment = new AugmentRepository(augments, aggregate);
@@ -368,6 +377,61 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 		for (Repository repository : orderedRepositories) {
 			super.addRepository(repository);
+		}
+	}
+
+	private void findAdditionalAugments(Parameters augments, Collection<Repository> orderedRepositories) {
+		RequirementBuilder rb = new RequirementBuilder("bnd.augment");
+		rb.filter("(path=*)");
+		Requirement req = rb.buildSyntheticRequirement();
+
+		for (Repository r : orderedRepositories) {
+			Map<Requirement,Collection<Capability>> found = r.findProviders(Collections.singleton(req));
+			Collection<Capability> capabilities = found.get(req);
+			if (capabilities != null) {
+				for (Capability capability : capabilities) {
+					findAdditionalAugmentsFromResource(augments, capability);
+				}
+			}
+		}
+	}
+
+	private void findAdditionalAugmentsFromResource(Parameters augments, Capability capability) {
+		Resource resource = capability.getResource();
+		Map<URI,String> locations = ResourceUtils.getLocations(resource);
+
+		if (locations == null || locations.isEmpty())
+			return;
+
+		Object pathObject = capability.getAttributes().get("path");
+		if (pathObject == null)
+			pathObject = "augments.bnd";
+
+		if (pathObject instanceof String) {
+			String path = (String) pathObject;
+
+			HttpClient http = project.getWorkspace().getPlugin(HttpClient.class);
+
+			for (URI uri : locations.keySet())
+				try {
+					project.trace("loading augments from %s", uri);
+					File file = http.build().age(24, TimeUnit.HOURS).useCache().go(uri);
+					try (Jar jar = new Jar(file);) {
+						aQute.bnd.osgi.Resource rs = jar.getResource(path);
+						try (InputStream in = rs.openInputStream()) {
+							UTF8Properties p = new UTF8Properties();
+							p.load(in, file, project);
+							try (Processor processor = new Processor();) {
+								processor.setProperties(p);
+								Parameters extra = processor.getMergedParameters(Constants.AUGMENT);
+								augments.putAll(extra);
+							}
+							return;
+						}
+					}
+				} catch (Exception e) {
+					project.warning("Failed to handle augment resource from repo %s", uri);
+				}
 		}
 	}
 
