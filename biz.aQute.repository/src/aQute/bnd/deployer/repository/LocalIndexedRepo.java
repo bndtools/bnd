@@ -543,8 +543,6 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 	}
 
 	public void close() {
-		// TODO Auto-generated method stub
-
 	}
 
 }
