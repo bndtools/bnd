@@ -410,7 +410,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		if (pathObject instanceof String) {
 			String path = (String) pathObject;
 
-			HttpClient http = project.getWorkspace().getPlugin(HttpClient.class);
+			HttpClient http = registry.getPlugin(HttpClient.class);
 
 			for (URI uri : locations.keySet())
 				try {
