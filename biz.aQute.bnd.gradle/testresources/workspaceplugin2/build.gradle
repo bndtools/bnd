@@ -19,9 +19,6 @@ buildscript {
 Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
 Workspace.addGestalt(Constants.GESTALT_BATCH, null)
 ext.bndWorkspace = new Workspace(rootDir, bnd_cnf)
-if (bndWorkspace == null) {
-  throw new GradleException("Unable to load workspace ${rootDir}/${bnd_cnf}")
-}
 
 ext.cnf = rootProject.project(bnd_cnf)
 

@@ -45,9 +45,6 @@ public class BndPlugin implements Plugin<Project> {
       }
       if (!rootProject.hasProperty('bndWorkspace')) {
         rootProject.ext.bndWorkspace = new Workspace(rootDir)
-        if (bndWorkspace == null) {
-          throw new GradleException("Unable to load bnd workspace ${rootDir}")
-        }
       }
       this.bndProject = bndWorkspace.getProject(name)
       if (bndProject == null) {
