@@ -305,7 +305,7 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	ProgressPlugin.Task getTask(final HttpRequest< ? > request) {
-		final String name = "Download " + request.url;
+		final String name = (request.upload == null ? "Download " : "Upload ") + request.url;
 		final int size = 100;
 		final ProgressPlugin.Task task;
 		final List<ProgressPlugin> progressPlugins = registry != null ? registry.getPlugins(ProgressPlugin.class)
