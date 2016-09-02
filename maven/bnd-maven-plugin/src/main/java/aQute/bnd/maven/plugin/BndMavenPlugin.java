@@ -24,6 +24,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -62,6 +64,7 @@ import aQute.service.reporter.Report.Location;
 public class BndMavenPlugin extends AbstractMojo {
 
 	private static final String						MANIFEST_LAST_MODIFIED	= "aQute.bnd.maven.plugin.BndMavenPlugin.manifestLastModified";
+	private static final String						MARKED_FILES			= "aQute.bnd.maven.plugin.BndMavenPlugin.markedFiles";
 	private static final String	PACKAGING_POM	= "pom";
 	private static final String	TSTAMP			= "${tstamp}";
 
@@ -279,6 +282,19 @@ public class BndMavenPlugin extends AbstractMojo {
 	private void reportErrorsAndWarnings(Builder builder) throws MojoExecutionException {
 		Log log = getLog();
 
+		@SuppressWarnings("unchecked")
+		Collection<File> markedFiles = (Collection<File>) buildContext.getValue(MARKED_FILES);
+		if (markedFiles == null) {
+			buildContext.removeMessages(propertiesFile);
+			markedFiles = builder.getIncluded();
+		}
+		if (markedFiles != null) {
+			for (File f : markedFiles) {
+				buildContext.removeMessages(f);
+			}
+		}
+		markedFiles = new HashSet<>();
+
 		List<String> warnings = builder.getWarnings();
 		for (String warning : warnings) {
 			Location location = builder.getLocation(warning);
@@ -287,6 +303,7 @@ public class BndMavenPlugin extends AbstractMojo {
 				location.message = warning;
 			}
 			File f = location.file == null ? propertiesFile : new File(location.file);
+			markedFiles.add(f);
 			buildContext.addMessage(f, location.line, location.length, location.message, BuildContext.SEVERITY_WARNING,
 					null);
 		}
@@ -298,9 +315,11 @@ public class BndMavenPlugin extends AbstractMojo {
 				location.message = error;
 			}
 			File f = location.file == null ? propertiesFile : new File(location.file);
+			markedFiles.add(f);
 			buildContext.addMessage(f, location.line, location.length, location.message, BuildContext.SEVERITY_ERROR,
 					null);
 		}
+		buildContext.setValue(MARKED_FILES, markedFiles);
 		if (!builder.isOk()) {
 			if (errors.size() == 1)
 				throw new MojoExecutionException(errors.get(0));
