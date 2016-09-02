@@ -489,7 +489,7 @@ public class Builder extends Analyzer {
 						}
 					}
 					if (packageRef.isDefaultPackage())
-						System.err.println("Duh?");
+						trace("Package reference is default package");
 					dot.putResource("OSGI-OPT/src/" + sourcePath, new FileResource(f));
 				}
 			}
