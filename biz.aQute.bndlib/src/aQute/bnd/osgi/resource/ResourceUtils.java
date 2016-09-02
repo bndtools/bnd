@@ -526,19 +526,26 @@ public class ResourceUtils {
 	}
 
 	/**
-	 * Apply a version range mask to the resource! Masks are defined by
-	 * {@link aQute.bnd.osgi.Macro#_range(String[])}.
+	 * Create a VersionedClause by appling a version range mask to the resource!
+	 * Masks are defined by {@link aQute.bnd.osgi.Macro#_range(String[])}. If
+	 * the resource should represent a project in the bnd workspace, then
+	 * instead the VersionClause will refer to it as a snapshot version: e.g.
+	 * <bsn>;version=snapshot
 	 */
 	public static VersionedClause toVersionClause(Resource resource, String mask) {
 		Macro macro = new Macro(new Processor());
 		Capability idCap = getIdentityCapability(resource);
 		String identity = getIdentity(idCap);
-		Version version = getVersion(idCap);
-		String versionRange = macro._range(new String[] {
-				"range", mask, version.toString()
-		});
+		String versionString;
+		if (resource.getCapabilities("bnd.workspace.project").isEmpty()) {
+			Version version = getVersion(idCap);
+			versionString = macro._range(new String[] {
+					"range", mask, version.toString()
+			});
+		} else
+			versionString = "snapshot";
 		Attrs attribs = new Attrs();
-		attribs.put(Constants.VERSION_ATTRIBUTE, versionRange);
+		attribs.put(Constants.VERSION_ATTRIBUTE, versionString);
 		return new VersionedClause(identity, attribs);
 	}
 

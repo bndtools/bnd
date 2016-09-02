@@ -205,6 +205,19 @@ public class ResourceTest extends TestCase {
 		assertEquals("demo-fragment;version='[3.3.0,3.3.1)'", sb.toString());
 	}
 
+	public void testSnapshotResourceToVersionedClause() throws Exception {
+		ResourceBuilder rb = new ResourceBuilder();
+		rb.addManifest(Domain.domain(IO.getFile("testresources/demo-fragment.jar")));
+		Attrs attrs = new Attrs();
+		attrs.put("bnd.workspace.project", "demo-fragment");
+		rb.addCapability(CapabilityBuilder.createCapReqBuilder("bnd.workspace.project", attrs));
+		Resource resource = rb.build();
+		VersionedClause versionClause = ResourceUtils.toVersionClause(resource, "[===,==+)");
+		StringBuilder sb = new StringBuilder();
+		versionClause.formatTo(sb);
+		assertEquals("demo-fragment;version=snapshot", sb.toString());
+	}
+
 	private Set<Resource> getResources(String locations) throws MalformedURLException, URISyntaxException {
 		FixedIndexedRepo repo = new FixedIndexedRepo();
 		repo.setLocations(locations);
