@@ -370,7 +370,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                                     @Override
                                     protected IStatus run(IProgressMonitor monitor) {
                                         final File repoFile = entry.getFile(true);
-                                        if (repoFile.exists()) {
+                                        if (repoFile != null && repoFile.exists()) {
                                             getSite().getShell().getDisplay().asyncExec(new Runnable() {
                                                 @Override
                                                 public void run() {
