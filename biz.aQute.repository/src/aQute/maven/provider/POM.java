@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
@@ -29,6 +28,7 @@ import org.w3c.dom.NodeList;
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.libg.xml.DocumentBuilderFactory;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom;
 import aQute.maven.api.MavenScope;
@@ -41,7 +41,6 @@ import aQute.maven.api.Revision;
 public class POM implements IPom {
 	static Logger l = LoggerFactory.getLogger(POM.class);
 
-	static DocumentBuilderFactory	dbf				= DocumentBuilderFactory.newInstance();
 	static XPathFactory				xpf				= XPathFactory.newInstance();
 	private Revision				revision;
 	private String					packaging;
@@ -68,11 +67,11 @@ public class POM implements IPom {
 	}
 
 	public POM(MavenRepository repo, InputStream in) throws Exception {
-		this(repo, dbf.newDocumentBuilder().parse(in));
+		this(repo, DocumentBuilderFactory.safeInstance().parse(in));
 	}
 
 	public POM(MavenRepository repo, File file) throws Exception {
-		this(repo, dbf.newDocumentBuilder().parse(file));
+		this(repo, DocumentBuilderFactory.safeInstance().parse(file));
 	}
 
 	public POM(MavenRepository repo, Document doc) throws Exception {

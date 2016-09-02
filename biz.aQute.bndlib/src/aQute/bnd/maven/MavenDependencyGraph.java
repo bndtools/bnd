@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
@@ -18,8 +17,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import aQute.libg.xml.DocumentBuilderFactory;
+
 public class MavenDependencyGraph {
-	final static DocumentBuilderFactory	docFactory		= DocumentBuilderFactory.newInstance();
 	final static XPathFactory			xpathFactory	= XPathFactory.newInstance();
 	final List<Artifact>				dependencies	= new ArrayList<Artifact>();
 	final List<URL>						repositories	= new ArrayList<URL>();
@@ -45,7 +45,7 @@ public class MavenDependencyGraph {
 		public Artifact(URL url) throws Exception {
 			if (url != null) {
 				this.url = url;
-				DocumentBuilder db = docFactory.newDocumentBuilder();
+				DocumentBuilder db = DocumentBuilderFactory.safeInstance();
 				Document doc = db.parse(url.toString());
 				Node node = (Node) xpath.evaluate("/project", doc, XPathConstants.NODE);
 

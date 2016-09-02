@@ -6,7 +6,6 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
@@ -18,10 +17,10 @@ import org.w3c.dom.NodeList;
 
 import aQute.bnd.util.dto.DTO;
 import aQute.lib.converter.Converter;
+import aQute.libg.xml.DocumentBuilderFactory;
 
 public class SettingsParser {
 	final static Converter				cnv			= new Converter();
-	final static DocumentBuilderFactory	dbf			= DocumentBuilderFactory.newInstance();
 	final static XPathFactory			xpf			= XPathFactory.newInstance();
 	final SettingsDTO					settings	= new SettingsDTO();
 	final XPath							xp;
@@ -37,7 +36,7 @@ public class SettingsParser {
 	 */
 
 	public SettingsParser(File file) throws Exception {
-		DocumentBuilder db = dbf.newDocumentBuilder();
+		DocumentBuilder db = DocumentBuilderFactory.safeInstance();
 		xp = xpf.newXPath();
 		doc = db.parse(file);
 
