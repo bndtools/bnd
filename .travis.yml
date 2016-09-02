@@ -1,22 +1,23 @@
-sudo: required
+sudo: false
 
 language: java
-
-# required for oraclejdk9
-dist: trusty
-group: edge
 
 jdk:
   - oraclejdk7
   - oraclejdk8
 
-matrix:
-  fast_finish: true
-  include:
-    - jdk: oraclejdk9
-      env: MAVEN_SKIP_RC=true
-  allow_failures:
-    - jdk: oraclejdk9
+# required for oraclejdk9
+#sudo: required
+#dist: trusty
+#group: edge
+#
+#matrix:
+#  fast_finish: true
+#  include:
+#    - jdk: oraclejdk9
+#      env: MAVEN_SKIP_RC=true
+#  allow_failures:
+#    - jdk: oraclejdk9
 
 before_install:
   - rvm --version

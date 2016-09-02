@@ -24,6 +24,7 @@ import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.jar.JarEntry;
@@ -95,7 +96,8 @@ public class Workspace extends Processor {
 	private final Set<String>					modelsUnderConstruction	= newSet();
 	final Map<String,Action>					commands				= newMap();
 	final Maven									maven					= new Maven(Processor.getExecutor());
-	private boolean								offline					= true;
+	private volatile boolean								hasBndListeners			= false;
+	private final AtomicBoolean								offline					= new AtomicBoolean();
 	Settings									settings				= new Settings();
 	WorkspaceRepository							workspaceRepo			= new WorkspaceRepository(this);
 	static String								overallDriver			= "unset";
@@ -397,7 +399,7 @@ public class Workspace extends Processor {
 		List<BndListener> listeners = getPlugins(BndListener.class);
 		for (BndListener l : listeners)
 			try {
-				offline = false;
+				hasBndListeners = true;
 				l.changed(f);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -709,17 +711,20 @@ public class Workspace extends Processor {
 		}
 	}
 
-	/**
-	 * Return if we're in offline mode. Offline mode is defined as an
-	 * environment where nobody tells us the resources are out of date (refresh
-	 * or changed). This is currently defined as having bndlisteners.
-	 */
+	boolean hasBndListeners() {
+		return hasBndListeners;
+	}
+
 	public boolean isOffline() {
+		return offline.get();
+	}
+
+	public AtomicBoolean getOffline() {
 		return offline;
 	}
 
 	public Workspace setOffline(boolean on) {
-		this.offline = on;
+		offline.set(on);
 		return this;
 	}
 
