@@ -18,6 +18,8 @@ import aQute.libg.cryptography.SHA256;
 
 public class WorkspaceResourcesRepository extends ResourcesRepository {
 
+	public static final String WORKSPACE_NAMESPACE = "bnd.workspace.project";
+
 	public WorkspaceResourcesRepository(Workspace workspace) throws Exception {
 		List<Resource> resources = new ArrayList<>();
 
@@ -35,6 +37,13 @@ public class WorkspaceResourcesRepository extends ResourcesRepository {
 					attrs.put(ContentNamespace.CONTENT_NAMESPACE, SHA256.digest(file).asHex());
 
 					rb.addCapability(CapabilityBuilder.createCapReqBuilder(ContentNamespace.CONTENT_NAMESPACE, attrs));
+
+					// Add a capability specific to the workspace so that we can
+					// identify this fact later during resource processing.
+					attrs = new Attrs();
+					attrs.put(WORKSPACE_NAMESPACE, p.getName());
+
+					rb.addCapability(CapabilityBuilder.createCapReqBuilder(WORKSPACE_NAMESPACE, attrs));
 
 					Resource resource = rb.build();
 
