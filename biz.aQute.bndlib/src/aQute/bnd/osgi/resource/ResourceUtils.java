@@ -32,7 +32,11 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.ContentNamespace;
 
+import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Macro;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.Converter.Hook;
@@ -512,6 +516,30 @@ public class ResourceUtils {
 		if (Strings.charAt(name, -1) == ':')
 			return Strings.substring(name, 0, -1);
 		return name;
+	}
+
+	public static String getIdentity(Capability identityCapability) throws IllegalArgumentException {
+		String id = (String) identityCapability.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+		if (id == null)
+			throw new IllegalArgumentException("Resource identity capability has missing identity attribute");
+		return id;
+	}
+
+	/**
+	 * Apply a version range mask to the resource! Masks are defined by
+	 * {@link aQute.bnd.osgi.Macro#_range(String[])}.
+	 */
+	public static VersionedClause toVersionClause(Resource resource, String mask) {
+		Macro macro = new Macro(new Processor());
+		Capability idCap = getIdentityCapability(resource);
+		String identity = getIdentity(idCap);
+		Version version = getVersion(idCap);
+		String versionRange = macro._range(new String[] {
+				"range", mask, version.toString()
+		});
+		Attrs attribs = new Attrs();
+		attribs.put(Constants.VERSION_ATTRIBUTE, versionRange);
+		return new VersionedClause(identity, attribs);
 	}
 
 }
