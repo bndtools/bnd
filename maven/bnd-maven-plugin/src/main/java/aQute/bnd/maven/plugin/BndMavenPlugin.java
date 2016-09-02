@@ -94,6 +94,8 @@ public class BndMavenPlugin extends AbstractMojo {
 
 	private Log					log;
 
+	private File									propertiesFile;
+
 	public void execute() throws MojoExecutionException {
 		log = getLog();
 
@@ -119,7 +121,7 @@ public class BndMavenPlugin extends AbstractMojo {
 			builder.setTrace(log.isDebugEnabled());
 
 			builder.setBase(project.getBasedir());
-			loadProjectProperties(builder, project);
+			propertiesFile = loadProjectProperties(builder, project);
 			builder.setProperty("project.output", targetDir.getCanonicalPath());
 
 			// If no bundle to be built, we have nothing to do
@@ -226,7 +228,7 @@ public class BndMavenPlugin extends AbstractMojo {
 		}
 	}
 
-	private void loadProjectProperties(Builder builder, MavenProject project) throws Exception {
+	private File loadProjectProperties(Builder builder, MavenProject project) throws Exception {
 		// Load parent project properties first
 		MavenProject parentProject = project.getParent();
 		if (parentProject != null) {
@@ -254,7 +256,7 @@ public class BndMavenPlugin extends AbstractMojo {
 				}
 				// we use setProperties to handle -include
 				builder.setProperties(bndFile.getParentFile(), builder.loadProperties(bndFile));
-				return;
+				return bndFile;
 			}
 			// no bnd file found, so we fall through
 		}
@@ -269,18 +271,14 @@ public class BndMavenPlugin extends AbstractMojo {
 				properties.load(bndElement.getValue(), project.getFile(), builder);
 				// we use setProperties to handle -include
 				builder.setProperties(baseDir, properties);
-				return;
 			}
 		}
+		return project.getFile();
 	}
 
 	private void reportErrorsAndWarnings(Builder builder) throws MojoExecutionException {
 		Log log = getLog();
 
-		File defaultFile = new File(project.getBasedir(), Project.BNDFILE);
-		if (!defaultFile.exists()) {
-			defaultFile = project.getFile();
-		}
 		List<String> warnings = builder.getWarnings();
 		for (String warning : warnings) {
 			Location location = builder.getLocation(warning);
@@ -288,8 +286,9 @@ public class BndMavenPlugin extends AbstractMojo {
 				location = new Location();
 				location.message = warning;
 			}
-			buildContext.addMessage(location.file == null ? defaultFile : new File(location.file), location.line,
-					location.length, location.message, BuildContext.SEVERITY_WARNING, null);
+			File f = location.file == null ? propertiesFile : new File(location.file);
+			buildContext.addMessage(f, location.line, location.length, location.message, BuildContext.SEVERITY_WARNING,
+					null);
 		}
 		List<String> errors = builder.getErrors();
 		for (String error : errors) {
@@ -298,8 +297,9 @@ public class BndMavenPlugin extends AbstractMojo {
 				location = new Location();
 				location.message = error;
 			}
-			buildContext.addMessage(location.file == null ? defaultFile : new File(location.file), location.line,
-					location.length, location.message, BuildContext.SEVERITY_ERROR, null);
+			File f = location.file == null ? propertiesFile : new File(location.file);
+			buildContext.addMessage(f, location.line, location.length, location.message, BuildContext.SEVERITY_ERROR,
+					null);
 		}
 		if (!builder.isOk()) {
 			if (errors.size() == 1)
