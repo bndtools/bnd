@@ -35,6 +35,8 @@ public class BndDependencySourceContainerType extends AbstractSourceContainerTyp
             Element element = (Element) node;
             if (ELEMENT_NAME.equals(element.getNodeName())) {
                 return new BndDependencySourceContainer();
+            } else if ("default".equals(element.getNodeName())) { // try to gracefully handle old serialized element name
+                return new BndDependencySourceContainer();
             }
             abort("Unable to restore Bnd Dependencies source lookup path - expecting bnd element.", null);
         }
