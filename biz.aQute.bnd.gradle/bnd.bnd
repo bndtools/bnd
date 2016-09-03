@@ -14,7 +14,8 @@ Bundle-Description: The bnd gradle plugin.
 
 -buildpath: \
   aQute.libg;version=latest, \
-  biz.aQute.bndlib;version=latest
+  biz.aQute.bndlib;version=latest, \
+  biz.aQute.resolve;version=latest
 
 -includeresource: \
   OSGI-OPT/src=src, \

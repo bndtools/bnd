@@ -18,14 +18,27 @@
 
 package aQute.bnd.gradle
 
+import aQute.bnd.build.ProjectLauncher
+import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
+import aQute.bnd.build.model.BndEditModel
+import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.osgi.Constants
+import aQute.bnd.osgi.resource.ResourceUtils
+import aQute.bnd.properties.Document
+import aQute.lib.io.IO
+import biz.aQute.resolve.ProjectResolver
+
+import java.util.List;
+
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
+import org.osgi.resource.Resource
+import org.osgi.resource.Wire
 
 public class BndPlugin implements Plugin<Project> {
   public static final String PLUGINID = 'biz.aQute.bnd'
@@ -412,6 +425,59 @@ public class BndPlugin implements Plugin<Project> {
             include '*.bndrun'
         }.each {
           dependsOn tasks.getByPath("runbundles.${it.name - '.bndrun'}")
+        }
+      }
+
+      tasks.addRule('Pattern: resolve.<name>: Resolving runbundles required for <name>.bndrun.') { taskName ->
+        if (taskName.startsWith('resolve.')) {
+          def bndrun = taskName - 'resolve.'
+          def runFile = file("${bndrun}.bndrun")
+          if (runFile.isFile()) {
+            task(taskName) {
+              description "Resolving runbundles required for ${bndrun}.bndrun file."
+              dependsOn assemble
+              group 'export'
+              doLast {
+                logger.info 'Resolving runbundles required for {}', runFile.absolutePath
+                bndProject.addProperties(runFile)
+                ProjectResolver pr = new ProjectResolver(bndProject)
+                pr.setTrace(true)
+                Map<Resource,List<Wire>> resolve = pr.resolve()
+                List<? extends VersionedClause> paths = new ArrayList<>()
+                resolve.keySet().toSorted().each {k ->
+                  paths.add(ResourceUtils.toVersionClause(k, "[===,==+)"))
+                }
+                BndEditModel bem = new BndEditModel(bndProject.getWorkspace())
+                bem.setBndResource(runFile)
+                bem.setRunBundles(paths)
+                logger.info 'Resolved the following runbundles [{}]', bem.getProperties().getProperty(Constants.RUNBUNDLES + "*")
+                logger.info 'Writing changes to {}', runFile.absolutePath
+                Document doc = new Document(IO.collect(runFile))
+                bem.saveChangesTo(doc)
+                IO.write(doc.get().getBytes("UTF-8"), runFile)
+              }
+            }
+          }
+        }
+      }
+
+      tasks.addRule('Pattern: run.<name>: Run the bndrun file <name>.bndrun.') { taskName ->
+        if (taskName.startsWith('run.')) {
+          def bndrun = taskName - 'run.'
+          def runFile = file("${bndrun}.bndrun")
+          if (runFile.isFile()) {
+            task(taskName) {
+              description "Run the bndrun file ${bndrun}.bndrun"
+              dependsOn assemble
+              group 'export'
+              doLast {
+                Run run = new Run(bndWorkspace, projectDir, runFile)
+                logger.lifecycle "Running {} with vm args: {}", bndrun, run.getProperty(Constants.RUNVM + "*")
+                ProjectLauncher l = run.getProjectLauncher();
+                l.launch();
+              }
+            }
+          }
         }
       }
 
