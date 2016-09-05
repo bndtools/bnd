@@ -56,6 +56,7 @@ import aQute.lib.utf8properties.UTF8Properties;
  */
 public class BndrunResolveContext extends AbstractResolveContext {
 
+	private static final String BND_AUGMENT = "bnd.augment";
 	public static final String	RUN_EFFECTIVE_INSTRUCTION	= "-resolve.effective";
 	public static final String	PROP_RESOLVE_PREFERENCES	= "-resolve.preferences";
 
@@ -128,9 +129,9 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 			loadPreferences();
 
-			loadRepositories();
+			Processor augments = loadRepositories();
 
-			constructBlacklist();
+			constructBlacklist(augments);
 
 			Map<String,Set<String>> effectiveSet = loadEffectiveSet();
 			if (effectiveSet != null)
@@ -329,10 +330,11 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	 * <p>
 	 * TODO Use Instruction ...
 	 * 
+	 * @return
 	 * @throws Exception
 	 */
 
-	private void loadRepositories() throws Exception {
+	private Processor loadRepositories() throws Exception {
 		//
 		// Get all of the repositories from the plugin registry
 		//
@@ -367,8 +369,11 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			}
 		}
 
-		Parameters augments = new Parameters(properties.mergeProperties(Constants.AUGMENT));
-		findAdditionalAugments(augments, orderedRepositories);
+		Processor repositoryAugments = findRepositoryAugments(orderedRepositories);
+
+		Parameters augments = new Parameters(repositoryAugments.mergeProperties(Constants.AUGMENT));
+		augments.putAll(new Parameters(properties.mergeProperties(Constants.AUGMENT)));
+
 		if (!augments.isEmpty()) {
 			AggregateRepository aggregate = new AggregateRepository(orderedRepositories);
 			AugmentRepository augment = new AugmentRepository(augments, aggregate);
@@ -378,10 +383,13 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		for (Repository repository : orderedRepositories) {
 			super.addRepository(repository);
 		}
+
+		return repositoryAugments;
 	}
 
-	private void findAdditionalAugments(Parameters augments, Collection<Repository> orderedRepositories) {
-		RequirementBuilder rb = new RequirementBuilder("bnd.augment");
+	private Processor findRepositoryAugments(Collection<Repository> orderedRepositories) {
+		Processor main = new Processor();
+		RequirementBuilder rb = new RequirementBuilder(BND_AUGMENT);
 		rb.filter("(path=*)");
 		Requirement req = rb.buildSyntheticRequirement();
 
@@ -390,13 +398,14 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			Collection<Capability> capabilities = found.get(req);
 			if (capabilities != null) {
 				for (Capability capability : capabilities) {
-					findAdditionalAugmentsFromResource(augments, capability);
+					findAdditionalAugmentsFromResource(main, capability);
 				}
 			}
 		}
+		return main;
 	}
 
-	private void findAdditionalAugmentsFromResource(Parameters augments, Capability capability) {
+	private void findAdditionalAugmentsFromResource(Processor augments, Capability capability) {
 		Resource resource = capability.getResource();
 		Map<URI,String> locations = ResourceUtils.getLocations(resource);
 
@@ -421,11 +430,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 						try (InputStream in = rs.openInputStream()) {
 							UTF8Properties p = new UTF8Properties();
 							p.load(in, file, project);
-							try (Processor processor = new Processor();) {
-								processor.setProperties(p);
-								Parameters extra = processor.getMergedParameters(Constants.AUGMENT);
-								augments.putAll(extra);
-							}
+							augments.getProperties().putAll(p);
 							return;
 						}
 					}
@@ -457,8 +462,10 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		return resBuilder.build();
 	}
 
-	private void constructBlacklist() throws Exception {
-		Parameters blacklist = new Parameters(properties.mergeProperties(Constants.RUNBLACKLIST));
+	private void constructBlacklist(Processor augments) throws Exception {
+		Parameters blacklist = new Parameters(augments.mergeProperties(Constants.RUNBLACKLIST));
+		blacklist.putAll(new Parameters(properties.mergeProperties(Constants.RUNBLACKLIST)));
+
 		if (blacklist != null && !blacklist.isEmpty()) {
 			List<Requirement> reject = CapReqBuilder.getRequirementsFrom(blacklist);
 			setBlackList(reject);
