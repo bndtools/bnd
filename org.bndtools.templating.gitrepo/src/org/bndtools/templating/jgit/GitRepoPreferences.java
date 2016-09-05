@@ -11,7 +11,7 @@ import aQute.bnd.header.Parameters;
 
 public class GitRepoPreferences {
 
-    public static final String INITIAL_GITHUB_REPOS = "osgi/workspace, bndtools/workspace;branch=OSGi_R6";
+    public static final String INITIAL_GITHUB_REPOS = "osgi/workspace, bndtools/workspace;branch=origin/3.3";
 
     private static final String PREF_GITHUB_REPOS = "githubRepos";
     private static final String PREF_GIT_REPOS = "gitRepos";
