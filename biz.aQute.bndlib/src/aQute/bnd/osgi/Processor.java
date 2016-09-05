@@ -84,17 +84,18 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		log = reporterAdapter;
 	}
 
-	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
+	static final int								BUFFER_SIZE			= IOConstants.PAGE_SIZE * 1;
 
-	static Pattern PACKAGES_IGNORED = Pattern.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
+	static Pattern									PACKAGES_IGNORED	= Pattern
+			.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
-	static ThreadLocal<Processor>	current			= new ThreadLocal<Processor>();
+	static ThreadLocal<Processor>					current				= new ThreadLocal<Processor>();
 	private final static ScheduledExecutorService	sheduledExecutor;
 	private final static ExecutorService			executor;
 	static {
 		ThreadFactory threadFactory = Executors.defaultThreadFactory();
-		executor = new ThreadPoolExecutor(0, 64, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
-				threadFactory, new RejectedExecutionHandler() {
+		executor = new ThreadPoolExecutor(0, 64, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), threadFactory,
+				new RejectedExecutionHandler() {
 					/*
 					 * We are stealing another's thread because we have hit max
 					 * pool size, so we cannot let the runnable's exception
@@ -129,30 +130,30 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private final Set<Closeable>	toBeClosed		= new HashSet<Closeable>();
 	Set<Object>						plugins;
 
-	boolean					pedantic;
-	boolean					trace;
-	private final Logger	logger			= LoggerFactory.getLogger(getClass().getName());
-	boolean					exceptions;
-	boolean					fileMustExist	= true;
+	boolean							pedantic;
+	boolean							trace;
+	private final Logger			logger			= LoggerFactory.getLogger(getClass().getName());
+	boolean							exceptions;
+	boolean							fileMustExist	= true;
 
-	private File	base	= new File("").getAbsoluteFile();
-	private URI		baseURI	= base.toURI();
+	private File					base			= new File("").getAbsoluteFile();
+	private URI						baseURI			= base.toURI();
 
-	Properties		properties;
-	String			profile;
-	private Macro	replacer;
-	private long	lastModified;
-	private File	propertiesFile;
-	private boolean	fixup	= true;
-	long			modified;
-	Processor		parent;
-	List<File>		included;
+	Properties						properties;
+	String							profile;
+	private Macro					replacer;
+	private long					lastModified;
+	private File					propertiesFile;
+	private boolean					fixup			= true;
+	long							modified;
+	Processor						parent;
+	List<File>						included;
 
-	CL					pluginLoader;
-	Collection<String>	filter;
-	HashSet<String>		missingCommand;
-	Boolean				strict;
-	boolean				fixupMessages;
+	CL								pluginLoader;
+	Collection<String>				filter;
+	HashSet<String>					missingCommand;
+	Boolean							strict;
+	boolean							fixupMessages;
 
 	public static class FileLine {
 		public static final FileLine	DUMMY	= new FileLine(null, 0, 0);
@@ -492,6 +493,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * a plugin.
 	 */
 	public Set<Object> getPlugins() {
+
 		synchronized (this) {
 			if (this.plugins != null)
 				return this.plugins;
@@ -499,6 +501,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			plugins = new LinkedHashSet<Object>();
 			missingCommand = new HashSet<String>();
 		}
+		// We only use plugins now when they are defined on our level
+		// and not if it is in our parent. We inherit from our parent
+		// through the previous block.
+
+		String spe = getProperty(PLUGIN);
+		if (NONE.equals(spe))
+			return plugins;
+
 		// The owner of the plugin is always in there.
 		plugins.add(this);
 		setTypeSpecificPlugins(plugins);
@@ -506,15 +516,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (parent != null)
 			plugins.addAll(parent.getPlugins());
 
-		// We only use plugins now when they are defined on our level
-		// and not if it is in our parent. We inherit from our parent
-		// through the previous block.
 
-		String spe = getProperty(PLUGIN);
-		if (NONE.equals(spe))
-			return new LinkedHashSet<Object>();
+		//
+		// Look only local
+		//
 
-		spe = mergeProperties(PLUGIN);
+		spe = mergeLocalProperties(PLUGIN);
 		String pluginPath = mergeProperties(PLUGINPATH);
 		loadPlugins(plugins, spe, pluginPath);
 
@@ -1272,37 +1279,57 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return getProperty(key, deflt, ",");
 	}
 
-	@SuppressWarnings("resource")
 	public String getProperty(String key, String deflt, String separator) {
+		return getProperty(key, deflt, separator, true);
+	}
 
-		String value = null;
+	@SuppressWarnings("resource")
+	private String getProperty(String key, String deflt, String separator, boolean inherit) {
 
 		Instruction ins = new Instruction(key);
 		if (!ins.isLiteral()) {
-			// Handle a wildcard key, make sure they're sorted
-			// for consistency
-			SortedList<String> sortedList = SortedList.fromIterator(iterator());
-			StringBuilder sb = new StringBuilder();
-			String del = "";
-			for (String k : sortedList) {
-				if (ins.matches(k)) {
-					String v = getProperty(k, null);
-					if (v != null) {
-						sb.append(del);
-						del = separator;
-						sb.append(v);
-					}
-				}
-			}
-			if (sb.length() == 0)
-				return deflt;
-
-			return sb.toString();
+			return getWildcardProperty(deflt, separator, inherit, ins);
 		}
 
 		@SuppressWarnings("resource")
 		Processor source = this;
 
+		return getLiteralProperty(key, deflt, source, true);
+	}
+
+	private String getWildcardProperty(String deflt, String separator, boolean inherit, Instruction ins) {
+		// Handle a wildcard key, make sure they're sorted
+		// for consistency
+		SortedList<String> sortedList = SortedList
+				.fromIterator(inherit ? iterator() : getLocalKeys().iterator());
+		StringBuilder sb = new StringBuilder();
+		String del = "";
+		for (String k : sortedList) {
+			if (ins.matches(k)) {
+				String v = getLiteralProperty(k, null, this, inherit);
+				if (v != null) {
+					sb.append(del);
+					del = separator;
+					sb.append(v);
+				}
+			}
+		}
+		if (sb.length() == 0)
+			return deflt;
+
+		return sb.toString();
+	}
+
+	@SuppressWarnings({
+			"unchecked", "rawtypes"
+	})
+	private Set<String> getLocalKeys() {
+		Set keySet = properties.keySet();
+		return keySet;
+	}
+
+	private String getLiteralProperty(String key, String deflt, Processor source, boolean inherit) {
+		String value = null;
 		// Use the key as is first, if found ok
 
 		if (filter != null && filter.contains(key)) {
@@ -1328,7 +1355,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					break;
 				}
 
-				source = source.getParent();
+				if (inherit)
+					source = source.getParent();
+				else
+					break;
 			}
 			//
 			// Check if we can find a replacement through the
@@ -2131,7 +2161,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return OSInformation.getNativeCapabilityClause(this, args);
 	}
 
-
 	/**
 	 * Set the current command thread. This must be balanced with the
 	 * {@link #endHandleErrors(Processor)} method. The method returns the
@@ -2546,12 +2575,23 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return mergeProperties(key, ",");
 	}
 
+	public String mergeLocalProperties(String key) {
+		if (since(About._3_3)) {
+			return getProperty(makeWildcard(key), null, ",", false);
+		} else
+			return mergeProperties(key);
+	}
+
 	public String mergeProperties(String key, String separator) {
 		if (since(About._2_4))
-			return getProperty(key + "|" + key + ".*", null, separator);
+			return getProperty(makeWildcard(key), null, separator, true);
 		else
 			return getProperty(key);
 
+	}
+
+	private String makeWildcard(String key) {
+		return key + "|" + key + ".*";
 	}
 
 	/**
