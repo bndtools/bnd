@@ -1,6 +1,7 @@
 package test;
 
 import java.awt.MenuContainer;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +20,27 @@ public class PluginTest extends TestCase {
 	@Override
 	protected void setUp() {
 		main = new Processor();
+	}
+
+	static public class Foo {
+
+	}
+
+	public void testPluginInheritance() throws IOException {
+		Processor top = new Processor();
+		Processor middle = new Processor(top);
+		Processor bottom = new Processor(middle);
+
+		top.setProperty("-plugin.top", Foo.class.getName() + ";l=top");
+		middle.setProperty("-plugin.middle", Foo.class.getName() + ";l=middle");
+
+		assertEquals(1, top.getPlugins(Foo.class).size());
+		assertEquals(2, middle.getPlugins(Foo.class).size());
+		assertEquals(2, bottom.getPlugins(Foo.class).size());
+		assertEquals(top.getPlugin(Foo.class), bottom.getPlugin(Foo.class));
+		assertTrue(top.check());
+		assertTrue(middle.check());
+		assertTrue(bottom.check());
 	}
 
 	public void testMissingPluginNotUsed() throws Exception {
