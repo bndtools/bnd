@@ -1,5 +1,6 @@
 package org.bndtools.templating.jgit.ui;
 
+import java.io.FileNotFoundException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.concurrent.ExecutorService;
@@ -7,6 +8,7 @@ import java.util.concurrent.Executors;
 
 import org.bndtools.templating.jgit.Cache;
 import org.bndtools.templating.jgit.GitHub;
+import org.bndtools.templating.jgit.GitHubValidationException;
 import org.bndtools.templating.jgit.GithubRepoDetailsDTO;
 import org.bndtools.utils.jface.ProgressRunner;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -41,6 +43,7 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
     private String branch = null;
     private Text txtRepository;
     private Text txtBranch;
+    private volatile boolean isValidated = false;
 
     public GitHubRepoDialog(Shell parentShell, String title) {
         super(parentShell);
@@ -63,6 +66,7 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
 
         txtRepository = new Text(container, SWT.BORDER);
         txtRepository.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        txtRepository.setMessage("username/repository");
         if (repository != null)
             txtRepository.setText(repository);
 
@@ -84,7 +88,10 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
         ModifyListener modifyListener = new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent ev) {
-                repository = txtRepository.getText().trim();
+                if (!txtRepository.getText().trim().equals(repository)) {
+                    isValidated = false;
+                    repository = txtRepository.getText().trim();
+                }
                 branch = txtBranch.getText().trim();
                 updateButtons();
             }
@@ -98,7 +105,10 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
                 setMessage(null, IMessageProvider.INFORMATION);
                 try {
                     if (repository == null || repository.isEmpty())
-                        throw new Exception("No repository name specified");
+                        throw new GitHubValidationException("No repository name specified");
+
+                    if (repository.contains(":/"))
+                        throw new GitHubValidationException("Specify GitHub repositories as username/repository");
 
                     IRunnableWithProgress runnable = new IRunnableWithProgress() {
                         @Override
@@ -110,6 +120,8 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
                                     @Override
                                     public void run() {
                                         setMessage(String.format("Validated! Clone URL is '%s'. Default branch 'origin/%s'", cloneUri, dto.default_branch), IMessageProvider.INFORMATION);
+                                        isValidated = true;
+                                        updateButtons();
                                     }
                                 });
                             } catch (InvocationTargetException e) {
@@ -124,7 +136,12 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
                     setErrorMessage(null);
                 } catch (InvocationTargetException ex) {
                     Throwable t = ex.getCause();
-                    setErrorMessage(t.getClass().getSimpleName() + ": " + t.getMessage());
+                    if (t instanceof FileNotFoundException)
+                        setErrorMessage("Could not find the requested repository");
+                    else
+                        setErrorMessage(t.getClass().getSimpleName() + ": " + t.getMessage());
+                } catch (GitHubValidationException ex) {
+                    setErrorMessage(ex.getMessage());
                 } catch (Exception ex) {
                     setErrorMessage(ex.getClass().getSimpleName() + ": " + ex.getMessage());
                 }
@@ -144,7 +161,7 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
     }
 
     private void updateButtons() {
-        getButton(OK).setEnabled(repository != null && repository.trim().length() > 0);
+        getButton(OK).setEnabled(repository != null && !repository.trim().isEmpty() && isValidated);
     }
 
     @Override
@@ -156,6 +173,7 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
             txtRepository.setText(repository);
         if (txtBranch != null && !txtBranch.isDisposed())
             txtBranch.setText(branch);
+        isValidated = true;
     }
 
     @Override
