@@ -1596,7 +1596,7 @@ public class Project extends Processor {
 	 * Check if this project needs building. This is defined as:
 	 */
 	public boolean isStale() throws Exception {
-		if (workspace == null || workspace.isOffline()) {
+		if (workspace == null || !workspace.hasBndListeners()) {
 			trace("working %s offline, so always stale", this);
 			return true;
 		}

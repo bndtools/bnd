@@ -17,6 +17,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
+import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.deployer.repository.FixedIndexedRepo;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
@@ -192,6 +193,29 @@ public class ResourceTest extends TestCase {
 		assertEquals(1, requirements.size());
 		Map<String,String> directives = requirements.get(0).getDirectives();
 		assertTrue(directives.containsKey(HostNamespace.REQUIREMENT_FILTER_DIRECTIVE));
+	}
+
+	public void testResourceToVersionedClause() throws Exception {
+		ResourceBuilder rb = new ResourceBuilder();
+		rb.addManifest(Domain.domain(IO.getFile("testresources/demo-fragment.jar")));
+		Resource resource = rb.build();
+		VersionedClause versionClause = ResourceUtils.toVersionClause(resource, "[===,==+)");
+		StringBuilder sb = new StringBuilder();
+		versionClause.formatTo(sb);
+		assertEquals("demo-fragment;version='[3.3.0,3.3.1)'", sb.toString());
+	}
+
+	public void testSnapshotResourceToVersionedClause() throws Exception {
+		ResourceBuilder rb = new ResourceBuilder();
+		rb.addManifest(Domain.domain(IO.getFile("testresources/demo-fragment.jar")));
+		Attrs attrs = new Attrs();
+		attrs.put("bnd.workspace.project", "demo-fragment");
+		rb.addCapability(CapabilityBuilder.createCapReqBuilder("bnd.workspace.project", attrs));
+		Resource resource = rb.build();
+		VersionedClause versionClause = ResourceUtils.toVersionClause(resource, "[===,==+)");
+		StringBuilder sb = new StringBuilder();
+		versionClause.formatTo(sb);
+		assertEquals("demo-fragment;version=snapshot", sb.toString());
 	}
 
 	private Set<Resource> getResources(String locations) throws MalformedURLException, URISyntaxException {

@@ -44,10 +44,7 @@ public class BndPlugin implements Plugin<Project> {
           throw new GradleException("Project already has '${BndBuilderPlugin.PLUGINID}' plugin applied.")
       }
       if (!rootProject.hasProperty('bndWorkspace')) {
-        rootProject.ext.bndWorkspace = new Workspace(rootDir)
-        if (bndWorkspace == null) {
-          throw new GradleException("Unable to load bnd workspace ${rootDir}")
-        }
+        rootProject.ext.bndWorkspace = new Workspace(rootDir).setOffline(rootProject.gradle.startParameter.offline)
       }
       this.bndProject = bndWorkspace.getProject(name)
       if (bndProject == null) {

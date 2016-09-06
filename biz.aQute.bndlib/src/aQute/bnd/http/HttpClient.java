@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -72,6 +73,7 @@ public class HttpClient implements Closeable, URLConnector {
 	private URLCache							cache					= new URLCache(IO.getFile("~/.bnd/urlcache"));
 	private Registry							registry				= null;
 	private Reporter							reporter				= new Slf4jReporter(HttpClient.class);
+	private volatile AtomicBoolean				offline;
 
 	public HttpClient() {}
 
@@ -124,7 +126,7 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	public Object send(final HttpRequest< ? > request) throws Exception {
-		if (request.isCache()) {
+		if (isOffline() || request.isCache()) {
 			return doCached(request);
 		} else {
 			TaggedData in = send0(request);
@@ -205,8 +207,8 @@ public class HttpClient implements Closeable, URLConnector {
 				// our accepted stale period
 				//
 
-				if (request.maxStale < 0
-						|| info.jsonFile.lastModified() + request.maxStale < System.currentTimeMillis()) {
+				if (!isOffline() && (request.maxStale < 0
+						|| info.jsonFile.lastModified() + request.maxStale < System.currentTimeMillis())) {
 
 					//
 					// Ok, expired. So check if there is a newer one on the
@@ -250,6 +252,10 @@ public class HttpClient implements Closeable, URLConnector {
 				request.ifMatch = null;
 				request.ifNoneMatch = null;
 				request.ifModifiedSince = -1;
+
+				if (isOffline()) {
+					return new TaggedData(url.toURI(), 404, request.useCacheFile);
+				}
 
 				TaggedData in = send0(request);
 
@@ -305,7 +311,7 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	ProgressPlugin.Task getTask(final HttpRequest< ? > request) {
-		final String name = "Download " + request.url;
+		final String name = (request.upload == null ? "Download " : "Upload ") + request.url;
 		final int size = 100;
 		final ProgressPlugin.Task task;
 		final List<ProgressPlugin> progressPlugins = registry != null ? registry.getPlugins(ProgressPlugin.class)
@@ -672,5 +678,17 @@ public class HttpClient implements Closeable, URLConnector {
 		}
 		else
 			return uri;
+	}
+
+	public boolean isOffline() {
+		AtomicBoolean localOffline = offline;
+		if (localOffline == null) {
+			return false;
+		}
+		return localOffline.get();
+	}
+
+	public void setOffline(AtomicBoolean offline) {
+		this.offline = offline;
 	}
 }

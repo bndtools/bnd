@@ -53,6 +53,9 @@ public class ResolveProcess {
 			return resolveRequired(inputModel.getProperties(), inputModel.getProject(), plugins, resolver, callbacks,
 					log);
 		} catch (Exception e) {
+			if (e instanceof ResolutionException) {
+				throw (ResolutionException) e;
+			}
 			throw new ResolutionException(e);
 		}
 	}
