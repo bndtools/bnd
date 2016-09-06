@@ -610,6 +610,7 @@ public class Workspace extends Processor {
 
 			try {
 				HttpClient client = new HttpClient();
+				client.setOffline(getOffline());
 				client.setRegistry(this);
 				try (ConnectionSettings cs = new ConnectionSettings(this, client);) {
 					cs.readSettings();
