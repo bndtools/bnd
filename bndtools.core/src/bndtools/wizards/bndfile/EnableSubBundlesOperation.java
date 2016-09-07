@@ -11,8 +11,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.utils.workspace.FileUtils;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
@@ -73,7 +75,8 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
             newBundleModel = new BndEditModel();
         }
         // Load project file and model
-        IFile projectFile = container.getProject().getFile(Project.BNDFILE);
+        IProject project = container.getProject();
+        IFile projectFile = project.getFile(Project.BNDFILE);
         BndEditModel projectModel;
         final Document projectDocument;
         try {
@@ -94,40 +97,43 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, e.getMessage(), e));
         }
 
-        // Check if we need to enable sub-bundles on the project file
-        boolean enableSubs;
-        List<String> subBndFiles = projectModel.getSubBndFiles();
-        List<String> availableHeaders = calculateProjectOnlyHeaders(projectModel.getAllPropertyNames());
-        Collection<String> bundleSpecificHeaders = calculateBundleSpecificHeaders(availableHeaders);
+        // Sub-bundles are meaningless outside of Bndtools
+        if (project.hasNature(BndtoolsConstants.NATURE_ID)) {
+            // Check if we need to enable sub-bundles on the project file
+            boolean enableSubs;
+            List<String> subBndFiles = projectModel.getSubBndFiles();
+            List<String> availableHeaders = calculateProjectOnlyHeaders(projectModel.getAllPropertyNames());
+            Collection<String> bundleSpecificHeaders = calculateBundleSpecificHeaders(availableHeaders);
 
-        if (subBndFiles == null || subBndFiles.isEmpty()) {
-            final EnableSubBundlesDialog subBundlesDialog = new EnableSubBundlesDialog(parentShell, availableHeaders, bundleSpecificHeaders);
+            if (subBndFiles == null || subBndFiles.isEmpty()) {
+                final EnableSubBundlesDialog subBundlesDialog = new EnableSubBundlesDialog(parentShell, availableHeaders, bundleSpecificHeaders);
 
-            if (subBundlesDialog.open() != Window.OK) {
-                monitor.setCanceled(true);
-                return;
+                if (subBundlesDialog.open() != Window.OK) {
+                    monitor.setCanceled(true);
+                    return;
+                }
+
+                enableSubs = subBundlesDialog.isEnableSubBundles();
+                bundleSpecificHeaders = subBundlesDialog.getSelectedProperties();
+            } else {
+                enableSubs = false;
             }
 
-            enableSubs = subBundlesDialog.isEnableSubBundles();
-            bundleSpecificHeaders = subBundlesDialog.getSelectedProperties();
-        } else {
-            enableSubs = false;
-        }
+            // Enable subs and copy entries from project model to new bundle model
+            if (enableSubs) {
+                projectModel.setSubBndFiles(Arrays.asList(new String[] {
+                        "*.bnd"
+                }));
+                for (String propertyName : bundleSpecificHeaders) {
+                    Object value = projectModel.genericGet(propertyName);
+                    projectModel.genericSet(propertyName, null);
+                    newBundleModel.genericSet(propertyName, value);
+                }
 
-        // Enable subs and copy entries from project model to new bundle model
-        if (enableSubs) {
-            projectModel.setSubBndFiles(Arrays.asList(new String[] {
-                "*.bnd"
-            }));
-            for (String propertyName : bundleSpecificHeaders) {
-                Object value = projectModel.genericGet(propertyName);
-                projectModel.genericSet(propertyName, null);
-                newBundleModel.genericSet(propertyName, value);
+                // Save the project model
+                projectModel.saveChangesTo(projectDocument);
+                FileUtils.writeFully(projectDocument.get(), projectFile, false);
             }
-
-            // Save the project model
-            projectModel.saveChangesTo(projectDocument);
-            FileUtils.writeFully(projectDocument.get(), projectFile, false);
         }
 
         // Generate the new bundle model
