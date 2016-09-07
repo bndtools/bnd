@@ -57,8 +57,14 @@ public class NewBndFileWizardPage extends WizardNewFileCreationPage {
         IResource container = ResourcesPlugin.getWorkspace().getRoot().findMember(containerPath);
         IProject project = container.getProject();
 
-        if (Project.BNDFILE.equalsIgnoreCase(fileName)) {
-            error = Messages.NewBndFileWizardPage_errorReservedFilename;
+        try {
+            if (project.hasNature(BndtoolsConstants.NATURE_ID)) {
+                if (Project.BNDFILE.equalsIgnoreCase(fileName)) {
+                    error = Messages.NewBndFileWizardPage_errorReservedFilename;
+                }
+            }
+        } catch (CoreException e) {
+            ErrorDialog.openError(getShell(), Messages.NewBndFileWizardPage_titleError, null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.NewBndFileWizardPage_errorCheckingBndNature, e));
         }
 
         if (container.getType() != IResource.PROJECT) {
