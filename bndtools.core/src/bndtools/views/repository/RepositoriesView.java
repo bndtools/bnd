@@ -81,7 +81,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPage;
@@ -96,7 +95,6 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.resource.Requirement;
 
 import aQute.bnd.http.HttpClient;
@@ -189,6 +187,11 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
                 if (newInput != null) {
                     stackLayout.topControl = mainPanel;
+
+                    advancedSearchAction.setEnabled(true);
+                    refreshAction.setEnabled(true);
+                    collapseAllAction.setEnabled(true);
+
                     parent.layout();
                 }
             }
@@ -509,9 +512,11 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                 viewer.collapseAll();
             }
         };
+        collapseAllAction.setEnabled(false);
         collapseAllAction.setText("Collapse All");
         collapseAllAction.setToolTipText("Collapse All");
-        collapseAllAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/collapseall.gif"));
+        collapseAllAction.setImageDescriptor(Icons.desc("collapse"));
+        collapseAllAction.setDisabledImageDescriptor(Icons.desc("collapse.disabled"));
 
         refreshAction = new Action() {
             @Override
@@ -535,9 +540,11 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                 }.schedule();
             }
         };
+        refreshAction.setEnabled(false);
         refreshAction.setText("Refresh");
         refreshAction.setToolTipText("Refresh Repositories Tree");
-        refreshAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_refresh.png"));
+        refreshAction.setImageDescriptor(Icons.desc("refresh"));
+        refreshAction.setDisabledImageDescriptor(Icons.desc("refresh.disabled"));
 
         addBundlesAction = new Action() {
             @Override
@@ -559,7 +566,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         addBundlesAction.setEnabled(false);
         addBundlesAction.setText("Add");
         addBundlesAction.setToolTipText("Add Bundles to Repository");
-        addBundlesAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJ_ADD));
+        addBundlesAction.setImageDescriptor(Icons.desc("add"));
+        addBundlesAction.setDisabledImageDescriptor(Icons.desc("add.disabled"));
 
         advancedSearchAction = new Action("Advanced Search", Action.AS_CHECK_BOX) {
             @Override
@@ -602,9 +610,11 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                 }
             }
         };
+        advancedSearchAction.setEnabled(false);
         advancedSearchAction.setText("Advanced Search");
         advancedSearchAction.setToolTipText("Toggle Advanced Search");
         advancedSearchAction.setImageDescriptor(Icons.desc("search"));
+        advancedSearchAction.setDisabledImageDescriptor(Icons.desc("search.disabled"));
 
         downloadAction = new Action() {
             @Override
@@ -649,9 +659,10 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                 return result;
             }
         };
+        downloadAction.setEnabled(false);
         downloadAction.setText("Download Repository Content");
         downloadAction.setImageDescriptor(Icons.desc("download"));
-        downloadAction.setEnabled(false);
+        downloadAction.setDisabledImageDescriptor(Icons.desc("download.disabled"));
 
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
