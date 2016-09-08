@@ -174,8 +174,7 @@
             finalPerspective="bndtools.perspective"
             preferredPerspectives="bndtools.perspective"
             icon="icons/bndtools-logo-16x16.png"
-            name="Bnd OSGi Workspace"
-            project="true">
+            name="Bnd OSGi Workspace">
       </wizard>
    </extension>
 
