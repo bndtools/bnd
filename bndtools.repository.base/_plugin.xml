@@ -5,7 +5,7 @@
    <extension point="bndtools.core.workspaceTemplates">
        <template
            name="Bndtools Bundle Hub"
-           description="Built-in Template – DEPRECATED"
+           description="Built-in Template – Deprecated"
            category="Legacy Templates"
            class="org.bndtools.wizards.workspace.legacy.ExtensionWorkspaceTemplate"
            icon="icons/bndtools-logo-16x16.png"

@@ -1,6 +1,5 @@
 <form>
-	<p>
-		Creates a configuration with a small build repository in the workspace. Other dependencies are supplied from the
-		Bndtools <a href="#">Bundle Hub</a>, a simple online repository.
-	</p>
+<p>Creates a configuration with a small build repository in the workspace. Other dependencies
+are supplied from the Bndtools <a href="https://github.com/bndtools/bundle-hub">Bundle Hub</a>,
+a simple online repository.</p>
 </form>
