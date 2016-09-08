@@ -10,6 +10,7 @@ public final class PartConstants {
 
     public static final String WIZARD_ID_NEWBND = PREFIX + "newBndFile";
     public static final String WIZARD_ID_NEWBNDRUN = PREFIX + "bndrunWizard";
+    public static final String WIZARD_ID_NEWWORKSPACE = PREFIX + "workspaceWizard";
     public static final String WIZARD_ID_NEWPROJECT = PREFIX + "newProjWiz";
     public static final String WIZARD_ID_NEWWRAPPROJECT = PREFIX + "newWrapProjWiz";
     public static final String WIZARD_ID_NEWBLUEPRINT_XML = PREFIX + "newBlueprintXml";
