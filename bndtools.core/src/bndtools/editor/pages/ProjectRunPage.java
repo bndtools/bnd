@@ -213,7 +213,12 @@ public class ProjectRunPage extends FormPage {
         model.addPropertyChangeListener(BndEditModel.PROP_WORKSPACE, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                updateFormImage(form);
+                Display.getDefault().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateFormImage(form);
+                    }
+                });
             }
         });
 
