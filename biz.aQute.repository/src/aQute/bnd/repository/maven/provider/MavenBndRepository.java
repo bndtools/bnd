@@ -75,6 +75,7 @@ import aQute.maven.api.Release;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenBackingRepository;
 import aQute.maven.provider.MavenRepository;
+import aQute.maven.provider.MavenSettings;
 import aQute.maven.provider.PomGenerator;
 import aQute.service.reporter.Reporter;
 
@@ -89,7 +90,7 @@ public class MavenBndRepository extends BaseRepository
 			.compile("https?://.+#!?/p/sha/(?<sha>([0-9A-F][0-9A-F]){20,20})/.*", Pattern.CASE_INSENSITIVE);
 	private static final String		NONE						= "NONE";
 	static final String				MAVEN_REPO_LOCAL			= System.getProperty("maven.repo.local",
-			"~/.m2/repository");
+			MavenSettings.localRepository());
 	private Configuration			configuration;
 	private Registry				registry;
 	private File					localRepo;
