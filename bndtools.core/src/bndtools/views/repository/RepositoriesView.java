@@ -404,6 +404,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                         } catch (Exception e) {
                             Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to load repository browser view", e));
                         }
+                    } else if (element instanceof RepositoryPlugin) {
+                        viewer.setExpandedState(element, !viewer.getExpandedState(element));
                     }
 
                 }
