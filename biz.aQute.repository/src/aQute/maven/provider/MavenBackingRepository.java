@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.service.url.State;
@@ -27,6 +29,12 @@ import aQute.maven.provider.MetadataParser.SnapshotVersion;
 import aQute.service.reporter.Reporter;
 
 public abstract class MavenBackingRepository implements Closeable {
+	// MD5(xercesImpl-2.9.0.jar)= 33ec8d237cbaceeffb2c2a7f52afd79a
+	// SHA1(xercesImpl-2.9.0.jar)= 868c0792233fc78d8c9bac29ac79ade988301318
+
+	final static Pattern					DIGEST_POLLUTED	= Pattern
+			.compile("(.+=\\s*)?(?<digest>([0-9A-F][0-9A-F])+)\\s*", Pattern.CASE_INSENSITIVE);
+
 	final Map<Revision,RevisionMetadata>	revisions	= new ConcurrentHashMap<>();
 	final Map<Program,ProgramMetadata>		programs	= new ConcurrentHashMap<>();
 	final String							id;
@@ -46,23 +54,27 @@ public abstract class MavenBackingRepository implements Closeable {
 
 	public abstract TaggedData fetch(String path, File file) throws Exception;
 
-	protected void checkDigest(String fileSha, String remoteSha, File file) {
-		if (remoteSha == null)
+	protected void checkDigest(String fileDigest, String remoteDigest, File file) {
+		if (remoteDigest == null)
 			return;
+
+		Matcher m = DIGEST_POLLUTED.matcher(remoteDigest);
+		if (m.matches())
+			remoteDigest = m.group("digest");
 
 		try {
 			int start = 0;
-			while (start < remoteSha.length() && Character.isWhitespace(remoteSha.charAt(start)))
+			while (start < remoteDigest.length() && Character.isWhitespace(remoteDigest.charAt(start)))
 				start++;
 
-			for (int i = 0; i < fileSha.length(); i++) {
-				if (start + i < remoteSha.length()) {
-					char us = fileSha.charAt(i);
-					char them = remoteSha.charAt(start + i);
+			for (int i = 0; i < fileDigest.length(); i++) {
+				if (start + i < remoteDigest.length()) {
+					char us = fileDigest.charAt(i);
+					char them = remoteDigest.charAt(start + i);
 					if (us == them || Character.toLowerCase(us) == Character.toLowerCase(them))
 						continue;
 				}
-				throw new IllegalArgumentException("Invalid checksum content " + remoteSha + " for " + file);
+				throw new IllegalArgumentException("Invalid checksum content " + remoteDigest + " for " + file);
 			}
 
 		} catch (Exception e) {
