@@ -53,6 +53,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
 import bndtools.central.RepositoriesViewRefresher.RefreshModel;
+import bndtools.preferences.BndPreferences;
 
 public class Central implements IStartupParticipant {
 
@@ -227,6 +228,8 @@ public class Central implements IStartupParticipant {
                         ws = Workspace.getWorkspace(workspaceDirectory);
                         resolve = true;
                     }
+
+                    ws.setOffline(new BndPreferences().isWorkspaceOffline());
 
                     ws.addBasicPlugin(new WorkspaceListener(ws));
                     ws.addBasicPlugin(getInstance().repoListenerTracker);

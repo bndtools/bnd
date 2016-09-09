@@ -97,6 +97,7 @@ import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.part.ViewPart;
 import org.osgi.resource.Requirement;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.Refreshable;
@@ -114,7 +115,9 @@ import bndtools.model.repo.RepositoryBundleVersion;
 import bndtools.model.repo.RepositoryEntry;
 import bndtools.model.repo.RepositoryTreeLabelProvider;
 import bndtools.model.repo.SearchableRepositoryTreeContentProvider;
+import bndtools.preferences.BndPreferences;
 import bndtools.preferences.JpmPreferences;
+import bndtools.preferences.WorkspaceOfflineChangeAdapter;
 import bndtools.utils.SelectionDragAdapter;
 import bndtools.wizards.workspace.AddFilesToRepositoryWizard;
 import bndtools.wizards.workspace.WorkspaceSetupWizard;
@@ -136,6 +139,22 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
     private Action advancedSearchAction;
     private Action downloadAction;
     private String advancedSearchState;
+    private Action offlineAction;
+
+    private final BndPreferences prefs = new BndPreferences();
+
+    private final WorkspaceOfflineChangeAdapter workspaceOfflineListener = new WorkspaceOfflineChangeAdapter() {
+        @Override
+        public void workspaceOfflineChanged(boolean offline) {
+            configureOfflineAction();
+
+            if (!offline) {
+                // Fire a fake selection event so that repo plugins
+                // can do what they would do if they were already online
+                viewer.setSelection(viewer.getSelection(), false);
+            }
+        }
+    };
 
     @Override
     public void createPartControl(final Composite parent) {
@@ -191,6 +210,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                     advancedSearchAction.setEnabled(true);
                     refreshAction.setEnabled(true);
                     collapseAllAction.setEnabled(true);
+
+                    configureOfflineAction();
 
                     parent.layout();
                 }
@@ -429,6 +450,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         createActions();
         fillToolBar(getViewSite().getActionBars().getToolBarManager());
 
+        prefs.addPropertyChangeListener(workspaceOfflineListener);
+
         // synthenic call to "refresh" so that we can get the repositories to show up in the UI
         new WorkspaceJob("Load repositories") {
             @Override
@@ -441,6 +464,31 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                 return Status.OK_STATUS;
             }
         }.schedule();
+    }
+
+    private void configureOfflineAction() {
+        Workspace workspace = Central.getWorkspaceIfPresent();
+        if (workspace == null) {
+            offlineAction.setChecked(false);
+            offlineAction.setToolTipText("Go Offline");
+            offlineAction.setImageDescriptor(Icons.desc("connected"));
+            offlineAction.setDisabledImageDescriptor(Icons.desc("connected.disabled"));
+            offlineAction.setEnabled(false);
+            return;
+        }
+
+        if (prefs.isWorkspaceOffline()) {
+            offlineAction.setChecked(true);
+            offlineAction.setToolTipText("Go Online");
+            offlineAction.setImageDescriptor(Icons.desc("disconnected"));
+            offlineAction.setDisabledImageDescriptor(Icons.desc("disconnected.disabled"));
+        } else {
+            offlineAction.setChecked(false);
+            offlineAction.setToolTipText("Go Offline");
+            offlineAction.setImageDescriptor(Icons.desc("connected"));
+            offlineAction.setDisabledImageDescriptor(Icons.desc("connected.disabled"));
+        }
+        offlineAction.setEnabled(true);
     }
 
     protected void openURI(URI uri) {
@@ -489,6 +537,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
     @Override
     public void dispose() {
         Central.removeRepositoriesViewer(viewer);
+        prefs.removePropertyChangeListener(workspaceOfflineListener);
         super.dispose();
     }
 
@@ -666,6 +715,20 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         downloadAction.setImageDescriptor(Icons.desc("download"));
         downloadAction.setDisabledImageDescriptor(Icons.desc("download.disabled"));
 
+        offlineAction = new Action("Online/Offline Mode", Action.AS_CHECK_BOX) {
+            @Override
+            public void run() {
+                Workspace workspace = Central.getWorkspaceIfPresent();
+                if (workspace != null) {
+                    prefs.setWorkspaceOffline(offlineAction.isChecked());
+                }
+            }
+        };
+        offlineAction.setEnabled(false);
+        offlineAction.setToolTipText("Go Offline");
+        offlineAction.setImageDescriptor(Icons.desc("connected"));
+        offlineAction.setDisabledImageDescriptor(Icons.desc("connected.disabled"));
+
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
@@ -798,6 +861,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         toolBar.add(refreshAction);
         toolBar.add(collapseAllAction);
         toolBar.add(addBundlesAction);
+        toolBar.add(new Separator());
+        toolBar.add(offlineAction);
         toolBar.add(new Separator());
     }
 
