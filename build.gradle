@@ -20,6 +20,7 @@ buildscript {
 Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
 Workspace.addGestalt(Constants.GESTALT_BATCH, null)
 ext.bndWorkspace = new Workspace(rootDir, bnd_cnf).setOffline(gradle.startParameter.offline)
+bndWorkspace.setOffline(gradle.startParameter.offline)
 
 ext.cnf = rootProject.project(bnd_cnf)
 

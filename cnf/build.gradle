@@ -5,6 +5,8 @@
 clean {
   /* clean bnd cache */
   doLast {
-    project.delete(file('cache'))
+    if (!project.gradle.startParameter.offline) {
+      project.delete(file('cache'))
+    }
   }
 }
