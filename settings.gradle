@@ -41,10 +41,8 @@ buildscript {
 /* Initialize the bnd workspace */
 Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
 Workspace.addGestalt(Constants.GESTALT_BATCH, null)
-def workspace = new Workspace(rootDir, bnd_cnf)
-if (workspace == null) {
-  throw new GradleException("Unable to load workspace ${rootDir}/${bnd_cnf}")
-}
+def workspace = new Workspace(rootDir, bnd_cnf).setOffline(startParameter.offline)
+
 workspace.setProperty('bnd_repourl', uri(bnd_repourl).toString())
 
 /* Add cnf project to the graph */
