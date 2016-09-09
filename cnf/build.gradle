@@ -3,13 +3,9 @@
  */
 
 task('clean') {
-  /* clean bnd cache */
+  /* clean bnd cache if not offline */
+  enabled !bndWorkspace.isOffline()
   doLast {
-    ['cache', 'bndcache'].each { cache ->
-      file(cache).eachDir {
-        project.delete(it)
-      }
-      project.delete(fileTree(cache).exclude('.git*'))
-    }
+    project.delete(file('cache'))
   }
 }
