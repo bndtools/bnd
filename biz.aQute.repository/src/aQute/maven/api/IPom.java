@@ -17,6 +17,9 @@ public interface IPom {
 
 		public Archive getArchive() {
 			Revision revision = getRevision();
+			if (revision == null)
+				return null;
+
 			return revision.archive(type, classifier);
 		}
 
@@ -24,6 +27,12 @@ public interface IPom {
 			if (version == null)
 				return null;
 			return program.version(version);
+		}
+
+		@Override
+		public String toString() {
+			return "Dependency [program=" + program + ", version=" + version + ", scope=" + scope + ", error=" + error
+					+ "]";
 		}
 	}
 

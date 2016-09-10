@@ -69,9 +69,10 @@ public class BridgeRepository {
 			ContentCapability cc = ResourceUtils.getContentCapability(resource);
 			String bsn = ic.osgi_identity();
 			Version version = ic.version();
-			String sha256 = cc.osgi_content();
 			
 			InfoCapability info = getInfo();
+
+			String sha256 = cc == null ? "<>" : cc.osgi_content();
 
 			String error = null;
 			String name = null;
