@@ -18,9 +18,11 @@ public class RepoTemplateLabelProvider extends StyledCellLabelProvider {
     private static final Image IMG_FOLDER = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
 
     private final Map<Template,Image> loadedImages;
+    private final Image defaultIcon;
 
-    public RepoTemplateLabelProvider(Map<Template,Image> loadedImages) {
+    public RepoTemplateLabelProvider(Map<Template,Image> loadedImages, Image defaultIcon) {
         this.loadedImages = loadedImages;
+        this.defaultIcon = defaultIcon;
     }
 
     @Override
@@ -56,7 +58,9 @@ public class RepoTemplateLabelProvider extends StyledCellLabelProvider {
             cell.setStyleRanges(label.getStyleRanges());
 
             Image image = loadedImages.get(template);
-            if (image != null)
+            if (image == null)
+                cell.setImage(defaultIcon);
+            else
                 cell.setImage(image);
         }
     }

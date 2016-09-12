@@ -60,6 +60,7 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.ScrolledFormText;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkUtil;
@@ -67,6 +68,7 @@ import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentConstants;
 import org.osgi.util.promise.Promise;
+
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
 import aQute.libg.tuple.Pair;
@@ -92,6 +94,7 @@ public class TemplateSelectionWizardPage extends WizardPage {
     private final LatestTemplateFilter latestFilter = new LatestTemplateFilter();
     private Button btnLatestOnly;
     private ScrolledFormText txtDescription;
+    private Image defaultTemplateImage;
 
     private Template selected = null;
 
@@ -154,10 +157,12 @@ public class TemplateSelectionWizardPage extends WizardPage {
         gd.heightHint = 100;
         tree.setLayoutData(gd);
 
+        defaultTemplateImage = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/template.gif").createImage(parent.getDisplay());
+
         viewer = new TreeViewer(tree);
         contentProvider = new RepoTemplateContentProvider(false);
         viewer.setContentProvider(contentProvider);
-        viewer.setLabelProvider(new RepoTemplateLabelProvider(loadedImages));
+        viewer.setLabelProvider(new RepoTemplateLabelProvider(loadedImages, defaultTemplateImage));
         viewer.addFilter(latestFilter);
         setTemplates(emptyTemplate != null ? Collections.singletonList(emptyTemplate) : Collections.<Template> emptyList());
 
@@ -358,6 +363,9 @@ public class TemplateSelectionWizardPage extends WizardPage {
     @Override
     public void dispose() {
         super.dispose();
+
+        if (!defaultTemplateImage.isDisposed())
+            defaultTemplateImage.dispose();
 
         for (Entry<Template,Image> entry : loadedImages.entrySet()) {
             Image img = entry.getValue();
