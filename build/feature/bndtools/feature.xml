@@ -151,13 +151,6 @@ This Agreement is governed by the laws of the State of New York and the intellec
          unpack="false"/>
 
    <plugin
-         id="bndtools.repository.base"
-         download-size="0"
-         install-size="0"
-         version="@bndtools.repository.base-version@"
-         unpack="false"/>
-
-   <plugin
          id="bndtools.jareditor"
          download-size="0"
          install-size="0"

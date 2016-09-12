@@ -6,7 +6,6 @@
 
 workspace.bundles: \
 	bndtools.core;version=snapshot,\
-	bndtools.repository.base;version=snapshot,\
 	bndtools.template.dm;version=snapshot,\
 	bndtools.jareditor;version=snapshot,\
 	bndtools.release;version=snapshot,\
