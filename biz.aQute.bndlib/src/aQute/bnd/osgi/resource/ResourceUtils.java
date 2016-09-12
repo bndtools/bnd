@@ -425,12 +425,15 @@ public class ResourceUtils {
 		return false;
 	}
 	public static boolean matches(Requirement r, Capability c) {
+		if (!r.getNamespace().equals(c.getNamespace()))
+			return false;
+
 		if (!isEffective(r, c))
 			return false;
 
 		String filter = r.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
 		if (filter == null)
-			return false;
+			return true;
 
 		try {
 			Filter f = new Filter(filter);
