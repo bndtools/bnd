@@ -94,6 +94,24 @@ public class PomRepositoryTest extends TestCase {
 		assertEquals(1, list.size());
 	}
 
+	public void testEntityPom() throws Exception {
+		BndPomRepository bpr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		bpr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("pom", "testdata/pomrepo/simple.xml");
+		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
+		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+		config.put("name", "test");
+		bpr.setProperties(config);
+
+		List<String> list = bpr.list(null);
+		assertNotNull(list);
+		assertEquals(1, list.size());
+	}
+
 	public void testBndPomRepoFileNoDeps() throws Exception {
 		BndPomRepository bpr = new BndPomRepository();
 		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());

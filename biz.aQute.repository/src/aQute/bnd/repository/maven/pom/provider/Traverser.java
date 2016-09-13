@@ -177,7 +177,11 @@ class Traverser {
 		Map<Program,Dependency> dependencies = pom.getDependencies(EnumSet.of(MavenScope.compile, MavenScope.runtime),
 				false);
 		for (Dependency d : dependencies.values()) {
-			parse(d.getArchive(), parent);
+			Archive archive = d.getArchive();
+			if (archive == null) {
+				reporter.trace("pom %s has bad dependency %s", pom.getRevision(), d);
+			} else
+				parse(archive, parent);
 		}
 	}
 

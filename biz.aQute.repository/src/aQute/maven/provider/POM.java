@@ -1,6 +1,9 @@
 package aQute.maven.provider;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -13,7 +16,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
@@ -39,19 +44,19 @@ import aQute.maven.api.Revision;
  * Parser and placeholder for POM information.
  */
 public class POM implements IPom {
-	static Logger l = LoggerFactory.getLogger(POM.class);
+	static Logger					l						= LoggerFactory.getLogger(POM.class);
 
-	static DocumentBuilderFactory	dbf				= DocumentBuilderFactory.newInstance();
-	static XPathFactory				xpf				= XPathFactory.newInstance();
+	static DocumentBuilderFactory	dbf						= DocumentBuilderFactory.newInstance();
+	static XPathFactory				xpf						= XPathFactory.newInstance();
 	private Revision				revision;
 	private String					packaging;
 	private final Properties		properties;
 	private final POM				parent;
-	private Map<Program,Dependency>	dependencies	= new LinkedHashMap<>();
+	private Map<Program,Dependency>	dependencies			= new LinkedHashMap<>();
 	private Map<Program,Dependency>	dependencyManagement	= new LinkedHashMap<>();
 	private XPath					xp;
 
-	private MavenRepository repo;
+	private MavenRepository			repo;
 
 	public static POM parse(MavenRepository repo, File file) throws Exception {
 		try {
@@ -68,11 +73,54 @@ public class POM implements IPom {
 	}
 
 	public POM(MavenRepository repo, InputStream in) throws Exception {
-		this(repo, dbf.newDocumentBuilder().parse(in));
+		this(repo, getDocBuilder().parse(processEntities(in)));
+	}
+
+	private static DocumentBuilder getDocBuilder() throws ParserConfigurationException {
+		DocumentBuilder db = dbf.newDocumentBuilder();
+		return db;
+	}
+
+	final static Pattern ENTITY_CLEAN_UP = Pattern.compile("&([-a-z0-9_]+);");
+
+	private static InputStream processEntities(InputStream in) throws IOException {
+		byte[] read = IO.read(in);
+		int l = read.length;
+		outer: for (int i = 0; i < read.length; i++) {
+			if (read[i] == '&') {
+
+				StringBuilder sb = new StringBuilder();
+
+				for (int j = i + 1; j < read.length && read[j] != ';'; j++) {
+
+					if (j > i + 10)
+						continue outer;
+
+					char c = (char) read[j];
+					if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))
+						sb.append(c);
+					else
+						continue outer;
+				}
+
+				switch (sb.toString()) {
+					case "lt" :
+					case "gt" :
+					case "amp" :
+					case "quote" :
+					case "apos" :
+						break;
+					default :
+						read[i] = '?';
+						break;
+				}
+			}
+		}
+		return new ByteArrayInputStream(read);
 	}
 
 	public POM(MavenRepository repo, File file) throws Exception {
-		this(repo, dbf.newDocumentBuilder().parse(file));
+		this(repo, new FileInputStream(file));
 	}
 
 	public POM(MavenRepository repo, Document doc) throws Exception {
@@ -188,7 +236,6 @@ public class POM implements IPom {
 		return d;
 	}
 
-
 	private Dependency getDirectDependency(Program program) {
 
 		Dependency dependency = dependencies.get(program);
@@ -289,11 +336,11 @@ public class POM implements IPom {
 	}
 
 	public Archive binaryArchive() {
-		return revision.archive(
-				packaging == null || packaging.isEmpty() || packaging.equals("bundle") || packaging.equals("pom")
-						|| packaging.equals("eclipse-plugin")
-						? "jar" : packaging,
-				null);
+		return revision
+				.archive(
+						packaging == null || packaging.isEmpty() || packaging.equals("bundle")
+								|| packaging.equals("pom") || packaging.equals("eclipse-plugin") ? "jar" : packaging,
+						null);
 	}
 
 	@Override
@@ -322,6 +369,7 @@ public class POM implements IPom {
 				d.version = directDependency.version;
 		}
 	}
+
 	private void getDependencies(Map<Program,Dependency> deps, EnumSet<MavenScope> scope, boolean transitive,
 			Set<Program> visited) throws Exception {
 
@@ -338,7 +386,7 @@ public class POM implements IPom {
 
 		for (Map.Entry<Program,Dependency> e : dependencies.entrySet()) {
 			Dependency d = e.getValue();
-			
+
 			resolve(d);
 
 			if (deps.containsKey(d.program))
