@@ -89,7 +89,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	protected static final String					IDENTITY_SYSTEM_RESOURCE	= "<<SYSTEM>>";
 
 	protected final LogService						log;
-	private CapabilityIndex							systemCapabilityIndex		= new CapabilityIndex();
+	private final CapabilityIndex					systemCapabilityIndex		= new CapabilityIndex();
 	private final List<Repository>					repositories				= new ArrayList<Repository>();
 	private final List<Requirement>					failed						= new ArrayList<Requirement>();
 	private final Map<CacheKey,List<Capability>>	providerCache				= new HashMap<CacheKey,List<Capability>>();
