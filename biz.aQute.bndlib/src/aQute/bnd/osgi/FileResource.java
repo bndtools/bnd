@@ -54,7 +54,7 @@ public class FileResource implements Resource, Closeable {
 		copy(this, out);
 	}
 
-	static synchronized void copy(Resource resource, OutputStream out) throws Exception {
+	static void copy(Resource resource, OutputStream out) throws Exception {
 		InputStream in = resource.openInputStream();
 		try {
 			byte buffer[] = new byte[BUFFER_SIZE];
