@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.felix.resolver.ResolverImpl;
 import org.mockito.Mockito;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -151,7 +150,7 @@ public class ResolveTest extends TestCase {
 	 * @throws Exception
 	 */
 
-	public static void testResolveWithAugments() throws Exception {
+	public void testResolveWithAugments() throws Exception {
 		// Add requirement
 		assertAugmentResolve(
 				"org.apache.felix.gogo.shell;capability:='foo;foo=gogo';requirement:='foo;filter:=\"(foo=*)\"'",
@@ -217,7 +216,7 @@ public class ResolveTest extends TestCase {
 	 * @throws URISyntaxException
 	 * @throws MalformedURLException
 	 */
-	public static void testMinimalSetup() throws MalformedURLException, URISyntaxException {
+	public void testMinimalSetup() throws MalformedURLException, URISyntaxException {
 		File index = IO.getFile("testdata/repo3.index.xml");
 		FixedIndexedRepo fir = new FixedIndexedRepo();
 		fir.setLocations(index.toURI().toString());
@@ -249,7 +248,7 @@ public class ResolveTest extends TestCase {
 	 * 
 	 * @throws ResolutionException
 	 */
-	public static void testResolveWithDistro() throws ResolutionException {
+	public void testResolveWithDistro() throws ResolutionException {
 
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml")));
@@ -279,7 +278,7 @@ public class ResolveTest extends TestCase {
 	 * this is done in the same way. The {@link #testResolveWithDistro()} has a
 	 * negative check while this one checks positive.
 	 */
-	public static void testSimpleResolve() {
+	public void testSimpleResolve() {
 
 		MockRegistry registry = new MockRegistry();
 		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml")));
@@ -409,7 +408,7 @@ public class ResolveTest extends TestCase {
 	 * 
 	 * @throws ResolutionException
 	 */
-	public static void testMultipleOptionsNotDuplicated() throws ResolutionException {
+	public void testMultipleOptionsNotDuplicated() throws ResolutionException {
 
 		// Resolve against repo 5
 		MockRegistry registry = new MockRegistry();
@@ -436,7 +435,7 @@ public class ResolveTest extends TestCase {
 
 		// Resolve the bndrun
 		BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
-		Resolver resolver = new ResolverImpl(new org.apache.felix.resolver.Logger(4), null);
+		Resolver resolver = new BndResolver(new org.apache.felix.resolver.Logger(4));
 		Collection<Resource> resolvedResources = new ResolveProcess()
 				.resolveRequired(runModel, registry, resolver, Collections.<ResolutionCallback> emptyList(), log)
 				.keySet();
