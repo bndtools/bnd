@@ -23,11 +23,7 @@ public class CapabilityIndex {
 	}
 
 	public void addResource(Resource resource) {
-		List<Capability> capabilities = resource.getCapabilities(null);
-		if (capabilities == null)
-			return;
-
-		for (Capability cap : capabilities) {
+		for (Capability cap : resource.getCapabilities(null)) {
 			addCapability(cap);
 		}
 	}

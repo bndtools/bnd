@@ -177,16 +177,14 @@ public class InfoRepositoryWrapper extends BaseRepository {
 
 			for (PersistentResource presource : persistent.values()) {
 				Resource resource = presource.getResource();
-				List<Capability> provided = resource.getCapabilities(req.getNamespace());
-				if (provided != null)
-					for (Capability cap : provided) {
-						if (filter.matchMap(cap.getAttributes())) {
-							List<Capability> l = result.get(req);
-							if (l == null)
-								result.put(req, l = new ArrayList<Capability>());
-							l.add(cap);
-						}
+				for (Capability cap : resource.getCapabilities(req.getNamespace())) {
+					if (filter.matchMap(cap.getAttributes())) {
+						List<Capability> l = result.get(req);
+						if (l == null)
+							result.put(req, l = new ArrayList<Capability>());
+						l.add(cap);
 					}
+				}
 			}
 		}
 	}

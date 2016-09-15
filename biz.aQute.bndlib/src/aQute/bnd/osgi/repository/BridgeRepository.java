@@ -117,8 +117,8 @@ public class BridgeRepository {
 		public InfoCapability getInfo() {
 			List<Capability> capabilities = resource.getCapabilities("bnd.info");
 			InfoCapability info;
-			if ( capabilities.size() >= 1) {
-				 info = ResourceUtils.as(capabilities.get(0), InfoCapability.class);
+			if (capabilities.size() >= 1) {
+				info = ResourceUtils.as(capabilities.get(0), InfoCapability.class);
 			} else
 				info = null;
 			return info;

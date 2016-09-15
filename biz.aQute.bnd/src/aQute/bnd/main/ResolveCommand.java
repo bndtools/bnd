@@ -107,8 +107,7 @@ public class ResolveCommand extends Processor {
 				}
 			}
 			List<Capability> capabilities = resource.getResource().getCapabilities(null);
-			if (capabilities != null && capabilities.size() > 0) {
-
+			if (!capabilities.isEmpty()) {
 				bnd.out.println("Capabilities:");
 				for (Capability cap : capabilities) {
 					Map<String,Object> attrs = new HashMap<String,Object>(cap.getAttributes());

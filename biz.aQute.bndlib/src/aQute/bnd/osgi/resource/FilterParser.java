@@ -1067,7 +1067,7 @@ public class FilterParser {
 			return "<>";
 
 		List<Capability> capabilities = resource.getCapabilities("osgi.identity");
-		if (capabilities == null || capabilities.size() == 0)
+		if (capabilities.isEmpty())
 			return resource.toString();
 
 		Capability c = capabilities.get(0);
