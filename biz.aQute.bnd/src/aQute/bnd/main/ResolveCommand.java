@@ -99,7 +99,7 @@ public class ResolveCommand extends Processor {
 
 		if (r != null) {
 			List<Requirement> requirements = resource.getResource().getRequirements(null);
-			if (requirements != null && requirements.size() > 0) {
+			if (!requirements.isEmpty()) {
 				bnd.out.println("Requirements:");
 				for (Requirement req : requirements) {
 					Expression parse = p.parse(req);
