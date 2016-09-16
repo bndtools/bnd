@@ -120,7 +120,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		return get(archive, true);
 	}
 
-	public Promise<File> get(final Archive archive, final boolean thrw) throws Exception {
+	private Promise<File> get(final Archive archive, final boolean thrw) throws Exception {
 		final File file = toLocalFile(archive);
 
 		if (file.isFile() && !archive.isSnapshot()) {
@@ -135,7 +135,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 			@Override
 			public void run() {
 				try {
-					File f = get0(archive, file);
+					File f = getFile(archive, file);
 					if (thrw && f == null) {
 						deferred.fail(new FileNotFoundException("For Maven artifact " + archive));
 						return;
@@ -158,7 +158,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		return diff < TimeUnit.DAYS.toMillis(1);
 	}
 
-	private File get0(Archive archive, File file) throws Exception {
+	File getFile(Archive archive, File file) throws Exception {
 		State result = null;
 
 		if (archive.isSnapshot()) {
