@@ -362,8 +362,13 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public boolean exists(Archive archive) throws Exception {
-		Promise<File> promise = get(archive.getPomArchive());
-		return (promise.getFailure() == null) && (promise.getValue() != null);
+		File file = File.createTempFile("pom", ".xml");
+		try {
+			File result = getFile(archive.getPomArchive(), file);
+			return result != null;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	public void clear(Revision revision) {
