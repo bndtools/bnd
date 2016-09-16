@@ -163,7 +163,7 @@ public class MavenBndRepository extends BaseRepository
 				checkRemotePossible(instructions, binaryArchive.isSnapshot());
 
 				if (!binaryArchive.isSnapshot() && storage.exists(binaryArchive)) {
-					reporter.trace("Alrady released %s", pom.getRevision());
+					reporter.trace("Already released %s to %s", pom.getRevision(), this);
 					result.alreadyReleased = true;
 					return result;
 				}
