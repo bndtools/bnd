@@ -1058,7 +1058,7 @@ public class Project extends Processor {
 			return;
 		}
 		Parameters repos = new Parameters(name);
-		trace("build %s - %s", Arrays.toString(jars), repos);
+		trace("releasing %s - %s", Arrays.toString(jars), repos);
 
 		for (Map.Entry<String,Attrs> entry : repos.entrySet()) {
 			for (File jar : jars) {
