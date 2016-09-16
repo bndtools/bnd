@@ -112,7 +112,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		if (revision.isSnapshot()) {
 			return new SnapshotReleaser(this, revision, snapshot.isEmpty() ? null : snapshot.get(0), context);
 		}
-		return new Releaser(this, revision, release.get(0), context);
+		return new Releaser(this, revision, release.isEmpty() ? null : release.get(0), context);
 	}
 
 	@Override
