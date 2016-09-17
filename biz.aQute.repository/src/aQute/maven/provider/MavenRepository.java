@@ -368,6 +368,8 @@ public class MavenRepository implements IMavenRepo, Closeable {
 			return result != null;
 		} catch (Exception e) {
 			return false;
+		} finally {
+			IO.delete(file);
 		}
 	}
 
