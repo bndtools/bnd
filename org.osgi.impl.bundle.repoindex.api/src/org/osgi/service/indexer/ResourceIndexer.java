@@ -50,7 +50,7 @@ public interface ResourceIndexer {
 	public static final String	REPOSITORY_NAME			= "repository.name";
 
 	/** the default stylesheet for the XML representation */
-	public static final String	STYLESHEET_DEFAULT		= "http://www.osgi.org/www/obr2html.xsl";
+	public static final String	STYLESHEET_DEFAULT		= "http://bnd.bndtools.org/static/obr2html.xsl";
 
 	/**
 	 * Name of the configuration variable for the stylesheet of the XML
