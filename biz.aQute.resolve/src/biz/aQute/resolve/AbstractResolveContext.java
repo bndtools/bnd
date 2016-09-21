@@ -105,6 +105,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	private Set<Resource>							blacklistedResources		= new HashSet<Resource>();
 	private int										level						= 0;
 	private Resource								framework;
+	private Boolean									collectAllMissingRequirements;
+	private MissingRequirementsResource				missingRequirementResource	= new MissingRequirementsResource();
 
 	public AbstractResolveContext(LogService log) {
 		this.log = log;
@@ -137,6 +139,9 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		List<Capability> result = findProviders0(requirement);
 		if (result.isEmpty()) {
 			failed.add(requirement);
+			if (isCollectAllMissingRequirements()) {
+				return missingRequirementResource.addMissingRequirement(requirement);
+			}
 		}
 		return result;
 	}
@@ -969,5 +974,20 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	public Map<String,Set<String>> getEffectiveSet() {
 		return effectiveSet;
+	}
+
+	public boolean isCollectAllMissingRequirements() {
+		Boolean c = collectAllMissingRequirements;
+		if (c == null)
+			return false;
+		return collectAllMissingRequirements.booleanValue();
+	}
+
+	public Boolean getCollectAllMissingRequirements() {
+		return collectAllMissingRequirements;
+	}
+
+	public void setCollectAllMissingRequirements(boolean collectAllMissingRequirements) {
+		this.collectAllMissingRequirements = collectAllMissingRequirements;
 	}
 }

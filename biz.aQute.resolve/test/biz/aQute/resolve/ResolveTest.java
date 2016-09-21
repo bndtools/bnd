@@ -38,6 +38,8 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
 import junit.framework.TestCase;
@@ -449,6 +451,51 @@ public class ResolveTest extends TestCase {
 			assertNull("Multiple results for " + symbolicName, mandatoryResourcesBySymbolicName.put(symbolicName, r));
 		}
 		assertEquals(4, resolvedResources.size());
+	}
+
+	@SuppressWarnings("null")
+	public static void testMultipleMissingRequirements() throws Exception {
+		MockRegistry registry = new MockRegistry();
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml")));
+
+		BndEditModel model = new BndEditModel();
+
+		model.setRunFw("org.apache.felix.framework");
+
+		List<Requirement> requirements = new ArrayList<Requirement>();
+
+		requirements.add(new CapReqBuilder("osgi.identity").addDirective("filter", "(osgi.identity=foo.fum)")
+				.buildSyntheticRequirement());
+		requirements.add(new CapReqBuilder("osgi.wiring.package")
+				.addDirective("filter", "(osgi.wiring.package=foo.bar)").buildSyntheticRequirement());
+
+		model.setRunRequires(requirements);
+
+		BndrunResolveContext context = new BndrunResolveContext(model, registry, log);
+		context.setCollectAllMissingRequirements(Boolean.TRUE);
+
+		Resolver resolver = new BndResolver(new ResolverLogger(4));
+
+		Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+		Set<Resource> resources = resolved.keySet();
+		assertFalse(resources.isEmpty());
+		Resource missingRequirementsResource = null;
+		for (Resource resource : resources) {
+			IdentityCapability identityCapability = ResourceUtils.getIdentityCapability(resource);
+			String identity = ResourceUtils.getIdentity(identityCapability);
+			if (MissingRequirementsResource.MISSING_REQUIREMENT.equals(identity)) {
+				missingRequirementsResource = resource;
+			}
+		}
+		assertNotNull(missingRequirementsResource);
+		assertEquals(2,
+				missingRequirementsResource.getCapabilities(MissingRequirementsResource.MISSING_REQUIREMENT).size());
+		for (Capability capability : missingRequirementsResource
+				.getCapabilities(MissingRequirementsResource.MISSING_REQUIREMENT)) {
+			Map<String,Object> attributes = capability.getAttributes();
+			Requirement requirement = (Requirement) attributes.get(MissingRequirementsResource.MISSING_REQUIREMENT);
+			System.out.println(requirement);
+		}
 	}
 
 }

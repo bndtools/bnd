@@ -71,6 +71,8 @@ public class ResolveProcess {
 		try {
 			Map<Resource,List<Wire>> wirings = resolver.resolve(rc);
 
+			throwIfMissingRequirements(properties, wirings);
+
 			// 2. Save initial requirement resolution
 			Pair<Resource,List<Wire>> initialRequirement = null;
 			for (Map.Entry<Resource,List<Wire>> wiring : wirings.entrySet()) {
@@ -182,6 +184,16 @@ public class ResolveProcess {
 			return result;
 		} catch (ResolutionException re) {
 			throw augment(new BndrunResolveContext(properties, project, plugins, log), re);
+		}
+	}
+
+	private void throwIfMissingRequirements(Processor properties, Map<Resource,List<Wire>> wirings)
+			throws MissingRequirementsException {
+		for (Resource resource : wirings.keySet()) {
+			if (resource instanceof MissingRequirementsResource) {
+				MissingRequirementsResource mrr = (MissingRequirementsResource) resource;
+				throw new MissingRequirementsException(mrr.getMissingRequirements(), wirings, properties);
+			}
 		}
 	}
 
