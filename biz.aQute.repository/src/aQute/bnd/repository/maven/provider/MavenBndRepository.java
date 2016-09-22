@@ -496,6 +496,12 @@ public class MavenBndRepository extends BaseRepository
 	}
 
 	private void startPoll(final IndexFile index) {
+		Workspace ws = registry.getPlugin(Workspace.class);
+		if ((ws != null) && (ws.getGestalt().containsKey(Constants.GESTALT_BATCH)
+				|| ws.getGestalt().containsKey(Constants.GESTALT_CI)
+				|| ws.getGestalt().containsKey(Constants.GESTALT_OFFLINE))) {
+			return;
+		}
 		final AtomicBoolean busy = new AtomicBoolean();
 		indexPoller = Processor.getScheduledExecutor().scheduleAtFixedRate(new Runnable() {
 
