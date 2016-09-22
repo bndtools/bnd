@@ -1,6 +1,8 @@
 package aQute.bnd.osgi.resource;
 
-import java.util.Collections;
+import static aQute.bnd.osgi.resource.ResourceUtils.requireNonNull;
+import static java.util.Collections.unmodifiableMap;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,14 +22,15 @@ class CapReq {
 	private final Resource				resource;
 	private final Map<String,String>	directives;
 	private final Map<String,Object>	attributes;
+	private transient int				hashCode	= 0;
 
 	CapReq(MODE mode, String namespace, Resource resource, Map<String,String> directives,
 			Map<String,Object> attributes) {
-		this.mode = mode;
-		this.namespace = namespace;
+		this.mode = requireNonNull(mode);
+		this.namespace = requireNonNull(namespace);
 		this.resource = resource;
-		this.directives = new HashMap<String,String>(directives);
-		this.attributes = new HashMap<String,Object>(attributes);
+		this.directives = unmodifiableMap(new HashMap<>(directives));
+		this.attributes = unmodifiableMap(new HashMap<>(attributes));
 	}
 
 	public String getNamespace() {
@@ -35,11 +38,11 @@ class CapReq {
 	}
 
 	public Map<String,String> getDirectives() {
-		return Collections.unmodifiableMap(directives);
+		return directives;
 	}
 
 	public Map<String,Object> getAttributes() {
-		return Collections.unmodifiableMap(attributes);
+		return attributes;
 	}
 
 	public Resource getResource() {
@@ -48,14 +51,17 @@ class CapReq {
 
 	@Override
 	public int hashCode() {
+		if (hashCode != 0) {
+			return hashCode;
+		}
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((attributes == null) ? 0 : attributes.hashCode());
-		result = prime * result + ((directives == null) ? 0 : directives.hashCode());
-		result = prime * result + ((mode == null) ? 0 : mode.hashCode());
-		result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
+		result = prime * result + attributes.hashCode();
+		result = prime * result + directives.hashCode();
+		result = prime * result + mode.hashCode();
+		result = prime * result + namespace.hashCode();
 		result = prime * result + ((resource == null) ? 0 : resource.hashCode());
-		return result;
+		return hashCode = result;
 	}
 
 	@Override
@@ -66,85 +72,43 @@ class CapReq {
 			return false;
 		if (obj instanceof CapReq)
 			return equalsNative((CapReq) obj);
-		else if ((mode == MODE.Capability) && (obj instanceof Capability))
+		if ((mode == MODE.Capability) && (obj instanceof Capability))
 			return equalsCap((Capability) obj);
-		else if ((mode == MODE.Requirement) && (obj instanceof Requirement))
+		if ((mode == MODE.Requirement) && (obj instanceof Requirement))
 			return equalsReq((Requirement) obj);
 		return false;
 	}
 
 	private boolean equalsCap(Capability other) {
-		if (namespace == null) {
-			if (other.getNamespace() != null)
-				return false;
-		} else if (!namespace.equals(other.getNamespace()))
+		if (!namespace.equals(other.getNamespace()))
 			return false;
-		if (attributes == null) {
-			if (other.getAttributes() != null)
-				return false;
-		} else if (!attributes.equals(other.getAttributes()))
+		if (!attributes.equals(other.getAttributes()))
 			return false;
-		if (directives == null) {
-			if (other.getDirectives() != null)
-				return false;
-		} else if (!directives.equals(other.getDirectives()))
+		if (!directives.equals(other.getDirectives()))
 			return false;
-		if (resource == null) {
-			if (other.getResource() != null)
-				return false;
-		} else if (!resource.equals(other.getResource()))
-			return false;
-		return true;
+		return (resource == null) ? (other.getResource() == null) : resource.equals(other.getResource());
 	}
 
 	private boolean equalsNative(CapReq other) {
 		if (mode != other.mode)
 			return false;
-		if (namespace == null) {
-			if (other.namespace != null)
-				return false;
-		} else if (!namespace.equals(other.namespace))
+		if (!namespace.equals(other.namespace))
 			return false;
-		if (attributes == null) {
-			if (other.attributes != null)
-				return false;
-		} else if (!attributes.equals(other.attributes))
+		if (!attributes.equals(other.attributes))
 			return false;
-		if (directives == null) {
-			if (other.directives != null)
-				return false;
-		} else if (!directives.equals(other.directives))
+		if (!directives.equals(other.directives))
 			return false;
-		if (resource == null) {
-			if (other.resource != null)
-				return false;
-		} else if (!resource.equals(other.resource))
-			return false;
-		return true;
+		return (resource == null) ? (other.resource == null) : resource.equals(other.resource);
 	}
 
 	private boolean equalsReq(Requirement other) {
-		if (namespace == null) {
-			if (other.getNamespace() != null)
-				return false;
-		} else if (!namespace.equals(other.getNamespace()))
+		if (!namespace.equals(other.getNamespace()))
 			return false;
-		if (attributes == null) {
-			if (other.getAttributes() != null)
-				return false;
-		} else if (!attributes.equals(other.getAttributes()))
+		if (!attributes.equals(other.getAttributes()))
 			return false;
-		if (directives == null) {
-			if (other.getDirectives() != null)
-				return false;
-		} else if (!directives.equals(other.getDirectives()))
+		if (!directives.equals(other.getDirectives()))
 			return false;
-		if (resource == null) {
-			if (other.getResource() != null)
-				return false;
-		} else if (!resource.equals(other.getResource()))
-			return false;
-		return true;
+		return (resource == null) ? (other.getResource() == null) : resource.equals(other.getResource());
 	}
 
 	@Override

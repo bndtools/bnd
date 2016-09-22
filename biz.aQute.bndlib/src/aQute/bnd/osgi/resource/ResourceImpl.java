@@ -2,9 +2,11 @@ package aQute.bnd.osgi.resource;
 
 import static aQute.bnd.osgi.resource.ResourceUtils.getLocations;
 import static aQute.lib.collections.Logic.retain;
+import static java.util.Collections.unmodifiableList;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,59 +26,59 @@ import aQute.bnd.version.Version;
 
 class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent {
 
-	private List<Capability>				allCapabilities;
-	private Map<String,List<Capability>>	capabilityMap;
+	private volatile List<Capability>				allCapabilities;
+	private volatile Map<String,List<Capability>>	capabilityMap;
+	private volatile List<Requirement>				allRequirements;
+	private volatile Map<String,List<Requirement>>	requirementMap;
 
-	private List<Requirement>				allRequirements;
-	private Map<String,List<Requirement>>	requirementMap;
-	private Map<URI,String>					locations;
+	private transient Map<URI,String>				locations;
 
 	void setCapabilities(List<Capability> capabilities) {
-		allCapabilities = capabilities;
-
-		capabilityMap = new HashMap<String,List<Capability>>();
+		Map<String,List<Capability>> prepare = new HashMap<>();
 		for (Capability capability : capabilities) {
-			List<Capability> list = capabilityMap.get(capability.getNamespace());
+			List<Capability> list = prepare.get(capability.getNamespace());
 			if (list == null) {
 				list = new LinkedList<Capability>();
-				capabilityMap.put(capability.getNamespace(), list);
+				prepare.put(capability.getNamespace(), list);
 			}
 			list.add(capability);
 		}
+		for (Map.Entry<String,List<Capability>> entry : prepare.entrySet()) {
+			entry.setValue(unmodifiableList(new ArrayList<>(entry.getValue())));
+		}
+
+		allCapabilities = unmodifiableList(new ArrayList<>(capabilities));
+		capabilityMap = prepare;
 	}
 
 	public List<Capability> getCapabilities(String namespace) {
-		List<Capability> caps = allCapabilities;
-		if (namespace != null)
-			caps = capabilityMap.get(namespace);
-		if (caps == null || caps.isEmpty())
-			return Collections.emptyList();
+		List<Capability> caps = (namespace != null) ? capabilityMap.get(namespace) : allCapabilities;
 
-		return Collections.unmodifiableList(caps);
+		return (caps != null) ? caps : Collections.<Capability> emptyList();
 	}
 
 	void setRequirements(List<Requirement> requirements) {
-		allRequirements = requirements;
-
-		requirementMap = new HashMap<String,List<Requirement>>();
+		Map<String,List<Requirement>> prepare = new HashMap<>();
 		for (Requirement requirement : requirements) {
-			List<Requirement> list = requirementMap.get(requirement.getNamespace());
+			List<Requirement> list = prepare.get(requirement.getNamespace());
 			if (list == null) {
 				list = new LinkedList<Requirement>();
-				requirementMap.put(requirement.getNamespace(), list);
+				prepare.put(requirement.getNamespace(), list);
 			}
 			list.add(requirement);
 		}
+		for (Map.Entry<String,List<Requirement>> entry : prepare.entrySet()) {
+			entry.setValue(unmodifiableList(new ArrayList<>(entry.getValue())));
+		}
+
+		allRequirements = unmodifiableList(new ArrayList<>(requirements));
+		requirementMap = prepare;
 	}
 
 	public List<Requirement> getRequirements(String namespace) {
-		List<Requirement> reqs = allRequirements;
-		if (namespace != null)
-			reqs = requirementMap.get(namespace);
-		if (reqs == null || reqs.isEmpty())
-			return Collections.emptyList();
+		List<Requirement> reqs = (namespace != null) ? requirementMap.get(namespace) : allRequirements;
 
-		return Collections.unmodifiableList(reqs);
+		return (reqs != null) ? reqs : Collections.<Requirement> emptyList();
 	}
 
 	@Override

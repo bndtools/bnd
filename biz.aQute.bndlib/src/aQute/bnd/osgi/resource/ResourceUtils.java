@@ -552,4 +552,10 @@ public class ResourceUtils {
 		return new VersionedClause(identity, attribs);
 	}
 
+	static <T> T requireNonNull(T obj) {
+		if (obj != null) {
+			return obj;
+		}
+		throw new NullPointerException();
+	}
 }
