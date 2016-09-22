@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -87,6 +89,7 @@ class IndexFile {
 	private final Reporter									reporter;
 	private long									lastModified;
 	private AtomicBoolean							refresh		= new AtomicBoolean();
+	private final ReadWriteLock							lock		= new ReentrantReadWriteLock();
 
 	IndexFile(Reporter reporter, File file, IMavenRepo repo) throws Exception {
 		this.reporter = reporter;
@@ -226,6 +229,7 @@ class IndexFile {
 		lastModified = indexFile.lastModified();
 		Set<Archive> toBeDeleted = new HashSet<>(descriptors.keySet());
 		if (indexFile.isFile()) {
+			lock.readLock().lock();
 			try (BufferedReader rdr = IO.reader(indexFile)) {
 				String line;
 				while ((line = rdr.readLine()) != null) {
@@ -241,6 +245,8 @@ class IndexFile {
 						loadDescriptorAsync(a);
 					}
 				}
+			} finally {
+				lock.readLock().unlock();
 			}
 
 			this.descriptors.keySet().removeAll(toBeDeleted);
@@ -369,15 +375,20 @@ class IndexFile {
 	}
 
 	private void saveIndexFile() throws Exception {
-		File tmp = File.createTempFile("index", null);
-		try (PrintWriter pw = new PrintWriter(tmp);) {
-			List<Archive> archives = new ArrayList<>(this.descriptors.keySet());
-			Collections.sort(archives);
-			for (Archive archive : archives) {
-				pw.println(archive);
+		lock.writeLock().lock();
+		try {
+			File tmp = File.createTempFile("index", null);
+			try (PrintWriter pw = new PrintWriter(tmp);) {
+				List<Archive> archives = new ArrayList<>(this.descriptors.keySet());
+				Collections.sort(archives);
+				for (Archive archive : archives) {
+					pw.println(archive);
+				}
 			}
+			Files.move(tmp.toPath(), indexFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		} finally {
+			lock.writeLock().unlock();
 		}
-		Files.move(tmp.toPath(), indexFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
 		lastModified = indexFile.lastModified();
 	}
