@@ -8,7 +8,6 @@ Bundle-ActivationPolicy: lazy
 Bundle-Localization: plugin
 
 Import-Package: !junit*,org.eclipse.core.runtime;registry=!,\
-	org.osgi.service.component.annotations;resolution:=optional,\
 	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
 Private-Package: \
