@@ -21,9 +21,11 @@ import org.osgi.service.resolver.Resolver;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.service.repository.InfoRepository;
 import aQute.lib.io.IO;
+import biz.aQute.resolve.BndResolver;
 import biz.aQute.resolve.BndrunResolveContext;
 import biz.aQute.resolve.ResolveProcess;
 import junit.framework.TestCase;
@@ -125,7 +127,7 @@ public class JpmRepoTest extends TestCase {
 		model.setRunRequires(requires);
 		BndrunResolveContext context = new BndrunResolveContext(model, ws, log);
 
-		Resolver resolver = new ResolverImpl(new org.apache.felix.resolver.Logger(4), null);
+		Resolver resolver = new BndResolver(new org.apache.felix.resolver.Logger(4));
 
 		try {
 			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
@@ -154,7 +156,7 @@ public class JpmRepoTest extends TestCase {
 		model.setRunRequires(requires);
 		BndrunResolveContext context = new BndrunResolveContext(model, ws, log);
 
-		Resolver resolver = new ResolverImpl(new org.apache.felix.resolver.Logger(4), null);
+		Resolver resolver = new BndResolver(new org.apache.felix.resolver.Logger(4));
 
 		try {
 			Map<Resource,List<Wire>> resolved = resolver.resolve(context);

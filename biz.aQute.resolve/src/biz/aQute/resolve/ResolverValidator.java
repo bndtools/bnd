@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.felix.resolver.ResolverImpl;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -38,7 +37,7 @@ import aQute.lib.strings.Strings;
 public class ResolverValidator extends Processor {
 
 	LogReporter	reporter		= new LogReporter(this);
-	Resolver	resolver		= new ResolverImpl(reporter, null);
+	Resolver	resolver		= new BndResolver(reporter);
 	List<URI>	repositories	= new ArrayList<>();
 	Resource	system			= null;
 

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.felix.resolver.Logger;
-import org.apache.felix.resolver.ResolverImpl;
 import org.osgi.framework.ServiceReference;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -15,6 +14,7 @@ import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 import org.osgi.service.log.LogService;
 import org.osgi.service.resolver.ResolutionException;
+import org.osgi.service.resolver.Resolver;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
@@ -78,7 +78,7 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 	private Project							project;
 	private Map<Resource,List<Wire>>		resolution;
 	private ReporterLogger					log			= new ReporterLogger(0);
-	private ResolverImpl					resolver	= new ResolverImpl(new ReporterLogger(0), null);
+	private Resolver						resolver	= new BndResolver(new ReporterLogger(0));
 	private ResolveProcess					resolve		= new ResolveProcess();
 	private Collection<ResolutionCallback>	cbs			= new ArrayList<ResolutionCallback>();
 
