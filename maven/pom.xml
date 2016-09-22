@@ -8,7 +8,7 @@
     <description>Parent POM for the bnd maven plugins.</description>
     <name>${project.groupId}:${project.artifactId}</name>
 	<packaging>pom</packaging>
-	<version>3.3.0-SNAPSHOT</version>
+	<version>3.4.0-SNAPSHOT</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
