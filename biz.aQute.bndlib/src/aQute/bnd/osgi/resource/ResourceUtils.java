@@ -205,7 +205,7 @@ public class ResourceUtils {
 
 	public static IdentityCapability getIdentityCapability(Resource resource) {
 		List<Capability> caps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
-		if (caps == null || caps.isEmpty())
+		if (caps.isEmpty())
 			return null;
 
 		return as(caps.get(0), IdentityCapability.class);
@@ -225,7 +225,7 @@ public class ResourceUtils {
 
 	public static BundleCap getBundleCapability(Resource resource) {
 		List<Capability> caps = resource.getCapabilities(BundleNamespace.BUNDLE_NAMESPACE);
-		if (caps == null || caps.isEmpty())
+		if (caps.isEmpty())
 			return null;
 
 		return as(caps.get(0), BundleCap.class);

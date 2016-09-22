@@ -83,7 +83,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
 		List<Capability> identities = getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
-		if (identities != null && identities.size() == 1) {
+		if (identities.size() == 1) {
 			Capability idCap = identities.get(0);
 			Object id = idCap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
 			Object version = idCap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);

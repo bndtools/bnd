@@ -91,7 +91,7 @@ public final class RepoResourceUtils {
 
 	public static Capability getIdentityCapability(Resource resource) {
 		List<Capability> identityCaps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
-		if (identityCaps == null || identityCaps.isEmpty())
+		if (identityCaps.isEmpty())
 			throw new IllegalArgumentException("Resource has no identity capability.");
 		return identityCaps.iterator().next();
 	}
@@ -119,7 +119,7 @@ public final class RepoResourceUtils {
 
 	public static URI getContentUrl(Resource resource) {
 		List<Capability> caps = resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE);
-		if (caps == null || caps.isEmpty())
+		if (caps.isEmpty())
 			throw new IllegalArgumentException("Resource has no content capability");
 
 		Object uri = caps.iterator().next().getAttributes().get(ContentNamespace.CAPABILITY_URL_ATTRIBUTE);
@@ -142,7 +142,7 @@ public final class RepoResourceUtils {
 
 	public static String getContentSha(Resource resource) {
 		List<Capability> caps = resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE);
-		if (caps == null || caps.isEmpty())
+		if (caps.isEmpty())
 			return null;
 
 		Object contentObj = caps.iterator().next().getAttributes().get(ContentNamespace.CONTENT_NAMESPACE);

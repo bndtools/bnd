@@ -99,7 +99,7 @@ public class ResolveCommand extends Processor {
 
 		if (r != null) {
 			List<Requirement> requirements = resource.getResource().getRequirements(null);
-			if (requirements != null && requirements.size() > 0) {
+			if (!requirements.isEmpty()) {
 				bnd.out.println("Requirements:");
 				for (Requirement req : requirements) {
 					Expression parse = p.parse(req);
@@ -107,8 +107,7 @@ public class ResolveCommand extends Processor {
 				}
 			}
 			List<Capability> capabilities = resource.getResource().getCapabilities(null);
-			if (capabilities != null && capabilities.size() > 0) {
-
+			if (!capabilities.isEmpty()) {
 				bnd.out.println("Capabilities:");
 				for (Capability cap : capabilities) {
 					Map<String,Object> attrs = new HashMap<String,Object>(cap.getAttributes());
