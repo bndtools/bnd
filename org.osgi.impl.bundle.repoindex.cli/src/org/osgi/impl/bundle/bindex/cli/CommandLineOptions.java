@@ -133,7 +133,7 @@ public class CommandLineOptions {
 	 * Stylesheet URL
 	 */
 
-	@Option(name = "-stylesheet", metaVar = "http://some/url.xsl", usage = "Stylesheet URL, for example: http://www.osgi.org/www/obr2html.xsl (default = none)")
+	@Option(name = "-stylesheet", metaVar = "http://some/url.xsl", usage = "Stylesheet URL, for example: http://bnd.bndtools.org/static/obr2html.xsl (default = none)")
 	URL							stylesheetURL		= null;
 
 	/*
