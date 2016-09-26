@@ -1315,8 +1315,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private String getWildcardProperty(String deflt, String separator, boolean inherit, Instruction ins) {
 		// Handle a wildcard key, make sure they're sorted
 		// for consistency
-		SortedList<String> sortedList = SortedList
-				.fromIterator(inherit ? iterator() : getLocalKeys().iterator());
+		SortedList<String> sortedList = SortedList.fromIterator(iterator(inherit));
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 		for (String k : sortedList) {
@@ -1333,14 +1332,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return deflt;
 
 		return sb.toString();
-	}
-
-	@SuppressWarnings({
-			"unchecked", "rawtypes"
-	})
-	private Set<String> getLocalKeys() {
-		Set keySet = properties.keySet();
-		return keySet;
 	}
 
 	private String getLiteralProperty(String key, String deflt, Processor source, boolean inherit) {
@@ -1560,8 +1551,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		Set<String> result;
 		if (parent == null || !inherit) {
 			result = Create.set();
-		} else
+		} else {
 			result = parent.getPropertyKeys(inherit);
+		}
 		for (Object o : properties.keySet())
 			result.add(o.toString());
 
@@ -2251,9 +2243,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	@Override
 	public Iterator<String> iterator() {
-		Set<String> keys = keySet();
-		final Iterator<String> it = keys.iterator();
+		return iterator(true);
+	}
 
+	private Iterator<String> iterator(boolean inherit) {
+		Set<String> keys = getPropertyKeys(inherit);
+		final Iterator<String> it = keys.iterator();
 		return new Iterator<String>() {
 			String current;
 
@@ -2272,16 +2267,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public Set<String> keySet() {
-		Set<String> set;
-		if (parent == null)
-			set = Create.set();
-		else
-			set = parent.keySet();
-
-		for (Object o : properties.keySet())
-			set.add(o.toString());
-
-		return set;
+		return getPropertyKeys(true);
 	}
 
 	/**
