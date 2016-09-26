@@ -118,12 +118,22 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 		return reporter.warning(format, args);
 	}
 
+	/**
+	 * @deprecated Use SLF4J Logger.debug instead.
+	 */
+	@Deprecated
 	public void trace(String format, Object... args) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("{}", Strings.format(format, args));
 		}
 	}
 
+	/**
+	 * @deprecated Use SLF4J
+	 *             Logger.info(aQute.libg.slf4j.GradleLogging.LIFECYCLE)
+	 *             instead.
+	 */
+	@Deprecated
 	public void progress(float progress, String format, Object... args) {
 		if (logger.isInfoEnabled(LIFECYCLE)) {
 			String message = Strings.format(format, args);

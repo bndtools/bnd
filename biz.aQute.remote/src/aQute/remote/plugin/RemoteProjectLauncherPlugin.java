@@ -205,6 +205,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 		return sessions;
 	}
 
+	@SuppressWarnings("deprecation")
 	private void tryJMXDeploy(String jmx, String bsn) {
 		JMXBundleDeployer jmxBundleDeployer = null;
 		int port = -1;

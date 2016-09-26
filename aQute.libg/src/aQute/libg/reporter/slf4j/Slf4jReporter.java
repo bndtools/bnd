@@ -35,6 +35,10 @@ public class Slf4jReporter extends ReporterAdapter {
 		return location;
 	}
 
+	/**
+	 * @deprecated Use SLF4J Logger.debug instead.
+	 */
+	@Deprecated
 	public void trace(String format, Object... args) {
 		super.trace(format, args);
 		if (isTrace()) {
@@ -48,6 +52,12 @@ public class Slf4jReporter extends ReporterAdapter {
 		}
 	}
 
+	/**
+	 * @deprecated Use SLF4J
+	 *             Logger.info(aQute.libg.slf4j.GradleLogging.LIFECYCLE)
+	 *             instead.
+	 */
+	@Deprecated
 	public void progress(float progress, String format, Object... args) {
 		super.progress(progress, format, args);
 		if (logger.isInfoEnabled(LIFECYCLE)) {

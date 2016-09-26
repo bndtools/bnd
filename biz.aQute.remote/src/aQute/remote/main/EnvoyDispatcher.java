@@ -52,6 +52,7 @@ public class EnvoyDispatcher implements Closeable {
 		Closeable			framework;
 		File				storage;
 
+		@SuppressWarnings("deprecation")
 		void close() {
 			try {
 				main.trace("closing framework for %s", this);
@@ -91,6 +92,7 @@ public class EnvoyDispatcher implements Closeable {
 		 * previous framework under this name and create a new one with the
 		 * given props.
 		 */
+		@SuppressWarnings("deprecation")
 		@Override
 		public boolean createFramework(String name, Collection<String> runpath, Map<String,Object> properties)
 				throws Exception {
@@ -123,6 +125,7 @@ public class EnvoyDispatcher implements Closeable {
 			}
 		}
 
+		@SuppressWarnings("deprecation")
 		private void createAgent(DispatcherInfo info, boolean state) throws Exception {
 			main.trace("Adding an agent for %s", info.name);
 			link.transfer(state);
@@ -133,6 +136,7 @@ public class EnvoyDispatcher implements Closeable {
 			close();
 		}
 
+		@SuppressWarnings("deprecation")
 		private DispatcherInfo create(String name, Collection<String> runpath, Map<String,Object> properties)
 				throws Exception {
 			List<URL> files = new ArrayList<URL>();
@@ -217,6 +221,7 @@ public class EnvoyDispatcher implements Closeable {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public void run() {
 		while (!Thread.currentThread().isInterrupted())
 			try {

@@ -294,6 +294,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 	}
 
+	/**
+	 * @deprecated Use SLF4J
+	 *             Logger.info(aQute.libg.slf4j.GradleLogging.LIFECYCLE)
+	 *             instead.
+	 */
+	@Deprecated
 	public void progress(float progress, String format, Object... args) {
 		Logger l = getLogger();
 		if (l.isInfoEnabled(LIFECYCLE)) {
@@ -834,6 +840,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return logger;
 	}
 
+	/**
+	 * @deprecated Use SLF4J Logger.debug instead.
+	 */
+	@Deprecated
 	public void trace(String msg, Object... parms) {
 		Processor p = current();
 		Logger l = p.getLogger();

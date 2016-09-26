@@ -71,6 +71,7 @@ public class ReporterMessages {
 				messages
 		}, new InvocationHandler() {
 
+			@SuppressWarnings("deprecation")
 			public Object invoke(Object target, Method method, Object[] args) throws Throwable {
 				String format;
 				Message d = method.getAnnotation(Message.class);
