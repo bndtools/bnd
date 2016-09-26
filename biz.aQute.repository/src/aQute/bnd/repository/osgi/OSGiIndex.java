@@ -19,6 +19,8 @@ import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.Promises;
 import org.osgi.util.promise.Success;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequest;
@@ -30,11 +32,9 @@ import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.version.Version;
 import aQute.lib.exceptions.Exceptions;
-import aQute.libg.reporter.slf4j.Slf4jReporter;
-import aQute.service.reporter.Reporter;
 
 class OSGiIndex {
-	private final Reporter					log	= new Slf4jReporter(OSGiIndex.class);
+	private final static Logger				logger	= LoggerFactory.getLogger(OSGiIndex.class);
 	private final Promise<BridgeRepository>	repository;
 	private final HttpClient				client;
 	private final long						staleTime;
@@ -91,7 +91,7 @@ class OSGiIndex {
 			public List<Resource> apply(File file) {
 				try {
 					if (file == null) {
-						log.trace("%s: No file downloaded for %s", name, uri);
+						logger.debug("{}: No file downloaded for {}", name, uri);
 						return Collections.emptyList();
 					}
 					try (InputStream in = new FileInputStream(file)) {
@@ -113,13 +113,13 @@ class OSGiIndex {
 
 		ContentCapability content = ResourceUtils.getContentCapability(resource);
 		if (content == null) {
-			log.warning("%s: No content capability for %s", name, resource);
+			logger.warn("{}: No content capability for {}", name, resource);
 			return null;
 		}
 
 		URI url = content.url();
 		if (url == null) {
-			log.warning("%s: No content capability for %s", name, resource);
+			logger.warn("{}: No content capability for {}", name, resource);
 			return null;
 		}
 
@@ -156,7 +156,7 @@ class OSGiIndex {
 							case OTHER :
 								// in the offline case
 								// ignore might be best here
-								log.trace("Could not verify %s", uri);
+								logger.debug("Could not verify {}", uri);
 								break;
 
 							case UNMODIFIED :
@@ -165,7 +165,7 @@ class OSGiIndex {
 							case NOT_FOUND :
 							case UPDATED :
 							default :
-								log.trace("Found %s to be stale", uri);
+								logger.debug("Found {} to be stale", uri);
 								freshness.fail(new Exception("stale"));
 						}
 						return null;
@@ -173,12 +173,12 @@ class OSGiIndex {
 				}, new Failure() {
 					@Override
 					public void fail(Promise< ? > resolved) throws Exception {
-						log.trace("Could not verify %s: %s", uri, resolved.getFailure());
+						logger.debug("Could not verify {}: {}", uri, resolved.getFailure());
 						freshness.fail(resolved.getFailure());
 					}
 				}));
 			} catch (Exception e) {
-				log.trace("Checking stale status: %s: %s", uri, e);
+				logger.debug("Checking stale status: {}: {}", uri, e);
 			}
 		}
 

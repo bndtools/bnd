@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.boris.winrun4j.RegistryKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.osgi.Instructions;
 import aQute.jpm.lib.ArtifactData;
@@ -38,6 +40,7 @@ import aQute.lib.strings.Strings;
  * TODO services (fortunately, winrun4j has extensive support)
  */
 public class Windows extends Platform {
+	private final static Logger	logger	= LoggerFactory.getLogger(Windows.class);
 	static boolean	IS64	= System.getProperty("os.arch").contains("64");
 
 	static File		javahome;
@@ -147,7 +150,7 @@ public class Windows extends Platform {
 		} finally {
 			pw.close();
 		}
-		reporter.trace("Ini content %s", IO.collect(ini));
+		logger.debug("Ini content {}", IO.collect(ini));
 		return null;
 	}
 
@@ -157,7 +160,7 @@ public class Windows extends Platform {
 		File f = new File(executable);
 		File fj = new File(executable + ".ini");
 		if (cmd.name.equals("jpm")) {
-			reporter.trace("leaving jpm behind");
+			logger.debug("leaving jpm behind");
 			return;
 		} else {
 			IO.deleteWithException(f);

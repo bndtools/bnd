@@ -2,10 +2,13 @@ package aQute.bnd.main;
 
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.log.LogService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.service.reporter.Reporter;
 
 public class ReporterLogger implements LogService {
+	private final static Logger	logger	= LoggerFactory.getLogger(ReporterLogger.class);
 
 	private Reporter	reporter;
 	private int			level;
@@ -29,8 +32,12 @@ public class ReporterLogger implements LogService {
 				reporter.warning("%s", message);
 				return;
 
+			case LogService.LOG_INFO :
+				logger.info("{}", message);
+				return;
+
 			default :
-				reporter.trace("%s", message);
+				logger.debug("{}", message);
 				return;
 		}
 	}
@@ -49,8 +56,12 @@ public class ReporterLogger implements LogService {
 				reporter.warning("%s: %s", exception, message);
 				return;
 
+			case LogService.LOG_INFO :
+				logger.info("{}", message, exception);
+				return;
+
 			default :
-				reporter.trace("%s: %s", exception, message);
+				logger.debug("{}", message, exception);
 				return;
 		}
 	}
@@ -66,8 +77,12 @@ public class ReporterLogger implements LogService {
 				reporter.warning("%s: %s", sr, message);
 				return;
 
+			case LogService.LOG_INFO :
+				logger.info("{}: {}", sr, message);
+				return;
+
 			default :
-				reporter.trace("%s: %s", sr, message);
+				logger.debug("{}: {}", sr, message);
 				return;
 		}
 	}
@@ -83,8 +98,12 @@ public class ReporterLogger implements LogService {
 				reporter.warning("%s:%s: %s", sr, exception, message);
 				return;
 
+			case LogService.LOG_INFO :
+				logger.info("{}: {}", sr, message, exception);
+				return;
+
 			default :
-				reporter.trace("%s:%s: %s", sr, exception, message);
+				logger.debug("{}: {}", sr, message, exception);
 				return;
 		}
 	}

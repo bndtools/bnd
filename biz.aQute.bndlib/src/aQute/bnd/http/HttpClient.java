@@ -33,6 +33,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.connection.settings.ConnectionSettings;
 import aQute.bnd.http.URLCache.Info;
 import aQute.bnd.osgi.Processor;
@@ -48,7 +51,6 @@ import aQute.bnd.service.url.URLConnector;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.libg.reporter.ReporterAdapter;
-import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -57,6 +59,7 @@ import aQute.service.reporter.Reporter;
  * parties that are in the bnd registry for proxies and authentication models.
  */
 public class HttpClient implements Closeable, URLConnector {
+	private final static Logger						logger				= LoggerFactory.getLogger(HttpClient.class);
 	public static final SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
 
 	private static final ThreadLocal<DateFormat>	HTTP_DATE_FORMATTER	= new ThreadLocal<>();
@@ -72,7 +75,7 @@ public class HttpClient implements Closeable, URLConnector {
 	private static JSONCodec					codec					= new JSONCodec();
 	private URLCache							cache					= new URLCache(IO.getFile("~/.bnd/urlcache"));
 	private Registry							registry				= null;
-	private Reporter							reporter				= new Slf4jReporter(HttpClient.class);
+	private Reporter							reporter;
 	private volatile AtomicBoolean				offline;
 
 	public HttpClient() {}
@@ -175,7 +178,7 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	TaggedData doCached0(final HttpRequest< ? > request) throws Exception, IOException {
-		reporter.trace("cached %s", request.url);
+		logger.debug("cached {}", request.url);
 
 		URL url = request.url;
 
@@ -302,7 +305,7 @@ public class HttpClient implements Closeable, URLConnector {
 					return doConnect(request.upload, request.download, con, hcon, request, task);
 				}
 			});
-			reporter.trace("result %s", td);
+			logger.debug("result {}", td);
 			return td;
 		} catch (Throwable t) {
 			task.done("Failed " + t, t);
@@ -380,7 +383,7 @@ public class HttpClient implements Closeable, URLConnector {
 		for (ProxyHandler ph : getProxyHandlers()) {
 			ProxySetup setup = ph.forURL(url);
 			if (setup != null) {
-				reporter.trace("Proxy %s", setup);
+				logger.debug("Proxy {}", setup);
 				return setup;
 			}
 		}
@@ -415,10 +418,10 @@ public class HttpClient implements Closeable, URLConnector {
 	public URLConnectionHandler findMatchingHandler(URL url) throws Exception {
 		for (URLConnectionHandler urlh : getURLConnectionHandlers()) {
 			if (urlh.matches(url)) {
-				reporter.trace("Decorate %s with handler %s", url, urlh);
+				logger.debug("Decorate {} with handler {}", url, urlh);
 				return urlh;
 			} else
-				reporter.trace("No match for %s, handler %s", url, urlh);
+				logger.debug("No match for {}, handler {}", url, urlh);
 		}
 		return null;
 	}
@@ -427,7 +430,7 @@ public class HttpClient implements Closeable, URLConnector {
 		if (connectionHandlers.isEmpty() && registry != null) {
 			List<URLConnectionHandler> connectionHandlers = registry.getPlugins(URLConnectionHandler.class);
 			this.connectionHandlers.addAll(connectionHandlers);
-			reporter.trace("URL Connection handlers %s", connectionHandlers);
+			logger.debug("URL Connection handlers {}", connectionHandlers);
 		}
 		return connectionHandlers;
 	}
@@ -436,7 +439,7 @@ public class HttpClient implements Closeable, URLConnector {
 		if (proxyHandlers.isEmpty() && registry != null) {
 			List<ProxyHandler> proxyHandlers = registry.getPlugins(ProxyHandler.class);
 			proxyHandlers.addAll(proxyHandlers);
-			reporter.trace("Proxy handlers %s", proxyHandlers);
+			logger.debug("Proxy handlers {}", proxyHandlers);
 		}
 		return proxyHandlers;
 	}
@@ -456,7 +459,7 @@ public class HttpClient implements Closeable, URLConnector {
 			task.worked(1);
 			doOutput(put, con, request);
 		} else
-			reporter.trace("%s %s", request.verb, request.url);
+			logger.debug("{} {}", request.verb, request.url);
 
 		if (request.timeout > 0) {
 			con.setConnectTimeout((int) request.timeout * 10);
@@ -571,10 +574,10 @@ public class HttpClient implements Closeable, URLConnector {
 		if (encoding != null) {
 			if (encoding.equalsIgnoreCase("deflate")) {
 				in = new InflaterInputStream(in);
-				reporter.trace("inflate");
+				logger.debug("inflate");
 			} else if (encoding.equalsIgnoreCase("gzip")) {
 				in = new GZIPInputStream(in);
-				reporter.trace("gzip");
+				logger.debug("gzip");
 			}
 		}
 		return in;
@@ -584,19 +587,19 @@ public class HttpClient implements Closeable, URLConnector {
 		con.setDoOutput(true);
 		try (OutputStream out = con.getOutputStream();) {
 			if (put instanceof InputStream) {
-				reporter.trace("out %s input stream %s", rq.verb, rq.url);
+				logger.debug("out {} input stream {}", rq.verb, rq.url);
 				IO.copy((InputStream) put, out);
 			} else if (put instanceof String) {
-				reporter.trace("out %s string %s", rq.verb, rq.url);
+				logger.debug("out {} string {}", rq.verb, rq.url);
 				IO.store(put, out);
 			} else if (put instanceof byte[]) {
-				reporter.trace("out %s byte[] 5s", rq.verb, rq.url);
+				logger.debug("out {} byte[] {}", rq.verb, rq.url);
 				IO.copy((byte[]) put, out);
 			} else if (put instanceof File) {
-				reporter.trace("out %s file %s %s", rq.verb, put, rq.url);
+				logger.debug("out {} file {} {}", rq.verb, put, rq.url);
 				IO.copy((File) put, out);
 			} else {
-				reporter.trace("out %s JSON %s %s", rq.verb, put, rq.url);
+				logger.debug("out {} JSON {} {}", rq.verb, put, rq.url);
 				codec.enc().to(out).put(put).flush();
 			}
 		}
@@ -613,7 +616,7 @@ public class HttpClient implements Closeable, URLConnector {
 	private void setHeaders(Map<String,String> headers, final URLConnection con) {
 		if (headers != null) {
 			for (Entry<String,String> e : headers.entrySet()) {
-				reporter.trace("set header %s=%s", e.getKey(), e.getValue());
+				logger.debug("set header {}={}", e.getKey(), e.getValue());
 				con.setRequestProperty(e.getKey(), e.getValue());
 			}
 		}

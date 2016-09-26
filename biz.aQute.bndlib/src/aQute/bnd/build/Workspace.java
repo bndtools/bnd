@@ -35,6 +35,9 @@ import java.util.regex.Pattern;
 
 import javax.naming.TimeLimitExceededException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.connection.settings.ConnectionSettings;
 import aQute.bnd.exporter.subsystem.SubsystemExporter;
@@ -72,6 +75,7 @@ import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter;
 
 public class Workspace extends Processor {
+	private final static Logger	logger							= LoggerFactory.getLogger(Workspace.class);
 	public static final File	BND_DEFAULT_WS					= IO.getFile("~/.bnd/default-ws");
 	public static final String	BND_CACHE_REPONAME				= "bnd-cache";
 	public static final String	EXT								= "ext";
@@ -645,7 +649,7 @@ public class Workspace extends Processor {
 			String bsn = removeDuplicateMarker(i.getKey());
 			String stringRange = i.getValue().get(VERSION_ATTRIBUTE);
 
-			trace("Adding extension %s-%s", bsn, stringRange);
+			logger.debug("Adding extension {}-{}", bsn, stringRange);
 
 			if (stringRange == null)
 				stringRange = Version.LOWEST.toString();
@@ -669,7 +673,7 @@ public class Workspace extends Processor {
 			}
 		}
 
-		trace("Found extensions %s", blockers);
+		logger.debug("Found extensions {}", blockers);
 
 		for (Entry<DownloadBlocker,Attrs> blocker : blockers.entrySet()) {
 			try {
@@ -1135,7 +1139,7 @@ public class Workspace extends Processor {
 				((LifeCyclePlugin) l).init(this);
 			}
 
-			trace("setup %s", out);
+			logger.debug("setup {}", out);
 			IO.store(out, f);
 		} finally {
 			setup.close();

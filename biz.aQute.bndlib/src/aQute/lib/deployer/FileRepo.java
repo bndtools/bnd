@@ -21,6 +21,9 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Jar;
@@ -74,6 +77,7 @@ import aQute.service.reporter.Reporter;
 
 @aQute.bnd.annotation.plugin.BndPlugin(name = "filerepo", parameters = FileRepo.Config.class)
 public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, RegistryPlugin, Actionable, Closeable {
+	private final static Logger logger = LoggerFactory.getLogger(FileRepo.class);
 
 	interface Config {
 		String name();
@@ -291,7 +295,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			reporter.setExceptions(trace);
 			this.reporter = reporter;
 		}
-		reporter.trace("init");
+		logger.debug("init");
 		if (!root.isDirectory()) {
 			root.mkdirs();
 			if (!root.isDirectory())
@@ -401,7 +405,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				version = Version.LOWEST;
 			}
 
-			reporter.trace("bsn=%s version=%s", bsn, version);
+			logger.debug("bsn={} version={}", bsn, version);
 
 			File dir = new File(root, bsn);
 			dir.mkdirs();
@@ -411,7 +415,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
 			File file = new File(dir, fName);
 
-			reporter.trace("updating %s ", file.getAbsolutePath());
+			logger.debug("updating {}", file.getAbsolutePath());
 
 			if (hasIndex)
 				index.put(bsn + "-" + version.getWithoutQualifier(),
@@ -431,7 +435,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				IO.copy(file, latest);
 			}
 
-			reporter.trace("updated %s", file.getAbsolutePath());
+			logger.debug("updated {}", file.getAbsolutePath());
 
 			return file;
 		} finally {
@@ -841,13 +845,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	void exec(String line, Object... args) {
 		if (line == null) {
 
-			if (reporter != null)
-				reporter.trace("Line is empty, args=%s", Arrays.toString(args == null ? new Object[0] : args));
+			logger.debug("Line is empty, args={}", args == null ? new Object[0] : args);
 
 			return;
 		}
 
-		reporter.trace("exec %s", line);
+		logger.debug("exec {}", line);
 
 		try {
 			if (args != null) {

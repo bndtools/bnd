@@ -398,8 +398,6 @@ public class MavenBndRepoTest extends TestCase {
 			config.putAll(override);
 
 		reporter = new Processor();
-		reporter.setTrace(true);
-		reporter.trace("test");
 		reporter.addBasicPlugin(new ProgressPlugin() {
 
 			@Override

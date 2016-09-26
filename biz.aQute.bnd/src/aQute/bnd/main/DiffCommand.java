@@ -6,6 +6,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.differ.DiffPluginImpl;
@@ -25,6 +28,7 @@ import aQute.lib.getopt.Options;
 import aQute.lib.tag.Tag;
 
 public class DiffCommand {
+	private final static Logger	logger	= LoggerFactory.getLogger(DiffCommand.class);
 	bnd bnd;
 
 	DiffCommand(bnd bnd) {
@@ -89,7 +93,7 @@ public class DiffCommand {
 			}
 
 		} else if (options._arguments().size() == 1) {
-			bnd.trace("Show tree");
+			logger.debug("Show tree");
 			showTree(bnd, options);
 			return;
 		}

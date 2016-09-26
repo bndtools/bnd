@@ -34,6 +34,9 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
 import aQute.bnd.component.error.DeclarativeServicesAnnotationError;
@@ -53,6 +56,8 @@ import aQute.service.reporter.Reporter;
  * This converts bnd style annotations to, roughly, the header format.
  */
 public class ComponentAnnotationReader extends ClassDataCollector {
+	private final static Logger								logger					= LoggerFactory
+			.getLogger(ComponentAnnotationReader.class);
 
 	String													EMPTY[]					= new String[0];
 	private static final String								V1_1					= "1.1.0";															// "1.1.0"
@@ -470,7 +475,7 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 		set(COMPONENT_PROPERTIES, properties);
 		if (version != null) {
 			set(COMPONENT_VERSION, version, "<>");
-			reporter.trace("Component %s is v1.1", map);
+			logger.debug("Component {} is v1.1", map);
 		}
 		set(COMPONENT_DESCRIPTORS, descriptors);
 	}

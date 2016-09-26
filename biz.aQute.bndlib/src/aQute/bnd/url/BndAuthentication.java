@@ -20,6 +20,9 @@ import java.util.TimeZone;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.build.Workspace;
 import aQute.lib.base64.Base64;
 import aQute.lib.hex.Hex;
@@ -48,6 +51,7 @@ import aQute.lib.settings.Settings;
  */
 @aQute.bnd.annotation.plugin.BndPlugin(name = "url.bnd.authentication", parameters = BndAuthentication.Config.class)
 public class BndAuthentication extends DefaultURLConnectionHandler {
+	private final static Logger logger = LoggerFactory.getLogger(BndAuthentication.class);
 
 	interface Config extends DefaultURLConnectionHandler.Config {
 		String machine();
@@ -85,7 +89,7 @@ public class BndAuthentication extends DefaultURLConnectionHandler {
 			return;
 
 		if (!(connection instanceof HttpsURLConnection))
-			trace("bnd authentication should only be used with https: %s", connection.getURL());
+			logger.debug("bnd authentication should only be used with https: {}", connection.getURL());
 
 		init();
 		// Build up Authorization header

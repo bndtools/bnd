@@ -19,7 +19,6 @@ import aQute.bnd.service.progress.ProgressPlugin;
 import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
-import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.maven.provider.FakeNexus;
 import junit.framework.TestCase;
 
@@ -57,7 +56,6 @@ public class OSGiRepositoryTest extends TestCase {
 			p.setBase(ws);
 			p.addBasicPlugin(Workspace.createStandaloneWorkspace(p, ws.toURI()));
 			r.setRegistry(p);
-			r.setReporter(new Slf4jReporter());
 
 			final AtomicInteger tasks = new AtomicInteger();
 
@@ -137,7 +135,6 @@ public class OSGiRepositoryTest extends TestCase {
 			p.setBase(ws);
 			p.addBasicPlugin(workspace);
 			r.setRegistry(p);
-			r.setReporter(new Slf4jReporter());
 			final AtomicReference<RepositoryPlugin> refreshed = new AtomicReference<>();
 			p.addBasicPlugin(new RepositoryListenerPlugin() {
 
@@ -203,14 +200,10 @@ public class OSGiRepositoryTest extends TestCase {
 			HttpClient httpClient = new HttpClient();
 			httpClient.setCache(cache);
 			httpClient.setRegistry(p);
-			Slf4jReporter slf4jReporter = new Slf4jReporter();
-			slf4jReporter.setTrace(true);
-			httpClient.setReporter(slf4jReporter);
 			p.addBasicPlugin(httpClient);
 			p.setBase(ws);
 			p.addBasicPlugin(Workspace.createStandaloneWorkspace(p, ws.toURI()));
 			r.setRegistry(p);
-			r.setReporter(new Slf4jReporter());
 			final AtomicReference<RepositoryPlugin> refreshed = new AtomicReference<>();
 			p.addBasicPlugin(new RepositoryListenerPlugin() {
 
@@ -281,7 +274,6 @@ public class OSGiRepositoryTest extends TestCase {
 			p.setBase(ws);
 			p.addBasicPlugin(Workspace.createStandaloneWorkspace(p, ws.toURI()));
 			r.setRegistry(p);
-			r.setReporter(new Slf4jReporter());
 
 			final AtomicInteger tasks = new AtomicInteger();
 

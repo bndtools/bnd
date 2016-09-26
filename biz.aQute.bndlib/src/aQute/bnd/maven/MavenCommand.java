@@ -26,6 +26,9 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -46,6 +49,7 @@ import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.command.Command;
 
 public class MavenCommand extends Processor {
+	private final static Logger	logger		= LoggerFactory.getLogger(MavenCommand.class);
 	final Settings	settings	= new Settings();
 	File			temp;
 
@@ -73,7 +77,7 @@ public class MavenCommand extends Processor {
 
 		while (i < args.length && args[i].startsWith("-")) {
 			String option = args[i];
-			trace("option %s", option);
+			logger.debug("option {}", option);
 			if (option.equals("-temp"))
 				temp = getFile(args[++i]);
 			else {
@@ -85,7 +89,7 @@ public class MavenCommand extends Processor {
 
 		String cmd = args[i++];
 
-		trace("temp dir %s", temp);
+		logger.debug("temp dir {}", temp);
 		IO.delete(temp);
 		if (!temp.exists() && !temp.mkdirs()) {
 			throw new IOException("Could not create directory " + temp);
@@ -176,7 +180,7 @@ public class MavenCommand extends Processor {
 
 		while (i < args.length && args[i].startsWith("-")) {
 			String option = args[i++];
-			trace("bundle option %s", option);
+			logger.debug("bundle option {}", option);
 			if (option.equals("-scm"))
 				scm = args[i++];
 			else if (option.equals("-group"))
@@ -233,7 +237,7 @@ public class MavenCommand extends Processor {
 		String input = args[i++];
 
 		Jar binaryJar = getJarFromFileOrURL(input);
-		trace("got %s", binaryJar);
+		logger.debug("got {}", binaryJar);
 		if (binaryJar == null) {
 			error("JAR does not exist: %s", input);
 			return;
@@ -247,7 +251,7 @@ public class MavenCommand extends Processor {
 		binaryJar.calcChecksums(null);
 
 		Manifest manifest = binaryJar.getManifest();
-		trace("got manifest");
+		logger.debug("got manifest");
 
 		PomFromManifest pom = new PomFromManifest(manifest);
 
@@ -261,7 +265,7 @@ public class MavenCommand extends Processor {
 			pom.setGroup(group);
 		if (version != null)
 			pom.setVersion(version);
-		trace("%s", url);
+		logger.debug("{}", url);
 		for (String d : developers)
 			pom.addDeveloper(d);
 
@@ -270,7 +274,7 @@ public class MavenCommand extends Processor {
 
 		Jar sourceJar;
 		if (source == null) {
-			trace("Splitting source code");
+			logger.debug("Splitting source code");
 			sourceJar = new Jar("source");
 			for (Map.Entry<String,Resource> entry : binaryJar.getResources().entrySet()) {
 				if (entry.getKey().startsWith("OSGI-OPT/src")) {
@@ -285,7 +289,7 @@ public class MavenCommand extends Processor {
 
 		Jar javadocJar;
 		if (javadoc == null) {
-			trace("creating javadoc because -javadoc not used");
+			logger.debug("creating javadoc because -javadoc not used");
 			javadocJar = javadoc(getFile(original, "OSGI-OPT/src"), exports, manifest, properties);
 			if (javadocJar == null) {
 				error("Cannot find source code in OSGI-OPT/src to generate Javadoc");
@@ -293,7 +297,7 @@ public class MavenCommand extends Processor {
 			}
 			copyInfo(binaryJar, javadocJar, "javadoc");
 		} else {
-			trace("Loading javadoc externally %s", javadoc);
+			logger.debug("Loading javadoc externally {}", javadoc);
 			javadocJar = getJarFromFileOrURL(javadoc);
 		}
 		javadocJar.calcChecksums(null);
@@ -302,7 +306,7 @@ public class MavenCommand extends Processor {
 		addClose(sourceJar);
 		addClose(javadocJar);
 
-		trace("creating bundle dir");
+		logger.debug("creating bundle dir");
 		File bundle = new File(temp, "bundle");
 		if (!bundle.exists() && !bundle.mkdirs()) {
 			throw new IOException("Could not create directory " + bundle);
@@ -313,18 +317,18 @@ public class MavenCommand extends Processor {
 		File sourceFile = new File(bundle, prefix + "-sources.jar");
 		File javadocFile = new File(bundle, prefix + "-javadoc.jar");
 		File pomFile = new File(bundle, "pom.xml").getAbsoluteFile();
-		trace("creating output files %s, %s, %s, and %s", binaryFile, sourceFile, javadocFile, pomFile);
+		logger.debug("creating output files {}, {}, {}, and {}", binaryFile, sourceFile, javadocFile, pomFile);
 
 		IO.copy(pom.openInputStream(), pomFile);
-		trace("copied pom");
+		logger.debug("copied pom");
 
-		trace("writing binary %s", binaryFile);
+		logger.debug("writing binary {}", binaryFile);
 		binaryJar.write(binaryFile);
 
-		trace("writing source %s", sourceFile);
+		logger.debug("writing source {}", sourceFile);
 		sourceJar.write(sourceFile);
 
-		trace("writing javadoc %s", javadocFile);
+		logger.debug("writing javadoc {}", javadocFile);
 		javadocJar.write(javadocFile);
 
 		sign(binaryFile, passphrase);
@@ -332,12 +336,12 @@ public class MavenCommand extends Processor {
 		sign(javadocFile, passphrase);
 		sign(pomFile, passphrase);
 
-		trace("create bundle");
+		logger.debug("create bundle");
 		Jar bundleJar = new Jar(bundle);
 		addClose(bundleJar);
 		File outputFile = getFile(output);
 		bundleJar.write(outputFile);
-		trace("created bundle %s", outputFile);
+		logger.debug("created bundle {}", outputFile);
 
 		binaryJar.close();
 		sourceJar.close();
@@ -369,12 +373,12 @@ public class MavenCommand extends Processor {
 	private void copyInfoHeader(Manifest sm, Manifest dm, String key, String value) {
 		String v = sm.getMainAttributes().getValue(key);
 		if (v == null) {
-			trace("no source for %s", key);
+			logger.debug("no source for {}", key);
 			return;
 		}
 
 		if (dm.getMainAttributes().getValue(key) != null) {
-			trace("already have %s", key);
+			logger.debug("already have {}", key);
 			return;
 		}
 
@@ -409,7 +413,7 @@ public class MavenCommand extends Processor {
 	}
 
 	private void sign(File file, String passphrase) throws Exception {
-		trace("signing %s", file);
+		logger.debug("signing {}", file);
 		File asc = new File(file.getParentFile(), file.getName() + ".asc");
 		asc.delete();
 

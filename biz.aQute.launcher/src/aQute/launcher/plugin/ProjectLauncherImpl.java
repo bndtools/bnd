@@ -25,6 +25,9 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.header.OSGiHeader;
@@ -43,6 +46,7 @@ import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.SHA1;
 
 public class ProjectLauncherImpl extends ProjectLauncher {
+	private final static Logger	logger					= LoggerFactory.getLogger(ProjectLauncherImpl.class);
 	private static final String	EMBEDDED_LAUNCHER_FQN	= "aQute.launcher.pre.EmbeddedLauncher";
 	private static final String	EMBEDDED_LAUNCHER		= "aQute/launcher/pre/EmbeddedLauncher.class";
 	private static final String	JPM_LAUNCHER			= "aQute/launcher/pre/JpmLauncher.class";
@@ -56,10 +60,10 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	public ProjectLauncherImpl(Project project) throws Exception {
 		super(project);
-		project.trace("created a aQute launcher plugin");
+		logger.debug("created a aQute launcher plugin");
 		this.project = project;
 		propertiesFile = File.createTempFile("launch", ".properties", project.getTarget());
-		project.trace("launcher plugin using temp launch file %s", propertiesFile.getAbsolutePath());
+		logger.debug("launcher plugin using temp launch file {}", propertiesFile.getAbsolutePath());
 		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=\"" + propertiesFile.getAbsolutePath() + "\"");
 
 		if (project.getRunProperties().get("noframework") != null) {
@@ -98,7 +102,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			listenerComms = null;
 		}
 		prepared = false;
-		project.trace("Deleted %s", propertiesFile.getAbsolutePath());
+		logger.debug("Deleted {}", propertiesFile.getAbsolutePath());
 	}
 
 	@Override
@@ -143,7 +147,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 */
 	private LauncherConstants getConstants(Collection<String> runbundles, boolean exported)
 			throws Exception, FileNotFoundException, IOException {
-		project.trace("preparing the aQute launcher plugin");
+		logger.debug("preparing the aQute launcher plugin");
 
 		LauncherConstants lc = new LauncherConstants();
 		lc.noreferences = Processor.isTrue(project.getProperty(Constants.RUNNOREFERENCES));
@@ -224,7 +228,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		// TODO use constants in the future
 		Parameters packageHeader = OSGiHeader.parseHeader(project.getProperty("-package"));
 		boolean useShas = packageHeader.containsKey("jpm");
-		project.trace("Useshas %s %s", useShas, packageHeader);
+		logger.debug("useShas {} {}", useShas, packageHeader);
 
 		Jar jar = new Jar(project.getName());
 
@@ -248,7 +252,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		List<String> classpath = new ArrayList<String>();
 
 		for (String path : runpath) {
-			project.trace("embedding runpath %s", path);
+			logger.debug("embedding runpath {}", path);
 			File file = new File(path);
 			if (file.isFile()) {
 				if (useShas) {
@@ -268,7 +272,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		List<String> actualPaths = new ArrayList<String>();
 
 		for (String path : runbundles) {
-			project.trace("embedding run bundles %s", path);
+			logger.debug("embedding run bundles {}", path);
 			File file = new File(path);
 			if (!file.isFile())
 				project.error("Invalid entry in -runbundles %s", file);
@@ -309,7 +313,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		main.keySet().removeAll(result);
 
 		if (useShas) {
-			project.trace("Use JPM launcher");
+			logger.debug("Use JPM launcher");
 			m.getMainAttributes().putValue("Main-Class", JPM_LAUNCHER_FQN);
 			m.getMainAttributes().putValue("JPM-Classpath", Processor.join(runpathShas));
 			m.getMainAttributes().putValue("JPM-Runbundles", Processor.join(runbundleShas));
@@ -317,7 +321,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			jar.putResource(JPM_LAUNCHER, jpmLauncher);
 			doStart(jar, JPM_LAUNCHER_FQN);
 		} else {
-			project.trace("Use Embedded launcher");
+			logger.debug("Use Embedded launcher");
 			m.getMainAttributes().putValue("Main-Class", EMBEDDED_LAUNCHER_FQN);
 			m.getMainAttributes().putValue(EmbeddedLauncher.EMBEDDED_RUNPATH, Processor.join(classpath));
 			URLResource embeddedLauncher = new URLResource(this.getClass().getResource("/" + EMBEDDED_LAUNCHER));

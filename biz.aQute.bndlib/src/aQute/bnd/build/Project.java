@@ -45,6 +45,8 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.service.repository.ContentNamespace;
 import org.osgi.service.repository.Repository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.header.Attrs;
@@ -100,6 +102,7 @@ import aQute.libg.tuple.Pair;
  */
 
 public class Project extends Processor {
+	private final static Logger logger = LoggerFactory.getLogger(Project.class);
 	static class RefreshData {
 		Parameters installRepositories;
 	}
@@ -986,7 +989,7 @@ public class Project extends Processor {
 			return null;
 		}
 
-		trace("release to %s", name);
+		logger.debug("release to {}", name);
 		RepositoryPlugin repo = getReleaseRepo(name);
 
 		if (repo == null) {
@@ -1002,7 +1005,7 @@ public class Project extends Processor {
 			// TODO find sub bnd that is associated with this thing
 			putOptions.context = this;
 			PutResult r = repo.put(jarStream, putOptions);
-			trace("Released %s to %s in repository %s", jarName, r.artifact, repo);
+			logger.debug("Released {} to {} in repository {}", jarName, r.artifact, repo);
 			return r.artifact;
 		} catch (Exception e) {
 			msgs.Release_Into_Exception_(jarName, repo, e);
@@ -1050,15 +1053,15 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public void release(String name, boolean test) throws Exception {
-		trace("release");
+		logger.debug("release");
 		File[] jars = build(test);
 		// If build fails jars will be null
 		if (jars == null) {
-			trace("no jars being build");
+			logger.debug("no jars being build");
 			return;
 		}
 		Parameters repos = new Parameters(name);
-		trace("releasing %s - %s", Arrays.toString(jars), repos);
+		logger.debug("releasing {} - {}", jars, repos);
 
 		for (Map.Entry<String,Attrs> entry : repos.entrySet()) {
 			for (File jar : jars) {
@@ -1413,7 +1416,7 @@ public class Project extends Processor {
 			}
 			return;
 		}
-		trace("No repo found %s", file);
+		logger.debug("No repo found {}", file);
 		throw new IllegalArgumentException("No repository found for " + file);
 	}
 
@@ -1441,10 +1444,10 @@ public class Project extends Processor {
 		File[] outputs = getBuildFiles();
 		for (File output : outputs) {
 			for (Deploy d : getPlugins(Deploy.class)) {
-				trace("Deploying %s to: %s", output.getName(), d);
+				logger.debug("Deploying {} to: {}", output.getName(), d);
 				try {
 					if (d.deploy(this, output.getName(), new BufferedInputStream(new FileInputStream(output))))
-						trace("deployed %s successfully to %s", output, d);
+						logger.debug("deployed {} successfully to {}", output, d);
 				} catch (Exception e) {
 					msgs.Deploying(e);
 				}
@@ -1539,7 +1542,7 @@ public class Project extends Processor {
 		}
 
 		if (isStale()) {
-			trace("building %s", this);
+			logger.debug("building {}", this);
 			files = buildLocal(underTest);
 			if (files != null)
 				install(files);
@@ -1597,7 +1600,7 @@ public class Project extends Processor {
 	 */
 	public boolean isStale() throws Exception {
 		if (workspace == null || !workspace.hasBndListeners()) {
-			trace("working %s offline, so always stale", this);
+			logger.debug("working {} offline, so always stale", this);
 			return true;
 		}
 
@@ -1826,7 +1829,7 @@ public class Project extends Processor {
 			} else {
 				msg = "(not modified since " + new Date(f.lastModified()) + ")";
 			}
-			trace("%s (%s) %s %s", jar.getName(), f.getName(), jar.getResources().size(), msg);
+			logger.debug("{} ({}) {} {}", jar.getName(), f.getName(), jar.getResources().size(), msg);
 			return f;
 		} finally {
 			jar.close();
@@ -2028,7 +2031,7 @@ public class Project extends Processor {
 		String basePath = getBase().getCanonicalPath();
 		String dirPath = dir.getCanonicalPath();
 		if (!dirPath.startsWith(basePath)) {
-			trace("path outside the project dir %s", type);
+			logger.debug("path outside the project dir {}", type);
 			return;
 		}
 
@@ -2084,7 +2087,7 @@ public class Project extends Processor {
 
 		ProjectTester tester = getProjectTester();
 		if (tests != null) {
-			trace("Adding tests %s", tests);
+			logger.debug("Adding tests {}", tests);
 			for (String test : tests) {
 				tester.addTest(test);
 			}
@@ -2143,7 +2146,7 @@ public class Project extends Processor {
 	public Jar getValidJar(Jar jar, String id) throws Exception {
 		Manifest manifest = jar.getManifest();
 		if (manifest == null) {
-			trace("Wrapping with all defaults");
+			logger.debug("Wrapping with all defaults");
 			Builder b = new Builder(this);
 			this.addClose(b);
 			b.addClasspath(jar);
@@ -2152,7 +2155,7 @@ public class Project extends Processor {
 			b.setProperty(Constants.IMPORT_PACKAGE, "*;resolution:=optional");
 			jar = b.build();
 		} else if (manifest.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION) == null) {
-			trace("Not a release 4 bundle, wrapping with manifest as source");
+			logger.debug("Not a release 4 bundle, wrapping with manifest as source");
 			Builder b = new Builder(this);
 			this.addClose(b);
 			b.addClasspath(jar);
@@ -2193,7 +2196,7 @@ public class Project extends Processor {
 			if (replace(getPropertiesFile(), pattern, replace))
 				return;
 
-			trace("no version in bnd.bnd");
+			logger.debug("no version in bnd.bnd");
 
 			// Try the included filed in reverse order (last has highest
 			// priority)
@@ -2204,12 +2207,12 @@ public class Project extends Processor {
 
 				for (File file : copy) {
 					if (replace(file, pattern, replace)) {
-						trace("replaced version in file %s", file);
+						logger.debug("replaced version in file {}", file);
 						return;
 					}
 				}
 			}
-			trace("no version in included files");
+			logger.debug("no version in included files");
 
 			boolean found = false;
 
@@ -2219,7 +2222,7 @@ public class Project extends Processor {
 			}
 
 			if (!found) {
-				trace("no version in sub builders, add it to bnd.bnd");
+				logger.debug("no version in sub builders, add it to bnd.bnd");
 				String bndfile = IO.collect(getPropertiesFile());
 				bndfile += "\n# Added by by bump\n" + Constants.BUNDLE_VERSION + ": 0.0.0\n";
 				IO.store(bndfile, getPropertiesFile());
@@ -2496,7 +2499,7 @@ public class Project extends Processor {
 		List<Container> withDefault = Create.list();
 		withDefault.addAll(containers);
 		withDefault.addAll(getBundles(Strategy.HIGHEST, defaultHandler, null));
-		trace("candidates for handler %s: %s", target, withDefault);
+		logger.debug("candidates for handler {}: {}", target, withDefault);
 
 		for (Container c : withDefault) {
 			Manifest manifest = c.getManifest();
@@ -2509,7 +2512,7 @@ public class Project extends Processor {
 						if (!target.isAssignableFrom(clz)) {
 							msgs.IncompatibleHandler_For_(launcher, defaultHandler);
 						} else {
-							trace("found handler %s from %s", defaultHandler, c);
+							logger.debug("found handler {} from {}", defaultHandler, c);
 							handlerClass = clz.asSubclass(target);
 
 							try {
@@ -2706,7 +2709,7 @@ public class Project extends Processor {
 
 		String buildpathDel = "";
 		Collection<Container> bp = Container.flatten(getBuildpath());
-		trace("buildpath %s", getBuildpath());
+		logger.debug("buildpath {}", getBuildpath());
 		for (Container c : bp) {
 			buildpath.append(buildpathDel).append(c.getFile().getAbsolutePath());
 			buildpathDel = File.pathSeparator;
@@ -2735,7 +2738,7 @@ public class Project extends Processor {
 		}
 
 		if (files.isEmpty()) {
-			trace("Not compiled, no source files");
+			logger.debug("Not compiled, no source files");
 		} else
 			compile(javac, "src");
 
@@ -2760,21 +2763,21 @@ public class Project extends Processor {
 				javac.add(file.getAbsolutePath());
 			}
 			if (files.isEmpty()) {
-				trace("Not compiled for test, no test src files");
+				logger.debug("Not compiled for test, no test src files");
 			} else
 				compile(javac, "test");
 		}
 	}
 
 	private void compile(Command javac, String what) throws Exception {
-		trace("compile %s %s", what, javac);
+		logger.debug("compile {} {}", what, javac);
 
 		StringBuilder stdout = new StringBuilder();
 		StringBuilder stderr = new StringBuilder();
 
 		int n = javac.execute(stdout, stderr);
-		trace("javac stdout: %s", stdout);
-		trace("javac stderr: %s", stderr);
+		logger.debug("javac stdout: {}", stdout);
+		logger.debug("javac stderr: {}", stderr);
 
 		if (n != 0) {
 			error("javac failed %s", stderr);

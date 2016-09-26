@@ -15,6 +15,8 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.ContentNamespace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Processor;
@@ -24,6 +26,7 @@ import aQute.lib.strings.Strings;
 import aQute.libg.gzip.GZipUtils;
 
 public class XMLResourceParser extends Processor {
+	private final static Logger		logger			= LoggerFactory.getLogger(XMLResourceParser.class);
 	final static XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 
 	static {
@@ -147,7 +150,7 @@ public class XMLResourceParser extends Processor {
 			case XMLStreamConstants.END_ELEMENT :
 				break;
 			default :
-				trace("** unknown element, event type %s", type);
+				logger.debug("** unknown element, event type {}", type);
 				break;
 		}
 	}
@@ -182,7 +185,7 @@ public class XMLResourceParser extends Processor {
 	private void tagEnd(String tag) throws XMLStreamException {
 		if (!check(reader.isEndElement(), "Expected end element, got %s for %s (%s)", reader.getEventType(), tag,
 				reader.getLocalName())) {
-			trace("oops, invalid end %s", tag);
+			logger.debug("oops, invalid end {}", tag);
 		}
 		next();
 	}

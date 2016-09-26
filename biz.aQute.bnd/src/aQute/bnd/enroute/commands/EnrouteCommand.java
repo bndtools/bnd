@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.build.Workspace;
 import aQute.bnd.main.bnd;
 import aQute.bnd.osgi.Jar;
@@ -21,6 +24,7 @@ import aQute.lib.io.IO;
 
 @Description("OSGi enRoute Commands")
 public class EnrouteCommand {
+	private final static Logger	logger	= LoggerFactory.getLogger(EnrouteCommand.class);
 
 	private bnd				bnd;
 	private EnrouteOptions	opts;
@@ -171,7 +175,7 @@ public class EnrouteCommand {
 			for (Entry<String,Resource> e : jar.getResources().entrySet()) {
 
 				String path = e.getKey();
-				bnd.trace("path %s", path);
+				logger.debug("path {}", path);
 
 				if (glob != null && !glob.matcher(path).matches())
 					continue;
@@ -180,7 +184,7 @@ public class EnrouteCommand {
 				File dest = Processor.getFile(workspaceDir, path);
 				if (overwrite || !dest.isFile() || dest.lastModified() < r.lastModified() || r.lastModified() <= 0) {
 
-					bnd.trace("copy %s to %s", path, dest);
+					logger.debug("copy {} to {}", path, dest);
 
 					File dp = dest.getParentFile();
 					if (!dp.exists() && !dp.mkdirs()) {

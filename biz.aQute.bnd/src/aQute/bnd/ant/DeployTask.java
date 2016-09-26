@@ -7,11 +7,14 @@ import java.util.List;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 
 public class DeployTask extends BaseTask {
+	private final static Logger	logger		= LoggerFactory.getLogger(DeployTask.class);
 	private String	deployRepo	= null;
 	List<FileSet>	filesets	= new ArrayList<FileSet>();
 
@@ -25,7 +28,7 @@ public class DeployTask extends BaseTask {
 				DirectoryScanner ds = fileset.getDirectoryScanner(getProject());
 				String[] files = ds.getIncludedFiles();
 				if (files.length == 0)
-					trace("No files included");
+					logger.debug("No files included");
 
 				for (int i = 0; i < files.length; i++) {
 					File file = new File(ds.getBasedir(), files[i]);

@@ -123,8 +123,8 @@ public class BaseTask extends Task implements Reporter {
 	}
 
 	public void trace(String s, Object... args) {
-		if (trace) {
-			System.err.printf("# " + s + "%n", args);
+		if (logger.isDebugEnabled()) {
+			logger.debug("{}", Strings.format(s, args));
 		}
 	}
 

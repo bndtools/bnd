@@ -32,6 +32,9 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Instructions;
 import aQute.jpm.lib.ArtifactData;
@@ -68,6 +71,7 @@ import aQute.struct.struct.Error;
  */
 @Description("Just Another Package Manager (for Java)\nMaintains a local repository of Java jars (apps or libs). Can automatically link these jars to an OS command or OS service. For more information see https://www.jpm4j.org/#!/md/jpm")
 public class Main extends ReporterAdapter {
+	private final static Logger	logger			= LoggerFactory.getLogger(Main.class);
 	private static final String	JPM_CONFIG_BIN	= "jpm.config.bin";
 	private static final String	JPM_CONFIG_HOME	= "jpm.config.home";
 	static Pattern				ASSIGNMENT		= Pattern.compile("\\s*([-\\w\\d_.]+)\\s*(?:=\\s*([^\\s]+)\\s*)?");
@@ -298,10 +302,10 @@ public class Main extends ReporterAdapter {
 
 			if (opts.settings() != null) {
 				settings = new Settings(opts.settings());
-				trace("Using settings file: %s", opts.settings());
+				logger.debug("Using settings file: {}", opts.settings());
 			} else {
 				settings = new Settings(platform.getConfigFile());
-				trace("Using settings file: %s", platform.getConfigFile());
+				logger.debug("Using settings file: {}", platform.getConfigFile());
 			}
 
 			File homeDir;
@@ -310,26 +314,26 @@ public class Main extends ReporterAdapter {
 			String bin = settings.get(JPM_CONFIG_BIN);
 
 			if (opts.home() != null) {
-				trace("home set");
+				logger.debug("home set");
 				homeDir = IO.getFile(base, opts.home());
 				binDir = new File(homeDir, "bin");
 			} else if (opts.user()) {
-				trace("user set");
+				logger.debug("user set");
 				homeDir = platform.getLocal();
 				binDir = new File(homeDir, "bin");
 			} else if (!opts.global() && home != null) {
-				trace("global or in settings");
+				logger.debug("global or in settings");
 				homeDir = new File(home);
 				binDir = new File(bin);
 			} else {
-				trace("default");
+				logger.debug("default");
 				homeDir = platform.getGlobal();
 				binDir = platform.getGlobalBinDir();
 			}
 
-			trace("home=%s, bin=%s", homeDir, binDir);
+			logger.debug("home={}, bin={}", homeDir, binDir);
 			if (opts.bindir() != null) {
-				trace("bindir set");
+				logger.debug("bindir set");
 				binDir = new File(opts.bindir());
 				if (!binDir.isAbsolute())
 					binDir = new File(base, opts.bindir());
@@ -338,7 +342,7 @@ public class Main extends ReporterAdapter {
 				binDir = new File(bin);
 			}
 
-			trace("home=%s, bin=%s", homeDir, binDir);
+			logger.debug("home={}, bin={}", homeDir, binDir);
 
 			url = opts.library();
 			if (url == null)
@@ -462,15 +466,15 @@ public class Main extends ReporterAdapter {
 		}
 
 		for (String coordinate : opts._arguments()) {
-			trace("install %s", coordinate);
+			logger.debug("install {}", coordinate);
 			File file = IO.getFile(base, coordinate);
 			if (file.isFile()) {
 				coordinate = file.toURI().toString();
-				trace("is existing file: %s", coordinate);
+				logger.debug("is existing file: {}", coordinate);
 			}
 
 			ArtifactData artifact = jpm.getCandidate(coordinate);
-			trace("candidate %s", artifact);
+			logger.debug("candidate {}", artifact);
 			if (artifact == null) {
 				if (jpm.isWildcard(coordinate))
 					error("no candidate found for %s", coordinate);
@@ -482,7 +486,7 @@ public class Main extends ReporterAdapter {
 				if (!opts.ignore()) {
 					CommandData cmd = jpm.parseCommandData(artifact);
 					updateCommandData(cmd, opts);
-					trace("main=%s, name=%s", cmd.main, cmd.name);
+					logger.debug("main={}, name={}", cmd.main, cmd.name);
 					if (cmd.main != null) {
 						if (cmd.name == null && !artifact.local) {
 							cmd.name = artifact.coordinate.getArtifactId();
@@ -535,7 +539,7 @@ public class Main extends ReporterAdapter {
 		}
 
 		if (opts.create() != null) {
-			trace("create service");
+			logger.debug("create service");
 			if (s != null) {
 				error("Service already exists, cannot be created: %s. Update or remove it first", name);
 				return;
@@ -553,13 +557,13 @@ public class Main extends ReporterAdapter {
 				f.set(data, f.get(cmd));
 			}
 
-			trace("service data %s", cmd);
+			logger.debug("service data {}", cmd);
 
 			data.name = name;
 
 			updateServiceData(data, opts);
 
-			trace("update service data");
+			logger.debug("update service data");
 			String result = jpm.createService(data, false);
 			if (result != null)
 				error("Create service failed: %s", result);
@@ -596,7 +600,7 @@ public class Main extends ReporterAdapter {
 				if (n > 0)
 					coordinates = coordinates.substring(0, n);
 
-				trace("Updating from coordinate: %s", coordinates);
+				logger.debug("Updating from coordinate: {}", coordinates);
 				ArtifactData target = jpm.getCandidate(coordinates);
 				if (target == null) {
 					error("No candidates found for %s (%s)", coordinates, opts.staged() ? "staged" : "only masters");
@@ -837,7 +841,7 @@ public class Main extends ReporterAdapter {
 
 					String completionInstallResult = jpm.getPlatform().installCompletion(this);
 					if (completionInstallResult != null)
-						trace("%s", completionInstallResult);
+						logger.debug("{}", completionInstallResult);
 
 					settings.put(JPM_CONFIG_BIN, jpm.getBinDir().getAbsolutePath());
 					settings.put(JPM_CONFIG_HOME, jpm.getHomeDir().getAbsolutePath());
@@ -971,7 +975,7 @@ public class Main extends ReporterAdapter {
 				if (!service.isRunning()) {
 					try {
 						ServiceData d = service.getServiceData();
-						trace("starting %s as user %s, lock=%s, log=%s", d.name, d.user, d.lock, d.log);
+						logger.debug("starting {} as user {}, lock={}, log={}", d.name, d.user, d.lock, d.log);
 						if (options.clean())
 							service.clear();
 						String result = service.start();
@@ -1142,7 +1146,7 @@ public class Main extends ReporterAdapter {
 		Enumeration<URL> urls = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
 		while (urls.hasMoreElements()) {
 			URL url = urls.nextElement();
-			trace("found manifest %s", url);
+			logger.debug("found manifest {}", url);
 			Manifest m = new Manifest(url.openStream());
 			String name = m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
 			if (name != null && name.trim().equals("biz.aQute.jpm.run")) {
@@ -1326,12 +1330,12 @@ public class Main extends ReporterAdapter {
 	@Description("Manage user settings of jpm (in ~/.jpm)")
 	public void _settings(settingOptions opts) throws Exception {
 		try {
-			trace("settings %s", opts.clear());
+			logger.debug("settings {}", opts.clear());
 			List<String> rest = opts._arguments();
 
 			if (opts.clear()) {
 				settings.clear();
-				trace("clear %s", settings.entrySet());
+				logger.debug("clear {}", settings.entrySet());
 			}
 
 			if (opts.publicKey()) {
@@ -1361,19 +1365,19 @@ public class Main extends ReporterAdapter {
 				boolean set = false;
 				for (String s : rest) {
 					Matcher m = ASSIGNMENT.matcher(s);
-					trace("try %s", s);
+					logger.debug("try {}", s);
 					if (m.matches()) {
-						trace("matches %s %s %s", s, m.group(1), m.group(2));
+						logger.debug("matches {} {} {}", s, m.group(1), m.group(2));
 						String key = m.group(1);
 						Instructions instr = new Instructions(key);
 						Collection<String> select = instr.select(settings.keySet(), true);
 
 						String value = m.group(2);
 						if (value == null) {
-							trace("list wildcard %s %s %s", instr, select, settings.keySet());
+							logger.debug("list wildcard {} {} {}", instr, select, settings.keySet());
 							list(select, settings);
 						} else {
-							trace("assignment 	");
+							logger.debug("assignment 	");
 							settings.put(key, value);
 							set = true;
 						}
@@ -1383,7 +1387,7 @@ public class Main extends ReporterAdapter {
 					}
 				}
 				if (set) {
-					trace("saving");
+					logger.debug("saving");
 					settings.save();
 				}
 			}
@@ -1676,14 +1680,14 @@ public class Main extends ReporterAdapter {
 		for (String name : toDelete) {
 			Service s = null;
 			if (jpm.getCommand(name) != null) { // Try command first
-				trace("Corresponding command found, removing");
+				logger.debug("Corresponding command found, removing");
 				jpm.deleteCommand(name);
 				ccount++;
 
 			} else if ((s = jpm.getService(name)) != null) { // No command
 																// matching, try
 																// service
-				trace("Corresponding service found, removing");
+				logger.debug("Corresponding service found, removing");
 				s.remove();
 				scount++;
 

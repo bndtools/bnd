@@ -119,7 +119,9 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 	}
 
 	public void trace(String format, Object... args) {
-		reporter.trace(format, args);
+		if (logger.isDebugEnabled()) {
+			logger.debug("{}", Strings.format(format, args));
+		}
 	}
 
 	public void progress(float progress, String format, Object... args) {

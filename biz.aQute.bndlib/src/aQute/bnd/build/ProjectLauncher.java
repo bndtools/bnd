@@ -16,6 +16,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -35,6 +38,7 @@ import aQute.libg.generics.Create;
  * project to run the code. Launchers must extend this class.
  */
 public abstract class ProjectLauncher extends Processor {
+	private final static Logger					logger				= LoggerFactory.getLogger(ProjectLauncher.class);
 	private final Project						project;
 	private long								timeout				= 0;
 	private final List<String>					classpath			= new ArrayList<String>();
@@ -294,7 +298,7 @@ public abstract class ProjectLauncher extends Processor {
 		if (cwd != null)
 			java.setCwd(cwd);
 
-		project.trace("cmd line %s", java);
+		logger.debug("cmd line {}", java);
 		try {
 			int result = java.execute(in, out, err);
 			if (result == Integer.MIN_VALUE)
@@ -366,7 +370,7 @@ public abstract class ProjectLauncher extends Processor {
 	protected void reportResult(int result) {
 		switch (result) {
 			case OK :
-				project.trace("Command terminated normal %s", java);
+				logger.debug("Command terminated normal {}", java);
 				break;
 			case TIMEDOUT :
 				project.error("Launch timedout: %s", java);

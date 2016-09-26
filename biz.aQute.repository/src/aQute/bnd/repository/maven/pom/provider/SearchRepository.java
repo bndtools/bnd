@@ -12,6 +12,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.osgi.resource.Resource;
 import org.osgi.util.promise.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
@@ -23,6 +25,7 @@ import aQute.maven.provider.MavenRepository;
 import aQute.service.reporter.Reporter;
 
 class SearchRepository extends InnerRepository {
+	private final static Logger	logger				= LoggerFactory.getLogger(SearchRepository.class);
 
 	final static long			DEFAULT_MAX_STALE	= TimeUnit.HOURS.toMillis(1);
 	final String				query;
@@ -90,7 +93,7 @@ class SearchRepository extends InnerRepository {
 		int n = 0;
 		while (true) {
 			try {
-				reporter.trace("Searching %s", query);
+				logger.debug("Searching {}", query);
 
 				SearchResult result = client.build()
 						.headers("User-Agent", "Bnd")
@@ -98,7 +101,7 @@ class SearchRepository extends InnerRepository {
 						.get(SearchResult.class)
 						.go(url);
 
-				reporter.trace("Searched %s", result);
+				logger.debug("Searched {}", result);
 
 				return result;
 			} catch (Exception e) {

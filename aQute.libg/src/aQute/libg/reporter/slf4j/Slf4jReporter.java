@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import aQute.lib.strings.Strings;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
-
 public class Slf4jReporter extends ReporterAdapter {
 	final Logger logger;
 
@@ -23,8 +22,7 @@ public class Slf4jReporter extends ReporterAdapter {
 	public SetLocation error(String format, Object... args) {
 		SetLocation location = super.error(format, args);
 		if (logger.isErrorEnabled()) {
-			String msg = Strings.format(format, args);
-			logger.error(msg);
+			logger.error("{}", Strings.format(format, args));
 		}
 		return location;
 	}
@@ -32,33 +30,35 @@ public class Slf4jReporter extends ReporterAdapter {
 	public SetLocation warning(String format, Object... args) {
 		SetLocation location = super.warning(format, args);
 		if (logger.isWarnEnabled()) {
-			String msg = Strings.format(format, args);
-			logger.warn(msg);
+			logger.warn("{}", Strings.format(format, args));
 		}
 		return location;
 	}
 
 	public void trace(String format, Object... args) {
 		super.trace(format, args);
-		if (logger.isInfoEnabled()) {
-			String msg = Strings.format(format, args);
-			logger.info(msg);
+		if (isTrace()) {
+			if (logger.isInfoEnabled()) {
+				logger.info("{}", Strings.format(format, args));
+			}
+		} else {
+			if (logger.isDebugEnabled()) {
+				logger.debug("{}", Strings.format(format, args));
+			}
 		}
 	}
 
 	public void progress(float progress, String format, Object... args) {
 		super.progress(progress, format, args);
 		if (logger.isInfoEnabled(LIFECYCLE)) {
-			String msg = Strings.format(format, args);
-			logger.info(LIFECYCLE, "{}", msg);
+			logger.info(LIFECYCLE, "{}", Strings.format(format, args));
 		}
 	}
 
 	public SetLocation exception(Throwable t, String format, Object... args) {
 		SetLocation location = super.exception(t, format, args);
 		if (logger.isErrorEnabled()) {
-			String msg = Strings.format(format, args);
-			logger.error(msg, t);
+			logger.error("{}", Strings.format(format, args), t);
 		}
 		return location;
 	}

@@ -11,18 +11,19 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.cryptography.SHA256;
-import aQute.libg.reporter.slf4j.Slf4jReporter;
-import aQute.service.reporter.Reporter;
 
 public class URLCache {
+	private final static Logger			logger	= LoggerFactory.getLogger(URLCache.class);
 	private final static JSONCodec		codec		= new JSONCodec();
 
 	private final File					root;
-	private Reporter					reporter	= new Slf4jReporter(URLCache.class);
 
 	private ConcurrentMap<File,Info>	infos		= new ConcurrentHashMap<>();
 
@@ -55,7 +56,7 @@ public class URLCache {
 					this.dto = codec.dec().from(jsonFile).get(InfoDTO.class);
 				} catch (Exception e) {
 					this.dto = new InfoDTO();
-					reporter.error("URLCache Failed to load data for %s from %s", content, jsonFile);
+					logger.error("URLCache Failed to load data for {} from {}", content, jsonFile);
 				}
 			} else {
 				this.dto = new InfoDTO();
@@ -65,7 +66,7 @@ public class URLCache {
 
 		@Override
 		public void close() throws IOException {
-			reporter.trace("Unlocking url cache %s", url);
+			logger.debug("Unlocking url cache {}", url);
 			lock.unlock();
 		}
 
@@ -135,7 +136,7 @@ public class URLCache {
 
 			if (info.lock.tryLock(5, TimeUnit.MINUTES)) {
 			} else {
-				reporter.trace("Could not locked url cache %s - %s", uri, info);
+				logger.debug("Could not locked url cache {} - {}", uri, info);
 			}
 
 			return info;

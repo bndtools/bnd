@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.getopt.Arguments;
@@ -15,6 +18,7 @@ import aQute.maven.nexus.provider.Nexus;
 import aQute.maven.nexus.provider.Signer;
 
 public class NexusCommand extends Processor {
+	private final static Logger	logger	= LoggerFactory.getLogger(NexusCommand.class);
 
 	private NexusOptions	options;
 	private Nexus			nexus;
@@ -75,7 +79,7 @@ public class NexusCommand extends Processor {
 			List<URI> files = nexus.files();
 			for (URI uri : files) {
 				try {
-					trace("signing %s", relative(uri));
+					logger.debug("signing {}", relative(uri));
 					File f = nexus.download(uri);
 					byte[] signature = signer.sign(f);
 					if (options.show())

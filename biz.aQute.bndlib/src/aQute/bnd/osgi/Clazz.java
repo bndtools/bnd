@@ -23,6 +23,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
@@ -30,6 +33,7 @@ import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.generics.Create;
 
 public class Clazz {
+	private final static Logger	logger				= LoggerFactory.getLogger(Clazz.class);
 
 	static Pattern METHOD_DESCRIPTOR = Pattern.compile("(.*)\\)(.+)");
 
@@ -501,7 +505,7 @@ public class Clazz {
 	}
 
 	Set<TypeRef> parseClassFile(DataInputStream in) throws Exception {
-		analyzer.trace("parseClassFile(): path=%s resource=%s", path, resource);
+		logger.debug("parseClassFile(): path={} resource={}", path, resource);
 
 		++depth;
 		xref = new HashSet<TypeRef>();

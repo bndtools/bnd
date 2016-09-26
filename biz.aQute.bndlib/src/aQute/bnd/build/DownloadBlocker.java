@@ -2,6 +2,9 @@ package aQute.bnd.build;
 
 import java.io.File;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.service.reporter.Reporter;
 
@@ -15,6 +18,7 @@ import aQute.service.reporter.Reporter;
  * failure is called.
  */
 public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
+	private final static Logger logger = LoggerFactory.getLogger(DownloadBlocker.class);
 
 	public enum Stage {
 		INIT, SUCCESS, FAILURE
@@ -41,8 +45,7 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 			this.file = file;
 			notifyAll();
 		}
-		if (reporter != null)
-			reporter.trace("successfully downloaded %s", file);
+		logger.debug("successfully downloaded {}", file);
 	}
 
 	/*

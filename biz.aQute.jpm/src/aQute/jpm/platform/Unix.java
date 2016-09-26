@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.jpm.lib.CommandData;
 import aQute.jpm.lib.ServiceData;
 import aQute.lib.getopt.Arguments;
@@ -21,6 +24,7 @@ import aQute.libg.command.Command;
 import aQute.libg.glob.Glob;
 
 public abstract class Unix extends Platform {
+	private final static Logger	logger		= LoggerFactory.getLogger(Unix.class);
 
 	public static String JPM_GLOBAL = "/var/jpm";
 
@@ -268,7 +272,7 @@ public abstract class Unix extends Platform {
 		if (options.remove() || options.add()) {
 			if (!bd.equals(getGlobalBinDir().getAbsolutePath())) {
 				s = s.replaceAll("(PATH\\s*=)" + bd + ":(.*\\$PATH)", "$1$2");
-				reporter.trace("removed %s", bd);
+				logger.debug("removed {}", bd);
 			}
 		}
 
@@ -302,7 +306,7 @@ public abstract class Unix extends Platform {
 
 		if (!additions.isEmpty()) {
 			s += "\nexport PATH=" + Strings.join(":", additions) + ":$PATH\n";
-			reporter.trace("s %s", s);
+			logger.debug("s {}", s);
 		}
 		IO.store(s, file);
 	}

@@ -28,7 +28,7 @@ import junit.framework.TestCase;
 public class PomRepositoryTest extends TestCase {
 	static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
 
-	Reporter	reporter	= new Slf4jReporter();
+	Reporter			reporter			= new Slf4jReporter(PomRepositoryTest.class);
 	File		tmp			= IO.getFile("generated/tmp");
 	File				localRepo			= IO.getFile(MAVEN_REPO_LOCAL);
 	File		location	= IO.getFile(tmp, "index.xml");

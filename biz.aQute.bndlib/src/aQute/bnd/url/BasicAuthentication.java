@@ -6,6 +6,9 @@ import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.lib.base64.Base64;
 import aQute.libg.cryptography.SHA1;
 import aQute.service.reporter.Reporter;
@@ -23,6 +26,7 @@ import aQute.service.reporter.Reporter;
  */
 @aQute.bnd.annotation.plugin.BndPlugin(name = "url.basic.authentication", parameters = BasicAuthentication.Config.class)
 public class BasicAuthentication extends DefaultURLConnectionHandler {
+	private final static Logger logger = LoggerFactory.getLogger(BasicAuthentication.class);
 
 	interface Config extends DefaultURLConnectionHandler.Config {
 		String user();
@@ -78,7 +82,7 @@ public class BasicAuthentication extends DefaultURLConnectionHandler {
 	public void handle(URLConnection connection) {
 		if (connection instanceof HttpURLConnection && matches(connection) && password != null && user != null) {
 			if (!(connection instanceof HttpsURLConnection))
-				trace("using basic authentication with http instead of https, this is very insecure: %s",
+				logger.debug("using basic authentication with http instead of https, this is very insecure: {}",
 						connection.getURL());
 
 			connection.setRequestProperty(HEADER_AUTHORIZATION, authentication);

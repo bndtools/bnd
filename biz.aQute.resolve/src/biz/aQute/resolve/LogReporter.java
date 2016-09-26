@@ -2,10 +2,13 @@ package biz.aQute.resolve;
 
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.log.LogService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.service.reporter.Reporter;
 
 public class LogReporter extends org.apache.felix.resolver.Logger implements LogService {
+	private final static Logger	logger	= LoggerFactory.getLogger(LogReporter.class);
 	private Reporter reporter;
 
 	class Error extends Silent {
@@ -49,19 +52,19 @@ public class LogReporter extends org.apache.felix.resolver.Logger implements Log
 	class Trace extends Silent {
 
 		public void log(String message) {
-			reporter.trace("%s", message);
+			logger.debug("{}", message);
 		}
 
 		public void log(String message, Throwable exception) {
-			reporter.trace("%s : %s", message, exception);
+			logger.debug("{}", message, exception);
 		}
 
 		public void log(ServiceReference< ? > sr, String message) {
-			reporter.trace("%s (%s)", message, sr);
+			logger.debug("{} ({})", message, sr);
 		}
 
 		public void log(ServiceReference< ? > sr, String message, Throwable exception) {
-			reporter.trace("%s : %s (%s)", message, exception, sr);
+			logger.debug("{} ({})", message, sr, exception);
 		}
 	}
 

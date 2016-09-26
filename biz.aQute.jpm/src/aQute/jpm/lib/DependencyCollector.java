@@ -5,7 +5,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 class DependencyCollector {
+	private final static Logger				logger	= LoggerFactory.getLogger(DependencyCollector.class);
 	private final List<ArtifactData>		list	= new ArrayList<ArtifactData>();
 	private final JustAnotherPackageManager	jpm;
 	private boolean							synced;
@@ -20,7 +24,7 @@ class DependencyCollector {
 	 * @throws Exception
 	 */
 	public void add(String coordinate, String name) throws Exception {
-		jpm.reporter.trace("add %s = %s", coordinate, name);
+		logger.debug("add {} = {}", coordinate, name);
 		ArtifactData candidate = jpm.getCandidateAsync(coordinate);
 		if (candidate == null) {
 			jpm.reporter.error("Cannot find %s", coordinate);

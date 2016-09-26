@@ -13,6 +13,9 @@ import java.util.SortedSet;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.differ.DiffPluginImpl;
@@ -35,6 +38,7 @@ import aQute.lib.collections.SortedList;
 import aQute.lib.io.IO;
 
 public class ProjectBuilder extends Builder {
+	private final static Logger		logger	= LoggerFactory.getLogger(ProjectBuilder.class);
 	private final DiffPluginImpl	differ	= new DiffPluginImpl();
 	Project							project;
 	boolean							initialized;
@@ -127,12 +131,12 @@ public class ProjectBuilder extends Builder {
 	public void doBaseline(Jar dot) throws Exception {
 
 		String diffignore = project.getProperty(Constants.DIFFIGNORE);
-		trace("ignore headers & paths %s", diffignore);
+		logger.debug("ignore headers & paths {}", diffignore);
 		differ.setIgnore(diffignore);
 
 		Jar fromRepo = getBaselineJar();
 		if (fromRepo == null) {
-			trace("No baseline jar %s", getProperty(Constants.BASELINE));
+			logger.debug("No baseline jar {}", getProperty(Constants.BASELINE));
 			return;
 		}
 
@@ -161,13 +165,13 @@ public class ProjectBuilder extends Builder {
 			}
 		}
 
-		trace("baseline %s-%s against: %s", getBsn(), getVersion(), fromRepo.getName());
+		logger.debug("baseline {}-{} against: {}", getBsn(), getVersion(), fromRepo.getName());
 		try {
 			Baseline baseliner = new Baseline(this, differ);
 
 			Set<Info> infos = baseliner.baseline(dot, fromRepo, null);
 			if (infos.isEmpty())
-				trace("no deltas");
+				logger.debug("no deltas");
 
 			for (Info info : infos) {
 				if (info.mismatch) {
@@ -438,7 +442,7 @@ public class ProjectBuilder extends Builder {
 			last = current;
 		}
 		SortedList<Version> set = new SortedList<Version>(filtered);
-		trace("filtered for only latest staged: %s from %s in range ", set, versions);
+		logger.debug("filtered for only latest staged: {} from {} in range ", set, versions);
 		return set;
 	}
 

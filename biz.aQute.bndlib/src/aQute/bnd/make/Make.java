@@ -5,6 +5,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
@@ -14,6 +17,7 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.MakePlugin;
 
 public class Make {
+	private final static Logger			logger	= LoggerFactory.getLogger(Make.class);
 	Builder								builder;
 	Map<Instruction,Map<String,String>>	make;
 
@@ -23,7 +27,7 @@ public class Make {
 
 	public Resource process(String source) {
 		Map<Instruction,Map<String,String>> make = getMakeHeader();
-		builder.trace("make %s", source);
+		logger.debug("make {}", source);
 
 		for (Map.Entry<Instruction,Map<String,String>> entry : make.entrySet()) {
 			Instruction instr = entry.getKey();
@@ -35,7 +39,7 @@ public class Make {
 					try {
 						Resource resource = plugin.make(builder, source, arguments);
 						if (resource != null) {
-							builder.trace("Made %s from args %s with %s", source, arguments, plugin);
+							logger.debug("Made {} from args {} with {}", source, arguments, plugin);
 							return resource;
 						}
 					} catch (Exception e) {

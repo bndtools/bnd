@@ -34,6 +34,8 @@ import org.osgi.resource.Requirement;
 import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.Success;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Workspace;
@@ -84,6 +86,7 @@ import aQute.service.reporter.Reporter;
 @BndPlugin(name = "MavenBndRepository")
 public class MavenBndRepository extends BaseRepository
 		implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable, Refreshable, Actionable, ToDependencyPom {
+	private final static Logger		logger						= LoggerFactory.getLogger(MavenBndRepository.class);
 
 	private final Pattern			JPM_REVISION_URL_PATTERN_P	= Pattern
 			.compile("https?://.+#!?/p/sha/(?<sha>([0-9A-F][0-9A-F]){20,20})/.*", Pattern.CASE_INSENSITIVE);
@@ -163,15 +166,15 @@ public class MavenBndRepository extends BaseRepository
 				checkRemotePossible(instructions, binaryArchive.isSnapshot());
 
 				if (!binaryArchive.isSnapshot() && storage.exists(binaryArchive)) {
-					reporter.trace("Already released %s to %s", pom.getRevision(), this);
+					logger.debug("Already released {} to {}", pom.getRevision(), this);
 					result.alreadyReleased = true;
 					return result;
 				}
 
-				reporter.trace("Put release %s", pom.getRevision());
+				logger.debug("Put release {}", pom.getRevision());
 				try (Release releaser = storage.release(pom.getRevision(), options.context.getProperties());) {
 					if (releaser == null) {
-						reporter.trace("already released %s", pom.getRevision());
+						logger.debug("Already released {}", pom.getRevision());
 						return result;
 					}
 					if (instructions.snapshot >= 0)
@@ -488,7 +491,7 @@ public class MavenBndRepository extends BaseRepository
 			this.index = ixf;
 			startPoll(index);
 
-			reporter.trace("Maven Bnd repository initing %s", this);
+			logger.debug("initing {}", this);
 		} catch (Exception e) {
 			reporter.exception(e, "Init for maven repo failed %s", configuration);
 			throw new RuntimeException(e);
@@ -711,7 +714,7 @@ public class MavenBndRepository extends BaseRepository
 		int n = t.indexOf('\n');
 		if (n > 0) {
 			uri = new URI(t.substring(0, n));
-			reporter.trace("dropTarget cleaned up from %s to %s", t, uri);
+			logger.debug("dropTarget cleaned up from {} to {}", t, uri);
 		}
 
 		if ("search.maven.org".equals(uri.getHost()) && "/remotecontent".equals(uri.getPath())) {
@@ -744,7 +747,7 @@ public class MavenBndRepository extends BaseRepository
 		} catch (FileNotFoundException e) {
 			return false;
 		} catch (Exception e) {
-			reporter.trace("Failure to parse %s: %s", uri, e);
+			logger.debug("Failure to parse {}", uri, e);
 			return false;
 		}
 	}

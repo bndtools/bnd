@@ -5,9 +5,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.libg.command.Command;
 
 public class CommandResource extends WriteResource {
+	private final static Logger	logger	= LoggerFactory.getLogger(CommandResource.class);
 	final long		lastModified;
 	final Builder	domain;
 	final String	command;
@@ -24,7 +28,7 @@ public class CommandResource extends WriteResource {
 	public void write(OutputStream out) throws IOException, Exception {
 		StringBuilder errors = new StringBuilder();
 		StringBuilder stdout = new StringBuilder();
-		domain.trace("executing command %s", command);
+		logger.debug("executing command {}", command);
 		Command cmd = new Command("sh");
 		cmd.setCwd(wd);
 		cmd.inherit();
@@ -35,7 +39,7 @@ public class CommandResource extends WriteResource {
 			path = path.replaceAll("\\s*,\\s*", File.pathSeparator);
 			path = path.replaceAll("\\$\\{@\\}", oldpath);
 			cmd.var("PATH", path);
-			domain.trace("PATH: %s", path);
+			logger.debug("PATH: {}", path);
 		}
 		OutputStreamWriter osw = new OutputStreamWriter(out, "UTF-8");
 		int result = cmd.execute(command, stdout, errors);

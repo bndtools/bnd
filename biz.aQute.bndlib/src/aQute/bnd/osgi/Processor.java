@@ -76,6 +76,7 @@ import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
 public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
+	private static final Logger	logger	= LoggerFactory.getLogger(Processor.class);
 	public static Reporter log;;
 
 	static {
@@ -134,7 +135,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	boolean							pedantic;
 	boolean							trace;
-	private final Logger			logger			= LoggerFactory.getLogger(getClass().getName());
 	boolean							exceptions;
 	boolean							fileMustExist	= true;
 
@@ -603,7 +603,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			String className = removeDuplicateMarker(entry.getKey());
 			Attrs attrs = entry.getValue();
 
-			trace("Trying pre-plugin %s", className);
+			logger.debug("Trying pre-plugin {}", className);
 
 			Object plugin = loadPlugin(getClass().getClassLoader(), attrs, className, true);
 			if (plugin != null) {
@@ -629,7 +629,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			String className = removeDuplicateMarker(entry.getKey());
 			Attrs attrs = entry.getValue();
 
-			trace("Loading secondary plugin %s", className);
+			logger.debug("Loading secondary plugin {}", className);
 
 			// We can defer the error if the plugin specifies
 			// a command name. In that case, we'll verify that
@@ -680,7 +680,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				if (url != null) {
 					try {
 
-						trace("downloading %s to %s", url, f.getAbsoluteFile());
+						logger.debug("downloading {} to {}", url, f.getAbsoluteFile());
 						URL u = new URL(url);
 						URLConnection connection = u.openConnection();
 
@@ -732,7 +732,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					continue nextClause;
 				}
 			}
-			trace("Adding %s to loader for plugins", f);
+			logger.debug("Adding {} to loader for plugins", f);
 			try {
 				loader.add(f.toURI().toURL());
 			} catch (MalformedURLException e) {
@@ -839,11 +839,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		Logger l = p.getLogger();
 		if (p.trace) {
 			if (l.isInfoEnabled()) {
-				l.info(formatArrays(msg, parms));
+				l.info("{}", formatArrays(msg, parms));
 			}
 		} else {
 			if (l.isDebugEnabled()) {
-				l.debug(formatArrays(msg, parms));
+				l.debug("{}", formatArrays(msg, parms));
 			}
 		}
 	}
@@ -1878,7 +1878,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			//
 			String replace = attrs.get(FIXUPMESSAGES_REPLACE_DIRECTIVE);
 			if (replace != null) {
-				trace("replacing %s with %s", message, replace);
+				logger.debug("replacing {} with {}", message, replace);
 				setProperty("@", message);
 				message = getReplacer().process(replace);
 				messages.set(i, message);
@@ -2174,7 +2174,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 
 	protected Processor beginHandleErrors(String message) {
-		trace("begin %s", message);
+		logger.debug("begin {}", message);
 		Processor previous = current.get();
 		current.set(this);
 		return previous;
@@ -2186,7 +2186,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param previous
 	 */
 	protected void endHandleErrors(Processor previous) {
-		trace("end");
+		logger.debug("end");
 		current.set(previous);
 	}
 

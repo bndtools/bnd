@@ -8,6 +8,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.osgi.namespace.contract.ContractNamespace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
@@ -23,6 +25,8 @@ import aQute.service.reporter.Report.Location;
  * @author aqute
  */
 class Contracts {
+	private final static Logger							logger					= LoggerFactory
+			.getLogger(Contracts.class);
 
 	private Analyzer									analyzer;
 	private final MultiMap<PackageRef,Contract>			contracted				= new MultiMap<PackageRef,Contract>(
@@ -87,11 +91,11 @@ class Contracts {
 					Instruction instruction = i.getKey();
 					if (instruction.matches(name)) {
 						if (instruction.isNegated()) {
-							analyzer.trace("%s rejected due to %s", namespace, instructions);
+							logger.debug("{} rejected due to {}", namespace, instructions);
 							continue contract;
 						}
 
-						analyzer.trace("accepted %s", p);
+						logger.debug("accepted {}", p);
 
 						Contract c = new Contract();
 						c.name = name;

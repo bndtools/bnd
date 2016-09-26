@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.felix.resolver.ResolverImpl;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -21,7 +20,6 @@ import org.osgi.service.resolver.Resolver;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
-import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.service.repository.InfoRepository;
 import aQute.lib.io.IO;

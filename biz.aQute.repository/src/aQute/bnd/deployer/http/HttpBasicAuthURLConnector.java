@@ -15,6 +15,9 @@ import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.deployer.Constants;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.url.TaggedData;
@@ -27,6 +30,7 @@ import aQute.service.reporter.Reporter;
 
 @aQute.bnd.annotation.plugin.BndPlugin(name = "urlconnector", parameters = HttpBasicAuthURLConnector.Config.class)
 public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
+	private final static Logger logger = LoggerFactory.getLogger(HttpBasicAuthURLConnector.class);
 
 	@interface Config {
 		String configs();
@@ -136,14 +140,12 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		for (Mapping mapping : mappings) {
 			Matcher matcher = mapping.urlPattern.matcher(url.toString());
 			if (matcher.find()) {
-				if (reporter != null)
-					reporter.trace("Found username %s, password ***** for URL '%s'. Matched on pattern %s=%s",
-							mapping.user, url, mapping.name, mapping.urlPattern.toString());
+				logger.debug("Found username {}, password ***** for URL '{}'. Matched on pattern {}={}", mapping.user,
+						url, mapping.name, mapping.urlPattern);
 				return connectTagged(url, tag, mapping.user, mapping.pass);
 			}
 		}
-		if (reporter != null)
-			reporter.trace("No username/password found for URL '%s'.", url);
+		logger.debug("No username/password found for URL '{}'.", url);
 		return connectTagged(url, tag, null, null);
 	}
 

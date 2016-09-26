@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Processor;
@@ -22,6 +25,7 @@ import aQute.service.reporter.Reporter;
 
 @Deprecated
 public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath {
+	private final static Logger	logger	= LoggerFactory.getLogger(MavenRepository.class);
 
 	public final static String	NAME	= "name";
 
@@ -55,7 +59,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 					return files;
 			}
 		}
-		reporter.trace("Cannot find in maven: %s-%s", bsn, version);
+		logger.debug("Cannot find in maven: {}-{}", bsn, version);
 		return null;
 	}
 
