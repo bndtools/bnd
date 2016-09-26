@@ -191,9 +191,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		properties = new UTF8Properties(parent);
 	}
 
-	public Processor(Processor child) {
-		this(child.properties);
-		this.parent = child;
+	public Processor(Processor processor) {
+		this(processor.getProperties0());
+		this.parent = processor;
 	}
 
 	public Processor(Properties props, boolean copy) {
@@ -205,9 +205,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public void setParent(Processor processor) {
 		this.parent = processor;
-		Properties ext = new UTF8Properties(processor.properties);
-		ext.putAll(this.properties);
-		this.properties = ext;
+		Properties updated = new UTF8Properties(processor.getProperties0());
+		updated.putAll(getProperties0());
+		properties = updated;
 	}
 
 	public Processor getParent() {
@@ -972,6 +972,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			begin();
 		}
 		fixupMessages = false;
+		return getProperties0();
+	}
+
+	private Properties getProperties0() {
 		return properties;
 	}
 
@@ -1006,14 +1010,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public void setProperties(Properties properties) {
 		doIncludes(getBase(), properties);
-		this.properties.putAll(properties);
+		getProperties0().putAll(properties);
 		mergeProperties(Constants.INIT); // execute macros in -init
-		this.properties.remove(Constants.INIT);
+		getProperties0().remove(Constants.INIT);
 	}
 
 	public void setProperties(File base, Properties properties) {
 		doIncludes(base, properties);
-		this.properties.putAll(properties);
+		getProperties0().putAll(properties);
 	}
 
 	public void addProperties(File file) throws Exception {
@@ -1194,7 +1198,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	public void forceRefresh() {
 		included = null;
-		properties.clear();
+		Processor p = getParent();
+		properties = (p != null) ? new UTF8Properties(p.getProperties0()) : new UTF8Properties();
+
 		setProperties(propertiesFile, base);
 		propertiesChanged();
 	}
@@ -1554,7 +1560,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		} else {
 			result = parent.getPropertyKeys(inherit);
 		}
-		for (Object o : properties.keySet())
+		for (Object o : getProperties0().keySet())
 			result.add(o.toString());
 
 		return result;
@@ -2553,7 +2559,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void report(Map<String,Object> table) throws Exception {
 		table.put("Included Files", getIncluded());
 		table.put("Base", getBase());
-		table.put("Properties", properties.entrySet());
+		table.put("Properties", getProperties0().entrySet());
 	}
 
 	/**
