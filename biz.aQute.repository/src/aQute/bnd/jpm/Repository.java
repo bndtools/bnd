@@ -1,6 +1,7 @@
 package aQute.bnd.jpm;
 
 import static aQute.lib.io.IO.copy;
+import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
 
 import java.awt.Desktop;
 import java.awt.Toolkit;
@@ -41,6 +42,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 import aQute.bnd.build.Container;
@@ -93,6 +96,7 @@ import aQute.service.reporter.Reporter;
  */
 public class Repository implements Plugin, RepositoryPlugin, Closeable, Refreshable, Actionable, RegistryPlugin,
 		SearchableRepository, InfoRepository {
+	private final static Logger					logger						= LoggerFactory.getLogger(Repository.class);
 	private static final DocumentBuilderFactory	dbf							= DocumentBuilderFactory.newInstance();
 	private static final XPathFactory			xpf							= XPathFactory.newInstance();
 	public static final String					REPO_DEFAULT_URI			= "http://repo.jpm4j.org";
@@ -1020,7 +1024,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 						@Override
 						public boolean progress(File file, int percentage) throws Exception {
-							reporter.progress(((float) percentage) / 100, "downloading %s", file);
+							logger.info(LIFECYCLE, "[{}] downloading {}", percentage / 100, file);
 							return true;
 						}
 

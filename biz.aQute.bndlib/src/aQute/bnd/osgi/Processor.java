@@ -1,5 +1,7 @@
 package aQute.bnd.osgi;
 
+import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -293,11 +295,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void progress(float progress, String format, Object... args) {
-		String message = formatArrays(format, args);
-		if (progress > 0)
-			System.err.printf("[%2d] %s%n", (int) progress, message);
-		else
-			System.err.printf("%s%n", message);
+		Logger l = getLogger();
+		if (l.isInfoEnabled(LIFECYCLE)) {
+			String message = formatArrays(format, args);
+			if (progress > 0)
+				l.info(LIFECYCLE, "[{}] {}", (int) progress, message);
+			else
+				l.info(LIFECYCLE, "{}", message);
+		}
 	}
 
 	public void progress(String format, Object... args) {
