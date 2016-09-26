@@ -91,7 +91,9 @@ public interface Reporter extends Report {
 	 * 
 	 * @param format The format of the error
 	 * @param args The arguments of the error
+	 * @deprecated Use SLF4J Logger.debug instead.
 	 */
+	@Deprecated
 	void trace(String format, Object... args);
 
 	/**
@@ -103,7 +105,11 @@ public interface Reporter extends Report {
 	 *            starting and >=1 is done.
 	 * @param format The format of the error
 	 * @param args The arguments of the error
+	 * @deprecated Use SLF4J
+	 *             Logger.info(aQute.libg.slf4j.GradleLogging.LIFECYCLE)
+	 *             instead.
 	 */
+	@Deprecated
 	void progress(float progress, String format, Object... args);
 
 	/**

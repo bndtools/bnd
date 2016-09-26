@@ -12,6 +12,8 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 import org.osgi.service.repository.Repository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
@@ -39,6 +41,7 @@ import biz.aQute.resolve.ResolverValidator;
 import biz.aQute.resolve.ResolverValidator.Resolution;
 
 public class ResolveCommand extends Processor {
+	private final static Logger	logger	= LoggerFactory.getLogger(ResolveCommand.class);
 
 	private bnd bnd;
 
@@ -184,7 +187,7 @@ public class ResolveCommand extends Processor {
 
 		List<String> args = options._arguments();
 		File index = getFile(args.remove(0));
-		trace("validating %s", index);
+		logger.debug("validating {}", index);
 
 		ResolverValidator validator = new ResolverValidator(bnd);
 		validator.use(bnd);

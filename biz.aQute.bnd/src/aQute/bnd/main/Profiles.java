@@ -4,6 +4,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.header.Parameters;
 import aQute.bnd.main.bnd.ProfileOptions;
 import aQute.bnd.osgi.Builder;
@@ -20,7 +23,7 @@ import aQute.lib.io.IO;
 import aQute.libg.glob.Glob;
 
 public class Profiles extends Processor {
-
+	private final static Logger	logger	= LoggerFactory.getLogger(Profiles.class);
 	private bnd bnd;
 
 	// private ProfileOptions options;
@@ -74,7 +77,7 @@ public class Profiles extends Processor {
 		if (paths.isEmpty())
 			paths = options._arguments();
 
-		trace("input %s", paths);
+		logger.debug("input {}", paths);
 
 		ResourceBuilder pb = new ResourceBuilder();
 
@@ -89,7 +92,7 @@ public class Profiles extends Processor {
 					g = new Glob("*.jar");
 
 				Collection<File> files = IO.tree(f, "*.jar");
-				trace("will profile %s", files);
+				logger.debug("will profile {}", files);
 
 				for (File file : files) {
 					Domain domain = Domain.domain(file);
@@ -107,7 +110,7 @@ public class Profiles extends Processor {
 					if (match != null) {
 						Instruction instr = match.finder(bsn);
 						if (instr == null || instr.isNegated()) {
-							trace("skipped %s because of non matching bsn %s", file, bsn);
+							logger.debug("skipped {} because of non matching bsn {}", file, bsn);
 							continue;
 						}
 					}
@@ -115,7 +118,7 @@ public class Profiles extends Processor {
 					Parameters eps = domain.getExportPackage();
 					Parameters pcs = domain.getProvideCapability();
 
-					trace("parse %s:\ncaps: %s\npac: %s\n", file, pcs, eps);
+					logger.debug("parse {}:\ncaps: {}\npac: {}\n", file, pcs, eps);
 
 					packages.mergeWith(eps, false);
 					capabilities.mergeWith(pcs, false);
@@ -127,10 +130,10 @@ public class Profiles extends Processor {
 
 		b.setProperty(Constants.PROVIDE_CAPABILITY, capabilities.toString());
 		b.setProperty(Constants.EXPORT_PACKAGE, packages.toString());
-		trace("Found %s packages and %s capabilities", packages.size(), capabilities.size());
+		logger.debug("Found {} packages and {} capabilities", packages.size(), capabilities.size());
 		Jar jar = b.build();
 		File f = b.getOutputFile(options.output());
-		trace("Saving as %s", f);
+		logger.debug("Saving as {}", f);
 		jar.write(f);
 	}
 

@@ -1,6 +1,7 @@
 package aQute.bnd.jpm;
 
 import static aQute.lib.io.IO.copy;
+import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
 
 import java.awt.Desktop;
 import java.awt.Toolkit;
@@ -41,6 +42,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 import aQute.bnd.build.Container;
@@ -93,6 +96,7 @@ import aQute.service.reporter.Reporter;
  */
 public class Repository implements Plugin, RepositoryPlugin, Closeable, Refreshable, Actionable, RegistryPlugin,
 		SearchableRepository, InfoRepository {
+	private final static Logger					logger						= LoggerFactory.getLogger(Repository.class);
 	private static final DocumentBuilderFactory	dbf							= DocumentBuilderFactory.newInstance();
 	private static final XPathFactory			xpf							= XPathFactory.newInstance();
 	public static final String					REPO_DEFAULT_URI			= "http://repo.jpm4j.org";
@@ -145,17 +149,17 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 		@Override
 		public void success(File file) throws Exception {
-			reporter.trace("downloaded %s", file);
+			logger.debug("downloaded {}", file);
 		}
 
 		@Override
 		public void failure(File file, String reason) throws Exception {
-			reporter.trace("failed to downloaded %s", file);
+			logger.debug("failed to downloaded {}", file);
 		}
 
 		@Override
 		public boolean progress(File file, int percentage) throws Exception {
-			reporter.trace("Downloading %s %s%%", file, percentage);
+			logger.debug("Downloading {} {}%", file, percentage);
 			return true;
 		}
 
@@ -274,12 +278,12 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			if (file.length() == size) {
 				// Already exists, done
 				success(listeners, file);
-				reporter.trace("was in cache");
+				logger.debug("was in cache");
 				return;
 			}
 			reporter.error("found file but of different length %s, will refetch", file);
 		} else {
-			reporter.trace("not in cache %s %s", file, queues);
+			logger.debug("not in cache {} {}", file, queues);
 		}
 
 		if (!isConnected()) {
@@ -288,7 +292,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 		// Check if we need synchronous
 		if (listeners.length == 0) {
-			reporter.trace("in cache, no listeners");
+			logger.debug("in cache, no listeners");
 			getCache().download(file, urls, sha);
 			return;
 		}
@@ -309,12 +313,12 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			if (!first) {
 				// return, file is being downloaded by another and that
 				// other will signal the download listener.
-				reporter.trace("someone else is downloading our file %s", queues.get(file));
+				logger.debug("someone else is downloading our file {}", queues.get(file));
 				return;
 			}
 		}
 		try {
-			reporter.trace("starting thread for %s", file);
+			logger.debug("starting thread for {}", file);
 
 			// Limit the total downloads going on at the same time
 			limitDownloads.acquire();
@@ -322,7 +326,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			Thread t = new Thread("Downloading " + file) {
 				public void run() {
 					try {
-						reporter.trace("downloading in background %s", file);
+						logger.debug("downloading in background {}", file);
 						getCache().download(file, urls, sha);
 						success(queues.get(file).toArray(EMPTY_LISTENER), file);
 					} catch (FileNotFoundException e) {
@@ -343,7 +347,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 						synchronized (queues) {
 							queues.remove(file);
 						}
-						reporter.trace("downloaded %s", file);
+						logger.debug("downloaded {}", file);
 
 						// Allow other downloads to start
 						limitDownloads.release();
@@ -389,23 +393,23 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		if (options == null)
 			options = DEFAULT_OPTIONS;
 
-		reporter.trace("syncing");
+		logger.debug("syncing");
 		sync();
 
 		File file = File.createTempFile("put", ".jar");
 		file.deleteOnExit();
 		try {
-			reporter.trace("creating tmp copy");
+			logger.debug("creating tmp copy");
 			copy(in, file);
 			if (depository == null) {
-				reporter.trace("send to url %s", url);
+				logger.debug("send to url {}", url);
 				depository = getLibrary().depository(depositoryGroup, depositoryName);
-				reporter.trace("credentials %s", depository);
+				logger.debug("credentials {}", depository);
 			}
 
 			byte[] digest = options.digest == null ? SHA1.digest(file).digest() : options.digest;
 			String path = Hex.toHexString(digest);
-			reporter.trace("putting %s", path);
+			logger.debug("putting {}", path);
 
 			URI uri = getDepository(path);
 
@@ -495,7 +499,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 					phase = Library.Phase.WITHDRAWN;
 					break;
 			}
-			reporter.trace("Phase is %s %s", c, phase);
+			logger.debug("Phase is {} {}", c, phase);
 		}
 
 		Glob glob = null;
@@ -751,7 +755,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 					run = createAddSourceAction(bsn, version, resource, sourceFile, sourceURI);
 				}
 			} else
-				reporter.trace("sources in %s", sourceFile);
+				logger.debug("sources in {}", sourceFile);
 
 			if (run != null)
 				map.put("Add Sources", run);
@@ -1010,17 +1014,17 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 						@Override
 						public void success(File file) throws Exception {
-							reporter.trace("downloaded %s", file);
+							logger.debug("downloaded {}", file);
 						}
 
 						@Override
 						public void failure(File file, String reason) throws Exception {
-							reporter.trace("failed to download %s becasue %s", file, reason);
+							logger.debug("failed to download {} becasue {}", file, reason);
 						}
 
 						@Override
 						public boolean progress(File file, int percentage) throws Exception {
-							reporter.progress(((float) percentage) / 100, "downloading %s", file);
+							logger.info(LIFECYCLE, "[{}] downloading {}", percentage / 100, file);
 							return true;
 						}
 
@@ -1251,7 +1255,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 			return new RevisionRef(r);
 		}
-		reporter.trace("Looking for %s-%s", bsn, version);
+		logger.debug("Looking for {}-{}", bsn, version);
 		for (RevisionRef r : getRevisionRefs(bsn)) {
 			Version v = toVersion(r.baseline, r.qualifier);
 			if (v.equals(version))
@@ -1333,7 +1337,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		if (updateAction == null)
 			return;
 
-		reporter.trace("update bsn %s", updateAction);
+		logger.debug("update bsn {}", updateAction);
 		updateAction.run();
 	}
 
@@ -1610,7 +1614,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 	private void init() throws Exception {
 		if (index == null) {
-			reporter.trace("init %s", indexFile);
+			logger.debug("init {}", indexFile);
 			index = new Index(indexFile);
 			index.setRecurse(indexRecurse);
 			index.setReporter(reporter);
@@ -1623,7 +1627,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	public void add(String bsn, Version version) throws Exception {
-		reporter.trace("Add %s %s", bsn, version);
+		logger.debug("Add {} {}", bsn, version);
 		RevisionRef ref = getRevisionRef(bsn, version);
 		add(ref);
 	}
@@ -1633,14 +1637,14 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		// We remove everything between [mask(v), v)
 
 		Version newVersion = toVersion(ref.baseline, ref.qualifier);
-		reporter.trace("New version %s %s", ref.bsn, newVersion);
+		logger.debug("New version {} {}", ref.bsn, newVersion);
 		Version newMask = mask(newVersion);
 		List<Version> toBeDeleted = new ArrayList<Version>();
 
 		for (Version existingVersion : index.getVersions(ref.bsn)) {
 			Version existingMask = mask(existingVersion);
 			if (newMask.equals(existingMask)) {
-				reporter.trace("delete %s-%s", ref.bsn, existingVersion);
+				logger.debug("delete {}-{}", ref.bsn, existingVersion);
 				toBeDeleted.add(existingVersion);
 			}
 		}
@@ -1648,7 +1652,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		for (Version v : toBeDeleted)
 			index.delete(ref.bsn, v);
 
-		reporter.trace("add %s-%s", ref.bsn, newVersion);
+		logger.debug("add {}-{}", ref.bsn, newVersion);
 		index.addRevision(ref);
 
 		getLocal(ref, null, new LocalDownloadListener());
@@ -1672,21 +1676,21 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	public void delete(String bsn, Version version, boolean immediate) throws Exception {
-		reporter.trace("Delete %s %s", bsn, version);
+		logger.debug("Delete {} {}", bsn, version);
 
 		Library.RevisionRef resource = index.getRevisionRef(bsn, version);
 		if (resource != null) {
 			boolean removed = index.delete(bsn, version);
-			reporter.trace("Was present %s", removed);
+			logger.debug("Was present {}", removed);
 			index.save();
 		} else
-			reporter.trace("No such resource");
+			logger.debug("No such resource");
 	}
 
 	public void delete(String bsn) throws Exception {
-		reporter.trace("Delete %s", bsn);
+		logger.debug("Delete {}", bsn);
 		Set<Version> set = new HashSet<Version>(index.getVersions(bsn));
-		reporter.trace("Versions %s", set);
+		logger.debug("Versions {}", set);
 		for (Version version : set) {
 			delete(bsn, version, true);
 		}
@@ -1706,12 +1710,12 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			int n = t.indexOf('\n');
 			if (n > 0) {
 				uri = new URI(t.substring(0, n));
-				reporter.trace("dropTarget cleaned up from %s to %s", t, uri);
+				logger.debug("dropTarget cleaned up from {} to {}", t, uri);
 			}
 
 			RevisionRef ref;
 
-			reporter.trace("dropTarget %s", uri);
+			logger.debug("dropTarget {}", uri);
 			String uriString = uri.toString();
 
 			Matcher m = JPM_REVISION_URL_PATTERN.matcher(uriString);
@@ -1739,7 +1743,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 				ref = analyze(d.tmp, uri);
 				if (ref == null) {
-					reporter.trace("not a proper url to drop %s", uri);
+					logger.debug("not a proper url to drop {}", uri);
 					d.tmp.delete();
 					return false;
 				}
@@ -1762,11 +1766,11 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				resource.urls.add(uri);
 				// we know that we modified a resource so the index is dirty
 				index.save(true);
-				reporter.trace("resource already loaded %s", uri);
+				logger.debug("resource already loaded {}", uri);
 				return true;
 			}
 
-			reporter.trace("adding revision %s", ref);
+			logger.debug("adding revision {}", ref);
 			add(ref);
 			return true;
 		} catch (Exception e) {
@@ -1792,7 +1796,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			try {
 				Manifest manifest = jar.getManifest();
 				if (manifest == null) {
-					reporter.trace("Jar %s has no manifest", uri);
+					logger.debug("Jar {} has no manifest", uri);
 					return null;
 				}
 
@@ -1853,7 +1857,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 						ref.classifier = xp.evaluate("//classifier", doc);
 					}
 				} catch (Exception e) {
-					reporter.trace("parsing maven failed for %s: %s", uri, e);
+					logger.debug("parsing maven failed for {}: {}", uri, e);
 				}
 
 				if (ref.version == null)
@@ -1878,7 +1882,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				jar.close();
 			}
 		} catch (Exception e) {
-			reporter.trace("Could not parse JAR %s: %s", uri, e);
+			logger.debug("Could not parse JAR {}: {}", uri, e);
 		}
 		return null;
 	}
@@ -1927,7 +1931,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				});
 
 			} else
-				reporter.trace("Open %s", url);
+				logger.debug("Open {}", url);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -2114,7 +2118,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		Revisions revisions = index.getRevisions();
 
 		if (!index.isSynced()) {
-			reporter.trace("Syncing repo indexes");
+			logger.debug("Syncing repo indexes");
 			getLibrary().createRevisions(revisions);
 			index.setSynced(revisions._id);
 		}
@@ -2199,7 +2203,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 		for (Container libOrRev : set) {
 			for (Container c : libOrRev.getMembers()) {
-				reporter.trace("Dependency %s", c);
+				logger.debug("Dependency {}", c);
 
 				if (!Verifier.isVersion(c.getVersion()))
 					continue;
@@ -2209,7 +2213,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 					refs.remove(ref);
 				else {
 					// missing!
-					reporter.trace("Missing %s", c.getBundleSymbolicName());
+					logger.debug("Missing {}", c.getBundleSymbolicName());
 					Coordinate coord = new Coordinate(c.getBundleSymbolicName());
 					Revision rev = getLibrary().getRevisionByCoordinate(coord);
 					if (rev != null) {

@@ -11,6 +11,8 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Property;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -91,6 +93,7 @@ import aQute.libg.qtokens.QuotedTokenizer;
  * </fileset> <bndfiles> </bnd> </target> </project> </pre>
  */
 public class BndTask extends BaseTask {
+	private final static Logger	logger	= LoggerFactory.getLogger(BndTask.class);
 	String			command;
 	File			basedir;
 	boolean			test;
@@ -268,7 +271,7 @@ public class BndTask extends BaseTask {
 					} else {
 						msg = "(not modified)";
 					}
-					trace("%s (%s) %s %s", jar.getName(), output.getName(), jar.getResources().size(), msg);
+					logger.debug("{} ({}) {} {}", jar.getName(), output.getName(), jar.getResources().size(), msg);
 					report();
 					jar.close();
 				}
@@ -288,7 +291,7 @@ public class BndTask extends BaseTask {
 	}
 
 	void addAll(List<File> list, String files, String separator) {
-		trace("addAll '%s' with %s", files, separator);
+		logger.debug("addAll '{}' with {}", files, separator);
 		QuotedTokenizer qt = new QuotedTokenizer(files, separator);
 		String entries[] = qt.getTokens();
 		File project = getProject().getBaseDir();

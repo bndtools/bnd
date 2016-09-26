@@ -165,6 +165,12 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 		return loc;
 	}
 
+	/**
+	 * @deprecated Use SLF4J
+	 *             Logger.info(aQute.libg.slf4j.GradleLogging.LIFECYCLE)
+	 *             instead.
+	 */
+	@Deprecated
 	public void progress(float progress, String s, Object... args) {
 		if (out != null) {
 			out.format(s, args);
@@ -173,6 +179,10 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 		}
 	}
 
+	/**
+	 * @deprecated Use SLF4J Logger.debug instead.
+	 */
+	@Deprecated
 	public void trace(String s, Object... args) {
 		if (trace && out != null) {
 			out.format("# " + s + "%n", args);

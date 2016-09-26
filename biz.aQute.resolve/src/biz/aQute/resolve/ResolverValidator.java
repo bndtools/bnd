@@ -23,6 +23,8 @@ import org.osgi.resource.Wire;
 import org.osgi.service.repository.Repository;
 import org.osgi.service.resolver.ResolutionException;
 import org.osgi.service.resolver.Resolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.deployer.repository.FixedIndexedRepo;
 import aQute.bnd.osgi.Processor;
@@ -35,6 +37,7 @@ import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.lib.strings.Strings;
 
 public class ResolverValidator extends Processor {
+	private final static Logger	logger			= LoggerFactory.getLogger(ResolverValidator.class);
 
 	LogReporter	reporter		= new LogReporter(this);
 	Resolver	resolver		= new BndResolver(reporter);
@@ -151,15 +154,15 @@ public class ResolverValidator extends Processor {
 			resolution.succeeded = true;
 			resolution.resolved = resolve2.keySet();
 
-			trace("resolving %s succeeded", resource);
+			logger.debug("resolving {} succeeded", resource);
 		} catch (ResolutionException e) {
-			trace("resolving %s failed", resource);
+			logger.debug("resolving {} failed", resource);
 
 			resolution.succeeded = false;
 			resolution.message = e.getMessage();
 
 			for (Requirement req : e.getUnresolvedRequirements()) {
-				trace("    missing %s", req);
+				logger.debug("    missing {}", req);
 				resolution.unresolved.add(req);
 			}
 
@@ -184,11 +187,11 @@ public class ResolverValidator extends Processor {
 							resolution.missing.add(r);
 
 					} else {
-						trace("     found %s in repo", r);
+						logger.debug("     found {} in repo", r);
 						resolution.repos.add(r);
 					}
 				} else {
-					trace("     found %s in system", r);
+					logger.debug("     found {} in system", r);
 					resolution.system.add(r);
 				}
 			}

@@ -11,6 +11,8 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -20,6 +22,7 @@ import aQute.jpm.lib.ServiceData;
 import aQute.lib.io.IO;
 
 class MacOS extends Unix {
+	private final static Logger		logger	= LoggerFactory.getLogger(MacOS.class);
 	static DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
 	static XPathFactory				xpf	= XPathFactory.newInstance();
 
@@ -145,13 +148,13 @@ class MacOS extends Unix {
 
 		File contents = new File(vmdir, "Contents");
 		if (!contents.isDirectory()) {
-			reporter.trace("Found a directory %s, but it does not have the expected Contents directory", vmdir);
+			logger.debug("Found a directory {}, but it does not have the expected Contents directory", vmdir);
 			return null;
 		}
 
 		File plist = new File(contents, "Info.plist");
 		if (!plist.isFile()) {
-			reporter.trace("The VM in %s has no Info.plist with the necessary details", vmdir);
+			logger.debug("The VM in {} has no Info.plist with the necessary details", vmdir);
 			return null;
 		}
 
@@ -183,7 +186,7 @@ class MacOS extends Unix {
 
 			return jvm;
 		} catch (Exception e) {
-			reporter.trace("Could not parse the Info.plist in %s, got %s", vmdir, e);
+			logger.debug("Could not parse the Info.plist in {}", vmdir, e);
 			throw e;
 		}
 	}

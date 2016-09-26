@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequestException;
 import aQute.bnd.service.url.State;
@@ -22,6 +25,7 @@ import aQute.maven.provider.MetadataParser.RevisionMetadata;
 import aQute.service.reporter.Reporter;
 
 public class MavenRemoteRepository extends MavenBackingRepository {
+	private final static Logger				logger				= LoggerFactory.getLogger(MavenRemoteRepository.class);
 	final HttpClient						client;
 	final Map<Revision,RevisionMetadata>	revisions			= new ConcurrentHashMap<>();
 	final Map<Program,ProgramMetadata>		programs			= new ConcurrentHashMap<>();
@@ -39,14 +43,14 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 		int n = 0;
 		while (true)
 			try {
-				reporter.trace("Fetching %s", path);
+				logger.debug("Fetching {}", path);
 
 				TaggedData tag = client.build()
 						.headers("User-Agent", "Bnd")
 						.useCache(file, DEFAULT_MAX_STALE)
 						.asTag()
 						.go(url);
-				reporter.trace("Fetched %s", tag);
+				logger.debug("Fetched {}", tag);
 				if (tag.getState() == State.UPDATED) {
 
 					// https://issues.sonatype.org/browse/NEXUS-4900

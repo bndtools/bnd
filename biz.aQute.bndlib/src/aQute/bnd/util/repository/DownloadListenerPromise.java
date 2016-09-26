@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.Success;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
@@ -16,10 +18,11 @@ import aQute.service.reporter.Reporter;
  * Uses promises to signal the Download Listener from {@link RepositoryPlugin}
  */
 public class DownloadListenerPromise implements Success<File,Void>, Failure {
-	DownloadListener	dls[];
-	Promise<File>		promise;
-	private Reporter	reporter;
-	private String		task;
+	private final static Logger	logger	= LoggerFactory.getLogger(DownloadListenerPromise.class);
+	final DownloadListener		dls[];
+	final Promise<File>			promise;
+	private final Reporter		reporter;
+	private final String		task;
 	private File		linked;
 
 	/**
@@ -36,13 +39,13 @@ public class DownloadListenerPromise implements Success<File,Void>, Failure {
 		this.task = task;
 		this.promise = promise;
 		this.dls = downloadListeners;
-		reporter.trace("%s: starting", task);
+		logger.debug("{}: starting", task);
 		promise.then(this, this);
 	}
 
 	@Override
 	public Promise<Void> call(Promise<File> resolved) throws Exception {
-		reporter.trace("%s: success", this);
+		logger.debug("{}: success", this);
 		File file = resolved.getValue();
 
 		if (linked != null) {
@@ -61,7 +64,7 @@ public class DownloadListenerPromise implements Success<File,Void>, Failure {
 
 	@Override
 	public void fail(Promise< ? > resolved) throws Exception {
-		reporter.trace("%s: fail: %s", this, resolved.getFailure());
+		logger.debug("{}: fail: {}", this, resolved.getFailure());
 		for (DownloadListener dl : dls) {
 			try {
 				dl.failure(null, resolved.getFailure().toString());

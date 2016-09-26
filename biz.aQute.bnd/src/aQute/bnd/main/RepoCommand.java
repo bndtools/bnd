@@ -22,6 +22,9 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.build.DownloadBlocker;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -58,6 +61,7 @@ import aQute.libg.cryptography.SHA1;
 import aQute.libg.glob.Glob;
 
 public class RepoCommand {
+	private final static Logger	logger	= LoggerFactory.getLogger(RepoCommand.class);
 	final static JSONCodec codec = new JSONCodec();
 
 	@Description("Access to the repositories. Provides a number of sub commands to manipulate the repository "
@@ -111,7 +115,7 @@ public class RepoCommand {
 		// We can include the maven repository
 
 		if (opts.maven()) {
-			bnd.trace("maven");
+			logger.debug("maven");
 			MavenRemoteRepository maven = new MavenRemoteRepository();
 			maven.setProperties(new Attrs());
 			maven.setReporter(bnd);
@@ -122,7 +126,7 @@ public class RepoCommand {
 
 		if (opts.filerepo() != null) {
 			for (String r : opts.filerepo()) {
-				bnd.trace("file repo %s", r);
+				logger.debug("file repo {}", r);
 				FileRepo repo = new FileRepo();
 				repo.setReporter(bnd);
 				File location = bnd.getFile(r);
@@ -133,7 +137,7 @@ public class RepoCommand {
 
 		// If no repos are set
 		if (repos.isEmpty()) {
-			bnd.trace("getting project repos");
+			logger.debug("getting project repos");
 			Project p = bnd.getProject(opts.project());
 
 			if (p != null) {
@@ -145,7 +149,7 @@ public class RepoCommand {
 				}
 			}
 		}
-		bnd.trace("repos %s", repos);
+		logger.debug("repos {}", repos);
 
 		// Clean up and find first writable
 		RepositoryPlugin w = null;
@@ -162,7 +166,7 @@ public class RepoCommand {
 			}
 		}
 		this.writable = w;
-		bnd.trace("writable %s", w);
+		logger.debug("writable {}", w);
 
 		List<String> args = opts._arguments();
 		if (args.size() == 0) {
@@ -219,7 +223,7 @@ public class RepoCommand {
 
 	@Description("List all artifacts from the current repositories with their versions")
 	public void _list(listOptions opts) throws Exception {
-		bnd.trace("list");
+		logger.debug("list");
 		Set<String> bsns = new HashSet<String>();
 		Instruction from = opts.from();
 		if (from == null)
@@ -229,13 +233,13 @@ public class RepoCommand {
 			if (from.matches(repo.getName()))
 				bsns.addAll(repo.list(opts.query()));
 		}
-		bnd.trace("list %s", bsns);
+		logger.debug("list {}", bsns);
 
 		for (String bsn : new SortedList<String>(bsns)) {
 			if (!opts.noversions()) {
 				Set<Version> versions = new TreeSet<Version>();
 				for (RepositoryPlugin repo : repos) {
-					bnd.trace("get %s from %s", bsn, repo);
+					logger.debug("get {} from {}", bsn, repo);
 					if (from.matches(repo.getName())) {
 						SortedSet<Version> result = repo.versions(bsn);
 						if (result != null)
@@ -379,7 +383,7 @@ public class RepoCommand {
 				}
 			}
 
-			bnd.trace("put %s", file);
+			logger.debug("put {}", file);
 
 			Jar jar = new Jar(file);
 			try {
@@ -389,7 +393,7 @@ public class RepoCommand {
 					return;
 				}
 
-				bnd.trace("bsn %s version %s", bsn, jar.getVersion());
+				logger.debug("bsn {} version {}", bsn, jar.getVersion());
 
 				if (!opts.force()) {
 					Verifier v = new Verifier(jar);
@@ -402,7 +406,7 @@ public class RepoCommand {
 				if (bnd.isOk()) {
 					PutResult r = writable.put(new BufferedInputStream(new FileInputStream(file)),
 							new RepositoryPlugin.PutOptions());
-					bnd.trace("put %s in %s (%s) into %s", source, writable.getName(), writable.getLocation(),
+					logger.debug("put {} in {} ({}) into {}", source, writable.getName(), writable.getLocation(),
 							r.artifact);
 				}
 			} finally {
@@ -513,7 +517,7 @@ public class RepoCommand {
 	public void _refresh(RefreshOptions opts) throws Exception {
 		for (Object o : repos) {
 			if (o instanceof Refreshable) {
-				bnd.trace("refresh %s", o);
+				logger.debug("refresh {}", o);
 				((Refreshable) o).refresh();
 			}
 		}
@@ -572,8 +576,8 @@ public class RepoCommand {
 			return;
 		}
 
-		bnd.trace("src = %s -> %s", srcName, source);
-		bnd.trace("dst = %s -> %s", dstName, dest);
+		logger.debug("src = {} -> {}", srcName, source);
+		logger.debug("dst = {} -> {}", dstName, dest);
 
 		@SuppressWarnings("unused")
 		class Spec {
@@ -592,7 +596,7 @@ public class RepoCommand {
 
 		for (String bsn : source.list(null)) {
 			for (Version version : source.versions(bsn)) {
-				bnd.trace("src: %s %s", bsn, version);
+				logger.debug("src: {} {}", bsn, version);
 
 				Spec spec = new Spec();
 				spec.bsn = bsn;

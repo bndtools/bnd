@@ -21,6 +21,8 @@ import org.osgi.service.repository.Repository;
 import org.osgi.util.function.Function;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.Promises;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
@@ -39,6 +41,7 @@ import aQute.p2.provider.P2Impl;
 import aQute.service.reporter.Reporter;
 
 class P2Indexer implements Closeable {
+	private final static Logger			logger		= LoggerFactory.getLogger(P2Indexer.class);
 	private static final long	MAX_STALE	= TimeUnit.DAYS.toMillis(100);
 	private final Reporter					reporter;
 	final File								location;
@@ -145,7 +148,7 @@ class P2Indexer implements Closeable {
 								rb.addFile(file, a.uri);
 								return rb.build();
 							} catch (Exception e) {
-								reporter.trace("%s: Failed to create resource for %s from %s: %s", name, a, file, e);
+								logger.debug("{}: Failed to create resource for %s from {}", name, a, file, e);
 								return RECOVERY;
 							}
 						}
@@ -154,7 +157,7 @@ class P2Indexer implements Closeable {
 						@Override
 						public Resource apply(Promise< ? > failed) {
 							try {
-								reporter.trace("%s: Failed to create resource for %s: %s", name, a,
+								logger.debug("{}: Failed to create resource for {}", name, a,
 										failed.getFailure());
 							} catch (InterruptedException e) {
 								// impossible

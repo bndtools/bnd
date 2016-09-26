@@ -15,6 +15,7 @@ import org.osgi.resource.Wire;
 import org.osgi.service.log.LogService;
 import org.osgi.service.resolver.ResolutionException;
 import org.osgi.service.resolver.Resolver;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
@@ -35,6 +36,7 @@ import aQute.bnd.service.Strategy;
  */
 
 public class ProjectResolver extends Processor implements ResolutionCallback {
+	private final static org.slf4j.Logger logger = LoggerFactory.getLogger(ProjectResolver.class);
 
 	private final class ReporterLogger extends Logger implements LogService {
 		ReporterLogger(int i) {
@@ -43,18 +45,29 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 
 		@Override
 		protected void doLog(int level, String msg, Throwable throwable) {
-			String format = throwable == null ? "%s" : "%s: %s";
 			switch (level) {
-				case 0 : // error
-					error(format, msg, throwable);
+				case Logger.LOG_ERROR : // error
+					if (throwable == null) {
+						error("%s", msg);
+					} else {
+						exception(throwable, "%s", msg);
+					}
 					break;
 
-				case 1 :
-					warning(format, msg, throwable);
+				case Logger.LOG_WARNING :
+					if (throwable == null) {
+						warning("%s", msg);
+					} else {
+						warning("%s: %s", msg, throwable);
+					}
+					break;
+
+				case Logger.LOG_INFO :
+					logger.info("{}", msg, throwable);
 					break;
 
 				default :
-					trace(format, msg, throwable);
+					logger.debug("{}", msg, throwable);
 					break;
 			}
 		}

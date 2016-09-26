@@ -1,5 +1,7 @@
 package aQute.bnd.url;
 
+import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
+
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashSet;
@@ -7,10 +9,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.url.URLConnectionHandler;
+import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
 import aQute.service.reporter.Reporter;
 
@@ -21,6 +27,7 @@ import aQute.service.reporter.Reporter;
  * {@link #matches(URLConnection)} method to verify the plugin is applicable.
  */
 public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin, RegistryPlugin, Reporter {
+	private final static Logger logger = LoggerFactory.getLogger(DefaultURLConnectionHandler.class);
 
 	interface Config {
 		String match();
@@ -111,12 +118,30 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 		return reporter.warning(format, args);
 	}
 
+	/**
+	 * @deprecated Use SLF4J Logger.debug instead.
+	 */
+	@Deprecated
 	public void trace(String format, Object... args) {
-		reporter.trace(format, args);
+		if (logger.isDebugEnabled()) {
+			logger.debug("{}", Strings.format(format, args));
+		}
 	}
 
+	/**
+	 * @deprecated Use SLF4J
+	 *             Logger.info(aQute.libg.slf4j.GradleLogging.LIFECYCLE)
+	 *             instead.
+	 */
+	@Deprecated
 	public void progress(float progress, String format, Object... args) {
-		reporter.progress(progress, format, args);
+		if (logger.isInfoEnabled(LIFECYCLE)) {
+			String message = Strings.format(format, args);
+			if (progress > 0)
+				logger.info(LIFECYCLE, "[{}] {}", (int) progress, message);
+			else
+				logger.info(LIFECYCLE, "{}", message);
+		}
 	}
 
 	public SetLocation exception(Throwable t, String format, Object... args) {

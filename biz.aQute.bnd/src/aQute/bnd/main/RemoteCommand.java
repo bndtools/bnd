@@ -19,6 +19,8 @@ import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.framework.wiring.dto.BundleRevisionDTO;
 import org.osgi.resource.dto.CapabilityDTO;
 import org.osgi.service.repository.ContentNamespace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 import aQute.bnd.header.Attrs;
@@ -40,6 +42,7 @@ import aQute.remote.api.Supervisor;
 import aQute.remote.util.AgentSupervisor;
 
 class RemoteCommand extends Processor {
+	private final static Logger					logger				= LoggerFactory.getLogger(RemoteCommand.class);
 	private static TypeReference<List<Version>>	tref				= new TypeReference<List<Version>>() {};
 	private Yaml								y					= new Yaml();
 	private bnd									bnd;
@@ -192,10 +195,10 @@ class RemoteCommand extends Processor {
 			error("Cannot write to %s", output);
 		}
 
-		bnd.trace("Starting distro %s;%s", bsn, version);
+		logger.debug("Starting distro {};{}", bsn, version);
 
 		List<BundleRevisionDTO> bundleRevisons = agent.getBundleRevisons();
-		trace("Found %s bundle revisions", bundleRevisons.size());
+		logger.debug("Found {} bundle revisions", bundleRevisons.size());
 
 		Parameters packages = new Parameters();
 		List<Parameters> provided = new ArrayList<>();
@@ -235,9 +238,9 @@ class RemoteCommand extends Processor {
 						warning("Invalid package capability found %s", c);
 					} else
 						packages.put(pname, attrs);
-					trace("P: %s;%s", pname, attrs);
+					logger.debug("P: {};{}", pname, attrs);
 				} else if (!IGNORED_NAMESPACES.contains(c.namespace)) {
-					trace("C %s;%s", c.namespace, attrs);
+					logger.debug("C {};{}", c.namespace, attrs);
 					Parameters p = new Parameters();
 					p.put(c.namespace, attrs);
 					provided.add(p);

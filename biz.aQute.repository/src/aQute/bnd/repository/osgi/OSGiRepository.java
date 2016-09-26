@@ -19,6 +19,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.util.promise.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Workspace;
@@ -41,12 +43,12 @@ import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
-import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.service.reporter.Reporter;
 
 @BndPlugin(name = "OSGiRepository", parameters = Config.class)
 public class OSGiRepository extends BaseRepository
 		implements Plugin, RepositoryPlugin, Actionable, Refreshable, RegistryPlugin, Prepare, Closeable {
+	private final static Logger	logger				= LoggerFactory.getLogger(OSGiRepository.class);
 	final static int	YEAR		= 365 * 24 * 60 * 60;
 	static int			DEFAULT_POLL_TIME	= (int) TimeUnit.MINUTES.toSeconds(5);
 
@@ -67,7 +69,7 @@ public class OSGiRepository extends BaseRepository
 
 	private Config					config;
 	private OSGiIndex				index;
-	private Reporter				reporter	= new Slf4jReporter(OSGiRepository.class);
+	private Reporter				reporter;
 	private Registry				registry;
 	private ScheduledFuture< ? >	poller;
 	private volatile boolean		stale		= false;
@@ -142,7 +144,7 @@ public class OSGiRepository extends BaseRepository
 							try {
 								poll();
 							} catch (Exception e) {
-								reporter.trace("During polling %s", e);
+								logger.debug("During polling", e);
 							} finally {
 								inPoll.set(false);
 							}

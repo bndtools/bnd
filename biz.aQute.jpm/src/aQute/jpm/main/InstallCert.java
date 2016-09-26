@@ -61,6 +61,9 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter;
 
@@ -69,6 +72,7 @@ import aQute.service.reporter.Reporter;
  * certificates.
  */
 public class InstallCert {
+	private final static Logger logger = LoggerFactory.getLogger(InstallCert.class);
 
 	public static void installCert(Reporter reporter, String host, int port, String passphrase, File file,
 			boolean install) throws Exception {
@@ -85,25 +89,25 @@ public class InstallCert {
 		}, null);
 		SSLSocketFactory factory = context.getSocketFactory();
 
-		reporter.trace("Opening connection to %s:%s", host, port);
+		logger.debug("Opening connection to {}:{}", host, port);
 		SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
 		socket.setSoTimeout(10000);
 		try {
-			reporter.trace("Starting SSL handshake...");
+			logger.debug("Starting SSL handshake...");
 			socket.startHandshake();
 			socket.close();
-			reporter.trace("No errors, certificate is already trusted");
+			logger.debug("No errors, certificate is already trusted");
 		} catch (SSLException e) {
-			reporter.trace("expected exception");
+			logger.debug("expected exception");
 		}
 
 		X509Certificate[] chain = tm.chain;
 		if (chain == null) {
-			reporter.trace("Could not obtain server certificate chain");
+			logger.debug("Could not obtain server certificate chain");
 			return;
 		}
 
-		reporter.trace("Server sent %d certificate(s):", chain.length);
+		logger.debug("Server sent {} certificate(s):", chain.length);
 
 		System.out.println("Chain");
 		String trusted = null;
@@ -132,7 +136,7 @@ public class InstallCert {
 
 		saveKeystore(passphrase, file, ks);
 
-		reporter.trace("Added certificate to keystore '%s' using alias '%s'", file, alias);
+		logger.debug("Added certificate to keystore '{}' using alias '{}'", file, alias);
 	}
 
 	private static void saveKeystore(String passphrase, File file, KeyStore ks) throws FileNotFoundException,

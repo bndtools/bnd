@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -26,6 +29,7 @@ import aQute.service.reporter.Reporter;
 
 @aQute.bnd.annotation.plugin.BndPlugin(name = "signer", parameters = JartoolSigner.Config.class)
 public class JartoolSigner implements Plugin, SignerPlugin {
+	private final static Logger logger = LoggerFactory.getLogger(JartoolSigner.class);
 
 	@interface Config {
 		String keystore();
@@ -117,7 +121,7 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 
 		command.add(tmp.getAbsolutePath());
 		command.add(alias);
-		builder.trace("Jarsigner command: %s", command);
+		logger.debug("Jarsigner command: {}", command);
 		command.setTimeout(20, TimeUnit.SECONDS);
 		StringBuilder out = new StringBuilder();
 		StringBuilder err = new StringBuilder();
@@ -125,7 +129,7 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 		if (exitValue != 0) {
 			builder.error("Signing Jar out: %s%nerr: %s", out, err);
 		} else {
-			builder.trace("Signing Jar out: %s%nerr: %s", out, err);
+			logger.debug("Signing Jar out: {}\nerr: {}", out, err);
 		}
 
 		Jar signed = new Jar(tmp);

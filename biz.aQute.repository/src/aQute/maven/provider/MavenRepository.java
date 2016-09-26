@@ -23,13 +23,14 @@ import org.osgi.util.function.Function;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.Promises;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
-import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
 import aQute.maven.api.Program;
@@ -38,13 +39,13 @@ import aQute.maven.api.Revision;
 import aQute.service.reporter.Reporter;
 
 public class MavenRepository implements IMavenRepo, Closeable {
+	private final static Logger					logger		= LoggerFactory.getLogger(MavenRepository.class);
 	private final File									base;
 	private final String								id;
 	private final List<MavenBackingRepository>			release		= new ArrayList<>();
 	private final List<MavenBackingRepository>			snapshot	= new ArrayList<>();
 	private final Executor								executor;
 	private final boolean								localOnly;
-	private final Reporter						reporter	= new Slf4jReporter(MavenRepository.class);
 	private final Map<Revision,Promise<POM>>	poms		= new WeakHashMap<>();
 
 	public MavenRepository(File base, String id, List<MavenBackingRepository> release,
@@ -59,7 +60,6 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 		this.executor = executor == null ? Executors.newCachedThreadPool() : executor;
 		this.localOnly = this.release.isEmpty() && this.snapshot.isEmpty();
-		// this.reporter = reporter;
 		base.mkdirs();
 	}
 
@@ -108,7 +108,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public Release release(final Revision revision, final Properties context) throws Exception {
-		reporter.trace("Release %s to %s", revision, this);
+		logger.debug("Release {} to {}", revision, this);
 		if (revision.isSnapshot()) {
 			return new SnapshotReleaser(this, revision, snapshot.isEmpty() ? null : snapshot.get(0), context);
 		}
@@ -203,7 +203,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 					break;
 				case OTHER :
 					error = State.OTHER;
-					reporter.error("Fetching artifact gives error %s", remotePath);
+					logger.error("Fetching artifact gives error {}", remotePath);
 					break;
 
 				case UNMODIFIED :
@@ -337,7 +337,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 				try (FileInputStream fin = new FileInputStream(pomFile)) {
 					return getPom(fin);
 				} catch (Exception e) {
-					reporter.exception(e, "Failed to parse pom %s from file %s", revision, pomFile);
+					logger.error("Failed to parse pom {} from file {}", revision, pomFile, e);
 					return null;
 				}
 			}

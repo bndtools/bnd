@@ -32,7 +32,7 @@ public class CentralTest extends TestCase {
 		local.mkdirs();
 		repo = MavenRemoteRepository.create(REPO_URL, reporter, local, new HttpClient());
 		storage = new MavenRepository(local, "central", this.repo, null, null,
-				new ReporterAdapter(System.out), null);
+				null, null);
 	}
 
 	@Override

@@ -37,7 +37,7 @@ public class P2IndexerTest extends TestCase {
 		HttpClient client = new HttpClient();
 		client.setCache(IO.getFile(tmp, "cache"));
 
-		try (P2Indexer p2 = new P2Indexer(new Slf4jReporter(), tmp, client,
+		try (P2Indexer p2 = new P2Indexer(new Slf4jReporter(P2IndexerTest.class), tmp, client,
 				new URI("http://macbadge-updates.s3.amazonaws.com"), "test");) {
 
 			assertEquals("[name.njbartlett.eclipse.macbadge]", p2.list(null).toString());
@@ -53,7 +53,7 @@ public class P2IndexerTest extends TestCase {
 		File input = IO.getFile("testdata/p2/macbadge");
 		assertTrue("File must be dir", input.isDirectory());
 
-		try (P2Indexer p2 = new P2Indexer(new Slf4jReporter(), tmp, client, input.toURI(),
+		try (P2Indexer p2 = new P2Indexer(new Slf4jReporter(P2IndexerTest.class), tmp, client, input.toURI(),
 				"test");) {
 
 			assertEquals("[name.njbartlett.eclipse.macbadge]", p2.list(null).toString());
@@ -122,7 +122,7 @@ public class P2IndexerTest extends TestCase {
 			throw ite.getTargetException();
 		}
 
-		try (P2Indexer p3 = new P2Indexer(new Slf4jReporter(), tmp, client, input.toURI(),
+		try (P2Indexer p3 = new P2Indexer(new Slf4jReporter(P2IndexerTest.class), tmp, client, input.toURI(),
 				"test");) {
 			File f = p3.get("name.njbartlett.eclipse.macbadge", new Version("1.0.0.201110100042"), null);
 			assertNotNull(f);
@@ -136,7 +136,7 @@ public class P2IndexerTest extends TestCase {
 		HttpClient client = new HttpClient();
 		client.setCache(IO.getFile(tmp, "cache"));
 
-		try (P2Indexer p2 = new P2Indexer(new Slf4jReporter(), tmp, client,
+		try (P2Indexer p2 = new P2Indexer(new Slf4jReporter(P2IndexerTest.class), tmp, client,
 				new URI("http://macbadge-updates.s3.amazonaws.com"), "test");) {
 
 			assertEquals(1, p2.versions("name.njbartlett.eclipse.macbadge").size());

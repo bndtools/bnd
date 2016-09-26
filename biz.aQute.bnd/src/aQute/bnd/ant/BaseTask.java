@@ -1,5 +1,7 @@
 package aQute.bnd.ant;
 
+import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,14 +12,18 @@ import java.util.List;
 
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Property;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
+import aQute.lib.strings.Strings;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.libg.reporter.ReporterMessages;
 import aQute.service.reporter.Reporter;
 
 public class BaseTask extends Task implements Reporter {
+	private final static Logger	logger			= LoggerFactory.getLogger(BaseTask.class);
 	ReporterAdapter			reporter		= new ReporterAdapter();
 
 	List<String>			errors			= new ArrayList<String>();
@@ -116,9 +122,13 @@ public class BaseTask extends Task implements Reporter {
 		return trace;
 	}
 
+	/**
+	 * @deprecated Use SLF4J Logger.debug instead.
+	 */
+	@Deprecated
 	public void trace(String s, Object... args) {
-		if (trace) {
-			System.err.printf("# " + s + "%n", args);
+		if (logger.isDebugEnabled()) {
+			logger.debug("{}", Strings.format(s, args));
 		}
 	}
 
@@ -162,8 +172,20 @@ public class BaseTask extends Task implements Reporter {
 		return reporter.getWarnings();
 	}
 
+	/**
+	 * @deprecated Use SLF4J
+	 *             Logger.info(aQute.libg.slf4j.GradleLogging.LIFECYCLE)
+	 *             instead.
+	 */
+	@Deprecated
 	public void progress(float progress, String s, Object... args) {
-		reporter.progress(progress, s, args);
+		if (logger.isInfoEnabled(LIFECYCLE)) {
+			String message = Strings.format(s, args);
+			if (progress > 0)
+				logger.info(LIFECYCLE, "[{}] {}", (int) progress, message);
+			else
+				logger.info(LIFECYCLE, "{}", message);
+		}
 	}
 
 	public SetLocation warning(String s, Object... args) {

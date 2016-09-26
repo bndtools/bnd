@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.Manifest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
@@ -16,6 +19,7 @@ import aQute.lib.getopt.Options;
 import aQute.libg.generics.Create;
 
 public class PatchCommand {
+	private final static Logger	logger	= LoggerFactory.getLogger(PatchCommand.class);
 	bnd bnd;
 
 	public PatchCommand(bnd bnd) {
@@ -48,15 +52,15 @@ public class PatchCommand {
 		for (String path : a.getResources().keySet()) {
 			Resource br = b.getResource(path);
 			if (br == null) {
-				bnd.trace("DELETE    %s", path);
+				logger.debug("DELETE    {}", path);
 				delete.add(path);
 			} else {
 				Resource ar = a.getResource(path);
 				if (isEqual(ar, br)) {
-					bnd.trace("UNCHANGED %s", path);
+					logger.debug("UNCHANGED {}", path);
 					b.remove(path);
 				} else
-					bnd.trace("UPDATE    %s", path);
+					logger.debug("UPDATE    {}", path);
 			}
 		}
 

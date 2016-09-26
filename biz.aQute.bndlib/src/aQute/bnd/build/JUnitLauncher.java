@@ -7,12 +7,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.osgi.Classpath;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.libg.command.Command;
 
 public class JUnitLauncher extends ProjectLauncher {
+	private final static Logger	logger	= LoggerFactory.getLogger(JUnitLauncher.class);
 	boolean					junit4Main;
 	final Project			project;
 	private Classpath		cp;
@@ -32,12 +36,12 @@ public class JUnitLauncher extends ProjectLauncher {
 		String testDirName = project.getProperty("testsrc", "test");
 		File testSrc = project.getFile(testDirName).getAbsoluteFile();
 		if (!testSrc.isDirectory()) {
-			project.trace("no test src directory");
+			logger.debug("no test src directory");
 			return;
 		}
 
 		if (!traverse(fqns, testSrc, "", tests)) {
-			project.trace("no test files found in %s", testSrc);
+			logger.debug("no test files found in {}", testSrc);
 			return;
 		}
 
@@ -60,7 +64,7 @@ public class JUnitLauncher extends ProjectLauncher {
 		if (timeout != 0)
 			java.setTimeout(timeout + 1000, TimeUnit.MILLISECONDS);
 
-		project.trace("cmd line %s", java);
+		logger.debug("cmd line {}", java);
 		try {
 			int result = java.execute(System.in, System.err, System.err);
 			if (result == Integer.MIN_VALUE)

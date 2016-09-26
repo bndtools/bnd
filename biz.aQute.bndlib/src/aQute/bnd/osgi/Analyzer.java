@@ -58,6 +58,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.Export;
 import aQute.bnd.header.Attrs;
@@ -86,6 +88,7 @@ import aQute.libg.glob.Glob;
 import aQute.libg.reporter.ReporterMessages;
 
 public class Analyzer extends Processor {
+	private final static Logger						logger					= LoggerFactory.getLogger(Analyzer.class);
 	private final SortedSet<Clazz.JAVA>				ees						= new TreeSet<Clazz.JAVA>();
 	static Properties								bndInfo;
 
@@ -201,7 +204,7 @@ public class Analyzer extends Processor {
 			if (s != null) {
 				activator = getTypeRefFromFQN(s);
 				referTo(activator);
-				trace("activator %s %s", s, activator);
+				logger.debug("activator {} {}", s, activator);
 			}
 
 			// Execute any plugins
@@ -3016,7 +3019,7 @@ public class Analyzer extends Processor {
 			if (nm.endsWith(Constants.DEFAULT_BND_EXTENSION)) {
 				nm = nm.substring(0, nm.length() - Constants.DEFAULT_BND_EXTENSION.length())
 						+ Constants.DEFAULT_JAR_EXTENSION;
-				trace("name is %s", nm);
+				logger.debug("name is {}", nm);
 				return new File(outputDir, nm);
 			}
 		}
@@ -3048,7 +3051,7 @@ public class Analyzer extends Processor {
 		Jar jar = getJar();
 		File source = jar.getSource();
 
-		trace("check for modified build=%s file=%s, diff=%s", jar.lastModified(), output.lastModified(),
+		logger.debug("check for modified build={} file={}, diff={}", jar.lastModified(), output.lastModified(),
 				jar.lastModified() - output.lastModified());
 
 		if (!output.exists() || output.lastModified() <= jar.lastModified() || force) {
@@ -3064,7 +3067,7 @@ public class Analyzer extends Processor {
 					source.delete();
 			}
 			try {
-				trace("Saving jar to %s", output);
+				logger.debug("Saving jar to {}", output);
 				getJar().write(output);
 			} catch (Exception e) {
 				output.delete();
@@ -3072,7 +3075,7 @@ public class Analyzer extends Processor {
 			}
 			return true;
 		}
-		trace("Not modified %s", output);
+		logger.debug("Not modified {}", output);
 		return false;
 
 	}

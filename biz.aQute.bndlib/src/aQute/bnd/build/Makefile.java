@@ -9,6 +9,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Processor;
@@ -21,6 +24,7 @@ import aQute.libg.command.Command;
  * Implements a mini make builder that is run just before we build the bundle.
  */
 class Makefile extends Processor {
+	private final static Logger	logger		= LoggerFactory.getLogger(Makefile.class);
 
 	private Parameters	parameters;
 	private List<Cmd>	commands	= new ArrayList<>();
@@ -43,7 +47,7 @@ class Makefile extends Processor {
 
 			StringBuilder errors = new StringBuilder();
 			StringBuilder stdout = new StringBuilder();
-			trace("executing command %s", name);
+			logger.debug("executing command {}", name);
 			Command cmd = new Command("sh");
 			cmd.setTimeout(1, TimeUnit.MINUTES);
 			cmd.setCwd(getBase());
@@ -67,14 +71,14 @@ class Makefile extends Processor {
 				if (source != null)
 					command = command.replaceAll("\\$\\^", Strings.join(" ", source.getFiles()));
 
-				trace("cmd %s", command);
+				logger.debug("cmd {}", command);
 
 				int result = cmd.execute(command, stdout, errors);
 
 				if (stdout.length() > 0)
-					trace("%s stdout: %s", name, stdout);
+					logger.debug("{} stdout: {}", name, stdout);
 				if (errors.length() > 0)
-					trace("%s stderr: %s", name, errors);
+					logger.debug("{} stderr: {}", name, errors);
 
 				if (result != 0) {
 					target.delete();
@@ -120,7 +124,7 @@ class Makefile extends Processor {
 			boolean found = false;
 			while (m.find()) {
 				found = true;
-				trace("found errors %s", m.group());
+				logger.debug("found errors {}", m.group());
 				String type = getGroup(m, "type");
 
 				SetLocation location = "warning".equals(type) ? warning("%s: %s", name, m.group("message"))
@@ -136,7 +140,7 @@ class Makefile extends Processor {
 					String ls = getGroup(m, "line");
 					if (ls != null && ls.matches("\\d+"))
 						location.line(Integer.parseInt(ls));
-					trace("file %s#%s", file, ls);
+					logger.debug("file {}#{}", file, ls);
 				}
 			}
 			return found;
@@ -204,7 +208,7 @@ class Makefile extends Processor {
 					else
 						path = path + File.pathSeparator + oldpath;
 				}
-				trace("PATH: %s", path);
+				logger.debug("PATH: {}", path);
 			}
 
 		}

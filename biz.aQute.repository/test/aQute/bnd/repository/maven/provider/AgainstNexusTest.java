@@ -88,8 +88,6 @@ public class AgainstNexusTest extends TestCase {
 		config.put("releaseUrl", HTTP_LOCALHOST_8081);
 
 		Processor reporter = new Processor();
-		reporter.setTrace(true);
-		reporter.trace("test");
 		HttpClient client = new HttpClient();
 
 		BasicAuthentication ba = new BasicAuthentication("admin", "admin123", reporter);

@@ -60,6 +60,8 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 import aQute.bnd.build.Container;
@@ -142,6 +144,7 @@ import aQute.service.reporter.Reporter;
  * Utility to make bundles. @version $Revision: 1.14 $
  */
 public class bnd extends Processor {
+	private final static Logger					logger					= LoggerFactory.getLogger(bnd.class);
 	static Pattern								ASSIGNMENT	= Pattern.compile(																			//
 			"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
 	Settings									settings	= new Settings();
@@ -364,7 +367,7 @@ public class bnd extends Processor {
 
 			rewrite(arguments);
 
-			trace("rewritten %s", arguments);
+			logger.debug("rewritten {}", arguments);
 
 			if (arguments.isEmpty()) {
 				Justif f = new Justif(80, 20, 22, 72);
@@ -693,7 +696,7 @@ public class bnd extends Processor {
 			List<Builder> subs = b.getSubBuilders();
 
 			for (Builder bb : subs) {
-				trace("building %s", bb.getPropertiesFile());
+				logger.debug("building {}", bb.getPropertiesFile());
 				bb.build();
 				File out = bb.getOutputFile(dest);
 				getInfo(bb, bb.getBsn() + ": ");
@@ -1788,7 +1791,7 @@ public class bnd extends Processor {
 		Project project = getProject(options.project());
 		Justif justif = new Justif(120, 40, 50, 52, 80);
 
-		trace("using %s", project);
+		logger.debug("using {}", project);
 		Processor target = project;
 		if (project != null) {
 			Workspace ws = project.getWorkspace();
@@ -2363,7 +2366,7 @@ public class bnd extends Processor {
 			boolean hadOne = false;
 			try {
 				for (String arg : opts._arguments()) {
-					trace("will run test %s", arg);
+					logger.debug("will run test {}", arg);
 					File f = getFile(arg);
 					errors += runtTest(f, ws, reportDir, summary);
 					hadOne = true;
@@ -2550,7 +2553,7 @@ public class bnd extends Processor {
 			path = path.substring(0, path.length() - 4);
 		path += ".html";
 		File html = new File(path);
-		trace("Creating html report: %s", html);
+		logger.debug("Creating html report: {}", html);
 
 		TransformerFactory fact = TransformerFactory.newInstance();
 
@@ -2562,7 +2565,7 @@ public class bnd extends Processor {
 			try {
 				Transformer transformer = fact.newTransformer(new StreamSource(in));
 				transformer.transform(new DOMSource(doc), new StreamResult(out));
-				trace("Transformed");
+				logger.debug("Transformed");
 			} finally {
 				in.close();
 				out.close();
@@ -3181,20 +3184,20 @@ public class bnd extends Processor {
 				File f = getFile(opts.location());
 				settings = new Settings(f.getAbsolutePath());
 				settings.load(password);
-				trace("getting settings from %s", f);
+				logger.debug("getting settings from {}", f);
 			}
 
 			if (opts.clear()) {
 				settings.clear();
-				trace("clear %s", settings.entrySet());
+				logger.debug("clear {}", settings.entrySet());
 			}
 
 			if (opts.generate()) {
-				trace("Generating new key pair");
+				logger.debug("Generating new key pair");
 				settings.generate(password);
 			}
 
-			trace("settings %s", opts.clear());
+			logger.debug("settings {}", opts.clear());
 			List<String> rest = opts._arguments();
 
 			if (opts.publicKey()) {
@@ -3219,7 +3222,7 @@ public class bnd extends Processor {
 				for (String s : rest) {
 					s = s.trim();
 					Matcher m = ASSIGNMENT.matcher(s);
-					trace("try %s", s);
+					logger.debug("try {}", s);
 					if (m.matches()) {
 						String key = m.group(1);
 						Instructions instr = new Instructions(key);
@@ -3236,13 +3239,13 @@ public class bnd extends Processor {
 							} else {
 								// we have 'a=', remove
 								for (String k : select) {
-									trace("remove %s=%s", k, settings.get(k));
+									logger.debug("remove {}={}", k, settings.get(k));
 									settings.remove(k);
 									set = true;
 								}
 							}
 						} else {
-							trace("assignment %s=%s", key, value);
+							logger.debug("assignment {}={}", key, value);
 							settings.put(key, value);
 							set = true;
 						}
@@ -3252,7 +3255,7 @@ public class bnd extends Processor {
 					}
 				}
 				if (set) {
-					trace("saving");
+					logger.debug("saving");
 					settings.save(password);
 				}
 			}
@@ -3453,7 +3456,7 @@ public class bnd extends Processor {
 		}
 		for (Actionable o : actionables) {
 			if (filter.matcher(o.title()).matches()) {
-				trace("actionable %s - %s", o, o.title());
+				logger.debug("actionable {} - {}", o, o.title());
 				Map<String,Runnable> map = o.actions();
 				if (map != null) {
 					if (opts._arguments().isEmpty()) {
@@ -3558,7 +3561,7 @@ public class bnd extends Processor {
 			}
 		}
 		for (File f : files) {
-			trace("find %s", f);
+			logger.debug("find {}", f);
 			Jar jar = new Jar(f);
 			try {
 				Manifest m = jar.getManifest();
@@ -4235,7 +4238,7 @@ public class bnd extends Processor {
 
 			for (Entry<String,Attrs> e : exports.entrySet()) {
 
-				trace("exporting %s to %s with %s", run, e.getKey(), e.getValue());
+				logger.debug("exporting {} to {} with {}", run, e.getKey(), e.getValue());
 
 				Map.Entry<String,Resource> result = run.export(e.getKey(), e.getValue());
 				getInfo(run);
@@ -4248,7 +4251,7 @@ public class bnd extends Processor {
 					if (output.isDirectory())
 						output = new File(output, name);
 					output.getParentFile().mkdirs();
-					trace("Got a result for %s, store in %s", e.getKey(), output);
+					logger.debug("Got a result for {}, store in {}", e.getKey(), output);
 					IO.copy(result.getValue().openInputStream(), output);
 				}
 			}
@@ -4304,11 +4307,11 @@ public class bnd extends Processor {
 		Jar output = new Jar(source.getName());
 
 		for (String path : bundleClassPath) {
-			trace("bcp entry %s", path);
+			logger.debug("bcp entry {}", path);
 			Resource r = input.getResource(path);
 			if (r == null) {
 
-				trace("Is directory %s", path);
+				logger.debug("Is directory {}", path);
 
 				if (path.equals(".")) {
 					addAll(output, input, "", bundleClassPath);
@@ -4317,7 +4320,7 @@ public class bnd extends Processor {
 
 			} else {
 
-				trace("Is jar %s", path);
+				logger.debug("Is jar {}", path);
 
 				Jar sub = new Jar(path, r.openInputStream());
 				addClose(sub);
@@ -4341,7 +4344,7 @@ public class bnd extends Processor {
 			if (bundleClassPath != null && bundleClassPath.contains(path))
 				continue;
 
-			trace("Add %s", path);
+			logger.debug("Add {}", path);
 
 			if (path.equals("META-INF/MANIFEST.MF"))
 				continue;
@@ -4349,11 +4352,11 @@ public class bnd extends Processor {
 			Resource r = e.getValue();
 
 			if (path.startsWith(prefix)) {
-				trace("Add %s", path);
+				logger.debug("Add {}", path);
 				path = path.substring(prefix.length());
 				output.putResource(path, r);
 			} else
-				trace("Ignore %s because it does not start with prefix %s", path, prefix);
+				logger.debug("Ignore {} because it does not start with prefix {}", path, prefix);
 
 		}
 	}

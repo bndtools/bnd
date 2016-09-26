@@ -23,11 +23,12 @@ import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Resource;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
-import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom.Dependency;
 import aQute.maven.api.MavenScope;
@@ -35,10 +36,9 @@ import aQute.maven.api.Program;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenRepository;
 import aQute.maven.provider.POM;
-import aQute.service.reporter.Reporter;
 
 class Traverser {
-	final Reporter							reporter	= new Slf4jReporter(Traverser.class);
+	private final static Logger				logger		= LoggerFactory.getLogger(Traverser.class);
 	static final Resource					DUMMY		= new ResourceBuilder().build();
 	static final String						ROOT		= "<>";
 	final ConcurrentMap<Archive,Resource>	resources	= new ConcurrentHashMap<>();
@@ -128,10 +128,10 @@ class Traverser {
 			@Override
 			public void run() {
 				try {
-					reporter.trace("parse archive %s", archive);
+					logger.debug("parse archive {}", archive);
 					parseArchive(archive);
 				} catch (Throwable throwable) {
-					reporter.trace(" failed to parse archive %s: %s", archive, throwable);
+					logger.debug(" failed to parse archive {}: {}", archive, throwable);
 					ResourceBuilder rb = new ResourceBuilder();
 					String bsn = archive.revision.program.toString();
 					Version version = toFrameworkVersion(archive.revision.version.getOSGiVersion());
@@ -179,7 +179,7 @@ class Traverser {
 		for (Dependency d : dependencies.values()) {
 			Archive archive = d.getArchive();
 			if (archive == null) {
-				reporter.trace("pom %s has bad dependency %s", pom.getRevision(), d);
+				logger.debug("pom {} has bad dependency {}", pom.getRevision(), d);
 			} else
 				parse(archive, parent);
 		}

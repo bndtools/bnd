@@ -26,6 +26,8 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.log.LogService;
 import org.osgi.service.repository.Repository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
@@ -55,6 +57,7 @@ import aQute.lib.utf8properties.UTF8Properties;
  * BndEditModel & Project
  */
 public class BndrunResolveContext extends AbstractResolveContext {
+	private final static Logger	logger						= LoggerFactory.getLogger(BndrunResolveContext.class);
 
 	private static final String BND_AUGMENT = "bnd.augment";
 	public static final String	RUN_EFFECTIVE_INSTRUCTION	= "-resolve.effective";
@@ -423,7 +426,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 			for (URI uri : locations.keySet())
 				try {
-					project.trace("loading augments from %s", uri);
+					logger.debug("loading augments from {}", uri);
 					File file = http.build().age(24, TimeUnit.HOURS).useCache().go(uri);
 					try (Jar jar = new Jar(file);) {
 						aQute.bnd.osgi.Resource rs = jar.getResource(path);

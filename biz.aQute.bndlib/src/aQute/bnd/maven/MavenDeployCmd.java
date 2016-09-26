@@ -1,5 +1,7 @@
 package aQute.bnd.maven;
 
+import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -7,6 +9,9 @@ import java.io.OutputStream;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.header.Parameters;
@@ -17,8 +22,8 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.libg.command.Command;
 import aQute.service.reporter.Reporter;
-
 public class MavenDeployCmd extends Processor {
+	private final static Logger	logger		= LoggerFactory.getLogger(MavenDeployCmd.class);
 
 	String		repository	= "nexus";
 	String		url			= "http://oss.sonatype.org/service/local/staging/deploy/maven2";
@@ -90,7 +95,7 @@ public class MavenDeployCmd extends Processor {
 		if (maven == null)
 			return false; // we're not playing for this bundle
 
-		project.progress("deploying %s to Maven repo: %s", original, repository);
+		logger.info(LIFECYCLE, "deploying {} to Maven repo: {}", original, repository);
 		File target = project.getTarget();
 		File tmp = Processor.getFile(target, repository);
 		if (!tmp.exists() && !tmp.mkdirs()) {
@@ -101,7 +106,7 @@ public class MavenDeployCmd extends Processor {
 		if (manifest == null)
 			project.error("Jar has no manifest: %s", original);
 		else {
-			project.progress("Writing pom.xml");
+			logger.info(LIFECYCLE, "Writing pom.xml");
 			PomResource pom = new PomResource(manifest);
 			pom.setProperties(maven);
 			File pomFile = write(tmp, pom, "pom.xml");
@@ -116,20 +121,20 @@ public class MavenDeployCmd extends Processor {
 				if (!jdoc.exists() && !jdoc.mkdirs()) {
 					throw new IOException("Could not create directory " + jdoc);
 				}
-				project.progress("Generating Javadoc for: %s", exports.keySet());
+				logger.info(LIFECYCLE, "Generating Javadoc for: {}", exports.keySet());
 				Jar javadoc = javadoc(jdoc, project, exports.keySet());
-				project.progress("Writing javadoc jar");
+				logger.info(LIFECYCLE, "Writing javadoc jar");
 				File javadocFile = write(tmp, new JarResource(javadoc), "javadoc.jar");
-				project.progress("Writing main file");
+				logger.info(LIFECYCLE, "Writing main file");
 				File mainFile = write(tmp, new JarResource(main), "main.jar");
-				project.progress("Writing sources file");
+				logger.info(LIFECYCLE, "Writing sources file");
 				File srcFile = write(tmp, new JarResource(main), "src.jar");
 
-				project.progress("Deploying main file");
+				logger.info(LIFECYCLE, "Deploying main file");
 				maven_gpg_sign_and_deploy(project, mainFile, null, pomFile);
-				project.progress("Deploying main sources file");
+				logger.info(LIFECYCLE, "Deploying main sources file");
 				maven_gpg_sign_and_deploy(project, srcFile, "sources", null);
-				project.progress("Deploying main javadoc file");
+				logger.info(LIFECYCLE, "Deploying main javadoc file");
 				maven_gpg_sign_and_deploy(project, javadocFile, "javadoc", null);
 
 			} finally {

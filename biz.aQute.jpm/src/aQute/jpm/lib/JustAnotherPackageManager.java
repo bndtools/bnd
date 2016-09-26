@@ -37,6 +37,9 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -91,6 +94,7 @@ import aQute.struct.struct;
  */
 
 public class JustAnotherPackageManager {
+	private final static Logger	logger				= LoggerFactory.getLogger(JustAnotherPackageManager.class);
 	private static final String	JPM_VMS_EXTRA		= "jpm.vms.extra";
 	private static final String	SERVICE_JAR_FILE	= "service.jar";
 	public static final String	SERVICE				= "service";
@@ -535,7 +539,7 @@ public class JustAnotherPackageManager {
 		if (data.trace) {
 			map = new HashMap<String,String>();
 			map.put("java.security.manager", "aQute.jpm.service.TraceSecurityManager");
-			reporter.trace("tracing");
+			logger.debug("tracing");
 		}
 		String s = platform.createCommand(data, map, force, service.getAbsolutePath());
 		if (s == null)
@@ -681,13 +685,13 @@ public class JustAnotherPackageManager {
 		for (ServiceData sd : start) {
 			try {
 				Service service = getService(sd.name);
-				reporter.trace("Starting %s", service);
+				logger.debug("Starting {}", service);
 				String result = service.start(true);
 				if (result != null)
 					reporter.error("Started error %s", result);
 				else
 					startedByDaemon.add(service);
-				reporter.trace("Started %s", service);
+				logger.debug("Started {}", service);
 			} catch (Exception e) {
 				reporter.error("Cannot start daemon %s, due to %s", sd.name, e);
 			}
@@ -753,7 +757,7 @@ public class JustAnotherPackageManager {
 					e.printStackTrace();
 					data.error = e.toString();
 				} finally {
-					reporter.trace("done downloading %s", uri);
+					logger.debug("done downloading {}", uri);
 					data.done();
 				}
 			}
@@ -770,23 +774,23 @@ public class JustAnotherPackageManager {
 	}
 
 	void put(final URI uri, ArtifactData data) throws Exception {
-		reporter.trace("put %s %s", uri, data);
+		logger.debug("put {} {}", uri, data);
 		File tmp = createTempFile(repoDir, "mtp", ".whatever");
 		tmp.deleteOnExit();
 		try {
 			copy(uri.toURL(), tmp);
 			byte[] sha = SHA1.digest(tmp).digest();
-			reporter.trace("SHA %s %s", uri, Hex.toHexString(sha));
+			logger.debug("SHA {} {}", uri, Hex.toHexString(sha));
 			ArtifactData existing = get(sha);
 			if (existing != null) {
-				reporter.trace("existing");
+				logger.debug("existing");
 				xcopy(existing, data);
 				return;
 			}
 			File meta = new File(repoDir, Hex.toHexString(sha) + ".json");
 			File file = new File(repoDir, Hex.toHexString(sha));
 			rename(tmp, file);
-			reporter.trace("file %s", file);
+			logger.debug("file {}", file);
 			data.file = file.getAbsolutePath();
 			data.sha = sha;
 			data.busy = false;
@@ -796,17 +800,17 @@ public class JustAnotherPackageManager {
 			} else
 				data.name = Strings.display(cmddata.title, cmddata.bsn, cmddata.name, uri);
 			codec.enc().to(meta).put(data);
-			reporter.trace("TD = %s", data);
+			logger.debug("TD = {}", data);
 		} finally {
 			tmp.delete();
-			reporter.trace("puted %s %s", uri, data);
+			logger.debug("puted {} {}", uri, data);
 		}
 	}
 
 	public ArtifactData get(byte[] sha) throws Exception {
 		String name = Hex.toHexString(sha);
 		File data = IO.getFile(repoDir, name + ".json");
-		reporter.trace("artifact data file %s", data);
+		logger.debug("artifact data file {}", data);
 		if (data.isFile()) { // Bin + metadata
 			ArtifactData artifact = codec.dec().from(data).get(ArtifactData.class);
 			artifact.file = IO.getFile(repoDir, name).getAbsolutePath();
@@ -908,14 +912,14 @@ public class JustAnotherPackageManager {
 	}
 
 	public ArtifactData getCandidateAsync(String arg) throws Exception {
-		reporter.trace("coordinate %s", arg);
+		logger.debug("coordinate {}", arg);
 		if (isUrl(arg))
 			try {
 				ArtifactData data = putAsync(new URI(arg));
 				data.local = true;
 				return data;
 			} catch (Exception e) {
-				reporter.trace("hmm, not a valid url %s, will try the server", arg);
+				logger.debug("hmm, not a valid url {}, will try the server", arg);
 				return null;
 			}
 
@@ -927,7 +931,7 @@ public class JustAnotherPackageManager {
 				data.local = true;
 				return data;
 			} catch (Exception e) {
-				reporter.trace("hmm, not a valid file %s, will try the server", arg);
+				logger.debug("hmm, not a valid file {}, will try the server", arg);
 				return null;
 			}
 
@@ -943,11 +947,11 @@ public class JustAnotherPackageManager {
 		if (revision == null)
 			return null;
 
-		reporter.trace("revision %s", Hex.toHexString(revision._id));
+		logger.debug("revision {}", Hex.toHexString(revision._id));
 
 		ArtifactData ad = get(revision._id);
 		if (ad != null) {
-			reporter.trace("found in cache");
+			logger.debug("found in cache");
 			return ad;
 		}
 
@@ -1055,7 +1059,7 @@ public class JustAnotherPackageManager {
 				sha = SHA1.digest(jarfile).digest();
 			}
 		}
-		reporter.trace("sha %s", Hex.toHexString(sha));
+		logger.debug("sha {}", Hex.toHexString(sha));
 		Revision revision = library.getRevision(sha);
 		if (revision == null) {
 			return null;
@@ -1227,7 +1231,7 @@ public class JustAnotherPackageManager {
 		data.jpmRepoDir = repoDir.getCanonicalPath();
 		JarFile jar = new JarFile(source);
 		try {
-			reporter.trace("Parsing %s", source);
+			logger.debug("Parsing {}", source);
 			Manifest m = jar.getManifest();
 			Attributes main = m.getMainAttributes();
 			data.name = data.bsn = main.getValue(Constants.BUNDLE_SYMBOLICNAME);
@@ -1255,7 +1259,7 @@ public class JustAnotherPackageManager {
 				}
 			}
 
-			reporter.trace("name %s %s %s", data.name, data.main, data.title);
+			logger.debug("name {} {} {}", data.name, data.main, data.title);
 			DependencyCollector path = new DependencyCollector(this);
 			path.add(artifact);
 			DependencyCollector bundles = new DependencyCollector(this);
@@ -1288,9 +1292,9 @@ public class JustAnotherPackageManager {
 				}
 			}
 
-			reporter.trace("collect digests runpath");
+			logger.debug("collect digests runpath");
 			data.dependencies.addAll(path.getDigests());
-			reporter.trace("collect digests bundles");
+			logger.debug("collect digests bundles");
 			data.runbundles.addAll(bundles.getDigests());
 
 			Parameters command = OSGiHeader.parseHeader(main.getValue("JPM-Command"));

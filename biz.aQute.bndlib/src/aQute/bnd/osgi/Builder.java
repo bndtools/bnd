@@ -23,6 +23,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.component.DSAnnotations;
 import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.header.Attrs;
@@ -55,6 +58,7 @@ import aQute.libg.generics.Create;
  * Import-Package: package-decl ( ',' package-decl )* @version $Revision: 1.27 $
  */
 public class Builder extends Analyzer {
+	private final static Logger		logger						= LoggerFactory.getLogger(Builder.class);
 	static Pattern					IR_PATTERN					= Pattern.compile("[{]?-?@?(?:[^=]+=)?\\s*([^}!]+).*");
 	private final DiffPluginImpl	differ						= new DiffPluginImpl();
 	private Pattern					xdoNotCopy					= null;
@@ -74,7 +78,7 @@ public class Builder extends Analyzer {
 	public Builder() {}
 
 	public Jar build() throws Exception {
-		trace("build");
+		logger.debug("build");
 		init();
 		if (isTrue(getProperty(NOBUNDLES)))
 			return null;
@@ -199,7 +203,7 @@ public class Builder extends Analyzer {
 		Parameters ps = OSGiHeader.parseHeader(getProperty(DIGESTS));
 		if (ps.isEmpty())
 			return;
-		trace("digests %s", ps);
+		logger.debug("digests {}", ps);
 		String[] digests = ps.keySet().toArray(new String[0]);
 		dot.setDigestAlgorithms(digests);
 	}
@@ -231,14 +235,14 @@ public class Builder extends Analyzer {
 		if (wab == null && wablib == null)
 			return dot;
 
-		trace("wab %s %s", wab, wablib);
+		logger.debug("wab {} {}", wab, wablib);
 		setBundleClasspath(append("WEB-INF/classes", getProperty(BUNDLE_CLASSPATH)));
 
 		Set<String> paths = new HashSet<String>(dot.getResources().keySet());
 
 		for (String path : paths) {
 			if (path.indexOf('/') > 0 && !Character.isUpperCase(path.charAt(0))) {
-				trace("wab: moving: %s", path);
+				logger.debug("wab: moving: {}", path);
 				dot.rename(path, "WEB-INF/classes/" + path);
 			}
 		}
@@ -327,7 +331,7 @@ public class Builder extends Analyzer {
 		if (signing == null)
 			return;
 
-		trace("Signing %s, with %s", getBsn(), signing);
+		logger.debug("Signing {}, with {}", getBsn(), signing);
 		List<SignerPlugin> signers = getPlugins(SignerPlugin.class);
 
 		Parameters infos = parseHeader(signing);
@@ -351,7 +355,7 @@ public class Builder extends Analyzer {
 		conditionals.putAll(getMergedParameters(CONDITIONALPACKAGE));
 		if (conditionals.isEmpty())
 			return null;
-		trace("do Conditional Package %s", conditionals);
+		logger.debug("do Conditional Package {}", conditionals);
 		Instructions instructions = new Instructions(conditionals);
 
 		Collection<PackageRef> referred = instructions.select(getReferred().keySet(), false);
@@ -373,7 +377,7 @@ public class Builder extends Analyzer {
 			}
 		}
 		if (jar.getDirectories().size() == 0) {
-			trace("extra dirs %s", jar.getDirectories());
+			logger.debug("extra dirs {}", jar.getDirectories());
 			return null;
 		}
 		return jar;
@@ -489,7 +493,7 @@ public class Builder extends Analyzer {
 						}
 					}
 					if (packageRef.isDefaultPackage())
-						trace("Package reference is default package");
+						logger.debug("Package reference is default package");
 					dot.putResource("OSGI-OPT/src/" + sourcePath, new FileResource(f));
 				}
 			}
@@ -716,7 +720,7 @@ public class Builder extends Analyzer {
 	 * @param overwriteResource
 	 */
 	private void copy(Jar dest, Jar srce, String path, boolean overwrite) {
-		trace("copy d=%s s=%s p=%s", dest, srce, path);
+		logger.debug("copy d={} s={} p={}", dest, srce, path);
 		dest.copy(srce, path, overwrite);
 		if (hasSources())
 			dest.copy(srce, "OSGI-OPT/src/" + path, overwrite);
@@ -725,7 +729,7 @@ public class Builder extends Analyzer {
 		String bndInfoPath = path + "/bnd.info";
 		Resource r = dest.getResource(bndInfoPath);
 		if (r != null && !(r instanceof PreprocessResource)) {
-			trace("preprocessing bnd.info");
+			logger.debug("preprocessing bnd.info");
 			PreprocessResource pp = new PreprocessResource(this, r);
 			dest.putResource(bndInfoPath, pp);
 		}
@@ -1595,7 +1599,7 @@ public class Builder extends Analyzer {
 		if (diffs.isEmpty())
 			return;
 
-		trace("diff %s", diffs);
+		logger.debug("diff {}", diffs);
 
 		if (tree == null)
 			tree = differ.tree(this);
@@ -1615,7 +1619,7 @@ public class Builder extends Analyzer {
 			Diff api = tree.diff(other).get("<api>");
 			Instructions instructions = new Instructions(entry.getValue().get("--pack"));
 
-			trace("diff against %s --full=%s --pack=%s --warning=%s", file, full, instructions);
+			logger.debug("diff against {} --full={} --pack={} --warning={}", file, full, instructions);
 			for (Diff p : api.getChildren()) {
 				String pname = p.getName();
 				if (p.getType() == Type.PACKAGE && instructions.matches(pname)) {

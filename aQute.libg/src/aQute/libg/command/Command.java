@@ -18,10 +18,14 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter;
 
 public class Command {
+	private final static Logger	logger		= LoggerFactory.getLogger(Command.class);
 
 	boolean				trace;
 	Reporter			reporter;
@@ -75,9 +79,7 @@ public class Command {
 	}
 
 	public int execute(final InputStream in, Appendable stdout, Appendable stderr) throws Exception {
-		if (reporter != null) {
-			reporter.trace("executing cmd: %s", arguments);
-		}
+		logger.debug("executing cmd: {}", arguments);
 
 		ProcessBuilder p;
 		if (fullCommand != null) {
@@ -179,13 +181,11 @@ public class Command {
 						stdin.close();
 					}
 				}
-				if (reporter != null)
-					reporter.trace("exited process");
+				logger.debug("exited process");
 
 				cerr.join();
 				cout.join();
-				if (reporter != null)
-					reporter.trace("stdout/stderr streams have finished");
+				logger.debug("stdout/stderr streams have finished");
 			} finally {
 				err.close();
 			}
@@ -204,8 +204,7 @@ public class Command {
 			rdInThread.interrupt();
 		}
 
-		if (reporter != null)
-			reporter.trace("cmd %s executed with result=%d, result: %s/%s, timedout=%s", arguments, exitValue, stdout,
+		logger.debug("cmd {} executed with result={}, result: {}/{}, timedout={}", arguments, exitValue, stdout,
 					stderr, timedout);
 
 		if (timedout)
@@ -272,9 +271,7 @@ public class Command {
 					sb.append(e.toString());
 					sb.append("\n**************************************\n");
 				} catch (IOException e1) {}
-				if (reporter != null) {
-					reporter.trace("cmd exec: %s", e);
-				}
+				logger.debug("cmd exec", e);
 			}
 		}
 	}

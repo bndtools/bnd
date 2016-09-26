@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
@@ -28,6 +31,7 @@ import aQute.service.reporter.Reporter;
  * This class maintains
  */
 public class Baseline {
+	private final static Logger logger = LoggerFactory.getLogger(Baseline.class);
 
 	public static class Info {
 		public String				packageName;
@@ -127,7 +131,7 @@ public class Baseline {
 			info.packageDiff = pdiff;
 			info.packageName = pdiff.getName();
 			info.attributes = nExports.get(info.packageName);
-			bnd.trace("attrs for %s %s", info.packageName, info.attributes);
+			logger.debug("attrs for {} {}", info.packageName, info.attributes);
 
 			info.newerVersion = getVersion(info.attributes);
 			info.olderVersion = getVersion(oExports.get(info.packageName));

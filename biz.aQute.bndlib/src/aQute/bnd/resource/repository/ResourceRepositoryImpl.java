@@ -25,6 +25,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Semaphore;
 import java.util.zip.InflaterInputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
 import aQute.bnd.service.repository.ResourceRepository;
@@ -47,6 +50,8 @@ import aQute.service.reporter.Reporter;
  * provide faces on this hidden repository.
  */
 public class ResourceRepositoryImpl implements ResourceRepository {
+	private final static Logger						logger							= LoggerFactory
+			.getLogger(ResourceRepositoryImpl.class);
 	private static Comparator<ResourceDescriptor>	RESOURCE_DESCRIPTOR_COMPARATOR	= new Comparator<ResourceDescriptor>() {
 
 																						public int compare(
@@ -141,7 +146,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 			ResourceDescriptorImpl d = i.next();
 			if (Arrays.equals(id, d.id)) {
 				i.remove();
-				reporter.trace("removing resource %s from index", d);
+				logger.debug("removing resource {} from index", d);
 				event(TYPE.REMOVE, d, null);
 				setDirty();
 			}
@@ -188,11 +193,11 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		boolean add = false;
 		if (rdi != null) {
 			add = true;
-			reporter.trace("adding repo %s to resource %s to index", repoId, rdi);
+			logger.debug("adding repo {} to resource {} to index", repoId, rdi);
 		} else {
 			rdi = new ResourceDescriptorImpl(rd);
 			getIndex().descriptors.add(rdi);
-			reporter.trace("adding resource %s to index", rdi);
+			logger.debug("adding resource {} to index", rdi);
 		}
 		rdi.repositories.add(repoId);
 		event(TYPE.ADD, rdi, null);
@@ -210,7 +215,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		// No such descriptor?
 
 		if (rds == null) {
-			reporter.trace("no such descriptor %s", Hex.toHexString(rd));
+			logger.debug("no such descriptor {}", Hex.toHexString(rd));
 			return null;
 		}
 
@@ -234,7 +239,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		synchronized (failures) {
 			Long l = failures.get(rds.url);
 			if (l != null && (System.currentTimeMillis() - l) < THRESHOLD) {
-				reporter.trace("descriptor %s, had earlier failure not retrying", Hex.toHexString(rd));
+				logger.debug("descriptor {}, had earlier failure not retrying", Hex.toHexString(rd));
 				return null;
 			}
 		}
@@ -243,7 +248,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		// Check if we need to download directly, no blockers
 		//
 		if (blockers == null || blockers.length == 0) {
-			reporter.trace("descriptor %s, not found, immediate download", Hex.toHexString(rd));
+			logger.debug("descriptor {}, not found, immediate download", Hex.toHexString(rd));
 			download(rds, path);
 			return path;
 		}
@@ -252,7 +257,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		// We have blockers so we can download in the background.
 		//
 
-		reporter.trace("descriptor %s, not found, background download", Hex.toHexString(rd));
+		logger.debug("descriptor {}, not found, background download", Hex.toHexString(rd));
 
 		//
 		// With download listeners we need to be careful to queue them
@@ -270,7 +275,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 			if (!first) {
 				// return, file is being downloaded by another and that
 				// other will signal the download listener.
-				reporter.trace("someone else is downloading our file %s", queues.get(path));
+				logger.debug("someone else is downloading our file {}", queues.get(path));
 				return path;
 			}
 		}
@@ -358,28 +363,28 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	}
 
 	void download(ResourceDescriptor rds, File path) throws Exception {
-		reporter.trace("starting download %s", path);
+		logger.debug("starting download {}", path);
 		Exception exception = new Exception();
 		event(TYPE.START_DOWNLOAD, rds, null);
 		for (int i = 0; i < 3; sleep(3000), i++)
 			try {
 				download0(rds.url, path, rds.id);
 				event(TYPE.END_DOWNLOAD, rds, null);
-				reporter.trace("succesful download %s", path);
+				logger.debug("succesful download {}", path);
 				failures.remove(rds.url);
 				return;
 			} catch (FileNotFoundException e) {
-				reporter.trace("no such file download %s", path);
+				logger.debug("no such file download {}", path);
 				exception = e;
 				break; // no use retrying
 			} catch (Exception e) {
-				reporter.trace("exception download %s", path);
+				logger.debug("exception download {}", path);
 				exception = e;
 			}
 
 		failures.put(rds.url, System.currentTimeMillis());
 
-		reporter.trace("failed download %s", path);
+		logger.debug("failed download {}", path, exception);
 		event(TYPE.ERROR, rds, exception);
 		event(TYPE.END_DOWNLOAD, rds, exception);
 		throw exception;
@@ -407,7 +412,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 					if (err != null)
 						s = IO.collect(err);
 					if (result == 404) {
-						reporter.trace("not found ");
+						logger.debug("not found ");
 						throw new FileNotFoundException("Cannot find " + url + " : " + s);
 					}
 					throw new IOException("Failed request " + result + ":" + http.getResponseMessage() + " " + s);
@@ -421,7 +426,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 			in = http.getInputStream();
 			if (deflate != null && deflate.toLowerCase().contains("deflate")) {
 				in = new InflaterInputStream(in);
-				reporter.trace("inflate");
+				logger.debug("inflate");
 			}
 		} else {
 			connector.handle(conn);
@@ -434,7 +439,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		if (Arrays.equals(digest, sha)) {
 			IO.rename(tmp, path);
 		} else {
-			reporter.trace("sha's did not match %s, expected %s, got %s", tmp, Hex.toHexString(sha), digest);
+			logger.debug("sha's did not match {}, expected {}, got {}", tmp, Hex.toHexString(sha), digest);
 			throw new IllegalArgumentException("Invalid sha downloaded");
 		}
 	}
@@ -451,7 +456,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 			try {
 				l.events(new ResourceRepositoryEvent(type, rds, exception));
 			} catch (Exception e) {
-				reporter.trace("listener %s throws exception %s", l, e);
+				logger.debug("listener {} throws exception", l, e);
 			}
 		}
 	}

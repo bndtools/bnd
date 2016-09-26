@@ -24,6 +24,9 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.differ.Baseline;
@@ -55,6 +58,7 @@ import aQute.lib.tag.Tag;
  * Implements commands to maintain the Package versions db.
  */
 public class BaselineCommands {
+	private final static Logger	logger				= LoggerFactory.getLogger(BaselineCommands.class);
 	static TransformerFactory	transformerFactory	= TransformerFactory.newInstance();
 	final bnd					bnd;
 	final Baseline				baseline;
@@ -272,7 +276,7 @@ public class BaselineCommands {
 
 				// For each specification jar we found
 
-				bnd.trace("spec %s", f);
+				logger.debug("spec {}", f);
 				Jar jar = new Jar(f); // spec
 				Manifest m = jar.getManifest();
 				Attributes main = m.getMainAttributes();
@@ -376,7 +380,7 @@ public class BaselineCommands {
 					String compareId = newer.packageName + "-" + newer.id + "-" + older.id;
 					pack.addAttribute("delta", compareId);
 
-					bnd.trace(" newer=%s older=%s", newerExport, olderExport);
+					logger.debug(" newer={} older={}", newerExport, olderExport);
 
 					Set<Info> infos = baseline.baseline(newer.tree, newerExport, older.tree, olderExport,
 							new Instructions(pname));
@@ -436,7 +440,7 @@ public class BaselineCommands {
 
 			path = path + ".html";
 			File html = new File(path);
-			bnd.trace("xslt %s %s %s %s", xslt, of, html, html.exists());
+			logger.debug("xslt {} {} {} {}", xslt, of, html, html.exists());
 			FileOutputStream out = new FileOutputStream(html);
 			try {
 				Transformer transformer = transformerFactory.newTransformer(new StreamSource(xslt.openStream()));
