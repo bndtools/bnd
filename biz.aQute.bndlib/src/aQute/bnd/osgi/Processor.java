@@ -1309,7 +1309,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		@SuppressWarnings("resource")
 		Processor source = this;
 
-		return getLiteralProperty(key, deflt, source, true);
+		return getLiteralProperty(key, deflt, source, inherit);
 	}
 
 	private String getWildcardProperty(String deflt, String separator, boolean inherit, Instruction ins) {
