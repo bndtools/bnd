@@ -57,20 +57,20 @@ TODO: The syntax of the query part might change
 
 ## Configuration
 
-| Property         | Type     | Default | Description |
-|------------------|----------|---------|-------------|
-| `releaseUrls`    | `URI...` |         |Comma separated list of URLs to the repositories of released artifacts.| 
-| `snapshotUrls`   | `URI...` |         |Comma separated list of URLs to the repositories of snapshot artifacts.|
-|                  |          |         |If this is not specified, it falls back to the release repository |
-|                  |          |         |or just local if this is also not specified.|
-| `local`          | `PATH`   | `~/.m2/repository` | Path to local repository. The default can be 
-|                  |          |         |overridden with the `maven.repo.local` System property as in Maven| 
-| `revision`       | `GAV`    |         |The Maven coordinates. The GAV will be searched in the normal way.|
-| `pom`            | `PATH`   |         |A path to a POM file.|
-| `location`       | `PATH`   | `cnf/cache/pom-<name>.xml` | Cached index of the parsed POMs|
-| `query`          |          |         |A Solr query string. This is the part after ? and must be properly URL encoded|
-| `queryUrl`       | `URI`    | `http://search.maven.org/solrsearch/select` |The URI to the search engine.|
-| `name`           | `STRING` |         |Required name of the repo.|
+| Property         | Type          | Description |
+|------------------|---------------|-------------|
+| `releaseUrls`    | `URI...`      |Required comma separated list of URLs to the repositories of released artifacts.| 
+| `snapshotUrls`   | `URI...`      |Optional comma separated list of URLs to the repositories of snapshot artifacts.|
+|                  |               |If this is not specified, it falls back to the release repository |
+|                  |               |or just the local ~/.m2 repository if this is also not specified.|
+| `local`          | `PATH`        |Optional Path to local repository. The default `~/.m2/repository` can be 
+|                  |               |overridden with the `maven.repo.local` System property as in Maven| 
+| `revision`       | `GAV`         |The Maven coordinates. The GAV will be searched in the normal way.|
+| `pom`            | `PATH`        |A path to a POM file.|
+| `location`       | `PATH`        |Optional cached index of the parsed POMs. The default is  `cnf/cache/pom-<name>.xml` |
+| `query`          |               |A Solr query string. This is the part after ? and must be properly URL encoded|
+| `queryUrl`       | `URI`         |Optional URI to the search engine, default  `http://search.maven.org/solrsearch/select`.|
+| `name`           | `STRING`      |Required name of the repo.|
 
 
 One, and only one, of the `pom`, `revision`, or `query` configurations can be set. If multiple are set then the first in `[pom, revision, query]` is used and the remainders are ignored.
