@@ -58,6 +58,25 @@ import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.service.reporter.Report.Location;
 
+/**
+ * Generate a <pre>MANIFEST.MF</pre> for an OSGi bundle using <strong>bnd</strong>.
+ * This goal runs bnd with the contents of one or more bnd files to generate
+ * <pre>${project.build.outputDirectory}/META-INF/MANIFEST.MF</pre>. The pom must then
+ * configure the maven-jar-plugin to use this generated manifest rather than generate
+ * another:
+ * <pre>{@code
+ *     <plugin>
+ *         <groupId>org.apache.maven.plugins</groupId>
+ *          <artifactId>maven-jar-plugin</artifactId>
+ *            <configuration>
+ *              <archive>
+ *                <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+ *              </archive>
+ *            </configuration>
+ *      </plugin>
+ *      }
+ * </pre>
+ */
 @Mojo(name = "bnd-process", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class BndMavenPlugin extends AbstractMojo {
 
@@ -88,6 +107,19 @@ public class BndMavenPlugin extends AbstractMojo {
 
     @Parameter(defaultValue = "false", readonly = true)
     private boolean				skip;
+
+    /* This exists only to allow documentation */
+	/**
+	 * The location of the bnd file that this plugin will supply to <pre>bnd</pre>.
+	 * The plugin combines the contents of bnd files from the project and its parents.
+	 * The plugin walks up the tree of parents. At each level, if the project as a <pre>basedir</pre>,
+	 * the plugin looks for a bnd file. If there is a local configuration of this parameter,
+	 * it determines the file name relative to that project's basedir; otherwise, it looks for the default,
+	 * <pre>${basedir}/bnd.bnd</pre>. For each project's bnd file, <pre>-include</pre> directives are resolved
+	 * relative to that project's basedir.
+	 */
+	@Parameter(defaultValue = "bnd.bnd")
+	String bndfile;
 
 	@Component
 	private BuildContext		buildContext;

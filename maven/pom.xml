@@ -151,6 +151,12 @@
 								<goal>addPluginArtifactMetadata</goal>
 							</goals>
 						</execution>
+                                                <execution>
+                                                  <id>help-goal</id>
+                                                  <goals>
+                                                    <goal>helpmojo</goal>
+                                                  </goals>
+                                                </execution>
 					</executions>
 				</plugin>
 				<plugin>
@@ -280,4 +286,13 @@
             </plugin>
 		</plugins>
 	</build>
+        <reporting>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-plugin-plugin</artifactId>
+              <version>3.4</version>
+            </plugin>
+          </plugins>
+        </reporting>
 </project>
