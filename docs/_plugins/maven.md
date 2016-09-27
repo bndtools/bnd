@@ -18,15 +18,6 @@ To access Maven Central use the following configuration:
 			index=${.}/central.maven; \
 			name="Central"
 
-## Required Wrapper
-
-To be able to resolve, it is necessary to have a _wrapper_ plugin defined. This plugin turns the artifacts in the repository into actual OSGi resources. There should only be one wrapper defined.
-		
-	-plugin.wrapper = \
-	        aQute.bnd.deployer.repository.wrapper.Plugin; \
-	            location            =	"${build}/cache/wrapper"; \
-	            reindex				=	true
-
 ### Local Repository
 
 To use your local Maven repository (`~/.m2/repository`) you can define the following plugin:
