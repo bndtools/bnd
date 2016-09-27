@@ -47,7 +47,7 @@ class TestBndPlugin extends Specification {
           simple_jar.getEntry('test/simple/test.txt')
           simple_jar.getInputStream(simple_jar.getEntry('test/simple/test.txt')).text =~ /This is a test resource/
 
-          File release_jar = new File(testProjectDir, 'cnf/repo/test.simple/test.simple-0.0.0.jar')
+          File release_jar = new File(testProjectDir, 'cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
     }
 
