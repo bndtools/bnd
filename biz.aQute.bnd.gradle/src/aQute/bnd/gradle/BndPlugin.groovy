@@ -436,7 +436,7 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      tasks.addRule('Pattern: resolve.<name>: Resolving runbundles required for <name>.bndrun.') { taskName ->
+      tasks.addRule('Pattern: resolve.<name>: Resolve the required runbundles in the <name>.bndrun file.') { taskName ->
         if (taskName.startsWith('resolve.')) {
           def bndrun = taskName - 'resolve.'
           def runFile = file("${bndrun}.bndrun")
@@ -504,7 +504,7 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      tasks.addRule('Pattern: run.<name>: Run the bndrun file <name>.bndrun.') { taskName ->
+      tasks.addRule('Pattern: run.<name>: Run the runbundles in the <name>.bndrun file.') { taskName ->
         if (taskName.startsWith('run.')) {
           def bndrun = taskName - 'run.'
           def runFile = file("${bndrun}.bndrun")
