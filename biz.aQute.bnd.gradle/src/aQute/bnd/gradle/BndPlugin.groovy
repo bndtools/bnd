@@ -315,8 +315,10 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      check {
+      task('testOSGi') {
+        description 'Runs the OSGi JUnit tests by launching a framework and running the tests in the launched framework.'
         dependsOn assemble
+        group 'verification'
         enabled !parseBoolean(bnd(Constants.NOJUNITOSGI, 'false')) && !bndUnprocessed(Constants.TESTCASES, '').empty
         ext.ignoreFailures = false
         if (enabled) {
@@ -331,6 +333,10 @@ public class BndPlugin implements Plugin<Project> {
             checkErrors(logger, ignoreFailures)
           }
         }
+      }
+
+      check {
+        dependsOn testOSGi
       }
 
       task('checkNeeded') {

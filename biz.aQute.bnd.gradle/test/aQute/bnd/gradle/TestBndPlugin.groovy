@@ -29,6 +29,7 @@ class TestBndPlugin extends Specification {
 
         then:
           result.task(":test.simple:test").outcome == SUCCESS
+          result.task(":test.simple:testOSGi").outcome == SUCCESS
           result.task(":test.simple:check").outcome == SUCCESS
           result.task(":test.simple:build").outcome == SUCCESS
           result.task(":test.simple:release").outcome == SUCCESS
