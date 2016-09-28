@@ -22,4 +22,5 @@ JPM-Command: bndremote;jvmargs="-Xrunjdwp:transport=dt_socket,server=y,suspend=n
 Main-Class: aQute.remote.main.Main
 Export-Package: \
 	aQute.remote.api,\
-	aQute.remote.util
+	aQute.remote.util,\
+	aQute.bnd.util.dto
