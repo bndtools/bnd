@@ -6,6 +6,9 @@ import org.gradle.testkit.runner.GradleRunner
 import static org.gradle.testkit.runner.TaskOutcome.*
 import spock.lang.Specification
 
+import aQute.libg.reporter.slf4j.Slf4jReporter
+import aQute.lib.utf8properties.UTF8Properties
+
 class TestBndPlugin extends Specification {
 
     File buildDir = new File('generated')
@@ -68,6 +71,28 @@ class TestBndPlugin extends Specification {
           result.task(":test.simple:echo").outcome == SUCCESS
           result.task(":test.simple:bndproperties").outcome == SUCCESS
           result.task(":tasks").outcome == SUCCESS
+    }
+
+    def "Bnd Workspace Plugin resolve Test"() {
+        given:
+          String testProject = 'workspaceplugin1'
+          File testProjectDir = new File(testResources, testProject)
+          assert testProjectDir.isDirectory()
+
+        when:
+          def result = GradleRunner.create()
+            .withProjectDir(testProjectDir)
+            .withArguments('--stacktrace', ':test.simple:resolve.resolve')
+            .forwardOutput()
+            .build()
+
+        then:
+          result.task(":test.simple:resolve.resolve").outcome == SUCCESS
+          File bndrun = new File(testProjectDir, 'test.simple/resolve.bndrun')
+          bndrun.isFile()
+          UTF8Properties props = new UTF8Properties()
+          props.load(bndrun, new Slf4jReporter(TestBndPlugin.class))
+          props.getProperty('-runbundles') =~ /osgi\.enroute\.junit\.wrapper\s*;\s*version='\[4\.12\.0,4\.12\.1\)'\s*,\s*test\.simple\s*;\s*version=snapshot/
     }
 
     def "Bnd Workspace Plugin extra properties/extentions Test"() {
