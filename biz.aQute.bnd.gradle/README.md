@@ -75,7 +75,7 @@ The `test` task runs any plain JUnit tests in the project.
 The `check` task runs any OSGi JUnit tests in the project by launching a
 framework and running the tests in the launched framework.
 
-### New Tasks
+### Additional Tasks
 
 The `release` task releases the project's bundles to the
 [`-releaserepo`][6], if one is configured for the project.
@@ -100,6 +100,13 @@ file.
 
 The `runbundles` task will create distributions of the runbundles for
 all the bndrun files.
+
+The `resolve.`_name_ tasks, one per bndrun file in the project, resolves
+the _name_`.bndrun` file and updates the `-runbundles` instruction in the
+file.
+
+The `run.`_name_ tasks, one per bndrun file in the project, runs
+the _name_`.bndrun` file.
 
 The `echo` task will display some help information on the dependencies,
 paths and configuration of the project.

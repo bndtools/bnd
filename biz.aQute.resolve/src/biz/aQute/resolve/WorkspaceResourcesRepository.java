@@ -14,11 +14,11 @@ import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.libg.cryptography.SHA256;
-
 public class WorkspaceResourcesRepository extends ResourcesRepository {
 
-	public static final String WORKSPACE_NAMESPACE = "bnd.workspace.project";
+	public static final String WORKSPACE_NAMESPACE = ResourceUtils.WORKSPACE_NAMESPACE;
 
 	public WorkspaceResourcesRepository(Workspace workspace) throws Exception {
 		List<Resource> resources = new ArrayList<>();

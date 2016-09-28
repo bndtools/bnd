@@ -116,6 +116,7 @@ public class ResourceUtils {
 																					};
 
 	public static final Resource						DUMMY_RESOURCE				= new ResourceBuilder().build();
+	public static final String							WORKSPACE_NAMESPACE			= "bnd.workspace.project";
 
 	static Converter									cnv							= new Converter();
 
@@ -529,24 +530,25 @@ public class ResourceUtils {
 	}
 
 	/**
-	 * Create a VersionedClause by appling a version range mask to the resource!
-	 * Masks are defined by {@link aQute.bnd.osgi.Macro#_range(String[])}. If
-	 * the resource should represent a project in the bnd workspace, then
-	 * instead the VersionClause will refer to it as a snapshot version: e.g.
-	 * <bsn>;version=snapshot
+	 * Create a VersionedClause by applying a version range mask to the
+	 * resource! Masks are defined by
+	 * {@link aQute.bnd.osgi.Macro#_range(String[])}. If the resource should
+	 * represent a project in the bnd workspace, then instead the VersionClause
+	 * will refer to it as a snapshot version: e.g. <bsn>;version=snapshot
 	 */
 	public static VersionedClause toVersionClause(Resource resource, String mask) {
-		Macro macro = new Macro(new Processor());
 		Capability idCap = getIdentityCapability(resource);
 		String identity = getIdentity(idCap);
 		String versionString;
-		if (resource.getCapabilities("bnd.workspace.project").isEmpty()) {
+		if (resource.getCapabilities(WORKSPACE_NAMESPACE).isEmpty()) {
+			Macro macro = new Macro(new Processor());
 			Version version = getVersion(idCap);
 			versionString = macro._range(new String[] {
 					"range", mask, version.toString()
 			});
-		} else
+		} else {
 			versionString = "snapshot";
+		}
 		Attrs attribs = new Attrs();
 		attribs.put(Constants.VERSION_ATTRIBUTE, versionString);
 		return new VersionedClause(identity, attribs);
