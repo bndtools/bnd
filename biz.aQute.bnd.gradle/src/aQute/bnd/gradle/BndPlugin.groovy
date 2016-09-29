@@ -315,8 +315,10 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      check {
+      task('testOSGi') {
+        description 'Runs the OSGi JUnit tests by launching a framework and running the tests in the launched framework.'
         dependsOn assemble
+        group 'verification'
         enabled !parseBoolean(bnd(Constants.NOJUNITOSGI, 'false')) && !bndUnprocessed(Constants.TESTCASES, '').empty
         ext.ignoreFailures = false
         if (enabled) {
@@ -331,6 +333,10 @@ public class BndPlugin implements Plugin<Project> {
             checkErrors(logger, ignoreFailures)
           }
         }
+      }
+
+      check {
+        dependsOn testOSGi
       }
 
       task('checkNeeded') {
@@ -430,7 +436,7 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      tasks.addRule('Pattern: resolve.<name>: Resolving runbundles required for <name>.bndrun.') { taskName ->
+      tasks.addRule('Pattern: resolve.<name>: Resolve the required runbundles in the <name>.bndrun file.') { taskName ->
         if (taskName.startsWith('resolve.')) {
           def bndrun = taskName - 'resolve.'
           def runFile = file("${bndrun}.bndrun")
@@ -498,7 +504,7 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      tasks.addRule('Pattern: run.<name>: Run the bndrun file <name>.bndrun.') { taskName ->
+      tasks.addRule('Pattern: run.<name>: Run the runbundles in the <name>.bndrun file.') { taskName ->
         if (taskName.startsWith('run.')) {
           def bndrun = taskName - 'run.'
           def runFile = file("${bndrun}.bndrun")

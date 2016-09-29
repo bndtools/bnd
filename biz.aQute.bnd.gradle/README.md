@@ -72,8 +72,8 @@ The `jar` task uses Bnd to build the project's bundles.
 
 The `test` task runs any plain JUnit tests in the project.
 
-The `check` task runs any OSGi JUnit tests in the project by launching a
-framework and running the tests in the launched framework.
+The `check` task runs all verification tasks in the project,
+including `test` and `testOSGi`.
 
 ### Additional Tasks
 
@@ -82,6 +82,9 @@ The `release` task releases the project's bundles to the
 
 The `releaseNeeded` task releases the project and all projects it
 depends on.
+
+The `testOSGi` task runs any OSGi JUnit tests in the project by launching a
+framework and running the tests in the launched framework.
 
 The `checkNeeded` task runs the `check` task on the project and all
 projects it depends on.
@@ -329,7 +332,6 @@ For full details on what the Bnd Gradle Plugins do, check out the
 [11]: https://github.com/bndtools/bndtools/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/filter/root/gradle.properties
 [12]: https://github.com/bndtools/bndtools/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/unprocessed/root/settings.gradle
 [13]: https://github.com/bndtools/bndtools/blob/master/org.bndtools.headless.build.plugin.gradle/resources/templates/unprocessed/root/build.gradle
-[14]: http://gradle.org/docs/current/userguide/plugins.html#sec:plugins_block
 [15]: src/aQute/bnd/gradle/BndPluginConvention.groovy
 [16]: src/aQute/bnd/gradle/BndProperties.groovy
 [18]: https://docs.gradle.org/current/dsl/org.gradle.api.tasks.bundling.Jar.html
