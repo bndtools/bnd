@@ -108,6 +108,9 @@ The `resolve.`_name_ tasks, one per bndrun file in the project, resolves
 the _name_`.bndrun` file and updates the `-runbundles` instruction in the
 file.
 
+The `resolve` task resolves all the bndrun files and updates the `-runbundles`
+instruction in each bndrun file.
+
 The `run.`_name_ tasks, one per bndrun file in the project, runs
 the _name_`.bndrun` file.
 
