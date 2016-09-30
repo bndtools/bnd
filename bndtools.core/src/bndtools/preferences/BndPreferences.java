@@ -15,8 +15,11 @@ import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
 import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.util.IPropertyChangeListener;
 
+import aQute.bnd.build.Workspace;
 import bndtools.Plugin;
+import bndtools.central.Central;
 import bndtools.team.TeamUtils;
 
 public class BndPreferences {
@@ -37,6 +40,8 @@ public class BndPreferences {
     private static final String PREF_ENABLE_TEMPLATE_REPO = "enableTemplateRepo";
     private static final String PREF_TEMPLATE_REPO_URI_LIST = "templateRepoUriList";
 
+    static final String PREF_WORKSPACE_OFFLINE = "workspaceIsOffline";
+
     private final IPreferenceStore store;
 
     public BndPreferences() {
@@ -51,6 +56,7 @@ public class BndPreferences {
         store.setDefault(PREF_VCS_IGNORES_PLUGINS, "");
         store.setDefault(PREF_ENABLE_TEMPLATE_REPO, true);
         store.setDefault(PREF_TEMPLATE_REPO_URI_LIST, "https://raw.githubusercontent.com/bndtools/bundle-hub/master/index.xml.gz");
+        store.setDefault(PREF_WORKSPACE_OFFLINE, false);
     }
 
     private String mapToPreference(Map<String,Boolean> names) {
@@ -295,5 +301,25 @@ public class BndPreferences {
 
     public void setBuildBeforeLaunch(boolean b) {
         store.setValue(PREF_BUILDBEFORELAUNCH, b);
+    }
+
+    public boolean isWorkspaceOffline() {
+        return store.getBoolean(PREF_WORKSPACE_OFFLINE);
+    }
+
+    public void setWorkspaceOffline(boolean b) {
+        Workspace workspace = Central.getWorkspaceIfPresent();
+        if (workspace != null) {
+            workspace.setOffline(b);
+        }
+        store.setValue(PREF_WORKSPACE_OFFLINE, b);
+    }
+
+    public void addPropertyChangeListener(IPropertyChangeListener listener) {
+        store.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(IPropertyChangeListener listener) {
+        store.removePropertyChangeListener(listener);
     }
 }

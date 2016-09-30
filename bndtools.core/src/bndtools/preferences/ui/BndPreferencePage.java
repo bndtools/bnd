@@ -1,5 +1,7 @@
 package bndtools.preferences.ui;
 
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -24,6 +26,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
     private boolean warnExistingLaunch = true;
     private boolean buildBeforeLaunch = true;
     private boolean editorOpenSourceTab = false;
+    private boolean workspaceIsOffline = false;
 
     @Override
     protected Control createContents(Composite parent) {
@@ -32,6 +35,13 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         GridData gd;
 
         Composite composite = new Composite(parent, SWT.NONE);
+
+        final Button btnOfflineWorkspace = new Button(composite, SWT.CHECK);
+        btnOfflineWorkspace.setText(Messages.BndPreferencePage_btnOfflineWorkspace);
+
+        ControlDecoration decoration = new ControlDecoration(btnOfflineWorkspace, SWT.RIGHT | SWT.TOP, composite);
+        decoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
+        decoration.setDescriptionText(Messages.BndPreferencePage_decorOfflineWorkspace);
 
         // Create controls
         Group grpLaunching = new Group(composite, SWT.NONE);
@@ -55,10 +65,18 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         btnWarnExistingLaunch.setSelection(warnExistingLaunch);
         btnBuildBeforeLaunch.setSelection(buildBeforeLaunch);
         btnEditorOpenSourceTab.setSelection(editorOpenSourceTab);
+        btnOfflineWorkspace.setSelection(workspaceIsOffline);
         // headless already done
         // versionControlIgnores already done
 
         // Listeners
+        btnOfflineWorkspace.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                workspaceIsOffline = btnOfflineWorkspace.getSelection();
+            }
+        });
+
         btnBuildBeforeLaunch.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -72,6 +90,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
                 warnExistingLaunch = btnWarnExistingLaunch.getSelection();
             }
         });
+
         btnEditorOpenSourceTab.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -101,6 +120,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         prefs.setWarnExistingLaunch(warnExistingLaunch);
         prefs.setBuildBeforeLaunch(buildBeforeLaunch);
         prefs.setEditorOpenSourceTab(editorOpenSourceTab);
+        prefs.setWorkspaceOffline(workspaceIsOffline);
         return true;
     }
 
@@ -112,6 +132,7 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         warnExistingLaunch = prefs.getWarnExistingLaunches();
         buildBeforeLaunch = prefs.getBuildBeforeLaunch();
         editorOpenSourceTab = prefs.getEditorOpenSourceTab();
+        workspaceIsOffline = prefs.isWorkspaceOffline();
     }
 
 }
