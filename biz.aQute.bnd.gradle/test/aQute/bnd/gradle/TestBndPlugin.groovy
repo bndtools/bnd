@@ -83,11 +83,12 @@ class TestBndPlugin extends Specification {
         when:
           def result = GradleRunner.create()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', ':test.simple:resolve.resolve')
+            .withArguments('--stacktrace', ':test.simple:resolve')
             .forwardOutput()
             .build()
 
         then:
+          result.task(":test.simple:resolve").outcome == SUCCESS
           result.task(":test.simple:resolve.resolve").outcome == SUCCESS
           File bndrun = new File(testProjectDir, 'test.simple/resolve.bndrun')
           bndrun.isFile()

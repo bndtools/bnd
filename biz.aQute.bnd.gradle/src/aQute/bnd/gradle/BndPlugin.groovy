@@ -427,7 +427,7 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       task('runbundles') {
-        description "Create a distribution of the runbundles in each of the bndrun files."
+        description 'Create a distribution of the runbundles in each of the bndrun files.'
         group 'export'
         fileTree(projectDir) {
             include '*.bndrun'
@@ -442,7 +442,7 @@ public class BndPlugin implements Plugin<Project> {
           def runFile = file("${bndrun}.bndrun")
           if (runFile.isFile()) {
             task(taskName) {
-              description "Resolving runbundles required for ${bndrun}.bndrun file."
+              description "Resolve the runbundles required for ${bndrun}.bndrun file."
               dependsOn assemble
               group 'export'
               outputs.file runFile
@@ -501,6 +501,16 @@ public class BndPlugin implements Plugin<Project> {
               }
             }
           }
+        }
+      }
+
+      task('resolve') {
+        description 'Resolve the runbundles required for each of the bndrun files.'
+        group 'export'
+        fileTree(projectDir) {
+            include '*.bndrun'
+        }.each {
+          dependsOn tasks.getByPath("resolve.${it.name - '.bndrun'}")
         }
       }
 
