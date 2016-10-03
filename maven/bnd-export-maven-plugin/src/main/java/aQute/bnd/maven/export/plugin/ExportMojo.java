@@ -27,11 +27,8 @@ import biz.aQute.resolve.ProjectResolver;
 @Mojo(name = "export", defaultPhase = PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class ExportMojo extends AbstractMojo {
 
-	@Parameter(readonly = true, required = false)
+	@Parameter(readonly = true, required = true)
 	private List<File>	bndruns;
-
-	@Parameter(readonly = true, required = false)
-	private File		bndrun;
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
 	private File		targetDir;
@@ -44,12 +41,8 @@ public class ExportMojo extends AbstractMojo {
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
-			if (bndrun != null) {
-				export(bndrun);
-			} else {
-				for (File runFile : bndruns) {
-					export(runFile);
-				}
+			for (File runFile : bndruns) {
+				export(runFile);
 			}
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
