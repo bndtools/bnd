@@ -130,6 +130,11 @@ public class BndrunResolveContext extends AbstractResolveContext {
 					setLevel(level);
 			}
 
+			if (getCollectAllMissingRequirements() == null) {
+				Boolean failFast = Converter.cnv(Boolean.class, properties.getProperty("-resolve.failfast", "true"));
+				setCollectAllMissingRequirements(!failFast);
+			}
+
 			loadPreferences();
 
 			Processor augments = loadRepositories();
