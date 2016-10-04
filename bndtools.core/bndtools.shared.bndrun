@@ -8,7 +8,6 @@ workspace.bundles: \
 	bndtools.api;version=snapshot,\
 	bndtools.core;version=snapshot,\
 	bndtools.builder;version=snapshot,\
-	bndtools.repository.base;version=snapshot,\
 	bndtools.jareditor;version=snapshot,\
 	bndtools.release;version=snapshot,\
 	org.bndtools.embeddedrepo;version=snapshot,\

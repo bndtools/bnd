@@ -102,9 +102,8 @@ eclipse.deps: \
 	org.bndtools.headless.build.manager;version=latest,\
 	org.bndtools.versioncontrol.ignores.manager;version=latest,\
 	org.bndtools.templating; version=latest,\
-	bndtools.utils;version=project;packages=*,\
-	bndtools.repository.base;version=latest
-	
+	bndtools.utils;version=project;packages=*
+
 -testpath: \
 	slf4j.api,\
 	slf4j.simple,\
