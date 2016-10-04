@@ -54,7 +54,7 @@ public class BndPreferences {
         store.setDefault(PREF_HEADLESS_BUILD_PLUGINS, "");
         store.setDefault(PREF_VCS_IGNORES_CREATE, true);
         store.setDefault(PREF_VCS_IGNORES_PLUGINS, "");
-        store.setDefault(PREF_ENABLE_TEMPLATE_REPO, true);
+        store.setDefault(PREF_ENABLE_TEMPLATE_REPO, false);
         store.setDefault(PREF_TEMPLATE_REPO_URI_LIST, "https://raw.githubusercontent.com/bndtools/bundle-hub/master/index.xml.gz");
         store.setDefault(PREF_WORKSPACE_OFFLINE, false);
     }
