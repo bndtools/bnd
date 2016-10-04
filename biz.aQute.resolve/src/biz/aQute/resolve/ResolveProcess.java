@@ -38,6 +38,7 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.WireImpl;
 import aQute.bnd.service.Registry;
+import aQute.libg.generics.Create;
 import aQute.libg.tuple.Pair;
 
 public class ResolveProcess {
@@ -68,121 +69,125 @@ public class ResolveProcess {
 		BndrunResolveContext rc = new BndrunResolveContext(properties, project, plugins, log);
 		rc.addCallbacks(callbacks);
 		// 1. Resolve initial requirements
+		Map<Resource,List<Wire>> wirings;
 		try {
-			Map<Resource,List<Wire>> wirings = resolver.resolve(rc);
-
-			// 2. Save initial requirement resolution
-			Pair<Resource,List<Wire>> initialRequirement = null;
-			for (Map.Entry<Resource,List<Wire>> wiring : wirings.entrySet()) {
-				if (rc.getInputResource() == wiring.getKey()) {
-					initialRequirement = new Pair<Resource,List<Wire>>(wiring.getKey(), wiring.getValue());
-					break;
-				}
-			}
-
-			// 3. Save the resolved root resources
-			final List<Resource> resources = new ArrayList<Resource>();
-			for (Resource r : rc.getMandatoryResources()) {
-				reqs: for (Requirement req : r.getRequirements(null)) {
-					for (Resource found : wirings.keySet()) {
-						String filterStr = req.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-						try {
-							org.osgi.framework.Filter filter = filterStr != null
-									? org.osgi.framework.FrameworkUtil.createFilter(filterStr) : null;
-
-							for (Capability c : found.getCapabilities(req.getNamespace())) {
-								if (filter != null && filter.matches(c.getAttributes())) {
-									resources.add(found);
-									continue reqs;
-								}
-							}
-						} catch (InvalidSyntaxException e) {}
-					}
-				}
-			}
-
-			// 4. Add any 'osgi.wiring.bundle' requirements
-			List<Resource> wiredBundles = new ArrayList<Resource>();
-			for (Resource resource : resources) {
-				addWiredBundle(wirings, resource, wiredBundles);
-			}
-			for (Resource resource : wiredBundles) {
-				if (!resources.contains(resource)) {
-					resources.add(resource);
-				}
-			}
-
-			final Map<Resource,List<Wire>> discoveredOptional = new LinkedHashMap<Resource,List<Wire>>();
-
-			// 5. Resolve the rest
-			BndrunResolveContext rc2 = new BndrunResolveContext(properties, project, plugins, log) {
-
-				@Override
-				public Collection<Resource> getMandatoryResources() {
-					return resources;
-				}
-
-				@Override
-				public boolean isInputResource(Resource resource) {
-					for (Resource r : resources) {
-						if (GenericResolveContext.resourceIdentityEquals(r, resource)) {
-							return true;
-						}
-					}
-					return false;
-				}
-
-				@Override
-				public List<Capability> findProviders(Requirement requirement) {
-
-					List<Capability> toReturn = super.findProviders(requirement);
-
-					if (toReturn.isEmpty() && isEffective(requirement) && RESOLUTION_OPTIONAL
-							.equals(requirement.getDirectives().get(REQUIREMENT_RESOLUTION_DIRECTIVE))) {
-						// We have an effective optional requirement that is
-						// unmatched
-						// AbstractResolveContext deliberately does not include
-						// optionals,
-						// so we force a repo check here so that we can populate
-						// the optional
-						// map
-
-						for (Capability cap : findProvidersFromRepositories(requirement,
-								new LinkedHashSet<Capability>())) {
-
-							Resource optionalRes = cap.getResource();
-
-							List<Wire> list = discoveredOptional.get(optionalRes);
-
-							if (list == null) {
-								list = new ArrayList<>();
-								discoveredOptional.put(optionalRes, list);
-							}
-							WireImpl candidateWire = new WireImpl(cap, requirement);
-							if (!list.contains(candidateWire))
-								list.add(candidateWire);
-						}
-					}
-
-					return toReturn;
-				}
-
-			};
-
-			rc2.addCallbacks(callbacks);
-			wirings = resolver.resolve(rc2);
-			if (initialRequirement != null) {
-				wirings.put(initialRequirement.getFirst(), initialRequirement.getSecond());
-			}
-
-			Map<Resource,List<Wire>> result = invertWirings(wirings);
-			removeFrameworkAndInputResources(result, rc2);
-			required.putAll(result);
-			optional = tidyUpOptional(wirings, discoveredOptional, log);
-			return result;
+			wirings = resolver.resolve(rc);
 		} catch (ResolutionException re) {
-			throw augment(new BndrunResolveContext(properties, project, plugins, log), re);
+			throw augment(rc, re);
 		}
+
+		// 2. Save initial requirement resolution
+		Pair<Resource,List<Wire>> initialRequirement = null;
+		for (Map.Entry<Resource,List<Wire>> wiring : wirings.entrySet()) {
+			if (rc.getInputResource() == wiring.getKey()) {
+				initialRequirement = new Pair<Resource,List<Wire>>(wiring.getKey(), wiring.getValue());
+				break;
+			}
+		}
+
+		// 3. Save the resolved root resources
+		final List<Resource> resources = new ArrayList<Resource>();
+		for (Resource r : rc.getMandatoryResources()) {
+			reqs: for (Requirement req : r.getRequirements(null)) {
+				for (Resource found : wirings.keySet()) {
+					String filterStr = req.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+					try {
+						org.osgi.framework.Filter filter = filterStr != null
+								? org.osgi.framework.FrameworkUtil.createFilter(filterStr) : null;
+
+						for (Capability c : found.getCapabilities(req.getNamespace())) {
+							if (filter != null && filter.matches(c.getAttributes())) {
+								resources.add(found);
+								continue reqs;
+							}
+								}
+					} catch (InvalidSyntaxException e) {}
+				}
+			}
+		}
+
+		// 4. Add any 'osgi.wiring.bundle' requirements
+		List<Resource> wiredBundles = new ArrayList<Resource>();
+		for (Resource resource : resources) {
+			addWiredBundle(wirings, resource, wiredBundles);
+		}
+		for (Resource resource : wiredBundles) {
+			if (!resources.contains(resource)) {
+				resources.add(resource);
+			}
+		}
+
+		final Map<Resource,List<Wire>> discoveredOptional = new LinkedHashMap<Resource,List<Wire>>();
+
+		// 5. Resolve the rest
+		BndrunResolveContext rc2 = new BndrunResolveContext(properties, project, plugins, log) {
+
+			@Override
+			public Collection<Resource> getMandatoryResources() {
+				return resources;
+			}
+
+			@Override
+			public boolean isInputResource(Resource resource) {
+				for (Resource r : resources) {
+					if (GenericResolveContext.resourceIdentityEquals(r, resource)) {
+						return true;
+					}
+				}
+				return false;
+			}
+
+			@Override
+			public List<Capability> findProviders(Requirement requirement) {
+
+				List<Capability> toReturn = super.findProviders(requirement);
+
+				if (toReturn.isEmpty() && isEffective(requirement) && RESOLUTION_OPTIONAL
+						.equals(requirement.getDirectives().get(REQUIREMENT_RESOLUTION_DIRECTIVE))) {
+					// We have an effective optional requirement that is
+					// unmatched
+					// AbstractResolveContext deliberately does not include
+					// optionals,
+					// so we force a repo check here so that we can populate
+					// the optional
+					// map
+
+					for (Capability cap : findProvidersFromRepositories(requirement, new LinkedHashSet<Capability>())) {
+
+						Resource optionalRes = cap.getResource();
+
+						List<Wire> list = discoveredOptional.get(optionalRes);
+
+						if (list == null) {
+							list = new ArrayList<>();
+							discoveredOptional.put(optionalRes, list);
+						}
+						WireImpl candidateWire = new WireImpl(cap, requirement);
+						if (!list.contains(candidateWire))
+							list.add(candidateWire);
+					}
+				}
+
+				return toReturn;
+			}
+
+		};
+
+		rc2.addCallbacks(callbacks);
+		try {
+			wirings = resolver.resolve(rc2);
+		} catch (ResolutionException re) {
+			throw augment(rc2, re);
+		}
+		if (initialRequirement != null) {
+			wirings.put(initialRequirement.getFirst(), initialRequirement.getSecond());
+		}
+
+		Map<Resource,List<Wire>> result = invertWirings(wirings);
+		removeFrameworkAndInputResources(result, rc2);
+		required.putAll(result);
+		optional = tidyUpOptional(wirings, discoveredOptional, log);
+		return result;
 	}
 
 	/*
@@ -191,11 +196,22 @@ public class ResolveProcess {
 	 * method will (try to) analyze what is actually missing. This is not
 	 * perfect but should give some more diagnostics in most cases.
 	 */
+	public static ResolutionException augment(AbstractResolveContext context, ResolutionException re) {
+		Set<Requirement> unresolved = Create.set();
+		unresolved.addAll(re.getUnresolvedRequirements());
+		unresolved.addAll(context.getFailed());
+		return augment(unresolved, context, re);
+	}
+
 	public static ResolutionException augment(ResolveContext context, ResolutionException re)
 			throws ResolutionException {
+		return augment(re.getUnresolvedRequirements(), context, re);
+	}
+
+	private static ResolutionException augment(Collection<Requirement> unresolved, ResolveContext context,
+			ResolutionException re) {
 		try {
 			long deadline = System.currentTimeMillis() + 1000;
-			Collection<Requirement> unresolved = re.getUnresolvedRequirements();
 			Set<Requirement> list = new HashSet<Requirement>(unresolved);
 			Set<Resource> resources = new HashSet<Resource>();
 

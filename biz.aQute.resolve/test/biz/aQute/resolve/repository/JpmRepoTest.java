@@ -160,9 +160,9 @@ public class JpmRepoTest extends TestCase {
 			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
 			fail("Resolve did not fail");
 		} catch (ResolutionException e) {
-			assertTrue(e.getUnresolvedRequirements().size() == 1);
-			ResolutionException augmented = ResolveProcess.augment(new BndrunResolveContext(model, ws, log), e);
-			assertTrue(augmented.getUnresolvedRequirements().size() == 2);
+			assertEquals(1, e.getUnresolvedRequirements().size());
+			ResolutionException augmented = ResolveProcess.augment(context, e);
+			assertEquals(2, augmented.getUnresolvedRequirements().size());
 
 		}
 	}
