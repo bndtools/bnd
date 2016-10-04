@@ -38,6 +38,7 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.WireImpl;
 import aQute.bnd.service.Registry;
+import aQute.lib.strings.Strings;
 import aQute.libg.generics.Create;
 import aQute.libg.tuple.Pair;
 
@@ -183,7 +184,7 @@ public class ResolveProcess {
 			wirings.put(initialRequirement.getFirst(), initialRequirement.getSecond());
 		}
 
-		Map<Resource,List<Wire>> result = invertWirings(wirings);
+		Map<Resource,List<Wire>> result = invertWirings(wirings, rc2);
 		removeFrameworkAndInputResources(result, rc2);
 		required.putAll(result);
 		optional = tidyUpOptional(wirings, discoveredOptional, log);
@@ -377,12 +378,13 @@ public class ResolveProcess {
 	 * know the list of wirings TO that resource. This is in order to show the
 	 * user the reasons for each resource being present in the result.
 	 */
-	private static Map<Resource,List<Wire>> invertWirings(Map<Resource, ? extends Collection<Wire>> wirings) {
+	private static Map<Resource,List<Wire>> invertWirings(Map<Resource, ? extends Collection<Wire>> wirings,
+			AbstractResolveContext rc) {
 		Map<Resource,List<Wire>> inverted = new HashMap<Resource,List<Wire>>();
 		for (Entry<Resource, ? extends Collection<Wire>> entry : wirings.entrySet()) {
 			Resource requirer = entry.getKey();
 			for (Wire wire : entry.getValue()) {
-				Resource provider = findResolvedProvider(wire, wirings.keySet());
+				Resource provider = findResolvedProvider(wire, wirings.keySet(), rc);
 
 				// Filter out self-capabilities, i.e. requirer and provider are
 				// same
@@ -400,7 +402,7 @@ public class ResolveProcess {
 		return inverted;
 	}
 
-	private static Resource findResolvedProvider(Wire wire, Set<Resource> resources) {
+	private static Resource findResolvedProvider(Wire wire, Set<Resource> resources, AbstractResolveContext rc) {
 		// Make sure not to add new resources into the result. The resolver
 		// already created the closure of all the needed resources. We need to
 		// find the key in the result that already provides the capability
@@ -408,7 +410,7 @@ public class ResolveProcess {
 
 		Capability capability = wire.getCapability();
 		Resource resource = capability.getResource();
-		if (ResourceUtils.isFragment(resource) && resources.contains(resource)) {
+		if (rc.isSystemResource(resource) || (ResourceUtils.isFragment(resource) && resources.contains(resource))) {
 			return resource;
 		}
 
@@ -421,8 +423,9 @@ public class ResolveProcess {
 		}
 
 		// It shouldn't be possible to arrive here!
-		throw new IllegalStateException(
-				"What?!? The capability was not found associated with any key! That is not possible at this stage.");
+		throw new IllegalStateException(Strings.format(
+				"The capability for wire %s was not associated with a resource in the resolution",
+				wire));
 	}
 
 	private static Map<Resource,List<Wire>> tidyUpOptional(Map<Resource,List<Wire>> required,
