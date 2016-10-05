@@ -2262,7 +2262,37 @@ public class BuilderTest extends BndTestCase {
 			analyzer.close();
 		}
 	}
+	
+	/**
+	 * Test split packages with Conditional-Package
+	 */
+	public static void testSplitConditionalPackage() throws Exception {
+		Properties base = new Properties();
+		base.put(Analyzer.PRIVATE_PACKAGE, "main");
+		base.put(Analyzer.CONDITIONAL_PACKAGE, "*");
+		Builder analyzer = new Builder();
 
+		try {
+			// main/Main.class depends on split/A.class, both in split-left.jar.
+			// split/B.class depends on split_dependency/C.class, both split-right.jar.
+			// THEREFORE including Private-Package=main pulls in packages "split" and "split_dependency"
+			analyzer.setClasspath(new File[] { IO.getFile("jar/split-left.jar"), IO.getFile("jar/split-right.jar") });
+			analyzer.setProperties(base);
+			Jar jar = analyzer.build();
+			
+			// Check that the packages contain all the expected classes
+			Map<String,Resource> resources = jar.getResources();
+			assertTrue("contains private-package", resources.containsKey("main/Main.class"));
+			assertTrue("contains left split conditional-package", resources.containsKey("split/A.class"));
+			assertTrue("contains right split conditional-package", resources.containsKey("split/B.class"));
+			assertTrue("contains dependency of right split conditional-package", resources.containsKey("split_dependency/C.class"));
+			
+			assertTrue("build warning", analyzer.check("Split package, multiple jars provide the same package"));
+		} finally {
+			analyzer.close();
+		}
+	}
+	
 	/**
 	 * Test Resource inclusion that do not exist
 	 * 
