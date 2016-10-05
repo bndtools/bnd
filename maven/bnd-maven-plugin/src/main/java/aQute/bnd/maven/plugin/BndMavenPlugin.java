@@ -35,7 +35,6 @@ import java.util.jar.Manifest;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -44,6 +43,8 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 import aQute.bnd.build.Project;
@@ -62,7 +63,8 @@ import aQute.service.reporter.Report.Location;
 
 @Mojo(name = "bnd-process", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class BndMavenPlugin extends AbstractMojo {
-
+	private static final Logger						logger					= LoggerFactory
+			.getLogger(BndMavenPlugin.class);
 	private static final String						MANIFEST_LAST_MODIFIED	= "aQute.bnd.maven.plugin.BndMavenPlugin.manifestLastModified";
 	private static final String						MARKED_FILES			= "aQute.bnd.maven.plugin.BndMavenPlugin.markedFiles";
 	private static final String	PACKAGING_POM	= "pom";
@@ -95,22 +97,18 @@ public class BndMavenPlugin extends AbstractMojo {
 	@Component
 	private BuildContext		buildContext;
 
-	private Log					log;
-
 	private File									propertiesFile;
 
 	public void execute() throws MojoExecutionException {
-		log = getLog();
-
-        if ( skip ) {
-			log.debug("skip project as configured");
+		if (skip) {
+			logger.debug("skip project as configured");
 			return;
 		}
 
 		// Exit without generating anything if this is a pom-packaging project.
 		// Probably it's just a parent project.
 		if (PACKAGING_POM.equals(project.getPackaging())) {
-			log.info("skip project with packaging=pom");
+			logger.info("skip project with packaging=pom");
 			return;
 		}
 
@@ -121,7 +119,7 @@ public class BndMavenPlugin extends AbstractMojo {
 		mavenProperties.putAll(project.getProperties());
 
 		try (Builder builder = new Builder(new Processor(mavenProperties, false))) {
-			builder.setTrace(log.isDebugEnabled());
+			builder.setTrace(logger.isDebugEnabled());
 
 			builder.setBase(project.getBasedir());
 			propertiesFile = loadProjectProperties(builder, project);
@@ -129,7 +127,7 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			// If no bundle to be built, we have nothing to do
 			if (Builder.isTrue(builder.getProperty(Constants.NOBUNDLES))) {
-				log.debug(Constants.NOBUNDLES + ": true");
+				logger.debug(Constants.NOBUNDLES + ": true");
 				return;
 			}
 
@@ -165,9 +163,7 @@ public class BndMavenPlugin extends AbstractMojo {
 				}
 			}
 			builder.setProperty("project.buildpath", Strings.join(File.pathSeparator, buildpath));
-			if (log.isDebugEnabled()) {
-				log.debug("builder classpath: " + builder.getProperty("project.buildpath"));
-			}
+			logger.debug("builder classpath: {}", builder.getProperty("project.buildpath"));
 
 			// Compute bnd sourcepath
 			boolean delta = !buildContext.isIncremental() || manifestOutOfDate();
@@ -184,9 +180,7 @@ public class BndMavenPlugin extends AbstractMojo {
 				}
 			}
 			builder.setProperty("project.sourcepath", Strings.join(File.pathSeparator, sourcepath));
-			if (log.isDebugEnabled()) {
-				log.debug("builder sourcepath: " + builder.getProperty("project.sourcepath"));
-			}
+			logger.debug("builder sourcepath: {}", builder.getProperty("project.sourcepath"));
 
 			// Set Bundle-SymbolicName
 			if (builder.getProperty(Constants.BUNDLE_SYMBOLICNAME) == null) {
@@ -203,10 +197,8 @@ public class BndMavenPlugin extends AbstractMojo {
 				builder.setProperty(Constants.SNAPSHOT, TSTAMP);
 			}
 
-			if (log.isDebugEnabled()) {
-				log.debug("builder properties: " + builder.getProperties());
-				log.debug("builder delta: " + delta);
-			}
+			logger.debug("builder properties: {}", builder.getProperties());
+			logger.debug("builder delta: {}", delta);
 
 			if (delta || (builder.getJar() == null) || (builder.lastModified() > builder.getJar().lastModified())) {
 				// Set builder paths
@@ -219,7 +211,7 @@ public class BndMavenPlugin extends AbstractMojo {
 				// Expand Jar into target/classes
 				expandJar(bndJar, classesDir);
 			} else {
-				log.debug("No build");
+				logger.debug("No build");
 			}
 
 			// Finally, report
@@ -254,9 +246,7 @@ public class BndMavenPlugin extends AbstractMojo {
 			}
 			File bndFile = IO.getFile(baseDir, bndFileName);
 			if (bndFile.isFile()) {
-				if (log.isDebugEnabled()) {
-					log.debug("loading bnd properties from file: " + bndFile);
-				}
+				logger.debug("loading bnd properties from file: {}", bndFile);
 				// we use setProperties to handle -include
 				builder.setProperties(bndFile.getParentFile(), builder.loadProperties(bndFile));
 				return bndFile;
@@ -267,9 +257,7 @@ public class BndMavenPlugin extends AbstractMojo {
 		if (configuration != null) {
 			Xpp3Dom bndElement = configuration.getChild("bnd");
 			if (bndElement != null) {
-				if (log.isDebugEnabled()) {
-					log.debug("loading bnd properties from bnd element in pom: " + bndElement.getValue());
-				}
+				logger.debug("loading bnd properties from bnd element in pom: {}", project);
 				UTF8Properties properties = new UTF8Properties();
 				properties.load(bndElement.getValue(), project.getFile(), builder);
 				// we use setProperties to handle -include
@@ -280,8 +268,6 @@ public class BndMavenPlugin extends AbstractMojo {
 	}
 
 	private void reportErrorsAndWarnings(Builder builder) throws MojoExecutionException {
-		Log log = getLog();
-
 		@SuppressWarnings("unchecked")
 		Collection<File> markedFiles = (Collection<File>) buildContext.getValue(MARKED_FILES);
 		if (markedFiles == null) {
@@ -330,9 +316,7 @@ public class BndMavenPlugin extends AbstractMojo {
 
 	private void expandJar(Jar jar, File dir) throws Exception {
 		final long lastModified = jar.lastModified();
-		if (log.isDebugEnabled()) {
-			log.debug(String.format("Bundle lastModified: %tF %<tT.%<tL", lastModified));
-		}
+		logger.debug(String.format("Bundle lastModified: %tF %<tT.%<tL", lastModified));
 		dir = dir.getAbsoluteFile();
 		Files.createDirectories(dir.toPath());
 
@@ -348,12 +332,12 @@ public class BndMavenPlugin extends AbstractMojo {
 				}
 			}
 			if (!outFile.exists() || outFile.lastModified() < lastModified) {
-				if (log.isDebugEnabled()) {
+				if (logger.isDebugEnabled()) {
 					if (outFile.exists())
-						log.debug(String.format("Updating lastModified: %tF %<tT.%<tL '%s'", outFile.lastModified(),
+						logger.debug(String.format("Updating lastModified: %tF %<tT.%<tL '%s'", outFile.lastModified(),
 								outFile));
 					else
-						log.debug(String.format("Creating '%s'", outFile));
+						logger.debug("Creating '{}'", outFile);
 				}
 				Files.createDirectories(outFile.toPath().getParent());
 				try (OutputStream out = buildContext.newFileOutputStream(outFile)) {
@@ -363,12 +347,12 @@ public class BndMavenPlugin extends AbstractMojo {
 		}
 
 		if (manifestOutOfDate() || manifestPath.lastModified() < lastModified) {
-			if (log.isDebugEnabled()) {
+			if (logger.isDebugEnabled()) {
 				if (!manifestOutOfDate())
-					log.debug(String.format("Updating lastModified: %tF %<tT.%<tL '%s'", manifestPath.lastModified(),
+					logger.debug(String.format("Updating lastModified: %tF %<tT.%<tL '%s'", manifestPath.lastModified(),
 							manifestPath));
 				else
-					log.debug(String.format("Creating '%s'", manifestPath));
+					logger.debug("Creating '{}'", manifestPath);
 			}
 			Files.createDirectories(manifestPath.toPath().getParent());
 			try (OutputStream manifestOut = buildContext.newFileOutputStream(manifestPath)) {
@@ -429,7 +413,7 @@ public class BndMavenPlugin extends AbstractMojo {
 				}
 				value = getter.invoke(target);
 			} catch (Exception e) {
-				log.debug("Could not find getter method for field: " + fieldName, e);
+				logger.debug("Could not find getter method for field: {}", fieldName, e);
 			}
 			if ((value != null) && (i > 0)) {
 				value = getField(value, key.substring(i + 1));
