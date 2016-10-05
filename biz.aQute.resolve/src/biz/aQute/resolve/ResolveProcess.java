@@ -211,20 +211,21 @@ public class ResolveProcess {
 
 	private static ResolutionException augment(Collection<Requirement> unresolved, ResolveContext context,
 			ResolutionException re) {
+		if (unresolved.isEmpty()) {
+			return re;
+		}
+		long deadline = System.currentTimeMillis() + 1000L;
+		Set<Requirement> list = new HashSet<>(unresolved);
+		Set<Resource> resources = new HashSet<>();
 		try {
-			long deadline = System.currentTimeMillis() + 1000;
-			Set<Requirement> list = new HashSet<Requirement>(unresolved);
-			Set<Resource> resources = new HashSet<Resource>();
-
 			for (Requirement r : unresolved) {
 				Requirement find = missing(context, r, resources, deadline);
-				if (find != null)
+				if (find != null) {
 					list.add(find);
+				}
 			}
-			if (!list.isEmpty())
-				return new ResolutionException(re.getMessage(), re.getCause(), list);
 		} catch (TimeoutException toe) {}
-		return re;
+		return new ResolutionException(re.getMessage(), re.getCause(), list);
 	}
 
 	/*
