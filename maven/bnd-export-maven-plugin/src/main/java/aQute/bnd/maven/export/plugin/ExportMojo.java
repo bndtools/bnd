@@ -20,6 +20,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Run;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import biz.aQute.resolve.ProjectResolver;
@@ -54,6 +55,14 @@ public class ExportMojo extends AbstractMojo {
 			throw new MojoExecutionException("Could not find bnd run file " + runFile);
 		}
 		try (StandaloneRun run = new StandaloneRun(runFile)) {
+
+			for (RepositoryPlugin repo : run.getWorkspace().getRepositories()) {
+				repo.list(null);
+			}
+			run.check();
+			if (!run.isOk()) {
+				throw new MojoExecutionException("Initializing the workspace failed " + run.getErrors());
+			}
 			if (resolve) {
 				resolve(run);
 			}
