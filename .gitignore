@@ -7,3 +7,5 @@ buildfiles
 /.gradle/
 /reports/
 /generated/
+maven/bnd-testing-maven-plugin/.classpath
+maven/bnd-testing-maven-plugin/.project
