@@ -1,6 +1,4 @@
-package aQute.bnd.maven.export.plugin;
-
-import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
+package aQute.bnd.maven.testing.plugin;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,20 +11,23 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import aQute.bnd.build.Container;
+import aQute.bnd.build.ProjectTester;
 import aQute.bnd.build.Run;
-import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
+import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import biz.aQute.resolve.ProjectResolver;
 
-@Mojo(name = "export", defaultPhase = PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
-public class ExportMojo extends AbstractMojo {
+@Mojo(name = "testing", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
+public class TestingMojo extends AbstractMojo {
 
 	@Parameter(readonly = true, required = true)
 	private List<File>	bndruns;
@@ -43,14 +44,14 @@ public class ExportMojo extends AbstractMojo {
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
 			for (File runFile : bndruns) {
-				export(runFile);
+				testing(runFile);
 			}
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 	}
 
-	private void export(File runFile) throws MojoExecutionException, Exception, IOException {
+	private void testing(File runFile) throws MojoExecutionException, Exception, IOException {
 		if (!runFile.exists()) {
 			throw new MojoExecutionException("Could not find bnd run file " + runFile);
 		}
@@ -63,18 +64,47 @@ public class ExportMojo extends AbstractMojo {
 			if (!run.isOk()) {
 				throw new MojoExecutionException("Initializing the workspace failed " + run.getErrors());
 			}
+
 			if (resolve) {
 				resolve(run);
 			}
-			export(run);
+			run.setProperty("-runbundles.tester", "biz.aQute.tester");
+			testing(run);
 		}
 	}
 
-	private void export(Run run) throws Exception {
-		try (Jar jar = run.getProjectLauncher().executable()) {
-			targetDir.mkdirs();
-			File jarFile = new File(targetDir, getNamePart(run.getPropertiesFile()) + ".jar");
-			jar.write(jarFile);
+	private void testing(Run run) throws Exception {
+		try {
+			System.out.println("Test " + run);
+			ProjectTester projectTester = run.getProjectTester();
+			File dir = new File(targetDir, "tmp");
+			IO.delete(dir);
+			dir.mkdirs();
+
+			projectTester.setCwd(dir);
+			projectTester.setReportDir(targetDir);
+			projectTester.test();
+
+			if (!run.getErrors().isEmpty()) {
+				System.out.println("Errors");
+				System.out.println(Strings.join("\n", run.getErrors()));
+				System.out.println();
+			}
+			if (!run.getWarnings().isEmpty()) {
+				System.out.println("Warnings");
+				System.out.println(Strings.join("\n", run.getWarnings()));
+				System.out.println();
+			}
+
+			IO.delete(dir);
+
+			if (run.getErrors().isEmpty())
+				return;
+
+			System.out.println(Strings.join("\n", run.getErrors()));
+			throw new MojoExecutionException("Test had errors");
+		} catch (Exception e) {
+			throw new MojoExecutionException(e.getMessage());
 		}
 	}
 
@@ -124,12 +154,6 @@ public class ExportMojo extends AbstractMojo {
 			del = ",";
 		}
 		ps.append("\n\n");
-	}
-
-	private String getNamePart(File runFile) {
-		String nameExt = runFile.getName();
-		int pos = nameExt.lastIndexOf(".");
-		return nameExt.substring(0, pos);
 	}
 
 }
