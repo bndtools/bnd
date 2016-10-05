@@ -11,6 +11,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -24,6 +25,7 @@ import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.libg.glob.Glob;
 import biz.aQute.resolve.ProjectResolver;
 
 @Mojo(name = "testing", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
@@ -35,16 +37,38 @@ public class TestingMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
 	private File		targetDir;
 
+	@Parameter(defaultValue = "${testing.select}", readonly = true)
+	private File		testingSelect;
+
+	@Parameter(defaultValue = "${testing}", readonly = true)
+	private String		testing;
+
 	@Parameter(readonly = true, required = false)
 	private boolean		resolve			= false;
 
 	@Parameter(readonly = true, required = false)
 	private boolean		failOnChanges	= true;
 
+	private Log			log;
+
 	public void execute() throws MojoExecutionException, MojoFailureException {
+		log = getLog();
+
 		try {
-			for (File runFile : bndruns) {
-				testing(runFile);
+			if (testingSelect != null) {
+				log.info("Using selected testing file " + testingSelect);
+				testing(testingSelect);
+			} else {
+
+				Glob g = new Glob(testing == null ? "*" : testing);
+				log.info("Matching glob " + g);
+
+				for (File runFile : bndruns) {
+					if (g.matcher(runFile.getName()).matches())
+						testing(runFile);
+					else
+						log.info("Skipping " + g);
+				}
 			}
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);

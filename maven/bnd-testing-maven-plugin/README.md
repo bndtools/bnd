@@ -1,18 +1,22 @@
-# bnd-export-maven-plugin
+# bnd-testing-maven-plugin
 
-A plugin to optionally resolve and export bndrun files.
+A plugin to run integration tests.
 
-Point the plugin to a bndrun file in the same project. It will optionally resolve the project and export
+Point the plugin to a bndrun file in the same project. It will optionally resolve the project and test
 a runnable jar into the targetDir. If not specified targetDir defaults to the project build directory.
 
+The bndrun file must contain bundles that have the Test-Cases header set to class names that
+contain the JUnit tests.
+
+ 
 ```
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
-                <artifactId>bnd-export-maven-plugin</artifactId>
+                <artifactId>bnd-testing-maven-plugin</artifactId>
                 <version>${bnd.version}</version>
                 <configuration>
                     <bndruns>
-                        <bndrun>mylaunch.bndrun</bndrun>
+                        <bndrun>mytest.bndrun</bndrun>
                     </bndruns>
                     <targetDir>.</targetDir>
                 </configuration>
@@ -26,3 +30,7 @@ a runnable jar into the targetDir. If not specified targetDir defaults to the pr
             </plugin>
 ```
 
+You can use the following system properties on the command line:
+
+	testing.select     A file path to a test file, overrides anything else
+	testing            A glob expression that is matched against the file name of the listed bndrun files
