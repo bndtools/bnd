@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Manifest;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
@@ -148,16 +150,30 @@ public class BndMavenPlugin extends AbstractMojo {
 			Set<Artifact> artifacts = project.getArtifacts();
 			List<Object> buildpath = new ArrayList<Object>(artifacts.size());
 			for (Artifact artifact : artifacts) {
-				if (!artifact.getType().equals("jar")) {
+				File cpe = artifact.getFile().getCanonicalFile();
+				if (!cpe.exists()) {
+					logger.debug("dependency {} does not exist", cpe);
 					continue;
 				}
-				File cpe = artifact.getFile().getCanonicalFile();
 				if (cpe.isDirectory()) {
 					Jar cpeJar = new Jar(cpe);
 					builder.addClose(cpeJar);
 					builder.updateModified(cpeJar.lastModified(), cpe.getPath());
 					buildpath.add(cpeJar);
 				} else {
+					if (!artifact.getType().equals("jar")) {
+						/*
+						 * Check if it is a valid zip file. We don't create a
+						 * Jar object here because we want to avoid the cost of
+						 * creating the Jar object if we decide not to build.
+						 */
+						try (ZipFile zip = new ZipFile(cpe)) {
+							zip.entries();
+						} catch (ZipException e) {
+							logger.debug("dependency {} is not a zip", cpe);
+							continue;
+						}
+					}
 					builder.updateModified(cpe.lastModified(), cpe.getPath());
 					buildpath.add(cpe);
 				}
