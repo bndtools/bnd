@@ -34,12 +34,17 @@ script:
   - ./gradlew -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
   - (cd docs && ./build.sh)
 
-after_success:
+before_cache:
   - git status
+  - rm -rf maven/target/m2/biz/aQute/bnd/
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -rf $HOME/.gradle/caches/*/plugin-resolution/
 
 cache:
   directories:
-    - $HOME/.gradle/wrapper
-    - $HOME/.m2/wrapper
-    - cnf/cache/stable
-    - docs/bundler
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    - $HOME/.m2/wrapper/
+    - cnf/cache/stable/
+    - docs/bundler/
+    - maven/target/m2/
