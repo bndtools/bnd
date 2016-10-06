@@ -31,13 +31,15 @@ import org.osgi.service.indexer.ResourceIndexer;
 import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
 import org.osgi.service.indexer.impl.RepoIndex;
 import org.osgi.service.indexer.impl.URLResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Exports project dependencies to OSGi R5 index format.
  */
 @Mojo(name = "local-index", defaultPhase = PROCESS_RESOURCES)
 public class LocalIndexerMojo extends AbstractMojo {
-
+	private static final Logger	logger	= LoggerFactory.getLogger(LocalIndexerMojo.class);
 
 	@Parameter(property = "bnd.indexer.input.dir", required=true)
 	private File						inputDir;
@@ -59,7 +61,7 @@ public class LocalIndexerMojo extends AbstractMojo {
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
         if ( skip ) {
-			getLog().debug("skip project as configured");
+			logger.debug("skip project as configured");
 			return;
 		}
 
@@ -67,10 +69,10 @@ public class LocalIndexerMojo extends AbstractMojo {
         	baseFile = outputFile.getParentFile();
         }
         
-		getLog().debug("Indexing dependencies in folder: " + inputDir.getAbsolutePath());
-		getLog().debug("Outputting index to: " + outputFile.getAbsolutePath());
-		getLog().debug("Producing additional gzip index: " + includeGzip);
-		getLog().debug("URI paths will be relative to: " + baseFile);
+		logger.debug("Indexing dependencies in folder: {}", inputDir.getAbsolutePath());
+		logger.debug("Outputting index to: {}", outputFile.getAbsolutePath());
+		logger.debug("Producing additional gzip index: {}", includeGzip);
+		logger.debug("URI paths will be relative to: {}", baseFile);
 
 		Set<File> toIndex = new HashSet<>();
 		toIndex.addAll(asList(inputDir.listFiles()));
@@ -126,16 +128,16 @@ public class LocalIndexerMojo extends AbstractMojo {
 	class BaseFileURLResolver implements URLResolver {
 		public URI resolver(File file) throws Exception {
 			try {
-				getLog().debug("Resolving " + file.getAbsolutePath() + " relative to " + baseFile.getAbsolutePath());
+				logger.debug("Resolving {} relative to {}", file.getAbsolutePath(), baseFile.getAbsolutePath());
 				Path relativePath = baseFile.getAbsoluteFile().toPath().relativize(file.getAbsoluteFile().toPath());
-				getLog().debug("Relative Path is: " + relativePath);
+				logger.debug("Relative Path is: {}", relativePath);
 				// Note that relativePath.toURI() gives the wrong answer for us!
 				// We have to do some Windows related mashing here too :(
 				URI relativeURI = URI.create(relativePath.toString().replace(File.separatorChar, '/'));
-				getLog().debug("Relative URI is: " + relativeURI);
+				logger.debug("Relative URI is: {}", relativeURI);
 				return relativeURI;
 			} catch (Exception e) {
-				getLog().error(e);
+				logger.error("Exception resolving URI", e);
 				fail = true;
 				throw e;
 			}

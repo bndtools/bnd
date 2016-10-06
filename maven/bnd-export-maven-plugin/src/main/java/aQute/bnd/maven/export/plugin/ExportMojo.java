@@ -16,6 +16,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Run;
@@ -27,6 +29,7 @@ import biz.aQute.resolve.ProjectResolver;
 
 @Mojo(name = "export", defaultPhase = PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class ExportMojo extends AbstractMojo {
+	private static final Logger	logger			= LoggerFactory.getLogger(ExportMojo.class);
 
 	@Parameter(readonly = true, required = true)
 	private List<File>	bndruns;
@@ -95,7 +98,7 @@ public class ExportMojo extends AbstractMojo {
 				if (failOnChanges) {
 					throw new MojoExecutionException("The runbundles have changed. Failing the build");
 				} else {
-					getLog().warn("The runbundles have changed:");
+					logger.warn("The runbundles have changed:");
 					run.setRunBundles(runBundles);
 				}
 			}

@@ -332,7 +332,9 @@ public class BndMavenPlugin extends AbstractMojo {
 
 	private void expandJar(Jar jar, File dir) throws Exception {
 		final long lastModified = jar.lastModified();
-		logger.debug(String.format("Bundle lastModified: %tF %<tT.%<tL", lastModified));
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format("Bundle lastModified: %tF %<tT.%<tL", lastModified));
+		}
 		dir = dir.getAbsoluteFile();
 		Files.createDirectories(dir.toPath());
 
