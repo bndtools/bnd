@@ -64,12 +64,15 @@ import org.osgi.service.indexer.ResourceIndexer;
 import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
 import org.osgi.service.indexer.impl.RepoIndex;
 import org.osgi.service.indexer.impl.URLResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Exports project dependencies to OSGi R5 index format.
  */
 @Mojo(name = "index", defaultPhase = PACKAGE, requiresDependencyResolution = TEST)
 public class IndexerMojo extends AbstractMojo {
+	private static final Logger			logger	= LoggerFactory.getLogger(IndexerMojo.class);
 
 	@Parameter(defaultValue = "${project}", readonly = true, required = true)
 	private MavenProject				project;
@@ -115,7 +118,7 @@ public class IndexerMojo extends AbstractMojo {
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
         if ( skip ) {
-			getLog().debug("skip project as configured");
+			logger.debug("skip project as configured");
 			return;
 		}
 
@@ -123,10 +126,10 @@ public class IndexerMojo extends AbstractMojo {
 			scopes = Arrays.asList("compile", "runtime");
 		}
 
-		getLog().debug("Indexing dependencies with scopes: " + scopes);
-		getLog().debug("Including Transitive dependencies: " + includeTransitive);
-		getLog().debug("Local file URLs permitted: " + localURLs);
-		getLog().debug("Adding mvn: URLs as alternative content: " + addMvnURLs);
+		logger.debug("Indexing dependencies with scopes: {}", scopes);
+		logger.debug("Including Transitive dependencies: {}", includeTransitive);
+		logger.debug("Local file URLs permitted: {}", localURLs);
+		logger.debug("Adding mvn: URLs as alternative content: {}", addMvnURLs);
 
 		DependencyResolutionRequest request = new DefaultDependencyResolutionRequest(project, session);
 
@@ -185,7 +188,7 @@ public class IndexerMojo extends AbstractMojo {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 
-		getLog().debug("Indexing artifacts: " + dependencies.keySet());
+		logger.debug("Indexing artifacts: {}", dependencies.keySet());
 		try {
 			indexer.index(dependencies.keySet(), output, config);
 		} catch (Exception e) {
@@ -266,7 +269,7 @@ public class IndexerMojo extends AbstractMojo {
 				return URI.create(sb.toString()).normalize();
 			} catch (Exception e) {
 				fail = true;
-				getLog().error("Failed to determine the artifact URI", e);
+				logger.error("Failed to determine the artifact URI", e);
 				throw e;
 			}
 		}
@@ -302,8 +305,9 @@ public class IndexerMojo extends AbstractMojo {
 
 				if (repo == null) {
 					if (localURLs == ALLOWED) {
-						getLog().info("The Artifact " + artifact.toString()
-								+ " could not be found in any repository, returning the local location");
+						logger.info(
+								"The Artifact {} could not be found in any repository, returning the local location",
+								artifact);
 						return file.toURI();
 					}
 					throw new FileNotFoundException("The repository " + artifactResult.getRepository().getId()
@@ -334,7 +338,7 @@ public class IndexerMojo extends AbstractMojo {
 				return URI.create(baseUrl).resolve(artifactPath).normalize();
 			} catch (Exception e) {
 				fail = true;
-				getLog().error("Failed to determine the artifact URI", e);
+				logger.error("Failed to determine the artifact URI", e);
 				throw e;
 			}
 		}
@@ -347,8 +351,8 @@ public class IndexerMojo extends AbstractMojo {
 			try {
 				ArtifactResult resolvedArtifact = postProcessResult(system.resolveArtifact(session,
 						new ArtifactRequest(node.getArtifact(), project.getRemoteProjectRepositories(), parent)));
-				getLog().debug("Located file: " + resolvedArtifact.getArtifact().getFile() + " for artifact "
-						+ resolvedArtifact);
+				logger.debug("Located file: {} for artifact {}", resolvedArtifact.getArtifact().getFile(),
+						resolvedArtifact);
 
 				files.put(resolvedArtifact.getArtifact().getFile(), resolvedArtifact);
 			} catch (ArtifactResolutionException e) {
@@ -358,7 +362,7 @@ public class IndexerMojo extends AbstractMojo {
 			if (includeTransitive) {
 				discoverArtifacts(files, node.getChildren(), node.getRequestContext());
 			} else {
-				getLog().debug("Ignoring transitive dependencies of " + node.getDependency());
+				logger.debug("Ignoring transitive dependencies of {}", node.getDependency());
 			}
 		}
 	}
@@ -373,7 +377,7 @@ public class IndexerMojo extends AbstractMojo {
 		String repoId = resolvedArtifact.getRepository().getId();
 		Artifact artifact = resolvedArtifact.getArtifact();
 		if ("workspace".equals(repoId) || "local".equals(repoId)) {
-			getLog().debug("Post processing " + artifact + " to determine a remote source");
+			logger.debug("Post processing {} to determine a remote source", artifact);
 			ArtifactResult postProcessed;
 			if (artifact.isSnapshot()) {
 				postProcessed = postProcessSnapshot(resolvedArtifact.getRequest(), artifact);
@@ -433,23 +437,23 @@ public class IndexerMojo extends AbstractMojo {
 									session.getLocalRepositoryManager().getPathForRemoteArtifact(fullVersionArtifact,
 											aetherRepo, artifact.toString()));
 							if (!toUse.exists()) {
-								getLog().warn(
-										"The resolved artifact " + fullVersionArtifact + " does not exist at " + toUse);
+								logger.warn(
+										"The resolved artifact {} does not exist at {}", fullVersionArtifact, toUse);
 								continue;
 							} else {
-								getLog().debug("Located snapshot file " + toUse + " for artifact " + artifact);
+								logger.debug("Located snapshot file {} for artifact {}", toUse, artifact);
 							}
 							result.getArtifact().setFile(toUse);
 							return result;
 						}
 					} catch (ArtifactResolutionException e) {
-						getLog().debug("Unable to locate the artifact " + fullVersionArtifact, e);
+						logger.debug("Unable to locate the artifact {}", fullVersionArtifact, e);
 					}
 				}
 			}
 		}
 
-		getLog().debug("Unable to resolve a remote repository containing " + artifact);
+		logger.debug("Unable to resolve a remote repository containing {}", artifact);
 
 		return null;
 	}
@@ -489,10 +493,10 @@ public class IndexerMojo extends AbstractMojo {
 								File toUse = new File(session.getLocalRepository().getBasedir(),
 										session.getLocalRepositoryManager().getPathForLocalArtifact(artifact));
 								if (!toUse.exists()) {
-									getLog().warn("The resolved artifact " + artifact + " does not exist at " + toUse);
+									logger.warn("The resolved artifact {} does not exist at {}", artifact, toUse);
 									continue;
 								} else {
-									getLog().debug("Located snapshot file " + toUse + " for artifact " + artifact);
+									logger.debug("Located snapshot file {} for artifact {}", toUse, artifact);
 								}
 								result.getArtifact().setFile(toUse);
 								return result;
@@ -505,7 +509,7 @@ public class IndexerMojo extends AbstractMojo {
 			}
 		}
 
-		getLog().debug("Unable to resolve a remote repository containing " + artifact);
+		logger.debug("Unable to resolve a remote repository containing {}", artifact);
 
 		return null;
 	}

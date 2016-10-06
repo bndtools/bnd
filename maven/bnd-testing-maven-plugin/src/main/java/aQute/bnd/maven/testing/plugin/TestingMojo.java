@@ -11,11 +11,12 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.ProjectTester;
@@ -30,6 +31,7 @@ import biz.aQute.resolve.ProjectResolver;
 
 @Mojo(name = "testing", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class TestingMojo extends AbstractMojo {
+	private static final Logger	logger			= LoggerFactory.getLogger(TestingMojo.class);
 
 	@Parameter(readonly = true, required = true)
 	private List<File>	bndruns;
@@ -49,25 +51,21 @@ public class TestingMojo extends AbstractMojo {
 	@Parameter(readonly = true, required = false)
 	private boolean		failOnChanges	= true;
 
-	private Log			log;
-
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		log = getLog();
-
 		try {
 			if (testingSelect != null) {
-				log.info("Using selected testing file " + testingSelect);
+				logger.info("Using selected testing file {}", testingSelect);
 				testing(testingSelect);
 			} else {
 
 				Glob g = new Glob(testing == null ? "*" : testing);
-				log.info("Matching glob " + g);
+				logger.info("Matching glob {}", g);
 
 				for (File runFile : bndruns) {
 					if (g.matcher(runFile.getName()).matches())
 						testing(runFile);
 					else
-						log.info("Skipping " + g);
+						logger.info("Skipping {}", g);
 				}
 			}
 		} catch (Exception e) {
@@ -149,7 +147,7 @@ public class TestingMojo extends AbstractMojo {
 				if (failOnChanges) {
 					throw new MojoExecutionException("The runbundles have changed. Failing the build");
 				} else {
-					getLog().warn("The runbundles have changed:");
+					logger.warn("The runbundles have changed:");
 					run.setRunBundles(runBundles);
 				}
 			}

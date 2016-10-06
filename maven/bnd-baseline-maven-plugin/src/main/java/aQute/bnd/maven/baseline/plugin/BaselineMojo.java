@@ -25,6 +25,8 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.VersionRangeRequest;
 import org.eclipse.aether.resolution.VersionRangeResolutionException;
 import org.eclipse.aether.resolution.VersionRangeResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.BundleInfo;
@@ -39,6 +41,7 @@ import aQute.service.reporter.Reporter;
  */
 @Mojo(name = "baseline", defaultPhase = VERIFY)
 public class BaselineMojo extends AbstractMojo {
+	private static final Logger		logger	= LoggerFactory.getLogger(BaselineMojo.class);
 
 	@Parameter(defaultValue = "${project}", readonly = true, required = true)
 	private MavenProject			project;
@@ -69,7 +72,7 @@ public class BaselineMojo extends AbstractMojo {
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
         if ( skip ) {
-			getLog().debug("skip project as configured");
+			logger.debug("skip project as configured");
 			return;
 		}
 
@@ -100,21 +103,21 @@ public class BaselineMojo extends AbstractMojo {
 
 				if (checkFailures(artifact, artifactResult, baseline)) {
 					if (continueOnError) {
-						getLog().warn("The baselining check failed when checking " + artifact + " against "
-								+ artifactResult.getArtifact()
-								+ " but the bnd-baseline-maven-plugin is configured not to fail the build.");
+						logger.warn(
+								"The baselining check failed when checking {} against {} but the bnd-baseline-maven-plugin is configured not to fail the build.",
+								artifact, artifactResult.getArtifact());
 					} else {
 						throw new MojoExecutionException("The baselining plugin detected versioning errors");
 					}
 				} else {
-					getLog().info("Baselining check succeeded checking " + artifact + " against "
-							+ artifactResult.getArtifact());
+					logger.info("Baselining check succeeded checking {} against {}", artifact,
+							artifactResult.getArtifact());
 				}
 			} else {
 				if (failOnMissing) {
 					throw new MojoExecutionException("Unable to locate a previous version of the artifact");
 				} else {
-					getLog().warn("No previous version of " + artifact + " could be found to baseline against");
+					logger.warn("No previous version of {} could be found to baseline against", artifact);
 				}
 			}
 		} catch (RepositoryException re) {
@@ -161,13 +164,13 @@ public class BaselineMojo extends AbstractMojo {
 			base.setExtension(artifact.getExtension());
 		}
 
-		getLog().debug("Baselining against " + base + ", fail on missing: " + failOnMissing);
+		logger.debug("Baselining against {}, fail on missing: {}", base, failOnMissing);
 	}
 
 	protected void searchForBaseVersion(Artifact artifact, List<RemoteRepository> aetherRepos)
 			throws VersionRangeResolutionException {
-		getLog().info("Automatically determining the baseline version for " + artifact + " using repositories "
-				+ aetherRepos);
+		logger.info("Automatically determining the baseline version for {} using repositories {}", artifact,
+				aetherRepos);
 
 		Artifact toFind = new DefaultArtifact(base.getGroupId(), base.getArtifactId(), base.getClassifier(),
 				base.getExtension(), base.getVersion());
@@ -178,11 +181,11 @@ public class BaselineMojo extends AbstractMojo {
 
 		VersionRangeResult versions = system.resolveVersionRange(session, request);
 
-		getLog().debug("Found versions " + String.valueOf(versions.getVersions()));
+		logger.debug("Found versions {}", versions.getVersions());
 
 		base.setVersion(versions.getHighestVersion() != null ? versions.getHighestVersion().toString() : null);
 
-		getLog().info("The baseline version was found to be " + base.getVersion());
+		logger.info("The baseline version was found to be {}", base.getVersion());
 	}
 
 	protected ArtifactResult locateBaseJar(List<RemoteRepository> aetherRepos) throws ArtifactResolutionException {
@@ -200,19 +203,17 @@ public class BaselineMojo extends AbstractMojo {
 				null)) {
 			if (info.mismatch) {
 				failed = true;
-				getLog().error(String.format(
-						"Baseline mismatch for package %s, %s change. Current is %s, repo is %s, suggest %s or %s\n",
+				logger.error("Baseline mismatch for package {}, {} change. Current is {}, repo is {}, suggest {} or {}",
 						info.packageName, info.packageDiff.getDelta(), info.newerVersion, info.olderVersion,
-						info.suggestedVersion, info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders));
+						info.suggestedVersion, info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
 			}
 		}
 
 		BundleInfo binfo = baseline.getBundleInfo();
 		if (binfo.mismatch) {
 			failed = true;
-			getLog().error(String.format(
-					"The bundle version change (%s to %s) is too low, the new version must be at least %s",
-					binfo.olderVersion, binfo.newerVersion, binfo.suggestedVersion));
+			logger.error("The bundle version change ({} to {}) is too low, the new version must be at least {}",
+					binfo.olderVersion, binfo.newerVersion, binfo.suggestedVersion);
 		}
 		return failed;
 	}

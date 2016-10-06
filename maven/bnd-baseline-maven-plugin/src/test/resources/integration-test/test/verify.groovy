@@ -27,12 +27,12 @@ assert fileContents.contains("[INFO] Baselining check succeeded checking biz.aQu
 // With provider
 int idx = fileContents.indexOf("[ERROR] Baseline mismatch for package bnd.test, MINOR change. Current is 1.0.0, repo is 1.0.0, suggest 1.1.0 or -");
 
-assert fileContents.get(idx + 2) == "[WARNING] The baselining check failed when checking biz.aQute.bnd-test:invalid-with-provider:jar:0.0.2 against biz.aQute.bnd-test:valid-no-previous:jar:0.0.1 but the bnd-baseline-maven-plugin is configured not to fail the build.";
+assert fileContents.get(idx + 1) == "[WARNING] The baselining check failed when checking biz.aQute.bnd-test:invalid-with-provider:jar:0.0.2 against biz.aQute.bnd-test:valid-no-previous:jar:0.0.1 but the bnd-baseline-maven-plugin is configured not to fail the build.";
 
 
 // With consumer
 idx = fileContents.indexOf("[ERROR] Baseline mismatch for package bnd.test, MAJOR change. Current is 1.0.0, repo is 1.0.0, suggest 2.0.0 or 1.0.0");
 
-assert fileContents.get(idx + 2) == "[WARNING] The baselining check failed when checking biz.aQute.bnd-test:invalid-with-consumer:jar:0.0.2 against biz.aQute.bnd-test:valid-no-previous:jar:0.0.1 but the bnd-baseline-maven-plugin is configured not to fail the build.";
+assert fileContents.get(idx + 1) == "[WARNING] The baselining check failed when checking biz.aQute.bnd-test:invalid-with-consumer:jar:0.0.2 against biz.aQute.bnd-test:valid-no-previous:jar:0.0.1 but the bnd-baseline-maven-plugin is configured not to fail the build.";
 
 
