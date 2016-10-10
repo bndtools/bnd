@@ -115,17 +115,17 @@ public class AnnotationReader extends ClassDataCollector {
 
 	Map<String,List<DeclarativeServicesAnnotationError>>	mismatchedAnnotations	= new HashMap<String,List<DeclarativeServicesAnnotationError>>();
 
-	AnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder finder) {
+	AnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder finder, Version minVersion) {
 		this.analyzer = analyzer;
 		this.clazz = clazz;
 		this.options = options;
 		this.finder = finder;
-		this.component = new ComponentDef(finder);
+		this.component = new ComponentDef(finder, minVersion);
 	}
 
 	public static ComponentDef getDefinition(Clazz c, Analyzer analyzer, EnumSet<Options> options,
-			XMLAttributeFinder finder) throws Exception {
-		AnnotationReader r = new AnnotationReader(analyzer, c, options, finder);
+			XMLAttributeFinder finder, Version minVersion) throws Exception {
+		AnnotationReader r = new AnnotationReader(analyzer, c, options, finder, minVersion);
 		return r.getDef();
 	}
 

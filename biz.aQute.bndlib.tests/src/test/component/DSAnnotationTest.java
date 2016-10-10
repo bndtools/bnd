@@ -474,6 +474,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public void testBasic() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*_basic");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.0.0");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
@@ -1077,6 +1078,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public void testEnums() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Enums");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.0.0");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
@@ -1156,6 +1158,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public void testMethods() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Methods");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.0.0");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
@@ -1257,7 +1260,7 @@ public class DSAnnotationTest extends BndTestCase {
 		Resource r = jar.getResource("OSGI-INF/bottom.xml");
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.2.0");
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 
 		xt.assertAttribute("LogService", "scr:component/reference[1]/@name");
 		xt.assertAttribute("setLogService", "scr:component/reference[1]/@bind");
@@ -1324,6 +1327,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public void testPrototypes() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*Prototypes");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.0.0");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
@@ -1395,6 +1399,7 @@ public class DSAnnotationTest extends BndTestCase {
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*CheckBinds");
 		if (extender)
 			b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "extender");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS + ".min", "version;minimum=1.2.0");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
@@ -1523,6 +1528,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public void testConfigPolicySetsNamespace() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*TestConfigPolicy");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.0.0");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
@@ -1569,6 +1575,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public void testIssue347() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*issue347");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.0.0");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
@@ -2783,6 +2790,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public void testDesignate() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("-dsannotations", "test.component.DSAnnotationTest*Designate*");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.0.0");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
@@ -2926,6 +2934,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public void testExtraAttributes10() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$ExtraAttributes*");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.0.0");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
@@ -3588,6 +3597,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*ComponentReference*");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.0.0");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 

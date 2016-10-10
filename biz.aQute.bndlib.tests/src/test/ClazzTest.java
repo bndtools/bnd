@@ -180,6 +180,6 @@ public class ClazzTest extends TestCase {
 		clazz.parseClassFile();
 		analyzer.getClassspace().put(clazz.getClassName(), clazz);
 		AnnotationReader.getDefinition(clazz, analyzer, EnumSet.noneOf(DSAnnotations.Options.class),
-				new XMLAttributeFinder(analyzer));
+				new XMLAttributeFinder(analyzer), AnnotationReader.V1_3);
 	}
 }

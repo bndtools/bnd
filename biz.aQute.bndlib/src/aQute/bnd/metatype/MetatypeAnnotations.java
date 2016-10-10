@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import aQute.bnd.component.TagResource;
+import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
@@ -26,22 +27,68 @@ import aQute.libg.generics.Create;
 public class MetatypeAnnotations implements AnalyzerPlugin {
 
 	enum Options {
-		nested
-	}
+		nested, version {
+			@Override
+			void process(MetatypeAnnotations anno, Attrs attrs) {
+				String v = attrs.get("minimum");
+				if (v != null && v.length() > 0) {
+					anno.minVersion = MetatypeVersion.valueFor(v);
+				}
+			}
+
+			@Override
+			void reset(MetatypeAnnotations anno) {
+				anno.minVersion = MetatypeVersion.VERSION_1_2;
+			}
+		};
+
+		void process(MetatypeAnnotations anno, Attrs attrs) {
+
+		}
+
+		void reset(MetatypeAnnotations anno) {
+
+		}
+
+		static void parseOption(Map.Entry<String,Attrs> entry, EnumSet<Options> options, MetatypeAnnotations state) {
+			String s = entry.getKey();
+			boolean negation = false;
+			if (s.startsWith("!")) {
+				negation = true;
+				s = s.substring(1);
+			}
+			Options option = Options.valueOf(s);
+			if (negation) {
+				options.remove(option);
+				option.reset(state);
+			} else {
+				options.add(option);
+				Attrs attrs;
+				if ((attrs = entry.getValue()) != null) {
+					option.process(state, attrs);
+				}
+			}
+
+		}
+	};
+
+	MetatypeVersion minVersion;
 
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
+		this.minVersion = MetatypeVersion.VERSION_1_2;
 		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.METATYPE_ANNOTATIONS, "*"));
 		if (header.size() == 0)
 			return false;
 
 		Parameters optionsHeader = OSGiHeader.parseHeader(analyzer.getProperty(Constants.METATYPE_ANNOTATIONS_OPTIONS));
 		EnumSet<Options> options = EnumSet.noneOf(Options.class);
-		for (String s : optionsHeader.keySet()) {
+		for (Map.Entry<String,Attrs> entry : optionsHeader.entrySet()) {
 			try {
-				options.add(Options.valueOf(s));
+				Options.parseOption(entry, options, this);
 			} catch (IllegalArgumentException e) {
-				analyzer.error("Unrecognized %s value %s, expected values are %s",
-						Constants.METATYPE_ANNOTATIONS_OPTIONS, s, EnumSet.allOf(Options.class));
+				analyzer.error("Unrecognized %s value %s with attributes %s, expected values are %s",
+						Constants.METATYPE_ANNOTATIONS_OPTIONS, entry.getKey(), entry.getValue(),
+						EnumSet.allOf(Options.class));
 			}
 		}
 
@@ -60,7 +107,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 				if (instruction.matches(c.getFQN())) {
 					if (!instruction.isNegated()) {
 						list.add(c);
-						OCDDef definition = OCDReader.getOCDDef(c, analyzer, options, finder);
+						OCDDef definition = OCDReader.getOCDDef(c, analyzer, options, finder, minVersion);
 						if (definition != null) {
 							classToOCDMap.put(c.getClassName(), definition);
 						}

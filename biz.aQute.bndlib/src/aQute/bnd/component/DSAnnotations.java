@@ -32,21 +32,69 @@ import aQute.lib.strings.Strings;
 public class DSAnnotations implements AnalyzerPlugin {
 
 	public enum Options {
-		inherit, felixExtensions, extender, nocapabilities, norequirements
+		inherit, felixExtensions, extender, nocapabilities, norequirements,
+
+		version {
+			@Override
+			void process(DSAnnotations anno, Attrs attrs) {
+				String v = attrs.get("minimum");
+				if (v != null && v.length() > 0) {
+					anno.minVersion = new Version(v);
+				}
+			}
+
+			@Override
+			void reset(DSAnnotations anno) {
+				anno.minVersion = AnnotationReader.V1_3;
+			}
+		};
+
+		void process(DSAnnotations anno, Attrs attrs) {
+
+		}
+
+		void reset(DSAnnotations anno) {
+
+		}
+
+		static void parseOption(Map.Entry<String,Attrs> entry, EnumSet<Options> options, DSAnnotations state) {
+			String s = entry.getKey();
+			boolean negation = false;
+			if (s.startsWith("!")) {
+				negation = true;
+				s = s.substring(1);
+			}
+			Options option = Options.valueOf(s);
+			if (negation) {
+				options.remove(option);
+				option.reset(state);
+			} else {
+				options.add(option);
+				Attrs attrs;
+				if ((attrs = entry.getValue()) != null) {
+					option.process(state, attrs);
+				}
+			}
+
+		}
 	};
+
+	Version minVersion;
 
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS, "*"));
 		if (header.size() == 0)
 			return false;
 
-		Parameters optionsHeader = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS_OPTIONS));
+		minVersion = AnnotationReader.V1_3;
+		Parameters optionsHeader = OSGiHeader.parseHeader(analyzer.mergeProperties(Constants.DSANNOTATIONS_OPTIONS));
 		EnumSet<Options> options = EnumSet.noneOf(Options.class);
-		for (String s : optionsHeader.keySet()) {
+		for (Map.Entry<String,Attrs> entry : optionsHeader.entrySet()) {
 			try {
-				options.add(Options.valueOf(s));
+				Options.parseOption(entry, options, this);
 			} catch (IllegalArgumentException e) {
-				analyzer.error("Unrecognized %s value %s, expected values are %s", Constants.DSANNOTATIONS_OPTIONS, s,
+				analyzer.error("Unrecognized %s value %s with attributes %s, expected values are %s",
+						Constants.DSANNOTATIONS_OPTIONS, entry.getKey(), entry.getValue(),
 						EnumSet.allOf(Options.class));
 			}
 		}
@@ -74,7 +122,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 				if (instruction.matches(c.getFQN())) {
 					if (instruction.isNegated())
 						break;
-					ComponentDef definition = AnnotationReader.getDefinition(c, analyzer, options, finder);
+					ComponentDef definition = AnnotationReader.getDefinition(c, analyzer, options, finder, minVersion);
 					if (definition != null) {
 
 						definition.sortReferences();

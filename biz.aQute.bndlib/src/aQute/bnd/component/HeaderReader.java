@@ -55,7 +55,7 @@ public class HeaderReader extends Processor {
 	}
 
 	public Tag createComponentTag(String name, String impl, Map<String,String> info) throws Exception {
-		final ComponentDef cd = new ComponentDef(null);
+		final ComponentDef cd = new ComponentDef(null, AnnotationReader.V1_0);
 		cd.name = name;
 		if (info.get(COMPONENT_ENABLED) != null)
 			cd.enabled = Boolean.valueOf(info.get(COMPONENT_ENABLED));

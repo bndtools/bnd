@@ -37,7 +37,7 @@ class ComponentDef extends ExtensionDef {
 																								// name
 	final Map<String,String>		propertyType	= new HashMap<String,String>();
 	final Map<String,ReferenceDef>	references		= new LinkedHashMap<String,ReferenceDef>();
-	Version							version			= AnnotationReader.V1_0;
+	Version							version;
 	String							name;
 	String							factory;
 	Boolean							immediate;
@@ -53,8 +53,9 @@ class ComponentDef extends ExtensionDef {
 	String[]						configurationPid;
 	List<Tag>						propertyTags	= new ArrayList<Tag>();
 
-	public ComponentDef(XMLAttributeFinder finder) {
+	public ComponentDef(XMLAttributeFinder finder, Version minVersion) {
 		super(finder);
+		version = minVersion;
 	}
 
 	String effectiveName() {
@@ -152,7 +153,7 @@ class ComponentDef extends ExtensionDef {
 	 */
 	Tag getTag() {
 		String xmlns = this.xmlns;
-		if (xmlns == null && version != AnnotationReader.V1_0)
+		if (xmlns == null && !version.equals(AnnotationReader.V1_0))
 			xmlns = NAMESPACE_STEM + "/v" + version;
 		Tag component = new Tag(xmlns == null ? "component" : "scr:component");
 		Namespaces namespaces = null;
@@ -181,10 +182,10 @@ class ComponentDef extends ExtensionDef {
 		if (factory != null)
 			component.addAttribute("factory", factory);
 
-		if (activate != null && version != AnnotationReader.V1_0)
+		if (activate != null && !version.equals(AnnotationReader.V1_0))
 			component.addAttribute("activate", activate);
 
-		if (deactivate != null && version != AnnotationReader.V1_0)
+		if (deactivate != null && !version.equals(AnnotationReader.V1_0))
 			component.addAttribute("deactivate", deactivate);
 
 		if (modified != null)
