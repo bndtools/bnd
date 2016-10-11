@@ -879,7 +879,7 @@ public class Builder extends Analyzer {
 			String x = extra.get("extra");
 			if (x != null)
 				r.setExtra(x);
-			jar.putResource(name, r);
+			copy(jar, name, r, extra);
 		} else {
 			File sourceFile;
 			String destinationPath;
@@ -1124,7 +1124,7 @@ public class Builder extends Analyzer {
 		}
 	}
 
-	private void noSuchFile(Jar jar, @SuppressWarnings("unused") String clause, Map<String,String> extra, String source,
+	private void noSuchFile(Jar jar, String clause, Map<String,String> extra, String source,
 			String destinationPath) throws Exception {
 		List<Jar> src = getJarsFromName(source, Constants.INCLUDE_RESOURCE + " " + source);
 		if (!src.isEmpty()) {
@@ -1135,7 +1135,8 @@ public class Builder extends Analyzer {
 				j.setDoNotTouchManifest();
 				JarResource jarResource = new JarResource(j);
 				String path = destinationPath.replace(source, quoted);
-				jar.putResource(path, jarResource);
+				logger.debug("copy d={} s={} path={}", jar, j, path);
+				copy(jar, path, jarResource, extra);
 			}
 		} else {
 			Resource lastChance = make.process(source);
@@ -1143,7 +1144,7 @@ public class Builder extends Analyzer {
 				String x = extra.get("extra");
 				if (x != null)
 					lastChance.setExtra(x);
-				jar.putResource(destinationPath, lastChance);
+				copy(jar, destinationPath, lastChance, extra);
 			} else
 				error("Input file does not exist: %s", source).header(source).context(clause);
 		}
@@ -1216,6 +1217,7 @@ public class Builder extends Analyzer {
 		if (doNotCopy(from))
 			return;
 
+		logger.debug("copy d={} s={} path={}", jar, from, path);
 		if (from.isDirectory()) {
 
 			File files[] = from.listFiles();
@@ -1233,16 +1235,19 @@ public class Builder extends Analyzer {
 					resource.setExtra(x);
 				if (path.endsWith("/"))
 					path = path + from.getName();
-				jar.putResource(path, resource);
-
-				if (isTrue(extra.get(LIB_DIRECTIVE))) {
-					setProperty(BUNDLE_CLASSPATH, append(getProperty(BUNDLE_CLASSPATH, "."), path));
-				}
+				copy(jar, path, resource, extra);
 			} else if (from.getName().equals(Constants.EMPTY_HEADER)) {
 				jar.putResource(path, new EmbeddedResource(new byte[0], 0));
 			} else {
 				error("Input file does not exist: %s", from).header(INCLUDERESOURCE + "|" + INCLUDE_RESOURCE);
 			}
+		}
+	}
+
+	private void copy(Jar jar, String path, Resource resource, Map<String,String> extra) {
+		jar.putResource(path, resource);
+		if (isTrue(extra.get(LIB_DIRECTIVE))) {
+			setProperty(BUNDLE_CLASSPATH, append(getProperty(BUNDLE_CLASSPATH, "."), path));
 		}
 	}
 

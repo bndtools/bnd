@@ -32,6 +32,7 @@ assert api_manifest.getValue('Bundle-Version') == '0.0.1.bndqual'
 assert impl_manifest.getValue('Bundle-Version') == '0.0.1.SNAPSHOT'
 assert wrapper_manifest.getValue('Bundle-Version') != '0.0.1.BUILD-SNAPSHOT'
 assert wrapper_manifest.getValue('Bundle-Version') =~ /^0\.0\.1\.BUILD-/
+assert wrapper_manifest.getValue('Bundle-ClassPath') == '.,lib/osgi.annotation.jar'
 
 // Check inheritance of properties in bnd.bnd from the parent project
 assert api_manifest.getValue('X-ParentProjectProperty') == 'it worked'
@@ -83,4 +84,4 @@ assert impl_jar.getEntry('OSGI-INF/org.example.impl.ExampleComponent.xml') != nu
 assert impl_jar.getEntry('OSGI-INF/metatype/org.example.impl.Config.xml') != null
 assert wrapper_jar.getEntry('org/example/api/') != null
 assert wrapper_jar.getEntry('org/example/types/') != null
-assert wrapper_jar.getEntry('README.txt') != null
+assert wrapper_jar.getEntry('lib/osgi.annotation.jar') != null
