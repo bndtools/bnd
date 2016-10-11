@@ -28,7 +28,7 @@ assert wrapper_manifest.getValue('Bundle-SymbolicName') == 'test.wrapper.bundle'
 assert api_manifest.getValue('Bundle-Name') == 'Test API Bundle'
 assert impl_manifest.getValue('Bundle-Name') == 'Test Impl Bundle'
 assert wrapper_manifest.getValue('Bundle-Name') == 'test-wrapper-bundle'
-assert api_manifest.getValue('Bundle-Version') == '0.0.1'
+assert api_manifest.getValue('Bundle-Version') == '0.0.1.bndqual'
 assert impl_manifest.getValue('Bundle-Version') == '0.0.1.SNAPSHOT'
 assert wrapper_manifest.getValue('Bundle-Version') != '0.0.1.BUILD-SNAPSHOT'
 assert wrapper_manifest.getValue('Bundle-Version') =~ /^0\.0\.1\.BUILD-/
