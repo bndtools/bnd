@@ -48,6 +48,7 @@
     org.example.api,\
     org.example.types
 -sources: true
+Bundle-Version: ${project.version}.bndqual
 ]]></bnd>
                 </configuration>
             </plugin>

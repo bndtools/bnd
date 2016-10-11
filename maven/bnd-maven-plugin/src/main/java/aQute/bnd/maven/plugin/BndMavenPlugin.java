@@ -207,10 +207,12 @@ public class BndMavenPlugin extends AbstractMojo {
 				builder.setProperty(Constants.BUNDLE_NAME, project.getName());
 			}
 			// Set Bundle-Version
-			Version version = MavenVersion.parseString(project.getVersion()).getOSGiVersion();
-			builder.setProperty(Constants.BUNDLE_VERSION, version.toString());
-			if (builder.getProperty(Constants.SNAPSHOT) == null) {
-				builder.setProperty(Constants.SNAPSHOT, TSTAMP);
+			if (builder.getProperty(Constants.BUNDLE_VERSION) == null) {
+				Version version = MavenVersion.parseString(project.getVersion()).getOSGiVersion();
+				builder.setProperty(Constants.BUNDLE_VERSION, version.toString());
+				if (builder.getProperty(Constants.SNAPSHOT) == null) {
+					builder.setProperty(Constants.SNAPSHOT, TSTAMP);
+				}
 			}
 
 			logger.debug("builder properties: {}", builder.getProperties());
