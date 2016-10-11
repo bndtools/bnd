@@ -4,10 +4,11 @@
 	<parent>
 		<groupId>biz.aQute.bnd-test</groupId>
 		<artifactId>test</artifactId>
-		<version>0.0.1</version>
+		<version>0.0.2</version>
 	</parent>
 	<artifactId>test.api.bundle</artifactId>
     <name>Test API Bundle</name>
+	<version>0.0.1</version>
 
 	<dependencies>
 		<dependency>
