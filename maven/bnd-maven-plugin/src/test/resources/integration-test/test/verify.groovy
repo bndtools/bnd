@@ -83,3 +83,4 @@ assert impl_jar.getEntry('OSGI-INF/org.example.impl.ExampleComponent.xml') != nu
 assert impl_jar.getEntry('OSGI-INF/metatype/org.example.impl.Config.xml') != null
 assert wrapper_jar.getEntry('org/example/api/') != null
 assert wrapper_jar.getEntry('org/example/types/') != null
+assert wrapper_jar.getEntry('README.txt') != null

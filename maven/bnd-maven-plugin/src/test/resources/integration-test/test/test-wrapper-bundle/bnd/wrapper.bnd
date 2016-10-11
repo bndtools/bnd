@@ -4,3 +4,4 @@ Export-Package: \
 Bundle-SymbolicName: test.wrapper.bundle
 X-ParentProjectProperty: overridden
 -include: other.bnd
+-includeresource: README.txt
