@@ -13,6 +13,24 @@ All of the above artifacts will be generated into the project build output
 directory, i.e. `target/classes`, to be subsequently picked up and included
 in the JAR file by the default `maven-jar-plugin`.
 
+The plugin only provides one goal `bnd-process` which is doing that. 
+It is not executed by default, therefore at least one explicit execution needs to be configured (by default bound to phase `process-classes`)
+
+```xml
+<plugin>
+    <groupId>biz.aQute.bnd</groupId>
+    <artifactId>bnd-maven-plugin</artifactId>
+
+    <executions>
+        <execution>
+            <goals>
+                <goal>bnd-process</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
+```
+
 All Bnd instructions must be declared in a bnd file. By default, this is `bnd.bnd`
 in the base directory of the project. This can be configured to specify an alternate
 path which can be absolute or relative to the base directory of the project.
