@@ -354,7 +354,7 @@ public class Clazz {
 
 			Matcher m = METHOD_DESCRIPTOR.matcher(use);
 			if (!m.matches())
-				throw new IllegalArgumentException("Not a valid method descriptor: " + descriptor);
+				throw new IllegalArgumentException("Not a valid method descriptor: " + use);
 
 			String returnType = m.group(2);
 			return objectDescriptorToFQN(returnType);
