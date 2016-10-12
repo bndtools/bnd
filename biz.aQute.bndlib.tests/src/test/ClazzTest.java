@@ -96,7 +96,16 @@ public class ClazzTest extends TestCase {
 		c.parseDescriptor("<S:[LFoo;>()V", Modifier.PUBLIC);
 		c.parseDescriptor("<S:[Z>()V", Modifier.PUBLIC);
 		c.parseDescriptor("<S:Z>()V", Modifier.PUBLIC);
+	}
 
+	public void testNoClassBound() throws Exception {
+		Analyzer a = new Analyzer();
+		Clazz c = new Clazz(a, "", null);
+
+		// From aQute.lib.collections.SortedList.fromIterator()
+		c.parseDescriptor(
+				"<T::Ljava/lang/Comparable<*>;>(Ljava/util/Iterator<TT;>;)LaQute/lib/collections/SortedList<TT;>;",
+				Modifier.PUBLIC);
 	}
 
 	/**

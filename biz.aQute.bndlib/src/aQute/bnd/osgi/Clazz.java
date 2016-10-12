@@ -354,7 +354,7 @@ public class Clazz {
 
 			Matcher m = METHOD_DESCRIPTOR.matcher(use);
 			if (!m.matches())
-				throw new IllegalArgumentException("Not a valid method descriptor: " + descriptor);
+				throw new IllegalArgumentException("Not a valid method descriptor: " + use);
 
 			String returnType = m.group(2);
 			return objectDescriptorToFQN(returnType);
@@ -1748,26 +1748,18 @@ public class Clazz {
 			// Skip IDENTIFIER
 			index = descriptor.indexOf(':', index) + 1;
 			if (index == 0)
-				throw new IllegalArgumentException("Expected IDENTIFIER: " + descriptor);
+				throw new IllegalArgumentException("Expected ClassBound or InterfaceBounds: " + descriptor);
 
 			// ClassBound? InterfaceBounds
-
 			char c = descriptor.charAt(index);
 
-			if (c == '[') {
-				c = descriptor.charAt(++index);
-			}
-
-			// Class Bound?
-			if (c == 'L' || c == 'T') {
-				index = parseReference(descriptor, index, modifiers); // class
-																		// reference
+			if (c != ':') {
+				// ClassBound?
+				index = parseReference(descriptor, index, modifiers);
 				c = descriptor.charAt(index);
-			} else {
-				index++;
 			}
 
-			// Interface Bounds
+			// InterfaceBounds*
 			while (c == ':') {
 				index++;
 				index = parseReference(descriptor, index, modifiers);
