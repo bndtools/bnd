@@ -45,18 +45,20 @@ public class OCDReader extends ClassDataCollector {
 	private OCDDef						ocd;
 
 	private final XMLAttributeFinder	finder;
+	private final MetatypeVersion		minVersion;
 
-	OCDReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder finder) {
+	OCDReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder finder, MetatypeVersion minVersion) {
 		this.analyzer = analyzer;
 		this.clazz = clazz;
 		this.options = options;
 		this.finder = finder;
+		this.minVersion = minVersion;
 	}
 
-	static OCDDef getOCDDef(Clazz c, Analyzer analyzer, EnumSet<Options> options, XMLAttributeFinder finder)
+	static OCDDef getOCDDef(Clazz c, Analyzer analyzer, EnumSet<Options> options, XMLAttributeFinder finder, MetatypeVersion minVersion)
 			throws Exception {
 
-		OCDReader r = new OCDReader(analyzer, c, options, finder);
+		OCDReader r = new OCDReader(analyzer, c, options, finder, minVersion);
 		return r.getDef();
 	}
 
@@ -406,7 +408,7 @@ public class OCDReader extends ClassDataCollector {
 		if (current == null) {
 			if (clazz.isInterface()) {
 				if (ocd == null)
-					ocd = new OCDDef(finder);
+					ocd = new OCDDef(finder, minVersion);
 				ocd.addExtensionAttribute(xmlAttr, annotation);
 			}
 		} else {
@@ -418,7 +420,7 @@ public class OCDReader extends ClassDataCollector {
 		if (topLevel) {
 			if (clazz.isInterface()) {
 				if (ocd == null)
-					ocd = new OCDDef(finder);
+					ocd = new OCDDef(finder, minVersion);
 				ocd.id = o.id() == null ? name.getFQN() : o.id();
 				ocd.name = o.name() == null ? space(ocd.id) : o.name();
 				ocd.description = o.description() == null ? "" : o.description();

@@ -1088,6 +1088,31 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, TestSimple.class.getName());
 		b.build();
 		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestSimple.xml");
+		assertNotNull(r);
+		IO.copy(r.openInputStream(), System.err);
+
+		XmlTester xt = xmlTester12(r);
+
+		testSimple(b, xt);
+	}
+
+	public void testSimple13() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setProperty("Export-Package", "test.metatype");
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, TestSimple.class.getName());
+		b.setProperty(Constants.METATYPE_ANNOTATIONS_OPTIONS, "version;minimum=1.3.0");
+		b.build();
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestSimple.xml");
+		assertNotNull(r);
+		IO.copy(r.openInputStream(), System.err);
+
+		XmlTester xt = xmlTester13(r);
+
+		testSimple(b, xt);
+	}
+
+	private void testSimple(Builder b, XmlTester xt) throws XPathExpressionException {
 		assertEquals(0, b.getErrors().size());
 		assertEquals(0, b.getWarnings().size());
 		System.err.println(b.getJar().getResources().keySet());
@@ -1095,10 +1120,6 @@ public class SpecMetatypeTest extends TestCase {
 			if (res.endsWith(".xml"))
 				System.err.println(res);
 		}
-		assertNotNull(r);
-		IO.copy(r.openInputStream(), System.err);
-
-		XmlTester xt = xmlTester12(r);
 
 		xt.assertExactAttribute("TestSimple", "metatype:MetaData/OCD/@name");
 		xt.assertExactAttribute("simple", "metatype:MetaData/OCD/@description");

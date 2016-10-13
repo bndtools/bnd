@@ -21,10 +21,11 @@ public class OCDDef extends ExtensionDef {
 	String						name;
 	String						localization;
 	String						description;
-	MetatypeVersion				version		= MetatypeVersion.VERSION_1_2;
+	MetatypeVersion				version;
 
-	public OCDDef(XMLAttributeFinder finder) {
+	public OCDDef(XMLAttributeFinder finder, MetatypeVersion minVersion) {
 		super(finder);
+		this.version = minVersion;
 	}
 
 	void prepare(Analyzer analyzer) {
