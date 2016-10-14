@@ -111,7 +111,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 			format.format(//
 					"{\n\"version\"      :%s,\n" //
 							+ "\"descriptors\"   : [\n",
-					version, increment, date);
+					version);
 			String del = "";
 
 			for (ResourceDescriptorImpl rd : descriptors) {
