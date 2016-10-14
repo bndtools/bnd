@@ -1114,7 +1114,7 @@ public class Clazz {
 				classSignature = signature;
 
 		} catch (Exception e) {
-			new RuntimeException("Signature failed for" + signature, e);
+			throw new RuntimeException("Signature failed for " + signature, e);
 		}
 	}
 
