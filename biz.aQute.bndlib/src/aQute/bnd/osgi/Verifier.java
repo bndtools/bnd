@@ -424,6 +424,7 @@ public class Verifier extends Processor {
 		Manifest m = analyzer.getJar().getManifest();
 		if (m == null) {
 			error("No manifest");
+			return;
 		}
 
 		Domain domain = Domain.domain(m);

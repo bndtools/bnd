@@ -669,10 +669,11 @@ public class Project extends Processor {
 
 		RepoFilter repoFilter = parseRepoFilter(attrs);
 
-		if (bsnPattern != null)
+		if (bsnPattern != null) {
 			bsnPattern = bsnPattern.trim();
-		if (bsnPattern.length() == 0 || bsnPattern.equals("*"))
-			bsnPattern = null;
+			if (bsnPattern.length() == 0 || bsnPattern.equals("*"))
+				bsnPattern = null;
+		}
 
 		SortedMap<String,Pair<Version,RepositoryPlugin>> providerMap = new TreeMap<String,Pair<Version,RepositoryPlugin>>();
 
