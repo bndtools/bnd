@@ -2263,7 +2263,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			}
 
 			public String next() {
-				return current = it.next().toString();
+				return current = it.next();
 			}
 
 			public void remove() {

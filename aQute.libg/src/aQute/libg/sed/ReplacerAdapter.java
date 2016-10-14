@@ -209,7 +209,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	protected String replace(String key, Link link) {
 		if (link != null && link.contains(key))
-			return "${infinite:" + link.toString() + "}";
+			return "${infinite:" + link + "}";
 
 		if (key != null) {
 			key = key.trim();

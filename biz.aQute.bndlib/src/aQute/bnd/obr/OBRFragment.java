@@ -86,7 +86,7 @@ public class OBRFragment {
 				v = "0";
 			Version fragmentVersion = new Version(v);
 			String filter = filter(PackageNamespace.PACKAGE_NAMESPACE, fragmentHost.getKey(), fragmentHost.getValue());
-			fragment.addDirective(HostNamespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
+			fragment.addDirective(HostNamespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
 			resource.addRequirement(fragment);
 		} else {
 

@@ -208,7 +208,7 @@ public class Tag {
 			if (o instanceof Tag)
 				((Tag) o).getContentsAsString(sb);
 			else
-				sb.append(o.toString());
+				sb.append(o);
 		}
 	}
 

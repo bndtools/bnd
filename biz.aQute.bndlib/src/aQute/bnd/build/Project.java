@@ -1848,7 +1848,7 @@ public class Project extends Processor {
 		Processor scoped = new Processor(this);
 		try {
 			scoped.setProperty("@bsn", bsn);
-			scoped.setProperty("@version", version.toString());
+			scoped.setProperty("@version", version);
 			String path = scoped.getProperty(OUTPUTMASK, bsn + ".jar");
 			return IO.getFile(getTarget(), path);
 		} finally {
