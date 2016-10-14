@@ -2029,7 +2029,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		for (Object a : attrs) {
 			String attr = (String) a;
-			int n = attr.indexOf("=");
+			int n = attr.indexOf('=');
 			if (n > 0) {
 				map.put(attr.substring(0, n), macro.process(attr.substring(n + 1)));
 			} else

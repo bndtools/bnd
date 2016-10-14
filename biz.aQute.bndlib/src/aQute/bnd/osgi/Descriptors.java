@@ -562,7 +562,7 @@ public class Descriptors {
 		if (n >= 0)
 			return binaryNameOrFqn.substring(0, n).replace('/', '.');
 
-		n = binaryNameOrFqn.lastIndexOf(".");
+		n = binaryNameOrFqn.lastIndexOf('.');
 		if (n >= 0)
 			return binaryNameOrFqn.substring(0, n);
 

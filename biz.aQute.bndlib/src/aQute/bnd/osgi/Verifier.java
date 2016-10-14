@@ -394,7 +394,7 @@ public class Verifier extends Processor {
 		if (serviceComponent != null) {
 			Parameters map = parseHeader(serviceComponent);
 			for (String component : map.keySet()) {
-				if (component.indexOf("*") < 0 && !dot.exists(component)) {
+				if (component.indexOf('*') < 0 && !dot.exists(component)) {
 					error(Constants.SERVICE_COMPONENT + " entry can not be located in JAR: %s", component);
 				} else {
 					// validate component ...
