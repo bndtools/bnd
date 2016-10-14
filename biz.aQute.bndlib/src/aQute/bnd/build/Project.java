@@ -148,7 +148,6 @@ public class Project extends Processor {
 		if (buildFile != null)
 			setProperties(buildFile);
 
-		assert workspace != null;
 		// For backward compatibility reasons, we also read
 		readBuildProperties();
 	}
