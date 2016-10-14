@@ -121,7 +121,7 @@ public class PropertiesParser {
 						c = reader.read();
 						c = ws(c, reader);
 						while (c == '\n' || c == '\r') {
-							if (c == 'n')
+							if (c == '\n')
 								line++;
 							c = reader.read();
 						}
