@@ -345,7 +345,7 @@ public class Filter {
 
 	@Override
 	public boolean equals(Object obj) {
-		return obj != null && obj instanceof Filter && filter.equals(((Filter) obj).filter);
+		return obj instanceof Filter && filter.equals(((Filter) obj).filter);
 	}
 
 	@Override

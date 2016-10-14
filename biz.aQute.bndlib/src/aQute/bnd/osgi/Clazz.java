@@ -1893,7 +1893,7 @@ public class Clazz {
 			return;
 
 		Object o = pool[methodRefPoolIndex];
-		if (o != null && o instanceof Assoc) {
+		if (o instanceof Assoc) {
 			Assoc assoc = (Assoc) o;
 			if (assoc.tag == CONSTANT.Methodref) {
 				int string_index = intPool[assoc.a];
