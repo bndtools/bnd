@@ -21,7 +21,8 @@ public class NewBndProjectWizardFactory implements IExecutableExtension, IExecut
     private String propertyName;
     private Object data;
 
-    public Object create() throws CoreException {
+    @Override
+    public NewBndProjectWizard create() throws CoreException {
         NewBndProjectWizardPageOne pageOne = new NewBndProjectWizardPageOne();
         NewBndProjectWizardPageTwo pageTwo = new NewBndProjectWizardPageTwo(pageOne, pageOne);
 
@@ -31,6 +32,7 @@ public class NewBndProjectWizardFactory implements IExecutableExtension, IExecut
         return wizard;
     }
 
+    @Override
     public void setInitializationData(IConfigurationElement config, String propertyName, Object data) throws CoreException {
         this.config = config;
         this.propertyName = propertyName;

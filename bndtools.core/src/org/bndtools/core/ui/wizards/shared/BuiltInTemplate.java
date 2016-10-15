@@ -32,6 +32,7 @@ public class BuiltInTemplate implements Template {
     private final ResourceMap inputResources = new ResourceMap();
     private final String name;
     private final String engineName;
+    private final Version version = Version.parseVersion("1.0.0");
 
     private URI helpUri = null;
 
@@ -62,7 +63,7 @@ public class BuiltInTemplate implements Template {
 
     @Override
     public Version getVersion() {
-        return Version.emptyVersion;
+        return version;
     }
 
     @Override

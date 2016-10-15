@@ -150,11 +150,15 @@ public class TemplateSelectionWizardPage extends WizardPage {
 
         composite.setLayout(new GridLayout(1, false));
 
+        Control headerControl = createHeaderControl(composite);
+        if (headerControl != null)
+            headerControl.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+
         new Label(composite, SWT.NONE).setText("Select Template:");
 
         tree = new Tree(composite, SWT.BORDER | SWT.FULL_SELECTION);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.heightHint = 100;
+        gd.heightHint = 150;
         tree.setLayoutData(gd);
 
         defaultTemplateImage = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/template.gif").createImage(parent.getDisplay());
@@ -186,14 +190,14 @@ public class TemplateSelectionWizardPage extends WizardPage {
         formText.setFont("italic", JFaceResources.getFontRegistry().getItalic(""));
 
         GridData gd_cmpDescription = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd_cmpDescription.heightHint = 100;
+        gd_cmpDescription.heightHint = 25;
         cmpDescription.setLayoutData(gd_cmpDescription);
 
         GridLayout layout_cmpDescription = new GridLayout(1, false);
         cmpDescription.setLayout(layout_cmpDescription);
 
         GridData gd_txtDescription = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_txtDescription.heightHint = 100;
+        gd_txtDescription.heightHint = 25;
         txtDescription.setLayoutData(gd_txtDescription);
 
         Hyperlink linkRetina = new Hyperlink(composite, SWT.NONE);
@@ -252,6 +256,13 @@ public class TemplateSelectionWizardPage extends WizardPage {
                 }
             }
         });
+    }
+
+    /**
+     * Can be overridden to provide a control that will be placed at the top of the page.
+     */
+    protected Control createHeaderControl(Composite parent) {
+        return null;
     }
 
     private class LoadTemplatesJob implements IRunnableWithProgress {
