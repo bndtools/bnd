@@ -747,7 +747,7 @@ public class AnnotationReader extends ClassDataCollector {
 					if (inferredService != null)
 						inferredService = Descriptors.binaryToFQN(inferredService);
 					minVersion = V1_3;
-					if (!ReferenceScope.PROTOTYPE.equals(def.scope) && m.group(3) != null) {
+					if (ReferenceScope.PROTOTYPE != def.scope && m.group(3) != null) {
 						analyzer.error("In component %s, to use ComponentServiceObjects the scope must be 'prototype'",
 								component.implementation, "").details(details);
 					}

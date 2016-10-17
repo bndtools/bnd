@@ -152,7 +152,7 @@ public class ResourceBuilder {
 				fragment ? IdentityNamespace.TYPE_FRAGMENT : IdentityNamespace.TYPE_BUNDLE);
 		identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
 
-		if ("true".equals(singleton)) {
+		if (singleton) {
 			identity.addDirective(IdentityNamespace.CAPABILITY_SINGLETON_DIRECTIVE, "true");
 		}
 

@@ -148,7 +148,6 @@ public class Project extends Processor {
 		if (buildFile != null)
 			setProperties(buildFile);
 
-		assert workspace != null;
 		// For backward compatibility reasons, we also read
 		readBuildProperties();
 	}
@@ -670,10 +669,11 @@ public class Project extends Processor {
 
 		RepoFilter repoFilter = parseRepoFilter(attrs);
 
-		if (bsnPattern != null)
+		if (bsnPattern != null) {
 			bsnPattern = bsnPattern.trim();
-		if (bsnPattern.length() == 0 || bsnPattern.equals("*"))
-			bsnPattern = null;
+			if (bsnPattern.length() == 0 || bsnPattern.equals("*"))
+				bsnPattern = null;
+		}
 
 		SortedMap<String,Pair<Version,RepositoryPlugin>> providerMap = new TreeMap<String,Pair<Version,RepositoryPlugin>>();
 
@@ -1848,7 +1848,7 @@ public class Project extends Processor {
 		Processor scoped = new Processor(this);
 		try {
 			scoped.setProperty("@bsn", bsn);
-			scoped.setProperty("@version", version.toString());
+			scoped.setProperty("@version", version);
 			String path = scoped.getProperty(OUTPUTMASK, bsn + ".jar");
 			return IO.getFile(getTarget(), path);
 		} finally {

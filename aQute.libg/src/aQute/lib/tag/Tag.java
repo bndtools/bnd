@@ -184,7 +184,7 @@ public class Tag {
 	 */
 	public List<Object> getContents(String tag) {
 		List<Object> out = new ArrayList<Object>();
-		for (Object o : out) {
+		for (Object o : content) {
 			if (o instanceof Tag && ((Tag) o).getName().equals(tag))
 				out.add(o);
 		}
@@ -208,7 +208,7 @@ public class Tag {
 			if (o instanceof Tag)
 				((Tag) o).getContentsAsString(sb);
 			else
-				sb.append(o.toString());
+				sb.append(o);
 		}
 	}
 

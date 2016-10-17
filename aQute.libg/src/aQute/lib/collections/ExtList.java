@@ -51,7 +51,7 @@ public class ExtList<T> extends ArrayList<T> {
 			sb.append(d);
 			d = del;
 			if (t != null)
-				sb.append(t.toString());
+				sb.append(t);
 		}
 		return sb.toString();
 	}
