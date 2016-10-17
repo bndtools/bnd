@@ -1020,8 +1020,5 @@
          commandId="bnd.launch.runShortcut.debug"
          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
    </extension>
-   
-	${cat;resources/enroute/_plugin.xml}
-	
 
  </plugin>

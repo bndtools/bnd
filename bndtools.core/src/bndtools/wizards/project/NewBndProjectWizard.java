@@ -68,7 +68,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
         baseTemplate.addInputResource(Project.BNDFILE, new StringResource("")); //$NON-NLS-1$
         baseTemplate.setHelpPath("docs/empty_project.xml"); //$NON-NLS-1$
 
-        templatePage = new TemplateSelectionWizardPage("projectTemplateSelection", "project", baseTemplate);
+        templatePage = new ProjectTemplateSelectionWizardPage("projectTemplateSelection", "project", baseTemplate);
         templatePage.setTitle("Select Project Template");
 
         paramsPage = new TemplateParamsWizardPage(ProjectTemplateParam.valueStrings());
