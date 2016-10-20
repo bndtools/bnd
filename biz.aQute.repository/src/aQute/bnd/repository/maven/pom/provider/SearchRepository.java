@@ -41,7 +41,7 @@ class SearchRepository extends InnerRepository {
 		this.queryUrl = queryUrl;
 		this.reporter = reporter;
 		this.client = client;
-		cacheFile = new File(location.getParentFile(), "query.txt");
+		cacheFile = new File(location.getParentFile(), "pom-" + repo.getName() + ".query");
 		read();
 	}
 
