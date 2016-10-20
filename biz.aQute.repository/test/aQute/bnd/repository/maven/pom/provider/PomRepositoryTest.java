@@ -225,6 +225,50 @@ public class PomRepositoryTest extends TestCase {
 		assertEquals(1, list.size());
 	}
 
+	public void testSearchRepoMultipleConfigurationsDontBreak() throws Exception {
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+
+		BndPomRepository mcsrBnd320 = new BndPomRepository();
+		mcsrBnd320.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("query", "q=g:biz.aQute.bnd+a:biz.aQute.bnd+AND+v:3.2.0");
+		config.put("name", "bnd320");
+		mcsrBnd320.setProperties(config);
+
+		BndPomRepository mcsrBnd330 = new BndPomRepository();
+		mcsrBnd330.setRegistry(w);
+
+		config = new HashMap<>();
+		config.put("query", "q=g:biz.aQute.bnd+a:biz.aQute.bnd+AND+v:3.3.0");
+		config.put("name", "bnd330");
+		mcsrBnd330.setProperties(config);
+
+		List<String> list320 = mcsrBnd320.list(null);
+		assertNotNull(list320);
+		assertEquals(1, list320.size());
+
+		List<String> list330 = mcsrBnd330.list(null);
+		assertNotNull(list330);
+		assertEquals(1, list330.size());
+
+		// check the first repo to make sure it's there.
+		RequirementBuilder builder = mcsrBnd320.newRequirementBuilder("osgi.identity");
+		builder.addDirective("filter", "(&(osgi.identity=biz.aQute.bnd)(version>=3.2.0)(!(version>=3.3.0)))");
+		Promise<Collection<Resource>> providers = mcsrBnd320.findProviders(builder.buildExpression());
+		Collection<Resource> resources = providers.getValue();
+		assertFalse(resources.isEmpty());
+		assertEquals(1, resources.size());
+
+		// make sure it's not in the second repo, otherwise the caches are
+		// messed up.
+		providers = mcsrBnd330.findProviders(builder.buildExpression());
+		resources = providers.getValue();
+		assertTrue(resources.isEmpty());
+		assertEquals(0, resources.size());
+	}
+
 	/**
 	 * This test occasionally fails on Travis.
 	 *
