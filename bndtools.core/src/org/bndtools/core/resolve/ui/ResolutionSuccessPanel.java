@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
@@ -82,9 +83,13 @@ public class ResolutionSuccessPanel {
         GridLayout layout = new GridLayout(1, false);
         composite.setLayout(layout);
 
+        SashForm form = new SashForm(composite, SWT.VERTICAL);
+        form.setLayout(new GridLayout(1, false));
+        form.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
         GridData gd;
 
-        Section sectRequired = toolkit.createSection(composite, Section.TITLE_BAR | Section.EXPANDED);
+        Section sectRequired = toolkit.createSection(form, Section.TITLE_BAR | Section.EXPANDED);
         sectRequired.setText("Required Resources");
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -92,7 +97,7 @@ public class ResolutionSuccessPanel {
         gd.heightHint = 150;
         sectRequired.setLayoutData(gd);
 
-        Table tblRequired = toolkit.createTable(sectRequired, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
+        Table tblRequired = toolkit.createTable(sectRequired, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
         sectRequired.setClient(tblRequired);
 
         requiredViewer = new TableViewer(tblRequired);
@@ -115,19 +120,21 @@ public class ResolutionSuccessPanel {
             }
         });
 
-        sectOptional = toolkit.createSection(composite, Section.TITLE_BAR | Section.TWISTIE);
+        sectOptional = toolkit.createSection(form, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
         sectOptional.setText("Optional Resources");
 
         Composite cmpOptional = toolkit.createComposite(sectOptional);
         sectOptional.setClient(cmpOptional);
         cmpOptional.setLayout(new GridLayout(2, false));
 
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 200;
+        gd.heightHint = 150;
         sectOptional.setLayoutData(gd);
 
-        Table tblOptional = toolkit.createTable(cmpOptional, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.H_SCROLL);
-        tblOptional.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+        Table tblOptional = toolkit.createTable(cmpOptional, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        tblOptional.setLayoutData(gd);
 
         optionalViewer = new CheckboxTableViewer(tblOptional);
         optionalViewer.setContentProvider(ArrayContentProvider.getInstance());
@@ -213,10 +220,10 @@ public class ResolutionSuccessPanel {
         });
         btnClearOptional.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 
-        Section sectReason = toolkit.createSection(composite, Section.TITLE_BAR | Section.EXPANDED);
+        Section sectReason = toolkit.createSection(form, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
         sectReason.setText("Reasons");
 
-        Tree tblReasons = new Tree(sectReason, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL);
+        Tree tblReasons = new Tree(sectReason, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
         sectReason.setClient(tblReasons);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
