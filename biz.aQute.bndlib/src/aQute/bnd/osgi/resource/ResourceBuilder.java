@@ -182,7 +182,7 @@ public class ResourceBuilder {
 		// Now the provide bundle ns
 		//
 
-		if (bundleManifestVersion >= 2) {
+		if ((bundleManifestVersion >= 2) && (!fragment)) {
 			CapReqBuilder provideBundle = new CapReqBuilder(resource, BundleNamespace.BUNDLE_NAMESPACE);
 			provideBundle.addAttributesOrDirectives(bsn.getValue());
 			provideBundle.addAttribute(BundleNamespace.BUNDLE_NAMESPACE, bsn.getKey());
