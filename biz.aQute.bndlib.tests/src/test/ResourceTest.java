@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
 
+import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.namespace.service.ServiceNamespace;
 import org.osgi.resource.Capability;
@@ -188,6 +189,7 @@ public class ResourceTest extends TestCase {
 		ResourceBuilder rb = new ResourceBuilder();
 		rb.addManifest(Domain.domain(IO.getFile("testresources/demo-fragment.jar")));
 		Resource resource = rb.build();
+		assertEquals(0, resource.getCapabilities(BundleNamespace.BUNDLE_NAMESPACE).size());
 		assertEquals(0, resource.getCapabilities(HostNamespace.HOST_NAMESPACE).size());
 		List<Requirement> requirements = resource.getRequirements(HostNamespace.HOST_NAMESPACE);
 		assertEquals(1, requirements.size());
