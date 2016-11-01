@@ -94,6 +94,45 @@ public class PomRepositoryTest extends TestCase {
 		assertEquals(1, list.size());
 	}
 
+	public void testBndPomRepoFileExistingParent() throws Exception {
+		BndPomRepository bpr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		bpr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("pom", "testdata/pomrepo/existing-parent.xml");
+		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
+		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+		config.put("name", "test");
+		bpr.setProperties(config);
+
+		List<String> list = bpr.list(null);
+		assertNotNull(list);
+		assertEquals(1, list.size());
+	}
+
+	public void testBndPomRepoFileMissingParent() throws Exception {
+		BndPomRepository bpr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		bpr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("pom", "testdata/pomrepo/missing-parent.xml");
+		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
+		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+		config.put("name", "test");
+		bpr.setProperties(config);
+
+		try {
+			bpr.list(null);
+			fail("Should throw IllegalArgumentException on missing parent pom.");
+		} catch (Exception iae) {
+			// This exception is expected!
+		}
+	}
+
 	public void testEntityPom() throws Exception {
 		BndPomRepository bpr = new BndPomRepository();
 		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -101,7 +140,7 @@ public class PomRepositoryTest extends TestCase {
 		bpr.setRegistry(w);
 
 		Map<String,String> config = new HashMap<>();
-		config.put("pom", "testdata/pomrepo/simple.xml");
+		config.put("pom", "testdata/pomrepo/entity.xml");
 		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
 		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
 		config.put("name", "test");
