@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Run;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
@@ -43,6 +45,9 @@ public class ExportMojo extends AbstractMojo {
 	@Parameter(readonly = true, required = false)
 	private boolean		failOnChanges	= true;
 
+	@Parameter(defaultValue = "${session}", readonly = true)
+	private MavenSession session;
+
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
 			for (File runFile : bndruns) {
@@ -58,8 +63,9 @@ public class ExportMojo extends AbstractMojo {
 			throw new MojoExecutionException("Could not find bnd run file " + runFile);
 		}
 		try (StandaloneRun run = new StandaloneRun(runFile)) {
-
-			for (RepositoryPlugin repo : run.getWorkspace().getRepositories()) {
+			Workspace workspace = run.getWorkspace();
+			workspace.setOffline(session.getSettings().isOffline());
+			for (RepositoryPlugin repo : workspace.getRepositories()) {
 				repo.list(null);
 			}
 			run.check();
