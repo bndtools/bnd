@@ -4,6 +4,7 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -23,10 +24,18 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.clauses.VersionedClause;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.properties.Document;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
+import aQute.lib.io.IO;
 import biz.aQute.resolve.ProjectResolver;
 
 @Mojo(name = "export", defaultPhase = PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
@@ -104,8 +113,33 @@ public class ExportMojo extends AbstractMojo {
 				if (failOnChanges) {
 					throw new MojoExecutionException("The runbundles have changed. Failing the build");
 				} else {
-					logger.warn("The runbundles have changed:");
+					logger.warn("The runbundles have changed");
 					run.setRunBundles(runBundles);
+					File runFile = run.getPropertiesFile();
+					BndEditModel bem = new BndEditModel(run.getWorkspace());
+					Document doc = new Document(IO.collect(runFile));
+					bem.loadFrom(doc);
+
+					List<VersionedClause> bemRunBundles = bem.getRunBundles();
+					List<VersionedClause> deltaAdd = new ArrayList<>();
+					for (Container c : runBundles) {
+						ResourceBuilder rb = new ResourceBuilder();
+						rb.addManifest(Domain.domain(c.getFile()));
+						VersionedClause versionedClause = ResourceUtils.toVersionClause(rb.build(), "[===,==+)");
+						deltaAdd.add(versionedClause);
+					}
+					deltaAdd.removeAll(bemRunBundles);
+					List<VersionedClause> deltaRemove = new ArrayList<>(bemRunBundles);
+					deltaRemove.removeAll(runBundles);
+					boolean added = bemRunBundles.addAll(deltaAdd);
+					boolean removed = bemRunBundles.removeAll(deltaRemove);
+					if (added || removed) {
+						bem.setRunBundles(bemRunBundles);
+						logger.info("Writing changes to {}", runFile.getAbsolutePath());
+						logger.info("{}:{}", Constants.RUNBUNDLES, bem.getDocumentChanges().get(Constants.RUNBUNDLES));
+						bem.saveChangesTo(doc);
+						IO.store(doc.get(), runFile);
+					}
 				}
 			}
 		}
