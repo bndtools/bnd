@@ -41,7 +41,8 @@ import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
 public class ResourceBuilder {
-
+	private final static String		BUNDLE_MIME_TYPE	= "application/vnd.osgi.bundle";
+	private final static String		JAR_MIME_TYPE		= "application/java-archive";
 	private final ResourceImpl		resource		= new ResourceImpl();
 	private final List<Capability>	capabilities	= new LinkedList<Capability>();
 	private final List<Requirement>	requirements	= new LinkedList<Requirement>();
@@ -669,7 +670,7 @@ public class ResourceBuilder {
 		c.addAttribute(ContentNamespace.CONTENT_NAMESPACE, sha256);
 		c.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, uri.toString());
 		c.addAttribute(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, length);
-		c.addAttribute(ContentNamespace.CAPABILITY_MIME_ATTRIBUTE, mime == null ? "vnd.osgi.bundle" : mime);
+		c.addAttribute(ContentNamespace.CAPABILITY_MIME_ATTRIBUTE, mime != null ? mime : BUNDLE_MIME_TYPE);
 		addCapability(c);
 	}
 
@@ -678,12 +679,12 @@ public class ResourceBuilder {
 			uri = file.toURI();
 
 		Domain manifest = Domain.domain(file);
-		String mime = "vnd.osgi.bundle";
+		String mime = BUNDLE_MIME_TYPE;
 		boolean hasIdentity = false;
 		if (manifest != null)
 			hasIdentity = addManifest(manifest);
 		else
-			mime = "application/java-archive";
+			mime = JAR_MIME_TYPE;
 
 		String sha256 = SHA256.digest(file).asHex();
 		addContentCapability(uri, sha256, file.length(), mime);
