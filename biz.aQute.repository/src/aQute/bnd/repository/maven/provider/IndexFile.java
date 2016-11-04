@@ -211,9 +211,9 @@ class IndexFile {
 		} else {
 			boolean refreshed = false;
 			for (BundleDescriptor bd : descriptors.values()) {
-				if (bd.promise != null && bd.promise.isDone() && bd.promise.getFailure() == null) {
+				if ((bd.promise != null) && bd.promise.isDone() && (bd.promise.getFailure() == null)) {
 					File f = bd.promise.getValue();
-					if (f.isFile() && f.lastModified() != bd.lastModified) {
+					if ((f != null) && f.isFile() && (f.lastModified() != bd.lastModified)) {
 						updateDescriptor(bd, f);
 						refreshed = true;
 					}
