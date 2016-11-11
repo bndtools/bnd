@@ -65,12 +65,12 @@ Bundle-License:           EPL-1.0; \
 Bundle-DocURL:            http://bndtools.org/
 Bundle-SCM:               url=https://github.com/bndtools/bndtools, \
                           connection=scm:git:https://github.com/bndtools/bndtools.git, \
-                          developerConnection=scm:git:git@github.com:bndtools/bndtools.git
+                          developerConnection=scm:git:git@github.com:bndtools/bndtools.git, \
+                          tag=${Git-Descriptor}
 
 # Bnd 3.4 defaults to 1.3 as the base DS version. We want to work with older
 # DS versions since Eclipse Equinox DS currently does not support DS 1.3.
 -dsannotations-options.version: version;minimum=1.0.0
 
 -diffignore: Git-Descriptor,Git-SHA
-
 -removeheaders: Include-Resource, Private-Package
