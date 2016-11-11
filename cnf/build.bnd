@@ -38,13 +38,14 @@ Bundle-License:         Apache-2.0; \
 Bundle-DocURL:          http://bnd.bndtools.org/
 Bundle-SCM:             url=https://github.com/bndtools/bnd, \
                         connection=scm:git:https://github.com/bndtools/bnd.git, \
-                        developerConnection=scm:git:git@github.com:bndtools/bnd.git
+                        developerConnection=scm:git:git@github.com:bndtools/bnd.git, \
+                        tag=${Git-Descriptor}
 Bundle-Developers: \
     pkriens; \
         email=Peter.Kriens@aQute.biz; \
         name="Peter Kriens"; \
-        organization=bndtools; \
-        organizationUrl=http://bndtools.org; \
+        organization=Bndtools; \
+        organizationUrl=https://github.com/bndtools; \
         roles="architect,developer"; \
         timezone=1
 

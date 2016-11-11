@@ -265,6 +265,11 @@ public class BndPlugin implements Plugin<Project> {
               it.dependencyProject.jar
             }
           }
+          /* Workspace and project configuration changes should trigger jar task */
+          inputs.files bndProject.getWorkspace().getPropertiesFile(),
+            bndProject.getWorkspace().getIncluded() ?: [],
+            bndProject.getPropertiesFile(),
+            bndProject.getIncluded() ?: []
           outputs.files {
             configurations.archives.artifacts.files
           }
@@ -448,7 +453,7 @@ public class BndPlugin implements Plugin<Project> {
               outputs.file runFile
               doLast {
                 logger.info 'Resolving runbundles required for {}', runFile.absolutePath
-                Run.createRun(bndWorkspace, runFile).withCloseable { run ->
+                Run.createRun(bndProject.getWorkspace(), runFile).withCloseable { run ->
                   run.addBasicPlugin(new WorkspaceResourcesRepository(run.getWorkspace()))
                   new ProjectResolver(run).withCloseable { resolver ->
                     ResolutionException exception = null
@@ -524,7 +529,7 @@ public class BndPlugin implements Plugin<Project> {
               dependsOn assemble
               group 'export'
               doLast {
-                Run.createRun(bndWorkspace, runFile).withCloseable { run ->
+                Run.createRun(bndProject.getWorkspace(), runFile).withCloseable { run ->
                   logger.lifecycle "Running {} with vm args: {}", bndrun, run.getProperty(Constants.RUNVM + "*")
                   run.run()
                   checkProjectErrors(run, logger)
