@@ -36,6 +36,7 @@ import java.util.zip.ZipFile;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -92,14 +93,44 @@ public class BndMavenPlugin extends AbstractMojo {
 
 	@Parameter(defaultValue = "${settings}", readonly = true)
 	private Settings			settings;
+	
+	@Parameter(defaultValue = "${mojoExecution}", readonly = true)
+	private MojoExecution mojoExecution; 
 
+	/**
+	 * If set to {@code true} execution of this mojo will be skipped.
+	 */
     @Parameter(defaultValue = "false", readonly = true)
     private boolean				skip;
+
+    /**
+     * In-POM bnd specification. Allows to specify the parameters for bnd within the pom.xml.
+     * The value is just a CDATA with the same format as regular <a href="http://bnd.bndtools.org/chapters/790-format.html">bnd files</a>. Is superseded by an existing bnd file referenced in {@link #bndfile}.
+     * Example value:
+     * <pre>{@code<![CDATA[
+     * -exportcontents:\
+     *  org.example.api,\
+     *  org.example.types
+     * -sources: true
+     * ]]>}<pre>
+     * 
+     */
+	@SuppressWarnings("unused")
+    @Parameter(required = false)
+    private String bnd;
+    
+	/**
+	 * Filename of the bnd file. If the referenced file is found it supersedes the parameter {@link bnd}.
+	 * The bnd file must stick to <a href="http://bnd.bndtools.org/chapters/790-format.html">this format</a>.
+	 */
+	@SuppressWarnings("unused")
+	private String									bndfile;
+	@Parameter(defaultValue = Project.BNDFILE, required = false)
 
 	@Component
 	private BuildContext		buildContext;
 
-	private File									propertiesFile;
+	private File				propertiesFile;
 
 	public void execute() throws MojoExecutionException {
 		if (skip) {
@@ -241,6 +272,13 @@ public class BndMavenPlugin extends AbstractMojo {
 		}
 	}
 
+	/**
+	 * 
+	 * @param builder
+	 * @param project
+	 * @return either the bnd file used for configuration or the pom.xml in case bnd instructions were only found in the pom.
+	 * @throws Exception
+	 */
 	private File loadProjectProperties(Builder builder, MavenProject project) throws Exception {
 		// Load parent project properties first
 		MavenProject parentProject = project.getParent();
@@ -249,7 +287,7 @@ public class BndMavenPlugin extends AbstractMojo {
 		}
 
 		// Merge in current project properties
-		Xpp3Dom configuration = project.getGoalConfiguration("biz.aQute.bnd", "bnd-maven-plugin", null, null);
+		Xpp3Dom configuration = project.getGoalConfiguration("biz.aQute.bnd", "bnd-maven-plugin", mojoExecution.getExecutionId(), mojoExecution.getGoal());
 		File baseDir = project.getBasedir();
 		if (baseDir != null) { // file system based pom
 			File pomFile = project.getFile();
