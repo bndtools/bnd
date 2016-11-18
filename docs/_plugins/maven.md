@@ -88,7 +88,7 @@ Valid coordinates are:
 	commons-cli:commons-cli:jar:sources:1.3.1
 	commons-lang:commons-lang:2.6
 	commons-logging:commons-logging:1.2
-	org.osgi:org.osgi.core:6.0.0
+	org.osgi:osgi.core:6.0.0
 	org.osgi:osgi.annotation:6.0.1
 
 ## Local Repository
