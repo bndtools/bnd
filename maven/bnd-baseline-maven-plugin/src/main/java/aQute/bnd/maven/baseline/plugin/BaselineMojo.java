@@ -49,22 +49,22 @@ public class BaselineMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
 	private RepositorySystemSession	session;
 
-	@Parameter(property = "bnd.baseline.fail.on.missing", defaultValue = "true", readonly = true)
+	@Parameter(property = "bnd.baseline.fail.on.missing", defaultValue = "true")
 	private boolean					failOnMissing;
 
-	@Parameter(property = "bnd.baseline.include.distribution.management", defaultValue = "true", readonly = true)
+	@Parameter(property = "bnd.baseline.include.distribution.management", defaultValue = "true")
 	private boolean					includeDistributionManagement;
 
-	@Parameter(property = "bnd.baseline.full.report", defaultValue = "false", readonly = true)
+	@Parameter(property = "bnd.baseline.full.report", defaultValue = "false")
 	private boolean					fullReport;
 
-	@Parameter(property = "bnd.baseline.continue.on.error", defaultValue = "false", readonly = true)
+	@Parameter(property = "bnd.baseline.continue.on.error", defaultValue = "false")
 	private boolean					continueOnError;
 
-	@Parameter(readonly = true, required = false)
+	@Parameter(readonly = true)
 	private Base					base;
 
-    @Parameter(defaultValue = "false", readonly = true)
+	@Parameter(property = "bnd.baseline.skip", defaultValue = "false")
     private boolean				skip;
     
 	@Component

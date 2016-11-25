@@ -93,7 +93,7 @@ public class BndMavenPlugin extends AbstractMojo {
 	@Parameter(defaultValue = "${settings}", readonly = true)
 	private Settings			settings;
 
-    @Parameter(defaultValue = "false", readonly = true)
+	@Parameter(property = "bnd.skip", defaultValue = "false")
     private boolean				skip;
 
 	@Component

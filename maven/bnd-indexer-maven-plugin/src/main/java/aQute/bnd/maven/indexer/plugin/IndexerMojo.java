@@ -80,25 +80,25 @@ public class IndexerMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
 	private RepositorySystemSession		session;
 
-	@Parameter(property = "bnd.indexer.output.file", defaultValue = "${project.build.directory}/index.xml", readonly = true)
+	@Parameter(property = "bnd.indexer.output.file", defaultValue = "${project.build.directory}/index.xml")
 	private File						outputFile;
 
-	@Parameter(property = "bnd.indexer.localURLs", defaultValue = "FORBIDDEN", readonly = true)
+	@Parameter(property = "bnd.indexer.localURLs", defaultValue = "FORBIDDEN")
 	private LocalURLs					localURLs;
 
-	@Parameter(property = "bnd.indexer.includeTransitive", defaultValue = "true", readonly = true)
+	@Parameter(property = "bnd.indexer.includeTransitive", defaultValue = "true")
 	private boolean						includeTransitive;
 
-	@Parameter(property = "bnd.indexer.add.mvn.urls", defaultValue = "false", readonly = true)
+	@Parameter(property = "bnd.indexer.add.mvn.urls", defaultValue = "false")
 	private boolean						addMvnURLs;
 
-	@Parameter(property = "bnd.indexer.scopes", readonly = true, required = false)
+	@Parameter(property = "bnd.indexer.scopes", readonly = true)
 	private List<String>				scopes;
 
-	@Parameter(property = "bnd.indexer.include.gzip", defaultValue = "true", readonly = true)
+	@Parameter(property = "bnd.indexer.include.gzip", defaultValue = "true")
 	private boolean						includeGzip;
 
-	@Parameter(defaultValue = "false", readonly = true)
+	@Parameter(property = "bnd.indexer.skip", defaultValue = "false")
 	private boolean						skip;
     
 	@Component
