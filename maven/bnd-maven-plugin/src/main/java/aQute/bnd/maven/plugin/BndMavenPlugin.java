@@ -36,6 +36,7 @@ import java.util.zip.ZipFile;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -92,6 +93,9 @@ public class BndMavenPlugin extends AbstractMojo {
 
 	@Parameter(defaultValue = "${settings}", readonly = true)
 	private Settings			settings;
+
+	@Parameter(defaultValue = "${mojoExecution}", readonly = true)
+	private MojoExecution							mojoExecution;
 
 	@Parameter(property = "bnd.skip", defaultValue = "false")
     private boolean				skip;
@@ -249,7 +253,8 @@ public class BndMavenPlugin extends AbstractMojo {
 		}
 
 		// Merge in current project properties
-		Xpp3Dom configuration = project.getGoalConfiguration("biz.aQute.bnd", "bnd-maven-plugin", null, null);
+		Xpp3Dom configuration = project.getGoalConfiguration("biz.aQute.bnd", "bnd-maven-plugin",
+				mojoExecution.getExecutionId(), mojoExecution.getGoal());
 		File baseDir = project.getBasedir();
 		if (baseDir != null) { // file system based pom
 			File pomFile = project.getFile();
