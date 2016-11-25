@@ -42,15 +42,20 @@
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-maven-plugin</artifactId>
-                <configuration>
-                    <bnd><![CDATA[
--exportcontents: \
-    org.example.api,\
-    org.example.types
--sources: true
-Bundle-Version: ${project.version}.bndqual
-]]></bnd>
-                </configuration>
+                <executions>
+                    <execution>
+                        <id>default-bnd-process</id>
+                        <configuration>
+                            <bnd><![CDATA[
+                                -exportcontents: \
+                                    org.example.api,\
+                                    org.example.types
+                                -sources: true
+                                Bundle-Version: ${project.version}.bndqual
+                            ]]></bnd>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 		</plugins>
 	</build>
