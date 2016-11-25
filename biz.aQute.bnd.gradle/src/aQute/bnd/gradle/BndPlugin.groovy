@@ -487,7 +487,7 @@ public class BndPlugin implements Plugin<Project> {
                     Document doc = new Document(IO.collect(runFile))
                     bem.loadFrom(doc)
 
-                    List<VersionedClause> bemRunBundles = bem.getRunBundles()
+                    List<VersionedClause> bemRunBundles = bem.getRunBundles() ?: []
                     List<VersionedClause> deltaAdd = runBundles.collect()
                     deltaAdd.removeAll(bemRunBundles)
                     List<VersionedClause> deltaRemove = bemRunBundles.collect()
