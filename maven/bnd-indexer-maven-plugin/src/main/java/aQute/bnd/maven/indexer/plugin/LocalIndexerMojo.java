@@ -47,13 +47,13 @@ public class LocalIndexerMojo extends AbstractMojo {
 	@Parameter(property = "bnd.indexer.output.file", defaultValue = "${project.build.directory}/index.xml")
 	private File						outputFile;
 
-	@Parameter(property = "bnd.indexer.base.file", required=false)
+	@Parameter(property = "bnd.indexer.base.file")
 	private File						baseFile;
 
-	@Parameter(property = "bnd.indexer.include.gzip", defaultValue = "true", readonly = true)
+	@Parameter(property = "bnd.indexer.include.gzip", defaultValue = "true")
 	private boolean						includeGzip;
 
-	@Parameter(defaultValue = "false", readonly = true)
+	@Parameter(property = "bnd.indexer.skip", defaultValue = "false")
 	private boolean						skip;
 
 	private boolean						fail;

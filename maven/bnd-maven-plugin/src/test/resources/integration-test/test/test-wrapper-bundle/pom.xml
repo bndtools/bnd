@@ -21,9 +21,14 @@
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-maven-plugin</artifactId>
-                <configuration>
-                    <bndfile>bnd/wrapper.bnd</bndfile>
-                </configuration>
+                <executions>
+                    <execution>
+                        <id>default-bnd-process</id>
+                        <configuration>
+                            <bndfile>bnd/wrapper.bnd</bndfile>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

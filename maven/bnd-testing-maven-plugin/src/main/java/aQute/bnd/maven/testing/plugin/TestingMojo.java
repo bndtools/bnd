@@ -47,11 +47,11 @@ public class TestingMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${testing}", readonly = true)
 	private String		testing;
 
-	@Parameter(readonly = true, required = false)
-	private boolean		resolve			= false;
+	@Parameter(defaultValue = "false")
+	private boolean				resolve;
 
-	@Parameter(readonly = true, required = false)
-	private boolean		failOnChanges	= true;
+	@Parameter(defaultValue = "true")
+	private boolean				failOnChanges;
 
 	@Parameter(defaultValue = "${session}", readonly = true)
 	private MavenSession session;

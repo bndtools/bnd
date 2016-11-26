@@ -33,6 +33,7 @@
 					</execution>
 				</executions>
                 <configuration>
+                    <skip>false</skip>
                     <bnd><![CDATA[
 X-ParentProjectProperty: it worked
 Project-Name: ${project.name}
