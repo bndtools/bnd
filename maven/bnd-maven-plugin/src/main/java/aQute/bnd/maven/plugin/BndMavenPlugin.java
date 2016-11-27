@@ -100,6 +100,33 @@ public class BndMavenPlugin extends AbstractMojo {
 	@Parameter(property = "bnd.skip", defaultValue = "false")
     private boolean				skip;
 
+	/**
+	 * File path to a bnd file containing bnd instructions for this project.
+	 * Defaults to {@code bnd.bnd}. The file path can be an absolute or relative
+	 * to the project directory.
+	 * <p>
+	 * The bnd instructions for this project are merged with the bnd
+	 * instructions, if any, for the parent project.
+	 */
+	@Parameter(defaultValue = Project.BNDFILE)
+	// This is not used and is for doc only; see loadProjectProperties
+	@SuppressWarnings("unused")
+	private String									bndfile;
+
+	/**
+	 * Bnd instructions for this project specified directly in the pom file.
+	 * This is generally be done using a {@code <![CDATA[]]>} section. If the
+	 * projects has a {@link #bndfile bnd file}, then this configuration element
+	 * is ignored.
+	 * <p>
+	 * The bnd instructions for this project are merged with the bnd
+	 * instructions, if any, for the parent project.
+	 */
+	@Parameter
+	// This is not used and is for doc only; see loadProjectProperties
+	@SuppressWarnings("unused")
+	private String									bnd;
+
 	@Component
 	private BuildContext		buildContext;
 
