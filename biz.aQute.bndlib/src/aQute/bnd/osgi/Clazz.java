@@ -526,7 +526,7 @@ public class Clazz {
 
 		CONSTANT[] tags = CONSTANT.values();
 		process: for (int poolIndex = 1; poolIndex < count; poolIndex++) {
-			CONSTANT tag = tags[in.readByte()];
+			CONSTANT tag = tags[in.readUnsignedByte()];
 			switch (tag) {
 				case Zero :
 					break process;
@@ -965,52 +965,72 @@ public class Clazz {
 	 * @throws Exception
 	 */
 	private void doAttribute(DataInputStream in, ElementType member, boolean crawl, int access_flags) throws Exception {
-		int attribute_name_index = in.readUnsignedShort();
-		String attributeName = (String) pool[attribute_name_index];
-		long attribute_length = in.readInt();
-		attribute_length &= 0xFFFFFFFF;
-		if ("Deprecated".equals(attributeName)) {
-			if (cd != null)
-				cd.deprecated();
-		} else if ("RuntimeVisibleAnnotations".equals(attributeName))
-			doAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
-		else if ("RuntimeInvisibleAnnotations".equals(attributeName))
-			doAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
-		else if ("RuntimeVisibleParameterAnnotations".equals(attributeName))
-			doParameterAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
-		else if ("RuntimeInvisibleParameterAnnotations".equals(attributeName))
-			doParameterAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
-		else if ("RuntimeVisibleTypeAnnotations".equals(attributeName))
-			doTypeAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
-		else if ("RuntimeInvisibleTypeAnnotations".equals(attributeName))
-			doTypeAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
-		else if ("InnerClasses".equals(attributeName))
-			doInnerClasses(in);
-		else if ("EnclosingMethod".equals(attributeName))
-			doEnclosingMethod(in);
-		else if ("SourceFile".equals(attributeName))
-			doSourceFile(in);
-		else if ("Code".equals(attributeName) && crawl)
-			doCode(in);
-		else if ("Signature".equals(attributeName))
-			doSignature(in, member, access_flags);
-		else if ("ConstantValue".equals(attributeName))
-			doConstantValue(in);
-		else if ("AnnotationDefault".equals(attributeName)) {
-			Object value = doElementValue(in, member, RetentionPolicy.RUNTIME, cd != null, access_flags);
-			if (last instanceof MethodDef) {
-				((MethodDef) last).constant = value;
-				cd.annotationDefault((MethodDef) last, value);
-			}
-		} else if ("Exceptions".equals(attributeName))
-			doExceptions(in, access_flags);
-		else if ("BootstrapMethods".equals(attributeName))
-			doBootstrapMethods(in);
-		else {
-			if (attribute_length > 0x7FFFFFFF) {
-				throw new IllegalArgumentException("Attribute > 2Gb");
-			}
-			in.skipBytes((int) attribute_length);
+		final int attribute_name_index = in.readUnsignedShort();
+		final String attributeName = (String) pool[attribute_name_index];
+		final long attribute_length = 0xFFFFFFFFL & in.readInt();
+		switch (attributeName) {
+			case "Deprecated" :
+				if (cd != null)
+					cd.deprecated();
+				break;
+			case "RuntimeVisibleAnnotations" :
+				doAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
+				break;
+			case "RuntimeInvisibleAnnotations" :
+				doAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
+				break;
+			case "RuntimeVisibleParameterAnnotations" :
+				doParameterAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
+				break;
+			case "RuntimeInvisibleParameterAnnotations" :
+				doParameterAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
+				break;
+			case "RuntimeVisibleTypeAnnotations" :
+				doTypeAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
+				break;
+			case "RuntimeInvisibleTypeAnnotations" :
+				doTypeAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
+				break;
+			case "InnerClasses" :
+				doInnerClasses(in);
+				break;
+			case "EnclosingMethod" :
+				doEnclosingMethod(in);
+				break;
+			case "SourceFile" :
+				doSourceFile(in);
+				break;
+			case "Code" :
+				doCode(in, crawl);
+				break;
+			case "Signature" :
+				doSignature(in, member, access_flags);
+				break;
+			case "ConstantValue" :
+				doConstantValue(in);
+				break;
+			case "AnnotationDefault" :
+				Object value = doElementValue(in, member, RetentionPolicy.RUNTIME, cd != null, access_flags);
+				if (last instanceof MethodDef) {
+					((MethodDef) last).constant = value;
+					cd.annotationDefault((MethodDef) last, value);
+				}
+				break;
+			case "Exceptions" :
+				doExceptions(in, access_flags);
+				break;
+			case "BootstrapMethods" :
+				doBootstrapMethods(in);
+				break;
+			case "StackMapTable" :
+				doStackMapTable(in);
+				break;
+			default :
+				if (attribute_length > 0x7FFFFFFF) {
+					throw new IllegalArgumentException("Attribute > 2Gb");
+				}
+				in.skipBytes((int) attribute_length);
+				break;
 		}
 	}
 
@@ -1024,8 +1044,8 @@ public class Clazz {
 	 * @throws IOException
 	 */
 	private void doEnclosingMethod(DataInputStream in) throws IOException {
-		int cIndex = in.readShort();
-		int mIndex = in.readShort();
+		int cIndex = in.readUnsignedShort();
+		int mIndex = in.readUnsignedShort();
 		classConstRef(cIndex);
 
 		if (cd != null) {
@@ -1056,12 +1076,12 @@ public class Clazz {
 	 * @throws Exception
 	 */
 	private void doInnerClasses(DataInputStream in) throws Exception {
-		int number_of_classes = in.readShort();
+		int number_of_classes = in.readUnsignedShort();
 		for (int i = 0; i < number_of_classes; i++) {
-			int inner_class_info_index = in.readShort();
-			int outer_class_info_index = in.readShort();
-			int inner_name_index = in.readShort();
-			int inner_class_access_flags = in.readShort() & 0xFFFF;
+			int inner_class_info_index = in.readUnsignedShort();
+			int outer_class_info_index = in.readUnsignedShort();
+			int inner_name_index = in.readUnsignedShort();
+			int inner_class_access_flags = in.readUnsignedShort();
 
 			if (cd != null) {
 				TypeRef innerClass = null;
@@ -1157,13 +1177,14 @@ public class Clazz {
 	 * @param pool
 	 * @throws Exception
 	 */
-	private void doCode(DataInputStream in) throws Exception {
+	private void doCode(DataInputStream in, boolean crawl) throws Exception {
 		/* int max_stack = */in.readUnsignedShort();
 		/* int max_locals = */in.readUnsignedShort();
 		int code_length = in.readInt();
 		byte code[] = new byte[code_length];
 		in.readFully(code);
-		crawl(code);
+		if (crawl)
+			crawl(code);
 		int exception_table_length = in.readUnsignedShort();
 		for (int i = 0; i < exception_table_length; i++) {
 			int start_pc = in.readUnsignedShort();
@@ -1610,6 +1631,61 @@ public class Clazz {
 			}
 		}
 	}
+
+	/*
+	 * The verifier can require access to types only referenced in StackMapTable
+	 * attributes.
+	 */
+	private void doStackMapTable(DataInputStream in) throws IOException {
+		final int number_of_entries = in.readUnsignedShort();
+		for (int v = 0; v < number_of_entries; v++) {
+			final int frame_type = in.readUnsignedByte();
+			if (frame_type <= 63) { // same_frame
+				// nothing else to do
+			} else if (frame_type <= 127) { // same_locals_1_stack_item_frame
+				verification_type_info(in);
+			} else if (frame_type <= 246) { // RESERVED
+				// nothing else to do
+			} else if (frame_type <= 247) { // same_locals_1_stack_item_frame_extended
+				final int offset_delta = in.readUnsignedShort();
+				verification_type_info(in);
+			} else if (frame_type <= 250) { // chop_frame
+				final int offset_delta = in.readUnsignedShort();
+			} else if (frame_type <= 251) { // same_frame_extended
+				final int offset_delta = in.readUnsignedShort();
+			} else if (frame_type <= 254) { // append_frame
+				final int offset_delta = in.readUnsignedShort();
+				final int number_of_locals = frame_type - 251;
+				for (int n = 0; n < number_of_locals; n++) {
+					verification_type_info(in);
+				}
+			} else if (frame_type <= 255) { // full_frame
+				final int offset_delta = in.readUnsignedShort();
+				final int number_of_locals = in.readUnsignedShort();
+				for (int n = 0; n < number_of_locals; n++) {
+					verification_type_info(in);
+				}
+				final int number_of_stack_items = in.readUnsignedShort();
+				for (int n = 0; n < number_of_stack_items; n++) {
+					verification_type_info(in);
+				}
+			}
+		}
+	}
+
+	private void verification_type_info(DataInputStream in) throws IOException {
+		final int tag = in.readUnsignedByte();
+		switch (tag) {
+			case 7 :// Object_variable_info
+				final int cpool_index = in.readUnsignedShort();
+				classConstRef(cpool_index);
+				break;
+			case 8 :// ITEM_Uninitialized
+				final int offset = in.readUnsignedShort();
+				break;
+		}
+	}
+
 	/**
 	 * Add a new package reference.
 	 * 
