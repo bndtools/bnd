@@ -171,6 +171,15 @@ public class IndexerMojo extends AbstractMojo {
 				resourceBuilder.addFile(entry.getKey(), urlResolver.resolver(entry.getKey(), entry.getValue()));
 				resourcesRepository.add(resourceBuilder.build());
 			}
+			// add the current project if its packaging is jar
+			if (project.getPackaging().equals("jar")) {
+				File current = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + ".jar");
+				if (current.exists()) {
+					ResourceBuilder resourceBuilder = new ResourceBuilder();
+					resourceBuilder.addFile(current, current.toURI());
+					resourcesRepository.add(resourceBuilder.build());
+				}
+			}
 			xmlResourceGenerator.repository(resourcesRepository).save(outputFile);
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
