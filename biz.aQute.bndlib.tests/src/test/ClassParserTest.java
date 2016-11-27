@@ -423,4 +423,12 @@ public class ClassParserTest extends TestCase {
 		assertTrue(set.contains(test));
 		assertTrue(set.contains(testAnnotations));
 	}
+
+	public void testStackMapTable() throws Exception {
+		Clazz c = new Clazz(a, "test/stackmaptable", null);
+		c.parseClassFile(getClass().getResourceAsStream("stackmaptable/ClassRefInStackMapTable.class"));
+		assertTrue(c.getReferred().contains(a.getPackageRef("javax/crypto/spec")));
+		assertTrue(c.getReferred().contains(a.getPackageRef("javax/crypto")));
+	}
+
 }

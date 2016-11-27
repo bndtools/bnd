@@ -1022,6 +1022,9 @@ public class Clazz {
 			case "BootstrapMethods" :
 				doBootstrapMethods(in);
 				break;
+			case "StackMapTable" :
+				doStackMapTable(in);
+				break;
 			default :
 				if (attribute_length > 0x7FFFFFFF) {
 					throw new IllegalArgumentException("Attribute > 2Gb");
@@ -1628,6 +1631,61 @@ public class Clazz {
 			}
 		}
 	}
+
+	/*
+	 * The verifier can require access to types only referenced in StackMapTable
+	 * attributes.
+	 */
+	private void doStackMapTable(DataInputStream in) throws IOException {
+		final int number_of_entries = in.readUnsignedShort();
+		for (int v = 0; v < number_of_entries; v++) {
+			final int frame_type = in.readUnsignedByte();
+			if (frame_type <= 63) { // same_frame
+				// nothing else to do
+			} else if (frame_type <= 127) { // same_locals_1_stack_item_frame
+				verification_type_info(in);
+			} else if (frame_type <= 246) { // RESERVED
+				// nothing else to do
+			} else if (frame_type <= 247) { // same_locals_1_stack_item_frame_extended
+				final int offset_delta = in.readUnsignedShort();
+				verification_type_info(in);
+			} else if (frame_type <= 250) { // chop_frame
+				final int offset_delta = in.readUnsignedShort();
+			} else if (frame_type <= 251) { // same_frame_extended
+				final int offset_delta = in.readUnsignedShort();
+			} else if (frame_type <= 254) { // append_frame
+				final int offset_delta = in.readUnsignedShort();
+				final int number_of_locals = frame_type - 251;
+				for (int n = 0; n < number_of_locals; n++) {
+					verification_type_info(in);
+				}
+			} else if (frame_type <= 255) { // full_frame
+				final int offset_delta = in.readUnsignedShort();
+				final int number_of_locals = in.readUnsignedShort();
+				for (int n = 0; n < number_of_locals; n++) {
+					verification_type_info(in);
+				}
+				final int number_of_stack_items = in.readUnsignedShort();
+				for (int n = 0; n < number_of_stack_items; n++) {
+					verification_type_info(in);
+				}
+			}
+		}
+	}
+
+	private void verification_type_info(DataInputStream in) throws IOException {
+		final int tag = in.readUnsignedByte();
+		switch (tag) {
+			case 7 :// Object_variable_info
+				final int cpool_index = in.readUnsignedShort();
+				classConstRef(cpool_index);
+				break;
+			case 8 :// ITEM_Uninitialized
+				final int offset = in.readUnsignedShort();
+				break;
+		}
+	}
+
 	/**
 	 * Add a new package reference.
 	 * 
