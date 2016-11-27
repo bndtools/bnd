@@ -526,7 +526,7 @@ public class Clazz {
 
 		CONSTANT[] tags = CONSTANT.values();
 		process: for (int poolIndex = 1; poolIndex < count; poolIndex++) {
-			CONSTANT tag = tags[in.readByte()];
+			CONSTANT tag = tags[in.readUnsignedByte()];
 			switch (tag) {
 				case Zero :
 					break process;
@@ -1024,8 +1024,8 @@ public class Clazz {
 	 * @throws IOException
 	 */
 	private void doEnclosingMethod(DataInputStream in) throws IOException {
-		int cIndex = in.readShort();
-		int mIndex = in.readShort();
+		int cIndex = in.readUnsignedShort();
+		int mIndex = in.readUnsignedShort();
 		classConstRef(cIndex);
 
 		if (cd != null) {
@@ -1056,12 +1056,12 @@ public class Clazz {
 	 * @throws Exception
 	 */
 	private void doInnerClasses(DataInputStream in) throws Exception {
-		int number_of_classes = in.readShort();
+		int number_of_classes = in.readUnsignedShort();
 		for (int i = 0; i < number_of_classes; i++) {
-			int inner_class_info_index = in.readShort();
-			int outer_class_info_index = in.readShort();
-			int inner_name_index = in.readShort();
-			int inner_class_access_flags = in.readShort() & 0xFFFF;
+			int inner_class_info_index = in.readUnsignedShort();
+			int outer_class_info_index = in.readUnsignedShort();
+			int inner_name_index = in.readUnsignedShort();
+			int inner_class_access_flags = in.readUnsignedShort();
 
 			if (cd != null) {
 				TypeRef innerClass = null;
