@@ -965,52 +965,69 @@ public class Clazz {
 	 * @throws Exception
 	 */
 	private void doAttribute(DataInputStream in, ElementType member, boolean crawl, int access_flags) throws Exception {
-		int attribute_name_index = in.readUnsignedShort();
-		String attributeName = (String) pool[attribute_name_index];
-		long attribute_length = in.readInt();
-		attribute_length &= 0xFFFFFFFF;
-		if ("Deprecated".equals(attributeName)) {
-			if (cd != null)
-				cd.deprecated();
-		} else if ("RuntimeVisibleAnnotations".equals(attributeName))
-			doAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
-		else if ("RuntimeInvisibleAnnotations".equals(attributeName))
-			doAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
-		else if ("RuntimeVisibleParameterAnnotations".equals(attributeName))
-			doParameterAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
-		else if ("RuntimeInvisibleParameterAnnotations".equals(attributeName))
-			doParameterAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
-		else if ("RuntimeVisibleTypeAnnotations".equals(attributeName))
-			doTypeAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
-		else if ("RuntimeInvisibleTypeAnnotations".equals(attributeName))
-			doTypeAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
-		else if ("InnerClasses".equals(attributeName))
-			doInnerClasses(in);
-		else if ("EnclosingMethod".equals(attributeName))
-			doEnclosingMethod(in);
-		else if ("SourceFile".equals(attributeName))
-			doSourceFile(in);
-		else if ("Code".equals(attributeName) && crawl)
-			doCode(in);
-		else if ("Signature".equals(attributeName))
-			doSignature(in, member, access_flags);
-		else if ("ConstantValue".equals(attributeName))
-			doConstantValue(in);
-		else if ("AnnotationDefault".equals(attributeName)) {
-			Object value = doElementValue(in, member, RetentionPolicy.RUNTIME, cd != null, access_flags);
-			if (last instanceof MethodDef) {
-				((MethodDef) last).constant = value;
-				cd.annotationDefault((MethodDef) last, value);
-			}
-		} else if ("Exceptions".equals(attributeName))
-			doExceptions(in, access_flags);
-		else if ("BootstrapMethods".equals(attributeName))
-			doBootstrapMethods(in);
-		else {
-			if (attribute_length > 0x7FFFFFFF) {
-				throw new IllegalArgumentException("Attribute > 2Gb");
-			}
-			in.skipBytes((int) attribute_length);
+		final int attribute_name_index = in.readUnsignedShort();
+		final String attributeName = (String) pool[attribute_name_index];
+		final long attribute_length = 0xFFFFFFFFL & in.readInt();
+		switch (attributeName) {
+			case "Deprecated" :
+				if (cd != null)
+					cd.deprecated();
+				break;
+			case "RuntimeVisibleAnnotations" :
+				doAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
+				break;
+			case "RuntimeInvisibleAnnotations" :
+				doAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
+				break;
+			case "RuntimeVisibleParameterAnnotations" :
+				doParameterAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
+				break;
+			case "RuntimeInvisibleParameterAnnotations" :
+				doParameterAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
+				break;
+			case "RuntimeVisibleTypeAnnotations" :
+				doTypeAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
+				break;
+			case "RuntimeInvisibleTypeAnnotations" :
+				doTypeAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
+				break;
+			case "InnerClasses" :
+				doInnerClasses(in);
+				break;
+			case "EnclosingMethod" :
+				doEnclosingMethod(in);
+				break;
+			case "SourceFile" :
+				doSourceFile(in);
+				break;
+			case "Code" :
+				doCode(in, crawl);
+				break;
+			case "Signature" :
+				doSignature(in, member, access_flags);
+				break;
+			case "ConstantValue" :
+				doConstantValue(in);
+				break;
+			case "AnnotationDefault" :
+				Object value = doElementValue(in, member, RetentionPolicy.RUNTIME, cd != null, access_flags);
+				if (last instanceof MethodDef) {
+					((MethodDef) last).constant = value;
+					cd.annotationDefault((MethodDef) last, value);
+				}
+				break;
+			case "Exceptions" :
+				doExceptions(in, access_flags);
+				break;
+			case "BootstrapMethods" :
+				doBootstrapMethods(in);
+				break;
+			default :
+				if (attribute_length > 0x7FFFFFFF) {
+					throw new IllegalArgumentException("Attribute > 2Gb");
+				}
+				in.skipBytes((int) attribute_length);
+				break;
 		}
 	}
 
@@ -1157,13 +1174,14 @@ public class Clazz {
 	 * @param pool
 	 * @throws Exception
 	 */
-	private void doCode(DataInputStream in) throws Exception {
+	private void doCode(DataInputStream in, boolean crawl) throws Exception {
 		/* int max_stack = */in.readUnsignedShort();
 		/* int max_locals = */in.readUnsignedShort();
 		int code_length = in.readInt();
 		byte code[] = new byte[code_length];
 		in.readFully(code);
-		crawl(code);
+		if (crawl)
+			crawl(code);
 		int exception_table_length = in.readUnsignedShort();
 		for (int i = 0; i < exception_table_length; i++) {
 			int start_pc = in.readUnsignedShort();
