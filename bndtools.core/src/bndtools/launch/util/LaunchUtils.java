@@ -19,10 +19,9 @@ public final class LaunchUtils {
     private LaunchUtils() {}
 
     public static IResource getTargetResource(ILaunchConfiguration configuration) throws CoreException {
-        String target = configuration.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
-        if (target == null || target.length() == 0) {
+        String target = getTargetName(configuration);
+        if (target == null)
             return null;
-        }
 
         IResource targetResource = ResourcesPlugin.getWorkspace().getRoot().findMember(target);
         if (targetResource == null)
@@ -48,8 +47,10 @@ public final class LaunchUtils {
 
     public static Project getBndProject(ILaunchConfiguration configuration) throws Exception {
         IResource targetResource = getTargetResource(configuration);
-        if (targetResource == null)
-            throw new IllegalArgumentException("Bnd launch target was not specified, or does not exist.", null);
+        if (targetResource == null) {
+            String target = getTargetName(configuration);
+            throw new IllegalArgumentException(String.format("The run descriptor '%s' could not be found.", target));
+        }
 
         return getBndProject(targetResource);
     }
@@ -78,5 +79,13 @@ public final class LaunchUtils {
             throw new Exception(String.format("Cannot create a Bnd launch configuration for %s: not a project or file resource.", targetResource.getLocation()));
         }
         return run;
+    }
+
+    private static String getTargetName(ILaunchConfiguration configuration) throws CoreException {
+        String target = configuration.getAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, (String) null);
+        if (target != null && target.isEmpty()) {
+            target = null;
+        }
+        return target;
     }
 }
