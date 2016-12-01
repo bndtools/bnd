@@ -122,6 +122,7 @@ public class Verifier extends Processor {
 	public final static Pattern	NUMBERPATTERN					= Pattern.compile("\\d+");
 	public final static Pattern	PACKAGEPATTERN					= Pattern.compile(
 			"\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*(\\.\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)*");
+	public final static Pattern	PACKAGEPATTERN_OR_EMPTY			= Pattern.compile(PACKAGEPATTERN + "|^$");
 	public final static Pattern	MULTIPACKAGEPATTERN				= Pattern
 			.compile("(\\s*" + PACKAGEPATTERN + ")(" + LIST_SPLITTER + PACKAGEPATTERN + ")*\\s*");
 	public final static Pattern	PATHPATTERN						= Pattern.compile(".*");
@@ -745,8 +746,7 @@ public class Verifier extends Processor {
 			if (key.equals("osgi.extender")) {
 				// No requirements on extender
 			} else if (key.equals("osgi.serviceloader")) {
-				verify(attrs, "register:", PACKAGEPATTERN, false,
-						"Service Loader extender register: directive not a fully qualified Java name");
+
 			} else if (key.equals("osgi.contract")) {
 
 			} else if (key.equals("osgi.service")) {
@@ -802,7 +802,7 @@ public class Verifier extends Processor {
 						"osgi.extender");
 				verify(attrs, "version", VERSION, true, "%s must have the %s attribute set", key, "version");
 			} else if (key.equals("osgi.serviceloader")) {
-				verify(attrs, "register:", PACKAGEPATTERN, false,
+				verify(attrs, "register:", PACKAGEPATTERN_OR_EMPTY, false,
 						"Service Loader extender register: directive not a fully qualified Java name");
 			} else if (key.equals("osgi.contract")) {
 				verify(attrs, "osgi.contract", SYMBOLICNAME, true, "%s must have the %s attribute set", key,
