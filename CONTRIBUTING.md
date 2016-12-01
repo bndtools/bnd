@@ -13,6 +13,14 @@ provide the `Git-SHA` and `Git-Descriptor` headers from the bndtools jar files.
 Please include the steps required to reproduce the problem if possible and applicable.
 This information will help us review and fix your issue faster.
 
+## Development Environment
+
+We use Bndtools to develop Bndtools. If you encounter problems, make sure to have the latest version of Bndtools from https://bndtools.ci.cloudbees.com/job/bndtools.master/lastSuccessfulBuild/artifact/build/generated/p2/ installed.
+
+After cloning the repository from https://github.com/bndtools/bndtools.git, import all top-level projects into your workspace.
+
+The `bndtools.core` project has run descriptors (`.bndrun` files) for all supported platforms. To start Bndtools from your development environment, right-cick the suitable run descriptor and select _Run As_ or _Debug As_ > _Bnd OSGi Run Launcher_.
+
 ## Build Environment
 
 The only thing you need to build bndtools is Java. We use Java 7 but most
