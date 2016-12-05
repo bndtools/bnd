@@ -24,9 +24,6 @@ public final class LaunchUtils {
             return null;
 
         IResource targetResource = ResourcesPlugin.getWorkspace().getRoot().findMember(target);
-        if (targetResource == null)
-            return null;
-
         return targetResource;
     }
 
