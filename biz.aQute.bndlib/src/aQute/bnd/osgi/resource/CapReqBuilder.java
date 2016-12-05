@@ -537,7 +537,7 @@ public class CapReqBuilder {
 				sb.append(filter);
 
 			} else
-				sb.append("(").append(e.getKey()).append("=").append(v).append(")");
+				sb.append("(").append(e.getKey()).append("=").append(escapeFilterValue((String) v)).append(")");
 		}
 		sb.append(")");
 
