@@ -19,7 +19,7 @@ We use Bndtools to develop Bndtools. If you encounter problems, make sure to hav
 
 After cloning the repository from https://github.com/bndtools/bndtools.git, import all top-level projects into your workspace.
 
-The `bndtools.core` project has run descriptors (`.bndrun` files) for all supported platforms. To start Bndtools from your development environment, right-cick the suitable run descriptor and select _Run As_ or _Debug As_ > _Bnd OSGi Run Launcher_.
+The `bndtools.core` project has run descriptors (`.bndrun` files) for all supported platforms. To start Bndtools from your development environment, right-click the suitable run descriptor and select _Run As_ or _Debug As_ > _Bnd OSGi Run Launcher_.
 
 ## Build Environment
 
