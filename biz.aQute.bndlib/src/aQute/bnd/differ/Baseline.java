@@ -194,6 +194,9 @@ public class Baseline {
 					break;
 
 				case ADDED :
+					content = Delta.MINOR;
+					break;
+
 				case CHANGED : // cannot happen
 					content = Delta.MICRO;
 					break;
@@ -210,7 +213,7 @@ public class Baseline {
 					break;
 			}
 			if (content.compareTo(highestDelta) > 0) {
-				highestDelta = pdiff.getDelta();
+				highestDelta = content;
 			}
 		}
 		// If this is a first release, or the base has a different symbolic

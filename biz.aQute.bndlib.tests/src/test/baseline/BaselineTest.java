@@ -496,6 +496,6 @@ public class BaselineTest extends TestCase {
 		BundleInfo bundleInfo = baseline.getBundleInfo();
 
 		assertTrue(bundleInfo.mismatch);
-		assertEquals("1.1.0", bundleInfo.suggestedVersion.toString());
+		assertEquals("2.0.0", bundleInfo.suggestedVersion.toString());
 	}
 }
