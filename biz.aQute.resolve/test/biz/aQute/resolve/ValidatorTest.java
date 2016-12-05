@@ -1,5 +1,6 @@
 package biz.aQute.resolve;
 
+import java.io.File;
 import java.util.List;
 
 import org.osgi.framework.namespace.PackageNamespace;
@@ -7,6 +8,7 @@ import org.osgi.resource.Resource;
 
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.OSGI_CORE;
+import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceParser;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
@@ -105,6 +107,30 @@ public class ValidatorTest extends TestCase {
 			String expectedToContain = "missing requirement org.apache.felix.gogo.api";
 			assertTrue(String.format("expected to contain <%s> but was <%s>", expectedToContain, message),
 					message.contains(expectedToContain));
+		}
+	}
+
+	public void testValidatingResourcesWithDocumentaryAttributes() throws Exception {
+		try (ResolverValidator validator = new ResolverValidator();) {
+			ResourceBuilder system = new ResourceBuilder();
+			system.addEE(EE.JavaSE_1_8);
+			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
+			validator.setSystem(system.build());
+			validator.setTrace(true);
+
+			ResourcesRepository repository = new ResourcesRepository();
+			ResourceBuilder builder = new ResourceBuilder();
+			File file = IO.getFile("testdata/osgi.cmpn-4.3.0.jar");
+			builder.addFile(file, file.toURI());
+			repository.add(builder.build());
+			builder = new ResourceBuilder();
+			file = IO.getFile("testdata/org.apache.felix.framework-4.0.0.jar");
+			builder.addFile(file, file.toURI());
+			repository.add(builder.build());
+
+			List<Resource> resources = repository.getResources();
+			validator.validateResources(repository, resources);
+			assertTrue(validator.check());
 		}
 	}
 
