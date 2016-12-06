@@ -307,7 +307,7 @@ public class BaselineTest extends TestCase {
 		assertEquals("1.2.0", new Version(jar.getVersion()).getWithoutQualifier().toString());
 
 		if (!builder.check())
-			fail();
+			fail(builder.getErrors().toString());
 		{
 			// check for error when repository contains later versions
 			builder = (ProjectBuilder) p3.getBuilder(null).getSubBuilder();
@@ -319,7 +319,7 @@ public class BaselineTest extends TestCase {
 			assertNull(jar);
 
 			if (!builder.check("The baseline version 1.2.0.b is higher than the current version 1.1.3 for p3"))
-				fail();
+				fail(builder.getErrors().toString());
 		}
 		{
 			// check for no error when repository has the same version
@@ -332,7 +332,7 @@ public class BaselineTest extends TestCase {
 			assertNotNull(jar);
 
 			if (!builder.check())
-				fail();
+				fail(builder.getErrors().toString());
 
 		}
 		{
@@ -345,7 +345,7 @@ public class BaselineTest extends TestCase {
 			builder.build();
 
 			if (!builder.check("The bundle version \\(1.2.0/1.2.0\\) is too low, must be at least 1.3.0"))
-				fail();
+				fail(builder.getErrors().toString());
 
 		}
 	}
