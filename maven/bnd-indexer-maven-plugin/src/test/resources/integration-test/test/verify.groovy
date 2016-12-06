@@ -73,14 +73,14 @@ println "mavenVersion ${mavenVersion}"
 
 System.setProperty('jsse.enableSNIExtension', 'false')
 
-check("${basedir}/transitive/target/index.xml", "${basedir}/transitive/target/index.xml.gz", 21, false, true);
+check("${basedir}/transitive/target/index.xml", "${basedir}/transitive/target/index.xml.gz", 19, false, true);
 check("${basedir}/non-transitive/target/index.xml", "${basedir}/non-transitive/target/index.xml.gz", 3, false, true);
-check("${basedir}/scoped/target/index.xml", "${basedir}/scoped/target/index.xml.gz", 24, false, true);
-check("${basedir}/require-local/target/index.xml", "${basedir}/require-local/target/index.xml.gz", 21, true, true);
+check("${basedir}/scoped/target/index.xml", "${basedir}/scoped/target/index.xml.gz", 22, false, true);
+check("${basedir}/require-local/target/index.xml", "${basedir}/require-local/target/index.xml.gz", 19, true, true);
 
 // The in-build needs to check that the snapshot points at the real repo
 
-Repository repo = check("${basedir}/in-build/target/index.xml", "${basedir}/in-build/target/index.xml.gz", 4, false, true);
+Repository repo = check("${basedir}/in-build/target/index.xml", "${basedir}/in-build/target/index.xml.gz", 3, false, true);
 
 Capability content = check(repo, "osgi.identity", "(osgi.identity=biz.aQute.bnd)", "biz.aQute.bnd", false);
 
@@ -95,7 +95,7 @@ assert !(url.substring(url.lastIndexOf('/')).contains("SNAPSHOT"))
 
 // The add-mvn needs to check that the mvn: URLs are added as well
 
-repo = check("${basedir}/add-mvn/target/index.xml", "${basedir}/non-transitive/target/index.xml.gz", 3, false, true);
+repo = check("${basedir}/add-mvn/target/index.xml", "${basedir}/add-mvn/target/index.xml.gz", 3, false, true);
 
 Requirement requirement = new RequirementBuilder("osgi.content")
 						.addDirective("filter", "(url=mvn*)")
@@ -113,8 +113,8 @@ repo = check("${basedir}/local-repo-dependency/target/index.xml", "${basedir}/lo
 content = check(repo, "osgi.identity", "(osgi.identity=helloworld-for-indexer-testing)", "helloworld-for-indexer-testing", true);
 
 // Test a renamed repository
-check("${basedir}/rename-output/target/custom.xml", null, 21, false, true);
+check("${basedir}/rename-output/target/custom.xml", null, 19, false, true);
 
 // Test indexing a local folder
-check("${basedir}/index-folder/target/META-INF/index.xml", "${basedir}/index-folder/target/META-INF/index.xml.gz", 21, true, true);
+check("${basedir}/index-folder/target/META-INF/index.xml", "${basedir}/index-folder/target/META-INF/index.xml.gz", 19, true, true);
 return;
