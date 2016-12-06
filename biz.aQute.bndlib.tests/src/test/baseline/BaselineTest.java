@@ -307,7 +307,7 @@ public class BaselineTest extends TestCase {
 		assertEquals("1.2.0", new Version(jar.getVersion()).getWithoutQualifier().toString());
 
 		if (!builder.check())
-			fail();
+			fail(builder.getErrors().toString());
 		{
 			// check for error when repository contains later versions
 			builder = (ProjectBuilder) p3.getBuilder(null).getSubBuilder();
@@ -319,7 +319,7 @@ public class BaselineTest extends TestCase {
 			assertNull(jar);
 
 			if (!builder.check("The baseline version 1.2.0.b is higher than the current version 1.1.3 for p3"))
-				fail();
+				fail(builder.getErrors().toString());
 		}
 		{
 			// check for no error when repository has the same version
@@ -332,7 +332,7 @@ public class BaselineTest extends TestCase {
 			assertNotNull(jar);
 
 			if (!builder.check())
-				fail();
+				fail(builder.getErrors().toString());
 
 		}
 		{
@@ -345,7 +345,7 @@ public class BaselineTest extends TestCase {
 			builder.build();
 
 			if (!builder.check("The bundle version \\(1.2.0/1.2.0\\) is too low, must be at least 1.3.0"))
-				fail();
+				fail(builder.getErrors().toString());
 
 		}
 	}
@@ -461,5 +461,41 @@ public class BaselineTest extends TestCase {
 
 		assertFalse(bundleInfo.mismatch);
 		assertEquals(newer.getVersion(), bundleInfo.suggestedVersion.toString());
+	}
+
+	// Adding a method to an exported class produces a MINOR bump (1.0.0 -> 1.1.0)
+	public void testMinorChange() throws Exception {
+		Processor processor = new Processor();
+
+		DiffPluginImpl differ = new DiffPluginImpl();
+		Baseline baseline = new Baseline(processor, differ);
+
+		Jar older = new Jar(IO.getFile("testresources/minor-and-removed-change-1.0.0.jar"));
+		Jar newer = new Jar(IO.getFile("testresources/minor-change-1.0.1.jar"));
+
+		baseline.baseline(newer, older, null);
+
+		BundleInfo bundleInfo = baseline.getBundleInfo();
+
+		assertTrue(bundleInfo.mismatch);
+		assertEquals("1.1.0", bundleInfo.suggestedVersion.toString());
+	}
+
+	// Adding a method to an exported class and unexporting a package produces a MINOR bump (1.0.0 -> 1.1.0)
+	public void testMinorAndRemovedChange() throws Exception {
+		Processor processor = new Processor();
+
+		DiffPluginImpl differ = new DiffPluginImpl();
+		Baseline baseline = new Baseline(processor, differ);
+
+		Jar older = new Jar(IO.getFile("testresources/minor-and-removed-change-1.0.0.jar"));
+		Jar newer = new Jar(IO.getFile("testresources/minor-and-removed-change-1.0.1.jar"));
+
+		baseline.baseline(newer, older, null);
+
+		BundleInfo bundleInfo = baseline.getBundleInfo();
+
+		assertTrue(bundleInfo.mismatch);
+		assertEquals("2.0.0", bundleInfo.suggestedVersion.toString());
 	}
 }
