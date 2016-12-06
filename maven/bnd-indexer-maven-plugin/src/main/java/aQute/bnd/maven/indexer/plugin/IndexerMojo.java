@@ -8,20 +8,14 @@ import static org.apache.maven.plugins.annotations.ResolutionScope.TEST;
 import static org.eclipse.aether.metadata.Metadata.Nature.RELEASE;
 import static org.eclipse.aether.metadata.Metadata.Nature.SNAPSHOT;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.GZIPOutputStream;
+import java.util.Map.Entry;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.DefaultArtifact;
@@ -57,15 +51,12 @@ import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.MetadataRequest;
 import org.eclipse.aether.resolution.MetadataResult;
-import org.osgi.framework.Filter;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.service.indexer.ResourceIndexer;
-import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
-import org.osgi.service.indexer.impl.RepoIndex;
-import org.osgi.service.indexer.impl.URLResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import aQute.bnd.osgi.repository.ResourcesRepository;
+import aQute.bnd.osgi.repository.XMLResourceGenerator;
+import aQute.bnd.osgi.resource.ResourceBuilder;
 
 /**
  * Exports project dependencies to OSGi R5 index format.
@@ -100,7 +91,7 @@ public class IndexerMojo extends AbstractMojo {
 
 	@Parameter(property = "bnd.indexer.skip", defaultValue = "false")
 	private boolean						skip;
-    
+
 	@Component
 	private RepositorySystem			system;
 
@@ -162,35 +153,34 @@ public class IndexerMojo extends AbstractMojo {
 			repositories.put(artifactRepository.getId(), artifactRepository);
 		}
 
-		RepoIndex indexer = new RepoIndex();
-		Filter filter;
-		try {
-			filter = FrameworkUtil.createFilter("(name=*.jar)");
-		} catch (InvalidSyntaxException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		}
-		indexer.addAnalyzer(new KnownBundleAnalyzer(), filter);
+		outputFile.getParentFile().mkdirs();
 
-		indexer.addURLResolver(new RepositoryURLResolver(dependencies, repositories));
+		MavenURLResolver urlResolver = new RepositoryURLResolver(repositories);
 
 		if (addMvnURLs) {
-			indexer.addURLResolver(new MavenURLResolver(dependencies));
+			urlResolver = new MavenURLResolver();
 		}
 
-		Map<String,String> config = new HashMap<String,String>();
-		config.put(ResourceIndexer.PRETTY, "true");
-
-		OutputStream output;
-		try {
-			outputFile.getParentFile().mkdirs();
-			output = new FileOutputStream(outputFile);
-		} catch (FileNotFoundException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		}
+		ResourcesRepository resourcesRepository = new ResourcesRepository();
+		XMLResourceGenerator xmlResourceGenerator = new XMLResourceGenerator();
 
 		logger.debug("Indexing artifacts: {}", dependencies.keySet());
 		try {
-			indexer.index(dependencies.keySet(), output, config);
+			for (Entry<File,ArtifactResult> entry : dependencies.entrySet()) {
+				ResourceBuilder resourceBuilder = new ResourceBuilder();
+				resourceBuilder.addFile(entry.getKey(), urlResolver.resolver(entry.getKey(), entry.getValue()));
+				resourcesRepository.add(resourceBuilder.build());
+			}
+			// add the current project if its packaging is jar
+			if (project.getPackaging().equals("jar")) {
+				File current = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + ".jar");
+				if (current.exists()) {
+					ResourceBuilder resourceBuilder = new ResourceBuilder();
+					resourceBuilder.addFile(current, current.toURI());
+					resourcesRepository.add(resourceBuilder.build());
+				}
+			}
+			xmlResourceGenerator.repository(resourcesRepository).save(outputFile);
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
@@ -202,14 +192,9 @@ public class IndexerMojo extends AbstractMojo {
 		if (includeGzip) {
 			File gzipOutputFile = new File(outputFile.getPath() + ".gz");
 
-			try (InputStream is = new BufferedInputStream(new FileInputStream(outputFile));
-					OutputStream gos = new GZIPOutputStream(new FileOutputStream(gzipOutputFile))) {
-				byte[] bytes = new byte[4096];
-				int read;
-				while ((read = is.read(bytes)) != -1) {
-					gos.write(bytes, 0, read);
-				}
-			} catch (IOException ioe) {
+			try {
+				xmlResourceGenerator.save(gzipOutputFile);
+			} catch (Exception e) {
 				throw new MojoExecutionException("Unable to create the gzipped output file");
 			}
 			attach(gzipOutputFile, "osgi-index", "xml.gz");
@@ -226,23 +211,10 @@ public class IndexerMojo extends AbstractMojo {
 		project.addAttachedArtifact(artifact);
 	}
 
-	class MavenURLResolver implements URLResolver {
+	class MavenURLResolver {
 
-		private final Map<File,ArtifactResult> dependencies;
-
-		public MavenURLResolver(Map<File,ArtifactResult> dependencies) {
-			this.dependencies = dependencies;
-		}
-
-		public URI resolver(File file) throws Exception {
+		public URI resolver(File file, ArtifactResult artifactResult) throws Exception {
 			try {
-				ArtifactResult artifactResult = dependencies.get(file);
-
-				if (artifactResult == null) {
-					throw new FileNotFoundException(
-							"The file " + file.getCanonicalPath() + " is not known to this resolver");
-				}
-
 				Artifact artifact = artifactResult.getArtifact();
 
 				StringBuilder sb = new StringBuilder("mvn://");
@@ -275,26 +247,16 @@ public class IndexerMojo extends AbstractMojo {
 		}
 	}
 
-	class RepositoryURLResolver implements URLResolver {
+	class RepositoryURLResolver extends MavenURLResolver {
 
-		private final Map<File,ArtifactResult>			dependencies;
 		private final Map<String,ArtifactRepository>	repositories;
 
-		public RepositoryURLResolver(Map<File,ArtifactResult> dependencies,
-				Map<String,ArtifactRepository> repositories) {
-			this.dependencies = dependencies;
+		public RepositoryURLResolver(Map<String,ArtifactRepository> repositories) {
 			this.repositories = repositories;
 		}
 
-		public URI resolver(File file) throws Exception {
+		public URI resolver(File file, ArtifactResult artifactResult) throws Exception {
 			try {
-				ArtifactResult artifactResult = dependencies.get(file);
-
-				if (artifactResult == null) {
-					throw new FileNotFoundException(
-							"The file " + file.getCanonicalPath() + " is not known to this resolver");
-				}
-
 				if (localURLs == REQUIRED) {
 					return file.toURI();
 				}

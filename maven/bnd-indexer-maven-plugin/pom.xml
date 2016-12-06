@@ -37,7 +37,12 @@
 		</dependency>
 		<dependency>
 			<groupId>biz.aQute.bnd</groupId>
-			<artifactId>org.osgi.impl.bundle.repoindex.cli</artifactId>
+			<artifactId>biz.aQute.bndlib</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.core</artifactId>
+			<version>5.0.0</version>
 		</dependency>
 	</dependencies>
 	
