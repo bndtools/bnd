@@ -117,4 +117,8 @@ check("${basedir}/rename-output/target/custom.xml", null, 19, false, true);
 
 // Test indexing a local folder
 check("${basedir}/index-folder/target/META-INF/index.xml", "${basedir}/index-folder/target/META-INF/index.xml.gz", 19, true, true);
+
+// Test includeJar included the project output in the index
+check("${basedir}/include-jar/target/index.xml", "${basedir}/include-jar/target/index.xml.gz", 2, true, true);
+
 return;

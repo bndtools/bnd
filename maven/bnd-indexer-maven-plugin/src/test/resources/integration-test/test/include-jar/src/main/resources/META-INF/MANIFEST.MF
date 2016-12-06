@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-SymbolicName: include-jar
+Bundle-Name: include-jar
+Bundle-Version: 0.0.1
+Built-By: rotty
+Bnd-LastModified: 1481065960049
+Bundle-ManifestVersion: 2
+Private-Package: foo
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
+Created-By: 1.8.0_111 (Oracle Corporation)
+Build-Jdk: 1.8.0_111
+Tool: Bnd-3.4.0.201612062217-SNAPSHOT
+

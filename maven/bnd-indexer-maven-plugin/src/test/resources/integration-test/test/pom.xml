@@ -18,6 +18,7 @@
 		<module>local-repo-dependency</module>
 		<module>rename-output</module>
 		<module>index-folder</module>
+		<module>include-jar</module>
 	</modules>
 
 	<dependencyManagement>
