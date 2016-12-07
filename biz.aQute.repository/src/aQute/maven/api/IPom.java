@@ -31,8 +31,8 @@ public interface IPom {
 
 		@Override
 		public String toString() {
-			return "Dependency [program=" + program + ", version=" + version + ", scope=" + scope + ", error=" + error
-					+ "]";
+			return String.format("Dependency [program=%s, version=%s, type=%s, classifier=%s, scope=%s, error=%s]",
+					program, version, type, classifier, scope, error);
 		}
 	}
 
