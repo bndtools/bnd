@@ -229,6 +229,8 @@ public class POM implements IPom {
 
 		d.program = program;
 		d.version = version;
+		d.type = extension;
+		d.classifier = classifier;
 		d.scope = MavenScope.getScope(scope);
 
 		// TODO exclusions
