@@ -119,6 +119,7 @@ check("${basedir}/rename-output/target/custom.xml", null, 19, false, true);
 check("${basedir}/index-folder/target/META-INF/index.xml", "${basedir}/index-folder/target/META-INF/index.xml.gz", 19, true, true);
 
 // Test includeJar included the project output in the index
-check("${basedir}/include-jar/target/index.xml", "${basedir}/include-jar/target/index.xml.gz", 2, true, true);
+repo = check("${basedir}/include-jar/target/index.xml", "${basedir}/include-jar/target/index.xml.gz", 2, true, true);
+check(repo, "osgi.identity", "(osgi.identity=include-jar)", "include-jar", true);
 
 return;
