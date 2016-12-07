@@ -1,6 +1,7 @@
 package aQute.bnd.repository.maven.pom.provider;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -374,6 +375,42 @@ public class PomRepositoryTest extends TestCase {
 		} catch (Exception e) {
 			assertEquals("Must get a name", e.getMessage());
 		}
+	}
+
+	public void testNonStandardClassifierDependencies() throws Exception {
+		BndPomRepository mcsr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		mcsr.setRegistry(w);
+
+		File local = new File(tmp, "m2-repository");
+		local.mkdirs();
+
+		Map<String,String> config = new HashMap<>();
+		config.put("name", "pmd");
+		config.put("revision", "net.sourceforge.pmd:pmd-java:5.2.3");
+		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
+		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+		config.put("local", local.getAbsolutePath());
+		mcsr.setProperties(config);
+
+		List<String> list = mcsr.list(null);
+		assertNotNull(list);
+
+		URL url = new URL(tmp.toURI().toURL(),
+				"m2-repository/net/sourceforge/saxon/saxon/9.1.0.8/saxon-9.1.0.8-dom.jar");
+
+		File dom = new File(url.getFile());
+		assertTrue(dom.exists());
+
+		// I'm assuming because we don't have a way of currently "getting" such
+		// a classified artifact from the repo that we'd have to encode the
+		// classifier in the bsn of the classified jar if it's not a bundle.
+		// Something like:
+
+		// File file = mcsr.get("net.sourceforge.pmd:pmd-java:dom", new
+		// Version("5.2.3"), null);
+		// assertNotNull(file);
 	}
 
 	MavenRepository getRepo() throws Exception {
