@@ -83,6 +83,9 @@ public class IndexerMojo extends AbstractMojo {
 	@Parameter(property = "bnd.indexer.includeTransitive", defaultValue = "true")
 	private boolean						includeTransitive;
 
+	@Parameter(property = "bnd.indexer.includeJar", defaultValue = "false")
+	private boolean						includeJar;
+
 	@Parameter(property = "bnd.indexer.add.mvn.urls", defaultValue = "false")
 	private boolean						addMvnURLs;
 
@@ -94,7 +97,7 @@ public class IndexerMojo extends AbstractMojo {
 
 	@Parameter(property = "bnd.indexer.skip", defaultValue = "false")
 	private boolean						skip;
-    
+
 	@Component
 	private RepositorySystem			system;
 
@@ -181,6 +184,14 @@ public class IndexerMojo extends AbstractMojo {
 					resourceBuilder.addCapability(c);
 				}
 				resourcesRepository.add(resourceBuilder.build());
+			}
+			if (includeJar && project.getPackaging().equals("jar")) {
+				File current = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + ".jar");
+				if (current.exists()) {
+					ResourceBuilder resourceBuilder = new ResourceBuilder();
+					resourceBuilder.addFile(current, current.toURI());
+					resourcesRepository.add(resourceBuilder.build());
+				}
 			}
 			xmlResourceGenerator.repository(resourcesRepository).save(outputFile);
 		} catch (Exception e) {

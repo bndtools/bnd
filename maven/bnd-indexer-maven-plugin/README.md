@@ -195,6 +195,49 @@ By default the `bnd-indexer-maven-plugin` will include dependencies with
         </scopes>
     </configuration>
 
+#### Including the current project output as part of the index
+
+A nice application of the `bnd-indexer-maven-plugin` is using it in conjunction with the
+`bnd-testing-maven-plugin` for integration testing, which assembles a testable framework
+by means of the OSGi resolver from the index of the current project. By default, the
+`bnd-indexer-maven-plugin`, which is not typically associated with a project containing
+code, does not include the current project output as part of the index but this would
+be ideal for integration test projects. To support this scenario, if the project's
+packaging is `jar`, the plugin may be configured to include the artifact in the index
+as follows:
+
+    <configuration>
+        <includeJar>true</includeJar>
+    </configuration>
+
+Setting up an integration test project using this approach could be achieved as follows:
+
+*POM configuration data*
+
+    ...
+    <packaging>jar</packaging>
+    ...
+    <!-- Indexer plugin configuration -->
+    <configuration>
+        <includeJar>true</includeJar>
+        <localURLs>REQUIRED</localURLs>
+    </configuration>
+    ...
+    <!-- Testing plugin configuration -->
+    <configuration>
+        <failOnChanges>false</failOnChanges>
+        <resolve>true</resolve>
+        <bndruns>
+            <bndrun>itest.bndrun</bndrun>
+        </bndruns>
+        <targetDir>.</targetDir>
+    </configuration>
+    ...
+
+*`itest.bndrun` file data*
+
+    -standalone: target/index.xml
+    ...
 
 ## Building indexes with `local-index`
 
