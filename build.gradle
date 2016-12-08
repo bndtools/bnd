@@ -40,6 +40,10 @@ task wrapper(type: Wrapper) {
   jarFile = rootProject.file('.gradle-wrapper/gradle-wrapper.jar')
 }
 
-task buildscriptDependencies << {
+task buildscriptDependencies {
+  doLast {
+    println "bnd_plugin: ${bnd_plugin}"
+    println "bnd_repourl: ${bnd_repourl}"
     println buildscript.configurations.classpath.asPath
+  }
 }
