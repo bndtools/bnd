@@ -4,8 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.osgi.resource.Resource;
 import org.osgi.util.promise.Promise;
@@ -23,13 +26,17 @@ class PomRepository extends InnerRepository {
 	static final String		BND_MAVEN_EXCEPTION_ATTRIBUTE	= "exception";
 	static final String		BND_MAVEN_ARCHIVE_ATTRIBUTE		= "archive";
 	static final String		BND_MAVEN_REVISION_ATTRIBUTE	= "revision";
-	final Revision			revision;
+	final List<Revision>	revisions;
 	final URI				revisionUrl;
 	final HttpClient		client;
 
 	PomRepository(MavenRepository repo, HttpClient client, File location, Revision revision) throws Exception {
+		this(repo, client, location, Collections.singletonList(revision));
+	}
+
+	PomRepository(MavenRepository repo, HttpClient client, File location, List<Revision> revisions) throws Exception {
 		super(repo, location);
-		this.revision = revision;
+		this.revisions = revisions;
 		this.revisionUrl = null;
 		this.client = client;
 		read();
@@ -38,7 +45,7 @@ class PomRepository extends InnerRepository {
 	PomRepository(MavenRepository repo, HttpClient client, File location, URI revision) throws Exception {
 		super(repo, location);
 		this.revisionUrl = revision;
-		this.revision = null;
+		this.revisions = null;
 		this.client = client;
 		read();
 	}
@@ -47,7 +54,7 @@ class PomRepository extends InnerRepository {
 		if (revisionUrl != null)
 			read(revisionUrl);
 		else
-			read(revision);
+			read(revisions);
 	}
 
 	void read(URI revision) throws Exception {
@@ -55,15 +62,18 @@ class PomRepository extends InnerRepository {
 		Promise<Map<Archive,Resource>> p = traverser.getResources();
 		Collection<Resource> resources = p.getValue().values();
 		set(resources);
-		save(revision.toString(), resources, getLocation());
+		save(getMavenRepository().getName(), resources, getLocation());
 	}
 
-	void read(Revision revision) throws Exception {
-		Traverser traverser = new Traverser(getMavenRepository(), revision, client, Processor.getExecutor());
-		Promise<Map<Archive,Resource>> p = traverser.getResources();
-		Collection<Resource> resources = p.getValue().values();
+	void read(List<Revision> revisions) throws Exception {
+		Set<Resource> resources = ConcurrentHashMap.newKeySet();
+		for (Revision revision : revisions) {
+			Traverser traverser = new Traverser(getMavenRepository(), revision, client, Processor.getExecutor());
+			Promise<Map<Archive,Resource>> p = traverser.getResources();
+			resources.addAll(p.getValue().values());
+		}
 		set(resources);
-		save(revision.toString(), resources, getLocation());
+		save(getMavenRepository().getName(), resources, getLocation());
 	}
 
 	void save(String revision, Collection< ? extends Resource> resources, File location) throws Exception, IOException {
@@ -97,9 +107,11 @@ class PomRepository extends InnerRepository {
 			}
 		} else {
 			try {
-				File file = getMavenRepository().get(revision.getPomArchive()).getValue();
-				if (file.isFile() && file.lastModified() > getLocation().lastModified()) {
-					return true;
+				for (Revision revision : revisions) {
+					File file = getMavenRepository().get(revision.getPomArchive()).getValue();
+					if (file.isFile() && file.lastModified() > getLocation().lastModified()) {
+						return true;
+					}
 				}
 			} catch (Exception e) {
 				// ignore

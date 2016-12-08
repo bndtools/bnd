@@ -413,6 +413,42 @@ public class PomRepositoryTest extends TestCase {
 		// assertNotNull(file);
 	}
 
+	public void testMultipleRevisions() throws Exception {
+		BndPomRepository mcsr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		mcsr.setRegistry(w);
+
+		File local = new File(tmp, "m2-repository");
+		local.mkdirs();
+
+		Map<String,String> config = new HashMap<>();
+		config.put("name", "test-dependencies");
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("biz.aQute.bnd:biz.aQute.junit:3.4.0-SNAPSHOT,");
+		sb.append("biz.aQute.bnd:biz.aQute.launcher:3.4.0-SNAPSHOT,");
+		sb.append("biz.aQute.bnd:biz.aQute.remote.launcher:3.4.0-SNAPSHOT,");
+		sb.append("biz.aQute.bnd:biz.aQute.tester:3.4.0-SNAPSHOT");
+
+		config.put("revision", sb.toString());
+		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
+		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+		config.put("local", local.getAbsolutePath());
+		mcsr.setProperties(config);
+
+		List<String> list = mcsr.list(null);
+		assertNotNull(list);
+		assertEquals(4, list.size());
+
+		RequirementBuilder builder = mcsr.newRequirementBuilder("osgi.identity");
+		builder.addAttribute("filter", "(osgi.identity=biz.aQute.tester)");
+
+		Promise<Collection<Resource>> providers = mcsr.findProviders(builder.buildExpression());
+		Collection<Resource> resources = providers.getValue();
+		assertFalse(resources.isEmpty());
+	}
+
 	MavenRepository getRepo() throws Exception {
 		List<MavenBackingRepository> central = MavenBackingRepository.create("https://repo1.maven.org/maven2/",
 				reporter, localRepo, client);
