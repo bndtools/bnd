@@ -3,6 +3,7 @@ package aQute.bnd.repository.maven.pom.provider;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.maven.api.Archive;
 import aQute.maven.api.Revision;
@@ -51,7 +53,7 @@ public class BndPomRepository extends BaseRepository
 	private String				name;
 	private Reporter			reporter			= new Slf4jReporter(BndPomRepository.class);
 	private InnerRepository	repoImpl;
-	private Revision			revision;
+	private List<Revision>		revisions;
 	private BridgeRepository	bridge;
 	private URI					pomFile;
 	private String				query;
@@ -77,8 +79,8 @@ public class BndPomRepository extends BaseRepository
 
 			if (pomFile != null) {
 				repoImpl = new PomRepository(repository, client, location, pomFile);
-			} else if (revision != null) {
-				repoImpl = new PomRepository(repository, client, location, revision);
+			} else if (revisions != null) {
+				repoImpl = new PomRepository(repository, client, location, revisions);
 			} else if (query != null) {
 				repoImpl = new SearchRepository(repository, location, query, queryUrl, workspace, client);
 			} else {
@@ -119,11 +121,18 @@ public class BndPomRepository extends BaseRepository
 				this.pomFile = URI.create(configuration.pom());
 			}
 		} else if (configuration.revision() != null) {
-			revision = Revision.valueOf(configuration.revision());
-			if (revision == null)
+			List<String> parts = Strings.split(configuration.revision());
+			revisions = new ArrayList<>();
+			for (String part : parts) {
+				Revision revision = Revision.valueOf(part);
+				if (revision != null) {
+					revisions.add(revision);
+				}
+			}
+			if (revisions.isEmpty()) {
 				throw new IllegalArgumentException(
 						"Revision is neither a file nor a revision " + configuration.revision());
-
+			}
 		} else if (configuration.query() != null) {
 			this.query = configuration.query();
 			this.queryUrl = configuration.queryUrl("http://search.maven.org/solrsearch/select");

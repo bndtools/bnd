@@ -124,11 +124,6 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>biz.aQute.bnd</groupId>
-				<artifactId>org.osgi.impl.bundle.repoindex.cli</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>3.8.2</version>
@@ -252,6 +247,33 @@
                     </lifecycleMappingMetadata>
                   </configuration>
                 </plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>2.10</version>
+					<configuration>
+					    <artifactItems>
+					        <artifactItem>
+					            <groupId>biz.aQute.bnd</groupId>
+					            <artifactId>biz.aQute.bnd.embedded-repo</artifactId>
+					            <version>${project.version}</version>
+					            <type>jar</type>
+					            <overWrite>false</overWrite>
+					            <outputDirectory>${project.build.directory}/classes</outputDirectory>
+					            <destFileName>embedded-repo.jar</destFileName>
+					        </artifactItem>
+					    </artifactItems>
+					</configuration>
+					<executions>
+					    <execution>
+					        <id>copy</id>
+					        <phase>generate-resources</phase>
+					        <goals>
+					            <goal>copy</goal>
+					        </goals>
+					    </execution>
+					</executions>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 		<plugins>
