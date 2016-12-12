@@ -37,11 +37,11 @@ public class Create {
 		return Collections.checkedSet(new LinkedHashSet<T>(), c);
 	}
 
-	public static <T> List<T> list(T[] source) {
+	public static <T> List<T> list(T... source) {
 		return new ArrayList<T>(Arrays.asList(source));
 	}
 
-	public static <T> Set<T> set(T[] source) {
+	public static <T> Set<T> set(T... source) {
 		return new HashSet<T>(Arrays.asList(source));
 	}
 

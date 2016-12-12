@@ -159,9 +159,7 @@ public final class RepoResourceUtils {
 		List<Resource> result;
 		if (aQute.bnd.osgi.Constants.VERSION_ATTR_LATEST.equals(rangeStr)) {
 			Version highest = versionMap.lastKey();
-			result = Create.list(new Resource[] {
-					versionMap.get(highest)
-			});
+			result = Create.list(versionMap.get(highest));
 		} else {
 			VersionRange range = rangeStr != null ? new VersionRange(rangeStr) : null;
 
