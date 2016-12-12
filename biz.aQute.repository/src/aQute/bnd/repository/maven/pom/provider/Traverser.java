@@ -6,10 +6,11 @@ import static org.osgi.framework.namespace.IdentityNamespace.IDENTITY_NAMESPACE;
 
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,35 +44,29 @@ class Traverser {
 	static final String						ROOT		= "<>";
 	final ConcurrentMap<Archive,Resource>	resources	= new ConcurrentHashMap<>();
 	final Executor							executor;
-	final Collection<Revision>				revisions;
-	final URI								resource;
+	final List<Revision>					revisions;
+	final List<URI>							uris;
 	final AtomicInteger						count		= new AtomicInteger(-1);
 	final Deferred<Map<Archive,Resource>>	deferred	= new Deferred<>();
 	final MavenRepository					repo;
 	final HttpClient						client;
 
-	Traverser(MavenRepository repo, Revision revision, HttpClient client, Executor executor) {
+	Traverser(MavenRepository repo, HttpClient client, Executor executor) {
 		this.repo = repo;
-		this.revisions = Collections.singleton(revision);
 		this.client = client;
 		this.executor = executor;
-		this.resource = null;
+		this.revisions = new ArrayList<>();
+		this.uris = new ArrayList<>();
 	}
 
-	Traverser(MavenRepository repo, Collection<Revision> revisions, HttpClient client, Executor executor) {
-		this.repo = repo;
-		this.revisions = revisions;
-		this.client = client;
-		this.executor = executor;
-		this.resource = null;
+	Traverser revisions(Collection<Revision> revisions) {
+		this.revisions.addAll(revisions);
+		return this;
 	}
 
-	Traverser(MavenRepository repo, URI resource, HttpClient client, Executor executor) {
-		this.repo = repo;
-		this.client = client;
-		this.revisions = null;
-		this.executor = executor;
-		this.resource = resource;
+	Traverser uris(Collection<URI> uris) {
+		this.uris.addAll(uris);
+		return this;
 	}
 
 	Promise<Map<Archive,Resource>> getResources() throws Exception {
@@ -81,13 +76,12 @@ class Traverser {
 		 */
 		if (count.compareAndSet(-1, 1)) {
 			try {
-				if (resource != null) {
-					File in = client.build()
-							.useCache()
-							.age(1, TimeUnit.DAYS)
-							.go(resource);
-					POM pom = new POM(repo, in);
-					parsePom(pom, ROOT);
+				if (!uris.isEmpty()) {
+					for (URI uri : uris) {
+						File in = client.build().useCache().age(1, TimeUnit.DAYS).go(uri);
+						POM pom = new POM(repo, in);
+						parsePom(pom, ROOT);
+					}
 				} else {
 					for (Revision revision : revisions)
 						parse(revision.archive("jar", null), ROOT);

@@ -65,8 +65,8 @@ TODO: The syntax of the query part might change
 |                  |               |or just the local ~/.m2 repository if this is also not specified.|
 | `local`          | `PATH`        |Optional Path to local repository. The default `~/.m2/repository` can be 
 |                  |               |overridden with the `maven.repo.local` System property as in Maven| 
-| `revision`       | `GAV`         |The Maven coordinates. The GAV will be searched in the normal way.|
-| `pom`            | `PATH`        |A path to a POM file.|
+| `revision`       | `GAV...`      |A comma separated list of Maven coordinates. The GAV will be searched in the normal way.|
+| `pom`            | `PATH...`     |A comma separated list of paths to a POM file.|
 | `location`       | `PATH`        |Optional cached index of the parsed POMs. The default is  `cnf/cache/pom-<name>.xml` |
 | `query`          |               |A Solr query string. This is the part after ? and must be properly URL encoded|
 | `queryUrl`       | `URI`         |Optional URI to the search engine, default  `http://search.maven.org/solrsearch/select`.|

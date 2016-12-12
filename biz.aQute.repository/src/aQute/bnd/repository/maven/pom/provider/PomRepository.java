@@ -3,6 +3,7 @@ package aQute.bnd.repository.maven.pom.provider;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -23,53 +24,55 @@ class PomRepository extends InnerRepository {
 	static final String		BND_MAVEN_EXCEPTION_ATTRIBUTE	= "exception";
 	static final String		BND_MAVEN_ARCHIVE_ATTRIBUTE		= "archive";
 	static final String		BND_MAVEN_REVISION_ATTRIBUTE	= "revision";
-	final Revision			revision;
-	final URI				revisionUrl;
+	final List<Revision>	revisions;
+	final List<URI>			uris;
 	final HttpClient		client;
 
-	PomRepository(MavenRepository repo, HttpClient client, File location, Revision revision) throws Exception {
+	PomRepository(MavenRepository repo, HttpClient client, File location) {
 		super(repo, location);
-		this.revision = revision;
-		this.revisionUrl = null;
+		this.revisions = new ArrayList<>();
+		this.uris = new ArrayList<>();
 		this.client = client;
-		read();
 	}
 
-	PomRepository(MavenRepository repo, HttpClient client, File location, URI revision) throws Exception {
-		super(repo, location);
-		this.revisionUrl = revision;
-		this.revision = null;
-		this.client = client;
+	PomRepository revisions(Collection<Revision> revisions) throws Exception {
+		this.revisions.addAll(revisions);
 		read();
+		return this;
+	}
+
+	PomRepository uris(Collection<URI> uris) throws Exception {
+		this.uris.addAll(uris);
+		read();
+		return this;
 	}
 
 	void refresh() throws Exception {
-		if (revisionUrl != null)
-			read(revisionUrl);
+		if (!uris.isEmpty())
+			readUris();
 		else
-			read(revision);
+			readRevisons();
 	}
 
-	void read(URI revision) throws Exception {
-		Traverser traverser = new Traverser(getMavenRepository(), revision, client, Processor.getExecutor());
+	void readUris() throws Exception {
+		save(new Traverser(getMavenRepository(), client, Processor.getExecutor()).uris(uris));
+	}
+
+	void readRevisons() throws Exception {
+		save(new Traverser(getMavenRepository(), client, Processor.getExecutor()).revisions(revisions));
+	}
+
+	void save(Traverser traverser) throws Exception {
 		Promise<Map<Archive,Resource>> p = traverser.getResources();
 		Collection<Resource> resources = p.getValue().values();
 		set(resources);
-		save(revision.toString(), resources, getLocation());
+		save(getMavenRepository().getName(), resources, getLocation());
 	}
 
-	void read(Revision revision) throws Exception {
-		Traverser traverser = new Traverser(getMavenRepository(), revision, client, Processor.getExecutor());
-		Promise<Map<Archive,Resource>> p = traverser.getResources();
-		Collection<Resource> resources = p.getValue().values();
-		set(resources);
-		save(revision.toString(), resources, getLocation());
-	}
-
-	void save(String revision, Collection< ? extends Resource> resources, File location) throws Exception, IOException {
+	void save(String name, Collection< ? extends Resource> resources, File location) throws Exception, IOException {
 		XMLResourceGenerator generator = new XMLResourceGenerator();
 		generator.resources(resources);
-		generator.name(revision);
+		generator.name(name);
 		generator.save(location);
 	}
 
@@ -88,18 +91,22 @@ class PomRepository extends InnerRepository {
 		if (!getLocation().isFile())
 			return true;
 
-		if ( revisionUrl != null) {
-			if ( "file".equalsIgnoreCase(revisionUrl.getScheme())) {
-				File file = new File( revisionUrl);
-				if (file.isFile() && file.lastModified() > getLocation().lastModified()) {
-					return true;
+		if (!uris.isEmpty()) {
+			for (URI uri : uris) {
+				if ("file".equalsIgnoreCase(uri.getScheme())) {
+					File file = new File(uri);
+					if (file.isFile() && file.lastModified() > getLocation().lastModified()) {
+						return true;
+					}
 				}
 			}
 		} else {
 			try {
-				File file = getMavenRepository().get(revision.getPomArchive()).getValue();
-				if (file.isFile() && file.lastModified() > getLocation().lastModified()) {
-					return true;
+				for (Revision revision : revisions) {
+					File file = getMavenRepository().get(revision.getPomArchive()).getValue();
+					if (file.isFile() && file.lastModified() > getLocation().lastModified()) {
+						return true;
+					}
 				}
 			} catch (Exception e) {
 				// ignore

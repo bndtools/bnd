@@ -22,7 +22,8 @@ public interface PomConfiguration {
 	String local(String deflt);
 
 	/**
-	 * Coordinates of a maven revision. I.e. g:a[:c]:v
+	 * Coordinates of a maven revision. I.e. g:a[:c]:v. Can be a comma separated
+	 * list of gavs.
 	 */
 	String revision();
 
@@ -32,7 +33,8 @@ public interface PomConfiguration {
 	String location(String deflt);
 
 	/**
-	 * Points to a file that holds a pom. This is exclusive with revision.
+	 * Points to a file that holds a pom. This is exclusive with revision. Can
+	 * be a comma separated list of files.
 	 */
 	String pom();
 

@@ -3,6 +3,7 @@ package aQute.bnd.repository.maven.pom.provider;
 import java.io.File;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.XMLResourceParser;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.maven.api.Archive;
 import aQute.maven.api.Revision;
@@ -221,7 +223,7 @@ public class PomRepositoryTest extends TestCase {
 	public void testRepository() throws Exception {
 		MavenRepository repo = getRepo();
 		Revision revision = Revision.valueOf("bcel:bcel:5.1");
-		PomRepository pom = new PomRepository(repo, client, location, revision);
+		PomRepository pom = new PomRepository(repo, client, location).revisions(Collections.singleton(revision));
 
 		assertTrue(location.isFile());
 
@@ -411,6 +413,83 @@ public class PomRepositoryTest extends TestCase {
 		// File file = mcsr.get("net.sourceforge.pmd:pmd-java:dom", new
 		// Version("5.2.3"), null);
 		// assertNotNull(file);
+	}
+
+	public void testMultipleRevisions() throws Exception {
+		BndPomRepository mcsr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		mcsr.setRegistry(w);
+
+		File local = new File(tmp, "m2-repository");
+		local.mkdirs();
+
+		Map<String,String> config = new HashMap<>();
+		config.put("name", "test-dependencies");
+
+		String revisions = Strings.join(new String[] {
+				"biz.aQute.bnd:biz.aQute.junit:3.3.0", "biz.aQute.bnd:biz.aQute.launcher:3.3.0",
+				"biz.aQute.bnd:biz.aQute.remote.launcher:3.3.0", "biz.aQute.bnd:biz.aQute.tester:3.3.0"
+		});
+
+		config.put("revision", revisions);
+		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
+		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+		config.put("local", local.getAbsolutePath());
+		mcsr.setProperties(config);
+
+		List<String> list = mcsr.list(null);
+		assertNotNull(list);
+		assertEquals(4, list.size());
+
+		RequirementBuilder builder = mcsr.newRequirementBuilder("osgi.identity");
+		builder.addAttribute("filter", "(osgi.identity=biz.aQute.tester)");
+
+		Promise<Collection<Resource>> providers = mcsr.findProviders(builder.buildExpression());
+		Collection<Resource> resources = providers.getValue();
+		assertFalse(resources.isEmpty());
+	}
+
+	public void testMultiplePomFiles() throws Exception {
+		BndPomRepository mcsr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		mcsr.setRegistry(w);
+
+		File local = new File(tmp, "m2-repository");
+		local.mkdirs();
+
+		Map<String,String> config = new HashMap<>();
+		config.put("name", "test-dependencies");
+
+		String pomFiles = Strings.join(new String[] {
+				"testdata/pomrepo/simple.xml",
+				"https://repo1.maven.org/maven2/org/apache/felix/org.apache.felix.gogo.shell/0.12.0/org.apache.felix.gogo.shell-0.12.0.pom"
+		});
+
+		config.put("pom", pomFiles);
+		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
+		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+		config.put("local", local.getAbsolutePath());
+		mcsr.setProperties(config);
+
+		List<String> list = mcsr.list(null);
+		assertNotNull(list);
+		assertEquals(2, list.size());
+
+		RequirementBuilder builder = mcsr.newRequirementBuilder("osgi.identity");
+		builder.addAttribute("filter", "(osgi.identity=org.apache.felix.gogo.shell)");
+
+		Promise<Collection<Resource>> providers = mcsr.findProviders(builder.buildExpression());
+		Collection<Resource> resources = providers.getValue();
+		assertFalse(resources.isEmpty());
+
+		builder = mcsr.newRequirementBuilder("osgi.identity");
+		builder.addAttribute("filter", "(osgi.identity=osgi.core)");
+
+		providers = mcsr.findProviders(builder.buildExpression());
+		resources = providers.getValue();
+		assertFalse(resources.isEmpty());
 	}
 
 	MavenRepository getRepo() throws Exception {
