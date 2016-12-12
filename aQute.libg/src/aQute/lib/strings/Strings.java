@@ -48,7 +48,7 @@ public class Strings {
 		}
 	}
 
-	public static String join(String middle, Object[] segments) {
+	public static String join(String middle, Object... segments) {
 		return join(middle, new ExtList<Object>(segments));
 	}
 
@@ -63,11 +63,11 @@ public class Strings {
 		return "";
 	}
 
-	public static String join(String[] strings) {
-		return join(",", strings);
+	public static String join(String... strings) {
+		return join(",", (Object[]) strings);
 	}
 
-	public static String join(Object[] strings) {
+	public static String join(Object... strings) {
 		return join(",", strings);
 	}
 
