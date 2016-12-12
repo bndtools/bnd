@@ -47,18 +47,18 @@ class SearchRepository extends InnerRepository {
 
 	void refresh() throws Exception {
 		SearchResult result = query();
-		Traverser traverser = new Traverser(getMavenRepository(), result.response.docsToRevisions(), null,
-				Processor.getExecutor());
+		Traverser traverser = new Traverser(getMavenRepository(), null, Processor.getExecutor())
+				.revisions(result.response.docsToRevisions());
 		Promise<Map<Archive,Resource>> p = traverser.getResources();
 		Collection<Resource> resources = p.getValue().values();
 		set(resources);
-		save(query, resources, getLocation());
+		save(getMavenRepository().getName(), resources, getLocation());
 	}
 
-	void save(String revision, Collection< ? extends Resource> resources, File location) throws Exception, IOException {
+	void save(String name, Collection< ? extends Resource> resources, File location) throws Exception, IOException {
 		XMLResourceGenerator generator = new XMLResourceGenerator();
 		generator.resources(resources);
-		generator.name(revision);
+		generator.name(name);
 		generator.save(location);
 	}
 
