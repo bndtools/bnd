@@ -96,8 +96,31 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
                             bundleFile = ResourcesPlugin.getWorkspace().getRoot().getFile(bundlePath);
                         }
                         if (bundleFile != null) {
-                            ArchiveSourceContainer tempArchiveCont = new ArchiveSourceContainer(bundleFile, false);
-                            result.add(tempArchiveCont);
+                            ISourceContainer sourceContainer = null;
+
+                            // check to see if this archive came from a repo that encodes the source project name
+                            final String sourceProjectName = runbundle.getAttributes().get("sourceProjectName");
+
+                            if (sourceProjectName != null) {
+                                try {
+                                    IProject sourceProject = ResourcesPlugin.getWorkspace().getRoot().getProject(sourceProjectName);
+
+                                    if (sourceProject.exists()) {
+                                        IJavaProject javaSourceProject = JavaCore.create(sourceProject);
+
+                                        sourceContainer = new JavaProjectSourceContainer(javaSourceProject);
+                                    }
+                                } catch (Exception e) {
+                                    logger.logError("Error getting source java project", e);
+                                }
+                            }
+
+                            if (sourceContainer == null) {
+                                // default to archive source container
+                                sourceContainer = new ArchiveSourceContainer(bundleFile, false);
+                            }
+
+                            result.add(sourceContainer);
                         } else {
                             ExternalArchiveSourceContainer container = new ExternalArchiveSourceContainer(runbundle.getFile().toString(), false);
                             result.add(container);

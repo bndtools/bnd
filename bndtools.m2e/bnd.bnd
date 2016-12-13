@@ -1,0 +1,38 @@
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
+-buildpath: \
+	${bndlib},\
+	bndtools.api;version=latest,\
+	bndtools.core;version=latest,\
+	org.apache.maven:maven-core,\
+	org.apache.maven:maven-model,\
+	org.codehaus.plexus:plexus-utils,\
+	org.eclipse.core.jobs,\
+	org.eclipse.core.resources,\
+	org.eclipse.core.runtime,\
+	org.eclipse.debug.core,\
+	org.eclipse.equinox.common,\
+	org.eclipse.equinox.registry,\
+	org.eclipse.m2e.core,\
+	org.eclipse.m2e.jdt,\
+	org.sonatype.plexus:plexus-build-api,\
+	osgi.core;version=${osgi.core.version},\
+	osgi.cmpn;version=${osgi.core.version}
+
+Bundle-SymbolicName: bndtools.m2e; singleton:=true
+
+Import-Package: \
+	org.apache.maven.lifecycle;provider=m2e,\
+	org.apache.maven.model;provider=m2e,\
+	org.apache.maven.plugin;provider=m2e,\
+	org.apache.maven.project;provider=m2e,\
+	org.codehaus.plexus.util.xml;provider=m2e,\
+	*
+
+Private-Package: \
+	aQute.lib.collections,\
+	bndtools.m2e.*
+
+Include-Resource: \
+	lifecycle-mapping-metadata.xml,\
+	plugin.xml=_plugin.xml
