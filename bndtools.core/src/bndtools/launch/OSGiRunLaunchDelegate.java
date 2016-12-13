@@ -140,7 +140,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
         try {
             boolean dynamic = configuration.getAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, LaunchConstants.DEFAULT_DYNAMIC_BUNDLES);
             if (dynamic)
-                registerLaunchPropertiesRegenerator(model, launch);
+                registerLaunchPropertiesRegenerator(run, launch);
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error obtaining OSGi project launcher.", e));
         }

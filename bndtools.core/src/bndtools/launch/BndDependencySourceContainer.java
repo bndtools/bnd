@@ -26,7 +26,7 @@ import org.eclipse.jdt.launching.sourcelookup.containers.JavaProjectSourceContai
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Container.TYPE;
-import aQute.bnd.build.Project;
+import aQute.bnd.build.Run;
 import bndtools.central.Central;
 import bndtools.launch.util.LaunchUtils;
 
@@ -34,6 +34,8 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
     private static final ILogger logger = Logger.getLogger(BndDependencySourceContainer.class);
 
     public static final String TYPE_ID = "org.bndtools.core.launch.sourceContainerTypes.bndDependencies";
+
+    private Run lastRun = null;
 
     @Override
     public boolean equals(Object obj) {
@@ -70,9 +72,13 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
         ILaunchConfiguration config = getLaunchConfiguration();
         Set<String> projectsAdded = new HashSet<>();
         try {
-            Project project = LaunchUtils.getBndProject(config);
-            if (project != null) {
-                Collection<Container> runbundles = project.getRunbundles();
+            if (lastRun != null) {
+                LaunchUtils.endRun(lastRun);
+            }
+
+            Run run = LaunchUtils.createRun(config);
+            if (run != null) {
+                Collection<Container> runbundles = run.getRunbundles();
                 for (Container runbundle : runbundles) {
                     if (runbundle.getType() == TYPE.PROJECT) {
                         String targetProjName = runbundle.getProject().getName();
@@ -98,11 +104,23 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
                         }
                     }
                 }
+
+                lastRun = run;
             }
         } catch (Exception e) {
             logger.logError("Error querying Bnd dependency source containers.", e);
         }
 
         return result.toArray(new ISourceContainer[0]);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+
+        if (lastRun != null) {
+            LaunchUtils.endRun(lastRun);
+            lastRun = null;
+        }
     }
 }

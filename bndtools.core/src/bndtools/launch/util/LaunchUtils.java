@@ -2,11 +2,17 @@ package bndtools.launch.util;
 
 import java.io.File;
 
+import org.bndtools.api.ILogger;
+import org.bndtools.api.RunListener;
+import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
@@ -15,6 +21,10 @@ import bndtools.central.Central;
 import bndtools.launch.LaunchConstants;
 
 public final class LaunchUtils {
+
+    private static final ILogger logger = Logger.getLogger(LaunchUtils.class);
+
+    private static ServiceTracker<RunListener,RunListener> runListeners;
 
     private LaunchUtils() {}
 
@@ -42,17 +52,17 @@ public final class LaunchUtils {
         return result;
     }
 
-    public static Project getBndProject(ILaunchConfiguration configuration) throws Exception {
+    public static Run createRun(ILaunchConfiguration configuration) throws Exception {
         IResource targetResource = getTargetResource(configuration);
         if (targetResource == null) {
             String target = getTargetName(configuration);
             throw new IllegalArgumentException(String.format("The run descriptor '%s' could not be found.", target));
         }
 
-        return getBndProject(targetResource);
+        return createRun(targetResource);
     }
 
-    public static Run getBndProject(IResource targetResource) throws Exception {
+    public static Run createRun(IResource targetResource) throws Exception {
         Run run;
 
         Workspace ws = Central.getWorkspaceIfPresent();
@@ -75,6 +85,15 @@ public final class LaunchUtils {
         } else {
             throw new Exception(String.format("Cannot create a Bnd launch configuration for %s: not a project or file resource.", targetResource.getLocation()));
         }
+
+        for (RunListener runListener : getRunListeners()) {
+            try {
+                runListener.create(run);
+            } catch (Throwable t) {
+                logger.logError("Error in run listener", t);
+            }
+        }
+
         return run;
     }
 
@@ -84,5 +103,30 @@ public final class LaunchUtils {
             target = null;
         }
         return target;
+    }
+
+    public static void endRun(Run run) {
+        for (RunListener runListener : getRunListeners()) {
+            try {
+                runListener.end(run);
+            } catch (Throwable t) {
+                logger.logError("Error in run listener", t);
+            }
+        }
+    }
+
+    private static synchronized RunListener[] getRunListeners() {
+        if (runListeners == null) {
+            final BundleContext context = FrameworkUtil.getBundle(LaunchUtils.class).getBundleContext();
+
+            if (context == null) {
+                throw new IllegalStateException("Bundle context is null");
+            }
+
+            runListeners = new ServiceTracker<RunListener,RunListener>(context, RunListener.class, null);
+            runListeners.open();
+        }
+
+        return runListeners.getServices(new RunListener[0]);
     }
 }

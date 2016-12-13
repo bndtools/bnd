@@ -23,9 +23,9 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.IStatusHandler;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
-
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.build.Run;
 import bndtools.Plugin;
 import bndtools.launch.util.LaunchUtils;
 import bndtools.preferences.BndPreferences;
@@ -35,7 +35,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
     private static final String ATTR_LOGLEVEL = LaunchConstants.ATTR_LOGLEVEL;
     private static final ILogger logger = Logger.getLogger(AbstractOSGiLaunchDelegate.class);
 
-    protected Project model;
+    protected Run run;
 
     protected abstract ProjectLauncher getProjectLauncher() throws CoreException;
 
@@ -49,8 +49,9 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         boolean result = !prefs.getBuildBeforeLaunch() || super.buildForLaunch(configuration, mode, monitor);
 
         try {
-            model = LaunchUtils.getBndProject(configuration);
-            initialiseBndLauncher(configuration, model);
+            run = LaunchUtils.createRun(configuration);
+
+            initialiseBndLauncher(configuration, run);
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error initialising bnd launcher", e));
         }
@@ -100,7 +101,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 
         IStatusHandler prompter = DebugPlugin.getDefault().getStatusHandler(launchStatus);
         if (prompter != null)
-            return (Boolean) prompter.handleStatus(launchStatus, model);
+            return (Boolean) prompter.handleStatus(launchStatus, run);
         return true;
     }
 
@@ -129,6 +130,8 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
                                 } catch (Throwable t) {
                                     logger.logError("Error cleaning launcher temporary files", t);
                                 }
+
+                                LaunchUtils.endRun((Run) launcher.getProject());
                             }
                         }
                     }
@@ -155,7 +158,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
     @Override
     public File verifyWorkingDirectory(ILaunchConfiguration configuration) throws CoreException {
         try {
-            return (model != null) ? model.getBase() : null;
+            return (run != null) ? run.getBase() : null;
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error getting working directory for Bnd project.", e));
         }
