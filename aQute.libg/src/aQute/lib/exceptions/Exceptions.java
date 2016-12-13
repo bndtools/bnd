@@ -1,5 +1,8 @@
 package aQute.lib.exceptions;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 public class Exceptions {
 	private Exceptions() {}
 	public static RuntimeException duck(Throwable t) {
@@ -41,4 +44,9 @@ public class Exceptions {
 		};
 	}
 
+	public static String toString(Throwable t) {
+		StringWriter sw = new StringWriter();
+		t.printStackTrace(new PrintWriter(sw));
+		return sw.toString();
+	}
 }
