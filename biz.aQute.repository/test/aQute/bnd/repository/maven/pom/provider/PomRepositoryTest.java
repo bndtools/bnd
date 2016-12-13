@@ -462,8 +462,10 @@ public class PomRepositoryTest extends TestCase {
 		Map<String,String> config = new HashMap<>();
 		config.put("name", "test-dependencies");
 
-		String pomFiles = Strings.join("testdata/pomrepo/simple.xml",
-				"https://repo1.maven.org/maven2/org/apache/felix/org.apache.felix.gogo.shell/0.12.0/org.apache.felix.gogo.shell-0.12.0.pom");
+		String pomFiles = Strings.join(new String[] {
+				"testdata/pomrepo/simple.xml",
+				"https://repo1.maven.org/maven2/org/apache/felix/org.apache.felix.gogo.shell/0.12.0/org.apache.felix.gogo.shell-0.12.0.pom"
+		});
 
 		config.put("pom", pomFiles);
 		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
