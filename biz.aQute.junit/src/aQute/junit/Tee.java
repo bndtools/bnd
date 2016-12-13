@@ -8,13 +8,13 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
 public class Tee extends OutputStream {
-	PrintStream				oldStream;
-	ByteArrayOutputStream	buffer	= new ByteArrayOutputStream();
-	boolean					capture;
-	boolean					echo;
+	private final PrintStream			wrapped;
+	private final ByteArrayOutputStream	buffer	= new ByteArrayOutputStream();
+	private volatile boolean			capture;
+	private volatile boolean			echo;
 
-	public Tee(PrintStream oldOut) {
-		oldStream = oldOut;
+	public Tee(PrintStream toWrap) {
+		wrapped = toWrap;
 	}
 
 	public PrintStream getStream() {
@@ -22,18 +22,18 @@ public class Tee extends OutputStream {
 	}
 
 	@Override
-	public void write(int character) throws IOException {
+	public void write(int b) throws IOException {
 		if (capture)
-			buffer.write(character);
+			buffer.write(b);
 		if (echo)
-			oldStream.write(character);
+			wrapped.write(b);
 	}
 
 	public String getContent() {
 		if (buffer.size() == 0)
 			return null;
 		try {
-			return buffer.toString(Charset.defaultCharset().toString());
+			return buffer.toString(Charset.defaultCharset().name());
 		} catch (UnsupportedEncodingException e) {
 			return null;
 		}

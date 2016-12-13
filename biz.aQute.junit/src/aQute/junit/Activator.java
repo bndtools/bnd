@@ -280,6 +280,8 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			systemErr = new Tee(System.err);
 			systemOut.capture(trace).echo(true);
 			systemErr.capture(trace).echo(true);
+			final PrintStream originalOut = System.out;
+			final PrintStream originalErr = System.err;
 			System.setOut(systemOut.getStream());
 			System.setErr(systemErr.getStream());
 			trace("changed streams");
@@ -329,10 +331,10 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				}
 			} catch (Throwable t) {
 				System.err.println("exiting " + t);
-				t.printStackTrace();
+				t.printStackTrace(System.err);
 			} finally {
-				System.setOut(systemOut.oldStream);
-				System.setErr(systemErr.oldStream);
+				System.setOut(originalOut);
+				System.setErr(originalErr);
 				trace("unset streams");
 			}
 			System.err.println("Tests run  : " + result.runCount());
