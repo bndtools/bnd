@@ -1,6 +1,5 @@
 package aQute.junit;
 
-import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -15,7 +14,6 @@ import junit.framework.TestListener;
 
 public class BasicTestReport implements TestListener, TestReporter {
 	private int				errors;
-	private PrintStream		out;
 	private final Tee		systemOut;
 	private final Tee		systemErr;
 	private int				fails;
@@ -39,7 +37,6 @@ public class BasicTestReport implements TestListener, TestReporter {
 	public void addError(Test test, Throwable t) {
 		activator.trace("  add error to %s : %s", test, t);
 		check();
-		fails++;
 		errors++;
 	}
 
@@ -47,7 +44,6 @@ public class BasicTestReport implements TestListener, TestReporter {
 		activator.trace("  add failure to %s : %s", test, t);
 		check();
 		fails++;
-		errors++;
 	}
 
 	public void startTest(Test test) {
@@ -83,6 +79,7 @@ public class BasicTestReport implements TestListener, TestReporter {
 			}
 		}
 		fails = 0;
+		errors = 0;
 		systemOut.clear().capture(true).echo(true);
 		systemErr.clear().capture(true).echo(true);
 	}
@@ -91,7 +88,7 @@ public class BasicTestReport implements TestListener, TestReporter {
 		activator.trace("  << %s, fails=%s, errors=%s", test, fails, errors);
 		systemOut.capture(false);
 		systemErr.capture(false);
-		if (fails > 0) {
+		if ((fails > 0) || (errors > 0)) {
 			String sysout = systemOut.getContent();
 			String syserr = systemErr.getContent();
 			if (sysout != null)
@@ -109,7 +106,6 @@ public class BasicTestReport implements TestListener, TestReporter {
 
 	public void aborted() {
 		activator.trace("ABORTED");
-		out.println("ABORTED");
 	}
 
 	protected void check() {
