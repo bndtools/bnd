@@ -65,6 +65,7 @@ import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.ExtList;
 import aQute.lib.collections.SortedList;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
@@ -334,7 +335,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		while ((t instanceof InvocationTargetException) && (t.getCause() != null)) {
 			t = t.getCause();
 		}
-		String s = formatArrays("Exception: %s", t);
+		String s = formatArrays("Exception: %s", Exceptions.toString(t));
 		if (p.isFailOk()) {
 			p.warnings.add(s);
 		} else {
