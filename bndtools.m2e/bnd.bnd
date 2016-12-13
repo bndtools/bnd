@@ -30,7 +30,7 @@ Import-Package: \
 	*
 
 Private-Package: \
-	aQute.lib.collections,\
+	aQute.lib.collections;-split-package:=merge-first,\
 	bndtools.m2e.*
 
 Include-Resource: \
