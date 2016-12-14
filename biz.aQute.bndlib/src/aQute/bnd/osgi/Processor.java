@@ -26,7 +26,6 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,6 +33,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -132,7 +132,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	final List<String>				warnings		= new ArrayList<String>();
 	final Set<Object>				basicPlugins	= new HashSet<Object>();
 	private final Set<Closeable>	toBeClosed		= new HashSet<Closeable>();
-	Set<Object>						plugins;
+	private Set<Object>				plugins;
 
 	boolean							pedantic;
 	boolean							trace;
@@ -505,12 +505,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * a plugin.
 	 */
 	public Set<Object> getPlugins() {
-
+		Set<Object> p;
 		synchronized (this) {
-			if (this.plugins != null)
-				return this.plugins;
+			p = plugins;
+			if (p != null)
+				return p;
 
-			plugins = new LinkedHashSet<Object>();
+			plugins = p = new CopyOnWriteArraySet<>();
 			missingCommand = new HashSet<String>();
 		}
 		// We only use plugins now when they are defined on our level
@@ -519,15 +520,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		String spe = getProperty(PLUGIN);
 		if (NONE.equals(spe))
-			return plugins;
+			return p;
 
 		// The owner of the plugin is always in there.
-		plugins.add(this);
-		setTypeSpecificPlugins(plugins);
+		p.add(this);
+		setTypeSpecificPlugins(p);
 
 		if (parent != null)
-			plugins.addAll(parent.getPlugins());
-
+			p.addAll(parent.getPlugins());
 
 		//
 		// Look only local
@@ -535,9 +535,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		spe = mergeLocalProperties(PLUGIN);
 		String pluginPath = mergeProperties(PLUGINPATH);
-		loadPlugins(plugins, spe, pluginPath);
+		loadPlugins(p, spe, pluginPath);
 
-		addExtensions(plugins);
+		addExtensions(p);
 
 		for (RegistryDonePlugin rdp : getPlugins(RegistryDonePlugin.class)) {
 			try {
@@ -546,15 +546,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				error("Calling done on %s, gives an exception %s", rdp, e);
 			}
 		}
-		return this.plugins;
+		return p;
 	}
 
 	/**
 	 * Is called when all plugins are loaded
 	 * 
-	 * @param plugins
+	 * @param p
 	 */
-	protected void addExtensions(Set<Object> plugins) {
+	protected void addExtensions(Set<Object> p) {
 
 	}
 
@@ -1161,7 +1161,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public boolean refresh() {
-		plugins = null; // We always refresh our plugins
+		synchronized (this) {
+			plugins = null; // We always refresh our plugins
+		}
 
 		if (propertiesFile == null)
 			return false;
@@ -2216,14 +2218,16 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	public synchronized void addBasicPlugin(Object plugin) {
 		basicPlugins.add(plugin);
-		if (plugins != null)
-			plugins.add(plugin);
+		Set<Object> p = plugins;
+		if (p != null)
+			p.add(plugin);
 	}
 
 	public synchronized void removeBasicPlugin(Object plugin) {
 		basicPlugins.remove(plugin);
-		if (plugins != null)
-			plugins.remove(plugin);
+		Set<Object> p = plugins;
+		if (p != null)
+			p.remove(plugin);
 	}
 
 	public List<File> getIncluded() {
