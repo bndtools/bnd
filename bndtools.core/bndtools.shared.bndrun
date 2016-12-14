@@ -210,5 +210,5 @@ crossplatform.runprops: \
 	eclipse.consoleLog=,\
 	eclipse.product=org.eclipse.sdk.ide,\
 	osgi.console=,\
-	osgi.instance.area.default=/Users/greg/tmp/bndtools-workspace,\
+	osgi.instance.area.default=../bndtools.test/workspace,\
 	osgi.console.enable.builtin=false

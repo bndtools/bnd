@@ -20,6 +20,7 @@
 	osgi.cmpn;version=${osgi.core.version}
 
 Bundle-SymbolicName: bndtools.m2e; singleton:=true
+Bundle-ActivationPolicy: lazy
 
 Import-Package: \
 	org.apache.maven.lifecycle;provider=m2e,\
