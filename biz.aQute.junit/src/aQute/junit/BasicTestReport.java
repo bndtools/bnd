@@ -38,12 +38,20 @@ public class BasicTestReport implements TestListener, TestReporter {
 		activator.trace("  add error to %s : %s", test, t);
 		check();
 		errors++;
+		systemOut.capture(false);
+		System.out.printf("TEST %s <<< ERROR:", test);
+		t.printStackTrace(System.out);
+		systemOut.capture(true);
 	}
 
 	public void addFailure(Test test, AssertionFailedError t) {
 		activator.trace("  add failure to %s : %s", test, t);
 		check();
 		fails++;
+		systemOut.capture(false);
+		System.out.printf("TEST %s <<< FAILURE:", test);
+		t.printStackTrace(System.out);
+		systemOut.capture(true);
 	}
 
 	public void startTest(Test test) {
