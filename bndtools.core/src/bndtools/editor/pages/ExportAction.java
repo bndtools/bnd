@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ide.ResourceUtil;
 
-import aQute.bnd.build.Project;
+import aQute.bnd.build.Run;
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.Plugin;
 import bndtools.launch.util.LaunchUtils;
@@ -70,11 +70,13 @@ public class ExportAction extends Action {
 
         IFile targetResource = ResourceUtil.getFile(editor.getEditorInput());
         try {
-            Project project = LaunchUtils.getBndProject(targetResource);
+            Run run = LaunchUtils.createRun(targetResource);
 
-            RunExportSelectionWizard wizard = new RunExportSelectionWizard(configElems, model, project);
+            RunExportSelectionWizard wizard = new RunExportSelectionWizard(configElems, model, run);
             WizardDialog dialog = new WizardDialog(parentShell, wizard);
             dialog.open();
+
+            LaunchUtils.endRun(run);
 
         } catch (Exception e) {
             ErrorDialog.openError(parentShell, "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error deriving Bnd project.", e));

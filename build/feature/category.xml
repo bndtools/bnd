@@ -3,6 +3,9 @@
    <feature id="bndtools.main.feature" version="0.0.0">
       <category name="bndtools.category"/>
    </feature>
+   <feature id="bndtools.m2e.feature" version="0.0.0">
+      <category name="bndtools.category"/>
+   </feature>
    <category-def name="bndtools.category" label="Bndtools">
       <description>
          OSGi Development Tools for Eclipse based on bnd.

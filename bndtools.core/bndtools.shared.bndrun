@@ -9,6 +9,8 @@ workspace.bundles: \
 	bndtools.core;version=snapshot,\
 	bndtools.builder;version=snapshot,\
 	bndtools.jareditor;version=snapshot,\
+	bndtools.m2e;version=snapshot,\
+	bndtools.m2e.debug.fragment;version=snapshot,\
 	bndtools.release;version=snapshot,\
 	org.bndtools.embeddedrepo;version=snapshot,\
 	org.bndtools.headless.build.manager;version=snapshot,\
@@ -16,8 +18,8 @@ workspace.bundles: \
 	org.bndtools.headless.build.plugin.gradle;version=snapshot,\
 	org.bndtools.versioncontrol.ignores.manager;version=snapshot,\
 	org.bndtools.versioncontrol.ignores.plugin.git;version=snapshot,\
-	org.bndtools.templating; version=snapshot,\
-	org.bndtools.templating.gitrepo; version=snapshot
+	org.bndtools.templating;version=snapshot,\
+	org.bndtools.templating.gitrepo;version=snapshot
 
 p2.bundles: \
 	org.eclipse.equinox.p2.core,\
@@ -49,11 +51,23 @@ help.bundles: \
 	org.eclipse.search,\
 	org.eclipse.ui.cheatsheets,\
 	org.eclipse.ui.net
-	
+
 gogo.bundles:\
 	org.apache.felix.gogo.command,\
 	org.apache.felix.gogo.shell,\
 	org.apache.felix.gogo.runtime
+
+m2e.bundles:\
+	com.google.guava;version='[15,16)',\
+	org.eclipse.m2e.archetype.common,\
+	org.eclipse.m2e.core,\
+	org.eclipse.m2e.jdt,\
+	org.eclipse.m2e.lifecyclemapping.defaults,\
+	org.eclipse.m2e.maven.indexer,\
+	org.eclipse.m2e.maven.runtime,\
+	org.eclipse.m2e.maven.runtime.slf4j.simple,\
+	org.eclipse.m2e.workspace.cli,\
+	org.slf4j.api
 
 # TODO: separate this morass into more coherent libs!
 crossplatform.bundles: \
@@ -63,6 +77,7 @@ crossplatform.bundles: \
 	org.osgi.impl.bundle.repoindex.lib,\
 	${help.bundles},\
 	${p2.bundles},\
+	${m2e.bundles},\
 	${workspace.bundles},\
 	${gogo.bundles},\
 	bndtools.runtime.eclipse.applaunch,\
@@ -72,8 +87,6 @@ crossplatform.bundles: \
 	javax.inject,\
 	javax.xml,\
 	javax.xml.stream,\
-	slf4j.api,\
-	slf4j.simple,\
 	org.apache.batik.css,\
 	org.apache.batik.util,\
 	org.apache.batik.util.gui,\

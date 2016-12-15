@@ -11,6 +11,13 @@ eclipse-orbit: aQute.bnd.repository.osgi.OSGiRepository;\
  locations=http://download.eclipse.org/tools/orbit/downloads/drops/R20150124073747/repository/index.xml.gz; \
  poll.time=-1; \
  cache=${build}/cache/stable/EclipseOrbit
+eclipse-m2e: aQute.bnd.repository.p2.provider.P2Repository; \
+ name="Eclipse m2e 1.6.2"; \
+ url="http://download.eclipse.org/technology/m2e/releases/1.6/1.6.2.20150902-0002/"
+maven-core: aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
+ name="m2e Deps"; \
+ revision="org.apache.maven:maven-core:3.3.3,org.sonatype.plexus:plexus-build-api:0.0.7"; \
+ releaseUrls="https://repo1.maven.org/maven2"
 
 #
 # Bnd Repository. See ${workspace}/gradle.properties for the bnd_repourl property.
@@ -44,6 +51,8 @@ jpm:\
 	${jpm},\
 	${eclipse-repo},\
 	${eclipse-orbit},\
+	${eclipse-m2e},\
+	${maven-core},\
 	aQute.bnd.deployer.repository.LocalIndexedRepo; \
 		name='Release'; \
 		local=${workspace}/build/releaserepo; \
@@ -56,6 +65,6 @@ jpm:\
 		cache=${build}/cache/stable/Baseline
 
 
-	
+
 -baselinerepo: Baseline
 -releaserepo: Release
