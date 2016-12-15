@@ -96,7 +96,7 @@ public class DoubleKeyMap<K1, K2, V> extends HashMap<K1,Map<K2,V>>implements Map
 		return result;
 	}
 
-	public V remove(K1 key1, K2 key2) {
+	public V removeKey(K1 key1, K2 key2) {
 		assert k1Class.isInstance(key1);
 		assert k2Class.isInstance(key2);
 
