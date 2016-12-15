@@ -11,7 +11,7 @@ import java.util.NoSuchElementException;
 import java.util.SortedSet;
 
 /**
- * An immutbale list that sorts objects by their natural order or through a
+ * An immutable list that sorts objects by their natural order or through a
  * comparator. It has convenient methods/constructors to create it from
  * collections and iterators. Why not maintain the lists in their sorted form?
  * Well, TreeMaps are quite expensive ... I once profiled bnd and was shocked
@@ -28,30 +28,16 @@ import java.util.SortedSet;
  */
 @SuppressWarnings("unchecked")
 public class SortedList<T> implements SortedSet<T>, List<T> {
-	static SortedList< ? >		empty		= new SortedList<Object>();
+	private static final SortedList< ? >	EMPTY	= new SortedList<Object>();
 
-	final T[]					list;
-	final int					start;
-	final int					end;
-	final Comparator<T>			cmp;
-	Class< ? >					type;
-	static Comparator<Object>	comparator	=															//
+	private final T[]						list;
+	private final int						start;
+	private final int						end;
+	private final Comparator< ? super T>	comparator;
+	private Class< ? >						type;
 
-												new Comparator<Object>() {
-													public int compare(Object o1, Object o2) {
-
-														if (o1 == o2)
-															return 0;
-
-														if (o1.equals(o2))
-															return 0;
-
-														return ((Comparable<Object>) o1).compareTo(o2);
-													}
-												};
-
-	class It implements ListIterator<T> {
-		int n;
+	private class It implements ListIterator<T> {
+		private int n;
 
 		It(int n) {
 			this.n = n;
@@ -101,32 +87,31 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		}
 	}
 
-	public SortedList(Collection< ? extends Comparable< ? >> x) {
-		this((Collection<T>) x, 0, x.size(), (Comparator<T>) comparator);
+	public SortedList(Collection< ? extends Comparable< ? super T>> x) {
+		this((Collection< ? extends T>) x, 0, x.size(), null);
 	}
 
-	public SortedList(Collection<T> x, Comparator<T> cmp) {
+	public SortedList(Collection< ? extends T> x, Comparator< ? super T> cmp) {
 		this(x, 0, x.size(), cmp);
 	}
 
-	@SuppressWarnings("cast")
-	public SortedList(T... x) {
-		this(x.clone(), 0, x.length, (Comparator<T>) comparator);
+	// @SafeVarargs
+	public SortedList(Comparable< ? super T>... x) {
+		this((T[]) x, 0, x.length, null);
 	}
 
-	@SuppressWarnings("cast")
-	public SortedList(Comparator<T> cmp, T... x) {
-		this(x.clone(), 0, x.length, cmp);
+	public SortedList(Comparator<? super T> cmp, T... x) {
+		this(x, 0, x.length, cmp);
 	}
 
 	private SortedList(SortedList<T> other, int start, int end) {
 		this.list = other.list;
-		this.cmp = other.cmp;
+		this.comparator = other.comparator;
 		this.start = start;
 		this.end = end;
 	}
 
-	public SortedList(T[] x, int start, int end, Comparator<T> comparator2) {
+	public SortedList(T[] x, int start, int end, Comparator< ? super T> cmp) {
 		if (start > end) {
 			int tmp = start;
 			start = end;
@@ -138,14 +123,14 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		if (end < 0 || end > x.length)
 			throw new IllegalArgumentException("End is not in list");
 
-		this.list = x.clone();
-		Arrays.sort(this.list, start, end, comparator2);
+		this.list = (T[]) Arrays.copyOf(x, x.length, Object[].class);
+		Arrays.sort(this.list, start, end, cmp);
 		this.start = start;
 		this.end = end;
-		this.cmp = comparator2;
+		this.comparator = cmp;
 	}
 
-	public SortedList(Collection< ? extends T> x, int start, int end, Comparator<T> cmp) {
+	public SortedList(Collection< ? extends T> x, int start, int end, Comparator< ? super T> cmp) {
 		if (start > end) {
 			int tmp = start;
 			start = end;
@@ -161,14 +146,14 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		Arrays.sort(this.list, start, end, cmp);
 		this.start = start;
 		this.end = end;
-		this.cmp = cmp;
+		this.comparator = cmp;
 	}
 
 	private SortedList() {
 		list = null;
 		start = 0;
 		end = 0;
-		cmp = null;
+		comparator = null;
 	}
 
 	public int size() {
@@ -179,10 +164,13 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		return start == end;
 	}
 
-	@SuppressWarnings("cast")
 	public boolean contains(Object o) {
 		assert type == null || type.isInstance(o);
-		return find((T) o) >= 0;
+		for (int i = start; i < end; i++) {
+			if (compare((T) o, list[i]) == 0)
+				return true;
+		}
+		return false;
 	}
 
 	public Iterator<T> iterator() {
@@ -198,12 +186,11 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 			return list.clone();
 
 		if (type != null)
-			return (Object[]) Array.newInstance(type, size());
+			return toArray((Object[]) Array.newInstance(type, 0));
 
 		return toArray(new Object[0]);
 	}
 
-	@SuppressWarnings("hiding")
 	public <X> X[] toArray(X[] a) {
 		int size = size();
 
@@ -237,7 +224,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 			if (!contains(el))
 				return false;
 		}
-		return false;
+		return true;
 	}
 
 	public boolean addAll(Collection< ? extends T> c) {
@@ -257,7 +244,14 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	}
 
 	public Comparator< ? super T> comparator() {
-		return cmp;
+		return comparator;
+	}
+
+	private int compare(T o1, T o2) {
+		if (comparator == null) {
+			return ((Comparable< ? super T>) o1).compareTo(o2);
+		}
+		return comparator.compare(o1, o2);
 	}
 
 	public boolean isSubSet() {
@@ -280,8 +274,8 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	public int indexOf(Object o) {
 		assert type == null || type.isInstance(o);
 
-		int n = find((T) o);
-		if (n < end && comparator.compare(o, list[n]) == 0)
+		int n = find(o);
+		if (n < end && compare((T) o, list[n]) == 0)
 			return n;
 
 		return -1;
@@ -290,11 +284,11 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	public int lastIndexOf(Object o) {
 		assert type == null || type.isInstance(o);
 
-		int n = find((T) o);
-		if (n >= end || comparator.compare(o, list[n]) != 0)
+		int n = find(o);
+		if (n >= end || compare((T) o, list[n]) != 0)
 			return -1;
 
-		while (n < end - 1 && comparator.compare(o, list[n + 1]) == 0)
+		while (n < end - 1 && compare((T) o, list[n + 1]) == 0)
 			n++;
 
 		return n;
@@ -306,13 +300,11 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	 * @param toElement
 	 * @return absolute index (not relative!), returns end if not found
 	 */
-	private int find(T toElement) {
+	private int find(Object toElement) {
 		int i = start;
-		while (i < end) {
-			if (comparator.compare(toElement, list[i]) <= 0)
+		for (; i < end; i++) {
+			if (compare((T) toElement, list[i]) <= 0)
 				break;
-			else
-				i++;
 		}
 
 		return i;
@@ -325,7 +317,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 
 	public SortedList<T> headSet(T toElement) {
 		int i = find(toElement);
-		return subList(0, i - start);
+		return subList(start, i - start);
 	}
 
 	public T first() {
@@ -394,7 +386,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 			return this;
 
 		if (toIndex == fromIndex)
-			return (SortedList<T>) empty();
+			return (SortedList<T>) EMPTY;
 
 		return new SortedList<T>(this, fromIndex, toIndex);
 	}
@@ -416,7 +408,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 			return false;
 
 		for (int as = start, bs = list.start, al = size(); as < al && bs < al; as++, bs++) {
-			if (comparator.compare(this.list[as], this.list[bs]) != 0)
+			if (compare(this.list[as], this.list[bs]) != 0)
 				return false;
 		}
 		return true;
@@ -451,7 +443,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 
 		T prev = list[0];
 		for (int i = 1; i < list.length; i++) {
-			if (comparator.compare(prev, list[i]) == 0)
+			if (compare(prev, list[i]) == 0)
 				return true;
 
 			prev = list[i];
@@ -459,18 +451,18 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		return false;
 	}
 
-	public static <T extends Comparable< ? >> SortedList<T> fromIterator(Iterator<T> it) {
+	public static <T extends Comparable< ? super T>> SortedList<T> fromIterator(Iterator< ? extends T> it) {
 		IteratorList<T> l = new IteratorList<T>(it);
 		return new SortedList<T>(l);
 	}
 
-	public static <T> SortedList<T> fromIterator(Iterator<T> it, Comparator<T> cmp) {
+	public static <T> SortedList<T> fromIterator(Iterator< ? extends T> it, Comparator< ? super T> cmp) {
 		IteratorList<T> l = new IteratorList<T>(it);
 		return new SortedList<T>(l, cmp);
 	}
 
 	public static <T> SortedSet<T> empty() {
-		return (SortedSet<T>) empty;
+		return (SortedSet<T>) EMPTY;
 	}
 
 }

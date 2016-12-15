@@ -9,10 +9,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 public class LineCollection implements Iterator<String>, Closeable {
-	final BufferedReader	reader;
-	String					next;
+	private final BufferedReader	reader;
+	private String					next;
 
 	public LineCollection(InputStream in) throws IOException {
 		this(new InputStreamReader(in, "UTF8"));
@@ -37,7 +38,7 @@ public class LineCollection implements Iterator<String>, Closeable {
 
 	public String next() {
 		if (next == null)
-			throw new IllegalStateException("Iterator has finished");
+			throw new NoSuchElementException("Iterator has finished");
 		try {
 			String result = next;
 			next = reader.readLine();
