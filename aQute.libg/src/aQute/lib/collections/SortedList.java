@@ -95,7 +95,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		this(x, 0, x.size(), cmp);
 	}
 
-	// @SafeVarargs
+	@SafeVarargs
 	public SortedList(Comparable< ? super T>... x) {
 		this((T[]) x, 0, x.length, null);
 	}

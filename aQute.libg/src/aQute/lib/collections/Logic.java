@@ -7,7 +7,7 @@ import java.util.Set;
 public class Logic {
 	private Logic() {}
 
-	// @SafeVarargs
+	@SafeVarargs
 	public static <T> Collection<T> retain(Collection< ? extends T> first, Collection< ? extends T>... sets) {
 		Set<T> result = new HashSet<T>(first);
 		for (Collection< ? extends T> set : sets) {
@@ -16,7 +16,7 @@ public class Logic {
 		return result;
 	}
 
-	// @SafeVarargs
+	@SafeVarargs
 	public static <T> Collection<T> remove(Collection< ? extends T> first, Collection< ? extends T>... sets) {
 		Set<T> result = new HashSet<T>(first);
 		for (Collection< ? extends T> set : sets) {
@@ -25,6 +25,7 @@ public class Logic {
 		return result;
 	}
 
+	@SafeVarargs
 	public static <T> boolean hasOverlap(Collection< ? extends T> source, Collection< ? extends T>... toBeChecked) {
 		for (T t : source) {
 			for (Collection< ? extends T> l : toBeChecked) {

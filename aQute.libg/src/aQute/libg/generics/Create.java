@@ -37,10 +37,12 @@ public class Create {
 		return Collections.checkedSet(new LinkedHashSet<T>(), c);
 	}
 
+	@SafeVarargs
 	public static <T> List<T> list(T... source) {
 		return new ArrayList<T>(Arrays.asList(source));
 	}
 
+	@SafeVarargs
 	public static <T> Set<T> set(T... source) {
 		return new HashSet<T>(Arrays.asList(source));
 	}

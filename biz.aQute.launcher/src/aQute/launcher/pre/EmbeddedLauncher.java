@@ -37,14 +37,15 @@ public class EmbeddedLauncher {
 					classpath.add(url);
 				}
 
-				URLClassLoader urlc = new URLClassLoader(classpath.toArray(new URL[0]));
-				Class< ? > embeddedLauncher = urlc.loadClass("aQute.launcher.Launcher");
-				Method method = embeddedLauncher.getMethod("main", new Class< ? >[] {
-						String[].class
-				});
-				method.invoke(null, new Object[] {
-						args
-				});
+				try (URLClassLoader urlc = new URLClassLoader(classpath.toArray(new URL[0]))) {
+					Class< ? > embeddedLauncher = urlc.loadClass("aQute.launcher.Launcher");
+					Method method = embeddedLauncher.getMethod("main", new Class< ? >[] {
+							String[].class
+					});
+					method.invoke(null, new Object[] {
+							args
+					});
+				}
 				return;
 			}
 		}
