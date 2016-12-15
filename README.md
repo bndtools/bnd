@@ -13,8 +13,8 @@ The git repository contains all code. It contains the following projects:
 * biz.aQute.bndlib - The core library
 * biz.aQute.bndlib.tests - Tests for the core library
 * biz.aQute.jpm - Just another package manager for Java
-* biz.aQute.junit - Junit tester (runs on Java 1.6)
-* biz.aQute.launcher - Launcher (runs on Java 1.6)
+* biz.aQute.junit - Junit tester
+* biz.aQute.launcher - Launcher
 * biz.aQute.repository - Different repos with OBR
 * biz.aQute.resolve - OBR Resolver
 * cnf - Configuration directory

@@ -2,7 +2,6 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
-	ee.j2se;version=${javac.compliance},\
 	slf4j.api;version=1.7,\
 	org.osgi.util.function
 
@@ -13,13 +12,7 @@ Export-Package: aQute.lib.*, aQute.libg.*, aQute.configurable, aQute.service.*
 Bundle-Description: A library to be statically linked. Contains many small utilities. This bundle \
  should not be installed in a framework, it is compile only.
 
-
-
 -baseline: *
 -sources= true
-
-javac.source:           1.6
-javac.target:           1.6
-javac.compliance:       1.6
 
 -fixupmessages: The bundle version (3.2.0/3.3.0) is too low, must be at least 4.0.0

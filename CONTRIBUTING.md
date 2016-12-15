@@ -15,9 +15,9 @@ This information will help us review and fix your issue faster.
 
 ## Build Environment
 
-The only thing you need to build Bnd is Java. We use Java 7 but most
-projects only require Java 6. We use Gradle to build and the repo 
-includes `gradlew`. You can use your system `gradle` but we require 
+The only thing you need to build Bnd is Java. We use Java 7.
+We use Gradle to build and the repo includes `gradlew`.
+You can use your system `gradle` but we require 
 at least version 2.12.
 
 `./gradlew`              - Assembles, tests and releases the projects into dist/bundles  
