@@ -1411,9 +1411,8 @@ public class bnd extends Processor {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void printxref(MultiMap< ? , ? > map, String direction) {
-		SortedList< ? > labels = new SortedList<Comparable< ? >>((Collection< ? extends Comparable< ? >>) map.keySet());
+		SortedList< ? > labels = new SortedList<Object>(map.keySet(), null);
 		for (Object element : labels) {
 			List< ? > e = map.get(element);
 			if (e == null) {
@@ -2241,12 +2240,12 @@ public class bnd extends Processor {
 		}
 	}
 
-	<T extends Comparable< ? >> void printMultiMap(Map<T, ? extends Collection< ? >> map) {
-		SortedList<Object> keys = new SortedList<Object>(map.keySet());
+	<T extends Comparable< ? super T>> void printMultiMap(Map<T, ? extends Collection< ? >> map) {
+		SortedList<T> keys = new SortedList<T>(map.keySet());
 		for (Object key : keys) {
 			String name = key.toString();
 
-			SortedList<Object> values = new SortedList<Object>(map.get(key));
+			SortedList<Object> values = new SortedList<Object>(map.get(key), null);
 			String list = vertical(40, values);
 			out.printf("%-40s %s\n", name, list);
 		}

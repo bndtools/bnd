@@ -7,15 +7,14 @@ import java.util.Map;
 
 public class DoubleKeyMap<K1, K2, V> extends HashMap<K1,Map<K2,V>>implements Map<K1,Map<K2,V>> {
 	private static final long	serialVersionUID	= 1L;
-	final Class<K1>	k1Class;
-	final Class<K2>	k2Class;
-	final Class<V>	valueClass;
+	private final Class< ? >	k1Class;
+	private final Class< ? >	k2Class;
+	private final Class< ? >	valueClass;
 
-	@SuppressWarnings("unchecked")
 	public DoubleKeyMap() {
-		k1Class = (Class<K1>) Object.class;
-		k2Class = (Class<K2>) Object.class;
-		valueClass = (Class<V>) Object.class;
+		k1Class = Object.class;
+		k2Class = Object.class;
+		valueClass = Object.class;
 	}
 
 	public DoubleKeyMap(Class<K1> k1Class, Class<K2> k2Class, Class<V> valueClass) {
@@ -51,7 +50,7 @@ public class DoubleKeyMap<K1, K2, V> extends HashMap<K1,Map<K2,V>>implements Map
 		if (map == null) {
 			map = new HashMap<K2,V>();
 			if (valueClass != Object.class) {
-				map = Collections.checkedMap(map, k2Class, valueClass);
+				map = Collections.checkedMap(map, (Class<K2>) k2Class, (Class<V>) valueClass);
 			}
 			put(key1, map);
 		}
@@ -73,7 +72,7 @@ public class DoubleKeyMap<K1, K2, V> extends HashMap<K1,Map<K2,V>>implements Map
 
 		return map.containsKey(key2);
 	}
-	@SuppressWarnings("unchecked")
+
 	public void putAll(K1 key1, Map<K2,V> map) {
 		assert k1Class.isInstance(key1);
 

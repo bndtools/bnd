@@ -5,28 +5,29 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Logic {
+	private Logic() {}
 
 	// @SafeVarargs
-	public static <T> Collection<T> retain(Collection<T> first, Collection<T>... sets) {
+	public static <T> Collection<T> retain(Collection< ? extends T> first, Collection< ? extends T>... sets) {
 		Set<T> result = new HashSet<T>(first);
-		for (Collection<T> set : sets) {
+		for (Collection< ? extends T> set : sets) {
 			result.retainAll(set);
 		}
 		return result;
 	}
 
 	// @SafeVarargs
-	public static <T> Collection<T> remove(Collection<T> first, Collection<T>... sets) {
+	public static <T> Collection<T> remove(Collection< ? extends T> first, Collection< ? extends T>... sets) {
 		Set<T> result = new HashSet<T>(first);
-		for (Collection<T> set : sets) {
+		for (Collection< ? extends T> set : sets) {
 			result.removeAll(set);
 		}
 		return result;
 	}
 
-	public static <T> boolean hasOverlap(Collection<T> source, Collection<T>... toBeChecked) {
+	public static <T> boolean hasOverlap(Collection< ? extends T> source, Collection< ? extends T>... toBeChecked) {
 		for (T t : source) {
-			for (Collection<T> l : toBeChecked) {
+			for (Collection< ? extends T> l : toBeChecked) {
 				for (T r : l) {
 					if (t.equals(r))
 						return true;

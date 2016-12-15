@@ -8,15 +8,12 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>> {
 	private static final long	serialVersionUID	= 1L;
-	final boolean				noduplicates;
-	final Class< ? >			keyClass;
-	final Class< ? >			valueClass;
-
-	final Set<V>				EMPTY				= Collections.emptySet();
+	private final boolean		noduplicates;
+	private final Class< ? >	keyClass;
+	private final Class< ? >	valueClass;
 
 	public MultiMap() {
 		this(false);
@@ -34,18 +31,18 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 		this.valueClass = valueClass;
 	}
 
-	public MultiMap(Map<K,List<V>> other) {
+	public <S extends K, T extends V> MultiMap(Map<S, ? extends List<T>> other) {
 		this();
-		for (java.util.Map.Entry<K,List<V>> e : other.entrySet()) {
+		for (java.util.Map.Entry<S, ? extends List<T>> e : other.entrySet()) {
 			addAll(e.getKey(), e.getValue());
 		}
 	}
 
-	public MultiMap(MultiMap<K,V> other) {
+	public <S extends K, T extends V> MultiMap(MultiMap<S,T> other) {
 		keyClass = other.keyClass;
 		valueClass = other.valueClass;
 		noduplicates = other.noduplicates;
-		for (java.util.Map.Entry<K,List<V>> e : other.entrySet()) {
+		for (java.util.Map.Entry<S,List<T>> e : other.entrySet()) {
 			addAll(e.getKey(), e.getValue());
 		}
 	}
@@ -119,7 +116,7 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 		return result;
 	}
 
-	public boolean removeAll(K key, Collection<V> value) {
+	public boolean removeAll(K key, Collection< ? extends V> value) {
 		assert keyClass.isInstance(key);
 		List<V> set = get(key);
 		if (set == null) {
@@ -135,7 +132,7 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 		assert keyClass.isInstance(key);
 		List<V> set = get(key);
 		if (set == null)
-			return EMPTY.iterator();
+			return Collections.<V> emptyList().iterator();
 		return set.iterator();
 	}
 
@@ -200,12 +197,7 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 	 * @return all values
 	 */
 	public List<V> allValues() {
-		List<V> result = new ArrayList<V>();
-		Iterator<V> i = all();
-		while (i.hasNext())
-			result.add(i.next());
-
-		return result;
+		return new IteratorList<V>(all());
 	}
 
 }
