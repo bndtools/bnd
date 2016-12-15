@@ -5,8 +5,8 @@
 
 	<groupId>biz.aQute.bnd</groupId>
 	<artifactId>bnd-plugin-parent</artifactId>
-    <description>Parent POM for the bnd maven plugins.</description>
-    <name>${project.groupId}:${project.artifactId}</name>
+	<description>Parent POM for the bnd maven plugins.</description>
+	<name>${project.groupId}:${project.artifactId}</name>
 	<packaging>pom</packaging>
 	<version>3.4.0-SNAPSHOT</version>
 
@@ -86,16 +86,16 @@
 				<version>3.4</version>
 				<scope>provided</scope>
 			</dependency>
-            <dependency>
-                <groupId>org.sonatype.plexus</groupId>
-                <artifactId>plexus-build-api</artifactId>
-                <version>0.0.7</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>1.7.5</version>
-            </dependency>
+			<dependency>
+				<groupId>org.sonatype.plexus</groupId>
+				<artifactId>plexus-build-api</artifactId>
+				<version>0.0.7</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>1.7.5</version>
+			</dependency>
 			<dependency>
 				<groupId>org.eclipse.aether</groupId>
 				<artifactId>aether-api</artifactId>
@@ -177,8 +177,8 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>2.6</version>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>2.6</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -219,46 +219,46 @@
 					</executions>
 				</plugin>
 				<plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
+					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-invoker-plugin</artifactId>
 					<version>2.0.0</version>
 				</plugin>
-                <plugin>
-                  <groupId>org.eclipse.m2e</groupId>
-                  <artifactId>lifecycle-mapping</artifactId>
-                  <version>1.0.0</version>
-                  <configuration>
-                    <lifecycleMappingMetadata>
-                      <pluginExecutions>
-                        <pluginExecution>
-                          <pluginExecutionFilter>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-invoker-plugin</artifactId>
-                            <versionRange>[1.0.0,)</versionRange>
-                            <goals>
-                              <goal>install</goal>
-                            </goals>
-                          </pluginExecutionFilter>
-                          <action>
-                            <ignore />
-                          </action>
-                        </pluginExecution>
-                      </pluginExecutions>
-                    </lifecycleMappingMetadata>
-                  </configuration>
-                </plugin>
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-invoker-plugin</artifactId>
+										<versionRange>[1.0.0,)</versionRange>
+										<goals>
+											<goal>install</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
 					<version>2.10</version>
 					<executions>
-					    <execution>
-					        <id>copy</id>
-					        <phase>generate-resources</phase>
-					        <goals>
-					            <goal>copy</goal>
-					        </goals>
-					    </execution>
+						<execution>
+							<id>copy</id>
+							<phase>generate-resources</phase>
+							<goals>
+								<goal>copy</goal>
+							</goals>
+						</execution>
 					</executions>
 				</plugin>
 			</plugins>
@@ -296,10 +296,10 @@
 					</execution>
 				</executions>
 			</plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-            </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-install-plugin</artifactId>
@@ -334,10 +334,10 @@
 					</execution>
 				</executions>
 			</plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-invoker-plugin</artifactId>
-            </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-invoker-plugin</artifactId>
+			</plugin>
 		</plugins>
 	</build>
 </project>
