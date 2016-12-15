@@ -4,8 +4,7 @@
 -buildpath: biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
 	osgi.core;version=4.3.1,\
-	slf4j.api,\
-	ee.j2se;version=${javac.compliance}
+	slf4j.api
 
 -testpath: \
 	${junit},\

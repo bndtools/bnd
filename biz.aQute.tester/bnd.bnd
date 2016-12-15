@@ -36,10 +36,4 @@ Conditional-Package: aQute.lib*
 	biz.aQute.junit;version=latest;packages=aQute.junit.*, \
 	${junit},\
 	osgi.core;version=4.3.1,\
-	biz.aQute.bndlib;version=latest,\
-	ee.j2se;version=${javac.compliance}
-	
-	
-
-
-	
+	biz.aQute.bndlib;version=latest
