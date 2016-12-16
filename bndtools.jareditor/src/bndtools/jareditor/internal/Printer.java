@@ -199,12 +199,12 @@ public class Printer extends Processor {
         }
     }
 
-    private <T extends Comparable< ? >> void printMultiMap(Map<T, ? extends Collection<T>> map) {
-        SortedList<Object> keys = new SortedList<Object>(map.keySet());
+    private <T extends Comparable< ? super T>> void printMultiMap(Map<T, ? extends Collection<T>> map) {
+        SortedList<T> keys = new SortedList<T>(map.keySet());
         for (Object key : keys) {
             String name = key.toString();
 
-            SortedList<Object> values = new SortedList<Object>(map.get(key));
+            SortedList<T> values = new SortedList<T>(map.get(key));
             String list = vertical(41, values);
             format(out, "%-40s %s", name, list);
         }
@@ -333,7 +333,7 @@ public class Printer extends Processor {
 
     /**
      * Print the components in this JAR.
-     * 
+     *
      * @param jar
      */
     private void printComponents(Jar jar) throws Exception {
@@ -373,7 +373,7 @@ public class Printer extends Processor {
 
     /**
      * Print the metatypes in this JAR.
-     * 
+     *
      * @param jar
      */
     private void printMetatype(Jar jar) throws Exception {
