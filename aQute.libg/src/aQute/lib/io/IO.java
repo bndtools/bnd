@@ -240,12 +240,27 @@ public class IO {
 			}
 			if (!b.isDirectory())
 				throw new IllegalArgumentException("target directory for a directory must be a directory: " + b);
+			if (isParentOf(a, b))
+				throw new IllegalArgumentException("target directory can not be child of source directory.");
 			File subs[] = a.listFiles();
 			for (File sub : subs) {
 				copy(sub, new File(b, sub.getName()));
 			}
 		} else
 			throw new FileNotFoundException("During copy: " + a.toString());
+	}
+
+	private static boolean isParentOf(File a, File b) {
+		if (a == null || b == null)
+			return false;
+
+		if (!a.isDirectory())
+			return false;
+
+		if (a.equals(b.getParentFile()))
+			return true;
+
+		return isParentOf(a, b.getParentFile());
 	}
 
 	public static void copy(InputStream a, File b) throws IOException {
@@ -337,7 +352,7 @@ public class IO {
 
 	/**
 	 * Create a temporary file.
-	 * 
+	 *
 	 * @param directory the directory in which to create the file. Can be null,
 	 *            in which case the system TMP directory is used
 	 * @param pattern the filename prefix pattern. Must be at least 3 characters
@@ -406,7 +421,7 @@ public class IO {
 	/**
 	 * Deletes the specified file. Folders are recursively deleted.<br>
 	 * If file(s) cannot be deleted, no feedback is provided (fail silently).
-	 * 
+	 *
 	 * @param f file to be deleted
 	 */
 	public static void delete(File f) {
@@ -432,7 +447,7 @@ public class IO {
 	/**
 	 * Deletes the specified file. Folders are recursively deleted.<br>
 	 * Throws exception if any of the files could not be deleted.
-	 * 
+	 *
 	 * @param f file to be deleted
 	 * @throws IOException if the file (or contents of a folder) could not be
 	 *             deleted
@@ -471,7 +486,7 @@ public class IO {
 	 * Deletes <code>to</code> file if it exists, and renames <code>from</code>
 	 * file to <code>to</code>.<br>
 	 * Throws exception the rename operation fails.
-	 * 
+	 *
 	 * @param from source file
 	 * @param to destination file
 	 * @throws IOException if the rename operation fails
