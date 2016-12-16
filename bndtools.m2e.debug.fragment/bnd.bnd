@@ -5,3 +5,5 @@ Fragment-Host: org.eclipse.m2e.maven.runtime
 
 Import-Package: \
 	javax.net.ssl
+
+-fixupmessages.empty: The JAR is empty
