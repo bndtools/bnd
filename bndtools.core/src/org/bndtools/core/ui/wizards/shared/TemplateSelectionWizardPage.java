@@ -261,7 +261,7 @@ public class TemplateSelectionWizardPage extends WizardPage {
     /**
      * Can be overridden to provide a control that will be placed at the top of the page.
      */
-    protected Control createHeaderControl(Composite parent) {
+    protected Control createHeaderControl(@SuppressWarnings("unused") Composite parent) {
         return null;
     }
 
