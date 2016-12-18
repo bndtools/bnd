@@ -328,7 +328,9 @@ public class BndPlugin implements Plugin<Project> {
         ext.ignoreFailures = false
         if (enabled) {
           inputs.files jar
-          outputs.dir testResultsDir
+          outputs.dir {
+            testResultsDir
+          }
           doLast {
             try {
               bndProject.test()
@@ -373,12 +375,15 @@ public class BndPlugin implements Plugin<Project> {
               description "Export the ${bndrun}.bndrun file to an executable jar."
               dependsOn assemble
               group 'export'
-              def executableJar = new File(distsDir, "executable/${bndrun}.jar")
-              outputs.file executableJar
+              ext.destinationDir = new File(distsDir, 'executable')
+              outputs.file {
+                new File(destinationDir, "${bndrun}.jar")
+              }
               doFirst {
-                project.mkdir(executableJar.parent)
+                project.mkdir(destinationDir)
               }
               doLast {
+                def executableJar = new File(destinationDir, "${bndrun}.jar")
                 logger.info 'Exporting {} to {}', runFile.absolutePath, executableJar.absolutePath
                 try {
                   bndProject.export(relativePath(runFile), false, executableJar)
@@ -411,16 +416,18 @@ public class BndPlugin implements Plugin<Project> {
               description "Create a distribution of the runbundles in the ${bndrun}.bndrun file."
               dependsOn assemble
               group 'export'
-              def runbundlesDir = new File(distsDir, "runbundles/${bndrun}")
-              outputs.dir runbundlesDir
+              ext.destinationDir = new File(distsDir, "runbundles/${bndrun}")
+              outputs.dir {
+                destinationDir
+              }
               doFirst {
-                project.delete(runbundlesDir)
-                project.mkdir(runbundlesDir)
+                project.delete(destinationDir)
+                project.mkdir(destinationDir)
               }
               doLast {
-                logger.info 'Creating a distribution of the runbundles in {} in directory {}', runFile.absolutePath, runbundlesDir.absolutePath
+                logger.info 'Creating a distribution of the runbundles from {} in directory {}', runFile.absolutePath, destinationDir.absolutePath
                 try {
-                    bndProject.exportRunbundles(relativePath(runFile), runbundlesDir)
+                    bndProject.exportRunbundles(relativePath(runFile), destinationDir)
                 } catch (Exception e) {
                   throw new GradleException("Creating a distribution of the runbundles in ${runFile.absolutePath} failed", e)
                 }
