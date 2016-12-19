@@ -552,7 +552,7 @@
             <enablement>
                <or>
                   <with variable="selection">
-                     <count value="1"/>
+                     <count value="+"/>
                      <iterate>
                         <or>
                            <!-- Java/Bnd Project -->

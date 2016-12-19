@@ -1,6 +1,8 @@
 package bndtools.launch.api;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.bndtools.api.ILogger;
@@ -48,19 +50,40 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
     @Override
     public void launch(ISelection selection, String mode) {
         IStructuredSelection is = (IStructuredSelection) selection;
-        if (is.getFirstElement() != null) {
+        int size = is.size();
+
+        if (size == 1 && is.getFirstElement() != null) {
             try {
                 Object selected = is.getFirstElement();
                 launchSelectedObject(selected, mode);
             } catch (CoreException e) {
                 ErrorDialog.openError(null, "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error configuring launch.", e));
             }
+        } else if (size > 1) {
+            // only support multiple IJavaElements
+            List<IJavaElement> elements = new ArrayList<>();
+            Iterator< ? > iterator = is.iterator();
+
+            while (iterator.hasNext()) {
+                Object element = iterator.next();
+                if (element instanceof IJavaElement) {
+                    elements.add((IJavaElement) element);
+                }
+            }
+
+            if (!elements.isEmpty()) {
+                try {
+                    launchJavaElements(elements, mode);
+                } catch (CoreException e) {
+                    ErrorDialog.openError(null, "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error launching elements.", e));
+                }
+            }
         }
     }
 
     protected void launchSelectedObject(Object selected, String mode) throws CoreException {
         if (selected instanceof IJavaElement) {
-            launchJavaElement((IJavaElement) selected, mode);
+            launchJavaElements(Collections.singletonList((IJavaElement) selected), mode);
         } else if (selected instanceof IResource && Project.BNDFILE.equals(((IResource) selected).getName())) {
             IProject project = ((IResource) selected).getProject();
             launchProject(project, mode);
@@ -71,7 +94,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
             IAdaptable adaptable = (IAdaptable) selected;
             IJavaElement javaElement = (IJavaElement) adaptable.getAdapter(IJavaElement.class);
             if (javaElement != null) {
-                launchJavaElement(javaElement, mode);
+                launchJavaElements(Collections.singletonList(javaElement), mode);
             } else {
                 IResource resource = (IResource) adaptable.getAdapter(IResource.class);
                 if (resource != null && resource != selected)
@@ -102,8 +125,8 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
     }
 
     @SuppressWarnings("unused")
-    protected void launchJavaElement(IJavaElement element, String mode) throws CoreException {
-        launch(element.getJavaProject().getProject().getFullPath(), mode);
+    protected void launchJavaElements(List<IJavaElement> elements, String mode) throws CoreException {
+        launch(elements.get(0).getJavaProject().getProject().getFullPath(), mode);
     }
 
     protected void launchProject(IProject project, String mode) {
