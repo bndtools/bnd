@@ -7,7 +7,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bndtools.utils.osgi.BundleUtils;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -97,7 +99,15 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 
         IResource launchResource = LaunchUtils.getTargetResource(configuration);
         if (launchResource != null) {
-            modifiedConfig.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, LaunchUtils.getLaunchProjectName(launchResource));
+            String launchProjectName = LaunchUtils.getLaunchProjectName(launchResource);
+
+            IProject launchProject = ResourcesPlugin.getWorkspace().getRoot().getProject(launchProjectName);
+
+            if (!launchProject.exists()) {
+                launchProjectName = launchResource.getProject().getName();
+            }
+
+            modifiedConfig.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, launchProjectName);
         }
 
         return super.getLaunch(modifiedConfig.doSave(), mode);
