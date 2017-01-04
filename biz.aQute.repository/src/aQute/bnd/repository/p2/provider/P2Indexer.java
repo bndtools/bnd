@@ -4,7 +4,10 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -13,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -93,14 +97,37 @@ class P2Indexer implements Closeable {
 		URI url = contentCapability.url();
 
 		final File source = client.getCacheFileFor(url);
+		final Path sourcePath = source.toPath();
 		final File link = new File(location, bsn + "-" + version + ".jar");
-		if (link.isFile())
-			Files.delete(link.toPath());
-		Files.createLink(link.toPath(), source.toPath());
+		final Path linkPath = link.toPath();
+
+		// links can fail if they span disparate Windows drives
+		// so we need to handle them differently
+		final AtomicBoolean createdSymlink = new AtomicBoolean();
+
+		if (link.isFile() && Files.isSymbolicLink(linkPath))
+			Files.delete(linkPath);
+
+		try {
+			Files.createLink(linkPath, sourcePath);
+			createdSymlink.set(true);
+		} catch (FileSystemException e) {
+			createdSymlink.set(false);
+		}
 
 		Promise<File> go = client.build().useCache(MAX_STALE).async(url.toURL()).map(new Function<File,File>() {
 			@Override
 			public File apply(File t) {
+				// if we can't create symlinks we need to copy this into link
+				// path as a fallback
+				if (!createdSymlink.get() && needsCopy(sourcePath, linkPath)) {
+					try {
+						Files.copy(sourcePath, linkPath, StandardCopyOption.REPLACE_EXISTING);
+					} catch (IOException e) {
+						return null;
+					}
+				}
+
 				return link;
 			}
 		});
@@ -110,6 +137,12 @@ class P2Indexer implements Closeable {
 
 		new DownloadListenerPromise(reporter, name + ": get " + bsn + ";" + version + " " + url, go, listeners);
 		return link;
+	}
+
+	protected boolean needsCopy(Path sourcePath, Path destPath) {
+		final File dest = destPath.toFile();
+
+		return !dest.exists() || dest.length() != sourcePath.toFile().length();
 	}
 
 	List<String> list(String pattern) throws Exception {
