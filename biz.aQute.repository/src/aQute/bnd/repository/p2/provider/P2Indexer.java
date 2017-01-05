@@ -4,7 +4,10 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -93,14 +96,34 @@ class P2Indexer implements Closeable {
 		URI url = contentCapability.url();
 
 		final File source = client.getCacheFileFor(url);
+		final Path sourcePath = source.toPath();
 		final File link = new File(location, bsn + "-" + version + ".jar");
-		if (link.isFile())
-			Files.delete(link.toPath());
-		Files.createLink(link.toPath(), source.toPath());
+		final Path linkPath = link.toPath();
 
 		Promise<File> go = client.build().useCache(MAX_STALE).async(url.toURL()).map(new Function<File,File>() {
 			@Override
 			public File apply(File t) {
+				// links can fail if they span disparate Windows drives
+				// so we need to handle them slightly differently
+				try {
+					if (link.isFile() && Files.isSymbolicLink(linkPath))
+						Files.delete(linkPath);
+
+					Files.createLink(linkPath, sourcePath);
+				} catch (FileSystemException e) {
+					// failed to create the link
+					// copy this into linkPath as a fallback
+					if (needsCopy(sourcePath, linkPath)) {
+						try {
+							Files.copy(sourcePath, linkPath, StandardCopyOption.REPLACE_EXISTING);
+						} catch (IOException ioe) {
+							return null;
+						}
+					}
+				} catch (IOException ioe) {
+					return null;
+				}
+
 				return link;
 			}
 		});
@@ -110,6 +133,12 @@ class P2Indexer implements Closeable {
 
 		new DownloadListenerPromise(reporter, name + ": get " + bsn + ";" + version + " " + url, go, listeners);
 		return link;
+	}
+
+	private boolean needsCopy(Path sourcePath, Path destPath) {
+		final File dest = destPath.toFile();
+
+		return !dest.exists() || dest.length() != sourcePath.toFile().length();
 	}
 
 	List<String> list(String pattern) throws Exception {
