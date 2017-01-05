@@ -65,6 +65,7 @@ import aQute.bnd.service.maven.ToDependencyPom;
 import aQute.bnd.version.Version;
 import aQute.jpm.facade.repo.JpmRepo;
 import aQute.lib.converter.Converter;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA1;
@@ -408,7 +409,7 @@ public class MavenBndRepository extends BaseRepository
 			}, new Failure() {
 				@Override
 				public void fail(Promise< ? > resolved) throws Exception {
-					String reason = resolved.getFailure().toString();
+					String reason = Exceptions.toString(resolved.getFailure());
 					for (DownloadListener dl : listeners) {
 						try {
 							dl.failure(file, reason);

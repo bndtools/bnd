@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
+import aQute.lib.exceptions.Exceptions;
 import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.service.reporter.Reporter;
 
@@ -64,10 +65,12 @@ public class DownloadListenerPromise implements Success<File,Void>, Failure {
 
 	@Override
 	public void fail(Promise< ? > resolved) throws Exception {
-		logger.debug("{}: fail: {}", this, resolved.getFailure());
+		Throwable failure = resolved.getFailure();
+		logger.debug("{}: failure", this, failure);
+		String reason = Exceptions.toString(failure);
 		for (DownloadListener dl : dls) {
 			try {
-				dl.failure(null, resolved.getFailure().toString());
+				dl.failure(null, reason);
 			} catch (Throwable e) {
 				reporter.warning("%s: Fail callback failed to %s: %s", this, dl, e);
 			}
