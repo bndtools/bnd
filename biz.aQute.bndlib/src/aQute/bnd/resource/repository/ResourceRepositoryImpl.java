@@ -36,6 +36,7 @@ import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.url.DefaultURLConnectionHandler;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.MultiMap;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
@@ -353,9 +354,10 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	}
 
 	void fail(Exception e, DownloadListener[] blockers, File file) {
+		String reason = Exceptions.toString(e);
 		for (DownloadListener dl : blockers) {
 			try {
-				dl.failure(file, e.toString());
+				dl.failure(file, reason);
 			} catch (Exception ee) {
 				//
 			}

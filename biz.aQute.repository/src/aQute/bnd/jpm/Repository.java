@@ -74,6 +74,7 @@ import aQute.jpm.facade.repo.JpmRepo;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.collections.SortedList;
 import aQute.lib.converter.Converter;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.justif.Justif;
@@ -335,13 +336,13 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 							notfound.add(file);
 						}
 						synchronized (queues) {
-							failure(queues.get(file).toArray(EMPTY_LISTENER), file, e.toString());
+							failure(queues.get(file).toArray(EMPTY_LISTENER), file, Exceptions.toString(e));
 						}
 					} catch (Throwable e) {
 						e.printStackTrace();
 						reporter.error("failed to download %s: %s", e, file);
 						synchronized (queues) {
-							failure(queues.get(file).toArray(EMPTY_LISTENER), file, e.toString());
+							failure(queues.get(file).toArray(EMPTY_LISTENER), file, Exceptions.toString(e));
 						}
 					} finally {
 						synchronized (queues) {
@@ -360,7 +361,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			// listeners are called and we're at the head of the queue
 			reporter.error("Starting a download for %s failed %s", file, e);
 			synchronized (queues) {
-				failure(queues.get(file).toArray(EMPTY_LISTENER), file, e.toString());
+				failure(queues.get(file).toArray(EMPTY_LISTENER), file, Exceptions.toString(e));
 				queues.remove(file);
 			}
 		}
