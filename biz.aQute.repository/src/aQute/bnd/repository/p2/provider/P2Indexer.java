@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -101,31 +100,28 @@ class P2Indexer implements Closeable {
 		final File link = new File(location, bsn + "-" + version + ".jar");
 		final Path linkPath = link.toPath();
 
-		// links can fail if they span disparate Windows drives
-		// so we need to handle them differently
-		final AtomicBoolean createdSymlink = new AtomicBoolean();
-
-		if (link.isFile() && Files.isSymbolicLink(linkPath))
-			Files.delete(linkPath);
-
-		try {
-			Files.createLink(linkPath, sourcePath);
-			createdSymlink.set(true);
-		} catch (FileSystemException e) {
-			createdSymlink.set(false);
-		}
-
 		Promise<File> go = client.build().useCache(MAX_STALE).async(url.toURL()).map(new Function<File,File>() {
 			@Override
 			public File apply(File t) {
-				// if we can't create symlinks we need to copy this into link
-				// path as a fallback
-				if (!createdSymlink.get() && needsCopy(sourcePath, linkPath)) {
-					try {
-						Files.copy(sourcePath, linkPath, StandardCopyOption.REPLACE_EXISTING);
-					} catch (IOException e) {
-						return null;
+				// links can fail if they span disparate Windows drives
+				// so we need to handle them slightly differently
+				try {
+					if (link.isFile() && Files.isSymbolicLink(linkPath))
+						Files.delete(linkPath);
+
+					Files.createLink(linkPath, sourcePath);
+				} catch (FileSystemException e) {
+					// failed to create the link
+					// copy this into linkPath as a fallback
+					if (needsCopy(sourcePath, linkPath)) {
+						try {
+							Files.copy(sourcePath, linkPath, StandardCopyOption.REPLACE_EXISTING);
+						} catch (IOException ioe) {
+							return null;
+						}
 					}
+				} catch (IOException ioe) {
+					return null;
 				}
 
 				return link;
@@ -139,7 +135,7 @@ class P2Indexer implements Closeable {
 		return link;
 	}
 
-	protected boolean needsCopy(Path sourcePath, Path destPath) {
+	private boolean needsCopy(Path sourcePath, Path destPath) {
 		final File dest = destPath.toFile();
 
 		return !dest.exists() || dest.length() != sourcePath.toFile().length();
