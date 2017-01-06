@@ -28,7 +28,7 @@ public class DownloadListenerPromise implements Success<File,Void>, Failure {
 
 	/**
 	 * Use the promise to signal the Download Listeners
-	 * 
+	 *
 	 * @param reporter a reporter or null (will use a SLF4 in that case)
 	 * @param task
 	 * @param promise
@@ -50,7 +50,7 @@ public class DownloadListenerPromise implements Success<File,Void>, Failure {
 		File file = resolved.getValue();
 
 		if (linked != null) {
-			Files.createLink(linked.toPath(), file.toPath());
+			Files.createSymbolicLink(linked.toPath(), file.toPath());
 		}
 
 		for (DownloadListener dl : dls) {

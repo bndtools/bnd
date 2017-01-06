@@ -96,7 +96,8 @@ class P2Indexer implements Closeable {
 		final File link = new File(location, bsn + "-" + version + ".jar");
 		if (link.isFile())
 			Files.delete(link.toPath());
-		Files.createLink(link.toPath(), source.toPath());
+
+		Files.createSymbolicLink(link.toPath(), source.toPath());
 
 		Promise<File> go = client.build().useCache(MAX_STALE).async(url.toURL()).map(new Function<File,File>() {
 			@Override
