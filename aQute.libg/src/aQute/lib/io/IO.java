@@ -22,13 +22,12 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -628,15 +627,8 @@ public class IO {
 	 */
 	public static boolean createSymbolicLink(File link, File target) throws Exception {
 		try {
-			Method toPath = link.getClass().getMethod("toPath");
-			Class< ? > Files = Class.forName("java.nio.file.Files");
-			for (Method m : Files.getMethods()) {
-				if (m.getName().equals("createSymbolicLink") && m.getParameterTypes().length == 3) {
-					Object attrs = Array.newInstance(m.getParameterTypes()[2].getComponentType(), 0);
-					m.invoke(null, toPath.invoke(link), toPath.invoke(target), attrs);
-					return true;
-				}
-			}
+			Files.createSymbolicLink(link.toPath(), target.toPath());
+			return true;
 		} catch (Exception e) {
 			// ignore
 		}
@@ -644,15 +636,7 @@ public class IO {
 	}
 
 	public static boolean isSymbolicLink(File link) {
-		try {
-			Method toPath = link.getClass().getMethod("toPath");
-			Class< ? > Files = Class.forName("java.nio.file.Files");
-			Method method = Files.getMethod("isSymbolicLink", toPath.getReturnType());
-			return (Boolean) method.invoke(null, toPath.invoke(link));
-		} catch (Exception e) {
-			// ignore
-		}
-		return false;
+		return Files.isSymbolicLink(link.toPath());
 	}
 
 	static public OutputStream	nullStream	= new OutputStream() {
