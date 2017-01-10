@@ -650,11 +650,10 @@ public class IO {
 	 */
 	public static boolean createSymbolicLinkOrCopy(File link, File target) {
 		try {
-			if (isWindows()) {
+			if (isWindows() || !createSymbolicLink(link, target)) {
 				IO.copy(target, link);
-				return true;
 			}
-			return createSymbolicLink(link, target);
+			return true;
 		} catch (Exception ignore) {
 			// ignore
 		}
