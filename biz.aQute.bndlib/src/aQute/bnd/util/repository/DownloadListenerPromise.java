@@ -1,7 +1,6 @@
 package aQute.bnd.util.repository;
 
 import java.io.File;
-import java.nio.file.Files;
 
 import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
@@ -12,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
 import aQute.lib.exceptions.Exceptions;
+import aQute.lib.io.IO;
 import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.service.reporter.Reporter;
 
@@ -50,7 +50,7 @@ public class DownloadListenerPromise implements Success<File,Void>, Failure {
 		File file = resolved.getValue();
 
 		if (linked != null) {
-			Files.createSymbolicLink(linked.toPath(), file.toPath());
+			IO.createSymbolicLinkOrCopy(linked, file);
 		}
 
 		for (DownloadListener dl : dls) {
