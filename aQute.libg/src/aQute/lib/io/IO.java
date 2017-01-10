@@ -622,9 +622,6 @@ public class IO {
 		return writer(out, "UTF-8");
 	}
 
-	/**
-	 * Reflective way to create a link. This assumes Java 7+
-	 */
 	public static boolean createSymbolicLink(File link, File target) throws Exception {
 		try {
 			Files.createSymbolicLink(link.toPath(), target.toPath());
