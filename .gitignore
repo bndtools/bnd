@@ -1,5 +1,6 @@
 *.bak
 /.metadata/
+/.recommenders/
 Archive
 .DS_Store
 .*.swp
