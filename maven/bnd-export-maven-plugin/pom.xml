@@ -41,11 +41,6 @@
             <groupId>biz.aQute.bnd</groupId>
             <artifactId>biz.aQute.repository</artifactId>
         </dependency>
-        <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
-            <version>3.2.2</version>
-        </dependency>
     </dependencies>
 
     <build>
