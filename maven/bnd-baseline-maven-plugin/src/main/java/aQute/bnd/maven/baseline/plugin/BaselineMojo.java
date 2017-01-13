@@ -1,10 +1,12 @@
 package aQute.bnd.maven.baseline.plugin;
 
-import static org.apache.maven.plugins.annotations.LifecyclePhase.VERIFY;
-
-import java.io.IOException;
-import java.util.List;
-
+import aQute.bnd.differ.Baseline;
+import aQute.bnd.differ.Baseline.BundleInfo;
+import aQute.bnd.differ.Baseline.Info;
+import aQute.bnd.differ.DiffPluginImpl;
+import aQute.bnd.osgi.Jar;
+import aQute.libg.reporter.ReporterAdapter;
+import aQute.service.reporter.Reporter;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -25,16 +27,15 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.VersionRangeRequest;
 import org.eclipse.aether.resolution.VersionRangeResolutionException;
 import org.eclipse.aether.resolution.VersionRangeResult;
+import org.eclipse.aether.version.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.differ.Baseline;
-import aQute.bnd.differ.Baseline.BundleInfo;
-import aQute.bnd.differ.Baseline.Info;
-import aQute.bnd.differ.DiffPluginImpl;
-import aQute.bnd.osgi.Jar;
-import aQute.libg.reporter.ReporterAdapter;
-import aQute.service.reporter.Reporter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.apache.maven.plugins.annotations.LifecyclePhase.VERIFY;
 
 /**
  * Exports project dependencies to OSGi R5 index format.
@@ -60,6 +61,9 @@ public class BaselineMojo extends AbstractMojo {
 
 	@Parameter(property = "bnd.baseline.continue.on.error", defaultValue = "false")
 	private boolean					continueOnError;
+
+	@Parameter(property = "bnd.baseline.compare.to.snapshot", defaultValue = "true")
+	private boolean					compareToShanpshot;
 
 	@Parameter(readonly = true)
 	private Base					base;
@@ -183,9 +187,25 @@ public class BaselineMojo extends AbstractMojo {
 
 		logger.debug("Found versions {}", versions.getVersions());
 
-		base.setVersion(versions.getHighestVersion() != null ? versions.getHighestVersion().toString() : null);
+		Version baseVersion = getBaseVersion(versions);
+
+		base.setVersion(baseVersion != null ? baseVersion.toString() : null);
 
 		logger.info("The baseline version was found to be {}", base.getVersion());
+	}
+
+	private Version getBaseVersion(VersionRangeResult versions) {
+		if(compareToShanpshot){
+			return versions.getHighestVersion();
+		}
+		List<Version> foundVersions = versions.getVersions();
+		List<Version> versionsWithoutSnapshot = new ArrayList<>();
+		for (Version foundVersion : foundVersions) {
+			if(!foundVersion.toString().endsWith("SNAPSHOT")){
+				versionsWithoutSnapshot.add(foundVersion);
+			}
+		}
+		return versions.setVersions(versionsWithoutSnapshot).getHighestVersion();
 	}
 
 	protected ArtifactResult locateBaseJar(List<RemoteRepository> aetherRepos) throws ArtifactResolutionException {
