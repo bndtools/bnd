@@ -142,7 +142,7 @@ public class ExportMojo extends AbstractMojo {
 			if (added || removed) {
 				if (failOnChanges && !bemRunBundles.isEmpty()) {
 					String message = String.format(
-							"The runbundles have changed. Failing the build!\nWas: {}\nIs: {}",
+							"The runbundles have changed. Failing the build!\nWas: %s\nIs: %s",
 							originalRunbundlesString, runbundlesString);
 					throw new MojoExecutionException(message);
 				}
