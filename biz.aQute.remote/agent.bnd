@@ -26,7 +26,58 @@ Private-Package: \
 	org.osgi.resource.dto,\
 	org.osgi.framework.dto,\
 	org.osgi.framework.wiring.dto,\
-	aQute.remote.util
+	aQute.remote.util,\
+	aQute.bnd.annotation.headers,\
+	aQute.bnd.annotation.metatype,\
+	aQute.bnd.annotation.plugin,\
+	aQute.bnd.annotation.xml,\
+	aQute.bnd.build,\
+	aQute.bnd.build.model,\
+	aQute.bnd.build.model.clauses,\
+	aQute.bnd.build.model.conversions,\
+	aQute.bnd.component,\
+	aQute.bnd.component.error,\
+	aQute.bnd.connection.settings,\
+	aQute.bnd.differ,\
+	aQute.bnd.exporter.subsystem,\
+	aQute.bnd.header,\
+	aQute.bnd.help,\
+	aQute.bnd.http,\
+	aQute.bnd.make,\
+	aQute.bnd.make.component,\
+	aQute.bnd.make.metatype,\
+	aQute.bnd.maven,\
+	aQute.bnd.maven.support,\
+	aQute.bnd.metatype,\
+	aQute.bnd.osgi,\
+	aQute.bnd.osgi.eclipse,\
+	aQute.bnd.osgi.resource,\
+	aQute.bnd.osgi.repository,\
+	aQute.bnd.properties,\
+	aQute.bnd.resource.repository,\
+	aQute.bnd.service,\
+	aQute.bnd.service.action,\
+	aQute.bnd.service.classparser,\
+	aQute.bnd.service.diff,\
+	aQute.bnd.service.export,\
+	aQute.bnd.service.extension,\
+	aQute.bnd.service.lifecycle,\
+	aQute.bnd.service.progress,\
+	aQute.bnd.service.repository,\
+	aQute.bnd.service.url,\
+	aQute.bnd.service.verifier,\
+	aQute.bnd.url,\
+	aQute.bnd.version,\
+	aQute.bnd.xmlattribute,\
+	org.osgi.service.component.annotations,\
+	org.osgi.service.metatype.annotations,\
+	org.osgi.service.repository,\
+	org.osgi.util.function,\
+	org.osgi.util.promise,\
+	org.slf4j,\
+	org.slf4j.helpers,\
+	org.slf4j.impl,\
+	org.slf4j.spi
 
 #
 # The following import package override is necessary because

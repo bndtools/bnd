@@ -14,6 +14,7 @@ import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 
 import aQute.bnd.main.RemoteCommand.DistroOptions;
+import aQute.bnd.main.RemoteCommand.IndexOptions;
 import aQute.bnd.main.RemoteCommand.RemoteOptions;
 import aQute.bnd.osgi.Jar;
 import aQute.lib.getopt.CommandLine;
@@ -91,6 +92,24 @@ public class DistroCommandTest extends TestCase {
 
 		// should be at least two osgi.extender=jsp.taglib capabilities
 		assertTrue(capabilities.toString().split("jsp.taglib").length == 3);
+	}
+
+	public void testIndexFramework() throws Exception {
+		bnd bnd = new bnd();
+		CommandLine cmdline = new CommandLine(null);
+		List<String> remoteArgs = new ArrayList<>();
+		RemoteOptions remoteOptions = cmdline.getOptions(RemoteOptions.class, remoteArgs);
+
+		File index = new File("generated/tmp/index.xml");
+
+		List<String> indexArgs = new ArrayList<>();
+		indexArgs.add("-o");
+		indexArgs.add(index.getPath());
+		IndexOptions indexOptions = cmdline.getOptions(IndexOptions.class, indexArgs);
+
+		new RemoteCommand(bnd, remoteOptions)._index(indexOptions);
+
+		assertTrue(index.exists());
 	}
 
 }

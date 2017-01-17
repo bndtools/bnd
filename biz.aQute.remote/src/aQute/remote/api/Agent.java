@@ -79,6 +79,11 @@ public interface Agent {
 	FrameworkDTO getFramework() throws Exception;
 
 	/**
+	 * Index the framework and return the index file as a String.
+	 */
+	String indexFramework() throws Exception;
+
+	/**
 	 * Install a new bundle at the given bundle location. The SHA identifies the
 	 * file and should be retrievable through {@link Supervisor#getFile(String)}
 	 * .

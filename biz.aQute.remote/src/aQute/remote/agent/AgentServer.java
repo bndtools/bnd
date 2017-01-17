@@ -1,6 +1,7 @@
 package aQute.remote.agent;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -35,9 +36,11 @@ import org.osgi.framework.wiring.FrameworkWiring;
 import org.osgi.framework.wiring.dto.BundleRevisionDTO;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
 import org.osgi.resource.dto.CapabilityDTO;
 import org.osgi.resource.dto.RequirementDTO;
 
+import aQute.bnd.osgi.repository.XMLResourceGenerator;
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.TypeReference;
 import aQute.libg.shacache.ShaCache;
@@ -62,6 +65,8 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	private static final TypeReference<Map<String,String>>	MAP_STRING_STRING_T	= new TypeReference<Map<String,String>>() {};
 
 	private static final long[]								EMPTY				= new long[0];
+
+	private static final String								UTF_8				= "UTF-8";
 
 	//
 	// Known keys in the framework properties since we cannot
@@ -132,6 +137,21 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		fw.properties = getProperties();
 		fw.services = getServiceReferences();
 		return fw;
+	}
+
+	@Override
+	public String indexFramework() throws Exception {
+		List<Resource> resources = new ArrayList<>();
+		for (Bundle bundle : context.getBundles()) {
+			BundleRevision bundleRevision = bundle.adapt(BundleRevision.class);
+			resources.add(bundleRevision);
+		}
+		XMLResourceGenerator generator = new XMLResourceGenerator();
+		generator.resources(resources);
+		generator.name("Framework " + getProperties().get(Constants.FRAMEWORK_UUID));
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		generator.save(outputStream);
+		return outputStream.toString(UTF_8);
 	}
 
 	@Override

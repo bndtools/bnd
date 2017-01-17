@@ -36,6 +36,7 @@ import aQute.lib.converter.TypeReference;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
+import aQute.lib.io.IO;
 import aQute.remote.api.Agent;
 import aQute.remote.api.Event;
 import aQute.remote.api.Supervisor;
@@ -119,6 +120,17 @@ class RemoteCommand extends Processor {
 
 	public void _framework(FrameworkOptions opts) throws Exception {
 		dump(agent.getFramework());
+	}
+
+	@Description("Index the remote framework")
+	@Arguments(arg = {})
+	interface IndexOptions extends Options {
+		String output(String deflt);
+	}
+
+	public void _index(IndexOptions opts) throws Exception {
+		File output = getFile(opts.output("index.xml"));
+		IO.store(agent.indexFramework(), output);
 	}
 
 	@Description("Get the bundle revisions")
