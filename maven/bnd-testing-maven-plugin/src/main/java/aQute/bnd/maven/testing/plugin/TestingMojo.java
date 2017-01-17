@@ -35,6 +35,12 @@ import biz.aQute.resolve.ProjectResolver;
 public class TestingMojo extends AbstractMojo {
 	private static final Logger	logger			= LoggerFactory.getLogger(TestingMojo.class);
 
+	@Parameter(property = "skipTests", defaultValue = "false")
+	private boolean				skipTests;
+
+	@Parameter(property = "maven.test.skip", defaultValue = "false")
+	private boolean				skip;
+
 	@Parameter(readonly = true, required = true)
 	private List<File>	bndruns;
 
@@ -57,6 +63,9 @@ public class TestingMojo extends AbstractMojo {
 	private MavenSession session;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
+		if (skip || skipTests) {
+			return;
+		}
 		try {
 			if (testingSelect != null) {
 				logger.info("Using selected testing file {}", testingSelect);
