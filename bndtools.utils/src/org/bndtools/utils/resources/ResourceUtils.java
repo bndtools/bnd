@@ -42,7 +42,7 @@ public final class ResourceUtils {
             caps = filtered;
 
             if (caps.size() > 1)
-                throw new IllegalArgumentException("Resource is has multiple identity capabilities: " + ids);
+                throw new IllegalArgumentException("Resource has multiple identity capabilities: " + ids);
         }
         return caps.get(0);
     }
