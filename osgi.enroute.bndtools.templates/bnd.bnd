@@ -1,6 +1,6 @@
 -buildpath: biz.aQute.bndlib; version=3.4; packages=org.osgi.service.metatype.annotations
 
-template-category: OSGi enRoute New
+template-category: OSGi enRoute
 icondata: data:image/png;base64,${base64;icon.png}
 
 version: 1.0.0
