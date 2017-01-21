@@ -19,7 +19,8 @@ p2 = bndtools.api, \
     org.bndtools.versioncontrol.ignores.manager, \
     org.bndtools.versioncontrol.ignores.plugin.git, \
     org.bndtools.templating,\
-    org.bndtools.templating.gitrepo
+    org.bndtools.templating.gitrepo,\
+    osgi.enroute.bndtools.templates
 
 # Template projects which are not part of the p2 feature
 templates = \
