@@ -1,0 +1,15 @@
+#
+# {{projectName}} GOGO COMMAND BUNDLE (api) 
+#
+
+Bundle-Description: \
+	Provides a command to the Gogo shell. \
+	\
+	${warning;Please update this Bundle-Description in {{projectName}}/command.bnd}
+	
+
+Private-Package:  \
+	{{basePackageName}}.command
+	
+	
+-includeresource: {readme.md}

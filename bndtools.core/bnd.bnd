@@ -43,8 +43,7 @@ Export-Package: \
 Include-Resource: {plugin.xml=_plugin.xml},\
 	icons.properties,\
     /=resources/unprocessed,\
-    {/=resources/processed},\
-    enroute=resources/enroute
+    {/=resources/processed}
 
 # Build and Run
 eclipse.deps: \
