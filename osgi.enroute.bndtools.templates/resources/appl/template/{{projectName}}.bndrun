@@ -1,0 +1,17 @@
+#
+#  RUN SPECIFICATION
+#
+
+
+Bundle-Version:				1.0.0.${tstamp}
+Bundle-SymbolicName:		{{projectName}}.launch
+JPM-Command:				{{jpmCommand}}
+
+
+-runfw:						org.eclipse.osgi
+
+-runrequires:  \
+	osgi.identity;filter:='(osgi.identity={{projectName}})'
+
+-runbundles: \
+	${error;Resolve first}
