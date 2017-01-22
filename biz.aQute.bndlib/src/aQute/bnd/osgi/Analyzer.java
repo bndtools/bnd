@@ -201,7 +201,7 @@ public class Analyzer extends Processor {
 			// Handle the bundle activator
 
 			String s = getProperty(BUNDLE_ACTIVATOR);
-			if (s != null) {
+			if (s != null && !s.isEmpty()) {
 				activator = getTypeRefFromFQN(s);
 				referTo(activator);
 				logger.debug("activator {} {}", s, activator);
