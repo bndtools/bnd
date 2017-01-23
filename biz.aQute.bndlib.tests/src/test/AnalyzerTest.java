@@ -742,6 +742,108 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	/**
+	 * Scan for a BundleActivator, but there are no matches!
+	 * 
+	 * @throws Exception
+	 */
+	public static void testBundleActivatorNoType() throws Exception {
+		Builder a = new Builder();
+		try {
+			Properties p = new Properties();
+			p.put("Private-Package", "test.api");
+			p.put("Bundle-Activator", "");
+			a.addClasspath(new File("bin"));
+			a.setProperties(p);
+			a.build();
+			Manifest manifest = a.getJar().getManifest();
+	
+			assertEquals(a.getErrors().toString(), 0, a.getErrors().size());
+			assertEquals(a.getWarnings().toString(), 1, a.getWarnings().size());
+			assertTrue(
+					a.check("A Bundle-Activator header was present but no activator class was defined"));
+		} finally {
+			a.close();
+		}
+	}
+
+	/**
+	 * Scan for a BundleActivator, but the value is not a Java type identifier!
+	 * 
+	 * @throws Exception
+	 */
+	public static void testBundleActivatorNotAType() throws Exception {
+		Builder a = new Builder();
+		try {
+			Properties p = new Properties();
+			p.put("Private-Package", "test.api");
+			p.put("Bundle-Activator", "123");
+			a.addClasspath(new File("bin"));
+			a.setProperties(p);
+			a.build();
+			Manifest manifest = a.getJar().getManifest();
+	
+			assertEquals(a.getErrors().toString(), 2, a.getErrors().size());
+			assertEquals(a.getWarnings().toString(), 0, a.getWarnings().size());
+			assertTrue(a.check("A Bundle-Activator header is present and its value is not a valid type name 123",
+					"The default package '.' is not permitted by the Import-Package syntax."));
+		} finally {
+			a.close();
+		}
+	}
+
+	/**
+	 * Scan for a BundleActivator, but there are no matches!
+	 * 
+	 * @throws Exception
+	 */
+	public static void testScanForABundleActivatorNoMatches() throws Exception {
+		Builder a = new Builder();
+		try {
+			Properties p = new Properties();
+			p.put("Private-Package", "test.api");
+			p.put("Bundle-Activator", "${classes;IMPLEMENTS;org.osgi.framework.BundleActivator}");
+			a.addClasspath(new File("bin"));
+			a.setProperties(p);
+			a.build();
+			Manifest manifest = a.getJar().getManifest();
+	
+			assertEquals(a.getErrors().toString(), 1, a.getErrors().size());
+			assertEquals(a.getWarnings().toString(), 0, a.getWarnings().size());
+			assertTrue(
+					a.check("A Bundle-Activator header is present but no activator class was found using the macro \\$\\{classes;IMPLEMENTS;org\\.osgi\\.framework\\.BundleActivator\\}"));
+		} finally {
+			a.close();
+		}
+	}
+
+	/**
+	 * Scan for a BundleActivator, but there are multiple matches!
+	 * 
+	 * @throws Exception
+	 */
+	public static void testScanForABundleActivatorMultipleMatches() throws Exception {
+		Builder a = new Builder();
+		try {
+			Properties p = new Properties();
+			p.put("Private-Package", "test.activator");
+			p.put("Bundle-Activator", "${classes;IMPLEMENTS;org.osgi.framework.BundleActivator}");
+			a.addClasspath(new File("bin"));
+			a.setProperties(p);
+			a.build();
+			Manifest manifest = a.getJar().getManifest();
+
+			assertEquals(a.getErrors().toString(), 1, a.getErrors().size());
+			assertEquals(a.getWarnings().toString(), 0, a.getWarnings().size());
+			assertTrue(
+					a.check("The Bundle-Activator header only supports a single type. The following types were found: "
+							+ "test.activator.AbstractActivator,test.activator.Activator,test.activator.Activator11,test.activator.Activator2,test.activator.Activator3,test.activator.ActivatorPackage,test.activator.ActivatorPrivate,test.activator.DefaultVisibilityActivator,test.activator.IActivator,test.activator.MissingNoArgsConstructorActivator"
+							+ ". This usually happens when a macro resolves to multiple types"));
+		} finally {
+			a.close();
+		}
+	}
+
+	/**
 	 * The -removeheaders header removes any necessary after the manifest is
 	 * calculated.
 	 */

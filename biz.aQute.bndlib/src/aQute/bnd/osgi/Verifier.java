@@ -317,12 +317,36 @@ public class Verifier extends Processor {
 	}
 
 	public static enum ActivatorErrorType {
-		IS_INTERFACE, IS_ABSTRACT, NOT_PUBLIC, NO_SUITABLE_CONSTRUCTOR, NOT_AN_ACTIVATOR, DEFAULT_PACKAGE, NOT_ACCESSIBLE, IS_IMPORTED;
+		IS_INTERFACE, IS_ABSTRACT, NOT_PUBLIC, NO_SUITABLE_CONSTRUCTOR, NOT_AN_ACTIVATOR, DEFAULT_PACKAGE, NOT_ACCESSIBLE, IS_IMPORTED, NOT_SET, NO_RESULT_FROM_MACRO, MULTIPLE_TYPES, INVALID_TYPE_NAME;
 	}
 
 	private void verifyActivator() throws Exception {
 		String bactivator = main.get(Constants.BUNDLE_ACTIVATOR);
 		if (bactivator != null) {
+			if (!PACKAGEPATTERN.matcher(bactivator).matches()) {
+
+				boolean allElementsAreTypes = true;
+				for (String element : split(bactivator)) {
+					if (!PACKAGEPATTERN.matcher(element.trim()).matches()) {
+						allElementsAreTypes = false;
+						break;
+					}
+				}
+
+				if (allElementsAreTypes) {
+					registerActivatorErrorLocation(
+							error("The Bundle-Activator header only supports a single type. The following types were found: %s. This usually happens when a macro resolves to multiple types",
+									bactivator),
+							bactivator, ActivatorErrorType.MULTIPLE_TYPES);
+				} else {
+					registerActivatorErrorLocation(
+							error("A Bundle-Activator header is present and its value is not a valid type name %s",
+									bactivator),
+							bactivator, ActivatorErrorType.INVALID_TYPE_NAME);
+				}
+				return;
+			}
+			
 			TypeRef ref = analyzer.getTypeRefFromFQN(bactivator);
 			if (analyzer.getClassspace().containsKey(ref)) {
 				Clazz activatorClazz = analyzer.getClassspace().get(ref);
@@ -376,6 +400,23 @@ public class Verifier extends Processor {
 								+ " %s is being imported into the bundle rather than being contained inside it. This is usually a bundle packaging error",
 								bactivator),
 						bactivator, ActivatorErrorType.IS_IMPORTED);
+			}
+		} else if (parent != null) {
+			// If we have access to the parent we can do deeper checking
+			String raw = parent.getUnprocessedProperty(BUNDLE_ACTIVATOR, null);
+			if (raw != null) {
+				// The activator was specified, but nothing showed up.
+				if (raw.isEmpty()) {
+					registerActivatorErrorLocation(
+							warning("A Bundle-Activator header was present but no activator class was defined"), "",
+							ActivatorErrorType.NOT_SET);
+				} else {
+					registerActivatorErrorLocation(
+							error("A Bundle-Activator header is present but no activator class was found using the macro %s",
+									raw),
+							raw, ActivatorErrorType.NO_RESULT_FROM_MACRO);
+				}
+				return;
 			}
 		}
 	}
