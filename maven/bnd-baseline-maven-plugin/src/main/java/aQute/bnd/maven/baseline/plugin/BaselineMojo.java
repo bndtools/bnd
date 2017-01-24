@@ -33,6 +33,8 @@ import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.service.diff.Delta;
+import aQute.bnd.service.diff.Diff;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
@@ -206,6 +208,20 @@ public class BaselineMojo extends AbstractMojo {
 				logger.error("Baseline mismatch for package {}, {} change. Current is {}, repo is {}, suggest {} or {}",
 						info.packageName, info.packageDiff.getDelta(), info.newerVersion, info.olderVersion,
 						info.suggestedVersion, info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
+				if (fullReport) {
+					logger.info(info.packageDiff.toString());
+					for (Diff typeDiff : info.packageDiff.getChildren()) {
+						logger.info("    " + typeDiff.toString());
+						for (Diff fieldOrMethodDiff : typeDiff.getChildren()) {
+							// Unchanged field/method diffs are noisy and
+							// irrelevant
+							if (fieldOrMethodDiff.getDelta() == Delta.UNCHANGED) {
+								continue;
+							}
+							logger.info("        " + fieldOrMethodDiff.toString());
+						}
+					}
+				}
 			}
 		}
 
