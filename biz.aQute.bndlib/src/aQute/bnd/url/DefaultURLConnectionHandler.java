@@ -55,7 +55,7 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 			if (g.matcher(string).matches())
 				return true;
 		}
-		return true;
+		return false;
 	}
 
 	/**
