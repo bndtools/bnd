@@ -79,7 +79,7 @@
                     <localRepositoryPath>${project.build.directory}/integration-test/repo</localRepositoryPath>
                     <postBuildHookScript>verify.groovy</postBuildHookScript>
                     <goals>
-                        <goal>package</goal>
+                        <goal>integration-test</goal>
                     </goals>
                     <debug>true</debug>
                     <scriptVariables>

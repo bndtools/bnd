@@ -1,0 +1,12 @@
+-standalone: target/index.xml
+
+-runfw: 		org.apache.felix.framework;version='[5.6.1,5.6.1]'
+-runee: 		JavaSE-1.7
+
+-runrequires: osgi.identity;filter:='(osgi.identity=test-with-resolve)'
+
+-runbundles: \
+ org.apache.felix.scr; version='[2.0.2,2.0.3)',\
+ osgi.enroute.hamcrest.wrapper; version='[1.3.0,1.3.1)',\
+ osgi.enroute.junit.wrapper; version='[4.12.0,4.12.1)',\
+ test-with-resolve; version='[0.0.1,0.0.2)'
