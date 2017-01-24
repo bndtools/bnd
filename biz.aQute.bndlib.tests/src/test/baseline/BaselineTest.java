@@ -498,4 +498,33 @@ public class BaselineTest extends TestCase {
 		assertTrue(bundleInfo.mismatch);
 		assertEquals("2.0.0", bundleInfo.suggestedVersion.toString());
 	}
+
+	// Deleting a protected field on a ProviderType API class produces a MINOR
+	// bump (1.0.0 -> 1.1.0)
+	public void testProviderProtectedFieldRemovedChange() throws Exception {
+		Processor processor = new Processor();
+
+		DiffPluginImpl differ = new DiffPluginImpl();
+		Baseline baseline = new Baseline(processor, differ);
+
+		Jar older = new Jar(IO.getFile("jar/baseline/provider-deletion-1.0.0.jar"));
+		Jar newer = new Jar(IO.getFile("jar/baseline/provider-deletion-1.1.0.jar"));
+
+		baseline.baseline(newer, older, null);
+
+		BundleInfo bundleInfo = baseline.getBundleInfo();
+
+		assertFalse(bundleInfo.mismatch);
+		assertEquals("1.1.0", bundleInfo.suggestedVersion.toString());
+
+		Set<Info> packageInfos = baseline.getPackageInfos();
+
+		assertEquals(1, packageInfos.size());
+
+		Info change = packageInfos.iterator().next();
+		assertTrue(change.mismatch);
+		assertEquals("bnd.baseline.test", change.packageName);
+		assertEquals("1.1.0", change.suggestedVersion.toString());
+
+	}
 }

@@ -79,13 +79,16 @@ import aQute.libg.generics.Create;
  */
 
 class JavaElement {
-	static Pattern						PARAMETERS_P	= Pattern.compile(".*(\\(.*\\)).*");
+	static Pattern						PARAMETERS_P		= Pattern.compile(".*(\\(.*\\)).*");
 
-	final static EnumSet<Type>			INHERITED		= EnumSet.of(FIELD, METHOD, EXTENDS, IMPLEMENTS);
-	private static final Element		PROTECTED		= new Element(ACCESS, "protected", null, MAJOR, MINOR, null);
-	private static final Element		STATIC			= new Element(ACCESS, "static", null, MAJOR, MAJOR, null);
-	private static final Element		ABSTRACT		= new Element(ACCESS, "abstract", null, MAJOR, MINOR, null);
-	private static final Element		FINAL			= new Element(ACCESS, "final", null, MAJOR, MINOR, null);
+	final static EnumSet<Type>			INHERITED			= EnumSet.of(FIELD, METHOD, EXTENDS, IMPLEMENTS);
+	private static final Element		PROTECTED			= new Element(ACCESS, "protected", null, MAJOR, MINOR,
+			null);
+	private static final Element		PROTECTED_PROVIDER	= new Element(ACCESS, "protected", null, MINOR, MINOR,
+			null);
+	private static final Element		STATIC				= new Element(ACCESS, "static", null, MAJOR, MAJOR, null);
+	private static final Element		ABSTRACT			= new Element(ACCESS, "abstract", null, MAJOR, MINOR, null);
+	private static final Element		FINAL				= new Element(ACCESS, "final", null, MAJOR, MINOR, null);
 	// private static final Element DEPRECATED = new Element(ACCESS,
 	// "deprecated", null,
 	// CHANGED, CHANGED, null);
@@ -536,7 +539,7 @@ class JavaElement {
 			if (children == null)
 				children = new HashSet<Element>();
 
-			access(children, m.getAccess(), m.isDeprecated());
+			access(children, m.getAccess(), m.isDeprecated(), provider.get());
 
 			// A final class cannot be extended, ergo,
 			// all methods defined in it are by definition
@@ -590,7 +593,8 @@ class JavaElement {
 				add = MINOR;
 			}
 
-			Element member = new Element(Type.METHOD, m.getName() + signature, children, add, remove, null);
+			Element member = new Element(Type.METHOD, m.getName() + signature, children, add,
+					provider.get() && !isPublic(m.getAccess()) ? MINOR : remove, null);
 
 			if (!members.add(member)) {
 				members.remove(member);
@@ -650,9 +654,9 @@ class JavaElement {
 				children.add(new Element(Type.CONSTANT, f.getConstant().toString(), null, CHANGED, CHANGED, null));
 			}
 
-			access(children, f.getAccess(), f.isDeprecated());
-			Element member = new Element(Type.FIELD, f.getType().getFQN() + " " + f.getName(), children, MINOR, MAJOR,
-					null);
+			access(children, f.getAccess(), f.isDeprecated(), provider.get());
+			Element member = new Element(Type.FIELD, f.getType().getFQN() + " " + f.getName(), children, MINOR,
+					provider.get() && !isPublic(f.getAccess()) ? MINOR : MAJOR, null);
 
 			if (!members.add(member)) {
 				members.remove(member);
@@ -660,7 +664,7 @@ class JavaElement {
 			}
 		}
 
-		access(members, clazz.getAccess(), clazz.isDeprecated());
+		access(members, clazz.getAccess(), clazz.isDeprecated(), provider.get());
 
 		// And make the result
 		Element s = new Element(type, fqn, members, MINOR, MAJOR, comment.length() == 0 ? null : comment.toString());
@@ -763,9 +767,9 @@ class JavaElement {
 	}
 
 	private static void access(Collection<Element> children, int access,
-			@SuppressWarnings("unused") boolean deprecated) {
+			@SuppressWarnings("unused") boolean deprecated, boolean provider) {
 		if (!isPublic(access))
-			children.add(PROTECTED);
+			children.add(provider ? PROTECTED_PROVIDER : PROTECTED);
 		if (isAbstract(access))
 			children.add(ABSTRACT);
 		if (isFinal(access))
