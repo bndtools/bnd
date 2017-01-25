@@ -47,6 +47,8 @@ package aQute.bnd.gradle
 import aQute.bnd.differ.DiffPluginImpl
 import aQute.bnd.osgi.Jar
 import aQute.bnd.osgi.Processor
+import aQute.bnd.service.diff.Delta
+import aQute.bnd.service.diff.Type
 import aQute.bnd.version.Version
 
 import org.gradle.api.DefaultTask
@@ -220,21 +222,33 @@ public class Baseline extends DefaultTask {
         writer.println()
         writer.println '==============================================================='
 
-        String format = '%s %-50s %-10s %-10s %-10s %-10s %-10s%n'
-        writer.printf format, ' ', 'Package', 'Delta', 'New', 'Old', 'Suggest', 'If Prov.'
+        String format = '%s %-50s %-10s %-10s %-10s %-10s %-10s %s%n'
+        writer.printf format, ' ', 'Name', 'Type', 'Delta', 'New', 'Old', 'Suggest', 'If Prov.'
 
         infos.each { info ->
-          if (info.mismatch) {
-            failure = true
-          }
+          def packageDiff = info.packageDiff
           writer.printf format,
             info.mismatch ? '*' : ' ',
-            info.packageName,
-            info.packageDiff.getDelta(),
+            packageDiff.getName(),
+            packageDiff.getType(),
+            packageDiff.getDelta(),
             info.newerVersion,
             info.olderVersion != null && info.olderVersion.equals(Version.LOWEST) ? '-': info.olderVersion,
             info.suggestedVersion != null && info.suggestedVersion.compareTo(info.newerVersion) <= 0 ? 'ok' : info.suggestedVersion,
-            info.suggestedIfProviders == null ? '-' : info.suggestedIfProviders
+            info.suggestedIfProviders ?: '-'
+          if (info.mismatch) {
+            failure = true
+            packageDiff.getChildren().findAll { typeDiff ->
+              typeDiff.getDelta() != Delta.UNCHANGED
+            }.each { typeDiff ->
+              writer.printf '*  %-49s %-10s %s%n', typeDiff.getName(), typeDiff.getType(), typeDiff.getDelta()
+              typeDiff.getChildren().findAll { memberDiff ->
+                memberDiff.getDelta() != Delta.UNCHANGED
+              }.each { memberDiff ->
+                writer.printf '*   %-48s %-10s %s%n', memberDiff.getName(), memberDiff.getType(), memberDiff.getDelta()
+              }
+            }
+          }
         }
       }
     }
