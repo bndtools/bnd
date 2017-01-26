@@ -45,6 +45,7 @@ final class PropertiesParser {
 	private char		current;
 	private Properties	properties;
 	private boolean		validKey;
+	private boolean		continuation	= true;
 
 	PropertiesParser(String source, String file, Reporter reporter, Properties properties) {
 		this.source = source.toCharArray();
@@ -66,13 +67,15 @@ final class PropertiesParser {
 		try {
 			switch (current) {
 				case '\\' :
-					if (peek() == '\r' || peek() == '\n') {
-						next(); // skip line ending
-						next(); // first character on new line
-						skipWhitespace();
-						return current;
-					} else
-						return '\\';
+					if (continuation) {
+						char p = peek();
+						if (p == '\r' || p == '\n') {
+							next(); // skip line ending
+							next(); // first character on new line
+							skipWhitespace();
+						}
+					}
+					return current;
 
 				case '\r' :
 					current = '\n';
@@ -177,8 +180,13 @@ final class PropertiesParser {
 	}
 
 	public void skipLine() {
-		while (!isIn(LINE))
-			next();
+		continuation = false;
+		try {
+			while (!isIn(LINE))
+				next();
+		} finally {
+			continuation = true;
+		}
 	}
 
 	private final String token(byte delimeters) {
