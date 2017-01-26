@@ -69,6 +69,21 @@ public class UTF8PropertiesTest extends TestCase {
 	}
 
 	/*
+	 * Lines that start with the comment characters ! or # are ignored. Blank
+	 * lines are also ignored. Comments which end with \ must not continue to
+	 * next line.
+	 */
+	public void testSpecificationCommentContinuation() throws IOException {
+		testProperty("\n\n# comment\\\n!comment\\\n\nfoo=bar", "foo", "bar");
+		testProperty("foo=bar\n# comment\\", "foo", "bar");
+		testProperty("foo=bar\n! comment\\", "foo", "bar");
+		testProperty("# comment\\\nfoo=bar\n# comment\\", "foo", "bar");
+		testProperty("! comment\\\nfoo=bar\n! comment\\", "foo", "bar");
+		testProperty("# comment\\\nfoo=bar\n# comment\\\n", "foo", "bar");
+		testProperty("! comment\\\nfoo=bar\n! comment\\\n", "foo", "bar");
+	}
+
+	/*
 	 * The property value is generally terminated by the end of the line. White
 	 * space following the property value is not ignored, and is treated as part
 	 * of the property value.
