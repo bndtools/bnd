@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -73,13 +74,14 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
     protected void launchJavaElements(List<IJavaElement> elements, String mode) throws CoreException {
         assert elements != null && elements.size() > 0;
 
-        IPath projectPath = elements.get(0).getJavaProject().getProject().getFullPath().makeRelative();
+        IProject targetProject = elements.get(0).getJavaProject().getProject();
+        IPath projectPath = targetProject.getFullPath().makeRelative();
 
         ILaunchConfiguration config = findLaunchConfig(projectPath);
         ILaunchConfigurationWorkingCopy wc = null;
 
         if (config == null) {
-            wc = createConfiguration(projectPath);
+            wc = createConfiguration(projectPath, targetProject);
         } else {
             wc = config.getWorkingCopy();
         }

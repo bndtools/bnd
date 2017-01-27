@@ -26,6 +26,7 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.ISelection;
@@ -110,15 +111,15 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         if (element != null) {
             IJavaProject jproject = element.getJavaProject();
             if (jproject != null) {
-                launch(jproject.getProject().getFullPath(), mode);
+                launch(jproject.getProject().getFullPath(), jproject.getProject(), mode);
             }
         } else {
             IFile file = ResourceUtil.getFile(input);
             if (file != null) {
                 if (file.getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
-                    launch(file.getFullPath(), mode);
+                    launch(file.getFullPath(), file.getProject(), mode);
                 } else if (file.getName().equals(Project.BNDFILE)) {
-                    launch(file.getProject().getFullPath(), mode);
+                    launch(file.getProject().getFullPath(), file.getProject(), mode);
                 }
             }
         }
@@ -126,23 +127,24 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
 
     @SuppressWarnings("unused")
     protected void launchJavaElements(List<IJavaElement> elements, String mode) throws CoreException {
-        launch(elements.get(0).getJavaProject().getProject().getFullPath(), mode);
+        IProject targetProject = elements.get(0).getJavaProject().getProject();
+        launch(targetProject.getFullPath(), targetProject, mode);
     }
 
     protected void launchProject(IProject project, String mode) {
-        launch(project.getFullPath(), mode);
+        launch(project.getFullPath(), project, mode);
     }
 
     protected void launchBndRun(IFile bndRunFile, String mode) {
-        launch(bndRunFile.getFullPath(), mode);
+        launch(bndRunFile.getFullPath(), bndRunFile.getProject(), mode);
     }
 
-    protected void launch(IPath targetPath, String mode) {
+    protected void launch(IPath targetPath, IProject targetProject, String mode) {
         IPath tp = targetPath.makeRelative();
         try {
             ILaunchConfiguration config = findLaunchConfig(tp);
             if (config == null) {
-                ILaunchConfigurationWorkingCopy wc = createConfiguration(tp);
+                ILaunchConfigurationWorkingCopy wc = createConfiguration(tp, targetProject);
                 config = wc.doSave();
             }
             DebugUITools.launch(config, mode);
@@ -170,7 +172,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         return !candidateConfigs.isEmpty() ? candidateConfigs.get(candidateConfigs.size() - 1) : null;
     }
 
-    protected ILaunchConfigurationWorkingCopy createConfiguration(IPath targetPath) throws CoreException {
+    protected ILaunchConfigurationWorkingCopy createConfiguration(IPath targetPath, IProject targetProject) throws CoreException {
         ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
         ILaunchConfigurationType configType = manager.getLaunchConfigurationType(launchId);
 
@@ -179,6 +181,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         wc.setAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, targetPath.toString());
         wc.setAttribute(LaunchConstants.ATTR_CLEAN, LaunchConstants.DEFAULT_CLEAN);
         wc.setAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, LaunchConstants.DEFAULT_DYNAMIC_BUNDLES);
+        wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, targetProject.getName());
 
         return wc;
     }
