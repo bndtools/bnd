@@ -194,6 +194,7 @@ public class Clazz {
 	// Declared a thing not in the source code
 	final static int					ACC_ABSTRACT	= 0x0400;
 	final static int					ACC_SYNTHETIC	= 0x1000;
+	final static int					ACC_BRIDGE		= 0x0040;
 	final static int					ACC_ANNOTATION	= 0x2000;
 	final static int					ACC_ENUM		= 0x4000;
 
@@ -387,6 +388,10 @@ public class Clazz {
 		@Override
 		public TypeRef[] getPrototype() {
 			return descriptor.getPrototype();
+		}
+
+		public boolean isBridge() {
+			return (access & ACC_BRIDGE) != 0;
 		}
 	}
 

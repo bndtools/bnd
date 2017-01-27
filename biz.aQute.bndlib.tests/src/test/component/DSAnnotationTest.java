@@ -3,6 +3,7 @@ package test.component;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -3620,6 +3621,40 @@ public class DSAnnotationTest extends BndTestCase {
 			XmlTester xt = new XmlTester(r.openInputStream());
 			xt.assertCount(0, "component/reference");
 		}
+	}
+
+	public interface Activatable<T extends Annotation> {
+		void activator(T config);
+	}
+
+	@Component(service = {})
+	public static class ActivatableComponent implements Activatable<ConfigA> {
+		@Activate
+		public void activator(ConfigA config) {
+			String a = config.a();
+		}
+	}
+
+	/*
+	 * See https://github.com/bndtools/bnd/issues/1546. If a component class has
+	 * an annotated method for which the compiler generates a bridge method,
+	 * javac will copy the annotations onto the bridge method. Bnd must ignore
+	 * bridge methods.
+	 */
+	public void testBridgeMethod() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*ActivatableComponent");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b, 0, 0);
+
+		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$ActivatableComponent.xml");
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+		xt.assertAttribute("activator", "scr:component/@activate");
 	}
 
 }

@@ -1,7 +1,6 @@
 package aQute.bnd.component;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -986,12 +985,10 @@ public class AnnotationReader extends ClassDataCollector {
 
 	@Override
 	public void method(Clazz.MethodDef method) {
-		int access = method.getAccess();
-
-		if (Modifier.isAbstract(access) || Modifier.isStatic(access))
+		if (method.isAbstract() || method.isStatic() || method.isBridge())
 			return;
 
-		if (!baseclass && Modifier.isPrivate(access))
+		if (!baseclass && method.isPrivate())
 			return;
 
 		this.member = method;
