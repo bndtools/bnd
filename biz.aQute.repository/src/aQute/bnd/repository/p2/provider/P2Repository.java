@@ -142,4 +142,9 @@ public class P2Repository extends BaseRepository implements Plugin, RegistryPlug
 		IO.close(p2Index);
 	}
 
+	@Override
+	public String toString() {
+		return "P2Repository [" + getName() + "]";
+	}
+
 }
