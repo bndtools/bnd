@@ -158,9 +158,15 @@ class Traverser {
 	}
 
 	private void parseArchive(Archive archive) throws Exception {
-		POM pom = repo.getPom(archive.revision);
-		String parent = archive.revision.toString();
+		POM pom = repo.getPom(archive.getRevision());
+		String parent = archive.getRevision().toString();
 
+		if (pom == null) {
+			logger.debug("no pom found for archive {} ", archive);
+			if (!archive.isPom())
+				parseResource(archive, parent);
+			return;
+		}
 		parsePom(pom, parent);
 
 		if (!pom.isPomOnly())
