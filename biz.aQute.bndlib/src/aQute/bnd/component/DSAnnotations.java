@@ -116,6 +116,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 		Version maxVersion = AnnotationReader.V1_0;
 
 		XMLAttributeFinder finder = new XMLAttributeFinder(analyzer);
+		boolean componentProcessed = false;
 		for (Clazz c : list) {
 			for (Instruction instruction : instructions.keySet()) {
 
@@ -124,7 +125,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 						break;
 					ComponentDef definition = AnnotationReader.getDefinition(c, analyzer, options, finder, minVersion);
 					if (definition != null) {
-
+						componentProcessed = true;
 						definition.sortReferences();
 						definition.prepare(analyzer);
 
@@ -156,7 +157,8 @@ public class DSAnnotations implements AnalyzerPlugin {
 				}
 			}
 		}
-		if (options.contains(Options.extender) || maxVersion.compareTo(AnnotationReader.V1_3) >= 0) {
+		if (componentProcessed
+				&& (options.contains(Options.extender) || (maxVersion.compareTo(AnnotationReader.V1_3) >= 0))) {
 			maxVersion = ComponentDef.max(maxVersion, AnnotationReader.V1_3);
 			addExtenderRequirement(requires, maxVersion);
 		}
