@@ -170,6 +170,14 @@ public class BndMavenPlugin extends AbstractMojo {
 				throw new MojoExecutionException("Sub-bundles not permitted in a maven build");
 			}
 
+			// Reject wab projects
+			if (builder.getProperty(Constants.WAB) != null) {
+				throw new MojoExecutionException(Constants.WAB + " not supported in a maven build");
+			}
+			if (builder.getProperty(Constants.WABLIB) != null) {
+				throw new MojoExecutionException(Constants.WABLIB + " not supported in a maven build");
+			}
+
 			// Include local project packages automatically
 			if (classesDir.isDirectory()) {
 				Jar classesDirJar = new Jar(project.getName(), classesDir);
