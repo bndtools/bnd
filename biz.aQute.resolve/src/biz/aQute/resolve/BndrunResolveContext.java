@@ -183,7 +183,8 @@ public class BndrunResolveContext extends AbstractResolveContext {
 				// resource
 				//
 
-				Parameters systemPackages = new Parameters(properties.mergeProperties(Constants.RUNSYSTEMPACKAGES));
+				Parameters systemPackages = new Parameters(properties.mergeProperties(Constants.RUNSYSTEMPACKAGES),
+						project);
 				system.addExportPackages(systemPackages);
 
 				//
@@ -192,7 +193,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 				//
 
 				Parameters systemCapabilities = new Parameters(
-						properties.mergeProperties(Constants.RUNSYSTEMCAPABILITIES));
+						properties.mergeProperties(Constants.RUNSYSTEMCAPABILITIES), project);
 				system.addProvideCapabilities(systemCapabilities);
 
 				//
@@ -202,7 +203,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 				//
 
 				Parameters providedCapabilities = new Parameters(
-						properties.mergeProperties(Constants.RUNPROVIDEDCAPABILITIES));
+						properties.mergeProperties(Constants.RUNPROVIDEDCAPABILITIES), project);
 				system.addProvideCapabilities(providedCapabilities);
 
 				//
@@ -255,7 +256,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	}
 
 	void loadFramework(ResourceBuilder system) throws Exception {
-		Parameters parameters = new Parameters(properties.getProperty(Constants.RUNFW));
+		Parameters parameters = new Parameters(properties.getProperty(Constants.RUNFW), project);
 		if (parameters.isEmpty()) {
 			log.log(LogService.LOG_WARNING, "No -runfw set");
 			return;
@@ -318,7 +319,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 		HashMap<String,Set<String>> effectiveSet = new HashMap<String,Set<String>>();
 
-		for (Entry<String,Attrs> entry : new Parameters(effective).entrySet()) {
+		for (Entry<String,Attrs> entry : new Parameters(effective, project).entrySet()) {
 			String skip = entry.getValue().get("skip:");
 			Set<String> toSkip = skip == null ? new HashSet<String>()
 					: new HashSet<String>(Arrays.asList(skip.split(",")));
@@ -355,7 +356,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 		} else {
 
-			Parameters repoNames = new Parameters(rn);
+			Parameters repoNames = new Parameters(rn, project);
 
 			// Map the repository names...
 
@@ -374,8 +375,8 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 		Processor repositoryAugments = findRepositoryAugments(orderedRepositories);
 
-		Parameters augments = new Parameters(repositoryAugments.mergeProperties(Constants.AUGMENT));
-		augments.putAll(new Parameters(properties.mergeProperties(Constants.AUGMENT)));
+		Parameters augments = new Parameters(repositoryAugments.mergeProperties(Constants.AUGMENT), project);
+		augments.putAll(new Parameters(properties.mergeProperties(Constants.AUGMENT), project));
 
 		if (!augments.isEmpty()) {
 			AggregateRepository aggregate = new AggregateRepository(orderedRepositories);
@@ -456,7 +457,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 				.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, IDENTITY_INITIAL_RESOURCE);
 		resBuilder.addCapability(identity);
 
-		Parameters inputRequirements = new Parameters(properties.mergeProperties(Constants.RUNREQUIRES));
+		Parameters inputRequirements = new Parameters(properties.mergeProperties(Constants.RUNREQUIRES), project);
 		if (inputRequirements != null && !inputRequirements.isEmpty()) {
 			List<Requirement> requires = CapReqBuilder.getRequirementsFrom(inputRequirements);
 			resBuilder.addRequirements(requires);
@@ -466,8 +467,8 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	}
 
 	private void constructBlacklist(Processor augments) throws Exception {
-		Parameters blacklist = new Parameters(augments.mergeProperties(Constants.RUNBLACKLIST));
-		blacklist.putAll(new Parameters(properties.mergeProperties(Constants.RUNBLACKLIST)));
+		Parameters blacklist = new Parameters(augments.mergeProperties(Constants.RUNBLACKLIST), project);
+		blacklist.putAll(new Parameters(properties.mergeProperties(Constants.RUNBLACKLIST), project));
 
 		if (blacklist != null && !blacklist.isEmpty()) {
 			List<Requirement> reject = CapReqBuilder.getRequirementsFrom(blacklist);
@@ -476,7 +477,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	}
 
 	private void loadPreferences() {
-		resolvePrefs = new Parameters(properties.getProperty(PROP_RESOLVE_PREFERENCES));
+		resolvePrefs = new Parameters(properties.getProperty(PROP_RESOLVE_PREFERENCES), project);
 	}
 
 	protected void postProcessProviders(Requirement requirement, Set<Capability> wired, List<Capability> candidates) {

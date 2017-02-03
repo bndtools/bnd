@@ -285,7 +285,7 @@ public class Project extends Processor {
 
 				// Calculate our source directories
 
-				Parameters srces = new Parameters(mergeProperties(Constants.DEFAULT_PROP_SRC_DIR));
+				Parameters srces = new Parameters(mergeProperties(Constants.DEFAULT_PROP_SRC_DIR), this);
 				if (srces.isEmpty())
 					srces.add(Constants.DEFAULT_PROP_SRC_DIR, new Attrs());
 
@@ -540,7 +540,7 @@ public class Project extends Processor {
 
 	public List<Container> getBundles(Strategy strategyx, String spec, String source) throws Exception {
 		List<Container> result = new ArrayList<Container>();
-		Parameters bundles = new Parameters(spec);
+		Parameters bundles = new Parameters(spec, this);
 
 		try {
 			for (Iterator<Entry<String,Attrs>> i = bundles.entrySet().iterator(); i.hasNext();) {
@@ -1033,7 +1033,7 @@ public class Project extends Processor {
 
 	private String getReleaseRepoName(String name) {
 		String releaseRepo = name == null ? getProperty(RELEASEREPO) : name;
-		Parameters p = new Parameters(releaseRepo);
+		Parameters p = new Parameters(releaseRepo, this);
 		if (p.isEmpty())
 			return null;
 
@@ -1060,7 +1060,7 @@ public class Project extends Processor {
 			logger.debug("no jars being build");
 			return;
 		}
-		Parameters repos = new Parameters(name);
+		Parameters repos = new Parameters(name, this);
 		logger.debug("releasing {} - {}", jars, repos);
 
 		for (Map.Entry<String,Attrs> entry : repos.entrySet()) {
@@ -1436,7 +1436,7 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public void deploy() throws Exception {
-		Parameters deploy = new Parameters(getProperty(DEPLOY));
+		Parameters deploy = new Parameters(getProperty(DEPLOY), this);
 		if (deploy.isEmpty()) {
 			warning("Deploying but %s is not set to any repo", DEPLOY);
 			return;
@@ -1569,7 +1569,7 @@ public class Project extends Processor {
 
 	public Parameters getInstallRepositories() {
 		if (data.installRepositories == null) {
-			data.installRepositories = new Parameters(mergeProperties(BUILDREPO));
+			data.installRepositories = new Parameters(mergeProperties(BUILDREPO), this);
 		}
 		return data.installRepositories;
 	}
@@ -1931,7 +1931,7 @@ public class Project extends Processor {
 		for (NamedAction a : plugins)
 			all.put(a.getName(), a);
 
-		Parameters actions = new Parameters(getProperty("-actions", DEFAULT_ACTIONS));
+		Parameters actions = new Parameters(getProperty("-actions", DEFAULT_ACTIONS), this);
 		for (Entry<String,Attrs> entry : actions.entrySet()) {
 			String key = Processor.removeDuplicateMarker(entry.getKey());
 			Action action;
@@ -2794,7 +2794,7 @@ public class Project extends Processor {
 		if ("on".equalsIgnoreCase(debug) || "true".equalsIgnoreCase(debug))
 			debug = "vars,source,lines";
 
-		Parameters options = new Parameters(getProperty("java.options"));
+		Parameters options = new Parameters(getProperty("java.options"), this);
 
 		boolean deprecation = isTrue(getProperty("java.deprecation"));
 

@@ -42,7 +42,7 @@ public class ConnectionSettings extends Processor {
 	public void readSettings() throws Exception {
 		File tmp = null;
 		try {
-			Parameters connectionSettings = new Parameters(mergeProperties(CONNECTION_SETTINGS));
+			Parameters connectionSettings = new Parameters(mergeProperties(CONNECTION_SETTINGS), getParent());
 			if (connectionSettings.isEmpty()) {
 
 				File file = aQute.lib.io.IO.getFile(BND_CONNECTION_SETTINGS_XML);

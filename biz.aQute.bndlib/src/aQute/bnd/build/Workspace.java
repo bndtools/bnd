@@ -690,7 +690,7 @@ public class Workspace extends Processor {
 				Enumeration<URL> manifests = cl.getResources("META-INF/MANIFEST.MF");
 				while (manifests.hasMoreElements()) {
 					Manifest m = new Manifest(manifests.nextElement().openStream());
-					Parameters activators = new Parameters(m.getMainAttributes().getValue("Extension-Activator"));
+					Parameters activators = new Parameters(m.getMainAttributes().getValue("Extension-Activator"), this);
 					for (Entry<String,Attrs> e : activators.entrySet()) {
 						try {
 							Class< ? > c = cl.loadClass(e.getKey());
@@ -1200,7 +1200,7 @@ public class Workspace extends Processor {
 				ws.getProperties().put(key, entry.getValue());
 		}
 
-		Parameters standalone = new Parameters(property);
+		Parameters standalone = new Parameters(property, run);
 
 		int counter = 1;
 		for (Map.Entry<String,Attrs> e : standalone.entrySet()) {

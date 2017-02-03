@@ -96,7 +96,7 @@ public class OSGiHeader {
 						if (logger != null && logger.isPedantic())
 							logger.warning(
 									"Duplicate name %s used in header: '%s'. Duplicate names are specially marked in Bnd with a ~ at the end (which is stripped at printing time).",
-									clauseName, clauseName);
+									clauseName, value);
 						while (result.containsKey(clauseName))
 							clauseName += "~";
 					}

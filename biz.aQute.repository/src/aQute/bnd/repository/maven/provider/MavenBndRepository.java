@@ -293,7 +293,7 @@ public class MavenBndRepository extends BaseRepository
 		if (context == null)
 			return release;
 
-		Parameters p = new Parameters(context.getProperty(Constants.MAVEN_RELEASE));
+		Parameters p = new Parameters(context.getProperty(Constants.MAVEN_RELEASE), reporter);
 
 		release.type = storage.isLocalOnly() ? ReleaseType.LOCAL : ReleaseType.REMOTE;
 
