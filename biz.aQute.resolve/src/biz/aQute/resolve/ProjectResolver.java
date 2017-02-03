@@ -171,7 +171,7 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 	}
 
 	private void exists(BndrunResolveContext context, String framework, String msg) throws Exception {
-		Parameters p = new Parameters(framework);
+		Parameters p = new Parameters(framework, this);
 		for (Map.Entry<String,Attrs> e : p.entrySet()) {
 			exists(context, e.getKey(), e.getValue(), msg);
 		}

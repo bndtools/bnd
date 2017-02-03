@@ -576,7 +576,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param pluginString
 	 */
 	protected void loadPlugins(Set<Object> instances, String pluginString, String pluginPathString) {
-		Parameters plugins = new Parameters(pluginString);
+		Parameters plugins = new Parameters(pluginString, this);
 		CL loader = getLoader();
 
 		// First add the plugin-specific paths from their path: directives
@@ -672,7 +672,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param loader The class loader to extend
 	 */
 	private void loadPluginPath(Set<Object> instances, String pluginPath, CL loader) {
-		Parameters pluginpath = new Parameters(pluginPath);
+		Parameters pluginpath = new Parameters(pluginPath, this);
 
 		nextClause: for (Entry<String,Attrs> entry : pluginpath.entrySet()) {
 
@@ -1056,7 +1056,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (includes != null) {
 			includes = getReplacer().process(includes);
 			p.remove(INCLUDE);
-			Collection<String> clauses = new Parameters(includes).keySet();
+			Collection<String> clauses = new Parameters(includes, this).keySet();
 
 			for (String value : clauses) {
 				boolean fileMustExist = true;
@@ -2611,7 +2611,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 
 	public Parameters getMergedParameters(String key) {
-		return new Parameters(mergeProperties(key));
+		return new Parameters(mergeProperties(key), this);
 	}
 
 	/**

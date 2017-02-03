@@ -50,7 +50,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 	 */
 	public RemoteProjectLauncherPlugin(Project project) throws Exception {
 		super(project);
-		runremote = new Parameters(getProject().getProperty(Constants.RUNREMOTE));
+		runremote = new Parameters(getProject().getProperty(Constants.RUNREMOTE), getProject());
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 	public void update() throws Exception {
 		updateFromProject();
 
-		Parameters runremote = new Parameters(getProject().getProperty(Constants.RUNREMOTE));
+		Parameters runremote = new Parameters(getProject().getProperty(Constants.RUNREMOTE), getProject());
 
 		for (RunSessionImpl session : sessions)
 			try {

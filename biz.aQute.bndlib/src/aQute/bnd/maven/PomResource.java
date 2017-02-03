@@ -107,7 +107,7 @@ public class PomResource extends WriteResource {
 
 	public String augmentManifest(Domain domain, String bsn) {
 		String groupid = null;
-		Parameters augments = new Parameters(processor.mergeProperties("-pomaugment"));
+		Parameters augments = new Parameters(processor.mergeProperties("-pomaugment"), processor);
 
 		for (Entry<String,Attrs> augment : augments.entrySet()) {
 			Glob g = new Glob(augment.getKey());
@@ -212,7 +212,7 @@ public class PomResource extends WriteResource {
 			}
 		}
 		Tag ls = null;
-		Parameters licenses = new Parameters(bundleLicense);
+		Parameters licenses = new Parameters(bundleLicense, processor);
 		for (Entry<String,Attrs> license : licenses.entrySet()) {
 			// Bundle-License: identifier;description="description";link="URL"
 			//
@@ -251,7 +251,8 @@ public class PomResource extends WriteResource {
 			}
 		}
 
-		Parameters developers = new Parameters(manifest.getMainAttributes().getValue(Constants.BUNDLE_DEVELOPERS));
+		Parameters developers = new Parameters(manifest.getMainAttributes().getValue(Constants.BUNDLE_DEVELOPERS),
+				processor);
 
 		if (developers.size() > 0) {
 

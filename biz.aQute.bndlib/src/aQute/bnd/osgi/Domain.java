@@ -139,6 +139,16 @@ public abstract class Domain implements Iterable<String> {
 			}
 
 			@Override
+			public Parameters getParameters(String key) {
+				return getParameters(key, processor);
+			}
+
+			@Override
+			public Parameters getParameters(String key, String deflt) {
+				return getParameters(key, deflt, processor);
+			}
+
+			@Override
 			public Iterator<String> iterator() {
 				final Iterator<String> it = processor.getPropertyKeys(true).iterator();
 

@@ -746,8 +746,8 @@ public class Analyzer extends Processor {
 
 			// ----- Require/Capabilities section
 
-			Parameters requirements = new Parameters(annotationHeaders.getHeader(REQUIRE_CAPABILITY));
-			Parameters capabilities = new Parameters(annotationHeaders.getHeader(PROVIDE_CAPABILITY));
+			Parameters requirements = new Parameters(annotationHeaders.getHeader(REQUIRE_CAPABILITY), this);
+			Parameters capabilities = new Parameters(annotationHeaders.getHeader(PROVIDE_CAPABILITY), this);
 
 			//
 			// Do any contracts contracts
@@ -3264,7 +3264,7 @@ public class Analyzer extends Processor {
 
 	public boolean check(Check key) {
 		if (checks == null) {
-			Parameters p = new Parameters(getProperty("-check"));
+			Parameters p = new Parameters(getProperty("-check"), this);
 			checks = new HashSet<Check>();
 			for (String k : p.keySet())
 				try {

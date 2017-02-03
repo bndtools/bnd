@@ -328,7 +328,7 @@ public class Container {
 		}
 
 		File bundleClasspathDirectory = IO.getFile(file.getParentFile(), "." + file.getName() + "-bcp");
-		Parameters header = new Parameters(bundleClassPath);
+		Parameters header = new Parameters(bundleClassPath, project);
 		List<File> files = new ArrayList<>(header.size());
 		bundleClasspathDirectory.mkdir();
 

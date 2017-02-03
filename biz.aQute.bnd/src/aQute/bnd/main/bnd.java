@@ -2194,7 +2194,7 @@ public class bnd extends Processor {
 		}
 
 		String componentHeader = manifest.getMainAttributes().getValue(Constants.SERVICE_COMPONENT);
-		Parameters clauses = new Parameters(componentHeader);
+		Parameters clauses = new Parameters(componentHeader, this);
 		for (String path : clauses.keySet()) {
 			out.println(path);
 
@@ -3809,7 +3809,7 @@ public class bnd extends Processor {
 
 					line = matcher.group(1);
 
-					Parameters bundles = new Parameters(line);
+					Parameters bundles = new Parameters(line, this);
 					for (Map.Entry<String,Attrs> entry : bundles.entrySet()) {
 
 						String bsn = entry.getKey();
@@ -4228,11 +4228,11 @@ public class bnd extends Processor {
 			List<String> types = opts.exporter();
 			if (types != null) {
 				for (String type : types) {
-					exports.putAll(new Parameters(type));
+					exports.putAll(new Parameters(type, this));
 				}
 			} else {
 				String exportTypes = run.getProperty(Constants.EXPORTTYPE);
-				exports.putAll(new Parameters(exportTypes));
+				exports.putAll(new Parameters(exportTypes, this));
 			}
 
 			for (Entry<String,Attrs> e : exports.entrySet()) {

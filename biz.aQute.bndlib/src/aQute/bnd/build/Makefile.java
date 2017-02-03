@@ -159,7 +159,7 @@ class Makefile extends Processor {
 		setBase(project.getBase());
 		getSettings(project);
 
-		this.parameters = new Parameters(mergeProperties("-prepare"));
+		this.parameters = new Parameters(mergeProperties("-prepare"), this);
 
 		for (Map.Entry<String,Attrs> e : parameters.entrySet())
 			try {

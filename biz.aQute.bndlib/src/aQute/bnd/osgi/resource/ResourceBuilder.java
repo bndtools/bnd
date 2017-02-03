@@ -500,7 +500,7 @@ public class ResourceBuilder {
 	}
 
 	public List<Capability> addProvideCapabilities(String clauses) throws Exception {
-		return addProvideCapabilities(new Parameters(clauses));
+		return addProvideCapabilities(new Parameters(clauses, reporter));
 	}
 
 	public Capability addProvideCapability(String namespace, Attrs attrs) throws Exception {

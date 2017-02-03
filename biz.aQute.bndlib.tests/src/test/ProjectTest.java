@@ -323,7 +323,7 @@ public class ProjectTest extends TestCase {
 		top.clear();
 		top.setProperty("-runbundles", "org.apache.felix.configadmin,org.apache.felix.configadmin");
 		Collection<Container> runbundles = top.getRunbundles();
-		assertTrue(top.check("Multiple bundles with the same final URL"));
+		assertTrue(top.check("Multiple bundles with the same final URL", "Duplicate name"));
 		assertNotNull(runbundles);
 		assertEquals(1, runbundles.size());
 	}
@@ -390,7 +390,7 @@ public class ProjectTest extends TestCase {
 
 		List<Container> bundles = project.getBundles(Strategy.LOWEST,
 				"org.apache.felix.configadmin;version=1.1.0,org.apache.felix.configadmin;version=1.1.0", "test");
-		assertTrue(project.check("Multiple bundles with the same final URL"));
+		assertTrue(project.check("Multiple bundles with the same final URL", "Duplicate name"));
 		assertEquals(1, bundles.size());
 	}
 
