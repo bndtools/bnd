@@ -641,7 +641,8 @@ public class IO {
 	 * copies {@code target} to {@code link} if running on Windows.
 	 * <p>
 	 * Creating symbolic links on Windows requires administrator permissions, so
-	 * copying is a safer fallback.
+	 * copying is a safer fallback. Copy only happens if timestamp and and file
+	 * length are different than target
 	 *
 	 * @param link the location of the symbolic link, or destination of the
 	 *            copy.
@@ -651,7 +652,11 @@ public class IO {
 	public static boolean createSymbolicLinkOrCopy(File link, File target) {
 		try {
 			if (isWindows() || !createSymbolicLink(link, target)) {
-				IO.copy(target, link);
+				// only copy if target length and timestamp differ
+				if (target.lastModified() != link.lastModified() || target.length() != link.length()) {
+					IO.copy(target, link);
+					target.setLastModified(link.lastModified());
+				}
 			}
 			return true;
 		} catch (Exception ignore) {
