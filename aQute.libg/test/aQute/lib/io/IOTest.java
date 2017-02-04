@@ -1,6 +1,7 @@
 package aQute.lib.io;
 
 import java.io.File;
+import java.nio.file.Files;
 
 import junit.framework.TestCase;
 
@@ -52,6 +53,53 @@ public class IOTest extends TestCase {
 
 			fail("Expected IllegalArgumentException");
 		} catch (IllegalArgumentException e) {
+		}
+	}
+
+	public void testIfCreateSymlinkOrCopyFileDependingOnOS() throws Exception {
+		File link = new File("generated/test/target.dat");
+
+		IO.delete(link);
+
+		assertFalse(link.exists() || Files.isSymbolicLink(link.toPath()));
+
+		link.getParentFile().mkdirs();
+
+		File target = new File("testresources/zipped.dat");
+
+		assertTrue(target.exists());
+
+		assertTrue(IO.createSymbolicLinkOrCopy(link, target));
+
+		if (IO.isWindows()) {
+			assertFalse(Files.isSymbolicLink(link.toPath()));
+		} else {
+			assertTrue(Files.isSymbolicLink(link.toPath()));
+		}
+	}
+
+	public void testOnlyCopyIfReallyNeededOnWindows() throws Exception {
+		if (IO.isWindows()) {
+			File link = new File("generated/test/target.dat");
+
+			IO.delete(link);
+
+			assertFalse(link.exists() || Files.isSymbolicLink(link.toPath()));
+
+			link.getParentFile().mkdirs();
+
+			File target = new File("testresources/zipped.dat");
+			assertTrue(target.exists());
+
+			assertTrue(IO.createSymbolicLinkOrCopy(link, target));
+
+			assertEquals(link.lastModified(), target.lastModified());
+			assertEquals(link.length(), target.length());
+
+			assertTrue(IO.createSymbolicLinkOrCopy(link, target));
+
+			assertEquals(link.lastModified(), target.lastModified());
+			assertEquals(link.length(), target.length());
 		}
 	}
 }
