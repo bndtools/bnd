@@ -622,9 +622,9 @@ public class IO {
 		return writer(out, "UTF-8");
 	}
 
-	public static boolean createSymbolicLink(File link, File target) throws Exception {
+	public static boolean createSymbolicLink(File link, File source) throws Exception {
 		try {
-			Files.createSymbolicLink(link.toPath(), target.toPath());
+			Files.createSymbolicLink(link.toPath(), source.toPath());
 			return true;
 		} catch (Exception e) {
 			// ignore
@@ -644,18 +644,18 @@ public class IO {
 	 * copying is a safer fallback. Copy only happens if timestamp and and file
 	 * length are different than target
 	 *
-	 * @param link the location of the symbolic link, or destination of the
+	 * @param dest the location of the symbolic link, or destination of the
 	 *            copy.
-	 * @param target the target of the symbolic link, or source of the copy.
+	 * @param source the source of the symbolic link, or source of the copy.
 	 * @return {@code true} if the operation succeeds, {@code false} otherwise.
 	 */
-	public static boolean createSymbolicLinkOrCopy(File link, File target) {
+	public static boolean createSymbolicLinkOrCopy(File dest, File source) {
 		try {
-			if (isWindows() || !createSymbolicLink(link, target)) {
+			if (isWindows() || !createSymbolicLink(dest, source)) {
 				// only copy if target length and timestamp differ
-				if (target.lastModified() != link.lastModified() || target.length() != link.length()) {
-					IO.copy(target, link);
-					link.setLastModified(target.lastModified());
+				if (source.lastModified() != dest.lastModified() || source.length() != dest.length()) {
+					IO.copy(source, dest);
+					dest.setLastModified(source.lastModified());
 				}
 			}
 			return true;
