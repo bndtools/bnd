@@ -1,6 +1,7 @@
 package aQute.lib.io;
 
 import java.io.File;
+import java.nio.file.Files;
 
 import junit.framework.TestCase;
 
@@ -52,6 +53,76 @@ public class IOTest extends TestCase {
 
 			fail("Expected IllegalArgumentException");
 		} catch (IllegalArgumentException e) {
+		}
+	}
+
+	public void testIfCreateSymlinkOrCopyFileDependingOnOS() throws Exception {
+		File link = new File("generated/test/target.dat");
+
+		IO.delete(link);
+
+		assertFalse(link.exists() || Files.isSymbolicLink(link.toPath()));
+
+		link.getParentFile().mkdirs();
+
+		File source = new File("testresources/zipped.dat");
+
+		assertTrue(source.exists());
+
+		assertTrue(IO.createSymbolicLinkOrCopy(link, source));
+
+		if (IO.isWindows()) {
+			assertFalse(Files.isSymbolicLink(link.toPath()));
+		} else {
+			assertTrue(Files.isSymbolicLink(link.toPath()));
+		}
+	}
+
+	public void testOnlyCopyIfReallyNeededOnWindows() throws Exception {
+		if (IO.isWindows()) {
+			File link = new File("generated/test/target.dat");
+
+			IO.delete(link);
+
+			assertFalse(link.exists() || Files.isSymbolicLink(link.toPath()));
+
+			link.getParentFile().mkdirs();
+
+			File source = new File("testresources/zipped.dat");
+			assertTrue(source.exists());
+
+			assertTrue(IO.createSymbolicLinkOrCopy(link, source));
+
+			assertEquals(link.lastModified(), source.lastModified());
+			assertEquals(link.length(), source.length());
+
+			assertTrue(IO.createSymbolicLinkOrCopy(link, source));
+
+			assertEquals(link.lastModified(), source.lastModified());
+			assertEquals(link.length(), source.length());
+		}
+	}
+
+	public void testCreateSymlinkOrCopyWillDeleteOriginalLink() throws Exception {
+		File originalSource = new File("testresources/unzipped.dat");
+		File link = new File("generated/test/originalLink");
+
+		link.delete();
+
+		assertFalse(Files.isSymbolicLink(link.toPath()));
+
+		assertTrue(IO.createSymbolicLinkOrCopy(link, originalSource));
+
+		File newSource = new File("testresources/zipped.dat");
+
+		assertTrue(IO.createSymbolicLinkOrCopy(link, newSource));
+
+		if (IO.isWindows()) {
+			assertEquals(link.lastModified(), newSource.lastModified());
+			assertEquals(link.length(), newSource.length());
+		} else {
+			assertTrue(Files.isSymbolicLink(link.toPath()));
+			assertTrue(Files.readSymbolicLink(link.toPath()).equals(newSource.toPath()));
 		}
 	}
 }

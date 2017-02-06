@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -36,6 +35,7 @@ import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.service.RepositoryPlugin.DownloadListener;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
 import aQute.p2.api.Artifact;
 import aQute.p2.provider.P2Impl;
 import aQute.service.reporter.Reporter;
@@ -94,10 +94,8 @@ class P2Indexer implements Closeable {
 
 		final File source = client.getCacheFileFor(url);
 		final File link = new File(location, bsn + "-" + version + ".jar");
-		if (link.isFile())
-			Files.delete(link.toPath());
 
-		Files.createSymbolicLink(link.toPath(), source.toPath());
+		IO.createSymbolicLinkOrCopy(link, source);
 
 		Promise<File> go = client.build().useCache(MAX_STALE).async(url.toURL()).map(new Function<File,File>() {
 			@Override

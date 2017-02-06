@@ -28,6 +28,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -622,12 +623,19 @@ public class IO {
 		return writer(out, "UTF-8");
 	}
 
-	/**
-	 * Reflective way to create a link. This assumes Java 7+
-	 */
-	public static boolean createSymbolicLink(File link, File target) throws Exception {
+	public static boolean createSymbolicLink(File link, File source) throws Exception {
+		if (isSymbolicLink(link)) {
+			Path linkSource = Files.readSymbolicLink(link.toPath());
+
+			if (source.toPath().equals(linkSource)) {
+				return true;
+			} else {
+				link.delete();
+			}
+		}
+
 		try {
-			Files.createSymbolicLink(link.toPath(), target.toPath());
+			Files.createSymbolicLink(link.toPath(), source.toPath());
 			return true;
 		} catch (Exception e) {
 			// ignore
@@ -637,6 +645,35 @@ public class IO {
 
 	public static boolean isSymbolicLink(File link) {
 		return Files.isSymbolicLink(link.toPath());
+	}
+
+	/**
+	 * Creates a symbolic link from {@code link} to the {@code target}, or
+	 * copies {@code target} to {@code link} if running on Windows.
+	 * <p>
+	 * Creating symbolic links on Windows requires administrator permissions, so
+	 * copying is a safer fallback. Copy only happens if timestamp and and file
+	 * length are different than target
+	 *
+	 * @param dest the location of the symbolic link, or destination of the
+	 *            copy.
+	 * @param source the source of the symbolic link, or source of the copy.
+	 * @return {@code true} if the operation succeeds, {@code false} otherwise.
+	 */
+	public static boolean createSymbolicLinkOrCopy(File dest, File source) {
+		try {
+			if (isWindows() || !createSymbolicLink(dest, source)) {
+				// only copy if target length and timestamp differ
+				if (source.lastModified() != dest.lastModified() || source.length() != dest.length()) {
+					IO.copy(source, dest);
+					dest.setLastModified(source.lastModified());
+				}
+			}
+			return true;
+		} catch (Exception ignore) {
+			// ignore
+		}
+		return false;
 	}
 
 	static public OutputStream	nullStream	= new OutputStream() {
