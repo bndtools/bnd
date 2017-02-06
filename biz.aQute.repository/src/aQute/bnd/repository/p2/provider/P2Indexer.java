@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -95,8 +94,6 @@ class P2Indexer implements Closeable {
 
 		final File source = client.getCacheFileFor(url);
 		final File link = new File(location, bsn + "-" + version + ".jar");
-		if (link.isFile())
-			Files.delete(link.toPath());
 
 		IO.createSymbolicLinkOrCopy(link, source);
 

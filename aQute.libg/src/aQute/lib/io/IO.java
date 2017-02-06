@@ -28,6 +28,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -623,6 +624,16 @@ public class IO {
 	}
 
 	public static boolean createSymbolicLink(File link, File source) throws Exception {
+		if (isSymbolicLink(link)) {
+			Path linkSource = Files.readSymbolicLink(link.toPath());
+
+			if (source.toPath().equals(linkSource)) {
+				return true;
+			} else {
+				link.delete();
+			}
+		}
+
 		try {
 			Files.createSymbolicLink(link.toPath(), source.toPath());
 			return true;
