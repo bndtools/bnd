@@ -102,4 +102,27 @@ public class IOTest extends TestCase {
 			assertEquals(link.length(), source.length());
 		}
 	}
+
+	public void testCreateSymlinkOrCopyWillDeleteOriginalLink() throws Exception {
+		File originalSource = new File("testresources/unzipped.dat");
+		File link = new File("generated/test/originalLink");
+
+		link.delete();
+
+		assertFalse(Files.isSymbolicLink(link.toPath()));
+
+		assertTrue(IO.createSymbolicLinkOrCopy(link, originalSource));
+
+		File newSource = new File("testresources/zipped.dat");
+
+		assertTrue(IO.createSymbolicLinkOrCopy(link, newSource));
+
+		if (IO.isWindows()) {
+			assertEquals(link.lastModified(), newSource.lastModified());
+			assertEquals(link.length(), newSource.length());
+		} else {
+			assertTrue(Files.isSymbolicLink(link.toPath()));
+			assertTrue(Files.readSymbolicLink(link.toPath()).equals(newSource.toPath()));
+		}
+	}
 }
