@@ -12,9 +12,7 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import org.osgi.framework.namespace.BundleNamespace;
-import org.osgi.framework.namespace.HostNamespace;
-import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.framework.wiring.dto.BundleRevisionDTO;
 import org.osgi.resource.dto.CapabilityDTO;
@@ -55,10 +53,11 @@ class RemoteCommand extends Processor {
 	static {
 		IGNORED_NAMESPACES.add(PackageNamespace.PACKAGE_NAMESPACE); // handled
 																	// specially
-		IGNORED_NAMESPACES.add(HostNamespace.HOST_NAMESPACE);
-		IGNORED_NAMESPACES.add(BundleNamespace.BUNDLE_NAMESPACE);
-		IGNORED_NAMESPACES.add(IdentityNamespace.IDENTITY_NAMESPACE);
+		// IGNORED_NAMESPACES.add(HostNamespace.HOST_NAMESPACE);
+		// IGNORED_NAMESPACES.add(BundleNamespace.BUNDLE_NAMESPACE);
+		// IGNORED_NAMESPACES.add(IdentityNamespace.IDENTITY_NAMESPACE);
 		IGNORED_NAMESPACES.add(ContentNamespace.CONTENT_NAMESPACE);
+		IGNORED_NAMESPACES.add(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
 	}
 
 	/**
