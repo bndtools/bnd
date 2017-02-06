@@ -655,7 +655,7 @@ public class IO {
 				// only copy if target length and timestamp differ
 				if (target.lastModified() != link.lastModified() || target.length() != link.length()) {
 					IO.copy(target, link);
-					target.setLastModified(link.lastModified());
+					link.setLastModified(target.lastModified());
 				}
 			}
 			return true;
