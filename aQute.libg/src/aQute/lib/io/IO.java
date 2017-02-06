@@ -622,9 +622,6 @@ public class IO {
 		return writer(out, "UTF-8");
 	}
 
-	/**
-	 * Reflective way to create a link. This assumes Java 7+
-	 */
 	public static boolean createSymbolicLink(File link, File target) throws Exception {
 		try {
 			Files.createSymbolicLink(link.toPath(), target.toPath());
@@ -637,6 +634,30 @@ public class IO {
 
 	public static boolean isSymbolicLink(File link) {
 		return Files.isSymbolicLink(link.toPath());
+	}
+
+	/**
+	 * Creates a symbolic link from {@code link} to the {@code target}, or
+	 * copies {@code target} to {@code link} if running on Windows.
+	 * <p>
+	 * Creating symbolic links on Windows requires administrator permissions, so
+	 * copying is a safer fallback.
+	 *
+	 * @param link the location of the symbolic link, or destination of the
+	 *            copy.
+	 * @param target the target of the symbolic link, or source of the copy.
+	 * @return {@code true} if the operation succeeds, {@code false} otherwise.
+	 */
+	public static boolean createSymbolicLinkOrCopy(File link, File target) {
+		try {
+			if (isWindows() || !createSymbolicLink(link, target)) {
+				IO.copy(target, link);
+			}
+			return true;
+		} catch (Exception ignore) {
+			// ignore
+		}
+		return false;
 	}
 
 	static public OutputStream	nullStream	= new OutputStream() {
