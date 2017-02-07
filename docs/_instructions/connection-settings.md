@@ -6,16 +6,16 @@ summary: Setting up the communications for bnd
 
 This chapter discusses the communication settings of bnd that you will need when a server requires a proxy, password, or other communication settings. These settings can obviously not be part of the workspace since they are unique to the actual user of the workspace.
 
-Since Maven support is quite widespread we've tried to align the communication settings with the settings of maven. Out of the box, bnd will use the settings in `~/.m2/settings.xml`. We made it out of the box so that people could get a seam less experience when using OSGi workspaces. However, there can reasons to not share the maven settings. In that case you must create a `~/.bnd/settings.xml` file that follows the same syntax as the maven file. The order bnd looks for settings is therefore:
+Since Maven support is quite widespread we've tried to align the communication settings with the settings of maven. Out of the box, bnd will use the settings in `~/.m2/settings.xml`. We made it out of the box so that people could get a seam less experience when using OSGi workspaces. However, there can reasons to not share the maven settings. In that case you must create a `~/.bnd/connection-settings.xml` file that follows the same syntax as the maven file. The order bnd looks for settings is therefore:
 
-	`~/.bnd/settings.xml`
+	`~/.bnd/connection-settings.xml`
 	`~/.m2/settings.xml`
 
 If you want to disable the use of these mechanisms from the workspace then you can use the `-connection-settings` instruction. If you set this to `false` then it will not look for the aforementioned files. 
 
 	-connection-settings: false
 
-In this setting, you can also list additional files to parse that must be of the same syntax as maven settings. The name `maven` and `bnd` are recognized as `~/.m2/settings.xml` and `~/.bnd/settings.xml` respectively.
+In this setting, you can also list additional files to parse that must be of the same syntax as maven settings. The name `maven` and `bnd` are recognized as `~/.m2/settings.xml` and `~/.bnd/connection-settings.xml` respectively.
 
 	-connection-settings: ~/foo/settings.xml, bnd
 
