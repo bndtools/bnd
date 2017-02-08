@@ -136,27 +136,27 @@ public class BndPlugin implements Plugin<Project> {
       def javacEncoding = bnd('javac.encoding', 'UTF-8')
       def compileOptions = {
         if (javacDebug) {
-          options.debugOptions.debugLevel = 'source,lines,vars'
+          debugOptions.debugLevel = 'source,lines,vars'
         }
-        options.verbose = logger.isDebugEnabled()
-        options.listFiles = logger.isInfoEnabled()
-        options.deprecation = javacDeprecation
-        options.encoding = javacEncoding
+        verbose = logger.isDebugEnabled()
+        listFiles = logger.isInfoEnabled()
+        deprecation = javacDeprecation
+        encoding = javacEncoding
         if (javac != 'javac') {
-          options.fork = true
-          options.forkOptions.executable = javac
+          fork = true
+          forkOptions.executable = javac
         }
         if (!bootclasspath.empty) {
-          options.fork = true
-          options.bootClasspath = bootclasspath.asPath
+          fork = true
+          bootClasspath = bootclasspath.asPath
         }
         if (!javacProfile.empty) {
-          options.compilerArgs += ['-profile', javacProfile]
+          compilerArgs += ['-profile', javacProfile]
         }
       }
 
       compileJava {
-        configure compileOptions
+        configure options, compileOptions
         if (logger.isInfoEnabled()) {
           doFirst {
             logger.info 'Compile {} to {}', sourceSets.main.java.srcDirs, destinationDir
@@ -187,7 +187,7 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       compileTestJava {
-        configure compileOptions
+        configure options, compileOptions
         doFirst {
             checkErrors(logger)
         }
