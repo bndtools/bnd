@@ -8,3 +8,4 @@ Project-Dir: ${project.dir}
 Project-Output: ${project.output}
 Project-Sourcepath: ${project.sourcepath}
 Project-Buildpath: ${project.buildpath}
+-includeresource.lib: commons-lang-2.6.jar;lib:=true
