@@ -136,30 +136,30 @@ public class BndPlugin implements Plugin<Project> {
       def javacEncoding = bnd('javac.encoding', 'UTF-8')
       def compileOptions = {
         if (javacDebug) {
-          options.debugOptions.debugLevel = 'source,lines,vars'
+          debugOptions.debugLevel = 'source,lines,vars'
         }
-        options.verbose = logger.isDebugEnabled()
-        options.listFiles = logger.isInfoEnabled()
-        options.deprecation = javacDeprecation
-        options.encoding = javacEncoding
+        verbose = logger.isDebugEnabled()
+        listFiles = logger.isInfoEnabled()
+        deprecation = javacDeprecation
+        encoding = javacEncoding
         if (javac != 'javac') {
-          options.fork = true
-          options.forkOptions.executable = javac
+          fork = true
+          forkOptions.executable = javac
         }
         if (!bootclasspath.empty) {
-          options.fork = true
-          options.bootClasspath = bootclasspath.asPath
+          fork = true
+          bootClasspath = bootclasspath.asPath
         }
         if (!javacProfile.empty) {
-          options.compilerArgs += ['-profile', javacProfile]
+          compilerArgs += ['-profile', javacProfile]
         }
       }
 
       compileJava {
-        configure compileOptions
+        configure options, compileOptions
         if (logger.isInfoEnabled()) {
           doFirst {
-            logger.info 'Compile {} to {}', sourceSets.main.java.srcDirs, destinationDir
+            logger.info 'Compile {} to {}', sourceSets.main.java.sourceDirectories.asPath, destinationDir
             if (javacProfile.empty) {
               logger.info '-source {} -target {}', sourceCompatibility, targetCompatibility
             } else {
@@ -187,7 +187,7 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       compileTestJava {
-        configure compileOptions
+        configure options, compileOptions
         doFirst {
             checkErrors(logger)
         }
@@ -205,11 +205,11 @@ public class BndPlugin implements Plugin<Project> {
 
       processResources {
         outputs.files {
-          def srcDirs = sourceSets.main.resources.srcDirs
+          def sourceDirectories = sourceSets.main.resources.sourceDirectories
           def outputDir = sourceSets.main.output.resourcesDir
           inputs.files.collect {
             def input = it.absolutePath
-            srcDirs.each {
+            sourceDirectories.each {
               input -= it
             }
             new File(outputDir, input)
@@ -219,11 +219,11 @@ public class BndPlugin implements Plugin<Project> {
 
       processTestResources {
         outputs.files {
-          def srcDirs = sourceSets.test.resources.srcDirs
+          def sourceDirectories = sourceSets.test.resources.sourceDirectories
           def outputDir = sourceSets.test.output.resourcesDir
           inputs.files.collect {
             def input = it.absolutePath
-            srcDirs.each {
+            sourceDirectories.each {
               input -= it
             }
             new File(outputDir, input)
@@ -236,55 +236,53 @@ public class BndPlugin implements Plugin<Project> {
         deleteAllActions() /* Replace the standard task actions */
         enabled !bndProject.isNoBundles()
         ext.projectDirInputsExcludes = [] /* Additional excludes for projectDir inputs */
-        if (enabled) {
-          /* all other files in the project like bnd and resources */
-          inputs.files {
-            fileTree(projectDir) { tree ->
-              sourceSets.each { sourceSet -> /* exclude sourceSet dirs */
-                sourceSet.allSource.srcDirs.each {
-                  tree.exclude project.relativePath(it)
-                }
-                sourceSet.output.each {
-                  tree.exclude project.relativePath(it)
-                }
+        /* all other files in the project like bnd and resources */
+        inputs.files {
+          fileTree(projectDir) { tree ->
+            sourceSets.each { sourceSet -> /* exclude sourceSet dirs */
+              sourceSet.allSource.sourceDirectories.each {
+                tree.exclude project.relativePath(it)
               }
-              tree.exclude project.relativePath(buildDir) /* exclude buildDir */
-              tree.exclude projectDirInputsExcludes /* user specified excludes */
+              sourceSet.output.each {
+                tree.exclude project.relativePath(it)
+              }
             }
+            tree.exclude project.relativePath(buildDir) /* exclude buildDir */
+            tree.exclude projectDirInputsExcludes /* user specified excludes */
           }
-          /* bnd can include any class on the buildpath */
-          def compileConfiguration = configurations.findByName('compileClasspath') ?: configurations.compile
-          inputs.files {
-            compileConfiguration.files.collect {
-              it.directory ? fileTree(it) : it
-            }
+        }
+        /* bnd can include any class on the buildpath */
+        def compileConfiguration = configurations.findByName('compileClasspath') ?: configurations.compile
+        inputs.files {
+          compileConfiguration.collect {
+            it.directory ? fileTree(it) : it
           }
-          /* project dependencies' artifacts should trigger jar task */
-          inputs.files {
-            compileConfiguration.dependencies.withType(ProjectDependency.class).collect {
-              it.dependencyProject.jar
-            }
+        }
+        /* project dependencies' artifacts should trigger jar task */
+        inputs.files {
+          compileConfiguration.dependencies.withType(ProjectDependency.class).collect {
+            it.dependencyProject.jar
           }
-          /* Workspace and project configuration changes should trigger jar task */
-          inputs.files bndProject.getWorkspace().getPropertiesFile(),
-            bndProject.getWorkspace().getIncluded() ?: [],
-            bndProject.getPropertiesFile(),
-            bndProject.getIncluded() ?: []
-          outputs.files {
-            configurations.archives.artifacts.files
+        }
+        /* Workspace and project configuration changes should trigger jar task */
+        inputs.files bndProject.getWorkspace().getPropertiesFile(),
+          bndProject.getWorkspace().getIncluded() ?: [],
+          bndProject.getPropertiesFile(),
+          bndProject.getIncluded() ?: []
+        outputs.files {
+          configurations.archives.artifacts.files
+        }
+        outputs.file new File(buildDir, Constants.BUILDFILES)
+        doLast {
+          def built
+          try {
+            built = bndProject.build()
+          } catch (Exception e) {
+            throw new GradleException("Project ${bndProject.getName()} failed to build", e)
           }
-          outputs.file new File(buildDir, Constants.BUILDFILES)
-          doLast {
-            def built
-            try {
-              built = bndProject.build()
-            } catch (Exception e) {
-              throw new GradleException("Project ${bndProject.getName()} failed to build", e)
-            }
-            checkErrors(logger)
-            if (built != null) {
-              logger.info 'Generated bundles: {}', built
-            }
+          checkErrors(logger)
+          if (built != null) {
+            logger.info 'Generated bundles: {}', built
           }
         }
       }
@@ -294,16 +292,14 @@ public class BndPlugin implements Plugin<Project> {
         dependsOn assemble
         group 'release'
         enabled !bndProject.isNoBundles() && !bnd(Constants.RELEASEREPO, 'unset').empty
-        if (enabled) {
-          inputs.files jar
-          doLast {
-            try {
-              bndProject.release()
-            } catch (Exception e) {
-              throw new GradleException("Project ${bndProject.getName()} failed to release", e)
-            }
-            checkErrors(logger)
+        inputs.files jar
+        doLast {
+          try {
+            bndProject.release()
+          } catch (Exception e) {
+            throw new GradleException("Project ${bndProject.getName()} failed to release", e)
           }
+          checkErrors(logger)
         }
       }
 
@@ -326,19 +322,17 @@ public class BndPlugin implements Plugin<Project> {
         group 'verification'
         enabled !parseBoolean(bnd(Constants.NOJUNITOSGI, 'false')) && !bndUnprocessed(Constants.TESTCASES, '').empty
         ext.ignoreFailures = false
-        if (enabled) {
-          inputs.files jar
-          outputs.dir {
-            testResultsDir
+        inputs.files jar
+        outputs.dir {
+          testResultsDir
+        }
+        doLast {
+          try {
+            bndProject.test()
+          } catch (Exception e) {
+            throw new GradleException("Project ${bndProject.getName()} failed to test", e)
           }
-          doLast {
-            try {
-              bndProject.test()
-            } catch (Exception e) {
-              throw new GradleException("Project ${bndProject.getName()} failed to test", e)
-            }
-            checkErrors(logger, ignoreFailures)
-          }
+          checkErrors(logger, ignoreFailures)
         }
       }
 
@@ -561,11 +555,11 @@ project.name:           ${project.name}
 project.dir:            ${projectDir}
 target:                 ${buildDir}
 project.dependson:      ${bndProject.getDependson()*.getName()}
-project.sourcepath:     ${files(sourceSets.main.java.srcDirs).asPath}
+project.sourcepath:     ${sourceSets.main.java.sourceDirectories.asPath}
 project.output:         ${compileJava.destinationDir}
 project.buildpath:      ${compileJava.classpath.asPath}
 project.allsourcepath:  ${bnd.allSrcDirs.asPath}
-project.testsrc:        ${files(sourceSets.test.java.srcDirs).asPath}
+project.testsrc:        ${sourceSets.test.java.sourceDirectories.asPath}
 project.testoutput:     ${compileTestJava.destinationDir}
 project.testpath:       ${compileTestJava.classpath.asPath}
 project.bootclasspath:  ${compileJava.options.bootClasspath}
