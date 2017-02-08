@@ -61,6 +61,7 @@ class TestBundlePlugin extends Specification {
           new File(jartask_manifest.getValue('Project-Output')).canonicalFile == testProjectBuildDir
           jartask_manifest.getValue('Project-Sourcepath')
           jartask_manifest.getValue('Project-Buildpath')
+          jartask_manifest.getValue('Bundle-ClassPath') =~ /commons-lang-2\.6\.jar/
           jartask_jar.getEntry('doubler/Doubler.class')
           jartask_jar.getEntry('doubler/packageinfo')
           jartask_jar.getEntry('doubler/impl/DoublerImpl.class')
@@ -78,6 +79,7 @@ class TestBundlePlugin extends Specification {
           jartask_jar.getEntry('bar.txt')
           jartask_jar.getInputStream(jartask_jar.getEntry('bar.txt')).text =~ /Some more TEXT/
           !jartask_jar.getEntry('test.txt')
+          jartask_jar.getEntry('commons-lang-2.6.jar')
 
           bundletask_manifest.getValue('Bundle-SymbolicName') == "${testProject}_bundle"
           bundletask_manifest.getValue('Bundle-Version') == '1.1.0'
@@ -90,6 +92,7 @@ class TestBundlePlugin extends Specification {
           new File(bundletask_manifest.getValue('Project-Output')).canonicalFile == testProjectBuildDir
           bundletask_manifest.getValue('Project-Sourcepath')
           bundletask_manifest.getValue('Project-Buildpath')
+          bundletask_manifest.getValue('Bundle-ClassPath') =~ /commons-lang-2\.6\.jar/
           !bundletask_jar.getEntry('doubler/Doubler.class')
           !bundletask_jar.getEntry('doubler/impl/DoublerImpl.class')
           bundletask_jar.getEntry('doubler/impl/DoublerImplTest.class')
@@ -98,5 +101,6 @@ class TestBundlePlugin extends Specification {
           !bundletask_jar.getEntry('bar.txt')
           bundletask_jar.getEntry('test.txt')
           bundletask_jar.getInputStream(bundletask_jar.getEntry('test.txt')).text =~ /This is a test resource/
+          bundletask_jar.getEntry('commons-lang-2.6.jar')
     }
 }
