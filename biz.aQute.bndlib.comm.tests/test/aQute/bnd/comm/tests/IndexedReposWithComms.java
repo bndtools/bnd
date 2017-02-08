@@ -3,6 +3,7 @@ package aQute.bnd.comm.tests;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -155,6 +156,7 @@ public class IndexedReposWithComms extends TestCase {
 		UserManager userManager = new MemoryBasedUserManager();
 		userManager.create(new User("proxyuser", "good"));
 		SocksServerBuilder builder = SocksServerBuilder.newSocks5ServerBuilder();
+		builder.setBindAddr(InetAddress.getLoopbackAddress());
 		builder.setBindPort(9090);
 		builder.setUserManager(userManager);
 		builder.addSocksMethods(new UsernamePasswordMethod(new UsernamePasswordAuthenticator() {
