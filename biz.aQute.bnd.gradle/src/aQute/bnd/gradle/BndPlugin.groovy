@@ -236,55 +236,53 @@ public class BndPlugin implements Plugin<Project> {
         deleteAllActions() /* Replace the standard task actions */
         enabled !bndProject.isNoBundles()
         ext.projectDirInputsExcludes = [] /* Additional excludes for projectDir inputs */
-        if (enabled) {
-          /* all other files in the project like bnd and resources */
-          inputs.files {
-            fileTree(projectDir) { tree ->
-              sourceSets.each { sourceSet -> /* exclude sourceSet dirs */
-                sourceSet.allSource.srcDirs.each {
-                  tree.exclude project.relativePath(it)
-                }
-                sourceSet.output.each {
-                  tree.exclude project.relativePath(it)
-                }
+        /* all other files in the project like bnd and resources */
+        inputs.files {
+          fileTree(projectDir) { tree ->
+            sourceSets.each { sourceSet -> /* exclude sourceSet dirs */
+              sourceSet.allSource.srcDirs.each {
+                tree.exclude project.relativePath(it)
               }
-              tree.exclude project.relativePath(buildDir) /* exclude buildDir */
-              tree.exclude projectDirInputsExcludes /* user specified excludes */
+              sourceSet.output.each {
+                tree.exclude project.relativePath(it)
+              }
             }
+            tree.exclude project.relativePath(buildDir) /* exclude buildDir */
+            tree.exclude projectDirInputsExcludes /* user specified excludes */
           }
-          /* bnd can include any class on the buildpath */
-          def compileConfiguration = configurations.findByName('compileClasspath') ?: configurations.compile
-          inputs.files {
-            compileConfiguration.files.collect {
-              it.directory ? fileTree(it) : it
-            }
+        }
+        /* bnd can include any class on the buildpath */
+        def compileConfiguration = configurations.findByName('compileClasspath') ?: configurations.compile
+        inputs.files {
+          compileConfiguration.files.collect {
+            it.directory ? fileTree(it) : it
           }
-          /* project dependencies' artifacts should trigger jar task */
-          inputs.files {
-            compileConfiguration.dependencies.withType(ProjectDependency.class).collect {
-              it.dependencyProject.jar
-            }
+        }
+        /* project dependencies' artifacts should trigger jar task */
+        inputs.files {
+          compileConfiguration.dependencies.withType(ProjectDependency.class).collect {
+            it.dependencyProject.jar
           }
-          /* Workspace and project configuration changes should trigger jar task */
-          inputs.files bndProject.getWorkspace().getPropertiesFile(),
-            bndProject.getWorkspace().getIncluded() ?: [],
-            bndProject.getPropertiesFile(),
-            bndProject.getIncluded() ?: []
-          outputs.files {
-            configurations.archives.artifacts.files
+        }
+        /* Workspace and project configuration changes should trigger jar task */
+        inputs.files bndProject.getWorkspace().getPropertiesFile(),
+          bndProject.getWorkspace().getIncluded() ?: [],
+          bndProject.getPropertiesFile(),
+          bndProject.getIncluded() ?: []
+        outputs.files {
+          configurations.archives.artifacts.files
+        }
+        outputs.file new File(buildDir, Constants.BUILDFILES)
+        doLast {
+          def built
+          try {
+            built = bndProject.build()
+          } catch (Exception e) {
+            throw new GradleException("Project ${bndProject.getName()} failed to build", e)
           }
-          outputs.file new File(buildDir, Constants.BUILDFILES)
-          doLast {
-            def built
-            try {
-              built = bndProject.build()
-            } catch (Exception e) {
-              throw new GradleException("Project ${bndProject.getName()} failed to build", e)
-            }
-            checkErrors(logger)
-            if (built != null) {
-              logger.info 'Generated bundles: {}', built
-            }
+          checkErrors(logger)
+          if (built != null) {
+            logger.info 'Generated bundles: {}', built
           }
         }
       }
@@ -294,16 +292,14 @@ public class BndPlugin implements Plugin<Project> {
         dependsOn assemble
         group 'release'
         enabled !bndProject.isNoBundles() && !bnd(Constants.RELEASEREPO, 'unset').empty
-        if (enabled) {
-          inputs.files jar
-          doLast {
-            try {
-              bndProject.release()
-            } catch (Exception e) {
-              throw new GradleException("Project ${bndProject.getName()} failed to release", e)
-            }
-            checkErrors(logger)
+        inputs.files jar
+        doLast {
+          try {
+            bndProject.release()
+          } catch (Exception e) {
+            throw new GradleException("Project ${bndProject.getName()} failed to release", e)
           }
+          checkErrors(logger)
         }
       }
 
@@ -326,19 +322,17 @@ public class BndPlugin implements Plugin<Project> {
         group 'verification'
         enabled !parseBoolean(bnd(Constants.NOJUNITOSGI, 'false')) && !bndUnprocessed(Constants.TESTCASES, '').empty
         ext.ignoreFailures = false
-        if (enabled) {
-          inputs.files jar
-          outputs.dir {
-            testResultsDir
+        inputs.files jar
+        outputs.dir {
+          testResultsDir
+        }
+        doLast {
+          try {
+            bndProject.test()
+          } catch (Exception e) {
+            throw new GradleException("Project ${bndProject.getName()} failed to test", e)
           }
-          doLast {
-            try {
-              bndProject.test()
-            } catch (Exception e) {
-              throw new GradleException("Project ${bndProject.getName()} failed to test", e)
-            }
-            checkErrors(logger, ignoreFailures)
-          }
+          checkErrors(logger, ignoreFailures)
         }
       }
 
