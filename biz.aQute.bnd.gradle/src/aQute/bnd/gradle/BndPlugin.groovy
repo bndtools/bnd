@@ -254,7 +254,7 @@ public class BndPlugin implements Plugin<Project> {
         /* bnd can include any class on the buildpath */
         def compileConfiguration = configurations.findByName('compileClasspath') ?: configurations.compile
         inputs.files {
-          compileConfiguration.files.collect {
+          compileConfiguration.collect {
             it.directory ? fileTree(it) : it
           }
         }
