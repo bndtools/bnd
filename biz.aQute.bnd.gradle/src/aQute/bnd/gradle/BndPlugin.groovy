@@ -159,7 +159,7 @@ public class BndPlugin implements Plugin<Project> {
         configure options, compileOptions
         if (logger.isInfoEnabled()) {
           doFirst {
-            logger.info 'Compile {} to {}', sourceSets.main.java.srcDirs, destinationDir
+            logger.info 'Compile {} to {}', sourceSets.main.java.sourceDirectories.asPath, destinationDir
             if (javacProfile.empty) {
               logger.info '-source {} -target {}', sourceCompatibility, targetCompatibility
             } else {
@@ -205,11 +205,11 @@ public class BndPlugin implements Plugin<Project> {
 
       processResources {
         outputs.files {
-          def srcDirs = sourceSets.main.resources.srcDirs
+          def sourceDirectories = sourceSets.main.resources.sourceDirectories
           def outputDir = sourceSets.main.output.resourcesDir
           inputs.files.collect {
             def input = it.absolutePath
-            srcDirs.each {
+            sourceDirectories.each {
               input -= it
             }
             new File(outputDir, input)
@@ -219,11 +219,11 @@ public class BndPlugin implements Plugin<Project> {
 
       processTestResources {
         outputs.files {
-          def srcDirs = sourceSets.test.resources.srcDirs
+          def sourceDirectories = sourceSets.test.resources.sourceDirectories
           def outputDir = sourceSets.test.output.resourcesDir
           inputs.files.collect {
             def input = it.absolutePath
-            srcDirs.each {
+            sourceDirectories.each {
               input -= it
             }
             new File(outputDir, input)
@@ -240,7 +240,7 @@ public class BndPlugin implements Plugin<Project> {
         inputs.files {
           fileTree(projectDir) { tree ->
             sourceSets.each { sourceSet -> /* exclude sourceSet dirs */
-              sourceSet.allSource.srcDirs.each {
+              sourceSet.allSource.sourceDirectories.each {
                 tree.exclude project.relativePath(it)
               }
               sourceSet.output.each {
@@ -555,11 +555,11 @@ project.name:           ${project.name}
 project.dir:            ${projectDir}
 target:                 ${buildDir}
 project.dependson:      ${bndProject.getDependson()*.getName()}
-project.sourcepath:     ${files(sourceSets.main.java.srcDirs).asPath}
+project.sourcepath:     ${sourceSets.main.java.sourceDirectories.asPath}
 project.output:         ${compileJava.destinationDir}
 project.buildpath:      ${compileJava.classpath.asPath}
 project.allsourcepath:  ${bnd.allSrcDirs.asPath}
-project.testsrc:        ${files(sourceSets.test.java.srcDirs).asPath}
+project.testsrc:        ${sourceSets.test.java.sourceDirectories.asPath}
 project.testoutput:     ${compileTestJava.destinationDir}
 project.testpath:       ${compileTestJava.classpath.asPath}
 project.bootclasspath:  ${compileJava.options.bootClasspath}
