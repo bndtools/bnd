@@ -10,7 +10,9 @@ https://github.com/bndtools/sockslib
 # How to build sockslib-1.0.0.jar
 
 Clone above repo and execute:
+
 ```mvn clean package -DskipTests```
 
 Copy project to this project
-```cp target/sockslib-1.0.0-SNAPSHOTS.jar <bnd_repo>/biz.aQute.bndlib.comms.test/jar/sockslib-1.0.0.jar```
+
+```cp target/sockslib-1.0.0-SNAPSHOT.jar <bnd_repo>/biz.aQute.bndlib.comms.test/jar/sockslib-1.0.0.jar```
