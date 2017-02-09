@@ -462,11 +462,11 @@ public class ResourceBuilder {
 		StringBuilder filter = new StringBuilder();
 		filter.append("(").append(HostNamespace.HOST_NAMESPACE).append("=").append(bsn).append(")");
 
-		String v = attrs.getVersion();
+		String v = attrs.get(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 		if (v != null && VersionRange.isOSGiVersionRange(v)) {
 			VersionRange range = VersionRange.parseOSGiVersionRange(v);
 			filter.insert(0, "(&");
-			filter.append(range.toFilter());
+			filter.append(range.toFilter(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE));
 			filter.append(")");
 		}
 		rbb.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());

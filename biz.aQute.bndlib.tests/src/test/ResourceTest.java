@@ -195,6 +195,8 @@ public class ResourceTest extends TestCase {
 		assertEquals(1, requirements.size());
 		Map<String,String> directives = requirements.get(0).getDirectives();
 		assertTrue(directives.containsKey(HostNamespace.REQUIREMENT_FILTER_DIRECTIVE));
+		String filter = directives.get(HostNamespace.REQUIREMENT_FILTER_DIRECTIVE);
+		assertEquals("(&(osgi.wiring.host=demo)(&(bundle-version>=1.0.0)(!(bundle-version>=1.0.1))))", filter);
 	}
 
 	public void testResourceToVersionedClause() throws Exception {
@@ -204,7 +206,7 @@ public class ResourceTest extends TestCase {
 		VersionedClause versionClause = ResourceUtils.toVersionClause(resource, "[===,==+)");
 		StringBuilder sb = new StringBuilder();
 		versionClause.formatTo(sb);
-		assertEquals("demo-fragment;version='[3.3.0,3.3.1)'", sb.toString());
+		assertEquals("demo-fragment;version='[1.0.0,1.0.1)'", sb.toString());
 	}
 
 	public void testSnapshotResourceToVersionedClause() throws Exception {
