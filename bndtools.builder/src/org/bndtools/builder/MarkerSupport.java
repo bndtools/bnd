@@ -79,7 +79,7 @@ class MarkerSupport {
     }
 
     private void createMarkers(Processor model, int severity, Collection<String> msgs, String markerType) throws Exception {
-        for (String msg : msgs) {
+        for (String msg : msgs.toArray(new String[0])) {
             createMarker(model, severity, msg, markerType);
         }
     }
