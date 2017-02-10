@@ -13,7 +13,7 @@ public class MiniFrameworkTest extends TestCase {
 	public static void testSimple() throws Exception {
 		Properties properties = new Properties();
 		MiniFramework framework = new MiniFramework(properties);
-		URL url = new File("test/demo.jar").toURI().toURL();
+		URL url = new File("../demo/generated/demo.jar").getCanonicalFile().toURI().toURL();
 
 		url.openStream().close();
 		framework.init();
