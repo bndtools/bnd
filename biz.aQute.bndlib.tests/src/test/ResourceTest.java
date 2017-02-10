@@ -173,7 +173,7 @@ public class ResourceTest extends TestCase {
 
 	public void testOSGiWiringHostBundle() throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
-		rb.addManifest(Domain.domain(IO.getFile("testresources/demo.jar")));
+		rb.addManifest(Domain.domain(IO.getFile("../demo/generated/demo.jar")));
 		Resource resource = rb.build();
 		List<Capability> capabilities = resource.getCapabilities(HostNamespace.HOST_NAMESPACE);
 		assertEquals(1, capabilities.size());
@@ -187,7 +187,7 @@ public class ResourceTest extends TestCase {
 
 	public void testOSGiWiringHostFragment() throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
-		rb.addManifest(Domain.domain(IO.getFile("testresources/demo-fragment.jar")));
+		rb.addManifest(Domain.domain(IO.getFile("../demo-fragment/generated/demo-fragment.jar")));
 		Resource resource = rb.build();
 		assertEquals(0, resource.getCapabilities(BundleNamespace.BUNDLE_NAMESPACE).size());
 		assertEquals(0, resource.getCapabilities(HostNamespace.HOST_NAMESPACE).size());
@@ -201,7 +201,7 @@ public class ResourceTest extends TestCase {
 
 	public void testResourceToVersionedClause() throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
-		rb.addManifest(Domain.domain(IO.getFile("testresources/demo-fragment.jar")));
+		rb.addManifest(Domain.domain(IO.getFile("../demo-fragment/generated/demo-fragment.jar")));
 		Resource resource = rb.build();
 		VersionedClause versionClause = ResourceUtils.toVersionClause(resource, "[===,==+)");
 		StringBuilder sb = new StringBuilder();
@@ -211,7 +211,7 @@ public class ResourceTest extends TestCase {
 
 	public void testSnapshotResourceToVersionedClause() throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
-		rb.addManifest(Domain.domain(IO.getFile("testresources/demo-fragment.jar")));
+		rb.addManifest(Domain.domain(IO.getFile("../demo-fragment/generated/demo-fragment.jar")));
 		Attrs attrs = new Attrs();
 		attrs.put("bnd.workspace.project", "demo-fragment");
 		rb.addCapability(CapabilityBuilder.createCapReqBuilder("bnd.workspace.project", attrs));

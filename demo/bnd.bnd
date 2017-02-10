@@ -1,10 +1,10 @@
-Bundle-Version: 1.0.0
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 Private-Package: \
 	com.example.demo,\
 	test
+Bundle-Version: 1.0.0
 Bundle-Activator: com.example.demo.Activator
 Bundle-SymbolicName: demo
 
@@ -39,6 +39,7 @@ Import-Package: \
 base.version:   1.1.0
 
 -nojunit: true
+-nojunitosgi: true
 -buildrepo:
 -releaserepo:
 Export-Package: \

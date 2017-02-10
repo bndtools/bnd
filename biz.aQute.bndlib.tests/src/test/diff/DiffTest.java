@@ -44,12 +44,11 @@ public class DiffTest extends TestCase {
 
 	/**
 	 * Test API differences. We have a package in the /demo workspace project
-	 * and we have the same package in our test.api package. If you make
-	 * changes, copy the demo.jar in the testresources directory.
+	 * and we have the same package in our test.api package.
 	 */
 
 	public void testAPI() throws Exception {
-		Jar older = new Jar(IO.getFile("testresources/demo.jar"));
+		Jar older = new Jar(IO.getFile("../demo/generated/demo.jar"));
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("bin"));
 		b.setExportPackage("test.api");
@@ -79,7 +78,7 @@ public class DiffTest extends TestCase {
 	}
 
 	public void testAPIStaticSuperClassChange() throws Exception {
-		Jar older = new Jar(IO.getFile("testresources/demo.jar"));
+		Jar older = new Jar(IO.getFile("../demo/generated/demo.jar"));
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("bin"));
 		b.setExportPackage("test.api");

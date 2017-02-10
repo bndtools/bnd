@@ -2,3 +2,7 @@ Bundle-Version: 1.0.0
 Fragment-Host: demo;bundle-version='[1.0.0,1.0.1)'
 Provide-Capability: some.namespace;somenamespace=hello;version:Version=1.0.0
 -resourceonly: true
+-nojunit: true
+-nojunitosgi: true
+-buildrepo:
+-releaserepo:
