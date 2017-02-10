@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.osgi.framework.namespace.PackageNamespace;
+
 public class VersionRange {
 	final Version	high;
 	final Version	low;
@@ -154,26 +156,32 @@ public class VersionRange {
 
 	/**
 	 * Convert to an OSGi filter expression
-	 * 
 	 */
 	public String toFilter() {
+		return toFilter(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+	}
+
+	/**
+	 * Convert to an OSGi filter expression
+	 */
+	public String toFilter(String versionAttribute) {
 		Formatter f = new Formatter();
 		try {
 			if (high == Version.HIGHEST)
-				return "(version>=" + low + ")";
+				return "(" + versionAttribute + ">=" + low + ")";
 			if (isRange()) {
 				f.format("(&");
 				if (includeLow())
-					f.format("(version>=%s)", getLow());
+					f.format("(%s>=%s)", versionAttribute, getLow());
 				else
-					f.format("(!(version<=%s))", getLow());
+					f.format("(!(%s<=%s))", versionAttribute, getLow());
 				if (includeHigh())
-					f.format("(version<=%s)", getHigh());
+					f.format("(%s<=%s)", versionAttribute, getHigh());
 				else
-					f.format("(!(version>=%s))", getHigh());
+					f.format("(!(%s>=%s))", versionAttribute, getHigh());
 				f.format(")");
 			} else {
-				f.format("(version>=%s)", getLow());
+				f.format("(%s>=%s)", versionAttribute, getLow());
 			}
 			return f.toString();
 		} finally {

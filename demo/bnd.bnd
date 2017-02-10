@@ -1,3 +1,4 @@
+Bundle-Version: 1.0.0
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
