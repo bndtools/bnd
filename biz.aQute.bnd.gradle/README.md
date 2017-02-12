@@ -49,7 +49,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.2.0'
+    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.3.0'
   }
 }
 
@@ -155,7 +155,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.2.0'
+    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.3.0'
   }
 }
 ```
