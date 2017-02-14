@@ -871,7 +871,7 @@ public class FilterParser {
 		String findExpr() {
 			int nn = n;
 			int level = 0;
-			while (true) {
+			while (nn < s.length()) {
 				char c = s.charAt(nn++);
 				switch (c) {
 					case '(' :
@@ -888,7 +888,8 @@ public class FilterParser {
 							return s.substring(n, nn);
 				}
 			}
-
+			// bad expression
+			return "";
 		}
 
 		public String toString() {
@@ -939,28 +940,32 @@ public class FilterParser {
 	}
 
 	public Expression parse(Rover rover) {
-		String s = rover.findExpr();
-		Expression e = cache.get(s);
-		if (e != null) {
-			rover.n += s.length();
-			return e;
-		}
-
 		try {
-			char c = rover.wsNext();
+			String cacheKey = rover.findExpr();
+			Expression e = cache.get(cacheKey);
+			if (e != null) {
+				rover.n += cacheKey.length();
+				return e;
+			}
+
+			rover.ws();
+			char c = rover.current();
 			if (c != '(')
-				throw new IllegalArgumentException("Expression must start with a (");
+				throw new IllegalArgumentException("Expression must start with a '('");
+			rover.next();
 			rover.ws();
 			e = parse0(rover);
-			c = rover.wsNext();
+			rover.ws();
+			c = rover.current();
 
 			if (c != ')')
-				throw new IllegalArgumentException("Expression must end with a )");
-		} catch (IllegalArgumentException ie) {
-			throw new RuntimeException("Parsing failed on " + s + " " + ie.getMessage(), ie);
+				throw new IllegalArgumentException("Expression must end with a ')'");
+			rover.next();
+			cache.put(cacheKey, e);
+			return e;
+		} catch (RuntimeException re) {
+			throw new RuntimeException("Parsing failed: " + re.getMessage() + ":\n" + rover + "\n", re);
 		}
-		cache.put(s, e);
-		return e;
 	}
 
 	Expression parse0(Rover rover) {
