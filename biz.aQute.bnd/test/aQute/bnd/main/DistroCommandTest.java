@@ -11,16 +11,22 @@ import java.util.ServiceLoader;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
+import org.osgi.framework.Version;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
+import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
+import org.osgi.namespace.extender.ExtenderNamespace;
+import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 
 import aQute.bnd.main.RemoteCommand.DistroOptions;
 import aQute.bnd.main.RemoteCommand.RemoteOptions;
 import aQute.bnd.main.testlib.MockRegistry;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.lib.getopt.CommandLine;
 import aQute.lib.io.IO;
 import biz.aQute.resolve.BndResolver;
@@ -94,12 +100,53 @@ public class DistroCommandTest extends TestCase {
 
 		assertTrue(distro.exists());
 
-		Object capabilities = new Jar(distro).getManifest().getMainAttributes().getValue(Constants.PROVIDE_CAPABILITY);
+		ResourceBuilder builder = new ResourceBuilder();
+
+		Domain manifest = Domain.domain(new Jar(distro).getManifest());
+
+		builder.addManifest(manifest);
+
+		Resource resource = builder.build();
+
+		List<Capability> capabilities = resource.getCapabilities(null);
 
 		assertNotNull(capabilities);
 
-		// should be at least two osgi.extender=jsp.taglib capabilities
-		assertTrue(capabilities.toString().split("jsp.taglib").length == 3);
+		List<Capability> extenderCaps = resource.getCapabilities(ExtenderNamespace.EXTENDER_NAMESPACE);
+
+		int jspTaglibCapabilityCount = 0;
+		for (Capability capability : extenderCaps) {
+			Map<String,Object> attributes = capability.getAttributes();
+			if ("jsp.taglib".equals(attributes.get(ExtenderNamespace.EXTENDER_NAMESPACE))) {
+				jspTaglibCapabilityCount++;
+			}
+		}
+		assertEquals(2, jspTaglibCapabilityCount);
+
+		List<Capability> eeCaps = resource
+				.getCapabilities(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
+
+		assertTrue(eeCaps.size() > 0);
+
+		Capability javaSECap = null;
+		for (Capability capability : eeCaps) {
+			Map<String,Object> attributes = capability.getAttributes();
+			if ("JavaSE".equals(attributes.get(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE))) {
+				javaSECap = capability;
+			}
+		}
+		assertNotNull(javaSECap);
+		@SuppressWarnings("null")
+		Map<String,Object> attributes = javaSECap.getAttributes();
+		assertTrue(attributes.containsKey("version"));
+		@SuppressWarnings("unchecked")
+		List<Version> versions = (List<Version>) attributes.get("version");
+		assertTrue(versions.size() > 1);
+		assertTrue(versions.contains(new Version("1.7.0")));
+		assertTrue(versions.contains(new Version("1.6.0")));
+		assertTrue(versions.contains(new Version("1.5.0")));
+		assertTrue(versions.contains(new Version("1.4.0")));
+		assertTrue(versions.contains(new Version("1.3.0")));
 	}
 
 	public void testResolveAgainstDistro() throws Exception {

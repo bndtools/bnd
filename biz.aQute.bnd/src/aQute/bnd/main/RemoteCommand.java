@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
+import org.osgi.framework.namespace.NativeNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.framework.wiring.dto.BundleRevisionDTO;
 import org.osgi.resource.dto.CapabilityDTO;
@@ -53,11 +53,7 @@ class RemoteCommand extends Processor {
 	static {
 		IGNORED_NAMESPACES.add(PackageNamespace.PACKAGE_NAMESPACE); // handled
 																	// specially
-		// IGNORED_NAMESPACES.add(HostNamespace.HOST_NAMESPACE);
-		// IGNORED_NAMESPACES.add(BundleNamespace.BUNDLE_NAMESPACE);
-		// IGNORED_NAMESPACES.add(IdentityNamespace.IDENTITY_NAMESPACE);
 		IGNORED_NAMESPACES.add(ContentNamespace.CONTENT_NAMESPACE);
-		IGNORED_NAMESPACES.add(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
 	}
 
 	/**
@@ -238,6 +234,16 @@ class RemoteCommand extends Processor {
 					} else
 						packages.put(pname, attrs);
 					logger.debug("P: {};{}", pname, attrs);
+				} else if (NativeNamespace.NATIVE_NAMESPACE.equals(c.namespace)) {
+					Attrs newAttrs = new Attrs();
+					for (Entry<String,String> entry : attrs.entrySet()) {
+						if (entry.getKey().startsWith(NativeNamespace.NATIVE_NAMESPACE)) {
+							newAttrs.put(entry.getKey(), entry.getValue());
+						}
+					}
+					Parameters p = new Parameters();
+					p.put(c.namespace, newAttrs);
+					provided.add(p);
 				} else if (!IGNORED_NAMESPACES.contains(c.namespace)) {
 					logger.debug("C {};{}", c.namespace, attrs);
 					Parameters p = new Parameters();
