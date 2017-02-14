@@ -139,4 +139,29 @@ public class DistroCommandTest extends TestCase {
 		assertEquals(1, requiredResources.size());
 	}
 
+	public void testDistroJarLastModified() throws Exception {
+		bnd bnd = new bnd();
+		CommandLine cmdline = new CommandLine(null);
+		List<String> remoteArgs = new ArrayList<>();
+		RemoteOptions remoteOptions = cmdline.getOptions(RemoteOptions.class, remoteArgs);
+
+		File distro = new File("generated/tmp/test.distro.jar");
+
+		if (distro.exists()) {
+			assertTrue(distro.delete());
+		}
+
+		List<String> distroArgs = new ArrayList<>();
+		distroArgs.add("-o");
+		distroArgs.add(distro.getPath());
+		distroArgs.add("test.distro");
+		distroArgs.add("1.0.0");
+		DistroOptions distroOptions = cmdline.getOptions(DistroOptions.class, distroArgs);
+
+		new RemoteCommand(bnd, remoteOptions)._distro(distroOptions);
+
+		assertTrue(distro.exists());
+
+		assertTrue(distro.lastModified() > 0);
+	}
 }
