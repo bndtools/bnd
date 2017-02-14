@@ -286,8 +286,10 @@ class RemoteCommand extends Processor {
 			v.verify();
 			v.getErrors();
 
-			if (isFailOk() || v.isOk())
+			if (isFailOk() || v.isOk()) {
+				jar.updateModified(System.currentTimeMillis(), "Writing distro jar");
 				jar.write(output);
+			}
 			else
 				getInfo(v);
 		}
