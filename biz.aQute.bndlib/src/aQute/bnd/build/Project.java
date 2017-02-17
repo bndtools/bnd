@@ -957,13 +957,11 @@ public class Project extends Processor {
 	}
 
 	public File release(String jarName, InputStream jarStream) throws Exception {
-		String name = getReleaseRepoName(null);
-		return release(name, jarName, jarStream);
+		return release(null, jarName, jarStream);
 	}
 
 	public URI releaseURI(String jarName, InputStream jarStream) throws Exception {
-		String name = getReleaseRepoName(null);
-		return releaseURI(name, jarName, jarStream);
+		return releaseURI(null, jarName, jarStream);
 	}
 
 	/**
@@ -983,66 +981,71 @@ public class Project extends Processor {
 	}
 
 	public URI releaseURI(String name, String jarName, InputStream jarStream) throws Exception {
-
-		// Blank repository name means no release
-		if ("".equals(name)) {
+		List<RepositoryPlugin> releaseRepos = getReleaseRepos(name);
+		if (releaseRepos.isEmpty()) {
 			return null;
 		}
 
-		logger.debug("release to {}", name);
-		RepositoryPlugin repo = getReleaseRepo(name);
+		RepositoryPlugin releaseRepo = releaseRepos.get(0); // use only first release repo
+		return releaseRepo(releaseRepo, jarName, jarStream);
+	}
 
-		if (repo == null) {
-			if (name == null)
-				msgs.NoNameForReleaseRepository();
-			else
-				msgs.ReleaseRepository_NotFoundIn_(name, getPlugins(RepositoryPlugin.class));
-			return null;
-		}
-
+	private URI releaseRepo(RepositoryPlugin releaseRepo, String jarName, InputStream jarStream) throws Exception {
+		logger.debug("release to {}", releaseRepo.getName());
 		try {
 			PutOptions putOptions = new RepositoryPlugin.PutOptions();
 			// TODO find sub bnd that is associated with this thing
 			putOptions.context = this;
-			PutResult r = repo.put(jarStream, putOptions);
-			logger.debug("Released {} to {} in repository {}", jarName, r.artifact, repo);
+			PutResult r = releaseRepo.put(jarStream, putOptions);
+			logger.debug("Released {} to {} in repository {}", jarName, r.artifact, releaseRepo);
 			return r.artifact;
 		} catch (Exception e) {
-			msgs.Release_Into_Exception_(jarName, repo, e);
+			msgs.Release_Into_Exception_(jarName, releaseRepo, e);
 			return null;
 		}
 	}
 
-	RepositoryPlugin getReleaseRepo(String releaserepo) {
-		String repoName = getReleaseRepoName(releaserepo);
-
+	private List<RepositoryPlugin> getReleaseRepos(String names) {
+		Parameters repoNames = parseReleaseRepos(names);
 		List<RepositoryPlugin> plugins = getPlugins(RepositoryPlugin.class);
-
-		for (RepositoryPlugin plugin : plugins) {
-			if (!plugin.canWrite())
-				continue;
-
-			if (repoName == null)
-				return plugin;
-
-			if (repoName.equals(plugin.getName()))
-				return plugin;
+		List<RepositoryPlugin> result = new ArrayList<>();
+		if (repoNames == null) { // -releaserepo unspecified
+			for (RepositoryPlugin plugin : plugins) {
+				if (plugin.canWrite()) {
+					result.add(plugin);
+					break;
+				}
+			}
+			if (result.isEmpty()) {
+				msgs.NoNameForReleaseRepository();
+			}
+			return result;
 		}
-		return null;
+		repoNames:
+		for (String repoName : repoNames.keySet()) {
+			for (RepositoryPlugin plugin : plugins) {
+				if (plugin.canWrite() && repoName.equals(plugin.getName())) {
+					result.add(plugin);
+					continue repoNames;
+				}
+			}
+			msgs.ReleaseRepository_NotFoundIn_(repoName, plugins);
+		}
+		return result;
 	}
 
-	private String getReleaseRepoName(String name) {
-		String releaseRepo = name == null ? getProperty(RELEASEREPO) : name;
-		Parameters p = new Parameters(releaseRepo, this);
-		if (p.isEmpty())
-			return null;
-
-		return p.entrySet().iterator().next().getKey();
+	private Parameters parseReleaseRepos(String names) {
+		if (names == null) {
+			names = mergeProperties(RELEASEREPO);
+			if (names == null) {
+				return null; // -releaserepo unspecified
+			}
+		}
+		return new Parameters(names, this);
 	}
 
 	public void release(boolean test) throws Exception {
-		String name = getReleaseRepoName(null);
-		release(name, test);
+		release(null, test);
 	}
 
 	/**
@@ -1053,19 +1056,22 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public void release(String name, boolean test) throws Exception {
+		List<RepositoryPlugin> releaseRepos = getReleaseRepos(name);
+		if (releaseRepos.isEmpty()) {
+			return;
+		}
 		logger.debug("release");
 		File[] jars = build(test);
 		// If build fails jars will be null
 		if (jars == null) {
-			logger.debug("no jars being build");
+			logger.debug("no jars built");
 			return;
 		}
-		Parameters repos = new Parameters(name, this);
-		logger.debug("releasing {} - {}", jars, repos);
+		logger.debug("releasing {} - {}", jars, releaseRepos);
 
-		for (Map.Entry<String,Attrs> entry : repos.entrySet()) {
+		for (RepositoryPlugin releaseRepo : releaseRepos) {
 			for (File jar : jars) {
-				release(entry.getKey(), jar.getName(), new BufferedInputStream(new FileInputStream(jar)));
+				releaseRepo(releaseRepo, jar.getName(), new BufferedInputStream(new FileInputStream(jar)));
 			}
 		}
 	}
