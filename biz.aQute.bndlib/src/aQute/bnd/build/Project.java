@@ -1955,29 +1955,25 @@ public class Project extends Processor {
 	public void export(String runFilePath, boolean keep, File output) throws Exception {
 		prepare();
 
-		OutputStream outStream = null;
-		try {
-			Project packageProject;
-			if (runFilePath == null || runFilePath.length() == 0 || ".".equals(runFilePath)) {
-				packageProject = this;
-			} else {
-				File runFile = new File(getBase(), runFilePath);
-				if (!runFile.isFile())
-					throw new IOException(
-							String.format("Run file %s does not exist (or is not a file).", runFile.getAbsolutePath()));
-				packageProject = new Run(getWorkspace(), getBase(), runFile);
-			}
+		Project packageProject;
+		if (runFilePath == null || runFilePath.length() == 0 || ".".equals(runFilePath)) {
+			packageProject = this;
+		} else {
+			File runFile = IO.getFile(getBase(), runFilePath);
+			if (!runFile.isFile())
+				throw new IOException(
+						String.format("Run file %s does not exist (or is not a file).", runFile.getAbsolutePath()));
+			packageProject = new Run(getWorkspace(), getBase(), runFile);
+		}
+		packageProject.clear();
 
-			packageProject.clear();
-			ProjectLauncher launcher = packageProject.getProjectLauncher();
-			launcher.setKeep(keep);
-			Jar jar = launcher.executable();
+		ProjectLauncher launcher = packageProject.getProjectLauncher();
+		launcher.setKeep(keep);
+		try (Jar jar = launcher.executable()) {
 			getInfo(launcher);
-
-			outStream = new FileOutputStream(output);
-			jar.write(outStream);
-		} finally {
-			IO.close(outStream);
+			try (OutputStream outStream = new FileOutputStream(output)) {
+				jar.write(outStream);
+			}
 		}
 	}
 
@@ -1992,14 +1988,14 @@ public class Project extends Processor {
 		if (runFilePath == null || runFilePath.length() == 0 || ".".equals(runFilePath)) {
 			packageProject = this;
 		} else {
-			File runFile = new File(getBase(), runFilePath);
+			File runFile = IO.getFile(getBase(), runFilePath);
 			if (!runFile.isFile())
 				throw new IOException(
 						String.format("Run file %s does not exist (or is not a file).", runFile.getAbsolutePath()));
 			packageProject = new Run(getWorkspace(), getBase(), runFile);
 		}
-
 		packageProject.clear();
+
 		Collection<Container> runbundles = packageProject.getRunbundles();
 		for (Container container : runbundles) {
 			File bundle = container.getFile();
