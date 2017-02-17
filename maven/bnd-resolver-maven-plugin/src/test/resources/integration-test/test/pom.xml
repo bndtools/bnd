@@ -10,19 +10,18 @@
         <plugins>
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
-                <artifactId>bnd-export-maven-plugin</artifactId>
+                <artifactId>bnd-resolver-maven-plugin</artifactId>
                 <version>@project.version@</version>
                 <configuration>
+                    <failOnChanges>false</failOnChanges>
                     <bndruns>
                         <bndrun>test.bndrun</bndrun>
                     </bndruns>
-                    <failOnChanges>false</failOnChanges>
-                    <resolve>true</resolve>
                 </configuration>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>export</goal>
+                            <goal>resolve</goal>
                         </goals>
                     </execution>
                 </executions>

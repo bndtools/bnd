@@ -24,6 +24,7 @@
 		<module>bnd-baseline-maven-plugin</module>
 		<module>bnd-export-maven-plugin</module>
 		<module>bnd-testing-maven-plugin</module>
+		<module>bnd-resolver-maven-plugin</module>
 	</modules>
 
 	<url>http://bnd.bndtools.org/</url>

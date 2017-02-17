@@ -61,6 +61,7 @@
 						<bndruns>
 							<bndrun>test.bndrun</bndrun>
 						</bndruns>
+						<failOnChanges>false</failOnChanges>
 					</configuration>
 					<executions>
 						<execution>

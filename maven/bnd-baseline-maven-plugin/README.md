@@ -148,3 +148,13 @@ calculation then this can be configured as follows:
         <fullReport>true</fullReport>
     </configuration>
 
+## Configuration Properties
+
+|Configuration Property | Description |
+| ---                   | ---         |
+|`failOnMissing`        | See [Fail on missing baseline](#fail-on-missing-baseline). _Defaults to `true`._ Override with property `bnd.baseline.fail.on.missing`.|
+|`includeDistributionManagement`| See [Include Distribution Management](#include-distribution-management). _Defaults to `true`._ Override with property `bnd.baseline.include.distribution.management`.|
+|`fullReport`           | See [Full Reporting](#full-reporting). _Defaults to `false`._ Override with property `bnd.baseline.full.report`.|
+|`continueOnError`      | See [Continue on Error](#continue-on-error). _Defaults to `false`._ Override with property `bnd.baseline.continue.on.error`.|
+|`skip`                 | Skip the baseline process altogether. _Defaults to `false`._ Override with property `bnd.baseline.skip`.|
+

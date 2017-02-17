@@ -77,6 +77,16 @@ although it will be valid, the bundle may not be *useful*.
 For further usage information, see the integration test projects under the included
 `src/test/resources/integration-test/test` directory.
 
+## Configuration Properties
+
+|Configuration Property | Description |
+| ---                   | ---         |
+|`targetDir`            | The director into which to export the result. _Defaults to `${project.build.directory}`._|
+|`sourceDir`            | Specify an alternative source directory. _Defaults to `${project.build.sourceDirectory}`._|
+|`resources`            | Specify an alternative resources directory. _Defaults to `${project.build.resources}`._|
+|`classesDir`           | Specify an alternative classes directory. _Defaults to `${project.build.outputDirectory}`._|
+|`manifestPath`         | Specify the path to a manifest file to use. _Defaults to `${project.build.outputDirectory}/META-INF/MANIFEST.MF`._|
+|`skip`                 | Skip the index process altogether. _Defaults to `false`._ Override with property `bnd.skip`.|
 
 ## IMPORTANT NOTE
 

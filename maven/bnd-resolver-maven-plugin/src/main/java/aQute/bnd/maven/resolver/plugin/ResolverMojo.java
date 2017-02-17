@@ -1,6 +1,10 @@
-package aQute.bnd.maven.export.plugin;
+package aQute.bnd.maven.resolver.plugin;
 
-import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.service.RepositoryPlugin;
+
+import biz.aQute.resolve.Bndrun;
+import biz.aQute.resolve.StandaloneBndrun;
 
 import java.io.File;
 import java.util.List;
@@ -15,24 +19,15 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.build.Workspace;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.service.RepositoryPlugin;
-import biz.aQute.resolve.Bndrun;
-import biz.aQute.resolve.StandaloneBndrun;
-
-@Mojo(name = "export", defaultPhase = PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
-public class ExportMojo extends AbstractMojo {
-	private static final Logger	logger	= LoggerFactory.getLogger(ExportMojo.class);
+/**
+ * Resolves the <code>-runbundles</code> for the given bndrun file.
+ */
+@Mojo(name = "resolve", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
+public class ResolverMojo extends AbstractMojo {
+	private static final Logger	logger			= LoggerFactory.getLogger(ResolverMojo.class);
 
 	@Parameter(readonly = true, required = true)
 	private List<File>	bndruns;
-
-	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
-	private File		targetDir;
-
-	@Parameter(defaultValue = "false")
-	private boolean				resolve;
 
 	@Parameter(defaultValue = "true")
 	private boolean				failOnChanges;
@@ -45,7 +40,7 @@ public class ExportMojo extends AbstractMojo {
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
 			for (File runFile : bndruns) {
-				export(runFile);
+				resolve(runFile);
 			}
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -55,7 +50,7 @@ public class ExportMojo extends AbstractMojo {
 			throw new MojoExecutionException(errors + " errors found");
 	}
 
-	private void export(File runFile) throws Exception {
+	private void resolve(File runFile) throws Exception {
 		if (!runFile.exists()) {
 			logger.error("Could not find bnd run file {}", runFile);
 			errors++;
@@ -71,15 +66,7 @@ public class ExportMojo extends AbstractMojo {
 			if (!run.isOk()) {
 				return;
 			}
-			if (resolve) {
-				String runBundles = run.resolve(failOnChanges, false);
-				report(run);
-				if (!run.isOk()) {
-					return;
-				}
-				run.setProperty(Constants.RUNBUNDLES, runBundles);
-			}
-			run.export(targetDir);
+			run.resolve(failOnChanges, true);
 			report(run);
 		}
 	}
