@@ -7,8 +7,8 @@
         <version>3.4.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
-	<artifactId>bnd-export-maven-plugin</artifactId>
-	<description>Resolve and Export OSGi applications.</description>
+	<artifactId>bnd-resolver-maven-plugin</artifactId>
+	<description>Resolves the -runbundles for an OSGi bndrun file</description>
 	<name>${project.groupId}:${project.artifactId}</name>
     <packaging>maven-plugin</packaging>
 
@@ -46,23 +46,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-				<configuration>
-				    <artifactItems>
-				        <artifactItem>
-				            <groupId>biz.aQute.bnd</groupId>
-				            <artifactId>biz.aQute.bnd.embedded-repo</artifactId>
-				            <version>${project.version}</version>
-				            <type>jar</type>
-				            <overWrite>false</overWrite>
-				            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
-				            <destFileName>embedded-repo.jar</destFileName>
-				        </artifactItem>
-				    </artifactItems>
-				</configuration>
-            </plugin>
-            <plugin>
                 <artifactId>maven-invoker-plugin</artifactId>
                 <dependencies>
                     <dependency>
@@ -80,8 +63,11 @@
                     <streamLogs>true</streamLogs>
                     <localRepositoryPath>${project.build.directory}/integration-test/repo</localRepositoryPath>
                     <postBuildHookScript>verify.groovy</postBuildHookScript>
+                    <properties>
+                      <jsse.enableSNIExtension>false</jsse.enableSNIExtension>
+                    </properties>
                     <goals>
-                        <goal>package</goal>
+                        <goal>bnd-resolver:resolve</goal>
                     </goals>
                     <debug>true</debug>
                     <scriptVariables>

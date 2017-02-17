@@ -41,11 +41,15 @@
             <groupId>biz.aQute.bnd</groupId>
             <artifactId>biz.aQute.repository</artifactId>
         </dependency>
-        
         <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
-            <version>3.2.2</version>
+            <groupId>biz.aQute.bnd</groupId>
+            <artifactId>bnd-maven-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>biz.aQute.bnd</groupId>
+            <artifactId>bnd-indexer-maven-plugin</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
@@ -70,6 +74,14 @@
             </plugin>
             <plugin>
                 <artifactId>maven-invoker-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>biz.aQute.bnd</groupId>
+                        <artifactId>biz.aQute.bndlib</artifactId>
+                        <version>${project.version}</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                </dependencies>
                 <configuration>
                     <cloneProjectsTo>${project.build.directory}/integration-test/projects</cloneProjectsTo>
                     <cloneClean>true</cloneClean>

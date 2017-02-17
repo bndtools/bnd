@@ -1,15 +1,15 @@
-# bnd-export-maven-plugin
+# bnd-resolver-maven-plugin
 
-The `bnd-export-maven-plugin` is a bnd based plugin to export bndrun files.
+The `bnd-resolver-maven-plugin` is a bnd based plugin to resolve bundles from bndrun files.
 
-## What does the `bnd-export-maven-plugin` do?
+## What does the `bnd-resolver-maven-plugin` do?
 
-Point the plugin to a bndrun file in the same project. It will export a runnable jar.
+Point the plugin to one or more bndrun files in the same project. It will resolve the -runbundles value.
 
 ```
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
-                <artifactId>bnd-export-maven-plugin</artifactId>
+                <artifactId>bnd-resolver-maven-plugin</artifactId>
                 <version>${bnd.version}</version>
                 <configuration>
                     <failOnChanges>false</failOnChanges>
@@ -20,11 +20,20 @@ Point the plugin to a bndrun file in the same project. It will export a runnable
                 <executions>
                     <execution>
                         <goals>
-                            <goal>export</goal>
+                            <goal>resolve</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
+```
+
+## Executing the resolve operation
+
+Since the resolve operation is not associated with any maven build phase, it must in invoked manually.
+
+Here's an example invocation:
+```
+mvn bnd-resolver:resolve
 ```
 
 ## Configuration Properties
@@ -32,7 +41,5 @@ Point the plugin to a bndrun file in the same project. It will export a runnable
 |Configuration Property | Description |
 | ---                   | ---         |
 |`bndruns`              | Contains at least one `bndrun` child element, each element naming a bndrun file defining a runtime and tests to execute against it.|
-|`targetDir`            | The director into which to export the result. _Defaults to `${project.build.directory}`._|
-|`resolve`              | Whether to resolve the `-runbundles` required for a valid runtime. _Defaults to `false`._|
 |`failOnChanges`        | Whether to fail the build if any change in the resolved `-runbundles` is discovered. _Defaults to `true`._|
 

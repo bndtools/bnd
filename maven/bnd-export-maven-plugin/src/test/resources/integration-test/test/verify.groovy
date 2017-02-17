@@ -1,8 +1,29 @@
+import aQute.bnd.build.*;
+import aQute.bnd.build.model.*;
+import aQute.bnd.build.model.clauses.*;
+import aQute.bnd.osgi.*;
+import aQute.bnd.properties.*;
+import aQute.lib.io.*;
 import java.util.jar.*;
 
 println "basedir ${basedir}"
 println "bndVersion ${bndVersion}"
 def baseVersion = bndVersion - '-SNAPSHOT'
+
+// Check the bndrun file exist!
+File bndrunFile = new File(basedir, 'test.bndrun')
+assert bndrunFile.isFile()
+
+// Load the BndEditModel of the bndrun file so we can inspect the result
+Processor processor = new Processor()
+processor.setProperties(bndrunFile)
+BndEditModel bem = new BndEditModel(Workspace.createStandaloneWorkspace(processor, bndrunFile.toURI()))
+Document doc = new Document(IO.collect(bndrunFile))
+bem.loadFrom(doc)
+
+// Get the -runbundles.
+def bemRunBundles = bem.getRunBundles()
+assert null == bemRunBundles
 
 // Check the bundle exist!
 File bundle = new File(basedir, 'target/test.jar')

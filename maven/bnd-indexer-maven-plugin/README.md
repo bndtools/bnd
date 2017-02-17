@@ -270,3 +270,24 @@ different base directory can be supplied if needed
     <configuration>
         <baseFile>${project.build.directory}/some/folder</baseFile>
     </configuration>
+
+## Configuration Properties
+
+|Configuration Properties for `index` goal | Description |
+| ---               | ---         |
+|`outputFile`       | The name and location of the resulting index file. _Defaults to `${project.build.directory}/index.xml`._ Override with property `bnd.indexer.output.file`.|
+|`localURLs`        | See [Allowing local file locations](#allowing-local-file-locations). _Defaults to `FORBIDDEN`._ Override with property `bnd.indexer.localURLs`.|
+|`includeTransitive`| See [Excluding transitive dependencies](#excluding-transitive-dependencies). _Defaults to `true`._ Override with property `bnd.indexer.includeTransitive`.|
+|`includeJar`       | See [Including the current project output as part of the index](#including-the-current-project-output-as-part-of-the-index). _Defaults to `false`._ Override with property `bnd.indexer.includeJar`.|
+|`addMvnURLs`       | In addition to other resource urls include `mvn` protocol urls as well if found. _Defaults to `false`._ Override with property `bnd.indexer.add.mvn.urls`.|
+|`scopes`           | See [Restricting dependency scopes](#restricting-dependency-scopes). _Defaults to `compile,runtime`._ Override with property `bnd.indexer.scopes`.|
+|`includeGzip`      | Include a GZIP'd version of the index file adjacent to the non-GZIP'd one. _Defaults to `true`._ Override with property `bnd.indexer.include.gzip`.|
+|`skip`             | Skip the index process altogether. _Defaults to `false`._ Override with property `bnd.indexer.skip`.|
+
+|Configuration Properties for `local-index` goal | Description |
+| ---               | ---         |
+|`inputDir`         | A directory contain the bundles to index. Override with property `bnd.indexer.input.dir`.|
+|`outputFile`       | The name and location of the resulting index file. _Defaults to `${project.build.directory}/index.xml`._ Override with property `bnd.indexer.output.file`.|
+|`baseFile`         | See [Changing relative directory](#changing-relative-directory). Override with property `bnd.indexer.base.file`.|
+|`includeGzip`      | Include a GZIP'd version of the index file adjacent to the non-GZIP'd one. _Defaults to `true`._ Override with property `bnd.indexer.include.gzip`.|
+|`skip`             | Skip the index process altogether. _Defaults to `false`._ Override with property `bnd.indexer.skip`.|
