@@ -1,6 +1,7 @@
 package aQute.bnd.gradle
 
 import java.util.jar.*;
+import java.util.regex.Pattern
 
 import org.gradle.testkit.runner.GradleRunner
 import static org.gradle.testkit.runner.TaskOutcome.*
@@ -83,18 +84,48 @@ class TestBndPlugin extends Specification {
         when:
           def result = GradleRunner.create()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', ':test.simple:resolve')
+            .withArguments('--stacktrace', '--continue', ':test.simple:resolve')
             .forwardOutput()
-            .build()
+            .buildAndFail()
 
         then:
-          result.task(":test.simple:resolve").outcome == SUCCESS
           result.task(":test.simple:resolve.resolve").outcome == SUCCESS
+          result.task(":test.simple:resolve.resolvenochange").outcome == SUCCESS
+          result.task(":test.simple:resolve.resolveerror").outcome == FAILED
+          result.task(":test.simple:resolve.resolvechange").outcome == FAILED
+
+        when:
           File bndrun = new File(testProjectDir, 'test.simple/resolve.bndrun')
-          bndrun.isFile()
           UTF8Properties props = new UTF8Properties()
+        then:
+          bndrun.isFile()
           props.load(bndrun, new Slf4jReporter(TestBndPlugin.class))
           props.getProperty('-runbundles') =~ /osgi\.enroute\.junit\.wrapper\s*;\s*version='\[4\.12\.0,4\.12\.1\)'\s*,\s*test\.simple\s*;\s*version=snapshot/
+
+        when:
+          bndrun = new File(testProjectDir, 'test.simple/resolvenochange.bndrun')
+          props = new UTF8Properties()
+        then:
+          bndrun.isFile()
+          props.load(bndrun, new Slf4jReporter(TestBndPlugin.class))
+          props.getProperty('-runbundles') =~ /osgi\.enroute\.junit\.wrapper\s*;\s*version='\[4\.12\.0,4\.12\.1\)'\s*,\s*test\.simple\s*;\s*version=snapshot/
+
+        when:
+          bndrun = new File(testProjectDir, 'test.simple/resolveerror.bndrun')
+          props = new UTF8Properties()
+        then:
+          bndrun.isFile()
+          props.load(bndrun, new Slf4jReporter(TestBndPlugin.class))
+          props.getProperty('-runbundles') =~ /osgi\.enroute\.junit\.wrapper/
+          result.output =~ Pattern.quote('Unresolved requirements: [test.simple]')
+
+        when:
+          bndrun = new File(testProjectDir, 'test.simple/resolvechange.bndrun')
+          props = new UTF8Properties()
+        then:
+          bndrun.isFile()
+          props.load(bndrun, new Slf4jReporter(TestBndPlugin.class))
+          props.getProperty('-runbundles') =~ /osgi\.enroute\.junit\.wrapper/
     }
 
     def "Bnd Workspace Plugin extra properties/extentions Test"() {

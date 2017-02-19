@@ -3,7 +3,8 @@
 -runrequires: osgi.identity;filter:='(osgi.identity=test.simple)'
 
 -runbundles: osgi.enroute.junit.wrapper
-
+	
 -runproperties: 
 
 -runtrace: true
+-standalone:
