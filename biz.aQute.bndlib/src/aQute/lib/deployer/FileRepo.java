@@ -564,7 +564,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	@Override
 	public String toString() {
-		return String.format("%-40s r/w=%s", root.getAbsolutePath(), canWrite());
+		return String.format("%s [%-40s r/w=%s]", getName(), getRoot().getAbsolutePath(), canWrite());
 	}
 
 	public File getRoot() {
@@ -580,7 +580,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	public String getName() {
 		if (name == null) {
-			return toString();
+			return getLocation();
 		}
 		return name;
 	}

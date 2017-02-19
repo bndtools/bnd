@@ -458,11 +458,6 @@ public class Workspace extends Processor {
 		}
 
 		@Override
-		public String toString() {
-			return BND_CACHE_REPONAME;
-		}
-
-		@Override
 		protected boolean init() throws Exception {
 			if (lock.tryLock(50, TimeUnit.SECONDS) == false)
 				throw new TimeLimitExceededException("Cached File Repo is locked and can't acquire it");
