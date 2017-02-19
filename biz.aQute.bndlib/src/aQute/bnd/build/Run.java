@@ -15,30 +15,21 @@ public class Run extends Project {
 	 * case the given workspace is ignored. Otherwise, the workspace must be a
 	 * valid workspace.
 	 */
-	@SuppressWarnings("resource")
 	public static Run createRun(Workspace workspace, File file) throws Exception {
-		Processor parsed = null;
-
+		Processor processor;
 		if (workspace != null) {
-			// Assume we are not standalone until we discover otherwise
 			Run run = new Run(workspace, file);
-
-			String standalone = run.getProperty("-standalone");
-			if (standalone == null)
+			if (run.getProperties().get(STANDALONE) == null) {
 				return run;
-
-			// Actually we are standalone and the previously created Run should
-			// be thrown away
-			parsed = run;
-		}
-
-		if (parsed == null) {
-			Processor processor = new Processor();
+			}
+			// -standalone specified
+			processor = run;
+		} else {
+			processor = new Processor();
 			processor.setProperties(file);
-			parsed = processor;
 		}
 
-		Workspace standaloneWorkspace = Workspace.createStandaloneWorkspace(parsed, file.toURI());
+		Workspace standaloneWorkspace = Workspace.createStandaloneWorkspace(processor, file.toURI());
 		Run run = new Run(standaloneWorkspace, file);
 		return run;
 	}
@@ -81,4 +72,7 @@ public class Run extends Project {
 		return null;
 	}
 
+	public boolean isStandalone() {
+		return getWorkspace().getLayout() == WorkspaceLayout.STANDALONE;
+	}
 }

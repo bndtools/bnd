@@ -1,11 +1,5 @@
 package aQute.bnd.maven.resolver.plugin;
 
-import aQute.bnd.build.Workspace;
-import aQute.bnd.service.RepositoryPlugin;
-
-import biz.aQute.resolve.Bndrun;
-import biz.aQute.resolve.StandaloneBndrun;
-
 import java.io.File;
 import java.util.List;
 
@@ -18,6 +12,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import aQute.bnd.build.Workspace;
+import aQute.bnd.service.RepositoryPlugin;
+import biz.aQute.resolve.Bndrun;
 
 /**
  * Resolves the <code>-runbundles</code> for the given bndrun file.
@@ -37,6 +35,7 @@ public class ResolverMojo extends AbstractMojo {
 
 	private int					errors	= 0;
 
+	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
 			for (File runFile : bndruns) {
@@ -56,7 +55,7 @@ public class ResolverMojo extends AbstractMojo {
 			errors++;
 			return;
 		}
-		try (Bndrun run = new StandaloneBndrun(runFile)) {
+		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
 			Workspace workspace = run.getWorkspace();
 			workspace.setOffline(session.getSettings().isOffline());
 			for (RepositoryPlugin repo : workspace.getRepositories()) {
