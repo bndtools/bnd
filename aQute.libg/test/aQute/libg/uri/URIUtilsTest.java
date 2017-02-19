@@ -1,5 +1,6 @@
 package aQute.libg.uri;
 
+import java.io.File;
 import java.net.URI;
 
 import junit.framework.TestCase;
@@ -23,13 +24,21 @@ public class URIUtilsTest extends TestCase {
 	}
 
 	public void testResolveAbsoluteWindowsPath() throws Exception {
-		URI result = URIUtil.resolve(URI.create("file:///C:/Users/jim/base.txt"), "C:\\Users\\jim\\foo.txt");
-		assertEquals("file:///C:/Users/jim/foo.txt", result.toString());
+		if (isWindows()) {
+			URI result = URIUtil.resolve(URI.create("file:/C:/Users/jimbob/base.txt"), "C:\\Users\\jim\\foo.txt");
+			assertEquals("file:/C:/Users/jim/foo.txt", result.toString());
+		}
 	}
 
 	public void testResolveRelativeWindowsPath() throws Exception {
-		URI result = URIUtil.resolve(URI.create("file:///C:/Users/jim/base.txt"), "subdir\\foo.txt");
-		assertEquals("/C:/Users/jim/subdir/foo.txt", result.getPath());
+		if (isWindows()) {
+			URI result = URIUtil.resolve(URI.create("file:/C:/Users/jim/base.txt"), "subdir\\foo.txt");
+			assertEquals("/C:/Users/jim/subdir/foo.txt", result.getPath());
+		}
+	}
+
+	private static boolean isWindows() {
+		return File.separatorChar == '\\';
 	}
 
 }

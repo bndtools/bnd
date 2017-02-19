@@ -198,7 +198,11 @@ public class OSGiRepository extends BaseRepository
 
 	@Override
 	public String getLocation() {
-		return config.locations();
+		try {
+			return Strings.join(getIndex().getURIs());
+		} catch (Exception e) {
+			return config.locations();
+		}
 	}
 
 	@Override

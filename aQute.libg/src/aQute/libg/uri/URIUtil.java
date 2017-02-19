@@ -1,5 +1,6 @@
 package aQute.libg.uri;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.regex.Matcher;
@@ -7,7 +8,7 @@ import java.util.regex.Pattern;
 
 public final class URIUtil {
 
-	private static final Pattern DRIVE_LETTER_PATTERN = Pattern.compile("(.):\\\\(.*)");
+	private static final Pattern DRIVE_LETTER_PATTERN = Pattern.compile("([a-zA-Z]):\\\\(.*)");
 
 	/**
 	 * Resolves a URI reference against a base URI. Work-around for bugs in
@@ -32,9 +33,7 @@ public final class URIUtil {
 			// combination to handle this specifically as an absolute file URI.
 			Matcher driveLetterMatcher = DRIVE_LETTER_PATTERN.matcher(reference);
 			if (driveLetterMatcher.matches()) {
-				String path = "///" + reference.replace('\\', '/');
-				resolved = new URI("file", null, path, null);
-				// URI(scheme, host, path, fragment)
+				resolved = new File(reference).toURI();
 			} else {
 				resolved = baseURI.resolve(reference.replace('\\', '/'));
 			}

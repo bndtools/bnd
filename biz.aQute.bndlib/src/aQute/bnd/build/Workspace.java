@@ -84,7 +84,7 @@ public class Workspace extends Processor {
 	public static final String	CNFDIR							= "cnf";
 	public static final String	BNDDIR							= "bnd";
 	public static final String	CACHEDIR						= "cache/" + About.CURRENT;
-	public static final String	STANDALONE_REPO_CLASS			= "aQute.bnd.deployer.repository.FixedIndexedRepo";
+	public static final String	STANDALONE_REPO_CLASS			= "aQute.bnd.repository.osgi.OSGiRepository";
 
 	static final int			BUFFER_SIZE						= IOConstants.PAGE_SIZE * 16;
 	private static final String	PLUGIN_STANDALONE				= "-plugin.standalone_";
@@ -1207,10 +1207,13 @@ public class Workspace extends Processor {
 
 				URI resolvedLocation = URIUtil.resolve(base, locationStr);
 
-				String key = f.format("%s%02d", PLUGIN_STANDALONE, counter++).toString();
+				String key = f.format("%s%02d", PLUGIN_STANDALONE, counter).toString();
 				sb.setLength(0);
 				Attrs attrs = e.getValue();
-				String name = attrs.get("name", locationStr);
+				String name = attrs.get("name");
+				if (name == null) {
+					name = String.format("repo%02d", counter);
+				}
 				f.format("%s; name='%s'; locations='%s'", STANDALONE_REPO_CLASS, name, resolvedLocation);
 				for (Map.Entry<String,String> attribEntry : attrs.entrySet()) {
 					if (!"name".equals(attribEntry.getKey()))
@@ -1219,6 +1222,7 @@ public class Workspace extends Processor {
 				String value = f.toString();
 				sb.setLength(0);
 				ws.setProperty(key, value);
+				counter++;
 			}
 		}
 
