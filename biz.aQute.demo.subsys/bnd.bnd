@@ -1,5 +1,5 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
--buildpath: org.glassfish.javax.servlet;version=3.0
+-buildpath: org.apache.geronimo.specs.geronimo-servlet_3.0_spec;version=1.0
 Private-Package: biz.aQute.demo.subsys.provider

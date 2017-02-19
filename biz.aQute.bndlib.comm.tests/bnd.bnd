@@ -12,8 +12,8 @@
 	${junit},\
 	slf4j.api,\
 	slf4j.simple,\
-	org.littleshoot__littleproxy,\
-	io.netty__netty-all,\
+	org.littleshoot:littleproxy,\
+	io.netty:netty-all,\
 	org.apache.commons.lang3,\
 	org.apache.commons.codec,\
 	biz.aQute.repository;version=latest,\

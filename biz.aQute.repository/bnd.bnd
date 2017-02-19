@@ -2,23 +2,23 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 
-jetty.libs: lib/javax.servlet-2.5.0.jar;version=file,\
-	lib/jetty-continuation-7.6.3.v20120416.jar;version=file,\
-	lib/jetty-http-7.6.3.v20120416.jar;version=file,\
-	lib/jetty-io-7.6.3.v20120416.jar;version=file,\
-	lib/jetty-security-7.6.3.v20120416.jar;version=file,\
-	lib/jetty-server-7.6.3.v20120416.jar;version=file,\
-	lib/jetty-util-7.6.3.v20120416.jar;version=file
+jetty.libs: org.apache.geronimo.specs.geronimo-servlet_2.5_spec;version=1.2,\
+	org.eclipse.jetty.continuation;version=7.6.3,\
+	org.eclipse.jetty.http;version=7.6.3,\
+	org.eclipse.jetty.io;version=7.6.3,\
+	org.eclipse.jetty.security;version=7.6.3,\
+	org.eclipse.jetty.server;version=7.6.3,\
+	org.eclipse.jetty.util;version=7.6.3
 
 -buildpath: \
 	osgi.core;version=@6,\
-	osgi.annotation;version=@6,\
+	osgi.annotation;version=6.0.1,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
 	org.osgi.impl.bundle.bindex;packages=org.osgi.*.bindex.*,\
 	org.osgi.impl.bundle.repoindex.lib;version=latest,\
 	osgi.cmpn;version=@6,\
-	lib/javax.xml.stream-1.0.1.jar;version=file,\
+	javax.xml.stream;version=1.0.1,\
 	${jetty.libs},\
 	slf4j.api,\
 	aQute.jpm.clnt;version=1.0;packages=*,\
