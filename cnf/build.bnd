@@ -48,10 +48,8 @@ Git-SHA:                  ${system-allow-fail;git rev-list -1 HEAD}
 -make:                    (*).(jar);type=bnd;recipe="bnd/$1.bnd"
 
 # Runtime Options and Variables
-junit3:                   junit.osgi;version=3.8.2;export="junit.framework;version=3.8.2"
-
--runpath: org.eclipse.osgi;version=3.7.2,\
-          ${junit3}
+-runpath: org.eclipse.osgi,\
+          ${junit}
 
 # Extra Headers
 build.version:            ${base-version}.${tstamp}

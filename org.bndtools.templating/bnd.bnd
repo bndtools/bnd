@@ -8,9 +8,9 @@
 	osgi.core; version=${osgi.core.version},\
 	osgi.cmpn; version=${osgi.cmpn.version},\
 	org.eclipse.equinox.common,\
-	ST4-4.0.8-complete.jar; version=file,\
-	mustache-compiler-0.8.18.jar; version=file,\
-	guava-16.0.1.jar; version=file
+	org.antlr:ST4:jar:complete,\
+	com.github.spullara.mustache.java:compiler,\
+	com.google.guava;version=16.0.1
 
 -testpath: \
 	slf4j.api,\
