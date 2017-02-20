@@ -26,5 +26,6 @@ Conditional-Package: aQute.lib*, aQute.configurable.*,aQute.service.reporter, aQ
 # TODO Some tests were hanging on Travis. They ran fine on the mac
 # likely network issues.
 #
+-nojunit: true
 
-no.junit=true
+-baseline: *

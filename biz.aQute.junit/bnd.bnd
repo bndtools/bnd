@@ -29,4 +29,5 @@ Bundle-Activator: aQute.junit.Activator
 Embedded-Activator: aQute.junit.Activator
 Bundle-Release: Use main thread for testing, optionally allowing old separate thread model
 
-
+-baseline: *
+-diffpackages: !org.junit.*, *

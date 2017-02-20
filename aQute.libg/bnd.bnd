@@ -15,4 +15,4 @@ Bundle-Description: A library to be statically linked. Contains many small utili
 -baseline: *
 -sources= true
 
--fixupmessages: The bundle version (3.2.0/3.3.0) is too low, must be at least 4.0.0
+-fixupmessages: The bundle version * is too low

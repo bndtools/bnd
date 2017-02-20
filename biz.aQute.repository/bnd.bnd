@@ -97,3 +97,5 @@ Import-Package:\
 	*
 	
 -fixupmessages: "private references"
+
+-baseline: *

@@ -37,3 +37,5 @@ Conditional-Package: aQute.lib*
 	${junit},\
 	osgi.core;version=4.3.1,\
 	biz.aQute.bndlib;version=latest
+
+-baseline: *

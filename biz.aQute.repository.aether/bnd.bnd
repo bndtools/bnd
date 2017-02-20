@@ -65,3 +65,5 @@ Import-Package: \
 	!com.google.inject.*,\
 	!org.codehaus.plexus.*,\
 	*
+
+-baseline: *

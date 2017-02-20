@@ -32,3 +32,5 @@ Export-Package: \
 	org.osgi.service.indexer.impl,\
 	org.osgi.service.indexer.impl.types,\
 	org.osgi.service.indexer.impl.util
+
+-baseline: *
