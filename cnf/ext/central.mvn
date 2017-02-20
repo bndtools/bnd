@@ -45,6 +45,9 @@ org.apache.maven:maven-repository-metadata:3.1.0
 
 org.codehaus.plexus:plexus-utils:3.0.10
 org.codehaus.plexus:plexus-interpolation:1.16
+org.codehaus.plexus:plexus-component-annotations:1.5.5
+
+javax.inject:javax.inject:1
 
 org.eclipse.birt.runtime:javax.xml.stream:1.0.1.v201004272200
 org.eclipse.jetty:jetty-continuation:7.6.3.v20120416
