@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Formatter;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -17,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.differ.Baseline;
+import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.header.Attrs;
@@ -30,6 +33,8 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.diff.Delta;
+import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.repository.InfoRepository;
 import aQute.bnd.service.repository.Phase;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
@@ -173,21 +178,44 @@ public class ProjectBuilder extends Builder {
 			if (infos.isEmpty())
 				logger.debug("no deltas");
 
-			for (Info info : infos) {
-				if (info.mismatch) {
-					SetLocation l = error(
-							"Baseline mismatch for package %s, %s change. Current is %s, repo is %s, suggest %s or %s\n",
-							info.packageName, info.packageDiff.getDelta(), info.newerVersion, info.olderVersion,
-							info.suggestedVersion, info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
-					l.header(Constants.BASELINE);
+			StringBuffer sb = new StringBuffer();
+			try (Formatter f = new Formatter(sb, Locale.US)) {
+				for (Info info : infos) {
+					if (!info.mismatch) {
+						continue;
+					}
+					sb.setLength(0);
+					Diff packageDiff = info.packageDiff;
+					f.format("Baseline mismatch for package %s, %s change. Current is %s, repo is %s, suggest %s or %s",
+							packageDiff.getName(), packageDiff.getDelta(), info.newerVersion,
+							((info.olderVersion != null) && info.olderVersion.equals(Version.LOWEST)) ? '-'
+									: info.olderVersion,
+							((info.suggestedVersion != null) && info.suggestedVersion.compareTo(info.newerVersion) <= 0)
+									? "ok" : info.suggestedVersion,
+							(info.suggestedIfProviders == null) ? "-" : info.suggestedIfProviders);
+					for (Diff typeDiff : packageDiff.getChildren()) {
+						if (typeDiff.getDelta() == Delta.UNCHANGED) {
+							continue;
+						}
+						f.format("%n*  %-49s %-10s %s", typeDiff.getName(), typeDiff.getType(), typeDiff.getDelta());
+						for (Diff memberDiff : typeDiff.getChildren()) {
+							if (memberDiff.getDelta() == Delta.UNCHANGED) {
+								continue;
+							}
+							f.format("%n*   %-48s %-10s %s", memberDiff.getName(), memberDiff.getType(),
+									memberDiff.getDelta());
+						}
+					}
 
-					fillInLocationForPackageInfo(l.location(), info.packageName);
+					SetLocation l = error("%s", f.toString());
+					l.header(Constants.BASELINE);
+					fillInLocationForPackageInfo(l.location(), packageDiff.getName());
 					if (getPropertiesFile() != null)
 						l.file(getPropertiesFile().getAbsolutePath());
 					l.details(info);
 				}
 			}
-			aQute.bnd.differ.Baseline.BundleInfo binfo = baseliner.getBundleInfo();
+			BundleInfo binfo = baseliner.getBundleInfo();
 			if (binfo.mismatch) {
 				SetLocation error = error("The bundle version (%s/%s) is too low, must be at least %s",
 						binfo.olderVersion, binfo.newerVersion, binfo.suggestedVersion);
