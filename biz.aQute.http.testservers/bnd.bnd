@@ -15,10 +15,10 @@ Conditional-Package: aQute.lib*, fi.*, org.bouncycastle.*
     osgi.annotation;version=6.0.1,\
 	biz.aQute.bndlib;version=latest;packages=*,\
 	org.osgi.util.promise,\
-	org.nanohttpd__nanohttpd;version=2.2,\
+	org.nanohttpd:nanohttpd;version=2.2,\
 	bcpkix;version=1.54,\
 	bcprov;version=1.54, \
-	org.littleshoot__littleproxy
+	org.littleshoot:littleproxy
 	
 -testpath: \
 	${junit}, \

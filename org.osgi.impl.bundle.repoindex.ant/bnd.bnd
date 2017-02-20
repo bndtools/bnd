@@ -7,7 +7,7 @@
 	osgi.core;version=4.3.1,\
 	osgi.cmpn;version=4.3.1,\
 	de.kalpatec.pojosr.framework;version=0.1.8,\
-	org.apache.tools.ant
+	org.apache.ant:ant
 
 bindex-pkgs:\
 	org.osgi.service.indexer.impl,\
