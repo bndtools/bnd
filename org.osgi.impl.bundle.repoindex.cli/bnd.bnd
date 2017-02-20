@@ -50,3 +50,5 @@ Bundle-Description: RepoIndex: Repository Index Generator (Standalone)
 Main-Class: org.osgi.impl.bundle.bindex.cli.Index
 Bundle-Activator: org.osgi.service.indexer.osgi.Activator
 JPM-Command: repoindex
+
+-baseline: *

@@ -19,3 +19,5 @@ Private-Package: aQute.launcher.*
 Conditional-Package: aQute.lib*
 	
 Premain-Class: aQute.launcher.agent.LauncherAgent
+
+-baseline: *

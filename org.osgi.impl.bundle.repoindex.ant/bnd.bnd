@@ -37,3 +37,5 @@ Private-Package: \
 	${osgi-pkgs}
 Include-Resource: taskdef.properties
 Bundle-Activator: org.osgi.service.indexer.osgi.Activator
+
+-baseline: *
