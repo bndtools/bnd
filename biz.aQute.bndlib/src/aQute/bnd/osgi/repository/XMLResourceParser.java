@@ -1,6 +1,7 @@
 package aQute.bnd.osgi.repository;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
@@ -85,11 +86,24 @@ public class XMLResourceParser extends Processor {
 		this.depth = depth;
 		this.traversed = traversed;
 		this.url = url;
-		reader = inputFactory.createXMLStreamReader(GZipUtils.detectCompression(in));
+		in = GZipUtils.detectCompression(in);
+		addClose(in);
+		this.reader = inputFactory.createXMLStreamReader(in);
 	}
 
 	public XMLResourceParser(File location) throws Exception {
 		this(location.toURI());
+	}
+
+	@Override
+	public void close() throws IOException {
+		try {
+			reader.close();
+		} catch (XMLStreamException e) {
+			throw new IOException(e);
+		} finally {
+			super.close();
+		}
 	}
 
 	List<Resource> getResources() {
