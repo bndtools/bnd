@@ -1,70 +1,53 @@
 #
-# Eclipse Repository. Eclipse 4.4.2
-#
-eclipse-repo: aQute.bnd.repository.osgi.OSGiRepository;\
- name="Eclipse IDE for Eclipse Committers 4.4.2";\
- locations=https://dl.bintray.com/bndtools/eclipse-repo/4.4.2/index.xml.gz; \
- poll.time=-1; \
- cache=${build}/cache/stable/EclipseIDE
-eclipse-orbit: aQute.bnd.repository.osgi.OSGiRepository;\
- name="Eclipse Orbit 4.4.2";\
- locations=http://download.eclipse.org/tools/orbit/downloads/drops/R20150124073747/repository/index.xml.gz; \
- poll.time=-1; \
- cache=${build}/cache/stable/EclipseOrbit
-eclipse-m2e: aQute.bnd.repository.p2.provider.P2Repository; \
- name="Eclipse m2e 1.6.2"; \
- url="http://download.eclipse.org/technology/m2e/releases/1.6/1.6.2.20150902-0002/"
-maven-core: aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
- name="m2e Deps"; \
- revision="org.apache.maven:maven-core:3.3.3,org.sonatype.plexus:plexus-build-api:0.0.7"; \
- releaseUrls="https://repo1.maven.org/maven2"
-
-#
 # Bnd Repository. See ${workspace}/gradle.properties for the bnd_repourl property.
 #
 bndRepo: ${uri;${bnd_repourl}}/index.xml.gz
 
-baselinerepo:           https://dl.bintray.com/bndtools/bndtools/${baseline.version}
+baselinerepo: https://dl.bintray.com/bndtools/bndtools/${baseline.version}
 
 #
 # Don't touch below
 #
-
-jpm:\
-	aQute.bnd.jpm.Repository; \
-		includeStaged=true; \
-		name='JPM'; \
-		location=~/.bnd/shacache; \
-		index=${workspace}/cnf/jpm4j.json
-
 -plugin:\
+	aQute.bnd.repository.osgi.OSGiRepository; \
+		name='Bnd'; \
+		locations=${bndRepo}; \
+		max_stale=1800, \
+    aQute.bnd.repository.maven.provider.MavenBndRepository;\
+        releaseUrl="https://repo1.maven.org/maven2";\
+        index=${.}/central.mvn;\
+        name='Maven Central';\
+        readOnly=true,\
+    aQute.bnd.repository.osgi.OSGiRepository;\
+        name="Eclipse IDE for Eclipse Committers 4.4.2";\
+        locations=https://dl.bintray.com/bndtools/eclipse-repo/4.4.2/index.xml.gz; \
+        poll.time=-1; \
+        cache=${build}/cache/stable/EclipseIDE,\
+	aQute.bnd.repository.osgi.OSGiRepository;\
+        name="Eclipse Orbit 4.4.2";\
+        locations=http://download.eclipse.org/tools/orbit/downloads/drops/R20150124073747/repository/index.xml.gz; \
+        poll.time=-1; \
+        cache=${build}/cache/stable/EclipseOrbit,\
+	aQute.bnd.repository.p2.provider.P2Repository; \
+        name="Eclipse m2e 1.6.2"; \
+        url="http://download.eclipse.org/technology/m2e/releases/1.6/1.6.2.20150902-0002/",\
+	aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
+        name="m2e Deps"; \
+        revision="org.apache.maven:maven-core:3.3.3,org.sonatype.plexus:plexus-build-api:0.0.7"; \
+        releaseUrls='https://repo1.maven.org/maven2',\
 	aQute.lib.deployer.FileRepo; \
 		name='Build'; \
 		location=${build}/buildrepo; \
-		latest=false \
-	,\
-	aQute.bnd.repository.osgi.OSGiRepository; \
-		name='bnd'; \
-		locations=${bndRepo}; \
-		max_stale=1800 \
-	,\
-	${jpm},\
-	${eclipse-repo},\
-	${eclipse-orbit},\
-	${eclipse-m2e},\
-	${maven-core},\
+		latest=false, \
 	aQute.bnd.deployer.repository.LocalIndexedRepo; \
 		name='Release'; \
 		local=${workspace}/build/releaserepo; \
-		pretty=true \
-	,\
+		pretty=true, \
 	aQute.bnd.repository.osgi.OSGiRepository; \
 		name='Baseline'; \
 		locations=${baselinerepo}/index.xml.gz; \
         poll.time=-1; \
 		cache=${build}/cache/stable/Baseline
-
-
 
 -baselinerepo: Baseline
 -releaserepo: Release
