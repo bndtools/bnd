@@ -2,7 +2,8 @@
 -runee: JavaSE-1.7
 -runrequires: osgi.identity;filter:='(osgi.identity=test.simple)'
 
--runbundles: osgi.enroute.junit.wrapper
+-runbundles: osgi.enroute.junit.wrapper;version='[4.12.0,4.12.1)',\
+    test.simple;version=snapshot
 
 -runproperties: 
 

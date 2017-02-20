@@ -18,15 +18,9 @@
 
 package aQute.bnd.gradle
 
-import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
-import aQute.bnd.build.model.BndEditModel
-import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.osgi.Constants
-import aQute.bnd.osgi.resource.ResourceUtils
-import aQute.bnd.properties.Document
-import aQute.lib.io.IO
-import biz.aQute.resolve.ProjectResolver
+import biz.aQute.resolve.Bndrun
 import biz.aQute.resolve.WorkspaceResourcesRepository
 
 import java.util.List
@@ -38,8 +32,6 @@ import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 
-import org.osgi.resource.Resource
-import org.osgi.resource.Wire
 import org.osgi.service.resolver.ResolutionException
 
 public class BndPlugin implements Plugin<Project> {
@@ -451,58 +443,22 @@ public class BndPlugin implements Plugin<Project> {
               description "Resolve the runbundles required for ${bndrun}.bndrun file."
               dependsOn assemble
               group 'export'
+              ext.failOnChanges = false
               outputs.file runFile
               doLast {
                 logger.info 'Resolving runbundles required for {}', runFile.absolutePath
-                Run.createRun(bndProject.getWorkspace(), runFile).withCloseable { run ->
-                  run.addBasicPlugin(new WorkspaceResourcesRepository(run.getWorkspace()))
-                  new ProjectResolver(run).withCloseable { resolver ->
-                    ResolutionException exception = null
-                    Map<Resource,List<Wire>> resolution = null
-                    try {
-                      resolution = resolver.resolve()
-                    } catch (ResolutionException e) {
-                      exception = e
-                      run.exception(e, 'Unresolved requirements: %s', "${e.getUnresolvedRequirements()}")
-                    }
-                    boolean failed = !run.isOk()
-                    checkProjectErrors(run, logger, true)
-                    if (failed) {
-                      throw new GradleException("${bndrun}.bndrun does not resolve", exception)
-                    }
-
-                    List<VersionedClause> runBundles = []
-                    Set<Resource> resources = resolution.keySet()
-                    resources.each { resource ->
-                      VersionedClause runBundle = ResourceUtils.toVersionClause(resource, "[===,==+)")
-                      if (!runBundles.contains(runBundle)) {
-                        runBundles.add(runBundle)
-                      }
-                    }
-                    runBundles = runBundles.sort { a, b ->
-                      int diff = a.getName() <=> b.getName()
-                      (diff != 0) ? diff : a.getVersionRange() <=> b.getVersionRange()
-                    }
-
-                    BndEditModel bem = new BndEditModel(run.getWorkspace())
-                    Document doc = new Document(IO.collect(runFile))
-                    bem.loadFrom(doc)
-
-                    List<VersionedClause> bemRunBundles = bem.getRunBundles() ?: []
-                    List<VersionedClause> deltaAdd = runBundles.collect()
-                    deltaAdd.removeAll(bemRunBundles)
-                    List<VersionedClause> deltaRemove = bemRunBundles.collect()
-                    deltaRemove.removeAll(runBundles)
-                    boolean added = bemRunBundles.addAll(deltaAdd)
-                    boolean removed = bemRunBundles.removeAll(deltaRemove)
-                    if (added || removed) {
-                      bem.setRunBundles(bemRunBundles)
-                      logger.info 'Writing changes to {}', runFile.absolutePath
-                      logger.info '{}:{}', Constants.RUNBUNDLES, bem.getDocumentChanges().get(Constants.RUNBUNDLES)
-                      bem.saveChangesTo(doc)
-                      IO.store(doc.get(), runFile)
-                    }
+                Bndrun.createBndrun(bndProject.getWorkspace(), runFile).withCloseable { run ->
+                  if (run.isStandalone()) {
+                    run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
                   }
+                  try {
+                    def result = run.resolve(failOnChanges, true)
+                    logger.info '{}: {}', Constants.RUNBUNDLES, result
+                  } catch (ResolutionException e) {
+                    logger.error 'Unresolved requirements: {}', e.getUnresolvedRequirements()
+                    throw new GradleException("${bndrun}.bndrun resolution failure", e)
+                  }
+                  checkProjectErrors(run, logger)
                 }
               }
             }
@@ -520,18 +476,21 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      tasks.addRule('Pattern: run.<name>: Run the runbundles in the <name>.bndrun file.') { taskName ->
+      tasks.addRule('Pattern: run.<name>: Run the bndrun file <name>.bndrun.') { taskName ->
         if (taskName.startsWith('run.')) {
           def bndrun = taskName - 'run.'
           def runFile = file("${bndrun}.bndrun")
           if (runFile.isFile()) {
             task(taskName) {
-              description "Run the bndrun file ${bndrun}.bndrun"
+              description "Run the bndrun file ${bndrun}.bndrun."
               dependsOn assemble
               group 'export'
               doLast {
-                Run.createRun(bndProject.getWorkspace(), runFile).withCloseable { run ->
-                  logger.lifecycle "Running {} with vm args: {}", bndrun, run.getProperty(Constants.RUNVM + "*")
+                Bndrun.createBndrun(bndProject.getWorkspace(), runFile).withCloseable { run ->
+                  logger.lifecycle "Running {} with vm args: {}", bndrun, run.mergeProperties(Constants.RUNVM)
+                  if (run.isStandalone()) {
+                    run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
+                  }
                   run.run()
                   checkProjectErrors(run, logger)
                 }
@@ -642,7 +601,7 @@ Project ${project.name}
       } else if (errorCount > 1) {
         str = ", ${errorCount} errors were reported"
       }
-      throw new GradleException("Project ${project.getName()} has errors${str}")
+      throw new GradleException("${project.getName()} has errors${str}")
     }
   }
 

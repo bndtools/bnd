@@ -15,7 +15,7 @@ public class ProjectLaunchImplTest extends TestCase {
 	protected void setUp() throws Exception {
 		tmp = new File("generated/tmp/test/" + getName());
 		tmp.mkdirs();
-		IO.copy(IO.getFile("test/ws"), tmp);
+		IO.copy(IO.getFile("testresources/ws"), tmp);
 		ws = new Workspace(tmp);
 	}
 

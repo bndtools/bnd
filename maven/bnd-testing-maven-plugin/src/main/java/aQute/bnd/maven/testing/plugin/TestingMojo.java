@@ -19,7 +19,6 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.libg.glob.Glob;
 import biz.aQute.resolve.Bndrun;
-import biz.aQute.resolve.StandaloneBndrun;
 
 @Mojo(name = "testing", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class TestingMojo extends AbstractMojo {
@@ -91,7 +90,7 @@ public class TestingMojo extends AbstractMojo {
 			errors++;
 			return;
 		}
-		try (Bndrun run = new StandaloneBndrun(runFile)) {
+		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
 			Workspace workspace = run.getWorkspace();
 			workspace.setOffline(session.getSettings().isOffline());
 			for (RepositoryPlugin repo : workspace.getRepositories()) {

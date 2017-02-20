@@ -17,6 +17,7 @@ import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -83,7 +84,7 @@ public class Workspace extends Processor {
 	public static final String	CNFDIR							= "cnf";
 	public static final String	BNDDIR							= "bnd";
 	public static final String	CACHEDIR						= "cache/" + About.CURRENT;
-	public static final String	STANDALONE_REPO_CLASS			= "aQute.bnd.deployer.repository.FixedIndexedRepo";
+	public static final String	STANDALONE_REPO_CLASS			= "aQute.bnd.repository.osgi.OSGiRepository";
 
 	static final int			BUFFER_SIZE						= IOConstants.PAGE_SIZE * 16;
 	private static final String	PLUGIN_STANDALONE				= "-plugin.standalone_";
@@ -454,11 +455,6 @@ public class Workspace extends Processor {
 
 		CachedFileRepo() {
 			super(BND_CACHE_REPONAME, getCache(BND_CACHE_REPONAME), false);
-		}
-
-		@Override
-		public String toString() {
-			return BND_CACHE_REPONAME;
 		}
 
 		@Override
@@ -1183,46 +1179,46 @@ public class Workspace extends Processor {
 	 * @param run
 	 */
 	public static Workspace createStandaloneWorkspace(Processor run, URI base) throws Exception {
-		String property = run.getProperty(Constants.STANDALONE, "");
-
 		Workspace ws = new Workspace(WorkspaceLayout.STANDALONE);
 
 		//
 		// Copy all properties except the type we will add
 		//
-
-		for (Iterator<Map.Entry<Object,Object>> it = run.getProperties().entrySet().iterator(); it.hasNext();) {
-			Entry<Object,Object> entry = it.next();
+		for (Entry<Object,Object> entry : run.getProperties().entrySet()) {
 			String key = (String) entry.getKey();
-			if (key.startsWith(PLUGIN_STANDALONE))
-				it.remove();
-			else
+			if (!key.startsWith(PLUGIN_STANDALONE)) {
 				ws.getProperties().put(key, entry.getValue());
+			}
 		}
 
-		Parameters standalone = new Parameters(property, run);
+		Parameters standalone = new Parameters(ws.getProperty(STANDALONE), ws);
+		StringBuilder sb = new StringBuilder();
+		try (Formatter f = new Formatter(sb, Locale.US)) {
+			int counter = 1;
+			for (Map.Entry<String,Attrs> e : standalone.entrySet()) {
+				String locationStr = e.getKey();
+				if ("true".equalsIgnoreCase(locationStr))
+					break;
 
-		int counter = 1;
-		for (Map.Entry<String,Attrs> e : standalone.entrySet()) {
-			String locationStr = e.getKey();
-			if ("true".equalsIgnoreCase(locationStr))
-				break;
+				URI resolvedLocation = URIUtil.resolve(base, locationStr);
 
-			URI resolvedLocation = URIUtil.resolve(base, locationStr);
-
-			try (Formatter f = new Formatter();) {
-				String name = e.getValue().get("name");
-				if (name == null)
-					name = locationStr;
-				f.format("%s; name=%s; locations='%s'", STANDALONE_REPO_CLASS, name, resolvedLocation);
-				for (Map.Entry<String,String> attribEntry : e.getValue().entrySet()) {
-					if (!"name".equals(attribEntry.getKey()))
-						f.format(";%s='%s'", attribEntry.getKey(), attribEntry.getValue());
+				String key = f.format("%s%02d", PLUGIN_STANDALONE, counter).toString();
+				sb.setLength(0);
+				Attrs attrs = e.getValue();
+				String name = attrs.get("name");
+				if (name == null) {
+					name = String.format("repo%02d", counter);
 				}
-				f.format("\n");
-				ws.setProperty(PLUGIN_STANDALONE + counter, f.toString());
+				f.format("%s; name='%s'; locations='%s'", STANDALONE_REPO_CLASS, name, resolvedLocation);
+				for (Map.Entry<String,String> attribEntry : attrs.entrySet()) {
+					if (!"name".equals(attribEntry.getKey()))
+						f.format("; %s='%s'", attribEntry.getKey(), attribEntry.getValue());
+				}
+				String value = f.toString();
+				sb.setLength(0);
+				ws.setProperty(key, value);
+				counter++;
 			}
-			counter++;
 		}
 
 		return ws;

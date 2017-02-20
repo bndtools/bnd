@@ -198,7 +198,11 @@ public class OSGiRepository extends BaseRepository
 
 	@Override
 	public String getLocation() {
-		return config.locations();
+		try {
+			return Strings.join(getIndex().getURIs());
+		} catch (Exception e) {
+			return config.locations();
+		}
 	}
 
 	@Override
@@ -300,7 +304,13 @@ public class OSGiRepository extends BaseRepository
 
 	@Override
 	public String toString() {
-		return getName();
+		String location;
+		try {
+			location = getRoot().getAbsolutePath();
+		} catch (Exception e) {
+			location = config.cache();
+		}
+		return String.format("%s [%-40s r/w=%s]", getName(), location, canWrite());
 	}
 
 	@Override

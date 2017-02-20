@@ -26,6 +26,7 @@ import aQute.bnd.build.model.conversions.Converter;
 import aQute.bnd.build.model.conversions.HeaderClauseFormatter;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.properties.Document;
 import aQute.lib.io.IO;
@@ -40,8 +41,35 @@ public class Bndrun extends Run {
 	private static final Converter<String,Collection< ? extends HeaderClause>> runbundlesWrappedFormatter = new CollectionFormatter<HeaderClause>(
 			",\\\n\t", new HeaderClauseFormatter(), null);
 
+	/**
+	 * Create a Bndrun that will be stand alone if it contains -standalone. In
+	 * that case the given workspace is ignored. Otherwise, the workspace must
+	 * be a valid workspace.
+	 */
+	public static Bndrun createBndrun(Workspace workspace, File file) throws Exception {
+		Processor processor;
+		if (workspace != null) {
+			Bndrun run = new Bndrun(workspace, file);
+			if (run.getProperties().get(STANDALONE) == null) {
+				return run;
+			}
+			// -standalone specified
+			processor = run;
+		} else {
+			processor = new Processor();
+			processor.setProperties(file);
+		}
+
+		Workspace standaloneWorkspace = Workspace.createStandaloneWorkspace(processor, file.toURI());
+		Bndrun run = new Bndrun(standaloneWorkspace, file);
+		return run;
+	}
+
 	public Bndrun(Workspace workspace, File propertiesFile) throws Exception {
 		super(workspace, propertiesFile);
+		if (!isStandalone()) {
+			addBasicPlugin(new WorkspaceResourcesRepository(getWorkspace()));
+		}
 	}
 
 	/**
@@ -100,7 +128,7 @@ public class Bndrun extends Run {
 
 			List<VersionedClause> bemRunBundles = bem.getRunBundles();
 			if (bemRunBundles == null)
-				bemRunBundles = new ArrayList<VersionedClause>();
+				bemRunBundles = new ArrayList<>();
 
 			String originalRunbundlesString = runbundlesWrappedFormatter.convert(bemRunBundles);
 			logger.debug("Original -runbundles was:\n\t {}", originalRunbundlesString);
@@ -154,7 +182,7 @@ public class Bndrun extends Run {
 
 	private String getNamePart(File runFile) {
 		String nameExt = runFile.getName();
-		int pos = nameExt.lastIndexOf(".");
+		int pos = nameExt.lastIndexOf('.');
 		return nameExt.substring(0, pos);
 	}
 
