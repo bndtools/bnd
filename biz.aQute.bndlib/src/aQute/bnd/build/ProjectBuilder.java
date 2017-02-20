@@ -129,47 +129,47 @@ public class ProjectBuilder extends Builder {
 	 */
 	@Override
 	public void doBaseline(Jar dot) throws Exception {
-
 		String diffignore = project.getProperty(Constants.DIFFIGNORE);
 		logger.debug("ignore headers & paths {}", diffignore);
 		differ.setIgnore(diffignore);
+		Instructions diffpackages = new Instructions(new Parameters(project.getProperty(Constants.DIFFPACKAGES), this));
+		logger.debug("diffpackages {}", diffpackages);
 
-		Jar fromRepo = getBaselineJar();
-		if (fromRepo == null) {
-			logger.debug("No baseline jar {}", getProperty(Constants.BASELINE));
-			return;
-		}
-
-		Version newer = new Version(getVersion());
-		Version older = new Version(fromRepo.getVersion());
-
-		if (!getBsn().equals(fromRepo.getBsn())) {
-			error("The symbolic name of this project (%s) is not the same as the baseline: %s", getBsn(),
-					fromRepo.getBsn());
-			return;
-		}
-
-		//
-		// Check if we want to overwrite an equal version that is not staging
-		//
-
-		if (newer.getWithoutQualifier().equals(older.getWithoutQualifier())) {
-			RepositoryPlugin rr = getBaselineRepo();
-			if (rr instanceof InfoRepository) {
-				ResourceDescriptor descriptor = ((InfoRepository) rr).getDescriptor(getBsn(), older);
-				if (descriptor != null && descriptor.phase != Phase.STAGING) {
-					error("Baselining %s against same version %s but the repository says the older repository version is not the required %s but is instead %s",
-							getBsn(), getVersion(), Phase.STAGING, descriptor.phase);
-					return;
+		try (Jar fromRepo = getBaselineJar()) {
+			if (fromRepo == null) {
+				logger.debug("No baseline jar {}", getProperty(Constants.BASELINE));
+				return;
+			}
+			
+			Version newer = new Version(getVersion());
+			Version older = new Version(fromRepo.getVersion());
+			
+			if (!getBsn().equals(fromRepo.getBsn())) {
+				error("The symbolic name of this project (%s) is not the same as the baseline: %s", getBsn(),
+						fromRepo.getBsn());
+				return;
+			}
+			
+			//
+			// Check if we want to overwrite an equal version that is not staging
+			//
+			
+			if (newer.getWithoutQualifier().equals(older.getWithoutQualifier())) {
+				RepositoryPlugin rr = getBaselineRepo();
+				if (rr instanceof InfoRepository) {
+					ResourceDescriptor descriptor = ((InfoRepository) rr).getDescriptor(getBsn(), older);
+					if (descriptor != null && descriptor.phase != Phase.STAGING) {
+						error("Baselining %s against same version %s but the repository says the older repository version is not the required %s but is instead %s",
+								getBsn(), getVersion(), Phase.STAGING, descriptor.phase);
+						return;
+					}
 				}
 			}
-		}
-
-		logger.debug("baseline {}-{} against: {}", getBsn(), getVersion(), fromRepo.getName());
-		try {
+			
+			logger.debug("baseline {}-{} against: {}", getBsn(), getVersion(), fromRepo.getName());
 			Baseline baseliner = new Baseline(this, differ);
 
-			Set<Info> infos = baseliner.baseline(dot, fromRepo, null);
+			Set<Info> infos = baseliner.baseline(dot, fromRepo, diffpackages);
 			if (infos.isEmpty())
 				logger.debug("no deltas");
 
@@ -201,8 +201,6 @@ public class ProjectBuilder extends Builder {
 					error.length(fl.length);
 				}
 			}
-		} finally {
-			fromRepo.close();
 		}
 	}
 
