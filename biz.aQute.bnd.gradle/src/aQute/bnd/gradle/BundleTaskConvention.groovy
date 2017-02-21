@@ -146,6 +146,12 @@ class BundleTaskConvention {
 
         // set builder classpath
         def buildpath = project.files(configuration.files.findAll { file ->
+          if (!file.exists()) {
+            return false
+          }
+          if (file.directory) {
+            return true
+          }
           try {
             new ZipFile(file).withCloseable { zip ->
               zip.entries() // make sure it is a valid zip file and not a pom
