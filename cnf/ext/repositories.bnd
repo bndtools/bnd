@@ -41,7 +41,7 @@ baselinerepo: https://dl.bintray.com/bndtools/bndtools/${baseline.version}
 		latest=false, \
 	aQute.bnd.deployer.repository.LocalIndexedRepo; \
 		name='Release'; \
-		local=${workspace}/build/releaserepo; \
+		local=${workspace}/build/${target-dir}/repo; \
 		pretty=true, \
 	aQute.bnd.repository.osgi.OSGiRepository; \
 		name='Baseline'; \
