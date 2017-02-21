@@ -232,12 +232,11 @@ public class BndPlugin implements Plugin<Project> {
         inputs.files {
           fileTree(projectDir) { tree ->
             sourceSets.each { sourceSet -> /* exclude sourceSet dirs */
-              sourceSet.allSource.sourceDirectories.each {
-                tree.exclude project.relativePath(it)
+              tree.exclude sourceSet.allSource.sourceDirectories.collect {
+                project.relativePath(it)
               }
-              sourceSet.output.each {
-                project.mkdir(it)
-                tree.exclude project.relativePath(it)
+              tree.exclude sourceSet.output.collect {
+                project.relativePath(it)
               }
             }
             tree.exclude project.relativePath(buildDir) /* exclude buildDir */
@@ -246,9 +245,7 @@ public class BndPlugin implements Plugin<Project> {
         }
         /* bnd can include any class on the buildpath */
         inputs.files {
-          compileJava.classpath.collect {
-            it.directory ? fileTree(it) : it
-          }
+          compileJava.classpath
         }
         /* Workspace and project configuration changes should trigger jar task */
         inputs.files bndProject.getWorkspace().getPropertiesFile(),
@@ -259,6 +256,9 @@ public class BndPlugin implements Plugin<Project> {
           configurations.archives.artifacts.files
         }
         outputs.file new File(buildDir, Constants.BUILDFILES)
+        doFirst {
+          project.mkdir(compileJava.destinationDir)
+        }
         doLast {
           def built
           try {
