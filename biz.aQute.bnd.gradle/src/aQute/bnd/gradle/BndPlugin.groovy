@@ -236,6 +236,7 @@ public class BndPlugin implements Plugin<Project> {
                 tree.exclude project.relativePath(it)
               }
               sourceSet.output.each {
+                project.mkdir(it)
                 tree.exclude project.relativePath(it)
               }
             }
@@ -244,16 +245,9 @@ public class BndPlugin implements Plugin<Project> {
           }
         }
         /* bnd can include any class on the buildpath */
-        def compileConfiguration = configurations.findByName('compileClasspath') ?: configurations.compile
         inputs.files {
-          compileConfiguration.collect {
+          compileJava.classpath.collect {
             it.directory ? fileTree(it) : it
-          }
-        }
-        /* project dependencies' artifacts should trigger jar task */
-        inputs.files {
-          compileConfiguration.dependencies.withType(ProjectDependency.class).collect {
-            it.dependencyProject.jar
           }
         }
         /* Workspace and project configuration changes should trigger jar task */

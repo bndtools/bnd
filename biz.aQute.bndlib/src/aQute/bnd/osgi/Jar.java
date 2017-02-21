@@ -78,7 +78,7 @@ public class Jar implements Closeable {
 		else if (dirOrFile.isFile()) {
 			zipFile = ZipResource.build(this, dirOrFile);
 		} else {
-			throw new IllegalArgumentException("A Jar can only accept a valid file or directory: " + dirOrFile);
+			throw new IllegalArgumentException("A Jar can only accept a file or directory that exists: " + dirOrFile);
 		}
 	}
 
