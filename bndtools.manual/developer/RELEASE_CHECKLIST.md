@@ -111,5 +111,5 @@ git push origin master a.d.0.DEV
 [1]: https://bintray.com/bndtools/bndtools/update/view
 [2]: https://bndtools.ci.cloudbees.com/
 [3]: https://github.com/bndtools/bundle-hub
-[4]: https://bndtools.ci.cloudbees.com/job/bndtools.master/lastSuccessfulBuild/artifact/build/releaserepo/
+[4]: https://bndtools.ci.cloudbees.com/job/bndtools.master/lastSuccessfulBuild/artifact/build/generated/repo/
 [5]: https://bndtools.ci.cloudbees.com/job/bndtools.master/lastSuccessfulBuild/artifact/build/generated/bndtools-latest.zip
