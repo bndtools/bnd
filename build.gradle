@@ -30,8 +30,33 @@ subprojects {
   def bndProject = bndWorkspace.getProject(name)
   if (bndProject != null) {
     plugins.apply 'biz.aQute.bnd'
-    test.testLogging {
-      exceptionFormat 'full'
+    /* test folders are not part of jar but used by unit tests  */
+    def testfolders = ['testresources/', 'testdata/']
+    jar {
+      projectDirInputsExcludes << '.*'
+      projectDirInputsExcludes += testfolders
+    }
+    test {
+      testLogging {
+        exceptionFormat 'full'
+      }
+      inputs.files fileTree(projectDir) {
+        include testfolders
+        exclude {
+          def f = it.file
+          if (f.directory && f.list().length == 0) {
+            return true
+          }
+          try {
+            return "git check-ignore ${f}".execute().waitFor() == 0
+          } catch (Exception e) {
+            return false
+          }
+        }
+      }
+      if (System.properties['maven.repo.local']) {
+        systemProperty 'maven.repo.local', IO.getFile(rootProject.rootDir, System.properties['maven.repo.local'])
+      }
     }
   }
 }
