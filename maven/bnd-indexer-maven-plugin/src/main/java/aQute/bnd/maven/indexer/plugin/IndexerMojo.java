@@ -11,6 +11,7 @@ import static org.eclipse.aether.metadata.Metadata.Nature.SNAPSHOT;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -156,7 +157,21 @@ public class IndexerMojo extends AbstractMojo {
 		Map<String,ArtifactRepository> repositories = new HashMap<>();
 
 		for (ArtifactRepository artifactRepository : project.getRemoteArtifactRepositories()) {
+			logger.debug("Located an artifact repository {}", artifactRepository.getId());
 			repositories.put(artifactRepository.getId(), artifactRepository);
+		}
+
+		ArtifactRepository deploymentRepo = project.getDistributionManagementArtifactRepository();
+
+		if (deploymentRepo != null) {
+			logger.debug("Located a deployment repository {}", deploymentRepo.getId());
+			if (repositories.get(deploymentRepo.getId()) == null) {
+				repositories.put(deploymentRepo.getId(), deploymentRepo);
+			} else {
+				logger.info(
+						"The configured deployment repository {} has the same id as one of the remote artifact repositories. It is assumed that these repositories are the same.",
+						deploymentRepo.getId());
+			}
 		}
 
 		outputFile.getParentFile().mkdirs();
@@ -326,8 +341,16 @@ public class IndexerMojo extends AbstractMojo {
 		for (DependencyNode node : nodes) {
 			// Ensure that the file is downloaded so we can index it
 			try {
+				List<RemoteRepository> remoteRepositories = new ArrayList<>(project.getRemoteProjectRepositories());
+
+				ArtifactRepository deployRepo = project.getDistributionManagementArtifactRepository();
+
+				if (deployRepo != null) {
+					remoteRepositories.add(RepositoryUtils.toRepo(deployRepo));
+				}
+
 				ArtifactResult resolvedArtifact = postProcessResult(system.resolveArtifact(session,
-						new ArtifactRequest(node.getArtifact(), project.getRemoteProjectRepositories(), parent)));
+						new ArtifactRequest(node.getArtifact(), remoteRepositories, parent)));
 				logger.debug("Located file: {} for artifact {}", resolvedArtifact.getArtifact().getFile(),
 						resolvedArtifact);
 
@@ -371,20 +394,18 @@ public class IndexerMojo extends AbstractMojo {
 	private ArtifactResult postProcessSnapshot(ArtifactRequest request, Artifact artifact)
 			throws MojoExecutionException {
 
-		for (ArtifactRepository repository : project.getRemoteArtifactRepositories()) {
-			if (!repository.getSnapshots().isEnabled()) {
+		for (RemoteRepository repository : request.getRepositories()) {
+			if (!repository.getPolicy(true).isEnabled()) {
 				// Skip the repo if it isn't enabled for snapshots
 				continue;
 			}
-
-			RemoteRepository aetherRepo = RepositoryUtils.toRepo(repository);
 
 			// Remove the workspace from the session so that we don't use it
 			DefaultRepositorySystemSession newSession = new DefaultRepositorySystemSession(session);
 			newSession.setWorkspaceReader(null);
 
 			// Find the snapshot metadata for the module
-			MetadataRequest mr = new MetadataRequest().setRepository(aetherRepo)
+			MetadataRequest mr = new MetadataRequest().setRepository(repository)
 					.setMetadata(new DefaultMetadata(artifact.getGroupId(), artifact.getArtifactId(),
 							artifact.getVersion(), "maven-metadata.xml", SNAPSHOT));
 
@@ -408,11 +429,11 @@ public class IndexerMojo extends AbstractMojo {
 							artifact.getExtension(), version);
 					try {
 						ArtifactResult result = system.resolveArtifact(newSession,
-								new ArtifactRequest().setArtifact(fullVersionArtifact).addRepository(aetherRepo));
+								new ArtifactRequest().setArtifact(fullVersionArtifact).addRepository(repository));
 						if (result.isResolved()) {
 							File toUse = new File(session.getLocalRepository().getBasedir(),
 									session.getLocalRepositoryManager().getPathForRemoteArtifact(fullVersionArtifact,
-											aetherRepo, artifact.toString()));
+											repository, artifact.toString()));
 							if (!toUse.exists()) {
 								logger.warn(
 										"The resolved artifact {} does not exist at {}", fullVersionArtifact, toUse);
@@ -438,20 +459,18 @@ public class IndexerMojo extends AbstractMojo {
 	private ArtifactResult postProcessRelease(ArtifactRequest request, Artifact artifact)
 			throws MojoExecutionException {
 
-		for (ArtifactRepository repository : project.getRemoteArtifactRepositories()) {
-			if (!repository.getReleases().isEnabled()) {
+		for (RemoteRepository repository : request.getRepositories()) {
+			if (!repository.getPolicy(false).isEnabled()) {
 				// Skip the repo if it isn't enabled for releases
 				continue;
 			}
-
-			RemoteRepository aetherRepo = RepositoryUtils.toRepo(repository);
 
 			// Remove the workspace from the session so that we don't use it
 			DefaultRepositorySystemSession newSession = new DefaultRepositorySystemSession(session);
 			newSession.setWorkspaceReader(null);
 
 			// Find the snapshot metadata for the module
-			MetadataRequest mr = new MetadataRequest().setRepository(aetherRepo).setMetadata(new DefaultMetadata(
+			MetadataRequest mr = new MetadataRequest().setRepository(repository).setMetadata(new DefaultMetadata(
 					artifact.getGroupId(), artifact.getArtifactId(), null, "maven-metadata.xml", RELEASE));
 
 			for (MetadataResult metadataResult : system.resolveMetadata(newSession, singletonList(mr))) {
@@ -465,7 +484,7 @@ public class IndexerMojo extends AbstractMojo {
 						} else if (versioning.getVersions().contains(artifact.getVersion())) {
 
 							ArtifactResult result = system.resolveArtifact(newSession,
-									new ArtifactRequest().setArtifact(artifact).addRepository(aetherRepo));
+									new ArtifactRequest().setArtifact(artifact).addRepository(repository));
 							if (result.isResolved()) {
 								File toUse = new File(session.getLocalRepository().getBasedir(),
 										session.getLocalRepositoryManager().getPathForLocalArtifact(artifact));
