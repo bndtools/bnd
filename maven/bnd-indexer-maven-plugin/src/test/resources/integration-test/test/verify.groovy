@@ -122,4 +122,12 @@ check("${basedir}/index-folder/target/META-INF/index.xml", "${basedir}/index-fol
 repo = check("${basedir}/include-jar/target/index.xml", "${basedir}/include-jar/target/index.xml.gz", 2, true, true);
 check(repo, "osgi.identity", "(osgi.identity=include-jar)", "include-jar", true);
 
+
+//Test that we can find things that were deployed into a repository we don't use for dependencies
+
+repo = check("${basedir}/index-deployment-repo/target/index.xml", "${basedir}/index-deployment-repo/target/index.xml.gz", 1, true, false);
+content = check(repo, "osgi.identity", "(osgi.identity=test-deploy)", "test-deploy", true);
+
+assert content.getAttributes().get("url").toString().contains("localdeployrepo");
+
 return;

@@ -19,6 +19,8 @@
 		<module>rename-output</module>
 		<module>index-folder</module>
 		<module>include-jar</module>
+		<module>test-deploy</module>
+		<module>index-deployment-repo</module>
 	</modules>
 
 	<dependencyManagement>
