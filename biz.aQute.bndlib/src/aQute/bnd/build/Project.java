@@ -320,12 +320,8 @@ public class Project extends Processor {
 					}
 					getWorkspace().changedFile(output);
 				}
-				if (!output.isDirectory())
+				if (!output.isDirectory()) {
 					msgs.NoOutputDirectory_(output);
-				else {
-					Container c = new Container(this, output);
-					if (!buildpath.contains(c))
-						buildpath.add(c);
 				}
 
 				// Where we store all our generated stuff.

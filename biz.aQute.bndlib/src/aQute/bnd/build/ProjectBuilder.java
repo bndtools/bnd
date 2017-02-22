@@ -92,6 +92,11 @@ public class ProjectBuilder extends Builder {
 					addClasspath(file);
 				}
 
+				File output = project.getOutput();
+				if (output.exists()) {
+					addClasspath(output);
+				}
+
 				for (Container file : project.getBuildpath()) {
 					addClasspath(file);
 				}
@@ -103,7 +108,6 @@ public class ProjectBuilder extends Builder {
 				for (File file : project.getAllsourcepath()) {
 					addSourcepath(file);
 				}
-
 			}
 		} catch (Exception e) {
 			msgs.Unexpected_Error_("ProjectBuilder init", e);

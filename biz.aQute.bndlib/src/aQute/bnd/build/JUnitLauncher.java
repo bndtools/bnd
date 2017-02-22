@@ -49,6 +49,10 @@ public class JUnitLauncher extends ProjectLauncher {
 		// trace = Processor.isTrue(project.getProperty(Constants.RUNTRACE));
 		cp = new Classpath(project, "junit");
 		addClasspath(project.getTestpath());
+		File output = project.getOutput();
+		if (output.exists()) {
+			addClasspath(new Container(project, output));
+		}
 		addClasspath(project.getBuildpath());
 	}
 
