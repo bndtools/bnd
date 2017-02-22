@@ -25,6 +25,7 @@ import org.eclipse.debug.ui.ILaunchShortcut2;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.ITypeRoot;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.ui.JavaUI;
@@ -181,7 +182,13 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         wc.setAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, targetPath.toString());
         wc.setAttribute(LaunchConstants.ATTR_CLEAN, LaunchConstants.DEFAULT_CLEAN);
         wc.setAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, LaunchConstants.DEFAULT_DYNAMIC_BUNDLES);
-        wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, targetProject.getName());
+
+        if (targetProject != null) {
+            IJavaProject javaProject = JavaCore.create(targetProject);
+            if (javaProject.exists()) {
+                wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, targetProject.getName());
+            }
+        }
 
         return wc;
     }
