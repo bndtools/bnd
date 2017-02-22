@@ -36,6 +36,9 @@ public class ExportMojo extends AbstractMojo {
 	@Parameter(defaultValue = "true")
 	private boolean				failOnChanges;
 
+	@Parameter(defaultValue = "false")
+	private boolean				bundlesOnly;
+
 	@Parameter(defaultValue = "${session}", readonly = true)
 	private MavenSession session;
 
@@ -78,7 +81,11 @@ public class ExportMojo extends AbstractMojo {
 				}
 				run.setProperty(Constants.RUNBUNDLES, runBundles);
 			}
-			run.export(targetDir);
+			if (bundlesOnly)
+				run.exportRunbundles(null, targetDir);
+			else
+				run.export(targetDir);
+
 			report(run);
 		}
 	}

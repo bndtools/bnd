@@ -11,7 +11,7 @@ println "bndVersion ${bndVersion}"
 def baseVersion = bndVersion - '-SNAPSHOT'
 
 // Check the bndrun file exist!
-File bndrunFile = new File(basedir, 'test.bndrun')
+File bndrunFile = new File(new File(basedir, "export"), 'test.bndrun')
 assert bndrunFile.isFile()
 
 // Load the BndEditModel of the bndrun file so we can inspect the result
@@ -26,7 +26,7 @@ def bemRunBundles = bem.getRunBundles()
 assert null == bemRunBundles
 
 // Check the bundle exist!
-File bundle = new File(basedir, 'target/test.jar')
+File bundle = new File(new File(basedir, "export"), 'target/test.jar')
 assert bundle.isFile()
 
 // Load manifest
@@ -44,3 +44,16 @@ assert jar.getEntry("jar/biz.aQute.launcher-${baseVersion}.jar") != null
 assert jar.getEntry('jar/org.apache.felix.eventadmin-1.4.6.jar') != null
 assert jar.getEntry('jar/org.apache.felix.framework-5.4.0.jar') != null
 assert jar.getInputStream(jar.getEntry('launcher.properties')).text =~ /launch\.bundles=jar\/org\.apache\.felix\.eventadmin-1\.4\.6\.jar/
+
+//
+// The bundles-only case
+//
+
+// Check the bundle exist!
+bundle = new File(new File(basedir, "export-bundles-only"), 'target/test.jar')
+assert !bundle.exists()
+
+File targetDir = new File(new File(basedir, "export-bundles-only"), 'target')
+assert 1 == targetDir.listFiles().length
+File bundleFile = new File(new File(basedir, "export-bundles-only"), 'target/org.apache.felix.eventadmin-1.4.6.jar')
+assert bundleFile.exists()

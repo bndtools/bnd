@@ -35,4 +35,4 @@ Point the plugin to a bndrun file in the same project. It will export a runnable
 |`targetDir`            | The director into which to export the result. _Defaults to `${project.build.directory}`._|
 |`resolve`              | Whether to resolve the `-runbundles` required for a valid runtime. _Defaults to `false`._|
 |`failOnChanges`        | Whether to fail the build if any change in the resolved `-runbundles` is discovered. _Defaults to `true`._|
-
+|`bundlesOnly`          | Instead of creating an executable jar place runbundles into `targetDir`. _Defaults to `false`._|

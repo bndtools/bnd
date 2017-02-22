@@ -13,6 +13,9 @@ import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1998,11 +2001,30 @@ public class Project extends Processor {
 		}
 		packageProject.clear();
 
+		outputDir.mkdirs();
 		Collection<Container> runbundles = packageProject.getRunbundles();
+		Path outputPath = outputDir.toPath();
 		for (Container container : runbundles) {
-			File bundle = container.getFile();
-			IO.copy(bundle, new File(outputDir, bundle.getName()));
+			Path source = container.getFile().toPath();
+			Path target = nonCollidingPath(outputPath, source);
+			Files.copy(source, target, StandardCopyOption.COPY_ATTRIBUTES);
 		}
+	}
+
+	Path nonCollidingPath(Path outputDir, Path source) {
+		String fileName = source.getFileName().toString();
+		Path target = outputDir.resolve(fileName);
+		String[] parts = Strings.extension(fileName);
+		if (parts == null) {
+			parts = new String[] {
+					fileName, ""
+			};
+		}
+		int i = 1;
+		while (Files.exists(target)) {
+			target = outputDir.resolve(String.format("%s[%d].%s", parts[0], i++, parts[1]));
+		}
+		return target;
 	}
 
 	/**
