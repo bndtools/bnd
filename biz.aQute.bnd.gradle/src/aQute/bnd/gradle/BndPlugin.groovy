@@ -256,9 +256,6 @@ public class BndPlugin implements Plugin<Project> {
           configurations.archives.artifacts.files
         }
         outputs.file new File(buildDir, Constants.BUILDFILES)
-        doFirst {
-          project.mkdir(compileJava.destinationDir)
-        }
         doLast {
           def built
           try {
@@ -557,11 +554,11 @@ Project ${project.name}
   }
 
   private FileCollection compilePath() {
-    return project.files(bndProject.getBuildpath()*.getFile() - bndProject.getSrcOutput())
+    return project.files(bndProject.getBuildpath()*.getFile())
   }
 
   private FileCollection testCompilePath() {
-    return project.files(bndProject.getTestpath()*.getFile() - bndProject.getTestOutput())
+    return project.files(bndProject.getTestpath()*.getFile())
   }
 
   private FileCollection runtimePath() {

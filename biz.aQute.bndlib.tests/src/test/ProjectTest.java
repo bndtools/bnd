@@ -112,7 +112,7 @@ public class ProjectTest extends TestCase {
 		assertEquals(3, runpath.size());
 
 		List<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
-		assertEquals(4, buildpath.size()); // adds output ...
+		assertEquals(3, buildpath.size());
 
 		List<Container> testpath = new ArrayList<Container>(project.getTestpath());
 		assertEquals(3, testpath.size());
@@ -125,10 +125,10 @@ public class ProjectTest extends TestCase {
 		project.setProperty("-buildpath", "p3; version='[1,2)'; repo=Relea*");
 
 		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
-		assertEquals(2, buildpath.size());
+		assertEquals(1, buildpath.size());
 		// Without repos filter we would get lowest version, i.e. 1.0.0 from the
 		// repo named "Repo".
-		assertEquals("1.1.0", buildpath.get(1).getVersion());
+		assertEquals("1.1.0", buildpath.get(0).getVersion());
 	}
 
 	public void testRepoFilterBuildPathMultiple() throws Exception {
@@ -137,9 +137,9 @@ public class ProjectTest extends TestCase {
 
 		project.setProperty("-buildpath", "org.apache.felix.configadmin; version=latest; repo=\"Rel*,Repo\"");
 		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
-		assertEquals(2, buildpath.size());
+		assertEquals(1, buildpath.size());
 		// Expect 1.2.0 from Release repo; not 1.8.8 from Repo2
-		assertEquals("1.2.0", buildpath.get(1).getVersion());
+		assertEquals("1.2.0", buildpath.get(0).getVersion());
 	}
 
 	public void testWildcardBuildPath() throws Exception {
@@ -164,13 +164,13 @@ public class ProjectTest extends TestCase {
 		project.setProperty("-buildpath", "*; repo=Relea*");
 
 		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
-		assertEquals(3, buildpath.size());
+		assertEquals(2, buildpath.size());
+
+		assertEquals(Container.TYPE.REPO, buildpath.get(0).getType());
+		assertEquals("org.apache.felix.configadmin", buildpath.get(0).getBundleSymbolicName());
 
 		assertEquals(Container.TYPE.REPO, buildpath.get(1).getType());
-		assertEquals("org.apache.felix.configadmin", buildpath.get(1).getBundleSymbolicName());
-
-		assertEquals(Container.TYPE.REPO, buildpath.get(2).getType());
-		assertEquals("p3", buildpath.get(2).getBundleSymbolicName());
+		assertEquals("p3", buildpath.get(1).getBundleSymbolicName());
 	}
 
 	/**
@@ -873,8 +873,8 @@ public class ProjectTest extends TestCase {
 				"tmp; version=hash; hash=7fe83bfd5999fa4ef9cec40282d5d67dd0ff3303bac6b8c7b0e8be80a821441c");
 
 		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
-		assertEquals(2, buildpath.size());
-		assertEquals("bar", buildpath.get(1).getManifest().getMainAttributes().getValue("Prints"));
+		assertEquals(1, buildpath.size());
+		assertEquals("bar", buildpath.get(0).getManifest().getMainAttributes().getValue("Prints"));
 	}
 
 	public void testHashVersionWithAlgorithm() throws Exception {
@@ -885,8 +885,8 @@ public class ProjectTest extends TestCase {
 				"tmp; version=hash; hash=SHA-256:7fe83bfd5999fa4ef9cec40282d5d67dd0ff3303bac6b8c7b0e8be80a821441c");
 
 		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
-		assertEquals(2, buildpath.size());
-		assertEquals("bar", buildpath.get(1).getManifest().getMainAttributes().getValue("Prints"));
+		assertEquals(1, buildpath.size());
+		assertEquals("bar", buildpath.get(0).getManifest().getMainAttributes().getValue("Prints"));
 	}
 
 	public void testHashVersionWithAlgorithmNotFound() throws Exception {
@@ -897,7 +897,7 @@ public class ProjectTest extends TestCase {
 				"tmp; version=hash; hash=SHA-1:7fe83bfd5999fa4ef9cec40282d5d67dd0ff3303bac6b8c7b0e8be80a821441c");
 
 		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
-		assertEquals(1, buildpath.size());
+		assertEquals(0, buildpath.size());
 	}
 
 	public void testHashVersionNonMatchingBsn() throws Exception {
@@ -908,6 +908,6 @@ public class ProjectTest extends TestCase {
 				"WRONG; version=hash; hash=SHA-256:7fe83bfd5999fa4ef9cec40282d5d67dd0ff3303bac6b8c7b0e8be80a821441c");
 
 		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
-		assertEquals(1, buildpath.size());
+		assertEquals(0, buildpath.size());
 	}
 }

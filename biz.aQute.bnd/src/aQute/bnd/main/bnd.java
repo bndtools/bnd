@@ -3550,6 +3550,10 @@ public class bnd extends Processor {
 				error("This is not a project directory and you have specified no jar files ...");
 				return;
 			}
+			File output = p.getOutput();
+			if (output.exists()) {
+				files.add(output);
+			}
 			for (Container c : p.getBuildpath()) {
 				files.add(c.getFile());
 			}
