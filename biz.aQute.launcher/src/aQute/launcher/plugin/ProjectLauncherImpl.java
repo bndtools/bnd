@@ -42,6 +42,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.URLResource;
 import aQute.launcher.constants.LauncherConstants;
 import aQute.launcher.pre.EmbeddedLauncher;
+import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.SHA1;
 
@@ -259,7 +260,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 					String sha = SHA1.digest(file).asHex();
 					runpathShas.add(sha + ";name=\"" + file.getName() + "\"");
 				} else {
-					String newPath = "jar/" + file.getName();
+					String newPath = nonCollidingPath(file, jar);
 					jar.putResource(newPath, new FileResource(file));
 					classpath.add(newPath);
 				}
@@ -282,7 +283,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 					runbundleShas.add(sha + ";name=\"" + file.getName() + "\"");
 					actualPaths.add("${JPMREPO}/" + sha);
 				} else {
-					String newPath = "jar/" + file.getName();
+					String newPath = nonCollidingPath(file, jar);
 					jar.putResource(newPath, new FileResource(file));
 					actualPaths.add(newPath);
 				}
@@ -336,6 +337,22 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			});
 		jar.setManifest(m);
 		return jar;
+	}
+
+	String nonCollidingPath(File file, Jar jar) {
+		String fileName = file.getName();
+		String path = "jar/" + fileName;
+		String[] parts = Strings.extension(fileName);
+		if (parts == null) {
+			parts = new String[] {
+					fileName, ""
+			};
+		}
+		int i = 1;
+		while (jar.exists(path)) {
+			path = String.format("jar/%s[%d].%s", parts[0], i++, parts[1]);
+		}
+		return path;
 	}
 
 	/*
