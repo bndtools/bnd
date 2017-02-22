@@ -242,7 +242,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private void addAll(List<String> to, List<String> from, String prefix, Reporter reporter) {
 		try {
 			for (String message : from) {
-				String newMessage = prefix + message;
+				String newMessage = prefix.isEmpty() ? message : prefix + message;
 				to.add(newMessage);
 
 				Location location = reporter.getLocation(message);
@@ -256,7 +256,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				}
 			}
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw Exceptions.duck(e);
 		}
 	}
 
