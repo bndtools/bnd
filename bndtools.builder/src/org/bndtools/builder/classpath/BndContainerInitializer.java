@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -347,16 +347,13 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             List<IClasspathEntry> classpath = new ArrayList<IClasspathEntry>(20);
             List<File> filesToRefresh = new ArrayList<File>(20);
             try {
-                Iterator<Container> containers = model.getBuildpath().iterator();
-                if (containers.hasNext()) { // The first container is always the project directory; it is not part of this container.
-                    containers.next();
-                }
+                Collection<Container> containers = model.getBuildpath();
                 calculateContainersClasspath(Constants.BUILDPATH, containers, classpath, filesToRefresh);
 
-                containers = model.getTestpath().iterator();
+                containers = model.getTestpath();
                 calculateContainersClasspath(Constants.TESTPATH, containers, classpath, filesToRefresh);
 
-                containers = model.getBootclasspath().iterator();
+                containers = model.getBootclasspath();
                 calculateContainersClasspath(Constants.BUILDPATH, containers, classpath, filesToRefresh);
             } catch (CircularDependencyException e) {
                 error("Circular dependency during classpath calculation: %s", e, e.getMessage());
@@ -374,9 +371,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             return classpath;
         }
 
-        private void calculateContainersClasspath(String header, Iterator<Container> containers, List<IClasspathEntry> classpath, List<File> filesToRefresh) {
-            while (containers.hasNext()) {
-                Container c = containers.next();
+        private void calculateContainersClasspath(String header, Collection<Container> containers, List<IClasspathEntry> classpath, List<File> filesToRefresh) {
+            for (Container c : containers) {
                 File file = c.getFile();
                 assert file.isAbsolute();
 
