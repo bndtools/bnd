@@ -237,14 +237,19 @@ public class ProjectBuilder extends Builder {
 	}
 
 	// *
+	private static final Pattern	PATTERN_EXPORT_PACKAGE		= Pattern
+			.compile(Pattern.quote(Constants.EXPORT_PACKAGE), Pattern.CASE_INSENSITIVE);
+	private static final Pattern	PATTERN_EXPORT_CONTENTS		= Pattern
+			.compile(Pattern.quote(Constants.EXPORT_CONTENTS), Pattern.CASE_INSENSITIVE);
+	private static final Pattern	PATTERN_VERSION_ANNOTATION	= Pattern
+			.compile("@(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*\\.)*Version\\s*([^)]+)");
+	private static final Pattern	PATTERN_VERSION_PACKAGEINFO	= Pattern.compile("^\\s*version\\s.*$");
 
 	public void fillInLocationForPackageInfo(Location location, String packageName) throws Exception {
 		Parameters eps = getExportPackage();
 		Attrs attrs = eps.get(packageName);
-		FileLine fl;
-
 		if (attrs != null && attrs.containsKey(Constants.VERSION_ATTRIBUTE)) {
-			fl = getHeader(Pattern.compile(Constants.EXPORT_PACKAGE, Pattern.CASE_INSENSITIVE));
+			FileLine fl = getHeader(PATTERN_EXPORT_PACKAGE);
 			if (fl != null) {
 				location.file = fl.file.getAbsolutePath();
 				location.line = fl.line;
@@ -256,7 +261,7 @@ public class ProjectBuilder extends Builder {
 		Parameters ecs = getExportContents();
 		attrs = ecs.get(packageName);
 		if (attrs != null && attrs.containsKey(Constants.VERSION_ATTRIBUTE)) {
-			fl = getHeader(Pattern.compile(Constants.EXPORT_CONTENTS, Pattern.CASE_INSENSITIVE));
+			FileLine fl = getHeader(PATTERN_EXPORT_CONTENTS);
 			if (fl != null) {
 				location.file = fl.file.getAbsolutePath();
 				location.line = fl.line;
@@ -265,12 +270,12 @@ public class ProjectBuilder extends Builder {
 			}
 		}
 
+		String path = packageName.replace('.', '/');
 		for (File src : project.getSourcePath()) {
-			String path = packageName.replace('.', '/');
 			File packageDir = IO.getFile(src, path);
 			File pi = IO.getFile(packageDir, "package-info.java");
 			if (pi.isFile()) {
-				fl = findHeader(pi, Pattern.compile("@Version\\s*([^)]+)"));
+				FileLine fl = findHeader(pi, PATTERN_VERSION_ANNOTATION);
 				if (fl != null) {
 					location.file = fl.file.getAbsolutePath();
 					location.line = fl.line;
@@ -280,7 +285,7 @@ public class ProjectBuilder extends Builder {
 			}
 			pi = IO.getFile(packageDir, "packageinfo");
 			if (pi.isFile()) {
-				fl = findHeader(pi, Pattern.compile("^\\s*version.*$"));
+				FileLine fl = findHeader(pi, PATTERN_VERSION_PACKAGEINFO);
 				if (fl != null) {
 					location.file = fl.file.getAbsolutePath();
 					location.line = fl.line;
@@ -288,7 +293,6 @@ public class ProjectBuilder extends Builder {
 					return;
 				}
 			}
-
 		}
 	}
 
