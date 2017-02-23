@@ -577,12 +577,22 @@ Project ${project.name}
     project.getInfo(project.getWorkspace(), "${project.getWorkspace().getBase().name} :")
     boolean failed = !ignoreFailures && !project.isOk()
     int errorCount = project.getErrors().size()
-    project.getWarnings().each {
-      logger.warn 'Warning: {}', it
+    project.getWarnings().each { msg ->
+      def location = project.getLocation(msg)
+      if (location && location.file) {
+        logger.warn '{}:{}: warning\n{}', location.file, location.line, msg
+      } else {
+        logger.warn 'warning: {}', msg
+      }
     }
     project.getWarnings().clear()
-    project.getErrors().each {
-      logger.error 'Error  : {}', it
+    project.getErrors().each { msg ->
+      def location = project.getLocation(msg)
+      if (location && location.file) {
+        logger.error '{}:{}: error\n{}', location.file, location.line, msg
+      } else {
+        logger.error 'error  : {}', msg
+      }
     }
     project.getErrors().clear()
     if (failed) {
