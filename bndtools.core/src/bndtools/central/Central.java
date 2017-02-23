@@ -23,7 +23,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -301,76 +300,42 @@ public class Central implements IStartupParticipant {
 
     private static void addCnfChangeListener(final Workspace workspace) {
         ResourcesPlugin.getWorkspace().addResourceChangeListener(new IResourceChangeListener() {
-
             @Override
             public void resourceChanged(IResourceChangeEvent event) {
                 if (Central.getInstance() == null) { // plugin is not active
                     return;
                 }
-                if (event.getType() != IResourceChangeEvent.POST_CHANGE)
+                if (event.getType() != IResourceChangeEvent.POST_CHANGE) {
                     return;
-
+                }
                 IResourceDelta rootDelta = event.getDelta();
-                if (isCnfChanged(rootDelta)) {
+                if (isCnfChanged(workspace, rootDelta)) {
+                    logger.logInfo("cnf changed; refreshing workspace", null);
                     workspace.refresh();
                 }
             }
         });
     }
 
-    private static boolean isCnfChanged(IResourceDelta delta) {
-
-        final AtomicBoolean result = new AtomicBoolean(false);
+    private static boolean isCnfChanged(Workspace workspace, IResourceDelta rootDelta) {
         try {
-            delta.accept(new IResourceDeltaVisitor() {
-                @Override
-                public boolean visit(IResourceDelta delta) throws CoreException {
-                    try {
-
-                        if (!isChangeDelta(delta))
-                            return false;
-
-                        IResource resource = delta.getResource();
-                        if (resource.getType() == IResource.ROOT || resource.getType() == IResource.PROJECT && resource.getName().equals(Workspace.CNFDIR))
-                            return true;
-
-                        if (resource.getType() == IResource.PROJECT)
-                            return false;
-
-                        if (resource.getType() == IResource.FOLDER && resource.getName().equals("ext")) {
-                            result.set(true);
-                            return false;
-                        }
-
-                        if (resource.getType() == IResource.FILE) {
-                            if (Workspace.BUILDFILE.equals(resource.getName())) {
-                                result.set(true);
-                                return false;
-                            }
-                            // Check files included by the -include directive in build.bnd
-                            List<File> includedFiles = getWorkspace().getIncluded();
-                            if (includedFiles == null) {
-                                return false;
-                            }
-                            for (File includedFile : includedFiles) {
-                                IPath location = resource.getLocation();
-                                if (location != null && includedFile.equals(location.toFile())) {
-                                    result.set(true);
-                                    return false;
-                                }
-                            }
-                        }
+            IPath path = toPath(workspace.getPropertiesFile());
+            if (path != null && rootDelta.findMember(path) != null) {
+                return true;
+            }
+            List<File> includedFiles = workspace.getIncluded();
+            if (includedFiles != null) {
+                for (File includedFile : includedFiles) {
+                    path = toPath(includedFile);
+                    if (path != null && rootDelta.findMember(path) != null) {
                         return true;
-                    } catch (Exception e) {
-                        throw new CoreException(new Status(Status.ERROR, BndtoolsConstants.CORE_PLUGIN_ID, "During checking project changes", e));
                     }
                 }
-
-            });
-        } catch (CoreException e) {
+            }
+        } catch (Exception e) {
             logger.logError("Central.isCnfChanged() failed", e);
         }
-        return result.get();
+        return false;
     }
 
     public static boolean isChangeDelta(IResourceDelta delta) {
