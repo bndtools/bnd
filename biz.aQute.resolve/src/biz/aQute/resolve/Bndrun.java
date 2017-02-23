@@ -104,59 +104,66 @@ public class Bndrun extends Run {
 	 */
 	public String resolve(boolean failOnChanges, boolean writeOnChanges) throws Exception {
 		try (ProjectResolver projectResolver = new ProjectResolver(this)) {
-			Map<Resource,List<Wire>> resolution = projectResolver.resolve();
-			Set<Resource> resources = resolution.keySet();
-			List<VersionedClause> runBundles = new ArrayList<>();
-			for (Resource resource : resources) {
-				VersionedClause runBundle = ResourceUtils.toVersionClause(resource, "[===,==+)");
-				if (!runBundles.contains(runBundle)) {
-					runBundles.add(runBundle);
-				}
-			}
-			Collections.sort(runBundles, new Comparator<VersionedClause>() {
-				@Override
-				public int compare(VersionedClause a, VersionedClause b) {
-					int diff = a.getName().compareTo(b.getName());
-					return (diff != 0) ? diff : a.getVersionRange().compareTo(b.getVersionRange());
-				}
-			});
-
-			File runFile = getPropertiesFile();
-			BndEditModel bem = new BndEditModel(getWorkspace());
-			Document doc = new Document(IO.collect(runFile));
-			bem.loadFrom(doc);
-
-			List<VersionedClause> bemRunBundles = bem.getRunBundles();
-			if (bemRunBundles == null)
-				bemRunBundles = new ArrayList<>();
-
-			String originalRunbundlesString = runbundlesWrappedFormatter.convert(bemRunBundles);
-			logger.debug("Original -runbundles was:\n\t {}", originalRunbundlesString);
-			String runbundlesString = runbundlesWrappedFormatter.convert(runBundles);
-			logger.debug("Resolved -runbundles is:\n\t {}", runbundlesString);
-
-			List<VersionedClause> deltaAdd = new ArrayList<>(runBundles);
-			deltaAdd.removeAll(bemRunBundles);
-			List<VersionedClause> deltaRemove = new ArrayList<>(bemRunBundles);
-			deltaRemove.removeAll(runBundles);
-			boolean added = bemRunBundles.addAll(deltaAdd);
-			boolean removed = bemRunBundles.removeAll(deltaRemove);
-			if (added || removed) {
-				if (failOnChanges && !bemRunBundles.isEmpty()) {
-					error("The runbundles have changed. Failing the build!\nWas: %s\nIs: %s", originalRunbundlesString,
-							runbundlesString);
+			try {
+				Map<Resource,List<Wire>> resolution = projectResolver.resolve();
+				if (!projectResolver.isOk()) {
 					return null;
 				}
-				if (writeOnChanges) {
-					bem.setRunBundles(bemRunBundles);
-					String runBundlesProperty = bem.getDocumentChanges().get(Constants.RUNBUNDLES);
-					logger.debug("Writing changes to {}", runFile.getAbsolutePath());
-					logger.debug("{}:{}", Constants.RUNBUNDLES, runBundlesProperty);
-					bem.saveChangesTo(doc);
-					IO.store(doc.get(), runFile);
+				Set<Resource> resources = resolution.keySet();
+				List<VersionedClause> runBundles = new ArrayList<>();
+				for (Resource resource : resources) {
+					VersionedClause runBundle = ResourceUtils.toVersionClause(resource, "[===,==+)");
+					if (!runBundles.contains(runBundle)) {
+						runBundles.add(runBundle);
+					}
 				}
+				Collections.sort(runBundles, new Comparator<VersionedClause>() {
+					@Override
+					public int compare(VersionedClause a, VersionedClause b) {
+						int diff = a.getName().compareTo(b.getName());
+						return (diff != 0) ? diff : a.getVersionRange().compareTo(b.getVersionRange());
+					}
+				});
+
+				File runFile = getPropertiesFile();
+				BndEditModel bem = new BndEditModel(getWorkspace());
+				Document doc = new Document(IO.collect(runFile));
+				bem.loadFrom(doc);
+
+				List<VersionedClause> bemRunBundles = bem.getRunBundles();
+				if (bemRunBundles == null)
+					bemRunBundles = new ArrayList<>();
+
+				String originalRunbundlesString = runbundlesWrappedFormatter.convert(bemRunBundles);
+				logger.debug("Original -runbundles was:\n\t {}", originalRunbundlesString);
+				String runbundlesString = runbundlesWrappedFormatter.convert(runBundles);
+				logger.debug("Resolved -runbundles is:\n\t {}", runbundlesString);
+
+				List<VersionedClause> deltaAdd = new ArrayList<>(runBundles);
+				deltaAdd.removeAll(bemRunBundles);
+				List<VersionedClause> deltaRemove = new ArrayList<>(bemRunBundles);
+				deltaRemove.removeAll(runBundles);
+				boolean added = bemRunBundles.addAll(deltaAdd);
+				boolean removed = bemRunBundles.removeAll(deltaRemove);
+				if (added || removed) {
+					if (failOnChanges && !bemRunBundles.isEmpty()) {
+						error("The runbundles have changed. Failing the build!\nWas: %s\nIs: %s",
+								originalRunbundlesString, runbundlesString);
+						return null;
+					}
+					if (writeOnChanges) {
+						bem.setRunBundles(bemRunBundles);
+						String runBundlesProperty = bem.getDocumentChanges().get(Constants.RUNBUNDLES);
+						logger.debug("Writing changes to {}", runFile.getAbsolutePath());
+						logger.debug("{}:{}", Constants.RUNBUNDLES, runBundlesProperty);
+						bem.saveChangesTo(doc);
+						IO.store(doc.get(), runFile);
+					}
+				}
+				return runbundlesListFormatter.convert(bemRunBundles);
+			} finally {
+				getInfo(projectResolver);
 			}
-			return runbundlesListFormatter.convert(bemRunBundles);
 		}
 	}
 
