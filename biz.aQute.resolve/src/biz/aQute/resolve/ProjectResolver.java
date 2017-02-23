@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Processor;
@@ -95,14 +94,10 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 	private ResolveProcess					resolve		= new ResolveProcess();
 	private Collection<ResolutionCallback>	cbs			= new ArrayList<ResolutionCallback>();
 
-	public ProjectResolver(Project project) throws Exception {
+	public ProjectResolver(Project project) {
 		super(project);
 		getSettings(project);
 		this.project = project;
-
-		Workspace workspace = project.getWorkspace();
-		if (workspace != null)
-			addBasicPlugin(new WorkspaceResourcesRepository(workspace));
 	}
 
 	public Map<Resource,List<Wire>> resolve() throws ResolutionException {
