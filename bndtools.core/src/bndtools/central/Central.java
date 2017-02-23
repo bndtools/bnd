@@ -304,6 +304,9 @@ public class Central implements IStartupParticipant {
 
             @Override
             public void resourceChanged(IResourceChangeEvent event) {
+                if (Central.getInstance() == null) { // plugin is not active
+                    return;
+                }
                 if (event.getType() != IResourceChangeEvent.POST_CHANGE)
                     return;
 
