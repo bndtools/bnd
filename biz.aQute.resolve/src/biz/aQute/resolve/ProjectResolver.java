@@ -87,12 +87,12 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 		}
 	}
 
-	private Project							project;
+	private final Project					project;
 	private Map<Resource,List<Wire>>		resolution;
-	private ReporterLogger					log			= new ReporterLogger(0);
-	private Resolver						resolver	= new BndResolver(new ReporterLogger(0));
-	private ResolveProcess					resolve		= new ResolveProcess();
-	private Collection<ResolutionCallback>	cbs			= new ArrayList<ResolutionCallback>();
+	private final ReporterLogger					log			= new ReporterLogger(0);
+	private final Resolver							resolver	= new BndResolver(new ReporterLogger(0));
+	private final ResolveProcess					resolve		= new ResolveProcess();
+	private final Collection<ResolutionCallback>	cbs			= new ArrayList<ResolutionCallback>();
 
 	public ProjectResolver(Project project) {
 		super(project);
@@ -101,8 +101,7 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 	}
 
 	public Map<Resource,List<Wire>> resolve() throws ResolutionException {
-		resolution = resolve.resolveRequired(project, project, this, resolver, cbs, log);
-		return resolution;
+		return resolution = resolve.resolveRequired(this, project, this, resolver, cbs, log);
 	}
 
 	@Override
@@ -117,8 +116,10 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 	 */
 
 	public List<Container> getRunBundles() throws Exception {
-		if (resolution == null)
-			resolve();
+		Map<Resource,List<Wire>> resolution = this.resolution;
+		if (resolution == null) {
+			resolution = resolve();
+		}
 
 		List<Container> containers = new ArrayList<Container>();
 		for (Resource r : resolution.keySet()) {
@@ -148,7 +149,7 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 
 	public void validate() throws Exception {
 		BndrunResolveContext context = getContext();
-		String runrequires = project.getProperty(RUNREQUIRES);
+		String runrequires = getProperty(RUNREQUIRES);
 		if (runrequires == null || runrequires.isEmpty()) {
 			error("Requires the %s instruction to be set", RUNREQUIRES);
 		} else {
@@ -157,7 +158,7 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 
 			exists(context, runrequires, "Initial requirement %s cannot be resolved to an entry in the repositories");
 		}
-		String framework = project.getProperty(RUNFW);
+		String framework = getProperty(RUNFW);
 		if (framework == null) {
 			error("No framework is set");
 		} else {
@@ -180,7 +181,7 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 	}
 
 	public BndrunResolveContext getContext() {
-		return new BndrunResolveContext(project, project, this, log);
+		return new BndrunResolveContext(this, project, this, log);
 	}
 
 	public IdentityCapability getResource(String bsn, String version) {
