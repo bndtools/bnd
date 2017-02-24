@@ -583,8 +583,9 @@ class JavaElement {
 			}
 
 			access(children, f.getAccess(), f.isDeprecated(), provider.get());
-			Element member = new Element(Type.FIELD, f.getType().getFQN() + " " + f.getName(), children, MINOR,
-					provider.get() && !isPublic(f.getAccess()) ? MINOR : MAJOR, null);
+			children.add(getReturn(f.getType()));
+			Element member = new Element(FIELD, f.getName(), children, MINOR,
+					provider.get() && !f.isPublic() ? MINOR : MAJOR, null);
 
 			if (!members.add(member)) {
 				members.remove(member);

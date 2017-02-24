@@ -80,6 +80,17 @@ public class DiffTest extends TestCase {
 		assertEquals(Delta.UNCHANGED, diff.get("foo(java.util.List)").getDelta());
 		assertEquals(Delta.UNCHANGED, diff.get("foo(java.util.List)").get("void").getDelta());
 
+		diff = treeDiff.get("test.api.A");
+		assertEquals(Delta.MINOR, diff.getDelta());
+		assertEquals(Delta.ADDED, diff.get("n").getDelta());
+		assertEquals(Delta.ADDED, diff.get("n").get("static").getDelta());
+		assertEquals(Delta.ADDED, diff.get("n").get("int").getDelta());
+
+		diff = treeDiff.get("test.api.C");
+		assertEquals(Delta.MAJOR, diff.getDelta());
+		assertEquals(Delta.MAJOR, diff.get("s").getDelta());
+		assertEquals(Delta.ADDED, diff.get("s").get("int").getDelta());
+		assertEquals(Delta.REMOVED, diff.get("s").get("java.lang.String").getDelta());
 
 		b.close();
 	}
