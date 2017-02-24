@@ -26,10 +26,15 @@ public class DiffTest extends TestCase {
 		Tree olderTree = make(IO.getFile("testresources/baseline/test2.jar"));
 		Diff diff = newerTree.diff(olderTree);
 
-		assertEquals(Delta.MAJOR, diff.getDelta());
+		assertEquals(Delta.UNCHANGED, diff.getDelta());
 		assertEquals(Delta.UNCHANGED, diff.get("<init>()").getDelta());
-		assertEquals(Delta.ADDED, diff.get("putAll(Ljava/util/List<Ljava/lang/Integer;>;)").getDelta());
-		assertEquals(Delta.REMOVED, diff.get("putAll(Ljava/util/List<Ljava/lang/String;>;)").getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("putAll(java.util.List)").getDelta());
+		// assertEquals(Delta.MAJOR, diff.getDelta());
+		// assertEquals(Delta.UNCHANGED, diff.get("<init>()").getDelta());
+		// assertEquals(Delta.ADDED,
+		// diff.get("putAll(Ljava/util/List<Ljava/lang/Integer;>;)").getDelta());
+		// assertEquals(Delta.REMOVED,
+		// diff.get("putAll(Ljava/util/List<Ljava/lang/String;>;)").getDelta());
 		show(diff, 2);
 	}
 
@@ -63,16 +68,35 @@ public class DiffTest extends TestCase {
 		show(diff, 2);
 
 		assertEquals(Delta.MAJOR, diff.getDelta());
-		assertEquals(Delta.MAJOR, diff.get("foo()").getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("abstract").getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("foo()").getDelta());
 		assertEquals(Delta.UNCHANGED, diff.get("foo()").get("abstract").getDelta());
-		assertEquals(Delta.ADDED, diff.get("foo()").get("java.util.Collection<Ljava.lang.Integer;>").getDelta());
-		assertEquals(Delta.REMOVED, diff.get("foo()").get("java.util.Collection<Ljava.lang.String;>").getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("foo()").get("java.util.Collection").getDelta());
+		assertEquals(Delta.MAJOR, diff.get("foo(java.lang.Object)").getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("foo(java.lang.Object)").get("abstract").getDelta());
+		assertEquals(Delta.REMOVED, diff.get("foo(java.lang.Object)").get("java.lang.Object").getDelta());
+		assertEquals(Delta.ADDED, diff.get("foo(java.lang.Object)").get("java.util.List").getDelta());
 		assertEquals(Delta.UNCHANGED, diff.get("fooInt()").getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("fooInt()").get("int").getDelta());
 		assertEquals(Delta.UNCHANGED, diff.get("fooString()").getDelta());
-		assertEquals(Delta.MAJOR, diff.get("foo()").getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("fooString()").get("java.lang.String").getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("foo(java.util.List)").getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("foo(java.util.List)").get("void").getDelta());
 
-		assertEquals(Delta.ADDED, diff.get("foo(Ljava/util/List<Ljava/lang/Integer;>;)").getDelta());
-		assertEquals(Delta.REMOVED, diff.get("foo(Ljava/util/List<Ljava/lang/String;>;)").getDelta());
+		// assertEquals(Delta.MAJOR, diff.getDelta());
+		// assertEquals(Delta.MAJOR, diff.get("foo()").getDelta());
+		// assertEquals(Delta.UNCHANGED,
+		// diff.get("foo()").get("abstract").getDelta());
+		// assertEquals(Delta.ADDED,
+		// diff.get("foo()").get("java.util.Collection<Ljava.lang.Integer;>").getDelta());
+		// assertEquals(Delta.REMOVED,
+		// diff.get("foo()").get("java.util.Collection<Ljava.lang.String;>").getDelta());
+		// assertEquals(Delta.UNCHANGED, diff.get("fooInt()").getDelta());
+		// assertEquals(Delta.UNCHANGED, diff.get("fooString()").getDelta());
+		// assertEquals(Delta.ADDED,
+		// diff.get("foo(Ljava/util/List<Ljava/lang/Integer;>;)").getDelta());
+		// assertEquals(Delta.REMOVED,
+		// diff.get("foo(Ljava/util/List<Ljava/lang/String;>;)").getDelta());
 
 		b.close();
 	}

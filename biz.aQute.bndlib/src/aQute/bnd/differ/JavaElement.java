@@ -30,8 +30,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.Manifest;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
@@ -79,7 +77,7 @@ import aQute.libg.generics.Create;
  */
 
 class JavaElement {
-	static Pattern						PARAMETERS_P		= Pattern.compile(".*(\\(.*\\)).*");
+	// static Pattern PARAMETERS_P = Pattern.compile(".*(\\(.*\\)).*");
 
 	final static EnumSet<Type>			INHERITED			= EnumSet.of(FIELD, METHOD, EXTENDS, IMPLEMENTS);
 	private static final Element		PROTECTED			= new Element(ACCESS, "protected", null, MAJOR, MINOR,
@@ -571,12 +569,14 @@ class JavaElement {
 			// }
 			// }
 
-			String signature = m.getSignature();
-			Matcher matcher;
-			if (signature != null && (matcher = PARAMETERS_P.matcher(signature)).matches()) {
-				signature = matcher.group(1);
-			} else
-				signature = toString(m.getPrototype());
+			String signature = toString(m.getPrototype());
+			// String signature = m.getSignature();
+			// Matcher matcher;
+			// if (signature != null && (matcher =
+			// PARAMETERS_P.matcher(signature)).matches()) {
+			// signature = matcher.group(1);
+			// } else
+			// signature = toString(m.getPrototype());
 
 			//
 			// Java default methods are concrete implementations of methods
@@ -685,26 +685,28 @@ class JavaElement {
 		return sb.toString();
 	}
 
-	static Element	BOOLEAN_R	= new Element(RETURN, "boolean");
-	static Element	BYTE_R		= new Element(RETURN, "byte");
-	static Element	SHORT_R		= new Element(RETURN, "short");
-	static Element	CHAR_R		= new Element(RETURN, "char");
-	static Element	INT_R		= new Element(RETURN, "int");
-	static Element	LONG_R		= new Element(RETURN, "long");
-	static Element	FLOAT_R		= new Element(RETURN, "float");
-	static Element	DOUBLE_R	= new Element(RETURN, "double");
+	static final Element	VOID_R		= new Element(RETURN, "void");
+	static final Element	BOOLEAN_R	= new Element(RETURN, "boolean");
+	static final Element	BYTE_R		= new Element(RETURN, "byte");
+	static final Element	SHORT_R		= new Element(RETURN, "short");
+	static final Element	CHAR_R		= new Element(RETURN, "char");
+	static final Element	INT_R		= new Element(RETURN, "int");
+	static final Element	LONG_R		= new Element(RETURN, "long");
+	static final Element	FLOAT_R		= new Element(RETURN, "float");
+	static final Element	DOUBLE_R	= new Element(RETURN, "double");
+	static final Element	OBJECT_R	= new Element(RETURN, "java.lang.Object");
 
 	private void getCovariantReturns(Collection<Element> elements, TypeRef type, String generics) throws Exception {
-		if (type == null || type.isObject())
+		if (type == null)
 			return;
 
 		if (type.isPrimitive()) {
-			if (type.getFQN().equals("void"))
-				return;
-
 			String name = type.getBinary();
 			Element e;
 			switch (name.charAt(0)) {
+				case 'V' :
+					e = VOID_R;
+					break;
 				case 'Z' :
 					e = BOOLEAN_R;
 					break;
@@ -736,7 +738,8 @@ class JavaElement {
 			elements.add(e);
 			return;
 		}
-		Element current = new Element(RETURN, generics);
+		Element current = type.isObject() ? OBJECT_R : new Element(RETURN, type.getFQN());
+		// Element current = new Element(RETURN, generics);
 		elements.add(current);
 
 		// List<Element> set = covariant.get(type);
