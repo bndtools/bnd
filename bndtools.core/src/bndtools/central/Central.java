@@ -436,7 +436,9 @@ public class Central implements IStartupParticipant {
         for (Refreshable rp : rps) {
             if (rp.refresh()) {
                 changed = true;
-                refreshedFiles.add(rp.getRoot());
+                File root = rp.getRoot();
+                if (root != null)
+                    refreshedFiles.add(root);
             }
         }
 
