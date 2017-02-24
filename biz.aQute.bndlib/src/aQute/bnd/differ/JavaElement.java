@@ -6,24 +6,30 @@ import static aQute.bnd.service.diff.Delta.MAJOR;
 import static aQute.bnd.service.diff.Delta.MICRO;
 import static aQute.bnd.service.diff.Delta.MINOR;
 import static aQute.bnd.service.diff.Type.ACCESS;
+import static aQute.bnd.service.diff.Type.ANNOTATED;
+import static aQute.bnd.service.diff.Type.ANNOTATION;
+import static aQute.bnd.service.diff.Type.API;
+import static aQute.bnd.service.diff.Type.CLASS;
 import static aQute.bnd.service.diff.Type.CLASS_VERSION;
+import static aQute.bnd.service.diff.Type.CONSTANT;
+import static aQute.bnd.service.diff.Type.ENUM;
 import static aQute.bnd.service.diff.Type.EXTENDS;
 import static aQute.bnd.service.diff.Type.FIELD;
 import static aQute.bnd.service.diff.Type.IMPLEMENTS;
+import static aQute.bnd.service.diff.Type.INTERFACE;
 import static aQute.bnd.service.diff.Type.METHOD;
+import static aQute.bnd.service.diff.Type.PACKAGE;
+import static aQute.bnd.service.diff.Type.PROPERTY;
 import static aQute.bnd.service.diff.Type.RETURN;
-import static java.lang.reflect.Modifier.isAbstract;
-import static java.lang.reflect.Modifier.isFinal;
-import static java.lang.reflect.Modifier.isPublic;
-import static java.lang.reflect.Modifier.isStatic;
+import static aQute.bnd.service.diff.Type.VERSION;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -77,8 +83,6 @@ import aQute.libg.generics.Create;
  */
 
 class JavaElement {
-	// static Pattern PARAMETERS_P = Pattern.compile(".*(\\(.*\\)).*");
-
 	final static EnumSet<Type>			INHERITED			= EnumSet.of(FIELD, METHOD, EXTENDS, IMPLEMENTS);
 	private static final Element		PROTECTED			= new Element(ACCESS, "protected", null, MAJOR, MINOR,
 			null);
@@ -87,18 +91,23 @@ class JavaElement {
 	private static final Element		STATIC				= new Element(ACCESS, "static", null, MAJOR, MAJOR, null);
 	private static final Element		ABSTRACT			= new Element(ACCESS, "abstract", null, MAJOR, MINOR, null);
 	private static final Element		FINAL				= new Element(ACCESS, "final", null, MAJOR, MINOR, null);
-	// private static final Element DEPRECATED = new Element(ACCESS,
-	// "deprecated", null,
-	// CHANGED, CHANGED, null);
+	// Common return type elements
+	static final Element				VOID_R				= new Element(RETURN, "void");
+	static final Element				BOOLEAN_R			= new Element(RETURN, "boolean");
+	static final Element				BYTE_R				= new Element(RETURN, "byte");
+	static final Element				SHORT_R				= new Element(RETURN, "short");
+	static final Element				CHAR_R				= new Element(RETURN, "char");
+	static final Element				INT_R				= new Element(RETURN, "int");
+	static final Element				LONG_R				= new Element(RETURN, "long");
+	static final Element				FLOAT_R				= new Element(RETURN, "float");
+	static final Element				DOUBLE_R			= new Element(RETURN, "double");
+	static final Element				OBJECT_R			= new Element(RETURN, "java.lang.Object");
 
 	final Analyzer						analyzer;
 	final Map<PackageRef,Instructions>	providerMatcher	= Create.map();
 	final Set<TypeRef>					notAccessible	= Create.set();
 	final Map<Object,Element>			cache			= Create.map();
-	MultiMap<PackageRef,																								//
-	Element>							packages;
-	final MultiMap<TypeRef,																								//
-	Element>							covariant		= new MultiMap<TypeRef,Element>();
+	final MultiMap<PackageRef,Element>	packages;
 	final Set<JAVA>						javas			= Create.set();
 	final Packages						exports;
 
@@ -176,17 +185,17 @@ class JavaElement {
 			String version = exports.get(entry.getKey()).get(Constants.VERSION_ATTRIBUTE);
 			if (version != null) {
 				Version v = new Version(version);
-				set.add(new Element(Type.VERSION, v.getWithoutQualifier().toString(), null, IGNORED, IGNORED, null));
+				set.add(new Element(VERSION, v.getWithoutQualifier().toString(), null, IGNORED, IGNORED, null));
 			}
-			Element pd = new Element(Type.PACKAGE, entry.getKey().getFQN(), set, MINOR, MAJOR, null);
+			Element pd = new Element(PACKAGE, entry.getKey().getFQN(), set, MINOR, MAJOR, null);
 			result.add(pd);
 		}
 
 		for (JAVA java : javas) {
-			result.add(new Element(CLASS_VERSION, java.toString(), null, Delta.CHANGED, Delta.CHANGED, null));
+			result.add(new Element(CLASS_VERSION, java.toString(), null, CHANGED, CHANGED, null));
 		}
 
-		return new Element(Type.API, "<api>", result, CHANGED, CHANGED, null);
+		return new Element(API, "<api>", result, CHANGED, CHANGED, null);
 	}
 
 	/**
@@ -205,9 +214,8 @@ class JavaElement {
 		if (e != null)
 			return e;
 
-		final StringBuilder comment = new StringBuilder();
-		final Set<Element> members = new LinkedHashSet<Element>();
-		final Set<MethodDef> methods = new LinkedHashSet<MethodDef>();
+		final Set<Element> members = Create.set();
+		final Set<MethodDef> methods = Create.set();
 		final Set<Clazz.FieldDef> fields = Create.set();
 		final MultiMap<Clazz.Def,Element> annotations = new MultiMap<Clazz.Def,Element>();
 
@@ -283,20 +291,18 @@ class JavaElement {
 
 				Clazz c = analyzer.findClass(name);
 				if ((c == null || c.isPublic()) && !name.isObject())
-					members.add(new Element(Type.EXTENDS, name.getFQN(), null, MICRO, MAJOR, comment));
+					members.add(new Element(EXTENDS, name.getFQN(), null, MICRO, MAJOR, comment));
 			}
 
 			@Override
 			public void implementsInterfaces(TypeRef names[]) throws Exception {
-				// TODO is interface reordering important for binary
-				// compatibility??
-
+				Arrays.sort(names); // ignore type reordering
 				for (TypeRef name : names) {
 
 					String comment = null;
 					if (clazz.isInterface() || clazz.isAbstract())
 						comment = inherit(members, name);
-					members.add(new Element(Type.IMPLEMENTS, name.getFQN(), null, MINOR, MAJOR, comment));
+					members.add(new Element(IMPLEMENTS, name.getFQN(), null, MINOR, MAJOR, comment));
 				}
 			}
 
@@ -412,7 +418,7 @@ class JavaElement {
 				for (String key : annotation.keySet()) {
 					addAnnotationMember(properties, key, annotation.get(key));
 				}
-				return new Element(Type.ANNOTATED, annotation.getName().getFQN(), properties, CHANGED, CHANGED, null);
+				return new Element(ANNOTATED, annotation.getName().getFQN(), properties, CHANGED, CHANGED, null);
 			}
 
 			/*
@@ -440,7 +446,7 @@ class JavaElement {
 					} else
 						sb.append(member);
 
-					properties.add(new Element(Type.PROPERTY, sb.toString(), null, CHANGED, CHANGED, null));
+					properties.add(new Element(PROPERTY, sb.toString(), null, CHANGED, CHANGED, null));
 				}
 			}
 
@@ -473,15 +479,15 @@ class JavaElement {
 
 		if (clazz.isInterface())
 			if (clazz.isAnnotation())
-				type = Type.ANNOTATION;
+				type = ANNOTATION;
 			else
-				type = Type.INTERFACE;
+				type = INTERFACE;
 		else if (clazz.isEnum())
-			type = Type.ENUM;
+			type = ENUM;
 		else
-			type = Type.CLASS;
+			type = CLASS;
 
-		if (type == Type.INTERFACE) {
+		if (type == INTERFACE) {
 			if (provider.get()) {
 				// Adding a method for a provider is not an issue
 				// because it must be aware of the changes
@@ -515,24 +521,10 @@ class JavaElement {
 			remove = MAJOR;
 		}
 
-		// Remove all synthetic methods, we need
-		// to treat them special for the covariant returns
-		// We must do this in the correct order so please
-		// keep the linked hashset in place!
-
-		Set<MethodDef> synthetic = new LinkedHashSet<MethodDef>();
-		for (Iterator<MethodDef> i = methods.iterator(); i.hasNext();) {
-			MethodDef m = i.next();
-			if (m.isSynthetic()) {
-				synthetic.add(m);
-				i.remove();
-			}
-		}
-
-		// System.out.println("methods/synthetic " + clazz+ " " + methods + " "
-		// + synthetic);
 		for (MethodDef m : methods) {
-
+			if (m.isSynthetic()) { // Ignore synthetic methods
+				continue;
+			}
 			Collection<Element> children = annotations.get(m);
 			if (children == null)
 				children = new HashSet<Element>();
@@ -550,33 +542,7 @@ class JavaElement {
 			if (clazz.isFinal())
 				children.remove(FINAL);
 
-			// for covariant types we need to add the return types
-			// and all the implemented and extended types. This is already
-			// do for us when we get the element of the return type.
-
-			getCovariantReturns(children, m.getType(), m.getGenericReturnType());
-
-			/**
-			 * No longer includes synthetic methods in the tree
-			 */
-			// for (Iterator<MethodDef> i = synthetic.iterator(); i.hasNext();)
-			// {
-			// MethodDef s = i.next();
-			// if (s.getName().equals(m.getName()) &&
-			// Arrays.equals(s.getPrototype(), m.getPrototype())) {
-			// i.remove();
-			// getCovariantReturns(children, s.getType());
-			// }
-			// }
-
-			String signature = toString(m.getPrototype());
-			// String signature = m.getSignature();
-			// Matcher matcher;
-			// if (signature != null && (matcher =
-			// PARAMETERS_P.matcher(signature)).matches()) {
-			// signature = matcher.group(1);
-			// } else
-			// signature = toString(m.getPrototype());
+			children.add(getReturn(m.getType()));
 
 			//
 			// Java default methods are concrete implementations of methods
@@ -593,8 +559,9 @@ class JavaElement {
 				add = MINOR;
 			}
 
-			Element member = new Element(Type.METHOD, m.getName() + signature, children, add,
-					provider.get() && !isPublic(m.getAccess()) ? MINOR : remove, null);
+			String signature = m.getName() + toString(m.getPrototype());
+			Element member = new Element(METHOD, signature, children, add,
+					provider.get() && !m.isPublic() ? MINOR : remove, null);
 
 			if (!members.add(member)) {
 				members.remove(member);
@@ -602,56 +569,17 @@ class JavaElement {
 			}
 		}
 
-		/**
-		 * Repeat for the remaining synthetic methods After long discussions
-		 * with BJ we decided to skip the synthetic methods since they do not
-		 * seem to contribute to the binary compatibility. They also seem to
-		 * cause problems between compilers. ECJ onlyu adds a synthetic methods
-		 * for the super class while Javac traverse the whole super chain. I've
-		 * actually not been able to figure out how ECJ gets away with this but
-		 * the behavior seems ok.
-		 */
-		// for (MethodDef m : synthetic) {
-		// Collection<Element> children = annotations.get(m);
-		// if (children == null)
-		// children = new HashSet<Element>();
-		// access(children, m.getAccess(), m.isDeprecated());
-		//
-		// // A final class cannot be extended, ergo,
-		// // all methods defined in it are by definition
-		// // final. However, marking them final (either
-		// // on the method or inheriting it from the class)
-		// // will create superfluous changes if we
-		// // override a method from a super class that was not
-		// // final. So we actually remove the final for methods
-		// // in a final class.
-		// if (clazz.isFinal())
-		// children.remove(FINAL);
-		//
-		// // for covariant types we need to add the return types
-		// // and all the implemented and extended types. This is already
-		// // done for us when we get the element of the return type.
-		//
-		// getCovariantReturns(children, m.getType());
-		//
-		// Element member = new Element(Type.METHOD, m.getName() +
-		// toString(m.getPrototype()), children, add, remove,
-		// "synthetic");
-		//
-		// if (!members.add(member)) {
-		// members.remove(member);
-		// members.add(member);
-		// }
-		// }
-
 		for (Clazz.FieldDef f : fields) {
+			if (f.isSynthetic()) { // Ignore synthetic fields
+				continue;
+			}
 			Collection<Element> children = annotations.get(f);
 			if (children == null)
 				children = new HashSet<Element>();
 
 			// Fields can have a constant value, this is a new element
 			if (f.getConstant() != null) {
-				children.add(new Element(Type.CONSTANT, f.getConstant().toString(), null, CHANGED, CHANGED, null));
+				children.add(new Element(CONSTANT, f.getConstant().toString(), null, CHANGED, CHANGED, null));
 			}
 
 			access(children, f.getAccess(), f.isDeprecated(), provider.get());
@@ -667,7 +595,7 @@ class JavaElement {
 		access(members, clazz.getAccess(), clazz.isDeprecated(), provider.get());
 
 		// And make the result
-		Element s = new Element(type, fqn, members, MINOR, MAJOR, comment.length() == 0 ? null : comment.toString());
+		Element s = new Element(type, fqn, members, MINOR, MAJOR, null);
 		cache.put(clazz, s);
 		return s;
 	}
@@ -685,105 +613,43 @@ class JavaElement {
 		return sb.toString();
 	}
 
-	static final Element	VOID_R		= new Element(RETURN, "void");
-	static final Element	BOOLEAN_R	= new Element(RETURN, "boolean");
-	static final Element	BYTE_R		= new Element(RETURN, "byte");
-	static final Element	SHORT_R		= new Element(RETURN, "short");
-	static final Element	CHAR_R		= new Element(RETURN, "char");
-	static final Element	INT_R		= new Element(RETURN, "int");
-	static final Element	LONG_R		= new Element(RETURN, "long");
-	static final Element	FLOAT_R		= new Element(RETURN, "float");
-	static final Element	DOUBLE_R	= new Element(RETURN, "double");
-	static final Element	OBJECT_R	= new Element(RETURN, "java.lang.Object");
-
-	private void getCovariantReturns(Collection<Element> elements, TypeRef type, String generics) throws Exception {
-		if (type == null)
-			return;
-
-		if (type.isPrimitive()) {
-			String name = type.getBinary();
-			Element e;
-			switch (name.charAt(0)) {
-				case 'V' :
-					e = VOID_R;
-					break;
-				case 'Z' :
-					e = BOOLEAN_R;
-					break;
-				case 'S' :
-					e = SHORT_R;
-					break;
-				case 'I' :
-					e = INT_R;
-					break;
-				case 'B' :
-					e = BYTE_R;
-					break;
-				case 'C' :
-					e = CHAR_R;
-					break;
-				case 'J' :
-					e = LONG_R;
-					break;
-				case 'F' :
-					e = FLOAT_R;
-					break;
-				case 'D' :
-					e = DOUBLE_R;
-					break;
-
-				default :
-					throw new IllegalArgumentException("Unknown primitive " + type);
-			}
-			elements.add(e);
-			return;
+	private Element getReturn(TypeRef type) {
+		if (!type.isPrimitive()) {
+			return type.isObject() ? OBJECT_R : new Element(RETURN, type.getFQN());
 		}
-		Element current = type.isObject() ? OBJECT_R : new Element(RETURN, type.getFQN());
-		// Element current = new Element(RETURN, generics);
-		elements.add(current);
-
-		// List<Element> set = covariant.get(type);
-		// if (set != null) {
-		// elements.addAll(set);
-		// return;
-		// }
-		//
-		// Element current = new Element(RETURN, type.getFQN());
-		// Clazz clazz = analyzer.findClass(type);
-		// if (clazz == null) {
-		// elements.add(current);
-		// return;
-		// }
-		//
-		// set = Create.list();
-		// set.add(current);
-		// getCovariantReturns(set, clazz.getSuper());
-		//
-		// TypeRef[] interfaces = clazz.getInterfaces();
-		// if (interfaces != null)
-		// for (TypeRef intf : interfaces) {
-		// getCovariantReturns(set, intf);
-		// }
-		//
-		// covariant.put(type, set);
-		// elements.addAll(set);
+		switch (type.getBinary().charAt(0)) {
+			case 'V' :
+				return VOID_R;
+			case 'Z' :
+				return BOOLEAN_R;
+			case 'S' :
+				return SHORT_R;
+			case 'I' :
+				return INT_R;
+			case 'B' :
+				return BYTE_R;
+			case 'C' :
+				return CHAR_R;
+			case 'J' :
+				return LONG_R;
+			case 'F' :
+				return FLOAT_R;
+			case 'D' :
+				return DOUBLE_R;
+			default :
+				throw new IllegalArgumentException("Unknown primitive " + type);
+		}
 	}
 
-	private static void access(Collection<Element> children, int access,
-			@SuppressWarnings("unused") boolean deprecated, boolean provider) {
-		if (!isPublic(access))
+	private static void access(Collection<Element> children, int access, @SuppressWarnings("unused") boolean deprecated,
+			boolean provider) {
+		if (!Modifier.isPublic(access))
 			children.add(provider ? PROTECTED_PROVIDER : PROTECTED);
-		if (isAbstract(access))
+		if (Modifier.isAbstract(access))
 			children.add(ABSTRACT);
-		if (isFinal(access))
+		if (Modifier.isFinal(access))
 			children.add(FINAL);
-		if (isStatic(access))
+		if (Modifier.isStatic(access))
 			children.add(STATIC);
-
-		// Ignore for now
-		// if (deprecated)
-		// children.add(DEPRECATED);
-
 	}
-
 }

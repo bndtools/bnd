@@ -26,6 +26,7 @@ import aQute.bnd.service.diff.Type;
 
 class Element implements Tree {
 	final static Element[]	EMPTY	= new Element[0];
+
 	final Type				type;
 	final String			name;
 	final Delta				add;
@@ -48,7 +49,7 @@ class Element implements Tree {
 		this.remove = remove;
 		this.comment = comment;
 		if (children != null && children.size() > 0) {
-			this.children = children.toArray(new Element[0]);
+			this.children = children.toArray(EMPTY);
 			Arrays.sort(this.children);
 		} else
 			this.children = EMPTY;
