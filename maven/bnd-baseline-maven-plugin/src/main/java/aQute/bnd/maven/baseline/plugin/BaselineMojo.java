@@ -209,16 +209,22 @@ public class BaselineMojo extends AbstractMojo {
 						info.packageName, info.packageDiff.getDelta(), info.newerVersion, info.olderVersion,
 						info.suggestedVersion, info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
 				if (fullReport) {
-					logger.info(info.packageDiff.toString());
+					logger.info("{}", info.packageDiff);
 					for (Diff typeDiff : info.packageDiff.getChildren()) {
-						logger.info("    " + typeDiff.toString());
-						for (Diff fieldOrMethodDiff : typeDiff.getChildren()) {
+						logger.info("  {}", typeDiff);
+						for (Diff memberDiff : typeDiff.getChildren()) {
 							// Unchanged field/method diffs are noisy and
 							// irrelevant
-							if (fieldOrMethodDiff.getDelta() == Delta.UNCHANGED) {
+							if (memberDiff.getDelta() == Delta.UNCHANGED) {
 								continue;
 							}
-							logger.info("        " + fieldOrMethodDiff.toString());
+							logger.info("    {}", memberDiff);
+							for (Diff childDiff : memberDiff.getChildren()) {
+								if (childDiff.getDelta() == Delta.UNCHANGED) {
+									continue;
+								}
+								logger.info("      {}", childDiff);
+							}
 						}
 					}
 				}
