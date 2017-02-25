@@ -24,24 +24,12 @@ bem.loadFrom(doc)
 def bemRunBundles = bem.getRunBundles()
 assert null == bemRunBundles
 
-assert new File("${basedir}/build.log").exists();
-
-List<String> fileContents = new ArrayList<String>();
-
-BufferedReader reader = new File("${basedir}/build.log").newReader();
-
-String s = null;
-
-while((s = reader.readLine()) != null) {
-    fileContents.add(s);
-}
+File build_log_file = new File("${basedir}/build.log")
+assert build_log_file.exists();
+def build_log = build_log_file.text
 
 // Simple test
-int idx = fileContents.indexOf("Tests run  : 1");
-assert idx != -1;
-assert fileContents.get(idx + 1).equals("Passed     : 1");
+assert build_log =~ /Tests run\s*:\s*1\s*Passed\s*:\s*1\s*Errors\s*:\s*0\s*Failures\s*:\s*0/
 
 // Resolving test
-idx = fileContents.indexOf("Tests run  : 2");
-assert idx != -1;
-assert fileContents.get(idx + 1).equals("Passed     : 2");
+assert build_log =~ /Tests run\s*:\s*2\s*Passed\s*:\s*2\s*Errors\s*:\s*0\s*Failures\s*:\s*0/

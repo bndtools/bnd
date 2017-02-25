@@ -208,6 +208,13 @@ public class ProjectBuilder extends Builder {
 							}
 							f.format("%n*   %-48s %-10s %s", memberDiff.getName(), memberDiff.getType(),
 									memberDiff.getDelta());
+							for (Diff childDiff : memberDiff.getChildren()) {
+								if (childDiff.getDelta() == Delta.UNCHANGED) {
+									continue;
+								}
+								f.format("%n*    %-47s %-10s %s", childDiff.getName(), childDiff.getType(),
+										childDiff.getDelta());
+							}
 						}
 					}
 

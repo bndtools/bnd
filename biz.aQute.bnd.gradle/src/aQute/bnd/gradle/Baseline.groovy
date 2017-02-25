@@ -246,6 +246,11 @@ public class Baseline extends DefaultTask {
                 memberDiff.getDelta() != Delta.UNCHANGED
               }.each { memberDiff ->
                 writer.printf '*   %-48s %-10s %s%n', memberDiff.getName(), memberDiff.getType(), memberDiff.getDelta()
+                memberDiff.getChildren().findAll { childDiff ->
+                  childDiff.getDelta() != Delta.UNCHANGED
+                }.each { childDiff ->
+                  writer.printf '*    %-47s %-10s %s%n', childDiff.getName(), childDiff.getType(), childDiff.getDelta()
+                }
               }
             }
           }
