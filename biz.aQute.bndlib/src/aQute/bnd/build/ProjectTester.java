@@ -18,7 +18,6 @@ public abstract class ProjectTester {
 	public ProjectTester(Project project) throws Exception {
 		this.project = project;
 		launcher = project.getProjectLauncher();
-		launcher.setCwd(project.getBase());
 		launcher.addRunVM("-ea");
 		continuous = project.is(Constants.TESTCONTINUOUS);
 
