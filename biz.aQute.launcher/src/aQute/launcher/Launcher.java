@@ -285,12 +285,17 @@ public class Launcher implements ServiceListener {
 			// service.
 			if (parms.services) { // Does not work for our dummy framework
 
-				if (LauncherAgent.instrumentation != null) {
-					Hashtable<String,Object> argprops = new Hashtable<String,Object>();
-					if (LauncherAgent.agentArgs != null)
-						argprops.put("agent.arguments", LauncherAgent.agentArgs);
-					systemBundle.getBundleContext().registerService(Instrumentation.class.getName(),
-							LauncherAgent.instrumentation, argprops);
+				try {
+					if (LauncherAgent.instrumentation != null) {
+						Hashtable<String,Object> argprops = new Hashtable<String,Object>();
+						if (LauncherAgent.agentArgs != null)
+							argprops.put("agent.arguments", LauncherAgent.agentArgs);
+						systemBundle.getBundleContext().registerService(Instrumentation.class.getName(),
+								LauncherAgent.instrumentation, argprops);
+					}
+				} catch (NoClassDefFoundError e) {
+					// Must be running on a profile which does not support
+					// java.lang.instrument
 				}
 
 				Hashtable<String,Object> argprops = new Hashtable<String,Object>();
