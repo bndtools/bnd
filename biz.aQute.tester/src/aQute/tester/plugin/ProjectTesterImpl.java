@@ -14,13 +14,11 @@ import aQute.junit.constants.TesterConstants;
 public class ProjectTesterImpl extends ProjectTester implements TesterConstants, EclipseJUnitTester {
 	int					port	= -1;
 	String				host;
-	Project				project;
 	boolean				prepared;
 	private Container	me;
 
 	public ProjectTesterImpl(Project project, Container me) throws Exception {
 		super(project);
-		this.project = project;
 		this.me = me;
 	}
 
@@ -36,11 +34,12 @@ public class ProjectTesterImpl extends ProjectTester implements TesterConstants,
 					launcher.getRunProperties().put(TESTER_HOST, "" + host);
 
 			}
-			launcher.getRunProperties().put(TESTER_UNRESOLVED, project.getProperty(Constants.TESTUNRESOLVED, "true"));
+			launcher.getRunProperties().put(TESTER_UNRESOLVED,
+					getProject().getProperty(Constants.TESTUNRESOLVED, "true"));
 
 			launcher.getRunProperties().put(TESTER_DIR, getReportDir().getAbsolutePath());
 			launcher.getRunProperties().put(TESTER_CONTINUOUS, "" + getContinuous());
-			if (Processor.isTrue(project.getProperty(Constants.RUNTRACE)))
+			if (Processor.isTrue(getProject().getProperty(Constants.RUNTRACE)))
 				launcher.getRunProperties().put(TESTER_TRACE, "true");
 
 			Collection<String> testnames = getTests();
