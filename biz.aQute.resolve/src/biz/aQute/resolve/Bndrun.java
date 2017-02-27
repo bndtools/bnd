@@ -167,6 +167,12 @@ public class Bndrun extends Run {
 		}
 	}
 
+	@Override
+	public void setBase(File base) {
+		base.mkdirs();
+		super.setBase(base);
+	}
+
 	/**
 	 * Execute the tests defined by the bndrun configuration.
 	 *
@@ -175,13 +181,11 @@ public class Bndrun extends Run {
 	 * @param reportsDir the directory in which test reports are written
 	 * @throws Exception
 	 */
-	public int test(File cwd, File reportsDir) throws Exception {
+	public int test(File reportsDir) throws Exception {
 		logger.info("Test {}", this);
 		ProjectTester projectTester = getProjectTester();
-		cwd.mkdirs();
 		reportsDir.mkdirs();
 
-		projectTester.setCwd(cwd);
 		projectTester.setReportDir(reportsDir);
 
 		return projectTester.test();

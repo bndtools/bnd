@@ -4,6 +4,7 @@ import aQute.bnd.build.model.clauses.*;
 import aQute.bnd.osgi.*;
 import aQute.bnd.properties.*;
 import aQute.lib.io.*;
+import java.io.*;
 import java.util.jar.*;
 
 println "basedir ${basedir}"
@@ -50,10 +51,10 @@ assert jar.getInputStream(jar.getEntry('launcher.properties')).text =~ /launch\.
 //
 
 // Check the bundle exist!
-bundle = new File(new File(basedir, "export-bundles-only"), 'target/test.jar')
+bundle = new File(basedir, "export-bundles-only/target/test.jar")
 assert !bundle.exists()
 
-File targetDir = new File(new File(basedir, "export-bundles-only"), 'target')
-assert 1 == targetDir.listFiles().length
-File bundleFile = new File(new File(basedir, "export-bundles-only"), 'target/org.apache.felix.eventadmin-1.4.6.jar')
-assert bundleFile.exists()
+File targetDir = new File(basedir, "export-bundles-only/target/export/test")
+assert 1 == targetDir.listFiles(new FileFilter() { boolean accept(File file) {return file.isFile();}}).length
+bundle = new File(basedir, "export-bundles-only/target/export/test/org.apache.felix.eventadmin-1.4.6.jar")
+assert bundle.exists()
