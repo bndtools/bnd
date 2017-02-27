@@ -91,6 +91,9 @@ public class TestingMojo extends AbstractMojo {
 			return;
 		}
 		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
+			String bndrun = getNamePart(runFile);
+			File bndrunBase = new File(cwd, bndrun);
+			run.setBase(bndrunBase);
 			Workspace workspace = run.getWorkspace();
 			workspace.setOffline(session.getSettings().isOffline());
 			for (RepositoryPlugin repo : workspace.getRepositories()) {
@@ -108,10 +111,8 @@ public class TestingMojo extends AbstractMojo {
 				}
 				run.setProperty(Constants.RUNBUNDLES, runBundles);
 			}
-			String bndrun = getNamePart(runFile);
-			File bndrunCwd = new File(cwd, bndrun);
 			File bndrunResportsDir = new File(reportsDir, bndrun);
-			run.test(bndrunCwd, bndrunResportsDir);
+			run.test(bndrunResportsDir);
 			report(run);
 		}
 	}

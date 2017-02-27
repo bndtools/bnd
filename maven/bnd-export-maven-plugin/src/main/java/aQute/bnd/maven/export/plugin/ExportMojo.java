@@ -64,6 +64,9 @@ public class ExportMojo extends AbstractMojo {
 			return;
 		}
 		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
+			String bndrun = getNamePart(runFile);
+			File bndrunBase = new File(targetDir, "export/" + bndrun);
+			run.setBase(bndrunBase);
 			Workspace workspace = run.getWorkspace();
 			workspace.setOffline(session.getSettings().isOffline());
 			for (RepositoryPlugin repo : workspace.getRepositories()) {
@@ -82,12 +85,18 @@ public class ExportMojo extends AbstractMojo {
 				run.setProperty(Constants.RUNBUNDLES, runBundles);
 			}
 			if (bundlesOnly)
-				run.exportRunbundles(null, targetDir);
+				run.exportRunbundles(null, bndrunBase);
 			else
 				run.export(targetDir);
 
 			report(run);
 		}
+	}
+
+	private String getNamePart(File runFile) {
+		String nameExt = runFile.getName();
+		int pos = nameExt.lastIndexOf(".");
+		return nameExt.substring(0, pos);
 	}
 
 	private void report(Bndrun run) {
