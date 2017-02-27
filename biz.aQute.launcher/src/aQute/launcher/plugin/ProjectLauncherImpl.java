@@ -54,7 +54,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	private static final String	JPM_LAUNCHER_FQN		= "aQute.launcher.pre.JpmLauncher";
 
 	final private Project		project;
-	final private File			propertiesFile;
+	final private File			launchPropertiesFile;
 	boolean						prepared;
 
 	DatagramSocket				listenerComms;
@@ -63,9 +63,9 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		super(project);
 		logger.debug("created a aQute launcher plugin");
 		this.project = project;
-		propertiesFile = File.createTempFile("launch", ".properties", project.getTarget());
-		logger.debug("launcher plugin using temp launch file {}", propertiesFile.getAbsolutePath());
-		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=\"" + propertiesFile.getAbsolutePath() + "\"");
+		launchPropertiesFile = File.createTempFile("launch", ".properties", project.getTarget());
+		logger.debug("launcher plugin using temp launch file {}", launchPropertiesFile.getAbsolutePath());
+		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=\"" + launchPropertiesFile.getAbsolutePath() + "\"");
 
 		if (project.getRunProperties().get("noframework") != null) {
 			setRunFramework(NONE);
@@ -97,13 +97,13 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	@Override
 	public void cleanup() {
-		propertiesFile.delete();
+		launchPropertiesFile.delete();
 		if (listenerComms != null) {
 			listenerComms.close();
 			listenerComms = null;
 		}
 		prepared = false;
-		logger.debug("Deleted {}", propertiesFile.getAbsolutePath());
+		logger.debug("Deleted {}", launchPropertiesFile.getAbsolutePath());
 		super.cleanup();
 	}
 
@@ -134,7 +134,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	void writeProperties() throws Exception {
 		LauncherConstants lc = getConstants(getRunBundles(), false);
-		OutputStream out = new FileOutputStream(propertiesFile);
+		OutputStream out = new FileOutputStream(launchPropertiesFile);
 		try {
 			lc.getProperties(new UTF8Properties()).store(out, "Launching " + project);
 		} finally {
