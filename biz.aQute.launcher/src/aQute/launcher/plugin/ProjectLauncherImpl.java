@@ -104,6 +104,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		}
 		prepared = false;
 		logger.debug("Deleted {}", propertiesFile.getAbsolutePath());
+		super.cleanup();
 	}
 
 	@Override
@@ -336,6 +337,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 					"SHA-1", "MD-5"
 			});
 		jar.setManifest(m);
+		cleanup();
 		return jar;
 	}
 
