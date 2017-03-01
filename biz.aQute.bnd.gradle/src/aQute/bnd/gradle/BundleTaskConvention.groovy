@@ -30,6 +30,7 @@ import aQute.bnd.osgi.Jar
 import aQute.bnd.version.MavenVersion
 import org.gradle.api.GradleException
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.SourceSet
 
 class BundleTaskConvention {
@@ -190,7 +191,7 @@ class BundleTaskConvention {
         Jar bundleJar = builder.build()
         if (!builder.isOk()) {
           // if we already have an error; fail now
-          logBuilderErrors(builder)
+          logBuilderErrors(builder, logger)
           failBuild("Bundle ${archiveName} has errors")
         }
 
@@ -204,7 +205,7 @@ class BundleTaskConvention {
           bundleJar.close()
         }
 
-        logBuilderErrors(builder)
+        logBuilderErrors(builder, logger)
         if (!builder.isOk()) {
           failBuild("Bundle ${archiveName} has errors")
         }
@@ -212,21 +213,25 @@ class BundleTaskConvention {
     }
   }
 
-  private void logBuilderErrors(Builder builder) {
-    builder.getWarnings().each { msg ->
-      def location = builder.getLocation(msg)
-      if (location && location.file) {
-        logger.warn '{}:{}: warning: {}', location.file, location.line, msg
-      } else {
-        logger.warn 'warning: {}', msg
+  private void logBuilderErrors(Builder builder, Logger logger) {
+    if (logger.isWarnEnabled()) {
+      builder.getWarnings().each { msg ->
+        def location = builder.getLocation(msg)
+        if (location && location.file) {
+          logger.warn '{}:{}: warning: {}', location.file, location.line, msg
+        } else {
+          logger.warn 'warning: {}', msg
+        }
       }
     }
-    builder.getErrors().each { msg ->
-      def location = builder.getLocation(msg)
-      if (location && location.file) {
-        logger.error '{}:{}: error: {}', location.file, location.line, msg
-      } else {
-        logger.error 'error  : {}', msg
+    if (logger.isErrorEnabled()) {
+      builder.getErrors().each { msg ->
+        def location = builder.getLocation(msg)
+        if (location && location.file) {
+          logger.error '{}:{}: error: {}', location.file, location.line, msg
+        } else {
+          logger.error 'error  : {}', msg
+        }
       }
     }
   }

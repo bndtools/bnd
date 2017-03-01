@@ -577,23 +577,27 @@ Project ${project.name}
     project.getInfo(project.getWorkspace(), "${project.getWorkspace().getBase().name} :")
     boolean failed = !ignoreFailures && !project.isOk()
     int errorCount = project.getErrors().size()
-    project.getWarnings().each { msg ->
-      def location = project.getLocation(msg)
-      if (location && location.file) {
-        logger.warn '{}:{}: warning: {}', location.file, location.line, msg
-      } else {
-        logger.warn 'warning: {}', msg
+    if (logger.isWarnEnabled()) {
+      project.getWarnings().each { msg ->
+        def location = project.getLocation(msg)
+        if (location && location.file) {
+          logger.warn '{}:{}: warning: {}', location.file, location.line, msg
+        } else {
+          logger.warn 'warning: {}', msg
+        }
+      }
+    }
+    if (logger.isErrorEnabled()) {
+      project.getErrors().each { msg ->
+        def location = project.getLocation(msg)
+        if (location && location.file) {
+          logger.error '{}:{}: error: {}', location.file, location.line, msg
+        } else {
+          logger.error 'error  : {}', msg
+        }
       }
     }
     project.getWarnings().clear()
-    project.getErrors().each { msg ->
-      def location = project.getLocation(msg)
-      if (location && location.file) {
-        logger.error '{}:{}: error: {}', location.file, location.line, msg
-      } else {
-        logger.error 'error  : {}', msg
-      }
-    }
     project.getErrors().clear()
     if (failed) {
       def str = ' even though no errors were reported'
