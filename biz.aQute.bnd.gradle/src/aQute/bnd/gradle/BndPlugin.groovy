@@ -478,7 +478,7 @@ public class BndPlugin implements Plugin<Project> {
               group 'export'
               doLast {
                 Bndrun.createBndrun(bndProject.getWorkspace(), runFile).withCloseable { run ->
-                  logger.lifecycle "Running {} with vm args: {}", bndrun, run.mergeProperties(Constants.RUNVM)
+                  logger.lifecycle 'Running {} with vm args: {}', bndrun, run.mergeProperties(Constants.RUNVM)
                   if (run.isStandalone()) {
                     run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
                   }
@@ -580,7 +580,7 @@ Project ${project.name}
     project.getWarnings().each { msg ->
       def location = project.getLocation(msg)
       if (location && location.file) {
-        logger.warn '{}:{}: warning\n{}', location.file, location.line, msg
+        logger.warn '{}:{}: warning: {}', location.file, location.line, msg
       } else {
         logger.warn 'warning: {}', msg
       }
@@ -589,7 +589,7 @@ Project ${project.name}
     project.getErrors().each { msg ->
       def location = project.getLocation(msg)
       if (location && location.file) {
-        logger.error '{}:{}: error\n{}', location.file, location.line, msg
+        logger.error '{}:{}: error: {}', location.file, location.line, msg
       } else {
         logger.error 'error  : {}', msg
       }
