@@ -206,22 +206,19 @@ bundle. The default value is `project.file('bnd.bnd')`. If the bnd file
 does not exist, this is OK. But without some instructions to Bnd, your
 bundle will not be very interesting.
 
-### configuration
-
-This is the Configuration object to use as the classpath for the Bnd
-builder. The default value is the `project.configurations.compileClasspath`
-Configuration (or the `project.configurations.compile` Configuration in
-Gradle versions prior to 2.12).
-You will only need to specify this property if you want
-to use a different Configuration for the classpath or the default
-Configuration does not exist.
-
 ### sourceSet
 
-This is the SourceSet object to use as the sourcepath for the Bnd
-builder. The default value is the `project.sourceSets.main` SourceSet.
+This is the SourceSet object to use for the Bnd
+builder. The default value is `project.sourceSets.main`.
 You will only need to specify this property if you want to use a different
-SourceSet for the sourcepath or the default SourceSet does not exist.
+SourceSet or the default SourceSet does not exist.
+
+### classpath
+
+This is a FileCollection object to use as the classpath for the Bnd
+builder. The default value is `sourceSet.compileClasspath`.
+You will only need to specify this property if you want
+to use a different classpath or the default SourceSet does not exist.
 
 ### Example
 
@@ -239,7 +236,6 @@ sourceSets {
 task bundle(type: Bundle) {
   from sourceSets.bundle.output
   bndfile = project.file('bundle.bnd')
-  configuration = configurations.bundleCompile
   sourceSet = sourceSets.bundle
 }
 ```

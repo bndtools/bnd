@@ -1,4 +1,4 @@
--exportcontents: doubler
+-exportcontents: doubler.impl
 -sources: true
 My-Header: my-value
 text: TEXT
