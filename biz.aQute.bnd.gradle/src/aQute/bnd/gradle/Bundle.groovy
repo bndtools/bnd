@@ -15,7 +15,6 @@
  *   group 'build'
  *   from sourceSets.bundle.output
  *   bndfile = project.file('bundle.bnd')
- *   configuration = configurations.bundleCompile
  *   sourceSet = sourceSets.bundle
  * }
  * </pre>

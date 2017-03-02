@@ -10,10 +10,10 @@
  * <li>bndfile - This is the name of the bnd file to use to make the bundle.
  * This defaults to 'bnd.bnd' in the projectDir. The bndfile does not need
  * to exist. It supersedes any information in the jar task's manifest.</li>
- * <li>configuration - This is the Configuration to use for the buildpath
- * for the bnd builder. It defaults to the 'compileClasspath' Configuration.</li>
- * <li>sourceSet - This is the SourceSet to use for the sourcepath for the
- * bnd builder. It defaults to the 'main' SourceSet.</li>
+ * <li>sourceSet - This is the SourceSet to use for the
+ * bnd builder. It defaults to 'project.sourceSets.main'.</li>
+ * <li>classpath - This is the FileCollection to use for the buildpath
+ * for the bnd builder. It defaults to 'sourceSet.compileClasspath'.</li>
  * </ul>
  */
 
@@ -30,13 +30,17 @@ import aQute.bnd.osgi.Jar
 import aQute.bnd.version.MavenVersion
 import org.gradle.api.GradleException
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.SourceSet
 
 class BundleTaskConvention {
   private final org.gradle.api.tasks.bundling.Jar task
   private File bndfile
   private Configuration configuration
+  private FileCollection classpath
   private SourceSet sourceSet
 
   /**
@@ -56,6 +60,7 @@ class BundleTaskConvention {
   /**
    * Get the bndfile property.
    */
+  @InputFile
   public File getBndfile() {
     if (bndfile == null) {
       setBndfile(task.project.file('bnd.bnd'))
@@ -72,22 +77,48 @@ class BundleTaskConvention {
   /**
    * Get the configuration property.
    */
+  @Deprecated
   public Configuration getConfiguration() {
+    task.logger.warn 'The configuration property is deprecated and replaced by the classpath property.'
     if (configuration == null) {
-      setConfiguration(task.project.configurations.findByName('compileClasspath') ?: task.project.configurations.compile)
+      configuration = task.project.configurations.findByName('compileClasspath') ?: task.project.configurations.compile
+      if (classpath == null) {
+        setClasspath(configuration)
+      }
     }
     return configuration
   }
   /**
    * Set the configuration property.
    */
+  @Deprecated
   public void setConfiguration(Configuration configuration) {
+    task.logger.warn 'The configuration property is deprecated and replaced by the classpath property.'
     this.configuration = configuration
+    setClasspath(configuration)
+  }
+
+  /**
+   * Get the classpath property.
+   */
+  @InputFiles
+  public FileCollection getClasspath() {
+    if (classpath == null) {
+      setClasspath(getSourceSet().compileClasspath)
+    }
+    return classpath
+  }
+  /**
+   * Set the classpath property.
+   */
+  public void setClasspath(FileCollection classpath) {
+    this.classpath = classpath
   }
 
   /**
    * Get the sourceSet property.
    */
+  @InputFiles
   public SourceSet getSourceSet() {
     if (sourceSet == null) {
       setSourceSet(task.project.sourceSets.main)
@@ -141,12 +172,13 @@ class BundleTaskConvention {
           into temporaryDir
         }
         File archiveCopyFile = new File(temporaryDir, archiveName)
-        Jar archiveCopyJar = new Jar(archiveName, archiveCopyFile)
-        archiveCopyJar.setManifest(new Manifest())
-        builder.setJar(archiveCopyJar)
+        Jar bundleJar = new Jar(archiveName, archiveCopyFile)
+        bundleJar.updateModified(archiveCopyFile.lastModified(), 'time of Jar task generated jar')
+        bundleJar.setManifest(new Manifest())
+        builder.setJar(bundleJar)
 
         // set builder classpath
-        def buildpath = project.files(configuration.files.findAll { file ->
+        def buildpath = project.files(classpath.files.findAll { file ->
           if (!file.exists()) {
             return false
           }
@@ -188,7 +220,7 @@ class BundleTaskConvention {
         logger.debug 'builder properties: {}', builder.getProperties()
 
         // Build bundle
-        Jar bundleJar = builder.build()
+        builder.build()
         if (!builder.isOk()) {
           // if we already have an error; fail now
           logBuilderErrors(builder, logger)
@@ -196,14 +228,7 @@ class BundleTaskConvention {
         }
 
         // Write out the bundle
-        bundleJar.updateModified(archiveCopyFile.lastModified(), 'time of Jar task generated jar')
-        try {
-          bundleJar.write(archivePath)
-        } catch (Exception e) {
-          failBuild("Bundle ${archiveName} failed to build: ${e.getMessage()}", e)
-        } finally {
-          bundleJar.close()
-        }
+        bundleJar.write(archivePath)
 
         logBuilderErrors(builder, logger)
         if (!builder.isOk()) {
@@ -239,11 +264,6 @@ class BundleTaskConvention {
   private void failBuild(String msg) {
     task.archivePath.delete()
     throw new GradleException(msg)
-  }
-
-  private void failBuild(String msg, Exception e) {
-    task.archivePath.delete()
-    throw new GradleException(msg, e)
   }
 
   private boolean isEmpty(String header) {

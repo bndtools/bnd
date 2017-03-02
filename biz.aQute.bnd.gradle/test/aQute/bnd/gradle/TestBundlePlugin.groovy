@@ -84,7 +84,7 @@ class TestBundlePlugin extends Specification {
           bundletask_manifest.getValue('Bundle-SymbolicName') == "${testProject}_bundle"
           bundletask_manifest.getValue('Bundle-Version') == '1.1.0'
           bundletask_manifest.getValue('My-Header') == 'my-value'
-          bundletask_manifest.getValue('Export-Package') =~ /doubler/
+          bundletask_manifest.getValue('Export-Package') =~ /doubler\.impl/
           !bundletask_manifest.getValue('X-SomeProperty')
           bundletask_manifest.getValue('Override') == 'Override the jar task manifest'
           bundletask_manifest.getValue('Project-Name') == "${testProject}"
@@ -102,5 +102,17 @@ class TestBundlePlugin extends Specification {
           bundletask_jar.getEntry('test.txt')
           bundletask_jar.getInputStream(bundletask_jar.getEntry('test.txt')).text =~ /This is a test resource/
           bundletask_jar.getEntry('commons-lang-2.6.jar')
+
+        when:
+          result = GradleRunner.create()
+            .withProjectDir(testProjectDir)
+            .withArguments('--stacktrace', '--debug', 'build')
+            .withPluginClasspath(pluginClasspath)
+            .forwardOutput()
+            .build()
+
+        then:
+          result.task(":bundle").outcome == UP_TO_DATE
+          result.task(":jar").outcome == UP_TO_DATE
     }
 }
