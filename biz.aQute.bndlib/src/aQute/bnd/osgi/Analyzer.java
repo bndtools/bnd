@@ -76,6 +76,7 @@ import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.collections.SortedList;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.filter.Filter;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
@@ -122,6 +123,17 @@ public class Analyzer extends Processor {
 
 	public enum Check {
 		ALL, IMPORTS, EXPORTS;
+	}
+
+	public Analyzer(Jar jar) {
+		setJar(jar);
+		try {
+			Manifest manifest = jar.getManifest();
+			if (manifest != null)
+				copyFrom(Domain.domain(manifest));
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
 	}
 
 	public Analyzer(Processor parent) {

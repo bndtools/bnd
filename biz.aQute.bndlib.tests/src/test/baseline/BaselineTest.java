@@ -527,4 +527,32 @@ public class BaselineTest extends TestCase {
 		assertEquals("1.1.0", change.suggestedVersion.toString());
 
 	}
+
+	// Moving a package from the root into a jar on the Bundle-ClassPath
+	// should not result in DELETED
+	public void testMovePackageToBundleClassPath() throws Exception {
+		Processor processor = new Processor();
+
+		DiffPluginImpl differ = new DiffPluginImpl();
+		Baseline baseline = new Baseline(processor, differ);
+
+		Jar older = new Jar(IO.getFile("jar/baseline/com.liferay.calendar.api-2.0.5.jar"));
+		Jar newer = new Jar(IO.getFile("jar/baseline/com.liferay.calendar.api-2.1.0.jar"));
+
+		baseline.baseline(newer, older, null);
+
+		BundleInfo bundleInfo = baseline.getBundleInfo();
+
+		assertFalse(bundleInfo.mismatch);
+		assertEquals("2.1.0", bundleInfo.suggestedVersion.toString());
+
+		Set<Info> packageInfos = baseline.getPackageInfos();
+
+		assertEquals(12, packageInfos.size());
+
+		Info change = packageInfos.iterator().next();
+		assertFalse(change.mismatch);
+		assertEquals("com.google.ical.iter", change.packageName);
+		assertEquals("20110304.0.0", change.suggestedVersion.toString());
+	}
 }

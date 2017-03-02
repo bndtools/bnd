@@ -100,9 +100,8 @@ public class DiffPluginImpl implements Differ {
 	 * @see aQute.bnd.service.diff.Differ#tree(aQute.bnd.osgi.Jar)
 	 */
 	public Tree tree(Jar newer) throws Exception {
-		Analyzer anewer = new Analyzer();
+		Analyzer anewer = new Analyzer(newer);
 		try {
-			anewer.setJar(newer);
 			return tree(anewer);
 		} finally {
 			anewer.setJar((Jar) null);
