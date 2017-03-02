@@ -51,18 +51,20 @@ import aQute.bnd.service.diff.Delta
 import aQute.bnd.service.diff.Type
 import aQute.bnd.version.Version
 
+import org.gradle.api.Buildable
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
+import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.bundling.AbstractArchiveTask
 
 public class Baseline extends DefaultTask {
-  private File bundle
-  private AbstractArchiveTask bundleTask
-  private File baseline
+  private ConfigurableFileCollection bundleCollection
+  private ConfigurableFileCollection baselineCollection
   private Configuration baselineConfiguration
 
   /**
@@ -94,88 +96,65 @@ public class Baseline extends DefaultTask {
     super()
     ignoreFailures = false
     baselineReportDirName = 'baseline'
+    bundleCollection = project.files()
+    baselineCollection = project.files()
     dependsOn {
-      bundleTask
+      [bundleCollection, baselineCollection]
     }
   }
 
   /**
-   * Set the bundle to be baselined from a File.
-   */
-  public void setBundle(File file) {
-    bundle = file
-    bundleTask = null
-  }
-
-  /**
-   * Set the bundle to be baselined from an archive task.
+   * Set the bundle to be baselined.
    *
    * <p>
-   * The bundle File is obtained from the archivePath property
-   * of the task. This task will also dependOn the specified task.
+   * The argument will be handled using
+   * Project.files().
    */
-  public void setBundle(AbstractArchiveTask archive) {
-    bundleTask = archive
-    bundle = null
+  public void setBundle(Object file) {
+    bundleCollection = project.files(file)
+    if (file instanceof Task || file instanceof Buildable) {
+      bundleCollection.builtBy file
+    }
   }
 
   /**
    * Return the bundle File to be baselined.
+   *
+   * <p>
+   * An exception will be thrown if the set bundle does
+   * not result in exactly one file.
    */
   @InputFile
   public File getBundle() {
-    return (bundleTask != null) ? bundleTask.archivePath : bundle
-  }
-
-  /**
-   * Return the archive task whose bundle is to be baselined.
-   *
-   * <p>
-   * This will be null if the bundle to be baselined was not
-   * set with a task.
-   */
-  public AbstractArchiveTask getBundleTask() {
-    return bundleTask
+    return bundleCollection.singleFile
   }
 
   /**
    * Set the baseline bundle from a File.
+   * <p>
+   * The argument will be handled using
+   * Project.files().
    */
-  public void setBaseline(File file) {
-    baseline = file
-    baselineConfiguration = null
-  }
-
-  /**
-   * Set the baseline bundle from a configuration.
-   */
-  public void setBaseline(Configuration configuration) {
-    baselineConfiguration = configuration
-    baseline = null
+  public void setBaseline(Object file) {
+    baselineCollection = project.files(file)
+    if (file instanceof Task || file instanceof Buildable) {
+      baselineCollection.builtBy file
+    }
+    if (file instanceof Configuration) {
+      baselineConfiguration = file
+    }
   }
 
   /**
    * Get the baseline bundle File.
    *
    * <p>
-   * If the baseline was specified as a configuration,
-   * an exception will be thrown if the configuration does
-   * not contain a single file.
+   * An exception will be thrown if the baseline argument does
+   * not result in exactly one file.
    */
   @InputFile
   public File getBaseline() {
-    return (baselineConfiguration != null) ? baselineConfiguration.singleFile : baseline
-  }
-
-  /**
-   * Return the baseline configuration.
-   *
-   * <p>
-   * This will be null if the bundle is not to be baselined
-   * with a configuration.
-   */
-  public Configuration getBaselineConfiguration() {
-    return baselineConfiguration
+    return baselineCollection.singleFile
   }
 
   /**
@@ -183,7 +162,25 @@ public class Baseline extends DefaultTask {
    */
   public File getBaselineReportDir() {
     File dir = new File(baselineReportDirName)
-    return dir.absolute ? dir : new File(project.reporting.baseDir, dir.path)
+    return dir.absolute ? dir : project.reporting.file(dir.path)
+  }
+
+  Configuration getBaselineConfiguration() {
+    return baselineConfiguration
+  }
+  Task getBundleTask() {
+    return bundleCollection?.builtBy.find()
+  }
+  ConfigurableFileCollection getBundleCollection() {
+    return bundleCollection
+  }
+  ConfigurableFileCollection getBaselineCollection() {
+    return baselineCollection
+  }
+
+  @OutputFile
+  public File getDestination() {
+    return new File(baselineReportDir, "${name}.txt")
   }
 
   /**
@@ -192,7 +189,7 @@ public class Baseline extends DefaultTask {
    */
   @TaskAction
   void baselineBundle() {
-    File report = new File(baselineReportDir, "${name}.txt")
+    File report = destination
     project.mkdir(report.parent)
     boolean failure = false
     new Processor().withCloseable { processor ->
@@ -259,7 +256,7 @@ public class Baseline extends DefaultTask {
     }
 
     if (failure) {
-      String msg = "Baseline problems detected. See the report in ${report}."
+      String msg = "Baseline problems detected. See the report in ${report}.\n${report.text}"
       if (ignoreFailures) {
         logger.error msg
       } else {

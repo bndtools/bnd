@@ -304,14 +304,13 @@ path relative to the project's [`reporting.baseDir`][19]. The default name is
 
 ### bundle
 
-This is the bundle to be baselined. It can either be a File or a task
-that produces a bundle. This property must be set.
+This is the bundle to be baselined. It can be anything that `Project.files(Object...)`
+can accept to result in a single file. This property must be set.
 
 ### baseline
 
-This is the baseline bundle. It can either be a File or a Configuration.
-If a Configuration is specified, it must contain a single file;
-otherwise an exception will fail the build. This property must be set.
+This is the baseline bundle. It can be anything that `Project.files(Object...)`
+can accept to result in a single file. This property must be set.
 
 ---
 
