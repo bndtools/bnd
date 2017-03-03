@@ -50,14 +50,15 @@ public class JarSignerTest extends TestCase {
 		properties.put("storepass", "notvalid");
 		signer.setProperties(properties);
 
-		Jar jar = new Jar(IO.getFile("testresources/test.jar"));
-		Builder b = new Builder();
-		b.setTrace(true);
-		b.setJar(jar);
-		signer.sign(b, "test");
-		System.err.printf(Processor.join(b.getErrors(), "%n") + "%n");
-		assertEquals(1, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		try (Builder b = new Builder()) {
+			b.setTrace(true);
+			Jar jar = new Jar(IO.getFile("testresources/test.jar"));
+			b.setJar(jar);
+			signer.sign(b, "test");
+			System.err.printf(Processor.join(b.getErrors(), "%n") + "%n");
+			assertEquals(1, b.getErrors().size());
+			assertEquals(0, b.getWarnings().size());
+		}
 	}
 
 	public static void testSimple() throws Exception {
@@ -73,27 +74,28 @@ public class JarSignerTest extends TestCase {
 		Jar jar = new Jar(IO.getFile("testresources/test.jar"));
 		Set<String> names = new HashSet<String>(jar.getResources().keySet());
 		names.remove("META-INF/MANIFEST.MF");
-		Builder b = new Builder();
-		b.setJar(jar);
-		signer.sign(b, "test");
-		System.err.printf(Processor.join(b.getErrors(), "%n") + "%n");
-		System.err.printf(Processor.join(b.getWarnings(), "%n") + "%n");
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
-		assertNotNull(jar.getResource("META-INF/TEST.SF"));
-		Manifest m = jar.getManifest();
+		try (Builder b = new Builder()) {
+			b.setJar(jar);
+			signer.sign(b, "test");
+			System.err.printf(Processor.join(b.getErrors(), "%n") + "%n");
+			System.err.printf(Processor.join(b.getWarnings(), "%n") + "%n");
+			assertEquals(0, b.getErrors().size());
+			assertEquals(0, b.getWarnings().size());
+			assertNotNull(jar.getResource("META-INF/TEST.SF"));
+			Manifest m = jar.getManifest();
 
-		// Should have added 2 new resources: TEST.SF and TEST.DSA/RSA
-		assertEquals(names.size(), b.getJar().getResources().size() - 3);
+			// Should have added 2 new resources: TEST.SF and TEST.DSA/RSA
+			assertEquals(names.size(), b.getJar().getResources().size() - 3);
 
-		Attributes a = m.getAttributes("aQute/rendezvous/DNS.class");
-		assertNotNull(a);
-		assertEquals("G0/1CIZlB4eIVyY8tU/ZfMCqZm4=", a.getValue("SHA1-Digest"));
+			Attributes a = m.getAttributes("aQute/rendezvous/DNS.class");
+			assertNotNull(a);
+			assertEquals("G0/1CIZlB4eIVyY8tU/ZfMCqZm4=", a.getValue("SHA1-Digest"));
 
-		// Check if all resources are named
-		for (String name : names) {
-			System.err.println("name: " + name);
-			assertNotNull(m.getAttributes(name));
+			// Check if all resources are named
+			for (String name : names) {
+				System.err.println("name: " + name);
+				assertNotNull(m.getAttributes(name));
+			}
 		}
 	}
 

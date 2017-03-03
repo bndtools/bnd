@@ -671,8 +671,9 @@ public class bnd extends Processor {
 				build(options.output(), options.force(), path);
 			} else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION)
 					|| path.endsWith(Constants.DEFAULT_BAR_EXTENSION)) {
-				Jar jar = getJar(path);
-				doPrint(jar, MANIFEST, null);
+				try (Jar jar = getJar(path)) {
+					doPrint(jar, MANIFEST, null);
+				}
 			} else if (path.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
 				doRun(Arrays.asList(path), false, null);
 			} else
@@ -1697,10 +1698,8 @@ public class bnd extends Processor {
 				continue;
 			}
 
-			Analyzer wrapper = new Analyzer(this);
-			try {
+			try (Analyzer wrapper = new Analyzer(this)) {
 				wrapper.use(this);
-				addClose(wrapper);
 
 				for (File f : classpath)
 					wrapper.addClasspath(f);
@@ -1747,8 +1746,6 @@ public class bnd extends Processor {
 					wrapper.save(outputFile, options.force());
 				}
 				getInfo(wrapper, file.toString());
-			} finally {
-				wrapper.close();
 			}
 		}
 	}
@@ -1970,73 +1967,66 @@ public class bnd extends Processor {
 			if (opts == 0)
 				opts = MANIFEST | IMPEXP;
 
-			Jar jar = getJar(s);
-			try {
+			try (Jar jar = getJar(s)) {
 				doPrint(jar, opts, options);
-			} finally {
-				jar.close();
 			}
 		}
 	}
 
 	private void doPrint(Jar jar, int options, printOptions po) throws ZipException, IOException, Exception {
-
-		Analyzer analyzer = new Analyzer();
-		try {
-			if ((options & VERIFY) != 0) {
-				Verifier verifier = new Verifier(jar);
-				verifier.setPedantic(isPedantic());
-				verifier.verify();
-				getInfo(verifier);
+		if ((options & VERIFY) != 0) {
+			Verifier verifier = new Verifier(jar);
+			verifier.setPedantic(isPedantic());
+			verifier.verify();
+			getInfo(verifier);
+		}
+		if ((options & MANIFEST) != 0) {
+			Manifest manifest = jar.getManifest();
+			if (manifest == null)
+				warning("JAR has no manifest %s", jar);
+			else {
+				err.println("[MANIFEST " + jar.getName() + "]");
+				printManifest(manifest);
 			}
-			if ((options & MANIFEST) != 0) {
-				Manifest manifest = jar.getManifest();
-				if (manifest == null)
-					warning("JAR has no manifest %s", jar);
-				else {
-					err.println("[MANIFEST " + jar.getName() + "]");
-					printManifest(manifest);
-				}
-				out.println();
-			}
-			if ((options & IMPEXP) != 0) {
-				out.println("[IMPEXP]");
-				Manifest m = jar.getManifest();
-				Domain domain = Domain.domain(m);
+			out.println();
+		}
+		if ((options & IMPEXP) != 0) {
+			out.println("[IMPEXP]");
+			Manifest m = jar.getManifest();
+			Domain domain = Domain.domain(m);
 
-				if (m != null) {
-					Parameters imports = domain.getImportPackage();
-					Parameters exports = domain.getExportPackage();
-					for (String p : exports.keySet()) {
-						if (imports.containsKey(p)) {
-							Attrs attrs = imports.get(p);
-							if (attrs.containsKey(VERSION_ATTRIBUTE)) {
-								exports.get(p).put("imported-as", attrs.get(VERSION_ATTRIBUTE));
-							}
+			if (m != null) {
+				Parameters imports = domain.getImportPackage();
+				Parameters exports = domain.getExportPackage();
+				for (String p : exports.keySet()) {
+					if (imports.containsKey(p)) {
+						Attrs attrs = imports.get(p);
+						if (attrs.containsKey(VERSION_ATTRIBUTE)) {
+							exports.get(p).put("imported-as", attrs.get(VERSION_ATTRIBUTE));
 						}
 					}
-					print(Constants.IMPORT_PACKAGE, new TreeMap<String,Attrs>(imports));
-					print(Constants.EXPORT_PACKAGE, new TreeMap<String,Attrs>(exports));
-				} else
-					warning("File has no manifest");
-			}
+				}
+				print(Constants.IMPORT_PACKAGE, new TreeMap<String,Attrs>(imports));
+				print(Constants.EXPORT_PACKAGE, new TreeMap<String,Attrs>(exports));
+			} else
+				warning("File has no manifest");
+		}
+		if ((options & CAPABILITIES) != 0) {
+			out.println("[CAPABILITIES]");
+			Manifest m = jar.getManifest();
+			Domain domain = Domain.domain(m);
 
-			if ((options & CAPABILITIES) != 0) {
-				out.println("[CAPABILITIES]");
-				Manifest m = jar.getManifest();
-				Domain domain = Domain.domain(m);
-
-				if (m != null) {
-					Parameters provide = domain.getProvideCapability();
-					Parameters require = domain.getRequireCapability();
-					print(Constants.PROVIDE_CAPABILITY, new TreeMap<String,Attrs>(provide));
-					print(Constants.REQUIRE_CAPABILITY, new TreeMap<String,Attrs>(require));
-				} else
-					warning("File has no manifest");
-			}
-
-			if ((options & (USES | USEDBY | API)) != 0) {
-				out.println();
+			if (m != null) {
+				Parameters provide = domain.getProvideCapability();
+				Parameters require = domain.getRequireCapability();
+				print(Constants.PROVIDE_CAPABILITY, new TreeMap<String,Attrs>(provide));
+				print(Constants.REQUIRE_CAPABILITY, new TreeMap<String,Attrs>(require));
+			} else
+				warning("File has no manifest");
+		}
+		if ((options & (USES | USEDBY | API)) != 0) {
+			out.println();
+			try (Analyzer analyzer = new Analyzer()) {
 				analyzer.setPedantic(isPedantic());
 				analyzer.setJar(jar);
 				Manifest m = jar.getManifest();
@@ -2076,7 +2066,7 @@ public class bnd extends Processor {
 
 								refs.retainAll(privates);
 								out.printf("%60s %-40s %s\n", e.getKey().getOwnerType().getFQN() //
-								, e.getKey().getName(), refs);
+										, e.getKey().getName(), refs);
 							}
 							out.println();
 						}
@@ -2096,52 +2086,45 @@ public class bnd extends Processor {
 							uses).transpose();
 					printMultiMap(usedBy);
 				}
-
 			}
+		}
+		if ((options & COMPONENT) != 0) {
+			printComponents(out, jar);
+		}
+		if ((options & METATYPE) != 0) {
+			printMetatype(out, jar);
+		}
+		if ((options & LIST) != 0) {
+			out.println("[LIST]");
+			for (Map.Entry<String,Map<String,Resource>> entry : jar.getDirectories().entrySet()) {
+				String name = entry.getKey();
+				Map<String,Resource> contents = entry.getValue();
+				out.println(name);
+				if (contents != null) {
+					for (String element : contents.keySet()) {
+						int n = element.lastIndexOf('/');
+						if (n > 0)
+							element = element.substring(n + 1);
+						out.print("  ");
+						out.print(element);
+						String path = element;
+						if (name.length() != 0)
+							path = name + "/" + element;
+						Resource r = contents.get(path);
+						if (r != null) {
+							String extra = r.getExtra();
+							if (extra != null) {
 
-			if ((options & COMPONENT) != 0) {
-				printComponents(out, jar);
-			}
-
-			if ((options & METATYPE) != 0) {
-				printMetatype(out, jar);
-			}
-
-			if ((options & LIST) != 0) {
-				out.println("[LIST]");
-				for (Map.Entry<String,Map<String,Resource>> entry : jar.getDirectories().entrySet()) {
-					String name = entry.getKey();
-					Map<String,Resource> contents = entry.getValue();
-					out.println(name);
-					if (contents != null) {
-						for (String element : contents.keySet()) {
-							int n = element.lastIndexOf('/');
-							if (n > 0)
-								element = element.substring(n + 1);
-							out.print("  ");
-							out.print(element);
-							String path = element;
-							if (name.length() != 0)
-								path = name + "/" + element;
-							Resource r = contents.get(path);
-							if (r != null) {
-								String extra = r.getExtra();
-								if (extra != null) {
-
-									out.print(" extra='" + escapeUnicode(extra) + "'");
-								}
+								out.print(" extra='" + escapeUnicode(extra) + "'");
 							}
-							out.println();
 						}
-					} else {
-						out.println(name + " <no contents>");
+						out.println();
 					}
+				} else {
+					out.println(name + " <no contents>");
 				}
-				out.println();
 			}
-		} finally {
-			jar.close();
-			analyzer.close();
+			out.println();
 		}
 	}
 
@@ -3669,14 +3652,10 @@ public class bnd extends Processor {
 			if (!f.isFile()) {
 				error("Not a file");
 			} else {
-				Jar jar = new Jar(f);
-				Analyzer a = new Analyzer(this);
-				try {
-					a.setJar(jar);
+				try (Analyzer a = new Analyzer(this)) {
+					a.setJar(f);
 					a.analyze();
-					out.printf("%s %s%n", jar.getName(), a.getEEs());
-				} finally {
-					a.close();
+					out.printf("%s %s%n", a.getJar().getName(), a.getEEs());
 				}
 			}
 		}

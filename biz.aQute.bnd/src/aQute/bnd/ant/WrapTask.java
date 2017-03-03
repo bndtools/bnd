@@ -72,43 +72,45 @@ public class WrapTask extends BaseTask {
 					continue;
 				}
 
-				Analyzer wrapper = new Analyzer();
-				wrapper.setPedantic(isPedantic());
-				wrapper.setTrace(isTrace());
-				wrapper.setExceptions(exceptions);
-				wrapper.setBase(getProject().getBaseDir());
-				wrapper.addClasspath(classpath);
+				try (Analyzer wrapper = new Analyzer()) {
+					wrapper.setPedantic(isPedantic());
+					wrapper.setTrace(isTrace());
+					wrapper.setExceptions(exceptions);
+					wrapper.setBase(getProject().getBaseDir());
+					wrapper.addClasspath(classpath);
 
-				if (failok)
-					wrapper.setFailOk(true);
+					if (failok)
+						wrapper.setFailOk(true);
 
-				wrapper.setJar(file);
-				wrapper.addProperties(getProject().getProperties());
-				wrapper.setDefaults(bsn, version);
+					wrapper.setJar(file);
+					wrapper.addProperties(getProject().getProperties());
+					wrapper.setDefaults(bsn, version);
 
-				File outputFile = wrapper.getOutputFile(output == null ? null : output.getAbsolutePath());
+					File outputFile = wrapper.getOutputFile(output == null ? null : output.getAbsolutePath());
 
-				if (definitions != null) {
-					File properties = definitions;
-					if (properties.isDirectory()) {
-						String pfile = wrapper.replaceExtension(outputFile.getName(), Constants.DEFAULT_JAR_EXTENSION,
-								Constants.DEFAULT_BND_EXTENSION);
-						properties = new File(definitions, pfile);
+					if (definitions != null) {
+						File properties = definitions;
+						if (properties.isDirectory()) {
+							String pfile = wrapper.replaceExtension(outputFile.getName(),
+									Constants.DEFAULT_JAR_EXTENSION, Constants.DEFAULT_BND_EXTENSION);
+							properties = new File(definitions, pfile);
+						}
+						if (properties.isFile()) {
+							wrapper.setProperties(properties);
+						}
 					}
-					if (properties.isFile()) {
-						wrapper.setProperties(properties);
+
+					Manifest manifest = wrapper.calcManifest();
+					if (wrapper.isOk()) {
+						wrapper.getJar().setManifest(manifest);
+						boolean saved = wrapper.save(outputFile, force);
+						log(String.format("%30s %6d %s%n",
+								wrapper.getJar().getBsn() + "-" + wrapper.getJar().getVersion(), outputFile.length(),
+								saved ? "" : "(not modified)"));
 					}
-				}
 
-				Manifest manifest = wrapper.calcManifest();
-				if (wrapper.isOk()) {
-					wrapper.getJar().setManifest(manifest);
-					boolean saved = wrapper.save(outputFile, force);
-					log(String.format("%30s %6d %s%n", wrapper.getJar().getBsn() + "-" + wrapper.getJar().getVersion(),
-							outputFile.length(), saved ? "" : "(not modified)"));
+					failed |= report(wrapper);
 				}
-
-				failed |= report(wrapper);
 			}
 		} catch (Exception e) {
 

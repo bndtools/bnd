@@ -912,18 +912,20 @@ public class MacroTest extends TestCase {
 	}
 
 	public static void testFindPath() throws IOException {
-		Analyzer analyzer = new Analyzer();
-		analyzer.setJar(IO.getFile("jar/asm.jar"));
-		Macro m = new Macro(analyzer);
+		try (Analyzer analyzer = new Analyzer()) {
+			analyzer.setJar(IO.getFile("jar/asm.jar"));
+			Macro m = new Macro(analyzer);
 
-		assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").indexOf("FieldVisitor.xyz,") >= 0);
-		assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").indexOf("MethodVisitor.xyz,") >= 0);
-		assertTrue(m.process("${findpath;(.*)\\.class}").indexOf("org/objectweb/asm/AnnotationVisitor.class,") >= 0);
-		assertTrue(m.process("${findpath;(.*)\\.class}")
-				.indexOf("org/objectweb/asm/ByteVector.class, org/objectweb/asm/ClassAdapter.class,") >= 0);
-		assertEquals("META-INF/MANIFEST.MF", m.process("${findpath;META-INF/MANIFEST.MF}"));
-		assertEquals("Label.class", m.process("${findname;Label\\..*}"));
-		assertEquals("Adapter, Visitor, Writer", m.process("${findname;Method(.*)\\.class;$1}"));
+			assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").indexOf("FieldVisitor.xyz,") >= 0);
+			assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").indexOf("MethodVisitor.xyz,") >= 0);
+			assertTrue(
+					m.process("${findpath;(.*)\\.class}").indexOf("org/objectweb/asm/AnnotationVisitor.class,") >= 0);
+			assertTrue(m.process("${findpath;(.*)\\.class}")
+					.indexOf("org/objectweb/asm/ByteVector.class, org/objectweb/asm/ClassAdapter.class,") >= 0);
+			assertEquals("META-INF/MANIFEST.MF", m.process("${findpath;META-INF/MANIFEST.MF}"));
+			assertEquals("Label.class", m.process("${findname;Label\\..*}"));
+			assertEquals("Adapter, Visitor, Writer", m.process("${findname;Method(.*)\\.class;$1}"));
+		}
 	}
 
 	public static void testWarning() {

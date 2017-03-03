@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
@@ -76,7 +77,6 @@ import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.collections.SortedList;
-import aQute.lib.exceptions.Exceptions;
 import aQute.lib.filter.Filter;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
@@ -125,15 +125,12 @@ public class Analyzer extends Processor {
 		ALL, IMPORTS, EXPORTS;
 	}
 
-	public Analyzer(Jar jar) {
-		setJar(jar);
-		try {
-			Manifest manifest = jar.getManifest();
-			if (manifest != null)
-				copyFrom(Domain.domain(manifest));
-		} catch (Exception e) {
-			throw Exceptions.duck(e);
-		}
+	public Analyzer(Jar jar) throws Exception {
+		super();
+		this.dot = Objects.requireNonNull(jar);
+		Manifest manifest = dot.getManifest();
+		if (manifest != null)
+			copyFrom(Domain.domain(manifest));
 	}
 
 	public Analyzer(Processor parent) {
@@ -148,8 +145,7 @@ public class Analyzer extends Processor {
 	 */
 
 	public static Properties getManifest(File dirOrJar) throws Exception {
-		Analyzer analyzer = new Analyzer();
-		try {
+		try (Analyzer analyzer = new Analyzer()) {
 			analyzer.setJar(dirOrJar);
 			Properties properties = new UTF8Properties();
 			properties.put(IMPORT_PACKAGE, "*");
@@ -162,8 +158,6 @@ public class Analyzer extends Processor {
 				result.put(name.toString(), m.getMainAttributes().getValue(name));
 			}
 			return result;
-		} finally {
-			analyzer.close();
 		}
 	}
 
@@ -185,13 +179,6 @@ public class Analyzer extends Processor {
 			// Parse all the class in the
 			// the jar according to the OSGi bcp
 			analyzeBundleClasspath();
-
-			//
-			// calculate class versions in use
-			//
-			for (Clazz c : classspace.values()) {
-				ees.add(c.getFormat());
-			}
 
 			//
 			// Get exported packages from the
@@ -219,45 +206,38 @@ public class Analyzer extends Processor {
 				logger.debug("activator {} {}", s, activator);
 			}
 
+			// Conditional packages
+
+			doConditionalPackages();
+
 			// Execute any plugins
 			// TODO handle better reanalyze
 			doPlugins();
 
-			if (since(About._2_3)) {
-				List<ClassParser> parsers = getPlugins(ClassParser.class);
-				ClassDataCollectors cds = new ClassDataCollectors(this);
-				for (ClassParser cp : parsers) {
-					cds.add(cp.getClassDataCollector(this));
-				}
-
-				//
-				// built ins
-				//
-
-				cds.add(annotationHeaders = new AnnotationHeaders(this));
-
-				for (Clazz c : classspace.values()) {
-					cds.parse(c);
-				}
-				cds.close();
+			//
+			// calculate class versions in use
+			//
+			for (Clazz c : classspace.values()) {
+				ees.add(c.getFormat());
 			}
 
-			// Conditional packages
+			if (since(About._2_3)) {
+				try (ClassDataCollectors cds = new ClassDataCollectors(this)) {
+					List<ClassParser> parsers = getPlugins(ClassParser.class);
+					for (ClassParser cp : parsers) {
+						cds.add(cp.getClassDataCollector(this));
+					}
 
-			//
-			// We need to find out the contained packages
-			// again ... so we need to clear any visited
-			// packages otherwise new packages are not
-			// added to contained
-			//
-			packagesVisited.clear();
+					//
+					// built ins
+					//
 
-			Jar extra = getExtra();
+					cds.add(annotationHeaders = new AnnotationHeaders(this));
 
-			while (extra != null) {
-				dot.addAll(extra);
-				analyzeJar(extra, "", true);
-				extra = getExtra();
+					for (Clazz c : classspace.values()) {
+						cds.parse(c);
+					}
+				}
 			}
 
 			referred.keySet().removeAll(contained.keySet());
@@ -373,6 +353,21 @@ public class Analyzer extends Processor {
 						uses.transpose().get(Descriptors.DEFAULT_PACKAGE));
 			}
 
+		}
+	}
+
+	private void doConditionalPackages() throws Exception {
+		//
+		// We need to find out the contained packages
+		// again ... so we need to clear any visited
+		// packages otherwise new packages are not
+		// added to contained
+		//
+		packagesVisited.clear();
+
+		for (Jar extra = getExtra(); extra != null; extra = getExtra()) {
+			dot.addAll(extra);
+			analyzeJar(extra, "", true);
 		}
 	}
 
@@ -677,8 +672,7 @@ public class Analyzer extends Processor {
 					analyzeBundleClasspath();
 				}
 			} catch (Exception e) {
-				e.printStackTrace(System.err);
-				error("Analyzer Plugin %s failed %s", plugin, e);
+				exception(e, "Analyzer Plugin %s failed %s", plugin, e);
 			}
 		}
 	}
@@ -2107,8 +2101,6 @@ public class Analyzer extends Processor {
 		}
 
 		super.close();
-		if (dot != null)
-			dot.close();
 
 		if (classpath != null)
 			for (Iterator<Jar> j = classpath.iterator(); j.hasNext();) {
@@ -2242,7 +2234,7 @@ public class Analyzer extends Processor {
 	}
 
 	public Jar getTarget() {
-		return dot;
+		return getJar();
 	}
 
 	private void analyzeBundleClasspath() throws Exception {
