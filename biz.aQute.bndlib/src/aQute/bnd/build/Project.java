@@ -2866,8 +2866,9 @@ public class Project extends Processor {
 				error("The ${ide;<>} macro requires a .settings/org.eclipse.jdt.core.prefs file in the project");
 				return null;
 			}
-			FileInputStream in = new FileInputStream(file);
-			ide.load(in);
+			try(FileInputStream in = new FileInputStream(file)) {
+				ide.load(in);
+			}
 		}
 
 		String deflt = args.length > 2 ? args[2] : null;

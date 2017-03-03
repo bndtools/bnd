@@ -195,8 +195,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		if (cacheValidated)
 			return cachedFile;
 
-		try {
-			InputStream data = connector.connect(url);
+		try (InputStream data = connector.connect(url)){
 
 			// Save the data to the cache
 			ensureCacheDirExists();

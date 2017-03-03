@@ -113,10 +113,8 @@ public class Builder extends Analyzer {
 			File mff = getFile(mf);
 			if (mff.isFile()) {
 				updateModified(mff.lastModified(), "Manifest " + mff);
-				try {
-					InputStream in = new FileInputStream(mff);
+				try (InputStream in = new FileInputStream(mff)){
 					manifest = new Manifest(in);
-					in.close();
 				} catch (Exception e) {
 					exception(e, "%s: exception while reading manifest file", MANIFEST);
 				}

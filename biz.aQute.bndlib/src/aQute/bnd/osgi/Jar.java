@@ -90,9 +90,9 @@ public class Jar implements Closeable {
 	public Jar(String name, String path) throws IOException {
 		this(name);
 		File f = new File(path);
-		InputStream in = new FileInputStream(f);
-		EmbeddedResource.build(this, in, f.lastModified());
-		in.close();
+		try(InputStream in = new FileInputStream(f)) {
+			EmbeddedResource.build(this, in, f.lastModified());
+		}
 	}
 
 	public Jar(File f) throws IOException {
