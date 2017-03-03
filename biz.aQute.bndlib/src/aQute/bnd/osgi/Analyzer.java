@@ -145,8 +145,7 @@ public class Analyzer extends Processor {
 	 */
 
 	public static Properties getManifest(File dirOrJar) throws Exception {
-		Analyzer analyzer = new Analyzer();
-		try {
+		try (Analyzer analyzer = new Analyzer()) {
 			analyzer.setJar(dirOrJar);
 			Properties properties = new UTF8Properties();
 			properties.put(IMPORT_PACKAGE, "*");
@@ -159,8 +158,6 @@ public class Analyzer extends Processor {
 				result.put(name.toString(), m.getMainAttributes().getValue(name));
 			}
 			return result;
-		} finally {
-			analyzer.close();
 		}
 	}
 
@@ -675,8 +672,7 @@ public class Analyzer extends Processor {
 					analyzeBundleClasspath();
 				}
 			} catch (Exception e) {
-				e.printStackTrace(System.err);
-				error("Analyzer Plugin %s failed %s", plugin, e);
+				exception(e, "Analyzer Plugin %s failed %s", plugin, e);
 			}
 		}
 	}

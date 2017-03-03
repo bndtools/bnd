@@ -411,8 +411,7 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	public static void testMultilevelInheritance() throws Exception {
-		Analyzer a = new Analyzer();
-		try {
+		try (Analyzer a = new Analyzer()) {
 			a.setJar(new File("bin"));
 			a.analyze();
 
@@ -420,15 +419,12 @@ public class AnalyzerTest extends BndTestCase {
 			System.err.println(result);
 			assertTrue(result.contains("test.T2"));
 			assertTrue(result.contains("test.T3"));
-		} finally {
-			a.close();
 		}
 
 	}
 
 	public static void testClassQuery() throws Exception {
-		Analyzer a = new Analyzer();
-		try {
+		try (Analyzer a = new Analyzer()) {
 			a.setJar(IO.getFile("jar/osgi.jar"));
 			a.analyze();
 
@@ -438,8 +434,6 @@ public class AnalyzerTest extends BndTestCase {
 					new TreeSet<String>(
 							Arrays.asList("org.osgi.service.http.HttpContext", "org.osgi.service.http.HttpService")),
 					r);
-		} finally {
-			a.close();
 		}
 	}
 
@@ -449,8 +443,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * @throws Exception
 	 */
 	public static void testEmptyHeader() throws Exception {
-		Builder a = new Builder();
-		try {
+		try (Builder a = new Builder()) {
 			a.setProperty("Bundle-Blueprint", "  <<EMPTY>> ");
 			a.setProperty("Export-Package", "org.osgi.framework");
 			a.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -464,8 +457,6 @@ public class AnalyzerTest extends BndTestCase {
 			System.err.println(bb);
 			assertNotNull(bb);
 			assertEquals("", bb);
-		} finally {
-			a.close();
 		}
 	}
 
@@ -849,18 +840,16 @@ public class AnalyzerTest extends BndTestCase {
 	 */
 
 	public static void testRemoveheaders() throws Exception {
-		Analyzer a = new Analyzer();
-		try {
+		try (Analyzer a = new Analyzer()) {
 			a.setJar(IO.getFile("jar/asm.jar"));
 			Manifest m = a.calcManifest();
 			assertNotNull(m.getMainAttributes().getValue("Implementation-Title"));
-			a = new Analyzer();
+		}
+		try (Analyzer a = new Analyzer()) {
 			a.setJar(IO.getFile("jar/asm.jar"));
 			a.setProperty("-removeheaders", "Implementation-Title");
-			m = a.calcManifest();
+			Manifest m = a.calcManifest();
 			assertNull(m.getMainAttributes().getValue("Implementation-Title"));
-		} finally {
-			a.close();
 		}
 
 	}
@@ -871,9 +860,8 @@ public class AnalyzerTest extends BndTestCase {
 	 * @throws Exception
 	 */
 	public static void testExportForJar() throws Exception {
-		Jar jar = new Jar("dot");
-		Analyzer an = new Analyzer();
-		try {
+		try (Analyzer an = new Analyzer()) {
+			Jar jar = new Jar("dot");
 			jar.putResource("target/aopalliance.jar", new FileResource(IO.getFile("jar/asm.jar")));
 			an.setJar(jar);
 			an.setProperty("Export-Package", "target");
@@ -883,9 +871,6 @@ public class AnalyzerTest extends BndTestCase {
 			Parameters map = Analyzer.parseHeader(exports, null);
 			assertEquals(1, map.size());
 			assertEquals("target", map.keySet().iterator().next());
-		} finally {
-			jar.close();
-			an.close();
 		}
 
 	}
@@ -897,12 +882,9 @@ public class AnalyzerTest extends BndTestCase {
 	 */
 
 	public static void testVersion() throws IOException {
-		Analyzer a = new Analyzer();
-		try {
+		try (Analyzer a = new Analyzer()) {
 			String v = a.getBndVersion();
 			assertNotNull(v);
-		} finally {
-			a.close();
 		}
 	}
 
@@ -914,8 +896,7 @@ public class AnalyzerTest extends BndTestCase {
 		base.put(Analyzer.IMPORT_PACKAGE, "*");
 		base.put(Analyzer.EXPORT_PACKAGE, "*;-noimport:=true");
 
-		Analyzer analyzer = new Analyzer();
-		try {
+		try (Analyzer analyzer = new Analyzer()) {
 			analyzer.setJar(IO.getFile("jar/asm.jar"));
 			analyzer.setProperties(base);
 			analyzer.calcManifest().write(System.err);
@@ -927,8 +908,6 @@ public class AnalyzerTest extends BndTestCase {
 			assertFalse(analyzer.getImports().getByFQN("org.objectweb.asm") != null);
 
 			assertEquals("Expected size", 2, analyzer.getExports().size());
-		} finally {
-			analyzer.close();
 		}
 
 	}
@@ -942,8 +921,7 @@ public class AnalyzerTest extends BndTestCase {
 		Properties base = new Properties();
 		base.put(Analyzer.IMPORT_PACKAGE, "*");
 		base.put(Analyzer.EXPORT_PACKAGE, "org.objectweb.asm;name=short, org.objectweb.asm.signature;name=long");
-		Analyzer h = new Analyzer();
-		try {
+		try (Analyzer h = new Analyzer()) {
 			h.setJar(IO.getFile("jar/asm.jar"));
 			h.setProperties(base);
 			h.calcManifest().write(System.err);
@@ -956,8 +934,6 @@ public class AnalyzerTest extends BndTestCase {
 			assertEquals("Expected size", 2, h.getExports().size());
 			assertEquals("short", get(h.getExports(), h.getPackageRef("org.objectweb.asm"), "name"));
 			assertEquals("long", get(h.getExports(), h.getPackageRef("org.objectweb.asm.signature"), "name"));
-		} finally {
-			h.close();
 		}
 	}
 
@@ -966,8 +942,7 @@ public class AnalyzerTest extends BndTestCase {
 		base.put(Analyzer.IMPORT_PACKAGE, "*");
 		base.put(Analyzer.EXPORT_PACKAGE, "*;-noimport:=true");
 		File tmp = IO.getFile("jar/ds.jar");
-		Analyzer analyzer = new Analyzer();
-		try {
+		try (Analyzer analyzer = new Analyzer()) {
 			analyzer.setJar(tmp);
 			analyzer.setProperties(base);
 			analyzer.calcManifest().write(System.err);
@@ -980,8 +955,6 @@ public class AnalyzerTest extends BndTestCase {
 					"org.eclipse.equinox.ds.parser, " + "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
 							+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
 							+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
-		} finally {
-			analyzer.close();
 		}
 	}
 
@@ -990,8 +963,7 @@ public class AnalyzerTest extends BndTestCase {
 		base.put(Analyzer.IMPORT_PACKAGE, "!org.osgi.*, *");
 		base.put(Analyzer.EXPORT_PACKAGE, "*;-noimport:=true");
 		File tmp = IO.getFile("jar/ds.jar");
-		Analyzer h = new Analyzer();
-		try {
+		try (Analyzer h = new Analyzer()) {
 			h.setJar(tmp);
 			h.setProperties(base);
 			h.calcManifest().write(System.err);
@@ -1006,8 +978,6 @@ public class AnalyzerTest extends BndTestCase {
 					"org.eclipse.equinox.ds.parser, " + "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
 							+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
 							+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
-		} finally {
-			h.close();
 		}
 	}
 
@@ -1016,8 +986,7 @@ public class AnalyzerTest extends BndTestCase {
 		base.put(Analyzer.IMPORT_PACKAGE, "*");
 		base.put(Analyzer.EXPORT_PACKAGE, "!*");
 		File tmp = IO.getFile("jar/ds.jar");
-		Analyzer h = new Analyzer();
-		try {
+		try (Analyzer h = new Analyzer()) {
 			h.setJar(tmp);
 			h.setProperties(base);
 			h.calcManifest().write(System.err);
@@ -1030,8 +999,6 @@ public class AnalyzerTest extends BndTestCase {
 							+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
 							+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
 			System.err.println(h.getUnreachable());
-		} finally {
-			h.close();
 		}
 	}
 
@@ -1041,8 +1008,7 @@ public class AnalyzerTest extends BndTestCase {
 		base.put(Analyzer.EXPORT_PACKAGE, "*;-noimport:=true");
 		File tmp = IO.getFile("jar/ds.jar");
 		File osgi = IO.getFile("jar/osgi.jar");
-		Analyzer h = new Analyzer();
-		try {
+		try (Analyzer h = new Analyzer()) {
 			h.setJar(tmp);
 			h.setProperties(base);
 			h.setClasspath(new File[] {
@@ -1054,8 +1020,6 @@ public class AnalyzerTest extends BndTestCase {
 			assertEquals("Version from osgi.jar", "[1.3,2)",
 					get(h.getImports(), h.getPackageRef("org.osgi.util.tracker"), "version"));
 			assertEquals("Version from osgi.jar", null, get(h.getImports(), h.getPackageRef("org.xml.sax"), "version"));
-		} finally {
-			h.close();
 		}
 	}
 
@@ -1073,8 +1037,7 @@ public class AnalyzerTest extends BndTestCase {
 		base.put(Analyzer.IMPORT_PACKAGE, "*, =com.foo, com.foo.bar.*");
 		base.put(Analyzer.EXPORT_PACKAGE, "*, com.bar, baz.*");
 		File tmp = IO.getFile("jar/ds.jar");
-		Analyzer h = new Analyzer();
-		try {
+		try (Analyzer h = new Analyzer()) {
 			h.setJar(tmp);
 			h.setProperties(base);
 			Manifest m = h.calcManifest();
@@ -1084,8 +1047,6 @@ public class AnalyzerTest extends BndTestCase {
 					"Unused Import-Package instructions: \\[com.foo.bar.*\\]"));
 			assertTrue(h.getImports().getByFQN("com.foo") != null);
 			assertTrue(h.getExports().getByFQN("com.bar") != null);
-		} finally {
-			h.close();
 		}
 	}
 
