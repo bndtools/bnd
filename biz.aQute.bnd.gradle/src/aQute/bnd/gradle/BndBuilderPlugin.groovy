@@ -68,8 +68,10 @@ public class BndBuilderPlugin implements Plugin<Project> {
       }
 
       afterEvaluate {
-        if (baseline.bundleTask && (baseline.baselineConfiguration == configurations.baseline) && configurations.baseline.dependencies.empty) {
-          def baselineDep = dependencies.create('group': group, 'name': baseline.bundleTask.baseName, 'version': "(,${baseline.bundleTask.version})")
+        def bundleTask = baseline.bundleTask
+        def baselineConfiguration = baseline.baselineConfiguration
+        if (bundleTask && (baselineConfiguration == configurations.baseline) && baselineConfiguration.dependencies.empty) {
+          def baselineDep = dependencies.create('group': group, 'name': bundleTask.baseName, 'version': "(,${bundleTask.version})")
           if (configurations.detachedConfiguration(baselineDep).setTransitive(false).resolvedConfiguration.hasError()) {
             dependencies {
               baseline files(baseline.bundle)

@@ -2,7 +2,6 @@
  *
  */
 
-import aQute.bnd.gradle.Baseline
 import java.util.jar.*
 
 plugins {

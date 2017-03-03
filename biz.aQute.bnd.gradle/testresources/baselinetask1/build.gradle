@@ -41,8 +41,7 @@ baseline {
 task baselineSelf(type: Baseline) {
    description 'Baseline Self'
    group 'build'
-   dependsOn jar
-   bundle jar.archivePath
+   bundle jar
    baseline jar.archivePath
    ignoreFailures = false
    baselineReportDirName = name
