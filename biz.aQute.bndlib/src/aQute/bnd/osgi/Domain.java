@@ -520,4 +520,10 @@ public abstract class Domain implements Iterable<String> {
 	public String getBundleNative() {
 		return get(Constants.BUNDLE_NATIVECODE);
 	}
+
+	public void copyFrom(Domain domain) {
+		for (String key : domain) {
+			set(key, domain.get(key));
+		}
+	}
 }
