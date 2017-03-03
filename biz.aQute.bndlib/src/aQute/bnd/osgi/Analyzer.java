@@ -187,13 +187,6 @@ public class Analyzer extends Processor {
 			analyzeBundleClasspath();
 
 			//
-			// calculate class versions in use
-			//
-			for (Clazz c : classspace.values()) {
-				ees.add(c.getFormat());
-			}
-
-			//
 			// Get exported packages from the
 			// entries on the classpath and
 			// collect any contracts
@@ -219,45 +212,38 @@ public class Analyzer extends Processor {
 				logger.debug("activator {} {}", s, activator);
 			}
 
+			// Conditional packages
+
+			doConditionalPackages();
+
 			// Execute any plugins
 			// TODO handle better reanalyze
 			doPlugins();
 
-			if (since(About._2_3)) {
-				List<ClassParser> parsers = getPlugins(ClassParser.class);
-				ClassDataCollectors cds = new ClassDataCollectors(this);
-				for (ClassParser cp : parsers) {
-					cds.add(cp.getClassDataCollector(this));
-				}
-
-				//
-				// built ins
-				//
-
-				cds.add(annotationHeaders = new AnnotationHeaders(this));
-
-				for (Clazz c : classspace.values()) {
-					cds.parse(c);
-				}
-				cds.close();
+			//
+			// calculate class versions in use
+			//
+			for (Clazz c : classspace.values()) {
+				ees.add(c.getFormat());
 			}
 
-			// Conditional packages
+			if (since(About._2_3)) {
+				try (ClassDataCollectors cds = new ClassDataCollectors(this)) {
+					List<ClassParser> parsers = getPlugins(ClassParser.class);
+					for (ClassParser cp : parsers) {
+						cds.add(cp.getClassDataCollector(this));
+					}
 
-			//
-			// We need to find out the contained packages
-			// again ... so we need to clear any visited
-			// packages otherwise new packages are not
-			// added to contained
-			//
-			packagesVisited.clear();
+					//
+					// built ins
+					//
 
-			Jar extra = getExtra();
+					cds.add(annotationHeaders = new AnnotationHeaders(this));
 
-			while (extra != null) {
-				dot.addAll(extra);
-				analyzeJar(extra, "", true);
-				extra = getExtra();
+					for (Clazz c : classspace.values()) {
+						cds.parse(c);
+					}
+				}
 			}
 
 			referred.keySet().removeAll(contained.keySet());
@@ -373,6 +359,21 @@ public class Analyzer extends Processor {
 						uses.transpose().get(Descriptors.DEFAULT_PACKAGE));
 			}
 
+		}
+	}
+
+	private void doConditionalPackages() throws Exception {
+		//
+		// We need to find out the contained packages
+		// again ... so we need to clear any visited
+		// packages otherwise new packages are not
+		// added to contained
+		//
+		packagesVisited.clear();
+
+		for (Jar extra = getExtra(); extra != null; extra = getExtra()) {
+			dot.addAll(extra);
+			analyzeJar(extra, "", true);
 		}
 	}
 
