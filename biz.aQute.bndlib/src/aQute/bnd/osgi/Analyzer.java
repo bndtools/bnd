@@ -2238,7 +2238,7 @@ public class Analyzer extends Processor {
 	}
 
 	public Jar getTarget() {
-		return dot;
+		return getJar();
 	}
 
 	private void analyzeBundleClasspath() throws Exception {

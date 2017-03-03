@@ -39,7 +39,7 @@ public class MakeBnd implements MakePlugin, Constants {
 			bchild.setProperties(bndfile, builder.getBase());
 
 			Jar jar = bchild.build();
-			Jar dot = builder.getTarget();
+			Jar dot = builder.getJar();
 
 			if (builder.hasSources()) {
 				for (String key : jar.getResources().keySet()) {
