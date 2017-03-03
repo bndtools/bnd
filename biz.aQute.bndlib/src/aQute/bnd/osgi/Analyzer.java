@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
@@ -76,7 +77,6 @@ import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.collections.SortedList;
-import aQute.lib.exceptions.Exceptions;
 import aQute.lib.filter.Filter;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
@@ -125,15 +125,12 @@ public class Analyzer extends Processor {
 		ALL, IMPORTS, EXPORTS;
 	}
 
-	public Analyzer(Jar jar) {
-		setJar(jar);
-		try {
-			Manifest manifest = jar.getManifest();
-			if (manifest != null)
-				copyFrom(Domain.domain(manifest));
-		} catch (Exception e) {
-			throw Exceptions.duck(e);
-		}
+	public Analyzer(Jar jar) throws Exception {
+		super();
+		this.dot = Objects.requireNonNull(jar);
+		Manifest manifest = dot.getManifest();
+		if (manifest != null)
+			copyFrom(Domain.domain(manifest));
 	}
 
 	public Analyzer(Processor parent) {
@@ -2108,8 +2105,6 @@ public class Analyzer extends Processor {
 		}
 
 		super.close();
-		if (dot != null)
-			dot.close();
 
 		if (classpath != null)
 			for (Iterator<Jar> j = classpath.iterator(); j.hasNext();) {
