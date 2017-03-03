@@ -360,6 +360,10 @@ public class Builder extends Analyzer {
 
 		Collection<PackageRef> referred = instructions.select(getReferred().keySet(), false);
 		referred.removeAll(getContained().keySet());
+		if (referred.isEmpty()) {
+			logger.debug("no additional conditional packages to add");
+			return null;
+		}
 
 		Jar jar = new Jar("conditional-import");
 		addClose(jar);
@@ -368,10 +372,6 @@ public class Builder extends Analyzer {
 				Map<String,Resource> map = cpe.getDirectories().get(pref.getPath());
 				if (map != null) {
 					copy(jar, cpe, pref.getPath(), false);
-					// Now use copy so that bnd.info is processed, next line
-					// should be
-					// removed in the future TODO
-					// jar.addDirectory(map, false);
 					break;
 				}
 			}
