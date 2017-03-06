@@ -33,6 +33,10 @@ sourceSets {
     }
 }
 
+compileGroovy {
+  dependsOn compileJava.dependsOn
+}
+
 test {
     dependsOn jar
     def source = file('testresources')
