@@ -84,23 +84,10 @@ public class JunitXmlReport implements TestReporter {
 					URL url = targetBundle.getEntry(resource);
 
 					if (url != null) {
-						String name = url.getFile();
-						int n = name.lastIndexOf('/');
-						if (n < 0)
-							n = 0;
-						else
-							n = n + 1;
-
-						if (name.endsWith(".xml"))
-							name = name.substring(n, name.length() - 4);
-						else
-							name = name.substring(n, name.length()).replace('.', '_');
-
 						testsuite.addContent(url);
-
 					} else {
 						Tag addxml = new Tag(testsuite, "error");
-						addxml.addAttribute("reason", "no such resource: " + resource);
+						addxml.addAttribute("message", "no such resource: " + resource);
 					}
 				}
 			}
@@ -176,6 +163,7 @@ public class JunitXmlReport implements TestReporter {
 		Tag error = new Tag("error");
 		error.setCDATA();
 		error.addAttribute("type", t.getClass().getName());
+		error.addAttribute("message", t.getMessage());
 		error.addContent(getTrace(t));
 		if (testcase == null)
 			testsuite.addContent(error);
@@ -207,6 +195,7 @@ public class JunitXmlReport implements TestReporter {
 		Tag failure = new Tag("failure");
 		failure.setCDATA();
 		failure.addAttribute("type", t.getClass().getName());
+		failure.addAttribute("message", t.getMessage());
 		failure.addContent(getTrace(t));
 		testcase.addContent(failure);
 		progress(" f");
@@ -217,16 +206,17 @@ public class JunitXmlReport implements TestReporter {
 		String[] outs = basic.getCaptured();
 		if (outs[0] != null) {
 			Tag sysout = new Tag(testcase, "system-out");
+			sysout.setCDATA();
 			sysout.addContent(outs[0]);
 		}
 
 		if (outs[1] != null) {
-			Tag sysout = new Tag(testcase, "system-err");
-			sysout.addContent(outs[1]);
+			Tag syserr = new Tag(testcase, "system-err");
+			syserr.setCDATA();
+			syserr.addContent(outs[1]);
 		}
 
 		testcase.addAttribute("time", getFraction(System.currentTimeMillis() - testStartTime, 1000));
-		tests++;
 		tests++;
 	}
 
