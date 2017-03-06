@@ -596,13 +596,15 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 						if (n < objects.length) {
 							Object o = objects[n++];
 							if (o instanceof Throwable) {
-								e = (Throwable) o;
-								if (o instanceof InvocationTargetException) {
-									Throwable t = (InvocationTargetException) o;
-									sb.append(t.getMessage());
-									e = t;
-								} else
-									sb.append(e.getMessage());
+								Throwable t = e = (Throwable) o;
+								while (t instanceof InvocationTargetException) {
+									Throwable cause = t.getCause();
+									if (cause == null) {
+										break;
+									}
+									t = cause;
+								}
+								sb.append(t.getMessage());
 							} else {
 								sb.append(o);
 							}
