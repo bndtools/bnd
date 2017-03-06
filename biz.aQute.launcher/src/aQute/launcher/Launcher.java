@@ -1271,7 +1271,7 @@ public class Launcher implements ServiceListener {
 		}
 		String message = sb.toString();
 		out.println(message);
-		if (e != null && parms.trace)
+		if (e != null)
 			e.printStackTrace(out);
 		out.flush();
 

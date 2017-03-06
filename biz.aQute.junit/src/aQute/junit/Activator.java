@@ -571,16 +571,20 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		return sb.toString();
 	}
 
+	boolean isTrace() {
+		return trace;
+	}
+
 	public void trace(String msg, Object... objects) {
-		if (trace) {
+		if (isTrace()) {
 			message("# ", msg, objects);
 		}
 	}
 
-	private void message(String prefix, String string, Object[] objects) {
+	void message(String prefix, String string, Object... objects) {
 		Throwable e = null;
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		int n = 0;
 		sb.append(prefix);
 		for (int i = 0; i < string.length(); i++) {
@@ -614,7 +618,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			}
 		}
 		out.println(sb);
-		if (e != null && trace)
+		if (e != null)
 			e.printStackTrace(out);
 	}
 
