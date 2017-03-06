@@ -804,13 +804,10 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 					File file = getCache().getPath(bsn, version.toString(), resource.revision);
 					Jar binary = new Jar(file);
 					try {
-						Jar sources = new Jar(src.getFile(), src.openStream());
-						binary.setDoNotTouchManifest();
-						try {
+						try(Jar sources = new Jar(src.getFile(), src.openStream());) {
+							binary.setDoNotTouchManifest();
 							binary.addAll(sources, null, "OSGI-OPT/src");
 							binary.write(withSources);
-						} finally {
-							sources.close();
 						}
 					} finally {
 						binary.close();

@@ -685,24 +685,26 @@ public class Workspace extends Processor {
 				}, getClass().getClassLoader());
 				Enumeration<URL> manifests = cl.getResources("META-INF/MANIFEST.MF");
 				while (manifests.hasMoreElements()) {
-					Manifest m = new Manifest(manifests.nextElement().openStream());
-					Parameters activators = new Parameters(m.getMainAttributes().getValue("Extension-Activator"), this);
-					for (Entry<String,Attrs> e : activators.entrySet()) {
-						try {
-							Class< ? > c = cl.loadClass(e.getKey());
-							ExtensionActivator extensionActivator = (ExtensionActivator) c.getConstructor()
-									.newInstance();
-							customize(extensionActivator, blocker.getValue());
-							List< ? > plugins = extensionActivator.activate(this, blocker.getValue());
-							list.add(extensionActivator);
+					try(InputStream is = manifests.nextElement().openStream()) {
+						Manifest m = new Manifest(is);
+						Parameters activators = new Parameters(m.getMainAttributes().getValue("Extension-Activator"), this);
+						for (Entry<String, Attrs> e : activators.entrySet()) {
+							try {
+								Class<?> c = cl.loadClass(e.getKey());
+								ExtensionActivator extensionActivator = (ExtensionActivator) c.getConstructor()
+										.newInstance();
+								customize(extensionActivator, blocker.getValue());
+								List<?> plugins = extensionActivator.activate(this, blocker.getValue());
+								list.add(extensionActivator);
 
-							if (plugins != null)
-								for (Object plugin : plugins) {
-									list.add(plugin);
-								}
-						} catch (ClassNotFoundException cnfe) {
-							error("Loading extension %s, extension activator missing: %s (ignored)", blocker,
-									e.getKey());
+								if (plugins != null)
+									for (Object plugin : plugins) {
+										list.add(plugin);
+									}
+							} catch (ClassNotFoundException cnfe) {
+								error("Loading extension %s, extension activator missing: %s (ignored)", blocker,
+										e.getKey());
+							}
 						}
 					}
 				}

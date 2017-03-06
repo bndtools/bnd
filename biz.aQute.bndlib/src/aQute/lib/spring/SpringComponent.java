@@ -90,16 +90,16 @@ public class SpringComponent implements AnalyzerPlugin {
 			Resource resource = entry.getValue();
 			if (SPRING_SOURCE.matcher(path).matches()) {
 				try {
-					InputStream in = resource.openInputStream();
-					Set<CharSequence> set = analyze(in);
-					in.close();
-					for (Iterator<CharSequence> r = set.iterator(); r.hasNext();) {
-						PackageRef pack = analyzer.getPackageRef((String) r.next());
-						if (!QN.matcher(pack.getFQN()).matches())
-							analyzer.warning(
-									"Package does not seem a package in spring resource (%s): %s", path, pack);
-						if (!analyzer.getReferred().containsKey(pack))
-							analyzer.getReferred().put(pack, new Attrs());
+					try(InputStream in = resource.openInputStream()) {
+						Set<CharSequence> set = analyze(in);
+						for (Iterator<CharSequence> r = set.iterator(); r.hasNext(); ) {
+							PackageRef pack = analyzer.getPackageRef((String) r.next());
+							if (!QN.matcher(pack.getFQN()).matches())
+								analyzer.warning(
+										"Package does not seem a package in spring resource (%s): %s", path, pack);
+							if (!analyzer.getReferred().containsKey(pack))
+								analyzer.getReferred().put(pack, new Attrs());
+						}
 					}
 				} catch (Exception e) {
 					analyzer.error("Unexpected exception in processing spring resources(%s): %s", path, e);
