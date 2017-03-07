@@ -21,9 +21,6 @@ package aQute.bnd.gradle
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
 import biz.aQute.resolve.Bndrun
-import biz.aQute.resolve.WorkspaceResourcesRepository
-
-import java.util.List
 
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
