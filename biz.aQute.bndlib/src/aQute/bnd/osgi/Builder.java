@@ -303,18 +303,17 @@ public class Builder extends Analyzer {
 		if (f.isDirectory()) {
 			f = new File(f, "MANIFEST.MF");
 		}
-		f.delete();
-		File fp = f.getParentFile();
-		if (!fp.exists() && !fp.mkdirs()) {
-			throw new IOException("Could not create directory " + fp);
+		if (!f.exists() || f.lastModified() < dot.lastModified()) {
+			f.delete();
+			File fp = f.getParentFile();
+			if (!fp.exists() && !fp.mkdirs()) {
+				throw new IOException("Could not create directory " + fp);
+			}
+			try (OutputStream out = new FileOutputStream(f)) {
+				Jar.writeManifest(dot.getManifest(), out);
+			}
+			changedFile(f);
 		}
-		OutputStream out = new FileOutputStream(f);
-		try {
-			Jar.writeManifest(dot.getManifest(), out);
-		} finally {
-			out.close();
-		}
-		changedFile(f);
 	}
 
 	protected void changedFile(@SuppressWarnings("unused") File f) {}
