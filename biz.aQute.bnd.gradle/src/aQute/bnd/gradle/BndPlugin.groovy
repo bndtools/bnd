@@ -254,7 +254,7 @@ public class BndPlugin implements Plugin<Project> {
         }
         outputs.file new File(buildDir, Constants.BUILDFILES)
         doLast {
-          def built
+          File[] built
           try {
             built = bndProject.build()
           } catch (Exception e) {
@@ -262,7 +262,7 @@ public class BndPlugin implements Plugin<Project> {
           }
           checkErrors(logger)
           if (built != null) {
-            logger.info 'Generated bundles: {}', built
+            logger.info 'Generated bundles: {}', built as Object
           }
         }
       }
