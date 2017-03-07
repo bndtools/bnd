@@ -101,7 +101,6 @@ public class Workspace extends Processor {
 	private final Set<String>					modelsUnderConstruction	= newSet();
 	final Map<String,Action>					commands				= newMap();
 	final Maven									maven					= new Maven(Processor.getExecutor());
-	private volatile boolean								hasBndListeners			= false;
 	private final AtomicBoolean								offline					= new AtomicBoolean();
 	Settings									settings				= new Settings();
 	WorkspaceRepository							workspaceRepo			= new WorkspaceRepository(this);
@@ -404,7 +403,6 @@ public class Workspace extends Processor {
 		List<BndListener> listeners = getPlugins(BndListener.class);
 		for (BndListener l : listeners)
 			try {
-				hasBndListeners = true;
 				l.changed(f);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -712,10 +710,6 @@ public class Workspace extends Processor {
 				error("failed to install extension %s due to %s", blocker, e);
 			}
 		}
-	}
-
-	boolean hasBndListeners() {
-		return hasBndListeners;
 	}
 
 	public boolean isOffline() {

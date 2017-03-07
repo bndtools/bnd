@@ -1604,11 +1604,6 @@ public class Project extends Processor {
 	 * Check if this project needs building. This is defined as:
 	 */
 	public boolean isStale() throws Exception {
-		if (workspace == null || !workspace.hasBndListeners()) {
-			logger.debug("working {} offline, so always stale", this);
-			return true;
-		}
-
 		Set<Project> visited = new HashSet<Project>();
 		return isStale(visited);
 	}
@@ -1618,12 +1613,9 @@ public class Project extends Processor {
 		if (isNoBundles())
 			return false;
 
-		if (visited.contains(this)) {
-			msgs.CircularDependencyContext_Message_(this.getName(), visited.toString());
+		if (!visited.add(this)) {
 			return false;
 		}
-
-		visited.add(this);
 
 		long buildTime = 0;
 
@@ -1643,16 +1635,22 @@ public class Project extends Processor {
 			if (dependency == this)
 				continue;
 
-			if (dependency.isStale())
-				return true;
-
-			if (dependency.isNoBundles())
+			if (dependency.isNoBundles()) {
 				continue;
+			}
 
-			File[] deps = dependency.getBuildFiles();
+			if (dependency.isStale(visited)) {
+				return true;
+			}
+
+			File[] deps = dependency.getBuildFiles(false);
+			if (deps == null) {
+				return true;
+			}
 			for (File f : deps) {
-				if (f.lastModified() >= buildTime)
+				if (buildTime < f.lastModified()) {
 					return true;
+				}
 			}
 		}
 

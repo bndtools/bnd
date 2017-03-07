@@ -18,7 +18,6 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.eclipse.EclipseClasspath;
-import aQute.bnd.service.BndListener;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.version.Version;
 import aQute.lib.deployer.FileRepo;
@@ -334,7 +333,6 @@ public class ProjectTest extends TestCase {
 
 	public void testIsStale() throws Exception {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
-		ws.addBasicPlugin(new BndListener());
 		Project top = ws.getProject("p-stale");
 		assertNotNull(top);
 		top.build();
