@@ -543,7 +543,7 @@ Project ${project.name}
           compile handler.project('path': ":${dependency}", 'configuration': 'dependson')
         }
         compileJava.dependsOn(":${dependency}:assemble")
-        jar.dependsOn(":${dependency}:assemble")
+        jar.inputs.files { tasks.getByPath(":${dependency}:jar") }
         checkNeeded.dependsOn(":${dependency}:checkNeeded")
         releaseNeeded.dependsOn(":${dependency}:releaseNeeded")
         cleanNeeded.dependsOn(":${dependency}:cleanNeeded")
