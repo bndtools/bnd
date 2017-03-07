@@ -21,9 +21,6 @@ package aQute.bnd.gradle
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
 import biz.aQute.resolve.Bndrun
-import biz.aQute.resolve.WorkspaceResourcesRepository
-
-import java.util.List
 
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
@@ -151,7 +148,7 @@ public class BndPlugin implements Plugin<Project> {
         configure options, compileOptions
         if (logger.isInfoEnabled()) {
           doFirst {
-            logger.info 'Compile {} to {}', sourceSets.main.java.sourceDirectories.asPath, destinationDir
+            logger.info 'Compile {} to {}', sourceSets.main.java.srcDirs, destinationDir
             if (javacProfile.empty) {
               logger.info '-source {} -target {}', sourceCompatibility, targetCompatibility
             } else {
@@ -197,7 +194,7 @@ public class BndPlugin implements Plugin<Project> {
 
       processResources {
         outputs.files {
-          def sourceDirectories = sourceSets.main.resources.sourceDirectories
+          def sourceDirectories = sourceSets.main.resources.srcDirs
           def outputDir = sourceSets.main.output.resourcesDir
           inputs.files.collect {
             def input = it.absolutePath
@@ -211,7 +208,7 @@ public class BndPlugin implements Plugin<Project> {
 
       processTestResources {
         outputs.files {
-          def sourceDirectories = sourceSets.test.resources.sourceDirectories
+          def sourceDirectories = sourceSets.test.resources.srcDirs
           def outputDir = sourceSets.test.output.resourcesDir
           inputs.files.collect {
             def input = it.absolutePath
@@ -232,7 +229,7 @@ public class BndPlugin implements Plugin<Project> {
         inputs.files {
           fileTree(projectDir) { tree ->
             sourceSets.each { sourceSet -> /* exclude sourceSet dirs */
-              tree.exclude sourceSet.allSource.sourceDirectories.collect {
+              tree.exclude sourceSet.allSource.srcDirs.collect {
                 project.relativePath(it)
               }
               tree.exclude sourceSet.output.collect {
@@ -505,11 +502,11 @@ project.name:           ${project.name}
 project.dir:            ${projectDir}
 target:                 ${buildDir}
 project.dependson:      ${bndProject.getDependson()*.getName()}
-project.sourcepath:     ${sourceSets.main.java.sourceDirectories.asPath}
+project.sourcepath:     ${files(sourceSets.main.java.srcDirs).asPath}
 project.output:         ${compileJava.destinationDir}
 project.buildpath:      ${compileJava.classpath.asPath}
 project.allsourcepath:  ${bnd.allSrcDirs.asPath}
-project.testsrc:        ${sourceSets.test.java.sourceDirectories.asPath}
+project.testsrc:        ${files(sourceSets.test.java.srcDirs).asPath}
 project.testoutput:     ${compileTestJava.destinationDir}
 project.testpath:       ${compileTestJava.classpath.asPath}
 project.bootclasspath:  ${compileJava.options.bootClasspath}
