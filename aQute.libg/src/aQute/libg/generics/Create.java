@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -44,7 +43,7 @@ public class Create {
 
 	@SafeVarargs
 	public static <T> Set<T> set(T... source) {
-		return new HashSet<T>(Arrays.asList(source));
+		return new LinkedHashSet<T>(Arrays.asList(source));
 	}
 
 	public static <K, V> Map<K,V> copy(Map<K,V> source) {
