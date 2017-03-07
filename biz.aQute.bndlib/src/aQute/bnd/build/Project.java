@@ -8,8 +8,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.io.StringReader;
-import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.net.URL;
@@ -131,7 +131,7 @@ public class Project extends Processor {
 	File							output;
 	File							target;
 	private final AtomicInteger		revision						= new AtomicInteger();
-	File							files[];
+	private File					files[];
 	boolean							delayRunDependencies			= true;
 	final ProjectMessages			msgs							= ReporterMessages.base(this,
 			ProjectMessages.class);
@@ -1060,11 +1060,14 @@ public class Project extends Processor {
 			return;
 		}
 		logger.debug("release");
-		File[] jars = build(test);
-		// If build fails jars will be null
+		File[] jars = getBuildFiles(false);
 		if (jars == null) {
-			logger.debug("no jars built");
-			return;
+			jars = build(test);
+			// If build fails jars will be null
+			if (jars == null) {
+				logger.debug("no jars built");
+				return;
+			}
 		}
 		logger.debug("releasing {} - {}", jars, releaseRepos);
 
@@ -1546,12 +1549,9 @@ public class Project extends Processor {
 			return null;
 		}
 
-		if (isStale()) {
-			logger.debug("building {}", this);
-			files = buildLocal(underTest);
-			if (files != null)
-				install(files);
-		}
+		logger.debug("building {}", this);
+		File[] files = buildLocal(underTest);
+		install(files);
 
 		return files;
 	}
@@ -1627,7 +1627,7 @@ public class Project extends Processor {
 
 		long buildTime = 0;
 
-		files = getBuildFiles(false);
+		File[] files = getBuildFiles(false);
 		if (files == null)
 			return true;
 
@@ -1671,14 +1671,15 @@ public class Project extends Processor {
 	}
 
 	public File[] getBuildFiles(boolean buildIfAbsent) throws Exception {
-		if (files != null)
-			return files;
+		File[] current = files;
+		if (current != null) {
+			return current;
+		}
 
-		File f = new File(getTarget(), BUILDFILES);
-		if (f.isFile()) {
-			BufferedReader rdr = IO.reader(f);
-			try {
-				List<File> files = newList();
+		File bfs = new File(getTarget(), BUILDFILES);
+		if (bfs.isFile()) {
+			try (BufferedReader rdr = IO.reader(bfs)) {
+				List<File> list = newList();
 				for (String s = rdr.readLine(); s != null; s = rdr.readLine()) {
 					s = s.trim();
 					File ff = new File(s);
@@ -1689,19 +1690,15 @@ public class Project extends Processor {
 						// it seems better to correct,
 						// See #154
 						rdr.close();
-						f.delete();
-						break;
+						IO.delete(bfs);
+						return files = buildIfAbsent ? buildLocal(false) : null;
 					}
-					files.add(ff);
+					list.add(ff);
 				}
-				return this.files = files.toArray(new File[0]);
-			} finally {
-				rdr.close();
+				return files = list.toArray(new File[0]);
 			}
 		}
-		if (buildIfAbsent)
-			return files = buildLocal(false);
-		return files = null;
+		return files = buildIfAbsent ? buildLocal(false) : null;
 	}
 
 	/**
@@ -1712,11 +1709,16 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public File[] buildLocal(boolean underTest) throws Exception {
-		if (isNoBundles())
-			return null;
+		if (isNoBundles()) {
+			return files = null;
+		}
 
 		versionMap.clear();
 		getMakefile().make();
+
+		File[] buildfiles = getBuildFiles(false);
+		File bfs = new File(getTarget(), BUILDFILES);
+		files = null;
 
 		//
 		// #761 tstamp can vary between invocations in one build
@@ -1730,56 +1732,67 @@ public class Project extends Processor {
 			tstamp = true;
 		}
 
-		File bfs = new File(getTarget(), BUILDFILES);
-		bfs.delete();
-
-		files = null;
-		ProjectBuilder builder = getBuilder(null);
-		try {
+		try (ProjectBuilder builder = getBuilder(null)) {
 			if (underTest)
 				builder.setProperty(Constants.UNDERTEST, "true");
 			Jar jars[] = builder.builds();
-			File[] files = new File[jars.length];
-
 			getInfo(builder);
 
 			if (isPedantic() && !unreferencedClasspathEntries.isEmpty()) {
 				warning("Unreferenced class path entries %s", unreferencedClasspathEntries.keySet());
 			}
 
-			if (isOk()) {
-				this.files = files;
+			if (!isOk()) {
+				return null;
+			}
 
-				for (int i = 0; i < jars.length; i++) {
-					Jar jar = jars[i];
-					File file = saveBuild(jar);
-					if (file == null) {
-						getInfo(builder);
-						error("Could not save %s", jar.getName());
-						return this.files = null;
-					}
-					this.files[i] = file;
+			Set<File> builtFiles = Create.set();
+			long lastModified = 0L;
+			for (Jar jar : jars) {
+				File file = saveBuild(jar);
+				if (file == null) {
+					getInfo(builder);
+					error("Could not save %s", jar.getName());
+					return null;
 				}
+				builtFiles.add(file);
+				if (lastModified < file.lastModified()) {
+					lastModified = file.lastModified();
+				}
+			}
 
-				// Write out the filenames in the buildfiles file
-				// so we can get them later evenin another process
-				Writer fw = IO.writer(bfs);
-				try {
-					for (File f : files) {
-						fw.append(f.getAbsolutePath());
-						fw.append("\n");
+			boolean bfsWrite = !bfs.exists() || (lastModified > bfs.lastModified());
+			if (buildfiles != null) {
+				Set<File> removed = Create.set(buildfiles);
+				if (!removed.equals(builtFiles)) {
+					bfsWrite = true;
+					removed.removeAll(builtFiles);
+					for (File remove : removed) {
+						IO.delete(remove);
+						getWorkspace().changedFile(remove);
 					}
-				} finally {
-					fw.close();
+				}
+			}
+			// Write out the filenames in the buildfiles file
+			// so we can get them later even in another process
+			if (bfsWrite) {
+				try (PrintWriter fw = IO.writer(bfs)) {
+					for (File f : builtFiles) {
+						fw.write(f.getAbsolutePath());
+						fw.write('\n');
+					}
 				}
 				getWorkspace().changedFile(bfs);
-				return files;
 			}
-			return null;
+			bfs = null; // avoid delete in finally block
+			return files = builtFiles.toArray(new File[0]);
 		} finally {
-			builder.close();
 			if (tstamp)
 				unsetProperty(TSTAMP);
+			if (bfs != null) {
+				IO.delete(bfs); // something went wrong, so delete
+				getWorkspace().changedFile(bfs);
+			}
 		}
 	}
 
