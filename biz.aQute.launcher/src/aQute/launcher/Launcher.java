@@ -1246,15 +1246,19 @@ public class Launcher implements ServiceListener {
 						if (n < objects.length) {
 							Object o = objects[n++];
 							if (o instanceof Throwable) {
-								e = (Throwable) o;
-								if (o instanceof BundleException) {
-									sb.append(translateToMessage((BundleException) o));
-								} else if (o instanceof InvocationTargetException) {
-									Throwable t = (InvocationTargetException) o;
+								Throwable t = e = (Throwable) o;
+								if (t instanceof BundleException) {
+									sb.append(translateToMessage((BundleException) t));
+								} else {
+									while (t instanceof InvocationTargetException) {
+										Throwable cause = t.getCause();
+										if (cause == null) {
+											break;
+										}
+										t = cause;
+									}
 									sb.append(t.getMessage());
-									e = t;
-								} else
-									sb.append(e.getMessage());
+								}
 							} else {
 								sb.append(o);
 							}
@@ -1271,7 +1275,7 @@ public class Launcher implements ServiceListener {
 		}
 		String message = sb.toString();
 		out.println(message);
-		if (e != null && parms.trace)
+		if (e != null)
 			e.printStackTrace(out);
 		out.flush();
 

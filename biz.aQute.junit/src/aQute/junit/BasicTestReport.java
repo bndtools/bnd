@@ -35,23 +35,33 @@ public class BasicTestReport implements TestListener, TestReporter {
 	}
 
 	public void addError(Test test, Throwable t) {
-		activator.trace("  add error to %s : %s", test, t);
+		if (activator.isTrace()) {
+			activator.trace("  add error to %s : %s", test, t);
+		} else {
+			systemErr.capture(false);
+			try {
+				activator.message("", "TEST %s <<< ERROR: %s", test, t);
+			} finally {
+				systemErr.capture(true);
+			}
+		}
 		check();
 		errors++;
-		systemOut.capture(false);
-		System.out.printf("TEST %s <<< ERROR:", test);
-		t.printStackTrace(System.out);
-		systemOut.capture(true);
 	}
 
 	public void addFailure(Test test, AssertionFailedError t) {
-		activator.trace("  add failure to %s : %s", test, t);
+		if (activator.isTrace()) {
+			activator.trace("  add failure to %s : %s", test, t);
+		} else {
+			systemErr.capture(false);
+			try {
+				activator.message("", "TEST %s <<< FAILURE: %s", test, t);
+			} finally {
+				systemErr.capture(true);
+			}
+		}
 		check();
 		fails++;
-		systemOut.capture(false);
-		System.out.printf("TEST %s <<< FAILURE:", test);
-		t.printStackTrace(System.out);
-		systemOut.capture(true);
 	}
 
 	public void startTest(Test test) {

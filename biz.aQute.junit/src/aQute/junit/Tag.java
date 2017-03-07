@@ -245,8 +245,8 @@ public class Tag {
 						// specifier, so clean it up
 						int l = sb.indexOf("]]>");
 						while (l >= 0) {
-							sb.insert(l + 2, '\\');
-							l = sb.indexOf("]]>", l + 2);
+							sb.insert(l + 2, "]]><![CDATA[");
+							l = sb.indexOf("]]>", l + 15);
 						}
 						pw.print(sb);
 						pw.print("]]>");

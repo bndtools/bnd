@@ -32,10 +32,10 @@ public class UnresolvedTester extends TestCase {
 				try {
 					b.start();
 				} catch (BundleException e) {
-					sb.append(b.getBundleId())
-							.append(" ")
-							.append(b.getSymbolicName())
-							.append(";")
+					sb.append(b.getSymbolicName())
+							.append(" [")
+							.append(b.getBundleId())
+							.append("];")
 							.append(b.getVersion())
 							.append("\n");
 					sb.append("    ").append(e.getMessage()).append("\n\n");

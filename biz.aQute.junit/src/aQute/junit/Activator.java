@@ -102,6 +102,11 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			}
 		}
 
+		String testerDir = context.getProperty(TESTER_DIR);
+		if (testerDir == null)
+			testerDir = "testdir";
+
+		final File reportDir = new File(testerDir);
 		//
 		// Jenkins does not detect test failures unless reported
 		// by JUnit XML output. If we have an unresolved failure
@@ -118,15 +123,30 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			// Check if there are any unresolved bundles.
 			// If yes, we run a test case to get a proper JUnit report
 			//
+			Bundle testBundle = null;
 			for (Bundle b : context.getBundles()) {
 				if (b.getState() == Bundle.INSTALLED) {
-					//
-					// Now do it again but as a test case
-					// so we get a proper JUnit report
-					//
-					int err = test(context.getBundle(), "aQute.junit.UnresolvedTester", null);
-					if (err != 0)
-						System.exit(err);
+					testBundle = b;
+					break;
+				}
+			}
+			if (testBundle != null) {
+				for (Bundle b : context.getBundles()) {
+					String testcasesheader = b.getHeaders().get(aQute.bnd.osgi.Constants.TESTCASES);
+					if (testcasesheader != null) {
+						testBundle = b;
+						break;
+					}
+				}
+				int err = 0;
+				try {
+					err = test(context.getBundle(), "aQute.junit.UnresolvedTester",
+							getReportWriter(reportDir, testBundle));
+				} catch (IOException e) {
+					// ignore
+				}
+				if (err != 0) {
+					System.exit(err);
 				}
 			}
 		}
@@ -140,7 +160,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 			trace("automatic testing of all bundles with " + aQute.bnd.osgi.Constants.TESTCASES + " header");
 			try {
-				automatic();
+				automatic(reportDir);
 			} catch (IOException e) {
 				// ignore
 			}
@@ -156,12 +176,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		}
 	}
 
-	void automatic() throws IOException {
-		String testerDir = context.getProperty(TESTER_DIR);
-		if (testerDir == null)
-			testerDir = "testdir";
-
-		final File reportDir = new File(testerDir);
+	void automatic(File reportDir) throws IOException {
 		final List<Bundle> queue = new Vector<Bundle>();
 		if (!reportDir.exists() && !reportDir.mkdirs()) {
 			throw new IOException("Could not create directory " + reportDir);
@@ -273,13 +288,10 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			List<TestReporter> reporters = new ArrayList<TestReporter>();
 			final TestResult result = new TestResult();
 
-			Tee systemErr;
-			Tee systemOut;
-
-			systemOut = new Tee(System.err);
-			systemErr = new Tee(System.err);
-			systemOut.capture(trace).echo(true);
-			systemErr.capture(trace).echo(true);
+			Tee systemOut = new Tee(System.err);
+			Tee systemErr = new Tee(System.err);
+			systemOut.capture(isTrace()).echo(true);
+			systemErr.capture(isTrace()).echo(true);
 			final PrintStream originalOut = System.out;
 			final PrintStream originalErr = System.err;
 			System.setOut(systemOut.getStream());
@@ -309,21 +321,21 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 					tr.setup(fw, bundle);
 				}
 
+				TestSuite suite = createSuite(bundle, names, result);
 				try {
-					TestSuite suite = createSuite(bundle, names, result);
-					trace("created suite " + suite.getName() + " #" + suite.countTestCases());
+					trace("created suite %s #%s", suite.getName(), suite.countTestCases());
 					List<Test> flattened = new ArrayList<Test>();
 					int realcount = flatten(flattened, suite);
 
 					for (TestReporter tr : reporters) {
 						tr.begin(flattened, realcount);
 					}
-					trace("running suite " + suite);
+					trace("running suite %s", suite);
 					suite.run(result);
 
 				} catch (Throwable t) {
 					trace("%s", t);
-					result.addError(null, t);
+					result.addError(suite, t);
 				} finally {
 					for (TestReporter tr : reporters) {
 						tr.end();
@@ -349,7 +361,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		return -1;
 	}
 
-	private TestSuite createSuite(Bundle tfw, List<String> testNames, TestResult result) throws Exception {
+	private TestSuite createSuite(Bundle tfw, List<String> testNames, TestResult result) {
 		TestSuite suite = new TestSuite();
 		for (String fqn : testNames) {
 			addTest(tfw, suite, fqn, result);
@@ -571,16 +583,20 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		return sb.toString();
 	}
 
+	boolean isTrace() {
+		return trace;
+	}
+
 	public void trace(String msg, Object... objects) {
-		if (trace) {
+		if (isTrace()) {
 			message("# ", msg, objects);
 		}
 	}
 
-	private void message(String prefix, String string, Object[] objects) {
+	void message(String prefix, String string, Object... objects) {
 		Throwable e = null;
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		int n = 0;
 		sb.append(prefix);
 		for (int i = 0; i < string.length(); i++) {
@@ -592,13 +608,15 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 						if (n < objects.length) {
 							Object o = objects[n++];
 							if (o instanceof Throwable) {
-								e = (Throwable) o;
-								if (o instanceof InvocationTargetException) {
-									Throwable t = (InvocationTargetException) o;
-									sb.append(t.getMessage());
-									e = t;
-								} else
-									sb.append(e.getMessage());
+								Throwable t = e = (Throwable) o;
+								while (t instanceof InvocationTargetException) {
+									Throwable cause = t.getCause();
+									if (cause == null) {
+										break;
+									}
+									t = cause;
+								}
+								sb.append(t.getMessage());
 							} else {
 								sb.append(o);
 							}
@@ -614,7 +632,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			}
 		}
 		out.println(sb);
-		if (e != null && trace)
+		if (e != null)
 			e.printStackTrace(out);
 	}
 
