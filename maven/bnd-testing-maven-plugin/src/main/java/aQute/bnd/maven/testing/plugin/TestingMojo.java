@@ -93,6 +93,7 @@ public class TestingMojo extends AbstractMojo {
 		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
 			String bndrun = getNamePart(runFile);
 			File bndrunBase = new File(cwd, bndrun);
+			bndrunBase.mkdirs();
 			run.setBase(bndrunBase);
 			Workspace workspace = run.getWorkspace();
 			workspace.setOffline(session.getSettings().isOffline());

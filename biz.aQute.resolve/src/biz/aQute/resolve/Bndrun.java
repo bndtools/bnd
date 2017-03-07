@@ -167,17 +167,9 @@ public class Bndrun extends Run {
 		}
 	}
 
-	@Override
-	public void setBase(File base) {
-		base.mkdirs();
-		super.setBase(base);
-	}
-
 	/**
 	 * Execute the tests defined by the bndrun configuration.
 	 *
-	 * @param cwd the directory used as the current working directory for the
-	 *            test process
 	 * @param reportsDir the directory in which test reports are written
 	 * @throws Exception
 	 */
