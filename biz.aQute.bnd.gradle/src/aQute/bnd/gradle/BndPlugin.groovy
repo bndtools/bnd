@@ -254,7 +254,7 @@ public class BndPlugin implements Plugin<Project> {
         }
         outputs.file new File(buildDir, Constants.BUILDFILES)
         doLast {
-          def built
+          File[] built
           try {
             built = bndProject.build()
           } catch (Exception e) {
@@ -262,7 +262,7 @@ public class BndPlugin implements Plugin<Project> {
           }
           checkErrors(logger)
           if (built != null) {
-            logger.info 'Generated bundles: {}', built
+            logger.info 'Generated bundles: {}', built as Object
           }
         }
       }
@@ -543,7 +543,7 @@ Project ${project.name}
           compile handler.project('path': ":${dependency}", 'configuration': 'dependson')
         }
         compileJava.dependsOn(":${dependency}:assemble")
-        jar.dependsOn(":${dependency}:assemble")
+        jar.inputs.files { tasks.getByPath(":${dependency}:jar") }
         checkNeeded.dependsOn(":${dependency}:checkNeeded")
         releaseNeeded.dependsOn(":${dependency}:releaseNeeded")
         cleanNeeded.dependsOn(":${dependency}:cleanNeeded")
