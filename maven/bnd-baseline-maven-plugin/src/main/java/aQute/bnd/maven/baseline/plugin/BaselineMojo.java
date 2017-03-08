@@ -3,7 +3,9 @@ package aQute.bnd.maven.baseline.plugin;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.VERIFY;
 
 import java.io.IOException;
+import java.util.Formatter;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.plugin.AbstractMojo;
@@ -33,8 +35,6 @@ import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.osgi.Jar;
-import aQute.bnd.service.diff.Delta;
-import aQute.bnd.service.diff.Diff;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
@@ -129,7 +129,7 @@ public class BaselineMojo extends AbstractMojo {
 		}
 	}
 
-	protected List<RemoteRepository> getRepositories(Artifact artifact) {
+	private List<RemoteRepository> getRepositories(Artifact artifact) {
 		List<RemoteRepository> aetherRepos = RepositoryUtils.toRepos(project.getRemoteArtifactRepositories());
 
 		if (includeDistributionManagement) {
@@ -149,7 +149,7 @@ public class BaselineMojo extends AbstractMojo {
 		return aetherRepos;
 	}
 
-	protected void setupBase(Artifact artifact) {
+	private void setupBase(Artifact artifact) {
 		if (base == null) {
 			base = new Base();
 		}
@@ -169,7 +169,7 @@ public class BaselineMojo extends AbstractMojo {
 		logger.debug("Baselining against {}, fail on missing: {}", base, failOnMissing);
 	}
 
-	protected void searchForBaseVersion(Artifact artifact, List<RemoteRepository> aetherRepos)
+	private void searchForBaseVersion(Artifact artifact, List<RemoteRepository> aetherRepos)
 			throws VersionRangeResolutionException {
 		logger.info("Automatically determining the baseline version for {} using repositories {}", artifact,
 				aetherRepos);
@@ -190,53 +190,53 @@ public class BaselineMojo extends AbstractMojo {
 		logger.info("The baseline version was found to be {}", base.getVersion());
 	}
 
-	protected ArtifactResult locateBaseJar(List<RemoteRepository> aetherRepos) throws ArtifactResolutionException {
+	private ArtifactResult locateBaseJar(List<RemoteRepository> aetherRepos) throws ArtifactResolutionException {
 		Artifact toFind = new DefaultArtifact(base.getGroupId(), base.getArtifactId(), base.getClassifier(),
 				base.getExtension(), base.getVersion());
 
 		return system.resolveArtifact(session, new ArtifactRequest(toFind, aetherRepos, "baseline"));
 	}
 
-	protected boolean checkFailures(Artifact artifact, ArtifactResult artifactResult, Baseline baseline)
+	private boolean checkFailures(Artifact artifact, ArtifactResult artifactResult, Baseline baseline)
 			throws Exception, IOException {
-		boolean failed = false;
+		StringBuffer sb = new StringBuffer();
+		try (Formatter f = new Formatter(sb, Locale.US);
+				Jar newer = new Jar(artifact.getFile());
+				Jar older = new Jar(artifactResult.getArtifact().getFile())) {
+			boolean failed = false;
 
-		for (Info info : baseline.baseline(new Jar(artifact.getFile()), new Jar(artifactResult.getArtifact().getFile()),
-				null)) {
-			if (info.mismatch) {
-				failed = true;
-				logger.error("Baseline mismatch for package {}, {} change. Current is {}, repo is {}, suggest {} or {}",
-						info.packageName, info.packageDiff.getDelta(), info.newerVersion, info.olderVersion,
-						info.suggestedVersion, info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
-				if (fullReport) {
-					logger.info("{}", info.packageDiff);
-					for (Diff typeDiff : info.packageDiff.getChildren()) {
-						logger.info("  {}", typeDiff);
-						for (Diff memberDiff : typeDiff.getChildren()) {
-							// Unchanged field/method diffs are noisy and
-							// irrelevant
-							if (memberDiff.getDelta() == Delta.UNCHANGED) {
-								continue;
-							}
-							logger.info("    {}", memberDiff);
-							for (Diff childDiff : memberDiff.getChildren()) {
-								if (childDiff.getDelta() == Delta.UNCHANGED) {
-									continue;
-								}
-								logger.info("      {}", childDiff);
-							}
+			for (Info info : baseline.baseline(newer, older, null)) {
+				if (info.mismatch) {
+					failed = true;
+					if (logger.isErrorEnabled()) {
+						sb.setLength(0);
+						f.format(
+								"Baseline mismatch for package %s, %s change. Current is %s, repo is %s, suggest %s or %s",
+								info.packageName, info.packageDiff.getDelta(), info.newerVersion, info.olderVersion,
+								info.suggestedVersion,
+								info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
+						if (fullReport) {
+							f.format("%n%#S", info.packageDiff);
 						}
+						logger.error(f.toString());
 					}
 				}
 			}
-		}
 
-		BundleInfo binfo = baseline.getBundleInfo();
-		if (binfo.mismatch) {
-			failed = true;
-			logger.error("The bundle version change ({} to {}) is too low, the new version must be at least {}",
-					binfo.olderVersion, binfo.newerVersion, binfo.suggestedVersion);
+			BundleInfo binfo = baseline.getBundleInfo();
+			if (binfo.mismatch) {
+				failed = true;
+				if (logger.isErrorEnabled()) {
+					sb.setLength(0);
+					f.format("The bundle version change (%s to %s) is too low, the new version must be at least %s",
+						binfo.olderVersion, binfo.newerVersion, binfo.suggestedVersion);
+					if (fullReport) {
+						f.format("%n%#S", baseline.getDiff());
+					}
+					logger.error(f.toString());
+				}
+			}
+			return failed;
 		}
-		return failed;
 	}
 }

@@ -33,7 +33,6 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.RepositoryPlugin;
-import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.repository.InfoRepository;
 import aQute.bnd.service.repository.Phase;
@@ -190,34 +189,14 @@ public class ProjectBuilder extends Builder {
 					}
 					sb.setLength(0);
 					Diff packageDiff = info.packageDiff;
-					f.format("Baseline mismatch for package %s, %s change. Current is %s, repo is %s, suggest %s or %s",
+					f.format(
+							"Baseline mismatch for package %s, %s change. Current is %s, repo is %s, suggest %s or %s%n%#S",
 							packageDiff.getName(), packageDiff.getDelta(), info.newerVersion,
 							((info.olderVersion != null) && info.olderVersion.equals(Version.LOWEST)) ? '-'
 									: info.olderVersion,
 							((info.suggestedVersion != null) && info.suggestedVersion.compareTo(info.newerVersion) <= 0)
 									? "ok" : info.suggestedVersion,
-							(info.suggestedIfProviders == null) ? "-" : info.suggestedIfProviders);
-					for (Diff typeDiff : packageDiff.getChildren()) {
-						if (typeDiff.getDelta() == Delta.UNCHANGED) {
-							continue;
-						}
-						f.format("%n*  %-49s %-10s %s", typeDiff.getName(), typeDiff.getType(), typeDiff.getDelta());
-						for (Diff memberDiff : typeDiff.getChildren()) {
-							if (memberDiff.getDelta() == Delta.UNCHANGED) {
-								continue;
-							}
-							f.format("%n*   %-48s %-10s %s", memberDiff.getName(), memberDiff.getType(),
-									memberDiff.getDelta());
-							for (Diff childDiff : memberDiff.getChildren()) {
-								if (childDiff.getDelta() == Delta.UNCHANGED) {
-									continue;
-								}
-								f.format("%n*    %-47s %-10s %s", childDiff.getName(), childDiff.getType(),
-										childDiff.getDelta());
-							}
-						}
-					}
-
+							(info.suggestedIfProviders == null) ? "-" : info.suggestedIfProviders, packageDiff);
 					SetLocation l = error("%s", f.toString());
 					l.header(Constants.BASELINE);
 					fillInLocationForPackageInfo(l.location(), packageDiff.getName());
@@ -225,19 +204,22 @@ public class ProjectBuilder extends Builder {
 						l.file(getPropertiesFile().getAbsolutePath());
 					l.details(info);
 				}
-			}
-			BundleInfo binfo = baseliner.getBundleInfo();
-			if (binfo.mismatch) {
-				SetLocation error = error("The bundle version (%s/%s) is too low, must be at least %s",
-						binfo.olderVersion, binfo.newerVersion, binfo.suggestedVersion);
-				error.context("Baselining");
-				error.header(Constants.BUNDLE_VERSION);
-				error.details(binfo);
-				FileLine fl = getHeader(Pattern.compile("^" + Constants.BUNDLE_VERSION, Pattern.MULTILINE));
-				if (fl != null) {
-					error.file(fl.file.getAbsolutePath());
-					error.line(fl.line);
-					error.length(fl.length);
+
+				BundleInfo binfo = baseliner.getBundleInfo();
+				if (binfo.mismatch) {
+					sb.setLength(0);
+					f.format("The bundle version (%s/%s) is too low, must be at least %s%n%#S", binfo.olderVersion,
+							binfo.newerVersion, binfo.suggestedVersion, baseliner.getDiff());
+					SetLocation error = error("%s", f.toString());
+					error.context("Baselining");
+					error.header(Constants.BUNDLE_VERSION);
+					error.details(binfo);
+					FileLine fl = getHeader(Pattern.compile("^" + Constants.BUNDLE_VERSION, Pattern.MULTILINE));
+					if (fl != null) {
+						error.file(fl.file.getAbsolutePath());
+						error.line(fl.line);
+						error.length(fl.length);
+					}
 				}
 			}
 		}
