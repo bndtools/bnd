@@ -47,8 +47,6 @@ package aQute.bnd.gradle
 import aQute.bnd.differ.DiffPluginImpl
 import aQute.bnd.osgi.Jar
 import aQute.bnd.osgi.Processor
-import aQute.bnd.service.diff.Delta
-import aQute.bnd.service.diff.Type
 import aQute.bnd.version.Version
 
 import org.gradle.api.Buildable
@@ -201,9 +199,9 @@ public class Baseline extends DefaultTask {
       def baseliner = new aQute.bnd.differ.Baseline(processor, new DiffPluginImpl())
       def infos = baseliner.baseline(newer, older, null).sort {it.packageName}
       def bundleInfo = baseliner.getBundleInfo()
-      report.withPrintWriter('UTF-8') { writer ->
-        writer.println '==============================================================='
-        writer.printf '%s %s %s-%s',
+      new Formatter(report, 'UTF-8', Locale.US).withCloseable { f ->
+        f.format '===============================================================%n'
+        f.format '%s %s %s-%s',
           bundleInfo.mismatch ? '*' : ' ',
           bundleInfo.bsn,
           newer.getVersion(),
@@ -212,19 +210,19 @@ public class Baseline extends DefaultTask {
         if (bundleInfo.mismatch) {
           failure = true
           if (bundleInfo.suggestedVersion != null) {
-            writer.print " suggests ${bundleInfo.suggestedVersion}"
+            f.format ' suggests %s', bundleInfo.suggestedVersion
           }
+          f.format '%n%#2S', baseliner.getDiff()
         }
 
-        writer.println()
-        writer.println '==============================================================='
+        f.format '%n===============================================================%n'
 
         String format = '%s %-50s %-10s %-10s %-10s %-10s %-10s %s%n'
-        writer.printf format, ' ', 'Name', 'Type', 'Delta', 'New', 'Old', 'Suggest', 'If Prov.'
+        f.format format, ' ', 'Name', 'Type', 'Delta', 'New', 'Old', 'Suggest', 'If Prov.'
 
         infos.each { info ->
           def packageDiff = info.packageDiff
-          writer.printf format,
+          f.format format,
             info.mismatch ? '*' : ' ',
             packageDiff.getName(),
             packageDiff.getType(),
@@ -235,21 +233,7 @@ public class Baseline extends DefaultTask {
             info.suggestedIfProviders ?: '-'
           if (info.mismatch) {
             failure = true
-            packageDiff.getChildren().findAll { typeDiff ->
-              typeDiff.getDelta() != Delta.UNCHANGED
-            }.each { typeDiff ->
-              writer.printf '*  %-49s %-10s %s%n', typeDiff.getName(), typeDiff.getType(), typeDiff.getDelta()
-              typeDiff.getChildren().findAll { memberDiff ->
-                memberDiff.getDelta() != Delta.UNCHANGED
-              }.each { memberDiff ->
-                writer.printf '*   %-48s %-10s %s%n', memberDiff.getName(), memberDiff.getType(), memberDiff.getDelta()
-                memberDiff.getChildren().findAll { childDiff ->
-                  childDiff.getDelta() != Delta.UNCHANGED
-                }.each { childDiff ->
-                  writer.printf '*    %-47s %-10s %s%n', childDiff.getName(), childDiff.getType(), childDiff.getDelta()
-                }
-              }
-            }
+            f.format '%#2S%n', packageDiff
           }
         }
       }
