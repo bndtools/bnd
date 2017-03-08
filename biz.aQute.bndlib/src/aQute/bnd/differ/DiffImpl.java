@@ -12,13 +12,16 @@ import static aQute.bnd.service.diff.Delta.UNCHANGED;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Formattable;
+import java.util.FormattableFlags;
+import java.util.Formatter;
 import java.util.List;
 
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Tree;
 import aQute.bnd.service.diff.Type;
-
+import aQute.libg.generics.Create;
 /**
  * A DiffImpl class compares a newer Element to an older Element. The Element
  * classes hide all the low level details. A Element class is either either
@@ -28,7 +31,7 @@ import aQute.bnd.service.diff.Type;
  * Element can be sub classed to provide special behavior.
  */
 
-public class DiffImpl implements Diff, Comparable<DiffImpl> {
+public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 
 	final Tree					older;
 	final Tree					newer;
@@ -249,4 +252,58 @@ public class DiffImpl implements Diff, Comparable<DiffImpl> {
 		return data;
 	}
 
+	@Override
+	public void formatTo(Formatter formatter, int flags, int width, int precision) {
+		boolean alternate = (flags & FormattableFlags.ALTERNATE) != 0;
+		if (alternate) {
+			boolean unchanged = (flags & FormattableFlags.UPPERCASE) != 0;
+			int indent = Math.max(width, 0);
+			format(formatter, this, Create.<String> list(), unchanged, indent, 0);
+		} else {
+			StringBuilder sb = new StringBuilder();
+			sb.append('%');
+			if ((flags & FormattableFlags.LEFT_JUSTIFY) != 0) {
+				sb.append('-');
+			}
+			if (width != -1) {
+				sb.append(width);
+			}
+			if (precision != -1) {
+				sb.append('.');
+				sb.append(precision);
+			}
+			if ((flags & FormattableFlags.UPPERCASE) != 0) {
+				sb.append('S');
+			} else {
+				sb.append('s');
+			}
+			formatter.format(sb.toString(), toString());
+		}
+	}
+
+	private static void format(final Formatter formatter, final Diff diff, final List<String> formats,
+			final boolean unchanged, final int indent, final int depth) {
+		if (unchanged && (diff.getDelta() == Delta.UNCHANGED)) {
+			return;
+		}
+		if (depth == formats.size()) {
+			StringBuilder sb = new StringBuilder();
+			if (depth > 0) {
+				sb.append("%n");
+			}
+			int width = depth * 2;
+			for (int leading = width + indent; leading > 0; leading--) {
+				sb.append(' ');
+			}
+			sb.append("%-");
+			sb.append(Math.max(20 - width, 1));
+			sb.append("s %-10s %s");
+			formats.add(sb.toString());
+		}
+		String format = formats.get(depth);
+		formatter.format(format, diff.getDelta(), diff.getType(), diff.getName());
+		for (Diff childDiff : diff.getChildren()) {
+			format(formatter, childDiff, formats, unchanged, indent, depth + 1);
+		}
+	}
 }
