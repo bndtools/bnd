@@ -355,7 +355,7 @@ public class Baseline {
 			case MINOR :
 				return new Version(last.getMajor(), last.getMinor() + offset, base);
 			case MAJOR :
-				return new Version(last.getMajor() + 1, base, base);
+				return new Version(last.getMajor() + offset, base, base);
 			case ADDED :
 				return new Version(last.getMajor(), last.getMinor() + offset, base);
 			default :

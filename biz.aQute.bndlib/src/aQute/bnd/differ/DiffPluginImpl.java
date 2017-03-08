@@ -161,6 +161,9 @@ public class DiffPluginImpl implements Differ {
 
 			String path = entry.getKey();
 
+			if (path.endsWith(Constants.EMPTY_HEADER))
+				continue;
+
 			if (analyzer.since(About._3_0)) {
 
 				//
