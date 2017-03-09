@@ -12,10 +12,12 @@ import static aQute.bnd.service.diff.Delta.UNCHANGED;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Formattable;
 import java.util.FormattableFlags;
 import java.util.Formatter;
 import java.util.List;
+import java.util.Set;
 
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
@@ -256,9 +258,12 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 	public void formatTo(Formatter formatter, int flags, int width, int precision) {
 		boolean alternate = (flags & FormattableFlags.ALTERNATE) != 0;
 		if (alternate) {
-			boolean unchanged = (flags & FormattableFlags.UPPERCASE) != 0;
+			Set<Delta> deltas = EnumSet.allOf(Delta.class);
+			if ((flags & FormattableFlags.UPPERCASE) != 0) {
+				deltas.remove(Delta.UNCHANGED);
+			}
 			int indent = Math.max(width, 0);
-			format(formatter, this, Create.<String> list(), unchanged, indent, 0);
+			format(formatter, this, Create.<String> list(), deltas, indent, 0);
 		} else {
 			StringBuilder sb = new StringBuilder();
 			sb.append('%');
@@ -282,10 +287,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 	}
 
 	private static void format(final Formatter formatter, final Diff diff, final List<String> formats,
-			final boolean unchanged, final int indent, final int depth) {
-		if (unchanged && (diff.getDelta() == Delta.UNCHANGED)) {
-			return;
-		}
+			final Set<Delta> deltas, final int indent, final int depth) {
 		if (depth == formats.size()) {
 			StringBuilder sb = new StringBuilder();
 			if (depth > 0) {
@@ -303,7 +305,9 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 		String format = formats.get(depth);
 		formatter.format(format, diff.getDelta(), diff.getType(), diff.getName());
 		for (Diff childDiff : diff.getChildren()) {
-			format(formatter, childDiff, formats, unchanged, indent, depth + 1);
+			if (deltas.contains(childDiff.getDelta())) {
+				format(formatter, childDiff, formats, deltas, indent, depth + 1);
+			}
 		}
 	}
 }
