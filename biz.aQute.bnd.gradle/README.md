@@ -314,6 +314,58 @@ can accept to result in a single file. This property must be set.
 
 ---
 
+## Using the latest development SNAPSHOT build of the Bnd Gradle Plugins
+
+If you want to try the latest development SNAPSHOT build of the 
+Bnd Gradle Plugins, you will need to adjust your `buildscript` classpath 
+to refer to the CI built repository on Cloudbees and select the latest version
+(`+`) of the plugin. For example, edit the `buildscript` script block (in
+`settings.gradle` for Workspace builds), to configure the repository and
+version of the plugin:
+
+```groovy
+buildscript {
+  repositories {
+    maven {
+      url 'https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles'
+    }
+  }
+  dependencies {
+    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:+'
+  }
+}
+```
+
+If you want to use the latest development SNAPSHOT version on a regular basis, you
+will need to also need to add the following to the `buildscript` block to ensure
+Gradle checks more frequently for updates:
+
+```groovy
+buildscript {
+  ...
+  /* Since the files in the repository change with each build, we need to recheck for changes */
+  configurations.classpath {
+    resolutionStrategy {
+      cacheChangingModulesFor 30, 'minutes'
+      cacheDynamicVersionsFor 30, 'minutes'
+    }
+  }
+  dependencies {
+    components {
+      all { ComponentMetadataDetails details ->
+        details.changing = true
+      }
+    }
+  }
+}
+```
+
+Remember, if you are using the Gradle daemon, you will need to stop it 
+after making the change to use the development SNAPSHOT versions to ensure
+Gradle stops using the prior version of the plugin.
+
+---
+
 For full details on what the Bnd Gradle Plugins do, check out the
 [source code][10].
 
