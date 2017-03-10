@@ -1803,7 +1803,7 @@ public class Project extends Processor {
 
 	public File saveBuild(Jar jar) throws Exception {
 		try {
-			File f = getOutputFile(jar.getBsn(), jar.getVersion());
+			File f = getOutputFile(jar.getName(), jar.getVersion());
 			String msg = "";
 			if (!f.exists() || f.lastModified() < jar.lastModified()) {
 				reportNewer(f.lastModified(), jar);
@@ -1829,7 +1829,7 @@ public class Project extends Processor {
 				// maven handling that caused these versioned JARs
 				//
 
-				File canonical = new File(getTarget(), jar.getBsn() + ".jar");
+				File canonical = new File(getTarget(), jar.getName() + ".jar");
 				if (!canonical.equals(f)) {
 					IO.delete(canonical);
 					if (!IO.createSymbolicLink(canonical, f)) {
