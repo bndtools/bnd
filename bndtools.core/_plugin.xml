@@ -689,6 +689,10 @@
       </shortcut>
 
    </extension>
+   
+   <extension point="org.eclipse.ui.keywords">
+      <keyword id="bndtools.core" label="Bndtools"/>
+   </extension>
 
     <extension
           point="org.eclipse.ui.preferencePages">
@@ -696,29 +700,35 @@
              class="bndtools.preferences.ui.BndPreferencePage"
              id="bndtools.prefPages.basic"
              name="Bndtools">
+             <keywordReference id="bndtools.core"/>
        </page>
        <page
              class="bndtools.preferences.ui.BndBuildPreferencePage"
              id="bndtools.prefPages.build"
              category="bndtools.prefPages.basic"
              name="Build">
+             <keywordReference id="bndtools.core"/>
        </page>
        <page
              class="bndtools.preferences.ui.ReposPreferencePage"
              id="bndtools.prefPages.repos"
              category="bndtools.prefPages.basic"
-             name="Repositories"/>
+             name="Repositories">
+             <keywordReference id="bndtools.core"/>
+       </page>
        <page
              class="bndtools.preferences.ui.GeneratedResourcesPreferencePage"
              id="bndtools.prefPages.generatedResources"
              category="bndtools.prefPages.basic"
              name="Generated Resources">
+             <keywordReference id="bndtools.core"/>
        </page>
        <page
              class="bndtools.preferences.ui.JpmPreferencePage"
              id="bndtools.prefPages.jpm"
              category="bndtools.prefPages.basic"
              name="JPM">
+             <keywordReference id="bndtools.core"/>
        </page>
     </extension>
 	<extension point="org.eclipse.ui.propertyPages">
