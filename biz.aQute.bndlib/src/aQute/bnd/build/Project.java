@@ -2395,7 +2395,7 @@ public class Project extends Processor {
 
 		for (Builder builder : builders) {
 			Container c = new Container(this, builder.getBsn(), builder.getVersion(), Container.TYPE.PROJECT,
-					getOutputFile(builder.getBsn()), null, null, null);
+					getOutputFile(builder.getBsn(), builder.getVersion()), null, null, null);
 			result.add(c);
 		}
 		return result;
