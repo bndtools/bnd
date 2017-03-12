@@ -8,3 +8,6 @@ buildfiles
 /.gradle/
 /reports/
 /generated/
+*.iml
+.idea
+*.ipr
