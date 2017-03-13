@@ -1,0 +1,5 @@
+/*
+ * Master Gradle initialization script
+ */
+
+include 'test.simple'

@@ -1,0 +1,8 @@
+/*
+ * Master Gradle build script
+ *
+ * Depends on bndPlugin property set by settings.gradle.
+ * and bnd_* values from gradle.properties.
+ */
+
+apply plugin: 'biz.aQute.bnd.workspace'
