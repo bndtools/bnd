@@ -7,8 +7,8 @@
 			class="org.bndtools.templating.jgit.ui.GitRepoTemplatePreferencePage"
 			id="bndtools.prefPages.templating.gitRepos"
 			category="bndtools.prefPages.basic"
-			name="Workspace Template"
-			>
+			name="Workspace Template">
+			<keywordReference id="bndtools.core"/>
 		</page>
 	
 	</extension>
