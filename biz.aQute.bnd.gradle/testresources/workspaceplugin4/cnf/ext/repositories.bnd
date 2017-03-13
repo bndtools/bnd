@@ -1,0 +1,10 @@
+-plugin:\
+    aQute.bnd.repository.osgi.OSGiRepository; \
+        name='Local'; \
+        locations="${fileuri;${workspace}/cnf/repo/index.xml}"; \
+        poll.time=-1, \
+	aQute.lib.deployer.FileRepo; \
+		name='Release'; \
+		location=${workspace}/cnf/releaserepo
+
+-releaserepo: Release
