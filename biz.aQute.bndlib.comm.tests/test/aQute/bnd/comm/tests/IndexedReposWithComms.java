@@ -121,6 +121,7 @@ public class IndexedReposWithComms extends TestCase {
 			assertNotNull(ws);
 			ws.setProperty("repo", ht.getBaseURI().toASCIIString());
 			ws.setProperty("tmp", tmp.toURI().getPath());
+			ws.setProperty("-fixupmessages.jpmdeprecated", "aQute.bnd.jpm.Repository is deprecated");
 			Repository plugin = ws.getPlugin(Repository.class);
 			assertTrue(ws.check());
 			assertNotNull(plugin);

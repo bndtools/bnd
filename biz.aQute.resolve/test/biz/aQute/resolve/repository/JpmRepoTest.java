@@ -51,6 +51,7 @@ public class JpmRepoTest extends TestCase {
 	}
 
 	public void testWrapper() throws Exception {
+		ws.setProperty("-fixupmessages.jpmdeprecated", "aQute.bnd.jpm.Repository is deprecated");
 		assertNotNull(ws.getRepositories());
 		assertNotNull(ws.getPlugin(InfoRepository.class));
 		assertNotNull(ws.getPlugin(Repository.class));
