@@ -2,7 +2,7 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
-	slf4j.api;version=1.7,\
+	slf4j.api,\
 	org.osgi.util.function
 
 -testpath: \
