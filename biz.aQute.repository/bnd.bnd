@@ -19,16 +19,16 @@ jetty.libs: org.apache.geronimo.specs.geronimo-servlet_2.5_spec;version=1.2,\
 	org.osgi.impl.bundle.repoindex.lib;version=latest,\
 	osgi.cmpn;version=@6,\
 	javax.xml.stream;version=1.0.1,\
-	${jetty.libs},\
 	slf4j.api,\
 	aQute.jpm.clnt;version=1.0;packages=*,\
-	biz.aQute.http.testservers;version=latest,\
 	org.tukaani.xz;version=1.5,\
 	biz.aQute.bnd.annotation;version=latest
 	
 -testpath: \
 	${junit},\
 	${mockito},\
+	${jetty.libs},\
+	biz.aQute.http.testservers;version=latest,\
 	slf4j.simple
 
 bindex-pkgs: \
@@ -77,8 +77,7 @@ Private-Package: \
 	aQute.service.library,\
 	aQute.jsonrpc.domain,\
 	aQute.struct,\
-	aQute.bnd.jpm.util, \
-	org.bouncycastle.*
+	aQute.bnd.jpm.util
 
 Conditional-Package:\
 	aQute.lib.*;-split-package:=first,\
