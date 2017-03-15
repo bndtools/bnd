@@ -235,6 +235,10 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		Jar jar = new Jar(project.getName());
 
 		Builder b = new Builder();
+
+		if(getCwd() != null)
+			b.setBase(getCwd());
+
 		project.addClose(b);
 
 		if (!project.getIncludeResource().isEmpty()) {
