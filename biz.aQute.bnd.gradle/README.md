@@ -6,59 +6,109 @@ Bnd projects in [Workspace builds][20] as well as in
 The [`biz.aQute.bnd.gradle`][2] jar contains the Bnd Gradle Plugins.
 These plugins requires at least Gradle 2.0.
 
-# Gradle Plugin for Workspace Builds
+# Gradle Plugins for Workspace Builds
 
-The Bnd Gradle Plugin for Workspace builds uses the information
-specified in the project's `bnd.bnd` file and the workspace's
-`cnf/build.bnd` file to build a project.
+The Bnd Gradle Plugins for Workspace builds uses the information
+specified in the workspace's `cnf/build.bnd` file and each project's
+`bnd.bnd` file to build the projects.
 
-The Bnd Gradle Plugin for Workspace builds has the Gradle plugin
-name `biz.aQute.bnd`.
+The Bnd Gradle Plugins for Workspace builds consists of two plugins:
+
+* The `biz.aQute.bnd.workspace` Gradle plugin can be applied in the
+`settings.gradle` file or the root project's `build.gradle` file.
+* The `biz.aQute.bnd` Gradle plugin is applied to each subproject
+that is a Bnd project.
 
 ## Workspace
 
-When creating the cnf project for a new workspace with Bndtools, by
-default, the files for a gradle build will be installed in the
-workspace. This includes the following files in the root of the
-workspace:
+A Bnd Workspace is a folder containing a `cnf` project as well as a
+number of peer folders each holding a Bnd project. So the Bnd Workspace
+folder is the root project of the Gradle build for the Bnd Workspace.
+The following files are in the root project:
 
 * [`gradle.properties`][11] - Some initial properties to configure the
-Gradle build for the workspace. 
+Gradle build for the workspace.
 * [`settings.gradle`][12] - Initializes
-the projects to be included in the Gradle build for the workspace. 
-* [`build.gradle`][13] - Configures the projects in the Gradle build for
-the workspace.
+the projects to be included in the Gradle build for the workspace.
+* [`build.gradle`][13] - Configures the Gradle build for the workspace.
+
+When creating a new Bnd Workspace with Bndtools, it will put these files
+on the root folder of the workspace.
 
 These files can be modified to customize the overall Gradle build for
-the workspace. If special Gradle build behavior is needed, beyond
-changes to the project's `bnd.bnd` file, then you should place a
+the workspace. If special Gradle build behavior for a project is needed,
+beyond changes to the project's `bnd.bnd` file, then you should place a
 `build.gradle` file in the root of the project and place your
 customizations in there.
 
-## Using Bnd Gradle Plugin for Workspace builds
+## Using Bnd Gradle Plugins for Workspace builds
 
 If you are using the Gradle build added by Bndtools when creating the
-cnf project in your workspace, you don't need to do anything else. If
-you want to use the Bnd Gradle Plugin in your existing Gradle build, you
-need to add the Bnd Gradle Plugin to your buildscript classpath and then
-apply the plugin to your project. For example:
+the Bnd Workspace, you don't need to do anything else.
+
+If you want to use the Bnd Gradle Plugins in your existing Gradle build,
+there are two approaches you can take. The main
+approach is to edit `settings.gradle` as follows:
 
 ```groovy
 buildscript {
   repositories {
-    jcenter()
+    mavenCentral()
   }
   dependencies {
-    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.3.0'
+    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.4.0'
   }
 }
-
-apply plugin: 'biz.aQute.bnd'
+apply plugin: 'biz.aQute.bnd.workspace'
 ```
+
+When you apply the `biz.aQute.bnd.workspace` Gradle plugin in the
+`settings.gradle` file, the plugin will determine the Bnd project folders
+in the Bnd Workspace, include them in the Gradle build, and apply itself
+to the root project. This will result in the `biz.aQute.bnd` Gradle plugin
+being applied to each project which is a Bnd project. In this approach, you
+don't even need a `build.gradle` file for the root project. But you can
+use a `build.gradle` file in the root project to apply common configuration
+across all your Bnd projects:
+
+```groovy
+subprojects {
+  if (plugins.hasPlugin('biz.aQute.bnd')) {
+    // additional configuration for Bnd projects
+  }
+}
+```
+
+The second approach, for when you already have a `settings.gradle` file which
+includes the desired projects and you don't want the set of projects to
+include to be computed, is to edit the root project's `build.gradle` file
+to include the following:
+
+```groovy
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.4.0'
+  }
+}
+apply plugin: 'biz.aQute.bnd.workspace'
+```
+
+While this is the same as the previous `settings.gradle` example, since it
+is the root project's `build.gradle` file, it requires that your `settings.gradle`
+file has already included the necessary projects in the Gradle build. The plugin
+will apply the `biz.aQute.bnd` Gradle plugin to each project which is a
+Bnd project.
+
+In general, your Gradle scripts will not apply the `biz.aQute.bnd` Gradle plugin
+directly to a project since this is handled by using the `biz.aQute.bnd.workspace` Gradle
+plugin in the `settings.gradle` file or the `build.gradle` file in the root project.
 
 ## Gradle Tasks
 
-The Bnd Gradle Plugin extends the standard [Gradle Java plugin][3]. It
+The `biz.aQute.bnd` Gradle Plugin extends the standard [Gradle Java plugin][3]. It
 modifies some of the standard Java plugin tasks as necessary and also
 adds some additional tasks. Running `gradle tasks --all` in a project
 will provide a complete list of the tasks available within the project.
@@ -122,7 +172,7 @@ The `bndproperties` task will display the Bnd properties of the project.
 ## Customizing a project's Gradle build
 
 If you do need to write a `build.gradle` file for a Bnd project, there
-are some properties of the Bnd Gradle Plugin you will find useful.
+are some properties of the Bnd Gradle Plugins you will find useful.
 
 * The `bndWorkspace` property of the `rootProject` contains the
 [Workspace][8] object. 
@@ -152,10 +202,10 @@ To get the Bnd Builder Gradle Plugin on your `buildscript`, use the following:
 ```groovy
 buildscript {
   repositories {
-    jcenter()
+    mavenCentral()
   }
   dependencies {
-    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.3.0'
+    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.4.0'
   }
 }
 ```
@@ -321,7 +371,7 @@ Bnd Gradle Plugins, you will need to adjust your `buildscript` classpath
 to refer to the CI built repository on Cloudbees and select the latest version
 (`+`) of the plugin. For example, edit the `buildscript` script block (in
 `settings.gradle` for Workspace builds), to configure the repository and
-version of the plugin:
+version of the plugin jar:
 
 ```groovy
 buildscript {
@@ -366,6 +416,17 @@ Gradle stops using the prior version of the plugin.
 
 ---
 
+## Using other JVM languages with the Bnd Gradle Plugins for Workspace builds
+
+When you use the Gradle plugin for another JVM language like Groovy, Scala, or Kotlin
+with your Bnd Workspace build, the Bnd Gradle Plugin will configure the language's
+`srcDirs` for the `main` and `test` source sets to use the Bnd source and test source
+folders. The Bnd Gradle Plugin will also configure the language's compile task for the
+`main` source set to depend upon the same dependencies as configured for the
+`compileJava` task.
+
+---
+
 For full details on what the Bnd Gradle Plugins do, check out the
 [source code][10].
 
@@ -386,5 +447,5 @@ For full details on what the Bnd Gradle Plugins do, check out the
 [16]: src/aQute/bnd/gradle/BndProperties.groovy
 [18]: https://docs.gradle.org/current/dsl/org.gradle.api.tasks.bundling.Jar.html
 [19]: https://docs.gradle.org/current/dsl/org.gradle.api.reporting.ReportingExtension.html#org.gradle.api.reporting.ReportingExtension:baseDir
-[20]: #gradle-plugin-for-workspace-builds
+[20]: #gradle-plugins-for-workspace-builds
 [21]: #gradle-plugin-for-non-workspace-builds
