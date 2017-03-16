@@ -24,19 +24,6 @@ dependencies {
     testCompile gradleApi()
 }
 
-sourceSets {
-    main {
-        groovy.srcDirs = java.srcDirs
-    }
-    test {
-        groovy.srcDirs = java.srcDirs
-    }
-}
-
-compileGroovy {
-  dependsOn compileJava.dependsOn
-}
-
 test {
     dependsOn jar
     def source = file('testresources')
