@@ -257,7 +257,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                             model.warning("Project %s has blocking errors but requested to continue anyway", myProject.getName());
                         }
 
-                        deleteBuildFiles(model);
                         Central.invalidateIndex();
 
                         File buildFiles[] = model.build();
