@@ -538,15 +538,29 @@ Project ${project.name}
       }
 
       /* Set up dependencies */
+      def projectDependencies = []
       bndProject.getDependson()*.getName().each { dependency ->
         dependencies { handler ->
           compile handler.project('path': ":${dependency}", 'configuration': 'dependson')
         }
-        compileJava.dependsOn(":${dependency}:assemble")
+        projectDependencies.add ":${dependency}:assemble"
         jar.inputs.files { tasks.getByPath(":${dependency}:jar") }
-        checkNeeded.dependsOn(":${dependency}:checkNeeded")
-        releaseNeeded.dependsOn(":${dependency}:releaseNeeded")
-        cleanNeeded.dependsOn(":${dependency}:cleanNeeded")
+        checkNeeded.dependsOn ":${dependency}:checkNeeded"
+        releaseNeeded.dependsOn ":${dependency}:releaseNeeded"
+        cleanNeeded.dependsOn ":${dependency}:cleanNeeded"
+      }
+      compileJava.dependsOn projectDependencies
+
+      /* After evaluate configuration */
+      afterEvaluate {
+        sourceSets {
+          main.convention?.plugins.each { lang, object ->
+            main[lang]?.setSrcDirs main.java.srcDirs
+            test[lang]?.setSrcDirs test.java.srcDirs
+            String taskName = main.getCompileTaskName(lang)
+            tasks.findByName(taskName)?.dependsOn projectDependencies
+          }
+        }
       }
     }
   }
@@ -612,4 +626,3 @@ Project ${project.name}
     return 'on'.equalsIgnoreCase(value) || 'true'.equalsIgnoreCase(value)
   }
 }
-

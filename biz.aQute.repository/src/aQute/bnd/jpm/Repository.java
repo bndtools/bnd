@@ -640,6 +640,9 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		reporter = processor;
 		if (index != null)
 			index.setReporter(reporter);
+		reporter.warning(
+				"%s is deprecated as of Bnd 3.4 and support will be removed in Bnd 4.0. Please change to another repository type.",
+				getClass().getName());
 	}
 
 	@Override
