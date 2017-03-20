@@ -163,7 +163,10 @@ public class JunitXmlReport implements TestReporter {
 		Tag error = new Tag("error");
 		error.setCDATA();
 		error.addAttribute("type", t.getClass().getName());
-		error.addAttribute("message", t.getMessage());
+		String message = t.getMessage();
+		if (message != null) {
+			error.addAttribute("message", message);
+		}
 		error.addContent(getTrace(t));
 		if (testcase == null)
 			testsuite.addContent(error);
@@ -195,7 +198,10 @@ public class JunitXmlReport implements TestReporter {
 		Tag failure = new Tag("failure");
 		failure.setCDATA();
 		failure.addAttribute("type", t.getClass().getName());
-		failure.addAttribute("message", t.getMessage());
+		String message = t.getMessage();
+		if (message != null) {
+			failure.addAttribute("message", message);
+		}
 		failure.addContent(getTrace(t));
 		testcase.addContent(failure);
 		progress(" f");
