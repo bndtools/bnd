@@ -73,6 +73,7 @@ public class ExportMojo extends AbstractMojo {
 			for (RepositoryPlugin repo : workspace.getRepositories()) {
 				repo.list(null);
 			}
+			run.getInfo(workspace);
 			report(run);
 			if (!run.isOk()) {
 				return;
