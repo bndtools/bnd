@@ -18,11 +18,13 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.log.LogService;
 import org.osgi.service.repository.Repository;
+import org.osgi.service.resolver.Resolver;
 
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
@@ -764,6 +766,33 @@ public class BndrunResolveContextTest extends TestCase {
 		assertEquals(1, providers.size());
 		assertEquals(IO.getFile("testdata/repo3/org.apache.felix.framework-4.0.2.jar").toURI(),
 				findContentURI(providers.get(0).getResource()));
+	}
+
+	public static void testResolveProvidedCapabilitiesWithDistro() throws Exception {
+		MockRegistry registry = new MockRegistry();
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml")));
+
+		BndEditModel model = new BndEditModel();
+
+		model.genericSet("-runprovidedcapabilities",
+				"osgi.service;objectClass=foo.bar.FooBarService;effective:=active");
+
+		model.setDistro(Arrays.asList("testdata/distro.jar;version=file"));
+
+		List<Requirement> requires = new ArrayList<Requirement>();
+		List<Capability> caps = CapReqBuilder.getCapabilitiesFrom(
+				new Parameters("osgi.service;objectClass=foo.bar.FooBarService;effective:=active"));
+		Requirement req = CapReqBuilder.createRequirementFromCapability(caps.get(0)).buildSyntheticRequirement();
+		requires.add(req);
+
+		model.setRunRequires(requires);
+		BndrunResolveContext context = new BndrunResolveContext(model, registry, log);
+		context.setLevel(0);
+		context.init();
+
+		Resolver resolver = new BndResolver(new ResolverLogger(4));
+
+		resolver.resolve(context);
 	}
 
 }
