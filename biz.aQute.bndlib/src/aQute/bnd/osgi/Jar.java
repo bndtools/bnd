@@ -260,20 +260,13 @@ public class Jar implements Closeable {
 
 	public void write(File file) throws Exception {
 		check();
-		try {
-			OutputStream out = new FileOutputStream(file);
-			try {
-				write(out);
-			} finally {
-				IO.close(out);
-			}
-			file.setLastModified(lastModified);
-			return;
-
+		try (OutputStream out = new FileOutputStream(file)) {
+			write(out);
 		} catch (Exception t) {
 			file.delete();
 			throw t;
 		}
+		file.setLastModified(lastModified);
 	}
 
 	public void write(String file) throws Exception {
