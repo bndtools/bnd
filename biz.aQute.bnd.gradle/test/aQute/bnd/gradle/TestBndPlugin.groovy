@@ -135,6 +135,45 @@ class TestBndPlugin extends Specification {
           props.getProperty('-runbundles') =~ /osgi\.enroute\.junit\.wrapper/
     }
 
+    def "Bnd Workspace Plugin export Test"() {
+        given:
+          String testProject = 'workspaceplugin1'
+          File testProjectDir = new File(testResources, testProject)
+          assert testProjectDir.isDirectory()
+
+        when:
+          def result = GradleRunner.create()
+            .withProjectDir(testProjectDir)
+            .withArguments('--stacktrace', '--continue', 'clean', ':test.simple:export.resolvenochange', ':test.simple:runbundles.resolvenochange')
+            .forwardOutput()
+            .build()
+
+        then:
+          result.task(':test.simple:clean').outcome == SUCCESS
+          result.task(':test.simple:jar').outcome == SUCCESS
+          result.task(':test.simple:export.resolvenochange').outcome == SUCCESS
+          result.task(':test.simple:runbundles.resolvenochange').outcome == SUCCESS
+
+          File distributions = new File(testProjectDir, 'test.simple/generated/distributions')
+          new File(distributions, 'runbundles/resolvenochange/test.simple.jar').isFile()
+          new File(distributions, 'runbundles/resolvenochange/osgi.enroute.junit.wrapper-4.12.0.201507311000.jar').isFile()
+ 
+          File executable = new File(distributions, 'executable/resolvenochange.jar')
+          executable.isFile()
+          JarFile executable_jar = new JarFile(executable)
+          Attributes executable_manifest = executable_jar.getManifest().getMainAttributes()
+          def launcher = executable_manifest.getValue('Embedded-Runpath')
+          launcher =~ /jar\/biz\.aQute\.launcher/
+          executable_jar.getEntry(launcher)
+          executable_jar.getEntry('jar/test.simple.jar')
+          executable_jar.getEntry('jar/osgi.enroute.junit.wrapper-4.12.0.201507311000.jar')
+          executable_jar.getEntry('launcher.properties')
+          UTF8Properties props = new UTF8Properties()
+          props.load(executable_jar.getInputStream(executable_jar.getEntry('launcher.properties')), null, new Slf4jReporter(TestBndPlugin.class))
+          props.getProperty('launch.bundles') =~ /jar\/osgi\.enroute\.junit\.wrapper-4\.12\.0\.201507311000\.jar\s*,\s*jar\/test\.simple\.jar/
+          executable_jar.close()
+    }
+
     def "Bnd Workspace Plugin extra properties/extensions Test"() {
         given:
           String testProject = 'workspaceplugin2'
