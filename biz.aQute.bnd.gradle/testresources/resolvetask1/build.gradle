@@ -1,0 +1,35 @@
+/*
+ *
+ */
+
+import aQute.bnd.gradle.Resolve
+
+plugins {
+    id 'biz.aQute.bnd.builder'
+}
+
+task create(type: Resolve) {
+   description "Resolve ${name}.bndrun"
+   group 'export'
+   bndrun "${name}.bndrun"
+}
+
+task same(type: Resolve) {
+   description "Resolve ${name}.bndrun"
+   group 'export'
+   bndrun file("${name}.bndrun")
+   failOnChanges = true
+}
+
+task changefail(type: Resolve) {
+   description "Resolve ${name}.bndrun"
+   group 'export'
+   bndrun { file("${name}.bndrun") }
+   failOnChanges = true
+}
+
+task resolvefail(type: Resolve) {
+   description "Resolve ${name}.bndrun"
+   group 'export'
+   bndrun { "${name}.bndrun" }
+}

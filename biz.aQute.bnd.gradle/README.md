@@ -193,7 +193,11 @@ Workspace based build environment! Go figure?!
 So now Bnd offers [Gradle][1] support for building bundles in
 _typical_ Gradle build environments. There are two ways this support can
 be used. You can apply the `biz.aQute.bnd.builder` plugin to your
-project and you can use the new `Bundle` or `Baseline` task types.
+project and you can use the new task types:
+
+* `Bundle`
+* `Baseline`
+* `Resolve`
 
 ## Using Bnd Builder Gradle Plugin
 
@@ -361,6 +365,32 @@ can accept to result in a single file. This property must be set.
 
 This is the baseline bundle. It can be anything that `Project.files(Object...)`
 can accept to result in a single file. This property must be set.
+
+## Create a task of the `Resolve` type
+
+You can also create a new task of the `Resolve` type. This task type
+will resolve a standalone bndrun file and set the `-runbundles` property
+in the file. For example:
+
+```groovy
+import aQute.bnd.gradle.Resolve
+
+task resolve(type: Resolve) {
+  bndrun 'my.bndrun'
+}
+```
+There are four properties which can be configured for a Baseline task:
+
+### failOnChanges
+
+If `true` the build will fail if the resolve operation changes the value of the
+`-runbundles` property. The default is `false`.
+
+### bndrun
+
+This is the bndrun to be resolved. It can be anything that `Project.file(Object)`
+can accept. This property must be set. The bndrun file must be a standalone bndrun
+file since this is not a Workspace Build.
 
 ---
 
