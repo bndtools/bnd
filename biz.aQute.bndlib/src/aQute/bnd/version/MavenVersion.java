@@ -7,7 +7,6 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import aQute.bnd.osgi.Verifier;
 
 public class MavenVersion implements Comparable<MavenVersion> {
 
@@ -18,6 +17,9 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	static Pattern					fuzzyModifier		= Pattern.compile("(\\d+[.-])*(.*)", Pattern.DOTALL);
 	public static final String		VERSION_STRING		= "(\\d{1,15})(\\.(\\d{1,9})(\\.(\\d{1,9}))?)?([-\\.]?([-_\\.\\da-zA-Z]+))?";
 	final static SimpleDateFormat	snapshotTimestamp	= new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.ROOT);
+	public final static Pattern		VERSIONRANGE		= Pattern.compile("((\\(|\\[)"
+
+			+ VERSION_STRING + "," + VERSION_STRING + "(\\]|\\)))|" + VERSION_STRING);
 
 	static {
 		snapshotTimestamp.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -175,7 +177,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 		if (version == null || version.trim().isEmpty())
 			return "0";
 
-		Matcher m = Verifier.VERSIONRANGE.matcher(version);
+		Matcher m = VERSIONRANGE.matcher(version);
 
 		if (m.matches()) {
 			try {

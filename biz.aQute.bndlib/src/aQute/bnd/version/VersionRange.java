@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.osgi.framework.namespace.PackageNamespace;
 
 public class VersionRange {
 	final Version	high;
@@ -158,7 +157,7 @@ public class VersionRange {
 	 * Convert to an OSGi filter expression
 	 */
 	public String toFilter() {
-		return toFilter(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+		return toFilter("version");
 	}
 
 	/**
