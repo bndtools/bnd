@@ -19,6 +19,8 @@
 
 package aQute.bnd.gradle
 
+import static aQute.bnd.gradle.BndUtils.logReport
+
 import java.util.Properties
 import java.util.jar.Manifest
 import java.util.zip.ZipException
@@ -223,39 +225,16 @@ class BundleTaskConvention {
         builder.build()
         if (!builder.isOk()) {
           // if we already have an error; fail now
-          logBuilderErrors(builder, logger)
+          logReport(builder, logger)
           failBuild("Bundle ${archiveName} has errors")
         }
 
         // Write out the bundle
         bundleJar.write(archivePath)
 
-        logBuilderErrors(builder, logger)
+        logReport(builder, logger)
         if (!builder.isOk()) {
           failBuild("Bundle ${archiveName} has errors")
-        }
-      }
-    }
-  }
-
-  private void logBuilderErrors(Builder builder, Logger logger) {
-    if (logger.isWarnEnabled()) {
-      builder.getWarnings().each { msg ->
-        def location = builder.getLocation(msg)
-        if (location && location.file) {
-          logger.warn '{}:{}: warning: {}', location.file, location.line, msg
-        } else {
-          logger.warn 'warning: {}', msg
-        }
-      }
-    }
-    if (logger.isErrorEnabled()) {
-      builder.getErrors().each { msg ->
-        def location = builder.getLocation(msg)
-        if (location && location.file) {
-          logger.error '{}:{}: error: {}', location.file, location.line, msg
-        } else {
-          logger.error 'error  : {}', msg
         }
       }
     }

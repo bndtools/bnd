@@ -48,19 +48,19 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-				<configuration>
-				    <artifactItems>
-				        <artifactItem>
-				            <groupId>biz.aQute.bnd</groupId>
-				            <artifactId>biz.aQute.bnd.embedded-repo</artifactId>
-				            <version>${project.version}</version>
-				            <type>jar</type>
-				            <overWrite>false</overWrite>
-				            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
-				            <destFileName>embedded-repo.jar</destFileName>
-				        </artifactItem>
-				    </artifactItems>
-				</configuration>
+                <configuration>
+                    <artifactItems>
+                        <artifactItem>
+                            <groupId>biz.aQute.bnd</groupId>
+                            <artifactId>biz.aQute.bnd.embedded-repo</artifactId>
+                            <version>${project.version}</version>
+                            <type>jar</type>
+                            <overWrite>false</overWrite>
+                            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                            <destFileName>embedded-repo.jar</destFileName>
+                        </artifactItem>
+                    </artifactItems>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-invoker-plugin</artifactId>

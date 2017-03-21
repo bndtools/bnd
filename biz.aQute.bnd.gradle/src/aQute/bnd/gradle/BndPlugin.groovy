@@ -18,6 +18,8 @@
 
 package aQute.bnd.gradle
 
+import static aQute.bnd.gradle.BndUtils.logReport
+
 import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
@@ -456,8 +458,9 @@ public class BndPlugin implements Plugin<Project> {
                   } catch (ResolutionException e) {
                     logger.error 'Unresolved requirements: {}', e.getUnresolvedRequirements()
                     throw new GradleException("${run.getPropertiesFile()} resolution failure", e)
+                  } finally {
+                    checkProjectErrors(run, logger)
                   }
-                  checkProjectErrors(run, logger)
                 }
               }
             }
@@ -601,26 +604,7 @@ Project ${project.name}
     project.getInfo(project.getWorkspace(), "${project.getWorkspace().getBase().name} :")
     boolean failed = !ignoreFailures && !project.isOk()
     int errorCount = project.getErrors().size()
-    if (logger.isWarnEnabled()) {
-      project.getWarnings().each { msg ->
-        def location = project.getLocation(msg)
-        if (location && location.file) {
-          logger.warn '{}:{}: warning: {}', location.file, location.line, msg
-        } else {
-          logger.warn 'warning: {}', msg
-        }
-      }
-    }
-    if (logger.isErrorEnabled()) {
-      project.getErrors().each { msg ->
-        def location = project.getLocation(msg)
-        if (location && location.file) {
-          logger.error '{}:{}: error: {}', location.file, location.line, msg
-        } else {
-          logger.error 'error  : {}', msg
-        }
-      }
-    }
+    logReport(project, logger)
     project.getWarnings().clear()
     project.getErrors().clear()
     if (failed) {
