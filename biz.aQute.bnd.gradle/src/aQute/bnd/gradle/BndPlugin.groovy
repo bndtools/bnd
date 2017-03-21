@@ -486,6 +486,7 @@ public class BndPlugin implements Plugin<Project> {
               group 'export'
               doLast {
                 Bndrun.createBndrun(bndProject.getWorkspace(), runFile).withCloseable { run ->
+                  run.setBase(temporaryDir)
                   logger.lifecycle 'Running {} with vm args: {}', run.getPropertiesFile(), run.mergeProperties(Constants.RUNVM)
                   if (run.isStandalone()) {
                     run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
