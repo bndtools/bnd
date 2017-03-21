@@ -46,6 +46,12 @@ public class LauncherConstants {
 	final static String			LAUNCH_NAME					= "launch.name";
 	final static String			LAUNCH_NOREFERENCES			= "launch.noreferences";
 	final static String			LAUNCH_NOTIFICATION_PORT	= "launch.notificationPort";
+
+	public final static String[]	LAUNCHER_PROPERTY_KEYS		= {
+			LAUNCH_SERVICES, LAUNCH_STORAGE_DIR, LAUNCH_KEEP, LAUNCH_NOREFERENCES, LAUNCH_RUNBUNDLES,
+			LAUNCH_SYSTEMPACKAGES, LAUNCH_SYSTEMCAPABILITIES, LAUNCH_SYSTEMPACKAGES, LAUNCH_TRACE, LAUNCH_TIMEOUT,
+			LAUNCH_ACTIVATORS, LAUNCH_EMBEDDED, LAUNCH_NAME, LAUNCH_NOREFERENCES, LAUNCH_NOTIFICATION_PORT
+	};
 	/**
 	 * The command line arguments of the launcher. Launcher are not supposed to
 	 * eat any arguments, they should use -D VM arguments so that applications

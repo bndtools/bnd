@@ -129,6 +129,9 @@ public class Launcher implements ServiceListener {
 
 				Properties properties = new Properties();
 				load(in, properties);
+
+				augmentWithSystemProperties(properties);
+
 				Launcher target = new Launcher(properties, propertiesFile);
 				exitcode = target.run(args);
 			} catch (Throwable t) {
@@ -142,6 +145,16 @@ public class Launcher implements ServiceListener {
 			System.exit(exitcode);
 		} finally {
 			System.out.println("gone");
+		}
+	}
+
+	private static void augmentWithSystemProperties(Properties properties) {
+		for (String key : LauncherConstants.LAUNCHER_PROPERTY_KEYS) {
+			String value = System.getProperty(key);
+			if (value == null)
+				continue;
+
+			properties.put(key, value);
 		}
 	}
 
@@ -824,7 +837,10 @@ public class Launcher implements ServiceListener {
 		if (!workingdir.isDirectory())
 			throw new IllegalArgumentException("Cannot create a working dir: " + workingdir);
 
-		p.setProperty(Constants.FRAMEWORK_STORAGE, workingdir.getAbsolutePath());
+		if (System.getProperty(Constants.FRAMEWORK_STORAGE) == null)
+			p.setProperty(Constants.FRAMEWORK_STORAGE, workingdir.getAbsolutePath());
+		else
+			p.setProperty(Constants.FRAMEWORK_STORAGE, System.getProperty(Constants.FRAMEWORK_STORAGE));
 
 		if (parms.systemPackages != null) {
 			p.setProperty(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, parms.systemPackages);
