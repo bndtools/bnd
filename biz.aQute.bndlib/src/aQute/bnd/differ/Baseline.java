@@ -3,6 +3,7 @@ package aQute.bnd.differ;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Formatter;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
@@ -31,7 +32,7 @@ import aQute.service.reporter.Reporter;
  * This class maintains
  */
 public class Baseline {
-	private final static Logger logger = LoggerFactory.getLogger(Baseline.class);
+	private final static Logger	logger	= LoggerFactory.getLogger(Baseline.class);
 
 	public static class Info {
 		public String				packageName;
@@ -44,6 +45,7 @@ public class Baseline {
 		public Version				suggestedIfProviders;
 		public boolean				mismatch;
 		public String				warning	= "";
+		public String				reason;
 	}
 
 	public static class BundleInfo {
@@ -52,6 +54,7 @@ public class Baseline {
 		public Version	newerVersion;
 		public Version	suggestedVersion;
 		public boolean	mismatch;
+		public String	reason;
 
 		@Deprecated
 		public Version	version;
@@ -127,7 +130,7 @@ public class Baseline {
 
 			final Info info = new Info();
 			infos.add(info);
-
+			info.reason = getRootCauses(pdiff);
 			info.packageDiff = pdiff;
 			info.packageName = pdiff.getName();
 			info.attributes = nExports.get(info.packageName);
@@ -164,8 +167,7 @@ public class Baseline {
 
 						info.providers = Create.set();
 						if (info.attributes != null)
-							info.providers
-									.addAll(Processor.split(info.attributes.get(Constants.PROVIDER_TYPE_DIRECTIVE)));
+							info.providers.addAll(Processor.split(info.attributes.get(Constants.PROVIDER_TYPE_DIRECTIVE)));
 
 						// Calculate the new delta assuming we fix all the major
 						// interfaces
@@ -201,8 +203,12 @@ public class Baseline {
 					content = Delta.MICRO;
 					break;
 
-				case MINOR :
 				case MICRO :
+					content = pdiff.getDelta();
+					break;
+				case MINOR :
+					content = pdiff.getDelta();
+					break;
 				case MAJOR :
 					content = pdiff.getDelta();
 					break;
@@ -246,9 +252,37 @@ public class Baseline {
 		// Ok, now our bundle version must be >= the suggestedVersion
 		if (newerVersion.getWithoutQualifier().compareTo(getSuggestedVersion()) < 0) {
 			binfo.mismatch = true;
+			binfo.reason = getRootCauses(apiDiff);
 		}
 
 		return infos;
+	}
+
+	private String getRootCauses(Diff apiDiff) {
+		try (Formatter f = new Formatter()) {
+			getRootCauses(f, apiDiff, "");
+			return f.toString();
+		}
+	}
+
+	/*
+	 * Calculate the root causes for this diff. This means that we descent
+	 * through diffs with the same level (MAJOR/MINOR/MICRO) until we find an
+	 * add/remove. The first add/remove is seen as the root cause.
+	 */
+	private void getRootCauses(Formatter f, Diff diff, String path) {
+		for (Diff child : diff.getChildren()) {
+			String cpath = path + "/" + child.getName();
+			if (child.getDelta() == diff.getDelta()) {
+				getRootCauses(f, child, cpath);
+			} else {
+				if (child.getDelta() == Delta.ADDED) {
+					f.format("+ %s\n", cpath);
+				} else if (child.getDelta() == Delta.REMOVED) {
+					f.format("- %s\n", cpath);
+				}
+			}
+		}
 	}
 
 	/**
