@@ -9,12 +9,16 @@ bnd integrates an OSGi launcher. This launcher will start a framework and then i
 The launching environment is described with a number of instructions that start with `-run`.
 
 * `-runfw` — Specify the run framework in repository format
-* `-runsystemcapabilities` — 
+* `-runsystemcapabilities` — Capabilities added to the environment
 * `-runbundles` — A list of bundles to install in repository format
 * `-runvm` — VM options. Use a comma to separate different options. E.g. `-Dx=4, -Dy=5`.
 * `-runproperties` — System properties for the framework to create
 * `-runpath` — A list of jars (not required to be bundles) that are put on the classpath and available from the system bundle. Any Export-Package and Provide-Capabilityheaders  are provided as packages/capabilities from the framework. The `-runpath` can also override the default launcher.
 * `-runsystempackages` — An Export-Package list for packages exported by the system bundle.
+* `-runkeep` – Keep the framework working directory. That is, do not clean at start up
+* `-runstorage` – The working directory
+* `-runnoreferences` – Do not use the `reference:` scheme when installing. (Sometimes required on Windows).
+
 
 Additional properties can be specified, and can be inherited from the workspace, that are specific for a launcher or are used for exporting a bndrun to an executable format like OSGi Subsystems, KARs, WARs, or executable JARs.
  
@@ -54,7 +58,7 @@ The default launcher in bnd. It creates a new VM with the given options, creates
 		com.springsource.org.apache.commons.io;version=1.4.0,\
 		com.springsource.org.json;version=1.0.0
 	
-	#-runproperties:            org.osgi.service.http.port=8080
+	-runproperties:            org.osgi.service.http.port=8080
 	
 	-runrequire:\
 		bundle:(symbolicname=org.apache.felix.shell),\
@@ -66,12 +70,60 @@ The default launcher in bnd. It creates a new VM with the given options, creates
 		bundle:(&(symbolicname=osgi.cmpn)(version>=4.2)),\
 		bundle:(&(symbolicname=org.apache.felix.scr)(version>=1.6.0))
 
+### Exports from the Runpath
+
+The launcher analyzes the `-runpath` JARs. Any additional capabilities in the manifest (packages and Provide Capability headers) in these JARs are automatically added to the framework.
+
+### Runtime Information
+
+The launcher registers a service with object class `Object` that provides some runtime information. The following properties are set on this service:
+
+* `launcher.arguments` – The arguments passed to the `main` method.
+* `launcher.properties` – The properties handed to the launcher. These properties are modified by any overriding properties that were set from the command line.
+* `launcher.ready` – A boolean set to true, indicating the launcher has done all its work.
+* `service.ranking` – Set to -1000
+
+## Embedded Activators
+
+The launcher supports _embedded activators_. These are like normal Bundle Actviator classes but are instead found on the `-runpath`. Any bundle that has the header `Embedded-Activator` will be started. This starting can happen before any bundle is started or after all bundles are started. To start immediate, add a static or instance field called `IMMEDIATE` with a value that equals `true`.
+
+    public class MyActivator implements BundleActivator {
+        public static boolean IMMEDIATE = true;
+
+        public void start(BundleContext context) {}
+        
+        public void stop(BundleContext context) {}
+    }
+
+    In the manifest:
+
+    Embedded-Activator: com.example.MyActivator
 
 ### Packaging
 
 Any bndrun file can be packaged by the launcher plugin. This creates an executable JAR that will contain all its dependencies.
 
     $ bnd package xyz.bndrun
+
+You can then execute the jar:
+
+    $ java -jar xyz.jar
+
+You can override all the properties that are embedded in the executable JAR with the `-Dlauncher.properties=<file>` option of the Java VM. Instead of consulting its internal properties file, the launcher will read the given file. However, you can also set individual System properties with the `-D` option that override a specific launching constant.
+
+* `launch.storage.dir` – (`-runstorage`) Sets the directory for the framework directory. When `org.osgi.framework.storage` is also set, then the OSGi property has priority.
+* `launch.keep` – Keeps the OSGi Framework storage around
+* `launch.system.packages` – Extra system packages 
+* `launch.system.capabilities` – Extra system capabilities
+* `launch.trace` – Trace the launcher's progress
+* `launch.timeout` – Abort after `timeout` milliseconds
+* `launch.name` – Name of the executable (normally project name)
+* `launch.noreferences` – Do not use the `reference:` scheme (`-runnoreferences`)
+* `launch.notificationPort` – A port to send errors to
+
+For example, if you want to run your executable in trace mode:
+
+    $ java -Dlaunch.trace=true xyz.jar
 
 ### Exit codes
 
