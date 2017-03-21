@@ -34,8 +34,8 @@ class TestBundlePlugin extends Specification {
             .build()
 
         then:
-          result.task(":bundle").outcome == SUCCESS
-          result.task(":jar").outcome == SUCCESS
+          result.task(':bundle').outcome == SUCCESS
+          result.task(':jar').outcome == SUCCESS
 
           testProjectBuildDir.isDirectory()
 
@@ -112,7 +112,7 @@ class TestBundlePlugin extends Specification {
             .build()
 
         then:
-          result.task(":bundle").outcome == UP_TO_DATE
-          result.task(":jar").outcome == UP_TO_DATE
+          result.task(':bundle').outcome == UP_TO_DATE
+          result.task(':jar').outcome == UP_TO_DATE
     }
 }

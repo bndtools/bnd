@@ -29,11 +29,11 @@ class TestBndPlugin extends Specification {
             .build()
 
         then:
-          result.task(":test.simple:test").outcome == SUCCESS
-          result.task(":test.simple:testOSGi").outcome == SUCCESS
-          result.task(":test.simple:check").outcome == SUCCESS
-          result.task(":test.simple:build").outcome == SUCCESS
-          result.task(":test.simple:release").outcome == SUCCESS
+          result.task(':test.simple:test').outcome == SUCCESS
+          result.task(':test.simple:testOSGi').outcome == SUCCESS
+          result.task(':test.simple:check').outcome == SUCCESS
+          result.task(':test.simple:build').outcome == SUCCESS
+          result.task(':test.simple:release').outcome == SUCCESS
 
           File simple_bundle = new File(testProjectDir, 'test.simple/generated/test.simple.jar')
           simple_bundle.isFile()
@@ -73,9 +73,9 @@ class TestBndPlugin extends Specification {
             .build()
 
         then:
-          result.task(":test.simple:echo").outcome == SUCCESS
-          result.task(":test.simple:bndproperties").outcome == SUCCESS
-          result.task(":tasks").outcome == SUCCESS
+          result.task(':test.simple:echo').outcome == SUCCESS
+          result.task(':test.simple:bndproperties').outcome == SUCCESS
+          result.task(':tasks').outcome == SUCCESS
     }
 
     def "Bnd Workspace Plugin resolve Test"() {
@@ -92,10 +92,10 @@ class TestBndPlugin extends Specification {
             .buildAndFail()
 
         then:
-          result.task(":test.simple:resolve.resolve").outcome == SUCCESS
-          result.task(":test.simple:resolve.resolvenochange").outcome == SUCCESS
-          result.task(":test.simple:resolve.resolveerror").outcome == FAILED
-          result.task(":test.simple:resolve.resolvechange").outcome == FAILED
+          result.task(':test.simple:resolve.resolve').outcome == SUCCESS
+          result.task(':test.simple:resolve.resolvenochange').outcome == SUCCESS
+          result.task(':test.simple:resolve.resolveerror').outcome == FAILED
+          result.task(':test.simple:resolve.resolvechange').outcome == FAILED
 
         when:
           File bndrun = new File(testProjectDir, 'test.simple/resolve.bndrun')
@@ -145,7 +145,7 @@ class TestBndPlugin extends Specification {
             .build()
 
         then:
-          result.task(":tasks").outcome == SUCCESS
+          result.task(':tasks').outcome == SUCCESS
     }
 
     def "Bnd Workspace Plugin Old-style settings.gradle"() {
@@ -162,11 +162,11 @@ class TestBndPlugin extends Specification {
             .build()
 
         then:
-          result.task(":test.simple:test").outcome == SUCCESS
-          result.task(":test.simple:testOSGi").outcome == SUCCESS
-          result.task(":test.simple:check").outcome == SUCCESS
-          result.task(":test.simple:build").outcome == SUCCESS
-          result.task(":test.simple:release").outcome == SUCCESS
+          result.task(':test.simple:test').outcome == SUCCESS
+          result.task(':test.simple:testOSGi').outcome == SUCCESS
+          result.task(':test.simple:check').outcome == SUCCESS
+          result.task(':test.simple:build').outcome == SUCCESS
+          result.task(':test.simple:release').outcome == SUCCESS
 
           File simple_bundle = new File(testProjectDir, 'test.simple/generated/test.simple.jar')
           simple_bundle.isFile()
@@ -203,11 +203,11 @@ class TestBndPlugin extends Specification {
             .build()
 
         then:
-          result.task(":test.simple:test").outcome == SUCCESS
-          result.task(":test.simple:testOSGi").outcome == SUCCESS
-          result.task(":test.simple:check").outcome == SUCCESS
-          result.task(":test.simple:build").outcome == SUCCESS
-          result.task(":test.simple:release").outcome == SUCCESS
+          result.task(':test.simple:test').outcome == SUCCESS
+          result.task(':test.simple:testOSGi').outcome == SUCCESS
+          result.task(':test.simple:check').outcome == SUCCESS
+          result.task(':test.simple:build').outcome == SUCCESS
+          result.task(':test.simple:release').outcome == SUCCESS
 
           File simple_bundle = new File(testProjectDir, 'test.simple/generated/test.simple.jar')
           simple_bundle.isFile()
