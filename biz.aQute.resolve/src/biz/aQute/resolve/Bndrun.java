@@ -14,7 +14,6 @@ import org.osgi.resource.Wire;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.ProjectTester;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
@@ -25,7 +24,6 @@ import aQute.bnd.build.model.conversions.CollectionFormatter;
 import aQute.bnd.build.model.conversions.Converter;
 import aQute.bnd.build.model.conversions.HeaderClauseFormatter;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.properties.Document;
@@ -69,22 +67,6 @@ public class Bndrun extends Run {
 		super(workspace, propertiesFile);
 		if (!isStandalone()) {
 			addBasicPlugin(new WorkspaceResourcesRepository(getWorkspace()));
-		}
-	}
-
-	/**
-	 * Export the bndrun configuration as an executable JAR.
-	 *
-	 * @param targetDir the directory in which the executable jar is placed
-	 * @throws Exception
-	 */
-	public void export(File targetDir) throws Exception {
-		ProjectLauncher launcher = getProjectLauncher();
-		try (Jar jar = launcher.executable()) {
-			getInfo(launcher);
-			targetDir.mkdirs();
-			File jarFile = new File(targetDir, getNamePart(getPropertiesFile()) + ".jar");
-			jar.write(jarFile);
 		}
 	}
 
@@ -182,11 +164,4 @@ public class Bndrun extends Run {
 
 		return projectTester.test();
 	}
-
-	private String getNamePart(File runFile) {
-		String nameExt = runFile.getName();
-		int pos = nameExt.lastIndexOf('.');
-		return nameExt.substring(0, pos);
-	}
-
 }
