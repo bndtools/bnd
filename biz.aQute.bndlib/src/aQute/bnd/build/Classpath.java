@@ -1,44 +1,41 @@
-package aQute.bnd.osgi;
+package aQute.bnd.build;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
+import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
 import aQute.lib.strings.Strings;
 import aQute.service.reporter.Reporter;
 
-/**
- * Type caused coupling to build package and was never locally used. This class
- * was moved to the aQute.bnd.build package
- */
-@Deprecated()
-@ProviderType
 public class Classpath {
 
 	public interface ClassVisitor {
 		boolean visit(Clazz clazz) throws Exception;
 	}
 
-	List<File>	entries	= new ArrayList<File>();
+	List<File>			entries	= new ArrayList<File>();
+	private Reporter	project;
+	private String		name;
 
-	public Classpath(Reporter project, String name) {}
-
-	public void add(Collection<Object> testpath) throws Exception {
-		throw new UnsupportedOperationException();
+	public Classpath(Reporter project, String name) {
+		this.project = project;
+		this.name = name;
 	}
 
-	// public void add(Collection<Container> testpath) throws Exception {
-	// for (Container c : Container.flatten(testpath)) {
-	// if (c.getError() != null) {
-	// project.error("Adding %s to %s, got error: %s", c, name, c.getError());
-	// } else {
-	// entries.add(c.getFile().getAbsoluteFile());
-	// }
-	// }
-	// }
+	public void add(Collection<Container> testpath) throws Exception {
+		for (Container c : Container.flatten(testpath)) {
+			if (c.getError() != null) {
+				project.error("Adding %s to %s, got error: %s", c, name, c.getError());
+			} else {
+				entries.add(c.getFile().getAbsoluteFile());
+			}
+		}
+	}
 
 	public List<File> getEntries() {
 		return entries;
