@@ -51,6 +51,7 @@ class TestBndPlugin extends Specification {
           simple_jar.getInputStream(simple_jar.getEntry('test.txt')).text =~ /This is a test resource/
           simple_jar.getEntry('test/simple/test.txt')
           simple_jar.getInputStream(simple_jar.getEntry('test/simple/test.txt')).text =~ /This is a test resource/
+          simple_jar.close()
 
           File release_jar = new File(testProjectDir, 'cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
@@ -184,6 +185,7 @@ class TestBndPlugin extends Specification {
           simple_jar.getInputStream(simple_jar.getEntry('test.txt')).text =~ /This is a test resource/
           simple_jar.getEntry('test/simple/test.txt')
           simple_jar.getInputStream(simple_jar.getEntry('test/simple/test.txt')).text =~ /This is a test resource/
+          simple_jar.close()
 
           File release_jar = new File(testProjectDir, 'cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
@@ -225,6 +227,7 @@ class TestBndPlugin extends Specification {
           simple_jar.getInputStream(simple_jar.getEntry('test.txt')).text =~ /This is a test resource/
           simple_jar.getEntry('test/simple/test.txt')
           simple_jar.getInputStream(simple_jar.getEntry('test/simple/test.txt')).text =~ /This is a test resource/
+          simple_jar.close()
 
           File release_jar = new File(testProjectDir, 'cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
