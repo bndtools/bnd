@@ -18,6 +18,7 @@
 
 package aQute.bnd.gradle
 
+import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
 import biz.aQute.resolve.Bndrun
@@ -358,13 +359,18 @@ public class BndPlugin implements Plugin<Project> {
               }
               doLast {
                 def executableJar = new File(destinationDir, "${bndrun}.jar")
-                logger.info 'Exporting {} to {}', runFile.absolutePath, executableJar.absolutePath
-                try {
-                  bndProject.export(relativePath(runFile), false, executableJar)
-                } catch (Exception e) {
-                  throw new GradleException("Export of ${runFile.absolutePath} to an executable jar failed", e)
+                Run.createRun(bndProject.getWorkspace(), runFile).withCloseable { run ->
+                  logger.info 'Exporting {} to {}', run.getPropertiesFile(), executableJar.absolutePath
+                  if (run.isStandalone()) {
+                    run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
+                  }
+                  try {
+                    run.export(null, false, executableJar)
+                  } catch (Exception e) {
+                    throw new GradleException("Export of ${run.getPropertiesFile()} to an executable jar failed", e)
+                  }
+                  checkErrors(logger)
                 }
-                checkErrors(logger)
               }
             }
           }
@@ -399,13 +405,18 @@ public class BndPlugin implements Plugin<Project> {
                 project.mkdir(destinationDir)
               }
               doLast {
-                logger.info 'Creating a distribution of the runbundles from {} in directory {}', runFile.absolutePath, destinationDir.absolutePath
-                try {
-                    bndProject.exportRunbundles(relativePath(runFile), destinationDir)
-                } catch (Exception e) {
-                  throw new GradleException("Creating a distribution of the runbundles in ${runFile.absolutePath} failed", e)
+                Run.createRun(bndProject.getWorkspace(), runFile).withCloseable { run ->
+                  logger.info 'Creating a distribution of the runbundles from {} in directory {}', run.getPropertiesFile(), destinationDir.absolutePath
+                  if (run.isStandalone()) {
+                    run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
+                  }
+                  try {
+                      run.exportRunbundles(null, destinationDir)
+                  } catch (Exception e) {
+                    throw new GradleException("Creating a distribution of the runbundles in ${run.getPropertiesFile()} failed", e)
+                  }
+                  checkErrors(logger)
                 }
-                checkErrors(logger)
               }
             }
           }
@@ -434,8 +445,8 @@ public class BndPlugin implements Plugin<Project> {
               ext.failOnChanges = false
               outputs.file runFile
               doLast {
-                logger.info 'Resolving runbundles required for {}', runFile.absolutePath
                 Bndrun.createBndrun(bndProject.getWorkspace(), runFile).withCloseable { run ->
+                  logger.info 'Resolving runbundles required for {}', run.getPropertiesFile()
                   if (run.isStandalone()) {
                     run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
                   }
@@ -444,7 +455,7 @@ public class BndPlugin implements Plugin<Project> {
                     logger.info '{}: {}', Constants.RUNBUNDLES, result
                   } catch (ResolutionException e) {
                     logger.error 'Unresolved requirements: {}', e.getUnresolvedRequirements()
-                    throw new GradleException("${bndrun}.bndrun resolution failure", e)
+                    throw new GradleException("${run.getPropertiesFile()} resolution failure", e)
                   }
                   checkProjectErrors(run, logger)
                 }
@@ -475,7 +486,7 @@ public class BndPlugin implements Plugin<Project> {
               group 'export'
               doLast {
                 Bndrun.createBndrun(bndProject.getWorkspace(), runFile).withCloseable { run ->
-                  logger.lifecycle 'Running {} with vm args: {}', bndrun, run.mergeProperties(Constants.RUNVM)
+                  logger.lifecycle 'Running {} with vm args: {}', run.getPropertiesFile(), run.mergeProperties(Constants.RUNVM)
                   if (run.isStandalone()) {
                     run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
                   }
