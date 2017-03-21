@@ -25,6 +25,7 @@ Conditional-Package: 			aQute.libg.*, aQute.lib.*
 	biz.aQute.bndlib;version=latest,\
 	aQute.jpm.clnt;version=2.1,\
 	slf4j.api,\
+	slf4j.simple,\
 	lib/WinRun4J.jar;version=file
 -testpath: \
 	${junit},\
