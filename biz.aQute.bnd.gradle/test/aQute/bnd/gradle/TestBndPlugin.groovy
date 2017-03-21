@@ -24,11 +24,12 @@ class TestBndPlugin extends Specification {
         when:
           def result = GradleRunner.create()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', 'build', 'release')
+            .withArguments('--stacktrace', '--debug', 'clean', 'build', 'release')
             .forwardOutput()
             .build()
 
         then:
+          result.task(':test.simple:clean').outcome == SUCCESS
           result.task(':test.simple:test').outcome == SUCCESS
           result.task(':test.simple:testOSGi').outcome == SUCCESS
           result.task(':test.simple:check').outcome == SUCCESS
@@ -88,11 +89,13 @@ class TestBndPlugin extends Specification {
         when:
           def result = GradleRunner.create()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--continue', ':test.simple:resolve')
+            .withArguments('--stacktrace', '--continue', 'clean', ':test.simple:resolve')
             .forwardOutput()
             .buildAndFail()
 
         then:
+          result.task(':test.simple:clean').outcome == SUCCESS
+          result.task(':test.simple:jar').outcome == SUCCESS
           result.task(':test.simple:resolve.resolve').outcome == SUCCESS
           result.task(':test.simple:resolve.resolvenochange').outcome == SUCCESS
           result.task(':test.simple:resolve.resolveerror').outcome == FAILED
