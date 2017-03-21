@@ -35,9 +35,9 @@ class TestBaselineTask extends Specification {
             .build()
 
         then:
-          result.task(":jar").outcome == SUCCESS
-          result.task(":baseline").outcome == SUCCESS
-          result.task(":baselineSelf").outcome == SUCCESS
+          result.task(':jar').outcome == SUCCESS
+          result.task(':baseline').outcome == SUCCESS
+          result.task(':baselineSelf').outcome == SUCCESS
 
           testProjectReportsDir.isDirectory()
           File baseline = new File(testProjectReportsDir, 'baseline/baseline.txt')
@@ -63,7 +63,7 @@ class TestBaselineTask extends Specification {
             .build()
 
         then:
-          result.task(":echo").outcome == SUCCESS
+          result.task(':echo').outcome == SUCCESS
 
           result.getOutput() =~ Pattern.quote('Bundle-SymbolicName: biz.aQute.bnd')
           result.getOutput() =~ Pattern.quote('Bundle-Version: 2.4.1')
@@ -85,8 +85,8 @@ class TestBaselineTask extends Specification {
             .build()
 
         then:
-          result.task(":tasks").outcome == SUCCESS
-          result.task(":baseline").outcome == SUCCESS
+          result.task(':tasks').outcome == SUCCESS
+          result.task(':baseline').outcome == SUCCESS
 
           testProjectReportsDir.isDirectory()
           File baseline = new File(testProjectReportsDir, 'baseline/baseline.txt')

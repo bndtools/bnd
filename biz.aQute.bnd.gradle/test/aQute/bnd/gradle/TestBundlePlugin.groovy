@@ -34,8 +34,8 @@ class TestBundlePlugin extends Specification {
             .build()
 
         then:
-          result.task(":bundle").outcome == SUCCESS
-          result.task(":jar").outcome == SUCCESS
+          result.task(':bundle').outcome == SUCCESS
+          result.task(':jar').outcome == SUCCESS
 
           testProjectBuildDir.isDirectory()
 
@@ -80,6 +80,7 @@ class TestBundlePlugin extends Specification {
           jartask_jar.getInputStream(jartask_jar.getEntry('bar.txt')).text =~ /Some more TEXT/
           !jartask_jar.getEntry('test.txt')
           jartask_jar.getEntry('commons-lang-2.6.jar')
+          jartask_jar.close()
 
           bundletask_manifest.getValue('Bundle-SymbolicName') == "${testProject}_bundle"
           bundletask_manifest.getValue('Bundle-Version') == '1.1.0'
@@ -102,6 +103,7 @@ class TestBundlePlugin extends Specification {
           bundletask_jar.getEntry('test.txt')
           bundletask_jar.getInputStream(bundletask_jar.getEntry('test.txt')).text =~ /This is a test resource/
           bundletask_jar.getEntry('commons-lang-2.6.jar')
+          bundletask_jar.close()
 
         when:
           result = GradleRunner.create()
@@ -112,7 +114,7 @@ class TestBundlePlugin extends Specification {
             .build()
 
         then:
-          result.task(":bundle").outcome == UP_TO_DATE
-          result.task(":jar").outcome == UP_TO_DATE
+          result.task(':bundle').outcome == UP_TO_DATE
+          result.task(':jar').outcome == UP_TO_DATE
     }
 }

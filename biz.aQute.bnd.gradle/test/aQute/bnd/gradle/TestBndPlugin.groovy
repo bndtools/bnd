@@ -24,16 +24,17 @@ class TestBndPlugin extends Specification {
         when:
           def result = GradleRunner.create()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', 'build', 'release')
+            .withArguments('--stacktrace', '--debug', 'clean', 'build', 'release')
             .forwardOutput()
             .build()
 
         then:
-          result.task(":test.simple:test").outcome == SUCCESS
-          result.task(":test.simple:testOSGi").outcome == SUCCESS
-          result.task(":test.simple:check").outcome == SUCCESS
-          result.task(":test.simple:build").outcome == SUCCESS
-          result.task(":test.simple:release").outcome == SUCCESS
+          result.task(':test.simple:clean').outcome == SUCCESS
+          result.task(':test.simple:test').outcome == SUCCESS
+          result.task(':test.simple:testOSGi').outcome == SUCCESS
+          result.task(':test.simple:check').outcome == SUCCESS
+          result.task(':test.simple:build').outcome == SUCCESS
+          result.task(':test.simple:release').outcome == SUCCESS
 
           File simple_bundle = new File(testProjectDir, 'test.simple/generated/test.simple.jar')
           simple_bundle.isFile()
@@ -51,6 +52,7 @@ class TestBndPlugin extends Specification {
           simple_jar.getInputStream(simple_jar.getEntry('test.txt')).text =~ /This is a test resource/
           simple_jar.getEntry('test/simple/test.txt')
           simple_jar.getInputStream(simple_jar.getEntry('test/simple/test.txt')).text =~ /This is a test resource/
+          simple_jar.close()
 
           File release_jar = new File(testProjectDir, 'cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
@@ -73,9 +75,9 @@ class TestBndPlugin extends Specification {
             .build()
 
         then:
-          result.task(":test.simple:echo").outcome == SUCCESS
-          result.task(":test.simple:bndproperties").outcome == SUCCESS
-          result.task(":tasks").outcome == SUCCESS
+          result.task(':test.simple:echo').outcome == SUCCESS
+          result.task(':test.simple:bndproperties').outcome == SUCCESS
+          result.task(':tasks').outcome == SUCCESS
     }
 
     def "Bnd Workspace Plugin resolve Test"() {
@@ -87,15 +89,17 @@ class TestBndPlugin extends Specification {
         when:
           def result = GradleRunner.create()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--continue', ':test.simple:resolve')
+            .withArguments('--stacktrace', '--continue', 'clean', ':test.simple:resolve')
             .forwardOutput()
             .buildAndFail()
 
         then:
-          result.task(":test.simple:resolve.resolve").outcome == SUCCESS
-          result.task(":test.simple:resolve.resolvenochange").outcome == SUCCESS
-          result.task(":test.simple:resolve.resolveerror").outcome == FAILED
-          result.task(":test.simple:resolve.resolvechange").outcome == FAILED
+          result.task(':test.simple:clean').outcome == SUCCESS
+          result.task(':test.simple:jar').outcome == SUCCESS
+          result.task(':test.simple:resolve.resolve').outcome == SUCCESS
+          result.task(':test.simple:resolve.resolvenochange').outcome == SUCCESS
+          result.task(':test.simple:resolve.resolveerror').outcome == FAILED
+          result.task(':test.simple:resolve.resolvechange').outcome == FAILED
 
         when:
           File bndrun = new File(testProjectDir, 'test.simple/resolve.bndrun')
@@ -131,6 +135,45 @@ class TestBndPlugin extends Specification {
           props.getProperty('-runbundles') =~ /osgi\.enroute\.junit\.wrapper/
     }
 
+    def "Bnd Workspace Plugin export Test"() {
+        given:
+          String testProject = 'workspaceplugin1'
+          File testProjectDir = new File(testResources, testProject)
+          assert testProjectDir.isDirectory()
+
+        when:
+          def result = GradleRunner.create()
+            .withProjectDir(testProjectDir)
+            .withArguments('--stacktrace', '--continue', 'clean', ':test.simple:export.resolvenochange', ':test.simple:runbundles.resolvenochange')
+            .forwardOutput()
+            .build()
+
+        then:
+          result.task(':test.simple:clean').outcome == SUCCESS
+          result.task(':test.simple:jar').outcome == SUCCESS
+          result.task(':test.simple:export.resolvenochange').outcome == SUCCESS
+          result.task(':test.simple:runbundles.resolvenochange').outcome == SUCCESS
+
+          File distributions = new File(testProjectDir, 'test.simple/generated/distributions')
+          new File(distributions, 'runbundles/resolvenochange/test.simple.jar').isFile()
+          new File(distributions, 'runbundles/resolvenochange/osgi.enroute.junit.wrapper-4.12.0.201507311000.jar').isFile()
+ 
+          File executable = new File(distributions, 'executable/resolvenochange.jar')
+          executable.isFile()
+          JarFile executable_jar = new JarFile(executable)
+          Attributes executable_manifest = executable_jar.getManifest().getMainAttributes()
+          def launcher = executable_manifest.getValue('Embedded-Runpath')
+          launcher =~ /jar\/biz\.aQute\.launcher/
+          executable_jar.getEntry(launcher)
+          executable_jar.getEntry('jar/test.simple.jar')
+          executable_jar.getEntry('jar/osgi.enroute.junit.wrapper-4.12.0.201507311000.jar')
+          executable_jar.getEntry('launcher.properties')
+          UTF8Properties props = new UTF8Properties()
+          props.load(executable_jar.getInputStream(executable_jar.getEntry('launcher.properties')), null, new Slf4jReporter(TestBndPlugin.class))
+          props.getProperty('launch.bundles') =~ /jar\/osgi\.enroute\.junit\.wrapper-4\.12\.0\.201507311000\.jar\s*,\s*jar\/test\.simple\.jar/
+          executable_jar.close()
+    }
+
     def "Bnd Workspace Plugin extra properties/extensions Test"() {
         given:
           String testProject = 'workspaceplugin2'
@@ -145,7 +188,7 @@ class TestBndPlugin extends Specification {
             .build()
 
         then:
-          result.task(":tasks").outcome == SUCCESS
+          result.task(':tasks').outcome == SUCCESS
     }
 
     def "Bnd Workspace Plugin Old-style settings.gradle"() {
@@ -162,11 +205,11 @@ class TestBndPlugin extends Specification {
             .build()
 
         then:
-          result.task(":test.simple:test").outcome == SUCCESS
-          result.task(":test.simple:testOSGi").outcome == SUCCESS
-          result.task(":test.simple:check").outcome == SUCCESS
-          result.task(":test.simple:build").outcome == SUCCESS
-          result.task(":test.simple:release").outcome == SUCCESS
+          result.task(':test.simple:test').outcome == SUCCESS
+          result.task(':test.simple:testOSGi').outcome == SUCCESS
+          result.task(':test.simple:check').outcome == SUCCESS
+          result.task(':test.simple:build').outcome == SUCCESS
+          result.task(':test.simple:release').outcome == SUCCESS
 
           File simple_bundle = new File(testProjectDir, 'test.simple/generated/test.simple.jar')
           simple_bundle.isFile()
@@ -184,6 +227,7 @@ class TestBndPlugin extends Specification {
           simple_jar.getInputStream(simple_jar.getEntry('test.txt')).text =~ /This is a test resource/
           simple_jar.getEntry('test/simple/test.txt')
           simple_jar.getInputStream(simple_jar.getEntry('test/simple/test.txt')).text =~ /This is a test resource/
+          simple_jar.close()
 
           File release_jar = new File(testProjectDir, 'cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
@@ -203,11 +247,11 @@ class TestBndPlugin extends Specification {
             .build()
 
         then:
-          result.task(":test.simple:test").outcome == SUCCESS
-          result.task(":test.simple:testOSGi").outcome == SUCCESS
-          result.task(":test.simple:check").outcome == SUCCESS
-          result.task(":test.simple:build").outcome == SUCCESS
-          result.task(":test.simple:release").outcome == SUCCESS
+          result.task(':test.simple:test').outcome == SUCCESS
+          result.task(':test.simple:testOSGi').outcome == SUCCESS
+          result.task(':test.simple:check').outcome == SUCCESS
+          result.task(':test.simple:build').outcome == SUCCESS
+          result.task(':test.simple:release').outcome == SUCCESS
 
           File simple_bundle = new File(testProjectDir, 'test.simple/generated/test.simple.jar')
           simple_bundle.isFile()
@@ -225,6 +269,7 @@ class TestBndPlugin extends Specification {
           simple_jar.getInputStream(simple_jar.getEntry('test.txt')).text =~ /This is a test resource/
           simple_jar.getEntry('test/simple/test.txt')
           simple_jar.getInputStream(simple_jar.getEntry('test/simple/test.txt')).text =~ /This is a test resource/
+          simple_jar.close()
 
           File release_jar = new File(testProjectDir, 'cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
