@@ -36,10 +36,10 @@ package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.logReport
 
+import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
 import aQute.bnd.service.RepositoryPlugin
-import biz.aQute.resolve.Bndrun
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -133,10 +133,14 @@ public class Export extends DefaultTask {
   @TaskAction
   void export() {
     project.mkdir(destinationDir)
-    Bndrun.createBndrun(null, bndrun).withCloseable { run ->
-      logger.info 'Exporting {} to {}', run.getPropertiesFile(), destinationDir.absolutePath
+    File cnf = new File(temporaryDir, Workspace.CNFDIR)
+    project.mkdir(cnf)
+    Run.createRun(null, bndrun).withCloseable { run ->
+      run.setBase(temporaryDir)
       Workspace workspace = run.getWorkspace()
+      workspace.setBuildDir(cnf)
       workspace.setOffline(project.gradle.startParameter.offline)
+      logger.info 'Exporting {} to {}', run.getPropertiesFile(), destinationDir.absolutePath
       for (RepositoryPlugin repo : workspace.getRepositories()) {
         repo.list(null)
       }

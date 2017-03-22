@@ -91,10 +91,14 @@ public class Resolve extends DefaultTask {
    */
   @TaskAction
   void resolve() {
+    File cnf = new File(temporaryDir, Workspace.CNFDIR)
+    project.mkdir(cnf)
     Bndrun.createBndrun(null, bndrun).withCloseable { run ->
-      logger.info 'Resolving runbundles required for {}', run.getPropertiesFile()
+      run.setBase(temporaryDir)
       Workspace workspace = run.getWorkspace()
+      workspace.setBuildDir(cnf)
       workspace.setOffline(project.gradle.startParameter.offline)
+      logger.info 'Resolving runbundles required for {}', run.getPropertiesFile()
       for (RepositoryPlugin repo : workspace.getRepositories()) {
         repo.list(null)
       }
