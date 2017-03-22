@@ -122,8 +122,8 @@ public class Export extends DefaultTask {
    * The argument will be handled using
    * Project.file().
    */
-  public void setDestinationDir(Object file) {
-    destinationDir = project.file(file)
+  public void setDestinationDir(Object dir) {
+    destinationDir = project.file(dir)
   }
 
   /**
