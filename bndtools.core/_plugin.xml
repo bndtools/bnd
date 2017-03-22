@@ -1030,5 +1030,20 @@
          commandId="bnd.launch.runShortcut.debug"
          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
    </extension>
+   <extension
+         point="org.eclipse.ui.importWizards">
+      <category
+		name="Bndtools"
+        id="bndtools.importCategory">
+      </category>
+		<wizard
+            id="bndtools.importProject"
+            category="bndtools.importCategory"
+            class="bndtools.wizards.project.ImportBndWorkspaceWizard"
+            icon="icons/bndtools-logo-16x16.png"
+            name="Existing Bnd Workspace"
+            project="true">
+      </wizard>
+   </extension>
 
  </plugin>
