@@ -73,7 +73,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	 * Constructor for a BndEditModel. The idea to use a BndEditModel was rather
 	 * bad because it couples things that should not be coupled. The other
 	 * constructor should be preferred.
-	 * 
+	 *
 	 * @param runModel The edit model
 	 * @param registry The bnd registry
 	 * @param log
@@ -92,7 +92,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 	/**
 	 * The preferred constructor
-	 * 
+	 *
 	 * @param runModel The model (its properties)
 	 * @param project The project to access bundles
 	 * @param registry the registry
@@ -168,6 +168,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			if (distro != null && !distro.trim().isEmpty()) {
 				loadPath(system, distro, Constants.DISTRO);
 
+				loadProvidedCapabilities(system);
 			} else {
 				//
 				// Load the EE's and packages that belong to it.
@@ -196,15 +197,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 						properties.mergeProperties(Constants.RUNSYSTEMCAPABILITIES), project);
 				system.addProvideCapabilities(systemCapabilities);
 
-				//
-				// Some capabilities are provided by the runtime, like native
-				// code.
-				// We need to add them here so the resolver is aware of them
-				//
-
-				Parameters providedCapabilities = new Parameters(
-						properties.mergeProperties(Constants.RUNPROVIDEDCAPABILITIES), project);
-				system.addProvideCapabilities(providedCapabilities);
+				loadProvidedCapabilities(system);
 
 				//
 				// Load the frameworks capabilities
@@ -253,6 +246,18 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			throw new RuntimeException(e);
 		}
 		super.init();
+	}
+
+	private void loadProvidedCapabilities(ResourceBuilder system) throws Exception {
+		//
+		// Some capabilities are provided by the runtime, like native
+		// code.
+		// We need to add them here so the resolver is aware of them
+		//
+
+		Parameters providedCapabilities = new Parameters(properties.mergeProperties(Constants.RUNPROVIDEDCAPABILITIES),
+				project);
+		system.addProvideCapabilities(providedCapabilities);
 	}
 
 	void loadFramework(ResourceBuilder system) throws Exception {
@@ -333,7 +338,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	 * Load all the OSGi repositories from our registry
 	 * <p>
 	 * TODO Use Instruction ...
-	 * 
+	 *
 	 * @return
 	 * @throws Exception
 	 */
