@@ -40,9 +40,9 @@ class TestBaselineTask extends Specification {
           result.task(':baselineSelf').outcome == SUCCESS
 
           testProjectReportsDir.isDirectory()
-          File baseline = new File(testProjectReportsDir, 'baseline/baseline.txt')
+          File baseline = new File(testProjectReportsDir, 'baseline/baseline/baselinetask1-1.1.0.txt')
           baseline.isFile()
-          File baselineSelf = new File(testProjectReportsDir, 'baselineSelf/baselineSelf.txt')
+          File baselineSelf = new File(testProjectReportsDir, 'foo/baselineSelf/baselinetask1-1.1.0.txt')
           baselineSelf.isFile()
 
           result.getOutput() =~ Pattern.quote("Baseline problems detected. See the report in ${baseline.absolutePath}")
@@ -89,7 +89,7 @@ class TestBaselineTask extends Specification {
           result.task(':baseline').outcome == SUCCESS
 
           testProjectReportsDir.isDirectory()
-          File baseline = new File(testProjectReportsDir, 'baseline/baseline.txt')
+          File baseline = new File(testProjectReportsDir, 'baseline/baseline/baselinetask3-1.0.txt')
           baseline.isFile()
     }
 }

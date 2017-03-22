@@ -178,7 +178,9 @@ public class Baseline extends DefaultTask {
 
   @OutputFile
   public File getDestination() {
-    return new File(baselineReportDir, "${name}.txt")
+    String bundlename = bundle.name
+    bundlename = bundlename[0..Math.max(-1, bundlename.lastIndexOf('.') - 1)]
+    return new File(baselineReportDir, "${name}/${bundlename}.txt")
   }
 
   /**
