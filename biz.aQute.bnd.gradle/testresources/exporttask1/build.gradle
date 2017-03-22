@@ -1,0 +1,22 @@
+/*
+ *
+ */
+
+import aQute.bnd.gradle.Export
+
+plugins {
+    id 'biz.aQute.bnd.builder'
+}
+
+task export(type: Export) {
+   description "Export ${name}.bndrun"
+   group 'export'
+   bndrun "${name}.bndrun"
+}
+
+task runbundles(type: Export) {
+   description "Export ${name}.bndrun"
+   group 'export'
+   bndrun "${name}.bndrun"
+   bundlesOnly = true
+}

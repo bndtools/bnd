@@ -86,10 +86,12 @@ public class ExportMojo extends AbstractMojo {
 				}
 				run.setProperty(Constants.RUNBUNDLES, runBundles);
 			}
-			if (bundlesOnly)
+			if (bundlesOnly) {
 				run.exportRunbundles(null, bndrunBase);
-			else
-				run.export(targetDir);
+			} else {
+				File jarFile = new File(targetDir, bndrun + ".jar");
+				run.export(null, false, jarFile);
+			}
 
 			report(run);
 		}

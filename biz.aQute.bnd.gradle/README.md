@@ -198,6 +198,7 @@ project and you can use the new task types:
 * `Bundle`
 * `Baseline`
 * `Resolve`
+* `Export`
 
 ## Using Bnd Builder Gradle Plugin
 
@@ -379,7 +380,7 @@ task resolve(type: Resolve) {
   bndrun 'my.bndrun'
 }
 ```
-There are four properties which can be configured for a Baseline task:
+There are two properties which can be configured for a Resolve task:
 
 ### failOnChanges
 
@@ -391,6 +392,39 @@ If `true` the build will fail if the resolve operation changes the value of the
 This is the bndrun to be resolved. It can be anything that `Project.file(Object)`
 can accept. This property must be set. The bndrun file must be a standalone bndrun
 file since this is not a Workspace Build.
+
+## Create a task of the `Export` type
+
+You can also create a new task of the `Export` type. This task type
+will export a standalone bndrun file. For example:
+
+```groovy
+import aQute.bnd.gradle.Export
+
+task export(type: Export) {
+  bndrun 'my.bndrun'
+}
+```
+There are three properties which can be configured for a Export task:
+
+### bundlesOnly
+
+If `true` the task will export the `-runbundles` files to the configured
+`destinationDir`. If `false` the task will export an exectuable jar to
+the configured `destinationDir`.The default is `false`.
+
+### bndrun
+
+This is the bndrun to be exported. It can be anything that `Project.file(Object)`
+can accept. This property must be set. The bndrun file must be a standalone bndrun
+file since this is not a Workspace Build.
+
+### destinationDir
+
+This is the directory for the output. The default is
+_${project.distsDir}_/executable if `bundlesOnly` is `false`, and
+_${project.distsDir}_/runbundles/_${bndrun.name - '.bndrun'}_ if
+`bundlesOnly` is `true`.
 
 ---
 

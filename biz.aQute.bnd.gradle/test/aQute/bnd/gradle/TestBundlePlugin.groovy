@@ -1,6 +1,6 @@
 package aQute.bnd.gradle
 
-import java.util.jar.*;
+import java.util.jar.*
 
 import org.gradle.testkit.runner.GradleRunner
 import static org.gradle.testkit.runner.TaskOutcome.*
