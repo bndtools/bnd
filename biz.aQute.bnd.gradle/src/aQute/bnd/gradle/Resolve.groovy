@@ -9,7 +9,6 @@
  * Here is an example of using the Resolve task type:
  * <pre>
  * import aQute.bnd.gradle.Resolve
- * apply plugin: 'java'
  * task resolve(type: Resolve) {
  *   bndrun file('my.bndrun')
  * }
@@ -100,7 +99,7 @@ public class Resolve extends DefaultTask {
         repo.list(null)
       }
       run.getInfo(workspace)
-      logReport(run, logger);
+      logReport(run, logger)
       if (!run.isOk()) {
         throw new GradleException("${run.getPropertiesFile()} standalone workspace errors")
       }

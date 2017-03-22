@@ -1,6 +1,6 @@
 package aQute.bnd.gradle
 
-import java.util.jar.*;
+import java.util.jar.*
 import java.util.regex.Pattern
 
 import org.gradle.testkit.runner.GradleRunner

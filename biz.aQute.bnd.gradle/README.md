@@ -379,7 +379,7 @@ task resolve(type: Resolve) {
   bndrun 'my.bndrun'
 }
 ```
-There are four properties which can be configured for a Baseline task:
+There are two properties which can be configured for a Resolve task:
 
 ### failOnChanges
 
