@@ -2,7 +2,7 @@ package test.simple;
 
 import junit.framework.TestCase;
 
-public class Test extends TestCase {
+public class JUnitTest extends TestCase {
 
 	public void testX() {
 		Simple s = new Simple();

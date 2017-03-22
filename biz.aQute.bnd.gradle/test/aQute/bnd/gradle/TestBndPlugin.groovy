@@ -46,12 +46,13 @@ class TestBndPlugin extends Specification {
           simple_manifest.getValue('Foo') == 'foo'
           simple_manifest.getValue('Bar') == 'bar'
           simple_manifest.getValue('Import-Package') =~ /junit\.framework/
+          simple_jar.getEntry('test/simple/Simple.class')
           simple_jar.getEntry('test/simple/Test.class')
           simple_jar.getEntry('OSGI-OPT/src/')
           simple_jar.getEntry('test.txt')
-          simple_jar.getInputStream(simple_jar.getEntry('test.txt')).text =~ /This is a test resource/
+          simple_jar.getInputStream(simple_jar.getEntry('test.txt')).text =~ /This is a project resource/
           simple_jar.getEntry('test/simple/test.txt')
-          simple_jar.getInputStream(simple_jar.getEntry('test/simple/test.txt')).text =~ /This is a test resource/
+          simple_jar.getInputStream(simple_jar.getEntry('test/simple/test.txt')).text =~ /This is a package resource/
           simple_jar.close()
 
           File release_jar = new File(testProjectDir, 'cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
