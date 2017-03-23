@@ -113,8 +113,7 @@ public class TestingMojo extends AbstractMojo {
 				}
 				run.setProperty(Constants.RUNBUNDLES, runBundles);
 			}
-			File bndrunResportsDir = new File(reportsDir, bndrun);
-			run.test(bndrunResportsDir);
+			run.test(new File(reportsDir, bndrun), null);
 			report(run);
 		}
 	}

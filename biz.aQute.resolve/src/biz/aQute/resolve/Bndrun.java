@@ -14,7 +14,6 @@ import org.osgi.resource.Wire;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.build.ProjectTester;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
@@ -147,21 +146,5 @@ public class Bndrun extends Run {
 				getInfo(projectResolver);
 			}
 		}
-	}
-
-	/**
-	 * Execute the tests defined by the bndrun configuration.
-	 *
-	 * @param reportsDir the directory in which test reports are written
-	 * @throws Exception
-	 */
-	public int test(File reportsDir) throws Exception {
-		logger.info("Test {}", this);
-		ProjectTester projectTester = getProjectTester();
-		reportsDir.mkdirs();
-
-		projectTester.setReportDir(reportsDir);
-
-		return projectTester.test();
 	}
 }

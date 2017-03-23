@@ -2104,7 +2104,6 @@ public class Project extends Processor {
 	}
 
 	public void test(List<String> tests) throws Exception {
-
 		String testcases = getProperties().getProperty(Constants.TESTCASES);
 		if (testcases == null) {
 			warning("No %s set", Constants.TESTCASES);
@@ -2112,7 +2111,16 @@ public class Project extends Processor {
 		}
 		clear();
 
+		test(null, tests);
+	}
+
+	public void test(File reportDir, List<String> tests) throws Exception {
 		ProjectTester tester = getProjectTester();
+		if (reportDir != null) {
+			logger.debug("Setting reportDir {}", reportDir);
+			IO.delete(reportDir);
+			tester.setReportDir(reportDir);
+		}
 		if (tests != null) {
 			logger.debug("Adding tests {}", tests);
 			for (String test : tests) {
@@ -2122,17 +2130,18 @@ public class Project extends Processor {
 		tester.prepare();
 
 		if (!isOk()) {
+			logger.error("Tests not run because project has errors");
 			return;
 		}
 		int errors = tester.test();
 		if (errors == 0) {
-			System.err.println("No Errors");
+			logger.info("No Errors");
 		} else {
 			if (errors > 0) {
-				System.err.println(errors + " Error(s)");
-
-			} else
-				System.err.println("Error " + errors);
+				logger.info("{} Error(s)", errors);
+			} else {
+				logger.info("Error {}", errors);
+			}
 		}
 	}
 
