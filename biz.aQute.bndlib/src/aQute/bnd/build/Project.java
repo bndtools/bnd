@@ -2119,7 +2119,6 @@ public class Project extends Processor {
 				tester.addTest(test);
 			}
 		}
-		tester.setContinuous(isTrue(getProperty(Constants.TESTCONTINUOUS)));
 		tester.prepare();
 
 		if (!isOk()) {
