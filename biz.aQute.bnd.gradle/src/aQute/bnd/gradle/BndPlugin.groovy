@@ -307,11 +307,11 @@ public class BndPlugin implements Plugin<Project> {
         ext.ignoreFailures = false
         inputs.files jar
         outputs.dir {
-          testResultsDir
+          new File(testResultsDir, name)
         }
         doLast {
           try {
-            bndProject.test()
+            bndProject.test(new File(testResultsDir, name), null)
           } catch (Exception e) {
             throw new GradleException("Project ${bndProject.getName()} failed to test", e)
           }
