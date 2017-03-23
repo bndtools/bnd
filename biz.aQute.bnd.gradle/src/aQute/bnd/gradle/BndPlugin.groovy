@@ -19,6 +19,7 @@
 package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.logReport
+import static aQute.bnd.osgi.Processor.isTrue
 
 import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
@@ -62,7 +63,7 @@ public class BndPlugin implements Plugin<Project> {
         checkErrors(logger)
         throw new GradleException("Project ${bndProject.getName()} is not a valid bnd project")
       }
-      this.preCompileRefresh = project.hasProperty('bnd_preCompileRefresh') ? parseBoolean(bnd_preCompileRefresh) : false
+      this.preCompileRefresh = project.hasProperty('bnd_preCompileRefresh') ? isTrue(bnd_preCompileRefresh) : false
       extensions.create('bnd', BndProperties, bndProject)
       convention.plugins.bnd = new BndPluginConvention(this)
 
@@ -123,8 +124,8 @@ public class BndPlugin implements Plugin<Project> {
       targetCompatibility = javacTarget
       def javac = bnd('javac')
       def javacProfile = bnd('javac.profile', '')
-      def javacDebug = parseBoolean(bnd('javac.debug'))
-      def javacDeprecation = parseBoolean(bnd('javac.deprecation', 'true'))
+      def javacDebug = bndis('javac.debug')
+      def javacDeprecation = isTrue(bnd('javac.deprecation', 'true'))
       def javacEncoding = bnd('javac.encoding', 'UTF-8')
       def compileOptions = {
         if (javacDebug) {
@@ -293,7 +294,7 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       test {
-        enabled !parseBoolean(bnd(Constants.NOJUNIT, 'false')) && !parseBoolean(bnd('no.junit', 'false'))
+        enabled !bndis(Constants.NOJUNIT) && !bndis('no.junit')
         doFirst {
           checkErrors(logger, ignoreFailures)
         }
@@ -303,7 +304,7 @@ public class BndPlugin implements Plugin<Project> {
         description 'Runs the OSGi JUnit tests by launching a framework and running the tests in the launched framework.'
         dependsOn assemble
         group 'verification'
-        enabled !parseBoolean(bnd(Constants.NOJUNITOSGI, 'false')) && !bndUnprocessed(Constants.TESTCASES, '').empty
+        enabled !bndis(Constants.NOJUNITOSGI) && !bndUnprocessed(Constants.TESTCASES, '').empty
         ext.ignoreFailures = false
         inputs.files jar
         outputs.dir {
@@ -616,9 +617,5 @@ Project ${project.name}
       }
       throw new GradleException("${project.getName()} has errors${str}")
     }
-  }
-
-  private boolean parseBoolean(String value) {
-    return 'on'.equalsIgnoreCase(value) || 'true'.equalsIgnoreCase(value)
   }
 }

@@ -15,6 +15,9 @@ class BndPluginConvention {
   BndPluginConvention(BndPlugin plugin) {
    this.project = plugin.project
   }
+  boolean bndis(String name) {
+    return project.bnd.is(name)
+  }
   String bnd(String name) {
     return project.bnd.get(name)
   }
