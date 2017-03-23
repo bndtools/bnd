@@ -1,0 +1,6 @@
+tasks.getByName('resolve.resolvenochange') {
+  failOnChanges = true
+}
+tasks.getByName('resolve.resolvechange') {
+  failOnChanges = true
+}

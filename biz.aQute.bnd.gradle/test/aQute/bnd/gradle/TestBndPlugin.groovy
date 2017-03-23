@@ -24,12 +24,11 @@ class TestBndPlugin extends Specification {
         when:
           def result = GradleRunner.create()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', 'clean', 'build', 'release')
+            .withArguments('--stacktrace', '--debug', 'build', 'release')
             .forwardOutput()
             .build()
 
         then:
-          result.task(':test.simple:clean').outcome == SUCCESS
           result.task(':test.simple:test').outcome == SUCCESS
           result.task(':test.simple:testOSGi').outcome == SUCCESS
           result.task(':test.simple:check').outcome == SUCCESS
@@ -64,7 +63,7 @@ class TestBndPlugin extends Specification {
 
     def "Bnd Workspace Plugin echo/bndproperties Test"() {
         given:
-          String testProject = 'workspaceplugin1'
+          String testProject = 'workspaceplugin5'
           File testProjectDir = new File(testResources, testProject)
           assert testProjectDir.isDirectory()
 
@@ -83,19 +82,18 @@ class TestBndPlugin extends Specification {
 
     def "Bnd Workspace Plugin resolve Test"() {
         given:
-          String testProject = 'workspaceplugin1'
+          String testProject = 'workspaceplugin6'
           File testProjectDir = new File(testResources, testProject)
           assert testProjectDir.isDirectory()
 
         when:
           def result = GradleRunner.create()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--continue', 'clean', ':test.simple:resolve')
+            .withArguments('--stacktrace', '--continue', ':test.simple:resolve')
             .forwardOutput()
             .buildAndFail()
 
         then:
-          result.task(':test.simple:clean').outcome == SUCCESS
           result.task(':test.simple:jar').outcome == SUCCESS
           result.task(':test.simple:resolve.resolve').outcome == SUCCESS
           result.task(':test.simple:resolve.resolvenochange').outcome == SUCCESS
@@ -138,28 +136,29 @@ class TestBndPlugin extends Specification {
 
     def "Bnd Workspace Plugin export Test"() {
         given:
-          String testProject = 'workspaceplugin1'
+          String testProject = 'workspaceplugin7'
           File testProjectDir = new File(testResources, testProject)
           assert testProjectDir.isDirectory()
 
         when:
           def result = GradleRunner.create()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--continue', 'clean', ':test.simple:export.resolvenochange', ':test.simple:runbundles.resolvenochange')
+            .withArguments('--stacktrace', '--continue', ':test.simple:export', ':test.simple:runbundles')
             .forwardOutput()
             .build()
 
         then:
-          result.task(':test.simple:clean').outcome == SUCCESS
           result.task(':test.simple:jar').outcome == SUCCESS
-          result.task(':test.simple:export.resolvenochange').outcome == SUCCESS
-          result.task(':test.simple:runbundles.resolvenochange').outcome == SUCCESS
+          result.task(':test.simple:export').outcome == SUCCESS
+          result.task(':test.simple:export.export').outcome == SUCCESS
+          result.task(':test.simple:runbundles').outcome == SUCCESS
+          result.task(':test.simple:runbundles.export').outcome == SUCCESS
 
           File distributions = new File(testProjectDir, 'test.simple/generated/distributions')
-          new File(distributions, 'runbundles/resolvenochange/test.simple.jar').isFile()
-          new File(distributions, 'runbundles/resolvenochange/osgi.enroute.junit.wrapper-4.12.0.201507311000.jar').isFile()
+          new File(distributions, 'runbundles/export/test.simple.jar').isFile()
+          new File(distributions, 'runbundles/export/osgi.enroute.junit.wrapper-4.12.0.201507311000.jar').isFile()
  
-          File executable = new File(distributions, 'executable/resolvenochange.jar')
+          File executable = new File(distributions, 'executable/export.jar')
           executable.isFile()
           JarFile executable_jar = new JarFile(executable)
           Attributes executable_manifest = executable_jar.getManifest().getMainAttributes()
