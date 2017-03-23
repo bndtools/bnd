@@ -150,8 +150,19 @@ public class IndexerMojo extends AbstractMojo {
 
 		Map<File,ArtifactResult> dependencies = new HashMap<>();
 
-		if (result.getDependencyGraph() != null && !result.getDependencyGraph().getChildren().isEmpty()) {
-			discoverArtifacts(dependencies, result.getDependencyGraph().getChildren(), project.getArtifact().getId());
+		DependencyNode dependencyGraph = result.getDependencyGraph();
+
+		if (dependencyGraph != null && !dependencyGraph.getChildren().isEmpty()) {
+			List<RemoteRepository> remoteRepositories = new ArrayList<>(project.getRemoteProjectRepositories());
+
+			ArtifactRepository deployRepo = project.getDistributionManagementArtifactRepository();
+
+			if (deployRepo != null) {
+				remoteRepositories.add(RepositoryUtils.toRepo(deployRepo));
+			}
+
+			discoverArtifacts(dependencies, dependencyGraph.getChildren(), project.getArtifact().getId(),
+					remoteRepositories);
 		}
 
 		Map<String,ArtifactRepository> repositories = new HashMap<>();
@@ -336,19 +347,13 @@ public class IndexerMojo extends AbstractMojo {
 		}
 	}
 
-	private void discoverArtifacts(Map<File,ArtifactResult> files, List<DependencyNode> nodes, String parent)
+	private void discoverArtifacts(Map<File,ArtifactResult> files, List<DependencyNode> nodes, String parent,
+			List<RemoteRepository> remoteRepositories)
 			throws MojoExecutionException {
+
 		for (DependencyNode node : nodes) {
 			// Ensure that the file is downloaded so we can index it
 			try {
-				List<RemoteRepository> remoteRepositories = new ArrayList<>(project.getRemoteProjectRepositories());
-
-				ArtifactRepository deployRepo = project.getDistributionManagementArtifactRepository();
-
-				if (deployRepo != null) {
-					remoteRepositories.add(RepositoryUtils.toRepo(deployRepo));
-				}
-
 				ArtifactResult resolvedArtifact = postProcessResult(system.resolveArtifact(session,
 						new ArtifactRequest(node.getArtifact(), remoteRepositories, parent)));
 				logger.debug("Located file: {} for artifact {}", resolvedArtifact.getArtifact().getFile(),
@@ -360,7 +365,7 @@ public class IndexerMojo extends AbstractMojo {
 						e);
 			}
 			if (includeTransitive) {
-				discoverArtifacts(files, node.getChildren(), node.getRequestContext());
+				discoverArtifacts(files, node.getChildren(), node.getRequestContext(), remoteRepositories);
 			} else {
 				logger.debug("Ignoring transitive dependencies of {}", node.getDependency());
 			}
