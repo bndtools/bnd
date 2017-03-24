@@ -53,7 +53,6 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	private static final String	JPM_LAUNCHER			= "aQute/launcher/pre/JpmLauncher.class";
 	private static final String	JPM_LAUNCHER_FQN		= "aQute.launcher.pre.JpmLauncher";
 
-	final private Project		project;
 	final private File			launchPropertiesFile;
 	boolean						prepared;
 
@@ -62,7 +61,6 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	public ProjectLauncherImpl(Project project) throws Exception {
 		super(project);
 		logger.debug("created a aQute launcher plugin");
-		this.project = project;
 		launchPropertiesFile = File.createTempFile("launch", ".properties", project.getTarget());
 		logger.debug("launcher plugin using temp launch file {}", launchPropertiesFile.getAbsolutePath());
 		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=\"" + launchPropertiesFile.getAbsolutePath() + "\"");
@@ -136,7 +134,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		LauncherConstants lc = getConstants(getRunBundles(), false);
 		OutputStream out = new FileOutputStream(launchPropertiesFile);
 		try {
-			lc.getProperties(new UTF8Properties()).store(out, "Launching " + project);
+			lc.getProperties(new UTF8Properties()).store(out, "Launching " + getProject());
 		} finally {
 			out.close();
 		}
@@ -152,7 +150,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		logger.debug("preparing the aQute launcher plugin");
 
 		LauncherConstants lc = new LauncherConstants();
-		lc.noreferences = Processor.isTrue(project.getProperty(Constants.RUNNOREFERENCES));
+		lc.noreferences = getProject().is(Constants.RUNNOREFERENCES);
 		lc.runProperties = getRunProperties();
 		lc.storageDir = getStorageDir();
 		lc.keep = isKeep();
@@ -228,23 +226,23 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	public Jar executable() throws Exception {
 
 		// TODO use constants in the future
-		Parameters packageHeader = OSGiHeader.parseHeader(project.getProperty("-package"));
+		Parameters packageHeader = OSGiHeader.parseHeader(getProject().getProperty("-package"));
 		boolean useShas = packageHeader.containsKey("jpm");
 		logger.debug("useShas {} {}", useShas, packageHeader);
 
-		Jar jar = new Jar(project.getName());
+		Jar jar = new Jar(getProject().getName());
 
 		Builder b = new Builder();
-		project.addClose(b);
+		getProject().addClose(b);
 
-		if (!project.getIncludeResource().isEmpty()) {
-			b.setIncludeResource(project.getIncludeResource().toString());
+		if (!getProject().getIncludeResource().isEmpty()) {
+			b.setIncludeResource(getProject().getIncludeResource().toString());
 			b.setProperty(Constants.RESOURCEONLY, "true");
 			b.build();
 			if (b.isOk()) {
 				jar.addAll(b.getJar());
 			}
-			project.getInfo(b);
+			getProject().getInfo(b);
 		}
 
 		List<String> runpath = getRunpath();
@@ -277,7 +275,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			logger.debug("embedding run bundles {}", path);
 			File file = new File(path);
 			if (!file.isFile())
-				project.error("Invalid entry in -runbundles %s", file);
+				getProject().error("Invalid entry in -runbundles %s", file);
 			else {
 				if (useShas) {
 					String sha = SHA1.digest(file).asHex();
@@ -304,13 +302,13 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		Manifest m = new Manifest();
 		Attributes main = m.getMainAttributes();
 
-		for (Entry<Object,Object> e : project.getFlattenedProperties().entrySet()) {
+		for (Entry<Object,Object> e : getProject().getFlattenedProperties().entrySet()) {
 			String key = (String) e.getKey();
 			if (key.length() > 0 && Character.isUpperCase(key.charAt(0)))
 				main.putValue(key, (String) e.getValue());
 		}
 
-		Instructions instructions = new Instructions(project.getProperty(Constants.REMOVEHEADERS));
+		Instructions instructions = new Instructions(getProject().getProperty(Constants.REMOVEHEADERS));
 		Collection<Object> result = instructions.select(main.keySet(), false);
 		main.keySet().removeAll(result);
 
@@ -330,8 +328,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			jar.putResource(EMBEDDED_LAUNCHER, embeddedLauncher);
 			doStart(jar, EMBEDDED_LAUNCHER_FQN);
 		}
-		if (project.getProperty(Constants.DIGESTS) != null)
-			jar.setDigestAlgorithms(project.getProperty(Constants.DIGESTS).trim().split("\\s*,\\s*"));
+		if (getProject().getProperty(Constants.DIGESTS) != null)
+			jar.setDigestAlgorithms(getProject().getProperty(Constants.DIGESTS).trim().split("\\s*,\\s*"));
 		else
 			jar.setDigestAlgorithms(new String[] {
 					"SHA-1", "MD-5"

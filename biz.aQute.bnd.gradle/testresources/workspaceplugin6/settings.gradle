@@ -1,0 +1,12 @@
+/*
+ * Master Gradle initialization script
+ */
+
+/* Add bnd gradle plugin as a script dependency */
+buildscript {
+  dependencies {
+    classpath files(new File(bnd_plugin).canonicalFile)
+  }
+}
+
+apply plugin: 'biz.aQute.bnd.workspace'

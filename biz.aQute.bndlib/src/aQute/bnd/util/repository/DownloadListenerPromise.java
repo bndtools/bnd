@@ -46,8 +46,8 @@ public class DownloadListenerPromise implements Success<File,Void>, Failure {
 
 	@Override
 	public Promise<Void> call(Promise<File> resolved) throws Exception {
-		logger.debug("{}: success", this);
 		File file = resolved.getValue();
+		logger.debug("{}: success {}", this, file);
 
 		if (linked != null) {
 			IO.createSymbolicLinkOrCopy(linked, file);
@@ -55,7 +55,7 @@ public class DownloadListenerPromise implements Success<File,Void>, Failure {
 
 		for (DownloadListener dl : dls) {
 			try {
-				dl.success(resolved.getValue());
+				dl.success(file);
 			} catch (Throwable e) {
 				reporter.warning("%s: Success callback failed to %s: %s", this, dl, e);
 			}

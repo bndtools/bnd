@@ -16,6 +16,10 @@ class BndProperties {
     this.project = bndProject
   }
 
+  boolean is(String name) {
+    return project.is(name)
+  }
+
   def get(String name) {
     return trimmed(project.getProperty(name))
   }

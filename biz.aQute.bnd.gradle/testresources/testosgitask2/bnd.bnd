@@ -1,0 +1,3 @@
+-exportcontents: doubler
+-sources: true
+Test-Cases: ${classes;CONCRETE;PUBLIC;NAMED;*Test}

@@ -61,6 +61,7 @@ Export-Package: \
 	aQute.bnd.repository.p2.provider;bnd-plugins=true,\
 	aQute.bnd.repository.maven.pom.provider;bnd-plugins=true,\
 	aQute.bnd.repository.osgi;bnd-plugins=true,  \
+	aQute.bnd.repository.fileset;bnd-plugins=true,  \
 	aQute.maven.*, \
 	
 

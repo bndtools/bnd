@@ -199,6 +199,7 @@ project and you can use the new task types:
 * `Baseline`
 * `Resolve`
 * `Export`
+* `TestOSGi`
 
 ## Using Bnd Builder Gradle Plugin
 
@@ -393,6 +394,12 @@ This is the bndrun to be resolved. It can be anything that `Project.file(Object)
 can accept. This property must be set. The bndrun file must be a standalone bndrun
 file since this is not a Workspace Build.
 
+### bundles
+
+This is the collection of files to use for locating bundles during the
+bndrun resolution. The default is _${project.sourceSets.main.runtimeClasspath}_
+plus _${project.configurations.archives.artifacts.files}_.
+
 ## Create a task of the `Export` type
 
 You can also create a new task of the `Export` type. This task type
@@ -405,7 +412,7 @@ task export(type: Export) {
   bndrun 'my.bndrun'
 }
 ```
-There are three properties which can be configured for a Export task:
+There are three properties which can be configured for an Export task:
 
 ### bundlesOnly
 
@@ -425,6 +432,49 @@ This is the directory for the output. The default is
 _${project.distsDir}_/executable if `bundlesOnly` is `false`, and
 _${project.distsDir}_/runbundles/_${bndrun.name - '.bndrun'}_ if
 `bundlesOnly` is `true`.
+
+### bundles
+
+This is the collection of files to use for locating bundles during the
+bndrun export. The default is _${project.sourceSets.main.runtimeClasspath}_
+plus _${project.configurations.archives.artifacts.files}_.
+
+## Create a task of the `TestOSGi` type
+
+You can also create a new task of the `TestOSGi` type. This task type
+will execute tests in a standalone bndrun file. For example:
+
+```groovy
+import aQute.bnd.gradle.TestOSGi
+
+task testOSGi(type: TestOSGi) {
+  bndrun 'my.bndrun'
+}
+```
+There are four properties which can be configured for a TestOSGi task:
+
+### ignoreFailures
+
+If `true` the task will not fail due to test case failures; instead an
+error message will be logged. Otherwise, the task will fail. The
+default is `false`.
+
+### bndrun
+
+This is the bndrun to be tested. It can be anything that `Project.file(Object)`
+can accept. This property must be set. The bndrun file must be a standalone bndrun
+file since this is not a Workspace Build.
+
+### workingDir
+
+This is the directory for the test execution. The default is
+_${temporaryDir}_.
+
+### bundles
+
+This is the collection of files to use for locating bundles during the
+bndrun execution. The default is _${project.sourceSets.main.runtimeClasspath}_
+plus _${project.configurations.archives.artifacts.files}_.
 
 ---
 

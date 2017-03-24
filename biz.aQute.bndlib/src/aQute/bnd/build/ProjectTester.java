@@ -9,11 +9,11 @@ import java.util.List;
 import aQute.bnd.osgi.Constants;
 
 public abstract class ProjectTester {
-	final Project			project;
-	final ProjectLauncher	launcher;
-	final List<String>		tests		= new ArrayList<String>();
-	File					reportDir;
-	boolean					continuous	= true;
+	private final Project			project;
+	private final ProjectLauncher	launcher;
+	private final List<String>		tests		= new ArrayList<String>();
+	private File					reportDir;
+	private boolean					continuous	= true;
 
 	public ProjectTester(Project project) throws Exception {
 		this.project = project;

@@ -29,6 +29,10 @@
  * The default for destinationDir is project.distsDir/'executable'
  * if bundlesOnly is false, and project.distsDir/'runbundles'/bndrun
  * if bundlesOnly is true.</li>
+ * <li>bundles - This is the collection of files to use for locating
+ * bundles during the bndrun execution. The default is
+ * 'sourceSets.main.runtimeClasspath' plus
+ * 'configurations.archives.artifacts.files'</li>
  * </ul>
  */
 
@@ -36,10 +40,10 @@ package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.logReport
 
+import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
 import aQute.bnd.service.RepositoryPlugin
-import biz.aQute.resolve.Bndrun
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -71,6 +75,7 @@ public class Export extends DefaultTask {
   public Export() {
     super()
     bundlesOnly = false
+    convention.plugins.bundles = new FileSetRepositoryConvention(this)
   }
 
   /**
@@ -122,8 +127,8 @@ public class Export extends DefaultTask {
    * The argument will be handled using
    * Project.file().
    */
-  public void setDestinationDir(Object file) {
-    destinationDir = project.file(file)
+  public void setDestinationDir(Object dir) {
+    destinationDir = project.file(dir)
   }
 
   /**
@@ -133,10 +138,15 @@ public class Export extends DefaultTask {
   @TaskAction
   void export() {
     project.mkdir(destinationDir)
-    Bndrun.createBndrun(null, bndrun).withCloseable { run ->
-      logger.info 'Exporting {} to {}', run.getPropertiesFile(), destinationDir.absolutePath
+    File cnf = new File(temporaryDir, Workspace.CNFDIR)
+    project.mkdir(cnf)
+    Run.createRun(null, bndrun).withCloseable { run ->
+      run.setBase(temporaryDir)
       Workspace workspace = run.getWorkspace()
+      workspace.setBuildDir(cnf)
       workspace.setOffline(project.gradle.startParameter.offline)
+      workspace.addBasicPlugin(getFileSetRepository(name))
+      logger.info 'Exporting {} to {}', run.getPropertiesFile(), destinationDir.absolutePath
       for (RepositoryPlugin repo : workspace.getRepositories()) {
         repo.list(null)
       }
@@ -146,14 +156,18 @@ public class Export extends DefaultTask {
         throw new GradleException("${run.getPropertiesFile()} standalone workspace errors")
       }
 
-      if (bundlesOnly) {
-        logger.info 'Creating a distribution of the runbundles from {} in directory {}', run.getPropertiesFile(), destinationDir.absolutePath
-        run.exportRunbundles(null, destinationDir)
-      } else {
-        String name = bndrun.name - '.bndrun'
-        File executableJar = new File(destinationDir, "${name}.jar")
-        logger.info 'Creating an executable jar from {} to {}', run.getPropertiesFile(), executableJar.absolutePath
-        run.export(null, false, executableJar)
+      try {
+        if (bundlesOnly) {
+          logger.info 'Creating a distribution of the runbundles from {} in directory {}', run.getPropertiesFile(), destinationDir.absolutePath
+          run.exportRunbundles(null, destinationDir)
+        } else {
+          String name = bndrun.name - '.bndrun'
+          File executableJar = new File(destinationDir, "${name}.jar")
+          logger.info 'Creating an executable jar from {} to {}', run.getPropertiesFile(), executableJar.absolutePath
+          run.export(null, false, executableJar)
+        }
+      } finally {
+        logReport(run, logger)
       }
       if (!run.isOk()) {
         throw new GradleException("${run.getPropertiesFile()} export failure")

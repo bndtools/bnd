@@ -44,5 +44,5 @@ task baselineSelf(type: Baseline) {
    bundle jar
    baseline jar.archivePath
    ignoreFailures = false
-   baselineReportDirName = name
+   baselineReportDirName = 'foo'
 }
