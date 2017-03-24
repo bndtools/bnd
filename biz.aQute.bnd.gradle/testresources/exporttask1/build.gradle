@@ -8,10 +8,24 @@ plugins {
     id 'biz.aQute.bnd.builder'
 }
 
+repositories {
+    mavenCentral()
+}
+
+configurations {
+  bundles
+}
+
+dependencies {
+    bundles 'org.apache.felix:org.apache.felix.framework:5.4.0'
+    bundles 'org.apache.felix:org.apache.felix.eventadmin:1.4.6'
+}
+
 task export(type: Export) {
    description "Export ${name}.bndrun"
    group 'export'
    bndrun "${name}.bndrun"
+   bundles = configurations.bundles
 }
 
 task runbundles(type: Export) {
@@ -19,4 +33,5 @@ task runbundles(type: Export) {
    group 'export'
    bndrun "${name}.bndrun"
    bundlesOnly = true
+   bundles = configurations.bundles
 }

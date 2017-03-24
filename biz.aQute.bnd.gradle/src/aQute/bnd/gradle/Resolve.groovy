@@ -22,6 +22,10 @@
  * The default is false.</li>
  * <li>bndrun - This is the bndrun file to be resolved.
  * This property must be set.</li>
+ * <li>bundles - This is the collection of files to use for locating
+ * bundles during the bndrun execution. The default is
+ * 'sourceSets.main.runtimeClasspath' plus
+ * 'configurations.archives.artifacts.files'</li>
  * </ul>
  */
 
@@ -63,6 +67,7 @@ public class Resolve extends DefaultTask {
   public Resolve() {
     super()
     failOnChanges = false
+    convention.plugins.bundles = new FileSetRepositoryConvention(this)
   }
 
   /**
@@ -98,6 +103,7 @@ public class Resolve extends DefaultTask {
       Workspace workspace = run.getWorkspace()
       workspace.setBuildDir(cnf)
       workspace.setOffline(project.gradle.startParameter.offline)
+      workspace.addBasicPlugin(getFileSetRepository(name))
       logger.info 'Resolving runbundles required for {}', run.getPropertiesFile()
       for (RepositoryPlugin repo : workspace.getRepositories()) {
         repo.list(null)

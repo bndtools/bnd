@@ -394,6 +394,12 @@ This is the bndrun to be resolved. It can be anything that `Project.file(Object)
 can accept. This property must be set. The bndrun file must be a standalone bndrun
 file since this is not a Workspace Build.
 
+### bundles
+
+This is the collection of files to use for locating bundles during the
+bndrun resolution. The default is _${project.sourceSets.main.runtimeClasspath}_
+plus _${project.configurations.archives.artifacts.files}_.
+
 ## Create a task of the `Export` type
 
 You can also create a new task of the `Export` type. This task type
@@ -426,6 +432,12 @@ This is the directory for the output. The default is
 _${project.distsDir}_/executable if `bundlesOnly` is `false`, and
 _${project.distsDir}_/runbundles/_${bndrun.name - '.bndrun'}_ if
 `bundlesOnly` is `true`.
+
+### bundles
+
+This is the collection of files to use for locating bundles during the
+bndrun export. The default is _${project.sourceSets.main.runtimeClasspath}_
+plus _${project.configurations.archives.artifacts.files}_.
 
 ## Create a task of the `TestOSGi` type
 

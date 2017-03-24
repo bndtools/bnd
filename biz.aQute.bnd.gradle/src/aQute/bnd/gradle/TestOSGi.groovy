@@ -40,15 +40,12 @@ import static aQute.bnd.gradle.BndUtils.logReport
 import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
-import aQute.bnd.repository.fileset.FileSetRepository
 import aQute.bnd.service.RepositoryPlugin
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
-import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 
@@ -66,7 +63,6 @@ public class TestOSGi extends DefaultTask {
 
   private File workingDir
   private File bndrun
-  private ConfigurableFileCollection bundles
 
   /**
    * Create a TestOSGi task.
@@ -76,7 +72,7 @@ public class TestOSGi extends DefaultTask {
     super()
     ignoreFailures = false
     workingDir = temporaryDir
-    bundles = project.files(project.sourceSets.main.runtimeClasspath, project.configurations.archives.artifacts.files)
+    convention.plugins.bundles = new FileSetRepositoryConvention(this)
     dependsOn project.assemble
     project.check.dependsOn this
   }
@@ -121,36 +117,6 @@ public class TestOSGi extends DefaultTask {
   }
 
   /**
-   * Add files to use when locating bundles for the test execution.
-   *
-   * <p>
-   * The arguments will be handled using
-   * Project.files().
-   */
-  public ConfigurableFileCollection bundles(Object... paths) {
-    return bundles.from(paths)
-  }
-
-  /**
-   * Return the files to use when locating bundles for the test execution.
-   */
-  @InputFiles
-  public ConfigurableFileCollection getBundles() {
-    return bundles
-  }
-
-  /**
-   * Set the files to use when locating bundles for the test execution.
-   *
-   * <p>
-   * The argument will be handled using
-   * Project.files().
-   */
-  public void setBundles(Object path) {
-   bundles = project.files(path)
-  }
-
-  /**
    * Return the directory where the test case results are placed.
    */
   @OutputDirectory
@@ -172,7 +138,7 @@ public class TestOSGi extends DefaultTask {
       Workspace workspace = run.getWorkspace()
       workspace.setBuildDir(cnf)
       workspace.setOffline(project.gradle.startParameter.offline)
-      workspace.addBasicPlugin(new FileSetRepository(name, bundles.files))
+      workspace.addBasicPlugin(getFileSetRepository(name))
       logger.info 'Running tests for {} in {}', run.getPropertiesFile(), workingDir.absolutePath
       for (RepositoryPlugin repo : workspace.getRepositories()) {
         repo.list(null)

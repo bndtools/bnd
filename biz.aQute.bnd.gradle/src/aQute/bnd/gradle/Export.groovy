@@ -29,6 +29,10 @@
  * The default for destinationDir is project.distsDir/'executable'
  * if bundlesOnly is false, and project.distsDir/'runbundles'/bndrun
  * if bundlesOnly is true.</li>
+ * <li>bundles - This is the collection of files to use for locating
+ * bundles during the bndrun execution. The default is
+ * 'sourceSets.main.runtimeClasspath' plus
+ * 'configurations.archives.artifacts.files'</li>
  * </ul>
  */
 
@@ -71,6 +75,7 @@ public class Export extends DefaultTask {
   public Export() {
     super()
     bundlesOnly = false
+    convention.plugins.bundles = new FileSetRepositoryConvention(this)
   }
 
   /**
@@ -140,6 +145,7 @@ public class Export extends DefaultTask {
       Workspace workspace = run.getWorkspace()
       workspace.setBuildDir(cnf)
       workspace.setOffline(project.gradle.startParameter.offline)
+      workspace.addBasicPlugin(getFileSetRepository(name))
       logger.info 'Exporting {} to {}', run.getPropertiesFile(), destinationDir.absolutePath
       for (RepositoryPlugin repo : workspace.getRepositories()) {
         repo.list(null)
