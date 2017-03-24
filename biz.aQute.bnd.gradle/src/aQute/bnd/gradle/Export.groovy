@@ -150,14 +150,18 @@ public class Export extends DefaultTask {
         throw new GradleException("${run.getPropertiesFile()} standalone workspace errors")
       }
 
-      if (bundlesOnly) {
-        logger.info 'Creating a distribution of the runbundles from {} in directory {}', run.getPropertiesFile(), destinationDir.absolutePath
-        run.exportRunbundles(null, destinationDir)
-      } else {
-        String name = bndrun.name - '.bndrun'
-        File executableJar = new File(destinationDir, "${name}.jar")
-        logger.info 'Creating an executable jar from {} to {}', run.getPropertiesFile(), executableJar.absolutePath
-        run.export(null, false, executableJar)
+      try {
+        if (bundlesOnly) {
+          logger.info 'Creating a distribution of the runbundles from {} in directory {}', run.getPropertiesFile(), destinationDir.absolutePath
+          run.exportRunbundles(null, destinationDir)
+        } else {
+          String name = bndrun.name - '.bndrun'
+          File executableJar = new File(destinationDir, "${name}.jar")
+          logger.info 'Creating an executable jar from {} to {}', run.getPropertiesFile(), executableJar.absolutePath
+          run.export(null, false, executableJar)
+        }
+      } finally {
+        logReport(run, logger)
       }
       if (!run.isOk()) {
         throw new GradleException("${run.getPropertiesFile()} export failure")
