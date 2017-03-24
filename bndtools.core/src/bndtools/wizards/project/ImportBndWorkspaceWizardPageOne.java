@@ -329,7 +329,7 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
             }
 
             if (projectExistsInEclipse(element)) {
-                text = text + " (exits and will be updated)";
+                text = text + " (project already exists, metadata will updated)";
             }
             return text;
         }
