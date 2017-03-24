@@ -1,0 +1,8 @@
+-runfw: org.eclipse.osgi
+-runee: JavaSE-1.7
+
+-runbundles: osgi.enroute.junit.wrapper,osgi.enroute.hamcrest.wrapper,testosgitask3
+
+-runproperties:
+
+-runtrace: true
