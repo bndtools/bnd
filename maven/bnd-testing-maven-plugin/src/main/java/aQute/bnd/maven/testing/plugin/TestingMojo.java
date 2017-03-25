@@ -120,8 +120,8 @@ public class TestingMojo extends AbstractMojo {
 
 	private String getNamePart(File runFile) {
 		String nameExt = runFile.getName();
-		int pos = nameExt.lastIndexOf(".");
-		return nameExt.substring(0, pos);
+		int pos = nameExt.lastIndexOf('.');
+		return (pos > 0) ? nameExt.substring(0, pos) : nameExt;
 	}
 
 	private void report(Bndrun run) {
