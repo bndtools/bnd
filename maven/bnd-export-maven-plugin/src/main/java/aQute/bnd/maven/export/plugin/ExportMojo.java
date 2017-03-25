@@ -63,12 +63,14 @@ public class ExportMojo extends AbstractMojo {
 			errors++;
 			return;
 		}
+		String bndrun = getNamePart(runFile);
+		File temporaryDir = new File(targetDir, "tmp/export/" + bndrun);
+		File cnf = new File(temporaryDir, Workspace.CNFDIR);
+		cnf.mkdirs();
 		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
-			String bndrun = getNamePart(runFile);
-			File bndrunBase = new File(targetDir, "export/" + bndrun);
-			bndrunBase.mkdirs();
-			run.setBase(bndrunBase);
+			run.setBase(temporaryDir);
 			Workspace workspace = run.getWorkspace();
+			workspace.setBuildDir(cnf);
 			workspace.setOffline(session.getSettings().isOffline());
 			for (RepositoryPlugin repo : workspace.getRepositories()) {
 				repo.list(null);

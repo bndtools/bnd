@@ -90,12 +90,14 @@ public class TestingMojo extends AbstractMojo {
 			errors++;
 			return;
 		}
+		String bndrun = getNamePart(runFile);
+		File workingDir = new File(cwd, bndrun);
+		File cnf = new File(workingDir, Workspace.CNFDIR);
+		cnf.mkdirs();
 		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
-			String bndrun = getNamePart(runFile);
-			File bndrunBase = new File(cwd, bndrun);
-			bndrunBase.mkdirs();
-			run.setBase(bndrunBase);
+			run.setBase(workingDir);
 			Workspace workspace = run.getWorkspace();
+			workspace.setBuildDir(cnf);
 			workspace.setOffline(session.getSettings().isOffline());
 			for (RepositoryPlugin repo : workspace.getRepositories()) {
 				repo.list(null);
