@@ -30,6 +30,9 @@ public class ResolverMojo extends AbstractMojo {
 	@Parameter(defaultValue = "true")
 	private boolean				failOnChanges;
 
+	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
+	private File targetDir;
+
 	@Parameter(defaultValue = "${session}", readonly = true)
 	private MavenSession session;
 
@@ -55,8 +58,14 @@ public class ResolverMojo extends AbstractMojo {
 			errors++;
 			return;
 		}
+		String bndrun = getNamePart(runFile);
+		File temporaryDir = new File(targetDir, "tmp/resolve/" + bndrun);
+		File cnf = new File(temporaryDir, Workspace.CNFDIR);
+		cnf.mkdirs();
 		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
+			run.setBase(temporaryDir);
 			Workspace workspace = run.getWorkspace();
+			workspace.setBuildDir(cnf);
 			workspace.setOffline(session.getSettings().isOffline());
 			for (RepositoryPlugin repo : workspace.getRepositories()) {
 				repo.list(null);
@@ -66,9 +75,18 @@ public class ResolverMojo extends AbstractMojo {
 			if (!run.isOk()) {
 				return;
 			}
-			run.resolve(failOnChanges, true);
-			report(run);
+			try {
+				run.resolve(failOnChanges, true);
+			} finally {
+				report(run);
+			}
 		}
+	}
+
+	private String getNamePart(File runFile) {
+		String nameExt = runFile.getName();
+		int pos = nameExt.lastIndexOf('.');
+		return (pos > 0) ? nameExt.substring(0, pos) : nameExt;
 	}
 
 	private void report(Bndrun run) {

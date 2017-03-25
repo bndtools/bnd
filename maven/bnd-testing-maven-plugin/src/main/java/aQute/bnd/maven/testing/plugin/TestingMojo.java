@@ -90,12 +90,14 @@ public class TestingMojo extends AbstractMojo {
 			errors++;
 			return;
 		}
+		String bndrun = getNamePart(runFile);
+		File workingDir = new File(cwd, bndrun);
+		File cnf = new File(workingDir, Workspace.CNFDIR);
+		cnf.mkdirs();
 		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
-			String bndrun = getNamePart(runFile);
-			File bndrunBase = new File(cwd, bndrun);
-			bndrunBase.mkdirs();
-			run.setBase(bndrunBase);
+			run.setBase(workingDir);
 			Workspace workspace = run.getWorkspace();
+			workspace.setBuildDir(cnf);
 			workspace.setOffline(session.getSettings().isOffline());
 			for (RepositoryPlugin repo : workspace.getRepositories()) {
 				repo.list(null);
@@ -106,22 +108,28 @@ public class TestingMojo extends AbstractMojo {
 				return;
 			}
 			if (resolve) {
-				String runBundles = run.resolve(failOnChanges, false);
-				report(run);
-				if (!run.isOk()) {
-					return;
+				try {
+					String runBundles = run.resolve(failOnChanges, false);
+					if (!run.isOk()) {
+						return;
+					}
+					run.setProperty(Constants.RUNBUNDLES, runBundles);
+				} finally {
+					report(run);
 				}
-				run.setProperty(Constants.RUNBUNDLES, runBundles);
 			}
-			run.test(new File(reportsDir, bndrun), null);
-			report(run);
+			try {
+				run.test(new File(reportsDir, bndrun), null);
+			} finally {
+				report(run);
+			}
 		}
 	}
 
 	private String getNamePart(File runFile) {
 		String nameExt = runFile.getName();
-		int pos = nameExt.lastIndexOf(".");
-		return nameExt.substring(0, pos);
+		int pos = nameExt.lastIndexOf('.');
+		return (pos > 0) ? nameExt.substring(0, pos) : nameExt;
 	}
 
 	private void report(Bndrun run) {
