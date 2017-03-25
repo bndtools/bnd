@@ -108,15 +108,21 @@ public class TestingMojo extends AbstractMojo {
 				return;
 			}
 			if (resolve) {
-				String runBundles = run.resolve(failOnChanges, false);
-				report(run);
-				if (!run.isOk()) {
-					return;
+				try {
+					String runBundles = run.resolve(failOnChanges, false);
+					if (!run.isOk()) {
+						return;
+					}
+					run.setProperty(Constants.RUNBUNDLES, runBundles);
+				} finally {
+					report(run);
 				}
-				run.setProperty(Constants.RUNBUNDLES, runBundles);
 			}
-			run.test(new File(reportsDir, bndrun), null);
-			report(run);
+			try {
+				run.test(new File(reportsDir, bndrun), null);
+			} finally {
+				report(run);
+			}
 		}
 	}
 

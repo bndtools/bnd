@@ -75,8 +75,11 @@ public class ResolverMojo extends AbstractMojo {
 			if (!run.isOk()) {
 				return;
 			}
-			run.resolve(failOnChanges, true);
-			report(run);
+			try {
+				run.resolve(failOnChanges, true);
+			} finally {
+				report(run);
+			}
 		}
 	}
 

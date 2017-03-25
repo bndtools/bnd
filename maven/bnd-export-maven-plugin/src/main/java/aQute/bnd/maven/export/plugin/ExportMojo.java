@@ -81,21 +81,28 @@ public class ExportMojo extends AbstractMojo {
 				return;
 			}
 			if (resolve) {
-				String runBundles = run.resolve(failOnChanges, false);
-				report(run);
-				if (!run.isOk()) {
-					return;
+				try {
+					String runBundles = run.resolve(failOnChanges, false);
+					if (!run.isOk()) {
+						return;
+					}
+					run.setProperty(Constants.RUNBUNDLES, runBundles);
+				} finally {
+					report(run);
 				}
-				run.setProperty(Constants.RUNBUNDLES, runBundles);
 			}
-			if (bundlesOnly) {
-				run.exportRunbundles(null, bndrunBase);
-			} else {
-				File jarFile = new File(targetDir, bndrun + ".jar");
-				run.export(null, false, jarFile);
+			try {
+				if (bundlesOnly) {
+					File runbundlesDir = new File(targetDir, "export/" + bndrun);
+					runbundlesDir.mkdirs();
+					run.exportRunbundles(null, runbundlesDir);
+				} else {
+					File executableJar = new File(targetDir, bndrun + ".jar");
+					run.export(null, false, executableJar);
+				}
+			} finally {
+				report(run);
 			}
-
-			report(run);
 		}
 	}
 
