@@ -5,17 +5,18 @@
 -nobundles: true
 
 -testpath: \
+	org.osgi.util.function;version=latest,\
+	org.osgi.util.promise;version=latest,\
 	biz.aQute.bndlib;version=latest;packages=*,\
-	org.osgi.util.promise,\
 	biz.aQute.http.testservers;version=latest,\
 	jar/sockslib-1.0.0.jar;version=file,\
 	${junit},\
-	slf4j.api,\
-	slf4j.simple,\
-	org.littleshoot:littleproxy,\
-	io.netty:netty-all,\
-	org.apache.commons.lang3,\
-	org.apache.commons.codec,\
+	slf4j.api;version=latest,\
+	slf4j.simple;version=latest,\
+	org.littleshoot:littleproxy;version=latest,\
+	io.netty:netty-all;version=latest,\
+	org.apache.commons.lang3;version=latest,\
+	org.apache.commons.codec;version=latest,\
 	biz.aQute.repository;version=latest,\
-	com.google.guava;version=19.0
+	com.google.guava;version=latest
 

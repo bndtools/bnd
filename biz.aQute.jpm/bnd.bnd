@@ -23,14 +23,13 @@ Conditional-Package: 			aQute.libg.*, aQute.lib.*
 -buildpath: \
 	aQute.libg;version=project;packages=*,\
 	biz.aQute.bndlib;version=latest,\
-	aQute.jpm.clnt;version=2.1,\
-	slf4j.api,\
-	slf4j.simple,\
+	aQute.jpm.clnt;version=latest,\
+	slf4j.api;version=latest,\
+	slf4j.simple;version=latest,\
 	lib/WinRun4J.jar;version=file
 -testpath: \
 	${junit},\
-	${mockito},\
-    slf4j.simple
+	${mockito}
 	
 
 -digests: MD5, SHA1
