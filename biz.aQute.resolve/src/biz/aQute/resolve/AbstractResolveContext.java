@@ -14,7 +14,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,6 +50,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.Filters;
 import aQute.bnd.osgi.resource.ResourceBuilder;
@@ -772,42 +772,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	public static Repository createRepository(final List<Resource> resources) {
-		return new Repository() {
-
-			@Override
-			public Map<Requirement,Collection<Capability>> findProviders(
-					Collection< ? extends Requirement> requirements) {
-				Map<Requirement,Collection<Capability>> reqMap = null;
-				for (Requirement requirement : requirements) {
-					Resource resource = requirement.getResource();
-					List<Capability> result = new ArrayList<Capability>();
-					for (Resource found : resources) {
-						String filterStr = requirement.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
-						try {
-							org.osgi.framework.Filter filter = filterStr != null
-									? org.osgi.framework.FrameworkUtil.createFilter(filterStr) : null;
-
-							List<Capability> caps = found.getCapabilities(requirement.getNamespace());
-							for (Capability c : caps) {
-								if (filter != null && filter.matches(c.getAttributes())) {
-									result.add(c);
-								}
-							}
-						} catch (InvalidSyntaxException e) {}
-					}
-					if (result.size() > 0) {
-						if (reqMap == null) {
-							reqMap = new LinkedHashMap<Requirement,Collection<Capability>>();
-						}
-						reqMap.put(requirement, result);
-					}
-				}
-				if (reqMap != null) {
-					return reqMap;
-				}
-				return Collections.emptyMap();
-			}
-		};
+		return new ResourcesRepository(resources);
 	}
 
 	public static Capability createPackageCapability(String packageName, String versionString) throws Exception {
