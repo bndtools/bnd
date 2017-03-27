@@ -6,8 +6,8 @@
 	org.osgi.impl.bundle.repoindex.lib;version=project,\
 	osgi.core;version=4.3.1,\
 	osgi.cmpn;version=4.3.1,\
-	de.kalpatec.pojosr.framework;version=0.1.8,\
-	org.apache.ant:ant
+	de.kalpatec.pojosr.framework;version=latest,\
+	org.apache.ant:ant;version=latest
 
 bindex-pkgs:\
 	org.osgi.service.indexer.impl,\

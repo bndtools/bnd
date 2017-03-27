@@ -8,12 +8,12 @@
   osgi.cmpn;version=4.3.1,\
   ${junit},\
   ${mockito},\
-  slf4j.api
+  slf4j.api;version=latest
 
 -testpath:\
   aQute.libg;version=latest, \
   biz.aQute.bndlib;version=latest,\
-  slf4j.simple
+  slf4j.simple;version=latest
 
 # This is required to ensure the cli JAR is built before
 # running the integration tests

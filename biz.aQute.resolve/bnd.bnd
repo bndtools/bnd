@@ -6,13 +6,13 @@
     aQute.libg;version=latest,\
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.repository;version=snapshot,\
-	org.apache.felix.resolver;packages=org.apache.felix.resolver.*,\
-	slf4j.api
+	org.apache.felix.resolver;version=latest;packages=org.apache.felix.resolver.*,\
+	slf4j.api;version=latest
 	
 -testpath: \
 	${junit},\
 	${mockito},\
-	slf4j.simple
+	slf4j.simple;version=latest
 
 Export-Package:  \
 	biz.aQute.resolve,\

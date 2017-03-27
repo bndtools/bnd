@@ -10,9 +10,9 @@
     osgi.annotation;version=6.0.1,\
     osgi.core;version=@6,\
     osgi.cmpn;version=@6,\
-	slf4j.api
+	slf4j.api;version=latest
 
 -testpath: \
 	${junit},\
 	${mockito},\
-	slf4j.simple
+	slf4j.simple;version=latest

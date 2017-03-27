@@ -11,17 +11,19 @@ jetty.libs: org.apache.geronimo.specs.geronimo-servlet_2.5_spec;version=1.2,\
 	org.eclipse.jetty.util;version=7.6.3
 
 -buildpath: \
-	osgi.core;version=@6,\
 	osgi.annotation;version=6.0.1,\
+	osgi.core;version=@6,\
+    org.osgi.util.function;version=latest,\
+    org.osgi.util.promise;version=latest,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
-	org.osgi.impl.bundle.bindex;packages=org.osgi.*.bindex.*,\
+	org.osgi.impl.bundle.bindex;version=latest;packages=org.osgi.*.bindex.*,\
 	org.osgi.impl.bundle.repoindex.lib;version=latest,\
 	osgi.cmpn;version=@6,\
-	javax.xml.stream;version=1.0.1,\
-	slf4j.api,\
-	aQute.jpm.clnt;version=1.0;packages=*,\
-	org.tukaani.xz;version=1.5,\
+	javax.xml.stream;version=latest,\
+	slf4j.api;version=latest,\
+	aQute.jpm.clnt;version=latest;packages=*,\
+	org.tukaani.xz;version=latest,\
 	biz.aQute.bnd.annotation;version=latest
 	
 -testpath: \
@@ -29,7 +31,7 @@ jetty.libs: org.apache.geronimo.specs.geronimo-servlet_2.5_spec;version=1.2,\
 	${mockito},\
 	${jetty.libs},\
 	biz.aQute.http.testservers;version=latest,\
-	slf4j.simple
+	slf4j.simple;version=latest
 
 bindex-pkgs: \
 	org.osgi.service.obr,\

@@ -13,20 +13,21 @@ Conditional-Package: aQute.lib*, fi.*, org.bouncycastle.*
 
 -buildpath: \
     osgi.annotation;version=6.0.1,\
+	org.osgi.util.function;version=latest,\
+	org.osgi.util.promise;version=latest,\
 	biz.aQute.bndlib;version=latest;packages=*,\
-	org.osgi.util.promise,\
-	org.nanohttpd:nanohttpd;version=2.2,\
-	bcpkix;version=1.54,\
-	bcprov;version=1.54, \
-	org.littleshoot:littleproxy
+	org.nanohttpd:nanohttpd;version=latest,\
+	bcpkix;version=latest,\
+	bcprov;version=latest, \
+	org.littleshoot:littleproxy;version=latest
 	
 -testpath: \
 	${junit}, \
-	slf4j.api, \
-	slf4j.simple, \
-	com.google.guava, \
-	org.apache.commons.lang3, \
-	org.apache.commons.codec
+	slf4j.api;version=latest, \
+	slf4j.simple;version=latest, \
+	com.google.guava;version=latest, \
+	org.apache.commons.lang3;version=latest, \
+	org.apache.commons.codec;version=latest
 
 Export-Package: aQute.http.testservers
 

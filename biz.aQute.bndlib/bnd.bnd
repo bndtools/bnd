@@ -40,21 +40,23 @@ Export-Package: \
 	aQute.bnd.component.error;-noimport:=true,\
 	org.osgi.service.repository,\
 	org.osgi.resource, \
-	org.osgi.util.promise;-noimport:=true, \
-	org.osgi.util.function;-noimport:=true
+	org.osgi.util.promise;-split-package:=first, \
+	org.osgi.util.function;-split-package:=first
 
 Conditional-Package:	        aQute.service.*, aQute.configurable
 -includeresource: 				${workspace}/LICENSE, img/=img/, {readme.md}
 
 -buildpath:  \
-	org.osgi.service.component.annotations;version=1.3.0,\
-	org.osgi.service.metatype.annotations;version=1.3.0,\
+	org.osgi.service.component.annotations;version=latest,\
+	org.osgi.service.metatype.annotations;version=latest,\
     osgi.annotation;version=6.0.1,\
 	osgi.core;version=@6,\
+    org.osgi.util.function;version=latest,\
+    org.osgi.util.promise;version=latest,\
 	osgi.cmpn;version=@6,\
 	aQute.libg;version=project, \
 	biz.aQute.bnd.annotation;version=project,\
-	slf4j.api
+	slf4j.api;version=latest
 
 Import-Package: junit.framework;resolution:=optional,\
 	org.osgi.resource;resolution:=optional,\

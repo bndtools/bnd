@@ -2,8 +2,8 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
-	slf4j.api,\
-	org.osgi.util.function
+	slf4j.api;version=latest,\
+	org.osgi.util.function;version=latest
 
 -testpath: \
     ${junit}
