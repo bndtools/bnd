@@ -21,12 +21,18 @@ dependencies {
 }
 
 jar {
+    bndinstructions = [
+        '-includeresource.baz': '{baz.txt}',
+        'Override-Map': 'Override the jar task manifest'
+    ]
+
     manifest {
         attributes('Implementation-Title': baseName,
                    'Implementation-Version': version,
                    '-includeresource': '{bar.txt}',
                    '-include': 'other.bnd',
-                   'Override': 'This should be overridden by the bnd file'
+                   'Override': 'This should be overridden by the bnd file',
+                   'Override-Map': 'This should be overridden by the bndinstructions map'
                    )
     }
 }
