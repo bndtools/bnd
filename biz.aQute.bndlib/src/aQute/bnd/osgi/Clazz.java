@@ -2053,7 +2053,7 @@ public class Clazz {
 		StringBuilder out = new StringBuilder();
 		for (int i = 0; i < id.length(); i++) {
 			char c = id.charAt(i);
-			if (c == '_' || c == '$' || c == '.') {
+			if (c == '_' || c == '$' || c == '-' || c == '.') {
 				if (out.length() > 0 && !Character.isWhitespace(out.charAt(out.length() - 1)))
 					out.append(' ');
 				continue;

@@ -123,7 +123,7 @@ public class OCDReader extends ClassDataCollector {
 	}
 
 	// TODO what about Queue|Stack|Deque?
-	static Pattern GENERIC = Pattern.compile("((" + Collection.class.getName() + "|" + Set.class.getName() + "|"
+	static final Pattern GENERIC = Pattern.compile("((" + Collection.class.getName() + "|" + Set.class.getName() + "|"
 			+ List.class.getName() + "|" + Iterable.class.getName() + ")|(.*))<(L.+;)>");
 
 	private void doMethods() throws Exception {
@@ -142,7 +142,7 @@ public class OCDReader extends ClassDataCollector {
 			}
 			ADDef ad = entry.getValue();
 			ocd.attributes.add(ad);
-			ad.id = fixup(defined.getName());
+			ad.id = identifierToPropertyName(defined.getName());
 			ad.name = space(defined.getName());
 			String rtype = defined.getGenericReturnType();
 			if (rtype.endsWith("[]")) {
@@ -226,7 +226,7 @@ public class OCDReader extends ClassDataCollector {
 	// collection with a no-arg constructor
 	// So far this implementation doesn't try very hard. It only looks to see if
 	// the class directly implements a known collection interface.
-	static Pattern COLLECTION = Pattern
+	static final Pattern COLLECTION = Pattern
 			.compile("(" + Collection.class.getName() + "|" + Set.class.getName() + "|" + List.class.getName() + "|"
 					+ Queue.class.getName() + "|" + Stack.class.getName() + "|" + Deque.class.getName() + ")");
 
@@ -291,21 +291,25 @@ public class OCDReader extends ClassDataCollector {
 
 	}
 
-	private static final Pattern p = Pattern.compile("(\\$\\$)|(\\$)|(__)|(_)");
+	static final Pattern IDENTIFIERTOPROPERTY = Pattern.compile("(__)|(_)|(\\$_\\$)|(\\$\\$)|(\\$)");
 
-	static String fixup(String name) {
-		Matcher m = p.matcher(name);
+	private String identifierToPropertyName(String name) {
+		Matcher m = IDENTIFIERTOPROPERTY.matcher(name);
 		StringBuffer b = new StringBuffer();
 		while (m.find()) {
-			String replacement = "";// null;
-			if (m.group(1) != null)
-				replacement = "\\$";
-			if (m.group(2) != null)
-				replacement = "";
-			if (m.group(3) != null)
+			String replacement;// null;
+			if (m.group(1) != null) // __ to _
 				replacement = "_";
-			if (m.group(4) != null)
+			else if (m.group(2) != null) // _ to .
 				replacement = ".";
+			else if (m.group(3) != null) { // $_$ to -
+				replacement = "-";
+				ocd.updateVersion(MetatypeVersion.VERSION_1_4);
+			}
+			else if (m.group(4) != null) // $$ to $
+				replacement = "\\$";
+			else // $ removed.
+				replacement = "";
 
 			m.appendReplacement(b, replacement);
 		}
