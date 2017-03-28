@@ -41,6 +41,7 @@ import org.gradle.api.tasks.SourceSet
 class BundleTaskConvention {
   private final org.gradle.api.tasks.bundling.Jar task
   private File bndfile
+  private Map bndinstructions
   private Configuration configuration
   private FileCollection classpath
   private SourceSet sourceSet
@@ -141,8 +142,8 @@ class BundleTaskConvention {
         // load bnd properties
         File temporaryBndFile = File.createTempFile('bnd', '.bnd', temporaryDir)
         temporaryBndFile.withWriter('UTF-8') { writer ->
-          // write any task manifest entries into the tmp bnd file
-          manifest.effectiveManifest.attributes.inject(new Properties()) { properties, key, value ->
+          // write any task manifest entries and additional bnd instructions into the tmp bnd file
+          (manifest.effectiveManifest.attributes + (bndinstructions ?: [:])).inject(new Properties()) { properties, key, value ->
             if (key != 'Manifest-Version') {
               properties.setProperty(key, value.toString())
             }
