@@ -329,11 +329,11 @@ class OCDReader {
 					ocd.localization = o.localization() == null ? "OSGI-INF/l10n/" + name.getFQN() : o.localization();
 					if (annotation.get("pid") != null) {
 						String[] pids = o.pid();
-						designates(pids, false);
+						designates(name.getFQN(), pids, false);
 					}
 					if (annotation.get("factoryPid") != null) {
 						String[] pids = o.factoryPid();
-						designates(pids, true);
+						designates(name.getFQN(), pids, true);
 					}
 					if (annotation.get("icon") != null) {
 						Icon[] icons = o.icon();
@@ -511,8 +511,11 @@ class OCDReader {
 			return Clazz.unCamel(name);
 		}
 
-		private void designates(String[] pids, boolean factory) {
+		private void designates(String name, String[] pids, boolean factory) {
 			for (String pid : pids) {
+				if ("$".equals(pid)) {
+					pid = name;
+				}
 				ocd.designates.add(new DesignateDef(ocd.id, pid, factory, finder));
 			}
 		}
