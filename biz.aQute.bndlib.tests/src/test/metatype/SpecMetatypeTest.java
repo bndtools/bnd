@@ -197,6 +197,46 @@ public class SpecMetatypeTest extends TestCase {
 		assertAD(xt, "nullid", "§NULL§");
 	}
 
+	/**
+	 * Test method naming options with '.' and reserved names
+	 */
+	
+	@ObjectClassDefinition
+	public static @interface Naming14 {
+		String PREFIX_ = "test.";
+
+		String a$_$b() default "foo"; // test.a-b
+	
+		@AttributeDefinition(name = "a-b")
+		String xa$_$b() default "foo"; // test.xa-b
+
+		String value() default "foo"; // test.naming14
+	}
+
+	private void assertAD(XmlTester xt, String id, String name, String deflt) throws XPathExpressionException {
+		assertAD(xt, id, name, null, null, deflt, 0, "String", null, null, null);
+	}
+
+	public void testNaming14() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setProperty("Export-Package", "test.metatype");
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, Naming14.class.getName());
+		b.build();
+		System.out.println(b.getErrors());
+		assertEquals(0, b.getErrors().size());
+		System.out.println(b.getWarnings());
+		assertEquals(0, b.getWarnings().size());
+
+		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$Naming14.xml");
+		IO.copy(r.openInputStream(), System.err);
+		XmlTester xt = xmlTester14(r);
+
+		assertAD(xt, "test.a-b", "A b", "foo");
+		assertAD(xt, "test.xa-b", "a-b", "foo");
+		assertAD(xt, "test.naming14", "Value", "foo");
+	}
+
 	@ObjectClassDefinition
 	public static interface ADCollision {
 
@@ -769,6 +809,10 @@ public class SpecMetatypeTest extends TestCase {
 
 	private XmlTester xmlTester13(Resource r) throws Exception {
 		return xmlTester(r, MetatypeVersion.VERSION_1_3);
+	}
+
+	private XmlTester xmlTester14(Resource r) throws Exception {
+		return xmlTester(r, MetatypeVersion.VERSION_1_4);
 	}
 
 	private XmlTester xmlTester(Resource r, MetatypeVersion version) throws Exception {

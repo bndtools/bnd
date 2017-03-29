@@ -53,32 +53,34 @@ public class AnnotationReader extends ClassDataCollector {
 	public static final Version			V1_1						= new Version("1.1.0");																											// "1.1.0"
 	public static final Version			V1_2						= new Version("1.2.0");																											// "1.2.0"
 	public static final Version			V1_3						= new Version("1.3.0");																											// "1.3.0"
+	public static final Version			V1_4						= new Version("1.4.0");																											// "1.3.0"
 
-	static Pattern						BINDNAME					= Pattern.compile("(set|add|bind)?(.*)");
+	static final Pattern				BINDNAME					= Pattern.compile("(set|add|bind)?(.*)");
 
-	static Pattern						BINDDESCRIPTORDS10			= Pattern.compile(
+	static final Pattern				BINDDESCRIPTORDS10			= Pattern.compile(
 			"\\(L(((org/osgi/framework/ServiceReference)|(org/osgi/service/component/ComponentServiceObjects)|(java/util/Map\\$Entry)|(java/util/Map))|([^;]+));\\)(V|(Ljava/util/Map;))");
-	static Pattern						BINDDESCRIPTORDS11			= Pattern
+	static final Pattern				BINDDESCRIPTORDS11			= Pattern
 			.compile("\\(L([^;]+);(Ljava/util/Map;)?\\)(V|(Ljava/util/Map;))");
 
 	// includes support for felix extensions
-	static Pattern						BINDDESCRIPTORDS13			= Pattern.compile(
+	static final Pattern				BINDDESCRIPTORDS13			= Pattern.compile(
 			"\\(((Lorg/osgi/framework/ServiceReference;)|(Lorg/osgi/service/component/ComponentServiceObjects;)|(Ljava/util/Map;)|(Ljava/util/Map\\$Entry;)|(L([^;]+);))+\\)(V|(Ljava/util/Map;))");
 
-	static Pattern						LIFECYCLEDESCRIPTORDS10		= Pattern
+	static final Pattern				LIFECYCLEDESCRIPTORDS10		= Pattern
 			.compile("\\((Lorg/osgi/service/component/ComponentContext;)\\)(V|(Ljava/util/Map;))");
-	static Pattern						LIFECYCLEDESCRIPTORDS11		= Pattern.compile(
+	static final Pattern				LIFECYCLEDESCRIPTORDS11		= Pattern.compile(
 			"\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)(V|(Ljava/util/Map;))");
-	static Pattern						LIFECYCLEDESCRIPTORDS13		= Pattern
+	static final Pattern				LIFECYCLEDESCRIPTORDS13		= Pattern
 			.compile("\\((L([^;]+);)*\\)(V|(Ljava/util/Map;))");
-	static Pattern						LIFECYCLEARGUMENT			= Pattern.compile(
+	static final Pattern				LIFECYCLEARGUMENT			= Pattern.compile(
 			"((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(L([^;]+);))");
 
-	static Pattern						IDENTIFIERTOPROPERTY		= Pattern.compile("(__)|(_)|(\\$\\$)|(\\$)");
+	static final Pattern				IDENTIFIERTOPROPERTY		= Pattern
+			.compile("(__)|(_)|(\\$_\\$)|(\\$\\$)|(\\$)");
 
-	static Pattern						DEACTIVATEDESCRIPTORDS11	= Pattern.compile(
+	static final Pattern				DEACTIVATEDESCRIPTORDS11	= Pattern.compile(
 			"\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(Ljava/lang/Integer;)|(I))*\\)(V|(Ljava/util/Map;))");
-	static Pattern						DEACTIVATEDESCRIPTORDS13	= Pattern
+	static final Pattern				DEACTIVATEDESCRIPTORDS13	= Pattern
 			.compile("\\(((L([^;]+);)|(I))*\\)(V|(Ljava/util/Map;))");
 
 	final static Map<String,Class< ? >>	wrappers;
@@ -426,83 +428,7 @@ public class AnnotationReader extends ClassDataCollector {
 				try {
 					Clazz clazz = analyzer.findClass(typeRef);
 					if (clazz.isAnnotation()) {
-						final MultiMap<String,String> props = new MultiMap<String,String>();
-						clazz.parseClassFileWithCollector(new ClassDataCollector() {
-
-							@Override
-							public void annotationDefault(Clazz.MethodDef defined) {
-								Object value = defined.getConstant();
-								// check type, exit with warning if annotation
-								// or annotation array
-								boolean isClass = false;
-								Class< ? > typeClass = null;
-								TypeRef type = defined.getType().getClassRef();
-								if (!type.isPrimitive()) {
-									if (Class.class.getName().equals(type.getFQN())) {
-										isClass = true;
-									} else {
-										try {
-											Clazz r = analyzer.findClass(type);
-											if (r.isAnnotation()) {
-												analyzer.warning("Nested annotation type found in field %s, %s",
-														defined.getName(), type.getFQN()).details(details);
-												return;
-											}
-										} catch (Exception e) {
-											analyzer.exception(e,
-													"Exception looking at annotation type to lifecycle method with descriptor %s,  type %s",
-													methodDescriptor, type).details(details);
-										}
-									}
-								} else {
-									typeClass = wrappers.get(type.getFQN());
-								}
-								if (value != null) {
-									String name = identifierToPropertyName(defined.getName());
-									if (value.getClass().isArray()) {
-										// add element individually
-										for (int i = 0; i < Array.getLength(value); i++) {
-											Object element = Array.get(value, i);
-											valueToProperty(name, element, isClass, typeClass);
-										}
-									} else
-										valueToProperty(name, value, isClass, typeClass);
-								}
-							}
-
-							private void valueToProperty(String name, Object value, boolean isClass,
-									Class< ? > typeClass) {
-								if (isClass)
-									value = ((TypeRef) value).getFQN();
-								if (typeClass == null)
-									typeClass = value.getClass();
-								// enums already come out as the enum name, no
-								// processing needed.
-								String type = typeClass.getSimpleName();
-								component.propertyType.put(name, type);
-								props.add(name, value.toString());
-							}
-
-							private String identifierToPropertyName(String name) {
-								Matcher m = IDENTIFIERTOPROPERTY.matcher(name);
-								StringBuffer b = new StringBuffer();
-								while (m.find()) {
-									String replace = "";
-									if (m.group(1) != null) // __ to _
-										replace = "_";
-									else if (m.group(2) != null) // _ to .
-										replace = ".";
-									else if (m.group(3) != null) // $$ to $
-										replace = "\\$";
-									// group 4 $ removed.
-									m.appendReplacement(b, replace);
-								}
-								m.appendTail(b);
-								return b.toString();
-							}
-
-						});
-						component.property.putAll(props);
+						clazz.parseClassFileWithCollector(new ComponentPropertyTypeDataCollector(methodDescriptor, details));
 					} else if (clazz.isInterface() && options.contains(Options.felixExtensions)) {
 						// ok
 					} else {
@@ -515,6 +441,173 @@ public class AnnotationReader extends ClassDataCollector {
 							methodDescriptor, type).details(details);
 				}
 			}
+		}
+	}
+
+	private final class ComponentPropertyTypeDataCollector extends ClassDataCollector {
+		private final String								methodDescriptor;
+		private final DeclarativeServicesAnnotationError	details;
+		private final MultiMap<String,String>				props			= new MultiMap<String,String>();
+		private final Map<String,String>					propertyTypes	= new HashMap<>();
+		private int											hasNoDefault	= 0;
+		private boolean										hasValue		= false;
+		private FieldDef									prefixField		= null;
+		private TypeRef										typeRef			= null;
+	
+		private ComponentPropertyTypeDataCollector(String methodDescriptor,
+				DeclarativeServicesAnnotationError details) {
+			this.methodDescriptor = methodDescriptor;
+			this.details = details;
+		}
+	
+		@Override
+		public void classBegin(int access, TypeRef name) {
+			typeRef = name;
+		}
+
+		@Override
+		public void field(FieldDef defined) {
+			if (defined.getName().equals("PREFIX_") && defined.isPublic() && defined.isStatic()
+					&& defined.isFinal()) {
+				prefixField = defined;
+			}
+		}
+	
+		@Override
+		public void method(MethodDef defined) {
+			if (defined.getName().equals("value")) {
+				hasValue = true;
+			} else {
+				hasNoDefault++;
+			}
+		}
+	
+		@Override
+		public void annotationDefault(MethodDef defined, Object value) {
+			if (!defined.getName().equals("value")) {
+				hasNoDefault--;
+			}
+			// check type, exit with warning if annotation
+			// or annotation array
+			boolean isClass = false;
+			Class< ? > typeClass = null;
+			TypeRef type = defined.getType().getClassRef();
+			if (!type.isPrimitive()) {
+				if (Class.class.getName().equals(type.getFQN())) {
+					isClass = true;
+				} else {
+					try {
+						Clazz r = analyzer.findClass(type);
+						if (r.isAnnotation()) {
+							analyzer.warning("Nested annotation type found in field %s, %s",
+									defined.getName(), type.getFQN()).details(details);
+							return;
+						}
+					} catch (Exception e) {
+						analyzer.exception(e,
+								"Exception looking at annotation type to lifecycle method with descriptor %s,  type %s",
+								methodDescriptor, type).details(details);
+					}
+				}
+			} else {
+				typeClass = wrappers.get(type.getFQN());
+			}
+			if (value != null) {
+				String name = defined.getName();
+				if (value.getClass().isArray()) {
+					// add element individually
+					for (int i = 0; i < Array.getLength(value); i++) {
+						Object element = Array.get(value, i);
+						valueToProperty(name, element, isClass, typeClass);
+					}
+				} else
+					valueToProperty(name, value, isClass, typeClass);
+			}
+		}
+	
+		@Override
+		public void classEnd() throws Exception {
+			String prefix = null;
+			if (prefixField != null) {
+				Object c = prefixField.getConstant();
+				if (c instanceof String) {
+					prefix = (String) c;
+					component.updateVersion(V1_4);
+				} else {
+					analyzer.warning("Field PREFIX_ for %s does not have a String constant value: %s", typeRef.getFQN(),
+							c).details(details);
+				}
+			}
+			String singleElementAnnotation = null;
+			if (hasValue && (hasNoDefault == 0)) {
+				StringBuilder sb = new StringBuilder(typeRef.getShorterName());
+				boolean lastLowerCase = false;
+				for (int i = 0; i < sb.length(); i++) {
+					char c = sb.charAt(i);
+					if (Character.isUpperCase(c)) {
+						sb.setCharAt(i, Character.toLowerCase(c));
+						if (lastLowerCase) {
+							sb.insert(i++, '.');
+						}
+						lastLowerCase = false;
+					} else {
+						lastLowerCase = Character.isLowerCase(c);
+					}
+				}
+				singleElementAnnotation = sb.toString();
+				component.updateVersion(V1_4);
+			}
+			for (Entry<String,List<String>> entry : props.entrySet()) {
+				String key = entry.getKey();
+				List<String> value = entry.getValue();
+				String type = propertyTypes.get(key);
+				if ((singleElementAnnotation != null) && key.equals("value")) {
+					key = singleElementAnnotation;
+				} else {
+					key = identifierToPropertyName(key);
+				}
+				if (prefix != null) {
+					key = prefix + key;
+				}
+				component.property.put(key, value);
+				component.propertyType.put(key, type);
+			}
+		}
+
+		private void valueToProperty(String name, Object value, boolean isClass,
+				Class< ? > typeClass) {
+			if (isClass)
+				value = ((TypeRef) value).getFQN();
+			if (typeClass == null)
+				typeClass = value.getClass();
+			// enums already come out as the enum name, no
+			// processing needed.
+			String type = typeClass.getSimpleName();
+			propertyTypes.put(name, type);
+			props.add(name, value.toString());
+		}
+	
+		private String identifierToPropertyName(String name) {
+			Matcher m = IDENTIFIERTOPROPERTY.matcher(name);
+			StringBuffer b = new StringBuffer();
+			while (m.find()) {
+				String replace;
+				if (m.group(1) != null) // __ to _
+					replace = "_";
+				else if (m.group(2) != null) // _ to .
+					replace = ".";
+				else if (m.group(3) != null) { // $_$ to -
+					replace = "-";
+					component.updateVersion(V1_4);
+				}
+				else if (m.group(4) != null) // $$ to $
+					replace = "\\$";
+				else // $ removed.
+					replace = "";
+				m.appendReplacement(b, replace);
+			}
+			m.appendTail(b);
+			return b.toString();
 		}
 	}
 

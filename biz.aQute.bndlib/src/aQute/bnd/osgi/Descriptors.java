@@ -224,7 +224,7 @@ public class Descriptors {
 		@Override
 		public String getShorterName() {
 			String name = getShortName();
-			int n = name.indexOf('$');
+			int n = name.lastIndexOf('$');
 			if (n <= 0)
 				return name;
 
