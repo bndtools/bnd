@@ -449,6 +449,10 @@ public class AnnotationReader extends ClassDataCollector {
 		private final DeclarativeServicesAnnotationError	details;
 		private final MultiMap<String,String>				props			= new MultiMap<String,String>();
 		private final Map<String,String>					propertyTypes	= new HashMap<>();
+		private int											hasNoDefault	= 0;
+		private boolean										hasValue		= false;
+		private FieldDef									prefixField		= null;
+		private TypeRef										typeRef			= null;
 	
 		private ComponentPropertyTypeDataCollector(String methodDescriptor,
 				DeclarativeServicesAnnotationError details) {
@@ -457,7 +461,32 @@ public class AnnotationReader extends ClassDataCollector {
 		}
 	
 		@Override
+		public void classBegin(int access, TypeRef name) {
+			typeRef = name;
+		}
+
+		@Override
+		public void field(FieldDef defined) {
+			if (defined.getName().equals("PREFIX_") && defined.isPublic() && defined.isStatic()
+					&& defined.isFinal()) {
+				prefixField = defined;
+			}
+		}
+	
+		@Override
+		public void method(MethodDef defined) {
+			if (defined.getName().equals("value")) {
+				hasValue = true;
+			} else {
+				hasNoDefault++;
+			}
+		}
+	
+		@Override
 		public void annotationDefault(MethodDef defined, Object value) {
+			if (!defined.getName().equals("value")) {
+				hasNoDefault--;
+			}
 			// check type, exit with warning if annotation
 			// or annotation array
 			boolean isClass = false;
@@ -484,7 +513,7 @@ public class AnnotationReader extends ClassDataCollector {
 				typeClass = wrappers.get(type.getFQN());
 			}
 			if (value != null) {
-				String name = identifierToPropertyName(defined.getName());
+				String name = defined.getName();
 				if (value.getClass().isArray()) {
 					// add element individually
 					for (int i = 0; i < Array.getLength(value); i++) {
@@ -496,6 +525,55 @@ public class AnnotationReader extends ClassDataCollector {
 			}
 		}
 	
+		@Override
+		public void classEnd() throws Exception {
+			String prefix = null;
+			if (prefixField != null) {
+				Object c = prefixField.getConstant();
+				if (c instanceof String) {
+					prefix = (String) c;
+					component.updateVersion(V1_4);
+				} else {
+					analyzer.warning("Field PREFIX_ for %s does not have a String constant value: %s", typeRef.getFQN(),
+							c).details(details);
+				}
+			}
+			String singleElementAnnotation = null;
+			if (hasValue && (hasNoDefault == 0)) {
+				StringBuilder sb = new StringBuilder(typeRef.getShorterName());
+				boolean lastLowerCase = false;
+				for (int i = 0; i < sb.length(); i++) {
+					char c = sb.charAt(i);
+					if (Character.isUpperCase(c)) {
+						sb.setCharAt(i, Character.toLowerCase(c));
+						if (lastLowerCase) {
+							sb.insert(i++, '.');
+						}
+						lastLowerCase = false;
+					} else {
+						lastLowerCase = Character.isLowerCase(c);
+					}
+				}
+				singleElementAnnotation = sb.toString();
+				component.updateVersion(V1_4);
+			}
+			for (Entry<String,List<String>> entry : props.entrySet()) {
+				String key = entry.getKey();
+				List<String> value = entry.getValue();
+				String type = propertyTypes.get(key);
+				if ((singleElementAnnotation != null) && key.equals("value")) {
+					key = singleElementAnnotation;
+				} else {
+					key = identifierToPropertyName(key);
+				}
+				if (prefix != null) {
+					key = prefix + key;
+				}
+				component.property.put(key, value);
+				component.propertyType.put(key, type);
+			}
+		}
+
 		private void valueToProperty(String name, Object value, boolean isClass,
 				Class< ? > typeClass) {
 			if (isClass)
@@ -530,12 +608,6 @@ public class AnnotationReader extends ClassDataCollector {
 			}
 			m.appendTail(b);
 			return b.toString();
-		}
-	
-		@Override
-		public void classEnd() throws Exception {
-			component.property.putAll(props);
-			component.propertyType.putAll(propertyTypes);
 		}
 	}
 

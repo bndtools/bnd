@@ -202,11 +202,19 @@ public class SpecMetatypeTest extends TestCase {
 	 */
 	
 	@ObjectClassDefinition
-	public static interface Naming14 {
-		String a$_$b(); // a-b
+	public static @interface Naming14 {
+		String PREFIX_ = "test.";
+
+		String a$_$b() default "foo"; // test.a-b
 	
 		@AttributeDefinition(name = "a-b")
-		String xa$_$b(); // a-b
+		String xa$_$b() default "foo"; // test.xa-b
+
+		String value() default "foo"; // test.naming14
+	}
+
+	private void assertAD(XmlTester xt, String id, String name, String deflt) throws XPathExpressionException {
+		assertAD(xt, id, name, null, null, deflt, 0, "String", null, null, null);
 	}
 
 	public void testNaming14() throws Exception {
@@ -224,8 +232,9 @@ public class SpecMetatypeTest extends TestCase {
 		IO.copy(r.openInputStream(), System.err);
 		XmlTester xt = xmlTester14(r);
 
-		assertAD(xt, "a-b", "A b");
-		assertAD(xt, "xa-b", "a-b");
+		assertAD(xt, "test.a-b", "A b", "foo");
+		assertAD(xt, "test.xa-b", "a-b", "foo");
+		assertAD(xt, "test.naming14", "Value", "foo");
 	}
 
 	@ObjectClassDefinition

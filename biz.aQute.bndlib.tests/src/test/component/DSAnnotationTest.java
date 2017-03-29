@@ -2395,7 +2395,11 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	public @interface ConfigNames14 {
+		String PREFIX_ = "test.";
+	
 		String my$_$String7() default "foo";
+	
+		String value() default "foo";
 	}
 
 	@Component()
@@ -2455,10 +2459,13 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
 		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
-		xt.assertAttribute("1", "count(scr:component/property)");
+		xt.assertAttribute("2", "count(scr:component/property)");
 
-		xt.assertAttribute("foo", "scr:component/property[@name='my-String7']/@value");
-		xt.assertAttribute("String", "scr:component/property[@name='my-String7']/@type");
+		xt.assertAttribute("foo", "scr:component/property[@name='test.my-String7']/@value");
+		xt.assertAttribute("String", "scr:component/property[@name='test.my-String7']/@type");
+
+		xt.assertAttribute("foo", "scr:component/property[@name='test.config.names14']/@value");
+		xt.assertAttribute("String", "scr:component/property[@name='test.config.names14']/@type");
 
 	}
 
