@@ -1109,7 +1109,7 @@ public class SpecMetatypeTest extends TestCase {
 	 * @author aqute
 	 */
 	@ObjectClassDefinition(description = "simple", name = "TestSimple", pid = {
-			"simplePid"
+			"simplePid", "$"
 	})
 	public static interface TestSimple {
 		@AttributeDefinition
@@ -1168,9 +1168,9 @@ public class SpecMetatypeTest extends TestCase {
 		xt.assertExactAttribute("TestSimple", "metatype:MetaData/OCD/@name");
 		xt.assertExactAttribute("simple", "metatype:MetaData/OCD/@description");
 		xt.assertExactAttribute("test.metatype.SpecMetatypeTest$TestSimple", "metatype:MetaData/OCD/@id");
-		xt.assertExactAttribute("simplePid", "metatype:MetaData/Designate/@pid");
-		xt.assertExactAttribute("test.metatype.SpecMetatypeTest$TestSimple",
-				"metatype:MetaData/Designate/Object/@ocdref");
+		xt.assertExactAttribute("simplePid", "metatype:MetaData/Designate[1]/@pid");
+		xt.assertExactAttribute(TestSimple.class.getName(), "metatype:MetaData/Designate[2]/@pid");
+		xt.assertExactAttribute(TestSimple.class.getName(), "metatype:MetaData/Designate/Object/@ocdref");
 		xt.assertExactAttribute("simple", "metatype:MetaData/OCD/AD[@id='simple']/@id");
 		xt.assertExactAttribute("Simple", "metatype:MetaData/OCD/AD[@id='simple']/@name");
 		xt.assertExactAttribute("String", "metatype:MetaData/OCD/AD[@id='simple']/@type");

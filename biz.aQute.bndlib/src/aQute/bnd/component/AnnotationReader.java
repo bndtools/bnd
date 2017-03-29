@@ -244,8 +244,7 @@ public class AnnotationReader extends ClassDataCollector {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-			analyzer.error("During generation of a component on class %s, exception %s", clazz, e);
+			analyzer.exception(e, "During generation of a component on class %s, exception %s", clazz, e);
 		}
 	}
 
@@ -467,14 +466,16 @@ public class AnnotationReader extends ClassDataCollector {
 
 		@Override
 		public void field(FieldDef defined) {
-			if (defined.getName().equals("PREFIX_") && defined.isPublic() && defined.isStatic()
-					&& defined.isFinal()) {
+			if (defined.isStatic() && defined.getName().equals("PREFIX_")) {
 				prefixField = defined;
 			}
 		}
 	
 		@Override
 		public void method(MethodDef defined) {
+			if (defined.isStatic()) {
+				return;
+			}
 			if (defined.getName().equals("value")) {
 				hasValue = true;
 			} else {
@@ -493,13 +494,13 @@ public class AnnotationReader extends ClassDataCollector {
 			Class< ? > typeClass = null;
 			TypeRef type = defined.getType().getClassRef();
 			if (!type.isPrimitive()) {
-				if (Class.class.getName().equals(type.getFQN())) {
+				if (type == analyzer.getTypeRef("java/lang/Class")) {
 					isClass = true;
 				} else {
 					try {
 						Clazz r = analyzer.findClass(type);
 						if (r.isAnnotation()) {
-							analyzer.warning("Nested annotation type found in field %s, %s",
+							analyzer.warning("Nested annotation type found in member %s, %s",
 									defined.getName(), type.getFQN()).details(details);
 							return;
 						}
@@ -530,11 +531,14 @@ public class AnnotationReader extends ClassDataCollector {
 			String prefix = null;
 			if (prefixField != null) {
 				Object c = prefixField.getConstant();
-				if (c instanceof String) {
+				if (prefixField.isFinal() && (prefixField.getType() == analyzer.getTypeRef("java/lang/String"))
+						&& (c instanceof String)) {
 					prefix = (String) c;
 					component.updateVersion(V1_4);
 				} else {
-					analyzer.warning("Field PREFIX_ for %s does not have a String constant value: %s", typeRef.getFQN(),
+					analyzer.warning(
+							"Field PREFIX_ in %s is not a static final String field with a compile-time constant value: %s",
+							typeRef.getFQN(),
 							c).details(details);
 				}
 			}
