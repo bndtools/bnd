@@ -315,10 +315,27 @@ jar {
 }
 ```
 
-You can even use a combination of the `manifest` property and a bnd
-file. But the bnd file takes priority over the `manifest` property. So
-if the same header is in both places, the one in the bnd file will be
-used and the one in the `manifest` property will be ignored.
+Alternatively, you can instruct Bnd by passing a map to the `bndinstructions`
+property. This is particularly useful for instructions that contain periods or
+other characters not allowed by the manifest specifications. For example:
+
+```groovy
+apply plugin: 'biz.aQute.bnd.builder'
+
+jar {
+    bndinstructions = ['-includeresource.foo': 'foo.txt']
+}
+```
+
+You can even use a combination of the `manifest` property, the `bndinstructions`
+map and a bnd file. But the `bndinstructions` map takes priority over the
+`manifest` property, and the bnd file takes priority over the `bndinstructions`
+map. So if the same header is in more than one place, bnd will use this priority
+order in order to find the header value, stopping when a value is found:
+
+1. `bndfile`
+2. `bndinstructions` map
+3. `manifest` property
 
 ## Create a task of the `Baseline` type
 

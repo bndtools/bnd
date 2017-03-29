@@ -56,6 +56,7 @@ class TestBundlePlugin extends Specification {
           jartask_manifest.getValue('Export-Package') =~ /doubler/
           jartask_manifest.getValue('X-SomeProperty') == 'Included via -include in jar task manifest'
           jartask_manifest.getValue('Override') == 'Override the jar task manifest'
+          jartask_manifest.getValue('Override-Map') == 'Override the jar task manifest'
           jartask_manifest.getValue('Project-Name') == "${testProject}"
           new File(jartask_manifest.getValue('Project-Dir')).canonicalFile == testProjectDir
           new File(jartask_manifest.getValue('Project-Output')).canonicalFile == testProjectBuildDir
@@ -78,6 +79,8 @@ class TestBundlePlugin extends Specification {
           jartask_jar.getInputStream(jartask_jar.getEntry('foo.txt')).text =~ /Hi!/
           jartask_jar.getEntry('bar.txt')
           jartask_jar.getInputStream(jartask_jar.getEntry('bar.txt')).text =~ /Some more TEXT/
+          jartask_jar.getEntry('baz.txt')
+          jartask_jar.getInputStream(jartask_jar.getEntry('baz.txt')).text =~ /Even more TEXT/
           !jartask_jar.getEntry('test.txt')
           jartask_jar.getEntry('commons-lang-2.6.jar')
           jartask_jar.close()
