@@ -18,7 +18,9 @@ import aQute.bnd.osgi.Constants
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.initialization.Settings
+import org.gradle.api.tasks.Delete
 
 public class BndWorkspacePlugin implements Plugin<Object> {
   public static final String PLUGINID = 'biz.aQute.bnd.workspace'
@@ -108,22 +110,34 @@ public class BndWorkspacePlugin implements Plugin<Object> {
   }
 
   Closure configureRootProject() {
-    return { project ->
-      if (project != rootProject) {
-        throw new GradleException("The project ${project.name} is not the root project")
-      }
-
-      /* Initialize rootProject properties */
-      ext.bnd_cnf = findProperty('bnd_cnf') ?: 'cnf'
-      Project cnfProject = findProject(bnd_cnf)
-      if (cnfProject != null) {
-        ext.cnf = cnfProject
+    return { p ->
+      if (p != rootProject) {
+        throw new GradleException("The project ${p.name} is not the root project")
       }
 
       /* Initialize the Bnd workspace */
+      ext.bnd_cnf = findProperty('bnd_cnf') ?: 'cnf'
       Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
       Workspace.addGestalt(Constants.GESTALT_BATCH, null)
       ext.bndWorkspace = new Workspace(rootDir, bnd_cnf).setOffline(gradle.startParameter.offline)
+
+      /* Configure cnf project */
+      Project cnfProject = findProject(bnd_cnf)
+      if (cnfProject != null) {
+        ext.cnf = cnfProject
+        cnfProject.task('cleanCache', type: Delete) {
+          description 'Clean the cnf/cache folder.'
+          group 'build'
+          delete 'cache'
+        }
+        /* if not offline, :cnf:clean dependsOn :cnf:cleanCache */
+        if (!bndWorkspace.isOffline()) {
+          cnfProject.afterEvaluate {
+            Task clean = cnfProject.tasks.findByName('clean') ?: cnfProject.task('clean', type: Delete)
+            clean.dependsOn cnfProject.cleanCache
+          }
+        }
+      }
 
       /* Configure the Bnd projects */
       subprojects {
