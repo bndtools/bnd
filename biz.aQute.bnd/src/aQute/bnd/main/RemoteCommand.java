@@ -264,6 +264,13 @@ class RemoteCommand extends Processor {
 
 			main.putValue(Constants.EXPORT_PACKAGE, packages.toString());
 
+			// Make distro unresolvable
+			Parameters unresolveable = new Parameters(
+					"osgi.unresolvable; filter:='(&(must.not.resolve=*)(!(must.not.resolve=*)))'");
+			main.putValue(Constants.REQUIRE_CAPABILITY, unresolveable.toString());
+
+			provided.add(new Parameters("osgi.unresolvable"));
+
 			StringBuilder sb = new StringBuilder();
 
 			for (Parameters parameter : provided) {
