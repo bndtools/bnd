@@ -20,6 +20,8 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.main.RemoteCommand.DistroOptions;
 import aQute.bnd.main.RemoteCommand.RemoteOptions;
 import aQute.bnd.main.testlib.MockRegistry;
@@ -210,5 +212,43 @@ public class DistroCommandTest extends TestCase {
 		assertTrue(distro.exists());
 
 		assertTrue(distro.lastModified() > 0);
+	}
+
+	public void testDistroJarNotResolvable() throws Exception {
+		bnd bnd = new bnd();
+		CommandLine cmdline = new CommandLine(null);
+		List<String> remoteArgs = new ArrayList<>();
+		RemoteOptions remoteOptions = cmdline.getOptions(RemoteOptions.class, remoteArgs);
+
+		File distro = new File("generated/tmp/test.distro.jar");
+
+		if (distro.exists()) {
+			assertTrue(distro.delete());
+		}
+
+		List<String> distroArgs = new ArrayList<>();
+		distroArgs.add("-o");
+		distroArgs.add(distro.getPath());
+		distroArgs.add("test.distro");
+		distroArgs.add("1.0.0");
+		DistroOptions distroOptions = cmdline.getOptions(DistroOptions.class, distroArgs);
+
+		new RemoteCommand(bnd, remoteOptions)._distro(distroOptions);
+
+		assertTrue(distro.exists());
+
+		Domain domain = Domain.domain(distro);
+
+		Parameters providedCapabilities = domain.getProvideCapability();
+
+		assertTrue(providedCapabilities.containsKey("osgi.unresolvable"));
+
+		Parameters requiredCapabilities = domain.getRequireCapability();
+
+		assertTrue(requiredCapabilities.containsKey("osgi.unresolvable"));
+
+		Attrs attrs = requiredCapabilities.get("osgi.unresolvable");
+
+		assertEquals("(&(must.not.resolve=*)(!(must.not.resolve=*)))", attrs.get("filter:"));
 	}
 }
