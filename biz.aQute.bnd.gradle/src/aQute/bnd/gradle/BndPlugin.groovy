@@ -17,6 +17,8 @@ package aQute.bnd.gradle
 import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.osgi.Processor.isTrue
 
+import aQute.bnd.build.Container
+import aQute.bnd.build.Container.TYPE
 import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
@@ -25,9 +27,9 @@ import biz.aQute.resolve.Bndrun
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
+import org.gradle.api.tasks.compile.JavaCompile
 
 import org.osgi.service.resolver.ResolutionException
 
@@ -72,12 +74,11 @@ public class BndPlugin implements Plugin<Project> {
 
       /* Set up configurations */
       configurations {
-        dependson.description = 'bnd project dependencies.'
         runtime.artifacts.clear()
         archives.artifacts.clear()
       }
       /* Set up deliverables */
-      bndProject.getDeliverables()*.getFile().each { deliverable ->
+      bndProject.getDeliverables()*.getFile().each { File deliverable ->
         artifacts {
           runtime(deliverable) {
              builtBy jar
@@ -86,13 +87,6 @@ public class BndPlugin implements Plugin<Project> {
              builtBy jar
           }
         }
-      }
-      /* Set up dependencies */
-      dependencies {
-        compile compilePath()
-        runtime runtimePath()
-        testCompile testCompilePath()
-        testRuntime testRuntimePath()
       }
       /* Set up source sets */
       sourceSets {
@@ -107,46 +101,52 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
       bnd.ext.allSrcDirs = files(bndProject.getAllsourcepath())
+      /* Set up dependencies */
+      Collection<String> projectDependencies = bndProject.getDependson()*.getName()
+      dependencies {
+        compile pathFiles(bndProject.getBuildpath())
+        runtime files(bndProject.getSrcOutput())
+        testCompile pathFiles(bndProject.getTestpath())
+        testRuntime files(bndProject.getTestOutput())
+      }
       /* Set up compile tasks */
       sourceCompatibility = bnd('javac.source', sourceCompatibility)
-      def javacTarget = bnd('javac.target', targetCompatibility)
-      def bootclasspath = files(bndProject.getBootclasspath()*.getFile())
+      String javacTarget = bnd('javac.target', targetCompatibility)
+      FileCollection javacBootclasspath = files(bndProject.getBootclasspath()*.getFile())
       if (javacTarget == 'jsr14') {
         javacTarget = '1.5'
-        bootclasspath = files(bndProject.getBundle('ee.j2se', '1.5', null, ['strategy':'lowest']).getFile())
+        javacBootclasspath = files(bndProject.getBundle('ee.j2se', '1.5', null, ['strategy':'lowest']).getFile())
       }
       targetCompatibility = javacTarget
-      def javac = bnd('javac')
-      def javacProfile = bnd('javac.profile', '')
-      def javacDebug = bndis('javac.debug')
-      def javacDeprecation = isTrue(bnd('javac.deprecation', 'true'))
-      def javacEncoding = bnd('javac.encoding', 'UTF-8')
-      def compileOptions = {
-        if (javacDebug) {
-          debugOptions.debugLevel = 'source,lines,vars'
+      String javac = bnd('javac')
+      String javacProfile = bnd('javac.profile', '')
+      boolean javacDebug = bndis('javac.debug')
+      boolean javacDeprecation = isTrue(bnd('javac.deprecation', 'true'))
+      String javacEncoding = bnd('javac.encoding', 'UTF-8')
+      tasks.withType(JavaCompile) {
+        configure(options) {
+          if (javacDebug) {
+            debugOptions.debugLevel = 'source,lines,vars'
+          }
+          verbose = logger.isDebugEnabled()
+          listFiles = logger.isInfoEnabled()
+          deprecation = javacDeprecation
+          encoding = javacEncoding
+          if (javac != 'javac') {
+            fork = true
+            forkOptions.executable = javac
+          }
+          if (!javacBootclasspath.empty) {
+            fork = true
+            bootClasspath = javacBootclasspath.asPath
+          }
+          if (!javacProfile.empty) {
+            compilerArgs.addAll(['-profile', javacProfile])
+          }
         }
-        verbose = logger.isDebugEnabled()
-        listFiles = logger.isInfoEnabled()
-        deprecation = javacDeprecation
-        encoding = javacEncoding
-        if (javac != 'javac') {
-          fork = true
-          forkOptions.executable = javac
-        }
-        if (!bootclasspath.empty) {
-          fork = true
-          bootClasspath = bootclasspath.asPath
-        }
-        if (!javacProfile.empty) {
-          compilerArgs += ['-profile', javacProfile]
-        }
-      }
-
-      compileJava {
-        configure options, compileOptions
         if (logger.isInfoEnabled()) {
           doFirst {
-            logger.info 'Compile {} to {}', sourceSets.main.java.srcDirs, destinationDir
+            logger.info 'Compile to {}', destinationDir
             if (javacProfile.empty) {
               logger.info '-source {} -target {}', sourceCompatibility, targetCompatibility
             } else {
@@ -163,23 +163,14 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      compileTestJava {
-        configure options, compileOptions
-        doFirst {
-            checkErrors(logger)
-        }
-      }
-
       processResources {
         outputs.files {
           def sourceDirectories = sourceSets.main.resources.srcDirs
-          def outputDir = sourceSets.main.output.resourcesDir
-          inputs.files.collect {
-            def input = it.absolutePath
+          source*.absolutePath.collect { String file ->
             sourceDirectories.each {
-              input -= it
+              file -= it
             }
-            new File(outputDir, input)
+            new File(destinationDir, file)
           }
         }
       }
@@ -187,13 +178,11 @@ public class BndPlugin implements Plugin<Project> {
       processTestResources {
         outputs.files {
           def sourceDirectories = sourceSets.test.resources.srcDirs
-          def outputDir = sourceSets.test.output.resourcesDir
-          inputs.files.collect {
-            def input = it.absolutePath
+          source*.absolutePath.collect { String file ->
             sourceDirectories.each {
-              input -= it
+              file -= it
             }
-            new File(outputDir, input)
+            new File(destinationDir, file)
           }
         }
       }
@@ -218,9 +207,15 @@ public class BndPlugin implements Plugin<Project> {
             tree.exclude projectDirInputsExcludes /* user specified excludes */
           }
         }
-        /* bnd can include any class on the buildpath */
+        /* bnd can include from -buildpath */
         inputs.files {
           compileJava.classpath
+        }
+        /* bnd can include from -dependson */
+        inputs.files { 
+          projectDependencies.collect { String dependency ->
+            tasks.getByPath(":${dependency}:jar")
+          }
         }
         /* Workspace and project configuration changes should trigger jar task */
         inputs.files bndProject.getWorkspace().getPropertiesFile(),
@@ -263,7 +258,9 @@ public class BndPlugin implements Plugin<Project> {
 
       task('releaseNeeded') {
         description 'Release the project and all projects it depends on.'
-        dependsOn release
+        dependsOn projectDependencies.collect { String dependency ->
+          ":${dependency}:releaseNeeded"
+        }, release
         group 'release'
       }
 
@@ -300,7 +297,9 @@ public class BndPlugin implements Plugin<Project> {
 
       task('checkNeeded') {
         description 'Runs all checks on the project and all projects it depends on.'
-        dependsOn check
+        dependsOn projectDependencies.collect { String dependency ->
+          ":${dependency}:checkNeeded"
+        }, check
         group 'verification'
       }
 
@@ -314,7 +313,9 @@ public class BndPlugin implements Plugin<Project> {
 
       task('cleanNeeded') {
         description 'Cleans the project and all projects it depends on.'
-        dependsOn clean
+        dependsOn projectDependencies.collect { String dependency ->
+          ":${dependency}:cleanNeeded"
+        }, clean
         group 'build'
       }
 
@@ -478,6 +479,16 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
+      /* After evaluate configuration */
+      afterEvaluate {
+        sourceSets {
+          main.convention?.plugins.each { lang, object ->
+            main[lang]?.setSrcDirs main.java.srcDirs
+            test[lang]?.setSrcDirs test.java.srcDirs
+          }
+        }
+      }
+
       task('echo') {
         description 'Displays the bnd project information.'
         group 'help'
@@ -491,7 +502,7 @@ project.workspace:      ${rootDir}
 project.name:           ${project.name}
 project.dir:            ${projectDir}
 target:                 ${buildDir}
-project.dependson:      ${bndProject.getDependson()*.getName()}
+project.dependson:      ${projectDependencies}
 project.sourcepath:     ${files(sourceSets.main.java.srcDirs).asPath}
 project.output:         ${compileJava.destinationDir}
 project.buildpath:      ${compileJava.classpath.asPath}
@@ -502,8 +513,8 @@ project.testpath:       ${compileTestJava.classpath.asPath}
 project.bootclasspath:  ${compileJava.options.bootClasspath}
 project.deliverables:   ${configurations.archives.artifacts.files*.path}
 javac:                  ${compileJava.options.forkOptions.executable}
-javac.source:           ${sourceCompatibility}
-javac.target:           ${targetCompatibility}
+javac.source:           ${compileJava.sourceCompatibility}
+javac.target:           ${compileJava.targetCompatibility}
 javac.profile:          ${javacProfile}
 """
           checkErrors(logger, true)
@@ -526,49 +537,17 @@ Project ${project.name}
           checkErrors(logger, true)
         }
       }
-
-      /* Set up dependencies */
-      def projectDependencies = []
-      bndProject.getDependson()*.getName().each { dependency ->
-        dependencies { handler ->
-          compile handler.project('path': ":${dependency}", 'configuration': 'dependson')
-        }
-        projectDependencies.add ":${dependency}:assemble"
-        jar.inputs.files { tasks.getByPath(":${dependency}:jar") }
-        checkNeeded.dependsOn ":${dependency}:checkNeeded"
-        releaseNeeded.dependsOn ":${dependency}:releaseNeeded"
-        cleanNeeded.dependsOn ":${dependency}:cleanNeeded"
-      }
-      compileJava.dependsOn projectDependencies
-
-      /* After evaluate configuration */
-      afterEvaluate {
-        sourceSets {
-          main.convention?.plugins.each { lang, object ->
-            main[lang]?.setSrcDirs main.java.srcDirs
-            test[lang]?.setSrcDirs test.java.srcDirs
-            String taskName = main.getCompileTaskName(lang)
-            tasks.findByName(taskName)?.dependsOn projectDependencies
-          }
-        }
-      }
     }
   }
 
-  private FileCollection compilePath() {
-    return project.files(bndProject.getBuildpath()*.getFile())
-  }
-
-  private FileCollection testCompilePath() {
-    return project.files(bndProject.getTestpath()*.getFile())
-  }
-
-  private FileCollection runtimePath() {
-    return project.files(bndProject.getSrcOutput())
-  }
-
-  private FileCollection testRuntimePath() {
-    return project.files(bndProject.getTestOutput())
+  private FileCollection pathFiles(Collection<Container> path) {
+    return project.files(path*.getFile()) {
+      builtBy path.findAll { Container c ->
+        c.getType() == TYPE.PROJECT
+      }.collect { Container c ->
+        ":${c.getProject().getName()}:jar"
+      }
+    }
   }
 
   private void checkErrors(Logger logger, boolean ignoreFailures = false) {

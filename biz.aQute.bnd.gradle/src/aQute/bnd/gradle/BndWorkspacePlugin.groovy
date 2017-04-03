@@ -62,7 +62,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
       }
 
       /* Build a set of project names we need to include from the specified tasks */
-      def projectNames = startParameter.taskNames.collect { String taskName ->
+      Set<String> projectNames = startParameter.taskNames.collect { String taskName ->
         String[] elements = taskName.split(':')
         switch (elements.length) {
           case 1:
@@ -76,7 +76,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 
       /* Include the default project name if in a subproject or no tasks specified */
       if ((startParameter.currentDir != rootDir) || projectNames.empty) {
-        projectNames += defaultProjectName
+        projectNames.add(defaultProjectName)
       }
 
       /* If build used but empty, add all non-private folders of rootDir */
@@ -84,7 +84,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
         rootDir.eachDir {
           String projectName = it.name
           if (!projectName.startsWith('.')) {
-            projectNames += projectName
+            projectNames.add(projectName)
           }
         }
       }
@@ -126,7 +126,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
       if (cnfProject != null) {
         ext.cnf = cnfProject
         cnfProject.task('cleanCache', type: Delete) {
-          description 'Clean the cnf/cache folder.'
+          description 'Clean the cache folder.'
           group 'build'
           delete 'cache'
         }
