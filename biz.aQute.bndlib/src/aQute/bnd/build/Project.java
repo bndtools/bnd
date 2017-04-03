@@ -798,7 +798,6 @@ public class Project extends Processor {
 
 	public Collection<Container> getTestpath() throws Exception {
 		prepare();
-		justInTime(testpath, parseTestpath(), false, TESTPATH);
 		return testpath;
 	}
 
