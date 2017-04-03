@@ -10,10 +10,6 @@
  * <p>
  * If the bnd_defaultTask property is set, it will be used for the the default
  * task.
- *
- * <p>
- * If the bnd_preCompileRefresh property is set to 'true', the project
- * properties will be refreshed just before compiling the project.
  */
 
 package aQute.bnd.gradle
@@ -39,7 +35,6 @@ public class BndPlugin implements Plugin<Project> {
   public static final String PLUGINID = 'biz.aQute.bnd'
   private Project project
   private aQute.bnd.build.Project bndProject
-  private boolean preCompileRefresh
 
   /**
    * Apply the {@code biz.aQute.bnd} plugin to the specified project.
@@ -63,7 +58,6 @@ public class BndPlugin implements Plugin<Project> {
         checkErrors(logger)
         throw new GradleException("Project ${bndProject.getName()} is not a valid bnd project")
       }
-      this.preCompileRefresh = project.hasProperty('bnd_preCompileRefresh') ? isTrue(bnd_preCompileRefresh) : false
       extensions.create('bnd', BndProperties, bndProject)
       convention.plugins.bnd = new BndPluginConvention(this)
 
@@ -167,32 +161,12 @@ public class BndPlugin implements Plugin<Project> {
         doFirst {
             checkErrors(logger)
         }
-        if (preCompileRefresh) {
-          doFirst {
-            logger.info 'Refreshing the bnd Project before compilation.'
-            bndProject.refresh()
-            bndProject.propertiesChanged()
-            bndProject.clear()
-            bndProject.prepare()
-            classpath = compilePath()
-          }
-        }
       }
 
       compileTestJava {
         configure options, compileOptions
         doFirst {
             checkErrors(logger)
-        }
-        if (preCompileRefresh) {
-          doFirst {
-            logger.info 'Refreshing the bnd Project before compilation.'
-            bndProject.refresh()
-            bndProject.propertiesChanged()
-            bndProject.clear()
-            bndProject.prepare()
-            classpath = files(testCompilePath(), runtimePath(), compilePath())
-          }
         }
       }
 
