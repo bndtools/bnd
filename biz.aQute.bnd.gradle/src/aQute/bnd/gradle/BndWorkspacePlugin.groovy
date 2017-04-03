@@ -130,13 +130,6 @@ public class BndWorkspacePlugin implements Plugin<Object> {
           group 'build'
           delete 'cache'
         }
-        /* if not offline, :cnf:clean dependsOn :cnf:cleanCache */
-        if (!bndWorkspace.isOffline()) {
-          cnfProject.afterEvaluate {
-            Task clean = cnfProject.tasks.findByName('clean') ?: cnfProject.task('clean', type: Delete)
-            clean.dependsOn cnfProject.cleanCache
-          }
-        }
       }
 
       /* Configure the Bnd projects */
