@@ -37,4 +37,7 @@ buildscript {
   }
 }
 
+gradle.ext.bndWorkspaceConfigure = { workspace ->
+  workspace.setProperty('bnd_repourl', uri(bnd_repourl).toString())
+}
 apply plugin: 'biz.aQute.bnd.workspace'
