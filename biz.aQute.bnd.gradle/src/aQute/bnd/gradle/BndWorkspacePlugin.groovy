@@ -93,6 +93,9 @@ public class BndWorkspacePlugin implements Plugin<Object> {
       Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
       Workspace.addGestalt(Constants.GESTALT_BATCH, null)
       Workspace workspace = new Workspace(rootDir, cnf).setOffline(startParameter.offline)
+      if (gradle.ext.has('bndWorkspaceConfigure')) {
+        gradle.bndWorkspaceConfigure(workspace)
+      }
 
       /* Add each project and its dependencies to the graph */
       projectNames.each { String projectName ->
@@ -120,6 +123,9 @@ public class BndWorkspacePlugin implements Plugin<Object> {
       Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
       Workspace.addGestalt(Constants.GESTALT_BATCH, null)
       ext.bndWorkspace = new Workspace(rootDir, bnd_cnf).setOffline(gradle.startParameter.offline)
+      if (gradle.ext.has('bndWorkspaceConfigure')) {
+        gradle.bndWorkspaceConfigure(bndWorkspace)
+      }
 
       /* Configure cnf project */
       Project cnfProject = findProject(bnd_cnf)
