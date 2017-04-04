@@ -137,7 +137,6 @@ public class Export extends DefaultTask {
    */
   @TaskAction
   void export() {
-    project.mkdir(destinationDir)
     File cnf = new File(temporaryDir, Workspace.CNFDIR)
     project.mkdir(cnf)
     Run.createRun(null, bndrun).withCloseable { run ->
