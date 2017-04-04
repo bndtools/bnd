@@ -62,6 +62,10 @@ class TestBundlePlugin extends Specification {
           jartask_manifest.getValue('Project-Sourcepath')
           jartask_manifest.getValue('Project-Buildpath')
           jartask_manifest.getValue('Bundle-ClassPath') =~ /commons-lang-2\.6\.jar/
+          jartask_manifest.getValue('Gradle-Project-Prop') == 'prop.project'
+          jartask_manifest.getValue('Gradle-Task-Prop') == 'prop.task'
+          jartask_manifest.getValue('Gradle-Task-Project-Prop') == 'prop.project'
+          jartask_manifest.getValue('Gradle-Missing-Prop') == '${task.projectprop}'
           jartask_jar.getEntry('doubler/Doubler.class')
           jartask_jar.getEntry('doubler/packageinfo')
           jartask_jar.getEntry('doubler/impl/DoublerImpl.class')

@@ -29,6 +29,7 @@ import java.util.zip.ZipFile
 import aQute.bnd.osgi.Builder
 import aQute.bnd.osgi.Constants
 import aQute.bnd.osgi.Jar
+import aQute.bnd.osgi.Processor
 import aQute.bnd.version.MavenVersion
 import org.gradle.api.GradleException
 import org.gradle.api.artifacts.Configuration
@@ -137,7 +138,10 @@ class BundleTaskConvention {
   void buildBundle() {
     task.configure {
       // create Builder
-      new Builder().withCloseable { builder ->
+      Properties gradleProperties = new PropertiesWrapper()
+      gradleProperties.put('task', task)
+      gradleProperties.put('project', project)
+      new Builder(new Processor(gradleProperties, false)).withCloseable { builder ->
         // load bnd properties
         File temporaryBndFile = File.createTempFile('bnd', '.bnd', temporaryDir)
         temporaryBndFile.withWriter('UTF-8') { writer ->
@@ -155,7 +159,6 @@ class BundleTaskConvention {
           }
         }
         builder.setProperties(temporaryBndFile, project.projectDir) // this will cause project.dir property to be set
-        builder.setProperty('project.name', project.name)
         builder.setProperty('project.output', project.buildDir.canonicalPath)
 
         // If no bundle to be built, we have nothing to do

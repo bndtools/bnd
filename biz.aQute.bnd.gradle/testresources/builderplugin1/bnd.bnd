@@ -9,3 +9,7 @@ Project-Output: ${project.output}
 Project-Sourcepath: ${project.sourcepath}
 Project-Buildpath: ${project.buildpath}
 -includeresource.lib: commons-lang-2.6.jar;lib:=true
+Gradle-Project-Prop: ${project.projectprop}
+Gradle-Task-Prop: ${task.taskprop}
+Gradle-Task-Project-Prop: ${task.project.projectprop}
+Gradle-Missing-Prop: ${task.projectprop}
