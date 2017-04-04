@@ -242,7 +242,6 @@ public class BndPlugin implements Plugin<Project> {
 
       task('release') {
         description 'Release the project to the release repository.'
-        dependsOn assemble
         group 'release'
         enabled !bndProject.isNoBundles() && !bnd(Constants.RELEASEREPO, 'unset').empty
         inputs.files jar
@@ -273,7 +272,6 @@ public class BndPlugin implements Plugin<Project> {
 
       task('testOSGi') {
         description 'Runs the OSGi JUnit tests by launching a framework and running the tests in the launched framework.'
-        dependsOn assemble
         group 'verification'
         enabled !bndis(Constants.NOJUNITOSGI) && !bndUnprocessed(Constants.TESTCASES, '').empty
         ext.ignoreFailures = false
