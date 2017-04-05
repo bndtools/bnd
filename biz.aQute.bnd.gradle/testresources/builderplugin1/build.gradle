@@ -8,6 +8,7 @@ plugins {
     id 'biz.aQute.bnd.builder'
 }
 
+ext.projectprop = 'prop.project'
 version = '1.0.0'
 
 repositories {
@@ -21,6 +22,7 @@ dependencies {
 }
 
 jar {
+  ext.taskprop = 'prop.task'
     manifest {
         attributes('Implementation-Title': baseName,
                    'Implementation-Version': version,
