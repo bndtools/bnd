@@ -33,17 +33,21 @@ import aQute.bnd.osgi.Processor
 import aQute.bnd.version.MavenVersion
 import org.gradle.api.GradleException
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.file.FileCollection
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.logging.Logger
+import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.SourceSet
 
 class BundleTaskConvention {
-  private final org.gradle.api.tasks.bundling.Jar task
+  private final Task task
+  private final Project project
   private File bndfile
   private Configuration configuration
-  private FileCollection classpath
+  private ConfigurableFileCollection classpath
+  private boolean classpathModified
   private SourceSet sourceSet
 
   /**
@@ -55,9 +59,11 @@ class BundleTaskConvention {
    */
   BundleTaskConvention(org.gradle.api.tasks.bundling.Jar task) {
     this.task = task
-    task.inputs.file { // Add bndfile to task inputs
-      getBndfile()
-    }
+    this.project = task.project
+    setBndfile('bnd.bnd')
+    setSourceSet(project.sourceSets.main)
+    configuration = project.configurations.findByName('compileClasspath') ?: project.configurations.compile
+    classpathModified = false
   }
 
   /**
@@ -65,16 +71,17 @@ class BundleTaskConvention {
    */
   @InputFile
   public File getBndfile() {
-    if (bndfile == null) {
-      setBndfile(task.project.file('bnd.bnd'))
-    }
     return bndfile
   }
   /**
    * Set the bndfile property.
+   *
+   * <p>
+   * The argument will be handled using
+   * Project.file().
    */
-  public void setBndfile(File bndfile) {
-    this.bndfile = bndfile
+  public void setBndfile(Object file) {
+    bndfile = project.file(file)
   }
 
   /**
@@ -83,12 +90,6 @@ class BundleTaskConvention {
   @Deprecated
   public Configuration getConfiguration() {
     task.logger.warn 'The configuration property is deprecated and replaced by the classpath property.'
-    if (configuration == null) {
-      configuration = task.project.configurations.findByName('compileClasspath') ?: task.project.configurations.compile
-      if (classpath == null) {
-        setClasspath(configuration)
-      }
-    }
     return configuration
   }
   /**
@@ -98,24 +99,43 @@ class BundleTaskConvention {
   public void setConfiguration(Configuration configuration) {
     task.logger.warn 'The configuration property is deprecated and replaced by the classpath property.'
     this.configuration = configuration
-    setClasspath(configuration)
+    if (!classpathModified) {
+      setClasspath(configuration)
+      classpathModified = false
+    }
+  }
+
+  /**
+   * Add files to the classpath.
+   *
+   * <p>
+   * The arguments will be handled using
+   * Project.files().
+   */
+  public ConfigurableFileCollection classpath(Object... paths) {
+    classpathModified = true
+    classpath.builtBy paths.findAll { path ->
+      path instanceof Task || path instanceof Buildable
+    }
+    return classpath.from(paths)
   }
 
   /**
    * Get the classpath property.
    */
   @InputFiles
-  public FileCollection getClasspath() {
-    if (classpath == null) {
-      setClasspath(getSourceSet().compileClasspath)
-    }
+  public ConfigurableFileCollection getClasspath() {
     return classpath
   }
   /**
    * Set the classpath property.
    */
-  public void setClasspath(FileCollection classpath) {
-    this.classpath = classpath
+  public void setClasspath(Object path) {
+    classpathModified = true
+    classpath = project.files(path)
+    if (path instanceof Task || path instanceof Buildable) {
+      classpath.builtBy path
+    }
   }
 
   /**
@@ -123,9 +143,6 @@ class BundleTaskConvention {
    */
   @InputFiles
   public SourceSet getSourceSet() {
-    if (sourceSet == null) {
-      setSourceSet(task.project.sourceSets.main)
-    }
     return sourceSet
   }
   /**
@@ -133,6 +150,10 @@ class BundleTaskConvention {
    */
   public void setSourceSet(SourceSet sourceSet) {
     this.sourceSet = sourceSet
+    if (!classpathModified) {
+      setClasspath(sourceSet.compileClasspath)
+      classpathModified = false
+    }
   }
 
   void buildBundle() {
