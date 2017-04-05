@@ -24,7 +24,7 @@ import org.gradle.api.tasks.InputFiles
 
 class FileSetRepositoryConvention {
   private final Project project
-  private ConfigurableFileCollection bundles
+  private ConfigurableFileCollection bundleCollection
 
   /**
    * Create a FileSetRepositoryConvention.
@@ -32,7 +32,8 @@ class FileSetRepositoryConvention {
    */
   FileSetRepositoryConvention(Task task) {
     this.project = task.project
-    bundles = project.files(project.sourceSets.main.runtimeClasspath, project.configurations.archives.artifacts.files)
+    bundleCollection = project.files()
+    bundles(project.sourceSets.main.runtimeClasspath, project.configurations.archives.artifacts.files)
   }
 
   /**
@@ -43,7 +44,10 @@ class FileSetRepositoryConvention {
    * Project.files().
    */
   public ConfigurableFileCollection bundles(Object... paths) {
-    return bundles.from(paths)
+    bundleCollection.builtBy paths.findAll { path ->
+      path instanceof Task || path instanceof Buildable
+    }
+    return bundleCollection.from(paths)
   }
 
   /**
@@ -51,7 +55,7 @@ class FileSetRepositoryConvention {
    */
   @InputFiles
   public ConfigurableFileCollection getBundles() {
-    return bundles
+    return bundleCollection
   }
 
   /**
@@ -62,7 +66,10 @@ class FileSetRepositoryConvention {
    * Project.files().
    */
   public void setBundles(Object path) {
-    bundles = project.files(path)
+    bundleCollection = project.files(path)
+    if (path instanceof Task || path instanceof Buildable) {
+      bundleCollection.builtBy path
+    }
   }
 
   /**
