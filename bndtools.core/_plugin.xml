@@ -1010,7 +1010,7 @@
          commandId="bndtools.launch.runShortcut.debug"
          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
-         sequence="M3+M2+X C"
+         sequence="M3+M2+X K"
          contextId="org.eclipse.ui.globalScope"
          commandId="bndtools.launch.junitShortcut.run"
          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
