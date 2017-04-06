@@ -46,7 +46,7 @@ class BundleTaskConvention {
   private final Project project
   private File bndfile
   private Configuration configuration
-  private ConfigurableFileCollection classpath
+  private final ConfigurableFileCollection classpathCollection
   private boolean classpathModified
   private SourceSet sourceSet
 
@@ -61,9 +61,12 @@ class BundleTaskConvention {
     this.task = task
     this.project = task.project
     setBndfile('bnd.bnd')
+    classpathCollection = project.files()
     setSourceSet(project.sourceSets.main)
     configuration = project.configurations.findByName('compileClasspath') ?: project.configurations.compile
     classpathModified = false
+    // need to programmatically add to inputs since @InputFiles in a convention is not processed
+    task.inputs.files classpathCollection, { getBndfile() }
   }
 
   /**
@@ -114,10 +117,9 @@ class BundleTaskConvention {
    */
   public ConfigurableFileCollection classpath(Object... paths) {
     classpathModified = true
-    classpath.builtBy paths.findAll { path ->
+    return classpathCollection.from(paths).builtBy(paths.findAll { path ->
       path instanceof Task || path instanceof Buildable
-    }
-    return classpath.from(paths)
+    })
   }
 
   /**
@@ -125,23 +127,22 @@ class BundleTaskConvention {
    */
   @InputFiles
   public ConfigurableFileCollection getClasspath() {
-    return classpath
+    return classpathCollection
   }
   /**
    * Set the classpath property.
    */
   public void setClasspath(Object path) {
     classpathModified = true
-    classpath = project.files(path)
+    classpathCollection.from = path
     if (path instanceof Task || path instanceof Buildable) {
-      classpath.builtBy path
+      classpathCollection.builtBy = path
     }
   }
 
   /**
    * Get the sourceSet property.
    */
-  @InputFiles
   public SourceSet getSourceSet() {
     return sourceSet
   }
@@ -162,7 +163,7 @@ class BundleTaskConvention {
       Properties gradleProperties = new PropertiesWrapper()
       gradleProperties.put('task', task)
       gradleProperties.put('project', project)
-      new Builder(new Processor(gradleProperties, false)).withCloseable { builder ->
+      new Builder(new Processor(gradleProperties, false)).withCloseable { Builder builder ->
         // load bnd properties
         File temporaryBndFile = File.createTempFile('bnd', '.bnd', temporaryDir)
         temporaryBndFile.withWriter('UTF-8') { writer ->
@@ -204,7 +205,7 @@ class BundleTaskConvention {
         builder.setJar(bundleJar)
 
         // set builder classpath
-        def buildpath = project.files(classpath.files.findAll { file ->
+        ConfigurableFileCollection buildpath = project.files(classpath.files.findAll { File file ->
           if (!file.exists()) {
             return false
           }
@@ -212,7 +213,7 @@ class BundleTaskConvention {
             return true
           }
           try {
-            new ZipFile(file).withCloseable { zip ->
+            new ZipFile(file).withCloseable { ZipFile zip ->
               zip.entries() // make sure it is a valid zip file and not a pom
             }
           } catch (ZipException e) {
@@ -225,7 +226,7 @@ class BundleTaskConvention {
         logger.debug 'builder classpath: {}', builder.getClasspath()*.getSource()
 
         // set builder sourcepath
-        def sourcepath = project.files(sourceSet.allSource.srcDirs.findAll{it.exists()})
+        ConfigurableFileCollection sourcepath = project.files(sourceSet.allSource.srcDirs.findAll{it.exists()})
         builder.setProperty('project.sourcepath', sourcepath.asPath)
         builder.setSourcepath(sourcepath as File[])
         logger.debug 'builder sourcepath: {}', builder.getSourcePath()

@@ -139,7 +139,7 @@ public class Export extends DefaultTask {
   void export() {
     File cnf = new File(temporaryDir, Workspace.CNFDIR)
     project.mkdir(cnf)
-    Run.createRun(null, bndrun).withCloseable { run ->
+    Run.createRun(null, bndrun).withCloseable { Run run ->
       run.setBase(temporaryDir)
       Workspace workspace = run.getWorkspace()
       workspace.setBuildDir(cnf)

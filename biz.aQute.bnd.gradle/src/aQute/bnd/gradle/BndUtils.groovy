@@ -13,7 +13,7 @@ class BndUtils {
 
   public static void logReport(Report report, Logger logger) {
     if (logger.isWarnEnabled()) {
-      report.getWarnings().each { msg ->
+      report.getWarnings().each { String msg ->
         Location location = report.getLocation(msg)
         if (location && location.file) {
           logger.warn '{}:{}: warning: {}', location.file, location.line, msg
@@ -23,7 +23,7 @@ class BndUtils {
       }
     }
     if (logger.isErrorEnabled()) {
-      report.getErrors().each { msg ->
+      report.getErrors().each { String msg ->
         Location location = report.getLocation(msg)
         if (location && location.file) {
           logger.error '{}:{}: error: {}', location.file, location.line, msg

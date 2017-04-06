@@ -192,7 +192,7 @@ public class Baseline extends DefaultTask {
     File report = destination
     project.mkdir(report.parent)
     boolean failure = false
-    new Processor().withCloseable { processor ->
+    new Processor().withCloseable { Processor processor ->
       Jar newer = new Jar(bundle)
       processor.addClose(newer)
       Jar older = new Jar(baseline)
@@ -201,7 +201,7 @@ public class Baseline extends DefaultTask {
       def baseliner = new aQute.bnd.differ.Baseline(processor, new DiffPluginImpl())
       def infos = baseliner.baseline(newer, older, null).sort {it.packageName}
       def bundleInfo = baseliner.getBundleInfo()
-      new Formatter(report, 'UTF-8', Locale.US).withCloseable { f ->
+      new Formatter(report, 'UTF-8', Locale.US).withCloseable { Formatter f ->
         f.format '===============================================================%n'
         f.format '%s %s %s-%s',
           bundleInfo.mismatch ? '*' : ' ',

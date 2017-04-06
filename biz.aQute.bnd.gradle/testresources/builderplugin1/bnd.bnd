@@ -3,6 +3,7 @@
 My-Header: my-value
 text: TEXT
 Override: Override the jar task manifest
+Bundle-Name: ${project.group}:${task.baseName}
 Project-Name: ${project.name}
 Project-Dir: ${project.dir}
 Project-Output: ${project.output}

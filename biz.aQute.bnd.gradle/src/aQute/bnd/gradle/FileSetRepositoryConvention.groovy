@@ -24,7 +24,7 @@ import org.gradle.api.tasks.InputFiles
 
 class FileSetRepositoryConvention {
   private final Project project
-  private ConfigurableFileCollection bundleCollection
+  private final ConfigurableFileCollection bundleCollection
 
   /**
    * Create a FileSetRepositoryConvention.
@@ -34,6 +34,8 @@ class FileSetRepositoryConvention {
     this.project = task.project
     bundleCollection = project.files()
     bundles(project.sourceSets.main.runtimeClasspath, project.configurations.archives.artifacts.files)
+    // need to programmatically add to inputs since @InputFiles in a convention is not processed
+    task.inputs.files bundleCollection
   }
 
   /**
@@ -44,10 +46,9 @@ class FileSetRepositoryConvention {
    * Project.files().
    */
   public ConfigurableFileCollection bundles(Object... paths) {
-    bundleCollection.builtBy paths.findAll { path ->
+    return bundleCollection.from(paths).builtBy(paths.findAll { path ->
       path instanceof Task || path instanceof Buildable
-    }
-    return bundleCollection.from(paths)
+    })
   }
 
   /**
@@ -66,9 +67,9 @@ class FileSetRepositoryConvention {
    * Project.files().
    */
   public void setBundles(Object path) {
-    bundleCollection = project.files(path)
+    bundleCollection.from = path
     if (path instanceof Task || path instanceof Buildable) {
-      bundleCollection.builtBy path
+      bundleCollection.builtBy = path
     }
   }
 

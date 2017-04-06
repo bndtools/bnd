@@ -56,6 +56,7 @@ class TestBundlePlugin extends Specification {
           jartask_manifest.getValue('Export-Package') =~ /doubler/
           jartask_manifest.getValue('X-SomeProperty') == 'Included via -include in jar task manifest'
           jartask_manifest.getValue('Override') == 'Override the jar task manifest'
+          jartask_manifest.getValue('Bundle-Name') == "test.bnd.gradle:${testProject}"
           jartask_manifest.getValue('Project-Name') == "${testProject}"
           new File(jartask_manifest.getValue('Project-Dir')).canonicalFile == testProjectDir
           new File(jartask_manifest.getValue('Project-Output')).canonicalFile == testProjectBuildDir
@@ -92,6 +93,7 @@ class TestBundlePlugin extends Specification {
           bundletask_manifest.getValue('Export-Package') =~ /doubler\.impl/
           !bundletask_manifest.getValue('X-SomeProperty')
           bundletask_manifest.getValue('Override') == 'Override the jar task manifest'
+          bundletask_manifest.getValue('Bundle-Name') == "test.bnd.gradle:${testProject}_bundle"
           bundletask_manifest.getValue('Project-Name') == "${testProject}"
           new File(bundletask_manifest.getValue('Project-Dir')).canonicalFile == testProjectDir
           new File(bundletask_manifest.getValue('Project-Output')).canonicalFile == testProjectBuildDir
