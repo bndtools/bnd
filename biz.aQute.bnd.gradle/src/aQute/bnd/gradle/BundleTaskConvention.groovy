@@ -46,7 +46,7 @@ class BundleTaskConvention {
   private final Project project
   private File bndfile
   private Configuration configuration
-  private ConfigurableFileCollection classpath
+  private final ConfigurableFileCollection classpathCollection
   private boolean classpathModified
   private SourceSet sourceSet
 
@@ -61,6 +61,7 @@ class BundleTaskConvention {
     this.task = task
     this.project = task.project
     setBndfile('bnd.bnd')
+    classpathCollection = project.files()
     setSourceSet(project.sourceSets.main)
     configuration = project.configurations.findByName('compileClasspath') ?: project.configurations.compile
     classpathModified = false
@@ -114,7 +115,7 @@ class BundleTaskConvention {
    */
   public ConfigurableFileCollection classpath(Object... paths) {
     classpathModified = true
-    return classpath.from(paths).builtBy(paths.findAll { path ->
+    return classpathCollection.from(paths).builtBy(paths.findAll { path ->
       path instanceof Task || path instanceof Buildable
     })
   }
@@ -124,16 +125,16 @@ class BundleTaskConvention {
    */
   @InputFiles
   public ConfigurableFileCollection getClasspath() {
-    return classpath
+    return classpathCollection
   }
   /**
    * Set the classpath property.
    */
   public void setClasspath(Object path) {
     classpathModified = true
-    classpath = project.files(path)
+    classpathCollection.from = path
     if (path instanceof Task || path instanceof Buildable) {
-      classpath.builtBy path
+      classpathCollection.builtBy = path
     }
   }
 
