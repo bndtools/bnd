@@ -17,6 +17,9 @@ Launcher-Plugin: aQute.launcher.plugin.ProjectLauncherImpl
 
 Private-Package: aQute.launcher.*
 Conditional-Package: aQute.lib*
+
+Import-Package: org.osgi.framework;version='[1.5,2)', \
+        * 
 	
 Premain-Class: aQute.launcher.agent.LauncherAgent
 
