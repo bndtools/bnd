@@ -133,11 +133,9 @@ class BundleTaskConvention {
    * Set the classpath property.
    */
   public void setClasspath(Object path) {
-    classpathModified = true
-    classpathCollection.from = path
-    if (path instanceof Task || path instanceof Buildable) {
-      classpathCollection.builtBy = path
-    }
+    classpathCollection.from = []
+    classpathCollection.builtBy = []
+    classpath(path)
   }
 
   /**
