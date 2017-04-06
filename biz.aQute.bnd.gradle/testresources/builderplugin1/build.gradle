@@ -9,6 +9,7 @@ plugins {
 }
 
 ext.projectprop = 'prop.project'
+group = 'test.bnd.gradle'
 version = '1.0.0'
 
 repositories {
