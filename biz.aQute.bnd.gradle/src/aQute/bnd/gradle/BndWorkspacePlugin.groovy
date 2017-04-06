@@ -41,7 +41,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
   }
 
   Closure configureSettings() {
-    return { settings ->
+    return { Settings settings ->
       /* Add cnf project to the graph */
       String cnf = 'cnf'
       try {
@@ -113,7 +113,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
   }
 
   Closure configureRootProject() {
-    return { p ->
+    return { Project p ->
       if (p != rootProject) {
         throw new GradleException("The project ${p.name} is not the root project")
       }
