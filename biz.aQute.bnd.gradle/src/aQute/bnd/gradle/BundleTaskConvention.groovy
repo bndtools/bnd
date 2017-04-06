@@ -65,6 +65,8 @@ class BundleTaskConvention {
     setSourceSet(project.sourceSets.main)
     configuration = project.configurations.findByName('compileClasspath') ?: project.configurations.compile
     classpathModified = false
+    // need to programmatically add to inputs since @InputFiles in a convention is not processed
+    task.inputs.files classpathCollection, { getBndfile() }
   }
 
   /**
@@ -141,7 +143,6 @@ class BundleTaskConvention {
   /**
    * Get the sourceSet property.
    */
-  @InputFiles
   public SourceSet getSourceSet() {
     return sourceSet
   }

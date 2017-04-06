@@ -73,7 +73,6 @@ public class TestOSGi extends DefaultTask {
     ignoreFailures = false
     workingDir = temporaryDir
     convention.plugins.bundles = new FileSetRepositoryConvention(this)
-    dependsOn project.assemble
     project.check.dependsOn this
   }
 
