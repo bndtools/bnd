@@ -114,10 +114,9 @@ class BundleTaskConvention {
    */
   public ConfigurableFileCollection classpath(Object... paths) {
     classpathModified = true
-    classpath.builtBy paths.findAll { path ->
+    return classpath.from(paths).builtBy(paths.findAll { path ->
       path instanceof Task || path instanceof Buildable
-    }
-    return classpath.from(paths)
+    })
   }
 
   /**

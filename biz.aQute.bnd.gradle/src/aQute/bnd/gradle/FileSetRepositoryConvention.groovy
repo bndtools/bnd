@@ -44,10 +44,9 @@ class FileSetRepositoryConvention {
    * Project.files().
    */
   public ConfigurableFileCollection bundles(Object... paths) {
-    bundleCollection.builtBy paths.findAll { path ->
+    return bundleCollection.from(paths).builtBy(paths.findAll { path ->
       path instanceof Task || path instanceof Buildable
-    }
-    return bundleCollection.from(paths)
+    })
   }
 
   /**
