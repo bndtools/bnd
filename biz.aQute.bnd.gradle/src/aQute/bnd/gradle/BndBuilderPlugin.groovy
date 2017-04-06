@@ -33,6 +33,10 @@ package aQute.bnd.gradle
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.Dependency
+
 
 public class BndBuilderPlugin implements Plugin<Project> {
   public static final String PLUGINID = 'biz.aQute.bnd.builder'
@@ -68,10 +72,10 @@ public class BndBuilderPlugin implements Plugin<Project> {
       }
 
       afterEvaluate {
-        def bundleTask = baseline.bundleTask
-        def baselineConfiguration = baseline.baselineConfiguration
+        Task bundleTask = baseline.bundleTask
+        Configuration baselineConfiguration = baseline.baselineConfiguration
         if (bundleTask && (baselineConfiguration == configurations.baseline) && baselineConfiguration.dependencies.empty) {
-          def baselineDep = dependencies.create('group': group, 'name': bundleTask.baseName, 'version': "(,${bundleTask.version})")
+          Dependency baselineDep = dependencies.create('group': group, 'name': bundleTask.baseName, 'version': "(,${bundleTask.version})")
           if (configurations.detachedConfiguration(baselineDep).setTransitive(false).resolvedConfiguration.hasError()) {
             dependencies {
               baseline files(baseline.bundle)

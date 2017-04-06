@@ -43,7 +43,7 @@ public class BndPlugin implements Plugin<Project> {
    */
   @Override
   public void apply(Project p) {
-    p.configure(p) { project ->
+    p.configure(p) { Project project ->
       this.project = project
       if (plugins.hasPlugin(BndBuilderPlugin.PLUGINID)) {
           throw new GradleException("Project already has '${BndBuilderPlugin.PLUGINID}' plugin applied.")
@@ -165,7 +165,7 @@ public class BndPlugin implements Plugin<Project> {
 
       processResources {
         outputs.files {
-          def sourceDirectories = sourceSets.main.resources.srcDirs
+          Set<File> sourceDirectories = sourceSets.main.resources.srcDirs
           source*.absolutePath.collect { String file ->
             sourceDirectories.each {
               file -= it
@@ -177,7 +177,7 @@ public class BndPlugin implements Plugin<Project> {
 
       processTestResources {
         outputs.files {
-          def sourceDirectories = sourceSets.test.resources.srcDirs
+          Set<File> sourceDirectories = sourceSets.test.resources.srcDirs
           source*.absolutePath.collect { String file ->
             sourceDirectories.each {
               file -= it
@@ -319,8 +319,8 @@ public class BndPlugin implements Plugin<Project> {
 
       tasks.addRule('Pattern: export.<name>: Export the <name>.bndrun file to an executable jar.') { taskName ->
         if (taskName.startsWith('export.')) {
-          def bndrun = taskName - 'export.'
-          def runFile = file("${bndrun}.bndrun")
+          String bndrun = taskName - 'export.'
+          File runFile = file("${bndrun}.bndrun")
           if (runFile.isFile()) {
             task(taskName) {
               description "Export the ${bndrun}.bndrun file to an executable jar."
@@ -334,7 +334,7 @@ public class BndPlugin implements Plugin<Project> {
                 project.mkdir(destinationDir)
               }
               doLast {
-                def executableJar = new File(destinationDir, "${bndrun}.jar")
+                File executableJar = new File(destinationDir, "${bndrun}.jar")
                 Run.createRun(bndProject.getWorkspace(), runFile).withCloseable { run ->
                   logger.info 'Exporting {} to {}', run.getPropertiesFile(), executableJar.absolutePath
                   if (run.isStandalone()) {
@@ -365,8 +365,8 @@ public class BndPlugin implements Plugin<Project> {
 
       tasks.addRule('Pattern: runbundles.<name>: Create a distribution of the runbundles in <name>.bndrun file.') { taskName ->
         if (taskName.startsWith('runbundles.')) {
-          def bndrun = taskName - 'runbundles.'
-          def runFile = file("${bndrun}.bndrun")
+          String bndrun = taskName - 'runbundles.'
+          File runFile = file("${bndrun}.bndrun")
           if (runFile.isFile()) {
             task(taskName) {
               description "Create a distribution of the runbundles in the ${bndrun}.bndrun file."
@@ -411,8 +411,8 @@ public class BndPlugin implements Plugin<Project> {
 
       tasks.addRule('Pattern: resolve.<name>: Resolve the required runbundles in the <name>.bndrun file.') { taskName ->
         if (taskName.startsWith('resolve.')) {
-          def bndrun = taskName - 'resolve.'
-          def runFile = file("${bndrun}.bndrun")
+          String bndrun = taskName - 'resolve.'
+          File runFile = file("${bndrun}.bndrun")
           if (runFile.isFile()) {
             task(taskName) {
               description "Resolve the runbundles required for ${bndrun}.bndrun file."
@@ -427,7 +427,7 @@ public class BndPlugin implements Plugin<Project> {
                     run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
                   }
                   try {
-                    def result = run.resolve(failOnChanges, true)
+                    String result = run.resolve(failOnChanges, true)
                     logger.info '{}: {}', Constants.RUNBUNDLES, result
                   } catch (ResolutionException e) {
                     logger.error 'Unresolved requirements: {}', e.getUnresolvedRequirements()
@@ -454,8 +454,8 @@ public class BndPlugin implements Plugin<Project> {
 
       tasks.addRule('Pattern: run.<name>: Run the bndrun file <name>.bndrun.') { taskName ->
         if (taskName.startsWith('run.')) {
-          def bndrun = taskName - 'run.'
-          def runFile = file("${bndrun}.bndrun")
+          String bndrun = taskName - 'run.'
+          File runFile = file("${bndrun}.bndrun")
           if (runFile.isFile()) {
             task(taskName) {
               description "Run the bndrun file ${bndrun}.bndrun."
@@ -560,7 +560,7 @@ Project ${project.name}
     project.getWarnings().clear()
     project.getErrors().clear()
     if (failed) {
-      def str = ' even though no errors were reported'
+      String str = ' even though no errors were reported'
       if (errorCount == 1) {
         str = ', one error was reported'
       } else if (errorCount > 1) {

@@ -67,10 +67,9 @@ class FileSetRepositoryConvention {
    * Project.files().
    */
   public void setBundles(Object path) {
-    bundleCollection.from = path
-    if (path instanceof Task || path instanceof Buildable) {
-      bundleCollection.builtBy = path
-    }
+    bundleCollection.from = []
+    bundleCollection.builtBy = []
+    bundles(path)
   }
 
   /**
