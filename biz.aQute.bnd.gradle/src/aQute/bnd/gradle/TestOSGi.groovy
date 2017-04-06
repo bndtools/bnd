@@ -133,7 +133,7 @@ public class TestOSGi extends DefaultTask {
     project.mkdir(workingDir)
     File cnf = new File(temporaryDir, Workspace.CNFDIR)
     project.mkdir(cnf)
-    Run.createRun(null, bndrun).withCloseable { run ->
+    Run.createRun(null, bndrun).withCloseable { Run run ->
       run.setBase(workingDir)
       Workspace workspace = run.getWorkspace()
       workspace.setBuildDir(cnf)

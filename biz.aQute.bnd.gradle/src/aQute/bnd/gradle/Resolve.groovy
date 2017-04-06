@@ -98,7 +98,7 @@ public class Resolve extends DefaultTask {
   void resolve() {
     File cnf = new File(temporaryDir, Workspace.CNFDIR)
     project.mkdir(cnf)
-    Bndrun.createBndrun(null, bndrun).withCloseable { run ->
+    Bndrun.createBndrun(null, bndrun).withCloseable { Bndrun run ->
       run.setBase(temporaryDir)
       Workspace workspace = run.getWorkspace()
       workspace.setBuildDir(cnf)

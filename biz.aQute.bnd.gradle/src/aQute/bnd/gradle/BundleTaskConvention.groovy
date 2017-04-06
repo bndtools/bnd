@@ -161,7 +161,7 @@ class BundleTaskConvention {
       Properties gradleProperties = new PropertiesWrapper()
       gradleProperties.put('task', task)
       gradleProperties.put('project', project)
-      new Builder(new Processor(gradleProperties, false)).withCloseable { builder ->
+      new Builder(new Processor(gradleProperties, false)).withCloseable { Builder builder ->
         // load bnd properties
         File temporaryBndFile = File.createTempFile('bnd', '.bnd', temporaryDir)
         temporaryBndFile.withWriter('UTF-8') { writer ->
@@ -203,7 +203,7 @@ class BundleTaskConvention {
         builder.setJar(bundleJar)
 
         // set builder classpath
-        def buildpath = project.files(classpath.files.findAll { file ->
+        ConfigurableFileCollection buildpath = project.files(classpath.files.findAll { File file ->
           if (!file.exists()) {
             return false
           }
@@ -211,7 +211,7 @@ class BundleTaskConvention {
             return true
           }
           try {
-            new ZipFile(file).withCloseable { zip ->
+            new ZipFile(file).withCloseable { ZipFile zip ->
               zip.entries() // make sure it is a valid zip file and not a pom
             }
           } catch (ZipException e) {
@@ -224,7 +224,7 @@ class BundleTaskConvention {
         logger.debug 'builder classpath: {}', builder.getClasspath()*.getSource()
 
         // set builder sourcepath
-        def sourcepath = project.files(sourceSet.allSource.srcDirs.findAll{it.exists()})
+        ConfigurableFileCollection sourcepath = project.files(sourceSet.allSource.srcDirs.findAll{it.exists()})
         builder.setProperty('project.sourcepath', sourcepath.asPath)
         builder.setSourcepath(sourcepath as File[])
         logger.debug 'builder sourcepath: {}', builder.getSourcePath()
