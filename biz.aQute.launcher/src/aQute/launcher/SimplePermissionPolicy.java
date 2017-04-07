@@ -161,11 +161,11 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 	}
 
 	private PermissionAdmin getPermissionAdmin() {
-		ServiceReference<PermissionAdmin> ref = context.getServiceReference(PermissionAdmin.class);
+		ServiceReference ref = context.getServiceReference(PermissionAdmin.class.getName());
 		if (ref == null)
 			return null;
 
-		return context.getService(ref);
+		return (PermissionAdmin) context.getService(ref);
 	}
 
 	/**

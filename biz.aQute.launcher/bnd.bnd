@@ -5,7 +5,7 @@
 
 -buildpath: biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
-	osgi.core;version=4.3.1,\
+	osgi.core;version=4.2,\
 	slf4j.api;version=latest
 
 -testpath: \
