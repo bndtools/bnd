@@ -183,6 +183,18 @@ public class AgentTest extends TestCase {
 		assertTrue(previousModified != t2Bundle.lastModified);
 	}
 
+	public void testAgentSupervisorTimeout() throws Exception {
+		TestSupervisor testSupervisor = new TestSupervisor();
+
+		testSupervisor.connect("localhost", 12345, 300);
+		testSupervisor.connect("localhost", 12345, 100);
+
+		try {
+			testSupervisor.connect("localhost", 12345, -2);
+			fail("Excepted illegal argument exception");
+		} catch (IllegalArgumentException e) {}
+	}
+
 	/**
 	 * Launches against main
 	 */
@@ -218,6 +230,10 @@ public class AgentTest extends TestCase {
 
 		public void connect(String host, int port) throws Exception {
 			super.connect(Agent.class, this, host, port);
+		}
+
+		public void connect(String host, int port, int timeout) throws Exception {
+			super.connect(Agent.class, this, host, port, timeout);
 		}
 
 		@Override

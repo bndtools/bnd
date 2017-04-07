@@ -21,13 +21,14 @@ import aQute.libg.cryptography.SHA1;
  * This is a base class that provides the basic functionality of a supervisor.
  * In general an actual supervisor extends this class to provide the
  * functionality to use on the client side.
- * 
+ *
  * @param <Supervisor> The supervisor type
  * @param <Agent> The agent type
  */
 public class AgentSupervisor<Supervisor, Agent> {
 	private static final Map<File,Info>				fileInfo	= new ConcurrentHashMap<File,AgentSupervisor.Info>();
 	private static final MultiMap<String,String>	shaInfo		= new MultiMap<String,String>();
+	private static final int						connectWait	= 200;
 	private static byte[]							EMPTY		= new byte[0];
 	private Agent									agent;
 	private CountDownLatch							latch		= new CountDownLatch(1);
@@ -41,7 +42,16 @@ public class AgentSupervisor<Supervisor, Agent> {
 	}
 
 	protected void connect(Class<Agent> agent, Supervisor supervisor, String host, int port) throws Exception {
-		while (true)
+		connect(agent, supervisor, host, port, -1);
+	}
+
+	protected void connect(Class<Agent> agent, Supervisor supervisor, String host, int port, int timeout)
+			throws Exception {
+		if (timeout < -1) {
+			throw new IllegalArgumentException("timeout can not be less than -1");
+		}
+
+		while (true) {
 			try {
 				Socket socket = new Socket(host, port);
 				link = new Link<Supervisor,Agent>(agent, supervisor, socket);
@@ -49,8 +59,15 @@ public class AgentSupervisor<Supervisor, Agent> {
 				link.open();
 				return;
 			} catch (ConnectException e) {
-				Thread.sleep(200);
+				if (timeout == 0) {
+					return;
+				}
+				if (timeout > 0) {
+					timeout = Math.max(timeout - connectWait, 0);
+				}
+				Thread.sleep(connectWait);
 			}
+		}
 	}
 
 	public byte[] getFile(String sha) throws Exception {
