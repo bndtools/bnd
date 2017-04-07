@@ -60,10 +60,10 @@ import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
-import org.osgi.framework.wiring.BundleRevision;
-import org.osgi.framework.wiring.FrameworkWiring;
+import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.permissionadmin.PermissionInfo;
 
 import aQute.launcher.agent.LauncherAgent;
@@ -97,6 +97,7 @@ public class Launcher implements ServiceListener {
 	AtomicBoolean						active				= new AtomicBoolean();
 
 	private AtomicReference<DatagramSocket> commsSocket = new AtomicReference<DatagramSocket>();
+	private PackageAdmin					padmin;
 
 	public static void main(String[] args) {
 		try {
@@ -373,6 +374,12 @@ public class Launcher implements ServiceListener {
 		trace("system bundle started ok");
 
 		BundleContext systemContext = systemBundle.getBundleContext();
+		ServiceReference ref = systemContext.getServiceReference(PackageAdmin.class.getName());
+		if (ref != null) {
+			padmin = (PackageAdmin) systemContext.getService(ref);
+		} else
+			trace("could not get package admin");
+
 		systemContext.addServiceListener(this, "(&(|(objectclass=" + Runnable.class.getName() + ")(objectclass="
 				+ Callable.class.getName() + "))(main.thread=true))");
 
@@ -447,10 +454,9 @@ public class Launcher implements ServiceListener {
 		else
 			synchronizeFiles(tobestarted, before);
 
-		FrameworkWiring fwkWiring = systemBundle.adapt(FrameworkWiring.class);
-		if (fwkWiring != null) {
+		if (padmin != null) {
 			inrefresh = true;
-			fwkWiring.refreshBundles(null);
+			padmin.refreshPackages(null);
 			trace("Waiting for refresh to finish");
 
 			// Will be reset by the Framework listener we added
@@ -459,7 +465,7 @@ public class Launcher implements ServiceListener {
 				Thread.sleep(100);
 
 		} else
-			trace("cannot refresh the bundles because there is no FrameworkWiring");
+			trace("cannot refresh the bundles because there is no Package Admin");
 
 		trace("bundles administered %s", installedBundles.keySet());
 
@@ -470,7 +476,7 @@ public class Launcher implements ServiceListener {
 			policy.setDefaultPermissions(null);
 
 		// Get the resolved status
-		if (fwkWiring != null && fwkWiring.resolveBundles(null) == false) {
+		if (padmin != null && padmin.resolveBundles(null) == false) {
 			List<String> failed = new ArrayList<String>();
 
 			for (Bundle b : installedBundles.values()) {
@@ -767,8 +773,8 @@ public class Launcher implements ServiceListener {
 	}
 
 	private boolean isFragment(Bundle b) {
-		BundleRevision rev = b.adapt(BundleRevision.class);
-		return (rev != null) && ((rev.getTypes() & BundleRevision.TYPE_FRAGMENT) != 0);
+		return padmin != null
+				&& padmin.getBundleType(b) == PackageAdmin.BUNDLE_TYPE_FRAGMENT;
 	}
 
 	public void deactivate() throws Exception {

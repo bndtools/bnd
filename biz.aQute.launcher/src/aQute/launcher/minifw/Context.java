@@ -110,40 +110,49 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		jar.close();
 	}
 
+	@Override
 	public BundleContext getBundleContext() {
 		return this;
 	}
 
+	@Override
 	public long getBundleId() {
 		return id;
 	}
 
+	@Override
 	public URL getEntry(String path) {
 		if (path.startsWith("/"))
 			path = path.substring(1);
 		return getResource(path);
 	}
 
+	@Override
 	public Enumeration<String> getEntryPaths(String path) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Dictionary<String,String> getHeaders() {
 		return new Dict();
 	}
 
+	@Override
 	public Dictionary<String,String> getHeaders(String locale) {
 		return new Dict();
 	}
 
+	@Override
 	public long getLastModified() {
 		return jarFile.lastModified();
 	}
 
+	@Override
 	public String getLocation() {
 		return location;
 	}
 
+	@Override
 	public Enumeration<URL> findEntries(String path, String filePattern, boolean recurse) {
 
 		try {
@@ -206,26 +215,32 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		return paths;
 	}
 
-	public ServiceReference< ? >[] getRegisteredServices() {
+	@Override
+	public ServiceReference[] getRegisteredServices() {
 		return null;
 	}
 
-	public ServiceReference< ? >[] getServicesInUse() {
+	@Override
+	public ServiceReference[] getServicesInUse() {
 		return null;
 	}
 
+	@Override
 	public Map<X509Certificate,List<X509Certificate>> getSignerCertificates(int signersType) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public int getState() {
 		return state;
 	}
 
+	@Override
 	public String getSymbolicName() {
 		return getHeaders().get(aQute.bnd.osgi.Constants.BUNDLE_SYMBOLICNAME).trim();
 	}
 
+	@Override
 	public Version getVersion() {
 		String v = getHeaders().get(aQute.bnd.osgi.Constants.BUNDLE_VERSION).trim();
 		if (v == null)
@@ -233,106 +248,132 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		return new Version(v);
 	}
 
+	@Override
 	public boolean hasPermission(Object permission) {
 		return true;
 	}
 
+	@Override
 	public void start() throws BundleException {
 		state = Bundle.ACTIVE;
 	}
 
+	@Override
 	public void start(int options) throws BundleException {
 		state = Bundle.ACTIVE;
 	}
 
+	@Override
 	public void stop() throws BundleException {
 		state = Bundle.RESOLVED;
 	}
 
+	@Override
 	public void stop(int options) throws BundleException {
 		state = Bundle.RESOLVED;
 	}
 
+	@Override
 	public void uninstall() throws BundleException {
 		state = Bundle.UNINSTALLED;
 	}
 
+	@Override
 	public void update() throws BundleException {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public void update(InputStream in) throws BundleException {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public void addBundleListener(BundleListener listener) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public void addFrameworkListener(FrameworkListener listener) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public void addServiceListener(ServiceListener listener) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public void addServiceListener(ServiceListener listener, String filter) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Filter createFilter(String filter) throws InvalidSyntaxException {
 		throw new UnsupportedOperationException();
 	}
 
-	public ServiceReference< ? >[] getAllServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
+	@Override
+	public ServiceReference[] getAllServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Bundle getBundle() {
 		return this;
 	}
 
+	@Override
 	public Bundle getBundle(long id) {
 		return fw.getBundle(id);
 	}
 
+	@Override
 	public Bundle[] getBundles() {
 		return fw.getBundles();
 	}
 
+	@Override
 	public File getDataFile(String filename) {
 		return null;
 	}
 
+	@Override
 	public String getProperty(String key) {
 		return fw.getProperty(key);
 	}
 
-	public ServiceReference< ? > getServiceReference(String clazz) {
+	@Override
+	public ServiceReference getServiceReference(String clazz) {
 		return null;
 	}
 
-	public ServiceReference< ? >[] getServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
+	@Override
+	public ServiceReference[] getServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
 		return null;
 	}
 
+	@Override
 	public Bundle installBundle(String location) throws BundleException {
 		return fw.installBundle(location);
 	}
 
+	@Override
 	public Bundle installBundle(String location, InputStream input) throws BundleException {
 		return fw.installBundle(location, input);
 	}
 
+	@Override
 	public void removeBundleListener(BundleListener listener) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public void removeFrameworkListener(FrameworkListener listener) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public void removeServiceListener(ServiceListener listener) {
 		throw new UnsupportedOperationException();
 	}
@@ -343,54 +384,47 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 	}
 
 	public int compareTo(Bundle var0) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
-	public ServiceRegistration< ? > registerService(String[] clazzes, Object service,
-			Dictionary<String, ? > properties) {
-		// TODO Auto-generated method stub
+	@Override
+	public ServiceRegistration registerService(String[] clazzes, Object service, Dictionary properties) {
 		return null;
 	}
 
-	public ServiceRegistration< ? > registerService(String clazz, Object service, Dictionary<String, ? > properties) {
-		// TODO Auto-generated method stub
+	@Override
+	public ServiceRegistration registerService(String clazz, Object service, Dictionary properties) {
 		return null;
 	}
 
-	public <S> ServiceRegistration<S> registerService(Class<S> clazz, S service, Dictionary<String, ? > properties) {
-		// TODO Auto-generated method stub
+	public ServiceRegistration registerService(Class< ? > clazz, Object service, Dictionary<String, ? > properties) {
 		return null;
 	}
 
-	public <S> ServiceReference<S> getServiceReference(Class<S> clazz) {
-		// TODO Auto-generated method stub
+	public <S> ServiceReference getServiceReference(Class<S> clazz) {
 		return null;
 	}
 
-	public <S> Collection<ServiceReference<S>> getServiceReferences(Class<S> clazz, String filter)
+	public <S> Collection<ServiceReference> getServiceReferences(Class<S> clazz, String filter)
 			throws InvalidSyntaxException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public <S> S getService(ServiceReference<S> reference) {
-		// TODO Auto-generated method stub
+	@Override
+	public Object getService(ServiceReference reference) {
 		return null;
 	}
 
-	public boolean ungetService(ServiceReference< ? > reference) {
-		// TODO Auto-generated method stub
+	@Override
+	public boolean ungetService(ServiceReference reference) {
 		return false;
 	}
 
 	public Bundle getBundle(String location) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public <A> A adapt(Class<A> type) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }

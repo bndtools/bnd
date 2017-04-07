@@ -46,10 +46,12 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		last = loader = getClass().getClassLoader();
 	}
 
+	@Override
 	public void init() throws BundleException {
 		state = Bundle.ACTIVE;
 	}
 
+	@Override
 	public FrameworkEvent waitForStop(long timeout) throws InterruptedException {
 		long deadline = System.currentTimeMillis() + timeout;
 
@@ -64,101 +66,126 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return new FrameworkEvent(FrameworkEvent.STOPPED, this, null);
 	}
 
+	@Override
 	public BundleContext getBundleContext() {
 		return this;
 	}
 
+	@Override
 	public long getBundleId() {
 		return 0;
 	}
 
+	@Override
 	public URL getEntry(String path) {
 		if (path.startsWith("/"))
 			path = path.substring(1);
 		return loader.getResource(path);
 	}
 
+	@Override
 	public Enumeration<String> getEntryPaths(String path) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Dictionary<String,String> getHeaders() {
 		return new Hashtable<String,String>();
 	}
 
+	@Override
 	public Dictionary<String,String> getHeaders(String locale) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public long getLastModified() {
 		return 0;
 	}
 
+	@Override
 	public String getLocation() {
 		return "System Bundle";
 	}
 
+	@Override
 	public URL getResource(String name) {
 		return loader.getResource(name);
 	}
 
+	@Override
 	public Enumeration<URL> getResources(String name) throws IOException {
 		return loader.getResources(name);
 	}
 
+	@Override
 	public int getState() {
 		return Bundle.ACTIVE;
 	}
 
+	@Override
 	public String getSymbolicName() {
 		return "system.bundle";
 	}
 
+	@Override
 	public Version getVersion() {
 		return new Version("1.0");
 	}
 
+	@Override
 	public boolean hasPermission(Object permission) {
 		return true;
 	}
 
+	@Override
 	public Class< ? > loadClass(String name) throws ClassNotFoundException {
 		return loader.loadClass(name);
 	}
 
+	@Override
 	public void start() {}
 
+	@Override
 	public void start(int options) {}
 
+	@Override
 	public synchronized void stop() {
 		state = Bundle.UNINSTALLED;
 		notifyAll();
 	}
 
+	@Override
 	public void stop(int options) throws BundleException {}
 
+	@Override
 	public Bundle getBundle() {
 		return this;
 	}
 
+	@Override
 	public Bundle getBundle(long id) {
 		Long l = new Long(id);
 		Bundle b = bundles.get(l);
 		return b;
 	}
 
+	@Override
 	public Bundle[] getBundles() {
 		return bundles.values().toArray(new Bundle[0]);
 	}
 
+	@Override
 	public File getDataFile(String filename) {
 		return null;
 	}
 
+	@Override
 	public String getProperty(String key) {
 		return properties.getProperty(key);
 	}
 
+	@Override
 	public Bundle installBundle(String location) throws BundleException {
 		try {
 			if (location.startsWith("reference:"))
@@ -178,6 +205,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		}
 	}
 
+	@Override
 	public Bundle installBundle(String location, InputStream in) throws BundleException {
 		Context c;
 		try {
@@ -200,74 +228,92 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		}
 	}
 
+	@Override
 	public Enumeration<URL> findEntries(String path, String filePattern, boolean recurse) {
 		throw new UnsupportedOperationException();
 	}
 
-	public ServiceReference< ? >[] getRegisteredServices() {
+	@Override
+	public ServiceReference[] getRegisteredServices() {
 		throw new UnsupportedOperationException();
 	}
 
-	public ServiceReference< ? >[] getServicesInUse() {
+	@Override
+	public ServiceReference[] getServicesInUse() {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Map<X509Certificate,List<X509Certificate>> getSignerCertificates(int signersType) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public void uninstall() throws BundleException {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public void update() throws BundleException {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public void update(InputStream in) throws BundleException {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public void addBundleListener(BundleListener listener) {
 		// no services so cannot do any harm
 	}
 
+	@Override
 	public void addFrameworkListener(FrameworkListener listener) {
 		// no services so cannot do any harm
 	}
 
+	@Override
 	public void addServiceListener(ServiceListener listener) {
 		// no services so cannot do any harm
 	}
 
+	@Override
 	public void addServiceListener(ServiceListener listener, String filter) {
 		// no services so cannot do any harm
 	}
 
+	@Override
 	public Filter createFilter(String filter) throws InvalidSyntaxException {
 		return FrameworkUtil.createFilter(filter);
 	}
 
-	public ServiceReference< ? >[] getAllServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
+	@Override
+	public ServiceReference[] getAllServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
 		throw new UnsupportedOperationException();
 	}
 
-	public ServiceReference< ? > getServiceReference(String clazz) {
+	@Override
+	public ServiceReference getServiceReference(String clazz) {
 		return null;
 	}
 
-	public ServiceReference< ? >[] getServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
+	@Override
+	public ServiceReference[] getServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
 		return null;
 	}
 
+	@Override
 	public void removeBundleListener(BundleListener listener) {
 		// ok
 	}
 
+	@Override
 	public void removeFrameworkListener(FrameworkListener listener) {
 		// ok
 	}
 
+	@Override
 	public void removeServiceListener(ServiceListener listener) {
 		// ok
 	}
@@ -296,50 +342,44 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return 0;
 	}
 
-	public ServiceRegistration< ? > registerService(String[] clazzes, Object service,
-			Dictionary<String, ? > properties) {
-		// TODO Auto-generated method stub
+	@Override
+	public ServiceRegistration registerService(String[] clazzes, Object service, Dictionary properties) {
 		return null;
 	}
 
-	public ServiceRegistration< ? > registerService(String clazz, Object service, Dictionary<String, ? > properties) {
-		// TODO Auto-generated method stub
+	@Override
+	public ServiceRegistration registerService(String clazz, Object service, Dictionary properties) {
 		return null;
 	}
 
-	public <S> ServiceRegistration<S> registerService(Class<S> clazz, S service, Dictionary<String, ? > properties) {
-		// TODO Auto-generated method stub
+	public <S> ServiceRegistration registerService(Class<S> clazz, S service, Dictionary<String, ? > properties) {
 		return null;
 	}
 
-	public <S> ServiceReference<S> getServiceReference(Class<S> clazz) {
-		// TODO Auto-generated method stub
+	public <S> ServiceReference getServiceReference(Class<S> clazz) {
 		return null;
 	}
 
-	public <S> Collection<ServiceReference<S>> getServiceReferences(Class<S> clazz, String filter)
+	public <S> Collection<ServiceReference> getServiceReferences(Class<S> clazz, String filter)
 			throws InvalidSyntaxException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public <S> S getService(ServiceReference<S> reference) {
-		// TODO Auto-generated method stub
+	@Override
+	public Object getService(ServiceReference reference) {
 		return null;
 	}
 
-	public boolean ungetService(ServiceReference< ? > reference) {
-		// TODO Auto-generated method stub
+	@Override
+	public boolean ungetService(ServiceReference reference) {
 		return false;
 	}
 
 	public Bundle getBundle(String location) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public <A> A adapt(Class<A> type) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }
