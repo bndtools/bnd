@@ -14,3 +14,4 @@ Gradle-Project-Prop: ${project.projectprop}
 Gradle-Task-Prop: ${task.taskprop}
 Gradle-Task-Project-Prop: ${task.project.projectprop}
 Gradle-Missing-Prop: ${task.projectprop}
+Here: ${.}
