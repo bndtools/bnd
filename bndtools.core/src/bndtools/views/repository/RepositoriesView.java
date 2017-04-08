@@ -81,6 +81,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPage;
@@ -88,6 +89,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.XMLMemento;
+import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormText;
@@ -464,6 +466,10 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                 return Status.OK_STATUS;
             }
         }.schedule();
+
+        IActionBars actionBars = getViewSite().getActionBars();
+        actionBars.setGlobalActionHandler(ActionFactory.REFRESH.getId(), refreshAction);
+
     }
 
     private void configureOfflineAction() {
@@ -582,9 +588,12 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                         monitor.subTask("Refresh all repositories");
 
                         try {
+                            refreshAction.setEnabled(false);
                             Central.refreshPlugins();
                         } catch (Exception e) {
                             return new Status(Status.ERROR, Plugin.PLUGIN_ID, "Failed to refresh plugins", e);
+                        } finally {
+                            refreshAction.setEnabled(true);
                         }
                         return Status.OK_STATUS;
                     }
