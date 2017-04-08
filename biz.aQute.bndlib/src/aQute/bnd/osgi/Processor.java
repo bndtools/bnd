@@ -1440,11 +1440,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	private static UTF8Properties replaceAll0(Properties p, String pattern, String replacement) {
 		UTF8Properties result = new UTF8Properties();
-		for (Iterator<Map.Entry<Object,Object>> i = p.entrySet().iterator(); i.hasNext();) {
-			Map.Entry<Object,Object> entry = i.next();
+		Pattern regex = Pattern.compile(pattern);
+		for (Map.Entry<Object,Object> entry : p.entrySet()) {
 			String key = (String) entry.getKey();
 			String value = (String) entry.getValue();
-			value = value.replaceAll(pattern, replacement);
+			value = regex.matcher(value).replaceAll(replacement);
 			result.put(key, value);
 		}
 		return result;
