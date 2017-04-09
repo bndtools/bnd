@@ -1416,7 +1416,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	UTF8Properties loadProperties0(InputStream in, File file) throws IOException {
 
-		String name = file.getAbsoluteFile().toURI().getPath();
+		String name = file.toURI().getPath();
 		int n = name.lastIndexOf('/');
 		if (n > 0)
 			name = name.substring(0, n);
