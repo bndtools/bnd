@@ -1426,7 +1426,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		try {
 			UTF8Properties p = new UTF8Properties();
 			p.load(in, file, this);
-			return replaceAll0(p, "\\$\\{\\.\\}", name);
+			return replaceAll0(p, "\\$\\{\\.\\}", Matcher.quoteReplacement(name));
 		} catch (Exception e) {
 			error("Error during loading properties file: %s, error: %s", name, e);
 			return new UTF8Properties();
