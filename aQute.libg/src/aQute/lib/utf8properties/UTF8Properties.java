@@ -13,7 +13,9 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
+import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter;
@@ -142,4 +144,22 @@ public class UTF8Properties extends Properties {
 		store(out, null);
 	}
 
+	/**
+	 * Replace a string in all the values. This can be used to preassign
+	 * variables that change. For example, the base directory ${.} for a loaded
+	 * properties.
+	 * 
+	 * @return A new UTF8Properties with the replacement.
+	 */
+	public UTF8Properties replaceAll(String pattern, String replacement) {
+		UTF8Properties result = new UTF8Properties(defaults);
+		Pattern regex = Pattern.compile(pattern);
+		for (Map.Entry<Object,Object> entry : entrySet()) {
+			String key = (String) entry.getKey();
+			String value = (String) entry.getValue();
+			value = regex.matcher(value).replaceAll(replacement);
+			result.put(key, value);
+		}
+		return result;
+	}
 }

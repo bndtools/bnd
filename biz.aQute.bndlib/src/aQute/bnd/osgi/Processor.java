@@ -1426,7 +1426,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		try {
 			UTF8Properties p = new UTF8Properties();
 			p.load(in, file, this);
-			return replaceAll0(p, "\\$\\{\\.\\}", Matcher.quoteReplacement(name));
+			return p.replaceAll("\\$\\{\\.\\}", Matcher.quoteReplacement(name));
 		} catch (Exception e) {
 			error("Error during loading properties file: %s, error: %s", name, e);
 			return new UTF8Properties();
@@ -1438,7 +1438,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * preassign variables that change. I.e. the base directory ${.} for a
 	 * loaded properties
 	 */
-	private static UTF8Properties replaceAll0(Properties p, String pattern, String replacement) {
+	public static Properties replaceAll(Properties p, String pattern, String replacement) {
 		UTF8Properties result = new UTF8Properties();
 		Pattern regex = Pattern.compile(pattern);
 		for (Map.Entry<Object,Object> entry : p.entrySet()) {
@@ -1448,10 +1448,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			result.put(key, value);
 		}
 		return result;
-	}
-
-	public static Properties replaceAll(Properties p, String pattern, String replacement) {
-		return replaceAll0(p, pattern, replacement);
 	}
 
 	/**
