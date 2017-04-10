@@ -72,6 +72,10 @@ assert wrapper_manifest.getValue('Project-Buildpath')
 assert api_manifest.getValue('Project-Sourcepath')
 assert impl_manifest.getValue('Project-Sourcepath')
 assert !wrapper_manifest.getValue('Project-Sourcepath')
+assert api_manifest.getValue('Here') == new File(basedir, 'test-api-bundle').toURI().path[0..-2]
+assert api_manifest.getValue('Parent-Here') == basedir.toURI().path[0..-2]
+assert impl_manifest.getValue('Parent-Here') == basedir.toURI().path[0..-2]
+assert wrapper_manifest.getValue('Parent-Here') == basedir.toURI().path[0..-2]
 
 // Check contents
 assert api_jar.getEntry('org/example/api/') != null
