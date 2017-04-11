@@ -1,7 +1,6 @@
 package aQute.lib.settings;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.KeyFactory;
@@ -114,7 +113,7 @@ public class Settings implements Map<String,String> {
 			throw new RuntimeException("Cannot create directory in " + this.where.getParent());
 
 		try {
-			OutputStream out = new FileOutputStream(this.where);
+			OutputStream out = IO.outputStream(this.where);
 			try {
 				if (password != null) {
 					PasswordCryptor cryptor = new PasswordCryptor();

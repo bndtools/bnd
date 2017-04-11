@@ -1,7 +1,6 @@
 package aQute.launcher.pre;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -13,6 +12,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.Manifest;
 
+import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 
 public class EmbeddedLauncher {
@@ -54,20 +54,12 @@ public class EmbeddedLauncher {
 	private static URL toFileURL(URL resource) throws IOException {
 		File f = File.createTempFile("resource", ".jar");
 		f.getParentFile().mkdirs();
-		InputStream in = resource.openStream();
-		try {
-			OutputStream out = new FileOutputStream(f);
-			try {
-				int size = in.read(buffer);
-				while (size > 0) {
-					out.write(buffer, 0, size);
-					size = in.read(buffer);
-				}
-			} finally {
-				out.close();
+		try (InputStream in = resource.openStream(); OutputStream out = IO.outputStream(f)) {
+			int size = in.read(buffer);
+			while (size > 0) {
+				out.write(buffer, 0, size);
+				size = in.read(buffer);
 			}
-		} finally {
-			in.close();
 		}
 		f.deleteOnExit();
 		return f.toURI().toURL();

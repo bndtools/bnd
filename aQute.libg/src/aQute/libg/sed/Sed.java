@@ -2,9 +2,7 @@ package aQute.libg.sed;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -43,14 +41,13 @@ public class Sed {
 
 	public int doIt() throws IOException {
 		int actions = 0;
-		BufferedReader brdr = IO.reader(file);
 		File out;
 		if (output != null)
 			out = output;
 		else
 			out = new File(file.getAbsolutePath() + ".tmp");
-		PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(out), "UTF-8"));
-		try {
+		try (BufferedReader brdr = IO.reader(file, "UTF-8");
+				PrintWriter pw = IO.writer(out, "UTF-8")) {
 			String line;
 			while ((line = brdr.readLine()) != null) {
 				for (Pattern p : replacements.keySet()) {
@@ -76,9 +73,6 @@ public class Sed {
 				pw.print(line);
 				pw.print('\n');
 			}
-		} finally {
-			brdr.close();
-			pw.close();
 		}
 
 		if (output == null) {

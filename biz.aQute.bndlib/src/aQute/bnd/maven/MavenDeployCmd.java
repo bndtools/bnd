@@ -3,7 +3,6 @@ package aQute.bnd.maven;
 import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
@@ -20,6 +19,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
+import aQute.lib.io.IO;
 import aQute.libg.command.Command;
 import aQute.service.reporter.Reporter;
 public class MavenDeployCmd extends Processor {
@@ -225,11 +225,8 @@ public class MavenDeployCmd extends Processor {
 
 	private File write(File base, Resource r, String fileName) throws Exception {
 		File f = Processor.getFile(base, fileName);
-		OutputStream out = new FileOutputStream(f);
-		try {
+		try (OutputStream out = IO.outputStream(f)) {
 			r.write(out);
-		} finally {
-			out.close();
 		}
 		return f;
 	}

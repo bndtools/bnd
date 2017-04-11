@@ -1,7 +1,6 @@
 package aQute.lib.codec;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -58,7 +57,7 @@ public class HCodec implements Codec {
 	}
 
 	public void encode(Type t, Object o, File out) throws Exception {
-		OutputStream oout = new FileOutputStream(out);
+		OutputStream oout = IO.outputStream(out);
 		try {
 			Writer wr = new OutputStreamWriter(oout, "UTF-8");
 			try {

@@ -5,7 +5,6 @@ import static aQute.lib.io.IO.getFile;
 import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -256,7 +255,7 @@ public class Jar implements Closeable {
 
 	public void write(File file) throws Exception {
 		check();
-		try (OutputStream out = new FileOutputStream(file)) {
+		try (OutputStream out = IO.outputStream(file)) {
 			write(out);
 		} catch (Exception t) {
 			file.delete();
@@ -334,7 +333,7 @@ public class Jar implements Closeable {
 		} else {
 			File file = IO.getFile(dir, manifestName);
 			file.getParentFile().mkdirs();
-			try (FileOutputStream fout = new FileOutputStream(file);) {
+			try (OutputStream fout = IO.outputStream(file)) {
 				writeManifest(fout);
 				done.add(manifestName);
 			}

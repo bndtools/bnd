@@ -3,7 +3,6 @@ package aQute.bnd.osgi;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -308,7 +307,7 @@ public class Builder extends Analyzer {
 			if (!fp.exists() && !fp.mkdirs()) {
 				throw new IOException("Could not create directory " + fp);
 			}
-			try (OutputStream out = new FileOutputStream(f)) {
+			try (OutputStream out = IO.outputStream(f)) {
 				Jar.writeManifest(dot.getManifest(), out);
 			}
 			changedFile(f);

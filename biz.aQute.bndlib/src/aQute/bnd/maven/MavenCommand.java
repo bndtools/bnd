@@ -2,7 +2,6 @@ package aQute.bnd.maven;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -586,7 +585,7 @@ public class MavenCommand extends Processor {
 				urls.add(uri);
 				System.err.println("URI for repo " + uri);
 			} else if ("-o".equals(args[i])) {
-				out = new FileOutputStream(args[++i]);
+				out = IO.outputStream(Paths.get(args[++i]));
 			} else
 				throw new IllegalArgumentException("Unknown option: " + args[i]);
 

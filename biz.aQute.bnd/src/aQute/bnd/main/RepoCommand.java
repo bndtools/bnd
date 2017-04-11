@@ -2,7 +2,6 @@ package aQute.bnd.main;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -726,10 +725,9 @@ public class RepoCommand {
 			out = System.out;
 		else {
 			File f = bnd.getFile(sout);
-			out = new FileOutputStream(f);
+			out = IO.outputStream(f);
 		}
 		try {
-
 			ToDependencyPom r = (ToDependencyPom) source;
 			aQute.bnd.service.maven.PomOptions po = new aQute.bnd.service.maven.PomOptions();
 			po.dependencyManagement = opts.dependencyManagement();

@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -14,6 +13,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -132,11 +132,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	void writeProperties() throws Exception {
 		LauncherConstants lc = getConstants(getRunBundles(), false);
-		OutputStream out = new FileOutputStream(launchPropertiesFile);
-		try {
+		try (OutputStream out = Files.newOutputStream(launchPropertiesFile.toPath())) {
 			lc.getProperties(new UTF8Properties()).store(out, "Launching " + getProject());
-		} finally {
-			out.close();
 		}
 	}
 

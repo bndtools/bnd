@@ -9,7 +9,6 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -107,7 +106,7 @@ public class IO {
 	}
 
 	public static void copy(byte[] data, File file) throws FileNotFoundException, IOException {
-		FileOutputStream out = new FileOutputStream(file);
+		OutputStream out = outputStream(file);
 		try {
 			copy(data, out);
 		} finally {
@@ -228,7 +227,7 @@ public class IO {
 
 	public static void copy(File a, File b) throws IOException {
 		if (a.isFile()) {
-			FileOutputStream out = new FileOutputStream(b);
+			OutputStream out = outputStream(b);
 			try {
 				copy(stream(a), out);
 			} finally {
@@ -264,7 +263,7 @@ public class IO {
 	}
 
 	public static void copy(InputStream a, File b) throws IOException {
-		FileOutputStream out = new FileOutputStream(b);
+		OutputStream out = outputStream(b);
 		try {
 			copy(a, out);
 		} finally {
@@ -550,7 +549,7 @@ public class IO {
 	}
 
 	public static void store(Object o, File out, String encoding) throws IOException {
-		store(o, new FileOutputStream(out), encoding);
+		store(o, outputStream(out), encoding);
 	}
 
 	public static void store(Object o, OutputStream fout) throws IOException {
@@ -591,6 +590,14 @@ public class IO {
 		return s.openStream();
 	}
 
+	public static OutputStream outputStream(File f) throws IOException {
+		return outputStream(f.toPath());
+	}
+
+	public static OutputStream outputStream(Path p) throws IOException {
+		return Files.newOutputStream(p);
+	}
+
 	public static Reader reader(String s) {
 		return new StringReader(s);
 	}
@@ -608,7 +615,7 @@ public class IO {
 	}
 
 	public static PrintWriter writer(File f, String encoding) throws IOException {
-		return writer(new FileOutputStream(f), encoding);
+		return writer(outputStream(f), encoding);
 	}
 
 	public static PrintWriter writer(File f) throws IOException {

@@ -2,9 +2,9 @@ package aQute.bnd.main;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -52,6 +52,7 @@ import aQute.lib.collections.SortedList;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
+import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
 
 /**
@@ -418,17 +419,9 @@ public class BaselineCommands {
 		if (!pof.exists() && !pof.mkdirs()) {
 			throw new IOException("Could not create directory " + pof);
 		}
-		OutputStreamWriter fw = new OutputStreamWriter(new FileOutputStream(of), "UTF-8");
-		try {
-			PrintWriter pw = new PrintWriter(fw);
-			try {
-				pw.print("<?xml version='1.0' encoding='UTF-8'?>\n");
-				top.print(0, pw);
-			} finally {
-				pw.close();
-			}
-		} finally {
-			fw.close();
+		try (PrintWriter pw = IO.writer(of, "UTF-8")) {
+			pw.print("<?xml version='1.0' encoding='UTF-8'?>\n");
+			top.print(0, pw);
 		}
 
 		if (opts.xsl() != null) {
@@ -441,12 +434,9 @@ public class BaselineCommands {
 			path = path + ".html";
 			File html = new File(path);
 			logger.debug("xslt {} {} {} {}", xslt, of, html, html.exists());
-			FileOutputStream out = new FileOutputStream(html);
-			try {
-				Transformer transformer = transformerFactory.newTransformer(new StreamSource(xslt.openStream()));
+			try (OutputStream out = IO.outputStream(html); InputStream in = xslt.openStream()) {
+				Transformer transformer = transformerFactory.newTransformer(new StreamSource(in));
 				transformer.transform(new StreamSource(of), new StreamResult(out));
-			} finally {
-				out.close();
 			}
 		}
 	}

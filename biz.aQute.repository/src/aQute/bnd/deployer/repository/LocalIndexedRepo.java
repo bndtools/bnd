@@ -2,9 +2,9 @@ package aQute.bnd.deployer.repository;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
@@ -157,32 +157,22 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		Set<File> allFiles = new HashSet<File>();
 		gatherFiles(allFiles);
 
-		FileOutputStream out = null;
+		if (!storageDir.exists() && !storageDir.mkdirs()) {
+			throw new IOException("Could not create directory " + storageDir);
+		}
 		File shaFile = new File(indexFile.getPath() + REPO_INDEX_SHA_EXTENSION);
-		try {
-			if (!storageDir.exists() && !storageDir.mkdirs()) {
-				throw new IOException("Could not create directory " + storageDir);
-			}
-			out = new FileOutputStream(indexFile);
-
+		try (OutputStream out = IO.outputStream(indexFile)) {
 			URI rootUri = storageDir.getCanonicalFile().toURI();
 			provider.generateIndex(allFiles, out, this.getName(), rootUri, pretty, registry, logService);
 		} finally {
-			IO.close(out);
-			out = null;
 			shaFile.delete();
 		}
 
 		MessageDigest md = MessageDigest.getInstance(SHA256.ALGORITHM);
 		IO.copy(indexFile, md);
 
-		try {
-			out = new FileOutputStream(shaFile);
+		try (OutputStream out = IO.outputStream(shaFile);) {
 			out.write(Hex.toHexString(md.digest()).toLowerCase().toString().getBytes());
-		} finally {
-			if (out != null) {
-				out.close();
-			}
 		}
 	}
 

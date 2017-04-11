@@ -1,9 +1,9 @@
 package aQute.lib.json;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -29,11 +29,8 @@ public class FileHandler extends Handler {
 	@Override
 	public Object decode(Decoder dec, String s) throws Exception {
 		File tmp = File.createTempFile("json", ".bin");
-		FileOutputStream fout = new FileOutputStream(tmp);
-		try {
+		try (OutputStream fout = IO.outputStream(tmp)) {
 			Base64.decode(new StringReader(s), fout);
-		} finally {
-			fout.close();
 		}
 		return tmp;
 	}

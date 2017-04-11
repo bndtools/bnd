@@ -2,9 +2,9 @@ package aQute.bnd.deployer.repository;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -198,7 +198,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 
 			// Save the data to the cache
 			ensureCacheDirExists();
-			String serverSHA = copyWithSHA(data, new FileOutputStream(cachedFile));
+			String serverSHA = copyWithSHA(data, IO.outputStream(cachedFile));
 
 			// Check the SHA of the received data
 			if (sha != null && !sha.equalsIgnoreCase(serverSHA)) {
@@ -239,7 +239,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		}
 	}
 
-	private String copyWithSHA(InputStream input, FileOutputStream output) throws IOException {
+	private String copyWithSHA(InputStream input, OutputStream output) throws IOException {
 		MessageDigest digest;
 
 		try {
