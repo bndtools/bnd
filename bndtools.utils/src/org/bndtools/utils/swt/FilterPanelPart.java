@@ -35,9 +35,11 @@ public class FilterPanelPart {
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     private final Lock scheduledFilterLock = new ReentrantLock();
     private final Runnable updateFilterTask = new Runnable() {
+        @Override
         public void run() {
             Display display = panel.getDisplay();
             Runnable update = new Runnable() {
+                @Override
                 public void run() {
                     String newFilter = txtFilter.getText();
                     setFilter(newFilter);
@@ -94,6 +96,7 @@ public class FilterPanelPart {
             }
         });
         txtFilter.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent ev) {
                 try {
                     scheduledFilterLock.lock();
@@ -106,6 +109,10 @@ public class FilterPanelPart {
             }
         });
         return panel;
+    }
+
+    public Text getFilterControl() {
+        return txtFilter;
     }
 
     public String getFilter() {
