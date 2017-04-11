@@ -2,7 +2,6 @@ package aQute.bnd.deployer.repository;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -307,10 +306,8 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		MessageDigest digest;
 		byte[] buf = new byte[BUFFER_SIZE];
 
-		InputStream stream = null;
-		try {
+		try (InputStream stream = IO.stream(file)) {
 			digest = MessageDigest.getInstance(SHA_256);
-			stream = new FileInputStream(file);
 			while (true) {
 				int bytesRead = stream.read(buf, 0, BUFFER_SIZE);
 				if (bytesRead < 0)
@@ -321,9 +318,6 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		} catch (NoSuchAlgorithmException e) {
 			// Can't happen... hopefully...
 			throw new IOException(e.getMessage(), e);
-		} finally {
-			if (stream != null)
-				stream.close();
 		}
 
 		return Hex.toHexString(digest.digest());

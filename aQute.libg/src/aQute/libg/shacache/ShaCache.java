@@ -1,7 +1,6 @@
 package aQute.libg.shacache;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.regex.Pattern;
 
@@ -104,7 +103,7 @@ public class ShaCache {
 		if (!f.isFile())
 			return null;
 
-		return new FileInputStream(f);
+		return IO.stream(f);
 	}
 
 	/**

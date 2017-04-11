@@ -1,8 +1,6 @@
 package aQute.bnd.repository.osgi;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,6 +30,7 @@ import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.version.Version;
 import aQute.lib.exceptions.Exceptions;
+import aQute.lib.io.IO;
 
 class OSGiIndex {
 	private final static Logger				logger	= LoggerFactory.getLogger(OSGiIndex.class);
@@ -94,10 +93,8 @@ class OSGiIndex {
 						logger.debug("{}: No file downloaded for {}", name, uri);
 						return Collections.emptyList();
 					}
-					try (InputStream in = new FileInputStream(file)) {
-						try (XMLResourceParser xmlp = new XMLResourceParser(in, name, uri);) {
-							return xmlp.parse();
-						}
+					try (XMLResourceParser xmlp = new XMLResourceParser(IO.stream(file), name, uri)) {
+						return xmlp.parse();
 					}
 				} catch (Exception e) {
 					throw Exceptions.duck(e);

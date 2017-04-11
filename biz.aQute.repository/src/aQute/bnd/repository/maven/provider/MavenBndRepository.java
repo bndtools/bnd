@@ -2,7 +2,6 @@ package aQute.bnd.repository.maven.provider;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -159,7 +158,7 @@ public class MavenBndRepository extends BaseRepository
 
 				IO.copy(pomResource.openInputStream(), pomFile);
 				IPom pom;
-				try (FileInputStream fin = new FileInputStream(pomFile)) {
+				try (InputStream fin = IO.stream(pomFile)) {
 					pom = storage.getPom(fin);
 				}
 				Archive binaryArchive = pom.binaryArchive();

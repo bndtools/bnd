@@ -2,7 +2,6 @@ package aQute.bnd.main;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -2764,31 +2763,22 @@ public class bnd extends Processor {
 		File from = getFile(opts._arguments().get(0));
 		File to = getFile(opts._arguments().get(1));
 		if (opts.m2p()) {
-			FileInputStream in = new FileInputStream(from);
-			try {
+			try (InputStream in = IO.stream(from)) {
 				Properties p = new UTF8Properties();
 				Manifest m = new Manifest(in);
 				Attributes attrs = m.getMainAttributes();
 				for (Map.Entry<Object,Object> i : attrs.entrySet()) {
 					p.put(i.getKey().toString(), i.getValue().toString());
 				}
-				FileOutputStream fout = new FileOutputStream(to);
-				try {
+				try (OutputStream fout = new FileOutputStream(to)) {
 					if (opts.xml())
 						p.storeToXML(fout, "converted from " + from);
 					else {
-						OutputStreamWriter osw = new OutputStreamWriter(fout, "UTF-8");
-						try {
+						try (OutputStreamWriter osw = new OutputStreamWriter(fout, "UTF-8")) {
 							p.store(osw, "converted from " + from);
-						} finally {
-							osw.close();
 						}
 					}
-				} finally {
-					fout.close();
 				}
-			} finally {
-				in.close();
 			}
 			return;
 		}
@@ -3086,8 +3076,7 @@ public class bnd extends Processor {
 				continue;
 			}
 
-			JarInputStream in = new JarInputStream(new FileInputStream(file));
-			try {
+			try (JarInputStream in = new JarInputStream(IO.stream(file))) {
 				Manifest m = in.getManifest();
 				for (Object header : m.getMainAttributes().keySet()) {
 					Attributes.Name name = (Name) header;
@@ -3113,8 +3102,6 @@ public class bnd extends Processor {
 						}
 					}
 				}
-			} finally {
-				in.close();
 			}
 		}
 	}

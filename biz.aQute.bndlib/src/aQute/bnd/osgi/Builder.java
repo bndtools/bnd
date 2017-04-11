@@ -2,7 +2,6 @@ package aQute.bnd.osgi;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -113,7 +112,7 @@ public class Builder extends Analyzer {
 			File mff = getFile(mf);
 			if (mff.isFile()) {
 				updateModified(mff.lastModified(), "Manifest " + mff);
-				try (InputStream in = new FileInputStream(mff)){
+				try (InputStream in = IO.stream(mff)) {
 					manifest = new Manifest(in);
 				} catch (Exception e) {
 					exception(e, "%s: exception while reading manifest file", MANIFEST);

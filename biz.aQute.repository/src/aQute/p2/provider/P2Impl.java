@@ -1,7 +1,6 @@
 package aQute.p2.provider;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -193,7 +192,7 @@ public class P2Impl {
 
 		f = getFile(uri);
 		if (f != null)
-			return new FileInputStream(f);
+			return IO.stream(f);
 
 		if (!defaults.contains(uri))
 			logger.error("Invalid uri {}", uri);
@@ -218,7 +217,7 @@ public class P2Impl {
 	}
 
 	private InputStream tzStream(File f) throws Exception {
-		return new XZInputStream(new FileInputStream(f));
+		return new XZInputStream(IO.stream(f));
 	}
 
 	private URI replace(URI uri, String where, String replacement) {
@@ -289,7 +288,7 @@ public class P2Impl {
 
 	private P2Index parseIndex(File file, URI base) throws IOException {
 		Properties p = new Properties();
-		try (InputStream in = new FileInputStream(file)) {
+		try (InputStream in = IO.stream(file)) {
 			p.load(in);
 		}
 

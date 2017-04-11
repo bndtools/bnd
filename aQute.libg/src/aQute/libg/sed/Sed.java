@@ -2,10 +2,8 @@ package aQute.libg.sed;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.LinkedHashMap;
@@ -45,7 +43,7 @@ public class Sed {
 
 	public int doIt() throws IOException {
 		int actions = 0;
-		BufferedReader brdr = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+		BufferedReader brdr = IO.reader(file);
 		File out;
 		if (output != null)
 			out = output;

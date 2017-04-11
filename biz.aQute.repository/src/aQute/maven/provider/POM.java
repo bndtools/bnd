@@ -2,7 +2,6 @@ package aQute.maven.provider;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -120,7 +119,7 @@ public class POM implements IPom {
 	}
 
 	public POM(MavenRepository repo, File file) throws Exception {
-		this(repo, new FileInputStream(file));
+		this(repo, IO.stream(file));
 	}
 
 	public POM(MavenRepository repo, Document doc) throws Exception {

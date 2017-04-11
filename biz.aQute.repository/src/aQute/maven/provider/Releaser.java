@@ -1,7 +1,6 @@
 package aQute.maven.provider;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -171,7 +170,7 @@ class Releaser implements Release {
 
 	@Override
 	public void add(Archive archive, File in) throws Exception {
-		try (FileInputStream fin = new FileInputStream(in)) {
+		try (InputStream fin = IO.stream(in)) {
 			add(archive, fin);
 		} catch (Exception e) {
 			aborted = true;

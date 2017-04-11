@@ -39,7 +39,6 @@ package aQute.jpm.main;
  */
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -154,12 +153,9 @@ public class InstallCert {
 			IOException, NoSuchAlgorithmException, CertificateException {
 		file = getCacertFile(file);
 		KeyStore ks;
-		InputStream in = new FileInputStream(file);
-		try {
+		try (InputStream in = IO.stream(file)) {
 			ks = KeyStore.getInstance(KeyStore.getDefaultType());
 			ks.load(in, passphrase.toCharArray());
-		} finally {
-			in.close();
 		}
 
 		System.out.println("In key store");

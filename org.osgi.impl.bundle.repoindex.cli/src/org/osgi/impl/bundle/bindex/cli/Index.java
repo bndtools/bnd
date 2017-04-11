@@ -16,12 +16,13 @@
 package org.osgi.impl.bundle.bindex.cli;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -214,13 +215,8 @@ public class Index {
 
 	private static Properties loadPropertiesFile(File knownBundles) throws FileNotFoundException, IOException {
 		Properties props = new Properties();
-		FileInputStream stream = null;
-		try {
-			stream = new FileInputStream(knownBundles);
+		try (InputStream stream = Files.newInputStream(knownBundles.toPath())) {
 			props.load(stream);
-		} finally {
-			if (stream != null)
-				stream.close();
 		}
 		return props;
 	}

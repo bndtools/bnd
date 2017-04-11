@@ -1,7 +1,6 @@
 package aQute.lib.utf8properties;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -56,11 +55,8 @@ public class UTF8Properties extends Properties {
 	}
 
 	public void load(File file, Reporter reporter) throws Exception {
-		FileInputStream fin = new FileInputStream(file);
-		try {
+		try (InputStream fin = IO.stream(file)) {
 			load(fin, file, reporter);
-		} finally {
-			fin.close();
 		}
 	}
 

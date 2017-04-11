@@ -2,11 +2,13 @@ package aQute.libg.classdump;
 
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Modifier;
+import java.nio.file.Paths;
+
+import aQute.lib.io.IO;
 
 public class ClassDumper {
 	/**
@@ -56,7 +58,7 @@ public class ClassDumper {
 	InputStream			in;
 
 	public ClassDumper(String path) throws Exception {
-		this(path, new FileInputStream(new File(path)));
+		this(path, IO.stream(Paths.get(path)));
 	}
 
 	public ClassDumper(String path, InputStream in) throws IOException {

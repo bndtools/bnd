@@ -6,7 +6,6 @@ import static aQute.bnd.deployer.repository.RepoResourceUtils.getIdentityCapabil
 import static aQute.bnd.deployer.repository.RepoResourceUtils.readIndex;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -63,6 +62,7 @@ import aQute.bnd.service.url.URLConnector;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.filter.Filter;
+import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
 import aQute.libg.gzip.GZipUtils;
@@ -219,7 +219,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 									getCacheDirectory(), connector, (String) null);
 							indexHandle.setReporter(reporter);
 							InputStream indexStream = GZipUtils
-									.detectCompression(new FileInputStream(indexHandle.request()));
+									.detectCompression(IO.stream(indexHandle.request()));
 							readIndex(indexLocation.getPath(), indexLocation, indexStream, allContentProviders.values(),
 									this, logService);
 						} catch (Exception e) {
@@ -254,7 +254,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 					}
 					indexHandle.setReporter(reporter);
 					File indexFile = indexHandle.request();
-					InputStream indexStream = GZipUtils.detectCompression(new FileInputStream(indexFile));
+					InputStream indexStream = GZipUtils.detectCompression(IO.stream(indexFile));
 					readIndex(indexFile.getName(), indexLocation, indexStream, allContentProviders.values(), processor,
 							logService);
 				} catch (Exception e) {

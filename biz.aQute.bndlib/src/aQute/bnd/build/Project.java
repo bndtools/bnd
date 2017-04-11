@@ -3,7 +3,6 @@ package aQute.bnd.build;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -1070,7 +1069,7 @@ public class Project extends Processor {
 
 		for (RepositoryPlugin releaseRepo : releaseRepos) {
 			for (File jar : jars) {
-				releaseRepo(releaseRepo, jar.getName(), new BufferedInputStream(new FileInputStream(jar)));
+				releaseRepo(releaseRepo, jar.getName(), new BufferedInputStream(IO.stream(jar)));
 			}
 		}
 	}
@@ -1414,7 +1413,7 @@ public class Project extends Processor {
 
 		if (rp != null) {
 			try {
-				rp.put(new BufferedInputStream(new FileInputStream(file)), new RepositoryPlugin.PutOptions());
+				rp.put(new BufferedInputStream(IO.stream(file)), new RepositoryPlugin.PutOptions());
 				return;
 			} catch (Exception e) {
 				msgs.DeployingFile_On_Exception_(file, rp.getName(), e);
@@ -1451,7 +1450,8 @@ public class Project extends Processor {
 			for (Deploy d : getPlugins(Deploy.class)) {
 				logger.debug("Deploying {} to: {}", output.getName(), d);
 				try {
-					if (d.deploy(this, output.getName(), new BufferedInputStream(new FileInputStream(output))))
+					if (d.deploy(this, output.getName(),
+							new BufferedInputStream(IO.stream(output))))
 						logger.debug("deployed {} successfully to {}", output, d);
 				} catch (Exception e) {
 					msgs.Deploying(e);
@@ -1581,7 +1581,7 @@ public class Project extends Processor {
 			p.getProperties().putAll(value);
 			PutOptions options = new PutOptions();
 			options.context = p;
-			try (FileInputStream in = new FileInputStream(f)) {
+			try (InputStream in = IO.stream(f)) {
 				repo.put(in, options);
 			} catch (Exception e) {
 				exception(e, "Cannot install %s into %s because %s", f, repo.getName(), e);
@@ -2880,7 +2880,7 @@ public class Project extends Processor {
 				error("The ${ide;<>} macro requires a .settings/org.eclipse.jdt.core.prefs file in the project");
 				return null;
 			}
-			try(FileInputStream in = new FileInputStream(file)) {
+			try (InputStream in = IO.stream(file)) {
 				ide.load(in);
 			}
 		}

@@ -20,7 +20,6 @@ import static aQute.bnd.osgi.Constants.SOURCES;
 import static aQute.bnd.osgi.Constants.WAB;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
@@ -40,6 +39,7 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.maven.PomParser;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
+import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.service.reporter.Reporter;
 
@@ -444,7 +444,7 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public static Domain domain(File file) throws IOException {
-		try (FileInputStream in = new FileInputStream(file);) {
+		try (InputStream in = IO.stream(file)) {
 
 			if (file.getName().endsWith(".mf")) {
 				Manifest m = new Manifest(in);

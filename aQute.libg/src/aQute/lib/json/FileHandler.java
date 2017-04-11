@@ -1,14 +1,15 @@
 package aQute.lib.json;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.lang.reflect.Type;
 import java.util.Map;
 
 import aQute.lib.base64.Base64;
+import aQute.lib.io.IO;
 
 public class FileHandler extends Handler {
 
@@ -18,13 +19,10 @@ public class FileHandler extends Handler {
 		if (!f.isFile())
 			throw new RuntimeException("Encoding a file requires the file to exist and to be a normal file " + f);
 
-		FileInputStream in = new FileInputStream(f);
-		try {
+		try (InputStream in = IO.stream(f)) {
 			app.append('"');
 			Base64.encode(in, app);
 			app.append('"');
-		} finally {
-			in.close();
 		}
 	}
 

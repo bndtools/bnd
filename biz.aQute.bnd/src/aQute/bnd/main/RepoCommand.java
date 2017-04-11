@@ -2,9 +2,9 @@ package aQute.bnd.main;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -404,7 +404,7 @@ public class RepoCommand {
 				}
 
 				if (bnd.isOk()) {
-					PutResult r = writable.put(new BufferedInputStream(new FileInputStream(file)),
+					PutResult r = writable.put(new BufferedInputStream(IO.stream(file)),
 							new RepositoryPlugin.PutOptions());
 					logger.debug("put {} in {} ({}) into {}", source, writable.getName(), writable.getLocation(),
 							r.artifact);
@@ -657,8 +657,7 @@ public class RepoCommand {
 			File src = spec.src.getFile();
 
 			if (!options.dry()) {
-				FileInputStream fin = new FileInputStream(src);
-				try {
+				try (InputStream fin = IO.stream(src)) {
 					PutResult put = dest.put(fin, null);
 					if (put.digest != null) {
 						if (!Arrays.equals(spec.digest, put.digest)) {
@@ -667,8 +666,6 @@ public class RepoCommand {
 					}
 				} catch (Exception e) {
 					bnd.exception(e, "Exception %s in upload %s", e, src);
-				} finally {
-					fin.close();
 				}
 			}
 		}

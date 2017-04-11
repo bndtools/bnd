@@ -1,7 +1,6 @@
 package aQute.lib.settings;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -69,7 +68,7 @@ public class Settings implements Map<String,String> {
 		this.password = password;
 		if (this.where.isFile() && this.where.length() > 1) {
 			try {
-				InputStream in = new FileInputStream(this.where);
+				InputStream in = IO.stream(this.where);
 				try {
 					if (password != null) {
 						PasswordCryptor cryptor = new PasswordCryptor();

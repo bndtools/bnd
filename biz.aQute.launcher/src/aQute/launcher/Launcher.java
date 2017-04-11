@@ -10,7 +10,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -69,6 +68,7 @@ import org.osgi.service.permissionadmin.PermissionInfo;
 import aQute.launcher.agent.LauncherAgent;
 import aQute.launcher.constants.LauncherConstants;
 import aQute.launcher.minifw.MiniFramework;
+import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 
 /**
@@ -117,7 +117,7 @@ public class Launcher implements ServiceListener {
 					if (!propertiesFile.isFile())
 						errorAndExit("Specified launch file `%s' was not found - absolutePath='%s'", path,
 								propertiesFile.getAbsolutePath());
-					in = new FileInputStream(propertiesFile);
+					in = IO.stream(propertiesFile);
 				} else {
 					propertiesFile = null;
 					in = Launcher.class.getClassLoader().getResourceAsStream(DEFAULT_LAUNCHER_PROPERTIES);
@@ -239,8 +239,7 @@ public class Launcher implements ServiceListener {
 				public void run() {
 					long now = propertiesFile.lastModified();
 					if (begin < now) {
-						try {
-							FileInputStream in = new FileInputStream(propertiesFile);
+						try (InputStream in = IO.stream(propertiesFile)) {
 							Properties properties = new Properties();
 							load(in, properties);
 							parms = new LauncherConstants(properties);
@@ -694,11 +693,8 @@ public class Launcher implements ServiceListener {
 		} catch (BundleException e) {
 			trace("failed reference, will try to install %s with input stream", f.getAbsolutePath());
 			String reference = f.toURI().toURL().toExternalForm();
-			InputStream in = new FileInputStream(f);
-			try {
+			try (InputStream in = IO.stream(f)) {
 				return context.installBundle(reference, in);
-			} finally {
-				in.close();
 			}
 		}
 	}

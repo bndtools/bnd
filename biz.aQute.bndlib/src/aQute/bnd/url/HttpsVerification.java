@@ -1,7 +1,6 @@
 package aQute.bnd.url;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +23,7 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -142,13 +142,10 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 			for (String path : paths.split("\\s*,\\s*")) {
 				File file = new File(path); // This is a system specific path!
 				if (file.isFile()) {
-					InputStream inStream = new FileInputStream(file);
-					try {
+					try (InputStream inStream = IO.stream(file)) {
 						CertificateFactory cf = CertificateFactory.getInstance("X.509");
 						X509Certificate cert = (X509Certificate) cf.generateCertificate(inStream);
 						certificates.add(cert);
-					} finally {
-						inStream.close();
 					}
 				}
 			}
