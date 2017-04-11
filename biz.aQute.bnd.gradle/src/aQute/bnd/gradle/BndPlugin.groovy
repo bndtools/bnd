@@ -100,6 +100,16 @@ public class BndPlugin implements Plugin<Project> {
           output.classesDir = output.resourcesDir = bndProject.getTestOutput()
         }
       }
+      /* Configure srcDirs for any additional languages */
+      afterEvaluate {
+        sourceSets {
+          main.convention?.plugins.each { lang, object ->
+            main[lang]?.srcDirs = main.java.srcDirs
+            test[lang]?.srcDirs = test.java.srcDirs
+          }
+        }
+      }
+
       bnd.ext.allSrcDirs = files(bndProject.getAllsourcepath())
       /* Set up dependencies */
       Collection<String> projectDependencies = bndProject.getDependson()*.getName()
@@ -473,16 +483,6 @@ public class BndPlugin implements Plugin<Project> {
                 }
               }
             }
-          }
-        }
-      }
-
-      /* After evaluate configuration */
-      afterEvaluate {
-        sourceSets {
-          main.convention?.plugins.each { lang, object ->
-            main[lang]?.setSrcDirs main.java.srcDirs
-            test[lang]?.setSrcDirs test.java.srcDirs
           }
         }
       }

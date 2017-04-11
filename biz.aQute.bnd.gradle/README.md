@@ -535,9 +535,7 @@ Gradle stops using the prior version of the plugin.
 When you use the Gradle plugin for another JVM language like Groovy, Scala, or Kotlin
 with your Bnd Workspace build, the Bnd Gradle Plugin will configure the language's
 `srcDirs` for the `main` and `test` source sets to use the Bnd source and test source
-folders. The Bnd Gradle Plugin will also configure the language's compile task for the
-`main` source set to depend upon the same dependencies as configured for the
-`compileJava` task.
+folders.
 
 ---
 
