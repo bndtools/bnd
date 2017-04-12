@@ -1,6 +1,7 @@
 package biz.aQute.remote;
 
 import java.io.File;
+import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -186,8 +187,15 @@ public class AgentTest extends TestCase {
 	public void testAgentSupervisorTimeout() throws Exception {
 		TestSupervisor testSupervisor = new TestSupervisor();
 
-		testSupervisor.connect("localhost", 12345, 300);
-		testSupervisor.connect("localhost", 12345, 100);
+		try {
+			testSupervisor.connect("localhost", 12345, 300);
+			fail("Excepted connection timeout");
+		} catch (ConnectException e) {}
+
+		try {
+			testSupervisor.connect("localhost", 12345, 100);
+			fail("Excepted connection timeout");
+		} catch (ConnectException e) {}
 
 		try {
 			testSupervisor.connect("localhost", 12345, -2);
