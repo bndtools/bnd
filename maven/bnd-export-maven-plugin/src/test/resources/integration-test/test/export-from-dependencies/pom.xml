@@ -9,9 +9,24 @@
     </parent>
 
     <groupId>biz.aQute.bnd-test</groupId>
-    <artifactId>export-bundles-only</artifactId>
+    <artifactId>export-from-dependencies</artifactId>
     <version>0.0.1</version>
     <packaging>pom</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.eventadmin</artifactId>
+            <version>1.4.8</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.framework</artifactId>
+            <version>5.4.0</version>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>

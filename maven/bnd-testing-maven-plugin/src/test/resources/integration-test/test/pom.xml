@@ -16,6 +16,7 @@
 	<modules>
 		<module>test-no-resolve</module>
 		<module>test-with-resolve</module>
+		<module>test-with-resolve-from-dependencies</module>
 	</modules>
 
 	<dependencyManagement>

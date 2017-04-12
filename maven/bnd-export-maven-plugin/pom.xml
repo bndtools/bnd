@@ -7,9 +7,9 @@
         <version>3.4.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
-	<artifactId>bnd-export-maven-plugin</artifactId>
-	<description>Resolve and Export OSGi applications.</description>
-	<name>${project.groupId}:${project.artifactId}</name>
+    <artifactId>bnd-export-maven-plugin</artifactId>
+    <description>Resolve and Export OSGi applications.</description>
+    <name>${project.groupId}:${project.artifactId}</name>
     <packaging>maven-plugin</packaging>
 
     <dependencies>
@@ -40,6 +40,10 @@
         <dependency>
             <groupId>biz.aQute.bnd</groupId>
             <artifactId>biz.aQute.repository</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>biz.aQute.bnd</groupId>
+            <artifactId>bnd-shared-maven-lib</artifactId>
         </dependency>
     </dependencies>
 

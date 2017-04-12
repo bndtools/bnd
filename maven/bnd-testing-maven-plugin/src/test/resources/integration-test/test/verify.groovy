@@ -33,3 +33,6 @@ assert build_log =~ /Tests run\s*:\s*1\s*Passed\s*:\s*1\s*Errors\s*:\s*0\s*Failu
 
 // Resolving test
 assert build_log =~ /Tests run\s*:\s*2\s*Passed\s*:\s*2\s*Errors\s*:\s*0\s*Failures\s*:\s*0/
+
+// Resolve-from-dependencies test
+assert build_log =~ /Tests run\s*:\s*3\s*Passed\s*:\s*3\s*Errors\s*:\s*0\s*Failures\s*:\s*0/

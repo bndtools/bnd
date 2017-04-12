@@ -7,15 +7,22 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectDependenciesResolver;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.maven.lib.resolve.DependencyResolver;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.libg.glob.Glob;
 import biz.aQute.resolve.Bndrun;
@@ -23,6 +30,12 @@ import biz.aQute.resolve.Bndrun;
 @Mojo(name = "testing", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class TestingMojo extends AbstractMojo {
 	private static final Logger	logger			= LoggerFactory.getLogger(TestingMojo.class);
+
+	@Parameter(defaultValue = "${project}", readonly = true, required = true)
+	private MavenProject				project;
+
+	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
+	private RepositorySystemSession		repositorySession;
 
 	@Parameter(property = "skipTests", defaultValue = "false")
 	private boolean				skipTests;
@@ -45,6 +58,12 @@ public class TestingMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${testing}", readonly = true)
 	private String		testing;
 
+	@Parameter(readonly = true, required = false)
+	private List<File>					bundles;
+
+	@Parameter(defaultValue = "true")
+	private boolean						useDefaults;
+
 	@Parameter(defaultValue = "false")
 	private boolean				resolve;
 
@@ -56,14 +75,26 @@ public class TestingMojo extends AbstractMojo {
 
 	private int					errors	= 0;
 
+	@Component
+	private RepositorySystem			system;
+
+	@Component
+	private ProjectDependenciesResolver	resolver;
+
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		if (skip || skipTests) {
 			return;
 		}
 		try {
+			DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver,
+					system);
+
+			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles,
+					useDefaults);
+
 			if (testingSelect != null) {
 				logger.info("Using selected testing file {}", testingSelect);
-				testing(testingSelect);
+				testing(testingSelect, fileSetRepository);
 			} else {
 
 				Glob g = new Glob(testing == null ? "*" : testing);
@@ -71,7 +102,7 @@ public class TestingMojo extends AbstractMojo {
 
 				for (File runFile : bndruns) {
 					if (g.matcher(runFile.getName()).matches())
-						testing(runFile);
+						testing(runFile, fileSetRepository);
 					else
 						logger.info("Skipping {}", g);
 				}
@@ -84,7 +115,7 @@ public class TestingMojo extends AbstractMojo {
 			throw new MojoExecutionException(errors + " errors found");
 	}
 
-	private void testing(File runFile) throws Exception {
+	private void testing(File runFile, FileSetRepository fileSetRepository) throws Exception {
 		if (!runFile.exists()) {
 			logger.error("Could not find bnd run file {}", runFile);
 			errors++;
@@ -99,6 +130,7 @@ public class TestingMojo extends AbstractMojo {
 			Workspace workspace = run.getWorkspace();
 			workspace.setBuildDir(cnf);
 			workspace.setOffline(session.getSettings().isOffline());
+			workspace.addBasicPlugin(fileSetRepository);
 			for (RepositoryPlugin repo : workspace.getRepositories()) {
 				repo.list(null);
 			}
