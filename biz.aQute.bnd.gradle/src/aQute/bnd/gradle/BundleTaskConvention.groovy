@@ -8,8 +8,12 @@
  * Properties:
  * <ul>
  * <li>bndfile - This is the name of the bnd file to use to make the bundle.
- * This defaults to 'bnd.bnd' in the projectDir. The bndfile does not need
- * to exist. It supersedes any information in the jar task's manifest.</li>
+ * The bndfile does not need
+ * to exist. It will override headers in the jar task's manifest.</li>
+ * <li>bnd - This is a string holding a bnd file to use to make the bundle.
+ * It will override headers in the jar task's manifest.
+ * This properties is ignored if bndfile is specified and the specified file
+ * exists.</li>
  * <li>sourceSet - This is the SourceSet to use for the
  * bnd builder. It defaults to 'project.sourceSets.main'.</li>
  * <li>classpath - This is the FileCollection to use for the buildpath
@@ -23,6 +27,7 @@ import static aQute.bnd.gradle.BndUtils.logReport
 
 import java.util.Properties
 import java.util.jar.Manifest
+import java.util.regex.Matcher
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
 
@@ -31,20 +36,24 @@ import aQute.bnd.osgi.Constants
 import aQute.bnd.osgi.Jar
 import aQute.bnd.osgi.Processor
 import aQute.bnd.version.MavenVersion
+import aQute.lib.utf8properties.UTF8Properties
 import org.gradle.api.GradleException
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.SourceSet
 
 class BundleTaskConvention {
   private final Task task
   private final Project project
   private File bndfile
+  private final StringBuilder instructions
   private Configuration configuration
   private final ConfigurableFileCollection classpathCollection
   private boolean classpathModified
@@ -60,19 +69,23 @@ class BundleTaskConvention {
   BundleTaskConvention(org.gradle.api.tasks.bundling.Jar task) {
     this.task = task
     this.project = task.project
-    setBndfile('bnd.bnd')
+    instructions = new StringBuilder()
     classpathCollection = project.files()
     setSourceSet(project.sourceSets.main)
     configuration = project.configurations.findByName('compileClasspath') ?: project.configurations.compile
     classpathModified = false
     // need to programmatically add to inputs since @InputFiles in a convention is not processed
     task.inputs.files classpathCollection, { getBndfile() }
+    task.inputs.property 'bnd', { getBnd() }
   }
 
   /**
    * Get the bndfile property.
+   * <p>
+   * File path to a bnd file containing bnd instructions for this project.
    */
   @InputFile
+  @Optional
   public File getBndfile() {
     return bndfile
   }
@@ -85,6 +98,52 @@ class BundleTaskConvention {
    */
   public void setBndfile(Object file) {
     bndfile = project.file(file)
+  }
+
+  /**
+   * Get the bnd property.
+   * <p>
+   * If the bndfile property points an existing file, this property is ignored.
+   * Otherwise, the bnd instructions in this property will be used.
+   */
+  @Input
+  @Optional
+  public String getBnd() {
+    return instructions.toString()
+  }
+
+  /**
+   * Set the bnd property from a multi-line string.
+   */
+  public void setBnd(CharSequence line) {
+     instructions.length = 0
+     bnd(line)
+  }
+
+  /**
+   * Add instuctions to the bnd property from a list of multi-line strings.
+   */
+  public void bnd(CharSequence... lines) {
+    lines.each { line ->
+      instructions.append(line).append('\n')
+    }
+  }
+
+  /**
+   * Set the bnd property from a map.
+   */
+  public void setBnd(Map<String, ?> map) {
+     instructions.length = 0
+     bnd(map)
+  }
+
+  /**
+   * Add instuctions to the bnd property from a map.
+   */
+  public void bnd(Map<String, ?> map) {
+    map.each { key, value ->
+      instructions.append(key).append('=').append(value).append('\n')
+    }
   }
 
   /**
@@ -165,17 +224,22 @@ class BundleTaskConvention {
         // load bnd properties
         File temporaryBndFile = File.createTempFile('bnd', '.bnd', temporaryDir)
         temporaryBndFile.withWriter('UTF-8') { writer ->
+          String here = Matcher.quoteReplacement(project.projectDir.toURI().path[0..-2])
           // write any task manifest entries into the tmp bnd file
-          manifest.effectiveManifest.attributes.inject(new Properties()) { properties, key, value ->
+          manifest.effectiveManifest.attributes.inject(new UTF8Properties()) { properties, key, value ->
             if (key != 'Manifest-Version') {
               properties.setProperty(key, value.toString())
             }
             return properties
-          }.store(writer, null)
+          }.replaceAll(/\$\{\.\}/, here).store(writer, null)
 
           // if the bnd file exists, add its contents to the tmp bnd file
-          if (bndfile.isFile()) {
+          if (bndfile?.isFile()) {
             builder.loadProperties(bndfile).store(writer, null)
+          } else if (!bnd.empty) {
+            UTF8Properties props = new UTF8Properties()
+            props.load(bnd, project.buildFile, builder)
+            props.replaceAll(/\$\{\.\}/, here).store(writer, null)
           }
         }
         builder.setProperties(temporaryBndFile, project.projectDir) // this will cause project.dir property to be set

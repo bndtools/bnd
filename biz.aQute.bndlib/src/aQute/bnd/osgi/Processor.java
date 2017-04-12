@@ -1416,7 +1416,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	UTF8Properties loadProperties0(InputStream in, File file) throws IOException {
 
-		String name = file.getAbsoluteFile().toURI().getPath();
+		String name = file.toURI().getPath();
 		int n = name.lastIndexOf('/');
 		if (n > 0)
 			name = name.substring(0, n);
@@ -1426,7 +1426,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		try {
 			UTF8Properties p = new UTF8Properties();
 			p.load(in, file, this);
-			return replaceAll0(p, "\\$\\{\\.\\}", name);
+			return p.replaceAll("\\$\\{\\.\\}", Matcher.quoteReplacement(name));
 		} catch (Exception e) {
 			error("Error during loading properties file: %s, error: %s", name, e);
 			return new UTF8Properties();
@@ -1438,20 +1438,16 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * preassign variables that change. I.e. the base directory ${.} for a
 	 * loaded properties
 	 */
-	private static UTF8Properties replaceAll0(Properties p, String pattern, String replacement) {
+	public static Properties replaceAll(Properties p, String pattern, String replacement) {
 		UTF8Properties result = new UTF8Properties();
-		for (Iterator<Map.Entry<Object,Object>> i = p.entrySet().iterator(); i.hasNext();) {
-			Map.Entry<Object,Object> entry = i.next();
+		Pattern regex = Pattern.compile(pattern);
+		for (Map.Entry<Object,Object> entry : p.entrySet()) {
 			String key = (String) entry.getKey();
 			String value = (String) entry.getValue();
-			value = value.replaceAll(pattern, replacement);
+			value = regex.matcher(value).replaceAll(replacement);
 			result.put(key, value);
 		}
 		return result;
-	}
-
-	public static Properties replaceAll(Properties p, String pattern, String replacement) {
-		return replaceAll0(p, pattern, replacement);
 	}
 
 	/**

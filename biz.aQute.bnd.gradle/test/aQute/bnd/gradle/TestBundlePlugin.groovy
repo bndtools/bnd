@@ -67,6 +67,7 @@ class TestBundlePlugin extends Specification {
           jartask_manifest.getValue('Gradle-Task-Prop') == 'prop.task'
           jartask_manifest.getValue('Gradle-Task-Project-Prop') == 'prop.project'
           jartask_manifest.getValue('Gradle-Missing-Prop') == '${task.projectprop}'
+          jartask_manifest.getValue('Here') == testProjectDir.toURI().path[0..-2]
           jartask_jar.getEntry('doubler/Doubler.class')
           jartask_jar.getEntry('doubler/packageinfo')
           jartask_jar.getEntry('doubler/impl/DoublerImpl.class')
@@ -92,7 +93,6 @@ class TestBundlePlugin extends Specification {
           bundletask_manifest.getValue('My-Header') == 'my-value'
           bundletask_manifest.getValue('Export-Package') =~ /doubler\.impl/
           !bundletask_manifest.getValue('X-SomeProperty')
-          bundletask_manifest.getValue('Override') == 'Override the jar task manifest'
           bundletask_manifest.getValue('Bundle-Name') == "test.bnd.gradle:${testProject}_bundle"
           bundletask_manifest.getValue('Project-Name') == "${testProject}"
           new File(bundletask_manifest.getValue('Project-Dir')).canonicalFile == testProjectDir
@@ -100,6 +100,7 @@ class TestBundlePlugin extends Specification {
           bundletask_manifest.getValue('Project-Sourcepath')
           bundletask_manifest.getValue('Project-Buildpath')
           bundletask_manifest.getValue('Bundle-ClassPath') =~ /commons-lang-2\.6\.jar/
+          bundletask_manifest.getValue('Here') == testProjectDir.toURI().path[0..-2]
           !bundletask_jar.getEntry('doubler/Doubler.class')
           !bundletask_jar.getEntry('doubler/impl/DoublerImpl.class')
           bundletask_jar.getEntry('doubler/impl/DoublerImplTest.class')

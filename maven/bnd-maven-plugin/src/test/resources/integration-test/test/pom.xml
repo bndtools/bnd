@@ -41,7 +41,8 @@ Project-Dir: ${project.dir}
 Project-Output: ${project.output}
 Project-Sourcepath: ${project.sourcepath}
 Project-Buildpath: ${project.buildpath}
--include: other.bnd
+Parent-Here: ${.}
+-include: ${.}/other.bnd
 ]]></bnd>
                 </configuration>
 			</plugin>
