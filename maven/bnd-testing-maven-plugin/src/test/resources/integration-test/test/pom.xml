@@ -23,7 +23,7 @@
 		<dependencies>
 			<dependency>
 				<groupId>org.osgi</groupId>
-				<artifactId>org.osgi.core</artifactId>
+				<artifactId>osgi.core</artifactId>
 				<version>6.0.0</version>
 			</dependency>
 			<dependency>
