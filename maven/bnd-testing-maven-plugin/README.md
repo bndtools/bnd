@@ -12,24 +12,38 @@ contain the JUnit tests.
 
 Here is an example configuration:
 ```
-            <plugin>
-                <groupId>biz.aQute.bnd</groupId>
-                <artifactId>bnd-testing-maven-plugin</artifactId>
-                <version>${bnd.version}</version>
-                <configuration>
-                    <failOnChanges>false</failOnChanges>
-                    <bndruns>
-                        <bndrun>mytest.bndrun</bndrun>
-                    </bndruns>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>testing</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+    <plugin>
+        <groupId>biz.aQute.bnd</groupId>
+        <artifactId>bnd-testing-maven-plugin</artifactId>
+        <version>${bnd.version}</version>
+        <configuration>
+            <failOnChanges>false</failOnChanges>
+            <bndruns>
+                <bndrun>mytest.bndrun</bndrun>
+            </bndruns>
+        </configuration>
+        <executions>
+            <execution>
+                <goals>
+                    <goal>testing</goal>
+                </goals>
+            </execution>
+        </executions>
+    </plugin>
+```
+
+Here's an example setting the `bundles` used for resolution.
+
+```
+    ...
+    <configuration>
+        ...
+        <bundles>
+            <bundle>bundles/org.apache.felix.eventadmin-1.4.8.jar</bundle>
+            <bundle>bundles/org.apache.felix.framework-5.4.0.jar</bundle>
+        </bundles>
+    </configuration>
+    ...
 ```
 
 ## Configuration Properties
@@ -44,4 +58,5 @@ Here is an example configuration:
 |`skipTests` OR `maven.test.skip`| Does not execute any tests. Used from the command line via `-D`. _Defaults to `false`._|
 |`testingSelect`                 | A file path to a test file, overrides anything else. _Defaults to `${testing.select}`._ Override with property `testing.select`.|
 |`testing`                       | A glob expression that is matched against the file name of the listed bndrun files. _Defaults to `${testing}`._ Override with property `testing`.|
-
+|`bundles`                       | This is the collection of files to use for locating bundles during the bndrun resolution. Paths are relative to `${project.basedir}` by default. Absolute paths are allowed. _Defaults to dependencies in the `compile` and `runtime`, plus the current artifact (if any)._|
+|`useDefaults`                   | If `true` adds `bundles` to the normally calculated defaults rather than replacing them. _Defaults to `true`._|

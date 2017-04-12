@@ -4,12 +4,11 @@
 
     <parent>
         <groupId>biz.aQute.bnd-test</groupId>
-        <artifactId>test</artifactId>
+        <artifactId>resolver-test</artifactId>
         <version>0.0.1</version>
     </parent>
 
-    <groupId>biz.aQute.bnd-test</groupId>
-    <artifactId>export-bundles-only</artifactId>
+    <artifactId>resolve-from-inputbundles</artifactId>
     <version>0.0.1</version>
     <packaging>pom</packaging>
 
@@ -17,9 +16,14 @@
         <plugins>
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
-                <artifactId>bnd-export-maven-plugin</artifactId>
+                <artifactId>bnd-resolver-maven-plugin</artifactId>
                 <configuration>
                     <bundlesOnly>true</bundlesOnly>
+                    <bundles>
+                        <bundle>${project.basedir}/bundles/org.apache.felix.eventadmin-1.4.8.jar</bundle>
+                        <bundle>${project.basedir}/bundles/org.apache.felix.framework-5.4.0.jar</bundle>
+                    </bundles>
+                    <useDefaults>false</useDefaults>
                 </configuration>
             </plugin>
         </plugins>

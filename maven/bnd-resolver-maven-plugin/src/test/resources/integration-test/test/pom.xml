@@ -2,30 +2,39 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>biz.aQute.bnd-test</groupId>
-    <artifactId>export-test</artifactId>
+    <artifactId>resolver-test</artifactId>
     <version>0.0.1</version>
     <packaging>pom</packaging>
 
+    <modules>
+        <module>resolve</module>
+        <module>resolve-from-dependencies</module>
+        <module>resolve-from-inputbundles</module>
+    </modules>
+
     <build>
-        <plugins>
-            <plugin>
-                <groupId>biz.aQute.bnd</groupId>
-                <artifactId>bnd-resolver-maven-plugin</artifactId>
-                <version>@project.version@</version>
-                <configuration>
-                    <failOnChanges>false</failOnChanges>
-                    <bndruns>
-                        <bndrun>test.bndrun</bndrun>
-                    </bndruns>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>resolve</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>biz.aQute.bnd</groupId>
+                    <artifactId>bnd-resolver-maven-plugin</artifactId>
+                    <version>@project.version@</version>
+                    <configuration>
+                        <failOnChanges>false</failOnChanges>
+                        <bndruns>
+                            <bndrun>test.bndrun</bndrun>
+                        </bndruns>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>resolve</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 </project>

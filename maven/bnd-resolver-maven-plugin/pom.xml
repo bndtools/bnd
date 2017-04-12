@@ -7,9 +7,9 @@
         <version>3.4.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
-	<artifactId>bnd-resolver-maven-plugin</artifactId>
-	<description>Resolves the -runbundles for an OSGi bndrun file</description>
-	<name>${project.groupId}:${project.artifactId}</name>
+    <artifactId>bnd-resolver-maven-plugin</artifactId>
+    <description>Resolves the -runbundles for an OSGi bndrun file</description>
+    <name>${project.groupId}:${project.artifactId}</name>
     <packaging>maven-plugin</packaging>
 
     <dependencies>
@@ -40,6 +40,10 @@
         <dependency>
             <groupId>biz.aQute.bnd</groupId>
             <artifactId>biz.aQute.repository</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>biz.aQute.bnd</groupId>
+            <artifactId>bnd-shared-maven-lib</artifactId>
         </dependency>
     </dependencies>
 
@@ -84,7 +88,7 @@
                       <jsse.enableSNIExtension>false</jsse.enableSNIExtension>
                     </properties>
                     <goals>
-                        <goal>bnd-resolver:resolve</goal>
+                        <goal>package</goal>
                     </goals>
                     <debug>true</debug>
                     <scriptVariables>

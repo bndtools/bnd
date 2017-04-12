@@ -4,12 +4,11 @@
 
     <parent>
         <groupId>biz.aQute.bnd-test</groupId>
-        <artifactId>test</artifactId>
+        <artifactId>resolver-test</artifactId>
         <version>0.0.1</version>
     </parent>
 
-    <groupId>biz.aQute.bnd-test</groupId>
-    <artifactId>export-bundles-only</artifactId>
+    <artifactId>resolve</artifactId>
     <version>0.0.1</version>
     <packaging>pom</packaging>
 
@@ -17,10 +16,7 @@
         <plugins>
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
-                <artifactId>bnd-export-maven-plugin</artifactId>
-                <configuration>
-                    <bundlesOnly>true</bundlesOnly>
-                </configuration>
+                <artifactId>bnd-resolver-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

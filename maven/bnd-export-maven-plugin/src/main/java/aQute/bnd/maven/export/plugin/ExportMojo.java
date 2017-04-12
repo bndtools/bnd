@@ -9,14 +9,21 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectDependenciesResolver;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.maven.lib.resolve.DependencyResolver;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
 import biz.aQute.resolve.Bndrun;
 
@@ -24,11 +31,23 @@ import biz.aQute.resolve.Bndrun;
 public class ExportMojo extends AbstractMojo {
 	private static final Logger	logger	= LoggerFactory.getLogger(ExportMojo.class);
 
+	@Parameter(defaultValue = "${project}", readonly = true, required = true)
+	private MavenProject				project;
+
+	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
+	private RepositorySystemSession		repositorySession;
+
 	@Parameter(readonly = true, required = true)
 	private List<File>	bndruns;
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
 	private File		targetDir;
+
+	@Parameter(readonly = true, required = false)
+	private List<File>					bundles;
+
+	@Parameter(defaultValue = "true")
+	private boolean						useDefaults;
 
 	@Parameter(defaultValue = "false")
 	private boolean				resolve;
@@ -44,10 +63,22 @@ public class ExportMojo extends AbstractMojo {
 
 	private int					errors	= 0;
 
+	@Component
+	private RepositorySystem			system;
+
+	@Component
+	private ProjectDependenciesResolver	resolver;
+
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
+			DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver,
+					system);
+
+			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles,
+					useDefaults);
+
 			for (File runFile : bndruns) {
-				export(runFile);
+				export(runFile, fileSetRepository);
 			}
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -57,7 +88,7 @@ public class ExportMojo extends AbstractMojo {
 			throw new MojoExecutionException(errors + " errors found");
 	}
 
-	private void export(File runFile) throws Exception {
+	private void export(File runFile, FileSetRepository fileSetRepository) throws Exception {
 		if (!runFile.exists()) {
 			logger.error("Could not find bnd run file {}", runFile);
 			errors++;
@@ -72,6 +103,7 @@ public class ExportMojo extends AbstractMojo {
 			Workspace workspace = run.getWorkspace();
 			workspace.setBuildDir(cnf);
 			workspace.setOffline(session.getSettings().isOffline());
+			workspace.addBasicPlugin(fileSetRepository);
 			for (RepositoryPlugin repo : workspace.getRepositories()) {
 				repo.list(null);
 			}

@@ -47,14 +47,40 @@ assert jar.getEntry('jar/org.apache.felix.framework-5.4.0.jar') != null
 assert jar.getInputStream(jar.getEntry('launcher.properties')).text =~ /launch\.bundles=jar\/org\.apache\.felix\.eventadmin-1\.4\.6\.jar/
 
 //
-// The bundles-only case
+// The export-bundles-only case
 //
 
 // Check the bundle exist!
-bundle = new File(basedir, "export-bundles-only/target/test.jar")
+bundle = new File(basedir, "export-bundles-only/target/export/test/test.jar")
 assert !bundle.exists()
 
 File targetDir = new File(basedir, "export-bundles-only/target/export/test")
 assert 1 == targetDir.listFiles(new FileFilter() { boolean accept(File file) {return file.isFile();}}).length
 bundle = new File(basedir, "export-bundles-only/target/export/test/org.apache.felix.eventadmin-1.4.6.jar")
+assert bundle.exists()
+
+//
+// The export-from-dependencies case
+//
+
+// Check the bundle exist!
+bundle = new File(basedir, "export-from-dependencies/target/export/test/test.jar")
+assert !bundle.exists()
+
+targetDir = new File(basedir, "export-from-dependencies/target/export/test")
+assert 1 == targetDir.listFiles(new FileFilter() { boolean accept(File file) {return file.isFile();}}).length
+bundle = new File(basedir, "export-from-dependencies/target/export/test/org.apache.felix.eventadmin-1.4.8.jar")
+assert bundle.exists()
+
+//
+// The export-from-inputbundles case
+//
+
+// Check the bundle exist!
+bundle = new File(basedir, "export-from-inputbundles/target/export/test/test.jar")
+assert !bundle.exists()
+
+targetDir = new File(basedir, "export-from-inputbundles/target/export/test")
+assert 1 == targetDir.listFiles(new FileFilter() { boolean accept(File file) {return file.isFile();}}).length
+bundle = new File(basedir, "export-from-inputbundles/target/export/test/org.apache.felix.eventadmin-1.4.8.jar")
 assert bundle.exists()

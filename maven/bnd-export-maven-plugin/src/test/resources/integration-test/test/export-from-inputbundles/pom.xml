@@ -9,7 +9,7 @@
     </parent>
 
     <groupId>biz.aQute.bnd-test</groupId>
-    <artifactId>export-bundles-only</artifactId>
+    <artifactId>export-from-inputbundles</artifactId>
     <version>0.0.1</version>
     <packaging>pom</packaging>
 
@@ -20,6 +20,11 @@
                 <artifactId>bnd-export-maven-plugin</artifactId>
                 <configuration>
                     <bundlesOnly>true</bundlesOnly>
+                    <bundles>
+                        <bundle>${project.basedir}/bundles/org.apache.felix.eventadmin-1.4.8.jar</bundle>
+                        <bundle>${project.basedir}/bundles/org.apache.felix.framework-5.4.0.jar</bundle>
+                    </bundles>
+                    <useDefaults>false</useDefaults>
                 </configuration>
             </plugin>
         </plugins>

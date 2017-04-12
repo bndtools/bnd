@@ -1,0 +1,2 @@
+Require-Capability: osgi.extender;filter:="(osgi.extender=osgi.component)"
+Test-Cases: ${classes;CONCRETE;PUBLIC;NAMED;*Test}

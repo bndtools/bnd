@@ -7,9 +7,9 @@
         <version>3.4.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
-	<artifactId>bnd-testing-maven-plugin</artifactId>
-	<description>Run the tests from an OSGi bndrun file</description>
-	<name>${project.groupId}:${project.artifactId}</name>
+    <artifactId>bnd-testing-maven-plugin</artifactId>
+    <description>Run the tests from an OSGi bndrun file</description>
+    <name>${project.groupId}:${project.artifactId}</name>
     <packaging>maven-plugin</packaging>
 
     <dependencies>
@@ -45,6 +45,10 @@
             <groupId>biz.aQute.bnd</groupId>
             <artifactId>bnd-maven-plugin</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>biz.aQute.bnd</groupId>
+            <artifactId>bnd-shared-maven-lib</artifactId>
         </dependency>
         <dependency>
             <groupId>biz.aQute.bnd</groupId>

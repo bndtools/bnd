@@ -9,6 +9,8 @@
     <modules>
         <module>export</module>
         <module>export-bundles-only</module>
+        <module>export-from-dependencies</module>
+        <module>export-from-inputbundles</module>
     </modules>
 
     <build>
