@@ -4,8 +4,8 @@ import static org.osgi.framework.namespace.BundleNamespace.BUNDLE_NAMESPACE;
 import static org.osgi.framework.namespace.PackageNamespace.PACKAGE_NAMESPACE;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -886,7 +886,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			if ("file".equals(version)) {
 				File f = IO.getFile(bsn);
 				if (f.isFile()) {
-					try (FileInputStream fin = new FileInputStream(f);) {
+					try (InputStream fin = IO.stream(f)) {
 						Manifest m;
 
 						if (f.getName().endsWith(".mf"))

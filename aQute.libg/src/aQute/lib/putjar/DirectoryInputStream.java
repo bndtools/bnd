@@ -3,12 +3,12 @@ package aQute.lib.putjar;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.CRC32;
 
+import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 import aQute.libg.fileiterator.FileIterator;
 
@@ -62,7 +62,7 @@ public class DirectoryInputStream extends InputStream {
 
 			case HEADER :
 				if (element.isFile() && element.length() > 0) {
-					current = new FileInputStream(element);
+					current = IO.stream(element);
 					state = DATA;
 				} else
 					nextHeader();
@@ -238,16 +238,13 @@ public class DirectoryInputStream extends InputStream {
 
 	private CRC32 getCRC(File file) throws IOException {
 		CRC32 crc = new CRC32();
-		FileInputStream in = new FileInputStream(file);
-		try {
+		try (InputStream in = IO.stream(file)) {
 			byte data[] = new byte[BUFFER_SIZE];
 			int size = in.read(data);
 			while (size > 0) {
 				crc.update(data, 0, size);
 				size = in.read(data);
 			}
-		} finally {
-			in.close();
 		}
 		return crc;
 	}

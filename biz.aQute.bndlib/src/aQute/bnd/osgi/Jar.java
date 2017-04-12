@@ -5,8 +5,6 @@ import static aQute.lib.io.IO.getFile;
 import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -90,7 +88,7 @@ public class Jar implements Closeable {
 	public Jar(String name, String path) throws IOException {
 		this(name);
 		File f = new File(path);
-		try(InputStream in = new FileInputStream(f)) {
+		try (InputStream in = IO.stream(f)) {
 			EmbeddedResource.build(this, in, f.lastModified());
 		}
 	}
@@ -242,12 +240,9 @@ public class Jar implements Closeable {
 
 	public void setManifest(File file) throws IOException {
 		check();
-		FileInputStream fin = new FileInputStream(file);
-		try {
+		try (InputStream fin = IO.stream(file)) {
 			Manifest m = new Manifest(fin);
 			setManifest(m);
-		} finally {
-			fin.close();
 		}
 	}
 
@@ -260,7 +255,7 @@ public class Jar implements Closeable {
 
 	public void write(File file) throws Exception {
 		check();
-		try (OutputStream out = new FileOutputStream(file)) {
+		try (OutputStream out = IO.outputStream(file)) {
 			write(out);
 		} catch (Exception t) {
 			file.delete();
@@ -338,7 +333,7 @@ public class Jar implements Closeable {
 		} else {
 			File file = IO.getFile(dir, manifestName);
 			file.getParentFile().mkdirs();
-			try (FileOutputStream fout = new FileOutputStream(file);) {
+			try (OutputStream fout = IO.outputStream(file)) {
 				writeManifest(fout);
 				done.add(manifestName);
 			}

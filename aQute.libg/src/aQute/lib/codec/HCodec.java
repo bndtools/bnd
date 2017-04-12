@@ -1,8 +1,6 @@
 package aQute.lib.codec;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -10,6 +8,8 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.Type;
+
+import aQute.lib.io.IO;
 
 public class HCodec implements Codec {
 	final Codec codec;
@@ -49,22 +49,15 @@ public class HCodec implements Codec {
 	}
 
 	public <T> T decode(File in, Class<T> t) throws Exception {
-		FileInputStream fin = new FileInputStream(in);
-		try {
-			InputStreamReader rdr = new InputStreamReader(fin, "UTF-8");
-			try {
-				return t.cast(decode(rdr, t));
-			} finally {
-				rdr.close();
-			}
-		} finally {
-			fin.close();
+		try (InputStream fin = IO.stream(in);
+				InputStreamReader rdr = new InputStreamReader(fin, "UTF-8")) {
+			return t.cast(decode(rdr, t));
 		}
 
 	}
 
 	public void encode(Type t, Object o, File out) throws Exception {
-		OutputStream oout = new FileOutputStream(out);
+		OutputStream oout = IO.outputStream(out);
 		try {
 			Writer wr = new OutputStreamWriter(oout, "UTF-8");
 			try {

@@ -2,7 +2,6 @@ package aQute.lib.json;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.Flushable;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -14,6 +13,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.zip.DeflaterOutputStream;
+
+import aQute.lib.io.IO;
 
 public class Encoder implements Appendable, Closeable, Flushable {
 	final JSONCodec	codec;
@@ -62,7 +63,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 	}
 
 	public Encoder to(File file) throws IOException {
-		return to(new FileOutputStream(file));
+		return to(IO.outputStream(file));
 	}
 
 	public Encoder charset(String encoding) {

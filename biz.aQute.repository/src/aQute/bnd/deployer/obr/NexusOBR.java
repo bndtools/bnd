@@ -1,7 +1,6 @@
 package aQute.bnd.deployer.obr;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -237,12 +236,8 @@ public class NexusOBR extends AbstractIndexedRepo {
 
 	protected URL put(File file, String bsn, Version version) throws IOException {
 		URL url = getTargetURL(bsn, version);
-		HttpURLConnection httpUrlConnection = null;
-		FileInputStream is = null;
-		OutputStream out = null;
-		try {
-			is = new FileInputStream(file);
-			httpUrlConnection = (HttpURLConnection) url.openConnection();
+		try (InputStream is = IO.stream(file)) {
+			HttpURLConnection httpUrlConnection = (HttpURLConnection) url.openConnection();
 			httpUrlConnection.setDoOutput(true);
 			httpUrlConnection.setFixedLengthStreamingMode((int) file.length());
 			httpUrlConnection.setRequestMethod("PUT");
@@ -251,28 +246,23 @@ public class NexusOBR extends AbstractIndexedRepo {
 				httpUrlConnection.setRequestProperty("Authorization",
 						"Basic " + Base64.encodeBase64(userPassword.getBytes("UTF-8")));
 			}
-			out = httpUrlConnection.getOutputStream();
-			byte[] buffer = new byte[BUFFER_SIZE];
-			while (true) {
-				int length = is.read(buffer);
-				if (length < 0)
-					break;
-				out.write(buffer, 0, length);
-			}
-			int respondeCode = httpUrlConnection.getResponseCode();
-			// response code will be 201 (Created) if new bundle is successfully
-			// added
-			if (respondeCode < 200 || respondeCode > 300) {
-				throw new IOException(httpUrlConnection.getResponseMessage());
-			}
-		} finally {
-			if (is != null) {
-				is.close();
-			}
-			if (out != null) {
-				out.close();
-			}
-			if (httpUrlConnection != null) {
+
+			try (OutputStream out = httpUrlConnection.getOutputStream()) {
+				byte[] buffer = new byte[BUFFER_SIZE];
+				while (true) {
+					int length = is.read(buffer);
+					if (length < 0)
+						break;
+					out.write(buffer, 0, length);
+				}
+				int respondeCode = httpUrlConnection.getResponseCode();
+				// response code will be 201 (Created) if new bundle is
+				// successfully
+				// added
+				if (respondeCode < 200 || respondeCode > 300) {
+					throw new IOException(httpUrlConnection.getResponseMessage());
+				}
+			} finally {
 				httpUrlConnection.disconnect();
 			}
 		}

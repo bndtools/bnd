@@ -1,7 +1,6 @@
 package aQute.bnd.osgi.repository;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -50,7 +49,7 @@ public class XMLResourceGenerator {
 		location.getParentFile().mkdirs();
 		File tmp = IO.createTempFile(location.getParentFile(), "index", ".xml");
 
-		try (FileOutputStream out = new FileOutputStream(tmp)) {
+		try (OutputStream out = IO.outputStream(tmp)) {
 			save(out);
 		}
 		tmp.renameTo(location);

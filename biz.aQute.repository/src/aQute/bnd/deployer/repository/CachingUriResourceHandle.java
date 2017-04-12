@@ -2,10 +2,9 @@ package aQute.bnd.deployer.repository;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -199,7 +198,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 
 			// Save the data to the cache
 			ensureCacheDirExists();
-			String serverSHA = copyWithSHA(data, new FileOutputStream(cachedFile));
+			String serverSHA = copyWithSHA(data, IO.outputStream(cachedFile));
 
 			// Check the SHA of the received data
 			if (sha != null && !sha.equalsIgnoreCase(serverSHA)) {
@@ -240,7 +239,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		}
 	}
 
-	private String copyWithSHA(InputStream input, FileOutputStream output) throws IOException {
+	private String copyWithSHA(InputStream input, OutputStream output) throws IOException {
 		MessageDigest digest;
 
 		try {
@@ -307,10 +306,8 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		MessageDigest digest;
 		byte[] buf = new byte[BUFFER_SIZE];
 
-		InputStream stream = null;
-		try {
+		try (InputStream stream = IO.stream(file)) {
 			digest = MessageDigest.getInstance(SHA_256);
-			stream = new FileInputStream(file);
 			while (true) {
 				int bytesRead = stream.read(buf, 0, BUFFER_SIZE);
 				if (bytesRead < 0)
@@ -321,9 +318,6 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		} catch (NoSuchAlgorithmException e) {
 			// Can't happen... hopefully...
 			throw new IOException(e.getMessage(), e);
-		} finally {
-			if (stream != null)
-				stream.close();
 		}
 
 		return Hex.toHexString(digest.digest());

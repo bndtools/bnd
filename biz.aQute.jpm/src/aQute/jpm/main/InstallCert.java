@@ -39,9 +39,7 @@ package aQute.jpm.main;
  */
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -142,11 +140,8 @@ public class InstallCert {
 	private static void saveKeystore(String passphrase, File file, KeyStore ks) throws FileNotFoundException,
 			IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
 		file = getCacertFile(file);
-		OutputStream out = new FileOutputStream(file);
-		try {
+		try (OutputStream out = IO.outputStream(file)) {
 			ks.store(out, passphrase.toCharArray());
-		} finally {
-			out.close();
 		}
 	}
 
@@ -154,12 +149,9 @@ public class InstallCert {
 			IOException, NoSuchAlgorithmException, CertificateException {
 		file = getCacertFile(file);
 		KeyStore ks;
-		InputStream in = new FileInputStream(file);
-		try {
+		try (InputStream in = IO.stream(file)) {
 			ks = KeyStore.getInstance(KeyStore.getDefaultType());
 			ks.load(in, passphrase.toCharArray());
-		} finally {
-			in.close();
 		}
 
 		System.out.println("In key store");

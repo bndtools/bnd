@@ -1,9 +1,7 @@
 package biz.aQute.resolve;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
@@ -38,7 +36,7 @@ public class ResolverLogger implements LogService {
 			this.level = level;
 			file = File.createTempFile("tmp", ".log");
 			file.deleteOnExit();
-			printer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
+			printer = IO.writer(file, "UTF-8");
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

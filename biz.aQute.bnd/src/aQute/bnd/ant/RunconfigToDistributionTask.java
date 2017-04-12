@@ -2,9 +2,8 @@ package aQute.bnd.ant;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -79,22 +78,7 @@ public class RunconfigToDistributionTask extends BaseTask {
 
 					if (foundJar != null) {
 						File outputFile = new File(outputDir, foundJar.getName());
-						FileChannel source = null;
-						FileChannel destination = null;
-
-						try {
-							source = new FileInputStream(foundJar).getChannel();
-							destination = new FileOutputStream(outputFile).getChannel();
-							destination.transferFrom(source, 0, source.size());
-						} finally {
-							if (source != null) {
-								source.close();
-							}
-
-							if (destination != null) {
-								destination.close();
-							}
-						}
+						Files.copy(foundJar.toPath(), outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 					} else {
 						log(bsn + " could not be found in any repository");
 					}

@@ -1,7 +1,6 @@
 package aQute.bnd.plugin.eclipse;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -36,7 +35,7 @@ public class EclipsePlugin extends LifeCyclePlugin {
 		InputStream in;
 
 		if (f.isFile()) {
-			in = new FileInputStream(f);
+			in = IO.stream(f);
 		} else {
 			in = EclipsePlugin.class.getResourceAsStream(source);
 			if (in == null) {

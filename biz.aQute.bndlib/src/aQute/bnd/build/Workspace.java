@@ -1,14 +1,14 @@
 package aQute.bnd.build;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -483,7 +483,7 @@ public class Workspace extends Processor {
 						while (classPathTokenizer.hasMoreTokens()) {
 							String classPathEntry = classPathTokenizer.nextToken().trim();
 							if (EMBEDDED_REPO_TESTING_PATTERN.matcher(classPathEntry).matches()) {
-								in = new FileInputStream(classPathEntry);
+								in = IO.stream(Paths.get(classPathEntry));
 								unzip(in, root);
 								return true;
 							}
@@ -517,7 +517,7 @@ public class Workspace extends Processor {
 						if (!dp.exists() && !dp.mkdirs()) {
 							throw new IOException("Could not create directory " + dp);
 						}
-						try (FileOutputStream out = new FileOutputStream(dest)) {
+						try (OutputStream out = IO.outputStream(dest)) {
 							for (int size = jin.read(data); size > 0; size = jin.read(data)) {
 								out.write(data, 0, size);
 							}

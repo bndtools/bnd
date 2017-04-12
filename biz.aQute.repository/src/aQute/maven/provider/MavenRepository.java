@@ -2,7 +2,6 @@ package aQute.maven.provider;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -334,7 +333,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 				if (pomFile == null) {
 					return null;
 				}
-				try (FileInputStream fin = new FileInputStream(pomFile)) {
+				try (InputStream fin = IO.stream(pomFile)) {
 					return getPom(fin);
 				} catch (Exception e) {
 					logger.error("Failed to parse pom {} from file {}", revision, pomFile, e);

@@ -84,9 +84,7 @@ public class Signer extends Processor {
 
 			KeyStore.PrivateKeyEntry privateKeyEntry = null;
 
-			java.io.FileInputStream keystoreInputStream = null;
-			try {
-				keystoreInputStream = new java.io.FileInputStream(keystoreFile);
+			try (InputStream keystoreInputStream = IO.stream(keystoreFile)) {
 				char[] pw = password == null ? new char[0] : password.toCharArray();
 
 				keystore.load(keystoreInputStream, pw);
@@ -96,8 +94,6 @@ public class Signer extends Processor {
 				exception(e, "Not able to load the private key from the given keystore(%s) with alias %s",
 						keystoreFile.getAbsolutePath(), alias);
 				return;
-			} finally {
-				IO.close(keystoreInputStream);
 			}
 			PrivateKey privateKey = privateKeyEntry.getPrivateKey();
 

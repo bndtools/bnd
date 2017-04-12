@@ -2,9 +2,6 @@ package aQute.bnd.build;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -211,25 +208,14 @@ public class Container {
 			// basically a specification clause per line.
 			// I.e. you can do bsn; version, bsn2; version. But also
 			// spread it out over lines.
-			InputStream in = null;
-			BufferedReader rd = null;
-			String line;
-			try {
-				in = new FileInputStream(getFile());
-				rd = new BufferedReader(new InputStreamReader(in, Constants.DEFAULT_CHARSET));
+			try (BufferedReader rd = IO.reader(getFile(), Constants.DEFAULT_CHARSET)) {
+				String line;
 				while ((line = rd.readLine()) != null) {
 					line = line.trim();
 					if (!line.startsWith("#") && line.length() > 0) {
 						List<Container> list = project.getBundles(Strategy.HIGHEST, line, null);
 						result.addAll(list);
 					}
-				}
-			} finally {
-				if (rd != null) {
-					rd.close();
-				}
-				if (in != null) {
-					in.close();
 				}
 			}
 		} else
@@ -290,15 +276,10 @@ public class Container {
 			return null;
 
 		if (manifestTime < getFile().lastModified()) {
-			InputStream in = new FileInputStream(getFile());
-			try {
-				JarInputStream jin = new JarInputStream(in);
+			try (JarInputStream jin = new JarInputStream(IO.stream(getFile()))) {
 				manifest = jin.getManifest();
-				jin.close();
-				manifestTime = getFile().lastModified();
-			} finally {
-				in.close();
 			}
+			manifestTime = getFile().lastModified();
 		}
 		return manifest;
 	}

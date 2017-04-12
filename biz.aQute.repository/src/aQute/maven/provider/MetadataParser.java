@@ -1,7 +1,6 @@
 package aQute.maven.provider;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -16,6 +15,7 @@ import javax.xml.stream.XMLStreamReader;
 
 import aQute.bnd.util.dto.DTO;
 import aQute.bnd.version.MavenVersion;
+import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
 
 /**
@@ -159,7 +159,7 @@ public class MetadataParser {
 	}
 
 	public static RevisionMetadata parseRevisionMetadata(File metadataFile) throws Exception {
-		try (InputStream in = new FileInputStream(metadataFile)) {
+		try (InputStream in = IO.stream(metadataFile)) {
 			return parseRevisionMetadata(in);
 		}
 	}
@@ -436,7 +436,7 @@ public class MetadataParser {
 	}
 
 	public static ProgramMetadata parseProgramMetadata(File metafile) throws Exception {
-		try (FileInputStream in = new FileInputStream(metafile)) {
+		try (InputStream in = IO.stream(metafile)) {
 			return parseProgramMetadata(in);
 		} catch (Exception e) {
 			System.out.println("File " + metafile + " failed");

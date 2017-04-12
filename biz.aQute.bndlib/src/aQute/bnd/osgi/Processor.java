@@ -4,7 +4,6 @@ import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -1132,7 +1131,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			updateModified(file.lastModified(), file.toString());
 			Properties sub;
 			if (file.getName().toLowerCase().endsWith(".mf")) {
-				try (InputStream in = new FileInputStream(file);) {
+				try (InputStream in = IO.stream(file)) {
 					sub = getManifestAsProperties(in);
 				}
 			} else
@@ -1398,17 +1397,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @throws IOException
 	 */
 	public Properties loadProperties(File file) throws IOException {
-
 		updateModified(file.lastModified(), "Properties file: " + file);
-		InputStream in = new FileInputStream(file);
-		try {
-
+		try (InputStream in = IO.stream(file)) {
 			UTF8Properties p = loadProperties0(in, file);
 			return p;
-		} finally {
-			in.close();
 		}
-
 	}
 
 	/**

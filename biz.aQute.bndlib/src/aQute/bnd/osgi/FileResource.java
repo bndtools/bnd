@@ -2,8 +2,6 @@ package aQute.bnd.osgi;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,8 +35,8 @@ public class FileResource implements Resource, Closeable {
 		IO.copy(r.openInputStream(), this.file);
 	}
 
-	public InputStream openInputStream() throws FileNotFoundException {
-		return new FileInputStream(file);
+	public InputStream openInputStream() throws IOException {
+		return IO.stream(file);
 	}
 
 	public static void build(Jar jar, File directory, Pattern doNotCopy) {

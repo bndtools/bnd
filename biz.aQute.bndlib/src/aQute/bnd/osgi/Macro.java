@@ -1,7 +1,6 @@
 package aQute.bnd.osgi;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
@@ -1104,10 +1103,11 @@ public class Macro {
 
 		MessageDigest digester = MessageDigest.getInstance(args[1]);
 		File f = domain.getFile(args[2]);
-		DigestInputStream in = new DigestInputStream(new FileInputStream(f), digester);
-		IO.drain(in);
-		byte[] digest = digester.digest();
-		return Hex.toHexString(digest);
+		try (DigestInputStream in = new DigestInputStream(IO.stream(f), digester)) {
+			IO.drain(in);
+			byte[] digest = digester.digest();
+			return Hex.toHexString(digest);
+		}
 	}
 
 	public static void verifyCommand(String args[], String help, Pattern[] patterns, int low, int high) {

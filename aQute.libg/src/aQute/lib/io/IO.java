@@ -8,9 +8,7 @@ import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -107,7 +106,7 @@ public class IO {
 	}
 
 	public static void copy(byte[] data, File file) throws FileNotFoundException, IOException {
-		FileOutputStream out = new FileOutputStream(file);
+		OutputStream out = outputStream(file);
 		try {
 			copy(data, out);
 		} finally {
@@ -178,7 +177,7 @@ public class IO {
 	}
 
 	public static void copy(File in, MessageDigest md) throws IOException {
-		copy(new FileInputStream(in), md);
+		copy(stream(in), md);
 	}
 
 	public static void copy(URLConnection in, MessageDigest md) throws IOException {
@@ -228,9 +227,9 @@ public class IO {
 
 	public static void copy(File a, File b) throws IOException {
 		if (a.isFile()) {
-			FileOutputStream out = new FileOutputStream(b);
+			OutputStream out = outputStream(b);
 			try {
-				copy(new FileInputStream(a), out);
+				copy(stream(a), out);
 			} finally {
 				out.close();
 			}
@@ -264,7 +263,7 @@ public class IO {
 	}
 
 	public static void copy(InputStream a, File b) throws IOException {
-		FileOutputStream out = new FileOutputStream(b);
+		OutputStream out = outputStream(b);
 		try {
 			copy(a, out);
 		} finally {
@@ -273,12 +272,12 @@ public class IO {
 	}
 
 	public static void copy(File a, OutputStream b) throws IOException {
-		copy(new FileInputStream(a), b);
+		copy(stream(a), b);
 	}
 
 	public static byte[] read(File f) throws IOException {
 		byte[] data = new byte[(int) f.length()];
-		DataInputStream in = new DataInputStream(new FileInputStream(f));
+		DataInputStream in = new DataInputStream(stream(f));
 		try {
 			in.readFully(data);
 			return data;
@@ -550,7 +549,7 @@ public class IO {
 	}
 
 	public static void store(Object o, File out, String encoding) throws IOException {
-		store(o, new FileOutputStream(out), encoding);
+		store(o, outputStream(out), encoding);
 	}
 
 	public static void store(Object o, OutputStream fout) throws IOException {
@@ -568,7 +567,7 @@ public class IO {
 
 	public static InputStream stream(String s) {
 		try {
-			return new ByteArrayInputStream(s.getBytes("UTF-8"));
+			return stream(s, "UTF-8");
 		} catch (Exception e) {
 			// Ignore
 			return null;
@@ -579,12 +578,24 @@ public class IO {
 		return new ByteArrayInputStream(s.getBytes(encoding));
 	}
 
-	public static InputStream stream(File s) throws FileNotFoundException {
-		return new FileInputStream(s);
+	public static InputStream stream(File f) throws IOException {
+		return stream(f.toPath());
+	}
+
+	public static InputStream stream(Path p) throws IOException {
+		return Files.newInputStream(p);
 	}
 
 	public static InputStream stream(URL s) throws IOException {
 		return s.openStream();
+	}
+
+	public static OutputStream outputStream(File f) throws IOException {
+		return outputStream(f.toPath());
+	}
+
+	public static OutputStream outputStream(Path p) throws IOException {
+		return Files.newOutputStream(p);
 	}
 
 	public static Reader reader(String s) {
@@ -592,7 +603,11 @@ public class IO {
 	}
 
 	public static BufferedReader reader(File f, String encoding) throws IOException {
-		return reader(new FileInputStream(f), encoding);
+		return reader(stream(f), encoding);
+	}
+
+	public static BufferedReader reader(File f, Charset encoding) throws IOException {
+		return reader(stream(f), encoding);
 	}
 
 	public static BufferedReader reader(File f) throws IOException {
@@ -600,7 +615,7 @@ public class IO {
 	}
 
 	public static PrintWriter writer(File f, String encoding) throws IOException {
-		return writer(new FileOutputStream(f), encoding);
+		return writer(outputStream(f), encoding);
 	}
 
 	public static PrintWriter writer(File f) throws IOException {
@@ -612,6 +627,10 @@ public class IO {
 	}
 
 	public static BufferedReader reader(InputStream in, String encoding) throws IOException {
+		return new BufferedReader(new InputStreamReader(in, encoding));
+	}
+
+	public static BufferedReader reader(InputStream in, Charset encoding) throws IOException {
 		return new BufferedReader(new InputStreamReader(in, encoding));
 	}
 

@@ -1,9 +1,7 @@
 package aQute.bnd.maven;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -11,6 +9,7 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -204,15 +203,9 @@ public class MavenCommand extends Processor {
 			else if (option.equals("-nodelete"))
 				nodelete = true;
 			else if (option.startsWith("-properties")) {
-				InputStream in = null;
-				try {
-					in = new FileInputStream(args[i++]);
+				try (InputStream in = IO.stream(Paths.get(args[i++]))) {
 					properties.load(in);
-				} catch (Exception e) {} finally {
-					if (in != null) {
-						in.close();
-					}
-				}
+				} catch (Exception e) {}
 			}
 		}
 
@@ -592,7 +585,7 @@ public class MavenCommand extends Processor {
 				urls.add(uri);
 				System.err.println("URI for repo " + uri);
 			} else if ("-o".equals(args[i])) {
-				out = new FileOutputStream(args[++i]);
+				out = IO.outputStream(Paths.get(args[++i]));
 			} else
 				throw new IllegalArgumentException("Unknown option: " + args[i]);
 

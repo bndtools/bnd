@@ -2,7 +2,6 @@ package aQute.bnd.http;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -198,7 +197,7 @@ public class HttpClient implements Closeable, URLConnector {
 					return new TaggedData(url.toURI(), 304, info.file);
 				}
 
-				info.update(new FileInputStream(sourceFile), null, sourceFile.lastModified());
+				info.update(IO.stream(sourceFile), null, sourceFile.lastModified());
 				return new TaggedData(url.toURI(), 200, info.file);
 			}
 
@@ -546,7 +545,7 @@ public class HttpClient implements Closeable, URLConnector {
 
 		if (type == File.class)
 			return in;
-		try (FileInputStream fin = new FileInputStream(in)) {
+		try (InputStream fin = IO.stream(in)) {
 			return convert(type, fin);
 		}
 	}

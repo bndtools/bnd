@@ -2,7 +2,6 @@ package aQute.launcher.pre;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -10,6 +9,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
 
+import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 
 public class JpmLauncher {
@@ -72,16 +72,11 @@ public class JpmLauncher {
 	}
 
 	private static void copy(File tmpjpm, InputStream in) throws FileNotFoundException, IOException {
-		try {
-			OutputStream out = new FileOutputStream(tmpjpm);
-			try {
-				byte[] buffer = new byte[BUFFER_SIZE];
-				int size;
-				while ((size = in.read(buffer)) > 0)
-					out.write(buffer, 0, size);
-			} finally {
-				out.close();
-			}
+		try (OutputStream out = IO.outputStream(tmpjpm)) {
+			byte[] buffer = new byte[BUFFER_SIZE];
+			int size;
+			while ((size = in.read(buffer)) > 0)
+				out.write(buffer, 0, size);
 		} finally {
 			in.close();
 		}

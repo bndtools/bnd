@@ -3,13 +3,14 @@ package aQute.lib.collections;
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+
+import aQute.lib.io.IO;
 
 public class LineCollection implements Iterator<String>, Closeable {
 	private final BufferedReader	reader;
@@ -20,7 +21,7 @@ public class LineCollection implements Iterator<String>, Closeable {
 	}
 
 	public LineCollection(File in) throws IOException {
-		this(new InputStreamReader(new FileInputStream(in), "UTF-8"));
+		this(IO.reader(in, "UTF-8"));
 	}
 
 	public LineCollection(Reader reader) throws IOException {

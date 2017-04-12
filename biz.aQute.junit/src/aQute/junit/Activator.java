@@ -1,7 +1,6 @@
 package aQute.junit;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
@@ -9,6 +8,7 @@ import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -254,7 +254,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			Version v = bundle.getVersion();
 			File f = new File(reportDir, "TEST-" + bundle.getSymbolicName() + "-" + v.getMajor() + "." + v.getMinor()
 					+ "." + v.getMicro() + ".xml");
-			Writer writer = new OutputStreamWriter(new FileOutputStream(f), "UTF-8");
+			Writer writer = new OutputStreamWriter(Files.newOutputStream(f.toPath()), "UTF-8");
 			writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 			return writer;
 		}

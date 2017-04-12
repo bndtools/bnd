@@ -1,9 +1,9 @@
 package org.osgi.service.indexer.impl;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Enumeration;
@@ -94,7 +94,7 @@ public class JarResource implements Resource {
 	}
 
 	public InputStream getStream() throws IOException {
-		return new FileInputStream(file);
+		return Files.newInputStream(file.toPath());
 	}
 
 	public Manifest getManifest() throws IOException {

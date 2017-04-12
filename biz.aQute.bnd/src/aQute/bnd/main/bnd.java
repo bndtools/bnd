@@ -2,8 +2,6 @@ package aQute.bnd.main;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -1543,11 +1541,8 @@ public class bnd extends Processor {
 				if (path.equals(outputFile.getName()))
 					path = outputFile.getName() + ".pom";
 				File pom = new File(outputFile.getParentFile(), path);
-				OutputStream out = new FileOutputStream(pom);
-				try {
-					r.write(out);
-				} finally {
-					out.close();
+				try (OutputStream os = IO.outputStream(pom)) {
+					r.write(os);
 				}
 			}
 
@@ -2387,14 +2382,8 @@ public class bnd extends Processor {
 			}
 
 			File r = getFile(reportDir, "summary.xml");
-			FileOutputStream out = new FileOutputStream(r);
-			PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
-
-			try {
+			try (PrintWriter pw = IO.writer(r, "UTF-8")) {
 				summary.print(0, pw);
-			} finally {
-				pw.close();
-				out.close();
 			}
 			if (errors != 0)
 				error("Errors found %s", errors);
@@ -2539,18 +2528,15 @@ public class bnd extends Processor {
 
 		TransformerFactory fact = TransformerFactory.newInstance();
 
-		InputStream in = getClass().getResourceAsStream("testreport.xsl");
-		if (in == null) {
-			warning("Resource not found: test-report.xsl, no html report");
-		} else {
-			OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(html), "UTF-8");
-			try {
-				Transformer transformer = fact.newTransformer(new StreamSource(in));
-				transformer.transform(new DOMSource(doc), new StreamResult(out));
-				logger.debug("Transformed");
-			} finally {
-				in.close();
-				out.close();
+		try (InputStream in = getClass().getResourceAsStream("testreport.xsl")) {
+			if (in == null) {
+				warning("Resource not found: test-report.xsl, no html report");
+			} else {
+				try (OutputStreamWriter out = new OutputStreamWriter(IO.outputStream(html), "UTF-8")) {
+					Transformer transformer = fact.newTransformer(new StreamSource(in));
+					transformer.transform(new DOMSource(doc), new StreamResult(out));
+					logger.debug("Transformed");
+				}
 			}
 		}
 	}
@@ -2764,31 +2750,22 @@ public class bnd extends Processor {
 		File from = getFile(opts._arguments().get(0));
 		File to = getFile(opts._arguments().get(1));
 		if (opts.m2p()) {
-			FileInputStream in = new FileInputStream(from);
-			try {
+			try (InputStream in = IO.stream(from)) {
 				Properties p = new UTF8Properties();
 				Manifest m = new Manifest(in);
 				Attributes attrs = m.getMainAttributes();
 				for (Map.Entry<Object,Object> i : attrs.entrySet()) {
 					p.put(i.getKey().toString(), i.getValue().toString());
 				}
-				FileOutputStream fout = new FileOutputStream(to);
-				try {
+				try (OutputStream fout = IO.outputStream(to)) {
 					if (opts.xml())
 						p.storeToXML(fout, "converted from " + from);
 					else {
-						OutputStreamWriter osw = new OutputStreamWriter(fout, "UTF-8");
-						try {
+						try (OutputStreamWriter osw = new OutputStreamWriter(fout, "UTF-8")) {
 							p.store(osw, "converted from " + from);
-						} finally {
-							osw.close();
 						}
 					}
-				} finally {
-					fout.close();
 				}
-			} finally {
-				in.close();
 			}
 			return;
 		}
@@ -3086,8 +3063,7 @@ public class bnd extends Processor {
 				continue;
 			}
 
-			JarInputStream in = new JarInputStream(new FileInputStream(file));
-			try {
+			try (JarInputStream in = new JarInputStream(IO.stream(file))) {
 				Manifest m = in.getManifest();
 				for (Object header : m.getMainAttributes().keySet()) {
 					Attributes.Name name = (Name) header;
@@ -3113,8 +3089,6 @@ public class bnd extends Processor {
 						}
 					}
 				}
-			} finally {
-				in.close();
 			}
 		}
 	}

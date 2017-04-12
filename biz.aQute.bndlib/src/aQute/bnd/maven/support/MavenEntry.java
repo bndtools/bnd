@@ -2,9 +2,8 @@ package aQute.bnd.maven.support;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
@@ -214,14 +213,10 @@ public class MavenEntry implements Closeable {
 			properties = new UTF8Properties();
 			File props = new File(dir, "bnd.properties");
 			if (props.exists()) {
-				FileInputStream in = null;
-				try {
-					in = new FileInputStream(props);
+				try (InputStream in = IO.stream(props)) {
 					properties.load(in);
 				} catch (Exception e) {
 					// we ignore for now, will handle it on safe
-				} finally {
-					IO.close(in);
 				}
 			}
 		}
@@ -241,15 +236,11 @@ public class MavenEntry implements Closeable {
 
 	private void saveProperties() throws IOException {
 		if (propertiesChanged) {
-			FileOutputStream fout = new FileOutputStream(propertiesFile);
-			OutputStreamWriter osw = new OutputStreamWriter(fout);
-			try {
+			try (OutputStreamWriter osw = new OutputStreamWriter(IO.outputStream(propertiesFile))) {
 				properties.store(osw, "");
 			} finally {
 				properties = null;
 				propertiesChanged = false;
-				osw.close();
-				fout.close();
 			}
 		}
 	}
