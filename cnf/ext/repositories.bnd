@@ -30,11 +30,13 @@ baselinerepo: https://dl.bintray.com/bndtools/bndtools/${baseline.version}
         cache=${build}/cache/stable/EclipseOrbit,\
 	aQute.bnd.repository.p2.provider.P2Repository; \
         name="Eclipse m2e 1.6.2"; \
-        url="http://download.eclipse.org/technology/m2e/releases/1.6/1.6.2.20150902-0002/",\
+        url="http://download.eclipse.org/technology/m2e/releases/1.6/1.6.2.20150902-0002/";\
+        location=${build}/cache/stable/EclipseM2E,\
 	aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
         name="m2e Deps"; \
         revision="org.apache.maven:maven-core:3.3.3,org.sonatype.plexus:plexus-build-api:0.0.7"; \
-        releaseUrls='https://repo1.maven.org/maven2',\
+        releaseUrls='https://repo1.maven.org/maven2';\
+        location=${build}/cache/stable/m2eDeps/index.xml,\
 	aQute.lib.deployer.FileRepo; \
 		name='Build'; \
 		location=${build}/buildrepo; \
