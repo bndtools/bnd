@@ -7,6 +7,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -555,4 +557,51 @@ public class BaselineTest extends TestCase {
 		assertEquals("com.google.ical.iter", change.packageName);
 		assertEquals("20110304.0.0", change.suggestedVersion.toString());
 	}
+
+	// This tests the scenario where a super type is injected into the class
+	// hierarchy but the super class comes from outside the bundle so that the
+	// baseline cannot find it. Since the class hierarchy was cut off, the
+	// baseline would _forget_ that every class inherits from Object, and _lose_
+	// Object's methods if not directly implemented.
+	public void testCutOffInheritance() throws Exception {
+		Processor processor = new Processor();
+
+		DiffPluginImpl differ = new DiffPluginImpl();
+		Baseline baseline = new Baseline(processor, differ);
+
+		Jar older = new Jar(IO.getFile("jar/baseline/inheritance-change-1.0.0.jar"));
+		Jar newer = new Jar(IO.getFile("jar/baseline/inheritance-change-1.1.0.jar"));
+
+		baseline.baseline(newer, older, null);
+
+		BundleInfo bundleInfo = baseline.getBundleInfo();
+
+		assertFalse(bundleInfo.mismatch);
+		assertEquals("1.1.0", bundleInfo.suggestedVersion.toString());
+
+		Set<Info> packageInfos = baseline.getPackageInfos();
+
+		assertEquals(1, packageInfos.size());
+
+		Info change = packageInfos.iterator().next();
+		assertFalse(change.mismatch);
+		assertEquals("example", change.packageName);
+		assertEquals("1.1.0", change.suggestedVersion.toString());
+
+		Diff packageDiff = change.packageDiff;
+
+		Collection< ? extends Diff> children = packageDiff.getChildren();
+
+		assertEquals(5, children.size());
+
+		Iterator< ? extends Diff> iterator = children.iterator();
+
+		Diff diff = iterator.next();
+		assertEquals(Delta.MICRO, diff.getDelta());
+		diff = iterator.next();
+		assertEquals(Delta.MICRO, diff.getDelta());
+		diff = iterator.next();
+		assertEquals(Delta.MINOR, diff.getDelta());
+	}
+
 }
