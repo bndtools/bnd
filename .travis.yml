@@ -11,11 +11,15 @@ install:
   - ./gradlew --version
 
 script:
-  - ./gradlew --continue
+  - ./gradlew -Dmaven.repo.local=cnf/cache/stable/m2 --continue
 
-after_success:
+before_cache:
   - git status
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -rf $HOME/.gradle/caches/*/plugin-resolution/
 
 cache:
   directories:
-    - cnf/cache/stable
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    - cnf/cache/stable/
