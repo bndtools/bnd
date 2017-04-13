@@ -30,9 +30,9 @@ Import-Package: \
 	org.codehaus.plexus.util.xml;provider=m2e,\
 	*
 
-Private-Package: \
-	aQute.lib.collections;-split-package:=merge-first,\
-	bndtools.m2e.*
+Conditional-Package: aQute.lib*;-split-package:=first
+
+Private-Package: bndtools.m2e.*
 
 Include-Resource: \
 	lifecycle-mapping-metadata.xml,\
