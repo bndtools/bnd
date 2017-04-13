@@ -3,6 +3,7 @@ package aQute.remote.util;
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -45,25 +46,28 @@ public class AgentSupervisor<Supervisor, Agent> {
 		connect(agent, supervisor, host, port, -1);
 	}
 
-	protected void connect(Class<Agent> agent, Supervisor supervisor, String host, int port, int timeout)
+	protected void connect(Class<Agent> agent, Supervisor supervisor, String host, int port, final int timeout)
 			throws Exception {
 		if (timeout < -1) {
 			throw new IllegalArgumentException("timeout can not be less than -1");
 		}
 
+		int retryTimeout = timeout;
+
 		while (true) {
 			try {
-				Socket socket = new Socket(host, port);
+				Socket socket = new Socket();
+				socket.connect(new InetSocketAddress(host, port), Math.max(timeout, 0));
 				link = new Link<Supervisor,Agent>(agent, supervisor, socket);
 				this.setAgent(link);
 				link.open();
 				return;
 			} catch (ConnectException e) {
-				if (timeout == 0) {
-					return;
+				if (retryTimeout == 0) {
+					throw e;
 				}
-				if (timeout > 0) {
-					timeout = Math.max(timeout - connectWait, 0);
+				if (retryTimeout > 0) {
+					retryTimeout = Math.max(retryTimeout - connectWait, 0);
 				}
 				Thread.sleep(connectWait);
 			}
