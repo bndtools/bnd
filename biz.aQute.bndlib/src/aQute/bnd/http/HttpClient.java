@@ -541,7 +541,7 @@ public class HttpClient implements Closeable, URLConnector {
 
 	private Object convert(Type type, File in, TaggedData tag) throws IOException, Exception {
 		if (type == TaggedData.class)
-			return in;
+			return tag;
 
 		if (type == File.class)
 			return in;
