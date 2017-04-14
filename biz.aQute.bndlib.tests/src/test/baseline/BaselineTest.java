@@ -7,6 +7,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -59,13 +61,14 @@ public class BaselineTest extends TestCase {
 	 */
 	public void testCompilerEnumDifference() throws Exception {
 		DiffPluginImpl diff = new DiffPluginImpl();
-		Jar ecj = new Jar(IO.getFile("jar/baseline/com.example.baseline.ecj.jar"));
-		Jar javac = new Jar(IO.getFile("jar/baseline/com.example.baseline.javac.jar"));
+		try (Jar ecj = new Jar(IO.getFile("jar/baseline/com.example.baseline.ecj.jar"));
+				Jar javac = new Jar(IO.getFile("jar/baseline/com.example.baseline.javac.jar"));) {
 
-		Tree tecj = diff.tree(ecj);
-		Tree tjavac = diff.tree(javac);
-		Diff d = tecj.diff(tjavac);
-		assertEquals(Delta.UNCHANGED, d.getDelta());
+			Tree tecj = diff.tree(ecj);
+			Tree tjavac = diff.tree(javac);
+			Diff d = tecj.diff(tjavac);
+			assertEquals(Delta.UNCHANGED, d.getDelta());
+		}
 	}
 
 	/**
@@ -73,66 +76,59 @@ public class BaselineTest extends TestCase {
 	 */
 	public void testClassesDiffWithSource() throws Exception {
 		DiffPluginImpl diff = new DiffPluginImpl();
-		File file = IO.getFile("jar/osgi.jar");
-		Jar jar = new Jar(file);
+		try (Jar jar = new Jar(IO.getFile("jar/osgi.jar")); Jar out = new Jar(".");) {
+			out.putResource("OSGI-OPT/src/org/osgi/application/ApplicationContext.java",
+					jar.getResource("OSGI-OPT/src/org/osgi/application/ApplicationContext.java"));
+			out.putResource("org/osgi/application/ApplicationContext.class",
+					jar.getResource("org/osgi/application/ApplicationContext.class"));
+			Tree tree = diff.tree(out);
 
-		Jar out = new Jar(".");
-		out.putResource("OSGI-OPT/src/org/osgi/application/ApplicationContext.java",
-				jar.getResource("OSGI-OPT/src/org/osgi/application/ApplicationContext.java"));
-		out.putResource("org/osgi/application/ApplicationContext.class",
-				jar.getResource("org/osgi/application/ApplicationContext.class"));
-		Tree tree = diff.tree(out);
+			Tree src = tree.get("<resources>")
+					.get("OSGI-OPT/src/org/osgi/application/ApplicationContext.java")
+					.getChildren()[0];
 
-		Tree src = tree.get("<resources>")
-				.get("OSGI-OPT/src/org/osgi/application/ApplicationContext.java")
-				.getChildren()[0];
+			assertNotNull(src);
 
-		assertNotNull(src);
-
-		assertNull(tree.get("<resources>").get("org/osgi/application/ApplicationContext.class"));
-
+			assertNull(tree.get("<resources>").get("org/osgi/application/ApplicationContext.class"));
+		}
 	}
 
 	public void testClassesDiffWithoutSource() throws Exception {
 		DiffPluginImpl diff = new DiffPluginImpl();
-		File file = IO.getFile("jar/osgi.jar");
-		Jar jar = new Jar(file);
-		Jar out = new Jar(".");
+		try (Jar jar = new Jar(IO.getFile("jar/osgi.jar")); Jar out = new Jar(".");) {
+			for (String path : jar.getResources().keySet()) {
+				if (!path.startsWith("OSGI-OPT/src/"))
+					out.putResource(path, jar.getResource(path));
+			}
 
-		for (String path : jar.getResources().keySet()) {
-			if (!path.startsWith("OSGI-OPT/src/"))
-				out.putResource(path, jar.getResource(path));
+			Tree tree = diff.tree(out);
+			assertNull(tree.get("<resources>").get("OSGI-OPT/src/org/osgi/application/ApplicationContext.java"));
+			assertNotNull(tree.get("<resources>").get("org/osgi/application/ApplicationContext.class"));
 		}
-
-		Tree tree = diff.tree(out);
-		assertNull(tree.get("<resources>").get("OSGI-OPT/src/org/osgi/application/ApplicationContext.java"));
-		assertNotNull(tree.get("<resources>").get("org/osgi/application/ApplicationContext.class"));
 	}
 
 	public void testJava8DefaultMethods() throws Exception {
-		Builder older = new Builder();
-		older.addClasspath(IO.getFile("java8/older/bin"));
-		older.setExportPackage("*");
-		Jar o = older.build();
-		assertTrue(older.check());
+		try (Builder older = new Builder(); Builder newer = new Builder();) {
+			older.addClasspath(IO.getFile("java8/older/bin"));
+			older.setExportPackage("*");
+			newer.addClasspath(IO.getFile("java8/newer/bin"));
+			newer.setExportPackage("*");
+			try (Jar o = older.build(); Jar n = newer.build();) {
+				assertTrue(older.check());
+				assertTrue(newer.check());
 
-		Builder newer = new Builder();
-		newer.addClasspath(IO.getFile("java8/newer/bin"));
-		newer.setExportPackage("*");
-		Jar n = newer.build();
-		assertTrue(newer.check());
+				DiffPluginImpl differ = new DiffPluginImpl();
+				Baseline baseline = new Baseline(older, differ);
 
-		DiffPluginImpl differ = new DiffPluginImpl();
-		Baseline baseline = new Baseline(older, differ);
-
-		Set<Info> infoSet = baseline.baseline(n, o, null);
-		assertEquals(1, infoSet.size());
-		for (Info info : infoSet) {
-			assertTrue(info.mismatch);
-			assertEquals(new Version(0, 1, 0), info.suggestedVersion);
-			assertEquals(info.packageName, "api_default_methods");
+				Set<Info> infoSet = baseline.baseline(n, o, null);
+				assertEquals(1, infoSet.size());
+				for (Info info : infoSet) {
+					assertTrue(info.mismatch);
+					assertEquals(new Version(0, 1, 0), info.suggestedVersion);
+					assertEquals(info.packageName, "api_default_methods");
+				}
+			}
 		}
-
 	}
 
 	/**
@@ -145,23 +141,18 @@ public class BaselineTest extends TestCase {
 		differ.setIgnore("b/b");
 		Baseline baseline = new Baseline(processor, differ);
 
-		Builder a = new Builder();
-		a.setProperty("-includeresource", "a/a;literal='aa',b/b;literal='bb'");
-		a.setProperty("-resourceonly", "true");
-		Jar aj = a.build();
+		try (Builder a = new Builder(); Builder b = new Builder();) {
+			a.setProperty("-includeresource", "a/a;literal='aa',b/b;literal='bb'");
+			a.setProperty("-resourceonly", "true");
+			b.setProperty("-includeresource", "a/a;literal='aa',b/b;literal='bbb'");
+			b.setProperty("-resourceonly", "true");
+			try (Jar aj = a.build(); Jar bj = b.build();) {
+				Set<Info> infoSet = baseline.baseline(aj, bj, null);
 
-		Builder b = new Builder();
-		b.setProperty("-includeresource", "a/a;literal='aa',b/b;literal='bbb'");
-		b.setProperty("-resourceonly", "true");
-		Jar bj = b.build();
-
-		Set<Info> infoSet = baseline.baseline(aj, bj, null);
-
-		BundleInfo binfo = baseline.getBundleInfo();
-		assertFalse(binfo.mismatch);
-
-		a.close();
-		b.close();
+				BundleInfo binfo = baseline.getBundleInfo();
+				assertFalse(binfo.mismatch);
+			}
+		}
 	}
 
 	public static void testBaslineJar() throws Exception {
@@ -214,45 +205,45 @@ public class BaselineTest extends TestCase {
 	/**
 	 * When a JAR is build the manifest is not set in the resources but in a
 	 * instance var.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testPrematureJar() throws Exception {
-		Builder b1 = new Builder();
-		b1.addClasspath(IO.getFile(new File(""), "jar/osgi.jar"));
-		b1.setProperty(Constants.BUNDLE_VERSION, "1.0.0.${tstamp}");
-		b1.setExportPackage("org.osgi.service.event");
-		Jar j1 = b1.build();
-		System.out.println(j1.getResources().keySet());
-		assertTrue(b1.check());
+		File file = IO.getFile(new File(""), "jar/osgi.jar");
+		try (Builder b1 = new Builder(); Builder b2 = new Builder();) {
+			b1.addClasspath(file);
+			b1.setProperty(Constants.BUNDLE_VERSION, "1.0.0.${tstamp}");
+			b1.setExportPackage("org.osgi.service.event");
+			try (Jar j1 = b1.build();) {
+				assertTrue(b1.check());
 
-		File tmp = new File("tmp.jar");
-		try {
-			j1.write(tmp);
-			Jar j11 = new Jar(tmp);
+				File tmp = new File("tmp.jar");
+				j1.write(tmp);
+				try (Jar j11 = new Jar(tmp);) {
+					Thread.sleep(2000);
 
-			Thread.sleep(2000);
+					b2.addClasspath(file);
+					b2.setProperty(Constants.BUNDLE_VERSION, "1.0.0.${tstamp}");
+					b2.setExportPackage("org.osgi.service.event");
 
-			Builder b2 = new Builder();
-			b2.addClasspath(IO.getFile(new File(""), "jar/osgi.jar"));
-			b2.setProperty(Constants.BUNDLE_VERSION, "1.0.0.${tstamp}");
-			b2.setExportPackage("org.osgi.service.event");
-			Jar j2 = b2.build();
-			assertTrue(b2.check());
-			System.out.println(j2.getResources().keySet());
+					try (Jar j2 = b2.build();) {
+						assertTrue(b2.check());
 
-			DiffPluginImpl differ = new DiffPluginImpl();
+						DiffPluginImpl differ = new DiffPluginImpl();
 
-			ReporterAdapter ra = new ReporterAdapter();
-			Baseline baseline = new Baseline(ra, differ);
-			ra.setTrace(true);
-			ra.setPedantic(true);
-			Set<Info> infos = baseline.baseline(j2, j11, null);
-			print(baseline.getDiff(), " ");
+						ReporterAdapter ra = new ReporterAdapter();
+						Baseline baseline = new Baseline(ra, differ);
+						ra.setTrace(true);
+						ra.setPedantic(true);
+						Set<Info> infos = baseline.baseline(j2, j11, null);
+						print(baseline.getDiff(), " ");
 
-			assertEquals(Delta.UNCHANGED, baseline.getDiff().getDelta());
-		} finally {
-			tmp.delete();
+						assertEquals(Delta.UNCHANGED, baseline.getDiff().getDelta());
+					}
+				} finally {
+					tmp.delete();
+				}
+			}
 		}
 	}
 
@@ -271,11 +262,11 @@ public class BaselineTest extends TestCase {
 
 	/**
 	 * In repo:
-	 * 
+	 *
 	 * <pre>
 	 *  p3-1.1.0.jar p3-1.2.0.jar
 	 * </pre>
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testRepository() throws Exception {
@@ -353,7 +344,7 @@ public class BaselineTest extends TestCase {
 	/**
 	 * Check what happens when there is nothing in the repo ... We do not
 	 * generate an error when version <=1.0.0, otherwise we generate an error.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testNothingInRepo() throws Exception {
@@ -391,18 +382,19 @@ public class BaselineTest extends TestCase {
 		DiffPluginImpl differ = new DiffPluginImpl();
 		Baseline baseline = new Baseline(processor, differ);
 
-		Jar older = new Jar(IO.getFile("testresources/api-orig.jar"));
-		Jar newer = new Jar(IO.getFile("testresources/api-providerbump.jar"));
+		try (Jar older = new Jar(IO.getFile("testresources/api-orig.jar"));
+				Jar newer = new Jar(IO.getFile("testresources/api-providerbump.jar"));) {
 
-		Set<Info> infoSet = baseline.baseline(newer, older, null);
-		System.out.println(differ.tree(newer).get("<api>"));
+			Set<Info> infoSet = baseline.baseline(newer, older, null);
+			System.out.println(differ.tree(newer).get("<api>"));
 
-		assertEquals(1, infoSet.size());
-		Info info = infoSet.iterator().next();
+			assertEquals(1, infoSet.size());
+			Info info = infoSet.iterator().next();
 
-		assertTrue(info.mismatch);
-		assertEquals("dummy.api", info.packageName);
-		assertEquals("1.1.0", info.suggestedVersion.toString());
+			assertTrue(info.mismatch);
+			assertEquals("dummy.api", info.packageName);
+			assertEquals("1.1.0", info.suggestedVersion.toString());
+		}
 	}
 
 	// Adding a method to a ConsumerType produces a MINOR bump (1.0.0 -> 2.0.0)
@@ -412,17 +404,18 @@ public class BaselineTest extends TestCase {
 		DiffPluginImpl differ = new DiffPluginImpl();
 		Baseline baseline = new Baseline(processor, differ);
 
-		Jar older = new Jar(IO.getFile("testresources/api-orig.jar"));
-		Jar newer = new Jar(IO.getFile("testresources/api-consumerbump.jar"));
+		try (Jar older = new Jar(IO.getFile("testresources/api-orig.jar"));
+				Jar newer = new Jar(IO.getFile("testresources/api-consumerbump.jar"));) {
 
-		Set<Info> infoSet = baseline.baseline(newer, older, null);
+			Set<Info> infoSet = baseline.baseline(newer, older, null);
 
-		assertEquals(1, infoSet.size());
-		Info info = infoSet.iterator().next();
+			assertEquals(1, infoSet.size());
+			Info info = infoSet.iterator().next();
 
-		assertTrue(info.mismatch);
-		assertEquals("dummy.api", info.packageName);
-		assertEquals("2.0.0", info.suggestedVersion.toString());
+			assertTrue(info.mismatch);
+			assertEquals("dummy.api", info.packageName);
+			assertEquals("2.0.0", info.suggestedVersion.toString());
+		}
 	}
 
 	// Adding a method to a ProviderType produces a MINOR bump (1.0.0 -> 1.1.0)
@@ -432,15 +425,16 @@ public class BaselineTest extends TestCase {
 		DiffPluginImpl differ = new DiffPluginImpl();
 		Baseline baseline = new Baseline(processor, differ);
 
-		Jar older = new Jar(IO.getFile("testresources/api-orig.jar"));
-		Jar newer = new Jar(IO.getFile("testresources/api-providerbump.jar"));
+		try (Jar older = new Jar(IO.getFile("testresources/api-orig.jar"));
+				Jar newer = new Jar(IO.getFile("testresources/api-providerbump.jar"));) {
 
-		baseline.baseline(newer, older, null);
+			baseline.baseline(newer, older, null);
 
-		BundleInfo bundleInfo = baseline.getBundleInfo();
+			BundleInfo bundleInfo = baseline.getBundleInfo();
 
-		assertTrue(bundleInfo.mismatch);
-		assertEquals("1.1.0", bundleInfo.suggestedVersion.toString());
+			assertTrue(bundleInfo.mismatch);
+			assertEquals("1.1.0", bundleInfo.suggestedVersion.toString());
+		}
 	}
 
 	// Adding a method to a ProviderType produces a MINOR bump (1.0.0 -> 1.1.0)
@@ -450,17 +444,18 @@ public class BaselineTest extends TestCase {
 		DiffPluginImpl differ = new DiffPluginImpl();
 		Baseline baseline = new Baseline(processor, differ);
 
-		Jar older = new Jar(IO.getFile("testresources/api-orig.jar"));
-		Jar newer = new Jar(IO.getFile("testresources/api-providerbump.jar"));
+		try (Jar older = new Jar(IO.getFile("testresources/api-orig.jar"));
+				Jar newer = new Jar(IO.getFile("testresources/api-providerbump.jar"));) {
 
-		newer.getManifest().getMainAttributes().putValue(BUNDLE_SYMBOLICNAME, "a.different.name");
+			newer.getManifest().getMainAttributes().putValue(BUNDLE_SYMBOLICNAME, "a.different.name");
 
-		baseline.baseline(newer, older, null);
+			baseline.baseline(newer, older, null);
 
-		BundleInfo bundleInfo = baseline.getBundleInfo();
+			BundleInfo bundleInfo = baseline.getBundleInfo();
 
-		assertFalse(bundleInfo.mismatch);
-		assertEquals(newer.getVersion(), bundleInfo.suggestedVersion.toString());
+			assertFalse(bundleInfo.mismatch);
+			assertEquals(newer.getVersion(), bundleInfo.suggestedVersion.toString());
+		}
 	}
 
 	// Adding a method to an exported class produces a MINOR bump (1.0.0 -> 1.1.0)
@@ -470,15 +465,16 @@ public class BaselineTest extends TestCase {
 		DiffPluginImpl differ = new DiffPluginImpl();
 		Baseline baseline = new Baseline(processor, differ);
 
-		Jar older = new Jar(IO.getFile("testresources/minor-and-removed-change-1.0.0.jar"));
-		Jar newer = new Jar(IO.getFile("testresources/minor-change-1.0.1.jar"));
+		try (Jar older = new Jar(IO.getFile("testresources/minor-and-removed-change-1.0.0.jar"));
+				Jar newer = new Jar(IO.getFile("testresources/minor-change-1.0.1.jar"));) {
 
-		baseline.baseline(newer, older, null);
+			baseline.baseline(newer, older, null);
 
-		BundleInfo bundleInfo = baseline.getBundleInfo();
+			BundleInfo bundleInfo = baseline.getBundleInfo();
 
-		assertTrue(bundleInfo.mismatch);
-		assertEquals("1.1.0", bundleInfo.suggestedVersion.toString());
+			assertTrue(bundleInfo.mismatch);
+			assertEquals("1.1.0", bundleInfo.suggestedVersion.toString());
+		}
 	}
 
 	// Adding a method to an exported class and unexporting a package produces a MINOR bump (1.0.0 -> 1.1.0)
@@ -488,15 +484,16 @@ public class BaselineTest extends TestCase {
 		DiffPluginImpl differ = new DiffPluginImpl();
 		Baseline baseline = new Baseline(processor, differ);
 
-		Jar older = new Jar(IO.getFile("testresources/minor-and-removed-change-1.0.0.jar"));
-		Jar newer = new Jar(IO.getFile("testresources/minor-and-removed-change-1.0.1.jar"));
+		try (Jar older = new Jar(IO.getFile("testresources/minor-and-removed-change-1.0.0.jar"));
+				Jar newer = new Jar(IO.getFile("testresources/minor-and-removed-change-1.0.1.jar"));) {
 
-		baseline.baseline(newer, older, null);
+			baseline.baseline(newer, older, null);
 
-		BundleInfo bundleInfo = baseline.getBundleInfo();
+			BundleInfo bundleInfo = baseline.getBundleInfo();
 
-		assertTrue(bundleInfo.mismatch);
-		assertEquals("2.0.0", bundleInfo.suggestedVersion.toString());
+			assertTrue(bundleInfo.mismatch);
+			assertEquals("2.0.0", bundleInfo.suggestedVersion.toString());
+		}
 	}
 
 	// Deleting a protected field on a ProviderType API class produces a MINOR
@@ -507,25 +504,25 @@ public class BaselineTest extends TestCase {
 		DiffPluginImpl differ = new DiffPluginImpl();
 		Baseline baseline = new Baseline(processor, differ);
 
-		Jar older = new Jar(IO.getFile("jar/baseline/provider-deletion-1.0.0.jar"));
-		Jar newer = new Jar(IO.getFile("jar/baseline/provider-deletion-1.1.0.jar"));
+		try (Jar older = new Jar(IO.getFile("jar/baseline/provider-deletion-1.0.0.jar"));
+				Jar newer = new Jar(IO.getFile("jar/baseline/provider-deletion-1.1.0.jar"));) {
 
-		baseline.baseline(newer, older, null);
+			baseline.baseline(newer, older, null);
 
-		BundleInfo bundleInfo = baseline.getBundleInfo();
+			BundleInfo bundleInfo = baseline.getBundleInfo();
 
-		assertFalse(bundleInfo.mismatch);
-		assertEquals("1.1.0", bundleInfo.suggestedVersion.toString());
+			assertFalse(bundleInfo.mismatch);
+			assertEquals("1.1.0", bundleInfo.suggestedVersion.toString());
 
-		Set<Info> packageInfos = baseline.getPackageInfos();
+			Set<Info> packageInfos = baseline.getPackageInfos();
 
-		assertEquals(1, packageInfos.size());
+			assertEquals(1, packageInfos.size());
 
-		Info change = packageInfos.iterator().next();
-		assertTrue(change.mismatch);
-		assertEquals("bnd.baseline.test", change.packageName);
-		assertEquals("1.1.0", change.suggestedVersion.toString());
-
+			Info change = packageInfos.iterator().next();
+			assertTrue(change.mismatch);
+			assertEquals("bnd.baseline.test", change.packageName);
+			assertEquals("1.1.0", change.suggestedVersion.toString());
+		}
 	}
 
 	// Moving a package from the root into a jar on the Bundle-ClassPath
@@ -536,23 +533,72 @@ public class BaselineTest extends TestCase {
 		DiffPluginImpl differ = new DiffPluginImpl();
 		Baseline baseline = new Baseline(processor, differ);
 
-		Jar older = new Jar(IO.getFile("jar/baseline/com.liferay.calendar.api-2.0.5.jar"));
-		Jar newer = new Jar(IO.getFile("jar/baseline/com.liferay.calendar.api-2.1.0.jar"));
+		try (Jar older = new Jar(IO.getFile("jar/baseline/com.liferay.calendar.api-2.0.5.jar"));
+				Jar newer = new Jar(IO.getFile("jar/baseline/com.liferay.calendar.api-2.1.0.jar"));) {
 
-		baseline.baseline(newer, older, null);
+			baseline.baseline(newer, older, null);
 
-		BundleInfo bundleInfo = baseline.getBundleInfo();
+			BundleInfo bundleInfo = baseline.getBundleInfo();
 
-		assertFalse(bundleInfo.mismatch);
-		assertEquals("2.1.0", bundleInfo.suggestedVersion.toString());
+			assertFalse(bundleInfo.mismatch);
+			assertEquals("2.1.0", bundleInfo.suggestedVersion.toString());
 
-		Set<Info> packageInfos = baseline.getPackageInfos();
+			Set<Info> packageInfos = baseline.getPackageInfos();
 
-		assertEquals(12, packageInfos.size());
+			assertEquals(12, packageInfos.size());
 
-		Info change = packageInfos.iterator().next();
-		assertFalse(change.mismatch);
-		assertEquals("com.google.ical.iter", change.packageName);
-		assertEquals("20110304.0.0", change.suggestedVersion.toString());
+			Info change = packageInfos.iterator().next();
+			assertFalse(change.mismatch);
+			assertEquals("com.google.ical.iter", change.packageName);
+			assertEquals("20110304.0.0", change.suggestedVersion.toString());
+		}
 	}
+
+	// This tests the scenario where a super type is injected into the class
+	// hierarchy but the super class comes from outside the bundle so that the
+	// baseline cannot find it. Since the class hierarchy was cut off, the
+	// baseline would _forget_ that every class inherits from Object, and _lose_
+	// Object's methods if not directly implemented.
+	public void testCutOffInheritance() throws Exception {
+		Processor processor = new Processor();
+
+		DiffPluginImpl differ = new DiffPluginImpl();
+		Baseline baseline = new Baseline(processor, differ);
+
+		try (Jar older = new Jar(IO.getFile("jar/baseline/inheritance-change-1.0.0.jar"));
+				Jar newer = new Jar(IO.getFile("jar/baseline/inheritance-change-1.1.0.jar"));) {
+
+			baseline.baseline(newer, older, null);
+
+			BundleInfo bundleInfo = baseline.getBundleInfo();
+
+			assertFalse(bundleInfo.mismatch);
+			assertEquals("1.1.0", bundleInfo.suggestedVersion.toString());
+
+			Set<Info> packageInfos = baseline.getPackageInfos();
+
+			assertEquals(1, packageInfos.size());
+
+			Info change = packageInfos.iterator().next();
+			assertFalse(change.mismatch);
+			assertEquals("example", change.packageName);
+			assertEquals("1.1.0", change.suggestedVersion.toString());
+
+			Diff packageDiff = change.packageDiff;
+
+			Collection< ? extends Diff> children = packageDiff.getChildren();
+
+			assertEquals(5, children.size());
+
+			Iterator< ? extends Diff> iterator = children.iterator();
+
+			Diff diff = iterator.next();
+			assertEquals(Delta.MICRO, diff.getDelta());
+			diff = iterator.next();
+			assertEquals(Delta.MICRO, diff.getDelta());
+			diff = iterator.next();
+			assertEquals(Delta.MINOR, diff.getDelta());
+		}
+	}
+
 }

@@ -341,7 +341,7 @@ class JavaElement {
 
 					Clazz c = analyzer.findClass(name);
 					if (c == null) {
-						return "Cannot load " + name;
+						return inherit(members, analyzer.getTypeRef("java/lang/Object"));
 					}
 					Element s = classElement(c);
 					for (Element child : s.children) {
