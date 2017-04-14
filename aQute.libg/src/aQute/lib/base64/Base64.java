@@ -75,11 +75,8 @@ public class Base64 {
 	}
 
 	public static byte[] decodeBase64(InputStream in, int maxLength) throws IOException {
-		InputStreamReader ir = new InputStreamReader(in, "US-ASCII");
-		try {
+		try (InputStreamReader ir = new InputStreamReader(in, "US-ASCII")) {
 			return decodeBase64(ir, maxLength);
-		} finally {
-			ir.close();
 		}
 	}
 

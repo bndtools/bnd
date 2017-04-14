@@ -80,7 +80,7 @@ class PomRepository extends InnerRepository {
 		if (isStale()) {
 			refresh();
 		} else {
-			try (XMLResourceParser parser = new XMLResourceParser(getLocation());) {
+			try (XMLResourceParser parser = new XMLResourceParser(getLocation())) {
 				List<Resource> resources = parser.parse();
 				addAll(resources);
 			}

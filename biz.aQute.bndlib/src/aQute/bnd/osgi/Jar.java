@@ -371,13 +371,11 @@ public class Jar implements Closeable {
 		try {
 			File f = File.createTempFile(padString(getName(), 3, '_'), ".jar");
 			write(f);
-			Jar tmp = new Jar(f);
-			try {
+			try (Jar tmp = new Jar(f)) {
 				tmp.calcChecksums(algorithms);
 				tmp.write(out);
 			} finally {
 				f.delete();
-				tmp.close();
 			}
 		} finally {
 			algorithms = algs;
@@ -795,8 +793,7 @@ public class Jar implements Closeable {
 				attributes = new Attributes();
 				getManifest().getEntries().put(entry.getKey(), attributes);
 			}
-			InputStream in = r.openInputStream();
-			try {
+			try (InputStream in = r.openInputStream()) {
 				for (MessageDigest d : digests)
 					d.reset();
 				int size = in.read(buffer);
@@ -805,8 +802,6 @@ public class Jar implements Closeable {
 						d.update(buffer, 0, size);
 					size = in.read(buffer);
 				}
-			} finally {
-				in.close();
 			}
 			for (MessageDigest d : digests)
 				attributes.putValue(d.getAlgorithm() + "-Digest", Base64.encodeBase64(d.digest()));
@@ -942,13 +937,10 @@ public class Jar implements Closeable {
 			return null;
 
 		byte[] data = new byte[(int) r.size()];
-		DataInputStream din = new DataInputStream(r.openInputStream());
-		try {
+		try (DataInputStream din = new DataInputStream(r.openInputStream())) {
 			din.readFully(data);
 			String encoded = Base64.encodeBase64(data);
 			return new URI("data:" + mime + ";base64," + encoded);
-		} finally {
-			din.close();
 		}
 	}
 

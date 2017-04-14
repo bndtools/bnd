@@ -13,8 +13,7 @@ public class Data {
 
 	public static String validate(Object o) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		Formatter formatter = new Formatter(sb);
-		try {
+		try (Formatter formatter = new Formatter(sb)) {
 			Field fields[] = o.getClass().getFields();
 			for (Field f : fields) {
 				Validator patternValidator = f.getAnnotation(Validator.class);
@@ -68,15 +67,12 @@ public class Data {
 			if (sb.length() > 0)
 				sb.delete(sb.length() - 1, sb.length());
 			return sb.toString();
-		} finally {
-			formatter.close();
 		}
 	}
 
 	public static void details(Object data, Appendable out) throws Exception {
 		Field fields[] = data.getClass().getFields();
-		Formatter formatter = new Formatter(out);
-		try {
+		try (Formatter formatter = new Formatter(out)) {
 			for (Field f : fields) {
 				String name = f.getName();
 				name = Character.toUpperCase(name.charAt(0)) + name.substring(1);
@@ -88,8 +84,6 @@ public class Data {
 
 				formatter.format("%-40s %s%n", name, object);
 			}
-		} finally {
-			formatter.close();
 		}
 	}
 }

@@ -106,11 +106,8 @@ public class IO {
 	}
 
 	public static void copy(byte[] data, File file) throws FileNotFoundException, IOException {
-		OutputStream out = outputStream(file);
-		try {
+		try (OutputStream out = outputStream(file)) {
 			copy(data, out);
-		} finally {
-			out.close();
 		}
 	}
 
@@ -147,8 +144,8 @@ public class IO {
 	}
 
 	public static void copy(InputStream in, DataOutput out) throws IOException {
-		byte[] buffer = new byte[BUFFER_SIZE];
 		try {
+			byte[] buffer = new byte[BUFFER_SIZE];
 			int size = in.read(buffer);
 			while (size > 0) {
 				out.write(buffer, 0, size);
@@ -160,8 +157,8 @@ public class IO {
 	}
 
 	public static void copy(InputStream in, ByteBuffer bb) throws IOException {
-		byte[] buffer = new byte[BUFFER_SIZE];
 		try {
+			byte[] buffer = new byte[BUFFER_SIZE];
 			int size = in.read(buffer);
 			while (size > 0) {
 				bb.put(buffer, 0, size);
@@ -185,8 +182,8 @@ public class IO {
 	}
 
 	public static void copy(InputStream in, MessageDigest md) throws IOException {
-		byte[] buffer = new byte[BUFFER_SIZE];
 		try {
+			byte[] buffer = new byte[BUFFER_SIZE];
 			int size = in.read(buffer);
 			while (size > 0) {
 				md.update(buffer, 0, size);
@@ -217,21 +214,15 @@ public class IO {
 			http.setRequestMethod(method);
 		}
 		c.setDoOutput(true);
-		OutputStream os = c.getOutputStream();
-		try {
+		try (OutputStream os = c.getOutputStream()) {
 			copy(in, os);
-		} finally {
-			os.close();
 		}
 	}
 
 	public static void copy(File a, File b) throws IOException {
 		if (a.isFile()) {
-			OutputStream out = outputStream(b);
-			try {
+			try (OutputStream out = outputStream(b)) {
 				copy(stream(a), out);
-			} finally {
-				out.close();
 			}
 		} else if (a.isDirectory()) {
 			if (!b.exists() && !b.mkdirs()) {
@@ -263,11 +254,8 @@ public class IO {
 	}
 
 	public static void copy(InputStream a, File b) throws IOException {
-		OutputStream out = outputStream(b);
-		try {
+		try (OutputStream out = outputStream(b)) {
 			copy(a, out);
-		} finally {
-			out.close();
 		}
 	}
 
@@ -276,13 +264,10 @@ public class IO {
 	}
 
 	public static byte[] read(File f) throws IOException {
-		byte[] data = new byte[(int) f.length()];
-		DataInputStream in = new DataInputStream(stream(f));
-		try {
+		try (DataInputStream in = new DataInputStream(stream(f))) {
+			byte[] data = new byte[(int) f.length()];
 			in.readFully(data);
 			return data;
-		} finally {
-			in.close();
 		}
 	}
 
@@ -499,18 +484,18 @@ public class IO {
 	}
 
 	public static long drain(InputStream in) throws IOException {
-		long result = 0;
-		byte[] buffer = new byte[BUFFER_SIZE];
 		try {
+			long result = 0;
+			byte[] buffer = new byte[BUFFER_SIZE];
 			int size = in.read(buffer);
 			while (size >= 0) {
 				result += size;
 				size = in.read(buffer);
 			}
+			return result;
 		} finally {
 			in.close();
 		}
-		return result;
 	}
 
 	public void copy(Collection< ? > c, OutputStream out) throws IOException {

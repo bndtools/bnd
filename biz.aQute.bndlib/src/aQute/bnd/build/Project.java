@@ -1577,7 +1577,7 @@ public class Project extends Processor {
 	}
 
 	private void install(File f, RepositoryPlugin repo, Attrs value) throws Exception {
-		try (Processor p = new Processor();) {
+		try (Processor p = new Processor()) {
 			p.getProperties().putAll(value);
 			PutOptions options = new PutOptions();
 			options.context = p;
@@ -1858,14 +1858,11 @@ public class Project extends Processor {
 	public File getOutputFile(String bsn, String version) throws Exception {
 		if (version == null)
 			version = "0";
-		Processor scoped = new Processor(this);
-		try {
+		try (Processor scoped = new Processor(this)) {
 			scoped.setProperty("@bsn", bsn);
 			scoped.setProperty("@version", version);
 			String path = scoped.getProperty(OUTPUTMASK, bsn + ".jar");
 			return IO.getFile(getTarget(), path);
-		} finally {
-			scoped.close();
 		}
 	}
 
@@ -2168,12 +2165,9 @@ public class Project extends Processor {
 	}
 
 	public Jar getValidJar(URL url) throws Exception {
-		InputStream in = url.openStream();
-		try {
+		try (InputStream in = url.openStream()) {
 			Jar jar = new Jar(url.getFile().replace('/', '.'), in, System.currentTimeMillis());
 			return getValidJar(jar, url.toString());
-		} finally {
-			in.close();
 		}
 	}
 

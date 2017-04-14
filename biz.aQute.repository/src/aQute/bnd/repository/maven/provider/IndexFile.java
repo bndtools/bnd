@@ -378,7 +378,7 @@ class IndexFile {
 		lock.writeLock().lock();
 		try {
 			File tmp = File.createTempFile("index", null);
-			try (PrintWriter pw = new PrintWriter(tmp);) {
+			try (PrintWriter pw = new PrintWriter(tmp)) {
 				List<Archive> archives = new ArrayList<>(this.descriptors.keySet());
 				Collections.sort(archives);
 				for (Archive archive : archives) {

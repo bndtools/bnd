@@ -138,17 +138,15 @@ public class Workspace extends Processor {
 			return defaults;
 
 		UTF8Properties props = new UTF8Properties();
-		InputStream propStream = Workspace.class.getResourceAsStream("defaults.bnd");
-		if (propStream != null) {
-			try {
+		try (InputStream propStream = Workspace.class.getResourceAsStream("defaults.bnd")) {
+			if (propStream != null) {
 				props.load(propStream);
-			} catch (IOException e) {
-				throw new IllegalArgumentException("Unable to load bnd defaults.", e);
-			} finally {
-				IO.close(propStream);
+			} else {
+				System.err.println("Cannot load defaults");
 			}
-		} else
-			System.err.println("Cannot load defaults");
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Unable to load bnd defaults.", e);
+		}
 		defaults = new Processor(props, false);
 
 		return defaults;
@@ -613,7 +611,7 @@ public class Workspace extends Processor {
 				HttpClient client = new HttpClient();
 				client.setOffline(getOffline());
 				client.setRegistry(this);
-				try (ConnectionSettings cs = new ConnectionSettings(this, client);) {
+				try (ConnectionSettings cs = new ConnectionSettings(this, client)) {
 					cs.readSettings();
 				}
 
@@ -1116,8 +1114,7 @@ public class Workspace extends Processor {
 
 		Object l = plugin.getConstructor().newInstance();
 
-		Formatter setup = new Formatter();
-		try {
+		try (Formatter setup = new Formatter()) {
 			setup.format("#\n" //
 					+ "# Plugin %s setup\n" //
 					+ "#\n", alias);
@@ -1136,8 +1133,6 @@ public class Workspace extends Processor {
 
 			logger.debug("setup {}", out);
 			IO.store(out, f);
-		} finally {
-			setup.close();
 		}
 
 		refresh();

@@ -100,8 +100,8 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 					break;
 			}
 		}
-		try (TaggedData tag = client.build().put().upload(sha1.asHex()).asTag().go(new URL(base + path + ".sha1"));) {}
-		try (TaggedData tag = client.build().put().upload(md5.asHex()).asTag().go(new URL(base + path + ".md5"));) {}
+		try (TaggedData tag = client.build().put().upload(sha1.asHex()).asTag().go(new URL(base + path + ".sha1"))) {}
+		try (TaggedData tag = client.build().put().upload(md5.asHex()).asTag().go(new URL(base + path + ".md5"))) {}
 
 	}
 

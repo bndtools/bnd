@@ -321,14 +321,11 @@ public abstract class Pom {
 
 		file.delete();
 
-		Writer writer = IO.writer(file);
-		try {
+		try (Writer writer = IO.writer(file)) {
 			doEntry(writer, this);
 			for (Pom dep : getDependencies(action, repositories)) {
 				doEntry(writer, dep);
 			}
-		} finally {
-			writer.close();
 		}
 		return file;
 	}

@@ -177,9 +177,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 		MessageDigest digest = MessageDigest.getInstance(SHA_256);
 		byte[] buf = new byte[1024];
 
-		InputStream stream = null;
-		try {
-			stream = resource.getStream();
+		try (InputStream stream = resource.getStream()) {
 			while (true) {
 				int bytesRead = stream.read(buf, 0, 1024);
 				if (bytesRead < 0)
@@ -187,9 +185,6 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 
 				digest.update(buf, 0, bytesRead);
 			}
-		} finally {
-			if (stream != null)
-				stream.close();
 		}
 
 		return Hex.toHexString(digest.digest());

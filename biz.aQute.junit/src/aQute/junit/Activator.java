@@ -215,8 +215,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			try {
 				bundle = queue.remove(0);
 				trace("received bundle to test: %s", bundle.getLocation());
-				Writer report = getReportWriter(reportDir, bundle);
-				try {
+				try (Writer report = getReportWriter(reportDir, bundle)) {
 					trace("test will run");
 					result += test(bundle, (String) bundle.getHeaders().get(aQute.bnd.osgi.Constants.TESTCASES),
 							report);
@@ -225,9 +224,6 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 						trace("queue " + queue);
 						System.exit(result);
 					}
-				} finally {
-					if (report != null)
-						report.close();
 				}
 			} catch (Exception e) {
 				error("Not sure what happened anymore %s", e);

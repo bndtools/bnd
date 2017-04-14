@@ -186,8 +186,7 @@ class Contracts {
 			while (requirements.containsKey(name))
 				name += "~";
 
-			Formatter f = new Formatter();
-			try {
+			try (Formatter f = new Formatter()) {
 				f.format("(&(%s=%s)(version=%s))", ContractNamespace.CONTRACT_NAMESPACE, c.name, c.version);
 
 				// TODO : shall we also assert the attributes?
@@ -195,8 +194,6 @@ class Contracts {
 				attrs.put("filter:", f.toString());
 
 				requirements.put(name, attrs);
-			} finally {
-				f.close();
 			}
 		}
 

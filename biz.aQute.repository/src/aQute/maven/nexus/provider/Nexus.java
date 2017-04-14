@@ -62,7 +62,7 @@ public class Nexus {
 	}
 
 	public void upload(URI uri, byte[] data) throws Exception {
-		try (TaggedData tag = request().put().upload(data).asTag().go(uri);) {
+		try (TaggedData tag = request().put().upload(data).asTag().go(uri)) {
 			switch (tag.getState()) {
 				case NOT_FOUND :
 				case OTHER :

@@ -246,7 +246,7 @@ public class OSGiRepository extends BaseRepository
 	@Override
 	public String tooltip(Object... target) throws Exception {
 		if (target.length == 0) {
-			try (Formatter f = new Formatter();) {
+			try (Formatter f = new Formatter()) {
 				if (stale) {
 					f.format("[stale] Needs reload, see menu\n");
 				}

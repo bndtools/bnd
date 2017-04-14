@@ -69,9 +69,8 @@ public class MavenPlugin extends LifeCyclePlugin {
 
 	@Override
 	public String augmentSetup(String setup, String alias, Map<String,String> parameters) throws Exception {
-		Formatter f = new Formatter();
-		f.format("%s", setup);
-		try {
+		try (Formatter f = new Formatter()) {
+			f.format("%s", setup);
 			f.format("\n#\n# Change disk layout to fit maven\n#\n\n");
 			f.format("-outputmask = ${@bsn}-${version;===S;${@version}}.jar\n");
 			f.format("src=src/main/java\n");
@@ -80,8 +79,6 @@ public class MavenPlugin extends LifeCyclePlugin {
 			f.format("testbin=target/test-classes\n");
 			f.format("target-dir=target\n");
 			return f.toString();
-		} finally {
-			f.close();
 		}
 	}
 

@@ -23,8 +23,7 @@ public class ExpandPropertiesTask extends BaseTask {
 				Properties properties = new UTF8Properties();
 				properties.putAll((Map< ? , ? >) getProject().getProperties());
 
-				Processor processor = new Processor(properties);
-				try {
+				try (Processor processor = new Processor(properties)) {
 					processor.setProperties(propertyFile);
 
 					Project project = getProject();
@@ -35,8 +34,6 @@ public class ExpandPropertiesTask extends BaseTask {
 							project.setProperty(key, flattened.getProperty(key));
 						}
 					}
-				} finally {
-					processor.close();
 				}
 			}
 			report();

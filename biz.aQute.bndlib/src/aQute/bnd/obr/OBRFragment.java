@@ -193,8 +193,7 @@ public class OBRFragment {
 		//
 
 		Parameters brees = d.getBundleRequiredExecutionEnvironment();
-		Formatter formatter = new Formatter();
-		try {
+		try (Formatter formatter = new Formatter()) {
 			formatter.format("(|");
 
 			for (Entry<String,Attrs> bree : brees.entrySet()) {
@@ -252,8 +251,6 @@ public class OBRFragment {
 			for (Entry<String,Attrs> rc : d.getRequireCapability().entrySet()) {
 				resource.addCapability(toRequirement(rc.getKey(), rc.getValue()));
 			}
-		} finally {
-			formatter.close();
 		}
 
 		return null;
@@ -270,8 +267,7 @@ public class OBRFragment {
 	}
 
 	public static Reporter parse(File file, ResourceBuilder resource, String base) throws Exception {
-		Jar jar = new Jar(file);
-		try {
+		try (Jar jar = new Jar(file)) {
 			Reporter reporter = parse(jar, resource);
 			if (!reporter.isOk())
 				return reporter;
@@ -279,7 +275,7 @@ public class OBRFragment {
 			CapReqBuilder content = new CapReqBuilder(ContentNamespace.CONTENT_NAMESPACE);
 			String sha = SHA1.digest(file).asHex();
 			content.addAttribute(ContentNamespace.CONTENT_NAMESPACE, sha);
-			content.addAttribute(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, (long) file.length());
+			content.addAttribute(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, file.length());
 			content.addAttribute(ContentNamespace.CAPABILITY_MIME_ATTRIBUTE, MIME_TYPE_OSGI_BUNDLE);
 
 			if (base != null) {
@@ -294,15 +290,12 @@ public class OBRFragment {
 
 			resource.addCapability(content);
 			return reporter;
-		} finally {
-			jar.close();
 		}
 	}
 
 	// TODO finish
 	private static String filter(String ns, String primary, Map<String,String> value) {
-		Formatter f = new Formatter();
-		try {
+		try (Formatter f = new Formatter()) {
 			f.format("(&(%s=%s)", ns, primary);
 			for (String key : value.keySet()) {
 				if (key.equals("version") || key.equals("bundle-version")) {
@@ -313,8 +306,6 @@ public class OBRFragment {
 			}
 
 			f.format(")");
-		} finally {
-			f.close();
 		}
 		return null;
 	}

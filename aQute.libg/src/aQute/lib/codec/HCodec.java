@@ -57,16 +57,8 @@ public class HCodec implements Codec {
 	}
 
 	public void encode(Type t, Object o, File out) throws Exception {
-		OutputStream oout = IO.outputStream(out);
-		try {
-			Writer wr = new OutputStreamWriter(oout, "UTF-8");
-			try {
-				codec.encode(t, o, wr);
-			} finally {
-				wr.close();
-			}
-		} finally {
-			oout.close();
+		try (OutputStream oout = IO.outputStream(out); Writer wr = new OutputStreamWriter(oout, "UTF-8")) {
+			codec.encode(t, o, wr);
 		}
 	}
 

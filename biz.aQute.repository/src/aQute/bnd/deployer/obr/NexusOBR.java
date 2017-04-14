@@ -212,8 +212,7 @@ public class NexusOBR extends AbstractIndexedRepo {
 
 		Version version;
 		String bsn;
-		Jar jar = new Jar(tmpFile);
-		try {
+		try (Jar jar = new Jar(tmpFile)) {
 			bsn = jar.getBsn();
 			if (bsn == null || !Verifier.isBsn(bsn))
 				throw new IllegalArgumentException(
@@ -226,8 +225,6 @@ public class NexusOBR extends AbstractIndexedRepo {
 				throw new IllegalArgumentException("Invalid version " + versionString + " in file " + tmpFile);
 
 			version = Version.parseVersion(versionString);
-		} finally {
-			jar.close();
 		}
 		URL url = put(tmpFile, bsn, version);
 		reset();

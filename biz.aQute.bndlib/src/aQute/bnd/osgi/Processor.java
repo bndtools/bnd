@@ -1612,20 +1612,16 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	static public String read(InputStream in) throws Exception {
-		InputStreamReader ir = new InputStreamReader(in, "UTF8");
-		StringBuilder sb = new StringBuilder();
-
-		try {
+		try (InputStreamReader ir = new InputStreamReader(in, "UTF8")) {
+			StringBuilder sb = new StringBuilder();
 			char chars[] = new char[BUFFER_SIZE];
 			int size = ir.read(chars);
 			while (size > 0) {
 				sb.append(chars, 0, size);
 				size = ir.read(chars);
 			}
-		} finally {
-			ir.close();
+			return sb.toString();
 		}
-		return sb.toString();
 	}
 
 	/**

@@ -269,11 +269,8 @@ public class Tag {
 
 	private void copyURL(PrintWriter pw, URL url) {
 		try {
-			InputStream in = null;
-			BufferedReader rdr = null;
-			try {
-				in = url.openStream();
-				rdr = new BufferedReader(new InputStreamReader(in, "UTF8"));
+			try (InputStream in = url.openStream();
+					BufferedReader rdr = new BufferedReader(new InputStreamReader(in, "UTF8"))) {
 				String line = rdr.readLine();
 				if (line != null) {
 					while (line != null && line.trim().startsWith("<?"))
@@ -283,13 +280,6 @@ public class Tag {
 						pw.println(line);
 						line = rdr.readLine();
 					}
-				}
-			} finally {
-				if (rdr != null) {
-					rdr.close();
-				}
-				if (in != null) {
-					in.close();
 				}
 			}
 		} catch (Exception e) {

@@ -164,7 +164,7 @@ public class Builder extends Analyzer {
 	}
 
 	void doPom(Jar dot) throws Exception, IOException {
-		try (Processor scoped = new Processor(this);) {
+		try (Processor scoped = new Processor(this)) {
 			String bsn = getBsn();
 			if (bsn != null)
 				scoped.setProperty("@bsn", bsn);

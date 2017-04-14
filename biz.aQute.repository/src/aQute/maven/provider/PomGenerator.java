@@ -46,7 +46,7 @@ public class PomGenerator {
 	}
 
 	public void out(OutputStream out) throws IOException {
-		try (Writer w = new OutputStreamWriter(out, StandardCharsets.UTF_8);) {
+		try (Writer w = new OutputStreamWriter(out, StandardCharsets.UTF_8)) {
 			PrintWriter pw = new PrintWriter(w);
 			pw.println("<?xml version='1.0' encoding='UTF-8'?>");
 			Tag tag = build();

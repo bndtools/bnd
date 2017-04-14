@@ -426,11 +426,8 @@ public abstract class Domain implements Iterable<String> {
 
 		Resource propsResource = jar.getResource(path);
 		if (propsResource != null) {
-			InputStream in = propsResource.openInputStream();
-			try {
+			try (InputStream in = propsResource.openInputStream()) {
 				translation.load(in);
-			} finally {
-				in.close();
 			}
 		}
 	}
@@ -469,7 +466,7 @@ public abstract class Domain implements Iterable<String> {
 
 			// default & last. Assume JAR
 
-			try (JarInputStream jin = new JarInputStream(in);) {
+			try (JarInputStream jin = new JarInputStream(in)) {
 				Manifest m = jin.getManifest();
 				if (m != null)
 					return domain(m);

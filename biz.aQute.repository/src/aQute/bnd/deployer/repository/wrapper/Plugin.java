@@ -94,8 +94,7 @@ public class Plugin extends BaseRepository
 			if (config.augments() != null) {
 
 				Workspace workspace = registry.getPlugin(Workspace.class);
-				Processor p = new Processor(workspace);
-				try {
+				try (Processor p = new Processor(workspace)) {
 
 					if (!config.augments().equals("WORKSPACE")) {
 						File f = IO.getFile(workspace.getBuildDir(), config.augments());
@@ -122,8 +121,6 @@ public class Plugin extends BaseRepository
 
 					this.wrapper.addAugment(p.getFlattenedProperties());
 					this.wrapper.clear(workspace.getPropertiesFile().lastModified());
-				} finally {
-					p.close();
 				}
 			}
 

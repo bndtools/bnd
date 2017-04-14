@@ -111,9 +111,7 @@ public class MavenDeployCmd extends Processor {
 			pom.setProperties(maven);
 			File pomFile = write(tmp, pom, "pom.xml");
 
-			Jar main = new Jar("main");
-			Jar src = new Jar("src");
-			try {
+			try (Jar main = new Jar("main"); Jar src = new Jar("src")) {
 				split(original, main, src);
 				Parameters exports = project
 						.parseHeader(manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
@@ -136,10 +134,6 @@ public class MavenDeployCmd extends Processor {
 				maven_gpg_sign_and_deploy(project, srcFile, "sources", null);
 				logger.info(LIFECYCLE, "Deploying main javadoc file");
 				maven_gpg_sign_and_deploy(project, javadocFile, "javadoc", null);
-
-			} finally {
-				main.close();
-				src.close();
 			}
 		}
 		return true;

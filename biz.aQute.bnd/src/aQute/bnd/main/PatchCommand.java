@@ -75,24 +75,16 @@ public class PatchCommand {
 	}
 
 	private boolean isEqual(Resource ar, Resource br) throws Exception {
-		InputStream ain = ar.openInputStream();
-		try {
-			InputStream bin = br.openInputStream();
-			try {
-				while (true) {
-					int an = ain.read();
-					int bn = bin.read();
-					if (an == bn) {
-						if (an == -1)
-							return true;
-					} else
-						return false;
-				}
-			} finally {
-				bin.close();
+		try (InputStream ain = ar.openInputStream(); InputStream bin = br.openInputStream()) {
+			while (true) {
+				int an = ain.read();
+				int bn = bin.read();
+				if (an == bn) {
+					if (an == -1)
+						return true;
+				} else
+					return false;
 			}
-		} finally {
-			ain.close();
 		}
 	}
 

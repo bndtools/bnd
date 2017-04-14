@@ -102,8 +102,8 @@ public class JarResource implements Resource {
 			if (manifest == null) {
 				Resource manifestResource = getChild("META-INF/MANIFEST.MF");
 				if (manifestResource != null) {
-					try {
-						manifest = new Manifest(manifestResource.getStream());
+					try (InputStream in = manifestResource.getStream()) {
+						manifest = new Manifest(in);
 					} finally {
 						manifestResource.close();
 					}

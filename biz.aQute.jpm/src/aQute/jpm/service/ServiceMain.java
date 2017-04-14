@@ -141,11 +141,8 @@ public class ServiceMain extends Thread {
 	}
 
 	private static void write(File f, String response) throws IOException {
-		PrintWriter fw = IO.writer(f);
-		try {
+		try (PrintWriter fw = IO.writer(f)) {
 			fw.append(response);
-		} finally {
-			fw.close();
 		}
 	}
 

@@ -26,17 +26,12 @@ public class KnownBundleAnalyzer implements ResourceAnalyzer {
 
 	public KnownBundleAnalyzer() {
 		defaultProperties = new Properties();
-		InputStream stream = KnownBundleAnalyzer.class.getResourceAsStream("known-bundles.properties");
-		if (stream != null) {
-			try {
+		try (InputStream stream = KnownBundleAnalyzer.class.getResourceAsStream("known-bundles.properties")) {
+			if (stream != null) {
 				defaultProperties.load(stream);
-			} catch (IOException e) {
-				// ignore
-			} finally {
-				try {
-					stream.close();
-				} catch (IOException e) {}
 			}
+		} catch (IOException e) {
+			// ignore
 		}
 	}
 

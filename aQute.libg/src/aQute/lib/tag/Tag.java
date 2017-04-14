@@ -466,14 +466,11 @@ public class Tag {
 	}
 
 	public String validate() {
-		Formatter f = new Formatter();
-		try {
+		try (Formatter f = new Formatter()) {
 			if (invalid(f))
 				return f.toString();
 			else
 				return null;
-		} finally {
-			f.close();
 		}
 	}
 

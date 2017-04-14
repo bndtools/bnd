@@ -384,8 +384,7 @@ public class RepoCommand {
 
 			logger.debug("put {}", file);
 
-			Jar jar = new Jar(file);
-			try {
+			try (Jar jar = new Jar(file)) {
 				String bsn = jar.getBsn();
 				if (bsn == null) {
 					bnd.error("File %s is not a bundle (it has no bsn) ", file);
@@ -408,8 +407,6 @@ public class RepoCommand {
 					logger.debug("put {} in {} ({}) into {}", source, writable.getName(), writable.getLocation(),
 							r.artifact);
 				}
-			} finally {
-				jar.close();
 			}
 			if (delete)
 				file.delete();

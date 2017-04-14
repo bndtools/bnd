@@ -179,7 +179,7 @@ public class Tool extends Processor {
 		}
 
 		File overview = new File(sources, "overview.html");
-		try (PrintWriter pw = new PrintWriter(overview);) {
+		try (PrintWriter pw = new PrintWriter(overview)) {
 			body.print(2, pw);
 		}
 	}

@@ -50,11 +50,9 @@ public class Classpath {
 	 * @param visitor the visitor
 	 */
 	public void visit(ClassVisitor visitor) throws Exception {
-		Analyzer analyzer = new Analyzer();
-		try {
+		try (Analyzer analyzer = new Analyzer()) {
 			for (File f : entries) {
-				Jar jar = new Jar(f);
-				try {
+				try (Jar jar = new Jar(f)) {
 					for (String path : jar.getResources().keySet()) {
 						if (path.endsWith(".class")) {
 							Resource r = jar.getResource(path);
@@ -63,12 +61,8 @@ public class Classpath {
 							visitor.visit(c);
 						}
 					}
-				} finally {
-					jar.close();
 				}
 			}
-		} finally {
-			analyzer.close();
 		}
 	}
 

@@ -25,11 +25,8 @@ public class PreprocessResource extends AbstractResource {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream(2000);
 		OutputStreamWriter osw = new OutputStreamWriter(bout, Constants.DEFAULT_CHARSET);
 		PrintWriter pw = new PrintWriter(osw);
-		InputStream in = null;
-		BufferedReader rdr = null;
-		try {
-			in = resource.openInputStream();
-			rdr = new BufferedReader(new InputStreamReader(in, "UTF8"));
+		try (InputStream in = resource.openInputStream();
+				BufferedReader rdr = new BufferedReader(new InputStreamReader(in, "UTF8"))) {
 			String line = rdr.readLine();
 			while (line != null) {
 				line = processor.getReplacer().process(line);
@@ -42,14 +39,6 @@ public class PreprocessResource extends AbstractResource {
 
 		} catch (Exception e) {
 			return IO.read(resource.openInputStream());
-
-		} finally {
-			if (rdr != null) {
-				rdr.close();
-			}
-			if (in != null) {
-				in.close();
-			}
 		}
 	}
 }

@@ -509,7 +509,7 @@ public class HttpClient implements Closeable, URLConnector {
 			if (isUpdateInfo(con, request, code)) {
 				File file = (File) request.upload;
 				String etag = con.getHeaderField("ETag");
-				try (Info info = cache.get(file, con.getURL().toURI());) {
+				try (Info info = cache.get(file, con.getURL().toURI())) {
 					info.update(etag);
 				}
 			}
@@ -584,7 +584,7 @@ public class HttpClient implements Closeable, URLConnector {
 
 	private void doOutput(Object put, final URLConnection con, HttpRequest< ? > rq) throws IOException, Exception {
 		con.setDoOutput(true);
-		try (OutputStream out = con.getOutputStream();) {
+		try (OutputStream out = con.getOutputStream()) {
 			if (put instanceof InputStream) {
 				logger.debug("out {} input stream {}", rq.verb, rq.url);
 				IO.copy((InputStream) put, out);
@@ -668,7 +668,7 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	public void readSettings(Processor processor) throws IOException, Exception {
-		try (ConnectionSettings cs = new ConnectionSettings(processor, this);) {
+		try (ConnectionSettings cs = new ConnectionSettings(processor, this)) {
 			cs.readSettings();
 		}
 	}

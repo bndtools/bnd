@@ -170,8 +170,7 @@ public class EnrouteCommand {
 
 	private void copy(File workspaceDir, InputStream in, Pattern glob, boolean overwrite) throws Exception {
 
-		Jar jar = new Jar("dot", in);
-		try {
+		try (Jar jar = new Jar("dot", in)) {
 			for (Entry<String,Resource> e : jar.getResources().entrySet()) {
 
 				String path = e.getKey();
@@ -194,8 +193,6 @@ public class EnrouteCommand {
 					IO.copy(r.openInputStream(), dest);
 				}
 			}
-		} finally {
-			jar.close();
 		}
 	}
 

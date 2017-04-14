@@ -303,9 +303,7 @@ public class JustAnotherPackageManager {
 		if (!force) {
 			Justif justify = new Justif(80, 40);
 			StringBuilder sb = new StringBuilder();
-			Formatter f = new Formatter(sb);
-
-			try {
+			try (Formatter f = new Formatter(sb)) {
 				String list = listFiles(platform.getGlobal());
 				if (list != null) {
 					f.format("In global default environment:%n");
@@ -348,8 +346,6 @@ public class JustAnotherPackageManager {
 
 				justify.wrap(sb);
 				out.append(sb.toString());
-			} finally {
-				f.close();
 			}
 		} else { // i.e. if(force)
 			int count = 0;
@@ -453,8 +449,7 @@ public class JustAnotherPackageManager {
 	}
 
 	private String listSupportFiles(List<File> toDelete) throws Exception {
-		Formatter f = new Formatter();
-		try {
+		try (Formatter f = new Formatter()) {
 			if (toDelete == null) {
 				toDelete = new ArrayList<File>();
 			}
@@ -467,8 +462,6 @@ public class JustAnotherPackageManager {
 
 			String result = (toDelete.size() > precount) ? f.toString() : null;
 			return result;
-		} finally {
-			f.close();
 		}
 
 	}
@@ -1065,12 +1058,11 @@ public class JustAnotherPackageManager {
 			return null;
 		}
 
-		StringBuilder sb = new StringBuilder();
-		Formatter f = new Formatter(sb);
 		Justif justif = new Justif(120, 20, 70, 20, 75);
 		DateFormat dateFormat = DateFormat.getDateInstance();
 
-		try {
+		StringBuilder sb = new StringBuilder();
+		try (Formatter f = new Formatter(sb)) {
 			if (oneliner) {
 				f.format("%20s %s%n", Hex.toHexString(revision._id), createCoord(revision));
 			} else {
@@ -1103,8 +1095,6 @@ public class JustAnotherPackageManager {
 			f.flush();
 			justif.wrap(sb);
 			return sb.toString();
-		} finally {
-			f.close();
 		}
 
 	}
@@ -1229,8 +1219,7 @@ public class JustAnotherPackageManager {
 		CommandData data = new CommandData();
 		data.sha = artifact.sha;
 		data.jpmRepoDir = repoDir.getCanonicalPath();
-		JarFile jar = new JarFile(source);
-		try {
+		try (JarFile jar = new JarFile(source)) {
 			logger.debug("Parsing {}", source);
 			Manifest m = jar.getManifest();
 			Attributes main = m.getMainAttributes();
@@ -1317,8 +1306,6 @@ public class JustAnotherPackageManager {
 
 			}
 			return data;
-		} finally {
-			jar.close();
 		}
 	}
 

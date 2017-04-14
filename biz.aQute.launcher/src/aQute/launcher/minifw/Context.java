@@ -203,14 +203,11 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 			return paths;
 
 		paths = new TreeSet<String>();
-		JarFile jar = new JarFile(new File(location));
-		try {
+		try (JarFile jar = new JarFile(new File(location))) {
 			for (Enumeration<JarEntry> e = jar.entries(); e.hasMoreElements();) {
 				ZipEntry entry = e.nextElement();
 				paths.add(entry.getName());
 			}
-		} finally {
-			jar.close();
 		}
 		return paths;
 	}
