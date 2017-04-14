@@ -61,11 +61,10 @@ public class XMLResourceGenerator {
 				out = new GZIPOutputStream(out);
 			}
 
-			try (Writer writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);) {
-				try (PrintWriter pw = new PrintWriter(writer);) {
+			try (Writer writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);
+					PrintWriter pw = new PrintWriter(writer)) {
 					pw.printf("<?xml version='1.0' encoding='UTF-8'?>\n");
 					repository.print(indent, pw);
-				}
 			}
 		} finally {
 			out.close();

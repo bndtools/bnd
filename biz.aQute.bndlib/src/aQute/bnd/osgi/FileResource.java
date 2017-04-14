@@ -53,16 +53,13 @@ public class FileResource implements Resource, Closeable {
 	}
 
 	static void copy(Resource resource, OutputStream out) throws Exception {
-		InputStream in = resource.openInputStream();
-		try {
+		try (InputStream in = resource.openInputStream()) {
 			byte buffer[] = new byte[BUFFER_SIZE];
 			int size = in.read(buffer);
 			while (size > 0) {
 				out.write(buffer, 0, size);
 				size = in.read(buffer);
 			}
-		} finally {
-			in.close();
 		}
 	}
 

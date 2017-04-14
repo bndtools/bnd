@@ -271,7 +271,7 @@ public class ResolveCommand extends Processor {
 
 				Run run = Run.createRun(ws, f);
 
-				try (ProjectResolver pr = new ProjectResolver(run);) {
+				try (ProjectResolver pr = new ProjectResolver(run)) {
 					try {
 						Map<Resource,List<Wire>> resolution = pr.resolve();
 						if (pr.isOk()) {

@@ -122,8 +122,7 @@ public class Windows extends Platform {
 		// Make the ini file
 		//
 		File ini = new File(f.getAbsolutePath().replaceAll("\\.exe$", ".ini"));
-		PrintWriter pw = new PrintWriter(ini);
-		try {
+		try (PrintWriter pw = new PrintWriter(ini)) {
 			pw.printf("main.class=%s%n", data.main);
 			pw.printf("log.level=error%n");
 			String del = "classpath.1=";
@@ -147,8 +146,6 @@ public class Windows extends Platform {
 				for (int i = 0; i < parts.length; i++)
 					pw.printf("vmarg.%d=%s%n", i + 1, parts[i]);
 			}
-		} finally {
-			pw.close();
 		}
 		logger.debug("Ini content {}", IO.collect(ini));
 		return null;

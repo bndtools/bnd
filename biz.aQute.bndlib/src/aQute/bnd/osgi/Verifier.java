@@ -1373,15 +1373,12 @@ public class Verifier extends Processor {
 				list.add(location);
 			else {
 				if (parts.length > 1) {
-					Jar jar = new Jar("", resource.openInputStream());
-					try {
+					try (Jar jar = new Jar("", resource.openInputStream())) {
 						resource = jar.getResource(parts[1]);
 						if (resource == null)
 							list.add(location);
 					} catch (Exception e) {
 						list.add(location);
-					} finally {
-						jar.close();
 					}
 				}
 			}

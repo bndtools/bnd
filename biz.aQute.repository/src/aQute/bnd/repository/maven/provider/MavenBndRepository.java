@@ -135,7 +135,7 @@ public class MavenBndRepository extends BaseRepository
 
 			ReleaseDTO instructions = getReleaseDTO(options.context);
 
-			try (Jar binary = new Jar(binaryFile);) {
+			try (Jar binary = new Jar(binaryFile)) {
 				Resource pomResource;
 
 				if (instructions.pom.path != null) {
@@ -172,7 +172,7 @@ public class MavenBndRepository extends BaseRepository
 				}
 
 				logger.debug("Put release {}", pom.getRevision());
-				try (Release releaser = storage.release(pom.getRevision(), options.context.getProperties());) {
+				try (Release releaser = storage.release(pom.getRevision(), options.context.getProperties())) {
 					if (releaser == null) {
 						logger.debug("Already released {}", pom.getRevision());
 						return result;
@@ -191,13 +191,13 @@ public class MavenBndRepository extends BaseRepository
 
 					if (!isLocal(instructions)) {
 
-						try (Tool tool = new Tool(options.context, binary);) {
+						try (Tool tool = new Tool(options.context, binary)) {
 
 							if (instructions.javadoc != null) {
 								if (!NONE.equals(instructions.javadoc.path)) {
 									try (Jar jar = getJavadoc(tool, options.context, instructions.javadoc.path,
 											instructions.javadoc.options,
-											instructions.javadoc.packages == JavadocPackages.EXPORT);) {
+											instructions.javadoc.packages == JavadocPackages.EXPORT)) {
 										save(releaser, pom.getRevision(), jar, "javadoc");
 									}
 								}
@@ -205,7 +205,7 @@ public class MavenBndRepository extends BaseRepository
 
 							if (instructions.sources != null) {
 								if (!NONE.equals(instructions.sources.path)) {
-									try (Jar jar = getSource(tool, options.context, instructions.sources.path);) {
+									try (Jar jar = getSource(tool, options.context, instructions.sources.path)) {
 										save(releaser, pom.getRevision(), jar, "sources");
 									}
 								}
@@ -354,7 +354,7 @@ public class MavenBndRepository extends BaseRepository
 		if (manifest == null)
 			return null;
 
-		try (Processor scoped = context == null ? new Processor() : new Processor(context);) {
+		try (Processor scoped = context == null ? new Processor() : new Processor(context)) {
 			if (scoped.getProperty(Constants.GROUPID) == null)
 				scoped.setProperty(Constants.GROUPID, "osgi-bundle");
 			return new PomResource(scoped, manifest);

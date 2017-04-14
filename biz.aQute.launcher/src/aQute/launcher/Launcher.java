@@ -160,12 +160,8 @@ public class Launcher implements ServiceListener {
 	}
 
 	static void load(final InputStream in, Properties properties) throws UnsupportedEncodingException, IOException {
-		InputStreamReader ir = new InputStreamReader(in, "UTF-8");
-		try {
+		try (InputStreamReader ir = new InputStreamReader(in, "UTF-8")) {
 			properties.load(ir);
-		} finally {
-			ir.close();
-			in.close();
 		}
 	}
 
@@ -176,8 +172,7 @@ public class Launcher implements ServiceListener {
 			String del = "";
 			for (Enumeration<URL> u = manifests; u.hasMoreElements();) {
 				URL url = u.nextElement();
-				InputStream in = url.openStream();
-				try {
+				try (InputStream in = url.openStream()) {
 					Manifest m = new Manifest(in);
 					String bsn = m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
 					String version = m.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
@@ -185,8 +180,6 @@ public class Launcher implements ServiceListener {
 						sb.append(del).append(bsn).append(";version=").append(version);
 						del = ", ";
 					}
-				} finally {
-					in.close();
 				}
 			}
 			return sb.toString();
@@ -661,16 +654,13 @@ public class Launcher implements ServiceListener {
 		for (Object o : parms.runbundles) {
 			String path = (String) o;
 			trace("installing %s", path);
-			InputStream in = getClass().getClassLoader().getResourceAsStream(path);
-			try {
+			try (InputStream in = getClass().getClassLoader().getResourceAsStream(path)) {
 				Bundle bundle = getBundleByLocation(path);
 				if (bundle == null)
 					bundle = context.installBundle(path, in);
 				else
 					bundle.update(in);
 				tobestarted.add(bundle);
-			} finally {
-				in.close();
 			}
 		}
 	}
@@ -938,25 +928,15 @@ public class Launcher implements ServiceListener {
 			URL url = e.nextElement();
 			trace("found META-INF/services in %s", url);
 
-			InputStream in = null;
-			BufferedReader rdr = null;
-			String line;
-			try {
-				in = url.openStream();
-				rdr = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+			try (InputStream in = url.openStream();
+					BufferedReader rdr = new BufferedReader(new InputStreamReader(in, "UTF-8"))) {
+				String line;
 				while ((line = rdr.readLine()) != null) {
 					trace(line);
 					line = line.trim();
 					if (!line.startsWith("#") && line.length() > 0) {
 						factories.add(line);
 					}
-				}
-			} finally {
-				if (rdr != null) {
-					rdr.close();
-				}
-				if (in != null) {
-					in.close();
 				}
 			}
 		}

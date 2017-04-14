@@ -135,32 +135,25 @@ public class RepoIndex implements ResourceIndexer {
 			resolveDirectories(files, filesToIndex);
 		}
 
-		Indent indent;
-		PrintWriter pw = null;
-		try {
-			String prettySetting = config.get(ResourceIndexer.PRETTY);
-			String compressedSetting = config.get(ResourceIndexer.COMPRESSED);
-			/**
-			 * <pre>
-			 *  pretty compressed out-pretty out-compressed null null
-			 * Indent.NONE true* null false Indent.NONE false null true
-			 * Indent.NONE true false null Indent.PRETTY false* false false
-			 * Indent.NONE false false true Indent.NONE true true null
-			 * Indent.PRETTY false* true false Indent.PRETTY false true true
-			 * Indent.PRETTY true * = original behaviour, before compressed was
-			 * introduced
-			 * </pre>
-			 */
-			indent = (prettySetting == null || (!Boolean.parseBoolean(prettySetting) && compressedSetting != null))
-					? Indent.NONE : Indent.PRETTY;
-			boolean compressed = (prettySetting == null && compressedSetting == null)
-					|| Boolean.parseBoolean(compressedSetting);
-			if (!compressed) {
-				pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
-			} else {
-				pw = new PrintWriter(new GZIPOutputStream(out, Deflater.BEST_COMPRESSION));
-			}
-
+		String prettySetting = config.get(ResourceIndexer.PRETTY);
+		String compressedSetting = config.get(ResourceIndexer.COMPRESSED);
+		/**
+		 * <pre>
+		 *  pretty compressed out-pretty out-compressed null null
+		 * Indent.NONE true* null false Indent.NONE false null true
+		 * Indent.NONE true false null Indent.PRETTY false* false false
+		 * Indent.NONE false false true Indent.NONE true true null
+		 * Indent.PRETTY false* true false Indent.PRETTY false true true
+		 * Indent.PRETTY true * = original behaviour, before compressed was
+		 * introduced
+		 * </pre>
+		 */
+		Indent indent = (prettySetting == null || (!Boolean.parseBoolean(prettySetting) && compressedSetting != null))
+				? Indent.NONE : Indent.PRETTY;
+		boolean compressed = (prettySetting == null && compressedSetting == null)
+				|| Boolean.parseBoolean(compressedSetting);
+		try (PrintWriter pw = compressed ? new PrintWriter(new GZIPOutputStream(out, Deflater.BEST_COMPRESSION))
+				: new PrintWriter(new OutputStreamWriter(out, "UTF-8"))) {
 			pw.print(Schema.XML_PROCESSING_INSTRUCTION);
 			String stylesheet = config.get(STYLESHEET);
 			if (stylesheet != null) {
@@ -192,11 +185,6 @@ public class RepoIndex implements ResourceIndexer {
 				}
 			}
 			repoTag.printClose(indent, pw);
-		} finally {
-			if (pw != null) {
-				pw.flush();
-				pw.close();
-			}
 		}
 	}
 

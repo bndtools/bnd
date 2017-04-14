@@ -147,8 +147,7 @@ class PackageInfo {
 	 * Calculate the new content for a package info file.
 	 */
 	private String getContent(boolean modern, String packageName, Version version) {
-		Formatter f = new Formatter();
-		try {
+		try (Formatter f = new Formatter()) {
 			if (modern) {
 				f.format("@Version(\"%s\")\n", version);
 				f.format("package %s;\n", packageName);
@@ -157,8 +156,6 @@ class PackageInfo {
 				f.format("version %s\n", version);
 			}
 			return f.toString();
-		} finally {
-			f.close();
 		}
 	}
 

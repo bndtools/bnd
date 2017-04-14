@@ -171,7 +171,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		MessageDigest md = MessageDigest.getInstance(SHA256.ALGORITHM);
 		IO.copy(indexFile, md);
 
-		try (OutputStream out = IO.outputStream(shaFile);) {
+		try (OutputStream out = IO.outputStream(shaFile)) {
 			out.write(Hex.toHexString(md.digest()).toLowerCase().toString().getBytes());
 		}
 	}
@@ -277,8 +277,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 		init();
 
-		Jar jar = new Jar(tmpFile);
-		try {
+		try (Jar jar = new Jar(tmpFile)) {
 			String bsn = jar.getBsn();
 			if (bsn == null || !Verifier.isBsn(bsn))
 				throw new IllegalArgumentException("Jar does not have a symbolic name");
@@ -319,8 +318,6 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 				finishPut();
 			}
 			return file;
-		} finally {
-			jar.close();
 		}
 	}
 
@@ -392,22 +389,20 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		return storageDir;
 	}
 
-	protected void fireBundleAdded(File file) {
+	protected void fireBundleAdded(File file) throws Exception {
 		if (registry == null)
 			return;
 		List<RepositoryListenerPlugin> listeners = registry.getPlugins(RepositoryListenerPlugin.class);
-		Jar jar = null;
-		for (RepositoryListenerPlugin listener : listeners) {
-			try {
-				if (jar == null)
-					jar = new Jar(file);
-				listener.bundleAdded(this, jar, file);
-			} catch (Exception e) {
-				if (reporter != null)
-					reporter.warning("Repository listener threw an unexpected exception: %s", e);
-			} finally {
-				if (jar != null)
-					jar.close();
+		if (listeners.isEmpty())
+			return;
+		try (Jar jar = new Jar(file)) {
+			for (RepositoryListenerPlugin listener : listeners) {
+				try {
+					listener.bundleAdded(this, jar, file);
+				} catch (Exception e) {
+					if (reporter != null)
+						reporter.warning("Repository listener threw an unexpected exception: %s", e);
+				}
 			}
 		}
 	}

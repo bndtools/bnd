@@ -57,12 +57,9 @@ public class ProjectBuildOrderTask extends BaseTask {
 					throw new BuildException(e);
 				}
 			} else {
-				Project p = new Project(workspace, projectLocation, new File(projectLocation, bndFile));
-				p.setDelayRunDependencies(this.delayRunDependencies);
-				try {
+				try (Project p = new Project(workspace, projectLocation, new File(projectLocation, bndFile))) {
+					p.setDelayRunDependencies(this.delayRunDependencies);
 					projects = p.getDependson();
-				} finally {
-					p.close();
 				}
 			}
 

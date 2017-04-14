@@ -209,11 +209,8 @@ public class bnd extends Processor {
 		Workspace.addGestalt(Constants.GESTALT_INTERACTIVE, null);
 
 		Workspace ws = Workspace.findWorkspace(IO.work);
-		bnd main = new bnd(); // ws == null ? new bnd() : new bnd(ws);
-		try {
+		try (bnd main = new bnd()) { // ws == null ? new bnd() : new bnd(ws);
 			main.start(args);
-		} finally {
-			main.close();
 		}
 		exitWithCode(0);
 	}
@@ -680,8 +677,7 @@ public class bnd extends Processor {
 	}
 
 	public void build(String dest, boolean force, String path) throws IOException, Exception {
-		Builder b = new Builder();
-		try {
+		try (Builder b = new Builder()) {
 
 			File f = getFile(path);
 			if (!f.isFile()) {
@@ -707,8 +703,6 @@ public class bnd extends Processor {
 					out.delete();
 				}
 			}
-		} finally {
-			b.close();
 		}
 	}
 
@@ -1355,8 +1349,7 @@ public class bnd extends Processor {
 		for (String arg : options._arguments()) {
 			try {
 				File file = new File(arg);
-				Jar jar = new Jar(file.getName(), file);
-				try {
+				try (Jar jar = new Jar(file.getName(), file)) {
 					for (Map.Entry<String,Resource> entry : jar.getResources().entrySet()) {
 						String key = entry.getKey();
 						Resource r = entry.getValue();
@@ -1384,8 +1377,6 @@ public class bnd extends Processor {
 							}
 						}
 					}
-				} finally {
-					jar.close();
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -1614,8 +1605,7 @@ public class bnd extends Processor {
 			return;
 		}
 
-		Jar jar = new Jar(file);
-		try {
+		try (Jar jar = new Jar(file)) {
 			if (args.isEmpty())
 				args.add("*");
 
@@ -1635,8 +1625,6 @@ public class bnd extends Processor {
 					IO.copy(isr, out);
 				}
 			}
-		} finally {
-			jar.close();
 		}
 	}
 
@@ -2608,22 +2596,14 @@ public class bnd extends Processor {
 		if (opts.output() != null)
 			output = getFile(opts.output());
 
-		Jar bin = new Jar(jarFile);
-		bin.setDoNotTouchManifest();
-
 		File tmp = File.createTempFile("tmp", ".jar", jarFile.getParentFile());
 		tmp.deleteOnExit();
-		try {
-			Jar src = new Jar(sourceFile);
-			try {
-				for (String path : src.getResources().keySet())
-					bin.putResource("OSGI-OPT/src/" + path, src.getResource(path));
-				bin.write(tmp);
-			} finally {
-				src.close();
-			}
-		} finally {
-			bin.close();
+
+		try (Jar bin = new Jar(jarFile); Jar src = new Jar(sourceFile)) {
+			bin.setDoNotTouchManifest();
+			for (String path : src.getResources().keySet())
+				bin.putResource("OSGI-OPT/src/" + path, src.getResource(path));
+			bin.write(tmp);
 		}
 		tmp.renameTo(output);
 	}
@@ -3522,8 +3502,7 @@ public class bnd extends Processor {
 		}
 		for (File f : files) {
 			logger.debug("find {}", f);
-			Jar jar = new Jar(f);
-			try {
+			try (Jar jar = new Jar(f)) {
 				Manifest m = jar.getManifest();
 				if (m != null) {
 					Domain domain = Domain.domain(m);
@@ -3555,8 +3534,6 @@ public class bnd extends Processor {
 						}
 					}
 				}
-			} finally {
-				jar.close();
 			}
 		}
 
@@ -3581,12 +3558,10 @@ public class bnd extends Processor {
 		if (!out.getParentFile().isDirectory()) {
 			error("Output file is not in a valid directory: %s", out.getParentFile());
 		}
-		Jar jar = new Jar(name);
-		addClose(jar);
 		List<String> list = options._arguments();
 		Collections.reverse(list);
 
-		try {
+		try (Jar jar = new Jar(name)) {
 			Jar last = null;
 			for (String member : list) {
 				File m = getFile(member);
@@ -3603,8 +3578,6 @@ public class bnd extends Processor {
 				jar.setManifest(last.getManifest());
 			}
 			jar.write(out);
-		} finally {
-			jar.close();
 		}
 	}
 
@@ -3756,8 +3729,7 @@ public class bnd extends Processor {
 		List<String> files = opts._arguments();
 
 		for (String f : files) {
-			BufferedReader r = IO.reader(getFile(f));
-			try {
+			try (BufferedReader r = IO.reader(getFile(f))) {
 				String line;
 				nextLine: while ((line = r.readLine()) != null) {
 					Matcher matcher = LINE_P.matcher(line);
@@ -3804,8 +3776,6 @@ public class bnd extends Processor {
 				}
 			} catch (Exception e) {
 				error("failed to create url list from file %s : %s", f, e);
-			} finally {
-				r.close();
 			}
 		}
 	}

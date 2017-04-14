@@ -72,8 +72,7 @@ public class Index {
 			cache = new TreeMap<String,TreeMap<Version,Library.RevisionRef>>();
 
 			if (indexFile.isFile() && indexFile.length() > 100) {
-				Decoder dec = codec.dec();
-				try {
+				try (Decoder dec = codec.dec()) {
 					repo = dec.from(indexFile).get(new TypeReference<Repo>() {});
 					for (Library.RevisionRef r : repo.revisionRefs) {
 						TreeMap<Version,Library.RevisionRef> map = cache.get(r.bsn);
@@ -84,8 +83,6 @@ public class Index {
 						Version v = toVersion(r.baseline, r.qualifier);
 						map.put(v, r);
 					}
-				} finally {
-					dec.close();
 				}
 			} else {
 				repo = new Repo();
@@ -199,11 +196,8 @@ public class Index {
 
 	public void save(File out) throws Exception {
 		File tmp = IO.createTempFile(out.getParentFile(), out.getName(), ".tmp");
-		FileWriter fout = new FileWriter(tmp);
-		try {
+		try (FileWriter fout = new FileWriter(tmp)) {
 			save(fout);
-		} finally {
-			fout.close();
 		}
 		IO.rename(tmp, out);
 	}

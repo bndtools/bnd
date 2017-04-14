@@ -186,7 +186,7 @@ public class XMLResourceParser extends Processor {
 					depth = Integer.parseInt(depthString);
 				}
 				InputStream in = url.toURL().openStream();
-				try (XMLResourceParser referralParser = new XMLResourceParser(in, urlString, depth, traversed, url);) {
+				try (XMLResourceParser referralParser = new XMLResourceParser(in, urlString, depth, traversed, url)) {
 					referralParser.parse();
 					resources.addAll(referralParser.resources);
 				}

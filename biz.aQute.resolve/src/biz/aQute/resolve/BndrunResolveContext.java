@@ -434,7 +434,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 				try {
 					logger.debug("loading augments from {}", uri);
 					File file = http.build().age(24, TimeUnit.HOURS).useCache().go(uri);
-					try (Jar jar = new Jar(file);) {
+					try (Jar jar = new Jar(file)) {
 						aQute.bnd.osgi.Resource rs = jar.getResource(path);
 						try (InputStream in = rs.openInputStream()) {
 							UTF8Properties p = new UTF8Properties();

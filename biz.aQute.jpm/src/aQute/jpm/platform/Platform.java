@@ -93,14 +93,11 @@ public abstract class Platform {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		Formatter formatter = new Formatter(sb);
-		try {
+		try (Formatter formatter = new Formatter(sb)) {
 			formatter.format("Name                %s%n", getName());
 			formatter.format("Local               %s%n", getLocal());
 			formatter.format("Global              %s%n", getGlobal());
 			return formatter.toString();
-		} finally {
-			formatter.close();
 		}
 	}
 

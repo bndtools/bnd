@@ -18,11 +18,8 @@ public class ParseSignatureBuilder {
 
 	public void add(Jar jar) throws Exception {
 		for (Resource r : jar.getResources().values()) {
-			InputStream in = r.openInputStream();
-			try {
+			try (InputStream in = r.openInputStream()) {
 				parse(in);
-			} finally {
-				in.close();
 			}
 		}
 	}

@@ -193,8 +193,7 @@ public class DiffCommand {
 
 		Instructions packageFilters = new Instructions(options.pack());
 
-		Jar newer = new Jar(bnd.getFile(options._arguments().get(0)));
-		try {
+		try (Jar newer = new Jar(bnd.getFile(options._arguments().get(0)))) {
 			Differ di = new DiffPluginImpl();
 			Tree n = di.tree(newer);
 
@@ -209,9 +208,8 @@ public class DiffCommand {
 				show(pw, n.get("<manifest>"), 0);
 			if (all || options.resources())
 				show(pw, n.get("<resources>"), 0);
-			pw.close();
 		} finally {
-			newer.close();
+			pw.close();
 		}
 
 	}

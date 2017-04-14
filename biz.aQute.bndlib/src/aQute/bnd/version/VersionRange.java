@@ -164,8 +164,7 @@ public class VersionRange {
 	 * Convert to an OSGi filter expression
 	 */
 	public String toFilter(String versionAttribute) {
-		Formatter f = new Formatter();
-		try {
+		try (Formatter f = new Formatter()) {
 			if (high == Version.HIGHEST)
 				return "(" + versionAttribute + ">=" + low + ")";
 			if (isRange()) {
@@ -183,8 +182,6 @@ public class VersionRange {
 				f.format("(%s>=%s)", versionAttribute, getLow());
 			}
 			return f.toString();
-		} finally {
-			f.close();
 		}
 	}
 

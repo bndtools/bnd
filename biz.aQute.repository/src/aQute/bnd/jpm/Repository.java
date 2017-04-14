@@ -805,15 +805,10 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 					get(bsn, version, null);
 
 					File file = getCache().getPath(bsn, version.toString(), resource.revision);
-					Jar binary = new Jar(file);
-					try {
-						try(Jar sources = new Jar(src.getFile(), src.openStream());) {
+					try (Jar binary = new Jar(file); Jar sources = new Jar(src.getFile(), src.openStream())) {
 							binary.setDoNotTouchManifest();
 							binary.addAll(sources, null, "OSGI-OPT/src");
 							binary.write(withSources);
-						}
-					} finally {
-						binary.close();
 					}
 				} catch (Exception e) {
 					throw new RuntimeException(e);
@@ -844,20 +839,12 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 					get(bsn, version, null);
 
 					File file = getCache().getPath(bsn, version.toString(), resource.revision);
-					Jar binary = new Jar(file);
-					try {
-						Jar sources = new Jar(src.getFile(), src.openStream());
-						try {
-							binary.addAll(sources, null, "OSGI-OPT/src");
-							binary.write(withSources);
-						} finally {
-							sources.close();
-						}
-					} finally {
-						binary.close();
+					try (Jar binary = new Jar(file); Jar sources = new Jar(src.getFile(), src.openStream())) {
+						binary.addAll(sources, null, "OSGI-OPT/src");
+						binary.write(withSources);
 					}
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					throw Exceptions.duck(e);
 				}
 			}
 		};
@@ -1106,8 +1093,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	}
 
 	private String repositoryTooltip() throws Exception {
-		Formatter f = new Formatter();
-		try {
+		try (Formatter f = new Formatter()) {
 			f.format("%s\n", this);
 
 			if (depositoryGroup != null && depositoryName != null) {
@@ -1127,16 +1113,13 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			f.format("Dirty          %s\n", index.isDirty());
 
 			return f.toString().trim();
-		} finally {
-			f.close();
 		}
 	}
 
 	private String programTooltip(String bsn) throws Exception {
 		Program p = getProgram(bsn, false);
 		if (p != null) {
-			Formatter sb = new Formatter();
-			try {
+			try (Formatter sb = new Formatter()) {
 				if (p.wiki != null && p.wiki.text != null)
 					sb.format("%s\n", p.wiki.text.replaceAll("#\\s?", ""));
 				else if (p.last.description != null)
@@ -1149,8 +1132,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				}
 				j.wrap((StringBuilder) sb.out());
 				return sb.toString().trim();
-			} finally {
-				sb.close();
 			}
 		}
 		return null;
@@ -1162,8 +1143,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		if (r == null)
 			return null;
 
-		Formatter sb = new Formatter();
-		try {
+		try (Formatter sb = new Formatter()) {
 			sb.format("[%s:%s", r.groupId, r.artifactId);
 
 			if (r.classifier != null) {
@@ -1210,8 +1190,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 
 			j.wrap((StringBuilder) sb.out());
 			return sb.toString().trim();
-		} finally {
-			sb.close();
 		}
 	}
 
@@ -1593,17 +1571,14 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		if (listeners.isEmpty())
 			return;
 
-		Jar jar = new Jar(file);
-		try {
+		try (Jar jar = new Jar(file)) {
 			for (RepositoryListenerPlugin listener : listeners) {
 				try {
 					listener.bundleAdded(this, jar, file);
 				} catch (Exception e) {
 					reporter.error("Repository listener threw an unexpected exception: %s", e, e);
-				} finally {}
+				}
 			}
-		} finally {
-			jar.close();
 		}
 	}
 
@@ -1793,8 +1768,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 	private RevisionRef analyze(File file, URI uri) throws IllegalArgumentException, IOException {
 
 		try {
-			Jar jar = new Jar(file);
-			try {
+			try (Jar jar = new Jar(file)) {
 				Manifest manifest = jar.getManifest();
 				if (manifest == null) {
 					logger.debug("Jar {} has no manifest", uri);
@@ -1879,8 +1853,6 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 						ref.bsn = "unknown";
 				}
 				return ref;
-			} finally {
-				jar.close();
 			}
 		} catch (Exception e) {
 			logger.debug("Could not parse JAR {}: {}", uri, e);
@@ -2185,15 +2157,12 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			File base = project.getBase();
 			for (File sub : base.listFiles()) {
 				if (sub.getName().endsWith(".bndrun")) {
-					Project bndrun = new Project(workspace, base, sub);
-					try {
+					try (Project bndrun = new Project(workspace, base, sub)) {
 						set.addAll(bndrun.getRunbundles());
 						set.addAll(bndrun.getRunpath());
 						set.addAll(bndrun.getTestpath());
 						set.addAll(bndrun.getBootclasspath());
 						set.addAll(bndrun.getClasspath());
-					} finally {
-						bndrun.close();
 					}
 				}
 			}

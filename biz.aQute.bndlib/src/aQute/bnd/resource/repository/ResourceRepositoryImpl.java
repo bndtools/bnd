@@ -409,8 +409,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 			int result = http.getResponseCode();
 			if (result / 100 != 2) {
 				String s = "";
-				InputStream err = http.getErrorStream();
-				try {
+				try (InputStream err = http.getErrorStream()) {
 					if (err != null)
 						s = IO.collect(err);
 					if (result == 404) {
@@ -418,9 +417,6 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 						throw new FileNotFoundException("Cannot find " + url + " : " + s);
 					}
 					throw new IOException("Failed request " + result + ":" + http.getResponseMessage() + " " + s);
-				} finally {
-					if (err != null)
-						err.close();
 				}
 			}
 
@@ -489,13 +485,10 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		File tmp = new File(indexFile.getAbsolutePath() + ".tmp");
 		tmp.getParentFile().mkdirs();
 
-		PrintWriter ps = new PrintWriter(tmp, "UTF-8");
-		try {
+		try (PrintWriter ps = new PrintWriter(tmp, "UTF-8")) {
 			Formatter frm = new Formatter(ps);
 			getIndex().write(frm);
 			frm.close();
-		} finally {
-			ps.close();
 		}
 		IO.rename(tmp, indexFile);
 	}

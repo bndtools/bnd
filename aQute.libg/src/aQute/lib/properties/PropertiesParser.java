@@ -202,8 +202,7 @@ public class PropertiesParser {
 						}
 
 						URI u = input.resolve(uri);
-						Reader inc = IO.reader(u.toURL().openStream());
-						try {
+						try (Reader inc = IO.reader(u.toURL().openStream())) {
 							Properties p = parse(u);
 							for (Enumeration< ? > e = p.propertyNames(); e.hasMoreElements();) {
 								String k = (String) e.nextElement();
@@ -217,8 +216,6 @@ public class PropertiesParser {
 						} catch (Exception e) {
 							if (mandatory)
 								errors += file + "#" + line + ": include not found " + uri + "\n";
-						} finally {
-							inc.close();
 						}
 					}
 

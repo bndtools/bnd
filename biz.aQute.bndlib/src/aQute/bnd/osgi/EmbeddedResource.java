@@ -82,13 +82,10 @@ public class EmbeddedResource implements Resource {
 	}
 
 	public static void build(Jar sub, Resource resource) throws Exception {
-		InputStream in = resource.openInputStream();
-		try {
+		try (InputStream in = resource.openInputStream()) {
 			build(sub, in, resource.lastModified());
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			in.close();
 		}
 	}
 

@@ -145,13 +145,10 @@ public class MavenCommand extends Processor {
 			error("There is no settings file at '%s'", settings.getAbsolutePath());
 			return;
 		}
-		LineCollection lc = new LineCollection(IO.reader(settings));
-		try {
+		try (LineCollection lc = new LineCollection(IO.reader(settings))) {
 			while (lc.hasNext()) {
 				System.err.println(lc.next());
 			}
-		} finally {
-			lc.close();
 		}
 	}
 
@@ -394,11 +391,8 @@ public class MavenCommand extends Processor {
 			jar = new Jar(jarFile);
 		} else {
 			URL url = new URL(spec);
-			InputStream in = url.openStream();
-			try {
+			try (InputStream in = url.openStream()) {
 				jar = new Jar(url.getFile(), in);
-			} finally {
-				in.close();
 			}
 		}
 		addClose(jar);

@@ -1904,12 +1904,9 @@ public class Macro {
 			}
 		}
 
-		Formatter f = new Formatter();
-		try {
+		try (Formatter f = new Formatter()) {
 			f.format(args[1], args2);
 			return f.toString();
-		} finally {
-			f.close();
 		}
 	}
 

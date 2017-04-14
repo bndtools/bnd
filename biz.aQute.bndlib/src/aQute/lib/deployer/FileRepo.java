@@ -374,8 +374,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	protected File putArtifact(File tmpFile, PutOptions options, byte[] digest) throws Exception {
 		assert (tmpFile != null);
 
-		Jar tmpJar = new Jar(tmpFile);
-		try {
+		try (Jar tmpJar = new Jar(tmpFile)) {
 			String bsn = null;
 			if (options != null && options.bsn != null) {
 				bsn = options.bsn;
@@ -438,8 +437,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			logger.debug("updated {}", file.getAbsolutePath());
 
 			return file;
-		} finally {
-			tmpJar.close();
 		}
 	}
 
@@ -466,9 +463,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		 * in the root directory of the repository
 		 */
 		File tmpFile = IO.createTempFile(root, "put", ".jar");
-		try {
-			DigestInputStream dis = new DigestInputStream(stream, MessageDigest.getInstance("SHA-1"));
-			try {
+		try (DigestInputStream dis = new DigestInputStream(stream, MessageDigest.getInstance("SHA-1"))) {
 				IO.copy(dis, tmpFile);
 
 				byte[] digest = dis.getMessageDigest().digest();
@@ -489,9 +484,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				result.artifact = file.toURI();
 
 				return result;
-			} finally {
-				dis.close();
-			}
 		} catch (Exception e) {
 			abortPut(tmpFile);
 			throw e;
@@ -815,22 +807,21 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		exec(beforeGet, root.getAbsolutePath(), bsn, version);
 	}
 
-	protected void fireBundleAdded(File file) {
+	protected void fireBundleAdded(File file) throws Exception {
 		if (registry == null)
 			return;
 		List<RepositoryListenerPlugin> listeners = registry.getPlugins(RepositoryListenerPlugin.class);
-		Jar jar = null;
-		for (RepositoryListenerPlugin listener : listeners) {
-			try {
-				if (jar == null)
-					jar = new Jar(file);
-				listener.bundleAdded(this, jar, file);
-			} catch (Exception e) {
-				if (reporter != null)
-					reporter.warning("Repository listener threw an unexpected exception: %s", e);
-			} finally {
-				if (jar != null)
-					jar.close();
+		if (listeners.isEmpty())
+			return;
+
+		try (Jar jar = new Jar(file)) {
+			for (RepositoryListenerPlugin listener : listeners) {
+				try {
+					listener.bundleAdded(this, jar, file);
+				} catch (Exception e) {
+					if (reporter != null)
+						reporter.warning("Repository listener threw an unexpected exception: %s", e);
+				}
 			}
 		}
 	}

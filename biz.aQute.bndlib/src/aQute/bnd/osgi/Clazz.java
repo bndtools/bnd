@@ -69,11 +69,8 @@ public class Clazz {
 			public Map<String,Set<String>> getProfiles() throws IOException {
 				if (profiles == null) {
 					Properties p = new UTF8Properties();
-					InputStream in = Clazz.class.getResourceAsStream("profiles-" + this + ".properties");
-					try {
+					try (InputStream in = Clazz.class.getResourceAsStream("profiles-" + this + ".properties")) {
 						p.load(in);
-					} finally {
-						in.close();
 					}
 					profiles = new HashMap<String,Set<String>>();
 					for (Map.Entry<Object,Object> prop : p.entrySet()) {
@@ -489,23 +486,18 @@ public class Clazz {
 	}
 
 	public Set<TypeRef> parseClassFileWithCollector(ClassDataCollector cd) throws Exception {
-		InputStream in = resource.openInputStream();
-		try {
+		try (InputStream in = resource.openInputStream()) {
 			return parseClassFile(in, cd);
-		} finally {
-			in.close();
 		}
 	}
 
 	public Set<TypeRef> parseClassFile(InputStream in, ClassDataCollector cd) throws Exception {
-		DataInputStream din = new DataInputStream(in);
-		try {
-			cds.push(this.cd);
-			this.cd = cd;
+		cds.push(this.cd);
+		this.cd = cd;
+		try (DataInputStream din = new DataInputStream(in)) {
 			return parseClassFile(din);
 		} finally {
 			this.cd = cds.pop();
-			din.close();
 		}
 	}
 

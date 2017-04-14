@@ -104,27 +104,21 @@ public class BaselineCommands {
 			if (project != null) {
 				for (Builder b : project.getSubBuilders()) {
 					ProjectBuilder pb = (ProjectBuilder) b;
-					Jar older = pb.getBaselineJar();
-					if (older == null) {
-						bnd.error("No baseline JAR available. Did you set " + Constants.BASELINE);
-						return;
-					}
-					try {
+					try (Jar older = pb.getBaselineJar()) {
+						if (older == null) {
+							bnd.error("No baseline JAR available. Did you set " + Constants.BASELINE);
+							return;
+						}
 						pb.setProperty(Constants.BASELINE, ""); // do not do
 																// baselining in
 																// build
 						// make sure disabling is after getting the baseline jar
 
-						Jar newer = pb.build();
-						try {
+						try (Jar newer = pb.build()) {
 							differ.setIgnore(pb.getProperty(Constants.DIFFIGNORE));
 							baseline(opts, newer, older);
 							bnd.getInfo(b);
-						} finally {
-							newer.close();
 						}
-					} finally {
-						older.close();
 					}
 				}
 				bnd.getInfo(project);

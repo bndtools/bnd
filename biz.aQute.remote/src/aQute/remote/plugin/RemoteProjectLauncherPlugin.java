@@ -230,18 +230,13 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 		if (jmxBundleDeployer != null) {
 			for (String path : this.getRunpath()) {
 				File file = new File(path);
-				try {
-					Jar jar = new Jar(file);
-					try {
+				try (Jar jar = new Jar(file)) {
 						if (bsn.equals(jar.getBsn())) {
 							long bundleId = jmxBundleDeployer.deploy(bsn, file);
 
 							trace("agent installed with bundleId=%s", bundleId);
 							break;
 						}
-					} finally {
-						jar.close();
-					}
 				} catch (Exception e) {
 					//
 				}

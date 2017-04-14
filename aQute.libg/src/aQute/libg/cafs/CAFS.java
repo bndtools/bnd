@@ -218,8 +218,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 				throw new IllegalArgumentException("Store file is too small, need to be at least 256 bytes: " + store);
 		}
 
-		RandomAccessFile in = new RandomAccessFile(new File(home, STOREFILE), "r");
-		try {
+		try (RandomAccessFile in = new RandomAccessFile(new File(home, STOREFILE), "r")) {
 			byte[] signature = new byte[4];
 			in.readFully(signature);
 			if (!Arrays.equals(CAFS, signature))
@@ -241,8 +240,6 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 				ixf.renameTo(indexFile);
 				this.index = new Index(indexFile, KEYLENGTH);
 			}
-		} finally {
-			in.close();
 		}
 	}
 

@@ -475,11 +475,8 @@ public class Analyzer extends Processor {
 
 		Properties p = new UTF8Properties();
 		try {
-			InputStream in = r.openInputStream();
-			try {
+			try (InputStream in = r.openInputStream()) {
 				p.load(in);
-			} finally {
-				in.close();
 			}
 
 			Attrs attrs = new Attrs();
@@ -1256,11 +1253,8 @@ public class Analyzer extends Processor {
 				Properties bndInfoLocal = new UTF8Properties();
 				URL url = Analyzer.class.getResource("bnd.info");
 				if (url != null) {
-					InputStream in = url.openStream();
-					try {
+					try (InputStream in = url.openStream()) {
 						bndInfoLocal.load(in);
-					} finally {
-						in.close();
 					}
 				}
 
@@ -2331,13 +2325,8 @@ public class Analyzer extends Processor {
 					Clazz clazz;
 
 					try {
-						InputStream in = resource.openInputStream();
 						clazz = new Clazz(this, path, resource);
-						try {
-							clazz.parseClassFile();
-						} finally {
-							in.close();
-						}
+						clazz.parseClassFile();
 					} catch (Throwable e) {
 						exception(e, "Invalid class file %s (%s)", relativePath, e);
 						continue next;

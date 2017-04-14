@@ -27,13 +27,10 @@ public class Transform {
 
 		Templates templates = cache.get(xslt.toURI());
 		if (templates == null) {
-			InputStream xsltIn = xslt.openStream();
-			try {
+			try (InputStream xsltIn = xslt.openStream()) {
 				templates = transformerFactory.newTemplates(new StreamSource(xsltIn));
 
 				cache.put(xslt.toURI(), templates);
-			} finally {
-				in.close();
 			}
 		}
 		Result xmlResult = new StreamResult(out);

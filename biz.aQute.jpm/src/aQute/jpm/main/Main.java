@@ -1271,8 +1271,7 @@ public class Main extends ReporterAdapter {
 			logFile.createNewFile();
 		}
 
-		RandomAccessFile raf = new RandomAccessFile(logFile, "r");
-		try {
+		try (RandomAccessFile raf = new RandomAccessFile(logFile, "r")) {
 			long start = Math.max(logFile.length() - 2000, 0);
 			while (true) {
 				long l = raf.length();
@@ -1287,8 +1286,6 @@ public class Main extends ReporterAdapter {
 				if (l == raf.length())
 					Thread.sleep(100);
 			}
-		} finally {
-			raf.close();
 		}
 	}
 
@@ -1461,8 +1458,7 @@ public class Main extends ReporterAdapter {
 	void printPrograms(Iterable< ? extends Program> programs) {
 		Justif j = new Justif(120, 40, 42, 100);
 		StringBuilder sb = new StringBuilder();
-		Formatter f = new Formatter(sb);
-		try {
+		try (Formatter f = new Formatter(sb)) {
 			for (Program p : programs) {
 				if (p.groupId.equals(Library.OSGI_GROUP) || p.groupId.equals(Library.SHA_GROUP))
 					f.format("%s", p.artifactId);
@@ -1481,8 +1477,6 @@ public class Main extends ReporterAdapter {
 			}
 			j.wrap(sb);
 			out.println(sb);
-		} finally {
-			f.close();
 		}
 	}
 
@@ -1502,8 +1496,7 @@ public class Main extends ReporterAdapter {
 			return;
 		}
 		Justif j = new Justif(140, 40, 70, 82, 100, 120);
-		Formatter f = j.formatter();
-		try {
+		try (Formatter f = j.formatter()) {
 			for (Revision r : revisions) {
 				f.format("[%s] ", r.phase.getIdentifier());
 				if (r.groupId.equals(Library.OSGI_GROUP) || r.groupId.equals(Library.SHA_GROUP))
@@ -1519,8 +1512,6 @@ public class Main extends ReporterAdapter {
 				f.format("\n");
 			}
 			out.println(j.wrap());
-		} finally {
-			f.close();
 		}
 	}
 

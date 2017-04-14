@@ -892,7 +892,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 						if (f.getName().endsWith(".mf"))
 							m = new Manifest(fin);
 						else {
-							try (JarInputStream jin = new JarInputStream(fin);) {
+							try (JarInputStream jin = new JarInputStream(fin)) {
 								m = jin.getManifest();
 							}
 						}
