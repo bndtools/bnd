@@ -43,17 +43,7 @@
         </dependency>
         <dependency>
             <groupId>biz.aQute.bnd</groupId>
-            <artifactId>bnd-maven-plugin</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>biz.aQute.bnd</groupId>
             <artifactId>bnd-shared-maven-lib</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>biz.aQute.bnd</groupId>
-            <artifactId>bnd-indexer-maven-plugin</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
