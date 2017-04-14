@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>biz.aQute.bnd</groupId>
 		<artifactId>bnd-plugin-parent</artifactId>
-		<version>3.4.0-SNAPSHOT</version>
+		<version>${revision}</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>bnd-shared-maven-lib</artifactId>
