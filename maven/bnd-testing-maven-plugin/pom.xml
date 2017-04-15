@@ -4,7 +4,7 @@
     <parent>
         <groupId>biz.aQute.bnd</groupId>
         <artifactId>bnd-plugin-parent</artifactId>
-        <version>3.4.0-SNAPSHOT</version>
+        <version>${revision}</version>
         <relativePath>..</relativePath>
     </parent>
     <artifactId>bnd-testing-maven-plugin</artifactId>
@@ -43,17 +43,7 @@
         </dependency>
         <dependency>
             <groupId>biz.aQute.bnd</groupId>
-            <artifactId>bnd-maven-plugin</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>biz.aQute.bnd</groupId>
             <artifactId>bnd-shared-maven-lib</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>biz.aQute.bnd</groupId>
-            <artifactId>bnd-indexer-maven-plugin</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
