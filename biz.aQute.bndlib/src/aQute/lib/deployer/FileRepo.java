@@ -424,6 +424,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			tmpJar.close();
 
 			dirty = true;
+			if (file.isFile() && !file.canWrite()) {
+				// older versions of this class made file readonly
+				file.setWritable(true);
+			}
 			IO.rename(tmpFile, file);
 
 			fireBundleAdded(file);
@@ -477,7 +481,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				 */
 				beforePut(tmpFile);
 				File file = putArtifact(tmpFile, options, digest);
-				file.setReadOnly();
 
 				PutResult result = new PutResult();
 				result.digest = digest;
