@@ -17,7 +17,7 @@ public class LineCollection implements Iterator<String>, Closeable {
 	private String					next;
 
 	public LineCollection(InputStream in) throws IOException {
-		this(new InputStreamReader(in, "UTF8"));
+		this(new InputStreamReader(in, "UTF-8"));
 	}
 
 	public LineCollection(File in) throws IOException {

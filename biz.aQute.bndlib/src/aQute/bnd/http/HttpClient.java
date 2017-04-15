@@ -646,7 +646,7 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	public void setLog(File log) throws IOException {
-		log.getParentFile().mkdirs();
+		IO.mkdirs(log.getParentFile());
 		reporter = new ReporterAdapter(IO.writer(log));
 	}
 

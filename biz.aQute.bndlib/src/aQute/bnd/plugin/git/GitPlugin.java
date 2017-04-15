@@ -39,8 +39,7 @@ public class GitPlugin extends LifeCyclePlugin {
 	}
 
 	private void touch(File dir) throws IOException {
-		if (!dir.isDirectory())
-			dir.mkdirs();
+		IO.mkdirs(dir);
 		IO.store("", new File(dir, GITIGNORE));
 	}
 

@@ -90,9 +90,7 @@ public class MavenCommand extends Processor {
 
 		logger.debug("temp dir {}", temp);
 		IO.delete(temp);
-		if (!temp.exists() && !temp.mkdirs()) {
-			throw new IOException("Could not create directory " + temp);
-		}
+		IO.mkdirs(temp);
 		if (!temp.isDirectory())
 			throw new IOException("Cannot create temp directory");
 
@@ -234,9 +232,7 @@ public class MavenCommand extends Processor {
 		}
 
 		File original = getFile(temp, "original");
-		if (!original.exists() && !original.mkdirs()) {
-			throw new IOException("Could not create directory " + original);
-		}
+		IO.mkdirs(original);
 		binaryJar.expand(original);
 		binaryJar.calcChecksums(null);
 
@@ -298,9 +294,7 @@ public class MavenCommand extends Processor {
 
 		logger.debug("creating bundle dir");
 		File bundle = new File(temp, "bundle");
-		if (!bundle.exists() && !bundle.mkdirs()) {
-			throw new IOException("Could not create directory " + bundle);
-		}
+		IO.mkdirs(bundle);
 
 		String prefix = pom.getArtifactId() + "-" + pom.getVersion();
 		File binaryFile = new File(bundle, prefix + ".jar");
@@ -402,7 +396,7 @@ public class MavenCommand extends Processor {
 	private void sign(File file, String passphrase) throws Exception {
 		logger.debug("signing {}", file);
 		File asc = new File(file.getParentFile(), file.getName() + ".asc");
-		asc.delete();
+		IO.delete(asc);
 
 		Command command = new Command();
 		command.setTrace();
@@ -423,9 +417,7 @@ public class MavenCommand extends Processor {
 
 	private Jar javadoc(File source, Set<String> exports, Manifest m, Properties p) throws Exception {
 		File tmp = new File(temp, "javadoc");
-		if (!tmp.exists() && !tmp.mkdirs()) {
-			throw new IOException("Could not create directory " + tmp);
-		}
+		IO.mkdirs(tmp);
 
 		Command command = new Command();
 		command.add(getProperty("javadoc", "javadoc"));

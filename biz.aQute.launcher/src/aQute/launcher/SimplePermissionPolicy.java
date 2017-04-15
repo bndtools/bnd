@@ -3,7 +3,6 @@ package aQute.launcher;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +14,8 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.SynchronousBundleListener;
 import org.osgi.service.permissionadmin.PermissionAdmin;
 import org.osgi.service.permissionadmin.PermissionInfo;
+
+import aQute.lib.io.IO;
 
 /**
  * Implements a permissionpolicy. It will tried to read a resource from the
@@ -55,18 +56,14 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 			return;
 		}
 		// Set the default permissions.
-		InputStream in = getClass().getResourceAsStream(DEFAULT_PERMISSION_RESOURCE);
-		if (in != null) {
-			PermissionInfo[] info;
-			try {
-				info = parse(in);
-			} finally {
-				in.close();
+		try (InputStream in = getClass().getResourceAsStream(DEFAULT_PERMISSION_RESOURCE)) {
+			if (in != null) {
+				PermissionInfo[] info = parse(in);
+				permissionAdmin.setDefaultPermissions(info);
+				launcher.trace("Found default permission resource %s", DEFAULT_PERMISSION_RESOURCE);
+			} else {
+				launcher.trace("No default permission resource %s", DEFAULT_PERMISSION_RESOURCE);
 			}
-			permissionAdmin.setDefaultPermissions(info);
-			launcher.trace("Found default permission resource %s", DEFAULT_PERMISSION_RESOURCE);
-		} else {
-			launcher.trace("No default permission resource %s", DEFAULT_PERMISSION_RESOURCE);
 		}
 		//
 		// Set this bundles permissions.
@@ -123,8 +120,7 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 		PermissionInfo[] info = null;
 		if (in != null) {
 			List<PermissionInfo> permissions = new ArrayList<PermissionInfo>();
-			try {
-				BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF8"));
+			try (BufferedReader reader = IO.reader(in, "UTF-8")) {
 				String line;
 				while ((line = reader.readLine()) != null) {
 					line = line.trim();
@@ -137,8 +133,6 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 						System.err.println("Permission incorrectly encoded: " + line + " " + iae);
 					}
 				}
-			} finally {
-				in.close();
 			}
 			int size = permissions.size();
 			if (size > 0) {

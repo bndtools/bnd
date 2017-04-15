@@ -59,7 +59,7 @@ class P2Indexer implements Closeable {
 		this.client = client;
 		this.url = url;
 		this.name = name;
-		this.location.mkdirs();
+		IO.mkdirs(this.location);
 
 		validate();
 

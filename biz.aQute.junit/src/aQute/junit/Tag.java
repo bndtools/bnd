@@ -270,7 +270,7 @@ public class Tag {
 	private void copyURL(PrintWriter pw, URL url) {
 		try {
 			try (InputStream in = url.openStream();
-					BufferedReader rdr = new BufferedReader(new InputStreamReader(in, "UTF8"))) {
+					BufferedReader rdr = new BufferedReader(new InputStreamReader(in, "UTF-8"))) {
 				String line = rdr.readLine();
 				if (line != null) {
 					while (line != null && line.trim().startsWith("<?"))

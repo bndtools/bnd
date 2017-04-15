@@ -24,7 +24,6 @@ import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
 import aQute.bnd.deployer.repository.api.IRepositoryIndexProcessor;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
-import aQute.lib.io.IO;
 import aQute.libg.generics.Create;
 
 public final class RepoResourceUtils {
@@ -35,57 +34,49 @@ public final class RepoResourceUtils {
 			Collection<IRepositoryContentProvider> contentProviders, IRepositoryIndexProcessor listener, LogService log)
 					throws Exception {
 		// Make sure we have a buffering stream
-		InputStream bufferedStream;
-		if (stream.markSupported())
-			bufferedStream = stream;
-		else
-			bufferedStream = new BufferedInputStream(stream);
+		try (InputStream bufferedStream = stream.markSupported() ? stream : new BufferedInputStream(stream)) {
+			// Find a compatible content provider for the input
+			IRepositoryContentProvider selectedProvider = null;
+			IRepositoryContentProvider maybeSelectedProvider = null;
+			for (IRepositoryContentProvider provider : contentProviders) {
+				CheckResult checkResult;
+				try {
+					bufferedStream.mark(READ_AHEAD_MAX);
+					checkResult = provider.checkStream(name, new ProtectedStream(bufferedStream));
+				} finally {
+					bufferedStream.reset();
+				}
 
-		// Find a compatible content provider for the input
-		IRepositoryContentProvider selectedProvider = null;
-		IRepositoryContentProvider maybeSelectedProvider = null;
-		for (IRepositoryContentProvider provider : contentProviders) {
-			CheckResult checkResult;
-			try {
-				bufferedStream.mark(READ_AHEAD_MAX);
-				checkResult = provider.checkStream(name, new ProtectedStream(bufferedStream));
-			} finally {
-				bufferedStream.reset();
+				if (checkResult.getDecision() == Decision.accept) {
+					selectedProvider = provider;
+					break;
+				} else if (checkResult.getDecision() == Decision.undecided) {
+					log.log(LogService.LOG_WARNING,
+							String.format(
+									"Content provider '%s' was unable to determine compatibility with index at URL '%s': %s",
+									provider.getName(), baseUri, checkResult.getMessage()));
+					if (maybeSelectedProvider == null)
+						maybeSelectedProvider = provider;
+				}
 			}
 
-			if (checkResult.getDecision() == Decision.accept) {
-				selectedProvider = provider;
-				break;
-			} else if (checkResult.getDecision() == Decision.undecided) {
-				log.log(LogService.LOG_WARNING,
-						String.format(
-								"Content provider '%s' was unable to determine compatibility with index at URL '%s': %s",
-								provider.getName(), baseUri, checkResult.getMessage()));
-				if (maybeSelectedProvider == null)
-					maybeSelectedProvider = provider;
+			// If no provider answered definitively, fall back to the first
+			// undecided provider, with an appropriate warning.
+			if (selectedProvider == null) {
+				if (maybeSelectedProvider != null) {
+					selectedProvider = maybeSelectedProvider;
+					log.log(LogService.LOG_WARNING,
+							String.format(
+									"No content provider matches the specified index unambiguously. Selected '%s' arbitrarily.",
+									selectedProvider.getName()));
+				} else {
+					throw new IOException(
+							"Invalid repository index: no configured content provider understands the specified index.");
+				}
 			}
-		}
 
-		// If no provider answered definitively, fall back to the first
-		// undecided provider, with an appropriate warning.
-		if (selectedProvider == null) {
-			if (maybeSelectedProvider != null) {
-				selectedProvider = maybeSelectedProvider;
-				log.log(LogService.LOG_WARNING,
-						String.format(
-								"No content provider matches the specified index unambiguously. Selected '%s' arbitrarily.",
-								selectedProvider.getName()));
-			} else {
-				throw new IOException(
-						"Invalid repository index: no configured content provider understands the specified index.");
-			}
-		}
-
-		// Finally, parse the damn file.
-		try {
+			// Finally, parse the damn file.
 			selectedProvider.parseIndex(bufferedStream, baseUri, listener, log);
-		} finally {
-			IO.close(bufferedStream);
 		}
 	}
 

@@ -3,10 +3,6 @@ package aQute.bnd.maven.indexer.plugin;
 import static java.util.Arrays.asList;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PROCESS_RESOURCES;
 
-import aQute.bnd.osgi.repository.ResourcesRepository;
-import aQute.bnd.osgi.repository.XMLResourceGenerator;
-import aQute.bnd.osgi.resource.ResourceBuilder;
-
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
@@ -20,6 +16,11 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import aQute.bnd.osgi.repository.ResourcesRepository;
+import aQute.bnd.osgi.repository.XMLResourceGenerator;
+import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.lib.io.IO;
 
 /**
  * Exports project dependencies to OSGi R5 index format.
@@ -64,8 +65,6 @@ public class LocalIndexerMojo extends AbstractMojo {
 		Set<File> toIndex = new HashSet<>();
 		toIndex.addAll(asList(inputDir.listFiles()));
 
-		outputFile.getParentFile().mkdirs();
-
 		BaseFileURLResolver baseFileURLResolver = new BaseFileURLResolver();
 		ResourcesRepository resourcesRepository = new ResourcesRepository();
 		XMLResourceGenerator xmlResourceGenerator = new XMLResourceGenerator();
@@ -81,6 +80,7 @@ public class LocalIndexerMojo extends AbstractMojo {
 		}
 
 		try {
+			IO.mkdirs(outputFile.getParentFile());
 			xmlResourceGenerator.repository(resourcesRepository).save(outputFile);
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);

@@ -252,7 +252,7 @@ public abstract class Platform {
 			parseCompletion(target, tmp);
 			IO.copy(tmp, out);
 		} finally {
-			tmp.delete();
+			IO.delete(tmp);
 		}
 	}
 

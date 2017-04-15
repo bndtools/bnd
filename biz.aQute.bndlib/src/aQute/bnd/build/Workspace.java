@@ -233,9 +233,7 @@ public class Workspace extends Processor {
 
 	public void setFileSystem(File workspaceDir, String bndDir) throws Exception {
 		workspaceDir = workspaceDir.getAbsoluteFile();
-		if (!workspaceDir.exists() && !workspaceDir.mkdirs()) {
-			throw new IOException("Could not create directory " + workspaceDir);
-		}
+		IO.mkdirs(workspaceDir);
 		assert workspaceDir.isDirectory();
 
 		synchronized (cache) {
@@ -463,9 +461,7 @@ public class Workspace extends Processor {
 			try {
 				if (super.init()) {
 					inited = true;
-					if (!root.exists() && !root.mkdirs()) {
-						throw new IOException("Could not create cache directory " + root);
-					}
+					IO.mkdirs(root);
 					if (!root.isDirectory())
 						throw new IllegalArgumentException("Cache directory " + root + " not a directory");
 
@@ -512,9 +508,7 @@ public class Workspace extends Processor {
 					long modifiedTime = ZipUtil.getModifiedTime(jentry);
 					if (!dest.isFile() || dest.lastModified() < modifiedTime || modifiedTime <= 0) {
 						File dp = dest.getParentFile();
-						if (!dp.exists() && !dp.mkdirs()) {
-							throw new IOException("Could not create directory " + dp);
-						}
+						IO.mkdirs(dp);
 						try (OutputStream out = IO.outputStream(dest)) {
 							for (int size = jin.read(data); size > 0; size = jin.read(data)) {
 								out.write(data, 0, size);
@@ -522,8 +516,6 @@ public class Workspace extends Processor {
 						}
 					}
 				}
-			} finally {
-				in.close();
 			}
 		}
 	}
@@ -1027,18 +1019,18 @@ public class Workspace extends Processor {
 		}
 
 		File pdir = getFile(name);
-		pdir.mkdirs();
+		IO.mkdirs(pdir);
 
 		IO.store("#\n#   " + name.toUpperCase().replace('.', ' ') + "\n#\n", getFile(pdir, Project.BNDFILE));
 		Project p = new Project(this, pdir);
 
-		p.getTarget().mkdirs();
-		p.getOutput().mkdirs();
-		p.getTestOutput().mkdirs();
+		IO.mkdirs(p.getTarget());
+		IO.mkdirs(p.getOutput());
+		IO.mkdirs(p.getTestOutput());
 		for (File dir : p.getSourcePath()) {
-			dir.mkdirs();
+			IO.mkdirs(dir);
 		}
-		p.getTestSrc().mkdirs();
+		IO.mkdirs(p.getTestSrc());
 
 		for (LifeCyclePlugin l : getPlugins(LifeCyclePlugin.class))
 			l.created(p);
@@ -1060,13 +1052,13 @@ public class Workspace extends Processor {
 		if (wsdir.exists())
 			return null;
 
-		wsdir.mkdirs();
+		IO.mkdirs(wsdir);
 		File cnf = IO.getFile(wsdir, CNFDIR);
-		cnf.mkdir();
+		IO.mkdirs(cnf);
 		IO.store("", new File(cnf, BUILDFILE));
 		IO.store("-nobundles: true\n", new File(cnf, Project.BNDFILE));
 		File ext = new File(cnf, EXT);
-		ext.mkdir();
+		IO.mkdirs(ext);
 		Workspace ws = getWorkspace(wsdir);
 
 		return ws;
@@ -1099,7 +1091,7 @@ public class Workspace extends Processor {
 		}
 
 		File ext = getFile(Workspace.CNFDIR + "/" + Workspace.EXT);
-		ext.mkdirs();
+		IO.mkdirs(ext);
 
 		File f = new File(ext, alias + ".bnd");
 

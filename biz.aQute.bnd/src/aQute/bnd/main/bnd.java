@@ -578,9 +578,7 @@ public class bnd extends Processor {
 			if (opts.cdir() != null)
 				store = getFile(opts.cdir());
 
-			if (!store.exists() && !store.mkdirs()) {
-				throw new IOException("Could not create directory " + store);
-			}
+			IO.mkdirs(store);
 			Jar.Compression compression = jar.hasCompression();
 			for (String path : selected) {
 				if (opts.verbose())
@@ -588,9 +586,7 @@ public class bnd extends Processor {
 
 				File f = getFile(store, path);
 				File pf = f.getParentFile();
-				if (!pf.exists() && !pf.mkdirs()) {
-					throw new IOException("Could not create directory " + pf);
-				}
+				IO.mkdirs(pf);
 				Resource r = jar.getResource(path);
 				IO.copy(r.openInputStream(), f);
 			}
@@ -700,7 +696,7 @@ public class bnd extends Processor {
 				}
 				getInfo(bb, bb.getBsn() + ": "); // pickup any save errors
 				if (!isOk()) {
-					out.delete();
+					IO.delete(out);
 				}
 			}
 		}
@@ -1104,14 +1100,10 @@ public class bnd extends Processor {
 			output = getBase();
 
 		if (opts._arguments().size() > 1) {
-			if (!output.exists() && !output.mkdirs()) {
-				throw new IOException("Could not create directory " + output);
-			}
+			IO.mkdirs(output);
 		} else {
 			File pf = output.getParentFile();
-			if (!pf.exists() && !pf.mkdirs()) {
-				throw new IOException("Could not create directory " + pf);
-			}
+			IO.mkdirs(pf);
 		}
 
 		String profile = opts.profile() == null ? "exec" : opts.profile();
@@ -1358,22 +1350,22 @@ public class bnd extends Processor {
 							if (filter.matches(ref.toString())) {
 								set.add(ref);
 
-								InputStream in = r.openInputStream();
-								Clazz clazz = new Clazz(analyzer, key, r);
+								try (InputStream in = r.openInputStream()) {
+									Clazz clazz = new Clazz(analyzer, key, r);
 
-								// TODO use the proper bcp instead
-								// of using the default layout
-								Set<TypeRef> s = clazz.parseClassFile();
-								for (Iterator<TypeRef> t = s.iterator(); t.hasNext();) {
-									TypeRef tr = t.next();
-									if (tr.isJava() || tr.isPrimitive())
-										t.remove();
-									else
-										packages.add(ref.getPackageRef(), tr.getPackageRef());
+									// TODO use the proper bcp instead
+									// of using the default layout
+									Set<TypeRef> s = clazz.parseClassFile();
+									for (Iterator<TypeRef> t = s.iterator(); t.hasNext();) {
+										TypeRef tr = t.next();
+										if (tr.isJava() || tr.isPrimitive())
+											t.remove();
+										else
+											packages.add(ref.getPackageRef(), tr.getPackageRef());
+									}
+									table.addAll(ref, s);
+									set.addAll(s);
 								}
-								table.addAll(ref, s);
-								set.addAll(s);
-								in.close();
 							}
 						}
 					}
@@ -1697,7 +1689,7 @@ public class bnd extends Processor {
 							file);
 					return;
 				}
-				outputFile.delete();
+				IO.delete(outputFile);
 
 				String stem = file.getName();
 				if (stem.endsWith(".jar"))
@@ -2308,9 +2300,7 @@ public class bnd extends Processor {
 			if (opts.reportdir() != null) {
 				reportDir = getFile(opts.reportdir());
 			}
-			if (!reportDir.exists() && !reportDir.mkdirs()) {
-				throw new IOException("Could not create directory " + reportDir);
-			}
+			IO.mkdirs(reportDir);
 
 			if (!reportDir.isDirectory())
 				error("reportdir must be a directory %s (tried to create it ...)", reportDir);
@@ -2385,9 +2375,7 @@ public class bnd extends Processor {
 	 */
 	private int runtTest(File testFile, Workspace ws, File reportDir, Tag summary) throws Exception {
 		File tmpDir = new File(reportDir, "tmp");
-		if (!tmpDir.exists() && !tmpDir.mkdirs()) {
-			throw new IOException("Could not create directory " + tmpDir);
-		}
+		IO.mkdirs(tmpDir);
 		tmpDir.deleteOnExit();
 
 		Tag test = new Tag(summary, "test");
@@ -2421,7 +2409,7 @@ public class bnd extends Processor {
 			for (File report : reports) {
 				Tag bundle = new Tag(test, "bundle");
 				File dest = new File(reportDir, report.getName());
-				report.renameTo(dest);
+				IO.rename(report, dest);
 				bundle.addAttribute("file", dest.getAbsolutePath());
 				doPerReport(bundle, dest);
 			}
@@ -2605,7 +2593,7 @@ public class bnd extends Processor {
 				bin.putResource("OSGI-OPT/src/" + path, src.getResource(path));
 			bin.write(tmp);
 		}
-		tmp.renameTo(output);
+		IO.rename(tmp, output);
 	}
 
 	/**
@@ -3358,7 +3346,7 @@ public class bnd extends Processor {
 			sed.doIt();
 			IO.copy(tmp, out);
 		} finally {
-			tmp.delete();
+			IO.delete(tmp);
 		}
 	}
 
@@ -3871,7 +3859,7 @@ public class bnd extends Processor {
 				error("Multiple files require that the output is a directory");
 				return;
 			}
-			dest.mkdir();
+			IO.mkdirs(dest);
 		}
 
 		for (String f : files) {
@@ -3913,8 +3901,7 @@ public class bnd extends Processor {
 			jar.write(tmp);
 			jar.close();
 
-			if (!tmp.renameTo(out))
-				error("Could not rename file %s to %s", tmp, out);
+			IO.rename(tmp, out);
 		}
 
 	}
@@ -4176,7 +4163,7 @@ public class bnd extends Processor {
 					File output = new File(project.getTarget(), opts.output() == null ? name : opts.output());
 					if (output.isDirectory())
 						output = new File(output, name);
-					output.getParentFile().mkdirs();
+					IO.mkdirs(output.getParentFile());
 					logger.debug("Got a result for {}, store in {}", e.getKey(), output);
 					IO.copy(result.getValue().openInputStream(), output);
 				}
@@ -4209,7 +4196,7 @@ public class bnd extends Processor {
 		}
 
 		File destination = getFile(outputPath);
-		destination.getParentFile().mkdirs();
+		IO.mkdirs(destination.getParentFile());
 
 		if (!destination.getParentFile().isDirectory()) {
 			error("Could not create directory for output file %s", outputPath);

@@ -116,9 +116,7 @@ public class MavenDeployCmd extends Processor {
 				Parameters exports = project
 						.parseHeader(manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
 				File jdoc = new File(tmp, "jdoc");
-				if (!jdoc.exists() && !jdoc.mkdirs()) {
-					throw new IOException("Could not create directory " + jdoc);
-				}
+				IO.mkdirs(jdoc);
 				logger.info(LIFECYCLE, "Generating Javadoc for: {}", exports.keySet());
 				Jar javadoc = javadoc(jdoc, project, exports.keySet());
 				logger.info(LIFECYCLE, "Writing javadoc jar");

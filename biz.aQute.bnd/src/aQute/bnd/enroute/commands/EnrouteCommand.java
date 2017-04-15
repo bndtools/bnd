@@ -1,7 +1,6 @@
 package aQute.bnd.enroute.commands;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Formatter;
 import java.util.List;
@@ -122,12 +121,12 @@ public class EnrouteCommand {
 		}
 
 		File eclipseDir = workspaceDir;
-		workspaceDir.mkdirs();
+		IO.mkdirs(workspaceDir);
 
 		if (!opts.single())
 			workspaceDir = new File(workspaceDir, "scm");
 
-		workspaceDir.mkdirs();
+		IO.mkdirs(workspaceDir);
 
 		if (!base.isDirectory()) {
 			bnd.error("Could not create directory for the bnd workspace %s", base);
@@ -186,9 +185,7 @@ public class EnrouteCommand {
 					logger.debug("copy {} to {}", path, dest);
 
 					File dp = dest.getParentFile();
-					if (!dp.exists() && !dp.mkdirs()) {
-						throw new IOException("Could not create directory " + dp);
-					}
+					IO.mkdirs(dp);
 
 					IO.copy(r.openInputStream(), dest);
 				}

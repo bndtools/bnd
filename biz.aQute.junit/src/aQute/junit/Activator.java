@@ -181,7 +181,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		if (!reportDir.exists() && !reportDir.mkdirs()) {
 			throw new IOException("Could not create directory " + reportDir);
 		}
-		trace("using %s, needed creation %s", reportDir, reportDir.mkdirs());
+		trace("using %s", reportDir);
 
 		trace("adding Bundle Listener for getting test bundle events");
 		context.addBundleListener(new SynchronousBundleListener() {

@@ -24,6 +24,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 import aQute.lib.index.Index;
+import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA1;
 
 /**
@@ -76,12 +77,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 		this.home = home;
 		if (!home.isDirectory()) {
 			if (create) {
-				if (home.exists()) {
-					throw new IOException(home + " is not a directory");
-				}
-				if (!home.mkdirs()) {
-					throw new IOException("Could not create directory " + home);
-				}
+				IO.mkdirs(home);
 			} else
 				throw new IllegalArgumentException("CAFS requires a directory with create=false");
 		}
@@ -237,7 +233,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 			synchronized (store) {
 				index.close();
 				File indexFile = new File(home, INDEXFILE);
-				ixf.renameTo(indexFile);
+				IO.rename(ixf, indexFile);
 				this.index = new Index(indexFile, KEYLENGTH);
 			}
 		}
@@ -269,9 +265,9 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 		byte[] buffer = new byte[compressedSize];
 		in.readFully(buffer);
 
-		InputStream xin = getSha1Stream(sha1, buffer, uncompressedSize);
-		xin.skip(uncompressedSize);
-		xin.close();
+		try (InputStream xin = getSha1Stream(sha1, buffer, uncompressedSize)) {
+			xin.skip(uncompressedSize);
+		}
 		return sha1;
 	}
 

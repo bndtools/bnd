@@ -99,7 +99,7 @@ public class FileResource implements Resource, Closeable {
 
 	public void close() throws IOException {
 		if (deleteOnClose)
-			file.delete();
+			IO.delete(file);
 	}
 
 	public void deleteOnClose(boolean b) {
@@ -108,12 +108,5 @@ public class FileResource implements Resource, Closeable {
 
 	public File getFile() {
 		return file;
-	}
-
-	@Override
-	protected void finalize() throws Throwable {
-		if (deleteOnClose)
-			file.delete();
-		super.finalize();
 	}
 }

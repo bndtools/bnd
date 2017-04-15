@@ -75,8 +75,8 @@ class OSGiIndex {
 		});
 	}
 
-	private static File checkCache(File cache) {
-		cache.mkdirs();
+	private static File checkCache(File cache) throws Exception {
+		IO.mkdirs(cache);
 		if (!cache.isDirectory())
 			throw new IllegalArgumentException("Cannot create directory for " + cache);
 		return cache;

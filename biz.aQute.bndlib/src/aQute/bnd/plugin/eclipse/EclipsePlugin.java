@@ -47,7 +47,7 @@ public class EclipsePlugin extends LifeCyclePlugin {
 		String s = IO.collect(in);
 		String process = p.getReplacer().process(s);
 
-		d.getParentFile().mkdirs();
+		IO.mkdirs(d.getParentFile());
 		IO.store(process, d);
 	}
 

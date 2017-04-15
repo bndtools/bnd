@@ -34,7 +34,7 @@ public class Service {
 			if (!force)
 				return "Already running";
 
-			lock.delete();
+			IO.delete(lock);
 			Thread.sleep(2000);
 		}
 
@@ -54,7 +54,7 @@ public class Service {
 						return null;
 
 				}
-				lock.delete();
+				IO.delete(lock);
 				return "Could not establish a link to the service, likely failed to start";
 			} catch (Throwable t) {
 				IO.delete(lock);
@@ -79,7 +79,7 @@ public class Service {
 				}
 				return "Lock was not deleted by service in time (waited 10 secs)";
 			} finally {
-				lock.delete();
+				IO.delete(lock);
 			}
 		}
 		return "Not running";
@@ -174,8 +174,13 @@ public class Service {
 
 	public void clear() {
 		IO.delete(new File(data.log));
-		IO.delete(new File(data.work));
-		new File(data.work).mkdir();
+		File work = new File(data.work);
+		IO.delete(work);
+		try {
+			IO.mkdirs(work);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }

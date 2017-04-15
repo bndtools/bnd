@@ -300,7 +300,7 @@ public class Project extends Processor {
 					}
 
 					if (!dir.isDirectory()) {
-						dir.mkdirs();
+						IO.mkdirs(dir);
 					}
 
 					if (dir.isDirectory()) {
@@ -315,9 +315,7 @@ public class Project extends Processor {
 				// Set default bin directory
 				output = getSrcOutput().getAbsoluteFile();
 				if (!output.exists()) {
-					if (!output.mkdirs()) {
-						throw new IOException("Could not create directory " + output);
-					}
+					IO.mkdirs(output);
 					getWorkspace().changedFile(output);
 				}
 				if (!output.isDirectory()) {
@@ -403,9 +401,7 @@ public class Project extends Processor {
 	private File getTarget0() throws IOException {
 		File target = getTargetDir();
 		if (!target.exists()) {
-			if (!target.mkdirs()) {
-				throw new IOException("Could not create directory " + target);
-			}
+			IO.mkdirs(target);
 			getWorkspace().changedFile(target);
 		}
 		return target;
@@ -1804,12 +1800,10 @@ public class Project extends Processor {
 			String msg = "";
 			if (!f.exists() || f.lastModified() < jar.lastModified()) {
 				reportNewer(f.lastModified(), jar);
-				f.delete();
+				IO.deleteWithException(f);
 				File fp = f.getParentFile();
 				if (!fp.isDirectory()) {
-					if (!fp.exists() && !fp.mkdirs()) {
-						throw new IOException("Could not create directory " + fp);
-					}
+					IO.mkdirs(fp);
 				}
 				jar.write(f);
 
@@ -2004,7 +1998,7 @@ public class Project extends Processor {
 		}
 		packageProject.clear();
 
-		outputDir.mkdirs();
+		IO.mkdirs(outputDir);
 		Collection<Container> runbundles = packageProject.getRunbundles();
 		Path outputPath = outputDir.toPath();
 		for (Container container : runbundles) {
@@ -2069,7 +2063,7 @@ public class Project extends Processor {
 			return;
 		}
 
-		dir.mkdirs();
+		IO.mkdirs(dir);
 	}
 
 	public File[] build() throws Exception {

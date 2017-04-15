@@ -59,7 +59,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 		this.executor = executor == null ? Executors.newCachedThreadPool() : executor;
 		this.localOnly = this.release.isEmpty() && this.snapshot.isEmpty();
-		base.mkdirs();
+		IO.mkdirs(base);
 	}
 
 	@Override

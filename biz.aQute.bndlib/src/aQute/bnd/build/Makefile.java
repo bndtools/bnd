@@ -81,7 +81,7 @@ class Makefile extends Processor {
 					logger.debug("{} stderr: {}", name, errors);
 
 				if (result != 0) {
-					target.delete();
+					IO.delete(target);
 					boolean found = false;
 					if (report != null) {
 						found |= parseErrors(report, errors);
@@ -98,7 +98,7 @@ class Makefile extends Processor {
 				}
 			} catch (Exception e) {
 				exception(e, "%s: -prepare", name);
-				target.delete();
+				IO.delete(target);
 			}
 		}
 

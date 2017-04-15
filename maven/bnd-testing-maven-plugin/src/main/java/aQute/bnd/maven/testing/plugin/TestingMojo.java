@@ -24,6 +24,7 @@ import aQute.bnd.maven.lib.resolve.DependencyResolver;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.io.IO;
 import aQute.libg.glob.Glob;
 import biz.aQute.resolve.Bndrun;
 
@@ -124,7 +125,7 @@ public class TestingMojo extends AbstractMojo {
 		String bndrun = getNamePart(runFile);
 		File workingDir = new File(cwd, bndrun);
 		File cnf = new File(workingDir, Workspace.CNFDIR);
-		cnf.mkdirs();
+		IO.mkdirs(cnf);
 		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
 			run.setBase(workingDir);
 			Workspace workspace = run.getWorkspace();

@@ -18,7 +18,6 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -26,10 +25,18 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.FileVisitOption;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -102,7 +109,7 @@ public class IO {
 	}
 
 	public static void copy(byte[] r, Writer w) throws IOException {
-		copy(new ByteArrayInputStream(r), w, "UTF-8");
+		copy(stream(r), w, "UTF-8");
 	}
 
 	public static void copy(byte[] data, File file) throws FileNotFoundException, IOException {
@@ -112,15 +119,12 @@ public class IO {
 	}
 
 	public static void copy(byte[] r, OutputStream w) throws IOException {
-		copy(new ByteArrayInputStream(r), w);
+		copy(stream(r), w);
 	}
 
 	public static void copy(InputStream r, Writer w, String charset) throws IOException {
-		try {
-			InputStreamReader isr = new InputStreamReader(r, charset);
+		try (InputStreamReader isr = new InputStreamReader(r, charset)) {
 			copy(isr, w);
-		} finally {
-			r.close();
 		}
 	}
 
@@ -140,7 +144,7 @@ public class IO {
 	public static void copy(InputStream in, OutputStream out) throws IOException {
 		DataOutputStream dos = new DataOutputStream(out);
 		copy(in, (DataOutput) dos);
-		out.flush();
+		dos.flush();
 	}
 
 	public static void copy(InputStream in, DataOutput out) throws IOException {
@@ -170,7 +174,7 @@ public class IO {
 	}
 
 	public static void copy(URL in, MessageDigest md) throws IOException {
-		copy(in.openStream(), md);
+		copy(stream(in), md);
 	}
 
 	public static void copy(File in, MessageDigest md) throws IOException {
@@ -195,8 +199,7 @@ public class IO {
 	}
 
 	public static void copy(URL url, File file) throws IOException {
-		URLConnection c = url.openConnection();
-		copy(c, file);
+		copy(stream(url), file);
 	}
 
 	public static void copy(URLConnection c, File file) throws IOException {
@@ -209,48 +212,80 @@ public class IO {
 
 	public static void copy(InputStream in, URL out, String method) throws IOException {
 		URLConnection c = out.openConnection();
-		if (c instanceof HttpURLConnection && method != null) {
-			HttpURLConnection http = (HttpURLConnection) c;
+		HttpURLConnection http = (c instanceof HttpURLConnection) ? (HttpURLConnection) c : null;
+		if (http != null && method != null) {
 			http.setRequestMethod(method);
 		}
 		c.setDoOutput(true);
 		try (OutputStream os = c.getOutputStream()) {
 			copy(in, os);
+		} finally {
+			if (http != null) {
+				http.disconnect();
+			}
 		}
 	}
 
 	public static void copy(File a, File b) throws IOException {
-		if (a.isFile()) {
-			try (OutputStream out = outputStream(b)) {
-				copy(stream(a), out);
-			}
-		} else if (a.isDirectory()) {
-			if (!b.exists() && !b.mkdirs()) {
-				throw new IOException("Could not create directory " + b);
-			}
-			if (!b.isDirectory())
-				throw new IllegalArgumentException("target directory for a directory must be a directory: " + b);
-			if (isParentOf(a, b))
-				throw new IllegalArgumentException("target directory can not be child of source directory.");
-			File subs[] = a.listFiles();
-			for (File sub : subs) {
-				copy(sub, new File(b, sub.getName()));
-			}
-		} else
-			throw new FileNotFoundException("During copy: " + a.toString());
+		copy(a.toPath(), b.toPath());
 	}
 
-	private static boolean isParentOf(File a, File b) {
-		if (a == null || b == null)
-			return false;
+	public static void copy(Path a, Path b) throws IOException {
+		final Path source = a.toAbsolutePath();
+		final Path target = b.toAbsolutePath();
+		if (Files.isRegularFile(source)) {
+			Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+			return;
+		}
+		if (Files.isDirectory(source)) {
+			if (Files.notExists(target)) {
+				mkdirs(target);
+			}
+			if (!Files.isDirectory(target))
+				throw new IllegalArgumentException("target directory for a directory must be a directory: " + target);
+			if (target.startsWith(source))
+				throw new IllegalArgumentException("target directory can not be child of source directory.");
 
-		if (!a.isDirectory())
-			return false;
-
-		if (a.equals(b.getParentFile()))
-			return true;
-
-		return isParentOf(a, b.getParentFile());
+			Files.walkFileTree(source, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
+					new FileVisitor<Path>() {
+						final FileTime now = FileTime.fromMillis(System.currentTimeMillis());
+						@Override
+						public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+								throws IOException {
+							Path targetdir = target.resolve(source.relativize(dir));
+							try {
+								Files.copy(dir, targetdir);
+							} catch (FileAlreadyExistsException e) {
+								if (!Files.isDirectory(targetdir))
+									throw e;
+							}
+							return FileVisitResult.CONTINUE;
+						}
+						@Override
+						public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+							Path targetFile = target.resolve(source.relativize(file));
+							Files.copy(file, targetFile, StandardCopyOption.REPLACE_EXISTING);
+							Files.setLastModifiedTime(targetFile, now);
+							return FileVisitResult.CONTINUE;
+						}
+						@Override
+						public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+							if (exc != null) { // directory iteration failed
+								throw exc;
+							}
+							return FileVisitResult.CONTINUE;
+						}
+						@Override
+						public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+							if (exc != null) {
+								throw exc;
+							}
+							return FileVisitResult.CONTINUE;
+						}
+					});
+			return;
+		}
+		throw new FileNotFoundException("During copy: " + source.toString());
 	}
 
 	public static void copy(InputStream a, File b) throws IOException {
@@ -272,7 +307,7 @@ public class IO {
 	}
 
 	public static byte[] read(URL u) throws IOException {
-		return read(u.openStream());
+		return read(stream(u));
 	}
 
 	public static byte[] read(InputStream in) throws IOException {
@@ -282,23 +317,23 @@ public class IO {
 	}
 
 	public static void write(byte[] data, OutputStream out) throws Exception {
-		copy(new ByteArrayInputStream(data), out);
+		copy(stream(data), out);
 	}
 
 	public static void write(byte[] data, File out) throws Exception {
-		copy(new ByteArrayInputStream(data), out);
+		copy(stream(data), out);
 	}
 
 	public static String collect(File a, String encoding) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		copy(a, out);
-		return new String(out.toByteArray(), encoding);
+		return out.toString(encoding);
 	}
 
 	public static String collect(URL a, String encoding) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		copy(a.openStream(), out);
-		return new String(out.toByteArray(), encoding);
+		copy(stream(a), out);
+		return out.toString(encoding);
 	}
 
 	public static String collect(URL a) throws IOException {
@@ -316,7 +351,7 @@ public class IO {
 	public static String collect(InputStream a, String encoding) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		copy(a, out);
-		return new String(out.toByteArray(), encoding);
+		return out.toString(encoding);
 	}
 
 	public static String collect(InputStream a) throws IOException {
@@ -325,12 +360,7 @@ public class IO {
 
 	public static String collect(Reader a) throws IOException {
 		StringWriter sw = new StringWriter();
-		char[] buffer = new char[BUFFER_SIZE];
-		int size = a.read(buffer);
-		while (size > 0) {
-			sw.write(buffer, 0, size);
-			size = a.read(buffer);
-		}
+		copy(a, sw);
 		return sw.toString();
 	}
 
@@ -409,8 +439,18 @@ public class IO {
 	 * @param f file to be deleted
 	 */
 	public static void delete(File f) {
+		delete(f.toPath());
+	}
+
+	/**
+	 * Deletes the specified path. Folders are recursively deleted.<br>
+	 * If file(s) cannot be deleted, no feedback is provided (fail silently).
+	 *
+	 * @param p path to be deleted
+	 */
+	public static void delete(Path p) {
 		try {
-			deleteWithException(f);
+			deleteWithException(p);
 		} catch (IOException e) {
 			// Ignore a failed delete
 		}
@@ -422,10 +462,10 @@ public class IO {
 	public static void initialize(File f) {
 		try {
 			deleteWithException(f);
+			mkdirs(f);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		f.mkdirs();
 	}
 
 	/**
@@ -437,50 +477,85 @@ public class IO {
 	 *             deleted
 	 */
 	public static void deleteWithException(File f) throws IOException {
-		f = f.getAbsoluteFile();
-
-		if (!f.exists()) {
-			if (isSymbolicLink(f)) {
-				f.delete();
-			}
-			return;
-		}
-		if (f.getParentFile() == null)
-			throw new IllegalArgumentException("Cannot recursively delete root for safety reasons");
-
-		boolean wasDeleted = true;
-		if (f.isDirectory()) {
-			File[] subs = f.listFiles();
-			for (File sub : subs) {
-				try {
-					deleteWithException(sub);
-				} catch (IOException e) {
-					wasDeleted = false;
-				}
-			}
-		}
-
-		boolean fDeleted = f.delete();
-		if (!fDeleted || !wasDeleted) {
-			throw new IOException("Failed to delete " + f.getAbsoluteFile());
-		}
+		deleteWithException(f.toPath());
 	}
 
 	/**
-	 * Deletes <code>to</code> file if it exists, and renames <code>from</code>
-	 * file to <code>to</code>.<br>
-	 * Throws exception the rename operation fails.
+	 * Deletes the specified path. Folders are recursively deleted.<br>
+	 * Throws exception if any of the files could not be deleted.
+	 *
+	 * @param p path to be deleted
+	 * @throws IOException if the path (or contents of a folder) could not be
+	 *             deleted
+	 */
+	public static void deleteWithException(Path p) throws IOException {
+		p = p.toAbsolutePath();
+		if (Files.notExists(p) && !isSymbolicLink(p)) {
+			return;
+		}
+		if (p.equals(p.getRoot()))
+			throw new IllegalArgumentException("Cannot recursively delete root for safety reasons");
+
+		Files.walkFileTree(p, new FileVisitor<Path>() {
+			@Override
+			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+				return FileVisitResult.CONTINUE;
+			}
+			@Override
+			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+				Files.delete(file);
+				return FileVisitResult.CONTINUE;
+			}
+			@Override
+			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+				try {
+					Files.delete(file);
+				} catch (IOException e) {
+					throw exc;
+				}
+				return FileVisitResult.CONTINUE;
+			}
+			@Override
+			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+				if (exc != null) { // directory iteration failed
+					throw exc;
+				}
+				Files.delete(dir);
+				return FileVisitResult.CONTINUE;
+			}
+		});
+	}
+
+	/**
+	 * Renames <code>from</code> to <code>to</code> replacing the target file if
+	 * necessary.
 	 *
 	 * @param from source file
 	 * @param to destination file
 	 * @throws IOException if the rename operation fails
 	 */
 	public static void rename(File from, File to) throws IOException {
-		IO.deleteWithException(to);
+		rename(from.toPath(), to.toPath());
+	}
 
-		boolean renamed = from.renameTo(to);
-		if (!renamed)
-			throw new IOException("Could not rename " + from.getAbsoluteFile() + " to " + to.getAbsoluteFile());
+	/**
+	 * Renames <code>from</code> to <code>to</code> replacing the target file if
+	 * necessary.
+	 *
+	 * @param from source path
+	 * @param to destination path
+	 * @throws IOException if the rename operation fails
+	 */
+	public static void rename(Path from, Path to) throws IOException {
+		Files.move(from, to, StandardCopyOption.REPLACE_EXISTING);
+	}
+
+	public static void mkdirs(File dir) throws IOException {
+		mkdirs(dir.toPath());
+	}
+
+	public static void mkdirs(Path dir) throws IOException {
+		Files.createDirectories(dir);
 	}
 
 	public static long drain(InputStream in) throws IOException {
@@ -499,25 +574,24 @@ public class IO {
 	}
 
 	public void copy(Collection< ? > c, OutputStream out) throws IOException {
-		Writer w = new OutputStreamWriter(out, "UTF-8");
-		PrintWriter ps = new PrintWriter(w);
-		for (Object o : c) {
-			ps.println(o);
+		PrintWriter pw = writer(out);
+		try {
+			for (Object o : c) {
+				pw.println(o);
+			}
+		} finally {
+			pw.flush();
 		}
-		ps.flush();
-		w.flush();
 	}
 
 	public static Throwable close(Closeable in) {
-		if (in == null)
-			return null;
-
 		try {
-			in.close();
-			return null;
+			if (in != null)
+				in.close();
 		} catch (Throwable e) {
 			return e;
 		}
+		return null;
 	}
 
 	public static URL toURL(String s, File base) throws MalformedURLException {
@@ -543,8 +617,9 @@ public class IO {
 
 	public static void store(Object o, OutputStream fout, String encoding) throws IOException {
 		try {
-			String s = (o == null) ? "" : o.toString();
-			fout.write(s.getBytes(encoding));
+			if (o != null) {
+				copy(stream(o.toString(), encoding), fout);
+			}
 		} finally {
 			fout.close();
 		}
@@ -553,14 +628,18 @@ public class IO {
 	public static InputStream stream(String s) {
 		try {
 			return stream(s, "UTF-8");
-		} catch (Exception e) {
+		} catch (IOException e) {
 			// Ignore
 			return null;
 		}
 	}
 
-	public static InputStream stream(String s, String encoding) throws UnsupportedEncodingException {
-		return new ByteArrayInputStream(s.getBytes(encoding));
+	public static InputStream stream(String s, String encoding) throws IOException {
+		return stream(s.getBytes(encoding));
+	}
+
+	public static InputStream stream(byte[] b) throws IOException {
+		return new ByteArrayInputStream(b);
 	}
 
 	public static InputStream stream(File f) throws IOException {
@@ -611,6 +690,10 @@ public class IO {
 		return new PrintWriter(new OutputStreamWriter(out, encoding));
 	}
 
+	public static PrintWriter writer(OutputStream out, Charset encoding) throws IOException {
+		return new PrintWriter(new OutputStreamWriter(out, encoding));
+	}
+
 	public static BufferedReader reader(InputStream in, String encoding) throws IOException {
 		return new BufferedReader(new InputStreamReader(in, encoding));
 	}
@@ -627,19 +710,23 @@ public class IO {
 		return writer(out, "UTF-8");
 	}
 
-	public static boolean createSymbolicLink(File link, File source) throws Exception {
-		if (isSymbolicLink(link)) {
-			Path linkSource = Files.readSymbolicLink(link.toPath());
+	public static boolean createSymbolicLink(File link, File target) throws Exception {
+		return createSymbolicLink(link.toPath(), target.toPath());
+	}
 
-			if (source.toPath().equals(linkSource)) {
+	public static boolean createSymbolicLink(Path link, Path target) throws Exception {
+		if (isSymbolicLink(link)) {
+			Path linkTarget = Files.readSymbolicLink(link);
+
+			if (target.equals(linkTarget)) {
 				return true;
 			} else {
-				link.delete();
+				Files.delete(link);
 			}
 		}
 
 		try {
-			Files.createSymbolicLink(link.toPath(), source.toPath());
+			Files.createSymbolicLink(link, target);
 			return true;
 		} catch (Exception e) {
 			// ignore
@@ -648,7 +735,11 @@ public class IO {
 	}
 
 	public static boolean isSymbolicLink(File link) {
-		return Files.isSymbolicLink(link.toPath());
+		return isSymbolicLink(link.toPath());
+	}
+
+	public static boolean isSymbolicLink(Path link) {
+		return Files.isSymbolicLink(link);
 	}
 
 	/**
@@ -659,19 +750,44 @@ public class IO {
 	 * copying is a safer fallback. Copy only happens if timestamp and and file
 	 * length are different than target
 	 *
-	 * @param dest the location of the symbolic link, or destination of the
+	 * @param link the location of the symbolic link, or destination of the
 	 *            copy.
-	 * @param source the source of the symbolic link, or source of the copy.
+	 * @param target the source of the symbolic link, or source of the copy.
 	 * @return {@code true} if the operation succeeds, {@code false} otherwise.
 	 */
-	public static boolean createSymbolicLinkOrCopy(File dest, File source) {
+	public static boolean createSymbolicLinkOrCopy(File link, File target) {
+		return createSymbolicLinkOrCopy(link.toPath(), target.toPath());
+	}
+
+	/**
+	 * Creates a symbolic link from {@code link} to the {@code target}, or
+	 * copies {@code target} to {@code link} if running on Windows.
+	 * <p>
+	 * Creating symbolic links on Windows requires administrator permissions, so
+	 * copying is a safer fallback. Copy only happens if timestamp and and file
+	 * length are different than target
+	 *
+	 * @param link the location of the symbolic link, or destination of the
+	 *            copy.
+	 * @param target the source of the symbolic link, or source of the copy.
+	 * @return {@code true} if the operation succeeds, {@code false} otherwise.
+	 */
+	public static boolean createSymbolicLinkOrCopy(Path link, Path target) {
 		try {
-			if (isWindows() || !createSymbolicLink(dest, source)) {
+			if (isWindows() || !createSymbolicLink(link, target)) {
 				// only copy if target length and timestamp differ
-				if (source.lastModified() != dest.lastModified() || source.length() != dest.length()) {
-					IO.copy(source, dest);
-					dest.setLastModified(source.lastModified());
+				BasicFileAttributes targetAttrs = Files.readAttributes(target, BasicFileAttributes.class);
+				try {
+					BasicFileAttributes linkAttrs = Files.readAttributes(link, BasicFileAttributes.class);
+					if (targetAttrs.lastModifiedTime().equals(linkAttrs.lastModifiedTime())
+							&& targetAttrs.size() == linkAttrs.size()) {
+						return true;
+					}
+				} catch (IOException e) {
+					// link does not exist
 				}
+				copy(target, link);
+				Files.setLastModifiedTime(link, targetAttrs.lastModifiedTime());
 			}
 			return true;
 		} catch (Exception ignore) {
@@ -763,7 +879,7 @@ public class IO {
 	}
 
 	final static Pattern RESERVED_WINDOWS_P = Pattern.compile(
-			"CON|PRN|AUX|NUL|COM1|COM2|COM3|COM4|COM5|COM6|COM7|COM8|COM9|LPT1|LPT2|LPT3|LPT4|LPT5|LPT6|LPT7|LPT8|LPT9");
+			"CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9]");
 
 	static boolean isWindows() {
 		return File.separatorChar == '\\';

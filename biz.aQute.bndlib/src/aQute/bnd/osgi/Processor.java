@@ -706,7 +706,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 						//
 						// Copy the url to the file
 						//
-						f.getParentFile().mkdirs();
+						IO.mkdirs(f.getParentFile());
 						IO.copy(connection.getInputStream(), f);
 
 						//
@@ -888,11 +888,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public void close() throws IOException {
 		for (Closeable c : toBeClosed) {
-			try {
-				c.close();
-			} catch (IOException e) {
-				// Who cares?
-			}
+			IO.close(c);
 		}
 		if (pluginLoader != null)
 			pluginLoader.closex();
@@ -1086,7 +1082,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 								IO.copy(url.openStream(), tmp);
 								doIncludeFile(tmp, overwrite, p);
 							} finally {
-								tmp.delete();
+								IO.delete(tmp);
 							}
 						} catch (MalformedURLException mue) {
 							if (fileMustExist)
@@ -1612,7 +1608,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	static public String read(InputStream in) throws Exception {
-		try (InputStreamReader ir = new InputStreamReader(in, "UTF8")) {
+		try (InputStreamReader ir = new InputStreamReader(in, "UTF-8")) {
 			StringBuilder sb = new StringBuilder();
 			char chars[] = new char[BUFFER_SIZE];
 			int size = ir.read(chars);
@@ -2641,13 +2637,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			Jar jar = new Jar(fileName(url.getPath()));
 			addClose(jar);
 			URLConnection connection = url.openConnection();
-			InputStream in = connection.getInputStream();
-			long lastModified = connection.getLastModified();
-			if (lastModified == 0)
-				// We assume the worst :-(
-				lastModified = System.currentTimeMillis();
-			EmbeddedResource.build(jar, in, lastModified);
-			in.close();
+			try (InputStream in = connection.getInputStream()) {
+				long lastModified = connection.getLastModified();
+				if (lastModified == 0)
+					// We assume the worst :-(
+					lastModified = System.currentTimeMillis();
+				EmbeddedResource.build(jar, in, lastModified);
+			}
 			return jar;
 		} catch (IOException ee) {
 			// ignore

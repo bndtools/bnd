@@ -14,6 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.libg.cryptography.SHA1;
@@ -71,7 +72,7 @@ public class URLCache {
 		}
 
 		public void update(InputStream inputStream, String etag, long modified) throws Exception {
-			this.file.getParentFile().mkdirs();
+			IO.mkdirs(this.file.getParentFile());
 			IO.copy(inputStream, this.file);
 			if (modified > 0) {
 				this.file.setLastModified(modified);
@@ -115,7 +116,11 @@ public class URLCache {
 
 	public URLCache(File root) {
 		this.root = new File(root, "shas");
-		this.root.mkdirs();
+		try {
+			IO.mkdirs(this.root);
+		} catch (IOException e) {
+			throw Exceptions.duck(e);
+		}
 	}
 
 	public Info get(URI uri) throws Exception {

@@ -1,12 +1,12 @@
 package aQute.bnd.build;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import aQute.bnd.osgi.Constants;
+import aQute.lib.io.IO;
 
 public abstract class ProjectTester {
 	private final Project			project;
@@ -74,9 +74,7 @@ public abstract class ProjectTester {
 	}
 
 	public boolean prepare() throws Exception {
-		if (!reportDir.exists() && !reportDir.mkdirs()) {
-			throw new IOException("Could not create directory " + reportDir);
-		}
+		IO.mkdirs(reportDir);
 		return true;
 	}
 

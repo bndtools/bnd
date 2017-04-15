@@ -134,63 +134,56 @@ public class Command {
 		}
 
 		final AtomicBoolean finished = new AtomicBoolean(false);
-		InputStream out = process.getInputStream();
-		try {
-			InputStream err = process.getErrorStream();
-			try {
-				Collector cout = new Collector(out, stdout);
-				cout.start();
-				Collector cerr = new Collector(err, stderr);
-				cerr.start();
+		try (InputStream out = process.getInputStream(); InputStream err = process.getErrorStream()) {
+			Collector cout = new Collector(out, stdout);
+			cout.start();
+			Collector cerr = new Collector(err, stderr);
+			cerr.start();
 
-				if (in != null) {
-					if (in == System.in || useThreadForInput) {
-						rdInThread = new Thread("Read Input Thread") {
-							@Override
-							public void run() {
-								try {
-									while (!finished.get()) {
-										int n = in.available();
-										if (n == 0) {
-											sleep(100);
-										} else {
-											int c = in.read();
-											if (c < 0) {
-												stdin.close();
-												return;
-											}
-											stdin.write(c);
-											if (c == '\n')
-												stdin.flush();
+			if (in != null) {
+				if (in == System.in || useThreadForInput) {
+					rdInThread = new Thread("Read Input Thread") {
+						@Override
+						public void run() {
+							try {
+								while (!finished.get()) {
+									int n = in.available();
+									if (n == 0) {
+										sleep(100);
+									} else {
+										int c = in.read();
+										if (c < 0) {
+											stdin.close();
+											return;
 										}
+										stdin.write(c);
+										if (c == '\n')
+											stdin.flush();
 									}
-								} catch (InterruptedIOException e) {
-									// Ignore here
-								} catch (Exception e) {
-									// Who cares?
-								} finally {
-									IO.close(stdin);
 								}
+							} catch (InterruptedIOException e) {
+								// Ignore here
+							} catch (Exception e) {
+								// Who cares?
+							} finally {
+								IO.close(stdin);
 							}
-						};
-						rdInThread.setDaemon(true);
-						rdInThread.start();
-					} else {
+						}
+					};
+					rdInThread.setDaemon(true);
+					rdInThread.start();
+				} else {
 
-						IO.copy(in, stdin);
-						stdin.close();
-					}
+					IO.copy(in, stdin);
+					stdin.close();
 				}
-				logger.debug("exited process");
-
-				cerr.join();
-				cout.join();
-				logger.debug("stdout/stderr streams have finished");
-			} finally {
-				err.close();
 			}
+			logger.debug("exited process");
+
+			cerr.join();
+			cout.join();
+			logger.debug("stdout/stderr streams have finished");
 		} finally {
-			out.close();
 			if (timer != null)
 				timer.cancel();
 			Runtime.getRuntime().removeShutdownHook(hook);
@@ -199,8 +192,7 @@ public class Command {
 		byte exitValue = (byte) process.waitFor();
 		finished.set(true);
 		if (rdInThread != null) {
-			if (in != null)
-				IO.close(in);
+			IO.close(in);
 			rdInThread.interrupt();
 		}
 

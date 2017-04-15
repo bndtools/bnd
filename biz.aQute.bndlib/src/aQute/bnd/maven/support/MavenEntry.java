@@ -54,8 +54,10 @@ public class MavenEntry implements Closeable {
 		this.pomPath = path + ".pom";
 		this.artifactPath = path + ".jar";
 		this.dir = IO.getFile(maven.repository, path).getParentFile();
-		if (!this.dir.exists() && !this.dir.mkdirs()) {
-			throw new ExceptionInInitializerError("Could not create directory " + this.dir);
+		try {
+			IO.mkdirs(this.dir);
+		} catch (IOException e) {
+			throw new ExceptionInInitializerError(e);
 		}
 		this.pomFile = new File(maven.repository, pomPath);
 		this.artifactFile = new File(maven.repository, artifactPath);
@@ -113,9 +115,7 @@ public class MavenEntry implements Closeable {
 				// the file.
 
 			} else {
-				if (!dir.exists() && !dir.mkdirs()) {
-					throw new IOException("Could not create directory " + dir);
-				}
+				IO.mkdirs(dir);
 				// We really do not have the file
 				// so we have to find out who has it.
 				for (final URI url : urls) {

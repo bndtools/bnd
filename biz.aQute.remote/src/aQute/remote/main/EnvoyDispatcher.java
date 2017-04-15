@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.osgi.framework.Constants;
 
+import aQute.lib.io.IO;
 import aQute.libg.shacache.ShaCache;
 import aQute.libg.shacache.ShaSource;
 import aQute.remote.util.Link;
@@ -156,7 +157,7 @@ public class EnvoyDispatcher implements Closeable {
 			info.dispatcher = info.cl.loadClass("aQute.remote.agent.AgentDispatcher");
 
 			File storage = new File(EnvoyDispatcher.this.storage, name);
-			storage.mkdirs();
+			IO.mkdirs(storage);
 			if (!storage.isDirectory())
 				throw new IllegalArgumentException("Cannot create framework storage " + storage);
 

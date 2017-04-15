@@ -219,9 +219,9 @@ public class Jar implements Closeable {
 		if (manifest == null) {
 			Resource manifestResource = getResource(manifestName);
 			if (manifestResource != null) {
-				InputStream in = manifestResource.openInputStream();
-				manifest = new Manifest(in);
-				in.close();
+				try (InputStream in = manifestResource.openInputStream()) {
+					manifest = new Manifest(in);
+				}
 			}
 		}
 		return manifest;
@@ -258,7 +258,7 @@ public class Jar implements Closeable {
 		try (OutputStream out = IO.outputStream(file)) {
 			write(out);
 		} catch (Exception t) {
-			file.delete();
+			IO.delete(file);
 			throw t;
 		}
 		file.setLastModified(lastModified);
@@ -309,7 +309,7 @@ public class Jar implements Closeable {
 	}
 
 	public void writeFolder(File dir) throws Exception {
-		dir.mkdirs();
+		IO.mkdirs(dir);
 
 		if (!dir.exists())
 			throw new IllegalArgumentException(
@@ -332,7 +332,7 @@ public class Jar implements Closeable {
 			}
 		} else {
 			File file = IO.getFile(dir, manifestName);
-			file.getParentFile().mkdirs();
+			IO.mkdirs(file.getParentFile());
 			try (OutputStream fout = IO.outputStream(file)) {
 				writeManifest(fout);
 				done.add(manifestName);
@@ -352,7 +352,7 @@ public class Jar implements Closeable {
 
 	private void copyResource(File dir, String path, Resource resource) throws IOException, Exception {
 		File to = IO.getFile(dir, path);
-		to.getParentFile().mkdirs();
+		IO.mkdirs(to.getParentFile());
 		IO.copy(resource.openInputStream(), to);
 	}
 
@@ -375,7 +375,7 @@ public class Jar implements Closeable {
 				tmp.calcChecksums(algorithms);
 				tmp.write(out);
 			} finally {
-				f.delete();
+				IO.delete(f);
 			}
 		} finally {
 			algorithms = algs;
@@ -868,9 +868,7 @@ public class Jar implements Closeable {
 	public void expand(File dir) throws Exception {
 		check();
 		dir = dir.getAbsoluteFile();
-		if (!dir.exists() && !dir.mkdirs()) {
-			throw new IOException("Could not create directory " + dir);
-		}
+		IO.mkdirs(dir);
 		if (!dir.isDirectory()) {
 			throw new IllegalArgumentException("Not a dir: " + dir.getAbsolutePath());
 		}
@@ -878,9 +876,7 @@ public class Jar implements Closeable {
 		for (Map.Entry<String,Resource> entry : getResources().entrySet()) {
 			File f = getFile(dir, entry.getKey());
 			File fp = f.getParentFile();
-			if (!fp.exists() && !fp.mkdirs()) {
-				throw new IOException("Could not create directory " + fp);
-			}
+			IO.mkdirs(fp);
 			IO.copy(entry.getValue().openInputStream(), f);
 		}
 	}

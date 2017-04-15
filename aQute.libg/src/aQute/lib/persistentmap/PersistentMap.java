@@ -42,7 +42,7 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 	public PersistentMap(File dir, Type type) throws Exception {
 		this.dir = dir;
 		this.type = type;
-		dir.mkdirs();
+		IO.mkdirs(dir);
 		if (!dir.isDirectory())
 			throw new IllegalArgumentException("PersistentMap cannot create directory " + dir);
 
@@ -55,7 +55,7 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 		FileLock lock = lock();
 		try {
 			data = new File(dir, "data").getAbsoluteFile();
-			data.mkdir();
+			IO.mkdirs(data);
 			if (!dir.isDirectory())
 				throw new IllegalArgumentException("PersistentMap cannot create data directory " + dir);
 
@@ -224,10 +224,7 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 			FileLock lock = lock();
 			try {
 				File file = new File(data, key);
-				file.delete();
-				if (file.exists())
-					throw new IllegalStateException("PersistentMap cannot delete entry " + file);
-
+				IO.deleteWithException(file);
 				return cache.remove(key).get();
 			} finally {
 				unlock(lock);
@@ -246,7 +243,7 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 			try {
 				IO.deleteWithException(data);
 				cache.clear();
-				data.mkdir();
+				IO.mkdirs(data);
 			} finally {
 				unlock(lock);
 			}

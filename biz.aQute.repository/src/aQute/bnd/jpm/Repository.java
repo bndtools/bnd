@@ -441,7 +441,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 			e.printStackTrace();
 			throw e;
 		} finally {
-			file.delete();
+			IO.delete(file);
 		}
 	}
 
@@ -598,7 +598,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				url = new URI(REPO_DEFAULT_URI);
 
 			cacheDir = IO.getFile(IO.home, location);
-			cacheDir.mkdirs();
+			IO.mkdirs(cacheDir);
 			if (!cacheDir.isDirectory())
 				throw new IllegalArgumentException("Not able to create cache directory " + cacheDir);
 
@@ -631,7 +631,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 		} catch (Exception e) {
 			if (reporter != null)
 				reporter.exception(e, "Creating options");
-			throw new RuntimeException(e);
+			throw Exceptions.duck(e);
 		}
 	}
 
@@ -1720,7 +1720,7 @@ public class Repository implements Plugin, RepositoryPlugin, Closeable, Refresha
 				ref = analyze(d.tmp, uri);
 				if (ref == null) {
 					logger.debug("not a proper url to drop {}", uri);
-					d.tmp.delete();
+					IO.delete(d.tmp);
 					return false;
 				}
 

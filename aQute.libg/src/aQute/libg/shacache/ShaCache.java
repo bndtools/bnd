@@ -1,6 +1,7 @@
 package aQute.libg.shacache;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Pattern;
 
@@ -22,9 +23,11 @@ public class ShaCache {
 	 */
 	public ShaCache(File root) {
 		this.root = root;
-		this.root.mkdirs();
-		if (!this.root.isDirectory())
-			throw new IllegalArgumentException("Cannot create shacache root directory " + root);
+		try {
+			IO.mkdirs(this.root);
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Cannot create shacache root directory " + root, e);
+		}
 	}
 
 	/**
@@ -87,7 +90,7 @@ public class ShaCache {
 						// unique with the content.
 						//
 
-						tmp.renameTo(f);
+						IO.rename(tmp, f);
 						break;
 					}
 				} catch (Exception e) {
@@ -138,7 +141,7 @@ public class ShaCache {
 					IO.copy(in, tmp);
 					String digest = SHA1.digest(tmp).asHex();
 					if (digest.equalsIgnoreCase(sha)) {
-						tmp.renameTo(f);
+						IO.rename(tmp, f);
 						break;
 					}
 				}
@@ -154,11 +157,13 @@ public class ShaCache {
 
 	/**
 	 * Clean the cache
+	 * 
+	 * @throws Exception
 	 */
 
-	public void purge() {
-		IO.delete(root);
-		root.mkdirs();
+	public void purge() throws Exception {
+		IO.deleteWithException(root);
+		IO.mkdirs(root);
 	}
 
 	/**

@@ -50,7 +50,7 @@ public class Plugin extends BaseRepository
 	public void setProperties(Map<String,String> map) throws Exception {
 		config = Converter.cnv(Config.class, map);
 		File file = IO.getFile(config.location());
-		file.mkdirs();
+		IO.mkdirs(file);
 		if (!file.isDirectory()) {
 			reporter.error("Repository Wrapper: cannot create cache: %s", file);
 		}

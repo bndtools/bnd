@@ -3,7 +3,6 @@ package aQute.bnd.signing;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
@@ -17,6 +16,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.SignerPlugin;
+import aQute.lib.io.IO;
 import aQute.libg.command.Command;
 import aQute.service.reporter.Reporter;
 
@@ -152,14 +152,13 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 			@Override
 			public void run() {
 				try {
-					BufferedReader rdr = new BufferedReader(new InputStreamReader(in, Constants.DEFAULT_CHARSET));
-					String line = rdr.readLine();
-					while (line != null) {
-						sb.append(line);
-						line = rdr.readLine();
+					try (BufferedReader rdr = IO.reader(in, Constants.DEFAULT_CHARSET)) {
+						String line = rdr.readLine();
+						while (line != null) {
+							sb.append(line);
+							line = rdr.readLine();
+						}
 					}
-					rdr.close();
-					in.close();
 				} catch (Exception e) {
 					// Ignore any exceptions
 				}

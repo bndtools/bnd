@@ -1,10 +1,8 @@
 package aQute.lib.spring;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -23,6 +21,7 @@ import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
+import aQute.lib.io.IO;
 
 public class XMLType {
 
@@ -46,25 +45,21 @@ public class XMLType {
 		Source s = new StreamSource(in);
 		transformer.transform(s, r);
 
-		ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
-		bout.close();
-
-		BufferedReader br = new BufferedReader(new InputStreamReader(bin, "UTF8"));
-
-		String line = br.readLine();
-		while (line != null) {
-			line = line.trim();
-			if (line.length() > 0) {
-				String parts[] = line.split("\\s*,\\s*");
-				for (int i = 0; i < parts.length; i++) {
-					String pack = toPackage(parts[i]);
-					if (pack != null)
-						refers.add(pack);
+		try (BufferedReader br = IO.reader(IO.stream(bout.toByteArray()), "UTF-8")) {
+			String line = br.readLine();
+			while (line != null) {
+				line = line.trim();
+				if (line.length() > 0) {
+					String parts[] = line.split("\\s*,\\s*");
+					for (int i = 0; i < parts.length; i++) {
+						String pack = toPackage(parts[i]);
+						if (pack != null)
+							refers.add(pack);
+					}
 				}
+				line = br.readLine();
 			}
-			line = br.readLine();
 		}
-		br.close();
 		return refers;
 	}
 
@@ -105,9 +100,10 @@ public class XMLType {
 
 	private void process(Analyzer analyzer, String path, Resource resource) {
 		try {
-			InputStream in = resource.openInputStream();
-			Set<String> set = analyze(in);
-			in.close();
+			Set<String> set;
+			try (InputStream in = resource.openInputStream()) {
+				set = analyze(in);
+			}
 			for (Iterator<String> r = set.iterator(); r.hasNext();) {
 				PackageRef pack = analyzer.getPackageRef(r.next());
 				if (!QN.matcher(pack.getFQN()).matches())

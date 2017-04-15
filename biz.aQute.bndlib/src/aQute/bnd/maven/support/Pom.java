@@ -319,7 +319,7 @@ public abstract class Pom {
 		if (file.isFile() && file.lastModified() >= getPomFile().lastModified())
 			return file;
 
-		file.delete();
+		IO.delete(file);
 
 		try (Writer writer = IO.writer(file)) {
 			doEntry(writer, this);
