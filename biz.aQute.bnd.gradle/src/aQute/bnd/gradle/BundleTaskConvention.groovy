@@ -328,7 +328,7 @@ class BundleTaskConvention {
   }
 
   private void failBuild(String msg) {
-    task.archivePath.delete()
+    project.delete(task.archivePath)
     throw new GradleException(msg)
   }
 
