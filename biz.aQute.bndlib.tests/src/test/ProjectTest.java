@@ -232,9 +232,10 @@ public class ProjectTest extends TestCase {
 			assertNotNull(files);
 			assertEquals(1, files.length);
 
-			Jar older = new Jar(files[0]);
-			byte[] olderDigest = older.getTimelessDigest();
-			older.close();
+			byte[] olderDigest;
+			try (Jar older = new Jar(files[0])) {
+				olderDigest = older.getTimelessDigest();
+			}
 			System.out.println();
 			Thread.sleep(3000); // Ensure system time granularity is < than
 								// wait
@@ -246,9 +247,10 @@ public class ProjectTest extends TestCase {
 			assertNotNull(files);
 			assertEquals(1, files.length);
 
-			Jar newer = new Jar(files[0]);
-			byte[] newerDigest = newer.getTimelessDigest();
-			newer.close();
+			byte[] newerDigest;
+			try (Jar newer = new Jar(files[0])) {
+				newerDigest = newer.getTimelessDigest();
+			}
 
 			assertTrue(Arrays.equals(olderDigest, newerDigest));
 		} finally {
@@ -421,9 +423,10 @@ public class ProjectTest extends TestCase {
 		assertNotNull(files);
 		assertEquals(3, files.length);
 		for (File file : files) {
-			Jar jar = new Jar(file);
-			Manifest m = jar.getManifest();
-			assertTrue(names.contains(m.getMainAttributes().getValue("Bundle-SymbolicName")));
+			try (Jar jar = new Jar(file)) {
+				Manifest m = jar.getManifest();
+				assertTrue(names.contains(m.getMainAttributes().getValue("Bundle-SymbolicName")));
+			}
 		}
 
 		assertEquals(12, project.getExports().size());
@@ -452,15 +455,15 @@ public class ProjectTest extends TestCase {
 		assertNotNull(files);
 		assertEquals(3, files.length);
 
-		Jar a = new Jar(files[0]);
-		Jar b = new Jar(files[1]);
-		Manifest ma = a.getManifest();
-		Manifest mb = b.getManifest();
+		try (Jar a = new Jar(files[0]); Jar b = new Jar(files[1])) {
+			Manifest ma = a.getManifest();
+			Manifest mb = b.getManifest();
 
-		assertEquals("base", ma.getMainAttributes().getValue("Base-Header"));
-		assertEquals("base", mb.getMainAttributes().getValue("Base-Header"));
-		assertEquals("a", ma.getMainAttributes().getValue("Sub-Header"));
-		assertEquals("b", mb.getMainAttributes().getValue("Sub-Header"));
+			assertEquals("base", ma.getMainAttributes().getValue("Base-Header"));
+			assertEquals("base", mb.getMainAttributes().getValue("Base-Header"));
+			assertEquals("a", ma.getMainAttributes().getValue("Sub-Header"));
+			assertEquals("b", mb.getMainAttributes().getValue("Sub-Header"));
+		}
 	}
 
 	public void testOutofDate() throws Exception {
