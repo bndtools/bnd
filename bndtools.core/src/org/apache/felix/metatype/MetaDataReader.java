@@ -117,9 +117,7 @@ public class MetaDataReader {
      */
     public MetaData parse(URL url) throws IOException {
         this.documentURL = url;
-        InputStream ins = null;
-        try {
-            ins = url.openStream();
+        try (InputStream ins = url.openStream()) {
 
             this.parser.setProperty("http://xmlpull.org/v1/doc/properties.html#location", url.toString());
             MetaData md = parse(ins);
@@ -130,13 +128,6 @@ public class MetaDataReader {
         } catch (XmlPullParserException e) {
             throw new IOException("XML parsing exception while reading metadata: " + e.getMessage());
         } finally {
-            if (ins != null) {
-                try {
-                    ins.close();
-                } catch (IOException ioe) {
-                    // ignore
-                }
-            }
             this.documentURL = null;
         }
     }

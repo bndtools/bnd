@@ -165,26 +165,26 @@ public class StringTemplateEngine implements TemplateEngine {
 
     private String loadMappingTemplate(ResourceMap inputs, TemplateSettings settings, STGroup stg) throws IOException {
         StringWriter buf = new StringWriter();
-        PrintWriter bufPrint = new PrintWriter(buf);
-        for (String inputPath : inputs.getPaths()) {
-            if (inputPath.startsWith(TEMPLATE_DEFS_PREFIX)) {
-                if (inputPath.endsWith(TEMPLATE_FILE_SUFFIX)) {
-                    // Definition... load into StringTemplate group and don't generate output
-                    String inputPathRelative = inputPath.substring(TEMPLATE_DEFS_PREFIX.length());
+        try (PrintWriter bufPrint = new PrintWriter(buf)) {
+            for (String inputPath : inputs.getPaths()) {
+                if (inputPath.startsWith(TEMPLATE_DEFS_PREFIX)) {
+                    if (inputPath.endsWith(TEMPLATE_FILE_SUFFIX)) {
+                        // Definition... load into StringTemplate group and don't generate output
+                        String inputPathRelative = inputPath.substring(TEMPLATE_DEFS_PREFIX.length());
 
-                    Resource resource = inputs.get(inputPath);
-                    if (resource != null && resource.getType() == ResourceType.File)
-                        loadTemplate(stg, inputPathRelative, resource.getContent(), resource.getTextEncoding());
+                        Resource resource = inputs.get(inputPath);
+                        if (resource != null && resource.getType() == ResourceType.File)
+                            loadTemplate(stg, inputPathRelative, resource.getContent(), resource.getTextEncoding());
+                    }
+                } else {
+                    // Mapping to output file
+                    String outputPath = inputPath;
+                    String escapedSourcePath = escapeDelimiters(inputPath, settings);
+
+                    bufPrint.printf("%s=%s%n", outputPath, escapedSourcePath);
                 }
-            } else {
-                // Mapping to output file
-                String outputPath = inputPath;
-                String escapedSourcePath = escapeDelimiters(inputPath, settings);
-
-                bufPrint.printf("%s=%s%n", outputPath, escapedSourcePath);
             }
         }
-        bufPrint.close();
         String mappingTemplate = buf.toString();
         return mappingTemplate;
     }

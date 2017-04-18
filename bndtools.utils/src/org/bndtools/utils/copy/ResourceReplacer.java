@@ -32,12 +32,9 @@ public class ResourceReplacer extends Thread {
 
     @Override
     public void run() {
-        String line;
-        BufferedReader reader = null;
-        BufferedWriter writer = null;
-        try {
-            reader = new BufferedReader(new InputStreamReader(url.openStream(), Charset.forName("UTF-8")));
-            writer = new BufferedWriter(new OutputStreamWriter(out, Charset.forName("UTF-8")));
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), Charset.forName("UTF-8"))); //
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, Charset.forName("UTF-8")))) {
+            String line;
             while ((line = reader.readLine()) != null) {
                 for (Map.Entry<String,String> replaceRegularExpression : replaceRegularExpressions.entrySet()) {
                     line = line.replaceAll(replaceRegularExpression.getKey(), replaceRegularExpression.getValue());
@@ -47,22 +44,6 @@ public class ResourceReplacer extends Thread {
             }
         } catch (IOException e) {
             result = e;
-
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    /* swallow */
-                }
-            }
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    /* swallow */
-                }
-            }
         }
     }
 

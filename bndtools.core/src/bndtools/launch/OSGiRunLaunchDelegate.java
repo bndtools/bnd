@@ -116,18 +116,12 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 
     private static String validateClasspath(Collection<String> classpath) {
         for (String fileName : classpath) {
-            Jar jar = null;
-            try {
-                jar = new Jar(new File(fileName));
+            try (Jar jar = new Jar(new File(fileName))) {
                 boolean frameworkExists = jar.exists("META-INF/services/" + FrameworkFactory.class.getName());
                 if (frameworkExists)
                     return fileName;
             } catch (IOException e) {
                 e.printStackTrace();
-            } finally {
-                if (jar != null) {
-                    jar.close();
-                }
             }
         }
         return null;

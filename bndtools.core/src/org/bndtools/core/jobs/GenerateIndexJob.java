@@ -1,7 +1,7 @@
 package org.bndtools.core.jobs;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.osgi.service.indexer.ResourceIndexer;
 
+import aQute.lib.io.IO;
 import bndtools.Plugin;
 
 public class GenerateIndexJob extends Job {
@@ -38,7 +39,7 @@ public class GenerateIndexJob extends Job {
         SubMonitor progress = SubMonitor.convert(monitor);
 
         // Generate index
-        try (FileOutputStream outputStream = new FileOutputStream(outputFile)) {
+        try (OutputStream outputStream = IO.outputStream(outputFile)) {
             ResourceIndexer indexer = Plugin.getDefault().getResourceIndexer();
             indexer.index(files, outputStream, config);
         } catch (Exception e) {

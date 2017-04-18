@@ -2,7 +2,6 @@ package org.bndtools.utils.jar;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -13,6 +12,8 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
+
+import aQute.lib.io.IO;
 
 /**
  * A utility for reading either JAR files or directories that have the same layout as a JAR file.
@@ -38,7 +39,7 @@ public class PseudoJar implements Closeable {
         if (!base.isFile())
             throw new IOException("Cannot read as JAR, file does not exist or is not a plain file: " + base);
 
-        jarStream = new JarInputStream(new FileInputStream(base));
+        jarStream = new JarInputStream(IO.stream(base));
     }
 
     private void initDirIndex() throws IOException {
@@ -78,11 +79,8 @@ public class PseudoJar implements Closeable {
         final Manifest mf;
 
         if (base.isDirectory()) {
-            FileInputStream in = new FileInputStream(new File(base, "META-INF/MANIFEST.MF"));
-            try {
+            try (InputStream in = IO.stream(new File(base, "META-INF/MANIFEST.MF"))) {
                 mf = new Manifest(in);
-            } finally {
-                in.close();
             }
         } else {
             initJarStream();
@@ -148,7 +146,7 @@ public class PseudoJar implements Closeable {
         } else {
             if (lastIndexEntry == null)
                 throw new IOException("No more entries available");
-            result = new FileInputStream(new File(base, lastIndexEntry));
+            result = IO.stream(new File(base, lastIndexEntry));
         }
 
         return result;

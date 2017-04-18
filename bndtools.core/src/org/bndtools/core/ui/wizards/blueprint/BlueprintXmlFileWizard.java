@@ -215,8 +215,7 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
     }
 
     private void updateIncludeResourceIfNecessary(BndEditModel editModel, String blueprintrelativePath, IFile blueprintFile) throws Exception {
-        Builder b = new Builder();
-        try {
+        try (Builder b = new Builder()) {
             b.setBase(blueprintFile.getProject().getFullPath().toFile());
             StringBuilder sb = new StringBuilder();
             List<String> includeResource = editModel.getIncludeResource();
@@ -232,8 +231,6 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
             if (!b.isInScope(Collections.singleton(blueprintFile.getFullPath().toFile()))) {
                 editModel.addIncludeResource(blueprintrelativePath);
             }
-        } finally {
-            b.close();
         }
     }
 

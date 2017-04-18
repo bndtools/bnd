@@ -12,8 +12,6 @@
 package org.bndtools.builder.classpath;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -29,9 +27,11 @@ import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
 
+import aQute.lib.io.IO;
+
 class ClasspathContainerSerializationHelper<C extends IClasspathContainer> {
     C readClasspathContainer(File file) throws IOException, ClassNotFoundException {
-        try (FileInputStream in = new FileInputStream(file)) {
+        try (InputStream in = IO.stream(file)) {
             return readClasspathContainer(in);
         }
     }
@@ -68,7 +68,7 @@ class ClasspathContainerSerializationHelper<C extends IClasspathContainer> {
     }
 
     void writeClasspathContainer(C container, File file) throws IOException {
-        try (FileOutputStream out = new FileOutputStream(file)) {
+        try (OutputStream out = IO.outputStream(file)) {
             writeClasspathContainer(container, out);
         }
     }

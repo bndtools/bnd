@@ -475,8 +475,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 return info;
             }
             info.lastModified = lastModified;
-            PseudoJar jar = new PseudoJar(file);
-            try {
+            try (PseudoJar jar = new PseudoJar(file)) {
                 Manifest mf = jar.readManifest();
                 if ((mf != null) && (mf.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION) != null)) {
                     Parameters exportPkgs = new Parameters(mf.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
@@ -491,8 +490,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 }
             } catch (IOException e) {
                 logger.logInfo("Failed to read " + file, e);
-            } finally {
-                IO.close(jar);
             }
             jarInfo.put(file, info);
             return info;
