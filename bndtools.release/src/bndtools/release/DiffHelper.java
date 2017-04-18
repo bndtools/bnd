@@ -22,68 +22,76 @@ import aQute.bnd.osgi.Jar;
 
 public class DiffHelper {
 
-	public static Baseline createBaseline(Project project, String bsn) throws Exception {
+    public static Baseline createBaseline(Project project, String bsn) throws Exception {
 
-		List<Builder> builders = project.getBuilder(null).getSubBuilders();
-		Builder builder = null;
-		for (Builder b : builders) {
-			if (bsn.equals(b.getBsn())) {
-				builder = b;
-				break;
-			}
-		}
-		if (builder == null) {
-			return null;
-		}
-		return createBaseline(builder);
-	}
+        List<Builder> builders = project.getBuilder(null).getSubBuilders();
+        Builder builder = null;
+        for (Builder b : builders) {
+            if (bsn.equals(b.getBsn())) {
+                builder = b;
+                break;
+            }
+        }
+        if (builder == null) {
+            return null;
+        }
+        return createBaseline(builder);
+    }
 
-	public static Baseline createBaseline(Builder builder) {
+    public static Baseline createBaseline(Builder builder) {
 
-		try {
+        try {
 
-			if (builder instanceof ProjectBuilder) {
-				Jar jar = builder.build();
+            if (builder instanceof ProjectBuilder) {
+                Jar jar = null;
+                Jar currentJar = null;
 
-				Jar currentJar = ((ProjectBuilder) builder).getLastRevision();
-				if (currentJar == null) {
-				    currentJar = new Jar("."); //$NON-NLS-1$
-				}
+                try {
+                    jar = builder.build();
+                    currentJar = ((ProjectBuilder) builder).getLastRevision();
+                    if (currentJar == null) {
+                        currentJar = new Jar("."); //$NON-NLS-1$
+                    }
+                    DiffPluginImpl differ = new DiffPluginImpl();
+                    String diffignore = builder.getProperty(Constants.DIFFIGNORE);
+                    if (diffignore != null)
+                        differ.setIgnore(diffignore);
 
-				DiffPluginImpl differ = new DiffPluginImpl();
-		        String diffignore = builder.getProperty(Constants.DIFFIGNORE);
-		        if (diffignore != null)
-		            differ.setIgnore(diffignore);
+                    Baseline baseline = new Baseline(builder, differ);
 
-				Baseline baseline = new Baseline(builder, differ);
+                    baseline.baseline(jar, currentJar, null);
+                    return baseline;
+                } finally {
+                    if (jar != null)
+                        jar.close();
+                    if (currentJar != null)
+                        currentJar.close();
+                }
+            }
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+        return null;
 
-				baseline.baseline(jar, currentJar, null);
-				return baseline;
-			}
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		return null;
+    }
 
-	}
-
-	public static String removeVersionQualifier(String version) {
-		if (version == null) {
-			return null;
-		}
-		// Remove qualifier
-		String[] parts = version.split("\\."); //$NON-NLS-1$
-		StringBuilder sb = new StringBuilder();
-		String sep = "";
-		for (int i = 0; i < parts.length; i++) {
-			if (i == 3) {
-				break;
-			}
-			sb.append(sep);
-			sb.append(parts[i]);
-			sep = "."; //$NON-NLS-1$
-		}
-		return sb.toString();
-	}
+    public static String removeVersionQualifier(String version) {
+        if (version == null) {
+            return null;
+        }
+        // Remove qualifier
+        String[] parts = version.split("\\."); //$NON-NLS-1$
+        StringBuilder sb = new StringBuilder();
+        String sep = "";
+        for (int i = 0; i < parts.length; i++) {
+            if (i == 3) {
+                break;
+            }
+            sb.append(sep);
+            sb.append(parts[i]);
+            sep = "."; //$NON-NLS-1$
+        }
+        return sb.toString();
+    }
 
 }

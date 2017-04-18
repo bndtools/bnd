@@ -81,6 +81,12 @@ public class ReleaseContext {
         return releasedJars;
     }
 
+    public void close() {
+        for (Jar jar : releasedJars) {
+            jar.close();
+        }
+    }
+
     public void setProperty(String name, Object value) {
         properties.put(name, value);
     }
