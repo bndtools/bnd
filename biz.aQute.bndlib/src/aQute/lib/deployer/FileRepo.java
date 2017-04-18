@@ -297,7 +297,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		}
 		logger.debug("init");
 		if (!root.isDirectory()) {
-			root.mkdirs();
+			IO.mkdirs(root);
 			if (!root.isDirectory())
 				throw new IllegalArgumentException("Location cannot be turned into a directory " + root);
 
@@ -407,7 +407,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			logger.debug("bsn={} version={}", bsn, version);
 
 			File dir = new File(root, bsn);
-			dir.mkdirs();
+			IO.mkdirs(dir);
 			if (!dir.isDirectory())
 				throw new IOException("Could not create directory " + dir);
 
@@ -424,6 +424,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			tmpJar.close();
 
 			dirty = true;
+			if (file.isFile() && !file.canWrite()) {
+				// older versions of this class made file readonly
+				file.setWritable(true);
+			}
 			IO.rename(tmpFile, file);
 
 			fireBundleAdded(file);
@@ -477,7 +481,6 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				 */
 				beforePut(tmpFile);
 				File file = putArtifact(tmpFile, options, digest);
-				file.setReadOnly();
 
 				PutResult result = new PutResult();
 				result.digest = digest;

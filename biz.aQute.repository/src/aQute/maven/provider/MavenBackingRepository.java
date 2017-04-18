@@ -78,7 +78,7 @@ public abstract class MavenBackingRepository implements Closeable {
 			}
 
 		} catch (Exception e) {
-			file.delete();
+			IO.delete(file);
 			throw e;
 		}
 	}

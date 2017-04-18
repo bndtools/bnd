@@ -53,7 +53,7 @@ public class EmbeddedLauncher {
 
 	private static URL toFileURL(URL resource) throws IOException {
 		File f = File.createTempFile("resource", ".jar");
-		f.getParentFile().mkdirs();
+		IO.mkdirs(f.getParentFile());
 		try (InputStream in = resource.openStream(); OutputStream out = IO.outputStream(f)) {
 			int size = in.read(buffer);
 			while (size > 0) {

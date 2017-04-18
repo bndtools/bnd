@@ -148,9 +148,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 			localDir = cacheDir;
 			localFileName = URLEncoder.encode(fullUrl, UTF_8);
 		}
-		if (!localDir.exists() && !localDir.mkdirs()) {
-			throw new IOException("Could not create directory " + localDir);
-		}
+		IO.mkdirs(localDir);
 
 		return new File(localDir, localFileName);
 	}
@@ -202,8 +200,8 @@ public class CachingUriResourceHandle implements ResourceHandle {
 
 			// Check the SHA of the received data
 			if (sha != null && !sha.equalsIgnoreCase(serverSHA)) {
-				shaFile.delete();
-				cachedFile.delete();
+				IO.delete(shaFile);
+				IO.delete(cachedFile);
 				throw new IOException(String.format("Invalid SHA on remote resource at %s", url));
 			}
 			saveSHAFile(serverSHA);
@@ -240,10 +238,8 @@ public class CachingUriResourceHandle implements ResourceHandle {
 	}
 
 	private String copyWithSHA(InputStream input, OutputStream output) throws IOException {
-		MessageDigest digest;
-
 		try {
-			digest = MessageDigest.getInstance(SHA_256);
+			MessageDigest digest = MessageDigest.getInstance(SHA_256);
 			DigestOutputStream digestOutput = new DigestOutputStream(output, digest);
 			IO.copy(input, digestOutput);
 			return Hex.toHexString(digest.digest());
@@ -269,11 +265,15 @@ public class CachingUriResourceHandle implements ResourceHandle {
 			throw new IOException(message);
 		}
 
-		if (!cacheDir.mkdirs()) {
-			String message = String.format("Failed to create cache directory in path %s", cacheDir.getCanonicalPath());
-			if (reporter != null)
-				reporter.error(message);
-			throw new IOException(message);
+		try {
+			IO.mkdirs(cacheDir);
+		} catch (IOException e) {
+			if (reporter != null) {
+				String message = String.format("Failed to create cache directory in path %s",
+						cacheDir.getCanonicalPath());
+				reporter.exception(e, message);
+			}
+			throw e;
 		}
 	}
 
@@ -336,7 +336,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		try {
 			IO.copy(IO.stream(contents), shaFile);
 		} catch (IOException e) {
-			shaFile.delete();
+			IO.delete(shaFile);
 			// Errors saving the SHA should not interfere with the download
 			if (reporter != null)
 				reporter.exception(e, "Failed to save SHA file %s (%s)", shaFile, e);

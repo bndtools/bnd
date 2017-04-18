@@ -410,9 +410,7 @@ public class BaselineCommands {
 		String o = opts.output("schema.xml");
 		File of = bnd.getFile(o);
 		File pof = of.getParentFile();
-		if (!pof.exists() && !pof.mkdirs()) {
-			throw new IOException("Could not create directory " + pof);
-		}
+		IO.mkdirs(pof);
 		try (PrintWriter pw = IO.writer(of, "UTF-8")) {
 			pw.print("<?xml version='1.0' encoding='UTF-8'?>\n");
 			top.print(0, pw);

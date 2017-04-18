@@ -157,15 +157,13 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		Set<File> allFiles = new HashSet<File>();
 		gatherFiles(allFiles);
 
-		if (!storageDir.exists() && !storageDir.mkdirs()) {
-			throw new IOException("Could not create directory " + storageDir);
-		}
+		IO.mkdirs(storageDir);
 		File shaFile = new File(indexFile.getPath() + REPO_INDEX_SHA_EXTENSION);
 		try (OutputStream out = IO.outputStream(indexFile)) {
 			URI rootUri = storageDir.getCanonicalFile().toURI();
 			provider.generateIndex(allFiles, out, this.getName(), rootUri, pretty, registry, logService);
 		} finally {
-			shaFile.delete();
+			IO.delete(shaFile);
 		}
 
 		MessageDigest md = MessageDigest.getInstance(SHA256.ALGORITHM);
@@ -264,7 +262,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		}
 		for (URI entry : clone) {
 			try {
-				new File(entry).delete();
+				IO.deleteWithException(new File(entry));
 			} catch (Exception e) {
 				reporter.warning("Failed to remove repository entry %s on coordination rollback: %s", entry, e);
 			}
@@ -286,9 +284,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 			if (dir.exists() && !dir.isDirectory())
 				throw new IllegalArgumentException(
 						"Path already exists but is not a directory: " + dir.getAbsolutePath());
-			if (!dir.exists() && !dir.mkdirs()) {
-				throw new IOException("Could not create directory " + dir);
-			}
+			IO.mkdirs(dir);
 
 			String versionString = jar.getVersion();
 			if (versionString == null)
@@ -446,10 +442,10 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 					private void deleteEntry(final File f) {
 						File parent = f.getParentFile();
-						f.delete();
+						IO.delete(f);
 						File[] listFiles = parent.listFiles();
 						if (listFiles.length == 1 && listFiles[0].getName().endsWith("-latest.jar"))
-							listFiles[0].delete();
+							IO.delete(listFiles[0]);
 
 						listFiles = parent.listFiles();
 						if (listFiles.length == 0)

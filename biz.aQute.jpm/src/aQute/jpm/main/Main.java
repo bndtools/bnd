@@ -1267,7 +1267,7 @@ public class Main extends ReporterAdapter {
 		}
 
 		if (opts.clear()) {
-			logFile.delete();
+			IO.delete(logFile);
 			logFile.createNewFile();
 		}
 

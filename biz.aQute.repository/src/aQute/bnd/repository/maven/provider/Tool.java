@@ -47,7 +47,7 @@ public class Tool extends Processor {
 			if (e.getKey().startsWith(OSGI_OPT_SRC)) {
 				String path = e.getKey().substring(OSGI_OPT_SRC.length());
 				File out = IO.getFile(sources, path);
-				out.getParentFile().mkdirs();
+				IO.mkdirs(out.getParentFile());
 				IO.copy(e.getValue().openInputStream(), out);
 			}
 		}
@@ -61,7 +61,7 @@ public class Tool extends Processor {
 		if (!hasSources())
 			return new Jar("javadoc");
 
-		javadoc.mkdirs();
+		IO.mkdirs(javadoc);
 		List<String> args = new ArrayList<>();
 		args.add("-quiet");
 		args.add("-protected");

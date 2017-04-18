@@ -117,7 +117,7 @@ public class ResolverLogger implements LogService {
 
 	@Override
 	public void finalize() {
-		file.delete();
+		IO.delete(file);
 	}
 
 	public int getLogLevel() {

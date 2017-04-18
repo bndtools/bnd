@@ -255,8 +255,7 @@ public class Windows extends Platform {
 	 */
 
 	public void init() throws Exception {
-		if (!getMisc().isDirectory() && !getMisc().mkdirs())
-			throw new IOException("Cannot create directory " + getMisc());
+		IO.mkdirs(getMisc());
 		if (IS64) {
 			IO.copy(getClass().getResourceAsStream("windows/winrun4jc64.exe"), new File(getMisc(), "winrun4jc.exe"));
 			IO.copy(getClass().getResourceAsStream("windows/winrun4j64.exe"), new File(getMisc(), "winrun4j.exe"));

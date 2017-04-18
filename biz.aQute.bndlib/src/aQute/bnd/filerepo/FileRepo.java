@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
+import aQute.lib.io.IO;
 
 @Deprecated
 public class FileRepo {
@@ -105,9 +106,7 @@ public class FileRepo {
 
 	public File put(String bsn, Version version) throws IOException {
 		File dir = new File(root, bsn);
-		if (!dir.exists() && !dir.mkdirs()) {
-			throw new IOException("Could not create directory " + dir);
-		}
+		IO.mkdirs(dir);
 		File file = new File(dir,
 				bsn + "-" + version.getMajor() + "." + version.getMinor() + "." + version.getMicro() + ".jar");
 		return file;

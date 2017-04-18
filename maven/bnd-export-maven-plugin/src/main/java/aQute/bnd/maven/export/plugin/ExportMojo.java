@@ -25,6 +25,7 @@ import aQute.bnd.maven.lib.resolve.DependencyResolver;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.io.IO;
 import biz.aQute.resolve.Bndrun;
 
 @Mojo(name = "export", defaultPhase = PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
@@ -97,7 +98,7 @@ public class ExportMojo extends AbstractMojo {
 		String bndrun = getNamePart(runFile);
 		File temporaryDir = new File(targetDir, "tmp/export/" + bndrun);
 		File cnf = new File(temporaryDir, Workspace.CNFDIR);
-		cnf.mkdirs();
+		IO.mkdirs(cnf);
 		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
 			run.setBase(temporaryDir);
 			Workspace workspace = run.getWorkspace();
@@ -126,7 +127,7 @@ public class ExportMojo extends AbstractMojo {
 			try {
 				if (bundlesOnly) {
 					File runbundlesDir = new File(targetDir, "export/" + bndrun);
-					runbundlesDir.mkdirs();
+					IO.mkdirs(runbundlesDir);
 					run.exportRunbundles(null, runbundlesDir);
 				} else {
 					File executableJar = new File(targetDir, bndrun + ".jar");

@@ -157,7 +157,7 @@ public class Builder extends Analyzer {
 		String expand = getProperty("-expand");
 		if (expand != null) {
 			File out = getFile(expand);
-			out.mkdirs();
+			IO.mkdirs(out);
 			dot.expand(out);
 		}
 		return dot;
@@ -302,11 +302,9 @@ public class Builder extends Analyzer {
 			f = new File(f, "MANIFEST.MF");
 		}
 		if (!f.exists() || f.lastModified() < dot.lastModified()) {
-			f.delete();
+			IO.delete(f);
 			File fp = f.getParentFile();
-			if (!fp.exists() && !fp.mkdirs()) {
-				throw new IOException("Could not create directory " + fp);
-			}
+			IO.mkdirs(fp);
 			try (OutputStream out = IO.outputStream(f)) {
 				Jar.writeManifest(dot.getManifest(), out);
 			}

@@ -823,9 +823,7 @@ public class Launcher implements ServiceListener {
 			p.setProperty(Constants.FRAMEWORK_STORAGE_CLEAN, "true");
 		}
 
-		if (!workingdir.exists() && !workingdir.mkdirs()) {
-			throw new IOException("Could not create directory " + workingdir);
-		}
+		IO.mkdirs(workingdir);
 		if (!workingdir.isDirectory())
 			throw new IllegalArgumentException("Cannot create a working dir: " + workingdir);
 
@@ -902,12 +900,7 @@ public class Launcher implements ServiceListener {
 	}
 
 	protected void deleteFiles(File wd) {
-		if (wd.isDirectory()) {
-			for (File sub : wd.listFiles()) {
-				deleteFiles(sub);
-			}
-		}
-		wd.delete();
+		IO.delete(wd);
 	}
 
 	/**
@@ -948,16 +941,7 @@ public class Launcher implements ServiceListener {
 	}
 
 	private void delete(File f) {
-		String path = f.getAbsolutePath();
-		char first = path.charAt(0);
-		if (path.equals("/") || (first >= 'A' && first <= 'Z' && path.substring(1).equals(":\\")))
-			throw new IllegalArgumentException("You can not make the root the storage area because it will be deleted");
-		if (f.isDirectory()) {
-			File fs[] = f.listFiles();
-			for (int i = 0; i < fs.length; i++)
-				delete(fs[i]);
-		}
-		f.delete();
+		IO.delete(f);
 	}
 
 	public void report(PrintStream out) {

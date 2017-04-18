@@ -334,10 +334,7 @@ public class RepoCommand {
 				name = f.getName();
 			}
 		}
-
-		if (!dir.exists() && !dir.mkdirs()) {
-			throw new IOException("Could not create directory " + dir);
-		}
+		IO.mkdirs(dir);
 		IO.copy(file, new File(dir, name));
 	}
 
@@ -409,7 +406,7 @@ public class RepoCommand {
 				}
 			}
 			if (delete)
-				file.delete();
+				IO.delete(file);
 		}
 	}
 

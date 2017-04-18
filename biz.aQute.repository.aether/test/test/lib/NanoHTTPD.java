@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLEncoder;
@@ -34,7 +35,6 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
-import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 
 /**
@@ -490,8 +490,14 @@ public class NanoHTTPD {
 		private void dumpInput(Reader in) throws IOException {
 			in.mark(2024);
 			try {
-				String data = IO.collect(in);
-				System.out.println("READ DATA: " + data);
+				StringWriter sw = new StringWriter();
+				char[] buffer = new char[BUFFER_SIZE];
+				int size = in.read(buffer);
+				while (size > 0) {
+					sw.write(buffer, 0, size);
+					size = in.read(buffer);
+				}
+				System.out.println("READ DATA: " + sw.toString());
 			} finally {
 				in.reset();
 			}

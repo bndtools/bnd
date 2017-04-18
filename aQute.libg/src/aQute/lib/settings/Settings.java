@@ -1,6 +1,7 @@
 package aQute.lib.settings;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.KeyFactory;
@@ -109,8 +110,11 @@ public class Settings implements Map<String,String> {
 
 	@SuppressWarnings("resource")
 	public void save(char[] password) {
-		if (!this.where.getParentFile().isDirectory() && !this.where.getParentFile().mkdirs())
-			throw new RuntimeException("Cannot create directory in " + this.where.getParent());
+		try {
+			IO.mkdirs(this.where.getParentFile());
+		} catch (IOException e) {
+			throw new RuntimeException("Cannot create directory in " + this.where.getParent(), e);
+		}
 
 		try {
 			OutputStream out = IO.outputStream(this.where);

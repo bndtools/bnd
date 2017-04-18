@@ -1,10 +1,8 @@
 package aQute.lib.spring;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -26,6 +24,7 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.AnalyzerPlugin;
+import aQute.lib.io.IO;
 
 /**
  * This component is called when we find a resource in the META-INF/*.xml
@@ -55,26 +54,23 @@ public class SpringComponent implements AnalyzerPlugin {
 		Source s = new StreamSource(in);
 		transformer.transform(s, r);
 
-		ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
-		bout.close();
-
-		BufferedReader br = new BufferedReader(new InputStreamReader(bin, "UTF8"));
-
-		String line = br.readLine();
-		while (line != null) {
-			line = line.trim();
-			if (line.length() > 0) {
-				String parts[] = line.split("\\s*,\\s*");
-				for (int i = 0; i < parts.length; i++) {
-					int n = parts[i].lastIndexOf('.');
-					if (n > 0) {
-						refers.add(parts[i].subSequence(0, n));
+		try (BufferedReader br = IO.reader(IO.stream(bout.toByteArray()), "UTF-8")) {
+			String line = br.readLine();
+			while (line != null) {
+				line = line.trim();
+				if (line.length() > 0) {
+					String parts[] = line.split("\\s*,\\s*");
+					for (int i = 0; i < parts.length; i++) {
+						int n = parts[i].lastIndexOf('.');
+						if (n > 0) {
+							refers.add(parts[i].subSequence(0, n));
+						}
 					}
 				}
+				line = br.readLine();
 			}
-			line = br.readLine();
 		}
-		br.close();
+
 		return refers;
 	}
 
@@ -90,16 +86,16 @@ public class SpringComponent implements AnalyzerPlugin {
 			Resource resource = entry.getValue();
 			if (SPRING_SOURCE.matcher(path).matches()) {
 				try {
+					Set<CharSequence> set;
 					try(InputStream in = resource.openInputStream()) {
-						Set<CharSequence> set = analyze(in);
-						for (Iterator<CharSequence> r = set.iterator(); r.hasNext(); ) {
-							PackageRef pack = analyzer.getPackageRef((String) r.next());
-							if (!QN.matcher(pack.getFQN()).matches())
-								analyzer.warning(
-										"Package does not seem a package in spring resource (%s): %s", path, pack);
-							if (!analyzer.getReferred().containsKey(pack))
-								analyzer.getReferred().put(pack, new Attrs());
-						}
+						set = analyze(in);
+					}
+					for (Iterator<CharSequence> r = set.iterator(); r.hasNext();) {
+						PackageRef pack = analyzer.getPackageRef((String) r.next());
+						if (!QN.matcher(pack.getFQN()).matches())
+							analyzer.warning("Package does not seem a package in spring resource (%s): %s", path, pack);
+						if (!analyzer.getReferred().containsKey(pack))
+							analyzer.getReferred().put(pack, new Attrs());
 					}
 				} catch (Exception e) {
 					analyzer.error("Unexpected exception in processing spring resources(%s): %s", path, e);

@@ -119,7 +119,7 @@ public class ConnectionSettings extends Processor {
 			}
 		} finally {
 			if (tmp != null)
-				tmp.delete();
+				IO.delete(tmp);
 		}
 
 	}

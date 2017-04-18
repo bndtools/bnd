@@ -24,6 +24,7 @@ import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter;
 
@@ -64,12 +65,12 @@ public class P2Repository extends BaseRepository implements Plugin, RegistryPlug
 		try {
 			name = config.name(client.toName(url));
 			File location = workspace.getFile(config.location("cnf/cache/p2-" + name));
-			location.mkdirs();
+			IO.mkdirs(location);
 			File indexFile = new File(location, "index.xml.gz");
 
 			return new P2Indexer(reporter, location, client, url, name);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw Exceptions.duck(e);
 		}
 	}
 

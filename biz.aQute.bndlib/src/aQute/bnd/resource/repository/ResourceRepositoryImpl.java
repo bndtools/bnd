@@ -393,7 +393,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	}
 
 	void download0(URI url, File path, byte[] sha) throws Exception {
-		path.getParentFile().mkdirs();
+		IO.mkdirs(path.getParentFile());
 		File tmp = IO.createTempFile(path.getParentFile(), "tmp", ".jar");
 		URL u = url.toURL();
 
@@ -483,7 +483,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 			return;
 
 		File tmp = new File(indexFile.getAbsolutePath() + ".tmp");
-		tmp.getParentFile().mkdirs();
+		IO.mkdirs(tmp.getParentFile());
 
 		try (PrintWriter ps = new PrintWriter(tmp, "UTF-8")) {
 			Formatter frm = new Formatter(ps);
@@ -546,7 +546,11 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
 	public File getCacheDir(String name) {
 		File dir = new File(hosting, name);
-		dir.mkdirs();
+		try {
+			IO.mkdirs(dir);
+		} catch (IOException e) {
+			throw Exceptions.duck(e);
+		}
 		return dir;
 	}
 

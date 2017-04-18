@@ -44,6 +44,7 @@ import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA256;
 
 /**
@@ -138,8 +139,6 @@ public class IndexerMojo extends AbstractMojo {
 			}
 		}
 
-		outputFile.getParentFile().mkdirs();
-
 		RepositoryURLResolver repositoryURLResolver = new RepositoryURLResolver(repositories);
 		MavenURLResolver mavenURLResolver = new MavenURLResolver();
 
@@ -148,6 +147,7 @@ public class IndexerMojo extends AbstractMojo {
 
 		logger.debug("Indexing artifacts: {}", dependencies.keySet());
 		try {
+			IO.mkdirs(outputFile.getParentFile());
 			for (Entry<File,ArtifactResult> entry : dependencies.entrySet()) {
 				File file = entry.getKey();
 				ResourceBuilder resourceBuilder = new ResourceBuilder();

@@ -46,13 +46,13 @@ public class XMLResourceGenerator {
 		if (location.getName().endsWith(".gz"))
 			compress = true;
 
-		location.getParentFile().mkdirs();
+		IO.mkdirs(location.getParentFile());
 		File tmp = IO.createTempFile(location.getParentFile(), "index", ".xml");
 
 		try (OutputStream out = IO.outputStream(tmp)) {
 			save(out);
 		}
-		tmp.renameTo(location);
+		IO.rename(tmp, location);
 	}
 
 	public void save(OutputStream out) throws IOException {

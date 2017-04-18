@@ -127,7 +127,7 @@ public class ServiceMain extends Thread {
 				socket.close();
 			} finally {
 				try {
-					lock.delete();
+					IO.delete(lock);
 				} finally {
 					System.exit(1);
 				}

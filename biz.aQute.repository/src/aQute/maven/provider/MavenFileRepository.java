@@ -22,7 +22,7 @@ public class MavenFileRepository extends MavenBackingRepository {
 	public TaggedData fetch(String path, File dest) throws Exception {
 		File source = getFile(path);
 		if (source.isFile()) {
-			dest.getParentFile().mkdirs();
+			IO.mkdirs(dest.getParentFile());
 			IO.copy(source, dest);
 			return new TaggedData(toURI(path), 200, dest);
 		} else {
@@ -37,7 +37,7 @@ public class MavenFileRepository extends MavenBackingRepository {
 
 		File dest = getFile(path);
 
-		dest.getParentFile().mkdirs();
+		IO.mkdirs(dest.getParentFile());
 		IO.copy(source, dest);
 
 		SHA1 sha1 = SHA1.digest(source);
@@ -49,7 +49,8 @@ public class MavenFileRepository extends MavenBackingRepository {
 	@Override
 	public boolean delete(String path) throws Exception {
 		File dest = getFile(path);
-		return dest.delete();
+		IO.deleteWithException(dest);
+		return true;
 	}
 
 	@Override

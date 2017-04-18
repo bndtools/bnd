@@ -55,7 +55,7 @@ public class SnapshotReleaser extends Releaser {
 		}
 
 		File metafile = home.toLocalFile(revision.metadata(repo.id));
-		metafile.getParentFile().mkdirs();
+		IO.mkdirs(metafile.getParentFile());
 		IO.store(revisionMetadata.toString(), metafile);
 		repo.store(metafile, revision.metadata());
 

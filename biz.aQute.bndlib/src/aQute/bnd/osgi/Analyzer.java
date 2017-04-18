@@ -3049,21 +3049,20 @@ public class Analyzer extends Processor {
 
 		if (!output.exists() || output.lastModified() <= jar.lastModified() || force) {
 			File op = output.getParentFile();
-			if (!op.exists() && !op.mkdirs()) {
-				throw new IOException("Could not create directory " + op);
-			}
+			IO.mkdirs(op);
 			if (source != null && output.getCanonicalPath().equals(source.getCanonicalPath())) {
 				File bak = new File(source.getParentFile(), source.getName() + ".bak");
-				if (!source.renameTo(bak)) {
-					error("Could not create backup file %s", bak);
-				} else
-					source.delete();
+				try {
+					IO.rename(source, bak);
+				} catch (IOException e) {
+					exception(e, "Could not create backup file %s", bak);
+				}
 			}
 			try {
 				logger.debug("Saving jar to {}", output);
 				getJar().write(output);
 			} catch (Exception e) {
-				output.delete();
+				IO.delete(output);
 				exception(e, "Cannot write JAR file to %s due to %s", output, e);
 			}
 			return true;

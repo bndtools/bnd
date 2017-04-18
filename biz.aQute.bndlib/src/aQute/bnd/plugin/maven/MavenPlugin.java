@@ -63,7 +63,7 @@ public class MavenPlugin extends LifeCyclePlugin {
 		String process = p.getReplacer().process(s);
 
 		File d = p.getFile(dest);
-		d.getParentFile().mkdirs();
+		IO.mkdirs(d.getParentFile());
 		IO.store(process, d);
 	}
 

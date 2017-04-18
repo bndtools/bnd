@@ -147,24 +147,21 @@ public class JustAnotherPackageManager {
 
 		this.reporter = reporter;
 		this.homeDir = homeDir;
-		if (!homeDir.exists() && !homeDir.mkdirs())
-			throw new IllegalArgumentException("Could not create directory " + homeDir);
+		IO.mkdirs(homeDir);
 
 		repoDir = IO.getFile(homeDir, "repo");
-		if (!repoDir.exists() && !repoDir.mkdirs())
-			throw new IllegalArgumentException("Could not create directory " + repoDir);
+		IO.mkdirs(repoDir);
 
 		commandDir = new File(homeDir, COMMANDS);
 		serviceDir = new File(homeDir, SERVICE);
-		commandDir.mkdir();
-		serviceDir.mkdir();
+		IO.mkdirs(commandDir);
+		IO.mkdirs(serviceDir);
 		service = new File(repoDir, SERVICE_JAR_FILE);
 		if (!service.isFile())
 			init();
 
 		this.binDir = binDir;
-		if (!binDir.exists() && !binDir.mkdirs())
-			throw new IllegalArgumentException("Could not create bin directory " + binDir);
+		IO.mkdirs(binDir);
 	}
 
 	public String getArtifactIdFromCoord(String coord) {
@@ -278,7 +275,7 @@ public class JustAnotherPackageManager {
 					// going
 					// as
 					// well
-					f.delete();
+					IO.delete(f);
 					count++;
 				} else {
 
@@ -478,9 +475,7 @@ public class JustAnotherPackageManager {
 		}
 
 		File sdir = new File(serviceDir, data.name);
-		if (!sdir.exists() && !sdir.mkdirs()) {
-			throw new IOException("Could not create directory " + data.sdir);
-		}
+		IO.mkdirs(sdir);
 		data.sdir = sdir.getAbsolutePath();
 
 		File lock = new File(data.sdir, LOCK);
@@ -494,7 +489,7 @@ public class JustAnotherPackageManager {
 		if (data.user == null)
 			data.user = "root";
 
-		new File(data.work).mkdir();
+		IO.mkdirs(new File(data.work));
 
 		if (data.log == null)
 			data.log = new File(data.sdir, "log").getAbsolutePath();
@@ -795,7 +790,7 @@ public class JustAnotherPackageManager {
 			codec.enc().to(meta).put(data);
 			logger.debug("TD = {}", data);
 		} finally {
-			tmp.delete();
+			IO.delete(tmp);
 			logger.debug("puted {} {}", uri, data);
 		}
 	}
@@ -985,7 +980,7 @@ public class JustAnotherPackageManager {
 				return;
 			else
 				throw new Error("No " + SERVICE_JAR_FILE + " resource in jar");
-		service.getParentFile().mkdirs();
+		IO.mkdirs(service.getParentFile());
 		IO.copy(s, service);
 	}
 

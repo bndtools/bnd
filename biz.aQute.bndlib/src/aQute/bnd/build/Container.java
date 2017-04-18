@@ -311,7 +311,7 @@ public class Container {
 		File bundleClasspathDirectory = IO.getFile(file.getParentFile(), "." + file.getName() + "-bcp");
 		Parameters header = new Parameters(bundleClassPath, project);
 		List<File> files = new ArrayList<>(header.size());
-		bundleClasspathDirectory.mkdir();
+		IO.mkdirs(bundleClasspathDirectory);
 
 		int n = 0;
 		Jar jar = null;

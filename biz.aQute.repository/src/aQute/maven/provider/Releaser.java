@@ -41,7 +41,7 @@ class Releaser implements Release {
 
 		IO.delete(this.dir);
 		check();
-		this.dir.mkdirs();
+		IO.mkdirs(this.dir);
 	}
 
 	protected void check() {}
@@ -211,7 +211,7 @@ class Releaser implements Release {
 
 	File sign(File file) throws Exception {
 		File asc = new File(file.getParentFile(), file.getName() + ".asc");
-		asc.delete();
+		IO.delete(asc);
 
 		Command command = new Command();
 		command.setTrace();

@@ -1,6 +1,7 @@
 package aQute.libg.remote.sink;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -32,7 +33,7 @@ public class RemoteSink implements Sink {
 	public RemoteSink(File root, Source... s) throws Exception {
 		this.root = root;
 		areasDir = new File(root, "areas");
-		areasDir.mkdirs();
+		IO.mkdirs(areasDir);
 
 		for (File areaDir : areasDir.listFiles()) {
 			areas.put(areaDir.getName(), read(areaDir));
@@ -41,7 +42,7 @@ public class RemoteSink implements Sink {
 		this.sources = s;
 
 		shacache = new File(root, "shacache");
-		shacache.mkdirs();
+		IO.mkdirs(shacache);
 		sinkfs = new SinkFS(s, shacache);
 	}
 
@@ -52,7 +53,7 @@ public class RemoteSink implements Sink {
 			return area;
 
 		File af = new File(areasDir, areaId);
-		af.mkdirs();
+		IO.mkdirs(af);
 		return read(af);
 	}
 
@@ -208,7 +209,7 @@ public class RemoteSink implements Sink {
 			areaId = "" + n;
 		}
 		File dir = new File(areasDir, areaId);
-		dir.mkdirs();
+		IO.mkdirs(dir);
 
 		return read(dir);
 	}
@@ -223,7 +224,7 @@ public class RemoteSink implements Sink {
 		area.root = areaDir;
 		area.running = false;
 		area.cwd = new File(area.root, "cwd");
-		area.cwd.mkdirs();
+		IO.mkdirs(area.cwd);
 		areas.put(area.id, area);
 		return area;
 	}
@@ -251,7 +252,12 @@ public class RemoteSink implements Sink {
 
 	@Override
 	public boolean clearCache() {
-		IO.delete(shacache);
-		return shacache.mkdirs();
+		try {
+			IO.deleteWithException(shacache);
+			IO.mkdirs(shacache);
+			return true;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

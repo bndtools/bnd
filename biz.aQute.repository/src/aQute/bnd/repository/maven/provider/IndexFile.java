@@ -263,7 +263,7 @@ class IndexFile {
 		try {
 			if (file == null || !file.isFile()) {
 				File descriptorFile = getDescriptorFile(descriptor.archive);
-				descriptorFile.delete();
+				IO.delete(descriptorFile);
 				reporter.error("Could not find file %s", descriptor.archive);
 				descriptor.error = "File not found";
 			} else {
@@ -304,7 +304,7 @@ class IndexFile {
 
 	private void saveDescriptor(BundleDescriptor descriptor) throws IOException, Exception {
 		File df = getDescriptorFile(descriptor.archive);
-		df.getParentFile().mkdirs();
+		IO.mkdirs(df.getParentFile());
 		CODEC.enc().to(df).put(descriptor);
 	}
 

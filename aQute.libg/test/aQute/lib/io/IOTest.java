@@ -11,6 +11,8 @@ public class IOTest extends TestCase {
 		if (IO.isWindows()) {
 			assertEquals("abc%def", IO.toSafeFileName("abc:def"));
 			assertEquals("%abc%def%", IO.toSafeFileName("<abc:def>"));
+			assertEquals("LPT1_", IO.toSafeFileName("LPT1"));
+			assertEquals("COM2_", IO.toSafeFileName("COM2"));
 		} else {
 			assertEquals("abc%def", IO.toSafeFileName("abc/def"));
 			assertEquals("<abc%def>", IO.toSafeFileName("<abc/def>"));
@@ -25,7 +27,8 @@ public class IOTest extends TestCase {
 			assertFalse(destDir.exists());
 		}
 
-		assertTrue(destDir.mkdirs());
+		IO.mkdirs(destDir);
+		assertTrue(destDir.isDirectory());
 
 		File srcDir = new File("testresources/fileset");
 
@@ -44,7 +47,8 @@ public class IOTest extends TestCase {
 			assertFalse(parentDir.exists());
 		}
 
-		assertTrue(parentDir.mkdirs());
+		IO.mkdirs(parentDir);
+		assertTrue(parentDir.isDirectory());
 
 		File childDir = new File("generated/test/parentDir/childDir");
 
@@ -61,9 +65,9 @@ public class IOTest extends TestCase {
 
 		IO.delete(link);
 
-		assertFalse(link.exists() || Files.isSymbolicLink(link.toPath()));
+		assertFalse(link.exists() || IO.isSymbolicLink(link));
 
-		link.getParentFile().mkdirs();
+		IO.mkdirs(link.getParentFile());
 
 		File source = new File("testresources/zipped.dat");
 
@@ -72,9 +76,9 @@ public class IOTest extends TestCase {
 		assertTrue(IO.createSymbolicLinkOrCopy(link, source));
 
 		if (IO.isWindows()) {
-			assertFalse(Files.isSymbolicLink(link.toPath()));
+			assertFalse(IO.isSymbolicLink(link));
 		} else {
-			assertTrue(Files.isSymbolicLink(link.toPath()));
+			assertTrue(IO.isSymbolicLink(link));
 		}
 	}
 
@@ -84,9 +88,9 @@ public class IOTest extends TestCase {
 
 			IO.delete(link);
 
-			assertFalse(link.exists() || Files.isSymbolicLink(link.toPath()));
+			assertFalse(link.exists() || IO.isSymbolicLink(link));
 
-			link.getParentFile().mkdirs();
+			IO.mkdirs(link.getParentFile());
 
 			File source = new File("testresources/zipped.dat");
 			assertTrue(source.exists());
@@ -107,9 +111,9 @@ public class IOTest extends TestCase {
 		File originalSource = new File("testresources/unzipped.dat");
 		File link = new File("generated/test/originalLink");
 
-		link.delete();
+		IO.delete(link);
 
-		assertFalse(Files.isSymbolicLink(link.toPath()));
+		assertFalse(IO.isSymbolicLink(link));
 
 		assertTrue(IO.createSymbolicLinkOrCopy(link, originalSource));
 
@@ -121,7 +125,7 @@ public class IOTest extends TestCase {
 			assertEquals(link.lastModified(), newSource.lastModified());
 			assertEquals(link.length(), newSource.length());
 		} else {
-			assertTrue(Files.isSymbolicLink(link.toPath()));
+			assertTrue(IO.isSymbolicLink(link));
 			assertTrue(Files.readSymbolicLink(link.toPath()).equals(newSource.toPath()));
 		}
 	}

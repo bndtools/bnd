@@ -3,7 +3,6 @@ package aQute.bnd.maven;
 import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
@@ -66,9 +65,7 @@ public class MavenDeploy implements Deploy, Plugin {
 		logger.info(LIFECYCLE, "deploying {} to Maven repo: {}", jarName, repository);
 		File target = project.getTarget();
 		File tmp = Processor.getFile(target, repository);
-		if (!tmp.exists() && !tmp.mkdirs()) {
-			throw new IOException("Could not create directory " + tmp);
-		}
+		IO.mkdirs(tmp);
 
 		try (Jar original = new Jar(jarName, jarStream)) {
 			Manifest manifest = original.getManifest();
@@ -85,7 +82,7 @@ public class MavenDeploy implements Deploy, Plugin {
 					Parameters exports = project
 							.parseHeader(manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
 					File jdoc = new File(tmp, "jdoc");
-					jdoc.mkdirs();
+					IO.mkdirs(jdoc);
 					logger.info(LIFECYCLE, "Generating Javadoc for: {}", exports.keySet());
 					Jar javadoc = javadoc(jdoc, project, exports.keySet());
 					logger.info(LIFECYCLE, "Writing javadoc jar");

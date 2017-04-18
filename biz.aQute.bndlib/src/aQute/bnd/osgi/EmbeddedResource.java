@@ -40,17 +40,17 @@ public class EmbeddedResource implements Resource {
 	}
 
 	public static void build(Jar jar, InputStream in, long lastModified) throws IOException {
-		ZipInputStream jin = new ZipInputStream(in);
-		ZipEntry entry = jin.getNextEntry();
-		while (entry != null) {
-			if (!entry.isDirectory()) {
-				byte data[] = collect(jin);
-				jar.putResource(entry.getName(), new EmbeddedResource(data, lastModified), true);
+		try (ZipInputStream jin = new ZipInputStream(in)) {
+			ZipEntry entry = jin.getNextEntry();
+			while (entry != null) {
+				if (!entry.isDirectory()) {
+					byte data[] = collect(jin);
+					jar.putResource(entry.getName(), new EmbeddedResource(data, lastModified), true);
+				}
+				entry = jin.getNextEntry();
 			}
-			entry = jin.getNextEntry();
+			IO.drain(in);
 		}
-		IO.drain(in);
-		jin.close();
 	}
 
 	/**

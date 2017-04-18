@@ -218,8 +218,8 @@ public class MavenBndRepository extends BaseRepository
 			}
 			return result;
 		} finally {
-			binaryFile.delete();
-			pomFile.delete();
+			IO.delete(binaryFile);
+			IO.delete(pomFile);
 		}
 
 	}
@@ -279,7 +279,7 @@ public class MavenBndRepository extends BaseRepository
 			jar.write(tmp);
 			releaser.add(revision.archive(extension, classifier), tmp);
 		} finally {
-			tmp.delete();
+			IO.delete(tmp);
 		}
 
 	}
@@ -555,8 +555,7 @@ public class MavenBndRepository extends BaseRepository
 
 	@Override
 	public void close() throws IOException {
-		if (storage != null)
-			storage.close();
+		IO.close(storage);
 		if (indexPoller != null)
 			indexPoller.cancel(true);
 	}

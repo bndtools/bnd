@@ -2,6 +2,7 @@ package aQute.bnd.ant;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
@@ -21,6 +22,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
+import aQute.lib.io.IO;
 
 public class RunconfigToDistributionTask extends BaseTask {
 
@@ -94,16 +96,18 @@ public class RunconfigToDistributionTask extends BaseTask {
 
 	private File createReleaseDir() {
 		File releaseDir = new File(outputDir);
-		boolean deleted = releaseDir.delete();
-		if (deleted) {
+		try {
+			IO.deleteWithException(releaseDir);
 			log("Deleted directory " + outputDir);
+		} catch (IOException e1) {
+			// ignore
 		}
 
-		boolean created = releaseDir.mkdir();
-		if (created) {
+		try {
+			IO.mkdirs(releaseDir);
 			log("Created directory " + outputDir);
-		} else {
-			throw new BuildException("Output directory '" + outputDir + "' could not be created");
+		} catch (IOException e) {
+			throw new BuildException("Output directory '" + outputDir + "' could not be created", e);
 		}
 
 		return releaseDir;

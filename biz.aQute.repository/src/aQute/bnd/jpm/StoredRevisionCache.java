@@ -39,13 +39,13 @@ public class StoredRevisionCache {
 
 		this.root = root;
 		this.settings = settings;
-		this.getRoot().mkdirs();
+		IO.mkdirs(this.getRoot());
 		this.tmpdir = new File(root, "tmp");
-		this.tmpdir.mkdir();
+		IO.mkdirs(this.tmpdir);
 		this.repodir = new File(root, "shas");
-		this.repodir.mkdir();
+		IO.mkdirs(this.repodir);
 		this.programdir = new File(root, "programs");
-		this.programdir.mkdir();
+		IO.mkdirs(this.programdir);
 		this.refresh = new File(root, ".refreshed");
 		if (!this.refresh.isFile())
 			this.refresh.createNewFile();
@@ -105,27 +105,17 @@ public class StoredRevisionCache {
 					throw new Exception("Shas did not match (expected)" + Hex.toHexString(sha) + " (downloaded)" + d.tmp
 							+ " (" + Hex.toHexString(d.sha) + ")");
 
-				file.getParentFile().mkdirs();
-				if (!d.tmp.renameTo(file)) {
-					// We must have had a race condition
-					// on a system where we have not destructive
-					// rename. Since we are in a SHA name dir
-					// the content must ALWAYS be the same. So if
-					// we have a name clash we can throw away the newly download
-					// one since we seem to have lost.
-					d.tmp.delete();
-				} else {
-					// long modified = d.connection.getLastModified();
-					// if (modified > 0)
-					// file.setLastModified(modified);
-				}
+				IO.mkdirs(file.getParentFile());
+				IO.rename(d.tmp, file);
 				return;
 			} catch (Exception e) {
+				if (d != null)
+					IO.delete(d.tmp);
 				errors.put(file, e);
 				throw e;
 			} finally {
 				if (d != null)
-					d.tmp.delete();
+					IO.delete(d.tmp);
 			}
 		}
 		throw new FileNotFoundException(urls.toString());
@@ -156,7 +146,7 @@ public class StoredRevisionCache {
 
 	public void add(RevisionRef d, File file) throws IOException {
 		File path = getPath(d.bsn, d.version, d.revision);
-		path.getParentFile().mkdirs();
+		IO.mkdirs(path.getParentFile());
 		IO.copy(file, path);
 		long modified = file.lastModified();
 		if (modified > 0)
@@ -172,9 +162,9 @@ public class StoredRevisionCache {
 		refresh.setLastModified(System.currentTimeMillis());
 	}
 
-	public void deleteAll() {
+	public void deleteAll() throws IOException {
 		IO.delete(root);
-		root.mkdirs();
+		IO.mkdirs(root);
 	}
 
 	public Program getProgram(String bsn) {
@@ -218,16 +208,16 @@ public class StoredRevisionCache {
 	 * @param sha
 	 */
 	public void removeSources(String bsn, String version, byte[] sha) {
-		getPath(bsn, version, sha, true).delete();
+		IO.delete(getPath(bsn, version, sha, true));
 	}
 
 	/*
 	 * After we used download, we need to create the file in the cache area
 	 */
-	public void makePermanent(RevisionRef ref, Download d) {
+	public void makePermanent(RevisionRef ref, Download d) throws Exception {
 		File f = getPath(ref.bsn, ref.version, ref.revision);
-		f.getParentFile().mkdirs();
-		d.tmp.renameTo(f);
+		IO.mkdirs(f.getParentFile());
+		IO.rename(d.tmp, f);
 	}
 
 }

@@ -377,7 +377,7 @@ public interface Constants {
 
 	String							DEFAULT_DO_NOT_COPY							= "CVS|\\.svn|\\.git|\\.DS_Store";
 
-	Charset							DEFAULT_CHARSET								= Charset.forName("UTF8");
+	Charset							DEFAULT_CHARSET								= Charset.forName("UTF-8");
 	String							VERSION_FILTER								= "version";
 	String							PROVIDER_TYPE_DIRECTIVE						= "x-provider-type:";
 	/**

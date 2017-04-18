@@ -1,11 +1,13 @@
 package aQute.bnd.ant;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.tools.ant.BuildException;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.lib.io.IO;
 
 public class RunBundlesTask extends BaseTask {
 
@@ -38,16 +40,18 @@ public class RunBundlesTask extends BaseTask {
 
 	private File createReleaseDir() {
 		File releaseDir = new File(outputDir);
-		boolean deleted = releaseDir.delete();
-		if (deleted) {
+		try {
+			IO.deleteWithException(releaseDir);
 			log("Deleted directory " + outputDir);
+		} catch (IOException e1) {
+			// ignore
 		}
 
-		boolean created = releaseDir.mkdir();
-		if (created) {
+		try {
+			IO.mkdirs(releaseDir);
 			log("Created directory " + outputDir);
-		} else {
-			throw new BuildException("Output directory '" + outputDir + "' could not be created");
+		} catch (IOException e) {
+			throw new BuildException("Output directory '" + outputDir + "' could not be created", e);
 		}
 
 		return releaseDir;

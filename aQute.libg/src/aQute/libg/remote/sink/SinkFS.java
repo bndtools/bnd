@@ -64,7 +64,7 @@ public class SinkFS {
 	}
 
 	private void copy(byte[] data, File file, String sha) throws Exception {
-		file.getParentFile().mkdirs();
+		IO.mkdirs(file.getParentFile());
 		IO.copy(data, file);
 		shas.put(file, sha);
 	}
@@ -79,7 +79,7 @@ public class SinkFS {
 			if (data != null) {
 				File tmp = IO.createTempFile(shacache, "shacache", null);
 				IO.copy(data, tmp);
-				tmp.renameTo(shaf);
+				IO.rename(tmp, shaf);
 				return data;
 			}
 		}
