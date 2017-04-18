@@ -139,7 +139,7 @@ public class ResolutionFailurePanel {
 
     private static String formatFailureStatus(IStatus status, boolean exceptions, String indent) {
         StringWriter writer = new StringWriter();
-        try (PrintWriter pw = new PrintWriter(writer);) {
+        try (PrintWriter pw = new PrintWriter(writer)) {
 
             if (status.isMultiStatus()) {
                 IStatus[] children = status.getChildren();

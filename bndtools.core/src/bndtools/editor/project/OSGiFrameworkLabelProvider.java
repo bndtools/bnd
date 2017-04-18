@@ -36,16 +36,9 @@ public class OSGiFrameworkLabelProvider extends LabelProvider {
         if (fwkIconURI != null) {
             image = images.get(fwkIconURI);
             if (image == null) {
-                InputStream stream = null;
-                try {
-                    stream = fwkIcon.openStream();
+                try (InputStream stream = fwkIcon.openStream()) {
                     image = new Image(Display.getCurrent(), stream);
-                } catch (IOException e) {} finally {
-                    try {
-                        if (stream != null)
-                            stream.close();
-                    } catch (IOException e) {}
-                }
+                } catch (IOException e) {}
                 if (image != null)
                     images.put(fwkIconURI, image);
             }

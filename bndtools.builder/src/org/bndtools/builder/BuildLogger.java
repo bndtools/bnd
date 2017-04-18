@@ -63,12 +63,12 @@ public class BuildLogger {
         full("Duration %.2f sec", (end - start) / 1000f);
 
         StringBuilder top = new StringBuilder();
-        Formatter topper = new Formatter(top);
-        if (files > 0)
-            topper.format("BUILD %s %d file%s built", name, files, files > 1 ? "s were" : " was");
-        else
-            topper.format("BUILD %s no build", name);
-        topper.close();
+        try (Formatter topper = new Formatter(top)) {
+            if (files > 0)
+                topper.format("BUILD %s %d file%s built", name, files, files > 1 ? "s were" : " was");
+            else
+                topper.format("BUILD %s no build", name);
+        }
 
         return top.append('\n').append(sb).toString();
     }

@@ -1,7 +1,6 @@
 package bndtools.bndplugins.repo.git;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -215,9 +214,7 @@ public class GitOBRRepo extends LocalIndexedRepo {
                 File file = new File(configFileName);
                 if (file.exists()) {
                     Properties props = new Properties();
-                    InputStream stream = null;
-                    try {
-                        stream = new FileInputStream(file);
+                    try (InputStream stream = IO.stream(file)) {
                         props.load(stream);
 
                         for (Object key : props.keySet()) {
@@ -235,9 +232,6 @@ public class GitOBRRepo extends LocalIndexedRepo {
                         }
                     } catch (IOException e) {
                         reporter.error("Failed to load %s", configFileName);
-                    } finally {
-                        if (stream != null)
-                            IO.close(stream);
                     }
                 }
             }

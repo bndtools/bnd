@@ -1,6 +1,7 @@
 package bndtools.tasks;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +17,7 @@ import bndtools.model.resolution.RequirementWrapper;
 public class AnalyseBundleResolutionJobTest extends TestCase {
 
     public void testEmptyFileList() {
-        AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve", new CapReqLoader[0]);
+        AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve", Collections.<CapReqLoader> emptySet());
 
         IStatus status = job.run(new NullProgressMonitor());
         assertEquals(IStatus.OK, status.getCode());
@@ -44,9 +45,7 @@ public class AnalyseBundleResolutionJobTest extends TestCase {
      */
 
     public void testExportAndSelfImport() {
-        AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve", new CapReqLoader[] {
-                new JarFileCapReqLoader(new File("test/tests.provider.jar"))
-        });
+        AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve", Collections.singleton(new JarFileCapReqLoader(new File("test/tests.provider.jar"))));
 
         IStatus status = job.run(new NullProgressMonitor());
         assertEquals(IStatus.OK, status.getCode());
@@ -90,9 +89,7 @@ public class AnalyseBundleResolutionJobTest extends TestCase {
     }
 
     public void testProvideCapability() {
-        AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve", new CapReqLoader[] {
-                new JarFileCapReqLoader(new File("test/tests.consumer.jar"))
-        });
+        AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve", Collections.singleton(new JarFileCapReqLoader(new File("test/tests.consumer.jar"))));
 
         IStatus status = job.run(new NullProgressMonitor());
         assertEquals(IStatus.OK, status.getCode());
@@ -104,9 +101,7 @@ public class AnalyseBundleResolutionJobTest extends TestCase {
     }
 
     public void testOptionalImport() {
-        AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve", new CapReqLoader[] {
-                new JarFileCapReqLoader(new File("test/example2.jar"))
-        });
+        AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve", Collections.singleton(new JarFileCapReqLoader(new File("test/example2.jar"))));
 
         IStatus status = job.run(new NullProgressMonitor());
         assertEquals(IStatus.OK, status.getCode());

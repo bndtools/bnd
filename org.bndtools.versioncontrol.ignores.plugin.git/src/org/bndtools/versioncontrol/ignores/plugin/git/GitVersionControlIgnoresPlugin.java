@@ -3,11 +3,9 @@ package org.bndtools.versioncontrol.ignores.plugin.git;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,7 +19,7 @@ public class GitVersionControlIgnoresPlugin implements VersionControlIgnoresPlug
 
     /**
      * Fully read an ignore file, including comments.
-     * 
+     *
      * @param ignoreFile
      *            The ignore file
      * @return null when the ignore file is null, when the ignore file doesn't exist or when the ignore file is empty. A
@@ -38,10 +36,7 @@ public class GitVersionControlIgnoresPlugin implements VersionControlIgnoresPlug
         List<String> result = new LinkedList<String>();
 
         int lineNr = 0;
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(ignoreFile), "UTF-8"));
-
+        try (BufferedReader reader = Files.newBufferedReader(ignoreFile.toPath(), Charset.forName("UTF-8"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 result.add(line);
@@ -49,14 +44,6 @@ public class GitVersionControlIgnoresPlugin implements VersionControlIgnoresPlug
             }
         } catch (Exception e) {
             throw new IOException(String.format("Error reading ignore file %s on line %d", ignoreFile.getAbsolutePath(), lineNr), e);
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    /* swallow */
-                }
-            }
         }
 
         if (result.isEmpty()) {
@@ -132,9 +119,7 @@ public class GitVersionControlIgnoresPlugin implements VersionControlIgnoresPlug
         }
 
         /* write out the ignore file */
-        BufferedWriter writer = null;
-        try {
-            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(ignoreFile), "UTF-8"));
+        try (BufferedWriter writer = Files.newBufferedWriter(ignoreFile.toPath(), Charset.forName("UTF-8"))) {
             for (String ignoreToAppend : ignoresToAppend) {
                 writer.write(ignoreToAppend);
                 writer.newLine();
@@ -142,14 +127,6 @@ public class GitVersionControlIgnoresPlugin implements VersionControlIgnoresPlug
             writer.flush();
         } catch (Exception e) {
             throw new IOException(String.format("Error appending %s to ignore file %s", ignoresToAppend, ignoreFile.getAbsolutePath()), e);
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    /* swallow */
-                }
-            }
         }
     }
 }

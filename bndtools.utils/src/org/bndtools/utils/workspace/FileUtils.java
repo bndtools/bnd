@@ -1,7 +1,6 @@
 package org.bndtools.utils.workspace;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +28,8 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 
+import aQute.lib.io.IO;
+
 public class FileUtils {
     public static IDocument readFully(IFile file) throws CoreException, IOException {
         if (file.exists()) {
@@ -55,20 +56,7 @@ public class FileUtils {
     }
 
     public static byte[] readFully(InputStream stream) throws IOException {
-        try {
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
-
-            final byte[] buffer = new byte[1024];
-            while (true) {
-                int read = stream.read(buffer, 0, 1024);
-                if (read == -1)
-                    break;
-                output.write(buffer, 0, read);
-            }
-            return output.toByteArray();
-        } finally {
-            stream.close();
-        }
+        return IO.read(stream);
     }
 
     public static void writeFully(IDocument document, IFile file, boolean createIfAbsent) throws CoreException {

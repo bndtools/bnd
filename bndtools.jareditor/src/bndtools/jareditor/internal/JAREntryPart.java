@@ -143,6 +143,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
         encodingCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
     }
 
+    @Override
     public void selectionChanged(IFormPart part, ISelection selection) {
         if (selection instanceof IStructuredSelection) {
             Object element = ((IStructuredSelection) selection).getFirstElement();
@@ -184,9 +185,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
                     @Override
                     protected IStatus run(IProgressMonitor monitor) {
                         File ioFile = new File(uri);
-                        ZipFile zipFile = null;
-                        try {
-                            zipFile = new ZipFile(ioFile);
+                        try (ZipFile zipFile = new ZipFile(ioFile)) {
                             final StringWriter writer = new StringWriter();
                             if (showAsText)
                                 readAsText(zipFile, zipEntry, charsets[selectedCharset], writer, 1024 * 20, monitor);
@@ -194,6 +193,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
                                 readAsHex(zipFile, zipEntry, writer, 1024 * 20, 2, monitor);
 
                             display.asyncExec(new Runnable() {
+                                @Override
                                 public void run() {
                                     setContent(writer.toString());
                                 }
@@ -204,14 +204,6 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
                             Status status = new Status(IStatus.ERROR, PluginConstants.PLUGIN_ID, 0, "I/O error reading JAR file contents", e);
                             // ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, status);
                             return status;
-                        } finally {
-                            try {
-                                if (zipFile != null)
-                                    zipFile.close();
-                            } catch (IOException e) {
-                                // TODO Auto-generated catch block
-                                e.printStackTrace();
-                            }
                         }
                     }
                 };
@@ -247,8 +239,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
         SubMonitor progress = createProgressMonitor(entry, limit, monitor);
 
         boolean limitReached = false;
-        InputStream stream = zipFile.getInputStream(entry);
-        try {
+        try (InputStream stream = zipFile.getInputStream(entry)) {
             long total = 0;
 
             byte[] buffer = new byte[1024];
@@ -272,8 +263,6 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
             if (limitReached) {
                 out.write("\nLimit of " + (limit >> 10) + "Kb reached, the rest of the entry is not shown.");
             }
-
-            stream.close();
         }
     }
 
@@ -296,8 +285,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
         int bytePosition = 0;
         byte[] buffer = new byte[1024];
 
-        InputStream stream = zipFile.getInputStream(entry);
-        try {
+        try (InputStream stream = zipFile.getInputStream(entry)) {
             long total = 0;
 
             while (true) {
@@ -363,8 +351,6 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
             if (limitReached) {
                 out.write("\nLimit of " + (limit >> 10) + "Kb reached, the rest of the entry is not shown.");
             }
-
-            stream.close();
         }
     }
 }

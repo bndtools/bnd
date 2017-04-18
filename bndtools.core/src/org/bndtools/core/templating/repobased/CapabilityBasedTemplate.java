@@ -1,7 +1,6 @@
 package org.bndtools.core.templating.repobased;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -231,7 +230,7 @@ public class CapabilityBasedTemplate implements Template {
         File bundleFile = fetchBundle();
 
         _inputResources = new ResourceMap();
-        try (JarInputStream in = new JarInputStream(new FileInputStream(bundleFile))) {
+        try (JarInputStream in = new JarInputStream(IO.stream(bundleFile))) {
             JarEntry jarEntry = in.getNextJarEntry();
             while (jarEntry != null) {
                 String entryPath = jarEntry.getName().trim();

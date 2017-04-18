@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,6 +83,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.osgi.Clazz;
+import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.model.repo.RepositoryResourceElement;
 import bndtools.model.resolution.CapReqMapContentProvider;
@@ -116,13 +117,14 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
     private boolean inputLocked = false;
     private boolean outOfDate = false;
-    private CapReqLoader[] loaders;
+    Set<CapReqLoader> loaders;
     private Job analysisJob;
 
     private final Set<String> filteredCapabilityNamespaces;
 
     public ResolutionView() {
         filteredCapabilityNamespaces = new HashSet<String>(Arrays.asList(FILTERED_CAPABILITY_NAMESPACES));
+        loaders = Collections.emptySet();
     }
 
     private final IPartListener partAdapter = new PartAdapter() {
@@ -138,9 +140,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
                 if (file != null) {
                     CapReqLoader loader = getLoaderForFile(file.getLocation().toFile());
                     if (loader != null) {
-                        loaders = new CapReqLoader[] {
-                                loader
-                        };
+                        setLoaders(Collections.singleton(loader));
                         if (getSite().getPage().isPartVisible(ResolutionView.this)) {
                             executeAnalysis();
                         } else {
@@ -151,6 +151,18 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
             }
         }
     };
+
+    private boolean setLoaders(Set<CapReqLoader> newLoaders) {
+        Set<CapReqLoader> oldLoaders = loaders;
+        boolean swap = !oldLoaders.equals(newLoaders);
+        if (swap) {
+            loaders = newLoaders;
+        }
+        for (CapReqLoader l : swap ? oldLoaders : newLoaders) {
+            IO.close(l);
+        }
+        return swap;
+    }
 
     private CapReqLoader getLoaderForFile(File file) {
         CapReqLoader loader;
@@ -218,6 +230,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
         });
 
         hideSelfImportsFilter = new ViewerFilter() {
+
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
                 if (element instanceof RequirementWrapper) {
@@ -249,7 +262,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
                         Clazz clazz = (Clazz) item;
                         String className = clazz.getFQN();
                         IType type = null;
-                        if (loaders != null) {
+                        if (!loaders.isEmpty()) {
                             IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
                             for (CapReqLoader loader : loaders) {
                                 if (loader instanceof BndBuilderCapReqLoader) {
@@ -335,27 +348,26 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
         getSite().getPage().removeSelectionListener(this);
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         getSite().getPage().removePartListener(partAdapter);
+        setLoaders(Collections.<CapReqLoader> emptySet());
         super.dispose();
     }
 
-    public void setInput(CapReqLoader[] sourceLoaders, Map<String,List<Capability>> capabilities, Map<String,List<RequirementWrapper>> requirements) {
-        loaders = sourceLoaders;
+    public void setInput(Set<CapReqLoader> sourceLoaders, Map<String,List<Capability>> capabilities, Map<String,List<RequirementWrapper>> requirements) {
+        setLoaders(sourceLoaders);
+        sourceLoaders = loaders;
         if (reqsTree != null && !reqsTree.isDisposed() && capsTable != null && !capsTable.isDisposed()) {
             reqsViewer.setInput(requirements);
             capsViewer.setInput(capabilities);
 
             String label;
-            if (sourceLoaders != null && sourceLoaders.length > 0) {
+            if (!sourceLoaders.isEmpty()) {
                 StringBuilder builder = new StringBuilder();
-
-                if (sourceLoaders.length == 1)
-                    builder.append(sourceLoaders[0].getLongLabel());
-                else {
-                    for (int i = 0; i < sourceLoaders.length; i++) {
-                        if (i > 0)
-                            builder.append(", ");
-                        builder.append(sourceLoaders[i].getShortLabel());
-                    }
+                String delim = "";
+                boolean shortLabel = sourceLoaders.size() > 1;
+                for (CapReqLoader l : sourceLoaders) {
+                    builder.append(delim);
+                    builder.append(shortLabel ? l.getShortLabel() : l.getLongLabel());
+                    delim = ", ";
                 }
                 label = builder.toString();
             } else {
@@ -367,17 +379,11 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
     @Override
     public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-        if (selection == null || selection.isEmpty())
+        if (selection == null || !(selection instanceof IStructuredSelection))
             return;
 
-        List<CapReqLoader> loaderList = getLoadersFromSelection(selection);
-        if (loaderList.isEmpty())
-            return;
-
-        CapReqLoader[] loaders = loaderList.toArray(new CapReqLoader[0]);
-        if (!Arrays.equals(this.loaders, loaders)) {
-            this.loaders = loaders;
-
+        Set<CapReqLoader> loaders = getLoadersFromSelection((IStructuredSelection) selection);
+        if (setLoaders(loaders)) {
             if (getSite().getPage().isPartVisible(this)) {
                 executeAnalysis();
             } else {
@@ -386,12 +392,8 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
         }
     }
 
-    private List<CapReqLoader> getLoadersFromSelection(ISelection selection) {
-        if (selection.isEmpty() || !(selection instanceof IStructuredSelection))
-            return Collections.emptyList();
-        IStructuredSelection structSel = (IStructuredSelection) selection;
-
-        List<CapReqLoader> result = new LinkedList<CapReqLoader>();
+    private Set<CapReqLoader> getLoadersFromSelection(IStructuredSelection structSel) {
+        Set<CapReqLoader> result = new LinkedHashSet<CapReqLoader>();
         Iterator< ? > iter = structSel.iterator();
         while (iter.hasNext()) {
 
@@ -431,7 +433,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
             if (oldJob != null && oldJob.getState() != Job.NONE)
                 oldJob.cancel();
 
-            if (loaders != null) {
+            if (!loaders.isEmpty()) {
                 final AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("importExportAnalysis", loaders);
                 job.setSystem(true);
 
@@ -477,7 +479,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
     @Override
     public void resourceChanged(IResourceChangeEvent event) {
-        if (loaders != null) {
+        if (!loaders.isEmpty()) {
             IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
             for (CapReqLoader loader : loaders) {
                 if (loader instanceof BndBuilderCapReqLoader) {

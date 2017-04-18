@@ -86,9 +86,7 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
     }
 
     void analyseFile(File file) {
-        Jar jar = null;
-        try {
-            jar = new Jar(file);
+        try (Jar jar = new Jar(file)) {
             Attributes attribs = jar.getManifest().getMainAttributes();
             String bsn = attribs.getValue(Constants.BUNDLE_SYMBOLICNAME);
             String version = attribs.getValue(Constants.BUNDLE_VERSION);
@@ -96,9 +94,6 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
             bsnMap.put(file, Pair.newInstance(bsn, version));
         } catch (Exception e) {
             logger.logError("Error reading JAR file content", e);
-        } finally {
-            if (jar != null)
-                jar.close();
         }
     }
 

@@ -1,10 +1,9 @@
 package org.bndtools.builder.classpath;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -71,14 +70,10 @@ public class BndContainerSourceManager {
         if (props.isEmpty()) {
             IO.delete(propertiesFile);
         } else {
-            FileOutputStream out = null;
-            try {
-                out = new FileOutputStream(propertiesFile);
+            try (OutputStream out = IO.outputStream(propertiesFile)) {
                 props.store(out, new Date().toString());
             } catch (final IOException e) {
                 throw new CoreException(new Status(Status.ERROR, BndtoolsBuilder.PLUGIN_ID, "Failure to write container source attachments", e));
-            } finally {
-                IO.close(out);
             }
         }
     }
@@ -157,46 +152,38 @@ public class BndContainerSourceManager {
             bundlePath = resource.getLocation();
         }
 
-        JarInputStream jarStream = null;
-        try {
-            jarStream = new JarInputStream(new FileInputStream(bundlePath.toFile()), false);
-            try {
-                Manifest manifest = jarStream.getManifest();
-                if (manifest == null) {
-                    return null;
-                }
+        try (JarInputStream jarStream = new JarInputStream(IO.stream(bundlePath.toFile()), false)) {
+            Manifest manifest = jarStream.getManifest();
+            if (manifest == null) {
+                return null;
+            }
 
-                Domain domain = Domain.domain(manifest);
-                Entry<String,Attrs> bsnAttrs = domain.getBundleSymbolicName();
-                if (bsnAttrs == null) {
-                    return null;
-                }
-                String bsn = bsnAttrs.getKey();
-                String version = domain.getBundleVersion();
+            Domain domain = Domain.domain(manifest);
+            Entry<String,Attrs> bsnAttrs = domain.getBundleSymbolicName();
+            if (bsnAttrs == null) {
+                return null;
+            }
+            String bsn = bsnAttrs.getKey();
+            String version = domain.getBundleVersion();
 
-                if (version == null) {
-                    version = props.get("version");
-                }
+            if (version == null) {
+                version = props.get("version");
+            }
 
-                for (RepositoryPlugin repo : RepositoryUtils.listRepositories(true)) {
-                    if (repo == null) {
-                        continue;
-                    }
-                    if (repo instanceof WorkspaceRepository) {
-                        continue;
-                    }
-                    File sourceBundle = repo.get(bsn + ".source", new Version(version), props);
-                    if (sourceBundle != null) {
-                        return sourceBundle;
-                    }
+            for (RepositoryPlugin repo : RepositoryUtils.listRepositories(true)) {
+                if (repo == null) {
+                    continue;
                 }
-            } finally {
-                jarStream.close();
+                if (repo instanceof WorkspaceRepository) {
+                    continue;
+                }
+                File sourceBundle = repo.get(bsn + ".source", new Version(version), props);
+                if (sourceBundle != null) {
+                    return sourceBundle;
+                }
             }
         } catch (final Exception e) {
             // Ignore, something went wrong, or we could not find the source bundle
-        } finally {
-            IO.close(jarStream);
         }
 
         return null;
@@ -207,14 +194,10 @@ public class BndContainerSourceManager {
 
         final File propertiesFile = getSourceAttachmentPropertiesFile(project);
         if (propertiesFile.exists()) {
-            InputStream in = null;
-            try {
-                in = new FileInputStream(propertiesFile);
+            try (InputStream in = IO.stream(propertiesFile)) {
                 props.load(in);
             } catch (final IOException e) {
                 throw new CoreException(new Status(Status.ERROR, BndtoolsBuilder.PLUGIN_ID, "Failure to read container source attachments", e));
-            } finally {
-                IO.close(in);
             }
         }
 

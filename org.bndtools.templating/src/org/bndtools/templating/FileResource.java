@@ -1,9 +1,10 @@
 package org.bndtools.templating;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import aQute.lib.io.IO;
 
 public class FileResource implements Resource {
 
@@ -22,7 +23,7 @@ public class FileResource implements Resource {
 
     @Override
     public InputStream getContent() throws IOException {
-        return new FileInputStream(file);
+        return IO.stream(file);
     }
 
     @Override

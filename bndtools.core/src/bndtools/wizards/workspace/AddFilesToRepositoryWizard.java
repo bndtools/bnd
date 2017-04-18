@@ -4,7 +4,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -23,6 +22,7 @@ import org.eclipse.jface.wizard.Wizard;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.RefreshFileJob;
 import bndtools.types.Pair;
@@ -81,9 +81,7 @@ public class AddFilesToRepositoryWizard extends Wizard {
         for (File file : files) {
             monitor.subTask(file.getName());
 
-            Jar jar = null;
-            try {
-                jar = new Jar(file);
+            try (Jar jar = new Jar(file)) {
                 jar.setDoNotTouchManifest();
 
                 Attributes mainAttribs = jar.getManifest().getMainAttributes();
@@ -95,13 +93,10 @@ public class AddFilesToRepositoryWizard extends Wizard {
             } catch (Exception e) {
                 status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to analyse JAR: {0}", file.getPath()), e));
                 continue;
-            } finally {
-                if (jar != null)
-                    jar.close();
             }
 
             try {
-                RepositoryPlugin.PutResult result = repository.put(new BufferedInputStream(new FileInputStream(file)), new RepositoryPlugin.PutOptions());
+                RepositoryPlugin.PutResult result = repository.put(new BufferedInputStream(IO.stream(file)), new RepositoryPlugin.PutOptions());
                 if (result.artifact != null && result.artifact.getScheme().equals("file")) {
                     File newFile = new File(result.artifact);
 

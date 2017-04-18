@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -23,6 +25,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.osgi.resource.Capability;
+
 import aQute.lib.io.IO;
 import bndtools.model.resolution.RequirementWrapper;
 
@@ -30,12 +33,12 @@ public class AnalyseBundleResolutionJob extends Job {
 
     private static final ILogger logger = Logger.getLogger(AnalyseBundleResolutionJob.class);
 
-    private final CapReqLoader[] loaders;
+    private final Set< ? extends CapReqLoader> loaders;
 
     private Map<String,List<RequirementWrapper>> requirements;
     private Map<String,List<Capability>> capabilities;
 
-    public AnalyseBundleResolutionJob(String name, CapReqLoader[] loaders) {
+    public AnalyseBundleResolutionJob(String name, Set< ? extends CapReqLoader> loaders) {
         super(name);
         this.loaders = loaders;
     }

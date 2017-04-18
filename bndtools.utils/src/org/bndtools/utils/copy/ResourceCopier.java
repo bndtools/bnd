@@ -12,6 +12,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
+import aQute.lib.io.IO;
+
 public class ResourceCopier {
     public static IFile copy(URL url, IFile dst, Map<String,String> replaceRegularExpressions, IProgressMonitor monitor) throws IOException, CoreException {
         InputStream is = null;
@@ -58,13 +60,7 @@ public class ResourceCopier {
                 }
             }
         } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (Exception e) {
-                    /* swallow */
-                }
-            }
+            IO.close(is);
         }
 
         return dst;

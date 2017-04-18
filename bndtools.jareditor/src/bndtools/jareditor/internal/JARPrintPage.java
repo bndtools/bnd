@@ -60,22 +60,15 @@ public class JARPrintPage extends FormPage {
     }
 
     private static String print(File file) throws Exception {
-        Printer printer = new Printer();
-        ByteArrayOutputStream bos = null;
-        try {
-            bos = new ByteArrayOutputStream();
+        try (Printer printer = new Printer()) {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
             printer.setOut(new PrintStream(bos, false, "UTF-8"));
 
             /* Printer.METATYPE throws an NPE */
             int options = Printer.VERIFY | Printer.MANIFEST | Printer.LIST | Printer.IMPEXP | Printer.USES | Printer.USEDBY | Printer.COMPONENT;
 
             printer.doPrint(file.getAbsolutePath(), options);
-            return new String(bos.toByteArray(), "UTF-8");
-        } finally {
-            if (bos != null) {
-                bos.close();
-            }
-            printer.close();
+            return bos.toString("UTF-8");
         }
     }
 }

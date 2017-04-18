@@ -12,7 +12,6 @@ package bndtools.release;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,6 +44,7 @@ import aQute.bnd.osgi.JarResource;
 import aQute.bnd.properties.Document;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
+import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter;
 import bndtools.central.Central;
 import bndtools.release.api.IReleaseParticipant;
@@ -261,68 +261,70 @@ public class ReleaseHelper {
 
     private static boolean release(ReleaseContext context, List<IReleaseParticipant> participants, Builder builder) throws Exception {
 
-        Jar jar;
-
-        if (context.getReleaseOption() == ReleaseOption.UPDATE_RELEASE) {
-            jar = builder.build();
-        } else {
-            // No need to rebuild if release only
-            File jarFile = new File(context.getProject().getTarget(), builder.getBsn() + ".jar");
-            if (jarFile.isFile()) {
-                jar = new Jar(jarFile);
-            } else {
-                jar = builder.build();
-            }
-        }
-
-        handleBuildErrors(context, builder, jar);
-
-        String symbName = ReleaseUtils.getBundleSymbolicName(jar);
-        String version = ReleaseUtils.getBundleVersion(jar);
-
-        boolean proceed = preJarRelease(context, participants, jar);
-        if (!proceed) {
-            postRelease(context, participants, false);
-            displayErrors(context);
-            return false;
-        }
-
-        JarResource jr = new JarResource(jar);
-        InputStream is = new BufferedInputStream(jr.openInputStream());
+        Jar jar = null;
         try {
-            context.getProject().release(context.getReleaseRepository().getName(), jar.getName(), is);
+            if (context.getReleaseOption() == ReleaseOption.UPDATE_RELEASE) {
+                jar = builder.build();
+            } else {
+                // No need to rebuild if release only
+                File jarFile = new File(context.getProject().getTarget(), builder.getBsn() + ".jar");
+                if (jarFile.isFile()) {
+                    jar = new Jar(jarFile);
+                } else {
+                    jar = builder.build();
+                }
+            }
 
-            if (!context.getProject().isOk()) {
-                handleBuildErrors(context, context.getProject(), jar);
+            handleBuildErrors(context, builder, jar);
+
+            String symbName = ReleaseUtils.getBundleSymbolicName(jar);
+            String version = ReleaseUtils.getBundleVersion(jar);
+
+            boolean proceed = preJarRelease(context, participants, jar);
+            if (!proceed) {
+                postRelease(context, participants, false);
                 displayErrors(context);
-                context.getProject().clear();
                 return false;
             }
 
-        } finally {
-            is.close();
-        }
+            JarResource jr = new JarResource(jar);
+            try (InputStream is = new BufferedInputStream(jr.openInputStream())) {
+                context.getProject().release(context.getReleaseRepository().getName(), jar.getName(), is);
 
-        File file = context.getReleaseRepository().get(symbName, Version.parseVersion(version), null);
-        Jar releasedJar = null;
-        if (file != null && file.exists()) {
-            IResource resource = ReleaseUtils.toResource(file);
-            if (resource != null) {
-                resource.refreshLocal(IResource.DEPTH_ZERO, null);
+                if (!context.getProject().isOk()) {
+                    handleBuildErrors(context, context.getProject(), jar);
+                    displayErrors(context);
+                    context.getProject().clear();
+                    return false;
+                }
             }
-            releasedJar = jar;
-        }
-        if (releasedJar == null) {
-            handleReleaseErrors(context, context.getProject(), symbName, version);
 
-            postRelease(context, participants, false);
-            displayErrors(context);
-            return false;
-        }
-        context.addReleasedJar(releasedJar);
+            File file = context.getReleaseRepository().get(symbName, Version.parseVersion(version), null);
+            Jar releasedJar = null;
+            if (file != null && file.exists()) {
+                IResource resource = ReleaseUtils.toResource(file);
+                if (resource != null) {
+                    resource.refreshLocal(IResource.DEPTH_ZERO, null);
+                }
+                releasedJar = jar;
+                jar = null;
+            }
+            if (releasedJar == null) {
+                handleReleaseErrors(context, context.getProject(), symbName, version);
 
-        postJarRelease(context, participants, releasedJar);
-        return true;
+                postRelease(context, participants, false);
+                displayErrors(context);
+                return false;
+            }
+            context.addReleasedJar(releasedJar);
+
+            postJarRelease(context, participants, releasedJar);
+            return true;
+        } finally {
+            if (jar != null) {
+                jar.close();
+            }
+        }
     }
 
     private static boolean preUpdateProjectVersions(ReleaseContext context, List<IReleaseParticipant> participants) {
@@ -367,6 +369,7 @@ public class ReleaseHelper {
         for (IReleaseParticipant participant : participants) {
             participant.postRelease(context, success);
         }
+        context.close();
     }
 
     public static String[] getReleaseRepositories() {
@@ -447,20 +450,7 @@ public class ReleaseHelper {
     }
 
     private static byte[] readFully(InputStream stream) throws IOException {
-        try {
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
-
-            final byte[] buffer = new byte[1024];
-            while (true) {
-                int read = stream.read(buffer, 0, 1024);
-                if (read == -1)
-                    break;
-                output.write(buffer, 0, read);
-            }
-            return output.toByteArray();
-        } finally {
-            stream.close();
-        }
+        return IO.read(stream);
     }
 
     public static void writeFully(String text, IFile file, boolean createIfAbsent) throws CoreException {
