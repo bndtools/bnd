@@ -1,7 +1,9 @@
 package bndtools.editor.contents;
 
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -61,7 +63,6 @@ import bndtools.model.resolution.RequirementWrapper;
 import bndtools.model.resolution.RequirementWrapperLabelProvider;
 import bndtools.tasks.AnalyseBundleResolutionJob;
 import bndtools.tasks.BndFileCapReqLoader;
-import bndtools.tasks.CapReqLoader;
 
 public class BundleCalculatedImportsPart extends SectionPart implements IResourceChangeListener {
 
@@ -219,9 +220,7 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
         if (location == null)
             return;
 
-        CapReqLoader[] loaders = new CapReqLoader[] {
-                new BndFileCapReqLoader(location.toFile())
-        };
+        Set<BndFileCapReqLoader> loaders = Collections.singleton(new BndFileCapReqLoader(location.toFile()));
         final AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob(Messages.BundleCalculatedImportsPart_jobAnalyse, loaders);
         final Display display = tree.getDisplay();
         job.addJobChangeListener(new JobChangeAdapter() {
