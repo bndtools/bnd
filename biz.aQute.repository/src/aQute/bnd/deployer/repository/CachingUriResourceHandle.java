@@ -303,24 +303,15 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		if (file == null || !file.exists()) {
 			return null;
 		}
-		MessageDigest digest;
-		byte[] buf = new byte[BUFFER_SIZE];
 
-		try (InputStream stream = IO.stream(file)) {
-			digest = MessageDigest.getInstance(SHA_256);
-			while (true) {
-				int bytesRead = stream.read(buf, 0, BUFFER_SIZE);
-				if (bytesRead < 0)
-					break;
-
-				digest.update(buf, 0, bytesRead);
-			}
+		try {
+			MessageDigest digest = MessageDigest.getInstance(SHA_256);
+			IO.copy(file, digest);
+			return Hex.toHexString(digest.digest());
 		} catch (NoSuchAlgorithmException e) {
 			// Can't happen... hopefully...
 			throw new IOException(e.getMessage(), e);
 		}
-
-		return Hex.toHexString(digest.digest());
 	}
 
 	String readSHAFile() throws IOException {
