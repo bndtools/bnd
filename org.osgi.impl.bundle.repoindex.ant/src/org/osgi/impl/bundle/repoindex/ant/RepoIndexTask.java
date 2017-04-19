@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.Reader;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -136,8 +137,8 @@ public class RepoIndexTask extends Task {
 			File extras = new File(additionalKnownBundles);
 			if (extras.exists()) {
 				Properties props = new Properties();
-				try {
-					props.load(new FileReader(extras));
+				try (Reader r = new FileReader(extras)) {
+					props.load(r);
 					kba.setKnownBundlesExtra(props);
 				} catch (IOException e) {
 					throw new BuildException("Unable to load the additional known bundles " + additionalKnownBundles,

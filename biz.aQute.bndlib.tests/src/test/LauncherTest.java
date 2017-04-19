@@ -2,6 +2,7 @@ package test;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -94,7 +95,9 @@ public class LauncherTest extends TestCase {
 			Properties p = new Properties();
 			Resource resource = executable.getResource("launcher.properties");
 
-			p.load(resource.openInputStream());
+			try (InputStream in = resource.openInputStream()) {
+				p.load(in);
+			}
 
 			assertEquals("workspace", p.getProperty("in.workspace"));
 			assertEquals("project", p.getProperty("in.project"));
@@ -119,7 +122,9 @@ public class LauncherTest extends TestCase {
 				Properties p = new Properties();
 				Resource resource = executable.getResource("launcher.properties");
 
-				p.load(resource.openInputStream());
+				try (InputStream in = resource.openInputStream()) {
+					p.load(in);
+				}
 
 				assertEquals("workspace", p.getProperty("in.workspace"));
 				assertEquals("workspace", p.getProperty("in.project"));
@@ -141,7 +146,9 @@ public class LauncherTest extends TestCase {
 				Properties p = new Properties();
 				Resource resource = executable.getResource("launcher.properties");
 
-				p.load(resource.openInputStream());
+				try (InputStream in = resource.openInputStream()) {
+					p.load(in);
+				}
 
 				assertEquals("workspace", p.getProperty("in.workspace"));
 				assertEquals("project", p.getProperty("in.project"));
@@ -163,7 +170,9 @@ public class LauncherTest extends TestCase {
 				Properties p = new Properties();
 				Resource resource = executable.getResource("launcher.properties");
 
-				p.load(resource.openInputStream());
+				try (InputStream in = resource.openInputStream()) {
+					p.load(in);
+				}
 
 				assertEquals("workspace", p.getProperty("in.workspace"));
 				assertEquals("workspace", p.getProperty("in.project"));
@@ -429,7 +438,9 @@ public class LauncherTest extends TestCase {
 		assertNotNull(r);
 
 		Properties p = new Properties();
-		p.load(r.openInputStream());
+		try (InputStream in = r.openInputStream()) {
+			p.load(in);
+		}
 
 		System.out.println(p);
 

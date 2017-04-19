@@ -144,21 +144,22 @@ public class Plugins {
 		if (annotatedPlugins == null) {
 			annotatedPlugins = new TreeMap<String,Class< ? >>();
 
-			InputStream in = bnd.class.getResourceAsStream("bnd.info");
-			Properties p = new UTF8Properties();
-			p.load(in);
-			Parameters classes = new Parameters(p.getProperty("plugins"), bnd);
-			for (String cname : classes.keySet()) {
-				try {
-					Class< ? > c = getClass().getClassLoader().loadClass(cname);
-					aQute.bnd.annotation.plugin.BndPlugin annotation = c
-							.getAnnotation(aQute.bnd.annotation.plugin.BndPlugin.class);
-					if (annotation != null) {
-						annotatedPlugins.put(annotation.name(), c);
-					}
+			try (InputStream in = bnd.class.getResourceAsStream("bnd.info")) {
+				Properties p = new UTF8Properties();
+				p.load(in);
+				Parameters classes = new Parameters(p.getProperty("plugins"), bnd);
+				for (String cname : classes.keySet()) {
+					try {
+						Class< ? > c = getClass().getClassLoader().loadClass(cname);
+						aQute.bnd.annotation.plugin.BndPlugin annotation = c
+								.getAnnotation(aQute.bnd.annotation.plugin.BndPlugin.class);
+						if (annotation != null) {
+							annotatedPlugins.put(annotation.name(), c);
+						}
 
-				} catch (Exception ex) {
-					bnd.error("Cannot find plugin %s", cname);
+					} catch (Exception ex) {
+						bnd.error("Cannot find plugin %s", cname);
+					}
 				}
 			}
 

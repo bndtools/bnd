@@ -13,6 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
 import java.util.Collections;
@@ -466,7 +467,9 @@ public class TestIndexer extends TestCase {
 
 	public void testMacroExpansion() throws Exception {
 		Properties props = new Properties();
-		props.load(new FileInputStream("testdata/known-bundles.properties"));
+		try (InputStream in = new FileInputStream("testdata/known-bundles.properties")) {
+			props.load(in);
+		}
 
 		RepoIndex indexer = new RepoIndex();
 		indexer.addAnalyzer(new KnownBundleAnalyzer(props), FrameworkUtil.createFilter("(name=*)"));
