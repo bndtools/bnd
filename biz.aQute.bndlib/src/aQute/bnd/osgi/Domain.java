@@ -441,36 +441,34 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public static Domain domain(File file) throws IOException {
-		try (InputStream in = IO.stream(file)) {
-
-			if (file.getName().endsWith(".mf")) {
+		if (file.getName().endsWith(".mf")) {
+			try (InputStream in = IO.stream(file)) {
 				Manifest m = new Manifest(in);
 				return domain(m);
 			}
+		}
 
-			if (file.getName().endsWith(".properties") || file.getName().endsWith(".bnd")) {
-				Processor p = new Processor();
-				p.setProperties(file);
+		if (file.getName().endsWith(".properties") || file.getName().endsWith(".bnd")) {
+			Processor p = new Processor();
+			p.setProperties(file);
+			return domain(p);
+		}
+
+		if (file.getName().endsWith(".pom")) {
+			try {
+				PomParser p = new PomParser();
+				p.setProperties(p.getProperties(file));
 				return domain(p);
+			} catch (Exception e) {
+				throw new IllegalStateException(e);
 			}
+		}
 
-			if (file.getName().endsWith(".pom")) {
-				try {
-					PomParser p = new PomParser();
-					p.setProperties(p.getProperties(file));
-					return domain(p);
-				} catch (Exception e) {
-					throw new IllegalStateException(e);
-				}
-			}
-
-			// default & last. Assume JAR
-
-			try (JarInputStream jin = new JarInputStream(in)) {
-				Manifest m = jin.getManifest();
-				if (m != null)
-					return domain(m);
-			}
+		// default & last. Assume JAR
+		try (JarInputStream jin = new JarInputStream(IO.stream(file))) {
+			Manifest m = jin.getManifest();
+			if (m != null)
+				return domain(m);
 		}
 
 		// BUT WAIT! Maybe it's just a zip file (bad jar, bad jar...)
