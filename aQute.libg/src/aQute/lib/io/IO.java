@@ -573,7 +573,7 @@ public class IO {
 		}
 	}
 
-	public void copy(Collection< ? > c, OutputStream out) throws IOException {
+	public static void copy(Collection< ? > c, OutputStream out) throws IOException {
 		PrintWriter pw = writer(out);
 		try {
 			for (Object o : c) {
@@ -796,7 +796,7 @@ public class IO {
 		return false;
 	}
 
-	static public OutputStream	nullStream	= new OutputStream() {
+	static final public OutputStream	nullStream	= new OutputStream() {
 
 												@Override
 												public void write(int var0) throws IOException {}
@@ -807,7 +807,7 @@ public class IO {
 												@Override
 												public void write(byte[] var0, int from, int l) throws IOException {}
 											};
-	static public Writer		nullWriter	= new Writer() {
+	static final public Writer			nullWriter	= new Writer() {
 												public java.io.Writer append(char var0) throws java.io.IOException {
 													return null;
 												}
