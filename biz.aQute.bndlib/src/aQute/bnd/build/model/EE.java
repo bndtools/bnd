@@ -114,15 +114,14 @@ public enum EE {
 	 */
 	public Parameters getPackages() throws IOException {
 		if (packages == null) {
-			InputStream stream = EE.class.getResourceAsStream(name() + ".properties");
-			if (stream == null)
-				return new Parameters();
-
-			UTF8Properties props = new UTF8Properties();
-			props.load(stream);
-
-			String exports = props.getProperty("org.osgi.framework.system.packages");
-			packages = new Parameters(exports);
+			try (InputStream stream = EE.class.getResourceAsStream(name() + ".properties")) {
+				if (stream == null)
+					return new Parameters();
+				UTF8Properties props = new UTF8Properties();
+				props.load(stream);
+				String exports = props.getProperty("org.osgi.framework.system.packages");
+				packages = new Parameters(exports);
+			}
 		}
 		return packages;
 	}

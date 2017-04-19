@@ -1,6 +1,7 @@
 package aQute.lib.env;
 
 import java.io.File;
+import java.io.InputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -139,7 +140,9 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 
 	public void setProperties(URI uri) throws Exception {
 		UTF8Properties props = new UTF8Properties();
-		props.load(uri.toURL().openStream(), null, this);
+		try (InputStream in = uri.toURL().openStream()) {
+			props.load(in, null, this);
+		}
 		putAll(props);
 	}
 

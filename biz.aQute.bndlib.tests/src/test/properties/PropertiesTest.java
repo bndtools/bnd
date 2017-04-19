@@ -2,6 +2,7 @@ package test.properties;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
@@ -36,7 +37,9 @@ public class PropertiesTest extends TestCase {
 		model.loadFrom(file);
 
 		Properties props = new Properties();
-		props.load(new FileInputStream(file));
+		try (InputStream in = new FileInputStream(file)) {
+			props.load(in);
+		}
 
 		assertEquals(props.getProperty("Bundle-Version"), model.getBundleVersionString());
 

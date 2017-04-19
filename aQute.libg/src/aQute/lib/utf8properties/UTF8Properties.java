@@ -18,6 +18,8 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 import aQute.lib.io.IO;
+import aQute.lib.io.NonClosingInputStream;
+import aQute.lib.io.NonClosingReader;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -36,7 +38,7 @@ import aQute.service.reporter.Reporter;
 public class UTF8Properties extends Properties {
 	private static final long	serialVersionUID	= 1L;
 	private static Charset		UTF8				= Charset.forName("UTF-8");
-	private static Charset		ISO8859_1			= Charset.forName("ISO8859-1");
+	private static Charset		ISO8859_1			= Charset.forName("ISO-8859-1");
 
 	public UTF8Properties(Properties p) {
 		super(p);
@@ -45,67 +47,57 @@ public class UTF8Properties extends Properties {
 	public UTF8Properties() {}
 
 	public void load(InputStream in, File file, Reporter reporter) throws IOException {
-		String source = read(in);
+		String source = convert(IO.read(in));
 		load(source, file, reporter);
 	}
 
 	public void load(String source, File file, Reporter reporter) throws IOException {
-
 		PropertiesParser parser = new PropertiesParser(source, file == null ? null : file.getAbsolutePath(), reporter,
 				this);
 		parser.parse();
 	}
 
 	public void load(File file, Reporter reporter) throws Exception {
-		try (InputStream fin = IO.stream(file)) {
-			load(fin, file, reporter);
-		}
+		String source = convert(IO.read(file));
+		load(source, file, reporter);
 	}
 
 	@Override
 	public void load(InputStream in) throws IOException {
-		load(in, null, null);
+		load(new NonClosingInputStream(in), null, null);
 	}
 
 	@Override
 	public void load(Reader r) throws IOException {
-		String s = IO.collect(r);
-		PropertiesParser parser = new PropertiesParser(s, null, null, this);
-		parser.parse();
+		String source = IO.collect(new NonClosingReader(r));
+		load(source, null, null);
 	}
 
-	String read(InputStream in) throws IOException {
-
-		byte[] buffer = IO.read(in);
-		try {
-			try {
-				return convert(buffer, UTF8);
-			} catch (CharacterCodingException e) {
-				// Ok, not good, fallback to old encoding
-			}
-
-			try {
-				return convert(buffer, ISO8859_1);
-			} catch (CharacterCodingException e) {
-				// Ok, not good, fallback to platform encoding
-			}
-
-			return new String(buffer);
-		} finally {
-			// System.out.println("UTF8Props: " + this);
-		}
-	}
-
-	private String convert(byte[] buffer, Charset charset) throws IOException {
-		CharBuffer decode = charset.decode(ByteBuffer.wrap(buffer));
-		CharsetDecoder decoder = charset.newDecoder();
+	private String convert(byte[] buffer) throws IOException {
 		ByteBuffer bb = ByteBuffer.wrap(buffer);
 		CharBuffer cb = CharBuffer.allocate(buffer.length * 4);
-		CoderResult result = decoder.decode(bb, cb, true);
-		if (!result.isError()) {
-			return new String(cb.array(), 0, cb.position());
+		try {
+			return convert(bb, cb, UTF8);
+		} catch (CharacterCodingException e) {
+			// Ok, not good, fallback to old encoding
 		}
-		throw new CharacterCodingException();
+		bb.rewind();
+		cb.clear();
+		try {
+			return convert(bb, cb, ISO8859_1);
+		} catch (CharacterCodingException e) {
+			// Ok, not good, fallback to platform encoding
+		}
+		return new String(buffer);
+	}
+
+	private String convert(ByteBuffer bb, CharBuffer cb, Charset charset) throws IOException {
+		CharsetDecoder decoder = charset.newDecoder();
+		CoderResult result = decoder.decode(bb, cb, true);
+		if (result.isError()) {
+			result.throwException();
+		}
+		return cb.flip().toString();
 	}
 
 	@Override
