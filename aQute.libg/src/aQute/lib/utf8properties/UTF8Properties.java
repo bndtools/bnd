@@ -9,10 +9,11 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CoderResult;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -39,6 +40,8 @@ public class UTF8Properties extends Properties {
 	private static final long	serialVersionUID	= 1L;
 	private static Charset		UTF8				= Charset.forName("UTF-8");
 	private static Charset		ISO8859_1			= Charset.forName("ISO-8859-1");
+	private static final List<CharsetDecoder>	decoders			= Collections
+			.unmodifiableList(Arrays.asList(UTF8.newDecoder(), ISO8859_1.newDecoder()));
 
 	public UTF8Properties(Properties p) {
 		super(p);
@@ -47,7 +50,7 @@ public class UTF8Properties extends Properties {
 	public UTF8Properties() {}
 
 	public void load(InputStream in, File file, Reporter reporter) throws IOException {
-		String source = convert(IO.read(in));
+		String source = decode(IO.read(in));
 		load(source, file, reporter);
 	}
 
@@ -58,7 +61,7 @@ public class UTF8Properties extends Properties {
 	}
 
 	public void load(File file, Reporter reporter) throws Exception {
-		String source = convert(IO.read(file));
+		String source = decode(IO.read(file));
 		load(source, file, reporter);
 	}
 
@@ -73,31 +76,22 @@ public class UTF8Properties extends Properties {
 		load(source, null, null);
 	}
 
-	private String convert(byte[] buffer) throws IOException {
+	private String decode(byte[] buffer) throws IOException {
 		ByteBuffer bb = ByteBuffer.wrap(buffer);
 		CharBuffer cb = CharBuffer.allocate(buffer.length * 4);
-		try {
-			return convert(bb, cb, UTF8);
-		} catch (CharacterCodingException e) {
-			// Ok, not good, fallback to old encoding
+		for (CharsetDecoder decoder : decoders) {
+			boolean success = !decoder.decode(bb, cb, true).isError();
+			if (success) {
+				decoder.flush(cb);
+			}
+			decoder.reset();
+			if (success) {
+				return cb.flip().toString();
+			}
+			bb.rewind();
+			cb.clear();
 		}
-		bb.rewind();
-		cb.clear();
-		try {
-			return convert(bb, cb, ISO8859_1);
-		} catch (CharacterCodingException e) {
-			// Ok, not good, fallback to platform encoding
-		}
-		return new String(buffer);
-	}
-
-	private String convert(ByteBuffer bb, CharBuffer cb, Charset charset) throws IOException {
-		CharsetDecoder decoder = charset.newDecoder();
-		CoderResult result = decoder.decode(bb, cb, true);
-		if (result.isError()) {
-			result.throwException();
-		}
-		return cb.flip().toString();
+		return new String(buffer); // default decoding
 	}
 
 	@Override
