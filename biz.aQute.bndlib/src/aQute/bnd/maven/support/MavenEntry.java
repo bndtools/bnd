@@ -3,7 +3,6 @@ package aQute.bnd.maven.support;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
@@ -36,7 +35,7 @@ public class MavenEntry implements Closeable {
 	final File					artifactFile;
 	final String				pomPath;
 	final File					propertiesFile;
-	Properties					properties;
+	UTF8Properties				properties;
 	private boolean				propertiesChanged;
 	FutureTask<File>			artifact;
 	String						artifactPath;
@@ -213,8 +212,8 @@ public class MavenEntry implements Closeable {
 			properties = new UTF8Properties();
 			File props = new File(dir, "bnd.properties");
 			if (props.exists()) {
-				try (InputStream in = IO.stream(props)) {
-					properties.load(in);
+				try {
+					properties.load(props, null);
 				} catch (Exception e) {
 					// we ignore for now, will handle it on safe
 				}
