@@ -47,19 +47,18 @@ public class MavenPlugin extends LifeCyclePlugin {
 	private void copy(String source, String dest, Project p) throws IOException {
 
 		File f = p.getWorkspace().getFile("maven/" + source + ".tmpl");
-		InputStream in;
-
+		String s;
 		if (f.isFile()) {
-			in = IO.stream(f);
+			s = IO.collect(f);
 		} else {
-			in = MavenPlugin.class.getResourceAsStream(source);
+			InputStream in = MavenPlugin.class.getResourceAsStream(source);
 			if (in == null) {
 				p.error("Cannot find Maven default for %s", source);
 				return;
 			}
+			s = IO.collect(in);
 		}
 
-		String s = IO.collect(in);
 		String process = p.getReplacer().process(s);
 
 		File d = p.getFile(dest);
