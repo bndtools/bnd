@@ -1,6 +1,8 @@
 package aQute.lib.io;
 
 import java.io.File;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 
 import junit.framework.TestCase;
@@ -37,6 +39,104 @@ public class IOTest extends TestCase {
 		assertTrue(new File(destDir, "a/b/c/d/e/f/a.abc").exists());
 		assertTrue(new File(destDir, "a/b/c/c.abc").exists());
 		assertTrue(new File(destDir, "root").exists());
+	}
+
+	public void testCopyToExactHeapByteBuffer() throws Exception {
+		File src = new File("testresources/unzipped.dat");
+		byte[] file = IO.read(src);
+		ByteBuffer bb = ByteBuffer.allocate((int) src.length());
+		try (InputStream in = IO.stream(src)) {
+			IO.copy(in, bb);
+		}
+		assertEquals((int) src.length(), bb.position());
+		assertEquals(bb.capacity(), bb.position());
+		assertFalse(bb.hasRemaining());
+		bb.flip();
+		int length = bb.remaining();
+		for (int i = 0; i < length; i++) {
+			assertEquals(file[i], bb.get());
+		}
+	}
+
+	public void testCopyToSmallerHeapByteBuffer() throws Exception {
+		File src = new File("testresources/unzipped.dat");
+		byte[] file = IO.read(src);
+		ByteBuffer bb = ByteBuffer.allocate((int) src.length() - 8);
+		try (InputStream in = IO.stream(src)) {
+			IO.copy(in, bb);
+		}
+		assertEquals(bb.capacity(), bb.position());
+		assertFalse(bb.hasRemaining());
+		bb.flip();
+		int length = bb.remaining();
+		for (int i = 0; i < length; i++) {
+			assertEquals(file[i], bb.get());
+		}
+	}
+
+	public void testCopyToLargerHeapByteBuffer() throws Exception {
+		File src = new File("testresources/unzipped.dat");
+		byte[] file = IO.read(src);
+		ByteBuffer bb = ByteBuffer.allocate((int) src.length() + 20);
+		try (InputStream in = IO.stream(src)) {
+			IO.copy(in, bb);
+		}
+		assertEquals((int) src.length(), bb.position());
+		assertTrue(bb.hasRemaining());
+		bb.flip();
+		int length = bb.remaining();
+		for (int i = 0; i < length; i++) {
+			assertEquals(file[i], bb.get());
+		}
+	}
+
+	public void testCopyToExactDirectByteBuffer() throws Exception {
+		File src = new File("testresources/unzipped.dat");
+		byte[] file = IO.read(src);
+		ByteBuffer bb = ByteBuffer.allocateDirect((int) src.length());
+		try (InputStream in = IO.stream(src)) {
+			IO.copy(in, bb);
+		}
+		assertEquals((int) src.length(), bb.position());
+		assertEquals(bb.capacity(), bb.position());
+		assertFalse(bb.hasRemaining());
+		bb.flip();
+		int length = bb.remaining();
+		for (int i = 0; i < length; i++) {
+			assertEquals(file[i], bb.get());
+		}
+	}
+
+	public void testCopyToSmallerDirectByteBuffer() throws Exception {
+		File src = new File("testresources/unzipped.dat");
+		byte[] file = IO.read(src);
+		ByteBuffer bb = ByteBuffer.allocateDirect((int) src.length() - 8);
+		try (InputStream in = IO.stream(src)) {
+			IO.copy(in, bb);
+		}
+		assertEquals(bb.capacity(), bb.position());
+		assertFalse(bb.hasRemaining());
+		bb.flip();
+		int length = bb.remaining();
+		for (int i = 0; i < length; i++) {
+			assertEquals(file[i], bb.get());
+		}
+	}
+
+	public void testCopyToLargerDirectByteBuffer() throws Exception {
+		File src = new File("testresources/unzipped.dat");
+		byte[] file = IO.read(src);
+		ByteBuffer bb = ByteBuffer.allocateDirect((int) src.length() + 20);
+		try (InputStream in = IO.stream(src)) {
+			IO.copy(in, bb);
+		}
+		assertEquals((int) src.length(), bb.position());
+		assertTrue(bb.hasRemaining());
+		bb.flip();
+		int length = bb.remaining();
+		for (int i = 0; i < length; i++) {
+			assertEquals(file[i], bb.get());
+		}
 	}
 
 	public void testDestDirIsChildOfSource() throws Exception {
