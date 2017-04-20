@@ -4,7 +4,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.util.HashSet;
@@ -117,8 +116,8 @@ public class WorkspaceSetupWizard extends Wizard implements INewWizard {
                     case File :
                         File parentDir = file.getParentFile();
                         Files.createDirectories(parentDir.toPath());
-                        try (InputStream in = resource.getContent(); OutputStream out = IO.outputStream(file)) {
-                            IO.copy(in, out);
+                        try (InputStream in = resource.getContent()) {
+                            IO.copy(in, file);
                         }
                         break;
                     default :
