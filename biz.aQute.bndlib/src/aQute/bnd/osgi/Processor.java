@@ -1394,10 +1394,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	public Properties loadProperties(File file) throws IOException {
 		updateModified(file.lastModified(), "Properties file: " + file);
-		try (InputStream in = IO.stream(file)) {
-			UTF8Properties p = loadProperties0(in, file);
-			return p;
-		}
+		UTF8Properties p = loadProperties0(file);
+		return p;
 	}
 
 	/**
@@ -1410,8 +1408,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @return a Properties
 	 * @throws IOException
 	 */
-	UTF8Properties loadProperties0(InputStream in, File file) throws IOException {
-
+	UTF8Properties loadProperties0(File file) throws IOException {
 		String name = file.toURI().getPath();
 		int n = name.lastIndexOf('/');
 		if (n > 0)
@@ -1421,7 +1418,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		try {
 			UTF8Properties p = new UTF8Properties();
-			p.load(in, file, this);
+			p.load(file, this);
 			return p.replaceAll("\\$\\{\\.\\}", Matcher.quoteReplacement(name));
 		} catch (Exception e) {
 			error("Error during loading properties file: %s, error: %s", name, e);

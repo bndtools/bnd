@@ -1,16 +1,12 @@
 package aQute.bnd.deployer.repository.providers;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
-import java.util.Properties;
 
 import org.osgi.service.indexer.ResourceAnalyzer;
 import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
 
 import aQute.bnd.service.Plugin;
-import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.service.reporter.Reporter;
 
@@ -34,11 +30,11 @@ public class KnownBundleAnalyzerPlugin extends KnownBundleAnalyzer implements Re
 			throw new IllegalArgumentException(
 					String.format("Data file does not exist, or is not a plain file: %s", file));
 
-		try (InputStream stream = IO.stream(file)) {
-			Properties props = new UTF8Properties();
-			props.load(stream);
+		try {
+			UTF8Properties props = new UTF8Properties();
+			props.load(file, null);
 			setKnownBundlesExtra(props);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new IllegalArgumentException(String.format("Unable to read data file: %s", file), e);
 		}
 	}

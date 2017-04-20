@@ -8,7 +8,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
@@ -1103,11 +1102,9 @@ public class Macro {
 
 		MessageDigest digester = MessageDigest.getInstance(args[1]);
 		File f = domain.getFile(args[2]);
-		try (DigestInputStream in = new DigestInputStream(IO.stream(f), digester)) {
-			IO.drain(in);
-			byte[] digest = digester.digest();
-			return Hex.toHexString(digest);
-		}
+		IO.copy(f, digester);
+		byte[] digest = digester.digest();
+		return Hex.toHexString(digest);
 	}
 
 	public static void verifyCommand(String args[], String help, Pattern[] patterns, int low, int high) {

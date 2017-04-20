@@ -32,19 +32,18 @@ public class EclipsePlugin extends LifeCyclePlugin {
 		}
 
 		File f = p.getWorkspace().getFile("eclipse/" + source + ".tmpl");
-		InputStream in;
-
+		String s;
 		if (f.isFile()) {
-			in = IO.stream(f);
+			s = IO.collect(f);
 		} else {
-			in = EclipsePlugin.class.getResourceAsStream(source);
+			InputStream in = EclipsePlugin.class.getResourceAsStream(source);
 			if (in == null) {
 				p.error("Cannot find Eclipse default for %s", source);
 				return;
 			}
+			s = IO.collect(in);
 		}
 
-		String s = IO.collect(in);
 		String process = p.getReplacer().process(s);
 
 		IO.mkdirs(d.getParentFile());

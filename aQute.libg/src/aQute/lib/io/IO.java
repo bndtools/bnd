@@ -1,12 +1,12 @@
 package aQute.lib.io;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
-import java.io.DataInputStream;
 import java.io.DataOutput;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -24,6 +24,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitOption;
@@ -31,7 +35,9 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
@@ -48,7 +54,9 @@ public class IO {
 
 	static final public File	work		= new File(System.getProperty("user.dir"));
 	static final public File	home;
-
+	private static final EnumSet<StandardOpenOption>	writeOptions	= EnumSet.of(StandardOpenOption.WRITE,
+			StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+	private static final EnumSet<StandardOpenOption>	readOptions		= EnumSet.of(StandardOpenOption.READ);
 	static {
 		File tmp = null;
 		try {
@@ -90,6 +98,28 @@ public class IO {
 		}
 	}
 
+	public static void copy(byte[] data, File file) throws IOException {
+		copy(data, file.toPath());
+	}
+
+	public static void copy(byte[] data, Path path) throws IOException {
+		try (FileChannel out = writeChannel(path)) {
+			ByteBuffer buffer = ByteBuffer.wrap(data);
+			while (buffer.hasRemaining()) {
+				out.write(buffer);
+			}
+		}
+	}
+
+	public static void copy(byte[] r, Writer w) throws IOException {
+		w.write(new String(r, UTF_8));
+		w.flush();
+	}
+
+	public static void copy(byte[] r, OutputStream w) throws IOException {
+		w.write(r);
+	}
+
 	public static void copy(Reader r, Writer w) throws IOException {
 		try {
 			char buffer[] = new char[BUFFER_SIZE];
@@ -104,47 +134,37 @@ public class IO {
 		}
 	}
 
-	public static void copy(InputStream r, Writer w) throws IOException {
-		copy(r, w, "UTF-8");
-	}
-
-	public static void copy(byte[] r, Writer w) throws IOException {
-		copy(stream(r), w, "UTF-8");
-	}
-
-	public static void copy(byte[] data, File file) throws FileNotFoundException, IOException {
-		try (OutputStream out = outputStream(file)) {
-			copy(data, out);
-		}
-	}
-
-	public static void copy(byte[] r, OutputStream w) throws IOException {
-		copy(stream(r), w);
-	}
-
-	public static void copy(InputStream r, Writer w, String charset) throws IOException {
-		try (InputStreamReader isr = new InputStreamReader(r, charset)) {
-			copy(isr, w);
-		}
-	}
-
 	public static void copy(Reader r, OutputStream o) throws IOException {
 		copy(r, o, "UTF-8");
 	}
 
 	public static void copy(Reader r, OutputStream o, String charset) throws IOException {
 		try {
-			OutputStreamWriter osw = new OutputStreamWriter(o, charset);
-			copy(r, osw);
+			copy(r, new OutputStreamWriter(o, charset));
 		} finally {
 			r.close();
 		}
 	}
 
+	public static void copy(InputStream r, Writer w) throws IOException {
+		copy(r, w, "UTF-8");
+	}
+
+	public static void copy(InputStream r, Writer w, String charset) throws IOException {
+		copy(new InputStreamReader(r, charset), w);
+	}
+
 	public static void copy(InputStream in, OutputStream out) throws IOException {
-		DataOutputStream dos = new DataOutputStream(out);
-		copy(in, (DataOutput) dos);
-		dos.flush();
+		try {
+			byte[] buffer = new byte[BUFFER_SIZE];
+			int size = in.read(buffer);
+			while (size > 0) {
+				out.write(buffer, 0, size);
+				size = in.read(buffer);
+			}
+		} finally {
+			in.close();
+		}
 	}
 
 	public static void copy(InputStream in, DataOutput out) throws IOException {
@@ -160,13 +180,38 @@ public class IO {
 		}
 	}
 
+	public static void copy(ReadableByteChannel in, WritableByteChannel out) throws IOException {
+		try {
+			ByteBuffer buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
+			while (in.read(buffer) != -1) {
+				buffer.flip();
+				out.write(buffer);
+				buffer.compact();
+			}
+			buffer.flip();
+			while (buffer.hasRemaining()) {
+				out.write(buffer);
+			}
+		} finally {
+			in.close();
+		}
+	}
+
 	public static void copy(InputStream in, ByteBuffer bb) throws IOException {
 		try {
-			byte[] buffer = new byte[BUFFER_SIZE];
-			int size = in.read(buffer);
-			while (size > 0) {
-				bb.put(buffer, 0, size);
-				size = in.read(buffer);
+			boolean hasArray = bb.hasArray();
+			byte[] buffer = hasArray ? bb.array() : new byte[bb.remaining()];
+			while (bb.hasRemaining()) {
+				int pos = hasArray ? bb.position() : 0;
+				int size = in.read(buffer, pos, bb.remaining());
+				if (size <= 0) {
+					break;
+				}
+				if (hasArray) {
+					bb.position(pos + size);
+				} else {
+					bb.put(buffer, pos, size);
+				}
 			}
 		} finally {
 			in.close();
@@ -178,7 +223,11 @@ public class IO {
 	}
 
 	public static void copy(File in, MessageDigest md) throws IOException {
-		copy(stream(in), md);
+		copy(in.toPath(), md);
+	}
+
+	public static void copy(Path path, MessageDigest md) throws IOException {
+		copy(readChannel(path), md);
 	}
 
 	public static void copy(URLConnection in, MessageDigest md) throws IOException {
@@ -192,6 +241,23 @@ public class IO {
 			while (size > 0) {
 				md.update(buffer, 0, size);
 				size = in.read(buffer);
+			}
+		} finally {
+			in.close();
+		}
+	}
+
+	public static void copy(ReadableByteChannel in, MessageDigest md) throws IOException {
+		try {
+			ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+			while (in.read(buffer) != -1) {
+				buffer.flip();
+				md.update(buffer);
+				buffer.compact();
+			}
+			buffer.flip();
+			while (buffer.hasRemaining()) {
+				md.update(buffer);
 			}
 		} finally {
 			in.close();
@@ -289,20 +355,34 @@ public class IO {
 	}
 
 	public static void copy(InputStream a, File b) throws IOException {
-		try (OutputStream out = outputStream(b)) {
-			copy(a, out);
+		copy(a, b.toPath());
+	}
+
+	public static void copy(InputStream in, Path path) throws IOException {
+		try (FileChannel out = writeChannel(path)) {
+			copy(Channels.newChannel(in), out);
 		}
 	}
 
 	public static void copy(File a, OutputStream b) throws IOException {
-		copy(stream(a), b);
+		copy(a.toPath(), b);
+	}
+
+	public static void copy(Path path, OutputStream out) throws IOException {
+		copy(readChannel(path), Channels.newChannel(out));
 	}
 
 	public static byte[] read(File f) throws IOException {
-		try (DataInputStream in = new DataInputStream(stream(f))) {
-			byte[] data = new byte[(int) f.length()];
-			in.readFully(data);
-			return data;
+		ByteBuffer buffer = read(f.toPath());
+		return buffer.array();
+	}
+
+	public static ByteBuffer read(Path path) throws IOException {
+		try (FileChannel in = readChannel(path)) {
+			ByteBuffer buffer = ByteBuffer.allocate((int) in.size());
+			while (in.read(buffer) > 0) {}
+			buffer.flip();
+			return buffer;
 		}
 	}
 
@@ -317,45 +397,49 @@ public class IO {
 	}
 
 	public static void write(byte[] data, OutputStream out) throws Exception {
-		copy(stream(data), out);
+		copy(data, out);
 	}
 
 	public static void write(byte[] data, File out) throws Exception {
-		copy(stream(data), out);
+		copy(data, out);
+	}
+
+	public static String collect(File a) throws IOException {
+		return collect(a.toPath(), UTF_8);
 	}
 
 	public static String collect(File a, String encoding) throws IOException {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		copy(a, out);
-		return out.toString(encoding);
+		return collect(a.toPath(), Charset.forName(encoding));
+	}
+
+	public static String collect(Path path) throws IOException {
+		return collect(path, UTF_8);
+	}
+
+	public static String collect(Path in, Charset encoding) throws IOException {
+		return encoding.decode(read(in)).toString();
 	}
 
 	public static String collect(URL a, String encoding) throws IOException {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		copy(stream(a), out);
-		return out.toString(encoding);
+		return collect(stream(a), encoding);
 	}
 
 	public static String collect(URL a) throws IOException {
 		return collect(a, "UTF-8");
 	}
 
-	public static String collect(File a) throws IOException {
-		return collect(a, "UTF-8");
+	public static String collect(String a) throws IOException {
+		return collect(Paths.get(a), UTF_8);
 	}
 
-	public static String collect(String a) throws IOException {
-		return collect(new File(a), "UTF-8");
+	public static String collect(InputStream a) throws IOException {
+		return collect(a, "UTF-8");
 	}
 
 	public static String collect(InputStream a, String encoding) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		copy(a, out);
 		return out.toString(encoding);
-	}
-
-	public static String collect(InputStream a) throws IOException {
-		return collect(a, "UTF-8");
 	}
 
 	public static String collect(Reader a) throws IOException {
@@ -608,7 +692,13 @@ public class IO {
 	}
 
 	public static void store(Object o, File out, String encoding) throws IOException {
-		store(o, outputStream(out), encoding);
+		try (FileChannel ch = writeChannel(out.toPath())) {
+			if (o != null) {
+				try (Writer w = Channels.newWriter(ch, encoding)) {
+					w.write(o.toString());
+				}
+			}
+		}
 	}
 
 	public static void store(Object o, OutputStream fout) throws IOException {
@@ -618,7 +708,7 @@ public class IO {
 	public static void store(Object o, OutputStream fout, String encoding) throws IOException {
 		try {
 			if (o != null) {
-				copy(stream(o.toString(), encoding), fout);
+				copy(o.toString().getBytes(encoding), fout);
 			}
 		} finally {
 			fout.close();
@@ -635,11 +725,7 @@ public class IO {
 	}
 
 	public static InputStream stream(String s, String encoding) throws IOException {
-		return stream(s.getBytes(encoding));
-	}
-
-	public static InputStream stream(byte[] b) throws IOException {
-		return new ByteArrayInputStream(b);
+		return new ByteArrayInputStream(s.getBytes(encoding));
 	}
 
 	public static InputStream stream(File f) throws IOException {
@@ -654,6 +740,10 @@ public class IO {
 		return s.openStream();
 	}
 
+	public static FileChannel readChannel(Path p) throws IOException {
+		return FileChannel.open(p, readOptions);
+	}
+
 	public static OutputStream outputStream(File f) throws IOException {
 		return outputStream(f.toPath());
 	}
@@ -662,36 +752,36 @@ public class IO {
 		return Files.newOutputStream(p);
 	}
 
-	public static Reader reader(String s) {
-		return new StringReader(s);
+	public static FileChannel writeChannel(Path p) throws IOException {
+		return FileChannel.open(p, writeOptions);
 	}
 
-	public static BufferedReader reader(File f, String encoding) throws IOException {
-		return reader(stream(f), encoding);
-	}
-
-	public static BufferedReader reader(File f, Charset encoding) throws IOException {
-		return reader(stream(f), encoding);
+	public static BufferedReader reader(String s) {
+		return new BufferedReader(new StringReader(s));
 	}
 
 	public static BufferedReader reader(File f) throws IOException {
-		return reader(f, "UTF-8");
+		return reader(f.toPath(), UTF_8);
 	}
 
-	public static PrintWriter writer(File f, String encoding) throws IOException {
-		return writer(outputStream(f), encoding);
+	public static BufferedReader reader(File f, String encoding) throws IOException {
+		return reader(f.toPath(), Charset.forName(encoding));
 	}
 
-	public static PrintWriter writer(File f) throws IOException {
-		return writer(f, "UTF-8");
+	public static BufferedReader reader(File f, Charset encoding) throws IOException {
+		return reader(f.toPath(), encoding);
 	}
 
-	public static PrintWriter writer(OutputStream out, String encoding) throws IOException {
-		return new PrintWriter(new OutputStreamWriter(out, encoding));
+	public static BufferedReader reader(Path path, Charset encoding) throws IOException {
+		return reader(readChannel(path), encoding);
 	}
 
-	public static PrintWriter writer(OutputStream out, Charset encoding) throws IOException {
-		return new PrintWriter(new OutputStreamWriter(out, encoding));
+	public static BufferedReader reader(ReadableByteChannel in, Charset encoding) throws IOException {
+		return new BufferedReader(Channels.newReader(in, encoding.newDecoder(), -1));
+	}
+
+	public static BufferedReader reader(InputStream in) throws IOException {
+		return reader(in, UTF_8);
 	}
 
 	public static BufferedReader reader(InputStream in, String encoding) throws IOException {
@@ -702,12 +792,36 @@ public class IO {
 		return new BufferedReader(new InputStreamReader(in, encoding));
 	}
 
-	public static BufferedReader reader(InputStream in) throws IOException {
-		return reader(in, "UTF-8");
+	public static PrintWriter writer(File f) throws IOException {
+		return writer(f.toPath(), UTF_8);
+	}
+
+	public static PrintWriter writer(File f, String encoding) throws IOException {
+		return writer(f.toPath(), Charset.forName(encoding));
+	}
+
+	public static PrintWriter writer(File f, Charset encoding) throws IOException {
+		return writer(f.toPath(), encoding);
+	}
+
+	public static PrintWriter writer(Path path, Charset encoding) throws IOException {
+		return writer(writeChannel(path), encoding);
+	}
+
+	public static PrintWriter writer(WritableByteChannel out, Charset encoding) throws IOException {
+		return new PrintWriter(Channels.newWriter(out, encoding.newEncoder(), -1));
 	}
 
 	public static PrintWriter writer(OutputStream out) throws IOException {
-		return writer(out, "UTF-8");
+		return writer(out, UTF_8);
+	}
+
+	public static PrintWriter writer(OutputStream out, String encoding) throws IOException {
+		return new PrintWriter(new OutputStreamWriter(out, encoding));
+	}
+
+	public static PrintWriter writer(OutputStream out, Charset encoding) throws IOException {
+		return new PrintWriter(new OutputStreamWriter(out, encoding));
 	}
 
 	public static boolean createSymbolicLink(File link, File target) throws Exception {
