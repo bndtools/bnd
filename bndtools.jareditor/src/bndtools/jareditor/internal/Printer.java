@@ -42,11 +42,13 @@ public class Printer extends Processor {
     final static int VERIFY = 1;
 
     PrintStream out = System.out;
+    OutputStreamWriter or = new OutputStreamWriter(out, Constants.DEFAULT_CHARSET);
 
     private static final String EOL = String.format("%n");
 
     public void setOut(PrintStream out) {
         this.out = out;
+        this.or = new OutputStreamWriter(out, Constants.DEFAULT_CHARSET);
     }
 
     public void doPrint(String string, int options) throws Exception {
@@ -346,12 +348,7 @@ public class Printer extends Processor {
 
             Resource r = jar.getResource(path);
             if (r != null) {
-                OutputStreamWriter or = new OutputStreamWriter(out, Constants.DEFAULT_CHARSET);
-                try {
-                    IO.copy(IO.reader(r.openInputStream(), Constants.DEFAULT_CHARSET), or);
-                } finally {
-                    or.flush();
-                }
+                IO.copy(IO.reader(r.openInputStream(), Constants.DEFAULT_CHARSET), or);
             } else {
                 out.println("  - no resource");
                 warning("No Resource found for service component: " + path);
@@ -379,7 +376,7 @@ public class Printer extends Processor {
         if (map != null) {
             for (Map.Entry<String,Resource> entry : map.entrySet()) {
                 out.println(entry.getKey());
-                IO.copy(entry.getValue().openInputStream(), out);
+                IO.copy(IO.reader(entry.getValue().openInputStream(), Constants.DEFAULT_CHARSET), or);
                 out.println();
             }
             out.println();
