@@ -28,7 +28,7 @@ So we had come up with the surprisingly well fitting dependency model: 'Look Ma,
 ### BTool
 The early version of bnd was called btool and was incepted at Ericsson, where it was used to automate the generation of the manifest in the ebox project. Then, in 2001, btool was used to automate the build process of the specifications, the reference implementations, and the test suites at the OSGi Alliance. One day there was a bit of confusion about the pedigree of the btool, and it was showing its age; it was time for a rewrite and bnd was born.
 
-The name came from bundle, then removing he vowels, and cutting it to three characters to reduce the typing on the command line. The pronunciation: we actually have no clue, whatever your preference is. _B AND D_, _bind_, whatever. You want to write it as bnd, Bnd, or BND, be our guest. We prefer to write it like bnd since we love the symmetry.
+The name came from bundle, then removing the vowels, and cutting it to three characters to reduce the typing on the command line. The pronunciation: we actually have no clue, whatever your preference is. _B AND D_, _bind_, whatever. You want to write it as bnd, Bnd, or BND, be our guest. We prefer to write it like bnd since we love the symmetry.
 
 Over the years bnd gained a lot of power because we needed a tool at the OSGi Alliance that could not just create good bundles, it also was heavily used in the test cases that required bad bundles. Of course this was an excellent test range for bnd and this synergy is still true today.  
 
