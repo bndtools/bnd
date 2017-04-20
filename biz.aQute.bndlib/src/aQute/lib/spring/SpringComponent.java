@@ -54,7 +54,7 @@ public class SpringComponent implements AnalyzerPlugin {
 		Source s = new StreamSource(in);
 		transformer.transform(s, r);
 
-		try (BufferedReader br = IO.reader(IO.stream(bout.toByteArray()), "UTF-8")) {
+		try (BufferedReader br = IO.reader(bout.toString("UTF-8"))) {
 			String line = br.readLine();
 			while (line != null) {
 				line = line.trim();
