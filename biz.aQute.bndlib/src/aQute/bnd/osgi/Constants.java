@@ -1,6 +1,7 @@
 package aQute.bnd.osgi;
 
 import java.nio.charset.Charset;
+import  java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -377,7 +378,7 @@ public interface Constants {
 
 	String							DEFAULT_DO_NOT_COPY							= "CVS|\\.svn|\\.git|\\.DS_Store";
 
-	Charset							DEFAULT_CHARSET								= Charset.forName("UTF-8");
+	Charset							DEFAULT_CHARSET								= StandardCharsets.UTF_8;
 	String							VERSION_FILTER								= "version";
 	String							PROVIDER_TYPE_DIRECTIVE						= "x-provider-type:";
 	/**

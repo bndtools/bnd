@@ -1,5 +1,8 @@
 package aQute.lib.utf8properties;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,7 +12,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,10 +40,8 @@ import aQute.service.reporter.Reporter;
  */
 public class UTF8Properties extends Properties {
 	private static final long	serialVersionUID	= 1L;
-	private static Charset		UTF8				= Charset.forName("UTF-8");
-	private static Charset		ISO8859_1			= Charset.forName("ISO-8859-1");
 	private static final List<CharsetDecoder>	decoders			= Collections
-			.unmodifiableList(Arrays.asList(UTF8.newDecoder(), ISO8859_1.newDecoder()));
+			.unmodifiableList(Arrays.asList(UTF_8.newDecoder(), ISO_8859_1.newDecoder()));
 
 	public UTF8Properties(Properties p) {
 		super(p);
@@ -105,8 +105,8 @@ public class UTF8Properties extends Properties {
 			if (line.startsWith("#"))
 				continue;
 
-			out.write(line.getBytes(UTF8));
-			out.write("\n".getBytes(UTF8));
+			out.write(line.getBytes(UTF_8));
+			out.write("\n".getBytes(UTF_8));
 		}
 	}
 
