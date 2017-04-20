@@ -287,7 +287,7 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 		List<File> files = new ArrayList<>();
 		for (X509Certificate c : cc) {
 			File f = aQute.lib.io.IO.createTempFile(dir, "cert", ".cer");
-			aQute.lib.io.IO.write(c.getEncoded(), f);
+			aQute.lib.io.IO.copy(c.getEncoded(), f);
 			files.add(f);
 		}
 		return files;
