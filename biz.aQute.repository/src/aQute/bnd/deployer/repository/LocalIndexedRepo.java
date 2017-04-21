@@ -168,10 +168,7 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 		MessageDigest md = MessageDigest.getInstance(SHA256.ALGORITHM);
 		IO.copy(indexFile, md);
-
-		try (OutputStream out = IO.outputStream(shaFile)) {
-			out.write(Hex.toHexString(md.digest()).toLowerCase().toString().getBytes());
-		}
+		IO.store(Hex.toHexString(md.digest()).toLowerCase(), shaFile);
 	}
 
 	@SuppressWarnings("deprecation")

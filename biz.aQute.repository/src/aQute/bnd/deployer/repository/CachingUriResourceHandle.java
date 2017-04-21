@@ -325,7 +325,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 
 	void saveSHAFile(String contents) {
 		try {
-			IO.copy(IO.stream(contents), shaFile);
+			IO.store(contents, shaFile);
 		} catch (IOException e) {
 			IO.delete(shaFile);
 			// Errors saving the SHA should not interfere with the download
