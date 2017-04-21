@@ -3,7 +3,6 @@ package aQute.bnd.maven.support;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -291,17 +290,7 @@ public class MavenEntry implements Closeable {
 		if (download(repo, digestPath)) {
 			File digestFile = new File(root, digestPath);
 			final MessageDigest md = MessageDigest.getInstance(algorithm);
-			IO.copy(actualFile, new OutputStream() {
-				@Override
-				public void write(int c) throws IOException {
-					md.update((byte) c);
-				}
-
-				@Override
-				public void write(byte[] buffer, int offset, int length) {
-					md.update(buffer, offset, length);
-				}
-			});
+			IO.copy(actualFile, md);
 			byte[] digest = md.digest();
 			String source = IO.collect(digestFile).toUpperCase();
 			String hex = Hex.toHexString(digest).toUpperCase();
