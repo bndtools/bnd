@@ -1,6 +1,7 @@
 package aQute.lib.io;
 
 import java.io.File;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 
@@ -251,5 +252,11 @@ public class IOTest extends TestCase {
 			assertTrue(IO.isSymbolicLink(link));
 			assertTrue(Files.readSymbolicLink(link.toPath()).equals(newSource.toPath()));
 		}
+	}
+
+	public void testCollectEncoded() throws Exception {
+		InputStream in = IO.stream("testString", "UTF-8");
+		String result = IO.collect(in, "UTF-8");
+		assertEquals("testString", result);
 	}
 }
