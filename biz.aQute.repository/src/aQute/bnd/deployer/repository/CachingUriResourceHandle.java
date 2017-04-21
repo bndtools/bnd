@@ -280,9 +280,9 @@ public class CachingUriResourceHandle implements ResourceHandle {
 	private static String collectStackTrace(Throwable t) {
 		try {
 			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-			PrintStream pps = new PrintStream(buffer, false, "UTF-8");
+			PrintStream pps = new PrintStream(buffer, false, UTF_8);
 			t.printStackTrace(pps);
-			return buffer.toString("UTF-8");
+			return buffer.toString(UTF_8);
 		} catch (UnsupportedEncodingException e) {
 			return null;
 		}
