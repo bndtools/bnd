@@ -1,15 +1,17 @@
 package aQute.bnd.osgi;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.Writer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.lib.io.IO;
 import aQute.libg.command.Command;
-
 public class CommandResource extends WriteResource {
 	private final static Logger	logger	= LoggerFactory.getLogger(CommandResource.class);
 	final long		lastModified;
@@ -41,7 +43,7 @@ public class CommandResource extends WriteResource {
 			cmd.var("PATH", path);
 			logger.debug("PATH: {}", path);
 		}
-		OutputStreamWriter osw = new OutputStreamWriter(out, "UTF-8");
+		Writer osw = IO.writer(out, UTF_8);
 		int result = cmd.execute(command, stdout, errors);
 		osw.append(stdout);
 		osw.flush();

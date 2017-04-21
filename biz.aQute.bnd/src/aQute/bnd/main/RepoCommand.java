@@ -1,11 +1,12 @@
 package aQute.bnd.main;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
@@ -455,11 +456,11 @@ public class RepoCommand {
 			return;
 		}
 
-		PrintWriter pw = new PrintWriter(new OutputStreamWriter(bnd.out, "UTF-8"));
+		PrintWriter pw = IO.writer(bnd.out, UTF_8);
 		Tree tNewer = RepositoryElement.getTree(rnewer);
 		if (rolder == null) {
 			if (options.json())
-				codec.enc().to(new OutputStreamWriter(bnd.out, "UTF-8")).put(tNewer.serialize()).flush();
+				codec.enc().to(pw).put(tNewer.serialize()).flush();
 			else
 				DiffCommand.show(pw, tNewer, 0);
 		} else {
@@ -483,7 +484,7 @@ public class RepoCommand {
 			}
 
 			if (options.json())
-				codec.enc().to(new OutputStreamWriter(bnd.out, "UTF-8")).put(map).flush();
+				codec.enc().to(pw).put(map).flush();
 			else if (!options.diff())
 				bnd.printMultiMap(map);
 			else

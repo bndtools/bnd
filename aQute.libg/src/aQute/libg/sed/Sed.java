@@ -1,5 +1,7 @@
 package aQute.libg.sed;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -46,8 +48,8 @@ public class Sed {
 			out = output;
 		else
 			out = new File(file.getAbsolutePath() + ".tmp");
-		try (BufferedReader brdr = IO.reader(file, "UTF-8");
-				PrintWriter pw = IO.writer(out, "UTF-8")) {
+		try (BufferedReader brdr = IO.reader(file, UTF_8); //
+				PrintWriter pw = IO.writer(out, UTF_8)) {
 			String line;
 			while ((line = brdr.readLine()) != null) {
 				for (Pattern p : replacements.keySet()) {

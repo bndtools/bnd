@@ -1,5 +1,7 @@
 package aQute.libg.remote.sink;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -173,7 +175,7 @@ public class RemoteSink implements Sink {
 			for (String s : f.list()) {
 				sb.append(s).append("\n");
 			}
-			return sb.toString().getBytes("UTF-8");
+			return sb.toString().getBytes(UTF_8);
 		} else if (f.isFile()) {
 			return IO.read(f);
 		}

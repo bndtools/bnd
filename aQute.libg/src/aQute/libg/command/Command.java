@@ -1,6 +1,7 @@
 package aQute.libg.command;
 
-import java.io.ByteArrayInputStream;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,7 +51,7 @@ public class Command {
 	}
 
 	public int execute(String input, Appendable stdout, Appendable stderr) throws Exception {
-		InputStream in = new ByteArrayInputStream(input.getBytes("UTF-8"));
+		InputStream in = IO.stream(input, UTF_8);
 		return execute(in, stdout, stderr);
 	}
 

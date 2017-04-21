@@ -1,5 +1,7 @@
 package aQute.lib.json;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
@@ -9,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -17,14 +20,13 @@ import java.util.zip.InflaterInputStream;
 
 import aQute.lib.converter.TypeReference;
 import aQute.lib.io.IO;
-
 public class Decoder implements Closeable {
 	final JSONCodec		codec;
 	Reader				reader;
 	int					current;
 	MessageDigest		digest;
 	Map<String,Object>	extra;
-	String				encoding	= "UTF-8";
+	Charset				encoding	= UTF_8;
 
 	boolean				strict;
 	boolean				inflate;
@@ -51,6 +53,10 @@ public class Decoder implements Closeable {
 	}
 
 	public Decoder charset(String encoding) {
+		return charset(Charset.forName(encoding));
+	}
+
+	public Decoder charset(Charset encoding) {
 		this.encoding = encoding;
 		return this;
 	}

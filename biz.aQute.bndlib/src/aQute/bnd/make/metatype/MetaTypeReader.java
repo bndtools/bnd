@@ -1,8 +1,9 @@
 package aQute.bnd.make.metatype;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -21,9 +22,9 @@ import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.WriteResource;
+import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
 import aQute.libg.generics.Create;
-
 public class MetaTypeReader extends WriteResource {
 	final Analyzer			reporter;
 	Clazz					clazz;
@@ -261,7 +262,7 @@ public class MetaTypeReader extends WriteResource {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, "UTF-8"));
+		PrintWriter pw = IO.writer(out, UTF_8);
 		pw.print("<?xml version='1.0' encoding='UTF-8'?>\n");
 		metadata.print(0, pw);
 		pw.flush();

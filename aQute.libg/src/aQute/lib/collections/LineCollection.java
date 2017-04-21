@@ -1,5 +1,7 @@
 package aQute.lib.collections;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
@@ -17,11 +19,11 @@ public class LineCollection implements Iterator<String>, Closeable {
 	private String					next;
 
 	public LineCollection(InputStream in) throws IOException {
-		this(new InputStreamReader(in, "UTF-8"));
+		this(new InputStreamReader(in, UTF_8));
 	}
 
 	public LineCollection(File in) throws IOException {
-		this(IO.reader(in, "UTF-8"));
+		this(IO.reader(in, UTF_8));
 	}
 
 	public LineCollection(Reader reader) throws IOException {

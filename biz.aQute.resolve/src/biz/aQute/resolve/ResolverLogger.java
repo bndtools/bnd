@@ -1,5 +1,7 @@
 package biz.aQute.resolve;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -36,7 +38,7 @@ public class ResolverLogger implements LogService {
 			this.level = level;
 			file = File.createTempFile("tmp", ".log");
 			file.deleteOnExit();
-			printer = IO.writer(file, "UTF-8");
+			printer = IO.writer(file, UTF_8);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -97,12 +99,12 @@ public class ResolverLogger implements LogService {
 					RandomAccessFile raf = new RandomAccessFile(file, "r");
 
 					raf.readFully(buffer);
-					sb.append(new String(buffer, "UTF-8"));
+					sb.append(new String(buffer, UTF_8));
 					sb.append("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n");
 
 					raf.seek(raf.length() - buffer.length);
 					raf.readFully(buffer);
-					String s = new String(buffer, "UTF-8");
+					String s = new String(buffer, UTF_8);
 					sb.append(s);
 
 					raf.close();

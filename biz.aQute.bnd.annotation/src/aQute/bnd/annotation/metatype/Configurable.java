@@ -1,5 +1,7 @@
 package aQute.bnd.annotation.metatype;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -257,7 +259,7 @@ public class Configurable<T> {
 			if (o instanceof String) {
 				String s = (String) o;
 				if (componentType == Byte.class || componentType == byte.class)
-					return s.getBytes("UTF-8");
+					return s.getBytes(UTF_8);
 				if (componentType == Character.class || componentType == char.class)
 					return s.toCharArray();
 			}

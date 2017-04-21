@@ -1,6 +1,7 @@
 package aQute.libg.cafs;
 
 import static aQute.lib.io.IO.copy;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -59,8 +60,8 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 
 	static {
 		try {
-			CAFS = "CAFS".getBytes("UTF-8");
-			CAFE = "CAFE".getBytes("UTF-8");
+			CAFS = "CAFS".getBytes(UTF_8);
+			CAFE = "CAFE".getBytes(UTF_8);
 		} catch (Throwable e) {
 			throw new ExceptionInInitializerError(e);
 		}

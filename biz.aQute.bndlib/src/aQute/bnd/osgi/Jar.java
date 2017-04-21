@@ -1,6 +1,7 @@
 package aQute.bnd.osgi;
 
 import static aQute.lib.io.IO.getFile;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -36,7 +37,6 @@ import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 import aQute.lib.zip.ZipUtil;
 import aQute.service.reporter.Reporter;
-
 public class Jar implements Closeable {
 	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
 
@@ -498,7 +498,7 @@ public class Jar implements Closeable {
 	 * @throws IOException when something fails
 	 */
 	private static int write(OutputStream out, int width, String s) throws IOException {
-		byte[] bytes = s.getBytes("UTF-8");
+		byte[] bytes = s.getBytes(UTF_8);
 		return write(out, width, bytes);
 	}
 
@@ -615,7 +615,7 @@ public class Jar implements Closeable {
 			}
 			ZipUtil.setModifiedTime(ze, lastModified);
 			if (resource.getExtra() != null)
-				ze.setExtra(resource.getExtra().getBytes("UTF-8"));
+				ze.setExtra(resource.getExtra().getBytes(UTF_8));
 			jout.putNextEntry(ze);
 			resource.write(jout);
 			jout.closeEntry();
@@ -969,7 +969,7 @@ public class Jar implements Closeable {
 				if (path.equals(manifestName))
 					continue;
 				Resource resource = entry.getValue();
-				dout.write(path.getBytes("UTF-8"));
+				dout.write(path.getBytes(UTF_8));
 				resource.write(dout);
 			}
 		}

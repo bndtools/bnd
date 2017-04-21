@@ -1,5 +1,7 @@
 package aQute.lib.json;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.Flushable;
@@ -8,6 +10,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.IdentityHashMap;
@@ -15,13 +18,12 @@ import java.util.Map;
 import java.util.zip.DeflaterOutputStream;
 
 import aQute.lib.io.IO;
-
 public class Encoder implements Appendable, Closeable, Flushable {
 	final JSONCodec	codec;
 	Appendable		app;
 	MessageDigest	digest;
 	boolean			writeDefaults;
-	String			encoding	= "UTF-8";
+	Charset			encoding	= UTF_8;
 	boolean			deflate;
 	String			tabs		= null;
 	String			indent		= "";
@@ -67,6 +69,10 @@ public class Encoder implements Appendable, Closeable, Flushable {
 	}
 
 	public Encoder charset(String encoding) {
+		return charset(Charset.forName(encoding));
+	}
+
+	public Encoder charset(Charset encoding) {
 		this.encoding = encoding;
 		return this;
 	}

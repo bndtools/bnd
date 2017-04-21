@@ -1,5 +1,7 @@
 package aQute.bnd.main;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.Collection;
@@ -25,6 +27,7 @@ import aQute.configurable.Config;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
+import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
 
 public class DiffCommand {
@@ -123,9 +126,9 @@ public class DiffCommand {
 			File fout = options.output();
 
 			if (fout == null)
-				pw = new PrintWriter(bnd.out);
+				pw = IO.writer(bnd.out);
 			else
-				pw = new PrintWriter(fout, "UTF-8");
+				pw = IO.writer(fout, UTF_8);
 
 			Instructions packageFilters = new Instructions(options.pack());
 
@@ -187,9 +190,9 @@ public class DiffCommand {
 		File fout = options.output();
 		PrintWriter pw;
 		if (fout == null)
-			pw = new PrintWriter(bnd.out);
+			pw = IO.writer(bnd.out);
 		else
-			pw = new PrintWriter(fout, "UTF-8");
+			pw = IO.writer(fout, UTF_8);
 
 		Instructions packageFilters = new Instructions(options.pack());
 

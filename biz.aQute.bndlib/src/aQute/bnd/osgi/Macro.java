@@ -1,5 +1,7 @@
 package aQute.bnd.osgi;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -995,11 +997,11 @@ public class Macro {
 
 		Process process = Runtime.getRuntime().exec(command, null, domain.getBase());
 		if (input != null) {
-			process.getOutputStream().write(input.getBytes("UTF-8"));
+			process.getOutputStream().write(input.getBytes(UTF_8));
 		}
 		process.getOutputStream().close();
 
-		String s = IO.collect(process.getInputStream(), "UTF-8");
+		String s = IO.collect(process.getInputStream(), UTF_8);
 		int exitValue = process.waitFor();
 
 		if (exitValue != 0) {
@@ -1063,7 +1065,7 @@ public class Macro {
 		} else {
 			try {
 				URL url = new URL(args[1]);
-				return IO.collect(url, "UTF-8");
+				return IO.collect(url, UTF_8);
 			} catch (MalformedURLException mfue) {
 				// Ignore here
 			}

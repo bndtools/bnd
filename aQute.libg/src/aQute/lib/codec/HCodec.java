@@ -1,5 +1,7 @@
 package aQute.lib.codec;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -31,7 +33,7 @@ public class HCodec implements Codec {
 	}
 
 	public Object decode(InputStream in, Type t) throws Exception {
-		InputStreamReader r = new InputStreamReader(in, "UTF-8");
+		InputStreamReader r = new InputStreamReader(in, UTF_8);
 		return codec.decode(r, t);
 	}
 
@@ -40,7 +42,7 @@ public class HCodec implements Codec {
 	}
 
 	public void encode(Type t, Object o, OutputStream out) throws Exception {
-		OutputStreamWriter wr = new OutputStreamWriter(out, "UTF-8");
+		OutputStreamWriter wr = new OutputStreamWriter(out, UTF_8);
 		try {
 			codec.encode(t, o, wr);
 		} finally {
@@ -50,14 +52,14 @@ public class HCodec implements Codec {
 
 	public <T> T decode(File in, Class<T> t) throws Exception {
 		try (InputStream fin = IO.stream(in);
-				InputStreamReader rdr = new InputStreamReader(fin, "UTF-8")) {
+				InputStreamReader rdr = new InputStreamReader(fin, UTF_8)) {
 			return t.cast(decode(rdr, t));
 		}
 
 	}
 
 	public void encode(Type t, Object o, File out) throws Exception {
-		try (OutputStream oout = IO.outputStream(out); Writer wr = new OutputStreamWriter(oout, "UTF-8")) {
+		try (OutputStream oout = IO.outputStream(out); Writer wr = new OutputStreamWriter(oout, UTF_8)) {
 			codec.encode(t, o, wr);
 		}
 	}

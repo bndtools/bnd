@@ -1,6 +1,7 @@
 package aQute.jpm.lib;
 
 import static aQute.lib.io.IO.collect;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +12,6 @@ import java.net.SocketTimeoutException;
 
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
-
 public class Service {
 	static final int				BUFFER_SIZE	= IOConstants.PAGE_SIZE * 16;
 
@@ -96,7 +96,7 @@ public class Service {
 		if (port == -1)
 			return "Invalid port";
 
-		byte data[] = m.getBytes("UTF-8");
+		byte data[] = m.getBytes(UTF_8);
 		DatagramPacket p = new DatagramPacket(data, 0, data.length, InetAddress.getLoopbackAddress(), port);
 		DatagramSocket dsocket = new DatagramSocket();
 		dsocket.setReceiveBufferSize(5000);
@@ -106,7 +106,7 @@ public class Service {
 			byte[] buffer = new byte[BUFFER_SIZE];
 			DatagramPacket dp = new DatagramPacket(buffer, BUFFER_SIZE);
 			dsocket.receive(dp);
-			return new String(dp.getData(), dp.getOffset(), dp.getLength(), "UTF-8");
+			return new String(dp.getData(), dp.getOffset(), dp.getLength(), UTF_8);
 		} catch (SocketTimeoutException stoe) {
 			return "Timed out";
 		} finally {
