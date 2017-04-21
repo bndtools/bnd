@@ -163,16 +163,17 @@ public class Signer extends Processor {
 	}
 
 	private void digest(MessageDigest[] algorithms, Resource r) throws Exception {
-		InputStream in = r.openInputStream();
-		byte[] data = new byte[BUFFER_SIZE];
-		int size = in.read(data);
-		while (size > 0) {
-			for (int a = 0; a < algorithms.length; a++) {
-				if (algorithms[a] != null) {
-					algorithms[a].update(data, 0, size);
+		try (InputStream in = r.openInputStream()) {
+			byte[] data = new byte[BUFFER_SIZE];
+			int size = in.read(data);
+			while (size > 0) {
+				for (int a = 0; a < algorithms.length; a++) {
+					if (algorithms[a] != null) {
+						algorithms[a].update(data, 0, size);
+					}
 				}
+				size = in.read(data);
 			}
-			size = in.read(data);
 		}
 	}
 
