@@ -360,7 +360,7 @@ public class IO {
 
 	public static void copy(InputStream in, Path path) throws IOException {
 		try (FileChannel out = writeChannel(path)) {
-			copy(Channels.newChannel(in), out);
+			copy(in, out);
 		}
 	}
 
@@ -369,7 +369,39 @@ public class IO {
 	}
 
 	public static void copy(Path path, OutputStream out) throws IOException {
-		copy(readChannel(path), Channels.newChannel(out));
+		copy(readChannel(path), out);
+	}
+
+	public static void copy(InputStream in, WritableByteChannel out) throws IOException {
+		try {
+			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
+			byte[] buffer = bb.array();
+			for (int size; (size = in.read(buffer, bb.position(), bb.remaining())) > 0;) {
+				bb.position(bb.position() + size);
+				bb.flip();
+				out.write(bb);
+				bb.compact();
+			}
+			bb.flip();
+			while (bb.hasRemaining()) {
+				out.write(bb);
+			}
+		} finally {
+			in.close();
+		}
+	}
+
+	public static void copy(ReadableByteChannel in, OutputStream out) throws IOException {
+		try {
+			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
+			byte[] buffer = bb.array();
+			while (in.read(bb) > 0) {
+				out.write(buffer, 0, bb.position());
+				bb.clear();
+			}
+		} finally {
+			in.close();
+		}
 	}
 
 	public static byte[] read(File file) throws IOException {
