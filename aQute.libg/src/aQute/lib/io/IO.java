@@ -199,18 +199,27 @@ public class IO {
 
 	public static void copy(InputStream in, ByteBuffer bb) throws IOException {
 		try {
-			boolean hasArray = bb.hasArray();
-			byte[] buffer = hasArray ? bb.array() : new byte[bb.remaining()];
-			while (bb.hasRemaining()) {
-				int pos = hasArray ? bb.position() : 0;
-				int size = in.read(buffer, pos, bb.remaining());
-				if (size <= 0) {
-					break;
+			if (bb.hasArray()) {
+				byte[] buffer = bb.array();
+				int offset = bb.arrayOffset();
+				while (bb.hasRemaining()) {
+					int position = bb.position();
+					int size = in.read(buffer, offset + position, bb.remaining());
+					if (size <= 0) {
+						break;
+					}
+					bb.position(position + size);
 				}
-				if (hasArray) {
-					bb.position(pos + size);
-				} else {
-					bb.put(buffer, pos, size);
+			} else {
+				int length = Math.min(bb.remaining(), BUFFER_SIZE);
+				byte[] buffer = new byte[length];
+				while (bb.hasRemaining()) {
+					int size = in.read(buffer, 0, length);
+					if (size <= 0) {
+						break;
+					}
+					bb.put(buffer, 0, size);
+					length = Math.min(bb.remaining(), buffer.length);
 				}
 			}
 		} finally {

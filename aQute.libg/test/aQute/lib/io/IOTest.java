@@ -1,7 +1,6 @@
 package aQute.lib.io;
 
 import java.io.File;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 
@@ -45,9 +44,7 @@ public class IOTest extends TestCase {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
 		ByteBuffer bb = ByteBuffer.allocate((int) src.length());
-		try (InputStream in = IO.stream(src)) {
-			IO.copy(in, bb);
-		}
+		IO.copy(IO.stream(src), bb);
 		assertEquals((int) src.length(), bb.position());
 		assertEquals(bb.capacity(), bb.position());
 		assertFalse(bb.hasRemaining());
@@ -62,9 +59,7 @@ public class IOTest extends TestCase {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
 		ByteBuffer bb = ByteBuffer.allocate((int) src.length() - 8);
-		try (InputStream in = IO.stream(src)) {
-			IO.copy(in, bb);
-		}
+		IO.copy(IO.stream(src), bb);
 		assertEquals(bb.capacity(), bb.position());
 		assertFalse(bb.hasRemaining());
 		bb.flip();
@@ -78,9 +73,7 @@ public class IOTest extends TestCase {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
 		ByteBuffer bb = ByteBuffer.allocate((int) src.length() + 20);
-		try (InputStream in = IO.stream(src)) {
-			IO.copy(in, bb);
-		}
+		IO.copy(IO.stream(src), bb);
 		assertEquals((int) src.length(), bb.position());
 		assertTrue(bb.hasRemaining());
 		bb.flip();
@@ -94,9 +87,7 @@ public class IOTest extends TestCase {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
 		ByteBuffer bb = ByteBuffer.allocateDirect((int) src.length());
-		try (InputStream in = IO.stream(src)) {
-			IO.copy(in, bb);
-		}
+		IO.copy(IO.stream(src), bb);
 		assertEquals((int) src.length(), bb.position());
 		assertEquals(bb.capacity(), bb.position());
 		assertFalse(bb.hasRemaining());
@@ -111,9 +102,7 @@ public class IOTest extends TestCase {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
 		ByteBuffer bb = ByteBuffer.allocateDirect((int) src.length() - 8);
-		try (InputStream in = IO.stream(src)) {
-			IO.copy(in, bb);
-		}
+		IO.copy(IO.stream(src), bb);
 		assertEquals(bb.capacity(), bb.position());
 		assertFalse(bb.hasRemaining());
 		bb.flip();
@@ -127,15 +116,49 @@ public class IOTest extends TestCase {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
 		ByteBuffer bb = ByteBuffer.allocateDirect((int) src.length() + 20);
-		try (InputStream in = IO.stream(src)) {
-			IO.copy(in, bb);
-		}
+		IO.copy(IO.stream(src), bb);
 		assertEquals((int) src.length(), bb.position());
 		assertTrue(bb.hasRemaining());
 		bb.flip();
 		int length = bb.remaining();
 		for (int i = 0; i < length; i++) {
 			assertEquals(file[i], bb.get());
+		}
+	}
+
+	public void testCopyToHugeDirectByteBuffer() throws Exception {
+		File src = new File("testresources/unzipped.dat");
+		byte[] file = IO.read(src);
+		ByteBuffer bb = ByteBuffer.allocateDirect(IOConstants.PAGE_SIZE * 32);
+		IO.copy(IO.stream(src), bb);
+		assertEquals((int) src.length(), bb.position());
+		assertTrue(bb.hasRemaining());
+		bb.flip();
+		int length = bb.remaining();
+		for (int i = 0; i < length; i++) {
+			assertEquals(file[i], bb.get());
+		}
+	}
+
+	public void testCopyToOffsetHeapByteBuffer() throws Exception {
+		File src = new File("testresources/unzipped.dat");
+		byte[] file = IO.read(src);
+		byte[] wrapped = new byte[file.length + 1];
+		ByteBuffer bb = ByteBuffer.wrap(wrapped);
+		bb.put((byte) 0xbb);
+		ByteBuffer slice = bb.slice();
+		IO.copy(IO.stream(src), slice);
+		assertEquals(wrapped.length, slice.arrayOffset() + slice.position());
+		assertFalse(slice.hasRemaining());
+		int length = wrapped.length;
+		assertEquals((byte) 0xbb, wrapped[0]);
+		for (int i = 1; i < length; i++) {
+			assertEquals(file[i - 1], wrapped[i]);
+		}
+		slice.flip();
+		length = slice.remaining();
+		for (int i = 0; i < length; i++) {
+			assertEquals(file[i], slice.get());
 		}
 	}
 
