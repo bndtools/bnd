@@ -203,22 +203,14 @@ public class IO {
 			if (bb.hasArray()) {
 				byte[] buffer = bb.array();
 				int offset = bb.arrayOffset();
-				while (bb.hasRemaining()) {
-					int position = bb.position();
-					int size = in.read(buffer, offset + position, bb.remaining());
-					if (size <= 0) {
-						break;
-					}
-					bb.position(position + size);
+				for (int size; bb.hasRemaining()
+						&& (size = in.read(buffer, offset + bb.position(), bb.remaining())) > 0;) {
+					bb.position(bb.position() + size);
 				}
 			} else {
 				int length = Math.min(bb.remaining(), BUFFER_SIZE);
 				byte[] buffer = new byte[length];
-				while (bb.hasRemaining()) {
-					int size = in.read(buffer, 0, length);
-					if (size <= 0) {
-						break;
-					}
+				for (int size; bb.hasRemaining() && (size = in.read(buffer, 0, length)) > 0;) {
 					bb.put(buffer, 0, size);
 					length = Math.min(bb.remaining(), buffer.length);
 				}
