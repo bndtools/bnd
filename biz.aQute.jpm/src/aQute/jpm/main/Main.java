@@ -1,5 +1,7 @@
 package aQute.jpm.main;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -65,7 +67,6 @@ import aQute.service.library.Library;
 import aQute.service.library.Library.Program;
 import aQute.service.library.Library.Revision;
 import aQute.struct.struct.Error;
-
 /**
  * The command line interface to JPM
  */
@@ -1349,7 +1350,7 @@ public class Main extends ReporterAdapter {
 
 			if (opts.mac()) {
 				for (String s : rest) {
-					byte[] data = s.getBytes("UTF-8");
+					byte[] data = s.getBytes(UTF_8);
 					byte[] signature = settings.sign(data);
 					out.printf("%s\n", tos(opts.hex(), signature));
 				}

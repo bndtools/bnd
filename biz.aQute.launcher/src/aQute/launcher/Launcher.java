@@ -5,6 +5,7 @@ import static aQute.launcher.constants.LauncherConstants.DEFAULT_LAUNCHER_PROPER
 import static aQute.launcher.constants.LauncherConstants.ERROR;
 import static aQute.launcher.constants.LauncherConstants.UPDATE_NEEDED;
 import static aQute.launcher.constants.LauncherConstants.WARNING;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -12,8 +13,8 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Field;
@@ -160,7 +161,7 @@ public class Launcher implements ServiceListener {
 	}
 
 	static void load(final InputStream in, Properties properties) throws UnsupportedEncodingException, IOException {
-		try (InputStreamReader ir = new InputStreamReader(in, "UTF-8")) {
+		try (Reader ir = IO.reader(in, UTF_8)) {
 			properties.load(ir);
 		}
 	}
@@ -921,8 +922,7 @@ public class Launcher implements ServiceListener {
 			URL url = e.nextElement();
 			trace("found META-INF/services in %s", url);
 
-			try (InputStream in = url.openStream();
-					BufferedReader rdr = new BufferedReader(new InputStreamReader(in, "UTF-8"))) {
+			try (BufferedReader rdr = IO.reader(url.openStream(), UTF_8)) {
 				String line;
 				while ((line = rdr.readLine()) != null) {
 					trace(line);

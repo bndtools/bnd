@@ -1,5 +1,7 @@
 package aQute.bnd.osgi;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
@@ -21,7 +23,7 @@ public class PreprocessResource extends AbstractResource {
 	protected byte[] getBytes() throws Exception {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream(2000);
 		PrintWriter pw = IO.writer(bout, Constants.DEFAULT_CHARSET);
-		try (BufferedReader rdr = IO.reader(resource.openInputStream(), "UTF-8")) {
+		try (BufferedReader rdr = IO.reader(resource.openInputStream(), UTF_8)) {
 			String line = rdr.readLine();
 			while (line != null) {
 				line = processor.getReplacer().process(line);

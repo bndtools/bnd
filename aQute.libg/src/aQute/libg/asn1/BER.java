@@ -1,5 +1,7 @@
 package aQute.libg.asn1;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
@@ -71,7 +73,7 @@ public class BER implements Types {
 				case UNIVERSAL_STRING :
 				case PRINTABLE_STRING :
 				case UTCTIME :
-					summary = new String(data, "UTF-8");
+					summary = new String(data, UTF_8);
 					break;
 
 				case OBJECT_IDENTIFIER :
@@ -241,7 +243,7 @@ public class BER implements Types {
 
 			case UTF8_STRING :
 				String s = pdu.getString();
-				byte[] encoded = s.getBytes("UTF-8");
+				byte[] encoded = s.getBytes(UTF_8);
 				return encoded.length;
 
 			case IA5STRING :
@@ -431,7 +433,7 @@ public class BER implements Types {
 
 			case UTF8_STRING : {
 				String s = pdu.getString();
-				byte[] data = s.getBytes("UTF-8");
+				byte[] data = s.getBytes(UTF_8);
 				out.write(data);
 				break;
 			}

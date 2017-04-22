@@ -1,5 +1,6 @@
 package org.osgi.service.indexer.impl;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.osgi.framework.FrameworkUtil.createFilter;
 
 import java.io.File;
@@ -37,7 +38,6 @@ import org.osgi.service.indexer.impl.util.Indent;
 import org.osgi.service.indexer.impl.util.Pair;
 import org.osgi.service.indexer.impl.util.Tag;
 import org.osgi.service.log.LogService;
-
 /**
  * The repository indexer. See OSGi Enterprise Specification 5.0.0, chapter 132.
  */
@@ -153,7 +153,7 @@ public class RepoIndex implements ResourceIndexer {
 		boolean compressed = (prettySetting == null && compressedSetting == null)
 				|| Boolean.parseBoolean(compressedSetting);
 		try (PrintWriter pw = compressed ? new PrintWriter(new GZIPOutputStream(out, Deflater.BEST_COMPRESSION))
-				: new PrintWriter(new OutputStreamWriter(out, "UTF-8"))) {
+				: new PrintWriter(new OutputStreamWriter(out, UTF_8))) {
 			pw.print(Schema.XML_PROCESSING_INSTRUCTION);
 			String stylesheet = config.get(STYLESHEET);
 			if (stylesheet != null) {

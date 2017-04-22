@@ -1,5 +1,7 @@
 package aQute.junit;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -34,7 +36,6 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
-
 public class Activator implements BundleActivator, TesterConstants, Runnable {
 	BundleContext		context;
 	volatile boolean	active;
@@ -250,7 +251,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			Version v = bundle.getVersion();
 			File f = new File(reportDir, "TEST-" + bundle.getSymbolicName() + "-" + v.getMajor() + "." + v.getMinor()
 					+ "." + v.getMicro() + ".xml");
-			Writer writer = new OutputStreamWriter(Files.newOutputStream(f.toPath()), "UTF-8");
+			Writer writer = new OutputStreamWriter(Files.newOutputStream(f.toPath()), UTF_8);
 			writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 			return writer;
 		}

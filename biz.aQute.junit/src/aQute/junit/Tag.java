@@ -1,5 +1,7 @@
 package aQute.junit;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -270,7 +272,7 @@ public class Tag {
 	private void copyURL(PrintWriter pw, URL url) {
 		try {
 			try (InputStream in = url.openStream();
-					BufferedReader rdr = new BufferedReader(new InputStreamReader(in, "UTF-8"))) {
+					BufferedReader rdr = new BufferedReader(new InputStreamReader(in, UTF_8))) {
 				String line = rdr.readLine();
 				if (line != null) {
 					while (line != null && line.trim().startsWith("<?"))

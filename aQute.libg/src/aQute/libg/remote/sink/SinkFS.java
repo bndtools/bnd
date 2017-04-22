@@ -1,5 +1,7 @@
 package aQute.libg.remote.sink;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.util.Collection;
 import java.util.Map;
@@ -56,7 +58,7 @@ public class SinkFS {
 						shas.remove(file);
 				}
 			} else if (delta.content != null) {
-				byte[] bytes = delta.content.getBytes("UTF-8");
+				byte[] bytes = delta.content.getBytes(UTF_8);
 				String sha = SHA1.digest(bytes).asHex();
 				copy(bytes, file, sha);
 			}

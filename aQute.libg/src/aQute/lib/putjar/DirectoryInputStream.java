@@ -1,5 +1,7 @@
 package aQute.lib.putjar;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -201,7 +203,7 @@ public class DirectoryInputStream extends InputStream {
 		String p = getPath(root, file);
 		if (file.isDirectory())
 			p = p + "/";
-		byte[] path = p.getBytes("UTF-8");
+		byte[] path = p.getBytes(UTF_8);
 		writeShort(bout, path.length);
 		writeShort(directory, path.length);
 

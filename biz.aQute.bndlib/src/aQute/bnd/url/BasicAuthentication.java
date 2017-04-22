@@ -1,5 +1,7 @@
 package aQute.bnd.url;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.util.Map;
@@ -12,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import aQute.lib.base64.Base64;
 import aQute.libg.cryptography.SHA1;
 import aQute.service.reporter.Reporter;
-
 /**
  * Provide Http Basic Authentication. This URL Connection Handler plugin will
  * add basic authentication to the matching URL Connections. The following
@@ -71,7 +72,7 @@ public class BasicAuthentication extends DefaultURLConnectionHandler {
 		}
 		String authString = user + ":" + password;
 		try {
-			String encoded = Base64.encodeBase64(authString.getBytes("UTF-8"));
+			String encoded = Base64.encodeBase64(authString.getBytes(UTF_8));
 			this.authentication = PREFIX_BASIC_AUTH + encoded;
 			sha = SHA1.digest(password.getBytes()).asHex();
 		} catch (Exception e) {

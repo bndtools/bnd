@@ -1,11 +1,14 @@
 package aQute.bnd.signing;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.security.KeyStore;
 import java.security.KeyStore.PrivateKeyEntry;
 import java.security.MessageDigest;
@@ -23,7 +26,6 @@ import aQute.bnd.osgi.Resource;
 import aQute.lib.base64.Base64;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
-
 /**
  * This class is used with the aQute.bnd.osgi package, it signs jars with DSA
  * signature. -sign: md5, sha1
@@ -135,38 +137,43 @@ public class Signer extends Processor {
 
 	private void doManifest(Jar jar, String[] digestNames, MessageDigest[] algorithms, OutputStream out)
 			throws Exception {
+		Writer w = IO.writer(out, UTF_8);
+		try {
+			for (Map.Entry<String,Resource> entry : jar.getResources().entrySet()) {
+				String name = entry.getKey();
+				if (!METAINFDIR.matcher(name).matches()) {
+					w.write("\r\n");
+					w.write("Name: ");
+					w.write(name);
+					w.write("\r\n");
 
-		for (Map.Entry<String,Resource> entry : jar.getResources().entrySet()) {
-			String name = entry.getKey();
-			if (!METAINFDIR.matcher(name).matches()) {
-				out.write("\r\n".getBytes("UTF-8"));
-				out.write("Name: ".getBytes("UTF-8"));
-				out.write(name.getBytes("UTF-8"));
-				out.write("\r\n".getBytes("UTF-8"));
-
-				digest(algorithms, entry.getValue());
-				for (int a = 0; a < algorithms.length; a++) {
-					if (algorithms[a] != null) {
-						byte[] digest = algorithms[a].digest();
-						String header = digestNames[a] + "-Digest: " + new Base64(digest) + "\r\n";
-						out.write(header.getBytes("UTF-8"));
+					digest(algorithms, entry.getValue());
+					for (int a = 0; a < algorithms.length; a++) {
+						if (algorithms[a] != null) {
+							byte[] digest = algorithms[a].digest();
+							String header = digestNames[a] + "-Digest: " + new Base64(digest) + "\r\n";
+							w.write(header);
+						}
 					}
 				}
 			}
+		} finally {
+			w.flush();
 		}
 	}
 
 	private void digest(MessageDigest[] algorithms, Resource r) throws Exception {
-		InputStream in = r.openInputStream();
-		byte[] data = new byte[BUFFER_SIZE];
-		int size = in.read(data);
-		while (size > 0) {
-			for (int a = 0; a < algorithms.length; a++) {
-				if (algorithms[a] != null) {
-					algorithms[a].update(data, 0, size);
+		try (InputStream in = r.openInputStream()) {
+			byte[] data = new byte[BUFFER_SIZE];
+			int size = in.read(data);
+			while (size > 0) {
+				for (int a = 0; a < algorithms.length; a++) {
+					if (algorithms[a] != null) {
+						algorithms[a].update(data, 0, size);
+					}
 				}
+				size = in.read(data);
 			}
-			size = in.read(data);
 		}
 	}
 

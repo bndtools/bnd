@@ -1,5 +1,7 @@
 package aQute.launcher;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -120,7 +122,7 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 		PermissionInfo[] info = null;
 		if (in != null) {
 			List<PermissionInfo> permissions = new ArrayList<PermissionInfo>();
-			try (BufferedReader reader = IO.reader(in, "UTF-8")) {
+			try (BufferedReader reader = IO.reader(in, UTF_8)) {
 				String line;
 				while ((line = reader.readLine()) != null) {
 					line = line.trim();

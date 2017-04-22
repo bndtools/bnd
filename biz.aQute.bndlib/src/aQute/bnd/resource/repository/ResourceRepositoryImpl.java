@@ -1,5 +1,7 @@
 package aQute.bnd.resource.repository;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -43,7 +45,6 @@ import aQute.lib.json.JSONCodec;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
-
 /**
  * This class implements a hidden repository. This repo is kept in a text file
  * that is under scm control. Files are fetched on demand. The idea is that bnd
@@ -485,7 +486,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		File tmp = new File(indexFile.getAbsolutePath() + ".tmp");
 		IO.mkdirs(tmp.getParentFile());
 
-		try (PrintWriter ps = new PrintWriter(tmp, "UTF-8")) {
+		try (PrintWriter ps = IO.writer(tmp, UTF_8)) {
 			Formatter frm = new Formatter(ps);
 			getIndex().write(frm);
 			frm.close();

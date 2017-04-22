@@ -113,7 +113,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 
 		// Clear the SHA so the file appears modified
 		File shaFile = new File(cached.getAbsolutePath() + AbstractIndexedRepo.REPO_INDEX_SHA_EXTENSION);
-		IO.copy(IO.stream("00000000"), shaFile);
+		IO.store("00000000", shaFile);
 
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
 				new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/5"),

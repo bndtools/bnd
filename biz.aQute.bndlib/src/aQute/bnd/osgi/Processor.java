@@ -1,13 +1,13 @@
 package aQute.bnd.osgi;
 
 import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -1605,16 +1605,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	static public String read(InputStream in) throws Exception {
-		try (InputStreamReader ir = new InputStreamReader(in, "UTF-8")) {
-			StringBuilder sb = new StringBuilder();
-			char chars[] = new char[BUFFER_SIZE];
-			int size = ir.read(chars);
-			while (size > 0) {
-				sb.append(chars, 0, size);
-				size = ir.read(chars);
-			}
-			return sb.toString();
-		}
+		return IO.collect(in, UTF_8);
 	}
 
 	/**

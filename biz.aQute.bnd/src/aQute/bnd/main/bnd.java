@@ -1,5 +1,7 @@
 package aQute.bnd.main;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -10,10 +12,12 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1582,9 +1586,9 @@ public class bnd extends Processor {
 	 */
 	@Description("View a resource from a JAR file.")
 	public void _view(viewOptions options) throws Exception {
-		String charset = "UTF-8";
+		Charset charset = UTF_8;
 		if (options.charset() != null)
-			charset = options.charset();
+			charset = Charset.forName(options.charset());
 
 		if (options._arguments().isEmpty()) {
 			error("Need a jarfile as source");
@@ -2360,7 +2364,7 @@ public class bnd extends Processor {
 			}
 
 			File r = getFile(reportDir, "summary.xml");
-			try (PrintWriter pw = IO.writer(r, "UTF-8")) {
+			try (PrintWriter pw = IO.writer(r, UTF_8)) {
 				summary.print(0, pw);
 			}
 			if (errors != 0)
@@ -2508,7 +2512,7 @@ public class bnd extends Processor {
 			if (in == null) {
 				warning("Resource not found: test-report.xsl, no html report");
 			} else {
-				try (OutputStreamWriter out = new OutputStreamWriter(IO.outputStream(html), "UTF-8")) {
+				try (Writer out = IO.writer(html, UTF_8)) {
 					Transformer transformer = fact.newTransformer(new StreamSource(in));
 					transformer.transform(new DOMSource(doc), new StreamResult(out));
 					logger.debug("Transformed");
@@ -2729,7 +2733,7 @@ public class bnd extends Processor {
 					if (opts.xml())
 						p.storeToXML(fout, "converted from " + from);
 					else {
-						try (OutputStreamWriter osw = new OutputStreamWriter(fout, "UTF-8")) {
+						try (Writer osw = IO.writer(fout, UTF_8)) {
 							p.store(osw, "converted from " + from);
 						}
 					}
@@ -3133,7 +3137,7 @@ public class bnd extends Processor {
 
 			if (opts.mac()) {
 				for (String s : rest) {
-					byte[] data = s.getBytes("UTF-8");
+					byte[] data = s.getBytes(UTF_8);
 					byte[] signature = settings.sign(data);
 					out.printf("%s\n", tos(!opts.base64(), signature));
 				}

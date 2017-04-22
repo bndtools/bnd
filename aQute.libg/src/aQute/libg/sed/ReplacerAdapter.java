@@ -1,5 +1,7 @@
 package aQute.libg.sed;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -793,12 +795,12 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 		Process process = Runtime.getRuntime().exec(command, null, base);
 		if (input != null) {
-			process.getOutputStream().write(input.getBytes("UTF-8"));
+			process.getOutputStream().write(input.getBytes(UTF_8));
 		}
 		process.getOutputStream().close();
 
-		String s = IO.collect(process.getInputStream(), "UTF-8");
-		s += IO.collect(process.getErrorStream(), "UTF-8");
+		String s = IO.collect(process.getInputStream(), UTF_8);
+		s += IO.collect(process.getErrorStream(), UTF_8);
 		int exitValue = process.waitFor();
 		if (exitValue != 0)
 			return exitValue + "";
@@ -856,7 +858,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		} else {
 			try {
 				URL url = new URL(args[1]);
-				return IO.collect(url, "UTF-8");
+				return IO.collect(url, UTF_8);
 			} catch (MalformedURLException mfue) {
 				// Ignore here
 			}

@@ -381,7 +381,7 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 			indexer.index(files, output, config);
 		} else {
 			String content = String.format(EMPTY_REPO_TEMPLATE, repoName);
-			IO.copy(IO.stream(content), output);
+			IO.store(content, output);
 		}
 	}
 

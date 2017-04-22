@@ -1,11 +1,12 @@
 package aQute.lib.base64;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
@@ -13,7 +14,6 @@ import java.io.StringWriter;
 import java.util.regex.Pattern;
 
 import aQute.lib.io.IO;
-
 /*
  * Base 64 converter.
  * 
@@ -53,7 +53,7 @@ public class Base64 {
 	}
 
 	public static byte[] decodeBase64(Reader rdr) throws IOException {
-		return decodeBase64(rdr, 65000);
+		return decodeBase64(rdr, DEFAULT_MAX_INPUT_LENGTH);
 	}
 
 	public static byte[] decodeBase64(Reader rdr, int maxLength) throws IOException {
@@ -67,24 +67,18 @@ public class Base64 {
 	}
 
 	public static byte[] decodeBase64(InputStream in) throws IOException {
-		try {
-			return decodeBase64(in, DEFAULT_MAX_INPUT_LENGTH);
-		} finally {
-			in.close();
-		}
+		return decodeBase64(in, DEFAULT_MAX_INPUT_LENGTH);
 	}
 
 	public static byte[] decodeBase64(InputStream in, int maxLength) throws IOException {
-		try (InputStreamReader ir = new InputStreamReader(in, "US-ASCII")) {
-			return decodeBase64(ir, maxLength);
-		}
+		return decodeBase64(IO.reader(in, US_ASCII), maxLength);
 	}
 
 	public final static byte[] decodeBase64(File file) throws IOException {
 		if (file.length() > Integer.MAX_VALUE)
 			throw new IllegalArgumentException("File " + file + " is >4Gb for base 64 decoding");
-		try (InputStream fin = IO.stream(file)) {
-			return decodeBase64(fin, (int) file.length() * 2 / 3);
+		try {
+			return decodeBase64(IO.reader(file, US_ASCII), (int) file.length() * 2 / 3);
 		} catch (IllegalArgumentException iae) {
 			throw new IllegalArgumentException(iae.getMessage() + ": " + file, iae);
 		}
@@ -100,8 +94,7 @@ public class Base64 {
 		int pads = 0;
 
 		byte test[] = new byte[3];
-		int c;
-		while ((c = rdr.read()) >= 0) {
+		for (int c; (c = rdr.read()) >= 0;) {
 
 			maxLength--;
 			if (maxLength < 0)

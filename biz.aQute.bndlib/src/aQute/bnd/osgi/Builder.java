@@ -1,5 +1,7 @@
 package aQute.bnd.osgi;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
@@ -49,7 +51,6 @@ import aQute.lib.collections.MultiMap;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.libg.generics.Create;
-
 /**
  * Include-Resource: ( [name '=' ] file )+ Private-Package: package-decl ( ','
  * package-decl )* Export-Package: package-decl ( ',' package-decl )*
@@ -868,7 +869,7 @@ public class Builder extends Analyzer {
 			doCommand(jar, source, destination, extra, preprocess, absentIsOk);
 		} else if (extra.containsKey(LITERAL_ATTRIBUTE)) {
 			String literal = extra.get(LITERAL_ATTRIBUTE);
-			Resource r = new EmbeddedResource(literal.getBytes("UTF-8"), 0);
+			Resource r = new EmbeddedResource(literal.getBytes(UTF_8), 0);
 			String x = extra.get("extra");
 			if (x != null)
 				r.setExtra(x);

@@ -1,5 +1,7 @@
 package aQute.bnd.main;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -411,7 +413,7 @@ public class BaselineCommands {
 		File of = bnd.getFile(o);
 		File pof = of.getParentFile();
 		IO.mkdirs(pof);
-		try (PrintWriter pw = IO.writer(of, "UTF-8")) {
+		try (PrintWriter pw = IO.writer(of, UTF_8)) {
 			pw.print("<?xml version='1.0' encoding='UTF-8'?>\n");
 			top.print(0, pw);
 		}

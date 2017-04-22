@@ -1,5 +1,7 @@
 package aQute.bnd.osgi;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -11,7 +13,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import aQute.lib.io.IO;
-
 public class EmbeddedResource implements Resource {
 	byte	data[];
 	long	lastModified;
@@ -23,7 +24,7 @@ public class EmbeddedResource implements Resource {
 	}
 
 	public EmbeddedResource(String pc, int lastModified) throws UnsupportedEncodingException {
-		this(pc.getBytes("UTF-8"), lastModified);
+		this(pc.getBytes(UTF_8), lastModified);
 	}
 
 	public InputStream openInputStream() throws FileNotFoundException {

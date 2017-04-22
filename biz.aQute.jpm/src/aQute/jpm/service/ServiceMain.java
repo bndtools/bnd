@@ -1,5 +1,7 @@
 package aQute.jpm.service;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -12,7 +14,6 @@ import java.util.UUID;
 
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
-
 public class ServiceMain extends Thread {
 	static final int		BUFFER_SIZE	= IOConstants.PAGE_SIZE * 16;
 
@@ -78,7 +79,7 @@ public class ServiceMain extends Thread {
 					trace("Received message " + dp.getAddress());
 					if (dp.getAddress().isLoopbackAddress()) {
 
-						String s = new String(dp.getData(), dp.getOffset(), dp.getLength(), "UTF-8");
+						String s = new String(dp.getData(), dp.getOffset(), dp.getLength(), UTF_8);
 						trace("Received message " + s);
 						String parts[] = s.split(":");
 						String reply;
@@ -108,7 +109,7 @@ public class ServiceMain extends Thread {
 						} else
 							reply = "404 UNKNOWN REQUEST " + s;
 
-						byte data[] = reply.getBytes("UTF-8");
+						byte data[] = reply.getBytes(UTF_8);
 						DatagramPacket p = new DatagramPacket(data, 0, data.length, dp.getAddress(), dp.getPort());
 						trace("Sending reply message " + reply);
 						socket.send(p);

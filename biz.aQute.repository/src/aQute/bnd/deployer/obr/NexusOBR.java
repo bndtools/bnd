@@ -1,5 +1,7 @@
 package aQute.bnd.deployer.obr;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -241,7 +243,7 @@ public class NexusOBR extends AbstractIndexedRepo {
 			if (username != null && password != null) {
 				String userPassword = username + ":" + password;
 				httpUrlConnection.setRequestProperty("Authorization",
-						"Basic " + Base64.encodeBase64(userPassword.getBytes("UTF-8")));
+						"Basic " + Base64.encodeBase64(userPassword.getBytes(UTF_8)));
 			}
 
 			try (OutputStream out = httpUrlConnection.getOutputStream()) {
