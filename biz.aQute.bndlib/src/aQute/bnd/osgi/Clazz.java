@@ -1955,7 +1955,10 @@ public class Clazz {
 
 	@Override
 	public String toString() {
-		return className.getFQN();
+		if (className != null) {
+			return className.getFQN();
+		}
+		return resource.toString();
 	}
 
 	/**
