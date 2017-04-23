@@ -675,9 +675,7 @@ public class Jar implements Closeable {
 		this.closed = true;
 		IO.close(zipFile);
 		for (Resource r : resources.values()) {
-			if (r instanceof Closeable) {
-				IO.close((Closeable) r);
-			}
+			IO.close(r);
 		}
 		resources.clear();
 		directories.clear();

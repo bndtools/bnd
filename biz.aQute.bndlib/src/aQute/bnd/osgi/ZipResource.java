@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,24 +16,45 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
+import aQute.lib.io.IO;
 import aQute.lib.zip.ZipUtil;
 public class ZipResource implements Resource {
-	ZipFile		zip;
-	ZipEntry	entry;
-	long		lastModified;
-	String		extra;
+	private ByteBuffer	buffer;
+	private final ZipFile	zip;
+	private final ZipEntry	entry;
+	private long			lastModified;
+	private String			extra;
 
 	ZipResource(ZipFile zip, ZipEntry entry) throws UnsupportedEncodingException {
 		this.zip = zip;
 		this.entry = entry;
 		this.lastModified = -11L;
 		byte[] data = entry.getExtra();
-		if (data != null)
+		if (data != null) {
 			this.extra = new String(data, UTF_8);
+		}
 	}
 
-	public InputStream openInputStream() throws IOException {
-		return zip.getInputStream(entry);
+	@Override
+	public ByteBuffer buffer() throws Exception {
+		return getBuffer().duplicate();
+	}
+
+	private ByteBuffer getBuffer() throws Exception {
+		if (buffer != null) {
+			return buffer;
+		}
+		if (entry.getSize() == -1) {
+			return buffer = ByteBuffer.wrap(IO.read(zip.getInputStream(entry)));
+		}
+		ByteBuffer bb = ByteBuffer.allocate((int) entry.getSize());
+		IO.copy(zip.getInputStream(entry), bb);
+		bb.flip();
+		return buffer = bb;
+	}
+
+	public InputStream openInputStream() throws Exception {
+		return IO.stream(buffer());
 	}
 
 	@Override
@@ -45,7 +67,6 @@ public class ZipResource implements Resource {
 	}
 
 	public static ZipFile build(Jar jar, File file, Pattern pattern) throws ZipException, IOException {
-
 		try {
 			ZipFile zip = new ZipFile(file);
 			nextEntry: for (Enumeration< ? extends ZipEntry> e = zip.entries(); e.hasMoreElements();) {
@@ -56,7 +77,6 @@ public class ZipResource implements Resource {
 						continue nextEntry;
 				}
 				if (!entry.isDirectory()) {
-
 					jar.putResource(entry.getName(), new ZipResource(zip, entry), true);
 				}
 			}
@@ -72,7 +92,7 @@ public class ZipResource implements Resource {
 	}
 
 	public void write(OutputStream out) throws Exception {
-		FileResource.copy(this, out);
+		IO.copy(buffer(), out);
 	}
 
 	public long lastModified() {
@@ -94,7 +114,9 @@ public class ZipResource implements Resource {
 		this.extra = extra;
 	}
 
-	public long size() {
-		return entry.getSize();
+	public long size() throws Exception {
+		return getBuffer().limit();
 	}
+
+	public void close() throws IOException {}
 }

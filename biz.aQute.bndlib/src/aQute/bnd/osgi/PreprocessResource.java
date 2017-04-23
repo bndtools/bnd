@@ -1,16 +1,16 @@
 package aQute.bnd.osgi;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
+import java.nio.ByteBuffer;
 
 import aQute.lib.io.IO;
+import aQute.lib.io.IOConstants;
 
 public class PreprocessResource extends AbstractResource {
-	final Resource	resource;
-	final Processor	processor;
+	private final Resource	resource;
+	private final Processor	processor;
 
 	public PreprocessResource(Processor processor, Resource r) {
 		super(r.lastModified());
@@ -21,9 +21,17 @@ public class PreprocessResource extends AbstractResource {
 
 	@Override
 	protected byte[] getBytes() throws Exception {
-		ByteArrayOutputStream bout = new ByteArrayOutputStream(2000);
+		ByteArrayOutputStream bout = new ByteArrayOutputStream(IOConstants.PAGE_SIZE);
 		PrintWriter pw = IO.writer(bout, Constants.DEFAULT_CHARSET);
-		try (BufferedReader rdr = IO.reader(resource.openInputStream(), UTF_8)) {
+		ByteBuffer bb = resource.buffer();
+		BufferedReader r;
+		if (bb != null) {
+			bb.mark();
+			r = IO.reader(bb, Constants.DEFAULT_CHARSET);
+		} else {
+			r = IO.reader(resource.openInputStream(), Constants.DEFAULT_CHARSET);
+		}
+		try (BufferedReader rdr = r) {
 			String line = rdr.readLine();
 			while (line != null) {
 				line = processor.getReplacer().process(line);
@@ -31,7 +39,12 @@ public class PreprocessResource extends AbstractResource {
 				line = rdr.readLine();
 			}
 		} catch (Exception e) {
-			return IO.read(resource.openInputStream());
+			if (bb != null) {
+				bb.reset();
+				return IO.read(bb);
+			} else {
+				return IO.read(resource.openInputStream());
+			}
 		}
 		pw.flush();
 		byte[] data = bout.toByteArray();
