@@ -69,4 +69,5 @@ Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huberts@pelagic
 
 -baseline: *
 
--fixupmessages: "Export aQute.bnd.http", Baseline mismatch for package org.osgi.resource
+-fixupmessages: "Export aQute.bnd.http"
+-fixupmessages.baseline: The bundle version (3.3.0/3.4.0) is too low, must be at least 4.0.0

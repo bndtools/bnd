@@ -1,5 +1,6 @@
 package aQute.bnd.osgi;
 
+import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -492,16 +493,22 @@ public class Clazz {
 	}
 
 	public Set<TypeRef> parseClassFile(InputStream in, ClassDataCollector cd) throws Exception {
+		try (DataInputStream din = new DataInputStream(in)) {
+			return parseClassFileData(din, cd);
+		}
+	}
+
+	Set<TypeRef> parseClassFileData(DataInput in, ClassDataCollector cd) throws Exception {
 		cds.push(this.cd);
 		this.cd = cd;
-		try (DataInputStream din = new DataInputStream(in)) {
-			return parseClassFile(din);
+		try {
+			return parseClassFileData(in);
 		} finally {
 			this.cd = cds.pop();
 		}
 	}
 
-	Set<TypeRef> parseClassFile(DataInputStream in) throws Exception {
+	Set<TypeRef> parseClassFileData(DataInput in) throws Exception {
 		logger.debug("parseClassFile(): path={} resource={}", path, resource);
 
 		++depth;
@@ -767,20 +774,20 @@ public class Clazz {
 		}
 	}
 
-	private void constantFloat(DataInputStream in, int poolIndex) throws IOException {
+	private void constantFloat(DataInput in, int poolIndex) throws IOException {
 		if (cd != null)
 			pool[poolIndex] = in.readFloat(); // ALU
 		else
 			in.skipBytes(4);
 	}
 
-	private void constantInteger(DataInputStream in, int poolIndex) throws IOException {
+	private void constantInteger(DataInput in, int poolIndex) throws IOException {
 		intPool[poolIndex] = in.readInt();
 		if (cd != null)
 			pool[poolIndex] = intPool[poolIndex];
 	}
 
-	protected void pool(@SuppressWarnings("unused") Object[] pool, @SuppressWarnings("unused") int[] intPool) {}
+	private void pool(@SuppressWarnings("unused") Object[] pool, @SuppressWarnings("unused") int[] intPool) {}
 
 	/**
 	 * @param in
@@ -788,24 +795,19 @@ public class Clazz {
 	 * @param tag
 	 * @throws IOException
 	 */
-	private void nameAndType(DataInputStream in, int poolIndex, CONSTANT tag) throws IOException {
+	private void nameAndType(DataInput in, int poolIndex, CONSTANT tag) throws IOException {
 		int name_index = in.readUnsignedShort();
 		int descriptor_index = in.readUnsignedShort();
 		pool[poolIndex] = new Assoc(tag, name_index, descriptor_index);
 	}
 
-	@Deprecated
-	protected void nameAndType(DataInputStream in, int poolIndex, byte tag) throws IOException {
-		nameAndType(in, poolIndex, CONSTANT.values()[tag]);
-	}
-
 	/**
 	 * @param in
 	 * @param poolIndex
 	 * @param tag
 	 * @throws IOException
 	 */
-	private void methodType(DataInputStream in, int poolIndex, CONSTANT tag) throws IOException {
+	private void methodType(DataInput in, int poolIndex, CONSTANT tag) throws IOException {
 		int descriptor_index = in.readUnsignedShort();
 		pool[poolIndex] = new Assoc(tag, 0, descriptor_index);
 	}
@@ -816,7 +818,7 @@ public class Clazz {
 	 * @param tag
 	 * @throws IOException
 	 */
-	private void methodHandle(DataInputStream in, int poolIndex, CONSTANT tag) throws IOException {
+	private void methodHandle(DataInput in, int poolIndex, CONSTANT tag) throws IOException {
 		int reference_kind = in.readUnsignedByte();
 		int reference_index = in.readUnsignedShort();
 		pool[poolIndex] = new Assoc(tag, reference_kind, reference_index);
@@ -828,7 +830,7 @@ public class Clazz {
 	 * @param tag
 	 * @throws IOException
 	 */
-	private void invokeDynamic(DataInputStream in, int poolIndex, CONSTANT tag) throws IOException {
+	private void invokeDynamic(DataInput in, int poolIndex, CONSTANT tag) throws IOException {
 		int bootstrap_method_attr_index = in.readUnsignedShort();
 		int name_and_type_index = in.readUnsignedShort();
 		pool[poolIndex] = new Assoc(tag, bootstrap_method_attr_index, name_and_type_index);
@@ -839,7 +841,7 @@ public class Clazz {
 	 * @param poolIndex
 	 * @throws IOException
 	 */
-	private void ref(DataInputStream in, int poolIndex) throws IOException {
+	private void ref(DataInput in, int poolIndex) throws IOException {
 		int class_index = in.readUnsignedShort();
 		int name_and_type_index = in.readUnsignedShort();
 		pool[poolIndex] = new Assoc(CONSTANT.Methodref, class_index, name_and_type_index);
@@ -850,7 +852,7 @@ public class Clazz {
 	 * @param poolIndex
 	 * @throws IOException
 	 */
-	private void constantString(DataInputStream in, int poolIndex) throws IOException {
+	private void constantString(DataInput in, int poolIndex) throws IOException {
 		int string_index = in.readUnsignedShort();
 		intPool[poolIndex] = string_index;
 	}
@@ -860,7 +862,7 @@ public class Clazz {
 	 * @param poolIndex
 	 * @throws IOException
 	 */
-	protected void constantClass(DataInputStream in, int poolIndex) throws IOException {
+	private void constantClass(DataInput in, int poolIndex) throws IOException {
 		int class_index = in.readUnsignedShort();
 		intPool[poolIndex] = class_index;
 		ClassConstant c = new ClassConstant(class_index);
@@ -871,7 +873,7 @@ public class Clazz {
 	 * @param in
 	 * @throws IOException
 	 */
-	protected void constantDouble(DataInputStream in, int poolIndex) throws IOException {
+	private void constantDouble(DataInput in, int poolIndex) throws IOException {
 		if (cd != null)
 			pool[poolIndex] = in.readDouble();
 		else
@@ -882,7 +884,7 @@ public class Clazz {
 	 * @param in
 	 * @throws IOException
 	 */
-	protected void constantLong(DataInputStream in, int poolIndex) throws IOException {
+	private void constantLong(DataInput in, int poolIndex) throws IOException {
 		if (cd != null) {
 			pool[poolIndex] = in.readLong();
 		} else
@@ -894,7 +896,7 @@ public class Clazz {
 	 * @param poolIndex
 	 * @throws IOException
 	 */
-	protected void constantUtf8(DataInputStream in, int poolIndex) throws IOException {
+	private void constantUtf8(DataInput in, int poolIndex) throws IOException {
 		// CONSTANT_Utf8
 
 		String name = in.readUTF();
@@ -945,7 +947,7 @@ public class Clazz {
 	 * @param access_flags
 	 * @throws Exception
 	 */
-	private void doAttributes(DataInputStream in, ElementType member, boolean crawl, int access_flags)
+	private void doAttributes(DataInput in, ElementType member, boolean crawl, int access_flags)
 			throws Exception {
 		int attributesCount = in.readUnsignedShort();
 		for (int j = 0; j < attributesCount; j++) {
@@ -961,7 +963,7 @@ public class Clazz {
 	 * @param access_flags
 	 * @throws Exception
 	 */
-	private void doAttribute(DataInputStream in, ElementType member, boolean crawl, int access_flags) throws Exception {
+	private void doAttribute(DataInput in, ElementType member, boolean crawl, int access_flags) throws Exception {
 		final int attribute_name_index = in.readUnsignedShort();
 		final String attributeName = (String) pool[attribute_name_index];
 		final long attribute_length = 0xFFFFFFFFL & in.readInt();
@@ -1040,7 +1042,7 @@ public class Clazz {
 	 * @param in
 	 * @throws IOException
 	 */
-	private void doEnclosingMethod(DataInputStream in) throws IOException {
+	private void doEnclosingMethod(DataInput in) throws IOException {
 		int cIndex = in.readUnsignedShort();
 		int mIndex = in.readUnsignedShort();
 		classConstRef(cIndex);
@@ -1072,7 +1074,7 @@ public class Clazz {
 	 * @param in
 	 * @throws Exception
 	 */
-	private void doInnerClasses(DataInputStream in) throws Exception {
+	private void doInnerClasses(DataInput in) throws Exception {
 		int number_of_classes = in.readUnsignedShort();
 		for (int i = 0; i < number_of_classes; i++) {
 			int inner_class_info_index = in.readUnsignedShort();
@@ -1115,7 +1117,7 @@ public class Clazz {
 	 * @param access_flags
 	 */
 
-	void doSignature(DataInputStream in, ElementType member, int access_flags) throws IOException {
+	void doSignature(DataInput in, ElementType member, int access_flags) throws IOException {
 		int signature_index = in.readUnsignedShort();
 		String signature = (String) pool[signature_index];
 		try {
@@ -1138,7 +1140,7 @@ public class Clazz {
 	/**
 	 * Handle a constant value call the data collector with it
 	 */
-	void doConstantValue(DataInputStream in) throws IOException {
+	void doConstantValue(DataInput in) throws IOException {
 		int constantValue_index = in.readUnsignedShort();
 		if (cd == null)
 			return;
@@ -1151,7 +1153,7 @@ public class Clazz {
 		cd.constant(object);
 	}
 
-	void doExceptions(DataInputStream in, int access_flags) throws IOException {
+	void doExceptions(DataInput in, int access_flags) throws IOException {
 		int exception_count = in.readUnsignedShort();
 		for (int i = 0; i < exception_count; i++) {
 			int index = in.readUnsignedShort();
@@ -1174,7 +1176,7 @@ public class Clazz {
 	 * @param pool
 	 * @throws Exception
 	 */
-	private void doCode(DataInputStream in, boolean crawl) throws Exception {
+	private void doCode(DataInput in, boolean crawl) throws Exception {
 		/* int max_stack = */in.readUnsignedShort();
 		/* int max_locals = */in.readUnsignedShort();
 		int code_length = in.readInt();
@@ -1198,7 +1200,7 @@ public class Clazz {
 	 * 
 	 * @param code
 	 */
-	protected void crawl(byte[] code) {
+	private void crawl(byte[] code) {
 		ByteBuffer bb = ByteBuffer.wrap(code);
 		bb.order(ByteOrder.BIG_ENDIAN);
 		int lastReference = -1;
@@ -1322,12 +1324,12 @@ public class Clazz {
 		}
 	}
 
-	private void doSourceFile(DataInputStream in) throws IOException {
+	private void doSourceFile(DataInput in) throws IOException {
 		int sourcefile_index = in.readUnsignedShort();
 		this.sourceFile = pool[sourcefile_index].toString();
 	}
 
-	private void doParameterAnnotations(DataInputStream in, ElementType member, RetentionPolicy policy,
+	private void doParameterAnnotations(DataInput in, ElementType member, RetentionPolicy policy,
 			int access_flags) throws Exception {
 		int num_parameters = in.readUnsignedByte();
 		for (int p = 0; p < num_parameters; p++) {
@@ -1337,7 +1339,7 @@ public class Clazz {
 		}
 	}
 
-	private void doTypeAnnotations(DataInputStream in, ElementType member, RetentionPolicy policy, int access_flags)
+	private void doTypeAnnotations(DataInput in, ElementType member, RetentionPolicy policy, int access_flags)
 			throws Exception {
 		int num_annotations = in.readUnsignedShort();
 		for (int p = 0; p < num_annotations; p++) {
@@ -1493,7 +1495,7 @@ public class Clazz {
 		}
 	}
 
-	private void doAnnotations(DataInputStream in, ElementType member, RetentionPolicy policy, int access_flags)
+	private void doAnnotations(DataInput in, ElementType member, RetentionPolicy policy, int access_flags)
 			throws Exception {
 		int num_annotations = in.readUnsignedShort(); // # of annotations
 		for (int a = 0; a < num_annotations; a++) {
@@ -1515,7 +1517,7 @@ public class Clazz {
 	// element_value_pairs[num_element_value_pairs];
 	// }
 
-	private Annotation doAnnotation(DataInputStream in, ElementType member, RetentionPolicy policy, boolean collect,
+	private Annotation doAnnotation(DataInput in, ElementType member, RetentionPolicy policy, boolean collect,
 			int access_flags) throws IOException {
 		int type_index = in.readUnsignedShort();
 		if (annotations == null)
@@ -1553,7 +1555,7 @@ public class Clazz {
 		return null;
 	}
 
-	private Object doElementValue(DataInputStream in, ElementType member, RetentionPolicy policy, boolean collect,
+	private Object doElementValue(DataInput in, ElementType member, RetentionPolicy policy, boolean collect,
 			int access_flags) throws IOException {
 		char tag = (char) in.readUnsignedByte();
 		switch (tag) {
@@ -1618,7 +1620,7 @@ public class Clazz {
 	 * We don't currently process BootstrapMethods. We walk the data structure
 	 * to consume the attribute.
 	 */
-	private void doBootstrapMethods(DataInputStream in) throws IOException {
+	private void doBootstrapMethods(DataInput in) throws IOException {
 		final int num_bootstrap_methods = in.readUnsignedShort();
 		for (int v = 0; v < num_bootstrap_methods; v++) {
 			final int bootstrap_method_ref = in.readUnsignedShort();
@@ -1633,7 +1635,7 @@ public class Clazz {
 	 * The verifier can require access to types only referenced in StackMapTable
 	 * attributes.
 	 */
-	private void doStackMapTable(DataInputStream in) throws IOException {
+	private void doStackMapTable(DataInput in) throws IOException {
 		final int number_of_entries = in.readUnsignedShort();
 		for (int v = 0; v < number_of_entries; v++) {
 			final int frame_type = in.readUnsignedByte();
@@ -1670,7 +1672,7 @@ public class Clazz {
 		}
 	}
 
-	private void verification_type_info(DataInputStream in) throws IOException {
+	private void verification_type_info(DataInput in) throws IOException {
 		final int tag = in.readUnsignedByte();
 		switch (tag) {
 			case 7 :// Object_variable_info
