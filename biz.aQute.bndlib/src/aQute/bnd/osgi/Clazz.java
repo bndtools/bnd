@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.generics.Create;
 
@@ -487,9 +488,11 @@ public class Clazz {
 	}
 
 	public Set<TypeRef> parseClassFileWithCollector(ClassDataCollector cd) throws Exception {
-		try (InputStream in = resource.openInputStream()) {
-			return parseClassFile(in, cd);
+		ByteBuffer bb = resource.buffer();
+		if (bb != null) {
+			return parseClassFileData(ByteBufferDataInput.wrap(bb), cd);
 		}
+		return parseClassFile(resource.openInputStream(), cd);
 	}
 
 	public Set<TypeRef> parseClassFile(InputStream in, ClassDataCollector cd) throws Exception {
