@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
@@ -426,6 +427,9 @@ public class IO {
 
 	public static ByteBuffer read(Path path) throws IOException {
 		try (FileChannel in = readChannel(path)) {
+			if (in.size() > BUFFER_SIZE) {
+				return in.map(MapMode.READ_ONLY, 0, in.size());
+			}
 			ByteBuffer bb = ByteBuffer.allocate((int) in.size());
 			while (in.read(bb) > 0) {}
 			bb.flip();
