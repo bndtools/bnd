@@ -23,15 +23,19 @@ import aQute.maven.provider.FakeNexus;
 import junit.framework.TestCase;
 
 public class OSGiRepositoryTest extends TestCase {
-	File				tmp		= IO.getFile("generated/tmp");
-	File				cache	= IO.getFile(tmp, "cache");
-	File				remote	= IO.getFile(tmp, "testdata");
-	File				ws		= IO.getFile(tmp, "ws");
+	File				tmp;
+	File				cache;
+	File				remote;
+	File				ws;
 	private FakeNexus	fnx;
 
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
+		tmp = IO.getFile("generated/tmp/test/" + getName());
+		cache = IO.getFile(tmp, "cache");
+		remote = IO.getFile(tmp, "testdata");
+		ws = IO.getFile(tmp, "ws");
 		IO.delete(tmp);
 		Config config = new Config();
 		fnx = new FakeNexus(config, remote);
@@ -45,7 +49,7 @@ public class OSGiRepositoryTest extends TestCase {
 		try (OSGiRepository r = new OSGiRepository();) {
 			Map<String,String> map = new HashMap<>();
 			map.put("locations", fnx.getBaseURI("/repo/minir5.xml").toString());
-			map.put("cache", "generated/tmp/cache");
+			map.put("cache", cache.getPath());
 			map.put("max.stale", "10000");
 			r.setProperties(map);
 			Processor p = new Processor();
@@ -122,7 +126,7 @@ public class OSGiRepositoryTest extends TestCase {
 		try (OSGiRepository r = new OSGiRepository();) {
 			Map<String,String> map = new HashMap<>();
 			map.put("locations", fnx.getBaseURI("/repo/minir5.xml").toString());
-			map.put("cache", "generated/tmp/cache");
+			map.put("cache", cache.getPath());
 			map.put("max.stale", "10000");
 			map.put("name", "test");
 			map.put("poll.time", "1");
@@ -191,7 +195,7 @@ public class OSGiRepositoryTest extends TestCase {
 		try (OSGiRepository r = new OSGiRepository();) {
 			Map<String,String> map = new HashMap<>();
 			map.put("locations", IO.getFile(remote, "minir5.xml").toURI().toString());
-			map.put("cache", "generated/tmp/cache");
+			map.put("cache", cache.getPath());
 			map.put("max.stale", "10000");
 			map.put("name", "test");
 			map.put("poll.time", "1");
@@ -263,7 +267,7 @@ public class OSGiRepositoryTest extends TestCase {
 			Map<String,String> map = new HashMap<>();
 			map.put("locations",
 					"https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles/index.xml.gz");
-			map.put("cache", "generated/tmp/cache");
+			map.put("cache", cache.getPath());
 			map.put("max.stale", "10000");
 			r.setProperties(map);
 			Processor p = new Processor();

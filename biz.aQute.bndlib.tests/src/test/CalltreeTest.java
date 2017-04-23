@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 
 import aQute.bnd.make.calltree.CalltreeResource;
@@ -69,6 +70,14 @@ public class CalltreeTest extends TestCase {
 			// TODO Auto-generated method stub
 			return 0;
 		}
+
+		@Override
+		public ByteBuffer buffer() throws Exception {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public void close() throws IOException {}
 	}
 
 	// public void testCoverage() throws Exception {

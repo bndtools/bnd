@@ -239,6 +239,7 @@ public class MavenCommand extends Processor {
 		Manifest manifest = binaryJar.getManifest();
 		logger.debug("got manifest");
 
+		@SuppressWarnings("resource")
 		PomFromManifest pom = new PomFromManifest(manifest);
 
 		if (scm != null)

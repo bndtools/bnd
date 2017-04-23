@@ -673,12 +673,10 @@ public class Jar implements Closeable {
 
 	public void close() {
 		this.closed = true;
-		if (zipFile != null)
-			try {
-				zipFile.close();
-			} catch (IOException e) {
-				// Ignore
-			}
+		IO.close(zipFile);
+		for (Resource r : resources.values()) {
+			IO.close(r);
+		}
 		resources.clear();
 		directories.clear();
 		manifest = null;

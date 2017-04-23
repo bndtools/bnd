@@ -1,14 +1,16 @@
 package aQute.bnd.osgi;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+
+import aQute.lib.io.IO;
 
 public abstract class AbstractResource implements Resource {
-	String	extra;
-	byte[]	calculated;
-	long	lastModified;
+	private String		extra;
+	private ByteBuffer	buffer;
+	private final long	lastModified;
 
 	protected AbstractResource(long modified) {
 		lastModified = modified;
@@ -22,36 +24,35 @@ public abstract class AbstractResource implements Resource {
 		return lastModified;
 	}
 
-	public InputStream openInputStream() throws IOException {
-		return new ByteArrayInputStream(getLocalBytes());
+	public InputStream openInputStream() throws Exception {
+		return IO.stream(buffer());
 	}
 
-	private byte[] getLocalBytes() throws IOException {
-		try {
-			if (calculated != null)
-				return calculated;
-
-			return calculated = getBytes();
-		} catch (IOException e) {
-			throw e;
-		} catch (Exception e) {
-			IOException ee = new IOException("Opening resource");
-			ee.initCause(e);
-			throw ee;
+	private ByteBuffer getBuffer() throws Exception {
+		if (buffer != null) {
+			return buffer;
 		}
+		return buffer = ByteBuffer.wrap(getBytes());
+	}
+
+	@Override
+	public ByteBuffer buffer() throws Exception {
+		return getBuffer().duplicate();
 	}
 
 	public void setExtra(String extra) {
 		this.extra = extra;
 	}
 
-	public void write(OutputStream out) throws IOException {
-		out.write(getLocalBytes());
+	public void write(OutputStream out) throws Exception {
+		IO.copy(buffer(), out);
 	}
 
 	abstract protected byte[] getBytes() throws Exception;
 
-	public long size() throws IOException {
-		return getLocalBytes().length;
+	public long size() throws Exception {
+		return getBuffer().limit();
 	}
+
+	public void close() throws IOException {}
 }

@@ -1,21 +1,20 @@
 package aQute.bnd.osgi;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.regex.Pattern;
 
 import aQute.lib.io.IO;
-import aQute.lib.io.IOConstants;
 
-public class FileResource implements Resource, Closeable {
-	static final int	BUFFER_SIZE	= IOConstants.PAGE_SIZE * 16;
-
-	File				file;
-	String				extra;
-	boolean				deleteOnClose;
+public class FileResource implements Resource {
+	private static final ByteBuffer	CLOSED	= ByteBuffer.allocate(0);
+	private ByteBuffer	buffer;
+	private final File	file;
+	private String		extra;
+	private boolean		deleteOnClose;
 
 	public FileResource(File file) {
 		this.file = file;
@@ -35,8 +34,20 @@ public class FileResource implements Resource, Closeable {
 		IO.copy(r.openInputStream(), this.file);
 	}
 
-	public InputStream openInputStream() throws IOException {
-		return IO.stream(file);
+	@Override
+	public ByteBuffer buffer() throws Exception {
+		return getBuffer().duplicate();
+	}
+
+	private ByteBuffer getBuffer() throws Exception {
+		if (buffer != null) {
+			return buffer;
+		}
+		return buffer = IO.read(file.toPath());
+	}
+
+	public InputStream openInputStream() throws Exception {
+		return IO.stream(buffer());
 	}
 
 	public static void build(Jar jar, File directory, Pattern doNotCopy) {
@@ -49,18 +60,7 @@ public class FileResource implements Resource, Closeable {
 	}
 
 	public void write(OutputStream out) throws Exception {
-		copy(this, out);
-	}
-
-	static void copy(Resource resource, OutputStream out) throws Exception {
-		try (InputStream in = resource.openInputStream()) {
-			byte buffer[] = new byte[BUFFER_SIZE];
-			int size = in.read(buffer);
-			while (size > 0) {
-				out.write(buffer, 0, size);
-				size = in.read(buffer);
-			}
-		}
+		IO.copy(buffer(), out);
 	}
 
 	static void traverse(Jar jar, int rootlength, File directory, Pattern doNotCopy) {
@@ -98,6 +98,11 @@ public class FileResource implements Resource, Closeable {
 	}
 
 	public void close() throws IOException {
+		/*
+		 * Allow original buffer to be garbage collected and prevent it being
+		 * remapped for this FileResouce.
+		 */
+		buffer = CLOSED;
 		if (deleteOnClose)
 			IO.delete(file);
 	}
