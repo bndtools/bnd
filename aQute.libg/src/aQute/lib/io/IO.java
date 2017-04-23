@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
@@ -104,25 +105,25 @@ public class IO {
 
 	public static void copy(byte[] data, Path path) throws IOException {
 		try (FileChannel out = writeChannel(path)) {
-			ByteBuffer buffer = ByteBuffer.wrap(data);
-			while (buffer.hasRemaining()) {
-				out.write(buffer);
+			ByteBuffer bb = ByteBuffer.wrap(data);
+			while (bb.hasRemaining()) {
+				out.write(bb);
 			}
 		}
 	}
 
-	public static void copy(byte[] r, Writer w) throws IOException {
-		w.write(new String(r, UTF_8));
+	public static void copy(byte[] data, Writer w) throws IOException {
+		w.write(new String(data, 0, data.length, UTF_8));
 	}
 
-	public static void copy(byte[] r, OutputStream out) throws IOException {
-		out.write(r);
+	public static void copy(byte[] data, OutputStream out) throws IOException {
+		out.write(data, 0, data.length);
 	}
 
 	public static void copy(Reader r, Writer w) throws IOException {
 		try {
-			char buffer[] = new char[BUFFER_SIZE];
-			for (int size; (size = r.read(buffer)) > 0;) {
+			char[] buffer = new char[BUFFER_SIZE];
+			for (int size; (size = r.read(buffer, 0, buffer.length)) > 0;) {
 				w.write(buffer, 0, size);
 			}
 		} finally {
@@ -162,7 +163,7 @@ public class IO {
 	public static void copy(InputStream in, OutputStream out) throws IOException {
 		try {
 			byte[] buffer = new byte[BUFFER_SIZE];
-			for (int size; (size = in.read(buffer)) > 0;) {
+			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
 				out.write(buffer, 0, size);
 			}
 		} finally {
@@ -173,7 +174,7 @@ public class IO {
 	public static void copy(InputStream in, DataOutput out) throws IOException {
 		try {
 			byte[] buffer = new byte[BUFFER_SIZE];
-			for (int size; (size = in.read(buffer)) > 0;) {
+			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
 				out.write(buffer, 0, size);
 			}
 		} finally {
@@ -183,15 +184,14 @@ public class IO {
 
 	public static void copy(ReadableByteChannel in, WritableByteChannel out) throws IOException {
 		try {
-			ByteBuffer buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
-			while (in.read(buffer) > 0) {
-				buffer.flip();
-				out.write(buffer);
-				buffer.compact();
+			ByteBuffer bb = ByteBuffer.allocateDirect(BUFFER_SIZE);
+			while (in.read(bb) > 0) {
+				bb.flip();
+				out.write(bb);
+				bb.compact();
 			}
-			buffer.flip();
-			while (buffer.hasRemaining()) {
-				out.write(buffer);
+			for (bb.flip(); bb.hasRemaining();) {
+				out.write(bb);
 			}
 		} finally {
 			in.close();
@@ -210,13 +210,28 @@ public class IO {
 			} else {
 				int length = Math.min(bb.remaining(), BUFFER_SIZE);
 				byte[] buffer = new byte[length];
-				for (int size; bb.hasRemaining() && (size = in.read(buffer, 0, length)) > 0;) {
+				for (int size; length > 0 && (size = in.read(buffer, 0, length)) > 0;) {
 					bb.put(buffer, 0, size);
 					length = Math.min(bb.remaining(), buffer.length);
 				}
 			}
 		} finally {
 			in.close();
+		}
+	}
+
+	public static void copy(ByteBuffer bb, OutputStream out) throws IOException {
+		if (bb.hasArray()) {
+			out.write(bb.array(), bb.arrayOffset() + bb.position(), bb.remaining());
+			bb.position(bb.limit());
+		} else {
+			int length = Math.min(bb.remaining(), BUFFER_SIZE);
+			byte[] buffer = new byte[length];
+			while (length > 0) {
+				bb.get(buffer, 0, length);
+				out.write(buffer, 0, length);
+				length = Math.min(bb.remaining(), buffer.length);
+			}
 		}
 	}
 
@@ -239,7 +254,7 @@ public class IO {
 	public static void copy(InputStream in, MessageDigest md) throws IOException {
 		try {
 			byte[] buffer = new byte[BUFFER_SIZE];
-			for (int size; (size = in.read(buffer)) > 0;) {
+			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
 				md.update(buffer, 0, size);
 			}
 		} finally {
@@ -249,15 +264,14 @@ public class IO {
 
 	public static void copy(ReadableByteChannel in, MessageDigest md) throws IOException {
 		try {
-			ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
-			while (in.read(buffer) > 0) {
-				buffer.flip();
-				md.update(buffer);
-				buffer.compact();
+			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
+			while (in.read(bb) > 0) {
+				bb.flip();
+				md.update(bb);
+				bb.compact();
 			}
-			buffer.flip();
-			while (buffer.hasRemaining()) {
-				md.update(buffer);
+			for (bb.flip(); bb.hasRemaining();) {
+				md.update(bb);
 			}
 		} finally {
 			in.close();
@@ -382,8 +396,7 @@ public class IO {
 				out.write(bb);
 				bb.compact();
 			}
-			bb.flip();
-			while (bb.hasRemaining()) {
+			for (bb.flip(); bb.hasRemaining();) {
 				out.write(bb);
 			}
 		} finally {
@@ -395,9 +408,8 @@ public class IO {
 		try {
 			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
 			byte[] buffer = bb.array();
-			while (in.read(bb) > 0) {
+			for (; in.read(bb) > 0; bb.clear()) {
 				out.write(buffer, 0, bb.position());
-				bb.clear();
 			}
 		} finally {
 			in.close();
@@ -405,17 +417,26 @@ public class IO {
 	}
 
 	public static byte[] read(File file) throws IOException {
-		ByteBuffer bb = read(file.toPath());
-		return bb.array();
+		try (FileChannel in = readChannel(file.toPath())) {
+			ByteBuffer bb = ByteBuffer.allocate((int) in.size());
+			while (in.read(bb) > 0) {}
+			return bb.array();
+		}
 	}
 
 	public static ByteBuffer read(Path path) throws IOException {
 		try (FileChannel in = readChannel(path)) {
-			ByteBuffer buffer = ByteBuffer.allocate((int) in.size());
-			while (in.read(buffer) > 0) {}
-			buffer.flip();
-			return buffer;
+			ByteBuffer bb = ByteBuffer.allocate((int) in.size());
+			while (in.read(bb) > 0) {}
+			bb.flip();
+			return bb;
 		}
+	}
+
+	public static byte[] read(ByteBuffer bb) throws IOException {
+		byte[] data = new byte[bb.remaining()];
+		bb.get(data, 0, data.length);
+		return data;
 	}
 
 	public static byte[] read(URL url) throws IOException {
@@ -423,7 +444,7 @@ public class IO {
 	}
 
 	public static byte[] read(InputStream in) throws IOException {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		ByteArrayOutputStream out = new ByteArrayOutputStream(IOConstants.PAGE_SIZE);
 		copy(in, out);
 		return out.toByteArray();
 	}
@@ -453,7 +474,11 @@ public class IO {
 	}
 
 	public static String collect(Path path, Charset encoding) throws IOException {
-		return encoding.decode(read(path)).toString();
+		return decode(read(path), encoding).toString();
+	}
+
+	public static String collect(ByteBuffer bb, Charset encoding) throws IOException {
+		return decode(bb, encoding).toString();
 	}
 
 	public static String collect(URL url, String encoding) throws IOException {
@@ -686,7 +711,7 @@ public class IO {
 		try {
 			long result = 0;
 			byte[] buffer = new byte[BUFFER_SIZE];
-			for (int size; (size = in.read(buffer)) > 0;) {
+			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
 				result += size;
 			}
 			return result;
@@ -766,6 +791,14 @@ public class IO {
 		}
 	}
 
+	public static InputStream stream(byte[] data) {
+		return new ByteArrayInputStream(data);
+	}
+
+	public static InputStream stream(ByteBuffer bb) {
+		return new ByteBufferInputStream(bb);
+	}
+
 	public static InputStream stream(String s) {
 		return stream(s, UTF_8);
 	}
@@ -775,7 +808,7 @@ public class IO {
 	}
 
 	public static InputStream stream(String s, Charset encoding) {
-		return new ByteArrayInputStream(s.getBytes(encoding));
+		return stream(s.getBytes(encoding));
 	}
 
 	public static InputStream stream(File file) throws IOException {
@@ -806,6 +839,14 @@ public class IO {
 		return FileChannel.open(path, writeOptions);
 	}
 
+	public static CharBuffer decode(ByteBuffer bb, Charset encoding) throws IOException {
+		return encoding.decode(bb);
+	}
+
+	public static ByteBuffer encode(CharBuffer cb, Charset encoding) throws IOException {
+		return encoding.encode(cb);
+	}
+
 	public static BufferedReader reader(String s) {
 		return new BufferedReader(new StringReader(s));
 	}
@@ -824,6 +865,14 @@ public class IO {
 
 	public static BufferedReader reader(Path path, Charset encoding) throws IOException {
 		return reader(readChannel(path), encoding);
+	}
+
+	public static BufferedReader reader(ByteBuffer bb, Charset encoding) throws IOException {
+		return reader(decode(bb, encoding));
+	}
+
+	public static BufferedReader reader(CharBuffer cb) throws IOException {
+		return new BufferedReader(new CharBufferReader(cb));
 	}
 
 	public static BufferedReader reader(ReadableByteChannel in, Charset encoding) throws IOException {
