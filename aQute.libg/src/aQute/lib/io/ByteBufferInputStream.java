@@ -3,14 +3,13 @@ package aQute.lib.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.InvalidMarkException;
-import java.util.Objects;
 
 public class ByteBufferInputStream extends InputStream {
 	private final ByteBuffer bb;
 
 	public ByteBufferInputStream(ByteBuffer buffer) {
-		bb = Objects.requireNonNull(buffer);
+		buffer.mark();
+		bb = buffer;
 	}
 
 	@Override
@@ -18,7 +17,7 @@ public class ByteBufferInputStream extends InputStream {
 		if (!bb.hasRemaining()) {
 			return -1;
 		}
-		return bb.get();
+		return 0xFF & bb.get();
 	}
 
 	@Override
@@ -54,19 +53,12 @@ public class ByteBufferInputStream extends InputStream {
 
 	@Override
 	public synchronized void mark(int readlimit) {
-		if (readlimit < 0) {
-			throw new IllegalArgumentException("negative read limit");
-		}
 		bb.mark();
 	}
 
 	@Override
 	public synchronized void reset() throws IOException {
-		try {
-			bb.reset();
-		} catch (InvalidMarkException e) {
-			bb.rewind();
-		}
+		bb.reset();
 	}
 
 	@Override

@@ -298,8 +298,8 @@ public class IO {
 			http.setRequestMethod(method);
 		}
 		c.setDoOutput(true);
-		try (OutputStream os = c.getOutputStream()) {
-			copy(in, os);
+		try (OutputStream out = c.getOutputStream()) {
+			copy(in, out);
 		} finally {
 			if (http != null) {
 				http.disconnect();
@@ -478,7 +478,7 @@ public class IO {
 	}
 
 	public static String collect(Path path, Charset encoding) throws IOException {
-		return decode(read(path), encoding).toString();
+		return collect(reader(path, encoding));
 	}
 
 	public static String collect(ByteBuffer bb, Charset encoding) throws IOException {
@@ -872,7 +872,7 @@ public class IO {
 	}
 
 	public static BufferedReader reader(ByteBuffer bb, Charset encoding) throws IOException {
-		return reader(decode(bb, encoding));
+		return reader(new ByteBufferInputStream(bb), encoding);
 	}
 
 	public static BufferedReader reader(CharBuffer cb) throws IOException {
