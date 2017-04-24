@@ -3,14 +3,13 @@ package aQute.lib.io;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.CharBuffer;
-import java.nio.InvalidMarkException;
-import java.util.Objects;
 
 public class CharBufferReader extends Reader {
 	private final CharBuffer cb;
 
 	public CharBufferReader(CharBuffer buffer) {
-		cb = Objects.requireNonNull(buffer);
+		buffer.mark();
+		cb = buffer;
 	}
 
 	@Override
@@ -40,7 +39,7 @@ public class CharBufferReader extends Reader {
 	@Override
 	public long skip(long n) throws IOException {
 		if (n < 0L) {
-			throw new IllegalArgumentException("negative skip count");
+			return 0L;
 		}
 		int skipped = Math.min((int) n, cb.remaining());
 		cb.position(cb.position() + skipped);
@@ -59,18 +58,11 @@ public class CharBufferReader extends Reader {
 
 	@Override
 	public void mark(int readAheadLimit) throws IOException {
-		if (readAheadLimit < 0) {
-			throw new IllegalArgumentException("negative read ahead limit");
-		}
 		cb.mark();
 	}
 
 	@Override
 	public void reset() throws IOException {
-		try {
-			cb.reset();
-		} catch (InvalidMarkException e) {
-			cb.rewind();
-		}
+		cb.reset();
 	}
 }
