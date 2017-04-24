@@ -182,6 +182,11 @@ public class EnvoyDispatcher implements Closeable {
 			link = null;
 		}
 
+		@Override
+		public boolean ping() {
+			return true;
+		}
+
 	}
 
 	public EnvoyDispatcher(Reporter main, File cache, File storage, String network, int port) {
