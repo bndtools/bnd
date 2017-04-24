@@ -17,7 +17,7 @@ public class ByteBufferInputStream extends InputStream {
 		if (!bb.hasRemaining()) {
 			return -1;
 		}
-		return bb.get();
+		return 0xFF & bb.get();
 	}
 
 	@Override
