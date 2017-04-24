@@ -25,4 +25,5 @@ public interface Envoy {
 	 */
 	boolean createFramework(String name, Collection<String> runpath, Map<String,Object> properties) throws Exception;
 
+	boolean ping();
 }
