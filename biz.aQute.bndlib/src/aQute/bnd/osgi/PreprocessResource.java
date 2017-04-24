@@ -26,7 +26,6 @@ public class PreprocessResource extends AbstractResource {
 		ByteBuffer bb = resource.buffer();
 		BufferedReader r;
 		if (bb != null) {
-			bb.mark();
 			r = IO.reader(bb, Constants.DEFAULT_CHARSET);
 		} else {
 			r = IO.reader(resource.openInputStream(), Constants.DEFAULT_CHARSET);
@@ -39,8 +38,8 @@ public class PreprocessResource extends AbstractResource {
 				line = rdr.readLine();
 			}
 		} catch (Exception e) {
+			bb = resource.buffer();
 			if (bb != null) {
-				bb.reset();
 				return IO.read(bb);
 			} else {
 				return IO.read(resource.openInputStream());
