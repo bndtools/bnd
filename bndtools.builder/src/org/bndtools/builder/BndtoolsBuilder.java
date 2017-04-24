@@ -234,6 +234,8 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                             return noreport();
                         }
 
+                        WorkingSetTracker.doWorkingSets(model, myProject);
+
                         if (model.isNoBundles()) {
                             buildLog.basic("-nobundles was set, so no build");
                             buildLog.setFiles(0);
