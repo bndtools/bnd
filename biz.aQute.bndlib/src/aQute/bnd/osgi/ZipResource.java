@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
@@ -18,20 +17,23 @@ import java.util.zip.ZipFile;
 
 import aQute.lib.io.IO;
 import aQute.lib.zip.ZipUtil;
+
 public class ZipResource implements Resource {
 	private ByteBuffer	buffer;
 	private final ZipFile	zip;
 	private final ZipEntry	entry;
 	private long			lastModified;
+	private long			size;
 	private String			extra;
 
-	ZipResource(ZipFile zip, ZipEntry entry) throws UnsupportedEncodingException {
+	ZipResource(ZipFile zip, ZipEntry entry) {
 		this.zip = zip;
 		this.entry = entry;
-		this.lastModified = -11L;
+		lastModified = -11L;
+		size = entry.getSize();
 		byte[] data = entry.getExtra();
 		if (data != null) {
-			this.extra = new String(data, UTF_8);
+			extra = new String(data, UTF_8);
 		}
 	}
 
@@ -44,10 +46,10 @@ public class ZipResource implements Resource {
 		if (buffer != null) {
 			return buffer;
 		}
-		if (entry.getSize() == -1) {
+		if (size == -1) {
 			return buffer = ByteBuffer.wrap(IO.read(zip.getInputStream(entry)));
 		}
-		ByteBuffer bb = ByteBuffer.allocate((int) entry.getSize());
+		ByteBuffer bb = ByteBuffer.allocate((int) size);
 		IO.copy(zip.getInputStream(entry), bb);
 		bb.flip();
 		return buffer = bb;
@@ -96,14 +98,10 @@ public class ZipResource implements Resource {
 	}
 
 	public long lastModified() {
-		try {
-			if (lastModified == -11L) {
-				lastModified = ZipUtil.getModifiedTime(entry);
-			}
+		if (lastModified != -11L) {
 			return lastModified;
-		} catch (IOException e) {
-			return lastModified = -1;
 		}
+		return lastModified = ZipUtil.getModifiedTime(entry);
 	}
 
 	public String getExtra() {
@@ -115,7 +113,10 @@ public class ZipResource implements Resource {
 	}
 
 	public long size() throws Exception {
-		return getBuffer().limit();
+		if (size >= 0) {
+			return size;
+		}
+		return size = getBuffer().limit();
 	}
 
 	public void close() throws IOException {}

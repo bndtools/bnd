@@ -16,6 +16,7 @@ public class URLResource implements Resource {
 	private final URL		url;
 	private String			extra;
 	private long			lastModified	= -1L;
+	private int						size			= -1;
 
 	public URLResource(URL url) {
 		this.url = url;
@@ -35,10 +36,7 @@ public class URLResource implements Resource {
 			lastModified = file.lastModified();
 			return buffer = IO.read(file.toPath());
 		}
-		URLConnection conn = url.openConnection();
-		conn.connect();
-		lastModified = conn.getLastModified();
-		int size = conn.getContentLength();
+		URLConnection conn = openConnection();
 		if (size == -1) {
 			return buffer = ByteBuffer.wrap(IO.read(conn.getInputStream()));
 		}
@@ -46,6 +44,17 @@ public class URLResource implements Resource {
 		IO.copy(conn.getInputStream(), bb);
 		bb.flip();
 		return buffer = bb;
+	}
+
+	private URLConnection openConnection() throws Exception {
+		URLConnection conn = url.openConnection();
+		conn.connect();
+		lastModified = conn.getLastModified();
+		int length = conn.getContentLength();
+		if (length != -1) {
+			size = length;
+		}
+		return conn;
 	}
 
 	public InputStream openInputStream() throws Exception {
@@ -82,7 +91,10 @@ public class URLResource implements Resource {
 	}
 
 	public long size() throws Exception {
-		return getBuffer().limit();
+		if (size >= 0) {
+			return size;
+		}
+		return size = getBuffer().limit();
 	}
 
 	@Override
