@@ -8,8 +8,10 @@ import java.nio.ByteBuffer;
 import java.util.regex.Pattern;
 
 import aQute.lib.io.IO;
+import aQute.lib.io.IOConstants;
 
 public class FileResource implements Resource {
+	private static final int		THRESHOLD	= IOConstants.PAGE_SIZE * 16;
 	private static final ByteBuffer	CLOSED	= ByteBuffer.allocate(0);
 	private ByteBuffer	buffer;
 	private final File	file;
@@ -44,18 +46,21 @@ public class FileResource implements Resource {
 
 	@Override
 	public ByteBuffer buffer() throws Exception {
-		return getBuffer().duplicate();
-	}
-
-	private ByteBuffer getBuffer() throws Exception {
 		if (buffer != null) {
-			return buffer;
+			return buffer.duplicate();
 		}
-		return buffer = IO.read(file.toPath());
+		if (IO.isWindows() && (size > THRESHOLD)) {
+			return null;
+		}
+		return (buffer = IO.read(file.toPath())).duplicate();
 	}
 
 	public InputStream openInputStream() throws Exception {
-		return IO.stream(buffer());
+		if (buffer != null) {
+			return IO.stream(buffer());
+		} else {
+			return IO.stream(file);
+		}
 	}
 
 	public static void build(Jar jar, File directory, Pattern doNotCopy) {
