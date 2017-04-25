@@ -15,9 +15,13 @@ public class FileResource implements Resource {
 	private final File	file;
 	private String		extra;
 	private boolean		deleteOnClose;
+	private final long				lastModified;
+	private final long				size;
 
 	public FileResource(File file) {
 		this.file = file;
+		lastModified = file.lastModified();
+		size = file.length();
 	}
 
 	/**
@@ -28,10 +32,14 @@ public class FileResource implements Resource {
 	 * @throws Exception
 	 */
 	public FileResource(Resource r) throws Exception {
-		this.file = File.createTempFile("fileresource", ".resource");
+		file = File.createTempFile("fileresource", ".resource");
 		deleteOnClose(true);
-		this.file.deleteOnExit();
-		IO.copy(r.openInputStream(), this.file);
+		file.deleteOnExit();
+		try (OutputStream out = IO.outputStream(file)) {
+			r.write(out);
+		}
+		lastModified = r.lastModified();
+		size = file.length();
 	}
 
 	@Override
@@ -60,7 +68,11 @@ public class FileResource implements Resource {
 	}
 
 	public void write(OutputStream out) throws Exception {
-		IO.copy(buffer(), out);
+		if (buffer != null) {
+			IO.copy(buffer(), out);
+		} else {
+			IO.copy(file, out);
+		}
 	}
 
 	static void traverse(Jar jar, int rootlength, File directory, Pattern doNotCopy) {
@@ -82,7 +94,7 @@ public class FileResource implements Resource {
 	}
 
 	public long lastModified() {
-		return file.lastModified();
+		return lastModified;
 	}
 
 	public String getExtra() {
@@ -94,7 +106,7 @@ public class FileResource implements Resource {
 	}
 
 	public long size() {
-		return (int) file.length();
+		return size;
 	}
 
 	public void close() throws IOException {
