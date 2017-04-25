@@ -68,7 +68,11 @@ public class FileResource implements Resource {
 	}
 
 	public void write(OutputStream out) throws Exception {
-		IO.copy(buffer(), out);
+		if (buffer != null) {
+			IO.copy(buffer(), out);
+		} else {
+			IO.copy(file, out);
+		}
 	}
 
 	static void traverse(Jar jar, int rootlength, File directory, Pattern doNotCopy) {

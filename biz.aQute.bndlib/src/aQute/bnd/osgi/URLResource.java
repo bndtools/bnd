@@ -67,7 +67,11 @@ public class URLResource implements Resource {
 	}
 
 	public void write(OutputStream out) throws Exception {
-		IO.copy(buffer(), out);
+		if (buffer != null) {
+			IO.copy(buffer(), out);
+		} else {
+			IO.copy(openConnection().getInputStream(), out);
+		}
 	}
 
 	public long lastModified() {

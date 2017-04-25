@@ -94,7 +94,11 @@ public class ZipResource implements Resource {
 	}
 
 	public void write(OutputStream out) throws Exception {
-		IO.copy(buffer(), out);
+		if (buffer != null) {
+			IO.copy(buffer(), out);
+		} else {
+			IO.copy(zip.getInputStream(entry), out);
+		}
 	}
 
 	public long lastModified() {
