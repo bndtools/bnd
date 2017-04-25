@@ -2,17 +2,11 @@ package aQute.bnd.osgi;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.util.Enumeration;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import aQute.lib.io.IO;
@@ -62,35 +56,6 @@ public class ZipResource implements Resource {
 	@Override
 	public String toString() {
 		return ":" + zip.getName() + "(" + entry.getName() + "):";
-	}
-
-	public static ZipFile build(Jar jar, File file) throws ZipException, IOException {
-		return build(jar, file, null);
-	}
-
-	public static ZipFile build(Jar jar, File file, Pattern pattern) throws ZipException, IOException {
-		try {
-			ZipFile zip = new ZipFile(file);
-			nextEntry: for (Enumeration< ? extends ZipEntry> e = zip.entries(); e.hasMoreElements();) {
-				ZipEntry entry = e.nextElement();
-				if (pattern != null) {
-					Matcher m = pattern.matcher(entry.getName());
-					if (!m.matches())
-						continue nextEntry;
-				}
-				if (!entry.isDirectory()) {
-					jar.putResource(entry.getName(), new ZipResource(zip, entry), true);
-				}
-			}
-			return zip;
-		} catch (ZipException e) {
-			ZipException ze = new ZipException(
-					"The JAR/ZIP file (" + file.getAbsolutePath() + ") seems corrupted, error: " + e.getMessage());
-			ze.initCause(e);
-			throw ze;
-		} catch (FileNotFoundException e) {
-			throw new IllegalArgumentException("Problem opening JAR: " + file.getAbsolutePath());
-		}
 	}
 
 	public void write(OutputStream out) throws Exception {

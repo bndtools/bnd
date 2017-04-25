@@ -516,8 +516,9 @@ public class bnd extends Processor {
 	 * @param base
 	 * @param path
 	 * @param report
+	 * @throws IOException
 	 */
-	private void add(Jar jar, File base, String path, boolean report) {
+	private void add(Jar jar, File base, String path, boolean report) throws IOException {
 		if (path.endsWith("/"))
 			path = path.substring(0, path.length() - 1);
 

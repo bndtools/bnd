@@ -450,9 +450,9 @@ public class Builder extends Analyzer {
 	}
 
 	/**
-	 *
+	 * @throws IOException
 	 */
-	private void addSources(Jar dot) {
+	private void addSources(Jar dot) throws Exception {
 		if (!hasSources())
 			return;
 

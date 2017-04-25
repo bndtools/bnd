@@ -2622,17 +2622,16 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		try {
 			// Lets try a URL
 			URL url = new URL(name);
-			Jar jar = new Jar(fileName(url.getPath()));
-			addClose(jar);
 			URLConnection connection = url.openConnection();
 			try (InputStream in = connection.getInputStream()) {
 				long lastModified = connection.getLastModified();
-				if (lastModified == 0)
+				if (lastModified == 0L)
 					// We assume the worst :-(
 					lastModified = System.currentTimeMillis();
-				EmbeddedResource.build(jar, in, lastModified);
+				Jar jar = new Jar(fileName(url.getPath()), in, lastModified);
+				addClose(jar);
+				return jar;
 			}
-			return jar;
 		} catch (IOException ee) {
 			// ignore
 		}
