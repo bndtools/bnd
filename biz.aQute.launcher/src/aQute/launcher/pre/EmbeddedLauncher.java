@@ -7,19 +7,18 @@ import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.Manifest;
 
-import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 
 public class EmbeddedLauncher {
 	static final int			BUFFER_SIZE			= IOConstants.PAGE_SIZE * 16;
 
 	public static final String	EMBEDDED_RUNPATH	= "Embedded-Runpath";
-	static byte[]				buffer				= new byte[BUFFER_SIZE];
 
 	public static void main(String... args) throws Exception {
 
@@ -53,12 +52,11 @@ public class EmbeddedLauncher {
 
 	private static URL toFileURL(URL resource) throws IOException {
 		File f = File.createTempFile("resource", ".jar");
-		IO.mkdirs(f.getParentFile());
-		try (InputStream in = resource.openStream(); OutputStream out = IO.outputStream(f)) {
-			int size = in.read(buffer);
-			while (size > 0) {
+		Files.createDirectories(f.getParentFile().toPath());
+		try (InputStream in = resource.openStream(); OutputStream out = Files.newOutputStream(f.toPath())) {
+			byte[] buffer = new byte[BUFFER_SIZE];
+			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
 				out.write(buffer, 0, size);
-				size = in.read(buffer);
 			}
 		}
 		f.deleteOnExit();

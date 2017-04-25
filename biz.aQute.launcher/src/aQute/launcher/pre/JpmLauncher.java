@@ -1,15 +1,14 @@
 package aQute.launcher.pre;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.file.Files;
 
-import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 
 public class JpmLauncher {
@@ -47,8 +46,7 @@ public class JpmLauncher {
 			File tmpjpm = File.createTempFile("jpm", ".jar");
 			URL url = new URL("https://github.com/jpm4j/jpm4j.installers/raw/master/dist/biz.aQute.jpm.run.jar ");
 
-			InputStream in = url.openStream();
-			copy(tmpjpm, in);
+			copy(url.openStream(), tmpjpm);
 
 			Runtime.getRuntime().exec("java -jar " + tmpjpm.getAbsolutePath() + " init");
 		} else {
@@ -71,12 +69,12 @@ public class JpmLauncher {
 		}
 	}
 
-	private static void copy(File tmpjpm, InputStream in) throws FileNotFoundException, IOException {
-		try (OutputStream out = IO.outputStream(tmpjpm)) {
+	private static void copy(InputStream in, File tmpjpm) throws IOException {
+		try (OutputStream out = Files.newOutputStream(tmpjpm.toPath())) {
 			byte[] buffer = new byte[BUFFER_SIZE];
-			int size;
-			while ((size = in.read(buffer)) > 0)
+			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
 				out.write(buffer, 0, size);
+			}
 		} finally {
 			in.close();
 		}
