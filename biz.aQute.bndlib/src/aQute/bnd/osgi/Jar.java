@@ -194,11 +194,12 @@ public class Jar implements Closeable {
 	private Jar buildFromInputStream(InputStream in, long lastModified) throws IOException {
 		try (ZipInputStream jin = new ZipInputStream(in)) {
 			InputStream noclose = new NonClosingInputStream(jin);
-			for (ZipEntry entry = jin.getNextEntry(); entry != null; entry = jin.getNextEntry()) {
+			for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
 				if (entry.isDirectory()) {
 					continue;
 				}
-				byte data[] = IO.read(noclose);
+				long size = entry.getSize();
+				byte[] data = (size == -1L) ? IO.read(noclose) : IO.copy(noclose, new byte[(int) size]);
 				putResource(entry.getName(), new EmbeddedResource(data, lastModified), true);
 			}
 		}

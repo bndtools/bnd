@@ -101,90 +101,98 @@ public class IO {
 		}
 	}
 
-	public static void copy(byte[] data, File file) throws IOException {
+	public static File copy(byte[] data, File file) throws IOException {
 		copy(data, file.toPath());
+		return file;
 	}
 
-	public static void copy(byte[] data, Path path) throws IOException {
+	public static Path copy(byte[] data, Path path) throws IOException {
 		try (FileChannel out = writeChannel(path)) {
 			ByteBuffer bb = ByteBuffer.wrap(data);
 			while (bb.hasRemaining()) {
 				out.write(bb);
 			}
 		}
+		return path;
 	}
 
-	public static void copy(byte[] data, Writer w) throws IOException {
+	public static Writer copy(byte[] data, Writer w) throws IOException {
 		w.write(new String(data, 0, data.length, UTF_8));
+		return w;
 	}
 
-	public static void copy(byte[] data, OutputStream out) throws IOException {
+	public static OutputStream copy(byte[] data, OutputStream out) throws IOException {
 		out.write(data, 0, data.length);
+		return out;
 	}
 
-	public static void copy(Reader r, Writer w) throws IOException {
+	public static Writer copy(Reader r, Writer w) throws IOException {
 		try {
 			char[] buffer = new char[BUFFER_SIZE];
 			for (int size; (size = r.read(buffer, 0, buffer.length)) > 0;) {
 				w.write(buffer, 0, size);
 			}
+			return w;
 		} finally {
 			r.close();
 		}
 	}
 
-	public static void copy(Reader r, OutputStream out) throws IOException {
-		copy(r, out, UTF_8);
+	public static OutputStream copy(Reader r, OutputStream out) throws IOException {
+		return copy(r, out, UTF_8);
 	}
 
-	public static void copy(Reader r, OutputStream out, String charset) throws IOException {
-		copy(r, out, Charset.forName(charset));
+	public static OutputStream copy(Reader r, OutputStream out, String charset) throws IOException {
+		return copy(r, out, Charset.forName(charset));
 	}
 
-	public static void copy(Reader r, OutputStream out, Charset charset) throws IOException {
+	public static OutputStream copy(Reader r, OutputStream out, Charset charset) throws IOException {
 		Writer w = writer(out, charset);
 		try {
 			copy(r, w);
+			return out;
 		} finally {
 			w.flush();
 		}
 	}
 
-	public static void copy(InputStream in, Writer w) throws IOException {
-		copy(in, w, UTF_8);
+	public static Writer copy(InputStream in, Writer w) throws IOException {
+		return copy(in, w, UTF_8);
 	}
 
-	public static void copy(InputStream in, Writer w, String charset) throws IOException {
-		copy(in, w, Charset.forName(charset));
+	public static Writer copy(InputStream in, Writer w, String charset) throws IOException {
+		return copy(in, w, Charset.forName(charset));
 	}
 
-	public static void copy(InputStream in, Writer w, Charset charset) throws IOException {
-		copy(reader(in, charset), w);
+	public static Writer copy(InputStream in, Writer w, Charset charset) throws IOException {
+		return copy(reader(in, charset), w);
 	}
 
-	public static void copy(InputStream in, OutputStream out) throws IOException {
+	public static OutputStream copy(InputStream in, OutputStream out) throws IOException {
 		try {
 			byte[] buffer = new byte[BUFFER_SIZE];
 			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
 				out.write(buffer, 0, size);
 			}
+			return out;
 		} finally {
 			in.close();
 		}
 	}
 
-	public static void copy(InputStream in, DataOutput out) throws IOException {
+	public static DataOutput copy(InputStream in, DataOutput out) throws IOException {
 		try {
 			byte[] buffer = new byte[BUFFER_SIZE];
 			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
 				out.write(buffer, 0, size);
 			}
+			return out;
 		} finally {
 			in.close();
 		}
 	}
 
-	public static void copy(ReadableByteChannel in, WritableByteChannel out) throws IOException {
+	public static WritableByteChannel copy(ReadableByteChannel in, WritableByteChannel out) throws IOException {
 		try {
 			ByteBuffer bb = ByteBuffer.allocateDirect(BUFFER_SIZE);
 			while (in.read(bb) > 0) {
@@ -195,12 +203,13 @@ public class IO {
 			for (bb.flip(); bb.hasRemaining();) {
 				out.write(bb);
 			}
+			return out;
 		} finally {
 			in.close();
 		}
 	}
 
-	public static void copy(InputStream in, ByteBuffer bb) throws IOException {
+	public static ByteBuffer copy(InputStream in, ByteBuffer bb) throws IOException {
 		try {
 			if (bb.hasArray()) {
 				byte[] buffer = bb.array();
@@ -217,12 +226,28 @@ public class IO {
 					length = Math.min(bb.remaining(), buffer.length);
 				}
 			}
+			return bb;
 		} finally {
 			in.close();
 		}
 	}
 
-	public static void copy(ByteBuffer bb, OutputStream out) throws IOException {
+	public static byte[] copy(InputStream in, byte[] data) throws IOException {
+		return copy(in, data, 0, data.length);
+	}
+
+	public static byte[] copy(InputStream in, byte[] data, int off, int len) throws IOException {
+		try {
+			for (int remaining, size; (remaining = len - off) > 0 && (size = in.read(data, off, remaining)) > 0;) {
+				off += size;
+			}
+			return data;
+		} finally {
+			in.close();
+		}
+	}
+
+	public static OutputStream copy(ByteBuffer bb, OutputStream out) throws IOException {
 		if (bb.hasArray()) {
 			out.write(bb.array(), bb.arrayOffset() + bb.position(), bb.remaining());
 			bb.position(bb.limit());
@@ -235,36 +260,38 @@ public class IO {
 				length = Math.min(bb.remaining(), buffer.length);
 			}
 		}
+		return out;
 	}
 
-	public static void copy(URL url, MessageDigest md) throws IOException {
-		copy(stream(url), md);
+	public static MessageDigest copy(URL url, MessageDigest md) throws IOException {
+		return copy(stream(url), md);
 	}
 
-	public static void copy(File file, MessageDigest md) throws IOException {
-		copy(file.toPath(), md);
+	public static MessageDigest copy(File file, MessageDigest md) throws IOException {
+		return copy(file.toPath(), md);
 	}
 
-	public static void copy(Path path, MessageDigest md) throws IOException {
-		copy(readChannel(path), md);
+	public static MessageDigest copy(Path path, MessageDigest md) throws IOException {
+		return copy(readChannel(path), md);
 	}
 
-	public static void copy(URLConnection conn, MessageDigest md) throws IOException {
-		copy(conn.getInputStream(), md);
+	public static MessageDigest copy(URLConnection conn, MessageDigest md) throws IOException {
+		return copy(conn.getInputStream(), md);
 	}
 
-	public static void copy(InputStream in, MessageDigest md) throws IOException {
+	public static MessageDigest copy(InputStream in, MessageDigest md) throws IOException {
 		try {
 			byte[] buffer = new byte[BUFFER_SIZE];
 			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
 				md.update(buffer, 0, size);
 			}
+			return md;
 		} finally {
 			in.close();
 		}
 	}
 
-	public static void copy(ReadableByteChannel in, MessageDigest md) throws IOException {
+	public static MessageDigest copy(ReadableByteChannel in, MessageDigest md) throws IOException {
 		try {
 			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
 			while (in.read(bb) > 0) {
@@ -275,24 +302,25 @@ public class IO {
 			for (bb.flip(); bb.hasRemaining();) {
 				md.update(bb);
 			}
+			return md;
 		} finally {
 			in.close();
 		}
 	}
 
-	public static void copy(URL url, File file) throws IOException {
-		copy(stream(url), file);
+	public static File copy(URL url, File file) throws IOException {
+		return copy(stream(url), file);
 	}
 
-	public static void copy(URLConnection conn, File file) throws IOException {
-		copy(conn.getInputStream(), file);
+	public static File copy(URLConnection conn, File file) throws IOException {
+		return copy(conn.getInputStream(), file);
 	}
 
-	public static void copy(InputStream in, URL url) throws IOException {
-		copy(in, url, null);
+	public static URL copy(InputStream in, URL url) throws IOException {
+		return copy(in, url, null);
 	}
 
-	public static void copy(InputStream in, URL url, String method) throws IOException {
+	public static URL copy(InputStream in, URL url, String method) throws IOException {
 		URLConnection c = url.openConnection();
 		HttpURLConnection http = (c instanceof HttpURLConnection) ? (HttpURLConnection) c : null;
 		if (http != null && method != null) {
@@ -301,6 +329,7 @@ public class IO {
 		c.setDoOutput(true);
 		try (OutputStream out = c.getOutputStream()) {
 			copy(in, out);
+			return url;
 		} finally {
 			if (http != null) {
 				http.disconnect();
@@ -308,16 +337,17 @@ public class IO {
 		}
 	}
 
-	public static void copy(File src, File tgt) throws IOException {
+	public static File copy(File src, File tgt) throws IOException {
 		copy(src.toPath(), tgt.toPath());
+		return tgt;
 	}
 
-	public static void copy(Path src, Path tgt) throws IOException {
+	public static Path copy(Path src, Path tgt) throws IOException {
 		final Path source = src.toAbsolutePath();
 		final Path target = tgt.toAbsolutePath();
 		if (Files.isRegularFile(source)) {
 			Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
-			return;
+			return tgt;
 		}
 		if (Files.isDirectory(source)) {
 			if (Files.notExists(target)) {
@@ -365,30 +395,32 @@ public class IO {
 							return FileVisitResult.CONTINUE;
 						}
 					});
-			return;
+			return tgt;
 		}
 		throw new FileNotFoundException("During copy: " + source.toString());
 	}
 
-	public static void copy(InputStream in, File file) throws IOException {
+	public static File copy(InputStream in, File file) throws IOException {
 		copy(in, file.toPath());
+		return file;
 	}
 
-	public static void copy(InputStream in, Path path) throws IOException {
+	public static Path copy(InputStream in, Path path) throws IOException {
 		try (FileChannel out = writeChannel(path)) {
 			copy(in, out);
 		}
+		return path;
 	}
 
-	public static void copy(File file, OutputStream out) throws IOException {
-		copy(file.toPath(), out);
+	public static OutputStream copy(File file, OutputStream out) throws IOException {
+		return copy(file.toPath(), out);
 	}
 
-	public static void copy(Path path, OutputStream out) throws IOException {
-		copy(readChannel(path), out);
+	public static OutputStream copy(Path path, OutputStream out) throws IOException {
+		return copy(readChannel(path), out);
 	}
 
-	public static void copy(InputStream in, WritableByteChannel out) throws IOException {
+	public static WritableByteChannel copy(InputStream in, WritableByteChannel out) throws IOException {
 		try {
 			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
 			byte[] buffer = bb.array();
@@ -401,18 +433,20 @@ public class IO {
 			for (bb.flip(); bb.hasRemaining();) {
 				out.write(bb);
 			}
+			return out;
 		} finally {
 			in.close();
 		}
 	}
 
-	public static void copy(ReadableByteChannel in, OutputStream out) throws IOException {
+	public static OutputStream copy(ReadableByteChannel in, OutputStream out) throws IOException {
 		try {
 			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
 			byte[] buffer = bb.array();
 			for (; in.read(bb) > 0; bb.clear()) {
 				out.write(buffer, 0, bb.position());
 			}
+			return out;
 		} finally {
 			in.close();
 		}
@@ -725,12 +759,13 @@ public class IO {
 		}
 	}
 
-	public static void copy(Collection< ? > c, OutputStream out) throws IOException {
+	public static OutputStream copy(Collection< ? > c, OutputStream out) throws IOException {
 		PrintWriter pw = writer(out);
 		try {
 			for (Object o : c) {
 				pw.println(o);
 			}
+			return out;
 		} finally {
 			pw.flush();
 		}

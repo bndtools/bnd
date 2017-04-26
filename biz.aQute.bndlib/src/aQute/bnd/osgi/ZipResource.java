@@ -43,8 +43,7 @@ public class ZipResource implements Resource {
 		if (size == -1) {
 			return buffer = ByteBuffer.wrap(IO.read(zip.getInputStream(entry)));
 		}
-		ByteBuffer bb = ByteBuffer.allocate((int) size);
-		IO.copy(zip.getInputStream(entry), bb);
+		ByteBuffer bb = IO.copy(zip.getInputStream(entry), ByteBuffer.allocate((int) size));
 		bb.flip();
 		return buffer = bb;
 	}
