@@ -6,14 +6,23 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.file.FileVisitOption;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,12 +38,14 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import aQute.bnd.version.Version;
 import aQute.lib.base64.Base64;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
+import aQute.lib.io.NonClosingInputStream;
 import aQute.lib.zip.ZipUtil;
 import aQute.service.reporter.Reporter;
 public class Jar implements Closeable {
@@ -45,6 +56,8 @@ public class Jar implements Closeable {
 	}
 
 	static final String DEFAULT_MANIFEST_NAME = "META-INF/MANIFEST.MF";
+	private static final Pattern				DEFAULT_DO_NOT_COPY		= Pattern
+			.compile(Constants.DEFAULT_DO_NOT_COPY);
 
 	public static final Object[]				EMPTY_ARRAY		= new Jar[0];
 	final TreeMap<String,Resource>				resources		= new TreeMap<String,Resource>();
@@ -72,9 +85,9 @@ public class Jar implements Closeable {
 		this(name);
 		source = dirOrFile;
 		if (dirOrFile.isDirectory())
-			FileResource.build(this, dirOrFile, doNotCopy);
+			buildFromDirectory(dirOrFile.toPath().toAbsolutePath(), doNotCopy);
 		else if (dirOrFile.isFile()) {
-			zipFile = ZipResource.build(this, dirOrFile);
+			buildFromZip(dirOrFile);
 		} else {
 			throw new IllegalArgumentException("A Jar can only accept a file or directory that exists: " + dirOrFile);
 		}
@@ -82,15 +95,21 @@ public class Jar implements Closeable {
 
 	public Jar(String name, InputStream in, long lastModified) throws IOException {
 		this(name);
-		EmbeddedResource.build(this, in, lastModified);
+		buildFromInputStream(in, lastModified);
+	}
+
+	@SuppressWarnings("resource")
+	public static Jar fromResource(String name, Resource resource) throws Exception {
+		if (resource instanceof JarResource) {
+			return ((JarResource) resource).getJar();
+		} else if (resource instanceof FileResource) {
+			return new Jar(name, ((FileResource) resource).getFile());
+		}
+		return new Jar(name).buildFromResource(resource);
 	}
 
 	public Jar(String name, String path) throws IOException {
-		this(name);
-		File f = new File(path);
-		try (InputStream in = IO.stream(f)) {
-			EmbeddedResource.build(this, in, f.lastModified());
-		}
+		this(name, new File(path));
 	}
 
 	public Jar(File f) throws IOException {
@@ -117,7 +136,73 @@ public class Jar implements Closeable {
 	}
 
 	public Jar(String string, File file) throws ZipException, IOException {
-		this(string, file, Pattern.compile(Constants.DEFAULT_DO_NOT_COPY));
+		this(string, file, DEFAULT_DO_NOT_COPY);
+	}
+
+	private Jar buildFromDirectory(final Path baseDir, final Pattern doNotCopy) throws IOException {
+		Files.walkFileTree(baseDir, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
+				new SimpleFileVisitor<Path>() {
+					@Override
+					public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+						if (doNotCopy != null) {
+							String name = dir.getFileName().toString();
+							if (doNotCopy.matcher(name).matches()) {
+								return FileVisitResult.SKIP_SUBTREE;
+							}
+						}
+						updateModified(attrs.lastModifiedTime().toMillis(), "Dir change " + dir);
+						return FileVisitResult.CONTINUE;
+					}
+					@Override
+					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+						String relativePath = baseDir.relativize(file).toString();
+						if (File.separatorChar != '/') {
+							relativePath = relativePath.replace(File.separatorChar, '/');
+						}
+						putResource(relativePath, new FileResource(file, attrs), true);
+						return FileVisitResult.CONTINUE;
+					}
+				});
+		return this;
+	}
+
+	private Jar buildFromZip(File file) throws IOException {
+		try {
+			zipFile = new ZipFile(file);
+			for (Enumeration< ? extends ZipEntry> e = zipFile.entries(); e.hasMoreElements();) {
+				ZipEntry entry = e.nextElement();
+				if (entry.isDirectory()) {
+					continue;
+				}
+				putResource(entry.getName(), new ZipResource(zipFile, entry), true);
+			}
+			return this;
+		} catch (ZipException e) {
+			ZipException ze = new ZipException(
+					"The JAR/ZIP file (" + file.getAbsolutePath() + ") seems corrupted, error: " + e.getMessage());
+			ze.initCause(e);
+			throw ze;
+		} catch (FileNotFoundException e) {
+			throw new IllegalArgumentException("Problem opening JAR: " + file.getAbsolutePath());
+		}
+	}
+
+	private Jar buildFromResource(Resource resource) throws Exception {
+		return buildFromInputStream(resource.openInputStream(), resource.lastModified());
+	}
+
+	private Jar buildFromInputStream(InputStream in, long lastModified) throws IOException {
+		try (ZipInputStream jin = new ZipInputStream(in)) {
+			InputStream noclose = new NonClosingInputStream(jin);
+			for (ZipEntry entry = jin.getNextEntry(); entry != null; entry = jin.getNextEntry()) {
+				if (entry.isDirectory()) {
+					continue;
+				}
+				byte data[] = IO.read(noclose);
+				putResource(entry.getName(), new EmbeddedResource(data, lastModified), true);
+			}
+		}
+		return this;
 	}
 
 	public void setName(String name) {

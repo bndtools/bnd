@@ -2263,9 +2263,8 @@ public class Analyzer extends Processor {
 				Resource resource = dot.getResource(path);
 				if (resource != null) {
 					try {
-						Jar jar = new Jar(path);
+						Jar jar = Jar.fromResource(path, resource);
 						addClose(jar);
-						EmbeddedResource.build(jar, resource);
 						analyzeJar(jar, "", true);
 					} catch (Exception e) {
 						warning("Invalid bundle classpath entry: %s: %s", path, e);

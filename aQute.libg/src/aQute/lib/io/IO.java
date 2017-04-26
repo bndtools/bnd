@@ -53,7 +53,8 @@ import aQute.libg.glob.Glob;
 
 public class IO {
 	static final int			BUFFER_SIZE	= IOConstants.PAGE_SIZE * 16;
-
+	private static final int							DIRECT_MAP_THRESHOLD	= BUFFER_SIZE;
+	private static final boolean						isWindows		= File.separatorChar == '\\';
 	static final public File	work		= new File(System.getProperty("user.dir"));
 	static final public File	home;
 	private static final EnumSet<StandardOpenOption>	writeOptions	= EnumSet.of(StandardOpenOption.WRITE,
@@ -427,7 +428,7 @@ public class IO {
 
 	public static ByteBuffer read(Path path) throws IOException {
 		try (FileChannel in = readChannel(path)) {
-			if (in.size() > BUFFER_SIZE) {
+			if (!isWindows && (in.size() > DIRECT_MAP_THRESHOLD)) {
 				return in.map(MapMode.READ_ONLY, 0, in.size());
 			}
 			ByteBuffer bb = ByteBuffer.allocate((int) in.size());
@@ -991,7 +992,7 @@ public class IO {
 	 */
 	public static boolean createSymbolicLinkOrCopy(Path link, Path target) {
 		try {
-			if (isWindows() || !createSymbolicLink(link, target)) {
+			if (isWindows || !createSymbolicLink(link, target)) {
 				// only copy if target length and timestamp differ
 				BasicFileAttributes targetAttrs = Files.readAttributes(target, BasicFileAttributes.class);
 				try {
@@ -1064,7 +1065,7 @@ public class IO {
 			if (c < ' ')
 				continue;
 
-			if (isWindows()) {
+			if (isWindows) {
 				switch (c) {
 					case '<' :
 					case '>' :
@@ -1089,7 +1090,7 @@ public class IO {
 				}
 			}
 		}
-		if (sb.length() == 0 || (isWindows() && RESERVED_WINDOWS_P.matcher(sb).matches()))
+		if (sb.length() == 0 || (isWindows && RESERVED_WINDOWS_P.matcher(sb).matches()))
 			sb.append("_");
 
 		return sb.toString();
@@ -1098,7 +1099,7 @@ public class IO {
 	final static Pattern RESERVED_WINDOWS_P = Pattern.compile(
 			"CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9]");
 
-	static boolean isWindows() {
-		return File.separatorChar == '\\';
+	public static boolean isWindows() {
+		return isWindows;
 	}
 }
