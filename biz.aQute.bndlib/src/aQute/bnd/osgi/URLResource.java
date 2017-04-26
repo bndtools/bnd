@@ -40,8 +40,7 @@ public class URLResource implements Resource {
 		if (size == -1) {
 			return buffer = ByteBuffer.wrap(IO.read(conn.getInputStream()));
 		}
-		ByteBuffer bb = ByteBuffer.allocate(size);
-		IO.copy(conn.getInputStream(), bb);
+		ByteBuffer bb = IO.copy(conn.getInputStream(), ByteBuffer.allocate(size));
 		bb.flip();
 		return buffer = bb;
 	}
