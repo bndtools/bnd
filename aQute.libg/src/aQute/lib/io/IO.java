@@ -462,10 +462,11 @@ public class IO {
 
 	public static ByteBuffer read(Path path) throws IOException {
 		try (FileChannel in = readChannel(path)) {
-			if (!isWindows && (in.size() > DIRECT_MAP_THRESHOLD)) {
-				return in.map(MapMode.READ_ONLY, 0, in.size());
+			long size = in.size();
+			if (!isWindows && (size > DIRECT_MAP_THRESHOLD)) {
+				return in.map(MapMode.READ_ONLY, 0, size);
 			}
-			ByteBuffer bb = ByteBuffer.allocate((int) in.size());
+			ByteBuffer bb = ByteBuffer.allocate((int) size);
 			while (in.read(bb) > 0) {}
 			bb.flip();
 			return bb;
