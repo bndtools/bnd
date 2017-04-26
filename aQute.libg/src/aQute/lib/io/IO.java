@@ -232,6 +232,21 @@ public class IO {
 		}
 	}
 
+	public static byte[] copy(InputStream in, byte[] data) throws IOException {
+		return copy(in, data, 0, data.length);
+	}
+
+	public static byte[] copy(InputStream in, byte[] data, int off, int len) throws IOException {
+		try {
+			for (int remaining, size; (remaining = len - off) > 0 && (size = in.read(data, off, remaining)) > 0;) {
+				off += size;
+			}
+			return data;
+		} finally {
+			in.close();
+		}
+	}
+
 	public static OutputStream copy(ByteBuffer bb, OutputStream out) throws IOException {
 		if (bb.hasArray()) {
 			out.write(bb.array(), bb.arrayOffset() + bb.position(), bb.remaining());
