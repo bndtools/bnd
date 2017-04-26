@@ -41,6 +41,18 @@ public class IOTest extends TestCase {
 		assertTrue(new File(destDir, "root").exists());
 	}
 
+	public void testCopyURLToByteArray() throws Exception {
+		File src = new File("testresources/unzipped.dat");
+		byte[] file = IO.read(src);
+		byte[] result = IO.read(src.toURI().toURL());
+		assertEquals((int) src.length(), result.length);
+		assertEquals(file.length, result.length);
+		int length = file.length;
+		for (int i = 0; i < length; i++) {
+			assertEquals(file[i], result[i]);
+		}
+	}
+
 	public void testCopyToExactHeapByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);

@@ -479,7 +479,13 @@ public class IO {
 	}
 
 	public static byte[] read(URL url) throws IOException {
-		return read(stream(url));
+		URLConnection conn = url.openConnection();
+		conn.connect();
+		int length = conn.getContentLength();
+		if (length == -1) {
+			return read(conn.getInputStream());
+		}
+		return copy(conn.getInputStream(), new byte[length]);
 	}
 
 	public static byte[] read(InputStream in) throws IOException {
