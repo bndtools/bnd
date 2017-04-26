@@ -44,8 +44,7 @@ public class IOTest extends TestCase {
 	public void testCopyToExactHeapByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
-		ByteBuffer bb = ByteBuffer.allocate((int) src.length());
-		IO.copy(IO.stream(src), bb);
+		ByteBuffer bb = IO.copy(IO.stream(src), ByteBuffer.allocate((int) src.length()));
 		assertEquals((int) src.length(), bb.position());
 		assertEquals(bb.capacity(), bb.position());
 		assertFalse(bb.hasRemaining());
@@ -59,8 +58,7 @@ public class IOTest extends TestCase {
 	public void testCopyToSmallerHeapByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
-		ByteBuffer bb = ByteBuffer.allocate((int) src.length() - 8);
-		IO.copy(IO.stream(src), bb);
+		ByteBuffer bb = IO.copy(IO.stream(src), ByteBuffer.allocate((int) src.length() - 8));
 		assertEquals(bb.capacity(), bb.position());
 		assertFalse(bb.hasRemaining());
 		bb.flip();
@@ -73,8 +71,7 @@ public class IOTest extends TestCase {
 	public void testCopyToLargerHeapByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
-		ByteBuffer bb = ByteBuffer.allocate((int) src.length() + 20);
-		IO.copy(IO.stream(src), bb);
+		ByteBuffer bb = IO.copy(IO.stream(src), ByteBuffer.allocate((int) src.length() + 20));
 		assertEquals((int) src.length(), bb.position());
 		assertTrue(bb.hasRemaining());
 		bb.flip();
@@ -87,8 +84,7 @@ public class IOTest extends TestCase {
 	public void testCopyToExactDirectByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
-		ByteBuffer bb = ByteBuffer.allocateDirect((int) src.length());
-		IO.copy(IO.stream(src), bb);
+		ByteBuffer bb = IO.copy(IO.stream(src), ByteBuffer.allocateDirect((int) src.length()));
 		assertEquals((int) src.length(), bb.position());
 		assertEquals(bb.capacity(), bb.position());
 		assertFalse(bb.hasRemaining());
@@ -102,8 +98,7 @@ public class IOTest extends TestCase {
 	public void testCopyToSmallerDirectByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
-		ByteBuffer bb = ByteBuffer.allocateDirect((int) src.length() - 8);
-		IO.copy(IO.stream(src), bb);
+		ByteBuffer bb = IO.copy(IO.stream(src), ByteBuffer.allocateDirect((int) src.length() - 8));
 		assertEquals(bb.capacity(), bb.position());
 		assertFalse(bb.hasRemaining());
 		bb.flip();
@@ -116,8 +111,7 @@ public class IOTest extends TestCase {
 	public void testCopyToLargerDirectByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
-		ByteBuffer bb = ByteBuffer.allocateDirect((int) src.length() + 20);
-		IO.copy(IO.stream(src), bb);
+		ByteBuffer bb = IO.copy(IO.stream(src), ByteBuffer.allocateDirect((int) src.length() + 20));
 		assertEquals((int) src.length(), bb.position());
 		assertTrue(bb.hasRemaining());
 		bb.flip();
@@ -130,8 +124,7 @@ public class IOTest extends TestCase {
 	public void testCopyToHugeDirectByteBuffer() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
-		ByteBuffer bb = ByteBuffer.allocateDirect(IOConstants.PAGE_SIZE * 32);
-		IO.copy(IO.stream(src), bb);
+		ByteBuffer bb = IO.copy(IO.stream(src), ByteBuffer.allocateDirect(IOConstants.PAGE_SIZE * 32));
 		assertEquals((int) src.length(), bb.position());
 		assertTrue(bb.hasRemaining());
 		bb.flip();
