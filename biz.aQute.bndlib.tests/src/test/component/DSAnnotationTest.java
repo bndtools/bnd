@@ -2116,11 +2116,15 @@ public class DSAnnotationTest extends BndTestCase {
 				"foo", "bar"
 		};
 
+		String[] mySingleStringArray() default "baz";
+
 		int myInt() default 1;
 
 		int[] myIntArray() default {
 				2, 3
 		};
+
+		int[] mySingleIntArray() default 4;
 
 		Class< ? > myClass() default ConfigTypes.class;
 
@@ -2128,11 +2132,15 @@ public class DSAnnotationTest extends BndTestCase {
 				ConfigTypes.class, ConfigTypes.class
 		};
 
+		Class< ? >[] mySingleClassArray() default ConfigTypes.class;
+
 		Foo myEnum() default Foo.A;
 
 		Foo[] myEnumArray() default {
 				Foo.A, Foo.B
 		};
+
+		Foo[] mySingleEnumArray() default Foo.B;
 
 		float myFloat() default 1.0f;
 
@@ -2253,7 +2261,7 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
 
 		xt.assertAttribute("0", "count(scr:component/properties)");
-		xt.assertAttribute("14", "count(scr:component/property)");
+		xt.assertAttribute("18", "count(scr:component/property)");
 
 		xt.assertAttribute("foo", "scr:component/property[@name='myString']/@value");
 		xt.assertAttribute("String", "scr:component/property[@name='myString']/@type");
@@ -2261,11 +2269,17 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertTrimmedAttribute("foo\\nbar", "scr:component/property[@name='myStringArray']");
 		xt.assertAttribute("String", "scr:component/property[@name='myStringArray']/@type");
 
+		xt.assertTrimmedAttribute("baz", "scr:component/property[@name='mySingleStringArray']");
+		xt.assertAttribute("String", "scr:component/property[@name='mySingleStringArray']/@type");
+
 		xt.assertAttribute("1", "scr:component/property[@name='myInt']/@value");
 		xt.assertAttribute("Integer", "scr:component/property[@name='myInt']/@type");
 
 		xt.assertTrimmedAttribute("2\\n3", "scr:component/property[@name='myIntArray']");
 		xt.assertAttribute("Integer", "scr:component/property[@name='myIntArray']/@type");
+
+		xt.assertTrimmedAttribute("4", "scr:component/property[@name='mySingleIntArray']");
+		xt.assertAttribute("Integer", "scr:component/property[@name='mySingleIntArray']/@type");
 
 		xt.assertAttribute("test.component.DSAnnotationTest$ConfigTypes",
 				"scr:component/property[@name='myClass']/@value");
@@ -2276,11 +2290,18 @@ public class DSAnnotationTest extends BndTestCase {
 				"scr:component/property[@name='myClassArray']");
 		xt.assertAttribute("String", "scr:component/property[@name='myClassArray']/@type");
 
+		xt.assertTrimmedAttribute("test.component.DSAnnotationTest$ConfigTypes",
+				"scr:component/property[@name='mySingleClassArray']");
+		xt.assertAttribute("String", "scr:component/property[@name='mySingleClassArray']/@type");
+
 		xt.assertAttribute("A", "scr:component/property[@name='myEnum']/@value");
 		xt.assertAttribute("String", "scr:component/property[@name='myEnum']/@type");
 
 		xt.assertTrimmedAttribute("A\\nB", "scr:component/property[@name='myEnumArray']");
 		xt.assertAttribute("String", "scr:component/property[@name='myEnumArray']/@type");
+
+		xt.assertTrimmedAttribute("B", "scr:component/property[@name='mySingleEnumArray']");
+		xt.assertAttribute("String", "scr:component/property[@name='mySingleEnumArray']/@type");
 
 		xt.assertAttribute("1.0", "scr:component/property[@name='myFloat']/@value");
 		xt.assertAttribute("Float", "scr:component/property[@name='myFloat']/@type");
