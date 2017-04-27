@@ -517,12 +517,19 @@ public class AnnotationReader extends ClassDataCollector {
 				String name = defined.getName();
 				if (value.getClass().isArray()) {
 					// add element individually
-					for (int i = 0; i < Array.getLength(value); i++) {
+					int len = Array.getLength(value);
+					for (int i = 0; i < len; i++) {
 						Object element = Array.get(value, i);
 						valueToProperty(name, element, isClass, typeClass);
 					}
-				} else
+					if (len == 1) {
+						// To make sure the output is an array, we must make
+						// sure there is more than one entry
+						props.add(name, ComponentDef.MARKER);
+					}
+				} else {
 					valueToProperty(name, value, isClass, typeClass);
+				}
 			}
 		}
 	
