@@ -396,6 +396,9 @@ public class MavenBndRepository extends BaseRepository
 				@Override
 				public Promise<Void> call(Promise<File> resolved) throws Exception {
 					File value = resolved.getValue();
+					if (value == null) {
+						throw new FileNotFoundException("Download failed");
+					}
 					for (DownloadListener dl : listeners) {
 						try {
 							dl.success(value);
@@ -405,7 +408,7 @@ public class MavenBndRepository extends BaseRepository
 					}
 					return null;
 				}
-			}, new Failure() {
+			}).then(null, new Failure() {
 				@Override
 				public void fail(Promise< ? > resolved) throws Exception {
 					String reason = Exceptions.toString(resolved.getFailure());

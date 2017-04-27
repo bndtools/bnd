@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
+import aQute.bnd.build.DownloadBlocker.Stage;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
@@ -79,9 +80,9 @@ public class Container {
 	public File getFile() {
 		DownloadBlocker blocker = db;
 		if (blocker != null) {
-			String r = blocker.getReason();
 			File f = blocker.getFile();
-			if (r != null) {
+			if (blocker.getStage() == Stage.FAILURE) {
+				String r = blocker.getReason();
 				if (error == null) {
 					error = r;
 				}

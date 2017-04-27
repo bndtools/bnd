@@ -1,6 +1,7 @@
 package aQute.bnd.util.repository;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 
 import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
@@ -41,12 +42,15 @@ public class DownloadListenerPromise implements Success<File,Void>, Failure {
 		this.promise = promise;
 		this.dls = downloadListeners;
 		logger.debug("{}: starting", task);
-		promise.then(this, this);
+		promise.then(this).then(null, this);
 	}
 
 	@Override
 	public Promise<Void> call(Promise<File> resolved) throws Exception {
 		File file = resolved.getValue();
+		if (file == null) {
+			throw new FileNotFoundException("Download failed");
+		}
 		logger.debug("{}: success {}", this, file);
 
 		if (linked != null) {

@@ -1,6 +1,7 @@
 package aQute.bnd.build;
 
 import java.io.File;
+import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,12 +26,14 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	};
 
 	private volatile Stage	stage	= Stage.INIT;
-	private volatile String	failure;
-	private volatile File	file;
+	private String					failure;
+	private File					file;
 	private final Reporter	reporter;
+	private final CountDownLatch	resolved;
 
 	public DownloadBlocker(Reporter reporter) {
 		this.reporter = reporter;
+		resolved = new CountDownLatch(1);
 	}
 
 	/*
@@ -39,11 +42,14 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	 * aQute.bnd.service.RepositoryPlugin.DownloadListener#success(java.io.File)
 	 */
 	public void success(File file) throws Exception {
-		synchronized (this) {
+		synchronized (resolved) {
+			if (resolved.getCount() == 0) {
+				throw new IllegalStateException("already resolved");
+			}
 			assert stage == Stage.INIT;
 			stage = Stage.SUCCESS;
 			this.file = file;
-			notifyAll();
+			resolved.countDown();
 		}
 		logger.debug("successfully downloaded {}", file);
 	}
@@ -55,12 +61,15 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	 * java.lang.String)
 	 */
 	public void failure(File file, String reason) throws Exception {
-		synchronized (this) {
+		synchronized (resolved) {
+			if (resolved.getCount() == 0) {
+				throw new IllegalStateException("already resolved");
+			}
 			assert stage == Stage.INIT;
 			stage = Stage.FAILURE;
 			this.failure = reason;
 			this.file = file;
-			notifyAll();
+			resolved.countDown();
 		}
 		if (reporter != null)
 			reporter.error("Download %s %s", reason, file);
@@ -84,15 +93,13 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	 * 
 	 * @return null or a reason for a failure
 	 */
-	public synchronized String getReason() {
+	public String getReason() {
 		try {
-			while (stage == Stage.INIT)
-				wait();
+			resolved.await();
+			return failure;
 		} catch (InterruptedException e) {
 			return "Interrupted";
 		}
-
-		return failure;
 	}
 
 	/**
@@ -105,8 +112,12 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	}
 
 	public File getFile() {
-		getReason();
-		return file;
+		try {
+			resolved.await();
+			return file;
+		} catch (InterruptedException e) {
+			return null;
+		}
 	}
 
 	@Override
