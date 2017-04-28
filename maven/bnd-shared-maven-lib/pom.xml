@@ -10,6 +10,12 @@
 	<artifactId>bnd-shared-maven-lib</artifactId>
 	<description>Shared logic used by bnd maven plugins.</description>
 	<name>${project.groupId}:${project.artifactId}</name>
+  <url>http://bnd.bndtools.org/</url>
+  <scm>
+    <url>https://github.com/bndtools/bnd</url>
+    <connection>scm:git:https://github.com/bndtools/bnd.git</connection>
+    <developerConnection>scm:git:git@github.com:bndtools/bnd.git</developerConnection>
+  </scm>
 
 	<dependencies>
 		<dependency>

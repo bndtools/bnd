@@ -11,6 +11,12 @@
     <description>Run the tests from an OSGi bndrun file</description>
     <name>${project.groupId}:${project.artifactId}</name>
     <packaging>maven-plugin</packaging>
+  <url>http://bnd.bndtools.org/</url>
+  <scm>
+    <url>https://github.com/bndtools/bnd</url>
+    <connection>scm:git:https://github.com/bndtools/bnd.git</connection>
+    <developerConnection>scm:git:git@github.com:bndtools/bnd.git</developerConnection>
+  </scm>
 
     <dependencies>
         <dependency>
