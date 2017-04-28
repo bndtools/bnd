@@ -2,10 +2,11 @@ package org.bndtools.builder;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.IWorkingSetManager;
@@ -16,6 +17,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.collections.ExtList;
+import aQute.service.reporter.Reporter.SetLocation;
 
 /**
  * Utility to track working sets from the bnd.bnd file You can set the -workingset to a list of working set names. This
@@ -30,6 +32,7 @@ import aQute.lib.collections.ExtList;
  * </pre>
  */
 public class WorkingSetTracker {
+    static final Pattern JAVAID_P = Pattern.compile("\\p{javaJavaIdentifierPart}+");
 
     static void doWorkingSets(final Project model, final IProject targetProject) {
 
@@ -72,33 +75,31 @@ public class WorkingSetTracker {
             }
         }
 
-        for (final String name : memberShips.keySet()) {
-            Display.getDefault().asyncExec(new Runnable() {
+        for (final Entry<String,Attrs> e : memberShips.entrySet()) {
+            String name = e.getKey();
+            boolean isMember = Processor.isTrue(e.getValue().get("member", "true"));
+            if (!isMember)
+                continue;
 
-                @Override
-                public void run() {
-                    IAdaptable[] members = new IAdaptable[1];
-                    members[0] = targetProject;
-                    IWorkingSet newWorkingSet = workingSetManager.createWorkingSet(name, members);
-                    newWorkingSet.setId("org.eclipse.ui.resourceWorkingSetPage");
-                    newWorkingSet.setLabel(null);
-                    workingSetManager.addWorkingSet(newWorkingSet);
-                }
-
-            });
+            if (!JAVAID_P.matcher(name).matches()) {
+                SetLocation error = model.warning("Invalid working set name '%s'. Must use pattern of Java identifier", name);
+                error.file(model.getPropertiesFile().getAbsolutePath());
+                error.header("-workingset");
+                continue;
+            }
+            IAdaptable[] members = new IAdaptable[1];
+            members[0] = targetProject;
+            IWorkingSet newWorkingSet = workingSetManager.createWorkingSet(name, members);
+            newWorkingSet.setId("org.eclipse.jdt.ui.JavaWorkingSetPage");
+            newWorkingSet.setLabel(null);
+            workingSetManager.addWorkingSet(newWorkingSet);
         }
     }
 
     static private void updateWorkingSet(final IWorkingSet wset, final List<IAdaptable> members) {
-        Display.getDefault().asyncExec(new Runnable() {
-
-            @Override
-            public void run() {
-                IAdaptable[] elements;
-                elements = members.toArray(new IAdaptable[members.size()]);
-                wset.setElements(elements);
-            }
-        });
+        IAdaptable[] elements;
+        elements = members.toArray(new IAdaptable[members.size()]);
+        wset.setElements(elements);
     }
 
 }
