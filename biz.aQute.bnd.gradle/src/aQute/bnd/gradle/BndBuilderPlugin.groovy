@@ -36,6 +36,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.ResolveException
 
 
 public class BndBuilderPlugin implements Plugin<Project> {
@@ -77,7 +78,13 @@ public class BndBuilderPlugin implements Plugin<Project> {
         Configuration baselineConfiguration = baseline.baselineConfiguration
         if (bundleTask && (baselineConfiguration == configurations.baseline) && baselineConfiguration.dependencies.empty) {
           Dependency baselineDep = dependencies.create('group': group, 'name': bundleTask.baseName, 'version': "(,${bundleTask.version})")
-          if (configurations.detachedConfiguration(baselineDep).setTransitive(false).resolvedConfiguration.hasError()) {
+          boolean resolveError
+          try {
+            resolveError = configurations.detachedConfiguration(baselineDep).setTransitive(false).resolvedConfiguration.hasError()
+          } catch(ResolveException e) {
+            resolveError = true
+          }
+          if (resolveError) {
             dependencies {
               baseline files(baseline.bundle)
             }
