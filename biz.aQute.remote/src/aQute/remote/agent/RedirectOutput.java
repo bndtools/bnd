@@ -20,6 +20,7 @@ public class RedirectOutput extends PrintStream {
 	private boolean						err;
 	private static ThreadLocal<Boolean>	onStack	= new ThreadLocal<Boolean>();
 	private TimerTask					active;
+	private String						lastOutput	= "";
 
 	/**
 	 * If we do not have an original, we create a null stream because the
@@ -110,6 +111,8 @@ public class RedirectOutput extends PrintStream {
 					agent.getSupervisor().stderr(output);
 				else
 					agent.getSupervisor().stdout(output);
+
+				setLastOutput(output);
 			} catch (InterruptedException ie) {
 				return;
 			} catch (Exception ie) {
@@ -132,4 +135,17 @@ public class RedirectOutput extends PrintStream {
 		return out;
 	}
 
+	public String getLastOutput() {
+		return lastOutput;
+	}
+
+	public void setLastOutput(String out) {
+		if (!"".equals(out) && out != null) {
+			out = out.replaceAll("^>.*$", "");
+
+			if (!"".equals(out) && !out.startsWith("true")) {
+				lastOutput = out;
+			}
+		}
+	}
 }

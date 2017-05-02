@@ -5,6 +5,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -415,8 +416,15 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	}
 
 	@Override
-	public String shell(String cmd) {
-		// TODO Auto-generated method stub
+	public String shell(String cmd) throws Exception {
+		redirect(Agent.COMMAND_SESSION);
+		stdin(cmd);
+		PrintStream ps = redirector.getOut();
+		if (ps instanceof RedirectOutput) {
+			RedirectOutput rout = (RedirectOutput) ps;
+			return rout.getLastOutput();
+		}
+
 		return null;
 	}
 
