@@ -102,6 +102,8 @@ public class RedirectOutput extends PrintStream {
 			sb = new StringBuilder();
 		}
 
+		setLastOutput(output);
+
 		for (AgentServer agent : agents) {
 			if (agent.quit)
 				continue;
@@ -111,8 +113,6 @@ public class RedirectOutput extends PrintStream {
 					agent.getSupervisor().stderr(output);
 				else
 					agent.getSupervisor().stdout(output);
-
-				setLastOutput(output);
 			} catch (InterruptedException ie) {
 				return;
 			} catch (Exception ie) {
@@ -139,7 +139,7 @@ public class RedirectOutput extends PrintStream {
 		return lastOutput;
 	}
 
-	public void setLastOutput(String out) {
+	private void setLastOutput(String out) {
 		if (!"".equals(out) && out != null) {
 			out = out.replaceAll("^>.*$", "");
 
