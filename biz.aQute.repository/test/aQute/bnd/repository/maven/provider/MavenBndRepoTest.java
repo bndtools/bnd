@@ -86,6 +86,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertEquals(3, pom.getDependencies(EnumSet.of(MavenScope.runtime), false).size());
 		System.out.println(new String(bout.toByteArray(), StandardCharsets.UTF_8));
 	}
+
 	public void testSnapshotGetInRelease() {
 
 	}
@@ -117,6 +118,27 @@ public class MavenBndRepoTest extends TestCase {
 		assertEquals("biz.aQute.bnd.maven", bc.osgi_identity());
 	}
 
+	public void testPutReleaseAndThenIndex() throws Exception {
+		try (Processor artifactProject = new Processor();) {
+			try (Processor indexProject = new Processor();) {
+				indexProject.setProperty("-releaseindex", "*");
+
+				Map<String,String> map = new HashMap<>();
+				map.put("releaseUrl", remote.toURI().toString());
+				config(map);
+				File jar = IO.getFile("testresources/release.jar");
+				PutOptions po = new PutOptions();
+				po.context = artifactProject;
+				PutResult put = repo.put(new FileInputStream(jar), po);
+
+				File demoJar = IO.getFile("testresources/demo.jar");
+				PutOptions indexPo = new PutOptions();
+				indexPo.context = indexProject;
+				put = repo.put(new FileInputStream(demoJar), indexPo);
+			}
+		}
+	}
+
 	public void testNoIndexFile() throws Exception {
 		Map<String,String> map = new HashMap<>();
 		map.put("index", "generated/does_not_exist");
@@ -124,7 +146,6 @@ public class MavenBndRepoTest extends TestCase {
 		repo.list(null);
 		assertTrue(reporter.check());
 	}
-
 
 	public void testGet() throws Exception {
 		config(null);
@@ -170,9 +191,9 @@ public class MavenBndRepoTest extends TestCase {
 
 		versions = repo.versions("org.apache.commons.cli");
 		assertEquals("[1.2.0]", versions.toString());
-		
+
 		Requirement all = ResourceUtils.createWildcardRequirement();
-		Collection<Capability> providers = repo.findProviders( Collections.singleton(all)).get(all);
+		Collection<Capability> providers = repo.findProviders(Collections.singleton(all)).get(all);
 		Set<Resource> resources = ResourceUtils.getResources(providers);
 
 		// there is only one bundle in the store
@@ -383,6 +404,7 @@ public class MavenBndRepoTest extends TestCase {
 		}
 
 	}
+
 	private void assertIsFile(File dir, String path) {
 		if (!IO.getFile(dir, path).isFile())
 			throw new AssertionFailedError(path + " does not exist");

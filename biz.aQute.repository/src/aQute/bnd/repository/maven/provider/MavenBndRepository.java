@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -49,6 +50,9 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.repository.BaseRepository;
+import aQute.bnd.osgi.repository.ResourcesRepository;
+import aQute.bnd.osgi.repository.XMLResourceGenerator;
+import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.repository.maven.provider.IndexFile.BundleDescriptor;
 import aQute.bnd.repository.maven.provider.ReleaseDTO.JavadocPackages;
 import aQute.bnd.repository.maven.provider.ReleaseDTO.ReleaseType;
@@ -86,36 +90,51 @@ import aQute.service.reporter.Reporter;
 @BndPlugin(name = "MavenBndRepository")
 public class MavenBndRepository extends BaseRepository
 		implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable, Refreshable, Actionable, ToDependencyPom {
-	private final static Logger		logger						= LoggerFactory.getLogger(MavenBndRepository.class);
+	private final static Logger				logger						= LoggerFactory
+			.getLogger(MavenBndRepository.class);
 
-	private final Pattern			JPM_REVISION_URL_PATTERN_P	= Pattern
+	private final Pattern					JPM_REVISION_URL_PATTERN_P	= Pattern
 			.compile("https?://.+#!?/p/sha/(?<sha>([0-9A-F][0-9A-F]){20,20})/.*", Pattern.CASE_INSENSITIVE);
-	private static final String		NONE						= "NONE";
-	static final String				MAVEN_REPO_LOCAL			= System.getProperty("maven.repo.local",
+	private static final String				NONE						= "NONE";
+	static final String						MAVEN_REPO_LOCAL			= System.getProperty("maven.repo.local",
 			"~/.m2/repository");
-	private Configuration			configuration;
-	private Registry				registry;
-	private File					localRepo;
-	Reporter						reporter;
-	IMavenRepo						storage;
-	private boolean					inited;
-	private boolean					ok							= true;
-	IndexFile						index;
-	private ScheduledFuture< ? >	indexPoller;
-	private RepoActions				actions						= new RepoActions(this);
-	private String					name;
-	private JpmRepo					libraryx;
-	private HttpClient				client;
+	private Configuration					configuration;
+	private Registry						registry;
+	private File							localRepo;
+	Reporter								reporter;
+	IMavenRepo								storage;
+	private boolean							inited;
+	private boolean							ok							= true;
+	IndexFile								index;
+	private ScheduledFuture< ? >			indexPoller;
+	private RepoActions						actions						= new RepoActions(this);
+	private String							name;
+	private JpmRepo							libraryx;
+	private HttpClient						client;
+	private Map<Processor,LocalPutResult>	releasedArtifacts			= new ConcurrentHashMap<>();
+
+	static class LocalPutResult extends PutResult {
+		Archive			binaryArchive;
+		PutOptions		options;
+		String			failed;
+		public Archive	pomArchive;
+	}
 
 	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		init();
 		File binaryFile = File.createTempFile("put", ".jar");
 		File pomFile = File.createTempFile("pom", ".xml");
+		File indexFile = File.createTempFile("index", ".xml");
+		LocalPutResult result = new LocalPutResult();
 		try {
-			PutResult result = new PutResult();
+
 			if (options == null)
 				options = new PutOptions();
+			else {
+				result.options = options;
+				releasedArtifacts.put(options.context, result);
+			}
 
 			IO.copy(stream, binaryFile);
 
@@ -185,9 +204,18 @@ public class MavenBndRepository extends BaseRepository
 
 					releaser.add(pom.getRevision().pomArchive(), pomFile);
 					releaser.add(binaryArchive, binaryFile);
+					result.binaryArchive = binaryArchive;
+					result.pomArchive = pom.getRevision().pomArchive();
 
 					result.artifact = isLocal(instructions) ? storage.toLocalFile(binaryArchive).toURI()
 							: storage.toRemoteURI(binaryArchive);
+
+					boolean hasReleaseIndex = Processor.isTrue(options.context.getProperty("-releaseindex"));
+					if (hasReleaseIndex) {
+						Archive index = pom.getRevision().archive("xml", "index");
+						createIndex(options.context, indexFile, releasedArtifacts);
+						releaser.add(index, indexFile);
+					}
 
 					if (!isLocal(instructions)) {
 
@@ -217,9 +245,13 @@ public class MavenBndRepository extends BaseRepository
 					index.add(binaryArchive);
 			}
 			return result;
+		} catch (Exception e) {
+			result.failed = e.getMessage();
+			throw e;
 		} finally {
 			IO.delete(binaryFile);
 			IO.delete(pomFile);
+			IO.delete(indexFile);
 		}
 
 	}
@@ -824,13 +856,39 @@ public class MavenBndRepository extends BaseRepository
 				.parent(Revision.valueOf(options.parent))
 				.dependencyManagement(options.dependencyManagement)
 				.out(out);
-		
+
 	}
 
 	@Override
 	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
 		init();
 		return index.findProviders(requirements);
+	}
+
+	private void createIndex(Processor context, File indexFile, Map<Processor,LocalPutResult> releasedArtifacts)
+			throws IOException, Exception {
+		try {
+			ResourcesRepository resources = new ResourcesRepository();
+
+			for (LocalPutResult pr : releasedArtifacts.values()) {
+				try {
+					if (pr.binaryArchive != null) {
+						File localFile = storage.toLocalFile(pr.binaryArchive);
+						ResourceBuilder resourceBuilder = new ResourceBuilder();
+						resourceBuilder.addFile(localFile, pr.artifact);
+						resources.add(resourceBuilder.build());
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
+			XMLResourceGenerator xrg = new XMLResourceGenerator();
+			xrg.indent(4).repository(resources).save(indexFile);
+		} catch (Exception e) {
+			logger.error("Failed to build index {}", context);
+		}
 	}
 
 }
