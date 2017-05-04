@@ -184,6 +184,13 @@ public class AgentTest extends TestCase {
 		assertTrue(previousModified != t2Bundle.lastModified);
 	}
 
+	public void testAgentShell() throws Exception {
+		String result = supervisor.getAgent().shell("lb");
+		assertNotNull(result);
+		assertTrue(result.contains("START"));
+		assertTrue(result.contains("LEVEL"));
+	}
+
 	public void testAgentSupervisorTimeout() throws Exception {
 		TestSupervisor testSupervisor = new TestSupervisor();
 
