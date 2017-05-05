@@ -50,7 +50,7 @@ public class XML {
 	}
 
 	NodeList getNodes(Node root, String path) throws Exception {
-		return (NodeList) xp.evaluate(path, document, XPathConstants.NODESET);
+		return (NodeList) xp.evaluate(path, root, XPathConstants.NODESET);
 	}
 
 	Map<String,String> getProperties(String path) throws Exception {
