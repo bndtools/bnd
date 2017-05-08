@@ -66,7 +66,7 @@ public class Version implements Comparable<Version> {
 		this.snapshot = isSnapshot(qualifier);
 	}
 
-	private boolean isSnapshot(String qualifier2) {
+	private boolean isSnapshot(String qualifier) {
 		return qualifier != null && qualifier != HIGHESTCHAR && SNAPSHOT_P.matcher(qualifier).matches();
 	}
 

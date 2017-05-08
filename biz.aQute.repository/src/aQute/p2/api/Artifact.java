@@ -130,4 +130,5 @@ public class Artifact extends DTO {
 	public URI		uri;
 	public String	id;
 	public Version	version;
+	public String	md5;
 }
