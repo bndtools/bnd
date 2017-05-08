@@ -1,11 +1,13 @@
 package aQute.bnd.repository.p2.provider;
 
+import aQute.bnd.version.Version;
+
 class ArtifactID {
 	private final String	id;
-	private final String	version;
+	private final Version	version;
 	private final String	md5;
 
-	public ArtifactID(String id, String version, String md5) {
+	public ArtifactID(String id, Version version, String md5) {
 		super();
 		this.id = id;
 		this.version = version;
