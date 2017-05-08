@@ -107,7 +107,8 @@ class ArtifactRepository extends XML {
 
 		NodeList artifactNodes = getNodes("repository/artifacts/artifact");
 		for (int i = 0; i < artifactNodes.getLength(); i++) {
-			final XMLArtifact xmlArtifact = getFromType(artifactNodes.item(i), XMLArtifact.class);
+			final Node artifactNode = artifactNodes.item(i).cloneNode(true);
+			final XMLArtifact xmlArtifact = getFromType(artifactNode, XMLArtifact.class);
 			final Map<String,String> map = Converter.cnv(new TypeReference<Map<String,String>>() {}, xmlArtifact);
 
 			if ("osgi.bundle".equals(xmlArtifact.classifier)) {
@@ -135,6 +136,7 @@ class ArtifactRepository extends XML {
 						artifact.uri = uri;
 						artifact.id = xmlArtifact.id;
 						artifact.version = new Version(xmlArtifact.version);
+						artifact.md5 = getProperties(artifactNode, "properties/property").get("download.md5");
 						artifacts.add(artifact);
 						break;
 					}

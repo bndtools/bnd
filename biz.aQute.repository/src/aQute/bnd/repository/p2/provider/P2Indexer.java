@@ -130,10 +130,13 @@ class P2Indexer implements Closeable {
 		P2Impl p2 = new P2Impl(client, this.url, Processor.getExecutor());
 		List<Artifact> artifacts = p2.getArtifacts();
 		List<Promise<Resource>> fetched = new ArrayList<>(artifacts.size());
-		Set<URI> visited = new HashSet<>(artifacts.size());
+		Set<URI> visitedURIs = new HashSet<>(artifacts.size());
+		Set<ArtifactID> visitedArtifacts = new HashSet<>(artifacts.size());
 
 		for (final Artifact a : artifacts) {
-			if (!visited.add(a.uri))
+			if (!visitedURIs.add(a.uri))
+				continue;
+			if (a.md5 != null && !visitedArtifacts.add(new ArtifactID(a.id, a.version.toString(), a.md5)))
 				continue;
 
 			Promise<Resource> promise = client.build()
