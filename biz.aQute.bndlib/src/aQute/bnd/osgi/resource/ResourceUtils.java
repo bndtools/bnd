@@ -236,15 +236,18 @@ public class ResourceUtils {
 		if (v instanceof Version)
 			return (Version) v;
 
+		if (v instanceof org.osgi.framework.Version) {
+			org.osgi.framework.Version o = (org.osgi.framework.Version) v;
+			String q = o.getQualifier();
+			return q.isEmpty() ? new Version(o.getMajor(), o.getMinor(), o.getMicro())
+					: new Version(o.getMajor(), o.getMinor(), o.getMicro(), q);
+		}
+
 		if (v instanceof String) {
 			if (!Version.isVersion((String) v))
 				return null;
 
 			return new Version((String) v);
-		}
-
-		if (v instanceof org.osgi.framework.Version) {
-			return new Version(v.toString());
 		}
 
 		return null;
