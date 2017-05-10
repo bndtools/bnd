@@ -12,20 +12,8 @@
  * This plugin also defines a 'baseline' configuration and a baseline task
  * of type {@link Baseline}. The baseline task will be set up with the
  * default of baselining the output of the jar task using the baseline
- * configuration. If the baseline configuration is not otherwise
- * setup and the baseline task is configured to baseline a task, the
- * baseline configuration will be set as follows:
- *
- * <pre>
- * dependencies {
- *     baseline('group': project.group, 
- *              'name': baseline.bundleTask.baseName, 
- *              'version': "(,${baseline.bundleTask.version})") {
- *       transitive false
- *     }
- *   }
- * }
- * </pre>
+ * configuration. The baseline configuration default dependency
+ * will use the prior version of the jar.
  */
 
 package aQute.bnd.gradle
@@ -87,7 +75,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
       configurations.baseline.defaultDependencies { deps ->
         Task bundleTask = baseline.bundleTask
         if (bundleTask) {
-          Dependency baselineDep = dependencies.create('group': group, 'name': bundleTask.baseName, 'version': "(,${bundleTask.version}[")  {
+          Dependency baselineDep = dependencies.create('group': group, 'name': bundleTask.baseName, 'version': "(,${bundleTask.version}[") {
             force = true
             transitive = false
           }
