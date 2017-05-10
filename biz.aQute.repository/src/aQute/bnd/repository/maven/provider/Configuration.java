@@ -1,5 +1,8 @@
 package aQute.bnd.repository.maven.provider;
 
+import org.osgi.annotation.versioning.ProviderType;
+
+@ProviderType
 public interface Configuration {
 
 	/**
@@ -26,4 +29,6 @@ public interface Configuration {
 	String name(String deflt);
 
 	String index(String deflt);
+
+	boolean noupdateOnRelease();
 }
