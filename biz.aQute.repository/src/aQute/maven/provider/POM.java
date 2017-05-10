@@ -29,6 +29,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
@@ -57,6 +58,8 @@ public class POM implements IPom {
 
 	private MavenRepository			repo;
 
+	private boolean					ignoreParentIfAbsent;
+
 	public static POM parse(MavenRepository repo, File file) throws Exception {
 		try {
 			return new POM(repo, file);
@@ -72,7 +75,12 @@ public class POM implements IPom {
 	}
 
 	public POM(MavenRepository repo, InputStream in) throws Exception {
-		this(repo, getDocBuilder().parse(processEntities(in)));
+		this(repo, getDocBuilder().parse(processEntities(in)), false);
+	}
+
+	public POM(MavenRepository mavenRepository, InputStream pomFile, boolean b)
+			throws SAXException, IOException, ParserConfigurationException, Exception {
+		this(mavenRepository, getDocBuilder().parse(processEntities(pomFile)), b);
 	}
 
 	private static DocumentBuilder getDocBuilder() throws ParserConfigurationException {
@@ -123,7 +131,12 @@ public class POM implements IPom {
 	}
 
 	public POM(MavenRepository repo, Document doc) throws Exception {
+		this(repo, doc, false);
+	}
+
+	public POM(MavenRepository repo, Document doc, boolean ignoreIfParentAbsent) throws Exception {
 		this.repo = repo;
+		this.ignoreParentIfAbsent = ignoreIfParentAbsent;
 		xp = xpf.newXPath();
 
 		String parentGroup = Strings.trim(xp.evaluate("project/parent/groupId", doc));
@@ -145,9 +158,21 @@ public class POM implements IPom {
 				this.parent = new POM(repo, fp);
 			} else {
 				Revision revision = program.version(v);
-				POM pom = repo.getPom(revision);
-				if (pom == null)
-					throw new IllegalArgumentException("Parent not found" + revision.pomArchive());
+				POM pom = null;
+
+				try {
+					pom = repo.getPom(revision);
+				} catch (Exception e) {
+					if (!this.ignoreParentIfAbsent)
+						throw e;
+				}
+
+				if (pom == null) {
+					if (this.ignoreParentIfAbsent)
+						pom = new POM(); // not found
+					else
+						throw new IllegalArgumentException("No parent for pom " + pom);
+				}
 				this.parent = pom;
 			}
 		} else {
@@ -163,9 +188,9 @@ public class POM implements IPom {
 		for (int i = 0; i < props.getLength(); i++)
 			index((Element) props.item(i), "");
 
-		String group = get("project.groupId", null);
+		String group = get("project.groupId", parentGroup);
 		String artifact = getNoInheritance("project.artifactId", null);
-		String version = get("project.version", null);
+		String version = get("project.version", parentVersion);
 		this.packaging = getNoInheritance("project.packaging", "jar");
 
 		Program program = Program.valueOf(group, artifact);
@@ -268,6 +293,9 @@ public class POM implements IPom {
 		String value = properties.getProperty(key);
 		if (value == null)
 			value = deflt;
+
+		if (value == null)
+			return null;
 
 		return replaceMacros(value);
 	}

@@ -271,13 +271,13 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public URI toRemoteURI(Archive archive) throws Exception {
-		// if (archive.revision.isSnapshot()) {
-		// if (snapshot != null)
-		// return snapshot.toURI(archive.remotePath);
-		// } else {
-		// if (release != null)
-		// return release.toURI(archive.remotePath);
-		// }
+		if (archive.revision.isSnapshot()) {
+			if (snapshot != null && !snapshot.isEmpty())
+				return snapshot.get(0).toURI(archive.remotePath);
+		} else {
+			if (release != null && !release.isEmpty())
+				return release.get(0).toURI(archive.remotePath);
+		}
 		return toLocalFile(archive).toURI();
 	}
 
@@ -305,7 +305,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public POM getPom(InputStream pomFile) throws Exception {
-		return new POM(this, pomFile);
+		return new POM(this, pomFile, true);
 	}
 
 	@Override
