@@ -343,8 +343,9 @@ configurations {
   baseline
 }
 dependencies {
-  baseline('group': group, 'name': jar.baseName, 'version': "(,${jar.version})") {
-    transitive false
+  baseline('group': group, 'name': jar.baseName, 'version': "(,${jar.version}[") {
+    force = true
+    transitive = false
   }
 }
 task baseline(type: Baseline) {
