@@ -20,6 +20,8 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.ResourceUtils;
@@ -119,24 +121,29 @@ public class MavenBndRepoTest extends TestCase {
 	}
 
 	public void testPutReleaseAndThenIndex() throws Exception {
-		try (Processor artifactProject = new Processor();) {
-			try (Processor indexProject = new Processor();) {
-				indexProject.setProperty("-releaseindex", "*");
+		Workspace ws = Workspace.findWorkspace(IO.getFile("testdata/releasews"));
+		Project p1 = ws.getProject("p1");
+		Project indexProject = ws.getProject("index");
 
-				Map<String,String> map = new HashMap<>();
-				map.put("releaseUrl", remote.toURI().toString());
-				config(map);
-				File jar = IO.getFile("testresources/release.jar");
-				PutOptions po = new PutOptions();
-				po.context = artifactProject;
-				PutResult put = repo.put(new FileInputStream(jar), po);
+		Map<String,String> map = new HashMap<>();
+		map.put("releaseUrl", remote.toURI().toString());
+		config(map);
 
-				File demoJar = IO.getFile("testresources/demo.jar");
-				PutOptions indexPo = new PutOptions();
-				indexPo.context = indexProject;
-				put = repo.put(new FileInputStream(demoJar), indexPo);
-			}
-		}
+		repo.begin(indexProject);
+		File jar = IO.getFile("testresources/release.jar");
+		PutOptions po = new PutOptions();
+		po.context = p1;
+		PutResult put = repo.put(new FileInputStream(jar), po);
+
+		File demoJar = IO.getFile("testresources/demo.jar");
+		PutOptions indexPo = new PutOptions();
+		indexPo.context = indexProject;
+		put = repo.put(new FileInputStream(demoJar), indexPo);
+
+		repo.end(indexProject);
+
+		assertTrue(indexProject.check());
+		assertTrue(IO.getFile(remote, "biz/aQute/bnd/demo/1.0.0/demo-1.0.0-index.xml").isFile());
 	}
 
 	public void testNoIndexFile() throws Exception {
@@ -455,5 +462,17 @@ public class MavenBndRepoTest extends TestCase {
 		repo.setRegistry(reporter);
 
 		repo.setProperties(config);
+	}
+
+	public void testPutPlainJarInRepo() throws Exception {
+
+		Map<String,String> map = new HashMap<>();
+		map.put("releaseUrl", remote.toURI().toString());
+		config(map);
+
+		File f = IO.getFile("testdata/plainjar/olingo-odata2-api-1.2.0.jar");
+		try (FileInputStream in = new FileInputStream(f)) {
+			repo.put(in, null);
+		}
 	}
 }
