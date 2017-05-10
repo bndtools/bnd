@@ -29,6 +29,8 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.Constants;
 import org.osgi.framework.SynchronousBundleListener;
 import org.osgi.framework.Version;
+import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.junit.constants.TesterConstants;
 import junit.framework.JUnit4TestAdapter;
@@ -36,6 +38,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
+
 public class Activator implements BundleActivator, TesterConstants, Runnable {
 	BundleContext		context;
 	volatile boolean	active;
@@ -45,11 +48,14 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	PrintStream			out			= System.err;
 	JUnitEclipseReport	jUnitEclipseReport;
 	volatile Thread		thread;
+	ServiceTracker		packageAdminTracker;
 
 	public Activator() {}
 
 	public void start(BundleContext context) throws Exception {
 		this.context = context;
+		this.packageAdminTracker = new ServiceTracker(context, PackageAdmin.class.getName(), null);
+		this.packageAdminTracker.open();
 		active = true;
 		if (!Boolean.valueOf(context.getProperty(TESTER_SEPARATETHREAD))
 				&& Boolean.valueOf(context.getProperty("launch.services"))) { // can't
@@ -69,6 +75,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	public void stop(BundleContext context) throws Exception {
+		this.packageAdminTracker.close();
 		active = false;
 		if (jUnitEclipseReport != null)
 			jUnitEclipseReport.close();
@@ -260,7 +267,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 	/**
 	 * The main test routine.
-	 * 
+	 *
 	 * @param bundle The bundle under test or null
 	 * @param testnames The names to test
 	 * @param report The report writer or null
@@ -270,6 +277,9 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		trace("testing bundle %s with %s", bundle, testnames);
 		Bundle fw = context.getBundle(0);
 		try {
+
+			bundle = findHost(bundle);
+
 			List<String> names = new ArrayList<String>();
 			StringTokenizer st = new StringTokenizer(testnames, " ,");
 
@@ -357,6 +367,48 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			e.printStackTrace();
 		}
 		return -1;
+	}
+
+	/*
+	 * Find the host for a fragment. We just iterate over all other bundles and
+	 * ask for the fragments. We returns the first one found.
+	 */
+	private Bundle findHost(Bundle bundle) {
+		if (bundle == null)
+			return null;
+
+		PackageAdmin packageAdmin = (PackageAdmin) packageAdminTracker.getService();
+		if (packageAdmin == null) {
+			trace("Have a potential fragment but Package Admin not present to find the host");
+			return bundle;
+		}
+
+		if ((packageAdmin.getBundleType(bundle) & PackageAdmin.BUNDLE_TYPE_FRAGMENT) == 0)
+			return bundle;
+
+		Bundle found = null;
+
+		for (Bundle potentialFragmentHost : context.getBundles()) {
+
+			if (potentialFragmentHost == bundle || potentialFragmentHost.getBundleId() == 0)
+				continue;
+
+			Bundle[] fragments = packageAdmin.getFragments(potentialFragmentHost);
+			if (fragments == null)
+				continue;
+
+			for (Bundle fragment : fragments) {
+				if (fragment == bundle) {
+					if (found != null) {
+						trace("Have a test fragment but find multiple hosts. Fragment=%s, Previous=%s, Next=%s ",
+								bundle, found, fragment);
+					} else
+						found = potentialFragmentHost;
+				}
+			}
+		}
+
+		return found == null ? bundle : found;
 	}
 
 	private TestSuite createSuite(Bundle tfw, List<String> testNames, TestResult result) {
@@ -640,7 +692,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 	/**
 	 * Running a test from the command line
-	 * 
+	 *
 	 * @param args
 	 */
 
