@@ -21,6 +21,7 @@ dependencies {
     compile 'commons-codec:commons-codec:1.5'
     compile 'commons-lang:commons-lang:2.6'
     testCompile 'junit:junit:4.9'
+    baseline ':baselinetask1:1.0.0'
 }
 
 jar {
@@ -38,13 +39,4 @@ baseline {
    description 'Baseline'
    group 'build'
    ignoreFailures = true
-}
-
-task baselineSelf(type: Baseline) {
-   description 'Baseline Self'
-   group 'build'
-   bundle jar
-   baseline jar.archivePath
-   ignoreFailures = false
-   baselineReportDirName = 'foo'
 }
