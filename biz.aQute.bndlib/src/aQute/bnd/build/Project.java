@@ -3,6 +3,7 @@ package aQute.bnd.build;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -81,6 +82,7 @@ import aQute.bnd.service.Scripter;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.service.action.Action;
 import aQute.bnd.service.action.NamedAction;
+import aQute.bnd.service.release.ReleaseBracketingPlugin;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.ExtList;
@@ -103,6 +105,7 @@ import aQute.libg.tuple.Pair;
 
 public class Project extends Processor {
 	private final static Logger logger = LoggerFactory.getLogger(Project.class);
+
 	static class RefreshData {
 		Parameters installRepositories;
 	}
@@ -194,7 +197,7 @@ public class Project extends Processor {
 	/**
 	 * Return a new builder that is nicely setup for this project. Please close
 	 * this builder after use.
-	 * 
+	 *
 	 * @param parent The project builder to use as parent, use this project if
 	 *            null
 	 * @throws Exception
@@ -411,7 +414,7 @@ public class Project extends Processor {
 	 * This method is deprecated because this can handle only one source dir.
 	 * Use getSourcePath. For backward compatibility we will return the first
 	 * entry on the source path.
-	 * 
+	 *
 	 * @return first entry on the {@link #getSourcePath()}
 	 */
 	@Deprecated
@@ -454,7 +457,7 @@ public class Project extends Processor {
 	/**
 	 * Iterate over the entries and place the projects on the projects list and
 	 * all the files of the entries on the resultpath.
-	 * 
+	 *
 	 * @param resultpath The list that gets all the files
 	 * @param projects The list that gets any projects that are entries
 	 * @param entries The input list of classpath entries
@@ -525,7 +528,7 @@ public class Project extends Processor {
 	 * indicates there is a project in the same workspace. The path to the
 	 * output directory is calculated. The default directory ${bin} can be
 	 * overridden with the output attribute.
-	 * 
+	 *
 	 * @param strategyx STRATEGY_LOWEST or STRATEGY_HIGHEST
 	 * @param spec The header
 	 */
@@ -625,7 +628,7 @@ public class Project extends Processor {
 
 	/**
 	 * Just calls a new method with a default parm.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	Collection<Container> getBundles(Strategy strategy, String spec) throws Exception {
@@ -634,7 +637,7 @@ public class Project extends Processor {
 
 	/**
 	 * Get all bundles matching a wildcard expression.
-	 * 
+	 *
 	 * @param bsnPattern A bsn wildcard, e.g. "osgi*" or just "*".
 	 * @param range A range to narrow the versions of bundles found, or null to
 	 *            return any version.
@@ -758,7 +761,7 @@ public class Project extends Processor {
 	/**
 	 * The user selected pom in a path. This will place the pom as well as its
 	 * dependencies on the list
-	 * 
+	 *
 	 * @param strategyx the strategy to use.
 	 * @param result The list of result containers
 	 * @throws Exception anything goes wrong
@@ -798,7 +801,7 @@ public class Project extends Processor {
 
 	/**
 	 * Handle dependencies for paths that are calculated on demand.
-	 * 
+	 *
 	 * @param testpath2
 	 * @param parseTestpath
 	 */
@@ -821,7 +824,7 @@ public class Project extends Processor {
 
 	/**
 	 * Return the run framework
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public Collection<Container> getRunFw() throws Exception {
@@ -957,7 +960,7 @@ public class Project extends Processor {
 
 	/**
 	 * Release
-	 * 
+	 *
 	 * @param name The repository name
 	 * @param jarName
 	 * @param jarStream
@@ -977,7 +980,8 @@ public class Project extends Processor {
 			return null;
 		}
 
-		RepositoryPlugin releaseRepo = releaseRepos.get(0); // use only first release repo
+		RepositoryPlugin releaseRepo = releaseRepos.get(0); // use only first
+															// release repo
 		return releaseRepo(releaseRepo, jarName, jarStream);
 	}
 
@@ -1012,8 +1016,7 @@ public class Project extends Processor {
 			}
 			return result;
 		}
-		repoNames:
-		for (String repoName : repoNames.keySet()) {
+		repoNames: for (String repoName : repoNames.keySet()) {
 			for (RepositoryPlugin plugin : plugins) {
 				if (plugin.canWrite() && repoName.equals(plugin.getName())) {
 					result.add(plugin);
@@ -1041,7 +1044,7 @@ public class Project extends Processor {
 
 	/**
 	 * Release
-	 * 
+	 *
 	 * @param name The respository name
 	 * @param test Run testcases
 	 * @throws Exception
@@ -1074,7 +1077,7 @@ public class Project extends Processor {
 	 * Get a bundle from one of the plugin repositories. If an exact version is
 	 * required we just return the first repository found (in declaration order
 	 * in the build.bnd file).
-	 * 
+	 *
 	 * @param bsn The bundle symbolic name
 	 * @param range The version range
 	 * @param strategy set to LOWEST or HIGHEST
@@ -1302,7 +1305,7 @@ public class Project extends Processor {
 	/**
 	 * Look for the bundle in the workspace. The premise is that the bsn must
 	 * start with the project name.
-	 * 
+	 *
 	 * @param bsn The bsn
 	 * @param attrs Any attributes
 	 * @throws Exception
@@ -1386,7 +1389,7 @@ public class Project extends Processor {
 
 	/**
 	 * Deploy the file (which must be a bundle) into the repository.
-	 * 
+	 *
 	 * @param name The repository name
 	 * @param file bundle
 	 */
@@ -1422,7 +1425,7 @@ public class Project extends Processor {
 
 	/**
 	 * Deploy the file (which must be a bundle) into the repository.
-	 * 
+	 *
 	 * @param file bundle
 	 */
 	public void deploy(File file) throws Exception {
@@ -1432,7 +1435,7 @@ public class Project extends Processor {
 
 	/**
 	 * Deploy the current project to a repository
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void deploy() throws Exception {
@@ -1446,8 +1449,7 @@ public class Project extends Processor {
 			for (Deploy d : getPlugins(Deploy.class)) {
 				logger.debug("Deploying {} to: {}", output.getName(), d);
 				try {
-					if (d.deploy(this, output.getName(),
-							new BufferedInputStream(IO.stream(output))))
+					if (d.deploy(this, output.getName(), new BufferedInputStream(IO.stream(output))))
 						logger.debug("deployed {} successfully to {}", output, d);
 				} catch (Exception e) {
 					msgs.Deploying(e);
@@ -1529,7 +1531,7 @@ public class Project extends Processor {
 	/**
 	 * This is the external method that will pre-build any dependencies if it is
 	 * out of date.
-	 * 
+	 *
 	 * @param underTest
 	 * @throws Exception
 	 */
@@ -1695,7 +1697,7 @@ public class Project extends Processor {
 	/**
 	 * Build without doing any dependency checking. Make sure any dependent
 	 * projects are built first.
-	 * 
+	 *
 	 * @param underTest
 	 * @throws Exception
 	 */
@@ -1846,7 +1848,7 @@ public class Project extends Processor {
 	/**
 	 * Calculate the file for a JAR. The default name is bsn.jar, but this can
 	 * be overridden with an
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public File getOutputFile(String bsn, String version) throws Exception {
@@ -2026,7 +2028,7 @@ public class Project extends Processor {
 
 	/**
 	 * Release.
-	 * 
+	 *
 	 * @param name The repository name
 	 * @throws Exception
 	 */
@@ -2137,7 +2139,7 @@ public class Project extends Processor {
 
 	/**
 	 * Run JUnit
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void junit() throws Exception {
@@ -2150,7 +2152,7 @@ public class Project extends Processor {
 	 * This methods attempts to turn any jar into a valid jar. If this is a
 	 * bundle with manifest, a manifest is added based on defaults. If it is a
 	 * bundle, but not r4, we try to add the r4 headers.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public Jar getValidJar(File f) throws Exception {
@@ -2206,7 +2208,7 @@ public class Project extends Processor {
 	 * does not contain a version, check the include files. If they still do not
 	 * contain a version, then check ALL the sub builders. If not, add a version
 	 * to the main bnd file.
-	 * 
+	 *
 	 * @param mask the mask for bumping, see {@link Macro#_version(String[])}
 	 * @throws Exception
 	 */
@@ -2376,7 +2378,7 @@ public class Project extends Processor {
 	 * Returns containers for the deliverables of this project. The deliverables
 	 * is the project builder for this project if no -sub is specified.
 	 * Otherwise it contains all the sub bnd files.
-	 * 
+	 *
 	 * @return A collection of containers
 	 * @throws Exception
 	 */
@@ -2399,7 +2401,7 @@ public class Project extends Processor {
 	 * same directory that should drive the generation of multiple deliverables.
 	 * This method figures out if the bndFile is actually one of the bnd files
 	 * of a deliverable.
-	 * 
+	 *
 	 * @param bndFile A file pointing to a bnd file.
 	 * @return null or the builder for a sub file.
 	 * @throws Exception
@@ -2427,7 +2429,7 @@ public class Project extends Processor {
 
 	/**
 	 * Return a build that maps to the sub file.
-	 * 
+	 *
 	 * @param string
 	 * @throws Exception
 	 */
@@ -2442,7 +2444,7 @@ public class Project extends Processor {
 
 	/**
 	 * Answer the container associated with a given bsn.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public Container getDeliverable(String bsn, Map<String,String> attrs) throws Exception {
@@ -2459,7 +2461,7 @@ public class Project extends Processor {
 	 * option. This will generate multiple deliverables. This method returns the
 	 * builders for each sub file. If no -sub option is present, the list will
 	 * contain a builder for the bnd.bnd file.
-	 * 
+	 *
 	 * @return A list of builders.
 	 * @throws Exception
 	 */
@@ -2471,7 +2473,7 @@ public class Project extends Processor {
 	 * Calculate the classpath. We include our own runtime.jar which includes
 	 * the test framework and we include the first of the test frameworks
 	 * specified.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	Collection<File> toFile(Collection<Container> containers) throws Exception {
@@ -2498,7 +2500,7 @@ public class Project extends Processor {
 
 	/**
 	 * Get a launcher.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public ProjectLauncher getProjectLauncher() throws Exception {
@@ -2639,7 +2641,7 @@ public class Project extends Processor {
 
 	/**
 	 * Do a baseline for this project
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -2655,7 +2657,7 @@ public class Project extends Processor {
 
 	/**
 	 * Method to verify that the paths are correct, ie no missing dependencies
-	 * 
+	 *
 	 * @param test for test cases, also adds -testpath
 	 * @throws Exception
 	 */
@@ -2686,7 +2688,7 @@ public class Project extends Processor {
 
 	/**
 	 * Report detailed info from this project
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -2956,5 +2958,67 @@ public class Project extends Processor {
 
 	public Version getPackageInfo(String packageName) throws Exception {
 		return packageInfo.getPackageInfo(packageName);
+	}
+
+	/**
+	 * Actions to perform before a full workspace release. This is executed for
+	 * projects that describe the distribution
+	 */
+
+	public void preRelease() {
+		for (ReleaseBracketingPlugin rp : getWorkspace().getPlugins(ReleaseBracketingPlugin.class)) {
+			rp.begin(this);
+		}
+	}
+
+	/**
+	 * Actions to perform after a full workspace release. This is executed for
+	 * projects that describe the distribution
+	 */
+
+	public void postRelease() {
+		for (ReleaseBracketingPlugin rp : getWorkspace().getPlugins(ReleaseBracketingPlugin.class)) {
+			rp.end(this);
+		}
+	}
+
+	/**
+	 * Copy a repository to another repository
+	 *
+	 * @throws Exception
+	 */
+
+	public void copy(RepositoryPlugin source, String filter, RepositoryPlugin destination) throws Exception {
+		copy(source, filter == null ? null : new Instructions(filter), destination);
+	}
+	public void copy(RepositoryPlugin source, Instructions filter, RepositoryPlugin destination) throws Exception {
+
+		assert source != null;
+		assert destination != null;
+
+		logger.info("copy from repo {} to {} with filter {}", source, destination, filter);
+
+		for (String bsn : source.list(null)) {
+			for (Version version : source.versions(bsn)) {
+				if (filter == null || filter.matches(bsn)) {
+					logger.info("copy {}:{}", bsn, version);
+					File file = source.get(bsn, version, null);
+					if (file.getName().endsWith(".jar")) {
+						try (InputStream in = new FileInputStream(file)) {
+							PutOptions po = new PutOptions();
+							po.bsn = bsn;
+							po.context = null;
+							po.type = "bundle";
+							po.version = version;
+							PutResult put = destination.put(in, po);
+						} catch (Exception e) {
+							logger.error("Failed to copy {}-{}", e, bsn, version);
+							error("Failed to copy %s:%s from %s to %s, error: %s", bsn, version, source, destination,
+									e);
+						}
+					}
+				}
+			}
+		}
 	}
 }
