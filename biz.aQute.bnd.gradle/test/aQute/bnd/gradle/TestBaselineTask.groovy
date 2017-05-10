@@ -40,9 +40,9 @@ class TestBaselineTask extends Specification {
           result.task(':baselineSelf').outcome == SUCCESS
 
           testProjectReportsDir.isDirectory()
-          File baseline = new File(testProjectReportsDir, 'baseline/baseline/baselinetask1-1.1.0.txt')
+          File baseline = new File(testProjectReportsDir, "baseline/baseline/${testProject}-1.1.0.txt")
           baseline.isFile()
-          File baselineSelf = new File(testProjectReportsDir, 'foo/baselineSelf/baselinetask1-1.1.0.txt')
+          File baselineSelf = new File(testProjectReportsDir, "foo/baselineSelf/${testProject}-1.1.0.txt")
           baselineSelf.isFile()
 
           result.getOutput() =~ Pattern.quote("Baseline problems detected. See the report in ${baseline.absolutePath}")
@@ -89,7 +89,33 @@ class TestBaselineTask extends Specification {
           result.task(':baseline').outcome == SUCCESS
 
           testProjectReportsDir.isDirectory()
-          File baseline = new File(testProjectReportsDir, 'baseline/baseline/baselinetask3-1.0.txt')
+          File baseline = new File(testProjectReportsDir, "baseline/baseline/${testProject}-1.0.txt")
           baseline.isFile()
+    }
+
+    def "Bnd Baseline Configuration Task Test"() {
+        given:
+          String testProject = 'baselinetask4'
+          File testProjectDir = new File(testResources, testProject).canonicalFile
+          assert testProjectDir.isDirectory()
+          File testProjectReportsDir = new File(testProjectDir, 'build/reports').canonicalFile
+
+        when:
+          def result = GradleRunner.create()
+            .withProjectDir(testProjectDir)
+            .withArguments('--stacktrace', '--debug', 'baseline')
+            .withPluginClasspath(pluginClasspath)
+            .forwardOutput()
+            .build()
+
+        then:
+          result.task(':jar').outcome == SUCCESS
+          result.task(':baseline').outcome == SUCCESS
+
+          testProjectReportsDir.isDirectory()
+          File baseline = new File(testProjectReportsDir, "baseline/baseline/${testProject}-1.1.0.txt")
+          baseline.isFile()
+
+          result.getOutput() =~ Pattern.quote("Baseline problems detected. See the report in ${baseline.absolutePath}")
     }
 }

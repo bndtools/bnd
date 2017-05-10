@@ -36,7 +36,10 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.ExternalDependency
+import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.artifacts.ResolveException
+
 
 
 public class BndBuilderPlugin implements Plugin<Project> {
@@ -64,6 +67,14 @@ public class BndBuilderPlugin implements Plugin<Project> {
 
       configurations {
         baseline
+        baseline.dependencies.all { Dependency dep ->
+          if (dep instanceof ExternalDependency) {
+            dep.force = true
+          }
+          if (dep instanceof ModuleDependency) {
+            dep.transitive = false
+          }
+        }
       }
 
       task ('baseline', type: Baseline) {
@@ -73,28 +84,24 @@ public class BndBuilderPlugin implements Plugin<Project> {
         baseline configurations.baseline
       }
 
-      afterEvaluate {
+      configurations.baseline.defaultDependencies { deps ->
         Task bundleTask = baseline.bundleTask
-        Configuration baselineConfiguration = baseline.baselineConfiguration
-        if (bundleTask && (baselineConfiguration == configurations.baseline) && baselineConfiguration.dependencies.empty) {
-          Dependency baselineDep = dependencies.create('group': group, 'name': bundleTask.baseName, 'version': "(,${bundleTask.version})")
+        if (bundleTask) {
+          Dependency baselineDep = dependencies.create('group': group, 'name': bundleTask.baseName, 'version': "(,${bundleTask.version}[")  {
+            force = true
+            transitive = false
+          }
           boolean resolveError
           try {
-            resolveError = configurations.detachedConfiguration(baselineDep).setTransitive(false).resolvedConfiguration.hasError()
+            Configuration detached = configurations.detachedConfiguration(baselineDep)
+            resolveError = detached.resolvedConfiguration.hasError()
           } catch(ResolveException e) {
             resolveError = true
           }
           if (resolveError) {
-            dependencies {
-              baseline files(baseline.bundle)
-            }
-          } else {
-            dependencies {
-              baseline(baselineDep) {
-                transitive false
-              }
-            }
+            baselineDep = dependencies.create(files(baseline.bundle))
           }
+          deps.add(baselineDep)
         }
       }
     }

@@ -63,7 +63,6 @@ import org.gradle.api.tasks.TaskAction
 public class Baseline extends DefaultTask {
   private ConfigurableFileCollection bundleCollection
   private ConfigurableFileCollection baselineCollection
-  private Configuration baselineConfiguration
 
   /**
    * Whether baseline failures should be ignored.
@@ -138,9 +137,6 @@ public class Baseline extends DefaultTask {
     if (file instanceof Task || file instanceof Buildable) {
       baselineCollection.builtBy file
     }
-    if (file instanceof Configuration) {
-      baselineConfiguration = file
-    }
   }
 
   /**
@@ -163,9 +159,6 @@ public class Baseline extends DefaultTask {
     return dir.absolute ? dir : project.reporting.file(dir.path)
   }
 
-  Configuration getBaselineConfiguration() {
-    return baselineConfiguration
-  }
   Task getBundleTask() {
     return bundleCollection?.builtBy.find()
   }
