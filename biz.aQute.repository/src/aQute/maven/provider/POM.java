@@ -78,9 +78,9 @@ public class POM implements IPom {
 		this(repo, getDocBuilder().parse(processEntities(in)), false);
 	}
 
-	public POM(MavenRepository mavenRepository, InputStream pomFile, boolean b)
+	public POM(MavenRepository mavenRepository, InputStream pomFile, boolean ignoreParentIfAbsent)
 			throws SAXException, IOException, ParserConfigurationException, Exception {
-		this(mavenRepository, getDocBuilder().parse(processEntities(pomFile)), b);
+		this(mavenRepository, getDocBuilder().parse(processEntities(pomFile)), ignoreParentIfAbsent);
 	}
 
 	private static DocumentBuilder getDocBuilder() throws ParserConfigurationException {

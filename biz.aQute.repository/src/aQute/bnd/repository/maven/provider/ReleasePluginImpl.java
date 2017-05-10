@@ -97,7 +97,7 @@ class ReleasePluginImpl {
 				rb.addFile(file, new URI(uri));
 				repo.add(rb.build());
 			} catch (Exception e) {
-				indexProject.error("Failed to index artifact %s", e, pom.binaryArchive());
+				indexProject.exception(e, "Failed to index artifact %s", pom.binaryArchive());
 			}
 		}
 
