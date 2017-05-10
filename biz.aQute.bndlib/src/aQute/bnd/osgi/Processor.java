@@ -363,49 +363,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void printStackTrace(Throwable e, int count, PrintStream out) {
-		StackTraceElement st[] = e.getStackTrace();
-		String previousPkg = null;
-		boolean shorted = false;
-		if (count < st.length) {
-			shorted = true;
-			count--;
-		}
-
-		for (int i = 0; i < count && i < st.length; i++) {
-			String cname = st[i].getClassName();
-			String file = st[i].getFileName();
-			String method = st[i].getMethodName();
-			int line = st[i].getLineNumber();
-
-			String pkg = Descriptors.getPackage(cname);
-			if (PACKAGES_IGNORED.matcher(pkg).matches())
-				continue;
-
-			String shortName = Descriptors.getShortName(cname);
-			if (pkg.equals(previousPkg))
-				pkg = "''";
-			else
-				pkg += "";
-
-			if (file.equals(shortName + ".java"))
-				file = "";
-			else
-				file = " (" + file + ")";
-
-			String l;
-			if (st[i].isNativeMethod())
-				l = "native";
-			else if (line > 0)
-				l = "" + line;
-			else
-				l = "";
-
-			out.printf(" %10s %-40s %s %s%n", l, shortName + "." + method, pkg, file);
-
-			previousPkg = pkg;
-		}
-		if (shorted)
-			out.println("...");
+		e.printStackTrace(out);
 	}
 
 	public void signal() {}
@@ -422,7 +380,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Standard OSGi header parser.
-	 * 
+	 *
 	 * @param value
 	 */
 	static public Parameters parseHeader(String value, Processor logger) {
@@ -468,7 +426,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Return a list of plugins that implement the given class.
-	 * 
+	 *
 	 * @param clazz Each returned plugin implements this class/interface
 	 * @return A list of plugins
 	 */
@@ -484,7 +442,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Returns the first plugin it can find of the given type.
-	 * 
+	 *
 	 * @param <T>
 	 * @param clazz
 	 */
@@ -550,7 +508,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Is called when all plugins are loaded
-	 * 
+	 *
 	 * @param p
 	 */
 	protected void addExtensions(Set<Object> p) {
@@ -570,7 +528,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * connectors.
 	 * <p>
 	 * Last but not least, we load the remaining plugins.
-	 * 
+	 *
 	 * @param instances
 	 * @param pluginString
 	 */
@@ -665,7 +623,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * {@link Constants#PLUGINPATH_URL_ATTR} attribute then we download it first
 	 * from that url. You can then also specify a
 	 * {@link Constants#PLUGINPATH_SHA1_ATTR} attribute to verify the file.
-	 * 
+	 *
 	 * @see PLUGINPATH
 	 * @param pluginPath the clauses for the plugin path
 	 * @param loader The class loader to extend
@@ -750,7 +708,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Load a plugin and customize it. If the plugin cannot be loaded then we
 	 * return null.
-	 * 
+	 *
 	 * @param loader Name of the loader
 	 * @param attrs
 	 * @param className
@@ -784,7 +742,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Set the initial parameters of a plugin
-	 * 
+	 *
 	 * @param plugin
 	 * @param map
 	 */
@@ -807,7 +765,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Indicates that this run should ignore errors and succeed anyway
-	 * 
+	 *
 	 * @return true if this processor should return errors
 	 */
 	@Override
@@ -1038,7 +996,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * Inspect the properties and if you find -includes parse the line included
 	 * manifest files or properties files. The files are relative from the given
 	 * base, this is normally the base for the analyzer.
-	 * 
+	 *
 	 * @param ubase
 	 * @param p
 	 * @param done
@@ -1209,7 +1167,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * Set the properties by file. Setting the properties this way will also set
 	 * the base for this analyzer. After reading the properties, this will call
 	 * setProperties(Properties) which will handle the includes.
-	 * 
+	 *
 	 * @param propertiesFile
 	 * @throws FileNotFoundException
 	 * @throws IOException
@@ -1279,7 +1237,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Get a property without preprocessing it with a proper default
-	 * 
+	 *
 	 * @param key
 	 * @param deflt
 	 */
@@ -1290,7 +1248,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Get a property with preprocessing it with a proper default
-	 * 
+	 *
 	 * @param key
 	 * @param deflt
 	 */
@@ -1388,7 +1346,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Helper to load a properties file from disk.
-	 * 
+	 *
 	 * @param file
 	 * @throws IOException
 	 */
@@ -1402,7 +1360,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * Load Properties from disk. The default encoding is ISO-8859-1 but
 	 * nowadays all files are encoded with UTF-8. So we try to load it first as
 	 * UTF-8 and if this fails we fail back to ISO-8859-1
-	 * 
+	 *
 	 * @param in The stream to load from
 	 * @param name The name of the file for doc reasons
 	 * @return a Properties
@@ -1445,7 +1403,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Print a standard Map based OSGi header.
-	 * 
+	 *
 	 * @param exports map { name => Map { attribute|directive => value } }
 	 * @return the clauses
 	 * @throws IOException
@@ -1565,7 +1523,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Add or override a new property.
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -1581,7 +1539,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Read a manifest but return a properties object.
-	 * 
+	 *
 	 * @param in
 	 * @throws IOException
 	 */
@@ -1692,7 +1650,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Make the file short if it is inside our base directory, otherwise long.
-	 * 
+	 *
 	 * @param f
 	 */
 	public String normalize(String f) {
@@ -1943,7 +1901,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * then an error is reported during manifest calculation. This allows the
 	 * plugin to fail to load when it is not needed. We first get the plugins to
 	 * ensure it is properly initialized.
-	 * 
+	 *
 	 * @param name
 	 */
 	public boolean isMissingPlugin(String name) {
@@ -1955,7 +1913,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * Append two strings to for a path in a ZIP or JAR file. It is guaranteed
 	 * to return a string that does not start, nor ends with a '/', while it is
 	 * properly separated with slashes. Double slashes are properly removed.
-	 * 
+	 *
 	 * <pre>
 	 * &quot;/&quot; + &quot;abc/def/&quot; becomes &quot;abc/def&quot;
 	 * &#064;param prefix &#064;param suffix &#064;return
@@ -1989,7 +1947,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Parse the a=b strings and return a map of them.
-	 * 
+	 *
 	 * @param attrs
 	 * @param clazz
 	 */
@@ -2014,7 +1972,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * This method is the same as String.format but it makes sure that any
 	 * arrays are transformed to strings.
-	 * 
+	 *
 	 * @param string
 	 * @param parms
 	 */
@@ -2025,7 +1983,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Check if the object is an array and turn it into a string if it is,
 	 * otherwise unchanged.
-	 * 
+	 *
 	 * @param object the object to make printable
 	 * @return a string if it was an array or the original object
 	 */
@@ -2129,13 +2087,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * according to OSGi RFC 188. For example on Windows7 running on an x86_64
 	 * processor it should generate the following:
 	 * </p>
-	 * 
+	 *
 	 * <pre>
 	 * osgi.native;osgi.native.osname:List&lt;String&gt;="Windows7,Windows
 	 * 7,Win32";osgi.native.osversion:Version=6.1.0;osgi.native.processor:List&
 	 * lt;String&gt;="x86-64,amd64,em64t,x86_64"
 	 * </pre>
-	 * 
+	 *
 	 * @param args The array of properties. For example: the macro invocation of
 	 *            "${native_capability;osversion=3.2.4;osname=Linux}" results in
 	 *            an args array of
@@ -2162,7 +2120,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * End a command. Will restore the previous command owner.
-	 * 
+	 *
 	 * @param previous
 	 */
 	protected void endHandleErrors(Processor previous) {
@@ -2182,7 +2140,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * These plugins are added to the total list of plugins. The separation is
 	 * necessary because the list of plugins is refreshed now and then so we
 	 * need to be able to add them at any moment in time.
-	 * 
+	 *
 	 * @param plugin
 	 */
 	public synchronized void addBasicPlugin(Object plugin) {
@@ -2267,7 +2225,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Utiltity to replace an extension
-	 * 
+	 *
 	 * @param s
 	 * @param extension
 	 * @param newExtension
@@ -2352,7 +2310,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Get a header relative to this processor, tking its parents and includes
 	 * into account.
-	 * 
+	 *
 	 * @param header
 	 * @throws IOException
 	 */
@@ -2525,7 +2483,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	/**
 	 * Report the details of this processor. Should in general be overridden
-	 * 
+	 *
 	 * @param table
 	 * @throws Exception
 	 */
@@ -2600,7 +2558,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Try to get a Jar from a file name/path or a url, or in last resort from
 	 * the classpath name part of their files.
-	 * 
+	 *
 	 * @param name URL or filename relative to the base
 	 * @param from Message identifying the caller for errors
 	 * @return null or a Jar with the contents for the name
@@ -2671,7 +2629,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * Return a range expression for a filter from a version. By default this is
 	 * based on consumer compatibility. You can specify a third argument (true)
 	 * to get provider compatibility.
-	 * 
+	 *
 	 * <pre>
 	 *  ${frange;1.2.3} ->
 	 * (&(version>=1.2.3)(!(version>=2.0.0)) ${frange;1.2.3, true} ->
