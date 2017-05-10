@@ -3,7 +3,6 @@ package aQute.bnd.build;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -3004,7 +3003,7 @@ public class Project extends Processor {
 					logger.info("copy {}:{}", bsn, version);
 					File file = source.get(bsn, version, null);
 					if (file.getName().endsWith(".jar")) {
-						try (InputStream in = new FileInputStream(file)) {
+						try (InputStream in = IO.stream(file)) {
 							PutOptions po = new PutOptions();
 							po.bsn = bsn;
 							po.context = null;
