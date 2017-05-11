@@ -191,12 +191,51 @@ final class PropertiesParser {
 
 	private final String token(byte delimeters) {
 		StringBuilder sb = new StringBuilder();
+		char quote = 0;
+		boolean expectDelimeter = false;
+
 		while (!isIn(delimeters)) {
 			char tmp = current;
 			if (tmp == '\\') {
 				tmp = backslash();
 
 				if (tmp == 0) // we hit \\n\n
+					break;
+			}
+			switch (tmp) {
+				case '\'' :
+				case '"' :
+					if (quote == 0) {
+						if (expectDelimeter) {
+							error("Found a quote '%s' while expecting a delimeter. You should quote the whole values, you can use both single and double quotes",
+									tmp);
+							expectDelimeter = false;
+						}
+						quote = tmp;
+					} else if (quote == tmp) {
+						quote = 0;
+						expectDelimeter = true;
+					}
+					break;
+
+				case ' ' :
+				case '\t' :
+				case '\f' :
+					break;
+
+				case ';' :
+				case ',' :
+				case '=' :
+				case ':' :
+					expectDelimeter = false;
+					break;
+
+				default :
+					if (expectDelimeter) {
+						error("Expected a delimeter, like comma or semicolon, after a quoted string but found '%s'",
+								tmp);
+						expectDelimeter = false;
+					}
 					break;
 			}
 			sb.append(tmp);
