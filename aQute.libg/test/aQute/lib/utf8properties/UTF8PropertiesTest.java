@@ -20,12 +20,16 @@ import junit.framework.TestCase;
 public class UTF8PropertiesTest extends TestCase {
 
 	public void testMissingDelimeterAfterQuotedString() throws IOException {
-		assertError("foo: bar='abc' ' '    ;", "foo", 0,
+		assertError("-foo: bar='abc' ' '    ;", "-foo", 0,
 				"Found a quote ''' while expecting a delimeter. You should quote the whole values, you can use both single and double quotes:");
-		assertError("foo: bar='abc', baz='def' goo='hji'", "foo", 0,
+		assertError("-foo: bar='abc', baz='def' goo='hji'", "-foo", 0,
 				"Expected a delimeter, like comma or semicolon, after a quoted string but found 'g':");
-		assertError("foo: bar='abc'                ,   baz='def'", "foo", 0);
-		assertError("foo: bar='abc'     ;", "foo", 0);
+		assertError("-foo: bar='abc'                ,   baz='def'", "-foo", 0);
+		assertError("-foo: bar='abc'     ;", "-foo", 0);
+		assertError("-foo: bar='\\'abc\\' foo'     ;", "-foo", 0);
+		assertError("-foo: bar=\"\\\"abc\\\" foo\"     ;", "-foo", 0);
+		assertError("foo: bar='abc' ' '    ;", "foo", 0);
+		assertError("foo: abc \"  \" '  '", "foo", 0);
 	}
 
 	String trickypart = "\u00A0\u00A1\u00A2\u00A3\u00A4\u00A5\u00A6\u00A7\u00A8\u00A9\u00AA\u00AB\u00AC\u00AD\u00AE\u00AF"

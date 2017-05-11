@@ -38,10 +38,10 @@ final class PropertiesParser {
 		INFO['\\'] = NOKEY;
 	}
 
-	private int			n		= 0;
-	private int			line	= 0;
-	private int			pos		= -1;
-	private int			marker	= 0;
+	private int			n				= 0;
+	private int			line			= 0;
+	private int			pos				= -1;
+	private int			marker			= 0;
 	private char		current;
 	private Properties	properties;
 	private boolean		validKey;
@@ -156,7 +156,7 @@ final class PropertiesParser {
 
 			if (current != '\n') {
 
-				String value = token(LINE);
+				String value = token(LINE, key.startsWith("-"));
 				properties.put(key, value);
 
 			} else {
@@ -189,7 +189,7 @@ final class PropertiesParser {
 		}
 	}
 
-	private final String token(byte delimeters) {
+	private final String token(byte delimeters, boolean check) {
 		StringBuilder sb = new StringBuilder();
 		char quote = 0;
 		boolean expectDelimeter = false;
@@ -201,42 +201,46 @@ final class PropertiesParser {
 
 				if (tmp == 0) // we hit \\n\n
 					break;
-			}
-			switch (tmp) {
-				case '\'' :
-				case '"' :
-					if (quote == 0) {
+			} else if (check) {
+				switch (current) {
+					case '\\' :
+						break;
+
+					case '\'' :
+					case '"' :
+						if (quote == 0) {
+							if (expectDelimeter) {
+								error("Found a quote '%s' while expecting a delimeter. You should quote the whole values, you can use both single and double quotes",
+										tmp);
+								expectDelimeter = false;
+							}
+							quote = tmp;
+						} else if (quote == tmp) {
+							quote = 0;
+							expectDelimeter = true;
+						}
+						break;
+
+					case ' ' :
+					case '\t' :
+					case '\f' :
+						break;
+
+					case ';' :
+					case ',' :
+					case '=' :
+					case ':' :
+						expectDelimeter = false;
+						break;
+
+					default :
 						if (expectDelimeter) {
-							error("Found a quote '%s' while expecting a delimeter. You should quote the whole values, you can use both single and double quotes",
+							error("Expected a delimeter, like comma or semicolon, after a quoted string but found '%s'",
 									tmp);
 							expectDelimeter = false;
 						}
-						quote = tmp;
-					} else if (quote == tmp) {
-						quote = 0;
-						expectDelimeter = true;
-					}
-					break;
-
-				case ' ' :
-				case '\t' :
-				case '\f' :
-					break;
-
-				case ';' :
-				case ',' :
-				case '=' :
-				case ':' :
-					expectDelimeter = false;
-					break;
-
-				default :
-					if (expectDelimeter) {
-						error("Expected a delimeter, like comma or semicolon, after a quoted string but found '%s'",
-								tmp);
-						expectDelimeter = false;
-					}
-					break;
+						break;
+				}
 			}
 			sb.append(tmp);
 			next();
