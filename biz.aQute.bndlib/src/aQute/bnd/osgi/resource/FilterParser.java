@@ -15,6 +15,7 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.version.Version;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
 
 public class FilterParser {
@@ -1063,7 +1064,7 @@ public class FilterParser {
 			}
 			return sb.toString();
 		} catch (Exception e) {
-			return e.toString();
+			return Exceptions.toString(e);
 		}
 	}
 

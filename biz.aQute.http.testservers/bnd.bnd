@@ -3,7 +3,7 @@
 
 Bundle-Description: \
 	The HttpTestServer Provides an HTTP(S) server that is very easy to extend by creating a subclass. \
-	Methods that start with '_' are treated as paths. That is, `get_foo()` maps to `get/foo`. Remaining \
+	Methods that start with `_` are treated as paths. That is, `get_foo()` maps to `get/foo`. Remaining \
 	path and parameters are mapped to the method. See Httpbin as an example. This example implements a lot \
 	of methods that are very useful to test HTTP communication.
 
@@ -20,7 +20,7 @@ Conditional-Package: aQute.lib*, fi.*, org.bouncycastle.*
 	bcpkix;version=latest,\
 	bcprov;version=latest, \
 	org.littleshoot:littleproxy;version=latest
-	
+
 -testpath: \
 	${junit}, \
 	slf4j.api;version=latest, \
