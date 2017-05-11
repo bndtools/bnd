@@ -18,6 +18,10 @@ If an explicit version is given, then ${@} can be used to substitute the found v
   Import-Package: org.osgi.framework;version=${@}
   Import-Package: org.osgi.framework;version="[${versionmask;==;${@}},${versionmask;=+;${@}})"
 
+Packages with directive resolution:=dynamic will be removed from Import-Package and added to the DynamicImport-Package header after being processed like any other Import-Package entry. For example:
+
+  Import-Package: org.slf4j.*;resolution:=dynamic, *
+
 If an imported package uses mandatory attributes, then bnd will attempt to add those attributes to the import statement. However, in certain (bizarre!) cases this is not wanted. It is therefore possible to remove an attribute from the import clause. This is done with the `-remove-attribute:` directive or by setting the value of an attribute to !. The parameter of the `-remove-attribute` directive is an instruction and can use the standard options with !, *, ?, etc.
 
   Import-Package: org.eclipse.core.runtime;-remove-attribute:common,*

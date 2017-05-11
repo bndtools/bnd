@@ -307,6 +307,7 @@ public interface Constants {
 	String							LINK_ATTRIBUTE								= "link";
 	String							LITERAL_ATTRIBUTE							= "literal";
 	String							NAME_ATTRIBUTE								= "name";
+	String							RESOLUTION_DYNAMIC							= "dynamic";
 	String							DESCRIPTION_ATTRIBUTE						= "description";
 	String							OSNAME_ATTRIBUTE							= "osname";
 	String							OSVERSION_ATTRIBUTE							= "osversion";

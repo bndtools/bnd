@@ -519,6 +519,72 @@ public class AnalyzerTest extends BndTestCase {
 			a.close();
 		}
 	}
+	
+	/**
+	 * Test Import-Packages marked with resolution:=dynamic are expanded, moved
+	 * to DynamicImport-Packages with no original DIP instruction.
+	 */
+	public static void testDynamicImportExpansionPackagesAreSet() throws Exception {
+		Builder a = new Builder();
+		try {
+			Properties p = new Properties();
+			p.put("Import-Package", "org.osgi.service.*;resolution:=dynamic, *");
+			p.put("Private-Package", "test.dynamicimport");
+
+			a.addClasspath(new File("bin"));
+			a.addClasspath(IO.getFile("jar/osgi.jar"));
+
+			a.setProperties(p);
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			String imports = jar.getManifest().getMainAttributes().getValue("Import-Package");
+			String dynamicImports = jar.getManifest().getMainAttributes().getValue("DynamicImport-Package");
+
+			assertTrue(imports.indexOf("org.osgi.framework;version=\"[1.3,2)\"") >= 0);
+			assertTrue(imports.indexOf("org.osgi.service.cm;version=\"[1.2,2)\"") < 0);
+			assertTrue(imports.indexOf("org.osgi.service.event;version=\"[1.0,2)\"") < 0);
+			assertTrue(dynamicImports.indexOf("org.osgi.service.cm;version=\"[1.2,2)\"") >= 0);
+			assertTrue(dynamicImports.indexOf("org.osgi.service.event;version=\"[1.0,2)\"") >= 0);
+
+		} finally {
+			a.close();
+		}
+	}
+
+	/**
+	 * Test Import-Packages marked with resolution:=dynamic are expanded, moved
+	 * to DynamicImport-Packages and added to the original DIP instruction.
+	 */
+	public static void testDynamicImportExpansionPackagesAreAdded() throws Exception {
+		Builder a = new Builder();
+		try {
+			Properties p = new Properties();
+			p.put("Import-Package", "org.osgi.service.*;resolution:=dynamic, *");
+			p.put("DynamicImport-Package", "javax.servlet.*");
+			p.put("Private-Package", "test.dynamicimport");
+
+			a.addClasspath(new File("bin"));
+			a.addClasspath(IO.getFile("jar/osgi.jar"));
+
+			a.setProperties(p);
+			Jar jar = a.build();
+			assertTrue(a.check());
+
+			String imports = jar.getManifest().getMainAttributes().getValue("Import-Package");
+			String dynamicImports = jar.getManifest().getMainAttributes().getValue("DynamicImport-Package");
+
+			assertTrue(imports.indexOf("org.osgi.framework;version=\"[1.3,2)\"") >= 0);
+			assertTrue(imports.indexOf("org.osgi.service.cm;version=\"[1.2,2)\"") < 0);
+			assertTrue(imports.indexOf("org.osgi.service.event;version=\"[1.0,2)\"") < 0);
+			assertTrue(dynamicImports.indexOf("org.osgi.service.cm;version=\"[1.2,2)\"") >= 0);
+			assertTrue(dynamicImports.indexOf("org.osgi.service.event;version=\"[1.0,2)\"") >= 0);
+			assertTrue(dynamicImports.indexOf("javax.servlet.*") >= 0);
+
+		} finally {
+			a.close();
+		}
+	}
 
 	/**
 	 * Use a private activator, check it is not imported.
