@@ -2,14 +2,35 @@ package aQute.bnd.comm.tests;
 
 import java.io.File;
 import java.net.Proxy.Type;
+import java.util.List;
 
+import aQute.bnd.connection.settings.ConnectionSettings;
 import aQute.bnd.connection.settings.ProxyDTO;
 import aQute.bnd.connection.settings.ServerDTO;
 import aQute.bnd.connection.settings.SettingsDTO;
 import aQute.bnd.connection.settings.SettingsParser;
+import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Processor;
 import junit.framework.TestCase;
 
 public class SettingsParserTest extends TestCase {
+
+	public void testMavenEncryptedPassword() throws Exception {
+
+		System.setProperty(ConnectionSettings.M2_SETTINGS_SECURITY_PROPERTY, "testresources/settings-security.xml");
+		Processor proc = new Processor();
+		proc.setProperty("-connection-settings", "testresources/server-maven-encrypted-selection.xml");
+		try (ConnectionSettings cs = new ConnectionSettings(proc, new HttpClient());) {
+			cs.readSettings();
+			List<ServerDTO> serverDTOs = cs.getServerDTOs();
+			assertEquals(1, serverDTOs.size());
+
+			ServerDTO s = serverDTOs.get(0);
+
+			assertEquals("encrypted-password", s.id);
+			assertEquals("FOOBAR", s.password);
+		}
+	}
 
 	public void testServerSelectionWithTrust() throws Exception {
 		SettingsDTO settings = getSettings("server-trust-selection.xml");

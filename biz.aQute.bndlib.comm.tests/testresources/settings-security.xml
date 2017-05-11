@@ -1,0 +1,6 @@
+<settingsSecurity>
+	<!--
+		mvn -?-encrypt-master-password foobar
+	-->
+	<master>{OSzn7gL8b0oHc6RcGGotMLkN0v7ba47h/Skt0x5JySw=}</master>
+</settingsSecurity>

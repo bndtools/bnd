@@ -11,10 +11,15 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
@@ -24,15 +29,32 @@ import aQute.bnd.service.url.ProxyHandler;
 import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.url.BasicAuthentication;
 import aQute.bnd.url.HttpsVerification;
+import aQute.lib.concurrentinit.ConcurrentInitialize;
 import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
+import aQute.lib.mavenpasswordobfuscator.MavenPasswordObfuscator;
+import aQute.lib.xpath.XPathParser;
 import aQute.libg.glob.Glob;
 
 public class ConnectionSettings extends Processor {
-	private static final String	M2_SETTINGS_XML				= "~/.m2/settings.xml";
-	private static final String	BND_CONNECTION_SETTINGS_XML	= "~/.bnd/connection-settings.xml";
-	private static final String	CONNECTION_SETTINGS			= "-connection-settings";
-	private HttpClient			client;
+	final static Logger						logger							= LoggerFactory
+			.getLogger(ConnectionSettings.class);
+	public static final String				M2_SETTINGS_SECURITY_XML		= "~/.m2/settings-security.xml";
+	public static final String				M2_SETTINGS_SECURITY_PROPERTY	= "settings.security";
+	private static final String				M2_SETTINGS_XML					= "~/.m2/settings.xml";
+	private static final String				BND_CONNECTION_SETTINGS_XML		= "~/.bnd/connection-settings.xml";
+	private static final String				CONNECTION_SETTINGS				= "-connection-settings";
+	private HttpClient						client;
+	private List<ServerDTO>					servers							= new ArrayList<>();
+	private ConcurrentInitialize<String>	mavenMasterPassphrase			= new ConcurrentInitialize<String>() {
+
+																				@Override
+																				public String create()
+																						throws Exception {
+																					return readMavenMasterPassphrase();
+																				}
+
+																			};
 
 	public ConnectionSettings(Processor processor, HttpClient client) throws Exception {
 		super(processor);
@@ -126,7 +148,7 @@ public class ConnectionSettings extends Processor {
 
 	/**
 	 * Set the parameters from within, i.e. not via file
-	 * 
+	 *
 	 * @param uri the uri that must match
 	 * @param value the values
 	 * @throws Exception
@@ -214,8 +236,8 @@ public class ConnectionSettings extends Processor {
 	 */
 	public static ProxyHandler createProxyHandler(final ProxyDTO proxyDTO) {
 		return new ProxyHandler() {
-			Glob globs[];
-			private ProxySetup proxySetup;
+			Glob				globs[];
+			private ProxySetup	proxySetup;
 
 			@Override
 			public ProxySetup forURL(URL url) throws Exception {
@@ -311,6 +333,12 @@ public class ConnectionSettings extends Processor {
 		for (ServerDTO serverDTO : settings.servers) {
 			serverDTO.trust = makeAbsolute(file, serverDTO.trust);
 
+			if (MavenPasswordObfuscator.isObfuscatedPassword(serverDTO.password)) {
+				String masterPassphrase = mavenMasterPassphrase.get();
+				if (masterPassphrase != null) {
+					serverDTO.password = MavenPasswordObfuscator.decrypt(serverDTO.password, masterPassphrase);
+				}
+			}
 			if ("default".equals(serverDTO.id))
 				deflt = serverDTO;
 			else {
@@ -321,6 +349,35 @@ public class ConnectionSettings extends Processor {
 		if (deflt != null)
 			add(deflt);
 
+	}
+
+	private String readMavenMasterPassphrase() throws Exception {
+		String path = System.getProperty(M2_SETTINGS_SECURITY_PROPERTY, M2_SETTINGS_SECURITY_XML);
+		File file = IO.getFile(path);
+		if (!file.isFile()) {
+			logger.info("No Maven security settings file {}", path);
+			return null;
+		}
+
+		XPathParser sp = new XPathParser(file);
+		String master = sp.parse("/settingsSecurity/master");
+		if (master == null || master.isEmpty()) {
+			warning("Found Maven security settings file %s but not master password in it", path);
+			return null;
+		} else {
+
+			if (!MavenPasswordObfuscator.isObfuscatedPassword(master)) {
+				warning("Master password in %s was not obfuscated, using actual value", path);
+				return master;
+			}
+			try {
+				return MavenPasswordObfuscator.decrypt(master, M2_SETTINGS_SECURITY_PROPERTY);
+			} catch (Exception e) {
+				exception(e, "Could not decrypt the master password from %s with key %s", path,
+						M2_SETTINGS_SECURITY_PROPERTY);
+				return null;
+			}
+		}
 	}
 
 	final static String	IPNR_PART_S	= "([01]\\d\\d)|(2[0-4]\\d)|(25[0-5])";
@@ -410,11 +467,18 @@ public class ConnectionSettings extends Processor {
 	}
 
 	public void add(ServerDTO server) {
-		client.addURLConnectionHandler(createUrlConnectionHandler(server));
+		servers.add(server);
+		if (client != null)
+			client.addURLConnectionHandler(createUrlConnectionHandler(server));
 	}
 
 	public void add(ProxyDTO proxy) {
-		client.addProxyHandler(createProxyHandler(proxy));
+		if (client != null)
+			client.addProxyHandler(createProxyHandler(proxy));
+	}
+
+	public List<ServerDTO> getServerDTOs() {
+		return servers;
 	}
 
 }
