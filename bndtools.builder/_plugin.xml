@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.5"?>
 <plugin>
-
+	<extension
+		point="org.eclipse.core.resources.markers"
+		id="bndtools.builder.componentmarker"
+		name="OSGi Component"
+		>
+		<persistent value="true"/>
+		<super type="org.eclipse.core.resources.textmarker"/>
+	</extension>
 	<extension
 		point="org.eclipse.core.resources.natures"
 		id="bndtools.core.bndnature"
@@ -36,8 +43,49 @@
 			<description>Marks exported packages with a '+' decoration, and
 				excluded packages with a strike-through.</description>
 		</decorator>
-	</extension>
 
+		<decorator
+			id="bndtools.componentDecorator"
+			label="Bndtools OSGi Component Decorations"
+			state="true"
+			adaptable="true"
+			lightweight="true"
+			class="org.bndtools.builder.decorator.ui.ComponentDecorator"
+			location="TOP_RIGHT">
+			<enablement>
+				<or>
+					<objectClass
+						name="org.eclipse.jdt.internal.core.CompilationUnit">
+					</objectClass>
+					<objectClass
+						name="org.eclipse.jdt.internal.core.SourceType">
+					</objectClass>
+				</or>                
+			</enablement>
+			<description>Marks components with a decoration.</description>
+		</decorator>
+		<decorator
+			id="bndtools.componentPackageDecorator"
+			label="Bndtools OSGi Component Package Decorations"
+			state="true"
+			adaptable="true"
+			lightweight="true"
+			class="org.bndtools.builder.decorator.ui.ComponentPackageDecorator"
+			location="TOP_RIGHT">
+			<enablement>
+				<or>
+					<objectClass
+						name="org.eclipse.jdt.internal.core.PackageFragment">
+					</objectClass>
+					<objectClass
+						name="org.eclipse.jdt.internal.core.CompilationUnit">
+					</objectClass>
+				</or>                
+			</enablement>
+			<description>Marks component packages with a component decoration and count.</description>
+		</decorator>
+	</extension>
+	
 	<extension
 		point="org.eclipse.core.resources.markers"
 		id="bndproblem"
