@@ -621,7 +621,7 @@ public class ProjectBuilder extends Builder {
 				&& (builder.getProperty(Constants.PRIVATE_PACKAGE) == null)
 				&& (builder.getProperty(Constants.EXPORT_PACKAGE) == null)
 				&& (builder.getProperty(Constants.INCLUDE_RESOURCE) == null)
-				&& (builder.getProperty(Constants.INCLUDERESOURCE) == null)) {
+				&& (builder.getProperty(Constants.INCLUDERESOURCE) == null) && project.getOutput().isDirectory()) {
 			Jar outputDirJar = new Jar(project.getName(), project.getOutput());
 			outputDirJar.setManifest(new Manifest());
 			builder.setJar(outputDirJar);

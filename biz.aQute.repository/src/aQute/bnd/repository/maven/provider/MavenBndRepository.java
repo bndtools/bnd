@@ -25,8 +25,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.Manifest;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -37,11 +35,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
+import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
-import aQute.bnd.jpm.util.JSONRPCProxy;
 import aQute.bnd.maven.PomResource;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.FileResource;
@@ -61,8 +59,8 @@ import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.maven.PomOptions;
 import aQute.bnd.service.maven.ToDependencyPom;
+import aQute.bnd.service.release.ReleaseBracketingPlugin;
 import aQute.bnd.version.Version;
-import aQute.jpm.facade.repo.JpmRepo;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.hex.Hex;
@@ -72,7 +70,6 @@ import aQute.libg.glob.Glob;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
 import aQute.maven.api.IPom;
-import aQute.maven.api.Program;
 import aQute.maven.api.Release;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenBackingRepository;
@@ -84,19 +81,17 @@ import aQute.service.reporter.Reporter;
  * This is the Bnd repository for Maven.
  */
 @BndPlugin(name = "MavenBndRepository")
-public class MavenBndRepository extends BaseRepository
-		implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable, Refreshable, Actionable, ToDependencyPom {
+public class MavenBndRepository extends BaseRepository implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable,
+		Refreshable, Actionable, ToDependencyPom, ReleaseBracketingPlugin {
 	private final static Logger		logger						= LoggerFactory.getLogger(MavenBndRepository.class);
 
-	private final Pattern			JPM_REVISION_URL_PATTERN_P	= Pattern
-			.compile("https?://.+#!?/p/sha/(?<sha>([0-9A-F][0-9A-F]){20,20})/.*", Pattern.CASE_INSENSITIVE);
 	private static final String		NONE						= "NONE";
 	static final String				MAVEN_REPO_LOCAL			= System.getProperty("maven.repo.local",
 			"~/.m2/repository");
 	private Configuration			configuration;
 	private Registry				registry;
 	private File					localRepo;
-	Reporter						reporter;
+	private Reporter				reporter;
 	IMavenRepo						storage;
 	private boolean					inited;
 	private boolean					ok							= true;
@@ -104,18 +99,29 @@ public class MavenBndRepository extends BaseRepository
 	private ScheduledFuture< ? >	indexPoller;
 	private RepoActions				actions						= new RepoActions(this);
 	private String					name;
-	private JpmRepo					libraryx;
 	private HttpClient				client;
+	private ReleasePluginImpl		releasePlugin		= new ReleasePluginImpl(this, null);
+
+	static class LocalPutResult extends PutResult {
+		Archive			binaryArchive;
+		PutOptions		options;
+		String			failed;
+		public Archive	pomArchive;
+	}
 
 	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		init();
 		File binaryFile = File.createTempFile("put", ".jar");
 		File pomFile = File.createTempFile("pom", ".xml");
+		LocalPutResult result = new LocalPutResult();
 		try {
-			PutResult result = new PutResult();
+
 			if (options == null)
 				options = new PutOptions();
+			else {
+				result.options = options;
+			}
 
 			IO.copy(stream, binaryFile);
 
@@ -165,10 +171,13 @@ public class MavenBndRepository extends BaseRepository
 
 				checkRemotePossible(instructions, binaryArchive.isSnapshot());
 
-				if (!binaryArchive.isSnapshot() && storage.exists(binaryArchive)) {
-					logger.debug("Already released {} to {}", pom.getRevision(), this);
-					result.alreadyReleased = true;
-					return result;
+				if (!binaryArchive.isSnapshot()) {
+					releasePlugin.add(options.context, pom);
+					if (storage.exists(binaryArchive)) {
+						logger.debug("Already released {} to {}", pom.getRevision(), this);
+						result.alreadyReleased = true;
+						return result;
+					}
 				}
 
 				logger.debug("Put release {}", pom.getRevision());
@@ -185,9 +194,8 @@ public class MavenBndRepository extends BaseRepository
 
 					releaser.add(pom.getRevision().pomArchive(), pomFile);
 					releaser.add(binaryArchive, binaryFile);
-
-					result.artifact = isLocal(instructions) ? storage.toLocalFile(binaryArchive).toURI()
-							: storage.toRemoteURI(binaryArchive);
+					result.binaryArchive = binaryArchive;
+					result.pomArchive = pom.getRevision().pomArchive();
 
 					if (!isLocal(instructions)) {
 
@@ -213,10 +221,13 @@ public class MavenBndRepository extends BaseRepository
 						}
 					}
 				}
-				if (!binaryArchive.isSnapshot())
+				if (configuration.noupdateOnRelease() == false && !binaryArchive.isSnapshot())
 					index.add(binaryArchive);
 			}
 			return result;
+		} catch (Exception e) {
+			result.failed = e.getMessage();
+			throw e;
 		} finally {
 			IO.delete(binaryFile);
 			IO.delete(pomFile);
@@ -726,9 +737,6 @@ public class MavenBndRepository extends BaseRepository
 		if (uri.getPath() != null && uri.getPath().endsWith(".pom"))
 			return addPom(uri);
 
-		if (doJpm(uri))
-			return true;
-
 		return false;
 	}
 
@@ -787,35 +795,6 @@ public class MavenBndRepository extends BaseRepository
 		return map;
 	}
 
-	JpmRepo getLibrary() throws Exception {
-		if (libraryx == null) {
-			HttpClient client = registry.getPlugin(HttpClient.class);
-			libraryx = JSONRPCProxy.createRPC(JpmRepo.class, client,
-					new URI("http://repo.jpm4j.org/" + JSONRPCProxy.JSONRPC_2_0 + "jpm"));
-		}
-		return libraryx;
-	}
-
-	boolean doJpm(URI uri) {
-		Matcher m = JPM_REVISION_URL_PATTERN_P.matcher(uri.toString());
-		if (m.matches())
-			try {
-				byte[] sha1 = Hex.toByteArray(m.group("sha"));
-				aQute.service.library.Library.Revision revision = getLibrary().getRevision(sha1);
-				if (revision != null) {
-					Archive a = Program.valueOf(revision.groupId, revision.artifactId)
-							.version(revision.version)
-							.archive("jar", revision.classifier);
-					index.add(a);
-					return true;
-				}
-
-			} catch (Exception e) {
-				reporter.exception(e, "Cannot drop JPM %s", uri);
-			}
-		return false;
-	}
-
 	@Override
 	public void toPom(OutputStream out, PomOptions options) throws Exception {
 		init();
@@ -824,13 +803,29 @@ public class MavenBndRepository extends BaseRepository
 				.parent(Revision.valueOf(options.parent))
 				.dependencyManagement(options.dependencyManagement)
 				.out(out);
-		
+
 	}
 
 	@Override
 	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
 		init();
 		return index.findProviders(requirements);
+	}
+
+	@Override
+	public void begin(Project project) {
+		releasePlugin = new ReleasePluginImpl(this, project);
+	}
+
+	@Override
+	public void end(Project p) {
+		System.out.println("Project ending is " + p);
+		try {
+			releasePlugin.end(p, storage);
+		} catch (Exception e) {
+			e.printStackTrace();
+			p.error("Could not end the release", e);
+		}
 	}
 
 }

@@ -4,11 +4,14 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.InputStream;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * This object can be used to release a revision. The actual work will be done
  * when this object is closed. This makes it convenient to do this in a
  * try/resource block.
  */
+@ProviderType
 public interface Release extends Closeable {
 
 	/**
@@ -45,4 +48,9 @@ public interface Release extends Closeable {
 	 * Ensure that no remote update is done
 	 */
 	void setLocalOnly();
+
+	/**
+	 * Force an overwrite even if the artifact exists
+	 */
+	void force();
 }

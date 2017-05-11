@@ -18,6 +18,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.eclipse.EclipseClasspath;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.version.Version;
 import aQute.lib.deployer.FileRepo;
@@ -175,7 +176,7 @@ public class ProjectTest extends TestCase {
 	/**
 	 * Check if a project=version, which is illegal on -runbundles, is actually
 	 * reported as an error.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testErrorOnVersionIsProjectInRunbundles() throws Exception {
@@ -210,7 +211,7 @@ public class ProjectTest extends TestCase {
 	/**
 	 * Two subsequent builds should not change the last modified if none of the
 	 * source inputs have been modified.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testLastModified() throws Exception {
@@ -377,7 +378,7 @@ public class ProjectTest extends TestCase {
 
 	/**
 	 * Check multiple repos
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testMultipleRepos() throws Exception {
@@ -437,7 +438,7 @@ public class ProjectTest extends TestCase {
 
 	/**
 	 * Tests the handling of the -sub facility
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -837,6 +838,7 @@ public class ProjectTest extends TestCase {
 
 	private Workspace getWorkspace(File file) throws Exception {
 		File tmpx = new File(tmp, "tmp-ws");
+		IO.delete(tmpx);
 		IO.copy(file, tmpx);
 		return new Workspace(tmpx);
 	}
@@ -910,5 +912,21 @@ public class ProjectTest extends TestCase {
 
 		ArrayList<Container> buildpath = new ArrayList<Container>(project.getBuildpath());
 		assertEquals(0, buildpath.size());
+	}
+
+	public void testCopyRepo() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws-repo-test"));
+		Project project = ws.getProject("p1");
+		assertNotNull(ws);
+		assertNotNull(project);
+
+		RepositoryPlugin repo = ws.getRepository("Repo");
+		assertNotNull(repo);
+		RepositoryPlugin release = ws.getRepository("Release");
+		assertNotNull(release);
+
+		project.copy(repo, (String) null, release);
+		assertTrue(project.check());
+		assertTrue(ws.check());
 	}
 }
