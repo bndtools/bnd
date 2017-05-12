@@ -143,7 +143,11 @@ public class BaselineMojo extends AbstractMojo {
 				releaseDistroRepo = RepositoryUtils.toRepo(project.getDistributionManagementArtifactRepository());
 			}
 
-			aetherRepos.add(0, releaseDistroRepo);
+			// Issue #2040:
+			// Don't fail on projects without distributionManagement
+			if (releaseDistroRepo != null) {
+				aetherRepos.add(0, releaseDistroRepo);
+			}
 		}
 
 		return aetherRepos;
