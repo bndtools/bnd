@@ -87,6 +87,7 @@ import aQute.libg.cryptography.SHA1;
 import aQute.libg.generics.Create;
 import aQute.libg.glob.Glob;
 import aQute.libg.reporter.ReporterMessages;
+import aQute.libg.tuple.Pair;
 
 public class Analyzer extends Processor {
 	private final static Logger						logger					= LoggerFactory.getLogger(Analyzer.class);
@@ -713,11 +714,22 @@ public class Analyzer extends Processor {
 			else
 				main.remove(EXPORT_PACKAGE);
 
-			// Remove all the Java packages from the imports
-			if (!imports.isEmpty()) {
-				main.putValue(IMPORT_PACKAGE, printClauses(imports));
+			// Divide imports with resolution:=dynamic to DynamicImport-Package
+			// and add them to the existing DynamicImport-Package instruction
+			Pair<Packages,Parameters> regularAndDynamicImports = divideRegularAndDynamicImports();
+			Packages regularImports = regularAndDynamicImports.getFirst();
+
+			if (!regularImports.isEmpty()) {
+				main.putValue(IMPORT_PACKAGE, printClauses(regularImports));
 			} else {
 				main.remove(IMPORT_PACKAGE);
+			}
+
+			Parameters dynamicImports = regularAndDynamicImports.getSecond();
+			if (!dynamicImports.isEmpty()) {
+				main.putValue(DYNAMICIMPORT_PACKAGE, printClauses(dynamicImports));
+			} else {
+				main.remove(DYNAMICIMPORT_PACKAGE);
 			}
 
 			Packages temp = new Packages(contained);
@@ -817,7 +829,8 @@ public class Analyzer extends Processor {
 				}
 
 				if (header.equals(BUNDLE_CLASSPATH) || header.equals(EXPORT_PACKAGE) || header.equals(IMPORT_PACKAGE)
-						|| header.equals(REQUIRE_CAPABILITY) || header.equals(PROVIDE_CAPABILITY))
+						|| header.equals(DYNAMICIMPORT_PACKAGE) || header.equals(REQUIRE_CAPABILITY)
+						|| header.equals(PROVIDE_CAPABILITY))
 					continue;
 
 				if (header.equalsIgnoreCase("Name")) {
@@ -1749,6 +1762,25 @@ public class Analyzer extends Processor {
 		if (isPedantic() && noimports.size() != 0) {
 			warning("Imports that lack version ranges: %s", noimports);
 		}
+	}
+
+	Pair<Packages,Parameters> divideRegularAndDynamicImports() {
+		Packages regularImports = new Packages(imports);
+		Parameters dynamicImports = getDynamicImportPackage();
+
+		Iterator<Entry<PackageRef,Attrs>> regularImportsIterator = regularImports.entrySet().iterator();
+		while (regularImportsIterator.hasNext()) {
+			Entry<PackageRef,Attrs> packageEntry = regularImportsIterator.next();
+			PackageRef packageRef = packageEntry.getKey();
+			Attrs attrs = packageEntry.getValue();
+			String resolution = attrs.get(Constants.RESOLUTION_DIRECTIVE);
+			if (Constants.RESOLUTION_DYNAMIC.equals(resolution)) {
+				attrs.remove(Constants.RESOLUTION_DIRECTIVE);
+				dynamicImports.put(packageRef.fqn, attrs);
+				regularImportsIterator.remove();
+			}
+		}
+		return new Pair<>(regularImports, dynamicImports);
 	}
 
 	String applyVersionPolicy(String exportVersion, String importRange, boolean provider) {
