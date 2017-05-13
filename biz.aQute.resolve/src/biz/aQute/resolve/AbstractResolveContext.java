@@ -426,33 +426,29 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	private static CacheKey getCacheKey(Requirement requirement) {
-		return new CacheKey(requirement.getNamespace(), requirement.getDirectives(), requirement.getAttributes(),
-				requirement.getResource());
+		return new CacheKey(requirement.getNamespace(), requirement.getDirectives(), requirement.getAttributes());
 	}
 
 	private static class CacheKey {
 		final String				namespace;
 		final Map<String,String>	directives;
 		final Map<String,Object>	attributes;
-		final Resource				resource;
 		final int					hashcode;
 
-		CacheKey(String namespace, Map<String,String> directives, Map<String,Object> attributes, Resource resource) {
+		CacheKey(String namespace, Map<String,String> directives, Map<String,Object> attributes) {
 			this.namespace = namespace;
 			this.directives = directives;
 			this.attributes = attributes;
-			this.resource = resource;
-			this.hashcode = calculateHashCode(namespace, directives, attributes, resource);
+			this.hashcode = calculateHashCode(namespace, directives, attributes);
 		}
 
 		private static int calculateHashCode(String namespace, Map<String,String> directives,
-				Map<String,Object> attributes, Resource resource) {
+				Map<String,Object> attributes) {
 			final int prime = 31;
 			int result = 1;
 			result = prime * result + ((attributes == null) ? 0 : attributes.hashCode());
 			result = prime * result + ((directives == null) ? 0 : directives.hashCode());
 			result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
-			result = prime * result + ((resource == null) ? 0 : resource.hashCode());
 			return result;
 		}
 
@@ -485,14 +481,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 					return false;
 			} else if (!namespace.equals(other.namespace))
 				return false;
-			if (resource == null) {
-				if (other.resource != null)
-					return false;
-			} else if (!resourceIdentityEquals(resource, other.resource))
-				return false;
 			return true;
 		}
-
 	}
 
 	static Version getVersion(Capability cap, String attr) {
