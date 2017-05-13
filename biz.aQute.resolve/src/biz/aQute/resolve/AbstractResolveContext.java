@@ -137,6 +137,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		List<Capability> result = findProviders0(requirement);
 		if (result.isEmpty()) {
 			failed.add(requirement);
+			return new ArrayList<>();
 		}
 		return result;
 	}
