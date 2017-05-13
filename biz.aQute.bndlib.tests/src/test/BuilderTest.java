@@ -42,6 +42,26 @@ import aQute.service.reporter.Report.Location;
 @SuppressWarnings("resource")
 public class BuilderTest extends BndTestCase {
 
+    /*
+     * #1172 a warning being generated when a package is split between two
+     * jar files that are both in the bundle classpath, and so part of the
+     * same bundle.
+     */
+    public void test1172SplitPackageWarningsInBundleClasspath() throws Exception {
+		Builder A = new Builder();
+        try {
+            A.addClasspath(new Jar(new File("jar/sp-tc-jar1.jar")));
+            A.addClasspath(new Jar(new File("jar/sp-tc-jar2.jar")));
+            A.setBundleClasspath("sp-tc-jar1.jar,sp-tc-jar2.jar");
+            A.setExportPackage("org.apache.felix.tc");
+            A.setIncludeResource("sp-tc-jar1.jar=jar/sp-tc-jar1.jar,sp-tc-jar2.jar=jar/sp-tc-jar2.jar");
+            A.build();
+            assertTrue(A.check());
+        } finally {
+            A.close();
+        }
+    }
+
 	/**
 	 * In the bnd file for bndlib, we include DS annotations 1.3 and osgi.cmpn 5
 	 * (which includes DS annotations 1.2) on the -buildpath. We use a
