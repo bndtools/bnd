@@ -193,7 +193,7 @@ public class DSTestWiring {
 						r.name = matcher.group(1);
 						r.set = findMethod(matcher.group(2));
 						r.unset = findMethod(matcher.group(3));
-						// TODO handle target
+						// TODO handle target <-- HERE!
 						String type = d.get(key);
 						if (type.endsWith("*")) {
 							r.multiple = true;

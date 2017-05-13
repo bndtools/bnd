@@ -21,6 +21,7 @@ public class DSTestWiringTest extends TestCase {
 	private LogService		log;
 	private String			string;
 	private A				a;
+	private I				i;
 	private List<Integer>	integers	= new ArrayList<Integer>();
 	private int				integer;
 
@@ -33,6 +34,14 @@ public class DSTestWiringTest extends TestCase {
 			this.map = map;
 		}
 	}
+
+	static interface I {}
+
+	static class B1 extends A implements I {}
+
+	static class B2 extends A implements I {}
+
+	static class B3 extends A implements I {}
 
 	public void testSimple() throws Exception {
 
@@ -97,4 +106,8 @@ public class DSTestWiringTest extends TestCase {
 		integer = i;
 	}
 
+	@Reference
+	void setB(I i) {
+		this.i = i;
+	}
 }
