@@ -503,13 +503,24 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			IndexFile ixf = new IndexFile(reporter, indexFile, storage);
 			ixf.open();
 			this.index = ixf;
-			startPoll(index);
+
+			if (shouldPoll())
+				startPoll(index);
 
 			logger.debug("initing {}", this);
 		} catch (Exception e) {
 			reporter.exception(e, "Init for maven repo failed %s", configuration);
 			throw new RuntimeException(e);
 		}
+	}
+
+	private boolean shouldPoll() {
+		Workspace ws = registry.getPlugin(Workspace.class);
+		if (ws == null)
+			return false;
+		return !ws.getGestalt().containsKey(Constants.GESTALT_BATCH)
+				&& !ws.getGestalt().containsKey(Constants.GESTALT_CI)
+				&& !ws.getGestalt().containsKey(Constants.GESTALT_OFFLINE);
 	}
 
 	private void startPoll(final IndexFile index) {
