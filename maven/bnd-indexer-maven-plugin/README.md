@@ -1,7 +1,7 @@
 # bnd-indexer-maven-plugin
 
 The `bnd-indexer-maven-plugin` is a bnd based plugin that creates OSGi 
-indexes of bundles.
+indexes of bundles. Read about repositories (http://bndtools.org/repositories.html) and workspaces (http://bnd.bndtools.org/chapters/130-concepts.html#the-workspace) 
 
 ## What does the `bnd-indexer-maven-plugin` do?
 
