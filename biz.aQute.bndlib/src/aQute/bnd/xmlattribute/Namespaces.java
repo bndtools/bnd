@@ -32,7 +32,8 @@ public class Namespaces {
 
 	public void addNamespaces(Tag tag) {
 		for (Map.Entry<String,String> entry : namespaces.entrySet())
-			tag.addAttribute("xmlns:" + entry.getValue(), entry.getKey());
+			if (entry.getValue().length() > 0)
+				tag.addAttribute("xmlns:" + entry.getValue(), entry.getKey());
 	}
 
 }

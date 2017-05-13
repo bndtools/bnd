@@ -3214,6 +3214,49 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
+	@XMLAttribute(namespace = "override", prefix = "", embedIn = "http://www.osgi.org/xmlns/scr/*")
+	@Retention(RetentionPolicy.CLASS)
+	@Target({
+		ElementType.TYPE
+	})
+	@interface TestSpecReplace {
+		boolean immediate() default false;
+
+		boolean enabled() default true;
+	}
+
+	@TestSpecReplace
+	@Component(immediate = true, enabled = false)
+	public static class ReplacedAttributes implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Override
+		public void run() {}
+	}
+
+	public void testReplaceSpecAttribute() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$ReplacedAttributes*");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+
+		String name = ReplacedAttributes.class.getName();
+		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
+		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0");
+		// Test the defaults
+		xt.assertAttribute(name, "scr:component/implementation/@class");
+
+		// check that we replaced it
+		xt.assertAttribute("false", "scr:component/@immediate");
+		xt.assertAttribute("true", "scr:component/@enabled");
+	}
+
 	@Component(name = "mixed-std-bnd")
 	static class MixedStdBnd {
 

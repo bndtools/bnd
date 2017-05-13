@@ -1560,6 +1560,53 @@ public class SpecMetatypeTest extends TestCase {
 		xt.assertExactAttribute("two", "metatype:MetaData/OCD/AD[@id='property']/@foo:second");
 	}
 
+	@XMLAttribute(namespace = "spec.override", prefix = "", embedIn = "*")
+	@Retention(RetentionPolicy.CLASS)
+	@Target({
+			ElementType.TYPE, ElementType.METHOD
+	})
+	@interface SpecOverride {
+		String name() default "replacement name";
+
+		String description() default "replacement description";
+	}
+
+	@SpecOverride
+	@ObjectClassDefinition(name = "default name", description = "default description")
+	@interface SpecReplacementConfig {
+		@SpecOverride(name = "one", description = "two")
+		@AttributeDefinition(name = "default name", description = "default description")
+		String[] property();
+	}
+
+	public void testSpecReplacementExtension() throws Exception {
+		MetatypeVersion version = MetatypeVersion.VERSION_1_3;
+		Builder b = new Builder();
+		b.addClasspath(new File("bin"));
+		b.setProperty("Export-Package", "test.metatype");
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, SpecReplacementConfig.class.getName());
+		b.build();
+		Resource r = b.getJar().getResource(
+				"OSGI-INF/metatype/test.metatype.SpecMetatypeTest$SpecReplacementConfig.xml");
+		assertEquals(0, b.getErrors().size());
+		assertEquals("warnings: " + b.getWarnings(), 0, b.getWarnings().size());
+
+		System.err.println(b.getJar().getResources().keySet());
+		assertNotNull(r);
+		IO.copy(r.openInputStream(), System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "metatype", version.getNamespace());
+		xt.assertNamespace(version.getNamespace());
+		xt.assertExactAttribute("test.metatype.SpecMetatypeTest$SpecReplacementConfig", "metatype:MetaData/OCD/@id");
+
+		xt.assertCount(3, "metatype:MetaData/OCD/@*");
+		xt.assertExactAttribute("replacement name", "metatype:MetaData/OCD/@name");
+		xt.assertExactAttribute("replacement description", "metatype:MetaData/OCD/@description");
+
+		xt.assertCount(5, "metatype:MetaData/OCD/AD[@id='property']/@*");
+		xt.assertExactAttribute("one", "metatype:MetaData/OCD/AD[@id='property']/@name");
+		xt.assertExactAttribute("two", "metatype:MetaData/OCD/AD[@id='property']/@description");
+	}
+
 	@ObjectClassDefinition
 	@interface Escapes {
 		@AttributeDefinition(defaultValue = {
