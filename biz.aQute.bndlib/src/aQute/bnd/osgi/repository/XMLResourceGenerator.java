@@ -127,7 +127,11 @@ public class XMLResourceGenerator {
 	private void directives(Tag cr, Map<String,String> directives) {
 		for (Entry<String,String> e : directives.entrySet()) {
 			Tag d = new Tag(cr, "directive");
-			d.addAttribute("name", e.getKey());
+			String key = e.getKey();
+			if (key.endsWith(":")) {
+				key = key.substring(0, key.length() - 1);
+			}
+			d.addAttribute("name", key);
 			d.addAttribute("value", e.getValue());
 		}
 	}
