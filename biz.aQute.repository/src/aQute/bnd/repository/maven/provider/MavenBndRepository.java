@@ -74,6 +74,7 @@ import aQute.maven.api.Release;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenBackingRepository;
 import aQute.maven.provider.MavenRepository;
+import aQute.maven.provider.MavenSettings;
 import aQute.maven.provider.PomGenerator;
 import aQute.service.reporter.Reporter;
 
@@ -87,7 +88,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	private static final String		NONE						= "NONE";
 	static final String				MAVEN_REPO_LOCAL			= System.getProperty("maven.repo.local",
-			"~/.m2/repository");
+			MavenSettings.localRepository());
 	private Configuration			configuration;
 	private Registry				registry;
 	private File					localRepo;

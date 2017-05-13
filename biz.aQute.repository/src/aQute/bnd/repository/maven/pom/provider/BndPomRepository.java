@@ -37,6 +37,7 @@ import aQute.maven.api.Archive;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenBackingRepository;
 import aQute.maven.provider.MavenRepository;
+import aQute.maven.provider.MavenSettings;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -45,7 +46,8 @@ import aQute.service.reporter.Reporter;
 @BndPlugin(name = "PomRepository")
 public class BndPomRepository extends BaseRepository
 		implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Actionable {
-	static final String			MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
+	static final String			MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local",
+			MavenSettings.localRepository());
 
 	boolean						inited;
 	private PomConfiguration	configuration;

@@ -25,11 +25,12 @@ import aQute.maven.api.Archive;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenBackingRepository;
 import aQute.maven.provider.MavenRepository;
+import aQute.maven.provider.MavenSettings;
 import aQute.service.reporter.Reporter;
 import junit.framework.TestCase;
 
 public class PomRepositoryTest extends TestCase {
-	static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
+	static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", MavenSettings.localRepository());
 
 	Reporter			reporter			= new Slf4jReporter(PomRepositoryTest.class);
 	File		tmp			= IO.getFile("generated/tmp");
