@@ -151,7 +151,10 @@ public class CapReqBuilder {
 
 	public CapReqBuilder addDirectives(Map<String,String> directives) {
 		for (Entry<String,String> e : directives.entrySet()) {
-			addDirective(e.getKey(), e.getValue());
+			String key = e.getKey();
+			if (key.endsWith(":"))
+				key = key.substring(0, key.length() - 1);
+			addDirective(key, e.getValue());
 		}
 		return this;
 	}
