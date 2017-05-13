@@ -46,7 +46,10 @@ public class Container {
 		this.version = version;
 		this.type = type;
 		this.file = source != null ? source : new File("/" + bsn + ":" + version + ":" + type);
-		this.path = file.getAbsolutePath();
+		String localPath = file.getAbsolutePath();
+		if (this.file.getName().equals("does_not_yet_exist") && (db != null))
+			localPath = db.getPath();
+		this.path = localPath;
 
 		this.project = project;
 		this.error = error;

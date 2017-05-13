@@ -124,4 +124,8 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	public String toString() {
 		return "DownloadBlocker [stage=" + stage + ", failure=" + failure + ", file=" + file + "]";
 	}
+
+	public String getPath() {
+		return file.getAbsolutePath();
+	}
 }
