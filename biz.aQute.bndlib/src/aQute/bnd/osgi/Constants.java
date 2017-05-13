@@ -244,6 +244,7 @@ public interface Constants {
 	String							WORKINGSET									= "-workingset";
 	String							WORKINGSET_MEMBER							= "member";
 	String							REQUIRE_BND									= "-require-bnd";
+	String							TRANSITIVE									= "-transitive";
 
 	// Deprecated
 	String							CLASSPATH									= "-classpath";
