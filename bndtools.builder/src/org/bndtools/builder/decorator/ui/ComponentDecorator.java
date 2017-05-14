@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IImportDeclaration;
 import org.eclipse.jdt.core.IPackageDeclaration;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.internal.core.CompilationUnit;
 import org.eclipse.jdt.internal.core.SourceType;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -105,11 +106,35 @@ public class ComponentDecorator extends LabelProvider implements ILightweightLab
                     }
 
                 }
+            } else if (element instanceof IPackageFragment) {
+                IPackageFragment frag = (IPackageFragment) element;
+                if (!frag.getJavaProject().getProject().hasNature(BndtoolsConstants.NATURE_ID)) {
+                    return;
+                }
+                IResource resource = (IResource) frag.getAdapter(IResource.class);
+                if (countComponents(resource)) {
+                    decoration.addOverlay(componentIcon);
+                }
+
             }
 
         } catch (CoreException e) {
             logger.logError("Component Decorator error", e);
         }
+    }
+
+    private static boolean countComponents(IResource resource) {
+        boolean found = false;
+
+        try {
+            if (resource.findMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_INFINITE).length > 0) {
+                found = true;
+            }
+
+        } catch (CoreException e) {
+            logger.logError("Component Package Decorator error", e);
+        }
+        return found;
     }
 
     private static boolean isComponentInImports(ICompilationUnit unit) throws CoreException {

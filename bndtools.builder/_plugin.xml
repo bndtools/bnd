@@ -60,32 +60,15 @@
 					<objectClass
 						name="org.eclipse.jdt.internal.core.SourceType">
 					</objectClass>
-				</or>                
-			</enablement>
-			<description>Marks components with a decoration.</description>
-		</decorator>
-		<decorator
-			id="bndtools.componentPackageDecorator"
-			label="Bndtools OSGi Component Package Decorations"
-			state="true"
-			adaptable="true"
-			lightweight="true"
-			class="org.bndtools.builder.decorator.ui.ComponentPackageDecorator"
-			location="TOP_RIGHT">
-			<enablement>
-				<or>
 					<objectClass
 						name="org.eclipse.jdt.internal.core.PackageFragment">
 					</objectClass>
-					<objectClass
-						name="org.eclipse.jdt.internal.core.CompilationUnit">
-					</objectClass>
-				</or>                
+				</or>
 			</enablement>
-			<description>Marks component packages with a component decoration and count.</description>
+			<description>Marks components with a decoration.</description>
 		</decorator>
 	</extension>
-	
+
 	<extension
 		point="org.eclipse.core.resources.markers"
 		id="bndproblem"
@@ -116,7 +99,7 @@
 		<super type="org.eclipse.core.resources.textmarker"/>
 		<super type="org.eclipse.core.resources.problemmarker"/>
 	</extension>
-	
+
 	<extension
 		point="org.eclipse.core.resources.markers"
 		id="missingworkspace"
@@ -127,7 +110,7 @@
 		<super type="org.eclipse.core.resources.textmarker"/>
 		<super type="org.eclipse.core.resources.problemmarker"/>
 	</extension>
-	
+
 	<extension point="org.eclipse.core.resources.markers"
 		id="packageInfoBaseline"
 		name="Package Info Baseline Problem Marker"
@@ -138,7 +121,7 @@
 		<super type="org.eclipse.core.resources.textmarker"/>
 		<super type="org.eclipse.core.resources.problemmarker"/>
 	</extension>
-	
+
 	<extension point="org.eclipse.jdt.core.classpathContainerInitializer">
 		<classpathContainerInitializer
 			id="aQute.bnd.classpath.container"
@@ -188,7 +171,7 @@
 		<markerResolutionGenerator markerType="bndtools.core.bndproblem"
 			class="org.bndtools.builder.BndtoolsMarkerResolutionGenerator" />
 	</extension>
-	
+
 	<extension point="bndtools.core.validators">
 		<validator name="BSN check"
 			class="org.bndtools.builder.validate.BsnValidator" />
