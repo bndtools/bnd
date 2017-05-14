@@ -36,6 +36,7 @@ import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import biz.aQute.resolve.Bndrun;
 import biz.aQute.resolve.ProjectResolver;
 import biz.aQute.resolve.ResolverValidator;
 import biz.aQute.resolve.ResolverValidator.Resolution;
@@ -238,6 +239,9 @@ public class ResolveCommand extends Processor {
 
 		@Description("Print out the bundles")
 		boolean bundles();
+
+		@Description("Print -runbundles instruction to the file")
+		boolean write();
 	}
 
 	@Description("Resolve a bndrun file")
@@ -268,28 +272,33 @@ public class ResolveCommand extends Processor {
 			if (!f.isFile()) {
 				error("Missing bndrun file: %s", f);
 			} else {
-
 				Run run = Run.createRun(ws, f);
-
-				try (ProjectResolver pr = new ProjectResolver(run)) {
-					try {
-						Map<Resource,List<Wire>> resolution = pr.resolve();
-						if (pr.isOk()) {
-							System.out.printf("# %-50s ok\n", f.getName());
-							if (options.bundles()) {
-								for (Resource r : resolution.keySet()) {
-									IdentityCapability id = ResourceUtils.getIdentityCapability(r);
-									List<ContentCapability> content = ResourceUtils.getContentCapabilities(r);
-									System.out.printf("  %-50s %40s %s\n", id.osgi_identity(),
-											content.get(0).osgi_content(), content.get(0).url());
+				if (options.write()) {
+					Bndrun bndrun = new Bndrun(run.getWorkspace(), f);
+					String resolved = bndrun.resolve(false, true);
+					System.out.printf("# %-50s ok%n", f.getName());
+					getInfo(bndrun);
+				} else {
+					try (ProjectResolver pr = new ProjectResolver(run)) {
+						try {
+							Map<Resource,List<Wire>> resolution = pr.resolve();
+							if (pr.isOk()) {
+								System.out.printf("# %-50s ok%n", f.getName());
+								if (options.bundles()) {
+									for (Resource r : resolution.keySet()) {
+										IdentityCapability id = ResourceUtils.getIdentityCapability(r);
+										List<ContentCapability> content = ResourceUtils.getContentCapabilities(r);
+										System.out.printf("  %-50s %40s %s%n", id.osgi_identity(),
+												content.get(0).osgi_content(), content.get(0).url());
+									}
 								}
 							}
+						} catch (Exception e) {
+							System.out.printf("%-50s %s%n", f.getName(), e);
+							exception(e, "Failed to resolve %s: %s", f, e);
 						}
-					} catch (Exception e) {
-						System.out.printf("%-50s %s\n", f.getName(), e);
-						exception(e, "Failed to resolve %s: %s", f, e);
+						getInfo(pr);
 					}
-					getInfo(pr);
 				}
 			}
 		}
