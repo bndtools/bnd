@@ -24,7 +24,7 @@ public class NewBndProjectWizardFactory implements IExecutableExtension, IExecut
     @Override
     public NewBndProjectWizard create() throws CoreException {
         NewBndProjectWizardPageOne pageOne = new NewBndProjectWizardPageOne();
-        NewBndProjectWizardPageTwo pageTwo = new NewBndProjectWizardPageTwo(pageOne, pageOne);
+        NewBndProjectWizardPageTwo pageTwo = new NewBndProjectWizardPageTwo(pageOne);
 
         NewBndProjectWizard wizard = new NewBndProjectWizard(pageOne, pageTwo);
         wizard.setInitializationData(config, propertyName, data);

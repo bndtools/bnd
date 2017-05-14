@@ -24,24 +24,26 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.wizard.WizardPage;
-
 import bndtools.Plugin;
 
 public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
 
-    private final WizardPage previousPage;
+    private boolean provisionalProjectCreated = false;
 
-    public NewBndProjectWizardPageTwo(WizardPage previousPage, NewJavaProjectWizardPageOne pageOne) {
+    public NewBndProjectWizardPageTwo(NewJavaProjectWizardPageOne pageOne) {
         super(pageOne);
-        this.previousPage = previousPage;
     }
 
     @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
-        if (!visible && getContainer().getCurrentPage() == previousPage) {
-            removeProvisonalProject();
+        if (visible) {
+            provisionalProjectCreated = true;
+        } else {
+            if (provisionalProjectCreated) {
+                removeProvisonalProject();
+                provisionalProjectCreated = false;
+            }
         }
     }
 
@@ -65,12 +67,14 @@ public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
 
     void doSetProjectDesc(final IProject project, final IProjectDescription desc) throws CoreException {
         final IWorkspaceRunnable workspaceOp = new IWorkspaceRunnable() {
+            @Override
             public void run(IProgressMonitor monitor) throws CoreException {
                 project.setDescription(desc, monitor);
             }
         };
         try {
             getContainer().run(true, true, new IRunnableWithProgress() {
+                @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
                         project.getWorkspace().run(workspaceOp, monitor);

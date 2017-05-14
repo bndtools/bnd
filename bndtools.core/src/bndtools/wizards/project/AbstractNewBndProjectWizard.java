@@ -193,8 +193,8 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
                                 public void run(IProgressMonitor monitor) throws CoreException {
                                     try {
                                         generateProjectContent(project, monitor, templateParams);
-                                    } catch (IOException e) {
-                                        throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error generating project content from template.", e));
+                                    } catch (Exception e) {
+                                        throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error generating project content from template", e));
                                     }
                                 }
                             };
@@ -206,8 +206,15 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
                 });
                 result = true;
             } catch (InvocationTargetException e) {
-                logger.logError("Could not initialise the project", e);
-                ErrorDialog.openError(getShell(), "Error", "", new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error creating Bnd project descriptor file ({0}).", Project.BNDFILE), e.getTargetException()));
+                Throwable targetException = e.getTargetException();
+                final IStatus status;
+                if (targetException instanceof CoreException) {
+                    status = ((CoreException) targetException).getStatus();
+                } else {
+                    status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error creating bnd project contents", targetException);
+                }
+                logger.logStatus(status);
+                ErrorDialog.openError(getShell(), "Error", "Error creating bnd project", status);
                 result = false;
             } catch (InterruptedException e) {
                 // Shouldn't happen
