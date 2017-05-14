@@ -61,7 +61,10 @@ public class ComponentMarker {
                     continue;
                 }
                 for (IPackageFragmentRoot pkgRoot : javaProject.findPackageFragmentRoots(cpe)) {
-                    assert pkgRoot.getKind() == IPackageFragmentRoot.K_SOURCE;
+                    if (pkgRoot.getKind() != IPackageFragmentRoot.K_SOURCE) {
+                        continue;
+                    }
+
                     IResource pkgRootResource = pkgRoot.getCorrespondingResource();
                     if (pkgRootResource == null) {
                         continue;
@@ -71,7 +74,9 @@ public class ComponentMarker {
                     if (pkgInSourcePath) {
                         for (IJavaElement child : pkgRoot.getChildren()) {
                             IPackageFragment pkg = (IPackageFragment) child;
-                            assert pkg.getKind() == IPackageFragmentRoot.K_SOURCE;
+                            if (pkg.getKind() != IPackageFragmentRoot.K_SOURCE) {
+                                continue;
+                            }
 
                             if (pkg.containsJavaResources()) {
                                 parseChildrenForComponents(pkg);
@@ -79,8 +84,8 @@ public class ComponentMarker {
                         }
                     }
                 }
-
             }
+
             updateComponentDecorators();
 
         } catch (CoreException e) {
