@@ -5,7 +5,6 @@ import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.builder.decorator.ui.ComponentDecorator;
-import org.bndtools.builder.decorator.ui.ComponentPackageDecorator;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
