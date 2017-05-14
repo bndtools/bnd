@@ -181,10 +181,16 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
                 String path = outputEntry.getKey();
                 Resource resource = outputEntry.getValue();
 
+                // Strip leading slashes from path
+                while (path.startsWith("/"))
+                    path = path.substring(1);
+
                 switch (resource.getType()) {
                 case Folder :
-                    IFolder folder = project.getFolder(path);
-                    FileUtils.mkdirs(folder, progress.newChild(1, SubMonitor.SUPPRESS_ALL_LABELS));
+                    if (!path.isEmpty()) {
+                        IFolder folder = project.getFolder(path);
+                        FileUtils.mkdirs(folder, progress.newChild(1, SubMonitor.SUPPRESS_ALL_LABELS));
+                    }
                     break;
                 case File :
                     IFile file = project.getFile(path);
