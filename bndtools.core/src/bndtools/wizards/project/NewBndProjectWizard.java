@@ -12,6 +12,7 @@ package bndtools.wizards.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.Collections;
@@ -39,7 +40,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
@@ -155,13 +155,8 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
         return params_;
     }
 
-    /**
-     * Generate the new Bnd model for the project. This implementation simply returns an empty Bnd model.
-     *
-     * @param monitor
-     */
     @Override
-    protected void generateProjectContent(IProject project, IProgressMonitor monitor, Map<String,String> params) {
+    protected void generateProjectContent(IProject project, IProgressMonitor monitor, Map<String,String> params) throws IOException {
         Map<String,List<Object>> templateParams = new HashMap<>();
         for (Entry<String,String> param : params.entrySet()) {
             templateParams.put(param.getKey(), Collections.<Object> singletonList(param.getValue()));
@@ -208,8 +203,8 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
                 }
             }
         } catch (Exception e) {
-            String message = MessageFormat.format("Error generating project contents from template \"{0}\".", template != null ? template.getName() : "<null>");
-            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, e));
+            String message = MessageFormat.format("Error generating project contents from template \"{0}\": {1}", template != null ? template.getName() : "<null>", e.getMessage());
+            throw new IOException(message);
         }
     }
 

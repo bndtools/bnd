@@ -162,12 +162,12 @@ public class MustacheTemplateEngineTest {
         MustacheTemplateEngine engine = new MustacheTemplateEngine();
 
         ResourceMap input = new ResourceMap();
-        input.put("_defaults.properties", new StringResource("fish=carp\nbattleship=potemkin"));
+        input.put("_defaults.properties", new StringResource("fish=carp\nbattleship=potemkin\nantidisestablishmentarianism=bigword"));
         input.put("readme.txt", new StringResource("Blah {{fish}} blah {{battleship}} blah {{antidisestablishmentarianism}}"));
 
         ResourceMap outputs = engine.generateOutputs(input, new HashMap<String,List<Object>>(), new NullProgressMonitor());
         assertEquals(1, outputs.size());
-        assertEquals("Blah carp blah potemkin blah ", IO.collect(outputs.get("readme.txt").getContent()));
+        assertEquals("Blah carp blah potemkin blah bigword", IO.collect(outputs.get("readme.txt").getContent()));
     }
 
 }

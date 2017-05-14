@@ -23,9 +23,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.osgi.service.component.annotations.Component;
 
 import com.github.mustachejava.DefaultMustacheFactory;
-import com.github.mustachejava.reflect.ReflectionObjectHandler;
-import com.github.mustachejava.util.Wrapper;
-
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Instructions;
 
@@ -76,13 +73,9 @@ public class MustacheTemplateEngine implements TemplateEngine {
 
         TemplateSettings settings = readSettings(inputs);
         DefaultMustacheFactory factory = new DefaultMustacheFactory();
-        factory.setObjectHandler(new ReflectionObjectHandler() {
-            @Override
-            public Wrapper find(String name, Object[] scopes) {
-                params.put(name, defaults.getProperty(name, null));
-                return super.find(name, scopes);
-            }
-        });
+        AccumulateNamesObjectHandler namesAccumulator = new AccumulateNamesObjectHandler(factory.getObjectHandler());
+        factory.setObjectHandler(namesAccumulator);
+
         int counter = 0;
         for (Entry<String,Resource> entry : inputs.entries()) {
             String inputPath = entry.getKey();
@@ -95,6 +88,11 @@ public class MustacheTemplateEngine implements TemplateEngine {
                 }
             }
         }
+
+        for (String param : namesAccumulator.getNames()) {
+            params.put(param, defaults.getProperty(param));
+        }
+
         return params;
     }
 
@@ -104,15 +102,19 @@ public class MustacheTemplateEngine implements TemplateEngine {
         Properties defaults = readDefaults(inputs);
 
         ResourceMap outputs = new ResourceMap();
-        Map<String,Object> flattenedParams = flattenParameters(parameters);
+        final Map<String,Object> flattenedParams = flattenParameters(parameters);
         applyDefaults(defaults, flattenedParams);
 
         DefaultMustacheFactory mustacheFactory = new DefaultMustacheFactory();
+        mustacheFactory.setObjectHandler(new CheckMissingObjectHandler(mustacheFactory.getObjectHandler()));
 
         for (Entry<String,Resource> entry : inputs.entries()) {
             String inputPath = entry.getKey();
             Resource source = entry.getValue();
-            String outputPath = mustacheFactory.compile(new StringReader(inputPath), "mapping", settings.leftDelim, settings.rightDelim).execute(new StringWriter(), flattenedParams).toString();
+
+            StringWriter writer = new StringWriter();
+            mustacheFactory.compile(new StringReader(inputPath), "mapping", settings.leftDelim, settings.rightDelim).execute(writer, flattenedParams);
+            String outputPath = writer.toString();
 
             if (settings.ignore == null || !settings.ignore.matches(inputPath)) {
                 Resource output;
@@ -124,8 +126,9 @@ public class MustacheTemplateEngine implements TemplateEngine {
                     if (settings.preprocessMatch.matches(inputPath)) {
                         // This file should be processed with the template engine
                         InputStreamReader reader = new InputStreamReader(source.getContent(), source.getTextEncoding());
-                        String rendered = mustacheFactory.compile(reader, outputPath, settings.leftDelim, settings.rightDelim).execute(new StringWriter(), flattenedParams).toString();
-                        output = new StringResource(rendered);
+                        StringWriter rendered = new StringWriter();
+                        mustacheFactory.compile(reader, outputPath, settings.leftDelim, settings.rightDelim).execute(rendered, flattenedParams);
+                        output = new StringResource(rendered.toString());
                     } else {
                         // This file should be directly copied
                         output = source;

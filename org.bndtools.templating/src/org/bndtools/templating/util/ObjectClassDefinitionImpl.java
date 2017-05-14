@@ -1,42 +1,18 @@
 package org.bndtools.templating.util;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.osgi.service.metatype.AttributeDefinition;
-import org.osgi.service.metatype.ObjectClassDefinition;
 
-public class ObjectClassDefinitionImpl implements ObjectClassDefinition {
-
-    private final String name;
-    private final String description;
-    private final URI iconUri;
+public class ObjectClassDefinitionImpl extends BaseOCD {
 
     private final List<AttributeDefinition> reqdAttribs = new ArrayList<>();
     private final List<AttributeDefinition> optAttribs = new ArrayList<>();
 
     public ObjectClassDefinitionImpl(String name, String description, URI iconUri) {
-        this.name = name;
-        this.description = description;
-        this.iconUri = iconUri;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getID() {
-        return name;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
+        super(name, description, iconUri);
     }
 
     @Override
@@ -54,11 +30,6 @@ public class ObjectClassDefinitionImpl implements ObjectClassDefinition {
         default :
             throw new IllegalArgumentException(String.format("Unexpected filter value %d in getAttributeDefinitions", filter));
         }
-    }
-
-    @Override
-    public InputStream getIcon(int size) throws IOException {
-        return iconUri != null ? iconUri.toURL().openStream() : null;
     }
 
     public void addAttribute(AttributeDefinition attr, boolean required) {
