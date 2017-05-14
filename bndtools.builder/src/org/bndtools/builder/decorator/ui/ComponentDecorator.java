@@ -51,7 +51,7 @@ public class ComponentDecorator extends LabelProvider implements ILightweightLab
                         boolean found = false;
                         String customText = null;
 
-                        for (IMarker marker : unit.getResource().findMarkers("bndtools.builder.componentmarker", false, IResource.DEPTH_ONE)) {
+                        for (IMarker marker : unit.getResource().findMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE)) {
                             found = true;
                             customText = marker.getAttribute(IMarker.MESSAGE).toString();
                         }
@@ -86,7 +86,7 @@ public class ComponentDecorator extends LabelProvider implements ILightweightLab
 
                 boolean found = false;
                 String customText = null;
-                for (IMarker marker : type.getCompilationUnit().getResource().findMarkers(BndtoolsConstants.MARKER_COMPONENT, false, IResource.DEPTH_ONE)) {
+                for (IMarker marker : type.getCompilationUnit().getResource().findMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE)) {
                     found = true;
                     customText = marker.getAttribute(IMarker.MESSAGE).toString();
                 }
@@ -112,7 +112,7 @@ public class ComponentDecorator extends LabelProvider implements ILightweightLab
         }
     }
 
-    public boolean isComponentInImports(ICompilationUnit unit) throws CoreException {
+    private static boolean isComponentInImports(ICompilationUnit unit) throws CoreException {
         boolean annotationInImports = false;
 
         if (unit != null) {

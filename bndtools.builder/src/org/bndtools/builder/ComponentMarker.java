@@ -104,7 +104,7 @@ public class ComponentMarker {
         });
     }
 
-    private static void parseChildrenForComponents(IPackageFragment pkg) throws JavaModelException, CoreException, BadLocationException {
+    private static void parseChildrenForComponents(IPackageFragment pkg) throws JavaModelException, CoreException {
         for (IJavaElement e : pkg.getChildren()) {
             if (e instanceof ICompilationUnit) {
                 ICompilationUnit compUnit = (ICompilationUnit) e;
@@ -112,14 +112,14 @@ public class ComponentMarker {
                     continue;
                 }
 
-                compUnit.getResource().deleteMarkers(BndtoolsConstants.MARKER_COMPONENT, true, 1);
-                getComponentAnnotation(compUnit);
+                compUnit.getResource().deleteMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE);
+                findAndMarkComponentAnnotations(compUnit);
 
             }
         }
     }
 
-    private static void getComponentAnnotation(ICompilationUnit c) throws CoreException, JavaModelException {
+    private static void findAndMarkComponentAnnotations(ICompilationUnit c) throws CoreException, JavaModelException {
 
         Document document = null;
         boolean found = false;
@@ -153,7 +153,7 @@ public class ComponentMarker {
             }
         }
         if (!found) {
-            c.getResource().deleteMarkers(BndtoolsConstants.MARKER_COMPONENT, false, IResource.DEPTH_ONE);
+            c.getResource().deleteMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE);
 
         }
 

@@ -38,9 +38,7 @@ public class ComponentPackageDecorator extends LabelProvider implements ILightwe
                 }
 
             }
-        } catch (
-
-        CoreException e) {
+        } catch (CoreException e) {
             logger.logError("Component Package Decorator error", e);
         }
     }
@@ -49,7 +47,7 @@ public class ComponentPackageDecorator extends LabelProvider implements ILightwe
         boolean found = false;
 
         try {
-            if (resource.findMarkers("bndtools.builder.componentmarker", false, IResource.DEPTH_INFINITE).length > 0) {
+            if (resource.findMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_INFINITE).length > 0) {
                 found = true;
             }
 
