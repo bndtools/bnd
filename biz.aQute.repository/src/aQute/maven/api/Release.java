@@ -36,8 +36,10 @@ public interface Release extends Closeable {
 
 	/**
 	 * Set the replacement for the SNAPSHOT part
+	 * 
+	 * @throws Exception
 	 */
-	void setBuild(long timestamp, String build);
+	void setBuild(long timestamp, String build) throws Exception;
 
 	/**
 	 * Set the replacement for the SNAPSHOT part

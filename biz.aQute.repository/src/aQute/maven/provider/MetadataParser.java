@@ -85,7 +85,7 @@ public class MetadataParser {
 
 	public static class Snapshot {
 		public String	timestamp;
-		public String	buildNumber	= "13";
+		public String	buildNumber	= "0";
 		public boolean	localCopy	= false;
 	}
 
