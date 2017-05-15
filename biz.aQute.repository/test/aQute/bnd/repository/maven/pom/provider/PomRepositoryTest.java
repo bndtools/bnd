@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -18,6 +19,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.XMLResourceParser;
+import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.reporter.slf4j.Slf4jReporter;
@@ -77,6 +79,50 @@ public class PomRepositoryTest extends TestCase {
 		// assertEquals(8, value.size());
 		// assertAllBndCap(value);
 		// }
+	}
+
+	public void testDependenciesWithVersionRanges() throws Exception {
+		BndPomRepository bpr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		bpr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("revision", "com.mchange:mchange-commons-java:0.2.10");
+		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
+		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+		config.put("name", "test");
+		bpr.setProperties(config);
+
+		List<String> list = bpr.list(null);
+		for (String bsn : list) {
+			SortedSet<Version> versions = bpr.versions(bsn);
+			assertEquals(1, versions.size());
+			Version v = versions.first();
+			switch (bsn) {
+				case "log4j:log4j" :
+					assertEquals("1.2.14", v.toString());
+					break;
+
+				case "com.typesafe.config" :
+					assertEquals("1.2.1", v.toString());
+					break;
+
+				case "com.mchange:mchange-commons-java" :
+					assertEquals("0.2.10", v.toString());
+					break;
+
+				case "slf4j.api" :
+					assertEquals("1.7.5", v.toString());
+					break;
+
+				default :
+					fail(bsn);
+			}
+
+		}
+		assertNotNull(list);
+		assertEquals(4, list.size());
 	}
 
 	public void testBndPomRepoFile() throws Exception {
