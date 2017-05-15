@@ -12,17 +12,18 @@ import aQute.maven.provider.MetadataParser.SnapshotVersion;
 
 public class SnapshotReleaser extends Releaser {
 
-	private MavenVersion	snapshotVersion;
-	private long			timestamp	= System.currentTimeMillis();
-	private String			build		= "1";
-	private String			dateStamp;
+	private MavenVersion		snapshotVersion;
+	private String				build;
+	private String				dateStamp;
+	private RevisionMetadata	revisionMetadata;
 
 	public SnapshotReleaser(MavenRepository home, Revision revision, MavenBackingRepository snapshot,
 			Properties context) throws Exception {
 		super(home, revision, snapshot, context);
+		revisionMetadata = localOnly || repo == null ? new RevisionMetadata() : repo.getMetadata(revision);
 		force();
 		assert revision.isSnapshot();
-		setBuild(timestamp, build);
+		setBuild(0, null);
 	}
 
 	@Override
@@ -30,15 +31,25 @@ public class SnapshotReleaser extends Releaser {
 
 	@Override
 	public void setBuild(long timestamp, String build) {
-		this.timestamp = timestamp == 0 ? System.currentTimeMillis() : timestamp;
-		this.build = build == null ? "1" : build;
+		timestamp = timestamp == 0 ? System.currentTimeMillis() : timestamp;
+		if (build == null) {
+			build = nextBuildNumber();
+		}
+		this.build = build;
 		snapshotVersion = revision.version.toSnapshot(timestamp, build);
 		dateStamp = MavenVersion.toDateStamp(timestamp);
 	}
 
+	private String nextBuildNumber() {
+		try {
+			return "" + (Integer.parseInt(revisionMetadata.snapshot.buildNumber) + 1);
+		} catch (Exception e) {
+			return "1";
+		}
+	}
+
+
 	public void updateMetadata() throws Exception {
-		final RevisionMetadata revisionMetadata;
-		revisionMetadata = localOnly ? new RevisionMetadata() : repo.getMetadata(revision);
 		revisionMetadata.group = revision.group;
 		revisionMetadata.artifact = revision.artifact;
 		revisionMetadata.version = revision.version;

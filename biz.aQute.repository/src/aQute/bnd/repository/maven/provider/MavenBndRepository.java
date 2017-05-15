@@ -187,7 +187,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 						return result;
 					}
 					if (instructions.snapshot >= 0)
-						releaser.setBuild(instructions.snapshot, "1");
+						releaser.setBuild(instructions.snapshot, null);
 
 					if (isLocal(instructions))
 						releaser.setLocalOnly();

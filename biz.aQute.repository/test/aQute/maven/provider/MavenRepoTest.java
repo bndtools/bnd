@@ -127,7 +127,7 @@ public class MavenRepoTest extends TestCase {
 
 	public void testBasicSnapshotRelease() throws Exception {
 		File fpom = IO.getFile(local, "commons-cli/commons-cli/1.4-SNAPSHOT/commons-cli-1.4-SNAPSHOT.pom");
-		File rpom = IO.getFile(remote, "commons-cli/commons-cli/1.4-SNAPSHOT/commons-cli-1.4-19700101.000010.pom");
+		File rpom = IO.getFile(remote, "commons-cli/commons-cli/1.4-SNAPSHOT/commons-cli-1.4-19700101.000010-10.pom");
 		Program program = Program.valueOf("commons-cli", "commons-cli");
 		Revision revision = Program.valueOf("commons-cli", "commons-cli").version("1.4-SNAPSHOT");
 		Archive apom = revision.archive("pom", null);

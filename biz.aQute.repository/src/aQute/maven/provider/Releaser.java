@@ -194,7 +194,7 @@ class Releaser implements Release {
 	}
 
 	@Override
-	public void setBuild(long timestamp, String build) {
+	public void setBuild(long timestamp, String build) throws Exception {
 		throw new IllegalArgumentException("This is not a snapshot release so you cannot set the timestamp");
 	}
 
