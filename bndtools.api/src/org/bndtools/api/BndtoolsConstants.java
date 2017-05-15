@@ -15,6 +15,7 @@ public final class BndtoolsConstants {
 
     public static final String MARKER_BND_PROBLEM = "bndtools.builder.bndproblem";
     public static final String MARKER_BND_PATH_PROBLEM = "bndtools.builder.bndpathproblem";
+    public static final String MARKER_COMPONENT = "bndtools.builder.componentmarker";
     public static final String MARKER_BND_WORKSPACE_PROBLEM = "bndtools.builder.bndworkspaceproblem";
     public static final String MARKER_BND_MISSING_WORKSPACE = "bndtools.builder.missingworkspace";
     public static final String MARKER_JAVA_BASELINE = "bndtools.builder.packageInfoBaseline";

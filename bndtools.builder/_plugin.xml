@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.5"?>
 <plugin>
-
+	<extension
+		point="org.eclipse.core.resources.markers"
+		id="bndtools.builder.componentmarker"
+		name="OSGi Component"
+		>
+		<persistent value="true"/>
+		<super type="org.eclipse.core.resources.textmarker"/>
+	</extension>
 	<extension
 		point="org.eclipse.core.resources.natures"
 		id="bndtools.core.bndnature"
@@ -36,6 +43,30 @@
 			<description>Marks exported packages with a '+' decoration, and
 				excluded packages with a strike-through.</description>
 		</decorator>
+
+		<decorator
+			id="bndtools.componentDecorator"
+			label="Bndtools OSGi Component Decorations"
+			state="true"
+			adaptable="true"
+			lightweight="true"
+			class="org.bndtools.builder.decorator.ui.ComponentDecorator"
+			location="TOP_RIGHT">
+			<enablement>
+				<or>
+					<objectClass
+						name="org.eclipse.jdt.internal.core.CompilationUnit">
+					</objectClass>
+					<objectClass
+						name="org.eclipse.jdt.internal.core.SourceType">
+					</objectClass>
+					<objectClass
+						name="org.eclipse.jdt.internal.core.PackageFragment">
+					</objectClass>
+				</or>
+			</enablement>
+			<description>Marks components with a decoration.</description>
+		</decorator>
 	</extension>
 
 	<extension
@@ -68,7 +99,7 @@
 		<super type="org.eclipse.core.resources.textmarker"/>
 		<super type="org.eclipse.core.resources.problemmarker"/>
 	</extension>
-	
+
 	<extension
 		point="org.eclipse.core.resources.markers"
 		id="missingworkspace"
@@ -79,7 +110,7 @@
 		<super type="org.eclipse.core.resources.textmarker"/>
 		<super type="org.eclipse.core.resources.problemmarker"/>
 	</extension>
-	
+
 	<extension point="org.eclipse.core.resources.markers"
 		id="packageInfoBaseline"
 		name="Package Info Baseline Problem Marker"
@@ -90,7 +121,7 @@
 		<super type="org.eclipse.core.resources.textmarker"/>
 		<super type="org.eclipse.core.resources.problemmarker"/>
 	</extension>
-	
+
 	<extension point="org.eclipse.jdt.core.classpathContainerInitializer">
 		<classpathContainerInitializer
 			id="aQute.bnd.classpath.container"
@@ -140,7 +171,7 @@
 		<markerResolutionGenerator markerType="bndtools.core.bndproblem"
 			class="org.bndtools.builder.BndtoolsMarkerResolutionGenerator" />
 	</extension>
-	
+
 	<extension point="bndtools.core.validators">
 		<validator name="BSN check"
 			class="org.bndtools.builder.validate.BsnValidator" />
