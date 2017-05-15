@@ -7,7 +7,6 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 public class MavenVersion implements Comparable<MavenVersion> {
 
 	static Pattern					fuzzyVersion		= Pattern
@@ -25,15 +24,17 @@ public class MavenVersion implements Comparable<MavenVersion> {
 		snapshotTimestamp.setTimeZone(TimeZone.getTimeZone("UTC"));
 	}
 
-	private static final Pattern VERSION = Pattern.compile(VERSION_STRING);
-	public static MavenVersion		UNRESOLVED	= new MavenVersion("0-UNRESOLVED");
+	private static final Pattern		VERSION		= Pattern.compile(VERSION_STRING);
+	public static MavenVersion			UNRESOLVED	= new MavenVersion("0-UNRESOLVED");
 
-	static final String SNAPSHOT = "SNAPSHOT";
+	static final String					SNAPSHOT	= "SNAPSHOT";
+	public static final MavenVersion	HIGHEST		= new MavenVersion(Version.HIGHEST);
+	public static final MavenVersion	LOWEST		= new MavenVersion("0");
 
-	private final Version	version;
-	private final String	literal;
+	private final Version				version;
+	private final String				literal;
 
-	private final boolean snapshot;
+	private final boolean				snapshot;
 
 	public MavenVersion(Version osgiVersion) {
 		this.version = osgiVersion;
@@ -248,12 +249,12 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	 * TRhe cleanup version got confused when people used numeric dates like
 	 * 201209091230120 as qualifiers. These are too large for Integers. This
 	 * method checks if the all digit string fits in an integer.
-	 * 
+	 *
 	 * <pre>
 	 *  maxint =
 	 * 2,147,483,647 = 10 digits
 	 * </pre>
-	 * 
+	 *
 	 * @param integer
 	 * @return if this fits in an integer
 	 */

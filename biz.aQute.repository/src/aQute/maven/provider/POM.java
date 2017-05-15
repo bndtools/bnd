@@ -422,7 +422,7 @@ public class POM implements IPom {
 				continue;
 
 			if (scope.contains(d.scope)) {
-
+				d.bindToVersion(repo);
 				deps.put(e.getKey(), d);
 				if (transitive && d.scope.isTransitive())
 					breadthFirst.add(d);

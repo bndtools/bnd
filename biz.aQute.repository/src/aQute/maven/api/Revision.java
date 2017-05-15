@@ -4,7 +4,7 @@ import java.nio.file.Path;
 
 import aQute.bnd.version.MavenVersion;
 
-public class Revision {
+public class Revision implements Comparable<Revision> {
 	public final Program		program;
 	public final String			group;
 	public final String			artifact;
@@ -98,6 +98,7 @@ public class Revision {
 		return archive("pom", null);
 	}
 
+	@Override
 	public int compareTo(Revision o) {
 		int n = program.compareTo(o.program);
 		if (n != 0)
@@ -117,4 +118,5 @@ public class Revision {
 		return Program.valueOf(parts[0], parts[1]).version(parts[2]);
 
 	}
+
 }

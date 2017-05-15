@@ -1,10 +1,40 @@
 package test;
 
 import aQute.bnd.version.MavenVersion;
+import aQute.bnd.version.MavenVersionRange;
 import aQute.bnd.version.Version;
 import junit.framework.TestCase;
 
 public class MavenVersionTest extends TestCase {
+
+	public void testRange() {
+		MavenVersionRange mvr = new MavenVersionRange("[1.0.0,2.0.0)");
+		assertEquals("[1.0.0,2.0.0)", mvr.toString());
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("0")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("1")));
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("2")));
+	}
+
+	public void testRangeWithOr() {
+		MavenVersionRange mvr = new MavenVersionRange("[1.0.0  ,  2.0.0)  ,  [ 3.0.0, 4.0.0)");
+		assertEquals("[1.0.0,2.0.0),[3.0.0,4.0.0)", mvr.toString());
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("0")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("1")));
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("2")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("3")));
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("4")));
+	}
+
+	public void testRangeWithLowExcludeAndHighInclude() {
+		MavenVersionRange mvr = new MavenVersionRange("(1.0.0  ,  2.0.0]  ,  ( 3.0.0, 4.0.0]");
+		assertEquals("(1.0.0,2.0.0],(3.0.0,4.0.0]", mvr.toString());
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("0")));
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("1")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("2")));
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("3")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("4")));
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("4.0.0.1")));
+	}
 
 	public void testCleanupWithMajor() {
 		assertEquals("0.0.0.usedbypico", MavenVersion.cleanupVersion("usedbypico"));
