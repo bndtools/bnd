@@ -83,7 +83,7 @@ public class Bndrun extends Run {
 	 * @return the calculated <code>-runbundles</code>
 	 * @throws Exception
 	 */
-	public String resolve(boolean failOnChanges, boolean writeOnChanges) throws Exception {
+	public List<VersionedClause> resolve(boolean failOnChanges, boolean writeOnChanges) throws Exception {
 		try (ProjectResolver projectResolver = new ProjectResolver(this)) {
 			try {
 				Map<Resource,List<Wire>> resolution = projectResolver.resolve();
@@ -141,7 +141,7 @@ public class Bndrun extends Run {
 						IO.store(doc.get(), runFile);
 					}
 				}
-				return runbundlesListFormatter.convert(bemRunBundles);
+				return bemRunBundles;
 			} finally {
 				getInfo(projectResolver);
 			}
