@@ -10,7 +10,6 @@ import java.util.Set;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
-import org.osgi.resource.Wire;
 import org.osgi.service.repository.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +20,7 @@ import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.OSGI_CORE;
+import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.main.bnd.projectOptions;
 import aQute.bnd.osgi.Domain;
@@ -28,8 +28,6 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
 import aQute.bnd.osgi.resource.ResourceBuilder;
-import aQute.bnd.osgi.resource.ResourceUtils;
-import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Description;
@@ -240,7 +238,7 @@ public class ResolveCommand extends Processor {
 		@Description("Print out the bundles")
 		boolean bundles();
 
-		@Description("Print -runbundles instruction to the file")
+		@Description("Write -runbundles instruction to the file")
 		boolean write();
 	}
 
@@ -273,33 +271,20 @@ public class ResolveCommand extends Processor {
 				error("Missing bndrun file: %s", f);
 			} else {
 				Run run = Run.createRun(ws, f);
-				if (options.write()) {
-					Bndrun bndrun = new Bndrun(run.getWorkspace(), f);
-					String resolved = bndrun.resolve(false, true);
-					System.out.printf("# %-50s ok%n", f.getName());
-					getInfo(bndrun);
-				} else {
-					try (ProjectResolver pr = new ProjectResolver(run)) {
-						try {
-							Map<Resource,List<Wire>> resolution = pr.resolve();
-							if (pr.isOk()) {
-								System.out.printf("# %-50s ok%n", f.getName());
-								if (options.bundles()) {
-									for (Resource r : resolution.keySet()) {
-										IdentityCapability id = ResourceUtils.getIdentityCapability(r);
-										List<ContentCapability> content = ResourceUtils.getContentCapabilities(r);
-										System.out.printf("  %-50s %40s %s%n", id.osgi_identity(),
-												content.get(0).osgi_content(), content.get(0).url());
-									}
-								}
-							}
-						} catch (Exception e) {
-							System.out.printf("%-50s %s%n", f.getName(), e);
-							exception(e, "Failed to resolve %s: %s", f, e);
-						}
-						getInfo(pr);
+				Bndrun bndrun = new Bndrun(run.getWorkspace(), f);
+
+				List<VersionedClause> runbundles = bndrun.resolve(false, options.write());
+				System.out.printf("# %-50s ok%n", f.getName());
+				if (options.bundles()) {
+					StringBuilder buffer = new StringBuilder();
+					for (VersionedClause runbundle : runbundles) {
+						buffer.append("  ");
+						runbundle.formatTo(buffer);
+						buffer.append('\n');
 					}
+					System.out.println(buffer);
 				}
+				getInfo(bndrun);
 			}
 		}
 	}

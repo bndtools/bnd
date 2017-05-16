@@ -161,4 +161,11 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder();
+		formatTo(b);
+		return b.toString();
+	}
 }
