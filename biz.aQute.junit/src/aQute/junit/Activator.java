@@ -86,6 +86,10 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		}
 	}
 
+	public boolean active() {
+		return active;
+	}
+
 	public void run() {
 
 		continuous = Boolean.valueOf(context.getProperty(TESTER_CONTINUOUS));
@@ -307,13 +311,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			trace("changed streams");
 			try {
 
-				BasicTestReport basic = new BasicTestReport(this, systemOut, systemErr) {
-					@Override
-					public void check() {
-						if (!active)
-							result.stop();
-					}
-				};
+				BasicTestReport basic = new BasicTestReport(this, systemOut, systemErr, result);
 
 				add(reporters, result, basic);
 

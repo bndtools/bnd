@@ -28,10 +28,6 @@ public class JunitXmlReport implements TestReporter {
 	DateFormat		df			= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	long			startTime;
 	long			testStartTime;
-	int				tests		= 0;
-	int				failures	= 0;
-	int				errors		= 0;
-	int				skipped		= 0;
 	PrintWriter		out;
 	boolean			finished;
 	boolean			progress;
@@ -99,10 +95,9 @@ public class JunitXmlReport implements TestReporter {
 	public void end() {
 		if (!finished) {
 			finished = true;
-			testsuite.addAttribute("tests", tests);
-			testsuite.addAttribute("failures", failures);
-			testsuite.addAttribute("errors", errors);
-			testsuite.addAttribute("skipped", skipped);
+			testsuite.addAttribute("tests", basic.getTestResult().runCount());
+			testsuite.addAttribute("failures", basic.getTestResult().failureCount());
+			testsuite.addAttribute("errors", basic.getTestResult().errorCount());
 			testsuite.addAttribute("time", getFraction(System.currentTimeMillis() - startTime, 1000));
 			testsuite.addAttribute("timestamp", df.format(new Date()));
 			testsuite.print(0, out);
@@ -173,7 +168,6 @@ public class JunitXmlReport implements TestReporter {
 		else
 			testcase.addContent(error);
 		progress(" e");
-		errors++;
 	}
 
 	private void progress(@SuppressWarnings("unused") String s) {}
@@ -205,7 +199,6 @@ public class JunitXmlReport implements TestReporter {
 		failure.addContent(getTrace(t));
 		testcase.addContent(failure);
 		progress(" f");
-		failures++;
 	}
 
 	public void endTest(Test test) {
@@ -223,7 +216,6 @@ public class JunitXmlReport implements TestReporter {
 		}
 
 		testcase.addAttribute("time", getFraction(System.currentTimeMillis() - testStartTime, 1000));
-		tests++;
 	}
 
 	public void close() {
