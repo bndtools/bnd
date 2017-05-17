@@ -369,7 +369,7 @@ public class BndPlugin implements Plugin<Project> {
         fileTree(projectDir) {
             include '*.bndrun'
         }.each {
-          dependsOn tasks.getByPath("export.${it.name - '.bndrun'}")
+          dependsOn tasks.getByName("export.${it.name - '.bndrun'}")
         }
       }
 
@@ -415,7 +415,7 @@ public class BndPlugin implements Plugin<Project> {
         fileTree(projectDir) {
             include '*.bndrun'
         }.each {
-          dependsOn tasks.getByPath("runbundles.${it.name - '.bndrun'}")
+          dependsOn tasks.getByName("runbundles.${it.name - '.bndrun'}")
         }
       }
 
@@ -458,7 +458,7 @@ public class BndPlugin implements Plugin<Project> {
         fileTree(projectDir) {
             include '*.bndrun'
         }.each {
-          dependsOn tasks.getByPath("resolve.${it.name - '.bndrun'}")
+          dependsOn tasks.getByName("resolve.${it.name - '.bndrun'}")
         }
       }
 
