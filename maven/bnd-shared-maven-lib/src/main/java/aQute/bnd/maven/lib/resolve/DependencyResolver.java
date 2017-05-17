@@ -1,7 +1,5 @@
 package aQute.bnd.maven.lib.resolve;
 
-import aQute.bnd.repository.fileset.FileSetRepository;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,13 +28,15 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.repository.fileset.FileSetRepository;
+
 public class DependencyResolver {
 
 	private static final Logger logger = LoggerFactory.getLogger(DependencyResolver.class);
 
 	private final boolean includeTransitive;
 	private final MavenProject project;
-	private final List<String> scopes;
+	final List<String> scopes;
 	private final RepositorySystemSession session;
 	private final RepositorySystem system;
 	private final ProjectDependenciesResolver resolver;
