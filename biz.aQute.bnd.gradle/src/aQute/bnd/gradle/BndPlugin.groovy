@@ -437,7 +437,7 @@ public class BndPlugin implements Plugin<Project> {
                     run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
                   }
                   try {
-                    String result = run.resolve(failOnChanges, true)
+                    def result = run.resolve(failOnChanges, true)
                     logger.info '{}: {}', Constants.RUNBUNDLES, result
                   } catch (ResolutionException e) {
                     logger.error 'Unresolved requirements: {}', e.getUnresolvedRequirements()
