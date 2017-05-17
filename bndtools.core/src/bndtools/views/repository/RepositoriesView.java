@@ -240,6 +240,9 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         ViewerDropAdapter dropAdapter = new ViewerDropAdapter(viewer) {
             @Override
             public boolean validateDrop(Object target, int operation, TransferData transferType) {
+                if (target == null)
+                    return false;
+
                 if (canDrop(target, transferType))
                     return true;
 
