@@ -11,6 +11,7 @@ import org.osgi.framework.FrameworkUtil;
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestListener;
+import junit.framework.TestResult;
 
 public class BasicTestReport implements TestListener, TestReporter {
 	private int				errors;
@@ -19,11 +20,13 @@ public class BasicTestReport implements TestListener, TestReporter {
 	private int				fails;
 	private Bundle			targetBundle;
 	private final Activator	activator;
+	private final TestResult	result;
 
-	public BasicTestReport(Activator activator, Tee systemOut, Tee systemErr) {
+	public BasicTestReport(Activator activator, Tee systemOut, Tee systemErr, TestResult result) {
 		this.systemOut = systemOut;
 		this.systemErr = systemErr;
 		this.activator = activator;
+		this.result = result;
 	}
 
 	public void setup(Bundle fw, Bundle targetBundle) {
@@ -46,7 +49,6 @@ public class BasicTestReport implements TestListener, TestReporter {
 			}
 		}
 		check();
-		errors++;
 	}
 
 	public void addFailure(Test test, AssertionFailedError t) {
@@ -61,7 +63,6 @@ public class BasicTestReport implements TestListener, TestReporter {
 			}
 		}
 		check();
-		fails++;
 	}
 
 	public void startTest(Test test) {
@@ -96,17 +97,17 @@ public class BasicTestReport implements TestListener, TestReporter {
 				}
 			}
 		}
-		fails = 0;
-		errors = 0;
+		fails = result.failureCount();
+		errors = result.errorCount();
 		systemOut.clear().capture(true).echo(true);
 		systemErr.clear().capture(true).echo(true);
 	}
 
 	public void endTest(Test test) {
-		activator.trace("  << %s, fails=%s, errors=%s", test, fails, errors);
+		activator.trace("  << %s, fails=%s, errors=%s", test, result.failureCount(), result.errorCount());
 		systemOut.capture(false);
 		systemErr.capture(false);
-		if ((fails > 0) || (errors > 0)) {
+		if ((result.failureCount() > fails) || (result.errorCount() > errors)) {
 			String sysout = systemOut.getContent();
 			String syserr = systemErr.getContent();
 			if (sysout != null)
@@ -126,13 +127,19 @@ public class BasicTestReport implements TestListener, TestReporter {
 		activator.trace("ABORTED");
 	}
 
-	protected void check() {
-
+	private void check() {
+		if (!activator.active()) {
+			result.stop();
+		}
 	}
 
 	String[] getCaptured() {
 		return new String[] {
 				systemOut.getContent(), systemErr.getContent()
 		};
+	}
+
+	TestResult getTestResult() {
+		return result;
 	}
 }

@@ -86,6 +86,10 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		}
 	}
 
+	public boolean active() {
+		return active;
+	}
+
 	public void run() {
 
 		continuous = Boolean.valueOf(context.getProperty(TESTER_CONTINUOUS));
@@ -307,13 +311,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			trace("changed streams");
 			try {
 
-				BasicTestReport basic = new BasicTestReport(this, systemOut, systemErr) {
-					@Override
-					public void check() {
-						if (!active)
-							result.stop();
-					}
-				};
+				BasicTestReport basic = new BasicTestReport(this, systemOut, systemErr, result);
 
 				add(reporters, result, basic);
 
@@ -596,23 +594,25 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			Test test = (Test) e.nextElement();
 
 			if (test instanceof JUnit4TestAdapter) {
-
 				list.add(test);
 
 				for (Test t : ((JUnit4TestAdapter) test).getTests()) {
 					if (t instanceof TestSuite) {
 						realCount += flatten(list, (TestSuite) t);
-					} else
+					} else {
 						list.add(t);
+						realCount++;
+					}
 				}
 				continue;
 			}
 
 			list.add(test);
-			if (test instanceof TestSuite)
+			if (test instanceof TestSuite) {
 				realCount += flatten(list, (TestSuite) test);
-			else
+			} else {
 				realCount++;
+			}
 		}
 		return realCount;
 	}
