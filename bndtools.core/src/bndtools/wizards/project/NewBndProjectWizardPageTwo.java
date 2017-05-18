@@ -28,23 +28,8 @@ import bndtools.Plugin;
 
 public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
 
-    private boolean provisionalProjectCreated = false;
-
     public NewBndProjectWizardPageTwo(NewJavaProjectWizardPageOne pageOne) {
         super(pageOne);
-    }
-
-    @Override
-    public void setVisible(boolean visible) {
-        super.setVisible(visible);
-        if (visible) {
-            provisionalProjectCreated = true;
-        } else {
-            if (provisionalProjectCreated) {
-                removeProvisonalProject();
-                provisionalProjectCreated = false;
-            }
-        }
     }
 
     @Override
