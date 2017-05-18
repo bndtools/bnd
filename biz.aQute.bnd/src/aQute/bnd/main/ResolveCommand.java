@@ -277,17 +277,21 @@ public class ResolveCommand extends Processor {
 			if (!f.isFile()) {
 				error("Missing bndrun file: %s", f);
 			} else {
-				Run run = Run.createRun(ws, f);
-				Bndrun bndrun = new Bndrun(run.getWorkspace(), f);
-
-				String runbundles = bndrun.resolve(false, options.write(), runbundlesFormatter);
-				if (bndrun.isOk()) {
-					System.out.printf("# %-50s ok%n", f.getName());
-					if (options.bundles()) {
-						System.out.println(runbundles);
+				try (Bndrun bndrun = Bndrun.createBndrun(ws, f)) {
+					try {
+						String runbundles = bndrun.resolve(false, options.write(), runbundlesFormatter);
+						if (bndrun.isOk()) {
+							System.out.printf("# %-50s ok%n", f.getName());
+							if (options.bundles()) {
+								System.out.println(runbundles);
+							}
+						}
+					} catch (Exception e) {
+						System.out.printf("%-50s %s\n", f.getName(), e);
+						exception(e, "Failed to resolve %s: %s", f, e);
 					}
+					getInfo(bndrun);
 				}
-				getInfo(bndrun);
 			}
 		}
 	}
