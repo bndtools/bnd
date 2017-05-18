@@ -83,12 +83,17 @@ public class Bndrun extends Run {
 	 * @return the calculated <code>-runbundles</code>
 	 * @throws Exception
 	 */
-	public List<VersionedClause> resolve(boolean failOnChanges, boolean writeOnChanges) throws Exception {
+	public String resolve(boolean failOnChanges, boolean writeOnChanges) throws Exception {
+		return resolve(failOnChanges, writeOnChanges, runbundlesListFormatter);
+	}
+
+	public <T> T resolve(boolean failOnChanges, boolean writeOnChanges,
+			Converter<T,Collection< ? extends HeaderClause>> runbundlesFormatter) throws Exception {
 		try (ProjectResolver projectResolver = new ProjectResolver(this)) {
 			try {
 				Map<Resource,List<Wire>> resolution = projectResolver.resolve();
 				if (!projectResolver.isOk()) {
-					return null;
+					return runbundlesFormatter.convert(Collections.<VersionedClause> emptyList());
 				}
 				Set<Resource> resources = resolution.keySet();
 				List<VersionedClause> runBundles = new ArrayList<>();
@@ -130,7 +135,7 @@ public class Bndrun extends Run {
 					if (failOnChanges && !bemRunBundles.isEmpty()) {
 						error("The runbundles have changed. Failing the build!\nWas: %s\nIs: %s",
 								originalRunbundlesString, runbundlesString);
-						return null;
+						return runbundlesFormatter.convert(Collections.<VersionedClause> emptyList());
 					}
 					if (writeOnChanges) {
 						bem.setRunBundles(bemRunBundles);
@@ -141,7 +146,7 @@ public class Bndrun extends Run {
 						IO.store(doc.get(), runFile);
 					}
 				}
-				return bemRunBundles;
+				return runbundlesFormatter.convert(bemRunBundles);
 			} finally {
 				getInfo(projectResolver);
 			}

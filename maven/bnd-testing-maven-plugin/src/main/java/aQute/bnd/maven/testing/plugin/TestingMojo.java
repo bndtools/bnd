@@ -20,9 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Workspace;
-import aQute.bnd.build.model.clauses.VersionedClause;
-import aQute.bnd.build.model.conversions.CollectionFormatter;
-import aQute.bnd.build.model.conversions.HeaderClauseFormatter;
 import aQute.bnd.maven.lib.resolve.DependencyResolver;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.repository.fileset.FileSetRepository;
@@ -145,12 +142,10 @@ public class TestingMojo extends AbstractMojo {
 			}
 			if (resolve) {
 				try {
-					List<VersionedClause> resolved = run.resolve(failOnChanges, false);
+					String runBundles = run.resolve(failOnChanges, false);
 					if (!run.isOk()) {
 						return;
 					}
-					String runBundles = new CollectionFormatter<>(",", new HeaderClauseFormatter(), null, "", "")
-							.convert(resolved);
 					run.setProperty(Constants.RUNBUNDLES, runBundles);
 				} finally {
 					report(run);

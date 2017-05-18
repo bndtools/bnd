@@ -1,6 +1,7 @@
 package aQute.bnd.main;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -20,7 +21,10 @@ import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.OSGI_CORE;
-import aQute.bnd.build.model.clauses.VersionedClause;
+import aQute.bnd.build.model.clauses.HeaderClause;
+import aQute.bnd.build.model.conversions.CollectionFormatter;
+import aQute.bnd.build.model.conversions.Converter;
+import aQute.bnd.build.model.conversions.HeaderClauseFormatter;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.main.bnd.projectOptions;
 import aQute.bnd.osgi.Domain;
@@ -227,6 +231,9 @@ public class ResolveCommand extends Processor {
 
 	}
 
+	private static final Converter<String,Collection< ? extends HeaderClause>> runbundlesFormatter = new CollectionFormatter<>(
+			"\n  ", new HeaderClauseFormatter(), "", "  ", "");
+
 	@Arguments(arg = "<path>...")
 	interface ResolveOptions extends Options {
 		@Description("Use the following workspace")
@@ -273,16 +280,12 @@ public class ResolveCommand extends Processor {
 				Run run = Run.createRun(ws, f);
 				Bndrun bndrun = new Bndrun(run.getWorkspace(), f);
 
-				List<VersionedClause> runbundles = bndrun.resolve(false, options.write());
-				System.out.printf("# %-50s ok%n", f.getName());
-				if (options.bundles()) {
-					StringBuilder buffer = new StringBuilder();
-					for (VersionedClause runbundle : runbundles) {
-						buffer.append("  ");
-						runbundle.formatTo(buffer);
-						buffer.append('\n');
+				String runbundles = bndrun.resolve(false, options.write(), runbundlesFormatter);
+				if (bndrun.isOk()) {
+					System.out.printf("# %-50s ok%n", f.getName());
+					if (options.bundles()) {
+						System.out.println(runbundles);
 					}
-					System.out.println(buffer);
 				}
 				getInfo(bndrun);
 			}
