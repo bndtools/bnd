@@ -38,6 +38,7 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import aQute.bnd.osgi.Processor.FileLine;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
@@ -50,6 +51,7 @@ import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.glob.Glob;
+import aQute.service.reporter.Reporter.SetLocation;
 
 /**
  * Provide a macro processor. This processor can replace variables in strings
@@ -579,7 +581,7 @@ public class Macro {
 
 	/**
 	 * replace ; <list> ; regex ; replace
-	 * 
+	 *
 	 * @param args
 	 */
 	public String _replace(String args[]) {
@@ -607,16 +609,22 @@ public class Macro {
 		return sb.toString();
 	}
 
-	public String _warning(String args[]) {
+	public String _warning(String args[]) throws Exception {
 		for (int i = 1; i < args.length; i++) {
-			domain.warning("%s", process(args[i]));
+			SetLocation warning = domain.warning("%s", process(args[i]));
+			FileLine header = domain.getHeader(Pattern.compile(".*"), Pattern.compile("\\$\\{warning;"));
+			if (header != null)
+				header.set(warning);
 		}
 		return "";
 	}
 
-	public String _error(String args[]) {
+	public String _error(String args[]) throws Exception {
 		for (int i = 1; i < args.length; i++) {
-			domain.error("%s", process(args[i]));
+			SetLocation error = domain.error("%s", process(args[i]));
+			FileLine header = domain.getHeader(Pattern.compile(".*"), Pattern.compile("\\$\\{error;"));
+			if (header != null)
+				header.set(error);
 		}
 		return "";
 	}
@@ -770,7 +778,7 @@ public class Macro {
 	 * Wildcard a directory. The lists can contain Instruction that are matched
 	 * against the given directory ${lsr;<dir>;<list>(;<list>)*} ${lsa;<dir>;
 	 * <list>(;<list>)*}
-	 * 
+	 *
 	 * @author aqute
 	 */
 
@@ -818,7 +826,7 @@ public class Macro {
 	/**
 	 * Modify a version to set a version policy. The policy is a mask that is
 	 * mapped to a version.
-	 * 
+	 *
 	 * <pre>
 	 *  + increment - decrement = maintain s only
 	 * pos=3 (qualifier). If qualifer == SNAPSHOT, return m.m.m-SNAPSHOT else
@@ -915,7 +923,7 @@ public class Macro {
 
 	/**
 	 * Schortcut for version policy
-	 * 
+	 *
 	 * <pre>
 	 *  -provide-policy : ${policy;[==,=+)}
 	 * -consume-policy : ${policy;[==,+)}
@@ -1051,7 +1059,7 @@ public class Macro {
 
 	/**
 	 * Get the contents of a file.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 
@@ -1075,7 +1083,7 @@ public class Macro {
 
 	/**
 	 * Get the Base64 encoding of a file.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	public String _base64(String... args) throws IOException {
@@ -1095,7 +1103,7 @@ public class Macro {
 
 	/**
 	 * Get a digest of a file.
-	 * 
+	 *
 	 * @throws NoSuchAlgorithmException
 	 * @throws IOException
 	 */
@@ -1190,7 +1198,7 @@ public class Macro {
 	 * <li>Property names starting with a minus sign ('-') are not expanded to
 	 * maintain readability
 	 * </ul>
-	 * 
+	 *
 	 * @return A new Properties with the flattened values
 	 */
 	public Properties getFlattenedProperties() {
@@ -1206,7 +1214,7 @@ public class Macro {
 	 * Property names starting with an underscore ('_') are ignored. These are
 	 * reserved for properties that cause an unwanted side effect when expanded
 	 * unnecessary
-	 * 
+	 *
 	 * @return A new Properties with the flattened values
 	 */
 	public Properties getFlattenedProperties(boolean ignoreInstructions) {
