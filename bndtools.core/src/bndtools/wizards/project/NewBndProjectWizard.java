@@ -40,6 +40,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
@@ -81,6 +82,8 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
                 paramsPage.setTemplate(template);
             }
         });
+
+        setDefaultPageImageDescriptor(ImageDescriptor.createFromURL(Plugin.getDefault().getBundle().getEntry("icons/bndtools-wizban.png")));
     }
 
     @Override
