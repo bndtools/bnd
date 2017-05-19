@@ -26,6 +26,7 @@ public class RefreshReposHandler extends AbstractHandler {
 
     private static final ILogger logger = Logger.getLogger(RefreshReposHandler.class);
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
         try {
@@ -36,26 +37,22 @@ public class RefreshReposHandler extends AbstractHandler {
             }
 
             window.run(true, false, new IRunnableWithProgress() {
+                @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
                         buildFile.getWorkspace().run(new IWorkspaceRunnable() {
+                            @Override
                             public void run(IProgressMonitor monitor) throws CoreException {
                                 List<RepositoryPlugin> repos = RepositoryUtils.listRepositories(true);
                                 for (RepositoryPlugin i : repos) {
                                     if (i instanceof Refreshable) {
-                                        boolean success = false;
-                                        Exception ex = null;
                                         try {
-                                            success = ((Refreshable) i).refresh();
+                                            ((Refreshable) i).refresh();
                                         } catch (Exception e) {
-                                            ex = e;
-                                        }
-                                        if (!success) {
-                                            logger.logError("Failed to refresh repository: " + i.getName(), ex);
+                                            logger.logError("An error occurred while refreshing repository: " + i.getName(), e);
                                         }
                                     }
                                 }
-
                                 buildFile.touch(monitor);
                             }
                         }, monitor);
