@@ -255,15 +255,15 @@ public class RepositorySelectionPart extends BndEditorPart {
                 Styler styler = null;
 
                 Repository repo = (Repository) element;
-                label = repo.toString();
-                if (repo instanceof RepositoryPlugin) {
-                    RepositoryPlugin repositoryPlugin = (RepositoryPlugin) repo;
-                    label = repositoryPlugin.getName();
-                } else if (repo instanceof aQute.bnd.deployer.repository.wrapper.Plugin) {
+                if (repo instanceof aQute.bnd.deployer.repository.wrapper.Plugin) {
                     @SuppressWarnings("resource")
                     aQute.bnd.deployer.repository.wrapper.Plugin wrapper = (aQute.bnd.deployer.repository.wrapper.Plugin) repo;
                     wrapper.init();
                     label = wrapper.toString();
+                } else if (repo instanceof RepositoryPlugin) {
+                    label = ((RepositoryPlugin) repo).getName();
+                } else {
+                    label = repo.toString();
                 }
                 image = repoImg;
 
