@@ -42,11 +42,13 @@ public class Run extends Project {
 		super(workspace, propertiesFile == null ? null : propertiesFile.getParentFile(), propertiesFile);
 	}
 
+	@Override
 	public void report(Map<String,Object> table) throws Exception {
 		super.report(table, false);
 	}
 
-	public String toString() {
+	@Override
+	public String getName() {
 		return getPropertiesFile().getName();
 	}
 

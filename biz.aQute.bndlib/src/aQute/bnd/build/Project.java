@@ -237,7 +237,7 @@ public class Project extends Processor {
 
 	@Override
 	public String toString() {
-		return getBase().getName();
+		return getName();
 	}
 
 	/**
