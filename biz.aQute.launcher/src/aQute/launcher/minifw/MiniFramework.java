@@ -42,7 +42,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		this.properties = new Properties(System.getProperties());
 		this.properties.putAll(properties);
 
-		bundles.put(new Long(0), this);
+		bundles.put(Long.valueOf(0), this);
 		last = loader = getClass().getClassLoader();
 	}
 
@@ -165,7 +165,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 
 	@Override
 	public Bundle getBundle(long id) {
-		Long l = new Long(id);
+		Long l = Long.valueOf(id);
 		Bundle b = bundles.get(l);
 		return b;
 	}
@@ -197,7 +197,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 				location = location.substring(1);
 
 			Context c = new Context(this, last, ++ID, location);
-			bundles.put(new Long(c.id), c);
+			bundles.put(Long.valueOf(c.id), c);
 			last = c;
 			return c;
 		} catch (Exception e) {
@@ -220,7 +220,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 						e);
 			}
 			c = new Context(this, last, ++ID, location);
-			bundles.put(new Long(c.id), c);
+			bundles.put(Long.valueOf(c.id), c);
 			last = c;
 			return c;
 		} catch (Exception e) {
