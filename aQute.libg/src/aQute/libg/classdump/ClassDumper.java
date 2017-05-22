@@ -112,7 +112,7 @@ public class ClassDumper {
 
 				case 4 :
 					float f = in.readFloat();
-					pool[poolIndex] = new Float(f);
+					pool[poolIndex] = Float.valueOf(f);
 					ps.printf("%30d tag(4) float %s%n", poolIndex, f);
 					break;
 
@@ -128,7 +128,7 @@ public class ClassDumper {
 
 				case 6 :
 					double d = in.readDouble();
-					pool[poolIndex] = new Double(d);
+					pool[poolIndex] = Double.valueOf(d);
 					ps.printf("%30d tag(6) double %s%n", poolIndex, d);
 					poolIndex++;
 					break;
