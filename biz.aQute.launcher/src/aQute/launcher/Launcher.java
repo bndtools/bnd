@@ -351,12 +351,12 @@ public class Launcher implements ServiceListener {
 	}
 
 	public int activate() throws Exception {
-		active.set(true);
 		Policy.setPolicy(new AllPolicy());
 
 		systemBundle = createFramework();
 		if (systemBundle == null)
 			return LauncherConstants.ERROR;
+		active.set(true);
 
 		doTimeoutHandler();
 
@@ -779,8 +779,7 @@ public class Launcher implements ServiceListener {
 					}
 				}
 			}
-		} else
-			errorAndExit("Huh? Already deactivated.");
+		}
 	}
 
 	public void addSystemPackage(String packageName) {
