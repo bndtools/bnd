@@ -533,12 +533,14 @@ public class Clazz {
 
 		CONSTANT[] tags = CONSTANT.values();
 		process: for (int poolIndex = 1; poolIndex < count; poolIndex++) {
-			CONSTANT tag = tags[in.readUnsignedByte()];
+			int tagValue = in.readUnsignedByte();
+			if (tagValue >= tags.length) {
+				throw new IOException("Unrecognized constant pool tag value " + tagValue);
+			}
+			CONSTANT tag = tags[tagValue];
 			switch (tag) {
 				case Zero :
 					break process;
-				case Two :
-					throw new IOException("Invalid tag " + tag);
 				case Utf8 :
 					constantUtf8(in, poolIndex);
 					break;
@@ -583,7 +585,11 @@ public class Clazz {
 					invokeDynamic(in, poolIndex, tag);
 					break;
 				default :
-					in.skipBytes(tag.skip());
+					int skip = tag.skip();
+					if (skip == -1) {
+						throw new IOException("Invalid tag " + tag);
+					}
+					in.skipBytes(skip);
 					break;
 			}
 		}
