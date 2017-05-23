@@ -32,12 +32,11 @@ import org.osgi.service.repository.Repository;
 
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.repository.BaseRepository;
-import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.SortedList;
 
-public class MavenWorkspaceRepository extends BaseRepository implements Repository, RepositoryPlugin, Refreshable, IMavenProjectChangedListener {
+public class MavenWorkspaceRepository extends BaseRepository implements Repository, RepositoryPlugin, IMavenProjectChangedListener {
 
     private final static ILogger logger = Logger.getLogger(MavenWorkspaceRepository.class);
 
@@ -50,16 +49,6 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
     @Override
     public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
         return Collections.emptyMap();
-    }
-
-    @Override
-    public boolean refresh() throws Exception {
-        return false;
-    }
-
-    @Override
-    public File getRoot() throws Exception {
-        return null;
     }
 
     @Override
