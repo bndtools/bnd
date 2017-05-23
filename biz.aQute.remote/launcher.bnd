@@ -17,8 +17,8 @@ Private-Package: \
 	aQute.remote.api,\
 	aQute.remote.plugin,\
 	aQute.remote.util,\
-	org.osgi.dto,\
-	org.osgi.framework.dto,\
+	org.osgi.dto;-split-package:=first,\
+	org.osgi.framework.dto;-split-package:=first,\
 	org.apache.felix.service.command.*,\
 	aQute.remote.embedded.activator
 

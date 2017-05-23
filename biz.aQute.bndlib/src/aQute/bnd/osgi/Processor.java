@@ -1744,12 +1744,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			} catch (Throwable t) {
 				StringBuilder sb = new StringBuilder();
 				sb.append(name);
-				sb.append(" not found, parent:  ");
+				sb.append(" not found, parent: ");
 				sb.append(getParent());
 				sb.append(" urls:");
 				sb.append(Arrays.toString(getURLs()));
 				sb.append(" exception:");
-				sb.append(t);
+				sb.append(Exceptions.toString(t));
 				throw new ClassNotFoundException(sb.toString(), t);
 			}
 		}
