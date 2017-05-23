@@ -150,9 +150,9 @@ public class Clazz {
 	}
 
 	static enum CONSTANT {
-		Zero(0), Utf8, Two, Integer(4), Float(4), Long(8), Double(8), Class, String(2), Fieldref(4), Methodref(
+		Zero(0), Utf8, Two, Integer(4), Float(4), Long(8), Double(8), Class(2), String(2), Fieldref(4), Methodref(
 				4), InterfaceMethodref(4), NameAndType(4), Thirteen, Fourteen, MethodHandle(3), MethodType(
-						2), Seventeen, InvokeDynamic(4);
+						2), Seventeen, InvokeDynamic(4), Module(2), Package(2);
 		private final int skip;
 
 		CONSTANT(int skip) {
@@ -196,6 +196,7 @@ public class Clazz {
 	final static int					ACC_BRIDGE		= 0x0040;
 	final static int					ACC_ANNOTATION	= 0x2000;
 	final static int					ACC_ENUM		= 0x4000;
+	final static int					ACC_MODULE		= 0x8000;
 
 	static protected class Assoc {
 		Assoc(CONSTANT tag, int a, int b) {

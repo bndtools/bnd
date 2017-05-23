@@ -141,6 +141,13 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	public void testModuleInfo() throws Exception {
+		try (Analyzer a = new Analyzer()) {
+			Clazz c = new Clazz(a, "", null);
+			c.parseClassFile(new FileInputStream("jar/module-info.jclass"), new ClassDataCollector() {});
+		}
+	}
+
 	/**
 	 * Check if the class is not picking up false references when the
 	 * CLass.forName name is constructed. The DeploymentAdminPermission.1.jclass
