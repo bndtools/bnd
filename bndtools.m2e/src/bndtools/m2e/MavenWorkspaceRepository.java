@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -18,11 +19,13 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.project.IMavenProjectChangedListener;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 import org.eclipse.m2e.core.project.MavenProjectChangedEvent;
+import org.eclipse.osgi.service.datalocation.Location;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.service.repository.Repository;
@@ -46,7 +49,7 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
 
     @Override
     public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
-        return null;
+        return Collections.emptyMap();
     }
 
     @Override
@@ -61,7 +64,7 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
 
     @Override
     public PutResult put(InputStream stream, PutOptions options) throws Exception {
-        return null;
+        throw new IllegalStateException(getName() + " is read-only");
     }
 
     @Override
@@ -165,7 +168,7 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
 
     @Override
     public List<String> list(String pattern) throws Exception {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -202,6 +205,12 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
 
     @Override
     public String getLocation() {
+        Location location = Platform.getInstanceLocation();
+
+        if (location != null) {
+            return location.getURL().toString();
+        }
+
         return null;
     }
 

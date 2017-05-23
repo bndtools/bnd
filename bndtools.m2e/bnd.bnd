@@ -15,6 +15,7 @@
 	org.eclipse.equinox.registry,\
 	org.eclipse.m2e.core,\
 	org.eclipse.m2e.jdt,\
+	org.eclipse.osgi,\
 	org.sonatype.plexus:plexus-build-api,\
 	osgi.core;version=${osgi.core.version},\
 	osgi.cmpn;version=${osgi.core.version}
