@@ -8,6 +8,7 @@ import static org.osgi.resource.Namespace.RESOLUTION_OPTIONAL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -33,6 +34,7 @@ import org.osgi.service.resolver.Resolver;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
@@ -207,6 +209,38 @@ public class ResolveProcess {
 	public static ResolutionException augment(ResolveContext context, ResolutionException re)
 			throws ResolutionException {
 		return augment(re.getUnresolvedRequirements(), context, re);
+	}
+
+	public static String format(Collection<Requirement> requirements) {
+		Set<Requirement> mandatory = new HashSet<>();
+		Set<Requirement> optional = new HashSet<>();
+		for (Requirement req : requirements) {
+			if (isOptional(req))
+				optional.add(req);
+			else
+				mandatory.add(req);
+		}
+		try (Formatter f = new Formatter()) {
+			f.format("%n  Mandatory:");
+			for (Requirement req : mandatory) {
+				f.format("%n    [%-19s] %s", req.getNamespace(), req);
+			}
+			f.format("%n  Optional:");
+			for (Requirement req : optional) {
+				f.format("%n    [%-19s] %s", req.getNamespace(), req);
+			}
+			return f.toString();
+		}
+	}
+
+	private static boolean isOptional(Requirement req) {
+		String resolution = req.getDirectives().get(Constants.RESOLUTION);
+
+		if (resolution == null) {
+			return false;
+		}
+
+		return Constants.OPTIONAL.equals(resolution);
 	}
 
 	private static ResolutionException augment(Collection<Requirement> unresolved, ResolveContext context,

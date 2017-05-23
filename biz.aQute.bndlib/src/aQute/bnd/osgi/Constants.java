@@ -291,6 +291,7 @@ public interface Constants {
 	String							USES_DIRECTIVE								= "uses:";
 	String							MANDATORY_DIRECTIVE							= "mandatory:";
 	String							INCLUDE_DIRECTIVE							= "include:";
+	String							OPTIONAL									= "optional";
 	String							PROVIDE_DIRECTIVE							= "provide:";
 	String							EXCLUDE_DIRECTIVE							= "exclude:";
 	String							FILTER_DIRECTIVE							= "filter:";
@@ -300,6 +301,7 @@ public interface Constants {
 	String							EXTENSION_DIRECTIVE							= "extension:";
 	String							VISIBILITY_DIRECTIVE						= "visibility:";
 	String							FRAGMENT_ATTACHMENT_DIRECTIVE				= "fragment-attachment:";
+	String							RESOLUTION									= "resolution";
 	String							RESOLUTION_DIRECTIVE						= "resolution:";
 	String							CARDINALITY_DIRECTIVE						= "cardinality:";
 	String							PATH_DIRECTIVE								= "path:";
