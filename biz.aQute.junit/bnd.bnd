@@ -24,6 +24,9 @@ Export-Package: junit.*;version="3.8.2", \
 Import-Package: \
     aQute.*;resolution:=optional, \
     junit.*;version="[3.8,5)",\
+    org.osgi.framework;version="[1.5,2)",\
+    org.junit.*;version="[4.11,5)",\
+    org.osgi.util.tracker;version="[1.4,2)",\
     *
 
 Bundle-Activator: aQute.junit.Activator

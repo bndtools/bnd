@@ -11,6 +11,8 @@ Bundle-Description: \
 Import-Package: \
 	aQute.*;resolution:=optional, \
 	junit.*;version="[3.8,5)",\
+        org.osgi.framework;version="[1.5,2)",\
+        org.junit.runner.*;version="[4.11,5)",\
 	*
 
 Bundle-Activator: \
