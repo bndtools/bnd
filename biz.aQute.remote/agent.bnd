@@ -22,10 +22,10 @@ Private-Package: \
 	aQute.remote.api,\
 	aQute.remote.agent,\
 	org.apache.felix.service.command,\
-	org.osgi.dto,\
-	org.osgi.resource.dto,\
-	org.osgi.framework.dto,\
-	org.osgi.framework.wiring.dto,\
+	org.osgi.dto;-split-package:=first,\
+	org.osgi.resource.dto;-split-package:=first,\
+	org.osgi.framework.dto;-split-package:=first,\
+	org.osgi.framework.wiring.dto;-split-package:=first,\
 	aQute.remote.util
 
 #
