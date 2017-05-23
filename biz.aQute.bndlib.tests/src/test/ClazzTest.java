@@ -38,12 +38,12 @@ public class ClazzTest extends TestCase {
 	 */
 
 	public void testJiniPlatformClasses() throws Exception {
-		Builder b = new Builder();
-		b.addClasspath(IO.getFile("jar/jsk-platform.jar"));
-		b.setExportPackage("*");
-		Jar build = b.build();
-		assertTrue(b.check());
-		b.close();
+		try (Builder b = new Builder()) {
+			b.addClasspath(IO.getFile("jar/jsk-platform.jar"));
+			b.setExportPackage("*");
+			Jar build = b.build();
+			assertTrue(b.check());
+		}
 	}
 
 	/**
@@ -67,10 +67,11 @@ public class ClazzTest extends TestCase {
 	}
 
 	public void testCaughtExceptions() throws Exception {
-		Analyzer a = new Analyzer();
-		Clazz c = new Clazz(a, "", null);
-		c.parseClassFile(new FileInputStream("bin/test/ClazzTest$Catching.class"), new ClassDataCollector() {});
-		assertTrue(c.getReferred().toString().contains("org.xml.sax"));
+		try (Analyzer a = new Analyzer()) {
+			Clazz c = new Clazz(a, "", null);
+			c.parseClassFile(new FileInputStream("bin/test/ClazzTest$Catching.class"), new ClassDataCollector() {});
+			assertTrue(c.getReferred().toString().contains("org.xml.sax"));
+		}
 	}
 
 	/**
@@ -78,11 +79,12 @@ public class ClazzTest extends TestCase {
 	 */
 
 	public void testUnusedClassConstant() throws Exception {
-		Analyzer a = new Analyzer();
-		Clazz c = new Clazz(a, "", null);
-		c.parseClassFile(new FileInputStream("testresources/TestWeavingHook.jclass"), new ClassDataCollector() {});
+		try (Analyzer a = new Analyzer()) {
+			Clazz c = new Clazz(a, "", null);
+			c.parseClassFile(new FileInputStream("testresources/TestWeavingHook.jclass"), new ClassDataCollector() {});
 		// TODO test someething here
-		System.out.println(c.getReferred());
+			System.out.println(c.getReferred());
+		}
 	}
 
 	/**
@@ -91,21 +93,23 @@ public class ClazzTest extends TestCase {
 	 */
 
 	public void test375() throws Exception {
-		Analyzer a = new Analyzer();
-		Clazz c = new Clazz(a, "", null);
-		c.parseDescriptor("<S:[LFoo;>()V", Modifier.PUBLIC);
-		c.parseDescriptor("<S:[Z>()V", Modifier.PUBLIC);
-		c.parseDescriptor("<S:Z>()V", Modifier.PUBLIC);
+		try (Analyzer a = new Analyzer()) {
+			Clazz c = new Clazz(a, "", null);
+			c.parseDescriptor("<S:[LFoo;>()V", Modifier.PUBLIC);
+			c.parseDescriptor("<S:[Z>()V", Modifier.PUBLIC);
+			c.parseDescriptor("<S:Z>()V", Modifier.PUBLIC);
+		}
 	}
 
 	public void testNoClassBound() throws Exception {
-		Analyzer a = new Analyzer();
-		Clazz c = new Clazz(a, "", null);
+		try (Analyzer a = new Analyzer()) {
+			Clazz c = new Clazz(a, "", null);
 
 		// From aQute.lib.collections.SortedList.fromIterator()
-		c.parseDescriptor(
-				"<T::Ljava/lang/Comparable<*>;>(Ljava/util/Iterator<TT;>;)LaQute/lib/collections/SortedList<TT;>;",
-				Modifier.PUBLIC);
+			c.parseDescriptor(
+					"<T::Ljava/lang/Comparable<*>;>(Ljava/util/Iterator<TT;>;)LaQute/lib/collections/SortedList<TT;>;",
+					Modifier.PUBLIC);
+		}
 	}
 
 	/**
@@ -126,14 +130,15 @@ public class ClazzTest extends TestCase {
 	 * 15
 	 * </pre>
 	 */
-	public static void testDynamicInstr() throws Exception {
-		Analyzer a = new Analyzer();
-		Clazz c = new Clazz(a, "", null);
-		c.parseClassFile(new FileInputStream("jar/AstNodeToScriptVisitor.jclass"), new ClassDataCollector() {});
-		Set<PackageRef> referred = c.getReferred();
-		Descriptors d = new Descriptors();
-		assertFalse(referred.contains(d.getPackageRef("")));
-		System.out.println(referred);
+	public void testDynamicInstr() throws Exception {
+		try (Analyzer a = new Analyzer()) {
+			Clazz c = new Clazz(a, "", null);
+			c.parseClassFile(new FileInputStream("jar/AstNodeToScriptVisitor.jclass"), new ClassDataCollector() {});
+			Set<PackageRef> referred = c.getReferred();
+			Descriptors d = new Descriptors();
+			assertFalse(referred.contains(d.getPackageRef("")));
+			System.out.println(referred);
+		}
 	}
 
 	/**
@@ -146,21 +151,23 @@ public class ClazzTest extends TestCase {
 	 * actually resemble a class name.
 	 */
 
-	public static void testClassForNameFalsePickup() throws Exception {
-		Analyzer a = new Analyzer();
-		Clazz c = new Clazz(a, "", null);
-		c.parseClassFile(new FileInputStream("jar/DeploymentAdminPermission.1.jclass"), new ClassDataCollector() {});
-		Set<PackageRef> referred = c.getReferred();
-		Descriptors d = new Descriptors();
-		assertFalse(referred.contains(d.getPackageRef("")));
-		System.out.println(referred);
+	public void testClassForNameFalsePickup() throws Exception {
+		try (Analyzer a = new Analyzer()) {
+			Clazz c = new Clazz(a, "", null);
+			c.parseClassFile(new FileInputStream("jar/DeploymentAdminPermission.1.jclass"),
+					new ClassDataCollector() {});
+			Set<PackageRef> referred = c.getReferred();
+			Descriptors d = new Descriptors();
+			assertFalse(referred.contains(d.getPackageRef("")));
+			System.out.println(referred);
+		}
 	}
 
 	/**
 	 * Test the uncamel
 	 */
 
-	public static void testUncamel() throws Exception {
+	public void testUncamel() throws Exception {
 		assertEquals("New", Clazz.unCamel("_new"));
 		assertEquals("An XMLMessage", Clazz.unCamel("anXMLMessage"));
 		assertEquals("A message", Clazz.unCamel("aMessage"));
@@ -168,13 +175,14 @@ public class ClazzTest extends TestCase {
 		assertEquals("A nice party", Clazz.unCamel("aNiceParty"));
 	}
 
-	public static void testAnalyzerCrawlInvokeInterfaceAIOOBException() throws Exception {
-		Analyzer a = new Analyzer();
-		Clazz c = new Clazz(a, "", null);
-		c.parseClassFile(new FileInputStream("jar/AnalyzerCrawlInvokerInterfaceAIOOBTest.jclass"),
-				new ClassDataCollector() {});
-		Set<PackageRef> referred = c.getReferred();
-		System.out.println(referred);
+	public void testAnalyzerCrawlInvokeInterfaceAIOOBException() throws Exception {
+		try (Analyzer a = new Analyzer()) {
+			Clazz c = new Clazz(a, "", null);
+			c.parseClassFile(new FileInputStream("jar/AnalyzerCrawlInvokerInterfaceAIOOBTest.jclass"),
+					new ClassDataCollector() {});
+			Set<PackageRef> referred = c.getReferred();
+			System.out.println(referred);
+		}
 	}
 
 	public @interface RecursiveAnno {
@@ -184,11 +192,12 @@ public class ClazzTest extends TestCase {
 
 	public void testRecursiveAnnotation() throws Exception {
 		File file = IO.getFile("bin/test/ClazzTest$RecursiveAnno.class");
-		Analyzer analyzer = new Analyzer();
-		Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
-		clazz.parseClassFile();
-		analyzer.getClassspace().put(clazz.getClassName(), clazz);
-		AnnotationReader.getDefinition(clazz, analyzer, EnumSet.noneOf(DSAnnotations.Options.class),
-				new XMLAttributeFinder(analyzer), AnnotationReader.V1_3);
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			analyzer.getClassspace().put(clazz.getClassName(), clazz);
+			AnnotationReader.getDefinition(clazz, analyzer, EnumSet.noneOf(DSAnnotations.Options.class),
+					new XMLAttributeFinder(analyzer), AnnotationReader.V1_3);
+		}
 	}
 }
