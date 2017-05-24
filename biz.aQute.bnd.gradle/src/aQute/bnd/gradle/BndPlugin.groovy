@@ -23,6 +23,7 @@ import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
 import biz.aQute.resolve.Bndrun
+import biz.aQute.resolve.ResolveProcess
 
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
@@ -440,7 +441,7 @@ public class BndPlugin implements Plugin<Project> {
                     def result = run.resolve(failOnChanges, true)
                     logger.info '{}: {}', Constants.RUNBUNDLES, result
                   } catch (ResolutionException e) {
-                    logger.error 'Unresolved requirements: {}', e.getUnresolvedRequirements()
+                    logger.error 'Unresolved requirements: {}', ResolveProcess.format(e.getUnresolvedRequirements())
                     throw new GradleException("${run.getPropertiesFile()} resolution failure", e)
                   } finally {
                     checkProjectErrors(run, logger)

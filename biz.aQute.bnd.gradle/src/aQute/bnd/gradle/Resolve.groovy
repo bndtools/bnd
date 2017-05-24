@@ -37,6 +37,7 @@ import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
 import aQute.bnd.service.RepositoryPlugin
 import biz.aQute.resolve.Bndrun
+import biz.aQute.resolve.ResolveProcess
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -118,7 +119,7 @@ public class Resolve extends DefaultTask {
         def result = run.resolve(failOnChanges, true)
         logger.info '{}: {}', Constants.RUNBUNDLES, result
       } catch (ResolutionException e) {
-        logger.error 'Unresolved requirements: {}', e.getUnresolvedRequirements()
+        logger.error 'Unresolved requirements: {}', ResolveProcess.format(e.getUnresolvedRequirements())
         throw new GradleException("${run.getPropertiesFile()} resolution exception", e)
       } finally {
         logReport(run, logger)

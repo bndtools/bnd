@@ -16,6 +16,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
+import org.osgi.service.resolver.ResolutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +28,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
 import aQute.libg.glob.Glob;
 import biz.aQute.resolve.Bndrun;
+import biz.aQute.resolve.ResolveProcess;
 
 @Mojo(name = "testing", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class TestingMojo extends AbstractMojo {
@@ -147,6 +149,9 @@ public class TestingMojo extends AbstractMojo {
 						return;
 					}
 					run.setProperty(Constants.RUNBUNDLES, runBundles);
+				} catch (ResolutionException re) {
+					logger.error("Unresolved requirements: {}", ResolveProcess.format(re.getUnresolvedRequirements()));
+					throw re;
 				} finally {
 					report(run);
 				}

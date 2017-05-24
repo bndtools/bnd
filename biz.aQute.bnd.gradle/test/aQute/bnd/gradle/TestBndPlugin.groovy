@@ -123,7 +123,7 @@ class TestBndPlugin extends Specification {
           bndrun.isFile()
           props.load(bndrun, new Slf4jReporter(TestBndPlugin.class))
           props.getProperty('-runbundles') =~ /osgi\.enroute\.junit\.wrapper/
-          result.output =~ Pattern.quote('Unresolved requirements: [test.simple]')
+          result.output =~ '(?s)Unresolved requirements:(.*)\\s+test.simple\\s+'
 
         when:
           bndrun = new File(testProjectDir, 'test.simple/resolvechange.bndrun')
@@ -157,7 +157,7 @@ class TestBndPlugin extends Specification {
           File distributions = new File(testProjectDir, 'test.simple/generated/distributions')
           new File(distributions, 'runbundles/export/test.simple.jar').isFile()
           new File(distributions, 'runbundles/export/osgi.enroute.junit.wrapper-4.12.0.201507311000.jar').isFile()
- 
+
           File executable = new File(distributions, 'executable/export.jar')
           executable.isFile()
           JarFile executable_jar = new JarFile(executable)
