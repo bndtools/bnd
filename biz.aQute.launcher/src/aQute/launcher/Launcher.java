@@ -953,6 +953,7 @@ public class Launcher implements ServiceListener {
 			row(out, "Keep", parms.keep);
 			row(out, "Security", security);
 			list(out, fill("Run bundles", 40), parms.runbundles);
+			row(out, "Java Home", System.getProperty("java.home"));
 			list(out, fill("Classpath", 40), split(System.getProperty("java.class.path"), File.pathSeparator));
 			list(out, fill("System Packages", 40), split(parms.systemPackages, ","));
 			list(out, fill("System Capabilities", 40), split(parms.systemCapabilities, ","));
