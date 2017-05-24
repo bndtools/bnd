@@ -145,6 +145,10 @@ public class ClazzTest extends TestCase {
 		try (Analyzer a = new Analyzer()) {
 			Clazz c = new Clazz(a, "", null);
 			c.parseClassFile(new FileInputStream("jar/module-info.jclass"), new ClassDataCollector() {});
+			assertTrue(c.isModule());
+			Set<PackageRef> referred = c.getReferred();
+			Descriptors d = new Descriptors();
+			assertFalse(referred.contains(d.getPackageRef("")));
 		}
 	}
 
