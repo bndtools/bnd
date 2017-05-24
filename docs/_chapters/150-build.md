@@ -18,7 +18,7 @@ The `cnf` directory can have an `ext` directory, this directory contains any ext
 
 To cache some intermediate files, bndlib will create a `cnf/cache/` directory, this file should not be under source control. E.g. in Git it should be defined in the `.gitignore` file. 
 
-The root of the workspace is generally used to hold other files. For example the `.git` directory for Git, or gradle and ant files for continuous integration. However, designers that add functionality to the workspace shoudl strive to minimize the clutter in the root. For example, the bnd gradle support adds a few files to the root but these link to a `cnf/gradle` directory for their actual content.
+The root of the workspace is generally used to hold other files. For example the `.git` directory for Git, or gradle and ant files for continuous integration. However, designers that add functionality to the workspace should strive to minimize the clutter in the root. For example, the bnd gradle support adds a few files to the root but these link to a `cnf/gradle` directory for their actual content.
 
 Other directories in the workspace represent _projects_. The name of the project is the bundle symbolic name of the bundle that it produces (or the prefix of the bundle symbolic name when it produces multiple bundles).
 
