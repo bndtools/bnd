@@ -265,7 +265,7 @@ public abstract class ProjectLauncher extends Processor {
 			java.var(e.getKey(), e.getValue());
 		}
 
-		java.add(project.getProperty("java", "java"));
+		java.add(project.getProperty("java", getJavaExecutable()));
 		String javaagent = project.getProperty(Constants.JAVAAGENT);
 		if (Processor.isTrue(javaagent)) {
 			for (String agent : agents) {
@@ -309,6 +309,15 @@ public abstract class ProjectLauncher extends Processor {
 			cleanup();
 			listeners.clear();
 		}
+	}
+
+	private String getJavaExecutable() {
+		String javaHome = System.getProperty("java.home");
+		if (javaHome == null) {
+			return "java";
+		}
+		File java = new File(javaHome, "bin/java");
+		return java.getAbsolutePath();
 	}
 
 	/**
