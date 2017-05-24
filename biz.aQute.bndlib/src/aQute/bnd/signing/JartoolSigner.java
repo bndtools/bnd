@@ -45,6 +45,12 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 		String sigFile() default "";
 
 		String digestalg() default "";
+
+		String tsa() default "";
+
+		String tsacert() default "";
+
+		String tsapolicyid() default "";
 	}
 
 	String	keystore;
@@ -54,6 +60,9 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 	String	keypass;
 	String	sigFile;
 	String	digestalg;
+	String	tsa;
+	String	tsacert;
+	String	tsapolicyid;
 
 	public void setProperties(Map<String,String> map) {
 		if (map.containsKey("keystore"))
@@ -70,6 +79,12 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 			this.sigFile = map.get("sigFile");
 		if (map.containsKey("digestalg"))
 			this.digestalg = map.get("digestalg");
+		if (map.containsKey("tsa"))
+			this.tsa = map.get("tsa");
+		if (map.containsKey("tsacert"))
+			this.tsacert = map.get("tsacert");
+		if (map.containsKey("tsapolicyid"))
+			this.tsapolicyid = map.get("tsapolicyid");
 	}
 
 	public void setReporter(Reporter processor) {}
@@ -117,6 +132,21 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 		if (digestalg != null) {
 			command.add("-digestalg");
 			command.add(digestalg);
+		}
+
+		if (tsa != null) {
+			command.add("-tsa");
+			command.add(tsa);
+		}
+
+		if (tsacert != null) {
+			command.add("-tsacert");
+			command.add(tsacert);
+		}
+
+		if (tsapolicyid != null) {
+			command.add("-tsapolicyid");
+			command.add(tsapolicyid);
 		}
 
 		command.add(tmp.getAbsolutePath());
