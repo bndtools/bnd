@@ -652,7 +652,9 @@ public class Clazz {
 
 		int this_class = in.readUnsignedShort();
 		className = analyzer.getTypeRef((String) pool[intPool[this_class]]);
-		referTo(className, Modifier.PUBLIC);
+		if (!isModule()) {
+			referTo(className, Modifier.PUBLIC);
+		}
 
 		try {
 
@@ -2019,7 +2021,11 @@ public class Clazz {
 	}
 
 	public boolean isSynthetic() {
-		return (0x1000 & accessx) != 0;
+		return (ACC_SYNTHETIC & accessx) != 0;
+	}
+
+	public boolean isModule() {
+		return (ACC_MODULE & accessx) != 0;
 	}
 
 	public JAVA getFormat() {
