@@ -2019,7 +2019,7 @@ public class Clazz {
 	}
 
 	public boolean isSynthetic() {
-		return (0x1000 & accessx) != 0;
+		return (ACC_SYNTHETIC & accessx) != 0;
 	}
 
 	public JAVA getFormat() {
