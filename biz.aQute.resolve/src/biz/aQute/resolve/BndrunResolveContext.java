@@ -47,6 +47,7 @@ import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.Registry;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.lib.converter.Converter;
@@ -366,8 +367,20 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			// Map the repository names...
 
 			Map<String,Repository> repoNameMap = new HashMap<String,Repository>(allRepos.size());
-			for (Repository repo : allRepos)
-				repoNameMap.put(repo.toString(), repo);
+			for (Repository repo : allRepos) {
+				String name;
+				if (repo instanceof aQute.bnd.deployer.repository.wrapper.Plugin) {
+					@SuppressWarnings("resource")
+					aQute.bnd.deployer.repository.wrapper.Plugin wrapper = (aQute.bnd.deployer.repository.wrapper.Plugin) repo;
+					wrapper.init();
+					name = wrapper.toString();
+				} else if (repo instanceof RepositoryPlugin) {
+					name = ((RepositoryPlugin) repo).getName();
+				} else {
+					name = repo.toString();
+				}
+				repoNameMap.put(name, repo);
+			}
 
 			// Create the result list
 			orderedRepositories = new ArrayList<>();
