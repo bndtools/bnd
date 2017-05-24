@@ -14,6 +14,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.RepositoryPlugin;
 import bndtools.central.Central;
 
 class RepositoriesEditModel {
@@ -125,8 +126,16 @@ class RepositoriesEditModel {
         return out;
     }
 
-    private String toName(Repository r) {
-        return r.toString();
+    private String toName(Repository repo) {
+        if (repo instanceof aQute.bnd.deployer.repository.wrapper.Plugin) {
+            aQute.bnd.deployer.repository.wrapper.Plugin wrapper = (aQute.bnd.deployer.repository.wrapper.Plugin) repo;
+            wrapper.init();
+            return wrapper.toString();
+        }
+        if (repo instanceof RepositoryPlugin) {
+            return ((RepositoryPlugin) repo).getName();
+        }
+        return repo.toString();
     }
 
     private HeaderClause toHeaderClause(Repository repository) {
