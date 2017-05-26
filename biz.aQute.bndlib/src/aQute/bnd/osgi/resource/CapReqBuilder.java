@@ -5,9 +5,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.osgi.framework.Constants;
@@ -37,6 +40,10 @@ import aQute.libg.filters.LiteralFilter;
 import aQute.libg.filters.SimpleFilter;
 
 public class CapReqBuilder {
+
+	private static final String			REQ_ALIAS_BUNDLE				= "bundle";
+	private static final String			REQ_ALIAS_BUNDLE_NAME_ATTRIB	= "bsn";
+	private static final String REQ_ALIAS_BUNDLE_VERSION_ATTRIB = "version";
 
 	private final String				namespace;
 	private Resource					resource;
@@ -260,31 +267,119 @@ public class CapReqBuilder {
 		return addDirective("filter", f.toString());
 	}
 
+	/**
+	 * Equivalent to {@code getRequirementsFrom(rr, true)}.
+	 * 
+	 * @param rr
+	 */
 	public static List<Requirement> getRequirementsFrom(Parameters rr) throws Exception {
+		return getRequirementsFrom(rr, true);
+	}
+
+	/**
+	 * Parse requirements from a Parameters set in the form of an OSGi
+	 * Require-Capability header.
+	 * 
+	 * @param rr The Require-Capability header.
+	 * @param unalias Whether to unalias requirements. If false then an aliases
+	 *            such as "bundle; bsn=org.foo" will be returned as a raw
+	 *            Requirement in the unspecified namespace "bundle".
+	 * @return The list of parsed requirements.
+	 * @throws Exception
+	 */
+	public static List<Requirement> getRequirementsFrom(Parameters rr, boolean unalias) throws Exception {
 		List<Requirement> requirements = new ArrayList<Requirement>();
 		for (Entry<String,Attrs> e : rr.entrySet()) {
-			requirements.add(getRequirementFrom(Processor.removeDuplicateMarker(e.getKey()), e.getValue()));
+			Requirement req = getRequirementFrom(Processor.removeDuplicateMarker(e.getKey()), e.getValue());
+			if (unalias) {
+				req = unalias(req);
+			}
+			requirements.add(req);
 		}
 		return requirements;
 	}
 
 	public static Requirement getRequirementFrom(String namespace, Attrs attrs) throws Exception {
+		return getRequirementFrom(namespace, attrs, true);
+	}
+	
+	public static Requirement getRequirementFrom(String namespace, Attrs attrs, boolean unalias) throws Exception {
 		CapReqBuilder builder = createCapReqBuilder(namespace, attrs);
-		return builder.buildSyntheticRequirement();
+		Requirement requirement = builder.buildSyntheticRequirement();
+		if (unalias)
+			requirement = unalias(requirement);
+		return requirement;
 	}
 
 	public static CapReqBuilder createCapReqBuilder(String namespace, Attrs attrs) throws Exception {
 		CapReqBuilder builder = new CapReqBuilder(namespace);
-		for (Entry<String,String> entry : attrs.entrySet()) {
-			String key = entry.getKey();
+		for (String key : attrs.keySet()) {
 			if (key.endsWith(":")) {
+				String value = attrs.get(key);
 				key = key.substring(0, key.length() - 1);
-				builder.addDirective(key, entry.getValue());
+				builder.addDirective(key, value);
 			} else {
-				builder.addAttribute(key, entry.getValue());
+				Object value = attrs.getTyped(key);
+				builder.addAttribute(key, value);
 			}
 		}
 		return builder;
+	}
+
+	private static Requirement unalias(Requirement requirement) throws Exception {
+		if (requirement == null)
+			return null;
+
+		final String ns = requirement.getNamespace();
+
+		final Set<String> consumedAttribs = new HashSet<>();
+		final Set<String> consumedDirectives = new HashSet<>();
+
+		if (REQ_ALIAS_BUNDLE.equals(ns)) {
+			final String bsn = Objects.toString(requirement.getAttributes().get(REQ_ALIAS_BUNDLE_NAME_ATTRIB), null);
+			consumedAttribs.add(REQ_ALIAS_BUNDLE_NAME_ATTRIB);
+			if (bsn == null) {
+				throw new IllegalArgumentException(
+						String.format("Requirement alias '%s' is missing mandatory attribute '%s' of type String",
+								REQ_ALIAS_BUNDLE, REQ_ALIAS_BUNDLE_NAME_ATTRIB));
+			}
+
+			final VersionRange range = toRange(requirement.getAttributes().get(REQ_ALIAS_BUNDLE_VERSION_ATTRIB));
+			consumedAttribs.add(REQ_ALIAS_BUNDLE_VERSION_ATTRIB);
+			CapReqBuilder b = CapReqBuilder.createBundleRequirement(bsn, Objects.toString(range, null));
+			copyAttribs(requirement, b, consumedAttribs);
+			copyDirectives(requirement, b, consumedDirectives);
+			requirement = b.buildSyntheticRequirement();
+		}
+		return requirement;
+	}
+
+	private static void copyAttribs(Requirement req, CapReqBuilder builder, Set<String> excludes) throws Exception {
+		for (Entry<String,Object> entry : req.getAttributes().entrySet()) {
+			if (!excludes.contains(entry.getKey()))
+				builder.addAttribute(entry.getKey(), entry.getValue());
+		}
+	}
+
+	private static void copyDirectives(Requirement req, CapReqBuilder builder, Set<String> excludes)
+			throws Exception {
+		for (Entry<String,String> entry : req.getDirectives().entrySet()) {
+			if (!excludes.contains(entry.getKey()))
+				builder.addDirective(entry.getKey(), entry.getValue());
+		}
+	}
+
+	private static VersionRange toRange(Object o) throws IllegalArgumentException {
+		final VersionRange range;
+		if (o == null)
+			range = null;
+		else if (o instanceof VersionRange)
+			range = (VersionRange) o;
+		else if (o instanceof org.osgi.framework.VersionRange || o instanceof Version || o instanceof String)
+			range = VersionRange.parseOSGiVersionRange(o.toString());
+		else
+			throw new IllegalArgumentException("Expected type String, Version or VersionRange");
+		return range;
 	}
 
 	public static List<Capability> getCapabilitiesFrom(Parameters rr) throws Exception {
