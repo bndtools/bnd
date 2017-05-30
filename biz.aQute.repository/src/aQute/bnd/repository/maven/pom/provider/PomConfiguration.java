@@ -1,5 +1,8 @@
 package aQute.bnd.repository.maven.pom.provider;
 
+import org.osgi.annotation.versioning.ProviderType;
+
+@ProviderType
 public interface PomConfiguration {
 
 	/**
@@ -53,4 +56,10 @@ public interface PomConfiguration {
 	 */
 	// default "http://search.maven.org/solrsearch/select"
 	String queryUrl(String deflf);
+
+	/**
+	 * Allow transitive dependencies
+	 */
+	boolean transitive(boolean deflt);
+
 }

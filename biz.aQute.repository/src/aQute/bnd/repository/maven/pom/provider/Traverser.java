@@ -50,11 +50,13 @@ class Traverser {
 	final Deferred<Map<Archive,Resource>>	deferred	= new Deferred<>();
 	final MavenRepository					repo;
 	final HttpClient						client;
+	final boolean							transitive;
 
-	Traverser(MavenRepository repo, HttpClient client, Executor executor) {
+	Traverser(MavenRepository repo, HttpClient client, Executor executor, boolean transitive) {
 		this.repo = repo;
 		this.client = client;
 		this.executor = executor;
+		this.transitive = transitive;
 		this.revisions = new ArrayList<>();
 		this.uris = new ArrayList<>();
 	}
@@ -110,33 +112,36 @@ class Traverser {
 		if (prev != null)
 			return;
 
-		//
-		// Every parse must be matched by a background
-		// execution of parseArchive. So we count the enters
-		// and then decrement at the end of the background task
-		// if we go to 0 then we've done it all
-		//
+		if (transitive || parent == ROOT) {
 
-		count.incrementAndGet();
-		executor.execute(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					logger.debug("parse archive {}", archive);
-					parseArchive(archive);
-				} catch (Throwable throwable) {
-					logger.debug(" failed to parse archive {}: {}", archive, throwable);
-					ResourceBuilder rb = new ResourceBuilder();
-					String bsn = archive.revision.program.toString();
-					Version version = toFrameworkVersion(archive.revision.version.getOSGiVersion());
-					addReserveIdentity(rb, bsn, version);
-					addInformationCapability(rb, archive.toString(), parent, throwable);
-					resources.put(archive, rb.build());
-				} finally {
-					finish();
+			//
+			// Every parse must be matched by a background
+			// execution of parseArchive. So we count the enters
+			// and then decrement at the end of the background task
+			// if we go to 0 then we've done it all
+			//
+
+			count.incrementAndGet();
+			executor.execute(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						logger.debug("parse archive {}", archive);
+						parseArchive(archive);
+					} catch (Throwable throwable) {
+						logger.debug(" failed to parse archive {}: {}", archive, throwable);
+						ResourceBuilder rb = new ResourceBuilder();
+						String bsn = archive.revision.program.toString();
+						Version version = toFrameworkVersion(archive.revision.version.getOSGiVersion());
+						addReserveIdentity(rb, bsn, version);
+						addInformationCapability(rb, archive.toString(), parent, throwable);
+						resources.put(archive, rb.build());
+					} finally {
+						finish();
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 
 	private Version toFrameworkVersion(aQute.bnd.version.Version v) {
@@ -174,6 +179,7 @@ class Traverser {
 	}
 
 	private void parsePom(POM pom, String parent) throws Exception {
+
 		Map<Program,Dependency> dependencies = pom.getDependencies(EnumSet.of(MavenScope.compile, MavenScope.runtime),
 				false);
 		for (Dependency d : dependencies.values()) {
@@ -218,6 +224,11 @@ class Traverser {
 		} catch (Exception ee) {
 			ee.printStackTrace();
 		}
+	}
+
+	public Traverser revision(Revision revision) {
+		revisions.add(revision);
+		return this;
 	}
 
 }
