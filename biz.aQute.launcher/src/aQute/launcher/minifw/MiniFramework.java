@@ -34,7 +34,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	ClassLoader			loader;
 	Properties			properties;
 	Map<Long,Bundle>	bundles	= new HashMap<Long,Bundle>();
-	int					ID		= 1;
+	int					ID		= 0;
 	int					state	= Bundle.INSTALLED;
 	ClassLoader			last;
 
