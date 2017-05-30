@@ -4,6 +4,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +45,9 @@ public class CapReqBuilder {
 	private static final String			REQ_ALIAS_IDENTITY					= "bnd.identity";
 	private static final String			REQ_ALIAS_IDENTITY_NAME_ATTRIB		= "id";
 	private static final String			REQ_ALIAS_IDENTITY_VERSION_ATTRIB	= "version";
+
+	private static final String			REQ_ALIAS_LITERAL					= "bnd.literal";
+	private static final String			REQ_ALIAS_LITERAL_ATTRIB			= REQ_ALIAS_LITERAL;
 
 	private final String				namespace;
 	private Resource					resource;
@@ -332,7 +336,20 @@ public class CapReqBuilder {
 		final Set<String> consumedAttribs = new HashSet<>();
 		final Set<String> consumedDirectives = new HashSet<>();
 
-		if (REQ_ALIAS_IDENTITY.equals(ns)) {
+		if (REQ_ALIAS_LITERAL.equals(ns)) {
+			final String literalNs = Objects.toString(requirement.getAttributes().get(REQ_ALIAS_LITERAL_ATTRIB), null);
+			consumedAttribs.add(REQ_ALIAS_LITERAL_ATTRIB);
+			if (literalNs == null) {
+				throw new IllegalArgumentException(
+						String.format("Requirement alias %s is missing mandatory attribute '%s' of type String",
+								REQ_ALIAS_LITERAL, REQ_ALIAS_LITERAL_ATTRIB));
+			}
+
+			CapReqBuilder builder = new CapReqBuilder(literalNs);
+			copyAttribs(requirement, builder, consumedAttribs);
+			copyDirectives(requirement, builder, Collections.<String> emptySet());
+			requirement = builder.buildSyntheticRequirement();
+		} else if (REQ_ALIAS_IDENTITY.equals(ns)) {
 			final String bsn = Objects.toString(requirement.getAttributes().get(REQ_ALIAS_IDENTITY_NAME_ATTRIB), null);
 			consumedAttribs.add(REQ_ALIAS_IDENTITY_NAME_ATTRIB);
 			if (bsn == null) {
@@ -348,6 +365,7 @@ public class CapReqBuilder {
 			copyDirectives(requirement, b, consumedDirectives);
 			requirement = b.buildSyntheticRequirement();
 		}
+
 		return requirement;
 	}
 

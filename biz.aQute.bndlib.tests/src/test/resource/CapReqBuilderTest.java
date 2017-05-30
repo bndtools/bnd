@@ -60,4 +60,32 @@ public class CapReqBuilderTest extends TestCase {
 		assertEquals("optional", req.getDirectives().get("resolution"));
 	}
 
+	public void testParseLiteralAliasedRequirement() throws Exception {
+		Attrs attrs = new Attrs();
+		attrs.putTyped("bnd.literal", "bnd.identity");
+		attrs.putTyped("size", 23L);
+		attrs.put("resolution:", "optional");
+		attrs.put("filter:", "(bnd.identity=org.example.foo)");
+		Requirement req = CapReqBuilder.getRequirementFrom("bnd.literal", attrs);
+
+		assertEquals("bnd.identity", req.getNamespace());
+		assertEquals("(bnd.identity=org.example.foo)", req.getDirectives().get("filter"));
+		assertEquals(23L, req.getAttributes().get("size"));
+		assertEquals("optional", req.getDirectives().get("resolution"));
+	}
+
+	public void testParseLiteralLiteralRequirement() throws Exception {
+		Attrs attrs = new Attrs();
+		attrs.putTyped("bnd.literal", "bnd.literal");
+		attrs.putTyped("size", 23L);
+		attrs.put("resolution:", "optional");
+		attrs.put("filter:", "(bnd.literal=org.example.foo)");
+		Requirement req = CapReqBuilder.getRequirementFrom("bnd.literal", attrs);
+
+		assertEquals("bnd.literal", req.getNamespace());
+		assertEquals("(bnd.literal=org.example.foo)", req.getDirectives().get("filter"));
+		assertEquals(23L, req.getAttributes().get("size"));
+		assertEquals("optional", req.getDirectives().get("resolution"));
+	}
+
 }
