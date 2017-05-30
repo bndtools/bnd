@@ -40,7 +40,7 @@ public class Cache {
                     data = IO.read(td.getInputStream());
                     if (td.getTag() == null) {
                         // server now not giving an etag -> remove from cache
-                        cache.remove(td.getTag());
+                        cache.remove(uri);
                     } else {
                         // replace cache entry with new tag
                         cache.put(uri, new Pair<String,byte[]>(td.getTag(), data));

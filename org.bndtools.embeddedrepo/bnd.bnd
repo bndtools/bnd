@@ -2,7 +2,7 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 Fragment-Host: biz.aQute.bndlib;bundle-version="[${bnd-version-base},${bnd-version-ceiling})"
--includeresource: embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;[${bnd-version-base},${bnd-version-ceiling})}
+-includeresource: embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;[${bnd-version-base},${bnd-version-ceiling});HIGHEST}
 
 Import-Package: \
 	javax.management,\

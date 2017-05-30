@@ -28,13 +28,13 @@ base-version-qualifier:   DEV
 # On advice of Peter we use an up-to-major version range
 bnd-version-base:         3.4.0
 bnd-version-ceiling:      4.0.0
-bndlib:                   aQute.libg;version='[${bnd-version-base},${bnd-version-ceiling})', \
-                          biz.aQute.bndlib;version='[${bnd-version-base},${bnd-version-ceiling})'
+bndlib:                   aQute.libg;version='[${bnd-version-base},${bnd-version-ceiling})';strategy=highest, \
+                          biz.aQute.bndlib;version='[${bnd-version-base},${bnd-version-ceiling})';strategy=highest
 
 # Version of the repository plugin to use consistently throughout the build
 # NB. this must be specified as full M.m.u version (but no qualifier)
-aQute-repository:         biz.aQute.repository;version='[${bnd-version-base},${bnd-version-ceiling})'
-aQute-resolve:            biz.aQute.resolve;version='[${bnd-version-base},${bnd-version-ceiling})'
+aQute-repository:         biz.aQute.repository;version='[${bnd-version-base},${bnd-version-ceiling})';strategy=highest
+aQute-resolve:            biz.aQute.resolve;version='[${bnd-version-base},${bnd-version-ceiling})';strategy=highest
 
 osgi.annotation.version:  6.0.1
 osgi.core.version:        5.0.0
