@@ -3,7 +3,8 @@
 
 -buildpath: \
 	slf4j.api;version=latest,\
-	org.osgi.util.function;version=latest
+	org.osgi.util.function;version=latest,\
+	org.osgi.util.promise;version=latest
 
 -testpath: \
     ${junit}
