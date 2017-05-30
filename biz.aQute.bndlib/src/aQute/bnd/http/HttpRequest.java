@@ -7,15 +7,15 @@ import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executor;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.url.TaggedData;
 import aQute.lib.converter.TypeReference;
+import aQute.lib.promise.PromiseExecutor;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -199,22 +199,13 @@ public class HttpRequest<T> {
 
 	public Promise<T> async(final URL url) throws InterruptedException {
 		this.url = url;
-		final Deferred<T> deferred = new Deferred<>();
-		Executor e = Processor.getExecutor();
-		e.execute(new Runnable() {
-
+		PromiseExecutor executor = new PromiseExecutor(Processor.getExecutor());
+		return executor.submit(new Callable<T>() {
 			@Override
-			public void run() {
-				try {
-					T result = (T) client.send(HttpRequest.this);
-					deferred.resolve(result);
-				} catch (Throwable t) {
-					deferred.fail(t);
-				}
+			public T call() throws Exception {
+				return (T) client.send(HttpRequest.this);
 			}
-
 		});
-		return deferred.getPromise();
 	}
 
 	public Promise<T> async(URI uri) throws MalformedURLException, InterruptedException {

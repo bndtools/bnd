@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.jar.JarFile;
@@ -30,6 +31,7 @@ import org.tukaani.xz.XZInputStream;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
 import aQute.lib.io.IO;
+import aQute.lib.promise.PromiseExecutor;
 import aQute.lib.strings.Strings;
 import aQute.p2.api.Artifact;
 import aQute.p2.api.P2Index;
@@ -41,11 +43,11 @@ public class P2Impl {
 	private static final Promise<List<Artifact>>	RESOLVED	= Promises.resolved(Collections.<Artifact> emptyList());
 	private final Set<URI>							defaults	= Collections
 			.newSetFromMap(new ConcurrentHashMap<URI,Boolean>());
-	private Executor								executor;
+	private final PromiseExecutor					executor;
 
 	public P2Impl(HttpClient c, URI base, Executor executor) throws Exception {
 		this.client = c;
-		this.executor = executor;
+		this.executor = new PromiseExecutor(executor);
 		this.base = normalize(base);
 	}
 
@@ -91,22 +93,17 @@ public class P2Impl {
 		if (in == null)
 			return RESOLVED;
 
-		final Deferred<List<Artifact>> deferred = new Deferred<>();
-		executor.execute(new Runnable() {
+		return executor.submit(new Callable<List<Artifact>>() {
 			@Override
-			public void run() {
+			public List<Artifact> call() throws Exception {
 				try {
 					ArtifactRepository ar = new ArtifactRepository(in, uri);
-					deferred.resolve(ar.getArtifacts());
-				} catch (Throwable e) {
-					deferred.fail(e);
+					return ar.getArtifacts();
 				} finally {
 					IO.close(in);
 				}
 			}
 		});
-
-		return deferred.getPromise();
 	}
 
 	/**

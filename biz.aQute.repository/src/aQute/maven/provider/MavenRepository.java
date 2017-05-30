@@ -29,6 +29,7 @@ import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
+import aQute.lib.promise.PromiseExecutor;
 import aQute.lib.strings.Strings;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
@@ -43,7 +44,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	private final String								id;
 	private final List<MavenBackingRepository>			release		= new ArrayList<>();
 	private final List<MavenBackingRepository>			snapshot	= new ArrayList<>();
-	private final Executor								executor;
+	private final PromiseExecutor				executor;
 	private final boolean								localOnly;
 	private final Map<Revision,Promise<POM>>	poms		= new WeakHashMap<>();
 
@@ -57,7 +58,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		if (snapshot != null)
 			this.snapshot.addAll(snapshot);
 
-		this.executor = executor == null ? Executors.newCachedThreadPool() : executor;
+		this.executor = new PromiseExecutor(executor == null ? Executors.newCachedThreadPool() : executor);
 		this.localOnly = this.release.isEmpty() && this.snapshot.isEmpty();
 		IO.mkdirs(base);
 	}
@@ -129,23 +130,15 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		if (localOnly || isFresh(file)) {
 			return Promises.resolved(file.isFile() ? file : null);
 		}
-		final Deferred<File> deferred = new Deferred<>();
-		executor.execute(new Runnable() {
+		return executor.submit(new Callable<File>() {
 			@Override
-			public void run() {
-				try {
-					File f = getFile(archive, file);
-					if (thrw && f == null) {
-						deferred.fail(new FileNotFoundException("For Maven artifact " + archive));
-						return;
-					}
-					deferred.resolve(f);
-				} catch (Throwable e) {
-					deferred.fail(e);
+			public File call() throws Exception {
+				File f = getFile(archive, file);
+				if (thrw && f == null) {
+					throw new FileNotFoundException("For Maven artifact " + archive);
 				}
-			}
-		});
-		return deferred.getPromise();
+				return f;
+			}});
 	}
 
 	private boolean isFresh(File file) {
