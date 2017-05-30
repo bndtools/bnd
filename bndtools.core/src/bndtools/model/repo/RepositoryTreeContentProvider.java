@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -15,8 +16,14 @@ import java.util.SortedSet;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.widgets.Display;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.service.repository.Repository;
@@ -44,6 +51,9 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
     private boolean showRepos = true;
 
     private Requirement requirementFilter = null;
+
+    private final Map<RepositoryPlugin,Map<String,Object[]>> repoPluginListResults = new HashMap<>();
+    private StructuredViewer structuredViewer;
 
     public RepositoryTreeContentProvider() {
         this.phases = EnumSet.allOf(ResolutionPhase.class);
@@ -106,7 +116,12 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
     public void dispose() {}
 
     @Override
-    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+        if (viewer instanceof StructuredViewer) {
+            this.structuredViewer = (StructuredViewer) viewer;
+            repoPluginListResults.clear();
+        }
+    }
 
     @Override
     public Object[] getChildren(Object parentElement) {
@@ -228,7 +243,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         return result;
     }
 
-    Object[] getRepositoryBundles(RepositoryPlugin repoPlugin) {
+    Object[] getRepositoryBundles(final RepositoryPlugin repoPlugin) {
         Object[] result = null;
 
         if (requirementFilter != null) {
@@ -245,20 +260,81 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
             return result;
         }
 
-        List<String> bsns = null;
-        try {
-            bsns = repoPlugin.list(wildcardFilter);
-        } catch (Exception e) {
-            logger.logError(MessageFormat.format("Error querying repository {0}.", repoPlugin.getName()), e);
+        /*
+         * We can't directly call repoPlugin.list() since we are on the UI thread
+         * so the plan is to first check to see if we have cached the list results
+         * already from a previous job, if so, return those results directly
+         * If not, then we need to create a background job that will call list()
+         * and once it is finished, we tell the Viewer to refresh this node and the
+         * next time this method gets called the 'results' will be available in the cache
+         */
+        Map<String,Object[]> listResults = repoPluginListResults.get(repoPlugin);
+
+        if (listResults == null) {
+            listResults = new HashMap<>();
+
+            repoPluginListResults.put(repoPlugin, listResults);
         }
-        if (bsns != null) {
-            Collections.sort(bsns);
-            result = new RepositoryBundle[bsns.size()];
-            int i = 0;
-            for (String bsn : bsns) {
-                result[i++] = new RepositoryBundle(repoPlugin, bsn);
+
+        result = listResults.get(wildcardFilter);
+
+        if (result == null) {
+            Job job = new Job("Loading " + repoPlugin.getName() + " content...") {
+
+                @Override
+                protected IStatus run(IProgressMonitor monitor) {
+                    Object[] jobresult;
+                    List<String> bsns = null;
+
+                    try {
+                        bsns = repoPlugin.list(wildcardFilter);
+                    } catch (Exception e) {
+                        logger.logError(MessageFormat.format("Error querying repository {0}.", repoPlugin.getName()), e);
+                    }
+                    if (bsns != null) {
+                        Collections.sort(bsns);
+                        jobresult = new RepositoryBundle[bsns.size()];
+                        int i = 0;
+                        for (String bsn : bsns) {
+                            jobresult[i++] = new RepositoryBundle(repoPlugin, bsn);
+                        }
+
+                        Map<String,Object[]> listResults = repoPluginListResults.get(repoPlugin);
+                        listResults.put(wildcardFilter, jobresult);
+
+                        Display.getDefault().asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                structuredViewer.refresh(repoPlugin, true);
+                            }
+                        });
+                    }
+
+                    return Status.OK_STATUS;
+                }
+            };
+            job.schedule();
+
+            // wait 100 ms and see if the job will complete fast (likely already cached)
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {}
+
+            IStatus status = job.getResult();
+
+            if (status != null && status.isOK()) {
+                Map<String,Object[]> fastResults = repoPluginListResults.get(repoPlugin);
+                result = fastResults.get(wildcardFilter);
+            } else {
+                Object[] loading = new Object[] {
+                        new LoadingContentElement()
+                };
+
+                listResults.put(wildcardFilter, loading);
+                result = loading;
             }
         }
+
         return result;
     }
 

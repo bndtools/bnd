@@ -35,6 +35,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
     final Image bundleImg = Icons.desc("bundle").createImage();
     final Image matchImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/star-small.png").createImage();
     final Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
+    final Image loadingImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/loading_16x16.gif").createImage();
 
     private final boolean showRepoId;
 
@@ -121,6 +122,9 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
             StyledString label = new StyledString("Continue Search on JPM4J.org...", new HyperlinkStyler());
             cell.setText(label.getString());
             cell.setStyleRanges(label.getStyleRanges());
+        } else if (element instanceof LoadingContentElement) {
+            cell.setText("Loading content...");
+            cell.setImage(loadingImg);
         } else if (element != null) {
             // Catch-all
             cell.setText(element.toString());
@@ -182,7 +186,10 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
             img = bundleImg;
         } else if (element instanceof RepositoryBundle) {
             img = bundleImg;
+        } else if (element instanceof LoadingContentElement) {
+            img = loadingImg;
         }
+
         return img;
     }
 
