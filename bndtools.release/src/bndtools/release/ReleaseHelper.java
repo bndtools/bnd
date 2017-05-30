@@ -287,8 +287,7 @@ public class ReleaseHelper {
                 return false;
             }
 
-            JarResource jr = new JarResource(jar);
-            try (InputStream is = new BufferedInputStream(jr.openInputStream())) {
+            try (JarResource jr = new JarResource(jar); InputStream is = new BufferedInputStream(jr.openInputStream())) {
                 context.getProject().release(context.getReleaseRepository().getName(), jar.getName(), is);
 
                 if (!context.getProject().isOk()) {
