@@ -24,14 +24,14 @@ public class CapReqBuilderTest extends TestCase {
 	}
 
 	public void testAliasedRequirement() throws Exception {
-		Parameters params = OSGiHeader.parseHeader("bundle; bsn=org.example.foo");
+		Parameters params = OSGiHeader.parseHeader("bnd.identity; id=org.example.foo");
 		Requirement req = CapReqBuilder.getRequirementsFrom(params).get(0);
 		assertEquals("osgi.identity", req.getNamespace());
 		assertEquals("(osgi.identity=org.example.foo)", req.getDirectives().get("filter"));
 	}
 
 	public void testAliasedRequirementWithVersion() throws Exception {
-		Parameters params = OSGiHeader.parseHeader("bundle; bsn=org.example.foo; version=1.2");
+		Parameters params = OSGiHeader.parseHeader("bnd.identity; id=org.example.foo; version=1.2");
 		Requirement req = CapReqBuilder.getRequirementsFrom(params).get(0);
 		assertEquals("osgi.identity", req.getNamespace());
 		assertEquals("(&(osgi.identity=org.example.foo)(version>=1.2.0))",
@@ -39,7 +39,7 @@ public class CapReqBuilderTest extends TestCase {
 	}
 
 	public void testAliasedRequirementWithVersionRange() throws Exception {
-		Parameters params = OSGiHeader.parseHeader("bundle; bsn=org.example.foo; version='[1.2,1.3)'");
+		Parameters params = OSGiHeader.parseHeader("bnd.identity; id=org.example.foo; version='[1.2,1.3)'");
 		Requirement req = CapReqBuilder.getRequirementsFrom(params).get(0);
 
 		assertEquals("osgi.identity", req.getNamespace());
@@ -49,10 +49,10 @@ public class CapReqBuilderTest extends TestCase {
 
 	public void testAliasedRequirementCopyAttributesAndDirectives() throws Exception {
 		Attrs attrs = new Attrs();
-		attrs.putTyped("bsn", "org.example.foo");
+		attrs.putTyped("id", "org.example.foo");
 		attrs.putTyped("size", 23L);
 		attrs.put("resolution:", "optional");
-		Requirement req = CapReqBuilder.getRequirementFrom("bundle", attrs);
+		Requirement req = CapReqBuilder.getRequirementFrom("bnd.identity", attrs);
 
 		assertEquals("osgi.identity", req.getNamespace());
 		assertEquals("(osgi.identity=org.example.foo)", req.getDirectives().get("filter"));

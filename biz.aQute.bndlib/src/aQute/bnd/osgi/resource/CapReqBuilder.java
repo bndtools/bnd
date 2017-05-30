@@ -41,9 +41,9 @@ import aQute.libg.filters.SimpleFilter;
 
 public class CapReqBuilder {
 
-	private static final String			REQ_ALIAS_BUNDLE				= "bundle";
-	private static final String			REQ_ALIAS_BUNDLE_NAME_ATTRIB	= "bsn";
-	private static final String REQ_ALIAS_BUNDLE_VERSION_ATTRIB = "version";
+	private static final String			REQ_ALIAS_IDENTITY					= "bnd.identity";
+	private static final String			REQ_ALIAS_IDENTITY_NAME_ATTRIB		= "id";
+	private static final String			REQ_ALIAS_IDENTITY_VERSION_ATTRIB	= "version";
 
 	private final String				namespace;
 	private Resource					resource;
@@ -290,10 +290,7 @@ public class CapReqBuilder {
 	public static List<Requirement> getRequirementsFrom(Parameters rr, boolean unalias) throws Exception {
 		List<Requirement> requirements = new ArrayList<Requirement>();
 		for (Entry<String,Attrs> e : rr.entrySet()) {
-			Requirement req = getRequirementFrom(Processor.removeDuplicateMarker(e.getKey()), e.getValue());
-			if (unalias) {
-				req = unalias(req);
-			}
+			Requirement req = getRequirementFrom(Processor.removeDuplicateMarker(e.getKey()), e.getValue(), unalias);
 			requirements.add(req);
 		}
 		return requirements;
@@ -335,17 +332,17 @@ public class CapReqBuilder {
 		final Set<String> consumedAttribs = new HashSet<>();
 		final Set<String> consumedDirectives = new HashSet<>();
 
-		if (REQ_ALIAS_BUNDLE.equals(ns)) {
-			final String bsn = Objects.toString(requirement.getAttributes().get(REQ_ALIAS_BUNDLE_NAME_ATTRIB), null);
-			consumedAttribs.add(REQ_ALIAS_BUNDLE_NAME_ATTRIB);
+		if (REQ_ALIAS_IDENTITY.equals(ns)) {
+			final String bsn = Objects.toString(requirement.getAttributes().get(REQ_ALIAS_IDENTITY_NAME_ATTRIB), null);
+			consumedAttribs.add(REQ_ALIAS_IDENTITY_NAME_ATTRIB);
 			if (bsn == null) {
 				throw new IllegalArgumentException(
 						String.format("Requirement alias '%s' is missing mandatory attribute '%s' of type String",
-								REQ_ALIAS_BUNDLE, REQ_ALIAS_BUNDLE_NAME_ATTRIB));
+								REQ_ALIAS_IDENTITY, REQ_ALIAS_IDENTITY_NAME_ATTRIB));
 			}
 
-			final VersionRange range = toRange(requirement.getAttributes().get(REQ_ALIAS_BUNDLE_VERSION_ATTRIB));
-			consumedAttribs.add(REQ_ALIAS_BUNDLE_VERSION_ATTRIB);
+			final VersionRange range = toRange(requirement.getAttributes().get(REQ_ALIAS_IDENTITY_VERSION_ATTRIB));
+			consumedAttribs.add(REQ_ALIAS_IDENTITY_VERSION_ATTRIB);
 			CapReqBuilder b = CapReqBuilder.createBundleRequirement(bsn, Objects.toString(range, null));
 			copyAttribs(requirement, b, consumedAttribs);
 			copyDirectives(requirement, b, consumedDirectives);
