@@ -24,6 +24,7 @@ import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.reporter.slf4j.Slf4jReporter;
 import aQute.maven.api.Archive;
+import aQute.maven.api.Program;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenBackingRepository;
 import aQute.maven.provider.MavenRepository;
@@ -34,10 +35,10 @@ public class PomRepositoryTest extends TestCase {
 	static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
 
 	Reporter			reporter			= new Slf4jReporter(PomRepositoryTest.class);
-	File		tmp			= IO.getFile("generated/tmp");
+	File				tmp					= IO.getFile("generated/tmp");
 	File				localRepo			= IO.getFile(MAVEN_REPO_LOCAL);
-	File		location	= IO.getFile(tmp, "index.xml");
-	HttpClient	client;
+	File				location			= IO.getFile(tmp, "index.xml");
+	HttpClient			client;
 
 	protected void setUp() {
 		IO.delete(tmp);
@@ -49,36 +50,28 @@ public class PomRepositoryTest extends TestCase {
 		client.close();
 	}
 
-	/**
-	 * this test fails on Travis
-	 *
-	 * <pre>
-	 * aQute.bnd.repository.maven.pom.provider.PomRepositoryTest > testPom FAILED
-	junit.framework.AssertionFailedError: expected:<8> but was:<3>
-	    at junit.framework.Assert.fail(Assert.java:57)
-	    at junit.framework.Assert.failNotEquals(Assert.java:329)
-	    at junit.framework.Assert.assertEquals(Assert.java:78)
-	    at junit.framework.Assert.assertEquals(Assert.java:234)
-	    at junit.framework.Assert.assertEquals(Assert.java:241)
-	    at junit.framework.TestCase.assertEquals(TestCase.java:409)
-	    at aQute.bnd.repository.maven.pom.provider.PomRepositoryTest.testPom(PomRepositoryTest.java:46)
-	 * </pre>
-	 *
-	 * @throws Exception
-	 */
-	public void testPom() throws Exception {
-		// for (int i = 0; i < 100; i++) {
-		// MavenRepository mr = getRepo();
-		//
-		// Revision revision = Program.valueOf("org.apache.aries.blueprint",
-		// "org.apache.aries.blueprint.cm")
-		// .version("1.0.8");
-		//
-		// Traverser t = new Traverser(mr, revision, Processor.getExecutor());
-		// Map<Archive,Resource> value = t.getResources().getValue();
-		// assertEquals(8, value.size());
-		// assertAllBndCap(value);
-		// }
+	public void testPomTransitive() throws Exception {
+		MavenRepository mr = getRepo();
+
+		Revision revision = Program.valueOf("org.apache.aries.blueprint", "org.apache.aries.blueprint.cm")
+				.version("1.0.8");
+
+		Traverser t = new Traverser(mr, new HttpClient(), Processor.getExecutor(), true).revision(revision);
+		Map<Archive,Resource> value = t.getResources().getValue();
+		assertEquals(8, value.size());
+		assertAllBndCap(value);
+	}
+
+	public void testPomNotTransitive() throws Exception {
+		MavenRepository mr = getRepo();
+
+		Revision revision = Program.valueOf("org.apache.aries.blueprint", "org.apache.aries.blueprint.cm")
+				.version("1.0.8");
+
+		Traverser t = new Traverser(mr, new HttpClient(), Processor.getExecutor(), false).revision(revision);
+		Map<Archive,Resource> value = t.getResources().getValue();
+		assertEquals(1, value.size());
+		assertAllBndCap(value);
 	}
 
 	public void testDependenciesWithVersionRanges() throws Exception {
@@ -482,6 +475,7 @@ public class PomRepositoryTest extends TestCase {
 		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
 		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
 		config.put("local", local.getAbsolutePath());
+		config.put("transitive", "true");
 		mcsr.setProperties(config);
 
 		List<String> list = mcsr.list(null);
