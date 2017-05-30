@@ -41,7 +41,7 @@ public class LimitedInputStream extends InputStream {
 	protected void eof() {}
 
 	@Override
-	public synchronized void mark(int readlimit) {
+	public void mark(int readlimit) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -68,7 +68,7 @@ public class LimitedInputStream extends InputStream {
 	}
 
 	@Override
-	public synchronized void reset() throws IOException {
+	public void reset() throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
