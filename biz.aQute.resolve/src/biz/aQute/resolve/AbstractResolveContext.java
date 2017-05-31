@@ -396,10 +396,11 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			log.log(LogService.LOG_ERROR, "Resource is missing an identity capability (osgi.identity).");
 			return false;
 		}
-		if (idCaps.size() > 1) {
-			log.log(LogService.LOG_ERROR, "Resource has more than one identity capability (osgi.identity).");
-			return false;
-		}
+		// if (idCaps.size() > 1) {
+		// log.log(LogService.LOG_ERROR, "Resource has more than one identity
+		// capability (osgi.identity).");
+		// return false;
+		// }
 		String identity = (String) idCaps.get(0).getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
 		if (identity == null) {
 			log.log(LogService.LOG_ERROR, "Resource is missing an identity capability (osgi.identity).");

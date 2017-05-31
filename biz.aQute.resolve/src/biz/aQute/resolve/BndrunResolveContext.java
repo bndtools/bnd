@@ -397,6 +397,19 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		augments.putAll(new Parameters(properties.mergeProperties(Constants.AUGMENT), project));
 
 		if (!augments.isEmpty()) {
+
+			if (project != null) {
+				String distro = properties.mergeProperties(Constants.DISTRO);
+				List<Container> containers = Container
+						.flatten(project.getBundles(Strategy.HIGHEST, distro, Constants.DISTRO));
+				if (!containers.isEmpty()) {
+					File distroFile = containers.get(0).getFile();
+
+					orderedRepositories.add(new DistroRepository(distroFile));
+				}
+			}
+
+
 			AggregateRepository aggregate = new AggregateRepository(orderedRepositories);
 			AugmentRepository augment = new AugmentRepository(augments, aggregate);
 			orderedRepositories = Collections.singleton((Repository) augment);
