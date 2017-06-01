@@ -433,12 +433,16 @@ public class Central implements IStartupParticipant {
         List<File> refreshedFiles = new ArrayList<File>();
         List<Refreshable> rps = getWorkspace().getPlugins(Refreshable.class);
         boolean changed = false;
+        boolean repoChanged = false;
         for (Refreshable rp : rps) {
             if (rp.refresh()) {
                 changed = true;
                 File root = rp.getRoot();
                 if (root != null)
                     refreshedFiles.add(root);
+                if (rp instanceof RepositoryPlugin) {
+                    repoChanged = true;
+                }
             }
         }
 
@@ -461,6 +465,9 @@ public class Central implements IStartupParticipant {
                         l.modelChanged(p);
                 }
 
+                if (repoChanged) {
+                    repositoriesViewRefresher.repositoriesRefreshed();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
@@ -476,6 +483,9 @@ public class Central implements IStartupParticipant {
                 p.setChanged();
                 for (ModelListener l : getInstance().listeners)
                     l.modelChanged(p);
+            }
+            if (plugin instanceof RepositoryPlugin) {
+                repositoriesViewRefresher.repositoryRefreshed((RepositoryPlugin) plugin);
             }
         }
     }
