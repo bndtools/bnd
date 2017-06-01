@@ -199,34 +199,35 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
                 }
             }
         }
+        releaseOption = bundleRelease.getReleaseOption();
 
-        // Find bundles with macros as Bundle-Version:
-        List<MacroInfo> bsns = ReleaseHelper.getBsnsWithBundleVersionMacro(projectDiffs);
-        if (bsns.size() > 0) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(Messages.macrosWillBeOverwritten1);
-            sb.append("\n\n");
-            for (MacroInfo info : bsns) {
-                sb.append("\t");
-                sb.append(info.projectDiff.getProject().getName());
-                if (!info.projectDiff.getProject().getName().equals(info.bsn)) {
-                    sb.append(" (");
-                    sb.append(info.bsn);
-                    sb.append(")");
+        if (releaseOption != ReleaseOption.RELEASE) {
+            // Find bundles with macros as Bundle-Version:
+            List<MacroInfo> bsns = ReleaseHelper.getBsnsWithBundleVersionMacro(projectDiffs);
+            if (bsns.size() > 0) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(Messages.macrosWillBeOverwritten1);
+                sb.append("\n\n");
+                for (MacroInfo info : bsns) {
+                    sb.append("\t");
+                    sb.append(info.projectDiff.getProject().getName());
+                    if (!info.projectDiff.getProject().getName().equals(info.bsn)) {
+                        sb.append(" (");
+                        sb.append(info.bsn);
+                        sb.append(")");
+                    }
+                    sb.append("    ");
+                    sb.append(info.macro);
+                    sb.append("\n");
                 }
-                sb.append("    ");
-                sb.append(info.macro);
                 sb.append("\n");
-            }
-            sb.append("\n");
-            sb.append(Messages.macrosWillBeOverwritten2);
+                sb.append(Messages.macrosWillBeOverwritten2);
 
-            if (!Activator.confirmationMessage(sb.toString())) {
-                return;
+                if (!Activator.confirmationMessage(sb.toString())) {
+                    return;
+                }
             }
         }
-
-        this.releaseOption = bundleRelease.getReleaseOption();
         super.okPressed();
     }
 
