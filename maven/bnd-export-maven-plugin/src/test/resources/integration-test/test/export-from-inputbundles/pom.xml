@@ -24,7 +24,7 @@
                         <bundle>${project.basedir}/bundles/org.apache.felix.eventadmin-1.4.8.jar</bundle>
                         <bundle>${project.basedir}/bundles/org.apache.felix.framework-5.4.0.jar</bundle>
                     </bundles>
-                    <useDefaults>false</useDefaults>
+                    <useMavenDependencies>false</useMavenDependencies>
                 </configuration>
             </plugin>
         </plugins>
