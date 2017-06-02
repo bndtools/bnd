@@ -49,7 +49,7 @@ public class ResolverMojo extends AbstractMojo {
 	private List<File>	bundles;
 
 	@Parameter(defaultValue = "true")
-	private boolean						useDefaults;
+	private boolean						useMavenDependencies;
 
 	@Parameter(defaultValue = "true")
 	private boolean				failOnChanges;
@@ -74,7 +74,7 @@ public class ResolverMojo extends AbstractMojo {
 			DependencyResolver dependencyResolver = new DependencyResolver(
 					project, repositorySession, resolver, system);
 
-			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles, useDefaults);
+			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles, useMavenDependencies);
 
 			for (File runFile : bndruns) {
 				resolve(runFile, fileSetRepository);

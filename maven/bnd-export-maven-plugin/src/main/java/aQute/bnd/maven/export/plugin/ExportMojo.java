@@ -50,7 +50,7 @@ public class ExportMojo extends AbstractMojo {
 	private List<File>					bundles;
 
 	@Parameter(defaultValue = "true")
-	private boolean						useDefaults;
+	private boolean						useMavenDependencies;
 
 	@Parameter(defaultValue = "false")
 	private boolean				resolve;
@@ -78,7 +78,7 @@ public class ExportMojo extends AbstractMojo {
 					system);
 
 			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles,
-					useDefaults);
+					useMavenDependencies);
 
 			for (File runFile : bndruns) {
 				export(runFile, fileSetRepository);
