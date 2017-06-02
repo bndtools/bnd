@@ -30,6 +30,7 @@ import aQute.bnd.build.model.EE;
 import bndtools.BndConstants;
 import bndtools.utils.ModificationLock;
 import bndtools.editor.common.BndEditorPart;
+import bndtools.model.repo.LoadingContentElement;
 
 public class RunFrameworkPart extends BndEditorPart implements PropertyChangeListener {
     private static final String[] PROPERTIES = new String[] {
@@ -111,8 +112,12 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
                 lock.ifNotModifying(new Runnable() {
                     @Override
                     public void run() {
-                        markDirty();
                         Object element = ((IStructuredSelection) frameworkViewer.getSelection()).getFirstElement();
+                        if (element instanceof LoadingContentElement) {
+                            return;
+                        }
+
+                        markDirty();
                         if (element == null)
                             selectedFramework = null;
                         else

@@ -36,6 +36,7 @@ import aQute.bnd.service.IndexProvider;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
 import aQute.bnd.version.Version;
+import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.central.WorkspaceR5Repository;
 
@@ -283,13 +284,16 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
+                    IStatus status = Status.OK_STATUS;
                     Object[] jobresult;
                     List<String> bsns = null;
 
                     try {
                         bsns = repoPlugin.list(wildcardFilter);
                     } catch (Exception e) {
-                        logger.logError(MessageFormat.format("Error querying repository {0}.", repoPlugin.getName()), e);
+                        String message = MessageFormat.format("Error querying repository {0}.", repoPlugin.getName());
+                        logger.logError(message, e);
+                        status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, message, e);
                     }
                     if (bsns != null) {
                         Collections.sort(bsns);
@@ -310,7 +314,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
                         });
                     }
 
-                    return Status.OK_STATUS;
+                    return status;
                 }
             };
             job.schedule();
