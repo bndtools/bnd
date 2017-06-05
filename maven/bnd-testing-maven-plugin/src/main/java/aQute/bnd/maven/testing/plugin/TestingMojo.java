@@ -65,7 +65,7 @@ public class TestingMojo extends AbstractMojo {
 	private List<File>					bundles;
 
 	@Parameter(defaultValue = "true")
-	private boolean						useDefaults;
+	private boolean						useMavenDependencies;
 
 	@Parameter(defaultValue = "false")
 	private boolean				resolve;
@@ -93,7 +93,7 @@ public class TestingMojo extends AbstractMojo {
 					system);
 
 			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles,
-					useDefaults);
+					useMavenDependencies);
 
 			if (testingSelect != null) {
 				logger.info("Using selected testing file {}", testingSelect);

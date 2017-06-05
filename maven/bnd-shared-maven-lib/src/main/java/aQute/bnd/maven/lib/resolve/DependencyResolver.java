@@ -120,11 +120,11 @@ public class DependencyResolver {
 	}
 
 	public FileSetRepository getFileSetRepository(
-			String name, Collection<File> bundlesInputParameter, boolean useDefaults)
+			String name, Collection<File> bundlesInputParameter, boolean useMavenDependencies)
 		throws Exception {
 
 		Collection<File> bundles = new ArrayList<>();
-		if (useDefaults) {
+		if (useMavenDependencies) {
 			Map<File,ArtifactResult> dependencies = resolve();
 			bundles.addAll(dependencies.keySet());
 
