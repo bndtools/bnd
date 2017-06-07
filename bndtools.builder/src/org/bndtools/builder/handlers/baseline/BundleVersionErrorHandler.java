@@ -27,6 +27,7 @@ import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.osgi.Builder;
 import aQute.lib.io.IO;
 import aQute.service.reporter.Report.Location;
+import bndtools.central.Central;
 
 public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler {
 
@@ -58,6 +59,35 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
                     // Not found in sub-bundle file, try bnd.bnd
                     bndFile = project.getFile(Project.BNDFILE);
                     loc = findBundleVersionHeader(bndFile);
+                }
+
+                if (loc == null) {
+                    // Not found in bnd.bnd, try build.bnd. Marker will appear on bnd.bnd
+                    IFile buildFile = Central.getWorkspaceBuildFile();
+                    loc = findBundleVersionHeader(buildFile);
+                    if (loc != null) {
+                        loc = new LineLocation();
+                        loc.lineNum = 1;
+                        loc.start = 1;
+                        loc.end = 1;
+                    }
+                }
+
+                if (loc == null) {
+                    // Not found in build.bnd, try included files. Marker will appear on bnd.bnd
+                    List<File> extensions = Central.getWorkspace().getIncluded();
+                    if (extensions != null) {
+                        for (File extension : extensions) {
+                            loc = findBundleVersionHeader((IFile) Central.toResource(extension));
+                            if (loc != null) {
+                                loc = new LineLocation();
+                                loc.lineNum = 1;
+                                loc.start = 1;
+                                loc.end = 1;
+                                break;
+                            }
+                        }
+                    }
                 }
 
                 if (loc != null) {
