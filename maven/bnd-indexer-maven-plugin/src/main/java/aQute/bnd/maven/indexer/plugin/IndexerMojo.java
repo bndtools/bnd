@@ -266,7 +266,8 @@ public class IndexerMojo extends AbstractMojo {
 								artifact);
 						return file.toURI();
 					}
-					throw new FileNotFoundException("The repository " + artifactResult.getRepository().getId()
+					throw new FileNotFoundException("Unable to index artifact " + artifact + ". The repository "
+							+ artifactResult.getRepository().getId()
 							+ " is not known to this resolver");
 				}
 
@@ -294,7 +295,7 @@ public class IndexerMojo extends AbstractMojo {
 				return URI.create(baseUrl).resolve(artifactPath).normalize();
 			} catch (Exception e) {
 				fail = true;
-				logger.error("Failed to determine the artifact URI", e);
+				logger.error("Failed to determine the artifact URI for artifact {}", artifactResult.getArtifact(), e);
 				throw e;
 			}
 		}
