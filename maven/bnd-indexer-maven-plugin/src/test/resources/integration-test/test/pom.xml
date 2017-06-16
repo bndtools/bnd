@@ -21,6 +21,8 @@
 		<module>include-jar</module>
 		<module>test-deploy</module>
 		<module>index-deployment-repo</module>
+		<module>test-deploy-no-dist-mgmt</module>
+		<module>index-deployment-repo-no-dist-mgmt</module>
 	</modules>
 
 	<dependencyManagement>

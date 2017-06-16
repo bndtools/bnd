@@ -18,6 +18,9 @@ import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
+import org.apache.maven.artifact.repository.MavenArtifactRepository;
+import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.artifact.repository.metadata.io.MetadataReader;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -84,6 +87,27 @@ public class IndexerMojo extends AbstractMojo {
 	@Parameter(property = "bnd.indexer.skip", defaultValue = "false")
 	private boolean						skip;
 
+	/**
+	 * This configuration parameter is used by the maven-deploy-plugin to define
+	 * a release repo for deployment
+	 */
+	@Parameter(property = "altReleaseDeploymentRepository")
+	private String						altReleaseDeploymentRepository;
+
+	/**
+	 * This configuration parameter is used by the maven-deploy-plugin to define
+	 * a snapshot repo for deployment
+	 */
+	@Parameter(property = "altSnapshotDeploymentRepository")
+	private String						altSnapshotDeploymentRepository;
+
+	/**
+	 * This configuration parameter is the old mechanism used by the
+	 * maven-deploy-plugin to define a release repo for deployment
+	 */
+	@Parameter(property = "altDeploymentRepository")
+	private String						altDeploymentRepository;
+
 	@Component
 	private RepositorySystem			system;
 
@@ -114,30 +138,22 @@ public class IndexerMojo extends AbstractMojo {
 		logger.debug("Local file URLs permitted: {}", localURLs);
 		logger.debug("Adding mvn: URLs as alternative content: {}", addMvnURLs);
 
-		DependencyResolver dependencyResolver = new DependencyResolver(project, session, resolver, system, scopes,
-				includeTransitive, new RemotePostProcessor(session, system, metadataReader, localURLs));
-
-		Map<File,ArtifactResult> dependencies = dependencyResolver.resolve();
-
 		Map<String,ArtifactRepository> repositories = new HashMap<>();
-
 		for (ArtifactRepository artifactRepository : project.getRemoteArtifactRepositories()) {
 			logger.debug("Located an artifact repository {}", artifactRepository.getId());
 			repositories.put(artifactRepository.getId(), artifactRepository);
 		}
 
-		ArtifactRepository deploymentRepo = project.getDistributionManagementArtifactRepository();
+		addDeploymentRepo(repositories, project.getDistributionManagementArtifactRepository());
 
-		if (deploymentRepo != null) {
-			logger.debug("Located a deployment repository {}", deploymentRepo.getId());
-			if (repositories.get(deploymentRepo.getId()) == null) {
-				repositories.put(deploymentRepo.getId(), deploymentRepo);
-			} else {
-				logger.info(
-						"The configured deployment repository {} has the same id as one of the remote artifact repositories. It is assumed that these repositories are the same.",
-						deploymentRepo.getId());
-			}
-		}
+		addDeploymentRepo(repositories, parseAltDistRepo(altReleaseDeploymentRepository, true, false));
+		addDeploymentRepo(repositories, parseAltDistRepo(altSnapshotDeploymentRepository, false, true));
+		addDeploymentRepo(repositories, parseAltDistRepo(altDeploymentRepository, true, true));
+
+		DependencyResolver dependencyResolver = new DependencyResolver(project, session, resolver, system, scopes,
+				includeTransitive, new RemotePostProcessor(session, system, metadataReader, localURLs));
+
+		Map<File,ArtifactResult> dependencies = dependencyResolver.resolveAgainstRepos(repositories.values());
 
 		RepositoryURLResolver repositoryURLResolver = new RepositoryURLResolver(repositories);
 		MavenURLResolver mavenURLResolver = new MavenURLResolver();
@@ -192,6 +208,37 @@ public class IndexerMojo extends AbstractMojo {
 			attach(gzipOutputFile, "osgi-index", "xml.gz");
 		}
 
+	}
+
+	private ArtifactRepository parseAltDistRepo(String repo, boolean releases, boolean snapshots) {
+
+		if (repo == null) {
+			return null;
+		}
+
+		String[] tokens = repo.split("::", 3);
+
+		if (!"default".equals(tokens[1])) {
+			logger.warn("Ignoring repository {} as it uses a non-default layout {}", tokens[0], tokens[1]);
+			return null;
+		}
+
+		return new MavenArtifactRepository(tokens[0], tokens[2], new DefaultRepositoryLayout(),
+				new ArtifactRepositoryPolicy(snapshots, "always", "warn"),
+				new ArtifactRepositoryPolicy(releases, "always", "warn"));
+	}
+
+	protected void addDeploymentRepo(Map<String,ArtifactRepository> repositories, ArtifactRepository deploymentRepo) {
+		if (deploymentRepo != null) {
+			logger.debug("Located a deployment repository {}", deploymentRepo.getId());
+			if (repositories.get(deploymentRepo.getId()) == null) {
+				repositories.put(deploymentRepo.getId(), deploymentRepo);
+			} else {
+				logger.info(
+						"The configured deployment repository {} has the same id as one of the remote artifact repositories. It is assumed that these repositories are the same.",
+						deploymentRepo.getId());
+			}
+		}
 	}
 
 	private void attach(File file, String type, String extension) {
