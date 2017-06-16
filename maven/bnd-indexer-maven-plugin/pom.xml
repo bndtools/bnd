@@ -83,6 +83,8 @@
 					<postBuildHookScript>verify.groovy</postBuildHookScript>
                     <properties>
                       <jsse.enableSNIExtension>false</jsse.enableSNIExtension>
+                      <!-- Used in the "no-dist-mgmt" deploy test -->
+                      <altSnapshotDeploymentRepository>LocalSnapshotDeploy::default::file://${project.build.directory}/integration-test/projects/test/localsnapshotdeployrepo</altSnapshotDeploymentRepository>
                     </properties>
 					<goals>
 						<goal>package</goal>
