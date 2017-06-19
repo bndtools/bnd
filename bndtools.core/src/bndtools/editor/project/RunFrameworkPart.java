@@ -2,8 +2,8 @@ package bndtools.editor.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 
-import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -13,6 +13,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -20,11 +21,14 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.ui.forms.IMessageManager;
+import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.model.EE;
 import bndtools.BndConstants;
@@ -37,8 +41,6 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
             BndConstants.RUNFW, BndConstants.RUNEE
     };
 
-    private final Object MESSAGE_KEY = new Object();
-
     private final ModificationLock lock = new ModificationLock();
     private final OSGiFrameworkContentProvider fwkContentProvider = new OSGiFrameworkContentProvider();
 
@@ -46,15 +48,35 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
     private EE selectedEE = null;
 
     private Combo cmbFramework;
-    private ComboViewer frameworkViewer;
     private Combo cmbExecEnv;
     private ComboViewer eeViewer;
+    private StructuredViewer frameworkViewer;
 
     private boolean committing = false;
 
     public RunFrameworkPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
         createSection(getSection(), toolkit);
+    }
+
+    @Override
+    public void initialize(IManagedForm form) {
+        super.initialize(form);
+
+        fwkContentProvider.onContentReady(new Success<List<OSGiFramework>,Void>() {
+            @Override
+            public Promise<Void> call(Promise<List<OSGiFramework>> resolved) throws Exception {
+                Display.getDefault().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        refreshFromModel();
+                    }
+                });
+                return null;
+            }
+        });
+
+        frameworkViewer.setInput(model.getWorkspace());
     }
 
     final void createSection(Section section, FormToolkit tk) {
@@ -100,8 +122,11 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
                 lock.ifNotModifying(new Runnable() {
                     @Override
                     public void run() {
-                        markDirty();
-                        selectedFramework = cmbFramework.getText();
+                        String text = cmbFramework.getText();
+                        if (text != null && text.length() > 0 && !LoadingContentElement.MSG.equals(text)) {
+                            markDirty();
+                            selectedFramework = text;
+                        }
                     }
                 });
             }
@@ -167,18 +192,9 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
         lock.modifyOperation(new Runnable() {
             @Override
             public void run() {
-                IMessageManager messages = getManagedForm().getMessageManager();
-                messages.removeMessage(MESSAGE_KEY, cmbFramework);
-                try {
-                    frameworkViewer.setInput(model.getWorkspace());
-                } catch (Exception e) {
-                    messages.addMessage(MESSAGE_KEY, "Unable to load OSGi Framework list. " + e.getMessage(), null, IMessageProvider.ERROR, cmbFramework);
-                }
-
                 selectedFramework = model.getRunFw();
-                if (selectedFramework == null)
-                    selectedFramework = "";
-                cmbFramework.setText(selectedFramework);
+                if (selectedFramework != null)
+                    cmbFramework.setText(selectedFramework);
 
                 selectedEE = model.getEE();
                 eeViewer.setSelection(selectedEE != null ? new StructuredSelection(selectedEE) : StructuredSelection.EMPTY);
