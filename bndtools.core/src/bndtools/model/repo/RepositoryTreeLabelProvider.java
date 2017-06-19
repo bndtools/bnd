@@ -123,7 +123,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
             cell.setText(label.getString());
             cell.setStyleRanges(label.getStyleRanges());
         } else if (element instanceof LoadingContentElement) {
-            cell.setText("Loading content...");
+            cell.setText(element.toString());
             cell.setImage(loadingImg);
         } else if (element != null) {
             // Catch-all

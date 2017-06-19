@@ -11,27 +11,48 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.utils.osgi.BundleUtils;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.widgets.Display;
 import org.osgi.framework.Bundle;
+import org.osgi.util.promise.Deferred;
+import org.osgi.util.promise.Failure;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
 import bndtools.Plugin;
+import bndtools.model.repo.LoadingContentElement;
 
 public class OSGiFrameworkContentProvider implements IStructuredContentProvider {
     private static final ILogger logger = Logger.getLogger(OSGiFrameworkContentProvider.class);
 
     List<OSGiFramework> frameworks = new ArrayList<OSGiFramework>();
+    private final Deferred<List<OSGiFramework>> contentReadyQueue = new Deferred<>();
+
+    private StructuredViewer structuredViewer;
+    private Workspace workspace;
+    private LoadingContentJob loadingJob;
 
     @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         frameworks.clear();
+        workspace = (Workspace) newInput;
+        structuredViewer = (StructuredViewer) viewer;
+    }
 
-        Workspace workspace = (Workspace) newInput;
+    private IStatus refreshProviders() {
+        List<IStatus> statuses = new ArrayList<>();
+
         IConfigurationElement[] configElements = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "osgiFrameworks");
 
         for (IConfigurationElement element : configElements) {
@@ -50,7 +71,7 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
             try {
                 repositories = (workspace != null) ? workspace.getRepositories() : Collections.<RepositoryPlugin> emptyList();
             } catch (Exception e) {
-                throw Exceptions.duck(e);
+                return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, e.getMessage(), e);
             }
 
             for (RepositoryPlugin repo : repositories) {
@@ -63,14 +84,31 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
                                 if (framework != null)
                                     frameworks.add(new OSGiFramework(frameworkName, bsn, version, iconUrl));
                             } catch (Exception e) {
-                                logger.logError(String.format("Error finding repository entry for OSGi framework %s, version %s.", bsn, version.toString()), e);
+                                String msg = String.format("Error finding repository entry for OSGi framework %s, version %s.", bsn, version.toString());
+                                logger.logError(msg, e);
+                                statuses.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, msg, e));
                             }
                         }
                 } catch (Exception e) {
-                    logger.logError(String.format("Error searching repository for OSGi framework %s.", bsn), e);
+                    String msg = String.format("Error searching repository for OSGi framework %s.", bsn);
+                    logger.logError(msg, e);
+                    statuses.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, msg, e));
                 }
             }
         }
+
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                structuredViewer.refresh(true);
+            }
+        });
+
+        if (statuses.size() > 0) {
+            return new MultiStatus(Plugin.PLUGIN_ID, IStatus.ERROR, statuses.toArray(new IStatus[0]), "Errors while refreshing OSGi framework providers.", null);
+        }
+
+        return Status.OK_STATUS;
     }
 
     @Override
@@ -78,7 +116,53 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
 
     @Override
     public Object[] getElements(Object inputElement) {
+        if (frameworks.size() == 0) {
+            if (loadingJob == null) {
+                loadingJob = new LoadingContentJob("Refreshing OSGi Framework content...") {
+                    @Override
+                    protected IStatus run(IProgressMonitor monitor) {
+                        IStatus status = refreshProviders();
+
+                        loadingJob = null;
+                        contentReadyQueue.resolve(frameworks);
+
+                        return status;
+                    }
+                };
+                loadingJob.schedule();
+            }
+
+            return loadingJob.getLoadingContent();
+        }
+
         return frameworks.toArray();
     }
 
+    public void onContentReady(final Success<List<OSGiFramework>,Void> callback) {
+        Promise<List<OSGiFramework>> p = contentReadyQueue.getPromise();
+        p.then(callback, null).then(null, callbackFailure);
+    }
+
+    private static final Failure callbackFailure = new Failure() {
+        @Override
+        public void fail(Promise< ? > resolved) throws Exception {
+            logger.logError("onContentReady callback failed", resolved.getFailure());
+        }
+    };
+
+    private static abstract class LoadingContentJob extends Job {
+
+        public LoadingContentJob(String name) {
+            super(name);
+        }
+
+        public Object[] getLoadingContent() {
+            return loadingContent;
+        }
+
+        private final Object[] loadingContent = new Object[] {
+                new LoadingContentElement()
+        };
+
+    }
 }
