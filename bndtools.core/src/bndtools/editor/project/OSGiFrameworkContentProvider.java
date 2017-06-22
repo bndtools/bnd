@@ -46,6 +46,7 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
     @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         frameworks.clear();
+        loadingJob = null;
         workspace = (Workspace) newInput;
         structuredViewer = (StructuredViewer) viewer;
     }
@@ -123,7 +124,6 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
                     protected IStatus run(IProgressMonitor monitor) {
                         IStatus status = refreshProviders();
 
-                        loadingJob = null;
                         contentReadyQueue.resolve(frameworks);
 
                         return status;
