@@ -2112,6 +2112,15 @@ public class Project extends Processor {
 			IO.delete(reportDir);
 			tester.setReportDir(reportDir);
 		}
+		if (tests == null) {
+			// check system properties: gradle
+			String singleTest = System.getProperty("integTest.single");
+			if (singleTest == null)
+				// check system properties: maven
+				singleTest = System.getProperty("it.test");
+			if (singleTest != null)
+				tests = Collections.singletonList(singleTest);
+		}
 		if (tests != null) {
 			logger.debug("Adding tests {}", tests);
 			for (String test : tests) {
