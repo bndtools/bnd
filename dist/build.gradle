@@ -35,7 +35,7 @@ task('index') {
     exclude '**/*-javadoc.jar'
   }
 
-  inputs.files bundles
+  inputs.files { bundles.files }
 
   /* Index files */
   def index_uncompressed = new File(releaserepo, 'index.xml')
