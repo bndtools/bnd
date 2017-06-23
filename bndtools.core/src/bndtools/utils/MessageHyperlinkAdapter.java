@@ -10,6 +10,7 @@
  *******************************************************************************/
 package bndtools.utils;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.forms.IMessage;
@@ -26,12 +27,15 @@ public class MessageHyperlinkAdapter implements IHyperlinkListener {
         this.part = part;
     }
 
+    @Override
     public void linkActivated(HyperlinkEvent e) {
         showPopup(e);
     }
 
+    @Override
     public void linkEntered(final HyperlinkEvent e) {}
 
+    @Override
     public void linkExited(HyperlinkEvent e) {}
 
     private void showPopup(final HyperlinkEvent e) {
@@ -40,7 +44,14 @@ public class MessageHyperlinkAdapter implements IHyperlinkListener {
 
         if (popupDialog != null)
             popupDialog.close();
-        popupDialog = new MessagesPopupDialog(link, (IMessage[]) e.data, part);
-        popupDialog.open();
+
+        IMessage[] messages = (IMessage[]) e.data;
+
+        if (messages == null || messages.length == 0) {
+            MessageDialog.openInformation(part.getSite().getShell(), part.getTitle(), "No further information available.");
+        } else {
+            popupDialog = new MessagesPopupDialog(link, (IMessage[]) e.data, part);
+            popupDialog.open();
+        }
     }
 }
