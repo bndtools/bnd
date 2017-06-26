@@ -69,6 +69,50 @@ m2e.bundles:\
 	org.eclipse.m2e.workspace.cli,\
 	org.slf4j.api
 
+m2e.debug.bundles:\
+	com.google.guava;version='[15,16)',\
+	org.apache.xerces,\
+	org.apache.xml.resolver,\
+	org.apache.xml.serializer,\
+	org.eclipse.core.externaltools,\
+	org.eclipse.emf.ecore.edit,\
+	org.eclipse.emf.edit,\
+	org.eclipse.jem.util,\
+	org.eclipse.m2e.archetype.common,\
+	org.eclipse.m2e.core,\
+	org.eclipse.m2e.core.ui,\
+	org.eclipse.m2e.editor,\
+	org.eclipse.m2e.editor.xml,\
+	org.eclipse.m2e.jdt,\
+	org.eclipse.m2e.jdt.ui,\
+	org.eclipse.m2e.launching,\
+	org.eclipse.m2e.lifecyclemapping.defaults,\
+	org.eclipse.m2e.maven.indexer,\
+	org.eclipse.m2e.maven.runtime,\
+	org.eclipse.m2e.maven.runtime.slf4j.simple,\
+	org.eclipse.m2e.model.edit,\
+	org.eclipse.m2e.refactoring,\
+	org.eclipse.m2e.workspace.cli,\
+	org.eclipse.osgi.util,\
+	org.eclipse.ui.externaltools,\
+	org.eclipse.wst.common.core,\
+	org.eclipse.wst.common.ui,\
+	org.eclipse.wst.common.emf,\
+	org.eclipse.wst.common.environment,\
+	org.eclipse.wst.common.frameworks,\
+	org.eclipse.wst.common.frameworks.ui,\
+	org.eclipse.wst.common.project.facet.core,\
+	org.eclipse.wst.common.uriresolver,\
+	org.eclipse.wst.sse.core,\
+	org.eclipse.wst.sse.ui,\
+	org.eclipse.wst.validation,\
+	org.eclipse.wst.validation.ui,\
+	org.eclipse.wst.xml.core,\
+	org.eclipse.wst.xml.ui,\
+	org.eclipse.wst.xsd.core,\
+	org.eclipse.xsd,\
+	org.slf4j.api
+
 # TODO: separate this morass into more coherent libs!
 crossplatform.bundles: \
 	${aQute-repository},\

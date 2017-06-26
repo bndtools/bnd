@@ -14,10 +14,16 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.m2e.core.MavenPlugin;
+import org.eclipse.m2e.core.embedder.ICallable;
 import org.eclipse.m2e.core.embedder.IMaven;
+import org.eclipse.m2e.core.embedder.IMavenExecutionContext;
+import org.eclipse.m2e.core.internal.MavenPluginActivator;
+import org.eclipse.m2e.core.internal.project.registry.ProjectRegistryManager;
 import org.eclipse.m2e.core.lifecyclemapping.model.IPluginExecutionMetadata;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
+import org.eclipse.m2e.core.project.ResolverConfiguration;
 import org.eclipse.m2e.core.project.configurator.AbstractBuildParticipant;
 import org.eclipse.m2e.core.project.configurator.AbstractProjectConfigurator;
 import org.eclipse.m2e.core.project.configurator.MojoExecutionBuildParticipant;
@@ -37,39 +43,56 @@ public class BndConfigurator extends AbstractProjectConfigurator {
                 final Set<IProject> build = super.build(kind, monitor);
 
                 // now we make sure jar is built in separate job, doing this during maven builder will throw lifecycle errors
-                new WorkspaceJob("Executing " + projectFacade.getProject().getName() + " jar:jar goal") {
+                final IProject project = projectFacade.getProject();
+
+                Job job = new WorkspaceJob("Executing " + project.getName() + " jar:jar goal") {
                     @Override
                     public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
                         execJarMojo(projectFacade, monitor);
 
-                        projectFacade.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
+                        project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 
                         return Status.OK_STATUS;
                     }
-                }.schedule();
+                };
+                job.setRule(project);
+                job.schedule();
 
                 return build;
             }
         };
     }
 
-    private void execJarMojo(IMavenProjectFacade projectFacade, IProgressMonitor monitor) throws CoreException {
-        MavenProject mavenProject = projectFacade.getMavenProject();
-
-        if (mavenProject == null) {
-            mavenProject = projectFacade.getMavenProject(monitor);
-        }
-
+    private void execJarMojo(final IMavenProjectFacade projectFacade, IProgressMonitor monitor) throws CoreException {
         final IMaven maven = MavenPlugin.getMaven();
+        ProjectRegistryManager projectRegistryManager = MavenPluginActivator.getDefault().getMavenProjectManagerImpl();
 
-        final MavenExecutionPlan plan = maven.calculateExecutionPlan(mavenProject, Arrays.asList("jar:jar"), true, monitor);
-        final List<MojoExecution> mojoExecutions = plan.getMojoExecutions();
+        ResolverConfiguration resolverConfiguration = new ResolverConfiguration();
+        resolverConfiguration.setResolveWorkspaceProjects(true);
 
-        if (mojoExecutions != null) {
-            for (MojoExecution mojoExecution : mojoExecutions) {
-                MavenPlugin.getMaven().execute(mavenProject, mojoExecution, monitor);
+        IMavenExecutionContext context = projectRegistryManager.createExecutionContext(projectFacade.getPom(), resolverConfiguration);
+
+        context.execute(new ICallable<Void>() {
+            @Override
+            public Void call(IMavenExecutionContext context, IProgressMonitor monitor) throws CoreException {
+                MavenProject mavenProject = projectFacade.getMavenProject();
+
+                if (mavenProject == null) {
+                    mavenProject = projectFacade.getMavenProject(monitor);
+                }
+
+                MavenExecutionPlan plan = maven.calculateExecutionPlan(mavenProject, Arrays.asList("jar:jar"), true, monitor);
+                List<MojoExecution> mojoExecutions = plan.getMojoExecutions();
+
+                if (mojoExecutions != null) {
+                    for (MojoExecution mojoExecution : mojoExecutions) {
+                        maven.execute(mavenProject, mojoExecution, monitor);
+                    }
+                }
+
+                return null;
             }
-        }
+        }, monitor);
     }
 
 }

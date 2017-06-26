@@ -51,5 +51,16 @@ baselinerepo: https://dl.bintray.com/bndtools/bndtools/${baseline.version}
         poll.time=-1; \
 		cache=${build}/cache/stable/Baseline
 
+# m2e debug repos
+#
+#	aQute.bnd.repository.p2.provider.P2Repository; \
+#        name="Eclipse EMF"; \
+#        url="http://download.eclipse.org/modeling/emf/updates/releases/";\
+#        location=${build}/cache/stable/EclipseEMF,\
+#	aQute.bnd.repository.p2.provider.P2Repository; \
+#        name="Eclipse WTP"; \
+#        url="http://download.eclipse.org/webtools/downloads/drops/R3.6.3/R-3.6.3-20150216091848/repository/";\
+#        location=${build}/cache/stable/EclipseWTP
+
 -baselinerepo: Baseline
 -releaserepo: Release
