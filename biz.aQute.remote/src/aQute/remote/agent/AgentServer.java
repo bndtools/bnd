@@ -191,7 +191,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			Bundle bundle = context.getBundle(id);
 			try {
 				bundle.uninstall();
-				installed.remove(bundle.getBundleId());
+				installed.remove(bundle.getLocation());
 			} catch (BundleException e) {
 				sb.append(e.getMessage()).append("\n");
 			}
