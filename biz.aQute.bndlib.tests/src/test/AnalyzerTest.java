@@ -995,11 +995,12 @@ public class AnalyzerTest extends BndTestCase {
 			Packages exports = h.getExports();
 			assertTrue(exports.getByFQN("org.objectweb.asm.signature") != null);
 			assertTrue(exports.getByFQN("org.objectweb.asm") != null);
-			assertTrue(Arrays.asList("org.objectweb.asm", "org.objectweb.asm.signature")
-					.removeAll(h.getImports().keySet()) == false);
-			assertEquals("Expected size", 2, h.getExports().size());
-			assertEquals("short", get(h.getExports(), h.getPackageRef("org.objectweb.asm"), "name"));
-			assertEquals("long", get(h.getExports(), h.getPackageRef("org.objectweb.asm.signature"), "name"));
+			Packages imports = h.getImports();
+			assertTrue(imports.getByFQN("org.objectweb.asm.signature") == null);
+			assertTrue(imports.getByFQN("org.objectweb.asm") == null);
+			assertEquals("Expected size", 2, exports.size());
+			assertEquals("short", get(exports, h.getPackageRef("org.objectweb.asm"), "name"));
+			assertEquals("long", get(exports, h.getPackageRef("org.objectweb.asm.signature"), "name"));
 		}
 	}
 

@@ -18,6 +18,7 @@ public class ConsoleRedirector implements Redirector {
 	private static RedirectInput						stdin;
 	private static CopyOnWriteArrayList<AgentServer>	agents	= new CopyOnWriteArrayList<AgentServer>();
 	volatile boolean									quit	= false;
+	private final AgentServer							agent;
 
 	/**
 	 * Constructor.
@@ -25,8 +26,9 @@ public class ConsoleRedirector implements Redirector {
 	 * @param agent the agent we're redirecting for
 	 */
 	public ConsoleRedirector(AgentServer agent) throws IOException {
+		this.agent = agent;
 		synchronized (agents) {
-			if (!agents.contains(this)) {
+			if (!agents.contains(agent)) {
 				agents.add(agent);
 				if (agents.size() == 1) {
 					System.setOut(stdout = new RedirectOutput(agents, System.out, false));
@@ -44,7 +46,7 @@ public class ConsoleRedirector implements Redirector {
 	public void close() throws IOException {
 		quit = true;
 		synchronized (agents) {
-			if (agents.remove(this)) {
+			if (agents.remove(agent)) {
 				if (agents.size() == 0) {
 					System.setOut(stdout.getOut());
 					System.setErr(stderr.getOut());

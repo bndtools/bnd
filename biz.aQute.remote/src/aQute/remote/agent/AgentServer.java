@@ -102,7 +102,6 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	private ShaSource										source;
 	private final Map<String,String>						installed			= new HashMap<String,String>();
 	volatile boolean										quit;
-	private static Map<String,AgentDispatcher>				instances			= new HashMap<String,AgentDispatcher>();
 	private Redirector										redirector			= new NullRedirector();
 	private Link<Agent,Supervisor>							link;
 	private CountDownLatch									refresh				= new CountDownLatch(0);
@@ -192,7 +191,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			Bundle bundle = context.getBundle(id);
 			try {
 				bundle.uninstall();
-				installed.remove(bundle.getBundleId());
+				installed.remove(bundle.getLocation());
 			} catch (BundleException e) {
 				sb.append(e.getMessage()).append("\n");
 			}
@@ -502,7 +501,6 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		if (quit)
 			return;
 
-		instances.remove(this);
 		quit = true;
 		update(null);
 		redirect(0);

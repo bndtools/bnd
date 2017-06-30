@@ -130,4 +130,11 @@ content = check(repo, "osgi.identity", "(osgi.identity=test-deploy)", "test-depl
 
 assert content.getAttributes().get("url").toString().contains("localdeployrepo");
 
+//Test that we can find things that were deployed into a repository only declared in properties
+
+repo = check("${basedir}/index-deployment-repo-no-dist-mgmt/target/index.xml", "${basedir}/index-deployment-repo-no-dist-mgmt/target/index.xml.gz", 1, true, false);
+content = check(repo, "osgi.identity", "(osgi.identity=test-deploy-no-dist-mgmt)", "test-deploy-no-dist-mgmt", true);
+
+assert content.getAttributes().get("url").toString().contains("localsnapshotdeployrepo");
+
 return;

@@ -75,7 +75,27 @@ public class DependencyResolver {
 		this.postProcessor = postProcessor;
 	}
 
+	
+	
 	public Map<File, ArtifactResult> resolve() throws MojoExecutionException {
+		List<RemoteRepository> remoteRepositories = new ArrayList<>(project.getRemoteProjectRepositories());
+		ArtifactRepository deployRepo = project.getDistributionManagementArtifactRepository();
+		if (deployRepo != null) {
+			remoteRepositories.add(RepositoryUtils.toRepo(deployRepo));
+		}
+		return resolve(remoteRepositories);
+	}
+
+	public Map<File, ArtifactResult> resolveAgainstRepos(Collection<ArtifactRepository> repositories) throws MojoExecutionException {
+		List<RemoteRepository> remoteRepositories = new ArrayList<>(repositories.size());
+		for(ArtifactRepository ar : repositories) {
+			remoteRepositories.add(RepositoryUtils.toRepo(ar));
+		}
+
+		return resolve(remoteRepositories);
+	}
+		
+	private Map<File, ArtifactResult> resolve(List<RemoteRepository> remoteRepositories) throws MojoExecutionException {
 		if (resolvedDependencies != null) {
 			return resolvedDependencies;
 		}
@@ -104,14 +124,6 @@ public class DependencyResolver {
 		DependencyNode dependencyGraph = result.getDependencyGraph();
 
 		if (dependencyGraph != null && !dependencyGraph.getChildren().isEmpty()) {
-			List<RemoteRepository> remoteRepositories = new ArrayList<>(project.getRemoteProjectRepositories());
-
-			ArtifactRepository deployRepo = project.getDistributionManagementArtifactRepository();
-
-			if (deployRepo != null) {
-				remoteRepositories.add(RepositoryUtils.toRepo(deployRepo));
-			}
-
 			discoverArtifacts(dependencies, dependencyGraph.getChildren(), project.getArtifact().getId(),
 					remoteRepositories);
 		}
