@@ -7,7 +7,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class URIUtil {
-
 	private static final Pattern DRIVE_LETTER_PATTERN = Pattern.compile("([a-zA-Z]):\\\\(.*)");
 
 	/**
@@ -24,19 +23,24 @@ public final class URIUtil {
 		URI resolved;
 		boolean emptyRef = reference.isEmpty();
 		if (emptyRef) {
-			resolved = baseURI.resolve(URI.create("#"));
-			String resolvedStr = resolved.toASCIIString();
-			resolved = URI.create(resolvedStr.substring(0, resolvedStr.indexOf('#')));
+			resolved = new URI(baseURI.getScheme(), baseURI.getSchemeSpecificPart(), null);
 		} else {
+			URI refURI;
 			// A Windows path such as "C:\Users" is interpreted as a URI with
 			// a scheme of "C". Use a regex that matches the colon-backslash
 			// combination to handle this specifically as an absolute file URI.
 			Matcher driveLetterMatcher = DRIVE_LETTER_PATTERN.matcher(reference);
 			if (driveLetterMatcher.matches()) {
-				resolved = new File(reference).toURI();
+				refURI = new File(reference).toURI();
 			} else {
-				resolved = baseURI.resolve(reference.replace('\\', '/'));
+				reference = reference.replace('\\', '/');
+				try {
+					refURI = new URI(reference);
+				} catch (URISyntaxException e) {
+					refURI = new URI(null, reference, null);
+				}
 			}
+			resolved = baseURI.resolve(refURI);
 		}
 
 		return resolved;
