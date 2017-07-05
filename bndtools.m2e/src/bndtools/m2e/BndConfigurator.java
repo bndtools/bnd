@@ -53,11 +53,11 @@ public class BndConfigurator extends AbstractProjectConfigurator {
                 Job job = new WorkspaceJob("Executing " + project.getName() + " jar:jar goal") {
                     @Override
                     public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
-                        SubMonitor progress = SubMonitor.convert(monitor, 2);
+                        SubMonitor progress = SubMonitor.convert(monitor, 3);
                         execJarMojo(projectFacade, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
 
                         // Find the maven output directory (usually "target")
-                        MavenProject mvnProject = projectFacade.getMavenProject(); // won't return null because getMavenProject(ProgressMonitor) was called within execJarMojo
+                        MavenProject mvnProject = getMavenProject(projectFacade, progress.newChild(1));
                         IPath buildDirPath = Path.fromOSString(mvnProject.getBuild().getDirectory());
                         IPath projectPath = project.getLocation();
                         IPath relativeBuildDirPath = buildDirPath.makeRelativeTo(projectPath);
@@ -85,6 +85,18 @@ public class BndConfigurator extends AbstractProjectConfigurator {
         };
     }
 
+    private MavenProject getMavenProject(final IMavenProjectFacade projectFacade, IProgressMonitor monitor) throws CoreException {
+        MavenProject mavenProject = projectFacade.getMavenProject();
+
+        if (mavenProject == null) {
+            mavenProject = projectFacade.getMavenProject(monitor);
+        }
+
+        monitor.done();
+
+        return mavenProject;
+    }
+
     private void execJarMojo(final IMavenProjectFacade projectFacade, IProgressMonitor monitor) throws CoreException {
         final IMaven maven = MavenPlugin.getMaven();
         ProjectRegistryManager projectRegistryManager = MavenPluginActivator.getDefault().getMavenProjectManagerImpl();
@@ -97,18 +109,15 @@ public class BndConfigurator extends AbstractProjectConfigurator {
         context.execute(new ICallable<Void>() {
             @Override
             public Void call(IMavenExecutionContext context, IProgressMonitor monitor) throws CoreException {
-                MavenProject mavenProject = projectFacade.getMavenProject();
-
-                if (mavenProject == null) {
-                    mavenProject = projectFacade.getMavenProject(monitor);
-                }
+                SubMonitor progress = SubMonitor.convert(monitor);
+                MavenProject mavenProject = getMavenProject(projectFacade, progress.newChild(1));
 
                 MavenExecutionPlan plan = maven.calculateExecutionPlan(mavenProject, Arrays.asList("jar:jar"), true, monitor);
                 List<MojoExecution> mojoExecutions = plan.getMojoExecutions();
 
                 if (mojoExecutions != null) {
                     for (MojoExecution mojoExecution : mojoExecutions) {
-                        maven.execute(mavenProject, mojoExecution, monitor);
+                        maven.execute(mavenProject, mojoExecution, progress.newChild(1));
                     }
                 }
 
