@@ -120,7 +120,12 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         if (viewer instanceof StructuredViewer) {
             this.structuredViewer = (StructuredViewer) viewer;
-            repoPluginListResults.clear();
+
+            // check to make sure there are actual changes to repo lists
+            // before clearing cache
+            if (oldInput != null && (!oldInput.equals(newInput))) {
+                repoPluginListResults.clear();
+            }
         }
     }
 
