@@ -11,9 +11,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedSet;
+
+import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -139,7 +142,30 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
     }
 
     private File getBundleFile(final MavenProject mavenProject) {
-        return new File(mavenProject.getBuild().getDirectory(), mavenProject.getBuild().getFinalName() + ".jar");
+        String finalName = null;
+
+        // first check maven-jar-plugin config first, if it is empty use project.build.finalName
+        Plugin jarPlugin = mavenProject.getPlugin("org.apache.maven.plugins:maven-jar-plugin");
+
+        if (jarPlugin != null) {
+            Object config = jarPlugin.getConfiguration();
+
+            if (config instanceof Xpp3Dom) {
+                Xpp3Dom dom = (Xpp3Dom) config;
+
+                Xpp3Dom finalNameNode = dom.getChild("finalName");
+
+                if (finalNameNode != null) {
+                    finalName = finalNameNode.getValue();
+                }
+            }
+        }
+
+        if (finalName == null) {
+            finalName = mavenProject.getBuild().getFinalName();
+        }
+
+        return new File(mavenProject.getBuild().getDirectory(), finalName + ".jar");
     }
 
     private String getBsnFromMavenProject(MavenProject mavenProject) throws Exception {
