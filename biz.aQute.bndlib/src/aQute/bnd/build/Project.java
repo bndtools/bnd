@@ -1797,16 +1797,95 @@ public class Project extends Processor {
 
 	public File saveBuild(Jar jar) throws Exception {
 		try {
-			File f = getOutputFile(jar.getName(), jar.getVersion());
+			File outputFile = getOutputFile(jar.getName(), jar.getVersion());
+			File logicalFile = outputFile;
+
 			String msg = "";
-			if (!f.exists() || f.lastModified() < jar.lastModified()) {
-				reportNewer(f.lastModified(), jar);
-				IO.deleteWithException(f);
-				File fp = f.getParentFile();
+			if (!outputFile.exists() || outputFile.lastModified() < jar.lastModified()) {
+				reportNewer(outputFile.lastModified(), jar);
+
+				File fp = outputFile.getParentFile();
 				if (!fp.isDirectory()) {
 					IO.mkdirs(fp);
 				}
-				jar.write(f);
+
+				// On windows we sometimes cannot delete a file because
+				// someone holds a lock in our or another process. So if
+				// we set the -overwritestrategy flag we use an avoiding
+				// strategy.
+				// We will always write to a temp file name. Basically the
+				// calculated name + a variable suffix. We then create
+				// a link with the constant name to this variable name.
+				// This allows us to pick a different suffix when we cannot
+				// delete the file. Yuck, but better than the alternative.
+
+				String overwritestrategy = getProperty("-x-overwritestrategy", "classic");
+				swtch: switch (overwritestrategy) {
+					case "delay" :
+						for (int i = 0; i < 10; i++) {
+							try {
+								IO.deleteWithException(outputFile);
+								jar.write(outputFile);
+								break swtch;
+							} catch (Exception e) {
+								Thread.sleep(500);
+							}
+						}
+
+						// Execute normal case to get classic behavior
+						// FALL THROUGH
+
+					case "classic" :
+						IO.deleteWithException(outputFile);
+						jar.write(outputFile);
+						break swtch;
+
+					case "gc" :
+						try {
+							IO.deleteWithException(outputFile);
+						} catch (Exception e) {
+							System.gc();
+							System.runFinalization();
+							IO.deleteWithException(outputFile);
+						}
+						jar.write(outputFile);
+						break swtch;
+
+					case "windows-only-disposable-names" :
+						boolean isWindows = File.separatorChar == '\\';
+						if (!isWindows) {
+							IO.deleteWithException(outputFile);
+							jar.write(outputFile);
+							break;
+						}
+						// Fall through
+
+					case "disposable-names" :
+						int suffix = 0;
+						while (true) {
+							outputFile = new File(outputFile.getParentFile(), outputFile.getName() + "-" + suffix);
+							IO.delete(outputFile);
+							if (!outputFile.isFile()) {
+								// Succeeded to delete the file
+								jar.write(outputFile);
+								Files.createSymbolicLink(logicalFile.toPath(), outputFile.toPath());
+								break;
+							} else {
+								warning("Could not delete build file {} ", overwritestrategy);
+								logger.warn("Cannot delete file {} but that should be ok", outputFile);
+							}
+							suffix++;
+						}
+						break swtch;
+
+					default :
+						error("Invalid value for -x-overwritestrategy: %s, expected classic, delay, gc, windows-only-disposable-names, disposable-names",
+								overwritestrategy);
+						IO.deleteWithException(outputFile);
+						jar.write(outputFile);
+						break swtch;
+
+				}
 
 				//
 				// For maven we've got the shitty situation that the
@@ -1822,24 +1901,29 @@ public class Project extends Processor {
 				//
 
 				File canonical = new File(getTarget(), jar.getName() + ".jar");
-				if (!canonical.equals(f)) {
+				if (!canonical.equals(logicalFile)) {
 					IO.delete(canonical);
-					if (!IO.createSymbolicLink(canonical, f)) {
+					if (!IO.createSymbolicLink(canonical, outputFile)) {
 						//
 						// As alternative, we copy the file
 						//
-						IO.copy(f, canonical);
+						IO.copy(outputFile, canonical);
 					}
 					getWorkspace().changedFile(canonical);
 				}
 
-				getWorkspace().changedFile(f);
+				getWorkspace().changedFile(outputFile);
+				if (!outputFile.equals(logicalFile))
+					getWorkspace().changedFile(logicalFile);
+
 			} else {
-				msg = "(not modified since " + new Date(f.lastModified()) + ")";
+				msg = "(not modified since " + new Date(outputFile.lastModified()) + ")";
 			}
-			logger.debug("{} ({}) {} {}", jar.getName(), f.getName(), jar.getResources().size(), msg);
-			return f;
-		} finally {
+			logger.debug("{} ({}) {} {}", jar.getName(), outputFile.getName(), jar.getResources().size(), msg);
+			return logicalFile;
+		} finally
+
+		{
 			jar.close();
 		}
 	}
@@ -2990,6 +3074,7 @@ public class Project extends Processor {
 	public void copy(RepositoryPlugin source, String filter, RepositoryPlugin destination) throws Exception {
 		copy(source, filter == null ? null : new Instructions(filter), destination);
 	}
+
 	public void copy(RepositoryPlugin source, Instructions filter, RepositoryPlugin destination) throws Exception {
 
 		assert source != null;

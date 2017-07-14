@@ -2,6 +2,8 @@ package test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,6 +40,33 @@ public class ProjectTest extends TestCase {
 
 	public void tearDown() throws Exception {
 		IO.delete(tmp);
+	}
+
+	public void testAliasbuild() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+		Project project = ws.getProject("p3");
+		project.setProperty("-x-overwritestrategy", "disposable-names");
+
+		project.clean();
+		File pt = project.getTarget();
+		if (!pt.exists() && !pt.mkdirs()) {
+			throw new IOException("Could not create directory " + pt);
+		}
+		try {
+			// Now we build it.
+			File[] files = project.build();
+			assertTrue(project.check());
+
+			assertNotNull(files);
+			assertEquals(1, files.length);
+
+			assertTrue(Files.isSymbolicLink(files[0].toPath()));
+			Path linkedTo = Files.readSymbolicLink(files[0].toPath());
+			assertTrue(linkedTo.toString().endsWith("-0"));
+
+		} finally {
+			project.clean();
+		}
 	}
 
 	/**
