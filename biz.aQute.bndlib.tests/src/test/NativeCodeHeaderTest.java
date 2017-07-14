@@ -32,6 +32,7 @@ public class NativeCodeHeaderTest extends TestCase {
 						+ "  processor = sparc, "//
 						+ "lib/linux/libhttp.so ; " //
 						+ "  osname = Linux ; "//
+						+ "  osversion = 3.1.4; " //
 						+ "  processor = mips; "//
 						+ "  selection-filter = '(com.acme.windowing=gtk)',"//
 						+ "*")
@@ -47,7 +48,7 @@ public class NativeCodeHeaderTest extends TestCase {
 		Expression parse = p.parse(filter);
 
 		assertEquals(
-				"(|(&(|(osgi.native.osname=Windows95)(osgi.native.osname=Windows98))(osgi.native.processor=x86)(|(osgi.native.language=en)(osgi.native.language=se))(com.acme.windowing=win32))(&(|(osgi.native.osname=Solaris)(osgi.native.osname=SunOS))(osgi.native.processor=sparc))(&(osgi.native.osname=Linux)(osgi.native.processor=mips)(com.acme.windowing=gtk)))",
+				"(|(&(|(osgi.native.osname~=Windows95)(osgi.native.osname~=Windows98))(osgi.native.processor~=x86)(|(osgi.native.language~=en)(osgi.native.language~=se))(com.acme.windowing=win32))(&(|(osgi.native.osname~=Solaris)(osgi.native.osname~=SunOS))(osgi.native.processor~=sparc))(&(osgi.native.osname~=Linux)(osgi.native.processor~=mips)(osgi.native.osversion=3.1.4)(com.acme.windowing=gtk)))",
 				filter);
 
 		System.out.println(nativeCode);
