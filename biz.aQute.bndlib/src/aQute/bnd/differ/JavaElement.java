@@ -299,7 +299,9 @@ class JavaElement {
 				Arrays.sort(names); // ignore type reordering
 				for (TypeRef name : names) {
 
-					String comment = inherit(members, name);
+					String comment = null;
+					if (clazz.isInterface() || clazz.isAbstract())
+						comment = inherit(members, name);
 					members.add(new Element(IMPLEMENTS, name.getFQN(), null, MINOR, MAJOR, comment));
 				}
 			}
