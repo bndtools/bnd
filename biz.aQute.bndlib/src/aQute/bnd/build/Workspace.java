@@ -465,27 +465,28 @@ public class Workspace extends Processor {
 					if (!root.isDirectory())
 						throw new IllegalArgumentException("Cache directory " + root + " not a directory");
 
-					InputStream in = getClass().getResourceAsStream(EMBEDDED_REPO);
-					if (in != null)
-						unzip(in, root);
-					else {
-						// We may be in unit test, look for
-						// biz.aQute.bnd.embedded-repo.jar on the
-						// classpath
-						StringTokenizer classPathTokenizer = new StringTokenizer(
-								System.getProperty("java.class.path", ""), File.pathSeparator);
-						while (classPathTokenizer.hasMoreTokens()) {
-							String classPathEntry = classPathTokenizer.nextToken().trim();
-							if (EMBEDDED_REPO_TESTING_PATTERN.matcher(classPathEntry).matches()) {
-								in = IO.stream(Paths.get(classPathEntry));
+					try (InputStream in = getClass().getResourceAsStream(EMBEDDED_REPO)) {
+						if (in != null) {
+							unzip(in, root);
+							return true;
+						}
+					}
+					// We may be in unit test, look for
+					// biz.aQute.bnd.embedded-repo.jar on the
+					// classpath
+					StringTokenizer classPathTokenizer = new StringTokenizer(
+							System.getProperty("java.class.path", ""), File.pathSeparator);
+					while (classPathTokenizer.hasMoreTokens()) {
+						String classPathEntry = classPathTokenizer.nextToken().trim();
+						if (EMBEDDED_REPO_TESTING_PATTERN.matcher(classPathEntry).matches()) {
+							try (InputStream in = IO.stream(Paths.get(classPathEntry))) {
 								unzip(in, root);
 								return true;
 							}
 						}
-						error("Couldn't find biz.aQute.bnd.embedded-repo on the classpath");
-						return false;
 					}
-					return true;
+					error("Couldn't find biz.aQute.bnd.embedded-repo on the classpath");
+					return false;
 				} else
 					return false;
 			} finally {
@@ -582,7 +583,8 @@ public class Workspace extends Processor {
 			list.add(settings);
 
 			if (!isTrue(getProperty(NOBUILDINCACHE))) {
-				list.add(new CachedFileRepo());
+				CachedFileRepo repo = new CachedFileRepo();
+				list.add(repo);
 			}
 
 			resourceRepositoryImpl = new ResourceRepositoryImpl();

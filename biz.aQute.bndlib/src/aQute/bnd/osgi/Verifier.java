@@ -1295,12 +1295,13 @@ public class Verifier extends Processor {
 			} else {
 				byte[] d = Base64.decodeBase64(digest);
 				SHA1 expected = new SHA1(d);
-				Digester<SHA1> digester = SHA1.getDigester();
-				InputStream in = dot.getResource(path).openInputStream();
-				IO.copy(in, digester);
-				digester.digest();
-				if (!expected.equals(digester.digest())) {
-					error("Checksum mismatch %s, expected %s, got %s", path, expected, digester.digest());
+				try (Digester<SHA1> digester = SHA1.getDigester();
+						InputStream in = dot.getResource(path).openInputStream()) {
+					IO.copy(in, digester);
+					digester.digest();
+					if (!expected.equals(digester.digest())) {
+						error("Checksum mismatch %s, expected %s, got %s", path, expected, digester.digest());
+					}
 				}
 			}
 		}
@@ -1374,8 +1375,7 @@ public class Verifier extends Processor {
 			else {
 				if (parts.length > 1) {
 					try (Jar jar = new Jar("", resource.openInputStream())) {
-						resource = jar.getResource(parts[1]);
-						if (resource == null)
+						if (jar.getResource(parts[1]) == null)
 							list.add(location);
 					} catch (Exception e) {
 						list.add(location);

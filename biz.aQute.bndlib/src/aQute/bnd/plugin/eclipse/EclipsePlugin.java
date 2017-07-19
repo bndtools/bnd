@@ -19,8 +19,6 @@ import aQute.lib.io.IO;
 public class EclipsePlugin extends LifeCyclePlugin {
 	@Override
 	public void created(Project p) throws IOException {
-		Workspace workspace = p.getWorkspace();
-
 		copy("project", ".project", p);
 		copy("classpath", ".classpath", p);
 	}
@@ -58,8 +56,9 @@ public class EclipsePlugin extends LifeCyclePlugin {
 	@Override
 	public void init(Workspace ws) throws Exception {
 
-		Project p = new Project(ws, ws.getFile("cnf"));
-		created(p);
+		try (Project p = new Project(ws, ws.getFile("cnf"))) {
+			created(p);
+		}
 
 		for (Project pp : ws.getAllProjects()) {
 			created(pp);

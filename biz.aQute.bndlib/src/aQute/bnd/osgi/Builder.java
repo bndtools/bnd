@@ -528,12 +528,12 @@ public class Builder extends Analyzer {
 		// Give the verifier the benefit of our analysis
 		// prevents parsing the files twice
 
-		Verifier verifier = new Verifier(this);
+		try (Verifier verifier = new Verifier(this)) {
+			verifier.setFrombuilder(true);
 
-		verifier.setFrombuilder(true);
-
-		verifier.verify();
-		getInfo(verifier);
+			verifier.verify();
+			getInfo(verifier);
+		}
 	}
 
 	private void doExpand(Jar dot) throws Exception {
