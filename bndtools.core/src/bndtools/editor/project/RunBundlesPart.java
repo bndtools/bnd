@@ -24,6 +24,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
@@ -35,7 +36,7 @@ import bndtools.wizards.repo.RepoBundleSelectionWizard;
 public class RunBundlesPart extends RepositoryBundleSelectionPart {
     private static final ILogger logger = Logger.getLogger(RunBundlesPart.class);
 
-    private final List<Builder> projectBuilders = new ArrayList<Builder>();
+    private final List<String> projectBuilders = new ArrayList<>();
     private final Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
 
     public RunBundlesPart(Composite parent, FormToolkit toolkit, int style) {
@@ -58,8 +59,13 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
     private void loadBuilders(IProject project) {
         try {
             Project model = Central.getProject(project);
-            if (model != null)
-                projectBuilders.addAll(model.getSubBuilders());
+            if (model != null) {
+                try (ProjectBuilder pb = model.getBuilder(null)) {
+                    for (Builder b : pb.getSubBuilders()) {
+                        projectBuilders.add(b.getBsn());
+                    }
+                }
+            }
         } catch (Exception e) {
             logger.logError(Messages.RunBundlesPart_errorGettingBuilders, e);
         }
@@ -89,10 +95,9 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
             public void update(ViewerCell cell) {
                 Object element = cell.getElement();
 
-                if (element instanceof Builder) {
-                    @SuppressWarnings("resource")
-                    Builder builder = (Builder) element;
-                    StyledString label = new StyledString(builder.getBsn(), StyledString.QUALIFIER_STYLER);
+                if (element instanceof String) {
+                    String builder = (String) element;
+                    StyledString label = new StyledString(builder, StyledString.QUALIFIER_STYLER);
                     cell.setText(label.getString());
                     cell.setStyleRanges(label.getStyleRanges());
                     cell.setImage(projectImg);

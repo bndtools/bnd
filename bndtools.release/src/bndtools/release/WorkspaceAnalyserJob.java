@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.differ.Baseline;
 import aQute.bnd.osgi.Builder;
@@ -81,17 +82,18 @@ public class WorkspaceAnalyserJob extends Job {
                     mon.worked(1);
                     continue;
                 }
-                List<Builder> builders = project.getBuilder(null).getSubBuilders();
                 List<Baseline> jarDiffs = null;
-                for (Builder b : builders) {
-                    mon.subTask(String.format(Messages.processingProject, b.getBsn()));
+                try (ProjectBuilder pb = project.getBuilder(null)) {
+                    for (Builder b : pb.getSubBuilders()) {
+                        mon.subTask(String.format(Messages.processingProject, b.getBsn()));
 
-                    Baseline jarDiff = DiffHelper.createBaseline(project, b.getBsn());
-                    if (jarDiff != null) {
-                        if (jarDiffs == null) {
-                            jarDiffs = new ArrayList<Baseline>();
+                        Baseline jarDiff = DiffHelper.createBaseline(b);
+                        if (jarDiff != null) {
+                            if (jarDiffs == null) {
+                                jarDiffs = new ArrayList<Baseline>();
+                            }
+                            jarDiffs.add(jarDiff);
                         }
-                        jarDiffs.add(jarDiff);
                     }
                 }
                 if (jarDiffs != null && jarDiffs.size() > 0) {

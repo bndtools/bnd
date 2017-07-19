@@ -23,19 +23,15 @@ import aQute.bnd.osgi.Jar;
 public class DiffHelper {
 
     public static Baseline createBaseline(Project project, String bsn) throws Exception {
-
-        List<Builder> builders = project.getBuilder(null).getSubBuilders();
-        Builder builder = null;
-        for (Builder b : builders) {
-            if (bsn.equals(b.getBsn())) {
-                builder = b;
-                break;
+        try (ProjectBuilder pb = project.getBuilder(null)) {
+            List<Builder> builders = pb.getSubBuilders();
+            for (Builder b : builders) {
+                if (bsn.equals(b.getBsn())) {
+                    return createBaseline(b);
+                }
             }
-        }
-        if (builder == null) {
             return null;
         }
-        return createBaseline(builder);
     }
 
     public static Baseline createBaseline(Builder builder) {
@@ -50,7 +46,7 @@ public class DiffHelper {
                 Jar currentJar = null;
 
                 try {
-                    jar = builder.build();
+                    jar = projectBuilder.build();
 
                     currentJar = projectBuilder.getBaselineJar();
                     if (currentJar == null) {
@@ -60,11 +56,11 @@ public class DiffHelper {
                         currentJar = new Jar("."); //$NON-NLS-1$
                     }
                     DiffPluginImpl differ = new DiffPluginImpl();
-                    String diffignore = builder.getProperty(Constants.DIFFIGNORE);
+                    String diffignore = projectBuilder.getProperty(Constants.DIFFIGNORE);
                     if (diffignore != null)
                         differ.setIgnore(diffignore);
 
-                    Baseline baseline = new Baseline(builder, differ);
+                    Baseline baseline = new Baseline(projectBuilder, differ);
 
                     baseline.baseline(jar, currentJar, null);
                     return baseline;

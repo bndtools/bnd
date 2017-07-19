@@ -54,6 +54,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
+import aQute.bnd.build.ProjectBuilder;
 import aQute.libg.glob.Glob;
 import bndtools.release.Activator;
 import bndtools.release.ProjectDiff;
@@ -92,7 +93,7 @@ public class ProjectListControl {
     public void createControl(final Composite parent) {
 
         createFilter(parent);
-        
+
         GridLayout gridLayout = new GridLayout(1, false);
         gridLayout.marginWidth = 0;
 
@@ -121,6 +122,7 @@ public class ProjectListControl {
         FilterPanelPart filterPart = new FilterPanelPart(Activator.getDefault().getScheduler());
         filterPart.createControl(composite, 0, 0);
         filterPart.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent event) {
                 String filter = (String) event.getNewValue();
                 updatedFilter(filter);
@@ -185,10 +187,12 @@ public class ProjectListControl {
         projects.setHeaderVisible(true);
         projects.setLinesVisible(true);
         projects.addSelectionListener(new SelectionListener() {
+            @Override
             public void widgetSelected(SelectionEvent e) {
                 selectionListener.widgetSelected(e);
             }
 
+            @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 selectionListener.widgetDefaultSelected(e);
             }
@@ -221,25 +225,27 @@ public class ProjectListControl {
         tableViewer.setColumnProperties(columnNames);
         tableViewer.setCheckStateProvider(new ICheckStateProvider() {
 
+            @Override
             public boolean isGrayed(Object element) {
                 return false;
             }
 
+            @Override
             public boolean isChecked(Object element) {
                 ProjectDiff diff = (ProjectDiff) element;
                 return diff.isRelease();
             }
         });
-        
+
         projects.pack();
 
         TableSortingEnabler.applyTableColumnSorting(tableViewer);
     }
-    
+
     private Image createSmallIcon(Display display) {
         Point[] iconSizes = display.getIconSizes();
         Point chosen = null;
-        
+
         if (iconSizes.length == 0) {
             chosen = new Point(16, 16);
         } else {
@@ -248,24 +254,23 @@ public class ProjectListControl {
 
         return new Image(display, chosen.x, chosen.y);
     }
-    
-    private Image createSolidIcon(Display display, Color color)
-    {
+
+    private Image createSolidIcon(Display display, Color color) {
         Image img = createSmallIcon(display);
 
         GC gc = new GC(img);
         gc.setBackground(color);
         gc.fillRectangle(img.getBounds());
         gc.dispose();
-        
+
         return img;
     }
 
     private void createLegend(Composite parent) {
-        
+
         final Image updateRequiredImage = createSolidIcon(parent.getDisplay(), COLOR_VERSION_UPDATE_REQUIRED);
         final Image releaseRequiredImage = createSolidIcon(parent.getDisplay(), COLOR_RELEASE_REQUIRED);
-        
+
         Composite composite = new Composite(parent, SWT.NONE);
         GridLayout gridLayout = new GridLayout(2, false);
         gridLayout.verticalSpacing = 2;
@@ -277,7 +282,7 @@ public class ProjectListControl {
         GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
         gridData.grabExcessHorizontalSpace = true;
         composite.setLayoutData(gridData);
-        
+
         Label l = new Label(composite, SWT.BORDER);
         l.setImage(updateRequiredImage);
         l.addDisposeListener(new DisposeListener() {
@@ -289,7 +294,7 @@ public class ProjectListControl {
 
         l = new Label(composite, SWT.NONE);
         l.setText(Messages.versionUpdateRequired);
-        
+
         l = new Label(composite, SWT.BORDER);
         l.setImage(releaseRequiredImage);
         l.addDisposeListener(new DisposeListener() {
@@ -324,10 +329,13 @@ public class ProjectListControl {
             this.filterRef.set(filter);
         }
 
+        @Override
         public void dispose() {}
 
+        @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
 
+        @Override
         public Object[] getElements(Object parent) {
             final String filter = filterRef.get();
             if (filter == null || "".equals(filter))
@@ -343,6 +351,7 @@ public class ProjectListControl {
             return filtered.toArray();
         }
 
+        @Override
         public Comparable< ? > getValue(Object element, int columnIndex) {
             ProjectDiff diff = (ProjectDiff) element;
             switch (columnIndex) {
@@ -352,8 +361,8 @@ public class ProjectListControl {
                 return diff.getReleaseRepository();
             case 2 :
                 int bundles = -1;
-                try {
-                    bundles = diff.getProject().getSubBuilders().size();
+                try (ProjectBuilder pb = diff.getProject().getBuilder(null)) {
+                    bundles = pb.getSubBuilders().size();
                 } catch (Exception e) {
                     /* ignore */
                 }
@@ -366,10 +375,12 @@ public class ProjectListControl {
 
     private class TableLabelProvider extends LabelProvider implements ITableColorProvider, ITableLabelProvider {
 
+        @Override
         public Image getColumnImage(Object element, int columnIndex) {
             return null;
         }
 
+        @Override
         public String getColumnText(Object element, int columnIndex) {
             String text = "";
             ProjectDiff diff = (ProjectDiff) element;
@@ -385,8 +396,8 @@ public class ProjectListControl {
                 break;
             case 2 :
                 int bundles = -1;
-                try {
-                    bundles = diff.getProject().getSubBuilders().size();
+                try (ProjectBuilder pb = diff.getProject().getBuilder(null)) {
+                    bundles = pb.getSubBuilders().size();
                 } catch (Exception e) {
                     /* ignore */
                 }
@@ -398,6 +409,7 @@ public class ProjectListControl {
             return text;
         }
 
+        @Override
         public Color getBackground(Object element, int columnIndex) {
             ProjectDiff diff = (ProjectDiff) element;
             if (diff.isVersionUpdateRequired()) {
@@ -409,6 +421,7 @@ public class ProjectListControl {
             return null;
         }
 
+        @Override
         public Color getForeground(Object element, int columnIndex) {
             return null;
         }
@@ -424,10 +437,12 @@ public class ProjectListControl {
 
             Control control = editor.getControl();
             ((CCombo) control).addSelectionListener(new SelectionListener() {
+                @Override
                 public void widgetSelected(SelectionEvent e) {
                     editor.deactivate();
                 }
 
+                @Override
                 public void widgetDefaultSelected(SelectionEvent e) {}
             });
         }
