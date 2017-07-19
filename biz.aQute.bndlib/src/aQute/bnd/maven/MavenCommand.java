@@ -4,11 +4,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -562,17 +562,16 @@ public class MavenCommand extends Processor {
 
 	void view(String args[], int i) throws Exception {
 		Maven maven = new Maven(executor);
-		OutputStream out = System.err;
 
 		List<URI> urls = new ArrayList<URI>();
-
+		Path output = null;
 		while (i < args.length && args[i].startsWith("-")) {
 			if ("-r".equals(args[i])) {
 				URI uri = new URI(args[++i]);
 				urls.add(uri);
 				System.err.println("URI for repo " + uri);
 			} else if ("-o".equals(args[i])) {
-				out = IO.outputStream(Paths.get(args[++i]));
+				output = Paths.get(args[++i]);
 			} else
 				throw new IllegalArgumentException("Unknown option: " + args[i]);
 
@@ -580,46 +579,54 @@ public class MavenCommand extends Processor {
 		}
 
 		URI[] urls2 = urls.toArray(new URI[0]);
-		PrintWriter pw = IO.writer(out);
+		PrintWriter pw = IO.writer(output == null ? System.err : IO.outputStream(output));
+		try {
+			while (i < args.length) {
+				String ref = args[i++];
+				pw.println("Ref " + ref);
 
-		while (i < args.length) {
-			String ref = args[i++];
-			pw.println("Ref " + ref);
+				Matcher matcher = GROUP_ARTIFACT_VERSION.matcher(ref);
+				if (matcher.matches()) {
 
-			Matcher matcher = GROUP_ARTIFACT_VERSION.matcher(ref);
-			if (matcher.matches()) {
+					String group = matcher.group(1);
+					String artifact = matcher.group(2);
+					String version = matcher.group(3);
+					CachedPom pom = maven.getPom(group, artifact, version, urls2);
 
-				String group = matcher.group(1);
-				String artifact = matcher.group(2);
-				String version = matcher.group(3);
-				CachedPom pom = maven.getPom(group, artifact, version, urls2);
+					try (Builder a = new Builder()) {
+						a.setProperty(Constants.PRIVATEPACKAGE, "*");
+						Set<Pom> dependencies = pom.getDependencies(Scope.compile, urls2);
+						for (Pom dep : dependencies) {
+							System.err.printf("%20s %-20s %10s%n", dep.getGroupId(), dep.getArtifactId(),
+									dep.getVersion());
+							a.addClasspath(dep.getArtifact());
+						}
+						pw.println(a.getClasspath());
+						a.build();
 
-				Builder a = new Builder();
-				a.setProperty(Constants.PRIVATEPACKAGE, "*");
-				Set<Pom> dependencies = pom.getDependencies(Scope.compile, urls2);
-				for (Pom dep : dependencies) {
-					System.err.printf("%20s %-20s %10s%n", dep.getGroupId(), dep.getArtifactId(), dep.getVersion());
-					a.addClasspath(dep.getArtifact());
+						TreeSet<PackageRef> sorted = new TreeSet<PackageRef>(a.getImports().keySet());
+						for (PackageRef p : sorted) {
+							pw.printf("%-40s\n", p);
+						}
+						// for ( Map.Entry<String, Set<String>> entry :
+						// a.getUses().entrySet()) {
+						// String from = entry.getKey();
+						// for ( String uses : entry.getValue()) {
+						// System.err.printf("%40s %s\n", from, uses);
+						// from = "";
+						// }
+						// }
+						a.close();
+					}
+				} else {
+					System.err.println("Wrong, must look like group+artifact+version, is " + ref);
 				}
-				pw.println(a.getClasspath());
-				a.build();
-
-				TreeSet<PackageRef> sorted = new TreeSet<PackageRef>(a.getImports().keySet());
-				for (PackageRef p : sorted) {
-					pw.printf("%-40s\n", p);
-				}
-				// for ( Map.Entry<String, Set<String>> entry :
-				// a.getUses().entrySet()) {
-				// String from = entry.getKey();
-				// for ( String uses : entry.getValue()) {
-				// System.err.printf("%40s %s\n", from, uses);
-				// from = "";
-				// }
-				// }
-				a.close();
-			} else
-				System.err.println("Wrong, must look like group+artifact+version, is " + ref);
-
+			}
+		} finally {
+			pw.flush();
+			if (output != null) {
+				IO.close(pw);
+			}
 		}
 	}
 

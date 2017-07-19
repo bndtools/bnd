@@ -79,17 +79,19 @@ public class DiffCommand {
 		if (args.size() == 0) {
 			Project project = bnd.getProject();
 			if (project != null) {
-				for (Builder b : project.getSubBuilders()) {
-					ProjectBuilder pb = (ProjectBuilder) b;
-					Jar older = pb.getBaselineJar(); // make sure remains before
-														// disabling baselining
-					pb.setProperty(Constants.BASELINE, ""); // do not do
-															// baselining in
-															// build
-					Jar newer = pb.build();
-					di.setIgnore(pb.getProperty(Constants.DIFFIGNORE));
-					diff(options, di, newer, older);
-					bnd.getInfo(b);
+				try (ProjectBuilder projectBuilder = project.getBuilder(null)) {
+					for (Builder b : projectBuilder.getSubBuilders()) {
+						ProjectBuilder pb = (ProjectBuilder) b;
+						Jar older = pb.getBaselineJar(); // make sure remains before
+						// disabling baselining
+						pb.setProperty(Constants.BASELINE, ""); // do not do
+						// baselining in
+						// build
+						Jar newer = pb.build();
+						di.setIgnore(pb.getProperty(Constants.DIFFIGNORE));
+						diff(options, di, newer, older);
+						bnd.getInfo(b);
+					}
 				}
 				bnd.getInfo(project);
 				return;

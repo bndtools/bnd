@@ -1797,16 +1797,95 @@ public class Project extends Processor {
 
 	public File saveBuild(Jar jar) throws Exception {
 		try {
-			File f = getOutputFile(jar.getName(), jar.getVersion());
+			File outputFile = getOutputFile(jar.getName(), jar.getVersion());
+			File logicalFile = outputFile;
+
 			String msg = "";
-			if (!f.exists() || f.lastModified() < jar.lastModified()) {
-				reportNewer(f.lastModified(), jar);
-				IO.deleteWithException(f);
-				File fp = f.getParentFile();
+			if (!outputFile.exists() || outputFile.lastModified() < jar.lastModified()) {
+				reportNewer(outputFile.lastModified(), jar);
+
+				File fp = outputFile.getParentFile();
 				if (!fp.isDirectory()) {
 					IO.mkdirs(fp);
 				}
-				jar.write(f);
+
+				// On windows we sometimes cannot delete a file because
+				// someone holds a lock in our or another process. So if
+				// we set the -overwritestrategy flag we use an avoiding
+				// strategy.
+				// We will always write to a temp file name. Basically the
+				// calculated name + a variable suffix. We then create
+				// a link with the constant name to this variable name.
+				// This allows us to pick a different suffix when we cannot
+				// delete the file. Yuck, but better than the alternative.
+
+				String overwritestrategy = getProperty("-x-overwritestrategy", "classic");
+				swtch: switch (overwritestrategy) {
+					case "delay" :
+						for (int i = 0; i < 10; i++) {
+							try {
+								IO.deleteWithException(outputFile);
+								jar.write(outputFile);
+								break swtch;
+							} catch (Exception e) {
+								Thread.sleep(500);
+							}
+						}
+
+						// Execute normal case to get classic behavior
+						// FALL THROUGH
+
+					case "classic" :
+						IO.deleteWithException(outputFile);
+						jar.write(outputFile);
+						break swtch;
+
+					case "gc" :
+						try {
+							IO.deleteWithException(outputFile);
+						} catch (Exception e) {
+							System.gc();
+							System.runFinalization();
+							IO.deleteWithException(outputFile);
+						}
+						jar.write(outputFile);
+						break swtch;
+
+					case "windows-only-disposable-names" :
+						boolean isWindows = File.separatorChar == '\\';
+						if (!isWindows) {
+							IO.deleteWithException(outputFile);
+							jar.write(outputFile);
+							break;
+						}
+						// Fall through
+
+					case "disposable-names" :
+						int suffix = 0;
+						while (true) {
+							outputFile = new File(outputFile.getParentFile(), outputFile.getName() + "-" + suffix);
+							IO.delete(outputFile);
+							if (!outputFile.isFile()) {
+								// Succeeded to delete the file
+								jar.write(outputFile);
+								Files.createSymbolicLink(logicalFile.toPath(), outputFile.toPath());
+								break;
+							} else {
+								warning("Could not delete build file {} ", overwritestrategy);
+								logger.warn("Cannot delete file {} but that should be ok", outputFile);
+							}
+							suffix++;
+						}
+						break swtch;
+
+					default :
+						error("Invalid value for -x-overwritestrategy: %s, expected classic, delay, gc, windows-only-disposable-names, disposable-names",
+								overwritestrategy);
+						IO.deleteWithException(outputFile);
+						jar.write(outputFile);
+						break swtch;
+
+				}
 
 				//
 				// For maven we've got the shitty situation that the
@@ -1822,24 +1901,29 @@ public class Project extends Processor {
 				//
 
 				File canonical = new File(getTarget(), jar.getName() + ".jar");
-				if (!canonical.equals(f)) {
+				if (!canonical.equals(logicalFile)) {
 					IO.delete(canonical);
-					if (!IO.createSymbolicLink(canonical, f)) {
+					if (!IO.createSymbolicLink(canonical, outputFile)) {
 						//
 						// As alternative, we copy the file
 						//
-						IO.copy(f, canonical);
+						IO.copy(outputFile, canonical);
 					}
 					getWorkspace().changedFile(canonical);
 				}
 
-				getWorkspace().changedFile(f);
+				getWorkspace().changedFile(outputFile);
+				if (!outputFile.equals(logicalFile))
+					getWorkspace().changedFile(logicalFile);
+
 			} else {
-				msg = "(not modified since " + new Date(f.lastModified()) + ")";
+				msg = "(not modified since " + new Date(outputFile.lastModified()) + ")";
 			}
-			logger.debug("{} ({}) {} {}", jar.getName(), f.getName(), jar.getResources().size(), msg);
-			return f;
-		} finally {
+			logger.debug("{} ({}) {} {}", jar.getName(), outputFile.getName(), jar.getResources().size(), msg);
+			return logicalFile;
+		} finally
+
+		{
 			jar.close();
 		}
 	}
@@ -1972,11 +2056,12 @@ public class Project extends Processor {
 		}
 		packageProject.clear();
 
-		ProjectLauncher launcher = packageProject.getProjectLauncher();
-		launcher.setKeep(keep);
-		try (Jar jar = launcher.executable()) {
-			getInfo(launcher);
-			jar.write(output);
+		try (ProjectLauncher launcher = packageProject.getProjectLauncher()) {
+			launcher.setKeep(keep);
+			try (Jar jar = launcher.executable()) {
+				getInfo(launcher);
+				jar.write(output);
+			}
 		}
 	}
 
@@ -2079,15 +2164,17 @@ public class Project extends Processor {
 	}
 
 	public void run() throws Exception {
-		ProjectLauncher pl = getProjectLauncher();
-		pl.setTrace(isTrace() || isTrue(getProperty(RUNTRACE)));
-		pl.launch();
+		try (ProjectLauncher pl = getProjectLauncher()) {
+			pl.setTrace(isTrace() || isTrue(getProperty(RUNTRACE)));
+			pl.launch();
+		}
 	}
 
 	public void runLocal() throws Exception {
-		ProjectLauncher pl = getProjectLauncher();
-		pl.setTrace(isTrace() || isTrue(getProperty(RUNTRACE)));
-		pl.start(null);
+		try (ProjectLauncher pl = getProjectLauncher()) {
+			pl.setTrace(isTrace() || isTrue(getProperty(RUNTRACE)));
+			pl.start(null);
+		}
 	}
 
 	public void test() throws Exception {
@@ -2240,8 +2327,10 @@ public class Project extends Processor {
 			boolean found = false;
 
 			// Replace in all sub builders.
-			for (Builder sub : getSubBuilders()) {
-				found |= replace(sub.getPropertiesFile(), pattern, replace);
+			try (ProjectBuilder b = getBuilder(null)) {
+				for (Builder sub : b.getSubBuilders()) {
+					found |= replace(sub.getPropertiesFile(), pattern, replace);
+				}
 			}
 
 			if (!found) {
@@ -2383,26 +2472,27 @@ public class Project extends Processor {
 	 */
 	public Collection<Container> getDeliverables() throws Exception {
 		List<Container> result = new ArrayList<Container>();
-		Collection< ? extends Builder> builders = getSubBuilders();
-
-		for (Builder builder : builders) {
-			Container c = new Container(this, builder.getBsn(), builder.getVersion(), Container.TYPE.PROJECT,
-					getOutputFile(builder.getBsn(), builder.getVersion()), null, null, null);
-			result.add(c);
+		try (ProjectBuilder pb = getBuilder(null)) {
+			for (Builder builder : pb.getSubBuilders()) {
+				Container c = new Container(this, builder.getBsn(), builder.getVersion(), Container.TYPE.PROJECT,
+						getOutputFile(builder.getBsn(), builder.getVersion()), null, null, null);
+				result.add(c);
+			}
+			return result;
 		}
-		return result;
 
 	}
 
 	/**
-	 * Return the builder associated with the give bnd file or null. The bnd.bnd
+	 * Return a builder associated with the give bnd file or null. The bnd.bnd
 	 * file can contain -sub option. This option allows specifying files in the
 	 * same directory that should drive the generation of multiple deliverables.
 	 * This method figures out if the bndFile is actually one of the bnd files
 	 * of a deliverable.
 	 *
 	 * @param bndFile A file pointing to a bnd file.
-	 * @return null or the builder for a sub file.
+	 * @return null or a builder for a sub file, the caller must close this
+	 *         builder
 	 * @throws Exception
 	 */
 	public Builder getSubBuilder(File bndFile) throws Exception {
@@ -2413,17 +2503,30 @@ public class Project extends Processor {
 		if (!bndFile.getAbsolutePath().startsWith(base.getAbsolutePath()))
 			return null;
 
-		Collection< ? extends Builder> builders = getSubBuilders();
-		for (Builder sub : builders) {
-			File propertiesFile = sub.getPropertiesFile();
-			if (propertiesFile != null) {
-				if (propertiesFile.getCanonicalFile().equals(bndFile)) {
-					// Found it!
-					return sub;
+		ProjectBuilder pb = getBuilder(null);
+		boolean close = true;
+		try {
+			for (Builder b : pb.getSubBuilders()) {
+				File propertiesFile = b.getPropertiesFile();
+				if (propertiesFile != null) {
+					if (propertiesFile.getCanonicalFile().equals(bndFile)) {
+						// Found it!
+						// disconnect from its parent life cycle
+						if (b == pb) {
+							close = false;
+						} else {
+							pb.removeClose(b);
+						}
+						return b;
+					}
 				}
 			}
+			return null;
+		} finally {
+			if (close) {
+				pb.close();
+			}
 		}
-		return null;
 	}
 
 	/**
@@ -2433,12 +2536,26 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public ProjectBuilder getSubBuilder(String string) throws Exception {
-		Collection< ? extends Builder> builders = getSubBuilders();
-		for (Builder b : builders) {
-			if (b.getBsn().equals(string) || b.getBsn().endsWith("." + string))
-				return (ProjectBuilder) b;
+		ProjectBuilder pb = getBuilder(null);
+		boolean close = true;
+		try {
+			for (Builder b : pb.getSubBuilders()) {
+				if (b.getBsn().equals(string) || b.getBsn().endsWith("." + string)) {
+					// disconnect from its parent life cycle
+					if (b == pb) {
+						close = false;
+					} else {
+						pb.removeClose(b);
+					}
+					return (ProjectBuilder) b;
+				}
+			}
+			return null;
+		} finally {
+			if (close) {
+				pb.close();
+			}
 		}
-		return null;
 	}
 
 	/**
@@ -2447,25 +2564,52 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public Container getDeliverable(String bsn, Map<String,String> attrs) throws Exception {
-		Collection< ? extends Builder> builders = getSubBuilders();
-		for (Builder sub : builders) {
-			if (sub.getBsn().equals(bsn))
-				return new Container(this, getOutputFile(bsn, sub.getVersion()), attrs);
+		try (ProjectBuilder pb = getBuilder(null)) {
+			for (Builder b : pb.getSubBuilders()) {
+				if (b.getBsn().equals(bsn))
+					return new Container(this, getOutputFile(bsn, b.getVersion()), attrs);
+			}
 		}
 		return null;
 	}
 
 	/**
-	 * Get a list of the sub builders. A bnd.bnd file can contain the -sub
-	 * option. This will generate multiple deliverables. This method returns the
-	 * builders for each sub file. If no -sub option is present, the list will
-	 * contain a builder for the bnd.bnd file.
+	 * Get a list of the sub builders. A bnd.bnd file can contain the -sub option.
+	 * This will generate multiple deliverables. This method returns the builders
+	 * for each sub file. If no -sub option is present, the list will contain a
+	 * builder for the bnd.bnd file.
 	 *
 	 * @return A list of builders.
 	 * @throws Exception
+	 * @deprecated As of 3.4. Replace with
+	 * 
+	 *             <pre>
+	 *             try (ProjectBuilder pb = getBuilder(null)) {
+	 *             	for (Builder b : pb.getSubBuilders()) {
+	 *             		...
+	 *             	}
+	 *             }
+	 *             </pre>
 	 */
+	@Deprecated
 	public Collection< ? extends Builder> getSubBuilders() throws Exception {
-		return getBuilder(null).getSubBuilders();
+		ProjectBuilder pb = getBuilder(null);
+		boolean close = true;
+		try {
+			List<Builder> builders = new ArrayList<>(pb.getSubBuilders());
+			for (Builder b : builders) {
+				if (b == pb) {
+					close = false;
+				} else {
+					pb.removeClose(b);
+				}
+			}
+			return builders;
+		} finally {
+			if (close) {
+				pb.close();
+			}
+		}
 	}
 
 	/**
@@ -2594,48 +2738,61 @@ public class Project extends Processor {
 	 */
 	static List<String> ignore = new ExtList<String>(BUNDLE_SPECIFIC_HEADERS);
 
+	/**
+	 * Caller must close this JAR
+	 *
+	 * @param profile
+	 * @return a jar with the executable code
+	 * @throws Exception
+	 */
 	public Jar pack(String profile) throws Exception {
-		Collection< ? extends Builder> subBuilders = getSubBuilders();
+		try (ProjectBuilder pb = getBuilder(null)) {
+			List<Builder> subBuilders = pb.getSubBuilders();
 
-		if (subBuilders.size() != 1) {
-			error("Project has multiple bnd files, please select one of the bnd files").header(EXPORT).context(profile);
-			return null;
-		}
+			if (subBuilders.size() != 1) {
+				error("Project has multiple bnd files, please select one of the bnd files").header(EXPORT)
+						.context(profile);
+				return null;
+			}
 
-		Builder b = subBuilders.iterator().next();
+			Builder b = subBuilders.iterator().next();
 
-		ignore.remove(BUNDLE_SYMBOLICNAME);
-		ignore.remove(BUNDLE_VERSION);
-		ignore.add(SERVICE_COMPONENT);
+			ignore.remove(BUNDLE_SYMBOLICNAME);
+			ignore.remove(BUNDLE_VERSION);
+			ignore.add(SERVICE_COMPONENT);
 
-		ProjectLauncher launcher = getProjectLauncher();
-		launcher.getRunProperties().put("profile", profile); // TODO remove
-		launcher.getRunProperties().put(PROFILE, profile);
-		Jar jar = launcher.executable();
-		Manifest m = jar.getManifest();
-		Attributes main = m.getMainAttributes();
-		for (String key : getPropertyKeys(true)) {
-			if (Character.isUpperCase(key.charAt(0)) && !ignore.contains(key)) {
-				main.putValue(key, getProperty(key));
+			try (ProjectLauncher launcher = getProjectLauncher()) {
+				launcher.getRunProperties().put("profile", profile); // TODO
+																		// remove
+				launcher.getRunProperties().put(PROFILE, profile);
+				Jar jar = launcher.executable();
+				Manifest m = jar.getManifest();
+				Attributes main = m.getMainAttributes();
+				for (String key : getPropertyKeys(true)) {
+					if (Character.isUpperCase(key.charAt(0)) && !ignore.contains(key)) {
+						main.putValue(key, getProperty(key));
+					}
+				}
+
+				if (main.getValue(BUNDLE_SYMBOLICNAME) == null)
+					main.putValue(BUNDLE_SYMBOLICNAME, b.getBsn());
+
+				if (main.getValue(BUNDLE_SYMBOLICNAME) == null)
+					main.putValue(BUNDLE_SYMBOLICNAME, getName());
+
+				if (main.getValue(BUNDLE_VERSION) == null) {
+					main.putValue(BUNDLE_VERSION, Version.LOWEST.toString());
+					warning("No version set, uses 0.0.0");
+				}
+
+				jar.setManifest(m);
+				jar.calcChecksums(new String[] {
+						"SHA1", "MD5"
+				});
+				launcher.removeClose(jar);
+				return jar;
 			}
 		}
-
-		if (main.getValue(BUNDLE_SYMBOLICNAME) == null)
-			main.putValue(BUNDLE_SYMBOLICNAME, b.getBsn());
-
-		if (main.getValue(BUNDLE_SYMBOLICNAME) == null)
-			main.putValue(BUNDLE_SYMBOLICNAME, getName());
-
-		if (main.getValue(BUNDLE_VERSION) == null) {
-			main.putValue(BUNDLE_VERSION, Version.LOWEST.toString());
-			warning("No version set, uses 0.0.0");
-		}
-
-		jar.setManifest(m);
-		jar.calcChecksums(new String[] {
-				"SHA1", "MD5"
-		});
-		return jar;
 	}
 
 	/**
@@ -2645,13 +2802,14 @@ public class Project extends Processor {
 	 */
 
 	public void baseline() throws Exception {
-		ProjectBuilder b = getBuilder(null);
-		for (Builder pb : b.getSubBuilders()) {
-			ProjectBuilder ppb = (ProjectBuilder) pb;
-			Jar build = ppb.build();
-			getInfo(ppb);
+		try (ProjectBuilder pb = getBuilder(null)) {
+			for (Builder b : pb.getSubBuilders()) {
+				@SuppressWarnings("resource")
+				Jar build = b.build();
+				getInfo(b);
+			}
+			getInfo(pb);
 		}
-		getInfo(b);
 	}
 
 	/**
@@ -2886,18 +3044,20 @@ public class Project extends Processor {
 
 	public Map<String,Version> getVersions() throws Exception {
 		if (versionMap.isEmpty()) {
-			for (Builder builder : getSubBuilders()) {
-				String v = builder.getVersion();
-				if (v == null)
-					v = "0";
-				else {
-					v = Analyzer.cleanupVersion(v);
-					if (!Verifier.isVersion(v))
-						continue; // skip
-				}
+			try (ProjectBuilder pb = getBuilder(null)) {
+				for (Builder builder : pb.getSubBuilders()) {
+					String v = builder.getVersion();
+					if (v == null)
+						v = "0";
+					else {
+						v = Analyzer.cleanupVersion(v);
+						if (!Verifier.isVersion(v))
+							continue; // skip
+					}
 
-				Version version = new Version(v);
-				versionMap.put(builder.getBsn(), version);
+					Version version = new Version(v);
+					versionMap.put(builder.getBsn(), version);
+				}
 			}
 		}
 		return new LinkedHashMap<String,Version>(versionMap);
@@ -2990,6 +3150,7 @@ public class Project extends Processor {
 	public void copy(RepositoryPlugin source, String filter, RepositoryPlugin destination) throws Exception {
 		copy(source, filter == null ? null : new Instructions(filter), destination);
 	}
+
 	public void copy(RepositoryPlugin source, Instructions filter, RepositoryPlugin destination) throws Exception {
 
 		assert source != null;

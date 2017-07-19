@@ -18,22 +18,27 @@ public class URIUtilsTest extends TestCase {
 		assertEquals("http://example.com/bar.xml", result.toString());
 	}
 
-	public void testResolveRelativeBlank() throws Exception {
+	public void testResolveBlank() throws Exception {
 		URI result = URIUtil.resolve(URI.create("http://example.com/foo.xml"), "");
+		assertEquals("http://example.com/foo.xml", result.toString());
+	}
+
+	public void testResolveFragmentBlank() throws Exception {
+		URI result = URIUtil.resolve(URI.create("http://example.com/foo.xml#bar"), "");
 		assertEquals("http://example.com/foo.xml", result.toString());
 	}
 
 	public void testResolveAbsoluteWindowsPath() throws Exception {
 		if (isWindows()) {
-			URI result = URIUtil.resolve(URI.create("file:/C:/Users/jimbob/base.txt"), "C:\\Users\\jim\\foo.txt");
-			assertEquals("file:/C:/Users/jim/foo.txt", result.toString());
+			URI result = URIUtil.resolve(URI.create("file:/C:/Users/jimbob/base.txt"), "C:\\Users\\sub dir\\foo.txt");
+			assertEquals("file:/C:/Users/sub%20dir/foo.txt", result.toString());
 		}
 	}
 
 	public void testResolveRelativeWindowsPath() throws Exception {
 		if (isWindows()) {
-			URI result = URIUtil.resolve(URI.create("file:/C:/Users/jim/base.txt"), "subdir\\foo.txt");
-			assertEquals("/C:/Users/jim/subdir/foo.txt", result.getPath());
+			URI result = URIUtil.resolve(URI.create("file:/C:/Users/jim/base.txt"), "sub dir\\foo.txt");
+			assertEquals("file:/C:/Users/jim/sub%20dir/foo.txt", result.toString());
 		}
 	}
 

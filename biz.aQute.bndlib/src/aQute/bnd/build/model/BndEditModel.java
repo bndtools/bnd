@@ -353,8 +353,9 @@ public class BndEditModel {
 	}
 
 	public void loadFrom(IDocument document) throws IOException {
-		InputStream in = toEscaped(document.get());
-		loadFrom(in);
+		try (InputStream in = toEscaped(document.get())) {
+			loadFrom(in);
+		}
 	}
 
 	public InputStream toEscaped(String text) throws IOException {

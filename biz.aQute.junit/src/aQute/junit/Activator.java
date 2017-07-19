@@ -198,10 +198,12 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		trace("adding Bundle Listener for getting test bundle events");
 		context.addBundleListener(new SynchronousBundleListener() {
 			public void bundleChanged(BundleEvent event) {
-				if (event.getType() == BundleEvent.STARTED) {
+				switch (event.getType()) {
+					case BundleEvent.STARTED :
+					case BundleEvent.RESOLVED :
 					checkBundle(queue, event.getBundle());
+						break;
 				}
-
 			}
 		});
 
@@ -245,7 +247,8 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	void checkBundle(List<Bundle> queue, Bundle bundle) {
-		if (bundle.getState() == Bundle.ACTIVE) {
+		Bundle host = findHost(bundle);
+		if (host.getState() == Bundle.ACTIVE) {
 			String testcases = (String) bundle.getHeaders().get(aQute.bnd.osgi.Constants.TESTCASES);
 			if (testcases != null) {
 				trace("found active bundle with test cases %s : %s", bundle, testcases);

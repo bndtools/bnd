@@ -47,7 +47,7 @@ public class BndPomRepository extends BaseRepository
 		implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Actionable {
 	static final String			MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
 
-	boolean						inited;
+	private boolean				inited;
 	private PomConfiguration	configuration;
 	private Registry			registry;
 	private String				name;
@@ -63,7 +63,6 @@ public class BndPomRepository extends BaseRepository
 		try {
 			if (inited)
 				return;
-			inited = true;
 			Workspace workspace = registry.getPlugin(Workspace.class);
 			HttpClient client = registry.getPlugin(HttpClient.class);
 			File localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
@@ -90,6 +89,7 @@ public class BndPomRepository extends BaseRepository
 				throw new IllegalStateException("We have neither a pom, revision, or query set!");
 			}
 			bridge = new BridgeRepository(repoImpl);
+			inited = true;
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -146,7 +146,9 @@ public class BndPomRepository extends BaseRepository
 		} else {
 			throw new IllegalArgumentException("Neither pom, revision nor query property are set");
 		}
-		inited = false;
+		synchronized (this) {
+			inited = false;
+		}
 	}
 
 	@Override

@@ -397,7 +397,7 @@ public class ResourceBuilder {
 		while (attrs.containsKey(key)) {
 			String[] names = Converter.cnv(String[].class, attrs.getTyped(key));
 			for (String name : names) {
-				sb.eq(attribute, name);
+				sb.approximate(attribute, name);
 			}
 			key += "~";
 		}

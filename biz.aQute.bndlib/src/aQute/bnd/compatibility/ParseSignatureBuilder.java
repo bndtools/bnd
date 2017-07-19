@@ -29,91 +29,92 @@ public class ParseSignatureBuilder {
 	}
 
 	public void parse(InputStream in) throws Exception {
-		Analyzer analyzer = new Analyzer();
-		Clazz clazz = new Clazz(analyzer, "", null);
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, "", null);
 
-		clazz.parseClassFile(in, new ClassDataCollector() {
-			Scope	s;
-			Scope	enclosing;
-			Scope	declaring;
+			clazz.parseClassFile(in, new ClassDataCollector() {
+				Scope	s;
+				Scope	enclosing;
+				Scope	declaring;
 
-			@Override
-			public void classBegin(int access, TypeRef name) {
-				s = root.getScope(name.getBinary());
-				s.access = Access.modifier(access);
-				s.kind = Kind.CLASS;
-			}
-
-			@Override
-			public void extendsClass(TypeRef name) {
-				// s.setBase(new GenericType(name));
-			}
-
-			@Override
-			public void implementsInterfaces(TypeRef names[]) {
-				s.setParameterTypes(convert(names));
-			}
-
-			GenericType[] convert(TypeRef names[]) {
-				GenericType tss[] = new GenericType[names.length];
-				for (int i = 0; i < names.length; i++) {
-					// tss[i] = new GenericType(names[i]);
+				@Override
+				public void classBegin(int access, TypeRef name) {
+					s = root.getScope(name.getBinary());
+					s.access = Access.modifier(access);
+					s.kind = Kind.CLASS;
 				}
-				return tss;
-			}
 
-			@Override
-			public void method(Clazz.MethodDef defined) {
-				String descriptor;
-				Kind kind;
-				if (defined.isConstructor()) {
-					descriptor = ":" + defined.getDescriptor();
-					kind = Kind.CONSTRUCTOR;
-				} else {
-					descriptor = defined.getName() + ":" + defined.getDescriptor();
-					kind = Kind.METHOD;
+				@Override
+				public void extendsClass(TypeRef name) {
+					// s.setBase(new GenericType(name));
 				}
-				Scope m = s.getScope(descriptor);
-				m.access = Access.modifier(defined.getAccess());
-				m.kind = kind;
-				m.declaring = s;
-				s.add(m);
-			}
 
-			@Override
-			public void field(Clazz.FieldDef defined) {
-				String descriptor = defined.getName() + ":" + defined.getDescriptor();
-				Kind kind = Kind.FIELD;
-				Scope m = s.getScope(descriptor);
-				m.access = Access.modifier(defined.getAccess());
-				m.kind = kind;
-				m.declaring = s;
-				s.add(m);
-			}
-
-			@Override
-			public void classEnd() {
-				if (enclosing != null)
-					s.setEnclosing(enclosing);
-				if (declaring != null)
-					s.setDeclaring(declaring);
-			}
-
-			@Override
-			public void enclosingMethod(TypeRef cName, String mName, String mDescriptor) {
-				enclosing = root.getScope(cName.getBinary());
-				if (mName != null) {
-					enclosing = enclosing.getScope(Scope.methodIdentity(mName, mDescriptor));
+				@Override
+				public void implementsInterfaces(TypeRef names[]) {
+					s.setParameterTypes(convert(names));
 				}
-			}
 
-			@Override
-			public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName,
-					int innerClassAccessFlags) {
-				if (outerClass != null && innerClass != null && innerClass.getBinary().equals(s.name))
-					declaring = root.getScope(outerClass.getBinary());
-			}
-		});
+				GenericType[] convert(TypeRef names[]) {
+					GenericType tss[] = new GenericType[names.length];
+					for (int i = 0; i < names.length; i++) {
+						// tss[i] = new GenericType(names[i]);
+					}
+					return tss;
+				}
+
+				@Override
+				public void method(Clazz.MethodDef defined) {
+					String descriptor;
+					Kind kind;
+					if (defined.isConstructor()) {
+						descriptor = ":" + defined.getDescriptor();
+						kind = Kind.CONSTRUCTOR;
+					} else {
+						descriptor = defined.getName() + ":" + defined.getDescriptor();
+						kind = Kind.METHOD;
+					}
+					Scope m = s.getScope(descriptor);
+					m.access = Access.modifier(defined.getAccess());
+					m.kind = kind;
+					m.declaring = s;
+					s.add(m);
+				}
+
+				@Override
+				public void field(Clazz.FieldDef defined) {
+					String descriptor = defined.getName() + ":" + defined.getDescriptor();
+					Kind kind = Kind.FIELD;
+					Scope m = s.getScope(descriptor);
+					m.access = Access.modifier(defined.getAccess());
+					m.kind = kind;
+					m.declaring = s;
+					s.add(m);
+				}
+
+				@Override
+				public void classEnd() {
+					if (enclosing != null)
+						s.setEnclosing(enclosing);
+					if (declaring != null)
+						s.setDeclaring(declaring);
+				}
+
+				@Override
+				public void enclosingMethod(TypeRef cName, String mName, String mDescriptor) {
+					enclosing = root.getScope(cName.getBinary());
+					if (mName != null) {
+						enclosing = enclosing.getScope(Scope.methodIdentity(mName, mDescriptor));
+					}
+				}
+
+				@Override
+				public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName,
+						int innerClassAccessFlags) {
+					if (outerClass != null && innerClass != null && innerClass.getBinary().equals(s.name))
+						declaring = root.getScope(outerClass.getBinary());
+				}
+			});
+		}
 
 	}
 }

@@ -23,7 +23,6 @@ import javax.net.ssl.HttpsURLConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.build.Workspace;
 import aQute.lib.base64.Base64;
 import aQute.lib.hex.Hex;
 import aQute.lib.settings.Settings;
@@ -140,7 +139,6 @@ public class BndAuthentication extends DefaultURLConnectionHandler {
 		super.setProperties(map);
 		String email = map.get(EMAIL);
 		if (email == null) {
-			Workspace ws = registry.getPlugin(Workspace.class);
 			Settings settings = registry.getPlugin(Settings.class);
 			email = settings.getEmail();
 			if (email == null) {

@@ -117,7 +117,9 @@ public class ComponentAnnotationReader extends ClassDataCollector {
 	}
 
 	public static Map<String,String> getDefinition(Clazz c) throws Exception {
-		return getDefinition(c, new Processor());
+		try (Processor p = new Processor()) {
+			return getDefinition(c, p);
+		}
 	}
 
 	public static Map<String,String> getDefinition(Clazz c, Reporter reporter) throws Exception {

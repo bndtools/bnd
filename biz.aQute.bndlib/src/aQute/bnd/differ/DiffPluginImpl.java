@@ -178,8 +178,7 @@ public class DiffPluginImpl implements Differ {
 
 			Resource resource = entry.getValue();
 
-			try (InputStream in = resource.openInputStream()) {
-				Digester<SHA1> digester = SHA1.getDigester();
+			try (InputStream in = resource.openInputStream(); Digester<SHA1> digester = SHA1.getDigester()) {
 				IO.copy(in, digester);
 				String value = Hex.toHexString(digester.digest().digest());
 				resources.add(new Element(Type.RESOURCE, entry.getKey(), Arrays.asList(new Element(Type.SHA, value)),

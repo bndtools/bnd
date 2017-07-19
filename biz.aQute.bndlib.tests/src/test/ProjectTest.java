@@ -2,6 +2,8 @@ package test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -12,6 +14,7 @@ import java.util.jar.Manifest;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
@@ -29,15 +32,43 @@ import junit.framework.TestCase;
 		"resource", "restriction"
 })
 public class ProjectTest extends TestCase {
-	File tmp = new File("tmp");
+	File tmp;
 
-	public void setUp() {
+	protected void setUp() {
+		tmp = IO.getFile("generated/tmp");
 		IO.delete(tmp);
 		tmp.mkdirs();
 	}
 
-	public void tearDown() throws Exception {
+	protected void tearDown() throws Exception {
 		IO.delete(tmp);
+	}
+
+	public void testAliasbuild() throws Exception {
+		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
+		Project project = ws.getProject("p3");
+		project.setProperty("-x-overwritestrategy", "disposable-names");
+
+		project.clean();
+		File pt = project.getTarget();
+		if (!pt.exists() && !pt.mkdirs()) {
+			throw new IOException("Could not create directory " + pt);
+		}
+		try {
+			// Now we build it.
+			File[] files = project.build();
+			assertTrue(project.check());
+
+			assertNotNull(files);
+			assertEquals(1, files.length);
+
+			assertTrue(Files.isSymbolicLink(files[0].toPath()));
+			Path linkedTo = Files.readSymbolicLink(files[0].toPath());
+			assertTrue(linkedTo.toString().endsWith("-0"));
+
+		} finally {
+			project.clean();
+		}
 	}
 
 	/**
@@ -401,39 +432,41 @@ public class ProjectTest extends TestCase {
 
 	public void testSubBuilders() throws Exception {
 		Workspace ws = getWorkspace("testresources/ws");
-		Project project = ws.getProject("p4-sub");
+		try (Project project = ws.getProject("p4-sub")) {
+			try (ProjectBuilder pb = project.getBuilder(null)) {
+				List<Builder> bs = pb.getSubBuilders();
+				assertNotNull(bs);
+				assertEquals(3, bs.size());
+				Set<String> names = new HashSet<String>();
+				for (Builder b : bs) {
+					names.add(b.getBsn());
+				}
+				assertTrue(names.contains("p4-sub.a"));
+				assertTrue(names.contains("p4-sub.b"));
+				assertTrue(names.contains("p4-sub.c"));
 
-		Collection< ? extends Builder> bs = project.getSubBuilders();
-		assertNotNull(bs);
-		assertEquals(3, bs.size());
-		Set<String> names = new HashSet<String>();
-		for (Builder b : bs) {
-			names.add(b.getBsn());
-		}
-		assertTrue(names.contains("p4-sub.a"));
-		assertTrue(names.contains("p4-sub.b"));
-		assertTrue(names.contains("p4-sub.c"));
+				File[] files = project.build();
+				assertTrue(project.check());
 
-		File[] files = project.build();
-		assertTrue(project.check());
+				System.err.println(Processor.join(project.getErrors(), "\n"));
+				System.err.println(Processor.join(project.getWarnings(), "\n"));
+				assertEquals(0, project.getErrors().size());
+				assertEquals(0, project.getWarnings().size());
+				assertNotNull(files);
+				assertEquals(3, files.length);
+				for (File file : files) {
+					try (Jar jar = new Jar(file)) {
+						Manifest m = jar.getManifest();
+						assertTrue(names.contains(m.getMainAttributes().getValue("Bundle-SymbolicName")));
+					}
+				}
 
-		System.err.println(Processor.join(project.getErrors(), "\n"));
-		System.err.println(Processor.join(project.getWarnings(), "\n"));
-		assertEquals(0, project.getErrors().size());
-		assertEquals(0, project.getWarnings().size());
-		assertNotNull(files);
-		assertEquals(3, files.length);
-		for (File file : files) {
-			try (Jar jar = new Jar(file)) {
-				Manifest m = jar.getManifest();
-				assertTrue(names.contains(m.getMainAttributes().getValue("Bundle-SymbolicName")));
+				assertEquals(12, project.getExports().size());
+				assertEquals(18, project.getImports().size());
+				assertEquals(12, project.getContained().size());
 			}
 		}
 
-		assertEquals(12, project.getExports().size());
-		assertEquals(18, project.getImports().size());
-		assertEquals(12, project.getContained().size());
-		project.close();
 	}
 
 	/**
@@ -578,8 +611,10 @@ public class ProjectTest extends TestCase {
 
 		assertNull(project.getProperty("Bundle-Version"));
 
-		for (Builder b : project.getSubBuilders()) {
-			assertEquals(new Version(1, 1, 0), new Version(b.getVersion()));
+		try (ProjectBuilder pb = project.getBuilder(null)) {
+			for (Builder b : pb.getSubBuilders()) {
+				assertEquals(new Version(1, 1, 0), new Version(b.getVersion()));
+			}
 		}
 	}
 
@@ -795,45 +830,47 @@ public class ProjectTest extends TestCase {
 		//
 		// We expect p1 to be a single project (no sub builders)
 		//
-		assertEquals("p1 must be singleton", 1, top.getSubBuilders().size());
-		Builder builder = top.getSubBuilders().iterator().next();
-		assertEquals("p1 must be singleton", "p1", builder.getBsn());
+		try (ProjectBuilder pb = top.getBuilder(null)) {
+			assertEquals("p1 must be singleton", 1, pb.getSubBuilders().size());
+			Builder builder = pb.getSubBuilders().get(0);
+			assertEquals("p1 must be singleton", "p1", builder.getBsn());
 
-		// Check the default bsn.jar form
+			// Check the default bsn.jar form
 
-		assertEquals(new File(top.getTarget(), "p1.jar"), top.getOutputFile("p1"));
-		assertEquals(new File(top.getTarget(), "p1.jar"), top.getOutputFile("p1", "0"));
+			assertEquals(new File(top.getTarget(), "p1.jar"), top.getOutputFile("p1"));
+			assertEquals(new File(top.getTarget(), "p1.jar"), top.getOutputFile("p1", "0"));
 
-		// Add the version to the filename
-		top.setProperty("-outputmask", "${@bsn}-${version;===s;${@version}}.jar");
-		assertEquals(new File(top.getTarget(), "p1-1.260.0.jar"),
-				top.getOutputFile(builder.getBsn(), builder.getVersion()));
+			// Add the version to the filename
+			top.setProperty("-outputmask", "${@bsn}-${version;===s;${@version}}.jar");
+			assertEquals(new File(top.getTarget(), "p1-1.260.0.jar"),
+					top.getOutputFile(builder.getBsn(), builder.getVersion()));
 
-		top.setProperty("Bundle-Version", "1.260.0.SNAPSHOT");
-		assertEquals(new File(top.getTarget(), "p1-1.260.0-SNAPSHOT.jar"),
-				top.getOutputFile(builder.getBsn(), builder.getVersion()));
+			top.setProperty("Bundle-Version", "1.260.0.SNAPSHOT");
+			assertEquals(new File(top.getTarget(), "p1-1.260.0-SNAPSHOT.jar"),
+					top.getOutputFile(builder.getBsn(), builder.getVersion()));
 
-		top.setProperty("-outputmask", "${@bsn}-${version;===S;${@version}}.jar");
-		assertEquals(new File(top.getTarget(), "p1-1.260.0-SNAPSHOT.jar"),
-				top.getOutputFile(builder.getBsn(), builder.getVersion()));
+			top.setProperty("-outputmask", "${@bsn}-${version;===S;${@version}}.jar");
+			assertEquals(new File(top.getTarget(), "p1-1.260.0-SNAPSHOT.jar"),
+					top.getOutputFile(builder.getBsn(), builder.getVersion()));
 
-		top.setProperty("Bundle-Version", "1.260.0.NOTSNAPSHOT");
-		top.setProperty("-outputmask", "${@bsn}-${version;===S;${@version}}.jar");
-		assertEquals(new File(top.getTarget(), "p1-1.260.0.NOTSNAPSHOT.jar"),
-				top.getOutputFile(builder.getBsn(), builder.getVersion()));
+			top.setProperty("Bundle-Version", "1.260.0.NOTSNAPSHOT");
+			top.setProperty("-outputmask", "${@bsn}-${version;===S;${@version}}.jar");
+			assertEquals(new File(top.getTarget(), "p1-1.260.0.NOTSNAPSHOT.jar"),
+					top.getOutputFile(builder.getBsn(), builder.getVersion()));
 
-		top.setProperty("-outputmask", "${@bsn}-${version;===s;${@version}}.jar");
-		assertEquals(new File(top.getTarget(), "p1-1.260.0.jar"),
-				top.getOutputFile(builder.getBsn(), builder.getVersion()));
+			top.setProperty("-outputmask", "${@bsn}-${version;===s;${@version}}.jar");
+			assertEquals(new File(top.getTarget(), "p1-1.260.0.jar"),
+					top.getOutputFile(builder.getBsn(), builder.getVersion()));
 
-		top.setProperty("Bundle-Version", "42");
-		top.setProperty("-outputmask", "${@bsn}-${version;===S;${@version}}.jar");
-		assertEquals(new File(top.getTarget(), "p1-42.0.0.jar"),
-				top.getOutputFile(builder.getBsn(), builder.getVersion()));
+			top.setProperty("Bundle-Version", "42");
+			top.setProperty("-outputmask", "${@bsn}-${version;===S;${@version}}.jar");
+			assertEquals(new File(top.getTarget(), "p1-42.0.0.jar"),
+					top.getOutputFile(builder.getBsn(), builder.getVersion()));
 
-		top.setProperty("-outputmask", "${@bsn}-${version;===s;${@version}}.jar");
-		assertEquals(new File(top.getTarget(), "p1-42.0.0.jar"),
-				top.getOutputFile(builder.getBsn(), builder.getVersion()));
+			top.setProperty("-outputmask", "${@bsn}-${version;===s;${@version}}.jar");
+			assertEquals(new File(top.getTarget(), "p1-42.0.0.jar"),
+					top.getOutputFile(builder.getBsn(), builder.getVersion()));
+		}
 	}
 
 	private Workspace getWorkspace(File file) throws Exception {
