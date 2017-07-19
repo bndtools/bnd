@@ -36,10 +36,12 @@ void copyProjectBundles(String[] projs, String dstDir) {
       throw new GradleException("Could not find project ${it}")
     }
 
-    proj.bnd.project.getSubBuilders()*.getBsn().each { bsn ->
-      copy {
-        from project.relativePath(proj.bnd.project.getOutputFile(bsn))
-        into targetDir
+    proj.bnd.project.getBuilder(null).withCloseable { pb ->
+      pb.getSubBuilders()*.getBsn().each { bsn ->
+        copy {
+          from project.relativePath(proj.bnd.project.getOutputFile(bsn))
+          into targetDir
+        }
       }
     }
   }

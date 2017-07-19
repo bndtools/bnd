@@ -1,5 +1,16 @@
 package org.bndtools.builder;
 
+import static org.bndtools.api.BndtoolsConstants.BNDTOOLS_MARKER_CONTEXT_ATTR;
+import static org.bndtools.api.BndtoolsConstants.BNDTOOLS_MARKER_FILE_ATTR;
+import static org.bndtools.api.BndtoolsConstants.BNDTOOLS_MARKER_HEADER_ATTR;
+import static org.bndtools.api.BndtoolsConstants.BNDTOOLS_MARKER_REFERENCE_ATTR;
+import static org.bndtools.api.BndtoolsConstants.CORE_PLUGIN_ID;
+import static org.bndtools.api.BndtoolsConstants.MARKER_BND_MISSING_WORKSPACE;
+import static org.bndtools.api.BndtoolsConstants.MARKER_BND_PATH_PROBLEM;
+import static org.bndtools.api.BndtoolsConstants.MARKER_BND_PROBLEM;
+import static org.bndtools.api.BndtoolsConstants.MARKER_BND_WORKSPACE_PROBLEM;
+import static org.bndtools.api.BndtoolsConstants.MARKER_JAVA_BASELINE;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -23,12 +34,12 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IJavaModelMarker;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Processor;
 import aQute.service.reporter.Report.Location;
 import aQute.service.reporter.Reporter.SetLocation;
-import static org.bndtools.api.BndtoolsConstants.*;
 
 class MarkerSupport {
     private static final ILogger logger = Logger.getLogger(BndtoolsBuilder.class);
@@ -173,10 +184,12 @@ class MarkerSupport {
                     if (v instanceof IProjectValidator) {
                         ((IProjectValidator) v).validateProject(model);
                     } else {
-                        for (Builder builder : model.getSubBuilders()) {
-                            IStatus status = v.validate(builder);
-                            report(builder, status);
-                            model.getInfo(builder);
+                        try (ProjectBuilder pb = model.getBuilder(null)) {
+                            for (Builder builder : pb.getSubBuilders()) {
+                                IStatus status = v.validate(builder);
+                                report(builder, status);
+                                model.getInfo(builder);
+                            }
                         }
                     }
                 } catch (Exception e) {

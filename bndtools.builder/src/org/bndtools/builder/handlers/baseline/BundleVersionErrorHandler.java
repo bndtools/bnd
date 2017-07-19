@@ -23,6 +23,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.osgi.Builder;
 import aQute.lib.io.IO;
@@ -44,70 +45,72 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
         LineLocation loc = null;
 
         BundleInfo info = (BundleInfo) location.details;
-        for (Builder builder : model.getSubBuilders()) {
-            if (builder.getBsn().equals(info.bsn)) {
-                File propsFile = builder.getPropertiesFile();
-                // Try to find in the sub-bundle file
-                if (propsFile != null) {
-                    bndFile = project.getWorkspace().getRoot().getFileForLocation(new Path(propsFile.getAbsolutePath()));
-                    if (bndFile != null) {
+        try (ProjectBuilder pb = model.getBuilder(null)) {
+            for (Builder builder : pb.getSubBuilders()) {
+                if (builder.getBsn().equals(info.bsn)) {
+                    File propsFile = builder.getPropertiesFile();
+                    // Try to find in the sub-bundle file
+                    if (propsFile != null) {
+                        bndFile = project.getWorkspace().getRoot().getFileForLocation(new Path(propsFile.getAbsolutePath()));
+                        if (bndFile != null) {
+                            loc = findBundleVersionHeader(bndFile);
+                        }
+                    }
+
+                    if (loc == null) {
+                        // Not found in sub-bundle file, try bnd.bnd
+                        bndFile = project.getFile(Project.BNDFILE);
                         loc = findBundleVersionHeader(bndFile);
                     }
-                }
 
-                if (loc == null) {
-                    // Not found in sub-bundle file, try bnd.bnd
-                    bndFile = project.getFile(Project.BNDFILE);
-                    loc = findBundleVersionHeader(bndFile);
-                }
-
-                if (loc == null) {
-                    // Not found in bnd.bnd, try build.bnd. Marker will appear on bnd.bnd
-                    IFile buildFile = Central.getWorkspaceBuildFile();
-                    loc = findBundleVersionHeader(buildFile);
-                    if (loc != null) {
-                        loc = new LineLocation();
-                        loc.lineNum = 1;
-                        loc.start = 1;
-                        loc.end = 1;
+                    if (loc == null) {
+                        // Not found in bnd.bnd, try build.bnd. Marker will appear on bnd.bnd
+                        IFile buildFile = Central.getWorkspaceBuildFile();
+                        loc = findBundleVersionHeader(buildFile);
+                        if (loc != null) {
+                            loc = new LineLocation();
+                            loc.lineNum = 1;
+                            loc.start = 1;
+                            loc.end = 1;
+                        }
                     }
-                }
 
-                if (loc == null) {
-                    // Not found in build.bnd, try included files. Marker will appear on bnd.bnd
-                    List<File> extensions = Central.getWorkspace().getIncluded();
-                    if (extensions != null) {
-                        for (File extension : extensions) {
-                            loc = findBundleVersionHeader((IFile) Central.toResource(extension));
-                            if (loc != null) {
-                                loc = new LineLocation();
-                                loc.lineNum = 1;
-                                loc.start = 1;
-                                loc.end = 1;
-                                break;
+                    if (loc == null) {
+                        // Not found in build.bnd, try included files. Marker will appear on bnd.bnd
+                        List<File> extensions = Central.getWorkspace().getIncluded();
+                        if (extensions != null) {
+                            for (File extension : extensions) {
+                                loc = findBundleVersionHeader((IFile) Central.toResource(extension));
+                                if (loc != null) {
+                                    loc = new LineLocation();
+                                    loc.lineNum = 1;
+                                    loc.start = 1;
+                                    loc.end = 1;
+                                    break;
+                                }
                             }
                         }
                     }
-                }
 
-                if (loc != null) {
-                    Map<String,Object> attribs = new HashMap<String,Object>();
-                    attribs.put(IMarker.MESSAGE, location.message);
-                    attribs.put(IMarker.LINE_NUMBER, loc.lineNum);
-                    attribs.put(IMarker.CHAR_START, loc.start);
-                    attribs.put(IMarker.CHAR_END, loc.end);
+                    if (loc != null) {
+                        Map<String,Object> attribs = new HashMap<String,Object>();
+                        attribs.put(IMarker.MESSAGE, location.message);
+                        attribs.put(IMarker.LINE_NUMBER, loc.lineNum);
+                        attribs.put(IMarker.CHAR_START, loc.start);
+                        attribs.put(IMarker.CHAR_END, loc.end);
 
-                    String qualifier = null;
-                    String currentVersion = builder.getUnprocessedProperty(Constants.BUNDLE_VERSION, "");
-                    if (currentVersion != null) {
-                        Matcher m = VERSION_ACCEPTING_MACRO.matcher(currentVersion);
-                        if (m.matches()) {
-                            qualifier = m.group(4);
+                        String qualifier = null;
+                        String currentVersion = builder.getUnprocessedProperty(Constants.BUNDLE_VERSION, "");
+                        if (currentVersion != null) {
+                            Matcher m = VERSION_ACCEPTING_MACRO.matcher(currentVersion);
+                            if (m.matches()) {
+                                qualifier = m.group(4);
+                            }
                         }
-                    }
-                    attribs.put(PROP_SUGGESTED_VERSION, info.suggestedVersion.toString() + (qualifier != null ? '.' + qualifier : ""));
+                        attribs.put(PROP_SUGGESTED_VERSION, info.suggestedVersion.toString() + (qualifier != null ? '.' + qualifier : ""));
 
-                    result.add(new MarkerData(bndFile, attribs, true, BndtoolsConstants.MARKER_JAVA_BASELINE));
+                        result.add(new MarkerData(bndFile, attribs, true, BndtoolsConstants.MARKER_JAVA_BASELINE));
+                    }
                 }
             }
         }

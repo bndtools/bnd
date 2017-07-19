@@ -29,6 +29,7 @@ import org.osgi.resource.Requirement;
 import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.osgi.Builder;
@@ -210,8 +211,8 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
     Object[] getProjectBundles(Project project) {
         ProjectBundle[] result = null;
-        try {
-            Collection< ? extends Builder> builders = project.getSubBuilders();
+        try (ProjectBuilder pb = project.getBuilder(null)) {
+            List<Builder> builders = pb.getSubBuilders();
             result = new ProjectBundle[builders.size()];
 
             int i = 0;

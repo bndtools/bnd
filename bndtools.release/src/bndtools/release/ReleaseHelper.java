@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -34,6 +33,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.Info;
@@ -61,19 +61,19 @@ public class ReleaseHelper {
     public final static Pattern VERSION_WITH_MACRO = Pattern.compile(VERSION_WITH_MACRO_STRING);
 
     public static void updateProject(ReleaseContext context) throws Exception {
+        try (ProjectBuilder pb = context.getProject().getBuilder(null)) {
+            for (Builder builder : pb.getSubBuilders()) {
 
-        Collection< ? extends Builder> builders = context.getProject().getBuilder(null).getSubBuilders();
-        for (Builder builder : builders) {
+                Baseline current = getBaselineForBuilder(builder, context);
+                if (current == null) {
+                    continue;
+                }
+                for (Info info : current.getPackageInfos()) {
+                    context.getProject().setPackageInfo(info.packageName, info.suggestedVersion);
+                }
 
-            Baseline current = getBaselineForBuilder(builder, context);
-            if (current == null) {
-                continue;
+                updateBundleVersion(context, current, builder);
             }
-            for (Info info : current.getPackageInfos()) {
-                context.getProject().setPackageInfo(info.packageName, info.suggestedVersion);
-            }
-
-            updateBundleVersion(context, current, builder);
         }
     }
 
@@ -198,18 +198,21 @@ public class ReleaseHelper {
             return false;
         }
 
-        for (Baseline diff : diffs) {
-            Collection< ? extends Builder> builders = context.getProject().getBuilder(null).getSubBuilders();
-            Builder builder = null;
-            for (Builder b : builders) {
-                if (b.getBsn().equals(diff.getBsn())) {
-                    builder = b;
-                    break;
+        try (ProjectBuilder pb = context.getProject().getBuilder(null)) {
+            List<Builder> builders = pb.getSubBuilders();
+
+            for (Baseline diff : diffs) {
+                Builder builder = null;
+                for (Builder b : builders) {
+                    if (b.getBsn().equals(diff.getBsn())) {
+                        builder = b;
+                        break;
+                    }
                 }
-            }
-            if (builder != null) {
-                if (!release(context, participants, builder)) {
-                    ret = false;
+                if (builder != null) {
+                    if (!release(context, participants, builder)) {
+                        ret = false;
+                    }
                 }
             }
         }

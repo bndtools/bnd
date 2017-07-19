@@ -9,6 +9,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.JavaCore;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.osgi.Builder;
 import bndtools.central.Central;
 
@@ -36,7 +37,20 @@ public class BndFileCapReqLoader extends BndBuilderCapReqLoader {
             if (bndProject == null)
                 return null;
             if (file.getName().equals(Project.BNDFILE)) {
-                b = bndProject.getSubBuilders().iterator().next();
+                ProjectBuilder pb = bndProject.getBuilder(null);
+                boolean close = true;
+                try {
+                    b = pb.getSubBuilders().get(0);
+                    if (b == pb) {
+                        close = false;
+                    } else {
+                        pb.removeClose(b);
+                    }
+                } finally {
+                    if (close) {
+                        pb.close();
+                    }
+                }
             } else {
                 b = bndProject.getSubBuilder(file);
             }
