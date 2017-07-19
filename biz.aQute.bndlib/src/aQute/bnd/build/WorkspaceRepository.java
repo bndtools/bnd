@@ -42,14 +42,12 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 			if (Constants.VERSION_ATTR_LATEST.equals(range) || matchVersion(range, version, exact)) {
 				File file = project.getOutputFile(bsn, version.toString());
 				if (!file.exists()) {
-					try (Builder builder = project.getSubBuilder(bsn);) {
-						Jar jar = builder.build();
+					try (Builder builder = project.getSubBuilder(bsn); Jar jar = builder.build()) {
 						if (jar == null) {
 							project.getInfo(builder);
 							continue;
 						}
 						file = project.saveBuild(jar);
-						jar.close();
 					}
 				}
 				foundVersion.put(version, file);

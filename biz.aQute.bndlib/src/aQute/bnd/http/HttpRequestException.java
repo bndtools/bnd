@@ -23,8 +23,7 @@ public class HttpRequestException extends RuntimeException {
 	}
 
 	private static String getMessage(HttpURLConnection conn) {
-		try {
-			InputStream in = conn.getErrorStream();
+		try (InputStream in = conn.getErrorStream()) {
 			if (in != null)
 				return IO.collect(in);
 		} catch (Exception e) {

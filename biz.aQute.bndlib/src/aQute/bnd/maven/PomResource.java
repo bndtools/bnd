@@ -162,8 +162,6 @@ public class PomResource extends WriteResource {
 
 	@Override
 	public void write(OutputStream out) throws IOException {
-		PrintWriter pw = IO.writer(out);
-
 		String description = manifest.getMainAttributes().getValue(Constants.BUNDLE_DESCRIPTION);
 		String docUrl = manifest.getMainAttributes().getValue(Constants.BUNDLE_DOCURL);
 		String bundleVendor = manifest.getMainAttributes().getValue(Constants.BUNDLE_VENDOR);
@@ -285,6 +283,7 @@ public class PomResource extends WriteResource {
 		if (validate != null)
 			throw new IllegalArgumentException(validate);
 
+		PrintWriter pw = IO.writer(out);
 		pw.print("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 		project.print(0, pw);
 		pw.flush();

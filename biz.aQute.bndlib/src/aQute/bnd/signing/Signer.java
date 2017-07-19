@@ -120,19 +120,20 @@ public class Signer extends Processor {
 
 	private byte[] doSignatureFile(String[] digestNames, MessageDigest[] algorithms, byte[] manbytes)
 			throws IOException {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		PrintWriter ps = IO.writer(out);
-		ps.print("Signature-Version: 1.0\r\n");
+		try (ByteArrayOutputStream out = new ByteArrayOutputStream(); PrintWriter ps = IO.writer(out)) {
+			ps.print("Signature-Version: 1.0\r\n");
 
-		for (int a = 0; a < algorithms.length; a++) {
-			if (algorithms[a] != null) {
-				byte[] digest = algorithms[a].digest(manbytes);
-				ps.print(digestNames[a] + "-Digest-Manifest: ");
-				ps.print(new Base64(digest));
-				ps.print("\r\n");
+			for (int a = 0; a < algorithms.length; a++) {
+				if (algorithms[a] != null) {
+					byte[] digest = algorithms[a].digest(manbytes);
+					ps.print(digestNames[a] + "-Digest-Manifest: ");
+					ps.print(new Base64(digest));
+					ps.print("\r\n");
+				}
 			}
+			ps.flush();
+			return out.toByteArray();
 		}
-		return out.toByteArray();
 	}
 
 	private void doManifest(Jar jar, String[] digestNames, MessageDigest[] algorithms, OutputStream out)

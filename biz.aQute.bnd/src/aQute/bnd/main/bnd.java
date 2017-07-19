@@ -68,6 +68,7 @@ import org.w3c.dom.Document;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
+import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.ProjectTester;
 import aQute.bnd.build.Run;
@@ -732,7 +733,9 @@ public class bnd extends Processor {
 			err.printf("Actions      %s\n", project.getActions().keySet());
 			err.printf("Directory    %s\n", project.getBase());
 			err.printf("Depends on   %s\n", project.getDependson());
-			err.printf("Sub builders %s\n", project.getSubBuilders());
+			try (ProjectBuilder pb = project.getBuilder(null)) {
+				err.printf("Sub builders %s\n", pb.getSubBuilders());
+			}
 			return;
 		}
 
@@ -1779,11 +1782,15 @@ public class bnd extends Processor {
 			report(justif, "Workspace", project.getWorkspace());
 			report(justif, "Project", project);
 
-			if (project.getSubBuilders() != null)
-				for (Builder sub : project.getSubBuilders()) {
-					report(justif, "Sub-Builder", sub);
-					getInfo(sub);
+			try (ProjectBuilder pb = project.getBuilder(null)) {
+				List<Builder> builders = pb.getSubBuilders();
+				if (builders != null) {
+					for (Builder sub : builders) {
+						report(justif, "Sub-Builder", sub);
+						getInfo(sub);
+					}
 				}
+			}
 
 			for (File file : project.getBase().listFiles()) {
 				if (file.getName().endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {

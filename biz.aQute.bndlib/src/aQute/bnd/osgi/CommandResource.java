@@ -44,11 +44,14 @@ public class CommandResource extends WriteResource {
 			logger.debug("PATH: {}", path);
 		}
 		Writer osw = IO.writer(out, UTF_8);
-		int result = cmd.execute(command, stdout, errors);
-		osw.append(stdout);
-		osw.flush();
-		if (result != 0) {
-			domain.error("Cmd '%s' failed in %s. %n  %s%n  %s", command, wd, errors, stdout);
+		try {
+			int result = cmd.execute(command, stdout, errors);
+			if (result != 0) {
+				domain.error("Cmd '%s' failed in %s. %n  %s%n  %s", command, wd, errors, stdout);
+			}
+		} finally {
+			osw.append(stdout);
+			osw.flush();
 		}
 	}
 

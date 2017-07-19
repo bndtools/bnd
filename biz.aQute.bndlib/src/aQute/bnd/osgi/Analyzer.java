@@ -1383,7 +1383,8 @@ public class Analyzer extends Processor {
 	 */
 	public Jar setJar(File file) throws IOException {
 		Jar jar = new Jar(file);
-		return setJar(jar);
+		setJar(jar);
+		return jar;
 	}
 
 	/**
@@ -2804,17 +2805,18 @@ public class Analyzer extends Processor {
 				null, null, Pattern.compile("base64|hex")
 		}, 2, 3);
 
-		Digester<MD5> digester = MD5.getDigester();
-		Resource r = dot.getResource(args[1]);
-		if (r == null)
-			throw new FileNotFoundException("From " + digester + ", not found " + args[1]);
+		try (Digester<MD5> digester = MD5.getDigester()) {
+			Resource r = dot.getResource(args[1]);
+			if (r == null)
+				throw new FileNotFoundException("From " + digester + ", not found " + args[1]);
 
-		IO.copy(r.openInputStream(), digester);
-		boolean hex = args.length > 2 && args[2].equals("hex");
-		if (hex)
-			return Hex.toHexString(digester.digest().digest());
+			IO.copy(r.openInputStream(), digester);
+			boolean hex = args.length > 2 && args[2].equals("hex");
+			if (hex)
+				return Hex.toHexString(digester.digest().digest());
 
-		return Base64.encodeBase64(digester.digest().digest());
+			return Base64.encodeBase64(digester.digest().digest());
+		}
 	}
 
 	/**
@@ -2827,13 +2829,14 @@ public class Analyzer extends Processor {
 		Macro.verifyCommand(args, _sha1Help, new Pattern[] {
 				null, null, Pattern.compile("base64|hex")
 		}, 2, 3);
-		Digester<SHA1> digester = SHA1.getDigester();
-		Resource r = dot.getResource(args[1]);
-		if (r == null)
-			throw new FileNotFoundException("From sha1, not found " + args[1]);
+		try (Digester<SHA1> digester = SHA1.getDigester()) {
+			Resource r = dot.getResource(args[1]);
+			if (r == null)
+				throw new FileNotFoundException("From sha1, not found " + args[1]);
 
-		IO.copy(r.openInputStream(), digester);
-		return Base64.encodeBase64(digester.digest().digest());
+			IO.copy(r.openInputStream(), digester);
+			return Base64.encodeBase64(digester.digest().digest());
+		}
 	}
 
 	public Descriptor getDescriptor(String descriptor) {

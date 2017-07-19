@@ -2164,14 +2164,14 @@ public class Project extends Processor {
 	}
 
 	public void run() throws Exception {
-		try (ProjectLauncher pl = getProjectLauncher();) {
+		try (ProjectLauncher pl = getProjectLauncher()) {
 			pl.setTrace(isTrace() || isTrue(getProperty(RUNTRACE)));
 			pl.launch();
 		}
 	}
 
 	public void runLocal() throws Exception {
-		try (ProjectLauncher pl = getProjectLauncher();) {
+		try (ProjectLauncher pl = getProjectLauncher()) {
 			pl.setTrace(isTrace() || isTrue(getProperty(RUNTRACE)));
 			pl.start(null);
 		}
@@ -2473,9 +2473,7 @@ public class Project extends Processor {
 	public Collection<Container> getDeliverables() throws Exception {
 		List<Container> result = new ArrayList<Container>();
 		try (ProjectBuilder pb = getBuilder(null)) {
-			Collection< ? extends Builder> builders = pb.getSubBuilders();
-
-			for (Builder builder : builders) {
+			for (Builder builder : pb.getSubBuilders()) {
 				Container c = new Container(this, builder.getBsn(), builder.getVersion(), Container.TYPE.PROJECT,
 						getOutputFile(builder.getBsn(), builder.getVersion()), null, null, null);
 				result.add(c);
@@ -2505,20 +2503,29 @@ public class Project extends Processor {
 		if (!bndFile.getAbsolutePath().startsWith(base.getAbsolutePath()))
 			return null;
 
-		try (ProjectBuilder pb = getBuilder(null)) {
-			Collection< ? extends Builder> builders = pb.getSubBuilders();
-			for (Builder sub : builders) {
-				File propertiesFile = sub.getPropertiesFile();
+		ProjectBuilder pb = getBuilder(null);
+		boolean close = true;
+		try {
+			for (Builder b : pb.getSubBuilders()) {
+				File propertiesFile = b.getPropertiesFile();
 				if (propertiesFile != null) {
 					if (propertiesFile.getCanonicalFile().equals(bndFile)) {
 						// Found it!
-						// disconnect from parent
-						pb.removeClose(sub);
-						return sub;
+						// disconnect from its parent life cycle
+						if (b == pb) {
+							close = false;
+						} else {
+							pb.removeClose(b);
+						}
+						return b;
 					}
 				}
 			}
 			return null;
+		} finally {
+			if (close) {
+				pb.close();
+			}
 		}
 	}
 
@@ -2529,18 +2536,25 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public ProjectBuilder getSubBuilder(String string) throws Exception {
-		try (ProjectBuilder parentBuilder = getBuilder(null)) {
-			Collection< ? extends Builder> builders = parentBuilder.getSubBuilders();
-			for (Builder b : builders) {
+		ProjectBuilder pb = getBuilder(null);
+		boolean close = true;
+		try {
+			for (Builder b : pb.getSubBuilders()) {
 				if (b.getBsn().equals(string) || b.getBsn().endsWith("." + string)) {
-					ProjectBuilder subBuilder = (ProjectBuilder) b;
-
 					// disconnect from its parent life cycle
-					parentBuilder.removeClose(subBuilder);
-					return subBuilder;
+					if (b == pb) {
+						close = false;
+					} else {
+						pb.removeClose(b);
+					}
+					return (ProjectBuilder) b;
 				}
 			}
 			return null;
+		} finally {
+			if (close) {
+				pb.close();
+			}
 		}
 	}
 
@@ -2550,21 +2564,20 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public Container getDeliverable(String bsn, Map<String,String> attrs) throws Exception {
-		try (ProjectBuilder b = getBuilder(null)) {
-			Collection< ? extends Builder> builders = b.getSubBuilders();
-			for (Builder sub : builders) {
-				if (sub.getBsn().equals(bsn))
-					return new Container(this, getOutputFile(bsn, sub.getVersion()), attrs);
+		try (ProjectBuilder pb = getBuilder(null)) {
+			for (Builder b : pb.getSubBuilders()) {
+				if (b.getBsn().equals(bsn))
+					return new Container(this, getOutputFile(bsn, b.getVersion()), attrs);
 			}
 		}
 		return null;
 	}
 
 	/**
-	 * Get a list of the sub builders. A bnd.bnd file can contain the -sub
-	 * option. This will generate multiple deliverables. This method returns the
-	 * builders for each sub file. If no -sub option is present, the list will
-	 * contain a builder for the bnd.bnd file.
+	 * Get a list of the sub builders. A bnd.bnd file can contain the -sub option.
+	 * This will generate multiple deliverables. This method returns the builders
+	 * for each sub file. If no -sub option is present, the list will contain a
+	 * builder for the bnd.bnd file.
 	 *
 	 * @return A list of builders.
 	 * @throws Exception
@@ -2708,7 +2721,7 @@ public class Project extends Processor {
 	 */
 	public Jar pack(String profile) throws Exception {
 		try (ProjectBuilder pb = getBuilder(null)) {
-			Collection< ? extends Builder> subBuilders = pb.getSubBuilders();
+			List<Builder> subBuilders = pb.getSubBuilders();
 
 			if (subBuilders.size() != 1) {
 				error("Project has multiple bnd files, please select one of the bnd files").header(EXPORT)
@@ -2722,7 +2735,7 @@ public class Project extends Processor {
 			ignore.remove(BUNDLE_VERSION);
 			ignore.add(SERVICE_COMPONENT);
 
-			try (ProjectLauncher launcher = getProjectLauncher();) {
+			try (ProjectLauncher launcher = getProjectLauncher()) {
 				launcher.getRunProperties().put("profile", profile); // TODO
 																		// remove
 				launcher.getRunProperties().put(PROFILE, profile);
@@ -2763,13 +2776,13 @@ public class Project extends Processor {
 	 */
 
 	public void baseline() throws Exception {
-		try (ProjectBuilder b = getBuilder(null);) {
-			for (Builder pb : b.getSubBuilders()) {
-				ProjectBuilder ppb = (ProjectBuilder) pb;
-				Jar build = ppb.build();
-				getInfo(ppb);
+		try (ProjectBuilder pb = getBuilder(null)) {
+			for (Builder b : pb.getSubBuilders()) {
+				@SuppressWarnings("resource")
+				Jar build = b.build();
+				getInfo(b);
 			}
-			getInfo(b);
+			getInfo(pb);
 		}
 	}
 
@@ -3005,8 +3018,8 @@ public class Project extends Processor {
 
 	public Map<String,Version> getVersions() throws Exception {
 		if (versionMap.isEmpty()) {
-			try (ProjectBuilder b = getBuilder(null)) {
-				for (Builder builder : b.getSubBuilders()) {
+			try (ProjectBuilder pb = getBuilder(null)) {
+				for (Builder builder : pb.getSubBuilders()) {
 					String v = builder.getVersion();
 					if (v == null)
 						v = "0";

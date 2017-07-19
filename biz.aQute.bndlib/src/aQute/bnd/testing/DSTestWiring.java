@@ -19,6 +19,7 @@ import org.osgi.framework.ServiceReference;
 import aQute.bnd.make.component.ComponentAnnotationReader;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.URLResource;
 import aQute.lib.collections.MultiMap;
 
@@ -173,48 +174,49 @@ public class DSTestWiring {
 			// Get the component definition
 			//
 
-			Analyzer a = new Analyzer();
-			Clazz clazz = new Clazz(a, "", new URLResource(url));
-			Map<String,String> d = ComponentAnnotationReader.getDefinition(clazz);
+			try (Analyzer a = new Analyzer(); Resource resource = new URLResource(url)) {
+				Clazz clazz = new Clazz(a, "", resource);
+				Map<String,String> d = ComponentAnnotationReader.getDefinition(clazz);
 
-			for (String key : d.keySet()) {
-				if ("activate:".equals(key))
-					activate = findMethod(d.get(key));
-				else if ("deactivate:".equals(key))
-					deactivate = findMethod(d.get(key));
-				else {
-					//
-					// Pick out the references
-					//
+				for (String key : d.keySet()) {
+					if ("activate:".equals(key))
+						activate = findMethod(d.get(key));
+					else if ("deactivate:".equals(key))
+						deactivate = findMethod(d.get(key));
+					else {
+						//
+						// Pick out the references
+						//
 
-					Matcher matcher = REFERENCE.matcher(key);
-					if (matcher.matches()) {
-						Reference r = new Reference();
-						r.name = matcher.group(1);
-						r.set = findMethod(matcher.group(2));
-						r.unset = findMethod(matcher.group(3));
-						// TODO handle target
-						String type = d.get(key);
-						if (type.endsWith("*")) {
-							r.multiple = true;
-							r.optional = true;
-							r.dynamic = true;
-						} else if (type.endsWith("?")) {
-							r.multiple = false;
-							r.optional = true;
-							r.dynamic = true;
-						} else if (type.endsWith("+")) {
-							r.multiple = true;
-							r.optional = false;
-							r.dynamic = true;
-						} else {
-							r.multiple = false;
-							r.optional = false;
-							r.dynamic = false;
+						Matcher matcher = REFERENCE.matcher(key);
+						if (matcher.matches()) {
+							Reference r = new Reference();
+							r.name = matcher.group(1);
+							r.set = findMethod(matcher.group(2));
+							r.unset = findMethod(matcher.group(3));
+							// TODO handle target
+							String type = d.get(key);
+							if (type.endsWith("*")) {
+								r.multiple = true;
+								r.optional = true;
+								r.dynamic = true;
+							} else if (type.endsWith("?")) {
+								r.multiple = false;
+								r.optional = true;
+								r.dynamic = true;
+							} else if (type.endsWith("+")) {
+								r.multiple = true;
+								r.optional = false;
+								r.dynamic = true;
+							} else {
+								r.multiple = false;
+								r.optional = false;
+								r.dynamic = false;
+							}
+
+							references.add(r);
+
 						}
-
-						references.add(r);
-
 					}
 				}
 			}

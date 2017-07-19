@@ -51,12 +51,13 @@ public class MavenPlugin extends LifeCyclePlugin {
 		if (f.isFile()) {
 			s = IO.collect(f);
 		} else {
-			InputStream in = MavenPlugin.class.getResourceAsStream(source);
-			if (in == null) {
-				p.error("Cannot find Maven default for %s", source);
-				return;
+			try (InputStream in = MavenPlugin.class.getResourceAsStream(source)) {
+				if (in == null) {
+					p.error("Cannot find Maven default for %s", source);
+					return;
+				}
+				s = IO.collect(in);
 			}
-			s = IO.collect(in);
 		}
 
 		String process = p.getReplacer().process(s);
