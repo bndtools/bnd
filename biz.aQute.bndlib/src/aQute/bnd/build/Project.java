@@ -2581,9 +2581,35 @@ public class Project extends Processor {
 	 *
 	 * @return A list of builders.
 	 * @throws Exception
+	 * @deprecated As of 3.4. Replace with
+	 * 
+	 *             <pre>
+	 *             try (ProjectBuilder pb = getBuilder(null)) {
+	 *             	for (Builder b : pb.getSubBuilders()) {
+	 *             		...
+	 *             	}
+	 *             }
+	 *             </pre>
 	 */
+	@Deprecated
 	public Collection< ? extends Builder> getSubBuilders() throws Exception {
-		return getBuilder(null).getSubBuilders();
+		ProjectBuilder pb = getBuilder(null);
+		boolean close = true;
+		try {
+			List<Builder> builders = new ArrayList<>(pb.getSubBuilders());
+			for (Builder b : builders) {
+				if (b == pb) {
+					close = false;
+				} else {
+					pb.removeClose(b);
+				}
+			}
+			return builders;
+		} finally {
+			if (close) {
+				pb.close();
+			}
+		}
 	}
 
 	/**
