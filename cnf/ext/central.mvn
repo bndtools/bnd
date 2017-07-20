@@ -33,7 +33,7 @@ org.apache.felix:org.apache.felix.scr:1.8.2
 org.apache.geronimo.specs:geronimo-servlet_2.5_spec:1.2
 org.apache.geronimo.specs:geronimo-servlet_3.0_spec:1.0
 
-org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:4.12_1
+org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:4.11_2
 
 org.apache.ant:ant:1.7.1
 
