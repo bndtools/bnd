@@ -94,11 +94,19 @@ public class BndPlugin implements Plugin<Project> {
         /* bnd uses the same directory for java and resources. */
         main {
           java.srcDirs = resources.srcDirs = files(bndProject.getSourcePath())
-          output.classesDir = output.resourcesDir = bndProject.getSrcOutput()
+          if (java.hasProperty('outputDir')) { // gradle 4.0
+            java.outputDir = output.resourcesDir = bndProject.getSrcOutput()
+          } else {
+            output.classesDir = output.resourcesDir = bndProject.getSrcOutput()
+          }
         }
         test {
           java.srcDirs = resources.srcDirs = files(bndProject.getTestSrc())
-          output.classesDir = output.resourcesDir = bndProject.getTestOutput()
+          if (java.hasProperty('outputDir')) { // gradle 4.0
+            java.outputDir = output.resourcesDir = bndProject.getTestOutput()
+          } else {
+            output.classesDir = output.resourcesDir = bndProject.getTestOutput()
+          }
         }
       }
       /* Configure srcDirs for any additional languages */
@@ -107,6 +115,9 @@ public class BndPlugin implements Plugin<Project> {
           main.convention?.plugins.each { lang, object ->
             main[lang]?.srcDirs = main.java.srcDirs
             test[lang]?.srcDirs = test.java.srcDirs
+            if (main.java.hasProperty('outputDir') && main[lang]?.hasProperty('outputDir')) { // gradle 4.0
+              main[lang]?.outputDir = main.java.outputDir
+            }
           }
         }
       }
