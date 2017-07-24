@@ -298,7 +298,11 @@ class JavaElement {
 			public void implementsInterfaces(TypeRef names[]) throws Exception {
 				Arrays.sort(names); // ignore type reordering
 				for (TypeRef name : names) {
-					members.add(new Element(IMPLEMENTS, name.getFQN(), null, MINOR, MAJOR, inherit(members, name)));
+
+					String comment = null;
+					if (clazz.isInterface() || clazz.isAbstract())
+						comment = inherit(members, name);
+					members.add(new Element(IMPLEMENTS, name.getFQN(), null, MINOR, MAJOR, comment));
 				}
 			}
 
@@ -346,10 +350,6 @@ class JavaElement {
 							continue;
 
 						if (INHERITED.contains(child.type) && !child.name.startsWith("<")) {
-							if (!clazz.isInterface() && !clazz.isAbstract()) {
-								child = new Element(child.type, child.name, Arrays.asList(child.children), Delta.MINOR,
-										Delta.MAJOR, "concrete class");
-							}
 							members.add(child);
 						}
 					}
