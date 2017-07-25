@@ -2596,7 +2596,7 @@ public class Project extends Processor {
 		ProjectBuilder pb = getBuilder(null);
 		boolean close = true;
 		try {
-			List<Builder> builders = new ArrayList<>(pb.getSubBuilders());
+			List<Builder> builders = pb.getSubBuilders();
 			for (Builder b : builders) {
 				if (b == pb) {
 					close = false;
