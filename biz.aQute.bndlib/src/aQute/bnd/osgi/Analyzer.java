@@ -336,7 +336,7 @@ public class Analyzer extends Processor {
 			for (PackageRef exported : exports.keySet()) {
 				List<PackageRef> used = uses.get(exported);
 				if (used != null) {
-					Set<PackageRef> privateReferences = new HashSet<PackageRef>(apiUses.get(exported));
+					Set<PackageRef> privateReferences = new TreeSet<PackageRef>(apiUses.get(exported));
 					privateReferences.retainAll(privatePackages);
 					if (!privateReferences.isEmpty())
 						msgs.Export_Has_PrivateReferences_(exported, privateReferences.size(), privateReferences);
