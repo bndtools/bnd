@@ -21,6 +21,7 @@ import aQute.bnd.service.Strategy;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.SortedList;
+import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter;
 
 @Deprecated
@@ -28,6 +29,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 	private final static Logger	logger	= LoggerFactory.getLogger(MavenRepository.class);
 
 	public final static String	NAME	= "name";
+	static final String			MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
 
 	File						root;
 	Reporter					reporter;
@@ -150,13 +152,13 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 	}
 
 	public void setProperties(Map<String,String> map) {
-		File home = new File("");
 		String root = map.get("root");
 		if (root == null) {
-			home = new File(System.getProperty("user.home"));
-			this.root = Processor.getFile(home, ".m2/repository").getAbsoluteFile();
-		} else
+			this.root = IO.getFile(MAVEN_REPO_LOCAL);
+		} else {
+			File home = new File("");
 			this.root = Processor.getFile(home, root).getAbsoluteFile();
+		}
 
 		if (!this.root.isDirectory()) {
 			reporter.error("Maven repository did not get a proper URL to the repository %s", root);
