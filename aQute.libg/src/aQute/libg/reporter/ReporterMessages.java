@@ -80,11 +80,13 @@ public class ReporterMessages {
 					StringBuilder sb = new StringBuilder();
 					sb.append(name.charAt(0));
 					int n = 0;
+					char c = 0, prev = 0;
 					for (int i = 1; i < name.length(); i++) {
-						char c = name.charAt(i);
+						prev = c;
+						c = name.charAt(i);
 						switch (c) {
 							case '_' :
-								sb.append(" %s, ");
+								sb.append(" %s ");
 								n++;
 								break;
 
@@ -94,7 +96,9 @@ public class ReporterMessages {
 
 							default :
 								if (Character.isUpperCase(c)) {
-									sb.append(" ");
+									if (prev == 0 || prev != ' ') {
+										sb.append(" ");
+									}
 									c = Character.toLowerCase(c);
 								}
 								sb.append(c);
