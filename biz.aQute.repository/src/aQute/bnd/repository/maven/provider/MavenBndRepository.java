@@ -192,10 +192,11 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					if (isLocal(instructions))
 						releaser.setLocalOnly();
 
-					releaser.add(pom.getRevision().pomArchive(), pomFile);
-					releaser.add(binaryArchive, binaryFile);
-					result.binaryArchive = binaryArchive;
 					result.pomArchive = pom.getRevision().pomArchive();
+					releaser.add(result.pomArchive, pomFile);
+					result.binaryArchive = binaryArchive;
+					result.artifact = storage.toRemoteURI(binaryArchive);
+					releaser.add(binaryArchive, binaryFile);
 
 					if (!isLocal(instructions)) {
 
