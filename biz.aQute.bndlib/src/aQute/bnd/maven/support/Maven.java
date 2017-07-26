@@ -8,21 +8,23 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
+import aQute.lib.io.IO;
+
 /*
  http://repository.springsource.com/maven/bundles/external/org/apache/coyote/com.springsource.org.apache.coyote/6.0.24/com.springsource.org.apache.coyote-6.0.24.pom
  http://repository.springsource.com/maven/bundles/external/org/apache/coyote/com.springsource.org.apache.coyote/6.0.24/com.springsource.org.apache.coyote-6.0.24.pom
  */
 public class Maven {
 
-	final File						userHome	= new File(System.getProperty("user.home"));
 	final Map<String,MavenEntry>	entries		= new ConcurrentHashMap<String,MavenEntry>();
 	final static String[]			ALGORITHMS	= {
 														"md5", "sha1"
 													};
 	boolean							usecache	= false;
 	final Executor					executor;
-	File							m2			= new File(userHome, ".m2");
-	File							repository	= new File(m2, "repository");
+	static final String				MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
+
+	File							repository			= IO.getFile(MAVEN_REPO_LOCAL);
 
 	public Maven(Executor executor) {
 		if (executor == null)
@@ -83,12 +85,11 @@ public class Maven {
 	}
 
 	public void setM2(File dir) {
-		this.m2 = dir;
 		this.repository = new File(dir, "repository");
 	}
 
 	@Override
 	public String toString() {
-		return "Maven [" + (m2 != null ? "m2=" + m2 : "") + "]";
+		return "Maven [" + (repository != null ? "m2=" + repository : "") + "]";
 	}
 }
