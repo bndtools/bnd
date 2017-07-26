@@ -11,7 +11,7 @@
 	<version>${revision}</version>
 
 	<properties>
-		<revision>3.4.0-SNAPSHOT</revision>
+		<revision>3.5.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.version>3.5.0</maven.version>
 		<aether.version>0.9.0.M2</aether.version>
