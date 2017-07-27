@@ -10,7 +10,7 @@ public class ProxyDTO extends DTO {
 	public String	id			= "default";
 	public boolean	active		= true;
 	public String	mask;
-	public Type		protocol	= Type.HTTP;
+	public String	protocol	= Type.HTTP.name();
 	public String	username;
 	public String	password;
 	public int		port		= 8080;

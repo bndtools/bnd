@@ -79,6 +79,12 @@ public class Standalone {
 				return "proxyuser".equals(user) && "good".equals(password);
 
 			}
+
+			@Override
+			public String getRealm() {
+				// TODO Auto-generated method stub
+				return null;
+			}
 		});
 		bootstrap.start();
 	}
