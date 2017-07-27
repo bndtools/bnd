@@ -252,6 +252,9 @@ public class Project extends Processor {
 
 		synchronized (preparedPaths) {
 			if (preparedPaths.get()) {
+				// ensure output folders exist
+				getSrcOutput0();
+				getTarget0();
 				return;
 			}
 			if (!workspace.trail.add(this)) {
@@ -315,11 +318,7 @@ public class Project extends Processor {
 				}
 
 				// Set default bin directory
-				output = getSrcOutput().getAbsoluteFile();
-				if (!output.exists()) {
-					IO.mkdirs(output);
-					getWorkspace().changedFile(output);
-				}
+				output = getSrcOutput0();
 				if (!output.isDirectory()) {
 					msgs.NoOutputDirectory_(output);
 				}
@@ -400,6 +399,14 @@ public class Project extends Processor {
 	 *
 	 */
 
+	private File getSrcOutput0() throws IOException {
+		File output = getSrcOutput().getAbsoluteFile();
+		if (!output.exists()) {
+			IO.mkdirs(output);
+			getWorkspace().changedFile(output);
+		}
+		return output;
+	}
 	private File getTarget0() throws IOException {
 		File target = getTargetDir();
 		if (!target.exists()) {
