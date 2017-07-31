@@ -51,13 +51,37 @@ public class SettingsParserTest extends TestCase {
 		assertEquals("passwd", p.password);
 	}
 
+	public void testProxies() throws Exception {
+		SettingsDTO settings = getSettings("proxy-types.xml");
+		assertEquals(2, settings.proxies.size());
+		ProxyDTO p = settings.proxies.get(0);
+		assertEquals("http-proxy", p.id);
+		assertEquals(true, p.active);
+		assertEquals(Type.HTTP.name(), p.protocol.toUpperCase());
+		assertEquals("localhost", p.host);
+		assertEquals(80, p.port);
+		assertEquals(null, p.nonProxyHosts);
+		assertEquals(null, p.username);
+		assertEquals(null, p.password);
+
+		p = settings.proxies.get(1);
+		assertEquals("https-proxy", p.id);
+		assertEquals(true, p.active);
+		assertEquals("HTTPS", p.protocol.toUpperCase());
+		assertEquals("localhost", p.host);
+		assertEquals(443, p.port);
+		assertEquals(null, p.nonProxyHosts);
+		assertEquals(null, p.username);
+		assertEquals(null, p.password);
+	}
+
 	public void testSocksAuth() throws Exception {
 		SettingsDTO settings = getSettings("socks-auth.xml");
 		assertEquals(1, settings.proxies.size());
 		ProxyDTO p = settings.proxies.get(0);
 		assertEquals("myproxy", p.id);
 		assertEquals(true, p.active);
-		assertEquals(Type.SOCKS, p.protocol);
+		assertEquals(Type.SOCKS.name(), p.protocol.toUpperCase());
 		assertEquals(1080, p.port);
 		assertEquals(null, p.nonProxyHosts);
 		assertEquals("proxyuser", p.username);
@@ -70,7 +94,7 @@ public class SettingsParserTest extends TestCase {
 		ProxyDTO p = settings.proxies.get(0);
 		assertEquals("myproxy", p.id);
 		assertEquals(true, p.active);
-		assertEquals(Type.SOCKS, p.protocol);
+		assertEquals(Type.SOCKS.name(), p.protocol.toUpperCase());
 		assertEquals(1080, p.port);
 		assertEquals(null, p.nonProxyHosts);
 		assertEquals(null, p.username);
@@ -83,7 +107,7 @@ public class SettingsParserTest extends TestCase {
 		ProxyDTO p = settings.proxies.get(0);
 		assertEquals("myproxy", p.id);
 		assertEquals(true, p.active);
-		assertEquals(Type.SOCKS, p.protocol);
+		assertEquals(Type.SOCKS.name(), p.protocol.toUpperCase());
 		assertEquals(1080, p.port);
 		assertEquals("*.google.com|ibiblio.org", p.nonProxyHosts);
 		assertEquals(null, p.username);

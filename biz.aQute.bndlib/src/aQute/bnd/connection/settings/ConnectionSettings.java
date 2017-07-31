@@ -7,6 +7,7 @@ import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
+import java.net.Proxy.Type;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.URL;
@@ -241,24 +242,37 @@ public class ConnectionSettings extends Processor {
 
 			@Override
 			public ProxySetup forURL(URL url) throws Exception {
-				switch (proxyDTO.protocol) {
 
-					case DIRECT :
+				Proxy.Type type;
+
+				switch (proxyDTO.protocol.toUpperCase()) {
+
+					case "DIRECT" :
+						type = Type.DIRECT;
 						break;
 
-					case HTTP :
-						String scheme = url.getProtocol();
-						if (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https")) {
+					case "HTTP" :
+						type = Type.HTTP;
+						if (url.getProtocol().equalsIgnoreCase("http")) {
 							// ok
 						} else
 							return null;
 
 						break;
+					case "HTTPS" :
+						type = Type.HTTP;
+						if (url.getProtocol().equalsIgnoreCase("https")) {
+							// ok
+						} else
+							return null;
+						break;
 
-					case SOCKS :
+					case "SOCKS" :
+						type = Type.SOCKS;
 						break;
 
 					default :
+						type = Type.HTTP;
 						break;
 				}
 
@@ -283,7 +297,7 @@ public class ConnectionSettings extends Processor {
 					else
 						socketAddress = new InetSocketAddress(proxyDTO.port);
 
-					proxySetup.proxy = new Proxy(proxyDTO.protocol, socketAddress);
+					proxySetup.proxy = new Proxy(type, socketAddress);
 				}
 				return proxySetup;
 			}
