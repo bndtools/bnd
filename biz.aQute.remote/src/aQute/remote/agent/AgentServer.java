@@ -38,6 +38,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.dto.CapabilityDTO;
 import org.osgi.resource.dto.RequirementDTO;
+import org.osgi.service.packageadmin.PackageAdmin;
 
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.TypeReference;
@@ -607,23 +608,35 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		return context;
 	}
 
+	@SuppressWarnings("deprecation")
 	public void refresh(boolean async) throws InterruptedException {
-		FrameworkWiring f = context.getBundle(0).adapt(FrameworkWiring.class);
-		if (f != null) {
-			refresh = new CountDownLatch(1);
-			f.refreshBundles(null, new FrameworkListener() {
+		try {
+			FrameworkWiring f = context.getBundle(0).adapt(FrameworkWiring.class);
+			if (f != null) {
+				refresh = new CountDownLatch(1);
+				f.refreshBundles(null, new FrameworkListener() {
 
-				@Override
-				public void frameworkEvent(FrameworkEvent event) {
-					refresh.countDown();
-				}
-			});
+					@Override
+					public void frameworkEvent(FrameworkEvent event) {
+						refresh.countDown();
+					}
+				});
 
-			if (async)
+				if (async)
+					return;
+
+				refresh.await();
 				return;
-
-			refresh.await();
+			}
+		} catch (Exception e) {
+			ServiceReference<PackageAdmin> ref = context.getServiceReference(PackageAdmin.class);
+			if ( ref != null) {
+				PackageAdmin padmin = context.getService(ref);
+				padmin.refreshPackages(null);
+				return;
+			}
 		}
+		throw new IllegalStateException("Cannot refresh");
 	}
 
 	@Override
