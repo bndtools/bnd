@@ -69,6 +69,7 @@ import org.osgi.service.permissionadmin.PermissionInfo;
 import aQute.launcher.agent.LauncherAgent;
 import aQute.launcher.constants.LauncherConstants;
 import aQute.launcher.minifw.MiniFramework;
+import aQute.launcher.pre.EmbeddedLauncher;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 
@@ -78,26 +79,29 @@ import aQute.lib.strings.Strings;
  */
 public class Launcher implements ServiceListener {
 
+	private static final String				BND_LAUNCHER						= ".bnd.launcher";
+
 	// Use our own constant for this rather than depend on OSGi core 4.3
-	private static final String FRAMEWORK_SYSTEM_CAPABILITIES_EXTRA = "org.osgi.framework.system.capabilities.extra";
+	private static final String				FRAMEWORK_SYSTEM_CAPABILITIES_EXTRA	= "org.osgi.framework.system.capabilities.extra";
 
-	private PrintStream					out;
-	LauncherConstants					parms;
-	Framework							systemBundle;
-	volatile boolean					inrefresh;
-	private final Properties			properties;
-	private boolean						security;
-	private SimplePermissionPolicy		policy;
-	private Callable<Integer>			mainThread;
-	private final List<BundleActivator>	embedded			= new ArrayList<BundleActivator>();
-	private final Map<Bundle,Throwable>	errors				= new HashMap<Bundle,Throwable>();
-	private final Map<File,Bundle>		installedBundles	= new LinkedHashMap<File,Bundle>();
-	private File						home				= new File(System.getProperty("user.home"));
-	private File						bnd					= new File(home, "bnd");
-	private List<Bundle>				wantsToBeStarted	= new ArrayList<Bundle>();
-	AtomicBoolean						active				= new AtomicBoolean();
+	private PrintStream						out;
+	LauncherConstants						parms;
+	Framework								systemBundle;
+	volatile boolean						inrefresh;
+	private final Properties				properties;
+	private boolean							security;
+	private SimplePermissionPolicy			policy;
+	private Callable<Integer>				mainThread;
+	private final List<BundleActivator>		embedded							= new ArrayList<BundleActivator>();
+	private final Map<Bundle,Throwable>		errors								= new HashMap<Bundle,Throwable>();
+	private final Map<File,Bundle>			installedBundles					= new LinkedHashMap<File,Bundle>();
+	private File							home								= new File(
+			System.getProperty("user.home"));
+	private File							bnd									= new File(home, "bnd");
+	private List<Bundle>					wantsToBeStarted					= new ArrayList<Bundle>();
+	AtomicBoolean							active								= new AtomicBoolean();
 
-	private AtomicReference<DatagramSocket> commsSocket = new AtomicReference<DatagramSocket>();
+	private AtomicReference<DatagramSocket>	commsSocket							= new AtomicReference<DatagramSocket>();
 	private PackageAdmin					padmin;
 
 	public static void main(String[] args) {
@@ -144,7 +148,8 @@ public class Launcher implements ServiceListener {
 
 			// We exit, even if there are non-daemon threads active
 			// though we've reported those
-			System.exit(exitcode);
+			if (exitcode != LauncherConstants.RETURN_INSTEAD_OF_EXIT)
+				System.exit(exitcode);
 		} finally {
 			System.out.println("gone");
 		}
@@ -237,7 +242,8 @@ public class Launcher implements ServiceListener {
 							Properties properties = new Properties();
 							load(in, properties);
 							parms = new LauncherConstants(properties);
-							update(now);
+							List<Bundle> tobestarted = update(now);
+							update(tobestarted);
 						} catch (Exception e) {
 							error("Error in updating the framework from the properties: %s", e);
 						}
@@ -362,22 +368,28 @@ public class Launcher implements ServiceListener {
 
 		doSecurity();
 
-		// Initialize this framework so it becomes STARTING
-		systemBundle.start();
-		trace("system bundle started ok");
+		List<Bundle> tobestarted = update(System.currentTimeMillis() + 100);
+
+
+
+
+		int result = LauncherConstants.OK;
 
 		BundleContext systemContext = systemBundle.getBundleContext();
+
+		systemContext.addServiceListener(this, "(&(|(objectclass=" + Runnable.class.getName() + ")(objectclass="
+				+ Callable.class.getName() + "))(main.thread=true))");
+
+		// Initialize this framework so it becomes STARTING
+		systemBundle.start();
+
 		ServiceReference ref = systemContext.getServiceReference(PackageAdmin.class.getName());
 		if (ref != null) {
 			padmin = (PackageAdmin) systemContext.getService(ref);
 		} else
 			trace("could not get package admin");
 
-		systemContext.addServiceListener(this, "(&(|(objectclass=" + Runnable.class.getName() + ")(objectclass="
-				+ Callable.class.getName() + "))(main.thread=true))");
-
-		int result = LauncherConstants.OK;
-
+		trace("system bundle started ok");
 		// Start embedded activators
 		trace("start embedded activators");
 		if (parms.activators != null) {
@@ -397,7 +409,8 @@ public class Launcher implements ServiceListener {
 			}
 		}
 
-		update(System.currentTimeMillis() + 100);
+
+		update(tobestarted);
 
 		if (parms.trace) {
 			report(out);
@@ -438,7 +451,7 @@ public class Launcher implements ServiceListener {
 	 * 
 	 * @param begin
 	 */
-	void update(long before) throws Exception {
+	List<Bundle> update(long before) throws Exception {
 
 		trace("Updating framework with %s", parms.runbundles);
 		List<Bundle> tobestarted = new ArrayList<Bundle>();
@@ -447,18 +460,11 @@ public class Launcher implements ServiceListener {
 		else
 			synchronizeFiles(tobestarted, before);
 
-		if (padmin != null) {
-			inrefresh = true;
-			padmin.refreshPackages(null);
-			trace("Waiting for refresh to finish");
+		return tobestarted;
+	}
 
-			// Will be reset by the Framework listener we added
-			// when we created the framework.
-			while (inrefresh)
-				Thread.sleep(100);
-
-		} else
-			trace("cannot refresh the bundles because there is no Package Admin");
+	void update(List<Bundle> tobestarted) throws Exception {
+		refresh();
 
 		trace("bundles administered %s", installedBundles.keySet());
 
@@ -505,6 +511,21 @@ public class Launcher implements ServiceListener {
 			}
 		}
 
+	}
+
+	private void refresh() throws InterruptedException {
+		if (padmin != null) {
+			inrefresh = true;
+			padmin.refreshPackages(null);
+			trace("Waiting for refresh to finish");
+
+			// Will be reset by the Framework listener we added
+			// when we created the framework.
+			while (inrefresh)
+				Thread.sleep(100);
+
+		} else
+			trace("cannot refresh the bundles because there is no Package Admin");
 	}
 
 	/**
@@ -650,19 +671,77 @@ public class Launcher implements ServiceListener {
 	 * @throws IOException
 	 */
 	void installEmbedded(List<Bundle> tobestarted) throws BundleException, IOException {
+		Manifest m = EmbeddedLauncher.MANIFEST;
 		trace("starting in embedded mode");
 		BundleContext context = systemBundle.getBundleContext();
 		for (Object o : parms.runbundles) {
 			String path = (String) o;
-			trace("installing %s", path);
+			String sha = m.getAttributes(path).getValue("SHA-Digest");
+
 			try (InputStream in = getClass().getClassLoader().getResourceAsStream(path)) {
 				Bundle bundle = getBundleByLocation(path);
-				if (bundle == null)
+				if (bundle == null) {
+					trace("installing %s", path);
 					bundle = context.installBundle(path, in);
-				else
-					bundle.update(in);
+				} else {
+					if (mustUpdate(sha, bundle)) {
+						trace("updating %s, sha=%s", path, sha);
+						bundle.stop();
+						bundle.update(in);
+					} else {
+						trace("not updating %s because identical sha=%s", path, sha);
+					}
+				}
+				updateSha(sha, bundle);
 				tobestarted.add(bundle);
 			}
+		}
+	}
+
+	/*
+	 * Check if we have a SHA from the manifest and it it was for this the
+	 * bundle.
+	 */
+	private boolean mustUpdate(String sha, Bundle bundle) {
+		if (sha == null)
+			return true;
+
+		File shafile = shafile(bundle);
+
+		if (shafile == null || !shafile.isFile() || !shafile.canRead())
+			return true;
+
+		try {
+			String storedSha = IO.collect(shafile);
+			if (storedSha == null || !storedSha.equals(sha))
+				return true;
+		} catch (IOException e) {
+			return true;
+		}
+
+		return false;
+	}
+
+	private File shafile(Bundle bundle) {
+		BundleContext context = systemBundle.getBundleContext();
+		File bndlauncher = context.getDataFile(BND_LAUNCHER);
+		bndlauncher.mkdirs();
+		File shafile = new File(bndlauncher, bundle.getBundleId() + "");
+		return shafile;
+	}
+
+	private void updateSha(String sha, Bundle bundle) {
+		if (sha == null)
+			return;
+
+		File shafile = shafile(bundle);
+		if (shafile == null || !shafile.getParentFile().isDirectory() && shafile.getParentFile().canWrite())
+			return;
+
+		try {
+			IO.store(sha, shafile);
+		} catch (Exception e) {
+			error("Could not (over) write sha %s", e);
 		}
 	}
 
@@ -760,8 +839,7 @@ public class Launcher implements ServiceListener {
 	}
 
 	private boolean isFragment(Bundle b) {
-		return padmin != null
-				&& padmin.getBundleType(b) == PackageAdmin.BUNDLE_TYPE_FRAGMENT;
+		return padmin != null && padmin.getBundleType(b) == PackageAdmin.BUNDLE_TYPE_FRAGMENT;
 	}
 
 	public void deactivate() throws Exception {
@@ -1173,6 +1251,7 @@ public class Launcher implements ServiceListener {
 	@SuppressWarnings("unchecked")
 	public synchronized void serviceChanged(ServiceEvent event) {
 		if (event.getType() == ServiceEvent.REGISTERED) {
+			trace("service even " + event);
 			final Object service = systemBundle.getBundleContext().getService(event.getServiceReference());
 			String[] objectclasses = (String[]) event.getServiceReference().getProperty(Constants.OBJECTCLASS);
 

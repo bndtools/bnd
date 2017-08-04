@@ -89,6 +89,18 @@ public class TestActivator implements BundleActivator {
 					return 55;
 				}
 			}, ht);
+		} else if ("quit.no.exit".equals(p)) {
+			Callable r = new Callable() {
+
+				public Integer call() {
+					System.err.println("Quit but not exit()");
+					return 197;
+				}
+
+			};
+			Properties props = new Properties();
+			props.setProperty("main.thread", "true");
+			context.registerService(Callable.class.getName(), r, (Dictionary) props);
 		} else if ("main.thread".equals(p)) {
 			Runnable r = new Runnable() {
 
