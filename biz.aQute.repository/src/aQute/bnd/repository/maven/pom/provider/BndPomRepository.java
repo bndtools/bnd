@@ -1,6 +1,8 @@
 package aQute.bnd.repository.maven.pom.provider;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
@@ -8,6 +10,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -16,6 +21,8 @@ import org.osgi.util.promise.Promise;
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.repository.BridgeRepository;
 import aQute.bnd.osgi.repository.BridgeRepository.ResourceInfo;
@@ -24,6 +31,7 @@ import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
+import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
@@ -43,20 +51,23 @@ import aQute.service.reporter.Reporter;
  */
 @BndPlugin(name = "PomRepository")
 public class BndPomRepository extends BaseRepository
-		implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Actionable {
-	static final String			MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
+		implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Actionable, Closeable {
+	static final String				MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
+	static int						DEFAULT_POLL_TIME	= (int) TimeUnit.MINUTES.toSeconds(5);
 
-	private boolean				inited;
-	private PomConfiguration	configuration;
-	private Registry			registry;
-	private String				name;
-	private Reporter			reporter			= new Slf4jReporter(BndPomRepository.class);
-	private InnerRepository	repoImpl;
-	private List<Revision>		revisions;
-	private BridgeRepository	bridge;
-	private List<URI>			pomFiles;
-	private String				query;
-	private String				queryUrl;
+	private boolean					inited;
+	private PomConfiguration		configuration;
+	private Registry				registry;
+	private String					name;
+	private Reporter				reporter			= new Slf4jReporter(BndPomRepository.class);
+	private InnerRepository			repoImpl;
+	private List<Revision>			revisions;
+	private BridgeRepository		bridge;
+	private List<URI>				pomFiles;
+	private String					query;
+	private String					queryUrl;
+	private ScheduledFuture< ? >	pomPoller;
+
 
 	public synchronized void init() {
 		try {
@@ -87,10 +98,45 @@ public class BndPomRepository extends BaseRepository
 				repository.close();
 				throw new IllegalStateException("We have neither a pom, revision, or query set!");
 			}
+			startPoll();
+
 			bridge = new BridgeRepository(repoImpl);
 			inited = true;
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
+		}
+	}
+
+	private void startPoll() {
+		Workspace ws = registry.getPlugin(Workspace.class);
+		if ((ws != null) && (ws.getGestalt().containsKey(Constants.GESTALT_BATCH)
+				|| ws.getGestalt().containsKey(Constants.GESTALT_CI)
+				|| ws.getGestalt().containsKey(Constants.GESTALT_OFFLINE))) {
+			return;
+		}
+		int polltime = configuration.poll_time(DEFAULT_POLL_TIME);
+		if (polltime > 0) {
+			AtomicBoolean inPoll = new AtomicBoolean();
+			pomPoller = Processor.getScheduledExecutor().scheduleAtFixedRate(() -> {
+				if (inPoll.getAndSet(true))
+					return;
+				try {
+					poll();
+				} catch (Exception e) {
+					reporter.exception(e, "Error when polling for %s for change", this);
+				} finally {
+					inPoll.set(false);
+				}
+			}, polltime, polltime, TimeUnit.SECONDS);
+		}
+	}
+
+	private void poll() throws Exception {
+		if (repoImpl.isStale()) {
+			refresh();
+			for (RepositoryListenerPlugin listener : registry.getPlugins(RepositoryListenerPlugin.class)) {
+				listener.repositoryRefreshed(this);
+			}
 		}
 	}
 
@@ -242,5 +288,11 @@ public class BndPomRepository extends BaseRepository
 	public String title(Object... target) throws Exception {
 		init();
 		return bridge.title(target);
+	}
+
+	@Override
+	public void close() throws IOException {
+		if (pomPoller != null)
+			pomPoller.cancel(true);
 	}
 }
