@@ -1,13 +1,20 @@
 package aQute.bnd.repository.maven.pom.provider;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedSet;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -16,6 +23,8 @@ import org.osgi.util.promise.Promise;
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.repository.BridgeRepository;
 import aQute.bnd.osgi.repository.BridgeRepository.ResourceInfo;
@@ -24,6 +33,7 @@ import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
+import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
@@ -43,7 +53,7 @@ import aQute.service.reporter.Reporter;
  */
 @BndPlugin(name = "PomRepository")
 public class BndPomRepository extends BaseRepository
-		implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Actionable {
+		implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Actionable, Closeable {
 	static final String			MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
 
 	private boolean				inited;
@@ -54,9 +64,10 @@ public class BndPomRepository extends BaseRepository
 	private InnerRepository	repoImpl;
 	private List<Revision>		revisions;
 	private BridgeRepository	bridge;
-	private List<URI>			pomFiles;
+	private Map<URI,Long>			pomFiles;
 	private String				query;
 	private String				queryUrl;
+	private ScheduledFuture< ? >	pomPoller;
 
 	public synchronized void init() {
 		try {
@@ -73,12 +84,13 @@ public class BndPomRepository extends BaseRepository
 					reporter, localRepo, client);
 
 			MavenRepository repository = new MavenRepository(localRepo, name, release, snapshot,
-					client.executor(), reporter, null);
+					Processor.getExecutor(), reporter, null);
 
 			boolean transitive = configuration.transitive(true);
 
 			if (pomFiles != null) {
-				repoImpl = new PomRepository(repository, client, location, transitive).uris(pomFiles);
+				repoImpl = new PomRepository(repository, client, location, transitive).uris(pomFiles.keySet());
+				startPoll();
 			} else if (revisions != null) {
 				repoImpl = new PomRepository(repository, client, location, transitive).revisions(revisions);
 			} else if (query != null) {
@@ -92,6 +104,49 @@ public class BndPomRepository extends BaseRepository
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
+	}
+
+	private void startPoll() {
+		Workspace ws = registry.getPlugin(Workspace.class);
+		if ((ws != null) && (ws.getGestalt().containsKey(Constants.GESTALT_BATCH)
+				|| ws.getGestalt().containsKey(Constants.GESTALT_CI)
+				|| ws.getGestalt().containsKey(Constants.GESTALT_OFFLINE))) {
+			return;
+		}
+		final AtomicBoolean busy = new AtomicBoolean();
+		pomPoller = Processor.getScheduledExecutor().scheduleAtFixedRate(new Runnable() {
+
+	@Override
+			public void run() {
+				if (busy.getAndSet(true))
+					return;
+				try {
+					boolean needsUpdate = false;
+					for (Entry<URI,Long> pomFilesEntry : pomFiles.entrySet()) {
+						if (pomFilesEntry.getValue() == null) {
+							// not interested
+							continue;
+						}
+						File f = new File(pomFilesEntry.getKey());
+						if (f != null && f.isFile() && f.lastModified() > pomFilesEntry.getValue()) {
+							needsUpdate = true;
+							pomFilesEntry.setValue(f.lastModified());
+						}
+					}
+					if (needsUpdate) {
+						refresh();
+						for (RepositoryListenerPlugin listener : registry.getPlugins(RepositoryListenerPlugin.class))
+							listener.repositoryRefreshed(BndPomRepository.this);
+					}
+
+				} catch (Exception e) {
+					reporter.error("Error when polling for %s for change", this);
+				} finally {
+					busy.set(false);
+				}
+			}
+
+		}, 5000, 5000, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -114,13 +169,13 @@ public class BndPomRepository extends BaseRepository
 
 		if (configuration.pom() != null) {
 			List<String> parts = Strings.split(configuration.pom());
-			pomFiles = new ArrayList<>();
+			pomFiles = new HashMap<>();
 			for (String part : parts) {
 				File f = IO.getFile(part);
 				if (f.isFile()) {
-					pomFiles.add(f.toURI());
+					pomFiles.put(f.toURI(), f.lastModified());
 				} else {
-					pomFiles.add(URI.create(part));
+					pomFiles.put(URI.create(part), null);
 				}
 			}
 			if (pomFiles.isEmpty()) {
@@ -242,5 +297,11 @@ public class BndPomRepository extends BaseRepository
 	public String title(Object... target) throws Exception {
 		init();
 		return bridge.title(target);
+	}
+
+	@Override
+	public void close() throws IOException {
+		if (pomPoller != null)
+			pomPoller.cancel(true);
 	}
 }
