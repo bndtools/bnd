@@ -601,4 +601,50 @@ public class BaselineTest extends TestCase {
 		}
 	}
 
+	// This tests the scenario where the return type of an interface method is
+	// expanded through generics.
+	// e.g. from:
+	// Foo getFoo();
+	// to:
+	// <T extends Foo> T getFoo();
+	// or:
+	// <T extends Foo & Comparable<Foo>> T getFoo();
+	public void testExpandErasureOfMethodReturn() throws Exception {
+		Processor processor = new Processor();
+
+		DiffPluginImpl differ = new DiffPluginImpl();
+		Baseline baseline = new Baseline(processor, differ);
+
+		try (Jar older = new Jar(IO.getFile("jar/baseline/expanding-erasure-1.0.0.jar"));
+				Jar newer = new Jar(IO.getFile("jar/baseline/expanding-erasure-1.1.0.jar"));) {
+
+			baseline.baseline(newer, older, null);
+
+			BundleInfo bundleInfo = baseline.getBundleInfo();
+
+			assertFalse(bundleInfo.mismatch);
+			assertEquals("1.1.0", bundleInfo.suggestedVersion.toString());
+
+			Set<Info> packageInfos = baseline.getPackageInfos();
+
+			assertEquals(1, packageInfos.size());
+
+			Info change = packageInfos.iterator().next();
+			assertFalse(change.mismatch);
+			assertEquals("bnd.test", change.packageName);
+			assertEquals("1.0.0", change.suggestedVersion.toString());
+
+			Diff packageDiff = change.packageDiff;
+
+			Collection< ? extends Diff> children = packageDiff.getChildren();
+
+			assertEquals(3, children.size());
+
+			Iterator< ? extends Diff> iterator = children.iterator();
+
+			Diff diff = iterator.next();
+			assertEquals(Delta.UNCHANGED, diff.getDelta());
+		}
+	}
+
 }
