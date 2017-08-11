@@ -2,6 +2,11 @@ package aQute.bnd.repository.maven.pom.provider;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -258,6 +263,55 @@ public class PomRepositoryTest extends TestCase {
 			bpr.refresh();
 		} catch (Throwable t) {
 			fail();
+		}
+	}
+
+	/**
+	 * Performs an update to the POM (testdata/pomrepo/simple.xml) to check if the
+	 * repo has been updated via polling. The changed content will be reset at the
+	 * end of the test.
+	 */
+	public void testBndPomRepoFilePolling() throws Exception {
+		BndPomRepository bpr = new BndPomRepository();
+		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+		w.setBase(tmp);
+		bpr.setRegistry(w);
+
+		Map<String,String> config = new HashMap<>();
+		config.put("pom", "testdata/pomrepo/simple.xml");
+		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
+		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+		config.put("name", "test");
+		config.put("pollTime", "1000");
+		bpr.setProperties(config);
+
+		List<String> list = bpr.list(null);
+		assertNotNull(list);
+		assertEquals(1, list.size());
+
+		Path path = Paths.get("testdata/pomrepo/simple.xml");
+		byte[] originalContent = Files.readAllBytes(path);
+
+		List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+
+		try {
+			StringBuilder sb = new StringBuilder();
+			for (String line : lines) {
+				if (line.contains("</dependencies>")) {
+					sb.append(
+							"<dependency><groupId>org.slf4j</groupId><artifactId>slf4j-api</artifactId><version>1.7.25</version></dependency>");
+				}
+				sb.append(line);
+			}
+			Files.write(path, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE,
+					StandardOpenOption.TRUNCATE_EXISTING);
+			Thread.sleep(2000);
+			List<String> updatedList = bpr.list(null);
+			assertNotNull(updatedList);
+			assertEquals(2, updatedList.size());
+		} finally {
+			Files.write(path, originalContent, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+			bpr.close();
 		}
 	}
 
