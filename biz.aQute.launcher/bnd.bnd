@@ -11,7 +11,8 @@
 -testpath: \
 	${junit},\
 	biz.aQute.bnd.annotation;version=project,\
-	slf4j.simple;version=latest
+	slf4j.simple;version=latest, \
+	biz.aQute.repository
 
 Launcher-Plugin: aQute.launcher.plugin.ProjectLauncherImpl
 

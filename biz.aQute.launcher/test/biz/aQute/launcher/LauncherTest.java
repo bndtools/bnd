@@ -15,11 +15,16 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.Test;
 
+import aQute.bnd.build.Run;
+import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Jar;
 import aQute.launcher.Launcher;
 import aQute.launcher.pre.EmbeddedLauncher;
 import aQute.lib.io.IO;
 
 public class LauncherTest {
+
+	private static final String GENERATED_PACKAGED_JAR = "generated/packaged.jar";
 
 	/**
 	 * Testing the embedded launcher is quite tricky. This test uses a
@@ -30,6 +35,8 @@ public class LauncherTest {
 
 	@Test
 	public void testPackaged() throws Exception {
+		File file = buildPackage();
+
 		System.setProperty("test.cmd", "quit.no.exit");
 		File fwdir = IO.getFile("generated/keepfw");
 		IO.delete(fwdir);
@@ -37,15 +44,27 @@ public class LauncherTest {
 		System.setProperty("org.osgi.framework.storage", fwdir.getAbsolutePath());
 
 		Class<Launcher> ll = Launcher.class;
-		File file = IO.getFile("testresources/packaged.jar");
 		assertTrue(file.isFile());
 
 		String result = runFramework(file);
 		assertTrue(result.contains("installing jar/demo.jar"));
 
 		result = runFramework(file);
-		assertTrue(result.contains("not updating jar/demo.jar because identical sha"));
+		assertTrue(result.contains("not updating jar/demo.jar because identical digest"));
 
+	}
+
+	private File buildPackage() throws Exception, IOException {
+		Workspace ws = Workspace.findWorkspace(IO.work);
+		Run run = Run.createRun(ws, IO.getFile("keep.bndrun"));
+		assertTrue(ws.check());
+		assertTrue(run.check());
+
+		File file = IO.getFile(GENERATED_PACKAGED_JAR);
+		try (Jar pack = run.pack(null)) {
+			pack.write(file);
+		}
+		return file;
 	}
 
 	private String runFramework(File file) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
@@ -54,7 +73,7 @@ public class LauncherTest {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		PrintStream out2 = new PrintStream(bout);
 		System.setErr(out2);
-		
+
 		try (URLClassLoader l = new URLClassLoader(new URL[] {
 				file.toURI().toURL()
 		}, null)) {

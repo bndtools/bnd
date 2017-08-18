@@ -370,9 +370,6 @@ public class Launcher implements ServiceListener {
 
 		List<Bundle> tobestarted = update(System.currentTimeMillis() + 100);
 
-
-
-
 		int result = LauncherConstants.OK;
 
 		BundleContext systemContext = systemBundle.getBundleContext();
@@ -408,7 +405,6 @@ public class Launcher implements ServiceListener {
 				}
 			}
 		}
-
 
 		update(tobestarted);
 
@@ -663,6 +659,27 @@ public class Launcher implements ServiceListener {
 		return sb.toString();
 	}
 
+	/*
+	 * Get the digest for a given path
+	 */
+	static String[] DIGESTS = {
+			"SHA-Digest", "SHA1-Digest", "SHA-1-Digest", "SHA-256-Digest", "SHA-224-Digest", "SHA-384-Digest",
+			"SHA-512-Digest", "MD5-Digest"
+	};
+
+	String getDigest(String path) {
+		Manifest m = EmbeddedLauncher.MANIFEST;
+		if (m != null) {
+			for (String name : DIGESTS) {
+				String digest = m.getAttributes(path).getValue(name);
+				if (digest != null) {
+					return digest;
+				}
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Install/Update the bundles from the current jar.
 	 * 
@@ -671,49 +688,48 @@ public class Launcher implements ServiceListener {
 	 * @throws IOException
 	 */
 	void installEmbedded(List<Bundle> tobestarted) throws BundleException, IOException {
-		Manifest m = EmbeddedLauncher.MANIFEST;
 		trace("starting in embedded mode");
 		BundleContext context = systemBundle.getBundleContext();
 		for (Object o : parms.runbundles) {
 			String path = (String) o;
-			String sha = m.getAttributes(path).getValue("SHA-Digest");
-
+			String digest = getDigest(path);
 			try (InputStream in = getClass().getClassLoader().getResourceAsStream(path)) {
 				Bundle bundle = getBundleByLocation(path);
 				if (bundle == null) {
 					trace("installing %s", path);
 					bundle = context.installBundle(path, in);
+					updateDigest(digest, bundle);
 				} else {
-					if (mustUpdate(sha, bundle)) {
-						trace("updating %s, sha=%s", path, sha);
+					if (mustUpdate(digest, bundle)) {
+						trace("updating %s, digest=%s", path, digest);
 						bundle.stop();
 						bundle.update(in);
+						updateDigest(digest, bundle);
 					} else {
-						trace("not updating %s because identical sha=%s", path, sha);
+						trace("not updating %s because identical digest=%s", path, digest);
 					}
 				}
-				updateSha(sha, bundle);
 				tobestarted.add(bundle);
 			}
 		}
 	}
 
 	/*
-	 * Check if we have a SHA from the manifest and it it was for this the
+	 * Check if we have a digest from the manifest and it it was for this the
 	 * bundle.
 	 */
-	private boolean mustUpdate(String sha, Bundle bundle) {
-		if (sha == null)
+	private boolean mustUpdate(String digest, Bundle bundle) {
+		if (digest == null)
 			return true;
 
-		File shafile = shafile(bundle);
+		File digestFile = digestFile(bundle);
 
-		if (shafile == null || !shafile.isFile() || !shafile.canRead())
+		if (digestFile == null || !digestFile.isFile() || !digestFile.canRead())
 			return true;
 
 		try {
-			String storedSha = IO.collect(shafile);
-			if (storedSha == null || !storedSha.equals(sha))
+			String storedDigest = IO.collect(digestFile);
+			if (storedDigest == null || !storedDigest.equals(digest))
 				return true;
 		} catch (IOException e) {
 			return true;
@@ -722,26 +738,26 @@ public class Launcher implements ServiceListener {
 		return false;
 	}
 
-	private File shafile(Bundle bundle) {
+	private File digestFile(Bundle bundle) {
 		BundleContext context = systemBundle.getBundleContext();
 		File bndlauncher = context.getDataFile(BND_LAUNCHER);
 		bndlauncher.mkdirs();
-		File shafile = new File(bndlauncher, bundle.getBundleId() + "");
-		return shafile;
+		File digestFile = new File(bndlauncher, bundle.getBundleId() + "");
+		return digestFile;
 	}
 
-	private void updateSha(String sha, Bundle bundle) {
-		if (sha == null)
+	private void updateDigest(String digest, Bundle bundle) {
+		if (digest == null)
 			return;
 
-		File shafile = shafile(bundle);
-		if (shafile == null || !shafile.getParentFile().isDirectory() && shafile.getParentFile().canWrite())
+		File digestFile = digestFile(bundle);
+		if (digestFile == null || !digestFile.getParentFile().isDirectory() && digestFile.getParentFile().canWrite())
 			return;
 
 		try {
-			IO.store(sha, shafile);
+			IO.store(digest, digestFile);
 		} catch (Exception e) {
-			error("Could not (over) write sha %s", e);
+			error("Could not (over) write digest %s", e);
 		}
 	}
 
@@ -1251,7 +1267,7 @@ public class Launcher implements ServiceListener {
 	@SuppressWarnings("unchecked")
 	public synchronized void serviceChanged(ServiceEvent event) {
 		if (event.getType() == ServiceEvent.REGISTERED) {
-			trace("service even " + event);
+			trace("service event " + event);
 			final Object service = systemBundle.getBundleContext().getService(event.getServiceReference());
 			String[] objectclasses = (String[]) event.getServiceReference().getProperty(Constants.OBJECTCLASS);
 
