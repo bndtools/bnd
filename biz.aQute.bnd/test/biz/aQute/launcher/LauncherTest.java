@@ -18,8 +18,6 @@ import org.junit.Test;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
-import aQute.launcher.Launcher;
-import aQute.launcher.pre.EmbeddedLauncher;
 import aQute.lib.io.IO;
 
 public class LauncherTest {
@@ -43,7 +41,6 @@ public class LauncherTest {
 
 		System.setProperty("org.osgi.framework.storage", fwdir.getAbsolutePath());
 
-		Class<Launcher> ll = Launcher.class;
 		assertTrue(file.isFile());
 
 		String result = runFramework(file);
@@ -57,11 +54,11 @@ public class LauncherTest {
 	private File buildPackage() throws Exception, IOException {
 		Workspace ws = Workspace.findWorkspace(IO.work);
 		Run run = Run.createRun(ws, IO.getFile("keep.bndrun"));
-		assertTrue(ws.check());
-		assertTrue(run.check());
 
 		File file = IO.getFile(GENERATED_PACKAGED_JAR);
 		try (Jar pack = run.pack(null)) {
+			assertTrue(ws.check());
+			assertTrue(run.check());
 			pack.write(file);
 		}
 		return file;
@@ -77,7 +74,7 @@ public class LauncherTest {
 		try (URLClassLoader l = new URLClassLoader(new URL[] {
 				file.toURI().toURL()
 		}, null)) {
-			Class< ? > launcher = l.loadClass(EmbeddedLauncher.class.getName());
+			Class< ? > launcher = l.loadClass("aQute.launcher.pre.EmbeddedLauncher");
 			Method main = launcher.getDeclaredMethod("main", String[].class);
 			main.invoke(null, (Object) new String[] {});
 		}
