@@ -243,7 +243,7 @@ public class Launcher implements ServiceListener {
 							load(in, properties);
 							parms = new LauncherConstants(properties);
 							List<Bundle> tobestarted = update(now);
-							update(tobestarted);
+							startBundles(tobestarted);
 						} catch (Exception e) {
 							error("Error in updating the framework from the properties: %s", e);
 						}
@@ -406,7 +406,7 @@ public class Launcher implements ServiceListener {
 			}
 		}
 
-		update(tobestarted);
+		startBundles(tobestarted);
 
 		if (parms.trace) {
 			report(out);
@@ -459,7 +459,7 @@ public class Launcher implements ServiceListener {
 		return tobestarted;
 	}
 
-	void update(List<Bundle> tobestarted) throws Exception {
+	void startBundles(List<Bundle> tobestarted) throws Exception {
 		refresh();
 
 		trace("bundles administered %s", installedBundles.keySet());
