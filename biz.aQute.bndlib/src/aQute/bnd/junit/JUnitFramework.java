@@ -104,7 +104,7 @@ public class JUnitFramework implements AutoCloseable {
 			Map<String,String> props = new HashMap<>();
 			props.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, extra);
 
-			File storage = IO.getFile("generated/fw");
+			File storage = IO.getFile(p.getTarget(), "fw");
 			IO.delete(storage);
 
 			props.put(Constants.FRAMEWORK_STORAGE, storage.getAbsolutePath());
