@@ -855,7 +855,10 @@ public class Launcher implements ServiceListener {
 	}
 
 	private boolean isFragment(Bundle b) {
-		return padmin != null && padmin.getBundleType(b) == PackageAdmin.BUNDLE_TYPE_FRAGMENT;
+		if (padmin != null)
+			return padmin.getBundleType(b) == PackageAdmin.BUNDLE_TYPE_FRAGMENT;
+
+		return b.getHeaders().get(Constants.FRAGMENT_HOST) != null;
 	}
 
 	public void deactivate() throws Exception {
