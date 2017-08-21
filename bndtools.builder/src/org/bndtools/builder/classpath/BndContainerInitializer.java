@@ -51,7 +51,6 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter.SetLocation;
 import bndtools.central.Central;
-import bndtools.central.RefreshFileJob;
 import bndtools.preferences.BndPreferences;
 
 /**
@@ -253,11 +252,12 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             }
 
             List<IClasspathEntry> newClasspath = Collections.emptyList();
+            final List<IPath> filesToRefresh = new ArrayList<IPath>(20);
             try {
                 newClasspath = Central.bndCall(new Callable<List<IClasspathEntry>>() {
                     @Override
                     public List<IClasspathEntry> call() throws Exception {
-                        return calculateProjectClasspath();
+                        return calculateProjectClasspath(filesToRefresh);
                     }
                 });
             } catch (Exception e) {
@@ -275,6 +275,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                     if (newClasspath.equals(currentClasspath)) {
                         if (bndContainer.updateLastModified(lastModified)) {
                             storeClasspathContainer(project, bndContainer);
+                            refreshFiles(filesToRefresh);
                         }
                         return; // no change; so no need to set entries
                     }
@@ -284,6 +285,21 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             BndContainer bndContainer = new BndContainer(newClasspath.toArray(new IClasspathEntry[0]), lastModified);
             setClasspathContainer(javaProject, bndContainer);
             storeClasspathContainer(project, bndContainer);
+            if (!init) {
+                refreshFiles(filesToRefresh);
+            }
+        }
+
+        private void refreshFiles(List<IPath> filesToRefresh) throws CoreException {
+            for (IPath path : filesToRefresh) {
+                IResource target = root.getFile(path);
+                if (target != null) {
+                    int depth = target.getType() == IResource.FILE ? IResource.DEPTH_ZERO : IResource.DEPTH_INFINITE;
+                    if (!target.isSynchronized(depth)) {
+                        target.refreshLocal(depth, null);
+                    }
+                }
+            }
         }
 
         boolean suggestClasspathContainerUpdate() throws Exception {
@@ -340,12 +356,11 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             }
         }
 
-        private List<IClasspathEntry> calculateProjectClasspath() {
+        private List<IClasspathEntry> calculateProjectClasspath(List<IPath> filesToRefresh) {
             if (!project.isOpen())
                 return Collections.emptyList();
 
             List<IClasspathEntry> classpath = new ArrayList<IClasspathEntry>(20);
-            List<File> filesToRefresh = new ArrayList<File>(20);
             try {
                 Collection<Container> containers = model.getBuildpath();
                 calculateContainersClasspath(Constants.BUILDPATH, containers, classpath, filesToRefresh);
@@ -363,15 +378,10 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 return Collections.emptyList();
             }
 
-            // Refresh once, instead of for each dependent project.
-            RefreshFileJob refreshJob = new RefreshFileJob(filesToRefresh, false, project);
-            if (refreshJob.needsToSchedule())
-                refreshJob.schedule(100);
-
             return classpath;
         }
 
-        private void calculateContainersClasspath(String header, Collection<Container> containers, List<IClasspathEntry> classpath, List<File> filesToRefresh) {
+        private void calculateContainersClasspath(String header, Collection<Container> containers, List<IClasspathEntry> classpath, List<IPath> filesToRefresh) {
             for (Container c : containers) {
                 File file = c.getFile();
                 assert file.isAbsolute();
@@ -398,13 +408,13 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 IPath path = null;
                 try {
                     path = fileToPath(file);
-                    filesToRefresh.add(file);
                 } catch (Exception e) {
                     error(c, header, "Failed to convert file %s to Eclipse path: %s", e, file, e.getMessage());
                 }
                 if (path == null) {
                     continue;
                 }
+                filesToRefresh.add(path);
 
                 List<IClasspathAttribute> extraAttrs = calculateContainerAttributes(c);
                 List<IAccessRule> accessRules = calculateContainerAccessRules(c);
