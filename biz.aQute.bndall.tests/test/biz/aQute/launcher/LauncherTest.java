@@ -25,10 +25,10 @@ public class LauncherTest {
 	private static final String GENERATED_PACKAGED_JAR = "generated/packaged.jar";
 
 	/**
-	 * Testing the embedded launcher is quite tricky. This test uses a
-	 * prefabricated packaged jar. Notice that you need to reexport that jar for
-	 * every change in the launcher since it embeds the launcher. This jar is
-	 * run twice to see if the second run will not reinstall the bundles.
+	 * Testing the embedded launcher is quite tricky. This test uses a prefabricated
+	 * packaged jar. Notice that you need to reexport that jar for every change in
+	 * the launcher since it embeds the launcher. This jar is run twice to see if
+	 * the second run will not reinstall the bundles.
 	 */
 
 	@Test

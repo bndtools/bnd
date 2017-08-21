@@ -38,7 +38,6 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.dto.CapabilityDTO;
 import org.osgi.resource.dto.RequirementDTO;
-import org.osgi.service.packageadmin.PackageAdmin;
 
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.TypeReference;
@@ -629,9 +628,10 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 				return;
 			}
 		} catch (Exception e) {
-			ServiceReference<PackageAdmin> ref = context.getServiceReference(PackageAdmin.class);
+			ServiceReference<org.osgi.service.packageadmin.PackageAdmin> ref = context
+					.getServiceReference(org.osgi.service.packageadmin.PackageAdmin.class);
 			if ( ref != null) {
-				PackageAdmin padmin = context.getService(ref);
+				org.osgi.service.packageadmin.PackageAdmin padmin = context.getService(ref);
 				padmin.refreshPackages(null);
 				return;
 			}

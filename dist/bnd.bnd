@@ -9,6 +9,7 @@
              biz.aQute.bnd.gradle, \
              biz.aQute.bndlib, \
              biz.aQute.bndlib.tests, \
+             biz.aQute.bndall.tests, \
              biz.aQute.bndlib.comm.tests, \
              biz.aQute.jpm, \
              biz.aQute.junit, \
