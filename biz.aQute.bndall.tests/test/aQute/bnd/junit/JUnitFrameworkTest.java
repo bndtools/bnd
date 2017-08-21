@@ -11,8 +11,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleException;
 import org.osgi.service.cm.ConfigurationAdmin;
-import org.osgi.service.packageadmin.PackageAdmin;
-import org.osgi.service.startlevel.StartLevel;
 import org.osgi.util.tracker.BundleTracker;
 
 import aQute.bnd.junit.JUnitFramework.BundleBuilder;
@@ -40,8 +38,8 @@ public class JUnitFrameworkTest extends Assert {
 
 		assertTrue("There are only the basic services from the framework",
 				3 <= framework.context.getServiceReferences((String) null, null).length);
-		assertNotNull("Package Admin", framework.getService(PackageAdmin.class));
-		assertNotNull("StartLevel Service Admin", framework.getService(StartLevel.class));
+		assertNotNull("Package Admin", framework.getService(org.osgi.service.packageadmin.PackageAdmin.class));
+		assertNotNull("StartLevel Service Admin", framework.getService(org.osgi.service.startlevel.StartLevel.class));
 	}
 
 	public static class Activator implements BundleActivator {
@@ -123,11 +121,11 @@ public class JUnitFrameworkTest extends Assert {
 		bundle.addResource("foo", new EmbeddedResource("Hello World".getBytes(), 0L));
 		Bundle b = bundle.install();
 		b.start();
-		
+
 		assertNotNull(b.getResource("foo"));
 	}
 
-	@Test(expected=BundleException.class)
+	@Test(expected = BundleException.class)
 	public void createCrappyBundle() throws Exception {
 		BundleBuilder builder = framework.bundle();
 		builder.setBundleActivator("asdasdasd");

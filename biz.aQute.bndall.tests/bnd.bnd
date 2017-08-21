@@ -6,14 +6,16 @@
 
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
-
 -dependson: biz.aQute.bnd.embedded-repo
+-nobundles: true
 
 -testpath: \
 	org.osgi.service.component.annotations;version=latest,\
 	org.osgi.service.metatype.annotations;version=latest,\
 	osgi.core;version=6.0,\
 	osgi.cmpn;version=6.0,\
+    aQute.libg;version=project,\
+    biz.aQute.bnd.annotation;version=project,\
 	biz.aQute.bndlib;version=project,\
 	org.osgi.impl.bundle.bindex;version=latest,\
 	biz.aQute.repository;version=latest,\
@@ -23,4 +25,6 @@
 	biz.aQute.bnd.embedded-repo; version=snapshot,\
 	org.apache.felix.framework;version=latest,\
 	slf4j.api;version=latest, \
-    slf4j.simple
+    slf4j.simple;version=latest
+
+-runtrace: true
