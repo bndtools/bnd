@@ -23,8 +23,7 @@ Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable, aQute.remot
 Import-Package: org.slf4j, *
 Export-Package: \
 	!org.slf4j.impl,\
-	org.slf4j.*,\
-	aQute.bnd.junit
+	org.slf4j.*
 
 Main-Class:                     aQute.bnd.main.bnd
 JPM-Command:                    bnd
