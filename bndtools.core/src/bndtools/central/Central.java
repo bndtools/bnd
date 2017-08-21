@@ -6,10 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.bndtools.api.BndtoolsConstants;
@@ -91,8 +93,8 @@ public class Central implements IStartupParticipant {
     }
 
     /**
-     * WARNING: Do not instantiate this class. It must be public to allow instantiation by the Eclipse registry, but it
-     * is not intended for direct creation by clients. Instead call Central.getInstance().
+     * WARNING: Do not instantiate this class. It must be public to allow instantiation by the Eclipse registry, but it is
+     * not intended for direct creation by clients. Instead call Central.getInstance().
      */
     @Deprecated
     public Central() {
@@ -553,6 +555,7 @@ public class Central implements IStartupParticipant {
      * Reentrant lock for serializing access to bnd code.
      */
     private static final ReentrantLock bndLock = new ReentrantLock();
+    private static final AtomicLong bndLockProgress = new AtomicLong();
 
     /**
      * Used to serialize access to bnd code which is not thread safe.
@@ -590,23 +593,33 @@ public class Central implements IStartupParticipant {
     public static <V> V bndCall(Callable<V> callable, IProgressMonitor monitor) throws Exception {
         boolean interrupted = Thread.interrupted();
         try {
-            boolean locked = false;
-            for (int i = 0; !locked && (i < 60) && !monitor.isCanceled(); i++) {
+            long progress = bndLockProgress.get();
+            for (int i = 0; i < 120; i++) {
+                if (monitor.isCanceled()) {
+                    throw new CancellationException("Cancelled waiting to acquire bndLock; has waiters: " + bndLock.getQueueLength());
+                }
+                boolean locked = false;
                 try {
                     locked = bndLock.tryLock(1, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     interrupted = true;
                     throw e;
                 }
+                if (locked) {
+                    try {
+                        return callable.call();
+                    } finally {
+                        bndLockProgress.incrementAndGet();
+                        bndLock.unlock();
+                    }
+                }
+                long currentProgress = bndLockProgress.get();
+                if (progress != currentProgress) {
+                    progress = currentProgress;
+                    i = 0;
+                }
             }
-            if (!locked) {
-                throw new TimeoutException("Unable to acquire bndLock");
-            }
-            try {
-                return callable.call();
-            } finally {
-                bndLock.unlock();
-            }
+            throw new TimeoutException("Unable to acquire bndLock; has waiters: " + bndLock.getQueueLength());
         } finally {
             if (interrupted) {
                 Thread.currentThread().interrupt();
