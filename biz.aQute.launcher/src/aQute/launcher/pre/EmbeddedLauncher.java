@@ -19,6 +19,7 @@ public class EmbeddedLauncher {
 	static final int			BUFFER_SIZE			= IOConstants.PAGE_SIZE * 16;
 
 	public static final String	EMBEDDED_RUNPATH	= "Embedded-Runpath";
+	public static Manifest		MANIFEST;
 
 	public static void main(String... args) throws Exception {
 
@@ -26,9 +27,12 @@ public class EmbeddedLauncher {
 		Enumeration<URL> manifests = cl.getResources("META-INF/MANIFEST.MF");
 		while (manifests.hasMoreElements()) {
 
-			Manifest m = new Manifest(manifests.nextElement().openStream());
+			URL murl = manifests.nextElement();
+
+			Manifest m = new Manifest(murl.openStream());
 			String runpath = m.getMainAttributes().getValue(EMBEDDED_RUNPATH);
 			if (runpath != null) {
+				MANIFEST = m;
 				List<URL> classpath = new ArrayList<URL>();
 
 				for (String path : runpath.split("\\s*,\\s*")) {
@@ -36,7 +40,7 @@ public class EmbeddedLauncher {
 					classpath.add(url);
 				}
 
-				try (URLClassLoader urlc = new URLClassLoader(classpath.toArray(new URL[0]))) {
+				try (URLClassLoader urlc = new URLClassLoader(classpath.toArray(new URL[0]), cl)) {
 					Class< ? > embeddedLauncher = urlc.loadClass("aQute.launcher.Launcher");
 					Method method = embeddedLauncher.getMethod("main", new Class< ? >[] {
 							String[].class

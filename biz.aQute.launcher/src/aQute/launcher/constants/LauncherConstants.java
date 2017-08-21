@@ -11,41 +11,42 @@ import java.util.StringTokenizer;
 
 public class LauncherConstants {
 
-	public final static String	LAUNCHER_PROPERTIES			= "launcher.properties";
-	public final static String	DEFAULT_LAUNCHER_PROPERTIES	= "launcher.properties";
-	public final static String	LAUNCHER_ARGUMENTS			= "launcher.arguments";
-	public final static String	LAUNCHER_READY				= "launcher.ready";
+	public final static String		LAUNCHER_PROPERTIES			= "launcher.properties";
+	public final static String		DEFAULT_LAUNCHER_PROPERTIES	= "launcher.properties";
+	public final static String		LAUNCHER_ARGUMENTS			= "launcher.arguments";
+	public final static String		LAUNCHER_READY				= "launcher.ready";
 
 	// MUST BE ALIGNED WITH ProjectLauncher! Donot want to create coupling
 	// so cannot refer.
-	public final static int		OK							= 0;
-	public final static int		ERROR						= -2;
-	public final static int		WARNING						= -1;
-	public final static int		TIMEDOUT					= -3;
-	public final static int		UPDATE_NEEDED				= -4;
-	public final static int		CANCELED					= -5;
-	public final static int		DUPLICATE_BUNDLE			= -6;
-	public final static int		RESOLVE_ERROR				= -7;
-	public final static int		ACTIVATOR_ERROR				= -8;
-	public static final int		STOPPED						= -9;
+	public final static int			OK							= 0;
+	public final static int			ERROR						= -2;
+	public final static int			WARNING						= -1;
+	public final static int			TIMEDOUT					= -3;
+	public final static int			UPDATE_NEEDED				= -4;
+	public final static int			CANCELED					= -5;
+	public final static int			DUPLICATE_BUNDLE			= -6;
+	public final static int			RESOLVE_ERROR				= -7;
+	public final static int			ACTIVATOR_ERROR				= -8;
+	public static final int			STOPPED						= -9;
+	public static final int			RETURN_INSTEAD_OF_EXIT		= 197;
 
 	// Start custom errors from here
-	public final static int		CUSTOM_LAUNCHER				= -128;
+	public final static int			CUSTOM_LAUNCHER				= -128;
 
 	// Local names
-	final static String			LAUNCH_SERVICES				= "launch.services";
-	final static String			LAUNCH_STORAGE_DIR			= "launch.storage.dir";
-	final static String			LAUNCH_KEEP					= "launch.keep";
-	final static String			LAUNCH_RUNBUNDLES			= "launch.bundles";
-	final static String			LAUNCH_SYSTEMPACKAGES		= "launch.system.packages";
-	final static String			LAUNCH_SYSTEMCAPABILITIES	= "launch.system.capabilities";
-	final static String			LAUNCH_TRACE				= "launch.trace";
-	final static String			LAUNCH_TIMEOUT				= "launch.timeout";
-	final static String			LAUNCH_ACTIVATORS			= "launch.activators";
-	final static String			LAUNCH_EMBEDDED				= "launch.embedded";
-	final static String			LAUNCH_NAME					= "launch.name";
-	final static String			LAUNCH_NOREFERENCES			= "launch.noreferences";
-	final static String			LAUNCH_NOTIFICATION_PORT	= "launch.notificationPort";
+	final static String				LAUNCH_SERVICES				= "launch.services";
+	final static String				LAUNCH_STORAGE_DIR			= "launch.storage.dir";
+	final static String				LAUNCH_KEEP					= "launch.keep";
+	final static String				LAUNCH_RUNBUNDLES			= "launch.bundles";
+	final static String				LAUNCH_SYSTEMPACKAGES		= "launch.system.packages";
+	final static String				LAUNCH_SYSTEMCAPABILITIES	= "launch.system.capabilities";
+	final static String				LAUNCH_TRACE				= "launch.trace";
+	final static String				LAUNCH_TIMEOUT				= "launch.timeout";
+	final static String				LAUNCH_ACTIVATORS			= "launch.activators";
+	final static String				LAUNCH_EMBEDDED				= "launch.embedded";
+	final static String				LAUNCH_NAME					= "launch.name";
+	final static String				LAUNCH_NOREFERENCES			= "launch.noreferences";
+	final static String				LAUNCH_NOTIFICATION_PORT	= "launch.notificationPort";
 
 	public final static String[]	LAUNCHER_PROPERTY_KEYS		= {
 			LAUNCH_SERVICES, LAUNCH_STORAGE_DIR, LAUNCH_KEEP, LAUNCH_NOREFERENCES, LAUNCH_RUNBUNDLES,
@@ -59,24 +60,23 @@ public class LauncherConstants {
 	 * service under its impl. class with this property set to a String[].
 	 */
 
-	public boolean				services;
-	public boolean				noreferences;
-	public File					storageDir;
-	public boolean				keep;
-	public final List<String>	runbundles					= new ArrayList<String>();
-	public String				systemPackages;
-	public String				systemCapabilities;
-	public boolean				trace;
-	public long					timeout;
-	public final List<String>	activators					= new ArrayList<String>();
-	public Map<String,String>	runProperties				= new HashMap<String,String>();
-	public boolean				embedded					= false;
-	public String				name;
-	public int					notificationPort			= -1;
+	public boolean					services;
+	public boolean					noreferences;
+	public File						storageDir;
+	public boolean					keep;
+	public final List<String>		runbundles					= new ArrayList<String>();
+	public String					systemPackages;
+	public String					systemCapabilities;
+	public boolean					trace;
+	public long						timeout;
+	public final List<String>		activators					= new ArrayList<String>();
+	public Map<String,String>		runProperties				= new HashMap<String,String>();
+	public boolean					embedded					= false;
+	public String					name;
+	public int						notificationPort			= -1;
 
 	/**
 	 * Translate a constants to properties.
-	 *
 	 */
 	public Properties getProperties(Properties p) {
 		p.setProperty(LAUNCH_NOREFERENCES, noreferences + "");

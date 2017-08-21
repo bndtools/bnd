@@ -24,7 +24,9 @@ Private-Package: \
 	org.apache.felix.service.command,\
 	org.osgi.dto;-split-package:=first,\
 	org.osgi.resource.dto;-split-package:=first,\
+	org.osgi.framework.resource;-split-package:=first,\
 	org.osgi.framework.dto;-split-package:=first,\
+	org.osgi.framework.wiring;-split-package:=first,\
 	org.osgi.framework.wiring.dto;-split-package:=first,\
 	aQute.remote.util
 
@@ -40,11 +42,12 @@ Private-Package: \
 #
  
 Import-Package: \
-	org.osgi.framework;version='[1.5,2)',\
-	org.osgi.framework.launch;version='[1.0,2)',\
-	org.osgi.framework.wiring;version='[1.0,2)',\
 	org.osgi.dto;resolution:=optional,\
+	org.osgi.framework;version='[1.5,2)',\
 	org.osgi.framework.dto;resolution:=optional,\
+	org.osgi.framework.launch;version='[1.0,2)',\
+	org.osgi.framework.resource;version='[1.0,2)';resolution:=optional,\
+	org.osgi.framework.wiring;version='[1.0,2)';resolution:=optional,\
+	org.osgi.framework.wiring.dto;version='[1.0,2)';resolution:=optional,\
 	org.osgi.resource.dto;resolution:=optional,\
-	org.osgi.framework.wiring.dto;resolution:=optional,\
 	*
