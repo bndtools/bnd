@@ -132,6 +132,10 @@ public class JUnitFramework implements AutoCloseable {
 				assert c.getError() == null;
 				a.addClasspath(c.getFile());
 			}
+			for (Container c : getProject().getTestpath()) {
+				assert c.getError() == null;
+				a.addClasspath(c.getFile());
+			}
 
 			a.setJar(bin_test);
 			a.removeClose(bin_test);
@@ -181,7 +185,6 @@ public class JUnitFramework implements AutoCloseable {
 	}
 
 	public <T> List<T> getServices(Class<T> class1) throws InvalidSyntaxException {
-		BundleContext context = framework.getBundleContext();
 		Collection<ServiceReference<T>> refs = context.getServiceReferences(class1, null);
 		List<T> result = new ArrayList<>();
 		for (ServiceReference<T> ref : refs) {

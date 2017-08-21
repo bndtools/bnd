@@ -142,7 +142,7 @@ public class JUnitFrameworkTest extends Assert {
 		Bundle bundle = framework.addBundle("org.apache.felix.configadmin").get(0);
 		assertNotNull(bundle);
 		assertEquals("Expect log & reader service", 2, bundle.getRegisteredServices().length);
-
+		bundle.start();
 		assertNotNull(framework.getService(ConfigurationAdmin.class));
 
 	}
