@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.builder.BndtoolsBuilder;
 import org.bndtools.builder.classpath.BndContainerInitializer;
 import org.bndtools.utils.workspace.WorkspaceUtils;
 import org.eclipse.core.resources.IProject;
@@ -25,11 +26,12 @@ import bndtools.central.Central;
 class AdjustClasspathsForNewProjectJob extends WorkspaceJob {
     private static final ILogger logger = Logger.getLogger(AdjustClasspathsForNewProjectJob.class);
 
-    private final IProject addedProject;
+    private final List<IProject> addedProjects;
 
-    AdjustClasspathsForNewProjectJob(IProject addedProject) {
-        super("Adjusting classpaths for new project: " + addedProject.getName());
-        this.addedProject = addedProject;
+    AdjustClasspathsForNewProjectJob(List<IProject> addedProjects) {
+        super("Adjusting classpaths for new projects");
+        this.addedProjects = addedProjects;
+        logger.logInfo("Adjust classpaths for projects: " + addedProjects, null);
     }
 
     @Override
@@ -38,16 +40,15 @@ class AdjustClasspathsForNewProjectJob extends WorkspaceJob {
         SubMonitor progress;
         try {
             projects = new ArrayList<Project>(Central.getWorkspace().getAllProjects());
-            progress = SubMonitor.convert(monitor, projects.size());
+            progress = SubMonitor.convert(monitor, addedProjects.size());
         } catch (Exception e) {
             return Status.CANCEL_STATUS;
         }
 
         IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
-        while (!projects.isEmpty()) {
-            Project project = projects.remove(0);
+        for (Project project : projects) {
             IProject eclipseProject = WorkspaceUtils.findOpenProject(wsroot, project);
-            if (eclipseProject != null && !eclipseProject.equals(addedProject)) {
+            if (eclipseProject != null && addedProjects.contains(eclipseProject)) {
                 try {
                     project.propertiesChanged();
                     IJavaProject javaProject = JavaCore.create(eclipseProject);
@@ -55,8 +56,8 @@ class AdjustClasspathsForNewProjectJob extends WorkspaceJob {
                         BndContainerInitializer.requestClasspathContainerUpdate(javaProject);
                     }
                 } catch (CoreException e) {
-                    logger.logStatus(e.getStatus());
-                    return Status.CANCEL_STATUS;
+                    IStatus result = new Status(e.getStatus().getSeverity(), BndtoolsBuilder.PLUGIN_ID, "Failure to update classpath for project " + eclipseProject, e);
+                    logger.logStatus(result);
                 }
                 progress.worked(1);
             }

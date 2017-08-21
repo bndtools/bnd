@@ -76,17 +76,17 @@ public class PseudoJar implements Closeable {
     }
 
     public Manifest readManifest() throws IOException {
-        final Manifest mf;
-
         if (base.isDirectory()) {
-            try (InputStream in = IO.stream(new File(base, "META-INF/MANIFEST.MF"))) {
-                mf = new Manifest(in);
+            File manifest = new File(base, "META-INF/MANIFEST.MF");
+            if (!manifest.isFile()) {
+                return null;
             }
-        } else {
-            initJarStream();
-            mf = jarStream.getManifest();
+            try (InputStream in = IO.stream(manifest)) {
+                return new Manifest(in);
+            }
         }
-        return mf;
+        initJarStream();
+        return jarStream.getManifest();
     }
 
     public String nextEntry() throws IOException {

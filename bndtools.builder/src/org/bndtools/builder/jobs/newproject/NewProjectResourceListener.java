@@ -14,10 +14,10 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
 
-
 public class NewProjectResourceListener implements IResourceChangeListener {
     private static final ILogger logger = Logger.getLogger(NewProjectResourceListener.class);
 
+    @Override
     public void resourceChanged(IResourceChangeEvent event) {
         IResourceDelta delta = event.getDelta();
         if (delta == null)
@@ -26,6 +26,7 @@ public class NewProjectResourceListener implements IResourceChangeListener {
         final List<IProject> newProjects = new LinkedList<IProject>();
         try {
             delta.accept(new IResourceDeltaVisitor() {
+                @Override
                 public boolean visit(IResourceDelta delta) throws CoreException {
                     if (delta.getFlags() == IResourceDelta.MARKERS)
                         return false; // ignore marker-only deltas.
@@ -45,12 +46,11 @@ public class NewProjectResourceListener implements IResourceChangeListener {
                 }
             });
 
-            for (IProject project : newProjects) {
-                AdjustClasspathsForNewProjectJob adjustClasspathsJob = new AdjustClasspathsForNewProjectJob(project);
+            if (!newProjects.isEmpty()) {
+                AdjustClasspathsForNewProjectJob adjustClasspathsJob = new AdjustClasspathsForNewProjectJob(newProjects);
                 adjustClasspathsJob.setSystem(true);
                 adjustClasspathsJob.schedule();
             }
-
         } catch (CoreException e) {
             logger.logError("An error occurred while analysing the resource change", e);
         }
