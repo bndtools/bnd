@@ -92,7 +92,7 @@ public class JUnitFramework implements AutoCloseable {
 	 * @param projectDir
 	 */
 	public JUnitFramework(File projectDir) {
-		this.projectDir = projectDir;
+		this.projectDir = projectDir.getAbsoluteFile();
 
 		try {
 			Project p = getProject();
@@ -288,7 +288,7 @@ public class JUnitFramework implements AutoCloseable {
 
 	public Workspace getWorkspace() throws Exception {
 		if (workspace == null) {
-			workspace = Workspace.getWorkspace(IO.work.getParentFile());
+			workspace = Workspace.getWorkspace(projectDir.getParentFile());
 			// workspace.setOffline(true);
 			// TODO fix the loading error
 			// assertTrue(workspace.check());
@@ -298,7 +298,7 @@ public class JUnitFramework implements AutoCloseable {
 
 	public Project getProject() throws Exception {
 		if (project == null) {
-			project = getWorkspace().getProjectFromFile(IO.work);
+			project = getWorkspace().getProjectFromFile(projectDir);
 			assert project.check();
 		}
 		return project;
