@@ -21,6 +21,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.lib.io.IO;
 
 public class LauncherTest {
+	File						base					= new File("").getAbsoluteFile();
 
 	private static final String GENERATED_PACKAGED_JAR = "generated/packaged.jar";
 
@@ -36,7 +37,7 @@ public class LauncherTest {
 		File file = buildPackage();
 
 		System.setProperty("test.cmd", "quit.no.exit");
-		File fwdir = IO.getFile("generated/keepfw");
+		File fwdir = IO.getFile(base, "generated/keepfw");
 		IO.delete(fwdir);
 
 		System.setProperty("org.osgi.framework.storage", fwdir.getAbsolutePath());
@@ -52,10 +53,10 @@ public class LauncherTest {
 	}
 
 	private File buildPackage() throws Exception, IOException {
-		Workspace ws = Workspace.findWorkspace(IO.work);
-		Run run = Run.createRun(ws, IO.getFile("keep.bndrun"));
+		Workspace ws = Workspace.getWorkspace(base.getParentFile());
+		Run run = Run.createRun(ws, IO.getFile(base, "keep.bndrun"));
 
-		File file = IO.getFile(GENERATED_PACKAGED_JAR);
+		File file = IO.getFile(base, GENERATED_PACKAGED_JAR);
 		try (Jar pack = run.pack(null)) {
 			assertTrue(ws.check());
 			assertTrue(run.check());
