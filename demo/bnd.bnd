@@ -5,7 +5,6 @@ Private-Package: \
 	com.example.demo,\
 	test
 Bundle-Version: 1.0.0
-Bundle-Activator: com.example.demo.Activator
 Bundle-SymbolicName: demo
 
 -tester: \

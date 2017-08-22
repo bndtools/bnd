@@ -21,6 +21,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.lib.io.IO;
 
 public class LauncherTest {
+	File						base					= new File("").getAbsoluteFile();
 
 	private static final String GENERATED_PACKAGED_JAR = "generated/packaged.jar";
 
@@ -36,10 +37,8 @@ public class LauncherTest {
 		File file = buildPackage();
 
 		System.setProperty("test.cmd", "quit.no.exit");
-		File fwdir = IO.getFile("generated/keepfw");
+		File fwdir = IO.getFile(base, "generated/keepfw");
 		IO.delete(fwdir);
-
-		System.setProperty("org.osgi.framework.storage", fwdir.getAbsolutePath());
 
 		assertTrue(file.isFile());
 
@@ -52,10 +51,10 @@ public class LauncherTest {
 	}
 
 	private File buildPackage() throws Exception, IOException {
-		Workspace ws = Workspace.findWorkspace(IO.work);
-		Run run = Run.createRun(ws, IO.getFile("keep.bndrun"));
+		Workspace ws = Workspace.getWorkspace(base.getParentFile());
+		Run run = Run.createRun(ws, IO.getFile(base, "keep.bndrun"));
 
-		File file = IO.getFile(GENERATED_PACKAGED_JAR);
+		File file = IO.getFile(base, GENERATED_PACKAGED_JAR);
 		try (Jar pack = run.pack(null)) {
 			assertTrue(ws.check());
 			assertTrue(run.check());
@@ -70,17 +69,19 @@ public class LauncherTest {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		PrintStream out2 = new PrintStream(bout);
 		System.setErr(out2);
+		try {
+			try (URLClassLoader l = new URLClassLoader(new URL[] {
+					file.toURI().toURL()
+			}, null)) {
+				Class< ? > launcher = l.loadClass("aQute.launcher.pre.EmbeddedLauncher");
+				Method main = launcher.getDeclaredMethod("main", String[].class);
+				main.invoke(null, (Object) new String[] {});
+			}
 
-		try (URLClassLoader l = new URLClassLoader(new URL[] {
-				file.toURI().toURL()
-		}, null)) {
-			Class< ? > launcher = l.loadClass("aQute.launcher.pre.EmbeddedLauncher");
-			Method main = launcher.getDeclaredMethod("main", String[].class);
-			main.invoke(null, (Object) new String[] {});
+			out2.flush();
+		} finally {
+			System.setErr(out);
 		}
-
-		out2.flush();
-		System.setErr(out);
 
 		return new String(bout.toByteArray(), StandardCharsets.UTF_8);
 	}

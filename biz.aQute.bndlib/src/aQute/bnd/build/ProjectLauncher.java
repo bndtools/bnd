@@ -135,9 +135,6 @@ public abstract class ProjectLauncher extends Processor {
 		runproperties = project.getRunProperties();
 
 		storageDir = project.getRunStorage();
-		if (storageDir == null) {
-			storageDir = new File(project.getTarget(), "fw");
-		}
 
 		setKeep(project.getRunKeep());
 	}

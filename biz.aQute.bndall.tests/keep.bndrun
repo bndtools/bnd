@@ -7,4 +7,4 @@
 	
 -runkeep: true
 -runtrace: true
--runproperties: org.osgi.framework.storage=generated/keepfw
+-runstorage: generated/keepfw

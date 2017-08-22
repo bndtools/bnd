@@ -1,9 +1,11 @@
 package aQute.bnd.junit;
 
+import java.io.File;
 import java.net.URL;
 
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
@@ -18,13 +20,15 @@ import aQute.bnd.osgi.EmbeddedResource;
 
 @SuppressWarnings("deprecation")
 public class JUnitFrameworkTest extends Assert {
-	static {
-		System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "warn");
-	}
-	static JUnitFramework framework = new JUnitFramework();
+	JUnitFramework framework;
 
-	@AfterClass
-	public static void tearDown() throws Exception {
+	@Before
+	public void setUp() throws Exception {
+		framework = new JUnitFramework(new File("").getAbsoluteFile());
+	}
+
+	@After
+	public void tearDown() throws Exception {
 		System.out.println("close " + framework);
 		framework.close();
 	}
@@ -37,7 +41,7 @@ public class JUnitFrameworkTest extends Assert {
 		assertEquals("This context is from the framework itself", 0L, framework.context.getBundle().getBundleId());
 
 		assertTrue("There are only the basic services from the framework",
-				3 <= framework.context.getServiceReferences((String) null, null).length);
+				2 <= framework.context.getServiceReferences((String) null, null).length);
 		assertNotNull("Package Admin", framework.getService(org.osgi.service.packageadmin.PackageAdmin.class));
 		assertNotNull("StartLevel Service Admin", framework.getService(org.osgi.service.startlevel.StartLevel.class));
 	}
