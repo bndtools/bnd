@@ -9,7 +9,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -138,7 +138,7 @@ public class IndexerMojo extends AbstractMojo {
 		logger.debug("Local file URLs permitted: {}", localURLs);
 		logger.debug("Adding mvn: URLs as alternative content: {}", addMvnURLs);
 
-		Map<String,ArtifactRepository> repositories = new HashMap<>();
+		Map<String,ArtifactRepository> repositories = new LinkedHashMap<>();
 		for (ArtifactRepository artifactRepository : project.getRemoteArtifactRepositories()) {
 			logger.debug("Located an artifact repository {}", artifactRepository.getId());
 			repositories.put(artifactRepository.getId(), artifactRepository);
