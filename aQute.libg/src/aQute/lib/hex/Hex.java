@@ -1,9 +1,8 @@
 package aQute.lib.hex;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.regex.Pattern;
-
-import aQute.lib.strings.Strings;
 
 /*
  * Hex converter.
@@ -18,7 +17,8 @@ public class Hex {
 									};
 
 	public final static byte[] toByteArray(String string) {
-		string = Strings.trim(string);
+		Objects.requireNonNull(string, "The hex string must not be null.");
+		string = string.trim();
 		if ((string.length() & 1) != 0)
 			throw new IllegalArgumentException("a hex string must have an even length");
 

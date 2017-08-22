@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import aQute.lib.collections.ExtList;
-
 public class Strings {
 
 	public static String join(String middle, Iterable< ? > objects) {
@@ -49,7 +47,7 @@ public class Strings {
 	}
 
 	public static String join(String middle, Object[] segments) {
-		return join(middle, new ExtList<Object>(segments));
+		return join(middle, Arrays.asList(segments));
 	}
 
 	public static String display(Object o, Object... ifNull) {
