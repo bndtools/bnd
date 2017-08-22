@@ -69,17 +69,19 @@ public class LauncherTest {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		PrintStream out2 = new PrintStream(bout);
 		System.setErr(out2);
+		try {
+			try (URLClassLoader l = new URLClassLoader(new URL[] {
+					file.toURI().toURL()
+			}, null)) {
+				Class< ? > launcher = l.loadClass("aQute.launcher.pre.EmbeddedLauncher");
+				Method main = launcher.getDeclaredMethod("main", String[].class);
+				main.invoke(null, (Object) new String[] {});
+			}
 
-		try (URLClassLoader l = new URLClassLoader(new URL[] {
-				file.toURI().toURL()
-		}, null)) {
-			Class< ? > launcher = l.loadClass("aQute.launcher.pre.EmbeddedLauncher");
-			Method main = launcher.getDeclaredMethod("main", String[].class);
-			main.invoke(null, (Object) new String[] {});
+			out2.flush();
+		} finally {
+			System.setErr(out);
 		}
-
-		out2.flush();
-		System.setErr(out);
 
 		return new String(bout.toByteArray(), StandardCharsets.UTF_8);
 	}
