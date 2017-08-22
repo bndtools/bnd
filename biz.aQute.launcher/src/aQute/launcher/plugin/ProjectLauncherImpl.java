@@ -288,7 +288,6 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 		LauncherConstants lc = getConstants(actualPaths, true);
 		lc.embedded = !useShas;
-		lc.storageDir = null; // cannot use local info
 
 		final Properties p = lc.getProperties(new UTF8Properties());
 

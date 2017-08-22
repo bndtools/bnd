@@ -218,6 +218,7 @@ public class LauncherTest extends TestCase {
 		//
 		Project project = getProject();
 		project.setProperty("-runkeep", "false");
+		project.setProperty("-runstorage", "generated/keepfw");
 		ProjectLauncher l = project.getProjectLauncher();
 
 		l.setTrace(true);
@@ -231,6 +232,7 @@ public class LauncherTest extends TestCase {
 
 		project = getProject();
 		project.setProperty("-runkeep", "false");
+		project.setProperty("-runstorage", "generated/keepfw");
 		l = project.getProjectLauncher();
 
 		l.setTrace(true);
@@ -242,6 +244,7 @@ public class LauncherTest extends TestCase {
 		//
 		project = getProject();
 		project.setProperty("-runkeep", "false");
+		project.setProperty("-runstorage", "generated/keepfw");
 		l = project.getProjectLauncher();
 
 		l.setTrace(true);
@@ -255,6 +258,7 @@ public class LauncherTest extends TestCase {
 
 		project = getProject();
 		project.setProperty("-runkeep", "true");
+		project.setProperty("-runstorage", "generated/keepfw");
 		l = project.getProjectLauncher();
 
 		l.setTrace(true);
