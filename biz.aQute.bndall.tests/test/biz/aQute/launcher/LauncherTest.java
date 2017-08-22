@@ -40,8 +40,6 @@ public class LauncherTest {
 		File fwdir = IO.getFile(base, "generated/keepfw");
 		IO.delete(fwdir);
 
-		System.setProperty("org.osgi.framework.storage", fwdir.getAbsolutePath());
-
 		assertTrue(file.isFile());
 
 		String result = runFramework(file);
