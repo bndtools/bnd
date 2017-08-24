@@ -617,6 +617,13 @@ public class CapReqBuilder {
 				return value;
 			}
 
+		if (value instanceof Number)
+			try {
+				return new Version(((Number) value).intValue(), 0, 0);
+			} catch (Exception e) {
+				return value;
+			}
+
 		if (value instanceof Collection) {
 			Collection< ? > v = (Collection< ? >) value;
 			if (v.isEmpty())
