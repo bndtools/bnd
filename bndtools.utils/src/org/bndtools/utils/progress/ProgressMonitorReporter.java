@@ -60,11 +60,13 @@ public class ProgressMonitorReporter implements Reporter {
     }
 
     @Override
+    @Deprecated
     public void trace(String format, Object... args) {
         // ignore
     }
 
     @Override
+    @Deprecated
     public void progress(float progress, String format, Object... args) {
         int cumulWorked = (int) (TOTAL * progress);
         int worked = cumulWorked - lastCumulWorked;
