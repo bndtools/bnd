@@ -269,7 +269,8 @@ public class PomRepositoryTest extends TestCase {
 	/**
 	 * Performs an update to the POM (testdata/pomrepo/simple.xml) to check if the
 	 * repo has been updated via polling. The changed content will be reset at the
-	 * end of the test.
+	 * end of the test. Furthermore a remote POM is added to the config to check run
+	 * through the stale-check
 	 */
 	public void testBndPomRepoFilePolling() throws Exception {
 		BndPomRepository bpr = new BndPomRepository();
@@ -278,16 +279,18 @@ public class PomRepositoryTest extends TestCase {
 		bpr.setRegistry(w);
 
 		Map<String,String> config = new HashMap<>();
-		config.put("pom", "testdata/pomrepo/simple.xml");
+		config.put("pom",
+				"testdata/pomrepo/simple.xml"
+						+ ",https://repo1.maven.org/maven2/org/apache/felix/org.apache.felix.gogo.shell/0.12.0/org.apache.felix.gogo.shell-0.12.0.pom");
 		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
 		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
 		config.put("name", "test");
-		config.put("pollTime", "1000");
+		config.put("pollTime", "100");
 		bpr.setProperties(config);
 
 		List<String> list = bpr.list(null);
 		assertNotNull(list);
-		assertEquals(1, list.size());
+		assertEquals(2, list.size()); // one from simple.xml, two from the remote pom (but one is the same)
 
 		Path path = Paths.get("testdata/pomrepo/simple.xml");
 		byte[] originalContent = Files.readAllBytes(path);
@@ -305,10 +308,10 @@ public class PomRepositoryTest extends TestCase {
 			}
 			Files.write(path, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE,
 					StandardOpenOption.TRUNCATE_EXISTING);
-			Thread.sleep(2000);
+			Thread.sleep(500); // might be necessary to increase this on slow machines (or busy CI)
 			List<String> updatedList = bpr.list(null);
 			assertNotNull(updatedList);
-			assertEquals(2, updatedList.size());
+			assertEquals(3, updatedList.size()); // including the added dependency
 		} finally {
 			Files.write(path, originalContent, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 			bpr.close();
