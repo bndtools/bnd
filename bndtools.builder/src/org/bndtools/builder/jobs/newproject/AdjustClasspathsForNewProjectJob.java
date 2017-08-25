@@ -31,7 +31,6 @@ class AdjustClasspathsForNewProjectJob extends WorkspaceJob {
     AdjustClasspathsForNewProjectJob(List<IProject> addedProjects) {
         super("Adjusting classpaths for new projects");
         this.addedProjects = addedProjects;
-        logger.logInfo("Adjust classpaths for projects: " + addedProjects, null);
     }
 
     @Override
