@@ -36,6 +36,7 @@ public class ExtensionRegistryTemplateLoader implements TemplateLoader {
         typeToExtPoint.put("workspace", "workspaceTemplates");
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Promise<List<Template>> findTemplates(String type, Reporter reporter) {
         List<Template> templates;
@@ -59,7 +60,7 @@ public class ExtensionRegistryTemplateLoader implements TemplateLoader {
                     Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Error loading template '%s' from bundle %s", elementName, contributor.getName()), e));
                 } finally {
                     worked += 1f;
-                    reporter.progress(total / worked, "Loading templates");
+                    reporter.progress(worked / total, "Loading templates");
                 }
             }
         } else {
