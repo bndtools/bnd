@@ -78,9 +78,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         addPage(pageTwo);
     }
 
-    @SuppressWarnings({
-            "static-method", "unused"
-    })
+    @SuppressWarnings("unused")
     protected BndEditModel generateBndModel(IProgressMonitor monitor) {
         try {
             return new BndEditModel(Central.getWorkspace());
@@ -95,16 +93,14 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
      *
      * @param monitor
      */
-    @SuppressWarnings({
-            "static-method", "unused"
-    })
+    @SuppressWarnings("unused")
     protected BndProject generateBndProject(IProject project, IProgressMonitor monitor) {
         return new BndProject(project);
     }
 
     /**
-     * Modify the newly generated Java project; this method is executed from within a workspace operation so is free to
-     * make workspace resource modifications.
+     * Modify the newly generated Java project; this method is executed from within a workspace operation so is free to make
+     * workspace resource modifications.
      *
      * @throws CoreException
      */

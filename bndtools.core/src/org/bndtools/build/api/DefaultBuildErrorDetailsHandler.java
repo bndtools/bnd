@@ -47,9 +47,9 @@ public final class DefaultBuildErrorDetailsHandler extends AbstractBuildErrorDet
 
         if (location.header != null && location.line == 0) {
             Processor rover = model;
-            if (location.file != null && !model.getPropertiesFile().equals(location.file)) {
+            if (location.file != null) {
                 File props = new File(location.file);
-                if (props.isFile()) {
+                if (props.isFile() && !props.equals(model.getPropertiesFile())) {
                     rover = new Processor(model);
                     rover.setProperties(props);
                 }
