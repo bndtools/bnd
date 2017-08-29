@@ -1283,7 +1283,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		for (String k : sortedList) {
 			if (ins.matches(k)) {
 				String v = getLiteralProperty(k, null, this, inherit);
-				if (v != null) {
+				if ((v != null) && !v.isEmpty()) {
 					sb.append(del);
 					del = separator;
 					sb.append(v);
