@@ -109,7 +109,6 @@ import aQute.bnd.repository.maven.provider.NexusCommand;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.action.Action;
-import aQute.bnd.service.export.Exporter;
 import aQute.bnd.service.repository.InfoRepository;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
@@ -4127,17 +4126,6 @@ public class bnd extends Processor {
 
 		// temporary
 		project.getWorkspace().addBasicPlugin(new SubsystemExporter());
-
-		List<Exporter> exporters = project.getPlugins(Exporter.class);
-		Exporter exporter = null;
-
-		for (Exporter e : exporters) {
-			String[] types = e.getTypes();
-			for (String type : types) {
-				if (type.equals(opts.exporter()))
-					;
-			}
-		}
 
 		for (String bndrun : opts._arguments()) {
 			File f = getFile(bndrun);
