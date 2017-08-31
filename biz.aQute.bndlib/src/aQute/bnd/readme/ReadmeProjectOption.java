@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,18 +27,18 @@ final public class ReadmeProjectOption extends ReadmeOption {
 
 	}
 
-	public static Optional<ReadmeProjectOption> parse(Jar source, final String properties, final String rootPath) {
+	public static ReadmeProjectOption parse(Jar source, final String properties, final String rootPath) {
 		ReadmeProjectOption option = new ReadmeProjectOption();
 
 		if (option.parse(properties, rootPath, false)) {
 
 			option.extractInformation(source);
 
-			return Optional.of(option);
+			return option;
 
 		} else {
 
-			return Optional.empty();
+			return null;
 		}
 	}
 

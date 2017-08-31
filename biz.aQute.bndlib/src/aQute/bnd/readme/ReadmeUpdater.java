@@ -21,19 +21,19 @@ final public class ReadmeUpdater {
 
 		StringBuffer readmeOutput = ReadmeUtil.removeAllTags(readmeInput);
 		
-		if (option.showTitle() && content.getTitle().isPresent() && option.showDescription()
-				&& content.getDescription().isPresent()) {
+		if (option.showTitle() && content.getTitle() != null && option.showDescription()
+				&& content.getDescription() != null) {
 
 			readmeOutput.insert(0,
-					ReadmeUtil.generateTitleDescription(content.getTitle().get(), content.getDescription().get()));
+					ReadmeUtil.generateTitleDescription(content.getTitle(), content.getDescription()));
 
-		} else if (option.showDescription() && content.getDescription().isPresent()) {
+		} else if (option.showDescription() && content.getDescription() != null) {
 
-			readmeOutput.insert(0, ReadmeUtil.generateDescription(content.getDescription().get()));
+			readmeOutput.insert(0, ReadmeUtil.generateDescription(content.getDescription()));
 
-		} else if (option.showTitle() && content.getTitle().isPresent()) {
+		} else if (option.showTitle() && content.getTitle() != null) {
 
-			readmeOutput.insert(0, ReadmeUtil.generateTitle(content.getTitle().get()));
+			readmeOutput.insert(0, ReadmeUtil.generateTitle(content.getTitle()));
 		}
 
 		if (option.showContents() && !content.getContents().isEmpty()) {
@@ -53,29 +53,29 @@ final public class ReadmeUpdater {
 			readmeOutput.append(ReadmeUtil.generateContacts(content.getContacts(), option.contactsMessage()));
 		}
 
-		if (option.showLicense() && content.getLicense().isPresent()) {
+		if (option.showLicense() && content.getLicense() != null) {
 
-			readmeOutput.append(ReadmeUtil.generateLicense(content.getLicense().get()));
+			readmeOutput.append(ReadmeUtil.generateLicense(content.getLicense()));
 		}
 
-		if (option.showCopyright() && content.getCopyright().isPresent()) {
+		if (option.showCopyright() && content.getCopyright() != null) {
 
-			readmeOutput.append(ReadmeUtil.generateCopyright(content.getCopyright().get()));
+			readmeOutput.append(ReadmeUtil.generateCopyright(content.getCopyright()));
 		}
 
-		if (option.showVendor() && option.showVersion() && content.getVendor().isPresent()
-				&& content.getVersion().isPresent()) {
+		if (option.showVendor() && option.showVersion() && content.getVendor() != null
+				&& content.getVersion() != null) {
 
 			readmeOutput
-					.append(ReadmeUtil.generateVendorVersion(content.getVendor().get(), content.getVersion().get()));
+					.append(ReadmeUtil.generateVendorVersion(content.getVendor(), content.getVersion()));
 
-		} else if (option.showVendor() && content.getVendor().isPresent()) {
+		} else if (option.showVendor() && content.getVendor() != null) {
 
-			readmeOutput.append(ReadmeUtil.generateVendor(content.getVendor().get()));
+			readmeOutput.append(ReadmeUtil.generateVendor(content.getVendor()));
 
-		} else if (option.showVersion() && content.getVersion().isPresent()) {
+		} else if (option.showVersion() && content.getVersion() != null) {
 
-			readmeOutput.append(ReadmeUtil.generateVersion(content.getVersion().get()));
+			readmeOutput.append(ReadmeUtil.generateVersion(content.getVersion()));
 		}
 		
 		return readmeOutput.toString();

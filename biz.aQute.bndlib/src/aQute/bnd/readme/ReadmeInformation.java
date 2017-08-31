@@ -3,33 +3,32 @@ package aQute.bnd.readme;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Readme content for {@link ReadmeUpdater}.
  */
 final public class ReadmeInformation {
 
-	private Optional<String>				_title;
-	private Optional<String>				_description;
+	private String						_title;
+	private String						_description;
 	private List<ComponentInformation>		_components;
 	private List<ContactInformation>		_contacts;
-	private Optional<LicenseInformation>	_license;
-	private Optional<String>				_copyright;
-	private Optional<VendorInformation>		_vendor;
-	private Optional<String>				_version;
+	private LicenseInformation			_license;
+	private String						_copyright;
+	private VendorInformation			_vendor;
+	private String						_version;
 	private List<ContentInformation>		_contents;
 
 	private ReadmeInformation() {
 
 	}
 
-	public Optional<String> getTitle() {
+	public String getTitle() {
 
 		return _title;
 	}
 
-	public Optional<String> getDescription() {
+	public String getDescription() {
 
 		return _description;
 	}
@@ -49,22 +48,22 @@ final public class ReadmeInformation {
 		return _contents;
 	}
 
-	public Optional<LicenseInformation> getLicense() {
+	public LicenseInformation getLicense() {
 
 		return _license;
 	}
 
-	public Optional<String> getCopyright() {
+	public String getCopyright() {
 
 		return _copyright;
 	}
 
-	public Optional<VendorInformation> getVendor() {
+	public VendorInformation getVendor() {
 
 		return _vendor;
 	}
 
-	public Optional<String> getVersion() {
+	public String getVersion() {
 
 		return _version;
 	}
@@ -76,15 +75,15 @@ final public class ReadmeInformation {
 
 	public static class Builder {
 
-		private String								_title;
-		private String								_description;
+		private String								_title			= null;
+		private String								_description	= null;
 		private List<ComponentInformationBuilder>	_components	= new LinkedList<>();
 		private List<ContactInformation>			_contacts	= new LinkedList<>();
 		private List<ContentInformation>			_contents	= new LinkedList<>();
-		private LicenseInformation					_license;
-		private String								_copyright;
-		private VendorInformation					_vendor;
-		private String								_version;
+		private LicenseInformation					_license		= null;
+		private String								_copyright		= null;
+		private VendorInformation					_vendor			= null;
+		private String								_version		= null;
 
 		private Builder() {
 
@@ -159,14 +158,14 @@ final public class ReadmeInformation {
 
 			final ReadmeInformation info = new ReadmeInformation();
 
-			info._title = Optional.ofNullable(_title);
-			info._description = Optional.ofNullable(_description);
+			info._title = _title;
+			info._description = _description;
 			info._contacts = Collections.unmodifiableList(_contacts);
 			info._contents = Collections.unmodifiableList(_contents);
-			info._license = Optional.ofNullable(_license);
-			info._copyright = Optional.ofNullable(_copyright);
-			info._vendor = Optional.ofNullable(_vendor);
-			info._version = Optional.ofNullable(_version);
+			info._license = _license;
+			info._copyright = _copyright;
+			info._vendor = _vendor;
+			info._version = _version;
 
 			List<ComponentInformation> components = new LinkedList<>();
 

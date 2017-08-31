@@ -51,19 +51,17 @@ public class ReadmeUtilTest extends TestCase {
 	public void testLicenseGeneration() {
 
 		assertTrue(goodFormat(ReadmeUtil
-				.generateLicense(ReadmeInformation.builder().setLicense(null, null, null).build().getLicense().get())));
+				.generateLicense(ReadmeInformation.builder().setLicense(null, null, null).build().getLicense())));
 		assertTrue(goodFormat(ReadmeUtil.generateLicense(
-				ReadmeInformation.builder().setLicense("Apache", null, "test test").build().getLicense().get())));
+				ReadmeInformation.builder().setLicense("Apache", null, "test test").build().getLicense())));
 		assertTrue(goodFormat(ReadmeUtil.generateLicense(ReadmeInformation.builder()
 				.setLicense(null, "www.google.com", "test test")
 				.build()
-				.getLicense()
-				.get())));
+				.getLicense())));
 		assertTrue(goodFormat(ReadmeUtil.generateLicense(ReadmeInformation.builder()
 				.setLicense("Apache", "www.google.com", "test test")
 				.build()
-				.getLicense()
-				.get())));
+				.getLicense())));
 	}
 
 	public void testTitleDescriptionGeneration() {
@@ -110,13 +108,18 @@ public class ReadmeUtilTest extends TestCase {
 
 	public void testVendorVersionGeneration() {
 
-		assertTrue(goodFormat(ReadmeUtil.generateVendor(ReadmeInformation.builder().setVendor("cde.org", null).build().getVendor().get())));
-		assertTrue(goodFormat(ReadmeUtil.generateVendor(ReadmeInformation.builder().setVendor(null, null).build().getVendor().get())));
-		assertTrue(goodFormat(ReadmeUtil.generateVendor(ReadmeInformation.builder().setVendor(null, "wou").build().getVendor().get())));
+		assertTrue(goodFormat(
+				ReadmeUtil.generateVendor(ReadmeInformation.builder().setVendor("cde.org", null).build().getVendor())));
+		assertTrue(goodFormat(
+				ReadmeUtil.generateVendor(ReadmeInformation.builder().setVendor(null, null).build().getVendor())));
+		assertTrue(goodFormat(
+				ReadmeUtil.generateVendor(ReadmeInformation.builder().setVendor(null, "wou").build().getVendor())));
 		assertTrue(goodFormat(ReadmeUtil.generateVersion("1.0.0")));
 		assertTrue(goodFormat(ReadmeUtil.generateVersion("")));
-		assertTrue(goodFormat(ReadmeUtil.generateVendorVersion(ReadmeInformation.builder().setVendor("cde.org", "cde.org").build().getVendor().get(), "1.0.0")));
-		assertTrue(goodFormat(ReadmeUtil.generateVendorVersion(ReadmeInformation.builder().setVendor("", "cde.org").build().getVendor().get(), "")));
+		assertTrue(goodFormat(ReadmeUtil.generateVendorVersion(
+				ReadmeInformation.builder().setVendor("cde.org", "cde.org").build().getVendor(), "1.0.0")));
+		assertTrue(goodFormat(ReadmeUtil
+				.generateVendorVersion(ReadmeInformation.builder().setVendor("", "cde.org").build().getVendor(), "")));
 	}
 
 	public void testServicesGeneration() {

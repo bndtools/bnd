@@ -1,7 +1,5 @@
 package aQute.bnd.readme;
 
-import java.util.Optional;
-
 final public class ReadmeWorkspaceOption extends ReadmeOption {
 
 	private ReadmeInformation _information;
@@ -10,18 +8,18 @@ final public class ReadmeWorkspaceOption extends ReadmeOption {
 
 	}
 
-	public static Optional<ReadmeWorkspaceOption> parse(final String properties, final String rootPath) {
+	public static ReadmeWorkspaceOption parse(final String properties, final String rootPath) {
 		ReadmeWorkspaceOption option = new ReadmeWorkspaceOption();
 
 		if (option.parse(properties, rootPath, false)) {
 
 			option.extractInformation(null);
 
-			return Optional.of(option);
+			return option;
 
 		} else {
 
-			return Optional.empty();
+			return null;
 		}
 	}
 

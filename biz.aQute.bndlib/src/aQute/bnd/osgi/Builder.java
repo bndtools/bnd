@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
@@ -202,12 +201,10 @@ public class Builder extends Analyzer {
 	 */
 	private void doReadme(Jar dot) throws ZipException, IOException, Exception {
 
-		Optional<ReadmeProjectOption> optionOp = ReadmeProjectOption.parse(dot, getProperty(README),
+		ReadmeProjectOption option = ReadmeProjectOption.parse(dot, getProperty(README),
 				getBase().getCanonicalPath());
 
-		if (optionOp.isPresent()) {
-
-			ReadmeProjectOption option = optionOp.get();
+		if (option != null) {
 
 			if (!option.isReadmeFile()) {
 
