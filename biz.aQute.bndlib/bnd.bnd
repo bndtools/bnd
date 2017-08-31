@@ -21,6 +21,7 @@ Export-Package: \
 	aQute.bnd.http;-noimport:=true,\
 	aQute.bnd.differ;-noimport:=true,\
 	aQute.bnd.service.*;-noimport:=true,\
+	aQute.bnd.readme;-noimport:=true,\
 	aQute.bnd.help.*;-noimport:=true,\
 	aQute.bnd.header;-noimport:=true,\
 	aQute.bnd.version;-noimport:=true,\

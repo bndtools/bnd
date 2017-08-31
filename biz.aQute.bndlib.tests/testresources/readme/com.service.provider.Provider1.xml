@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.3.0" name="com.service.provider.Provider1">
+  <implementation class="com.service.provider.Provider1"/>
+</scr:component>

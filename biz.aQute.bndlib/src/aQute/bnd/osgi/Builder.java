@@ -9,14 +9,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
@@ -41,6 +44,8 @@ import aQute.bnd.maven.PomResource;
 import aQute.bnd.metatype.MetatypeAnnotations;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.readme.ReadmeProjectOption;
+import aQute.bnd.readme.ReadmeUpdater;
 import aQute.bnd.service.SignerPlugin;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
@@ -136,6 +141,7 @@ public class Builder extends Analyzer {
 		addSources(dot);
 
 		doPom(dot);
+		doReadme(dot);
 
 		if (!isNoBundle())
 			doVerify(dot);
@@ -186,6 +192,60 @@ public class Builder extends Analyzer {
 				if (!pomProperties.getWhere().equals(pomXml.getWhere())) {
 					dot.putResource(pomProperties.getWhere(), pomProperties);
 				}
+			}
+		}
+	}
+
+	/*
+	 * Update the readme file of the project being built and optionally include it
+	 * in the jar.
+	 */
+	private void doReadme(Jar dot) throws ZipException, IOException, Exception {
+
+		Optional<ReadmeProjectOption> optionOp = ReadmeProjectOption.parse(dot, getProperty(README),
+				getBase().getCanonicalPath());
+
+		if (optionOp.isPresent()) {
+
+			ReadmeProjectOption option = optionOp.get();
+
+			if (!option.isReadmeFile()) {
+
+				throw new IOException(option.getReadmeFilePath()
+						+ " is not a readme file, its extension must be md, markdown, mdown, mkdn or mkd");
+			}
+
+			File readmeFile = getFile(option.getReadmeFilePath());
+			String readmeInput = "";
+
+			if (readmeFile.exists()) {
+
+				if (!readmeFile.isFile()) {
+
+					throw new IOException(option.getReadmeFilePath() + " is not a file");
+				}
+
+				if (!readmeFile.canRead()) {
+
+					throw new IOException("Cannot read " + option.getReadmeFilePath());
+				}
+
+				if (!readmeFile.canWrite()) {
+
+					throw new IOException("Cannot write " + option.getReadmeFilePath());
+				}
+
+				readmeInput = new String(Files.readAllBytes(readmeFile.toPath()));
+			}
+
+			String readmeOutput = ReadmeUpdater.updateReadme(readmeInput, option.getReadmeConfiguration(),
+					option.getReadmeInformation());
+
+			Files.write(readmeFile.toPath(), readmeOutput.getBytes());
+
+			if (option.include()) {
+
+				doIncludeResource(dot, option.getIncludePath(), new HashMap<String,String>());
 			}
 		}
 	}

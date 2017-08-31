@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.2.0" localization="OSGI-INF/l10n/com.service.provider.Config2">
+  <OCD id="com.service.provider.Config2" name="Com service provider config2" description="">
+    <AD id="name" type="String" name="Name"/>
+    <AD id="name2" type="String" name="Name2" default="dede"/>
+    <AD id="name3" type="String" cardinality="2147483647" name="Name3" default="de,dada"/>
+    <AD id="name4" type="Boolean" cardinality="2147483647" name="Name4" default="true,false"/>
+  </OCD>
+  <Designate pid="com.service.provider.pid1">
+    <Object ocdref="com.service.provider.Config2"/>
+  </Designate>
+  <Designate pid="com.service.provider.pid2">
+    <Object ocdref="com.service.provider.Config2"/>
+  </Designate>
+</metatype:MetaData>

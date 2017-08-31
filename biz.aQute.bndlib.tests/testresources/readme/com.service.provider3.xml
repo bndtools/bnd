@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.3.0" name="com.service.provider3" configuration-policy="require" enabled="true" immediate="false" configuration-pid="com.service.provider.pid com.service.provider.pid1 com.service.provider.pid2">
+  <implementation class="com.service.provider.Provider3"/>
+  <service scope="bundle">
+    <provide interface="org.service.api.ExampleService"/>
+    <provide interface="org.service.api.ExampleService2"/>
+  </service>
+  <property name="truc14" type="Boolean" value="true"/>
+  <property name="truc13" type="Character">89
+88</property>
+  <property name="truc12" type="Character" value="80"/>
+  <property name="truc11" type="Byte">0
+1</property>
+  <property name="truc10" type="Byte" value="0"/>
+  <property name="one" type="String" value="one"/>
+  <property name="truc4" type="Double" value="3.0"/>
+  <property name="truc5" type="Double">2.2
+5.6</property>
+  <property name="truc6" type="Float" value="4.5"/>
+  <property name="truc7" type="Float">5.5
+5.0</property>
+  <property name="truc8" type="Integer" value="1"/>
+  <property name="truc9" type="Integer">89456
+48</property>
+  <property name="truc19" type="Short">72
+2</property>
+  <property name="truc18" type="Short" value="45"/>
+  <property name="truc1" type="String" value="one"/>
+  <property name="truc17" type="Long">45
+452452</property>
+  <property name="truc2" type="String">ji
+txo</property>
+  <property name="truc16" type="Long" value="63"/>
+  <property name="truc15" type="Boolean">true,
+false</property>
+  <properties entry="prop.prop"/>
+  <properties entry="prop2.prop"/>
+</scr:component>
