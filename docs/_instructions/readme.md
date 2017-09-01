@@ -91,7 +91,7 @@ The `-readme` instruction will attempt to extract its information in the followi
 
 * **version**:
 	
-	Directly from the `Bundle-Version` header.
+	From the `Bundle-Version` header, using the Major, Minor and Micro part of the version.
 
 ### Note
 

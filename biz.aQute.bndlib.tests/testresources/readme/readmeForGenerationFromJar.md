@@ -6,7 +6,7 @@
 
 # Components
 
-## com.service.provider.Provider1 - `not enabled`
+## com.service.provider.Provider1 - `enabled`
 
 ### Services
 
@@ -67,7 +67,7 @@ component.factory=fact
 
 
 
-## com.service.provider3 - `not enabled`
+## com.service.provider3 - `enabled`
 
 ### Services
 
@@ -129,7 +129,7 @@ This component `must be` configured with the following Pids:
 
 ### Lifecycle
 
-This component is an `immediate component`, it will be activated on bundle start as soon as all its requirements will be satisfied.
+This component is a `delayed component` with a `bundle` scope, it will be activated if needed as soon as all its requirements will be satisfied.
 
 </bnd-gen>
 
@@ -137,5 +137,5 @@ This component is an `immediate component`, it will be activated on bundle start
 <bnd-gen>
 
 ---
-version 1.0.0.201708310931</bnd-gen>
+version 1.0.0</bnd-gen>
 

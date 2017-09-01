@@ -18,6 +18,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.readme.ReadmeInformation.ComponentInformationBuilder;
+import aQute.bnd.version.Version;
 
 final public class ReadmeProjectOption extends ReadmeOption {
 
@@ -71,7 +72,15 @@ final public class ReadmeProjectOption extends ReadmeOption {
 			info.setTitle(domain.getBundleName());
 			info.setDescription(domain.getBundleDescription());
 			info.setCopyright(domain.getBundleCopyright());
-			info.setVersion(domain.getBundleVersion());
+
+			String sVersion = domain.getBundleVersion();
+
+			if (sVersion != null) {
+
+				Version version = Version.parseVersion(sVersion);
+
+				info.setVersion(version.getMajor() + "." + version.getMinor() + "." + version.getMicro());
+			}
 
 			if (domain.getBundleVendor() != null) {
 				Matcher m = Pattern.compile("(.*)(https?://.*)", Pattern.CASE_INSENSITIVE)

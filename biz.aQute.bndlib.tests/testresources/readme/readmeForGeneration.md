@@ -4,7 +4,6 @@
 
 My Bundle Description</bnd-gen>
 
-
 <bnd-gen>
 
 # Contacts

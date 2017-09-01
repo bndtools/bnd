@@ -18,7 +18,7 @@ public class ReadmeGenerationTest extends TestCase {
 
 	public void testReadmeGeneration() throws Exception {
 
-		testReadme("path='testresources/readme/readmeForGeneration.md'", "My Bundle Name",
+		testReadme("path='generated/readmeForGeneration.md'", "My Bundle Name",
 				"My Bundle Description", "My Bundle Copyright", "My Bundle Vendor http://vendor.org/", "1.0.0",
 				"Apache-2.0;description='Apache License, Version 2.0';link='http://www.apache.org/licenses/LICENSE-2.0'",
 				" myid;email=xxx@yyy.zz; name='Name Name';roles='architect, developer',myid2;name='Name2 LastName2';roles='architect, developer'");
@@ -45,6 +45,8 @@ public class ReadmeGenerationTest extends TestCase {
 		Resource r = jar.getResource("readmeForGeneration.md");
 
 		assertNotNull(r);
+		assertEquals(new String(Files.readAllBytes(Paths.get("testresources/readme/readmeForGeneration.md"))),
+				new String(Files.readAllBytes(Paths.get("generated/readmeForGeneration.md"))));
 
 		b.close();
 	}
@@ -56,15 +58,15 @@ public class ReadmeGenerationTest extends TestCase {
 		Builder b = new Builder();
 		b.setJar(jar);
 
-		b.setProperty("-readme", "path='testresources/readme/readmeForGenerationFromJar.md'");
+		b.setProperty("-readme", "path='generated/readmeForGenerationFromJar.md'");
 		b.setProperty("Service-Component",
 				"OSGI-INF/com.service.provider.Provider1.xml,OSGI-INF/com.service.provider2.xml,OSGI-INF/com.service.provider3.xml");
 
 		b.build();
 
-		assertTrue(new String(Files.readAllBytes(Paths.get("testresources/readme/readmeForGenerationFromJar.md")))
-				.contains("# Components"));
-
+		assertEquals(new String(Files.readAllBytes(Paths.get("testresources/readme/readmeForGenerationFromJar.md"))),
+				new String(Files.readAllBytes(Paths.get("generated/readmeForGenerationFromJar.md"))));
+		
 		b.close();
 	}
 }
