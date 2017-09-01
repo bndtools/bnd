@@ -45,7 +45,7 @@ class ReadmeUtil {
 
 				} else {
 
-					position = readme.length() - 1;
+					position = readme.length();
 					condition = false;
 				}
 			}

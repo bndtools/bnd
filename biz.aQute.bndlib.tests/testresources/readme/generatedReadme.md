@@ -3,6 +3,7 @@
 # Title
 
 A short description</bnd-gen>
+
 <bnd-gen>
 
 # Components
@@ -176,7 +177,6 @@ This component is a `delayed component` with a `singleton` scope, it will be act
 
 * This is really good
 </bnd-gen>
-
 
 <bnd-gen>
 

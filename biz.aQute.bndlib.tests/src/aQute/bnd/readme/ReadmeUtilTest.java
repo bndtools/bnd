@@ -178,8 +178,7 @@ public class ReadmeUtilTest extends TestCase {
 				.removeAllTags(new String(Files.readAllBytes(Paths.get("testresources/readme/generatedReadme.md"))))
 				.toString();
 
-		assertFalse(removed.isEmpty());
-		assertFalse(removed.contains("bnd"));
+		assertTrue(removed.isEmpty());
 
 		assertTrue(ReadmeUtil.removeAllTags("").toString().isEmpty());
 		assertTrue(ReadmeUtil.removeAllTags("test  \n\n # Title <oth> test </oth>")
@@ -195,11 +194,11 @@ public class ReadmeUtilTest extends TestCase {
 		String readmeWith3Sections = new String(
 				Files.readAllBytes(Paths.get("testresources/readme/readmeWith3Sections.md")));
 
-		assertEquals(53, ReadmeUtil.findPosition(new StringBuffer(readmeWithoutTitle), 1));
+		assertEquals(54, ReadmeUtil.findPosition(new StringBuffer(readmeWithoutTitle), 1));
 		assertEquals(0, ReadmeUtil.findPosition(new StringBuffer(readmeWithTitle), 0));
-		assertEquals(77, ReadmeUtil.findPosition(new StringBuffer(readmeWithTitle), 1));
+		assertEquals(78, ReadmeUtil.findPosition(new StringBuffer(readmeWithTitle), 1));
 		assertEquals(91, ReadmeUtil.findPosition(new StringBuffer(readmeWith3Sections), 2));
-		assertEquals(107, ReadmeUtil.findPosition(new StringBuffer(readmeWith3Sections), 3));
-		assertEquals(107, ReadmeUtil.findPosition(new StringBuffer(readmeWith3Sections), 4));
+		assertEquals(108, ReadmeUtil.findPosition(new StringBuffer(readmeWith3Sections), 3));
+		assertEquals(108, ReadmeUtil.findPosition(new StringBuffer(readmeWith3Sections), 4));
 	}
 }

@@ -133,7 +133,6 @@ This component is a `delayed component` with a `bundle` scope, it will be activa
 
 </bnd-gen>
 
-
 <bnd-gen>
 
 ---
