@@ -77,9 +77,9 @@ final public class ReadmeInformation {
 
 		private String								_title			= null;
 		private String								_description	= null;
-		private List<ComponentInformationBuilder>	_components	= new LinkedList<>();
-		private List<ContactInformation>			_contacts	= new LinkedList<>();
-		private List<ContentInformation>			_contents	= new LinkedList<>();
+		private List<ComponentInformationBuilder>	_components		= new LinkedList<>();
+		private List<ContactInformation>			_contacts		= new LinkedList<>();
+		private List<ContentInformation>			_contents		= new LinkedList<>();
 		private LicenseInformation					_license		= null;
 		private String								_copyright		= null;
 		private VendorInformation					_vendor			= null;

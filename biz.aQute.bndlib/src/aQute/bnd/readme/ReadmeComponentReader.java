@@ -2,7 +2,7 @@ package aQute.bnd.readme;
 
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -105,7 +105,7 @@ class ReadmeComponentReader {
 					}
 				}
 
-				dto.attributes = new HashMap<>();
+				dto.attributes = new LinkedHashMap<>();
 
 				NodeList ocds = root.getElementsByTagName("OCD");
 
@@ -283,7 +283,7 @@ class ReadmeComponentReader {
 					Element service = (Element) services.item(i);
 				}
 				
-				dto.properties = new HashMap<>();
+				dto.properties = new LinkedHashMap<>();
 				
 				NodeList properties = root.getElementsByTagName("property");
 
