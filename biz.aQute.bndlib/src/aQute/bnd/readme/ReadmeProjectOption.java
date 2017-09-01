@@ -162,8 +162,8 @@ final public class ReadmeProjectOption extends ReadmeOption {
 			componentBuilder.setConfigurationPolicy(dto.configurationPolicy);
 			componentBuilder.setServiceScope(dto.scope);
 			componentBuilder.setFactory(dto.factory);
-			componentBuilder.isEnabled(dto.immediate);
-			componentBuilder.isImmediate(dto.defaultEnabled);
+			componentBuilder.isEnabled(dto.defaultEnabled);
+			componentBuilder.isImmediate(dto.immediate);
 
 
 			for (String service : dto.serviceInterfaces) {
