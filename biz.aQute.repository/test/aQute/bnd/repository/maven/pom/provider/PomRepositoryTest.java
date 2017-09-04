@@ -34,6 +34,7 @@ import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenBackingRepository;
 import aQute.maven.provider.MavenRepository;
 import aQute.service.reporter.Reporter;
+import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 public class PomRepositoryTest extends TestCase {
@@ -267,12 +268,15 @@ public class PomRepositoryTest extends TestCase {
 	}
 
 	/**
-	 * Performs an update to the POM (testdata/pomrepo/simple.xml) to check if the
-	 * repo has been updated via polling. The changed content will be reset at the
-	 * end of the test. Furthermore a remote POM is added to the config to check run
-	 * through the stale-check
+	 * Copies the POM from testdata/pomfiles/simple.xml to a temporary file which is
+	 * deleted at the end of the test. This copied POM is added to a Repo and
+	 * updated with a new dependency to test the polling for changes. Furthermore a
+	 * remote POM is added to the config to check run through the stale-check
 	 */
 	public void testBndPomRepoFilePolling() throws Exception {
+		Path path = Paths.get("testdata/pomrepo/simple-copy.xml");
+		Files.copy(Paths.get("testdata/pomrepo/simple.xml"), path);
+
 		BndPomRepository bpr = new BndPomRepository();
 		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
 		w.setBase(tmp);
@@ -280,7 +284,7 @@ public class PomRepositoryTest extends TestCase {
 
 		Map<String,String> config = new HashMap<>();
 		config.put("pom",
-				"testdata/pomrepo/simple.xml"
+				path.toString()
 						+ ",https://repo1.maven.org/maven2/org/apache/felix/org.apache.felix.gogo.shell/0.12.0/org.apache.felix.gogo.shell-0.12.0.pom");
 		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
 		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
@@ -288,16 +292,13 @@ public class PomRepositoryTest extends TestCase {
 		config.put("pollTime", "100");
 		bpr.setProperties(config);
 
-		List<String> list = bpr.list(null);
-		assertNotNull(list);
-		assertEquals(2, list.size()); // one from simple.xml, two from the remote pom (but one is the same)
-
-		Path path = Paths.get("testdata/pomrepo/simple.xml");
-		byte[] originalContent = Files.readAllBytes(path);
-
-		List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
-
 		try {
+			List<String> list = bpr.list(null);
+			assertNotNull(list);
+			assertEquals(2, list.size()); // this seems to be a bit flaky (the dependencies change from time to time)
+
+			List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+
 			StringBuilder sb = new StringBuilder();
 			for (String line : lines) {
 				if (line.contains("</dependencies>")) {
@@ -308,12 +309,22 @@ public class PomRepositoryTest extends TestCase {
 			}
 			Files.write(path, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE,
 					StandardOpenOption.TRUNCATE_EXISTING);
-			Thread.sleep(500); // might be necessary to increase this on slow machines (or busy CI)
-			List<String> updatedList = bpr.list(null);
-			assertNotNull(updatedList);
-			assertEquals(3, updatedList.size()); // including the added dependency
+			// retry-loop for slow machines (or busy CI)
+			final int maxretry = 3;
+			for (int i = 1; i <= maxretry; i++) {
+				Thread.sleep(500);
+				List<String> updatedList = bpr.list(null);
+				try {
+					assertNotNull(updatedList);
+					assertEquals(3, updatedList.size()); // including the added dependency
+				} catch (AssertionFailedError e) {
+					if (i == maxretry) {
+						throw e;
+					}
+				}
+			}
 		} finally {
-			Files.write(path, originalContent, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+			Files.delete(path);
 			bpr.close();
 		}
 	}
