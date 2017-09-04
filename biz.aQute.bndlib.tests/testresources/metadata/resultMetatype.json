@@ -1,0 +1,45 @@
+{
+	"metatypes":[{
+		"attributes":[],"description":"","factoryPids":[],"icons":[],"id":"org.metatype.test.Metatype1","localizations":{},"name":"Org metatype test metatype1","pids":[]
+	},{
+		"attributes":[{
+			"cardinality":2147483647,"localizations":{},"name":"Dede","options":[],"property":{
+				"multipleValues":true,"name":"dede","type":"Integer"
+			},"required":true
+		},{
+			"cardinality":0,"localizations":{},"name":"Dada","options":[{
+				"label":"ONE","localizations":{},"value":"ONE"
+			},{
+				"label":"OTHER","localizations":{},"value":"OTHER"
+			}],"property":{
+				"multipleValues":false,"name":"dada","type":"String"
+			},"required":true
+		},{
+			"cardinality":0,"description":"description","localizations":{},"max":"max","min":"min","name":"name","options":[],"property":{
+				"multipleValues":false,"name":"didi","type":"String","values":["One"]
+			},"required":false
+		}],"description":"description","factoryPids":["on","two"],"icons":[{
+			"size":54,"url":"path"
+		}],"id":"org.metatype.test.Metatype2","localizations":{},"name":"name","pids":["ones","other"]
+	},{
+		"attributes":[{
+			"cardinality":2,"description":"un descrip","localizations":{"en_US":{
+				"name":"lo name"
+			}},"max":"max","min":"min","name":"un name","options":[{
+				"label":"un Cool","localizations":{"en_US":{
+					"label":"lo Cool"
+				}},"value":"Two"
+			},{
+				"label":"un Super","localizations":{"en_US":{
+					"label":"lo Super"
+				}},"value":"pick"
+			}],"property":{
+				"multipleValues":true,"name":"didi","type":"String","values":["One"]
+			},"required":false
+		}],"description":"un descrip","factoryPids":["o","twco"],"icons":[{
+			"size":54,"url":"path"
+		}],"id":"org.metatype.test.Metatype3","localizations":{"en_US":{
+			"description":"lo descrip"
+		}},"name":"un name","pids":["onecs","othcer"]
+	}]
+}

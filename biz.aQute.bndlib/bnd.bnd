@@ -24,6 +24,8 @@ Export-Package: \
 	aQute.bnd.help.*;-noimport:=true,\
 	aQute.bnd.header;-noimport:=true,\
 	aQute.bnd.version;-noimport:=true,\
+	aQute.bnd.metadata;-noimport:=true,\
+	aQute.bnd.metadata.dto;-noimport:=true,\
 	aQute.bnd.filerepo;-noimport:=true,\
 	aQute.lib.deployer;-noimport:=true,\
 	aQute.bnd.junit,\
