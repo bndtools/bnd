@@ -312,7 +312,7 @@ public class PomRepositoryTest extends TestCase {
 			// retry-loop for slow machines (or busy CI)
 			final int maxretry = 10;
 			for (int i = 1; i <= maxretry; i++) {
-				Thread.sleep(500);
+				Thread.sleep(1000);
 				List<String> updatedList = bpr.list(null);
 				try {
 					assertNotNull(updatedList);
