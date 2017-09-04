@@ -310,13 +310,15 @@ public class PomRepositoryTest extends TestCase {
 			Files.write(path, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE,
 					StandardOpenOption.TRUNCATE_EXISTING);
 			// retry-loop for slow machines (or busy CI)
-			final int maxretry = 3;
+			final int maxretry = 10;
 			for (int i = 1; i <= maxretry; i++) {
 				Thread.sleep(500);
 				List<String> updatedList = bpr.list(null);
 				try {
 					assertNotNull(updatedList);
 					assertEquals(3, updatedList.size()); // including the added dependency
+					// if ok, leave the loop
+					break;
 				} catch (AssertionFailedError e) {
 					if (i == maxretry) {
 						throw e;
