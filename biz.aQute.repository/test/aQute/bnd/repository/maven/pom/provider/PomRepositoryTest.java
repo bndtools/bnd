@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.Collections;
@@ -268,14 +269,15 @@ public class PomRepositoryTest extends TestCase {
 	}
 
 	/**
-	 * Copies the POM from testdata/pomfiles/simple.xml to a temporary file which is
-	 * deleted at the end of the test. This copied POM is added to a Repo and
-	 * updated with a new dependency to test the polling for changes. Furthermore a
-	 * remote POM is added to the config to check run through the stale-check
+	 * Copies the POM from testdata/pomfiles/simple-nodeps.xml to a temporary file
+	 * which is deleted at the end of the test. This copied POM is added to a Repo
+	 * and updated with a new dependency to test the polling for changes.
+	 * Furthermore a remote POM is added to the config to check run through the
+	 * stale-check
 	 */
 	public void testBndPomRepoFilePolling() throws Exception {
-		Path path = Paths.get("testdata/pomrepo/simple-copy.xml");
-		Files.copy(Paths.get("testdata/pomrepo/simple.xml"), path);
+		Path path = Paths.get("testdata/pomrepo/simple-nodeps-copy.xml");
+		Files.copy(Paths.get("testdata/pomrepo/simple-nodeps.xml"), path, StandardCopyOption.REPLACE_EXISTING);
 
 		BndPomRepository bpr = new BndPomRepository();
 		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
@@ -289,34 +291,34 @@ public class PomRepositoryTest extends TestCase {
 		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
 		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
 		config.put("name", "test");
-		config.put("pollTime", "100");
+		config.put("pollTime", "300");
 		bpr.setProperties(config);
 
 		try {
 			List<String> list = bpr.list(null);
 			assertNotNull(list);
-			assertEquals(2, list.size()); // this seems to be a bit flaky (the dependencies change from time to time)
+			assertEquals(1, list.size()); // this seems to be a bit flaky (the dependencies change from time to time)
 
 			List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
 
 			StringBuilder sb = new StringBuilder();
 			for (String line : lines) {
-				if (line.contains("</dependencies>")) {
+				if (line.contains("</project>")) {
 					sb.append(
-							"<dependency><groupId>org.slf4j</groupId><artifactId>slf4j-api</artifactId><version>1.7.25</version></dependency>");
+							"<dependencies><dependency><groupId>org.slf4j</groupId><artifactId>slf4j-api</artifactId><version>1.7.25</version></dependency></dependencies>");
 				}
 				sb.append(line);
 			}
 			Files.write(path, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE,
 					StandardOpenOption.TRUNCATE_EXISTING);
 			// retry-loop for slow machines (or busy CI)
-			final int maxretry = 10;
+			final int maxretry = 3;
 			for (int i = 1; i <= maxretry; i++) {
-				Thread.sleep(1000);
+				Thread.sleep(500);
 				List<String> updatedList = bpr.list(null);
 				try {
 					assertNotNull(updatedList);
-					assertEquals(3, updatedList.size()); // including the added dependency
+					assertEquals(2, updatedList.size()); // including the added dependency
 					// if ok, leave the loop
 					break;
 				} catch (AssertionFailedError e) {
