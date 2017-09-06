@@ -340,7 +340,7 @@ public class AD extends OptionalAttributes {
                     // Boolean is only Comparable starting with Java 5
                     return new ComparableBoolean(value);
                 case AttributeDefinition.CHARACTER :
-                    return new Character(value.charAt(0));
+                    return Character.valueOf(value.charAt(0));
                 case AttributeDefinition.BYTE :
                     return Byte.valueOf(value);
                 case AttributeDefinition.SHORT :
