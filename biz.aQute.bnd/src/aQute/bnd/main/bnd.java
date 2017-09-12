@@ -3,6 +3,7 @@ package aQute.bnd.main;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -18,6 +19,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,6 +88,9 @@ import aQute.bnd.main.DiffCommand.diffOptions;
 import aQute.bnd.main.RepoCommand.repoOptions;
 import aQute.bnd.maven.MavenCommand;
 import aQute.bnd.maven.PomFromManifest;
+import aQute.bnd.metadata.MetadataAnalizer;
+import aQute.bnd.metadata.MetadataJsonIO;
+import aQute.bnd.metadata.dto.BundleMetadataDTO;
 import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
@@ -2553,6 +2559,58 @@ public class bnd extends Processor {
 					Verifier v = new Verifier(jar);
 					getInfo(v, f.getName());
 					v.close();
+				}
+				jar.close();
+			}
+		}
+	}
+
+	@Description("Show the jars metadata in Json format")
+	@Arguments(arg = {
+			"<jar path>", "[...]"
+	})
+	interface metadataOptions extends Options {
+		@Description("Export metadata to Json files at ./<bsn>.json")
+		boolean export();
+	}
+
+	/**
+	 * Show the jars metadata in Json.
+	 * 
+	 * @throws Exception
+	 */
+	@Description("Show the jars metadata in Json format")
+	public void _metadata(metadataOptions opts) throws Exception {
+		for (String path : opts._arguments()) {
+			File f = getFile(path);
+			if (!f.isFile()) {
+				error("No such file: %s", f);
+			} else {
+				Jar jar = new Jar(f);
+				if (jar.getManifest() == null || jar.getBsn() == null)
+					error("Not a bundle %s", f);
+				else {
+					BundleMetadataDTO dto = null;
+					try {
+						dto = MetadataAnalizer.analyze(jar);
+					} catch (Exception e) {
+						error(e.getMessage());
+					}
+					if (dto != null) {
+						ByteArrayOutputStream output = new ByteArrayOutputStream();
+						MetadataJsonIO.toJson(dto, output);
+						if (opts.export()) {
+							String p = "./" + dto.manifestHeaders.symbolicName.symbolicName + ".json";
+							try {
+								Files.write(Paths.get(p), output.toByteArray());
+							} catch (Exception e) {
+								error("Cannot write the file at %s", p);
+							}
+						} else {
+							out.println("\n" + dto.manifestHeaders.symbolicName.symbolicName + ":\n");
+							out.println(new String(output.toByteArray()));
+						}
+					}
 				}
 				jar.close();
 			}
