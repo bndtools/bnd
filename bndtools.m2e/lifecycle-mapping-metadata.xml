@@ -16,5 +16,21 @@
 				</configurator>
 			</action>
 		</pluginExecution>
+		<pluginExecution>
+			<pluginExecutionFilter>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>bnd-indexer-maven-plugin</artifactId>
+				<versionRange>[3.1.0,)</versionRange>
+				<goals>
+					<goal>index</goal>
+					<goal>local-index</goal>
+				</goals>
+			</pluginExecutionFilter>
+			<action>
+				<configurator>
+					<id>bndtools.m2e.indexconfigurator</id>
+				</configurator>
+			</action>
+		</pluginExecution>
 	</pluginExecutions>
 </lifecycleMappingMetadata>

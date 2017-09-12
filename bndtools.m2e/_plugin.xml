@@ -11,6 +11,11 @@
 			id="bndtools.m2e.bndconfigurator"
 			name="Bndtools m2e Bnd Configurator">
 		</configurator>
+		<configurator
+			class="bndtools.m2e.IndexConfigurator"
+			id="bndtools.m2e.indexconfigurator"
+			name="Bndtools m2e Bnd Indexer Configurator">
+		</configurator>
 	</extension>
 
 </plugin>
