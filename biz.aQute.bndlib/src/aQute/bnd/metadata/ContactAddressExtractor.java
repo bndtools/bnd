@@ -26,7 +26,7 @@ public class ContactAddressExtractor extends HeaderExtractor {
 
 			dto.contactAddress = new ContactAddressDTO();
 
-			String contact = header.keySet().iterator().next();
+			String contact = cleanKey(header.keySet().iterator().next());
 
 			if (isUrl(contact)) {
 
@@ -53,7 +53,7 @@ public class ContactAddressExtractor extends HeaderExtractor {
 
 			dto.localizations.get(entry.getKey()).contactAddress = new ContactAddressDTO();
 
-			String contact = entry.getValue().keySet().iterator().next();
+			String contact = cleanKey(entry.getValue().keySet().iterator().next());
 
 			if (isUrl(contact)) {
 

@@ -30,7 +30,7 @@ public class ExportExtractor extends HeaderExtractor {
 
 				ExportPackageDTO exp = new ExportPackageDTO();
 
-				exp.packageName = entry.getKey();
+				exp.packageName = cleanKey(entry.getKey());
 
 				exp.version = toVersion(entry.getValue().get("version", "bad"));
 				

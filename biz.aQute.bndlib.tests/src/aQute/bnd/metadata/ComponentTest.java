@@ -32,6 +32,7 @@ public class ComponentTest extends TestCase {
 			ee.append(l + "\n");
 		}
 		ee.deleteCharAt(ee.length() - 1);
+
 		assertEquals(ee.toString(), new String(s.toByteArray()));
 	}
 }

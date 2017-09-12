@@ -25,7 +25,7 @@ public class VersionExtractor extends HeaderExtractor {
 
 			try {
 
-				String v = header.keySet().iterator().next();
+				String v = cleanKey(header.keySet().iterator().next());
 
 				if (v != null && !v.isEmpty()) {
 

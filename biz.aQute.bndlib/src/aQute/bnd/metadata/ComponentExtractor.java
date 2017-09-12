@@ -306,6 +306,8 @@ class ComponentExtractor extends MetadataExtractor {
 					}
 				}
 
+				cdto.references = new LinkedList<>();
+
 				NodeList references = root.getElementsByTagName(REFERENCE_TAG);
 
 				for (int i = 0; i < references.getLength(); i++) {
@@ -326,11 +328,11 @@ class ComponentExtractor extends MetadataExtractor {
 
 						if (reference.hasAttribute(FIELD_OPTION_ATTR)) {
 
-							rdto.field = reference.getAttribute(FIELD_OPTION_ATTR);
+							rdto.fieldOption = reference.getAttribute(FIELD_OPTION_ATTR);
 
 						} else {
 
-							rdto.field = "replace";
+							rdto.fieldOption = "replace";
 						}
 					}
 
@@ -395,6 +397,7 @@ class ComponentExtractor extends MetadataExtractor {
 						rdto.updated = reference.getAttribute(UPDATED_ATTR);
 					}
 
+					cdto.references.add(rdto);
 				}
 				dto.components.add(cdto);
 

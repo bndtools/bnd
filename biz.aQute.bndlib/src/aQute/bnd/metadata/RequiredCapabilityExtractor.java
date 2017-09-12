@@ -34,7 +34,7 @@ public class RequiredCapabilityExtractor extends HeaderExtractor {
 
 				RequireCapabilityDTO rcap = new RequireCapabilityDTO();
 
-				rcap.nameSpace = entry.getKey();
+				rcap.nameSpace = cleanKey(entry.getKey());
 
 				rcap.filter = entry.getValue().get("filter:");
 				rcap.resolution = entry.getValue().get("resolution:");

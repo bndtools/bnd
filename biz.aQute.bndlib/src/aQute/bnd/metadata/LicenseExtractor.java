@@ -81,7 +81,7 @@ public class LicenseExtractor extends HeaderExtractor {
 		for (Entry<String,Attrs> entry : param.entrySet()) {
 			LicenseDTO lic = new LicenseDTO();
 
-			lic.name = entry.getKey();
+			lic.name = cleanKey(entry.getKey());
 			lic.description = entry.getValue().get("description");
 			lic.link = entry.getValue().get("link");
 

@@ -21,7 +21,7 @@ public class DescriptionExtractor extends HeaderExtractor {
 
 		if (header != null) {
 
-			dto.description = header.keySet().iterator().next();
+			dto.description = cleanKey(header.keySet().iterator().next());
 		}
 
 		for (Entry<String,Parameters> entry : localizedheaders.entrySet()) {
@@ -29,7 +29,7 @@ public class DescriptionExtractor extends HeaderExtractor {
 				dto.localizations.put(entry.getKey(), new LocalizableManifestHeadersDTO());
 			}
 
-			dto.localizations.get(entry.getKey()).description = entry.getValue().keySet().iterator().next();
+			dto.localizations.get(entry.getKey()).description = cleanKey(entry.getValue().keySet().iterator().next());
 		}
 	}
 

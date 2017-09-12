@@ -21,7 +21,7 @@ public class VendorExtractor extends HeaderExtractor {
 
 		if (header != null) {
 
-			dto.vendor = header.keySet().iterator().next();
+			dto.vendor = cleanKey(header.keySet().iterator().next());
 		}
 
 		for (Entry<String,Parameters> entry : localizedheaders.entrySet()) {
@@ -29,7 +29,7 @@ public class VendorExtractor extends HeaderExtractor {
 				dto.localizations.put(entry.getKey(), new LocalizableManifestHeadersDTO());
 			}
 
-			dto.localizations.get(entry.getKey()).vendor = entry.getValue().keySet().iterator().next();
+			dto.localizations.get(entry.getKey()).vendor = cleanKey(entry.getValue().keySet().iterator().next());
 		}
 	}
 

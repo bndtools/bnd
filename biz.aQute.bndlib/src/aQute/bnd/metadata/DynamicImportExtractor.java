@@ -30,7 +30,7 @@ public class DynamicImportExtractor extends HeaderExtractor {
 
 				DynamicImportPackageDTO imp = new DynamicImportPackageDTO();
 
-				imp.packageName = entry.getKey();
+				imp.packageName = cleanKey(entry.getKey());
 
 				imp.bsn = entry.getValue().get("bundle-symbolic-name");
 

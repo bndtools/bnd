@@ -21,7 +21,7 @@ public class NameExtractor extends HeaderExtractor {
 
 		if (header != null) {
 
-			dto.name = header.keySet().iterator().next();
+			dto.name = cleanKey(header.keySet().iterator().next());
 		}
 
 		for (Entry<String,Parameters> entry : localizedheaders.entrySet()) {
@@ -29,7 +29,7 @@ public class NameExtractor extends HeaderExtractor {
 				dto.localizations.put(entry.getKey(), new LocalizableManifestHeadersDTO());
 			}
 
-			dto.localizations.get(entry.getKey()).name = entry.getValue().keySet().iterator().next();
+			dto.localizations.get(entry.getKey()).name = cleanKey(entry.getValue().keySet().iterator().next());
 		}
 	}
 

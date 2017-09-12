@@ -21,7 +21,7 @@ public class DocUrlExtractor extends HeaderExtractor {
 
 		if (header != null) {
 
-			dto.docUrl = header.keySet().iterator().next();
+			dto.docUrl = cleanKey(header.keySet().iterator().next());
 		}
 
 		for (Entry<String,Parameters> entry : localizedheaders.entrySet()) {
@@ -29,7 +29,7 @@ public class DocUrlExtractor extends HeaderExtractor {
 				dto.localizations.put(entry.getKey(), new LocalizableManifestHeadersDTO());
 			}
 
-			dto.localizations.get(entry.getKey()).docUrl = entry.getValue().keySet().iterator().next();
+			dto.localizations.get(entry.getKey()).docUrl = cleanKey(entry.getValue().keySet().iterator().next());
 		}
 	}
 

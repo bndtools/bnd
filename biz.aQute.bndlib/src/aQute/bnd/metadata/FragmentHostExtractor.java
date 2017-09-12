@@ -25,7 +25,7 @@ public class FragmentHostExtractor extends HeaderExtractor {
 
 			dto.fragmentHost = new FragmentHostDTO();
 
-			dto.fragmentHost.bsn = header.keySet().iterator().next();
+			dto.fragmentHost.bsn = cleanKey(header.keySet().iterator().next());
 
 			Attrs attibutes = header.values().iterator().next();
 

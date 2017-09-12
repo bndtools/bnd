@@ -24,7 +24,7 @@ public class ClassPathExtractor extends HeaderExtractor {
 
 			// we ignore parameters, no one specified in spec and no mention for arbitrary
 			// attributes
-			dto.classPaths.addAll(header.keySet());
+			dto.classPaths.addAll(cleanKey(header.keySet()));
 
 		} else {
 

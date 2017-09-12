@@ -21,7 +21,7 @@ public class CopyrightExtractor extends HeaderExtractor {
 
 		if (header != null) {
 
-			dto.copyright = header.keySet().iterator().next();
+			dto.copyright = cleanKey(header.keySet().iterator().next());
 		}
 
 		for (Entry<String,Parameters> entry : localizedheaders.entrySet()) {
@@ -29,7 +29,7 @@ public class CopyrightExtractor extends HeaderExtractor {
 				dto.localizations.put(entry.getKey(), new LocalizableManifestHeadersDTO());
 			}
 
-			dto.localizations.get(entry.getKey()).copyright = entry.getValue().keySet().iterator().next();
+			dto.localizations.get(entry.getKey()).copyright = cleanKey(entry.getValue().keySet().iterator().next());
 		}
 	}
 

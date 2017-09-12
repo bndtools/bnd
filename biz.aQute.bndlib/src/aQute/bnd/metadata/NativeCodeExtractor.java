@@ -94,13 +94,13 @@ public class NativeCodeExtractor extends HeaderExtractor {
 							key = key + "~";
 						}
 
-						nativeCode.paths.add(entry.getKey());
+						nativeCode.paths.add(cleanKey(entry.getKey()));
 
 						dto.nativeCode.entries.add(nativeCode);
 
 					} else {
 
-						nativeCode.paths.add(entry.getKey());
+						nativeCode.paths.add(cleanKey(entry.getKey()));
 					}
 				}
 			}

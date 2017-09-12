@@ -40,11 +40,11 @@ result:
 ---
 
 extractor: CategoryExtractor
-header: one, two
+header: one, two, one, two
 result: 
 {
 	"manifestHeaders":{
-		"categories":["one","two"],"localizations":{}
+		"categories":["one","two","one","two"],"localizations":{}
 	}
 }
 ---

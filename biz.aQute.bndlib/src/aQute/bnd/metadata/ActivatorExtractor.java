@@ -18,7 +18,7 @@ public class ActivatorExtractor extends HeaderExtractor {
 	public void extract(ManifestHeadersDTO dto, Parameters header, Map<String,Parameters> localizedheaders, Jar jar) {
 
 		if (header != null) {
-			dto.activator = header.keySet().iterator().next();
+			dto.activator = cleanKey(header.keySet().iterator().next());
 		}
 	}
 

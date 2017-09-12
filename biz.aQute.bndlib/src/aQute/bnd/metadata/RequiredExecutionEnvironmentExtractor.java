@@ -21,7 +21,7 @@ public class RequiredExecutionEnvironmentExtractor extends HeaderExtractor {
 		if (header != null) {
 
 			dto.requiredExecutionEnvironments = new LinkedList<>();
-			dto.requiredExecutionEnvironments.addAll(header.keySet());
+			dto.requiredExecutionEnvironments.addAll(cleanKey(header.keySet()));
 		}
 	}
 

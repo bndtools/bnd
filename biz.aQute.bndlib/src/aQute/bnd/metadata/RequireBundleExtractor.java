@@ -30,7 +30,7 @@ public class RequireBundleExtractor extends HeaderExtractor {
 
 				RequireBundleDTO imp = new RequireBundleDTO();
 
-				imp.bsn = entry.getKey();
+				imp.bsn = cleanKey(entry.getKey());
 
 				imp.resolution = entry.getValue().get("resolution:");
 

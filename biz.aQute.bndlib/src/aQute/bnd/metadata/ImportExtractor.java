@@ -30,7 +30,7 @@ public class ImportExtractor extends HeaderExtractor {
 
 				ImportPackageDTO imp = new ImportPackageDTO();
 
-				imp.packageName = entry.getKey();
+				imp.packageName = cleanKey(entry.getKey());
 
 				imp.resolution = entry.getValue().get("resolution:");
 

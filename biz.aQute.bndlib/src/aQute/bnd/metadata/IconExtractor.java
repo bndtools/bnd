@@ -81,7 +81,7 @@ public class IconExtractor extends HeaderExtractor {
 		for (Entry<String,Attrs> entry : param.entrySet()) {
 			IconDTO ico = new IconDTO();
 
-			ico.url = entry.getKey();
+			ico.url = cleanKey(entry.getKey());
 
 			try {
 

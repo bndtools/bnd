@@ -71,7 +71,7 @@ public class DeveloperExtractor extends HeaderExtractor {
 
 			if (entry.getValue().get("email") == null) {
 
-				dev.email = entry.getKey();
+				dev.email = cleanKey(entry.getKey());
 			} else {
 
 				dev.email = entry.getValue().get("email");

@@ -34,7 +34,7 @@ public class ProvideCapabilityExtractor extends HeaderExtractor {
 
 				ProvideCapabilityDTO pcap = new ProvideCapabilityDTO();
 
-				pcap.nameSpace = entry.getKey();
+				pcap.nameSpace = cleanKey(entry.getKey());
 
 				pcap.uses = new LinkedList<>();
 

@@ -22,7 +22,7 @@ public class CategoryExtractor extends HeaderExtractor {
 
 		if (header != null) {
 			dto.categories = new LinkedList<>();
-			dto.categories.addAll(header.keySet());
+			dto.categories.addAll(cleanKey(header.keySet()));
 		}
 
 		for (Entry<String,Parameters> entry : localizedheaders.entrySet()) {
@@ -31,7 +31,7 @@ public class CategoryExtractor extends HeaderExtractor {
 			}
 
 			dto.localizations.get(entry.getKey()).categories = new LinkedList<>();
-			dto.localizations.get(entry.getKey()).categories.addAll(entry.getValue().keySet());
+			dto.localizations.get(entry.getKey()).categories.addAll(cleanKey(entry.getValue().keySet()));
 		}
 	}
 

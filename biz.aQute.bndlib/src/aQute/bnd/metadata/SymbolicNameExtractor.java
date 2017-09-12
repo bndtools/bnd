@@ -28,7 +28,7 @@ public class SymbolicNameExtractor extends HeaderExtractor {
 
 			dto.symbolicName = new BundleSymbolicNameDTO();
 
-			dto.symbolicName.symbolicName = header.keySet().iterator().next();
+			dto.symbolicName.symbolicName = cleanKey(header.keySet().iterator().next());
 
 			dto.symbolicName.mandatory = new LinkedList<>();
 

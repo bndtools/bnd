@@ -30,7 +30,7 @@ public class HeadersTest extends TestCase {
 
 		headers.add("");
 		headers.add("one");
-		headers.add("one, two");
+		headers.add("one, two, one, two");
 		perform(new CategoryExtractor(), headers, expected, false);
 		headers.clear();
 

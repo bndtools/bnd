@@ -1,7 +1,10 @@
 package aQute.bnd.metadata;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import aQute.bnd.header.Parameters;
 import aQute.bnd.metadata.dto.ManifestHeadersDTO;
@@ -185,5 +188,32 @@ abstract class HeaderExtractor extends Extractor {
 		version.micro = 0;
 
 		return version;
+	}
+
+	protected String cleanKey(final String key) {
+		String result = key;
+
+		if (key != null) {
+
+			while (result.endsWith("~")) {
+				result = result.substring(0, result.length() - 1);
+			}
+		}
+
+		return result;
+	}
+
+	protected List<String> cleanKey(final Set<String> keys) {
+		List<String> result = new LinkedList<>();
+
+		if (keys != null) {
+
+			for (String key : keys) {
+
+				result.add(cleanKey(key));
+			}
+		}
+
+		return result;
 	}
 }

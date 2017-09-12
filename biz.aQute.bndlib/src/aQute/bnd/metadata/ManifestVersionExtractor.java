@@ -21,7 +21,7 @@ public class ManifestVersionExtractor extends HeaderExtractor {
 
 			try {
 
-				dto.manifestVersion = Integer.valueOf(header.keySet().iterator().next());
+				dto.manifestVersion = Integer.valueOf(cleanKey(header.keySet().iterator().next()));
 
 			} catch (Exception e) {
 

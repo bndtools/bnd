@@ -6,7 +6,11 @@
 			"multipleValues":false,"name":"cool","type":"String","values":["top"]
 		},{
 			"multipleValues":false,"name":"prop2","type":"String","values":["top"]
-		}],"references":[],"scope":"prototype","serviceInterfaces":["org.bundle.test.api.SomeApi","org.bundle.test.api.SomeOtherApi"]
+		}],"references":[{
+			"cardinality":"1..1","field":"_service","fieldOption":"replace","interfaceName":"org.osgi.service.cm.ConfigurationAdmin","name":"_service","policy":"static","policyOption":"reluctant","scope":"bundle"
+		},{
+			"bind":"bindService","cardinality":"0..1","field":"_service2","fieldOption":"replace","interfaceName":"org.osgi.service.event.EventAdmin","name":"test","policy":"dynamic","policyOption":"reluctant","scope":"prototype","target":"(test=4)","unbind":"unbindService","updated":"updateService"
+		}],"scope":"prototype","serviceInterfaces":["org.bundle.test.api.SomeApi","org.bundle.test.api.SomeOtherApi"]
 	}],"manifestHeaders":{
 		"categories":["un one","other"],"classPaths":["."],"contactAddress":{
 			"address":"uncde@cde.cde","type":"email"
@@ -85,7 +89,7 @@
 		},{
 			"cardinality":"single","effective":"active","filter":"(objectClass=org.osgi.service.cm.ConfigurationAdmin)","nameSpace":"osgi.service","resolution":"mandatory","typedAttributes":[]
 		},{
-			"cardinality":"single","effective":"active","filter":"(objectClass=org.osgi.service.event.EventAdmin)","nameSpace":"osgi.service~","resolution":"optional","typedAttributes":[]
+			"cardinality":"single","effective":"active","filter":"(objectClass=org.osgi.service.event.EventAdmin)","nameSpace":"osgi.service","resolution":"optional","typedAttributes":[]
 		},{
 			"cardinality":"single","effective":"resolve","filter":"(&(osgi.ee=JavaSE)(version=1.8))","nameSpace":"osgi.ee","resolution":"mandatory","typedAttributes":[]
 		}],"requiredExecutionEnvironments":[],"symbolicName":{
