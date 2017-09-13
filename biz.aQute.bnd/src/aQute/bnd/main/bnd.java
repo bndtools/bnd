@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -88,6 +89,7 @@ import aQute.bnd.main.DiffCommand.diffOptions;
 import aQute.bnd.main.RepoCommand.repoOptions;
 import aQute.bnd.maven.MavenCommand;
 import aQute.bnd.maven.PomFromManifest;
+import aQute.bnd.metadata.DTOUtil;
 import aQute.bnd.metadata.MetadataAnalizer;
 import aQute.bnd.metadata.MetadataJsonIO;
 import aQute.bnd.metadata.dto.BundleMetadataDTO;
@@ -153,28 +155,29 @@ import aQute.service.reporter.Reporter;
  */
 public class bnd extends Processor {
 	private final static Logger					logger					= LoggerFactory.getLogger(bnd.class);
-	static Pattern								ASSIGNMENT	= Pattern.compile(																			//
+	static Pattern								ASSIGNMENT				= Pattern.compile(																//
 			"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
-	Settings									settings	= new Settings();
-	final PrintStream							err			= System.err;
-	final public PrintStream					out			= System.out;
-	Justif										justif		= new Justif(80, 40, 42, 70);
-	BndMessages									messages	= ReporterMessages.base(this, BndMessages.class);
+	Settings									settings				= new Settings();
+	final PrintStream							err						= System.err;
+	final public PrintStream					out						= System.out;
+	Justif										justif					= new Justif(80, 40, 42, 70);
+	BndMessages									messages				= ReporterMessages.base(this,
+			BndMessages.class);
 	private Workspace							ws;
 	private char[]								password;
 
-	private static final ThreadLocal<Boolean>	noExit		= new ThreadLocal<Boolean>() {
-																protected Boolean initialValue() {
-																	return false;
-																};
-															};
+	private static final ThreadLocal<Boolean>	noExit					= new ThreadLocal<Boolean>() {
+																			protected Boolean initialValue() {
+																				return false;
+																			};
+																		};
 	private static final String					DEFAULT_LOG_LEVEL_KEY	= "org.slf4j.simpleLogger.defaultLogLevel";
 
-	static Pattern								JARCOMMANDS	= Pattern
+	static Pattern								JARCOMMANDS				= Pattern
 			.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
-	static Pattern								COMMAND		= Pattern.compile("\\w[\\w\\d]+");
-	static Pattern								EMAIL_P		= Pattern.compile(
+	static Pattern								COMMAND					= Pattern.compile("\\w[\\w\\d]+");
+	static Pattern								EMAIL_P					= Pattern.compile(
 			"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
 			Pattern.CASE_INSENSITIVE);
 
@@ -210,8 +213,7 @@ public class bnd extends Processor {
 		super(ws);
 	}
 
-	public bnd() {
-	}
+	public bnd() {}
 
 	public static void main(String args[]) throws Exception {
 		Workspace.setDriver(Constants.BNDDRIVER_BND);
@@ -337,8 +339,8 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * Main command. This has options the bnd base options and will then run
-	 * another command.
+	 * Main command. This has options the bnd base options and will then run another
+	 * command.
 	 * 
 	 * @param options
 	 * @throws Exception
@@ -650,7 +652,6 @@ public class bnd extends Processor {
 			jar.close();
 		}
 	}
-
 
 	@Description("Execute a file based on its extension. Supported extensions are: bnd (build), bndrun (run), and jar (print)")
 	interface dooptions extends Options {
@@ -2572,6 +2573,10 @@ public class bnd extends Processor {
 	interface metadataOptions extends Options {
 		@Description("Export metadata to Json files at ./<bsn>.json")
 		boolean export();
+
+		@Description("Generate metadata for a specific locale, eg: en_US."
+				+ " If exported, the locale is appended to the end of the file name.")
+		String locale();
 	}
 
 	/**
@@ -2594,13 +2599,33 @@ public class bnd extends Processor {
 					try {
 						dto = MetadataAnalizer.analyze(jar);
 					} catch (Exception e) {
-						error(e.getMessage());
+						if (e.getMessage() != null) {
+							error(e.getMessage());
+						} else {
+							e.printStackTrace(err);
+						}
 					}
+					String localeOpt = opts.locale() != null ? opts.locale() : "";
+					if (!localeOpt.isEmpty()) {
+						String[] localeParts = localeOpt.split("_");
+						localeOpt = "_" + localeOpt;
+						Locale locale;
+						if (localeParts.length == 1) {
+							locale = new Locale(localeParts[0]);
+						} else if (localeParts.length == 2) {
+							locale = new Locale(localeParts[0], localeParts[1]);
+						} else {
+							locale = new Locale(localeParts[0], localeParts[1], localeParts[2]);
+						}
+
+						dto = DTOUtil.deepCopy(dto, locale);
+					}
+
 					if (dto != null) {
 						ByteArrayOutputStream output = new ByteArrayOutputStream();
 						MetadataJsonIO.toJson(dto, output);
 						if (opts.export()) {
-							String p = "./" + dto.manifestHeaders.symbolicName.symbolicName + ".json";
+							String p = "./" + dto.manifestHeaders.symbolicName.symbolicName + localeOpt + ".json";
 							try {
 								Files.write(Paths.get(p), output.toByteArray());
 							} catch (Exception e) {
@@ -3420,8 +3445,8 @@ public class bnd extends Processor {
 	}
 
 	/**
-	 * List actions of the repositories if they implement Actionable and allow
-	 * them to be executed
+	 * List actions of the repositories if they implement Actionable and allow them
+	 * to be executed
 	 */
 
 	@Description("Execute an action on a repo, or if no name is give, list the actions")
@@ -4164,6 +4189,7 @@ public class bnd extends Processor {
 		getInfo(rc);
 		rc.close();
 	}
+
 	/**
 	 * Export a bndrun file
 	 */
