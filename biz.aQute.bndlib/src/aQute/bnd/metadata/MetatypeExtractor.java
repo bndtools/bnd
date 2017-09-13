@@ -75,298 +75,301 @@ class MetatypeExtractor extends MetadataExtractor {
 
 		dto.metatypes = new LinkedList<>();
 
-		for (Resource metatype : jar.getDirectories().get(METATYPE_DIR).values()) {
+		if (jar.getDirectories().get(METATYPE_DIR) != null) {
 
-			try (InputStream in = metatype.openInputStream()) {
+			for (Resource metatype : jar.getDirectories().get(METATYPE_DIR).values()) {
 
-				Document doc = db.parse(in);
+				try (InputStream in = metatype.openInputStream()) {
 
-				Element root = doc.getDocumentElement();
+					Document doc = db.parse(in);
 
-				String localizationPath = null;
-				ObjectClassDefinitionDTO odto = new ObjectClassDefinitionDTO();
+					Element root = doc.getDocumentElement();
 
-				NodeList ocds = root.getElementsByTagName(OCD_TAG);
+					String localizationPath = null;
+					ObjectClassDefinitionDTO odto = new ObjectClassDefinitionDTO();
 
-				if (ocds.getLength() > 0) {
+					NodeList ocds = root.getElementsByTagName(OCD_TAG);
 
-					Element ocd = ((Element) ocds.item(0));
+					if (ocds.getLength() > 0) {
 
-					if (ocd.hasAttribute(ID_ATTR)) {
+						Element ocd = ((Element) ocds.item(0));
 
-						odto.id = ocd.getAttribute(ID_ATTR);
-					}
+						if (ocd.hasAttribute(ID_ATTR)) {
 
-					Map<String,Map<String,String>> localizations = new HashMap<>();
-
-					if (root.hasAttribute(LOCALIZATION_ATTR)) {
-
-						localizationPath = root.getAttribute(LOCALIZATION_ATTR);
-
-					} else {
-
-						if (odto.id != null) {
-
-							localizationPath = DEFAULT_LOCALIZATION_BASE + odto.id;
-						}
-					}
-
-					if (localizationPath != null) {
-
-						localizations = getLocalization(localizationPath, jar);
-					}
-
-					odto.localizations = new HashMap<>();
-
-					if (ocd.hasAttribute(NAME_ATTR)) {
-
-						odto.name = getUnlocalizedAttr(ocd.getAttribute(NAME_ATTR), localizations);
-
-						for (Entry<String,String> entry : getLocalizedAttr(ocd.getAttribute(NAME_ATTR), localizations)
-								.entrySet()) {
-
-							if (!odto.localizations.containsKey(entry.getKey())) {
-
-								odto.localizations.put(entry.getKey(), new LocalizableObjectClassDefinitionDTO());
-							}
-
-							odto.localizations.get(entry.getKey()).name = entry.getValue();
-						}
-					}
-
-					if (ocd.hasAttribute(DESCRIPTION_ATTR)) {
-
-						odto.description = getUnlocalizedAttr(ocd.getAttribute(DESCRIPTION_ATTR), localizations);
-
-						for (Entry<String,String> entry : getLocalizedAttr(ocd.getAttribute(DESCRIPTION_ATTR),
-								localizations).entrySet()) {
-
-							if (!odto.localizations.containsKey(entry.getKey())) {
-
-								odto.localizations.put(entry.getKey(), new LocalizableObjectClassDefinitionDTO());
-							}
-
-							odto.localizations.get(entry.getKey()).description = entry.getValue();
-						}
-					}
-
-					odto.pids = new LinkedList<>();
-					odto.factoryPids = new LinkedList<>();
-
-					NodeList designates = root.getElementsByTagName(DESIGNATE_TAG);
-
-					for (int i = 0; i < designates.getLength(); i++) {
-
-						Element designate = (Element) designates.item(i);
-
-						if (designate.hasAttribute(PID_ATTR)) {
-
-							odto.pids.add(designate.getAttribute(PID_ATTR));
+							odto.id = ocd.getAttribute(ID_ATTR);
 						}
 
-						if (designate.hasAttribute(FACTORY_PID_ATTR)) {
+						Map<String,Map<String,String>> localizations = new HashMap<>();
 
-							odto.factoryPids.add(designate.getAttribute(FACTORY_PID_ATTR));
-						}
-					}
+						if (root.hasAttribute(LOCALIZATION_ATTR)) {
 
-					odto.icons = new LinkedList<>();
+							localizationPath = root.getAttribute(LOCALIZATION_ATTR);
 
-					NodeList icons = ocd.getElementsByTagName(ICON_TAG);
+						} else {
 
-					for (int i = 0; i < icons.getLength(); i++) {
+							if (odto.id != null) {
 
-						Element icon = (Element) icons.item(i);
-
-						IconDTO idto = new IconDTO();
-
-						if (icon.hasAttribute(RESOURCE_ATTR)) {
-
-							idto.url = icon.getAttribute(RESOURCE_ATTR);
-						}
-
-						if (icon.hasAttribute(SIZE_ATTR)) {
-
-							try {
-
-								idto.size = Integer.valueOf(icon.getAttribute(SIZE_ATTR));
-
-							} catch (Exception expected) {
-
-								// Nothing to do
+								localizationPath = DEFAULT_LOCALIZATION_BASE + odto.id;
 							}
 						}
-						odto.icons.add(idto);
-					}
 
-					odto.attributes = new LinkedList<>();
+						if (localizationPath != null) {
 
-					NodeList ads = ocd.getElementsByTagName(AD_TAG);
+							localizations = getLocalization(localizationPath, jar);
+						}
 
-					for (int i = 0; i < ads.getLength(); i++) {
+						odto.localizations = new HashMap<>();
 
-						Element ad = (Element) ads.item(i);
+						if (ocd.hasAttribute(NAME_ATTR)) {
 
-						AttributeDefinitionDTO adto = new AttributeDefinitionDTO();
+							odto.name = getUnlocalizedAttr(ocd.getAttribute(NAME_ATTR), localizations);
 
-						adto.property = new TypedPropertyDTO();
-						adto.localizations = new HashMap<>();
-
-						if (ad.hasAttribute(NAME_ATTR)) {
-
-							adto.name = getUnlocalizedAttr(ad.getAttribute(NAME_ATTR), localizations);
-
-							for (Entry<String,String> entry : getLocalizedAttr(ad.getAttribute(NAME_ATTR),
+							for (Entry<String,String> entry : getLocalizedAttr(ocd.getAttribute(NAME_ATTR),
 									localizations).entrySet()) {
 
-								if (!adto.localizations.containsKey(entry.getKey())) {
+								if (!odto.localizations.containsKey(entry.getKey())) {
 
-									adto.localizations.put(entry.getKey(), new LocalizableAttributeDefinitionDTO());
+									odto.localizations.put(entry.getKey(), new LocalizableObjectClassDefinitionDTO());
 								}
 
-								adto.localizations.get(entry.getKey()).name = entry.getValue();
+								odto.localizations.get(entry.getKey()).name = entry.getValue();
 							}
 						}
 
-						if (ad.hasAttribute(DESCRIPTION_ATTR)) {
+						if (ocd.hasAttribute(DESCRIPTION_ATTR)) {
 
-							adto.description = getUnlocalizedAttr(ad.getAttribute(DESCRIPTION_ATTR), localizations);
+							odto.description = getUnlocalizedAttr(ocd.getAttribute(DESCRIPTION_ATTR), localizations);
 
-							for (Entry<String,String> entry : getLocalizedAttr(ad.getAttribute(DESCRIPTION_ATTR),
+							for (Entry<String,String> entry : getLocalizedAttr(ocd.getAttribute(DESCRIPTION_ATTR),
 									localizations).entrySet()) {
 
-								if (!adto.localizations.containsKey(entry.getKey())) {
+								if (!odto.localizations.containsKey(entry.getKey())) {
 
-									adto.localizations.put(entry.getKey(), new LocalizableAttributeDefinitionDTO());
+									odto.localizations.put(entry.getKey(), new LocalizableObjectClassDefinitionDTO());
 								}
 
-								adto.localizations.get(entry.getKey()).description = entry.getValue();
+								odto.localizations.get(entry.getKey()).description = entry.getValue();
 							}
 						}
 
-						if (ad.hasAttribute(ID_ATTR)) {
+						odto.pids = new LinkedList<>();
+						odto.factoryPids = new LinkedList<>();
 
-							adto.property.name = ad.getAttribute(ID_ATTR);
+						NodeList designates = root.getElementsByTagName(DESIGNATE_TAG);
+
+						for (int i = 0; i < designates.getLength(); i++) {
+
+							Element designate = (Element) designates.item(i);
+
+							if (designate.hasAttribute(PID_ATTR)) {
+
+								odto.pids.add(designate.getAttribute(PID_ATTR));
+							}
+
+							if (designate.hasAttribute(FACTORY_PID_ATTR)) {
+
+								odto.factoryPids.add(designate.getAttribute(FACTORY_PID_ATTR));
+							}
 						}
 
-						if (ad.hasAttribute(CARDINALITY_ATTR)) {
+						odto.icons = new LinkedList<>();
 
-							try {
+						NodeList icons = ocd.getElementsByTagName(ICON_TAG);
 
-								adto.cardinality = Integer.valueOf(ad.getAttribute(CARDINALITY_ATTR));
+						for (int i = 0; i < icons.getLength(); i++) {
 
-							} catch (Exception e) {
+							Element icon = (Element) icons.item(i);
+
+							IconDTO idto = new IconDTO();
+
+							if (icon.hasAttribute(RESOURCE_ATTR)) {
+
+								idto.url = icon.getAttribute(RESOURCE_ATTR);
+							}
+
+							if (icon.hasAttribute(SIZE_ATTR)) {
+
+								try {
+
+									idto.size = Integer.valueOf(icon.getAttribute(SIZE_ATTR));
+
+								} catch (Exception expected) {
+
+									// Nothing to do
+								}
+							}
+							odto.icons.add(idto);
+						}
+
+						odto.attributes = new LinkedList<>();
+
+						NodeList ads = ocd.getElementsByTagName(AD_TAG);
+
+						for (int i = 0; i < ads.getLength(); i++) {
+
+							Element ad = (Element) ads.item(i);
+
+							AttributeDefinitionDTO adto = new AttributeDefinitionDTO();
+
+							adto.property = new TypedPropertyDTO();
+							adto.localizations = new HashMap<>();
+
+							if (ad.hasAttribute(NAME_ATTR)) {
+
+								adto.name = getUnlocalizedAttr(ad.getAttribute(NAME_ATTR), localizations);
+
+								for (Entry<String,String> entry : getLocalizedAttr(ad.getAttribute(NAME_ATTR),
+										localizations).entrySet()) {
+
+									if (!adto.localizations.containsKey(entry.getKey())) {
+
+										adto.localizations.put(entry.getKey(), new LocalizableAttributeDefinitionDTO());
+									}
+
+									adto.localizations.get(entry.getKey()).name = entry.getValue();
+								}
+							}
+
+							if (ad.hasAttribute(DESCRIPTION_ATTR)) {
+
+								adto.description = getUnlocalizedAttr(ad.getAttribute(DESCRIPTION_ATTR), localizations);
+
+								for (Entry<String,String> entry : getLocalizedAttr(ad.getAttribute(DESCRIPTION_ATTR),
+										localizations).entrySet()) {
+
+									if (!adto.localizations.containsKey(entry.getKey())) {
+
+										adto.localizations.put(entry.getKey(), new LocalizableAttributeDefinitionDTO());
+									}
+
+									adto.localizations.get(entry.getKey()).description = entry.getValue();
+								}
+							}
+
+							if (ad.hasAttribute(ID_ATTR)) {
+
+								adto.property.name = ad.getAttribute(ID_ATTR);
+							}
+
+							if (ad.hasAttribute(CARDINALITY_ATTR)) {
+
+								try {
+
+									adto.cardinality = Integer.valueOf(ad.getAttribute(CARDINALITY_ATTR));
+
+								} catch (Exception e) {
+
+									adto.cardinality = 0;
+								}
+
+							} else {
 
 								adto.cardinality = 0;
 							}
 
-						} else {
+							if (adto.cardinality == 0) {
 
-							adto.cardinality = 0;
-						}
+								adto.property.multipleValues = false;
 
-						if (adto.cardinality == 0) {
+							} else {
 
-							adto.property.multipleValues = false;
+								adto.property.multipleValues = true;
+							}
 
-						} else {
+							if (ad.hasAttribute(TYPE_ATTR)) {
 
-							adto.property.multipleValues = true;
-						}
+								adto.property.type = ad.getAttribute(TYPE_ATTR);
 
-						if (ad.hasAttribute(TYPE_ATTR)) {
+								if (adto.property.type.equals(AttributeType.PASSWORD.toString())) {
 
-							adto.property.type = ad.getAttribute(TYPE_ATTR);
+									adto.property.type = "String";
+								}
 
-							if (adto.property.type.equals(AttributeType.PASSWORD.toString())) {
+							} else {
 
 								adto.property.type = "String";
 							}
 
-						} else {
+							if (ad.hasAttribute(DEFAULT_ATTR)) {
 
-							adto.property.type = "String";
-						}
+								List<String> values = new LinkedList<>(
+										Arrays.asList(ad.getAttribute(DEFAULT_ATTR).split("(?<!\\\\),")));
 
-						if (ad.hasAttribute(DEFAULT_ATTR)) {
+								List<String> valuesEsc = new LinkedList<>();
 
-							List<String> values = new LinkedList<>(
-									Arrays.asList(ad.getAttribute(DEFAULT_ATTR).split("(?<!\\\\),")));
+								for (String v : values) {
 
-							List<String> valuesEsc = new LinkedList<>();
-
-							for (String v : values) {
-
-								valuesEsc.add(v.replaceAll("\\\\(?<!\\\\\\\\)", ""));
-							}
-
-							adto.property.values = new LinkedList<>(valuesEsc);
-						}
-
-						if (ad.hasAttribute(REQUIRED_ATTR)) {
-
-							adto.required = Boolean.valueOf(ad.getAttribute(REQUIRED_ATTR));
-
-						} else {
-
-							adto.required = true;
-						}
-
-						if (ad.hasAttribute(MAX_ATTR)) {
-
-							adto.max = ad.getAttribute(MAX_ATTR);
-						}
-
-						if (ad.hasAttribute(MIN_ATTR)) {
-
-							adto.min = ad.getAttribute(MIN_ATTR);
-						}
-
-						adto.options = new LinkedList<>();
-
-						NodeList options = ad.getElementsByTagName(OPTION_TAG);
-
-						for (int j = 0; j < options.getLength(); j++) {
-
-							Element option = (Element) options.item(j);
-
-							OptionDTO opdto = new OptionDTO();
-
-							opdto.localizations = new HashMap<>();
-
-							if (option.hasAttribute(LABEL_ATTR)) {
-
-								opdto.label = getUnlocalizedAttr(option.getAttribute(LABEL_ATTR), localizations);
-
-								for (Entry<String,String> entry : getLocalizedAttr(option.getAttribute(LABEL_ATTR),
-										localizations).entrySet()) {
-
-									if (!opdto.localizations.containsKey(entry.getKey())) {
-
-										opdto.localizations.put(entry.getKey(), new LocalizableOptionDTO());
-									}
-
-									opdto.localizations.get(entry.getKey()).label = entry.getValue();
+									valuesEsc.add(v.replaceAll("\\\\(?<!\\\\\\\\)", ""));
 								}
+
+								adto.property.values = new LinkedList<>(valuesEsc);
 							}
 
-							if (option.hasAttribute(VALUE_ATTR)) {
+							if (ad.hasAttribute(REQUIRED_ATTR)) {
 
-								opdto.value = option.getAttribute(VALUE_ATTR);
+								adto.required = Boolean.valueOf(ad.getAttribute(REQUIRED_ATTR));
+
+							} else {
+
+								adto.required = true;
 							}
 
-							adto.options.add(opdto);
+							if (ad.hasAttribute(MAX_ATTR)) {
+
+								adto.max = ad.getAttribute(MAX_ATTR);
+							}
+
+							if (ad.hasAttribute(MIN_ATTR)) {
+
+								adto.min = ad.getAttribute(MIN_ATTR);
+							}
+
+							adto.options = new LinkedList<>();
+
+							NodeList options = ad.getElementsByTagName(OPTION_TAG);
+
+							for (int j = 0; j < options.getLength(); j++) {
+
+								Element option = (Element) options.item(j);
+
+								OptionDTO opdto = new OptionDTO();
+
+								opdto.localizations = new HashMap<>();
+
+								if (option.hasAttribute(LABEL_ATTR)) {
+
+									opdto.label = getUnlocalizedAttr(option.getAttribute(LABEL_ATTR), localizations);
+
+									for (Entry<String,String> entry : getLocalizedAttr(option.getAttribute(LABEL_ATTR),
+											localizations).entrySet()) {
+
+										if (!opdto.localizations.containsKey(entry.getKey())) {
+
+											opdto.localizations.put(entry.getKey(), new LocalizableOptionDTO());
+										}
+
+										opdto.localizations.get(entry.getKey()).label = entry.getValue();
+									}
+								}
+
+								if (option.hasAttribute(VALUE_ATTR)) {
+
+									opdto.value = option.getAttribute(VALUE_ATTR);
+								}
+
+								adto.options.add(opdto);
+							}
+
+							odto.attributes.add(adto);
 						}
 
-						odto.attributes.add(adto);
+						dto.metatypes.add(odto);
 					}
 
-					dto.metatypes.add(odto);
+				} catch (Exception e) {
+
+					throw new RuntimeException(e);
 				}
-
-			} catch (Exception e) {
-
-				throw new RuntimeException(e);
 			}
 		}
 	}
