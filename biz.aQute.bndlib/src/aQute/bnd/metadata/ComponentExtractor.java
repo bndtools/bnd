@@ -172,11 +172,11 @@ class ComponentExtractor extends MetadataExtractor {
 
 					if (cdto.factory != null || cdto.serviceInterfaces.isEmpty()) {
 
-						cdto.immediate = false;
+						cdto.immediate = true;
 
 					} else {
 
-						cdto.immediate = true;
+						cdto.immediate = false;
 					}
 				}
 

@@ -12,6 +12,6 @@
 			"bind":"bindService","cardinality":"0..1","field":"_service2","fieldOption":"replace","interfaceName":"org.osgi.service.event.EventAdmin","name":"test","policy":"dynamic","policyOption":"reluctant","scope":"prototype","target":"(test=4)","unbind":"unbindService","updated":"updateService"
 		}],"scope":"prototype","serviceInterfaces":["org.component.test.api.SomeApi","org.component.test.api.SomeOtherApi"]
 	},{
-		"configurationPid":["org.component.test.ProviderImpl"],"configurationPolicy":"optional","defaultEnabled":true,"immediate":false,"implementationClass":"org.component.test.ProviderImpl","name":"org.component.test.ProviderImpl","properties":[],"references":[],"serviceInterfaces":[]
+		"configurationPid":["org.component.test.ProviderImpl"],"configurationPolicy":"optional","defaultEnabled":true,"immediate":true,"implementationClass":"org.component.test.ProviderImpl","name":"org.component.test.ProviderImpl","properties":[],"references":[],"serviceInterfaces":[]
 	}]
 }
