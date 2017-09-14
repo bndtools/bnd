@@ -1,5 +1,7 @@
 package org.bndtools.builder;
 
+import org.bndtools.build.api.IProjectDecorator;
+import org.bndtools.builder.decorator.ui.ProjectDecoratorImpl;
 import org.osgi.framework.BundleContext;
 
 public class BuilderPlugin extends org.eclipse.core.runtime.Plugin {
@@ -18,6 +20,7 @@ public class BuilderPlugin extends org.eclipse.core.runtime.Plugin {
         synchronized (BuilderPlugin.class) {
             instance = this;
         }
+        context.registerService(IProjectDecorator.class, new ProjectDecoratorImpl(), null);
     }
 
     @Override

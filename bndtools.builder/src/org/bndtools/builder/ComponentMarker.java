@@ -4,6 +4,7 @@ import java.io.File;
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.build.api.IProjectDecorator.BndProjectInfo;
 import org.bndtools.builder.decorator.ui.ComponentDecorator;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -27,8 +28,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IDecoratorManager;
 import org.eclipse.ui.PlatformUI;
 
-import aQute.bnd.build.Project;
-
 /**
  * This class creates markers for classes that contain the {@link org.osgi.service.component.annotations.Component}
  * annotation, and stores this information in the {@link BuilderPlugin} for use by {@link ComponentDecorator}and
@@ -42,7 +41,7 @@ public class ComponentMarker {
     public static final String ANNOTATION_COMPONENT_PACKAGE = "org.osgi.service.component.annotations";
     public static final String ANNOTATION_COMPONENT_FQN = ANNOTATION_COMPONENT_PACKAGE + ".Component";
 
-    public static void updateComponentMarkers(IProject project, Project model) throws Exception {
+    public static void updateComponentMarkers(IProject project, BndProjectInfo model) throws Exception {
         try {
             if (!project.isOpen()) {
                 return;
@@ -50,9 +49,6 @@ public class ComponentMarker {
             IJavaProject javaProject = JavaCore.create(project);
             if (javaProject == null) {
                 return; // project is not a java project
-            }
-            if (!project.getProject().hasNature(BndtoolsConstants.NATURE_ID)) {
-                return; // project is not a bndtools project
             }
 
             for (IClasspathEntry cpe : javaProject.getRawClasspath()) {
