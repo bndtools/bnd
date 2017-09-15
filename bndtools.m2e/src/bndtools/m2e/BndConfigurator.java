@@ -60,9 +60,11 @@ public class BndConfigurator extends AbstractProjectConfigurator {
         public MavenProjectInfo(MavenProject project) throws Exception {
             super();
             this.project = project;
-            String type = project.getArtifact().getType();
-            File outputFile = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + "." + (type == null ? "jar" : type));
-            analyzer = new Analyzer(new Jar(outputFile));
+            File file = project.getArtifact().getFile();
+            if (file == null) {
+                throw new IllegalStateException("The output file for project " + project.getName() + " does not exist");
+            }
+            analyzer = new Analyzer(new Jar(file));
             analyzer.analyze();
         }
 
