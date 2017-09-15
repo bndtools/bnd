@@ -21,6 +21,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
@@ -212,55 +213,66 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
      */
     @Override
     public void resourceChanged(final IResourceChangeEvent event) {
-        for (IMavenProjectFacade facade : MavenPlugin.getMavenProjectRegistry().getProjects()) {
-            mojos: for (MojoExecutionKey key : facade.getMojoExecutionMapping().keySet()) {
+        projects: for (IMavenProjectFacade facade : MavenPlugin.getMavenProjectRegistry().getProjects()) {
+            for (MojoExecutionKey key : facade.getMojoExecutionMapping().keySet()) {
                 if ("biz.aQute.bnd".equals(key.getGroupId()) && "bnd-indexer-maven-plugin".equals(key.getArtifactId())) {
 
-                    // This is an indexer project - if any referenced projects were part of the build
-                    // then trigger it
+                    // This is an indexer project - if any referenced projects, or this project, were part
+                    // of the change then we *may* need to trigger a rebuild of the index
                     try {
-                        for (IProject p : facade.getProject().getReferencedProjects()) {
-                            if (p.equals(facade.getProject())) {
-                                continue;
-                            }
-                            if (event.getDelta().findMember(p.getFullPath()) != null) {
-                                final IMavenProjectFacade indexerFacade = facade;
-                                Job job = new WorkspaceJob("Rebuilding index project " + facade.getProject().getName()) {
-                                    @Override
-                                    public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+                        IProject[] projects = facade.getProject().getReferencedProjects();
+                        boolean doFullCheck = event.getDelta().findMember(facade.getFullPath()) != null;
+                        for (int i = 0; !doFullCheck && i < projects.length; i++) {
+                            doFullCheck = event.getDelta().findMember(projects[i].getFullPath()) != null;
+                        }
+                        if (doFullCheck) {
+                            final IMavenProjectFacade indexerFacade = facade;
+                            Job job = new WorkspaceJob("Checking index project " + facade.getProject().getName() + " for rebuild") {
+                                @Override
+                                public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 
-                                        // Do a longer check to see if we need to rebuild
+                                    // Do a longer check to see if we need to rebuild
 
-                                        final SubMonitor progress = SubMonitor.convert(monitor);
-                                        MavenProject project = getMavenProject(indexerFacade, progress.newChild(1));
+                                    final SubMonitor progress = SubMonitor.convert(monitor);
+                                    MavenProject project = getMavenProject(indexerFacade, progress.newChild(1));
 
-                                        Map<ArtifactKey,String> keysToTypes = new HashMap<>();
-                                        for (Artifact a : project.getArtifacts()) {
-                                            keysToTypes.put(new ArtifactKey(a), a.getType());
-                                        }
-
-                                        for (IProject p : indexerFacade.getProject().getReferencedProjects()) {
-                                            IMavenProjectFacade pf = MavenPlugin.getMavenProjectRegistry().getProject(p);
-                                            if (pf != null) {
-                                                String type = keysToTypes.get(pf.getArtifactKey());
-                                                if (type != null) {
-                                                    File dep = getMavenOutputFile(type, pf, monitor);
-                                                    IPath depPath = Path.fromOSString(dep.getAbsolutePath());
-                                                    IPath projectRelativePath = p.getFile(depPath.makeRelativeTo(p.getLocation())).getFullPath();
-                                                    if (event.getDelta().findMember(projectRelativePath) != null) {
-                                                        indexerFacade.getProject().build(FULL_BUILD, monitor);
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        return Status.OK_STATUS;
+                                    Map<ArtifactKey,String> keysToTypes = new HashMap<>();
+                                    for (Artifact a : project.getArtifacts()) {
+                                        keysToTypes.put(new ArtifactKey(a), a.getType());
                                     }
-                                };
-                                job.setRule(facade.getProject().getWorkspace().getRoot());
-                                job.schedule();
-                                break mojos;
-                            }
+
+                                    IResourceDelta delta = event.getDelta();
+
+                                    boolean needsBuild = needsBuild(delta, keysToTypes, indexerFacade, progress.newChild(1));
+
+                                    IProject[] refs = indexerFacade.getProject().getReferencedProjects();
+                                    for (int i = 0; !needsBuild && i < refs.length; i++) {
+                                        IMavenProjectFacade pf = MavenPlugin.getMavenProjectRegistry().getProject(refs[i]);
+                                        needsBuild = needsBuild(delta, keysToTypes, pf, progress.newChild(1));
+                                    }
+
+                                    if (needsBuild) {
+                                        SubMonitor buildMonitor = SubMonitor.convert(monitor, "Rebuilding index for project " + indexerFacade.getProject().getName(), 1);
+                                        indexerFacade.getProject().build(FULL_BUILD, buildMonitor);
+                                    }
+                                    return Status.OK_STATUS;
+                                }
+
+                                private boolean needsBuild(IResourceDelta delta, Map<ArtifactKey,String> keysToTypes, IMavenProjectFacade facade, IProgressMonitor monitor) {
+                                    String type = keysToTypes.get(facade.getArtifactKey());
+                                    if (type != null) {
+                                        File dep = getMavenOutputFile(type, facade, monitor);
+                                        IPath depPath = Path.fromOSString(dep.getAbsolutePath());
+                                        IProject p = facade.getProject();
+                                        IPath projectRelativePath = p.getFile(depPath.makeRelativeTo(p.getLocation())).getFullPath();
+                                        return delta.findMember(projectRelativePath) != null;
+                                    }
+                                    return false;
+                                }
+                            };
+                            job.setRule(facade.getProject().getWorkspace().getRoot());
+                            job.schedule();
+                            continue projects;
                         }
                     } catch (CoreException e) {
                         Exceptions.duck(e);
