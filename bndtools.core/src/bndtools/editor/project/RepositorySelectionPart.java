@@ -1,15 +1,26 @@
 package bndtools.editor.project;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.jface.StrikeoutStyler;
 import org.bndtools.utils.swt.AddRemoveButtonBarPart;
 import org.bndtools.utils.swt.AddRemoveButtonBarPart.AddRemoveListener;
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
+import org.eclipse.core.internal.events.ResourceChangeEvent;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -64,7 +75,9 @@ import org.osgi.util.promise.Success;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
+import aQute.bnd.deployer.repository.AbstractIndexedRepo;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.exceptions.Exceptions;
@@ -77,7 +90,7 @@ import bndtools.editor.common.UpDownButtonBarPart;
 import bndtools.editor.common.UpDownButtonBarPart.UpDownListener;
 import bndtools.shared.URLDialog;
 
-public class RepositorySelectionPart extends BndEditorPart {
+public class RepositorySelectionPart extends BndEditorPart implements IResourceChangeListener {
 
     private final Image refreshImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_refresh.png").createImage();
     private final Image bundleImg = Icons.desc("bundle").createImage();
@@ -96,6 +109,7 @@ public class RepositorySelectionPart extends BndEditorPart {
     private final UpDownButtonBarPart upDownReposPart;
     private RepositoriesEditModel repositories;
     private AddRemoveButtonBarPart addRemove;
+    private Set<IFile> workspaceIndexFiles;
 
     /**
      * Create the SectionPart.
@@ -311,6 +325,8 @@ public class RepositorySelectionPart extends BndEditorPart {
             }
         });
 
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(this, ResourceChangeEvent.POST_CHANGE | ResourceChangeEvent.POST_BUILD);
+
         stackLayout.topControl = cmpBndLayout;
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         cmpStackContainer.setLayoutData(gd);
@@ -442,9 +458,62 @@ public class RepositorySelectionPart extends BndEditorPart {
     @Override
     protected void refreshFromModel() {
         repositories = new RepositoriesEditModel(model);
-        btnStandaloneCheckbox.setSelection(repositories.isStandalone());
+        boolean standalone = repositories.isStandalone();
+        btnStandaloneCheckbox.setSelection(standalone);
+        workspaceIndexFiles = standalone ? getWorkspaceIndexFiles() : Collections.<IFile> emptySet();
         updateButtons();
         reloadRepos();
+    }
+
+    private Set<IFile> getWorkspaceIndexFiles() {
+        Set<IFile> files = new HashSet<>();
+        for (Repository repository : repositories.getOrdered()) {
+            List<URI> locations = getRepoLocations(repository);
+
+            for (URI u : locations) {
+                IFile[] found = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(u, IWorkspaceRoot.INCLUDE_HIDDEN | IWorkspaceRoot.INCLUDE_TEAM_PRIVATE_MEMBERS);
+                for (IFile file : found) {
+                    files.add(file);
+                }
+            }
+        }
+        return files;
+    }
+
+    private List<URI> getRepoLocations(Repository repository) {
+        List<URI> locations = new ArrayList<>();
+        if (repository instanceof AbstractIndexedRepo) {
+            try {
+                locations.addAll(((AbstractIndexedRepo) repository).getIndexLocations());
+            } catch (Exception e) {
+                throw new RuntimeException("An error occurred trying to determine whether a standalone repository had changed", e);
+            }
+        }
+
+        if (repository instanceof OSGiRepository) {
+            String loc = ((OSGiRepository) repository).getLocation();
+            if (loc != null) {
+                for (String l : loc.split(",")) {
+                    try {
+                        URI uri = new URI(l);
+                        if ("file".equalsIgnoreCase(uri.getScheme())) {
+                            locations.add(uri);
+                        }
+                    } catch (URISyntaxException use) {
+                        // Is this a straight file path?
+                        try {
+                            File f = new File(((OSGiRepository) repository).getRoot(), l);
+                            if (f.exists()) {
+                                locations.add(f.toURI());
+                            }
+                        } catch (Exception e) {
+                            // Just ignore this location
+                        }
+                    }
+                }
+            }
+        }
+        return locations;
     }
 
     @Override
@@ -454,6 +523,7 @@ public class RepositorySelectionPart extends BndEditorPart {
 
     @Override
     public void dispose() {
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         refreshImg.dispose();
         bundleImg.dispose();
         nonObrRepoImg.dispose();
@@ -461,6 +531,31 @@ public class RepositorySelectionPart extends BndEditorPart {
         imgDown.dispose();
         imgLink.dispose();
         super.dispose();
+    }
+
+    @Override
+    public void resourceChanged(IResourceChangeEvent event) {
+        boolean reposChanged = false;
+        for (IFile file : workspaceIndexFiles) {
+            if (event.getDelta().findMember(file.getFullPath()) != null) {
+                reposChanged = true;
+                break;
+            }
+        }
+
+        if (reposChanged) {
+
+            getSection().getDisplay().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        repositories.updateStandaloneWorkspace(model);
+                    } catch (Exception e) {
+                        throw Exceptions.duck(e);
+                    }
+                }
+            });
+        }
     }
 
 }

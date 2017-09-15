@@ -204,7 +204,7 @@ class RepositoriesEditModel {
         return r;
     }
 
-    private void updateStandaloneWorkspace(BndEditModel model) throws Exception {
+    void updateStandaloneWorkspace(BndEditModel model) throws Exception {
 
         assert isStandalone();
 
