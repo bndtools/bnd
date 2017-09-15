@@ -262,10 +262,12 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
                                     String type = keysToTypes.get(facade.getArtifactKey());
                                     if (type != null) {
                                         File dep = getMavenOutputFile(type, facade, monitor);
-                                        IPath depPath = Path.fromOSString(dep.getAbsolutePath());
-                                        IProject p = facade.getProject();
-                                        IPath projectRelativePath = p.getFile(depPath.makeRelativeTo(p.getLocation())).getFullPath();
-                                        return delta.findMember(projectRelativePath) != null;
+                                        if (dep != null) {
+                                            IPath depPath = Path.fromOSString(dep.getAbsolutePath());
+                                            IProject p = facade.getProject();
+                                            IPath projectRelativePath = p.getFile(depPath.makeRelativeTo(p.getLocation())).getFullPath();
+                                            return delta.findMember(projectRelativePath) != null;
+                                        }
                                     }
                                     return false;
                                 }
