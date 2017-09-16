@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.2.0" localization="OSGI-INF/l10n/com.service.provider.Provider3$Config">
+  <OCD id="com.service.provider.Provider3$Config" name="Com service provider provider3 config" description="">
+    <AD id="name" type="String" name="Name"/>
+  </OCD>
+</metatype:MetaData>

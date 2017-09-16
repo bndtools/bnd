@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.2.0" localization="OSGI-INF/l10n/com.service.provider.Config3">
+  <OCD id="com.service.provider.Config3" name="Com service provider config3" description="">
+    <AD id="name" type="String" name="Name" default="me"/>
+    <AD id="name2" type="String" name="Name2" default="and\ me"/>
+  </OCD>
+  <Designate factoryPid="com.service.provider.pid">
+    <Object ocdref="com.service.provider.Config3"/>
+  </Designate>
+</metatype:MetaData>

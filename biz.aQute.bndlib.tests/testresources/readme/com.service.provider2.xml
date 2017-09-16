@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.3.0" name="com.service.provider2" configuration-policy="optional" enabled="false" immediate="false" factory="fact">
+  <implementation class="com.service.provider.Provider2"/>
+  <service scope="prototype">
+    <provide interface="org.service.api.Test"/>
+  </service>
+  <property name="one" type="String" value="one"/>
+  <properties entry="prop.prop"/>
+</scr:component>
