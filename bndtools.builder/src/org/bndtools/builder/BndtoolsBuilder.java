@@ -269,9 +269,11 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                         }
 
                         // We can now decorate based on the build we just did.
-                        PackageDecorator.updateDecoration(myProject, model);
+                        BndProjectInfoAdapter adapter = new BndProjectInfoAdapter(model);
 
-                        ComponentMarker.updateComponentMarkers(myProject, model);
+                        PackageDecorator.updateDecoration(myProject, adapter);
+
+                        ComponentMarker.updateComponentMarkers(myProject, adapter);
 
                         if (model.isCnf()) {
                             model.getWorkspace().refresh(); // this is for bnd plugins built in cnf

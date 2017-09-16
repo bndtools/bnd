@@ -38,9 +38,6 @@ public class ComponentDecorator extends LabelProvider implements ILightweightLab
             if (element instanceof CompilationUnit) {
 
                 CompilationUnit unit = (CompilationUnit) element;
-                if (!unit.getJavaProject().getProject().hasNature(BndtoolsConstants.NATURE_ID)) {
-                    return;
-                }
                 if (!isComponentInImports(unit)) {
                     return;
                 }
@@ -77,9 +74,6 @@ public class ComponentDecorator extends LabelProvider implements ILightweightLab
 
             } else if (element instanceof SourceType) {
                 SourceType type = (SourceType) element;
-                if (!type.getJavaProject().getProject().hasNature(BndtoolsConstants.NATURE_ID)) {
-                    return;
-                }
 
                 if (!isComponentInImports(type.getCompilationUnit())) {
                     return;
@@ -108,9 +102,6 @@ public class ComponentDecorator extends LabelProvider implements ILightweightLab
                 }
             } else if (element instanceof IPackageFragment) {
                 IPackageFragment frag = (IPackageFragment) element;
-                if (!frag.getJavaProject().getProject().hasNature(BndtoolsConstants.NATURE_ID)) {
-                    return;
-                }
                 IResource resource = (IResource) frag.getAdapter(IResource.class);
                 if (resource != null && countComponents(resource)) {
                     decoration.addOverlay(componentIcon);

@@ -2,9 +2,9 @@ package org.bndtools.builder.decorator.ui;
 
 import java.io.File;
 
-import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.build.api.IProjectDecorator.BndProjectInfo;
 import org.bndtools.builder.BndtoolsBuilder;
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
 import org.eclipse.core.resources.IProject;
@@ -25,7 +25,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-import aQute.bnd.build.Project;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.version.Version;
 
@@ -49,9 +48,6 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
             if (pkg.getKind() != IPackageFragmentRoot.K_SOURCE) {
                 return;
             }
-            if (!pkg.getJavaProject().getProject().hasNature(BndtoolsConstants.NATURE_ID)) {
-                return;
-            }
             IResource pkgResource = pkg.getCorrespondingResource();
             if (pkgResource == null) {
                 return;
@@ -71,7 +67,7 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
         }
     }
 
-    public static void updateDecoration(IProject project, Project model) throws Exception {
+    public static void updateDecoration(IProject project, BndProjectInfo model) throws Exception {
         if (!project.isOpen()) {
             return;
         }
