@@ -58,7 +58,8 @@ public class FileResource implements Resource {
 	@Override
 	public ByteBuffer buffer() throws Exception {
 		if (buffer != null) {
-			return buffer.duplicate();
+			if (buffer.limit() > 0 || file.toFile().length() == 0)
+				return buffer.duplicate();
 		}
 		if (IO.isWindows() && (size > THRESHOLD)) {
 			return null;
