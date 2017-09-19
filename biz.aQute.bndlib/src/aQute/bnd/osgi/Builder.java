@@ -42,6 +42,7 @@ import aQute.bnd.metatype.MetatypeAnnotations;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.SignerPlugin;
+import aQute.bnd.service.buildevents.PostBuildPlugin;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Tree;
@@ -1314,7 +1315,11 @@ public class Builder extends Analyzer {
 	/**
 	 * Called when we're done with a builder
 	 */
-	protected void doneBuild(Builder builder) throws Exception {}
+	protected void doneBuild(Builder builder) throws Exception {
+		for (PostBuildPlugin post : getPlugins(PostBuildPlugin.class)) {
+			post.postBuild(builder);
+		}
+	}
 
 	/**
 	 * Answer a list of builders that represent this file or a list of files

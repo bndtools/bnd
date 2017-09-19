@@ -1,0 +1,12 @@
+Export-Package: \
+	biz.aQute.bnd.reporter.command,\
+	biz.aQute.bnd.reporter.lib
+
+
+-buildpath: \
+	aQute.libg;version=latest,\
+	biz.aQute.bndlib;version=latest
+	
+-testpath: \
+	org.apache.servicemix.bundles.junit
+	
