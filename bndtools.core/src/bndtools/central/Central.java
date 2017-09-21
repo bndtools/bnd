@@ -544,11 +544,13 @@ public class Central implements IStartupParticipant {
 
     public static IResource toResource(File file) {
         IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-        IFile[] ifiles = root.findFilesForLocationURI(file.toURI());
-        if (ifiles == null || ifiles.length == 0)
+        IFile[] ifiles = root.findFilesForLocationURI(file.getAbsoluteFile().toURI());
+        if ((ifiles == null) || (ifiles.length == 0)) {
             return null;
-
-        return ifiles[0];
+        }
+        IPath path = ifiles[0].getFullPath();
+        IResource resource = file.isDirectory() ? root.getFolder(path) : root.getFile(path);
+        return resource;
     }
 
     /**
