@@ -179,6 +179,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                             String changed = ""; // if empty, no change
                             String del = "";
                             if (requestClasspathContainerUpdate()) {
+                                needRebuild();
                                 changed += "Classpath container updated";
                                 del = " & ";
                             }
