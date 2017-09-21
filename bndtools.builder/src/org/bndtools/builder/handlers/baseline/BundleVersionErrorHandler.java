@@ -16,6 +16,7 @@ import org.bndtools.utils.parse.properties.PropertiesLineReader;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
@@ -80,7 +81,7 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
                         List<File> extensions = Central.getWorkspace().getIncluded();
                         if (extensions != null) {
                             for (File extension : extensions) {
-                                loc = findBundleVersionHeader((IFile) Central.toResource(extension));
+                                loc = findBundleVersionHeader(Central.toResource(extension));
                                 if (loc != null) {
                                     loc = new LineLocation();
                                     loc.lineNum = 1;
@@ -118,7 +119,7 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
         return result;
     }
 
-    private LineLocation findBundleVersionHeader(IFile bndFile) throws Exception {
+    private LineLocation findBundleVersionHeader(IResource bndFile) throws Exception {
         File file = bndFile.getLocation().toFile();
         String content = IO.collect(file);
 
