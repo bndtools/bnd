@@ -195,7 +195,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         try {
             return serializationHelper.readClasspathContainer(containerFile);
         } catch (IOException | ClassNotFoundException e) {
-            logger.logError("Unable to load stored classpath container", e);
             return new BndContainer(Updater.EMPTY_ENTRIES, 0L);
         }
     }
@@ -272,12 +271,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 if (container instanceof BndContainer) {
                     BndContainer bndContainer = (BndContainer) container;
                     List<IClasspathEntry> currentClasspath = Arrays.asList(bndContainer.getClasspathEntries());
-                    if (newClasspath.equals(currentClasspath)) {
-                        if (bndContainer.updateLastModified(lastModified)) {
-                            storeClasspathContainer(project, bndContainer);
-                            refreshFiles(filesToRefresh);
-                        }
-                        return; // no change; so no need to set entries
+                    if (newClasspath.equals(currentClasspath) && (lastModified <= bndContainer.lastModified())) {
+                        return; // no change; so no need for new container
                     }
                 }
             }
@@ -345,7 +340,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             BndPreferences prefs = new BndPreferences();
             if (prefs.getBuildLogging() == BuildLogger.LOG_FULL) {
                 StringBuilder sb = new StringBuilder();
-                sb.append("ClasspathEntries ").append(javaProject.getProject().getName());
+                sb.append(container.getDescription()).append(" for ").append(javaProject.getProject().getName());
                 for (IClasspathEntry cpe : container.getClasspathEntries()) {
                     sb.append("\n--- ").append(cpe);
                 }
