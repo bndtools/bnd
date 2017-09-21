@@ -93,12 +93,12 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     @Override
     protected IProject[] build(final int kind, Map<String,String> args, final IProgressMonitor monitor) throws CoreException {
 
+        final IProject myProject = getProject();
         BndPreferences prefs = new BndPreferences();
-        buildLog = new BuildLogger(prefs.getBuildLogging());
+        buildLog = new BuildLogger(prefs.getBuildLogging(), myProject.getName(), kind);
 
         final BuildListeners listeners = new BuildListeners();
 
-        final IProject myProject = getProject();
         try {
 
             listeners.fireBuildStarting(myProject);
@@ -290,7 +290,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Build Error!", e));
         } finally {
             if (buildLog.isActive())
-                logger.logInfo(buildLog.toString(myProject.getName()), null);
+                logger.logInfo(buildLog.format(), null);
             listeners.release(myProject);
         }
     }
