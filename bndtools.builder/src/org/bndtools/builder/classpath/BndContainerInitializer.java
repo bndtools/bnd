@@ -195,7 +195,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         try {
             return serializationHelper.readClasspathContainer(containerFile);
         } catch (IOException | ClassNotFoundException e) {
-            logger.logError("Unable to load stored classpath container", e);
             return new BndContainer(Updater.EMPTY_ENTRIES, 0L);
         }
     }
@@ -252,7 +251,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             }
 
             List<IClasspathEntry> newClasspath = Collections.emptyList();
-            final List<IPath> filesToRefresh = new ArrayList<IPath>(20);
+            final List<IResource> filesToRefresh = new ArrayList<IResource>(20);
             try {
                 newClasspath = Central.bndCall(new Callable<List<IClasspathEntry>>() {
                     @Override
@@ -272,12 +271,8 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 if (container instanceof BndContainer) {
                     BndContainer bndContainer = (BndContainer) container;
                     List<IClasspathEntry> currentClasspath = Arrays.asList(bndContainer.getClasspathEntries());
-                    if (newClasspath.equals(currentClasspath)) {
-                        if (bndContainer.updateLastModified(lastModified)) {
-                            storeClasspathContainer(project, bndContainer);
-                            refreshFiles(filesToRefresh);
-                        }
-                        return; // no change; so no need to set entries
+                    if (newClasspath.equals(currentClasspath) && (lastModified <= bndContainer.lastModified())) {
+                        return; // no change; so no need for new container
                     }
                 }
             }
@@ -290,14 +285,11 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             }
         }
 
-        private void refreshFiles(List<IPath> filesToRefresh) throws CoreException {
-            for (IPath path : filesToRefresh) {
-                IResource target = root.getFile(path);
-                if (target != null) {
-                    int depth = target.getType() == IResource.FILE ? IResource.DEPTH_ZERO : IResource.DEPTH_INFINITE;
-                    if (!target.isSynchronized(depth)) {
-                        target.refreshLocal(depth, null);
-                    }
+        private void refreshFiles(List<IResource> filesToRefresh) throws CoreException {
+            for (IResource target : filesToRefresh) {
+                int depth = target.getType() == IResource.FILE ? IResource.DEPTH_ZERO : IResource.DEPTH_INFINITE;
+                if (!target.isSynchronized(depth)) {
+                    target.refreshLocal(depth, null);
                 }
             }
         }
@@ -348,7 +340,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             BndPreferences prefs = new BndPreferences();
             if (prefs.getBuildLogging() == BuildLogger.LOG_FULL) {
                 StringBuilder sb = new StringBuilder();
-                sb.append("ClasspathEntries ").append(javaProject.getProject().getName());
+                sb.append(container.getDescription()).append(" for ").append(javaProject.getProject().getName());
                 for (IClasspathEntry cpe : container.getClasspathEntries()) {
                     sb.append("\n--- ").append(cpe);
                 }
@@ -356,7 +348,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             }
         }
 
-        private List<IClasspathEntry> calculateProjectClasspath(List<IPath> filesToRefresh) {
+        private List<IClasspathEntry> calculateProjectClasspath(List<IResource> filesToRefresh) {
             if (!project.isOpen())
                 return Collections.emptyList();
 
@@ -381,7 +373,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             return classpath;
         }
 
-        private void calculateContainersClasspath(String header, Collection<Container> containers, List<IClasspathEntry> classpath, List<IPath> filesToRefresh) {
+        private void calculateContainersClasspath(String header, Collection<Container> containers, List<IClasspathEntry> classpath, List<IResource> filesToRefresh) {
             for (Container c : containers) {
                 File file = c.getFile();
                 assert file.isAbsolute();
@@ -410,11 +402,12 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                     path = fileToPath(file);
                 } catch (Exception e) {
                     error(c, header, "Failed to convert file %s to Eclipse path: %s", e, file, e.getMessage());
-                }
-                if (path == null) {
                     continue;
                 }
-                filesToRefresh.add(path);
+                IResource resource = Central.toResource(file);
+                if (resource != null) {
+                    filesToRefresh.add(resource);
+                }
 
                 List<IClasspathAttribute> extraAttrs = calculateContainerAttributes(c);
                 List<IAccessRule> accessRules = calculateContainerAccessRules(c);

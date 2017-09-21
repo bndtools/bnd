@@ -1,22 +1,20 @@
 package org.bndtools.builder.classpath;
 
 import java.io.Serializable;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.bndtools.api.BndtoolsConstants;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 
 public class BndContainer implements IClasspathContainer, Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
     public static final String DESCRIPTION = "Bnd Bundle Path";
     private final IClasspathEntry[] entries;
-    private final AtomicLong lastModified;
+    private final long lastModified;
 
     BndContainer(IClasspathEntry[] entries, long lastModified) {
         this.entries = entries;
-        this.lastModified = new AtomicLong(lastModified);
+        this.lastModified = lastModified;
     }
 
     @Override
@@ -45,15 +43,6 @@ public class BndContainer implements IClasspathContainer, Serializable {
     }
 
     long lastModified() {
-        return lastModified.get();
-    }
-
-    boolean updateLastModified(long time) {
-        for (long current = lastModified.get(); time > current; current = lastModified.get()) {
-            if (lastModified.compareAndSet(current, time)) {
-                return true;
-            }
-        }
-        return false;
+        return lastModified;
     }
 }

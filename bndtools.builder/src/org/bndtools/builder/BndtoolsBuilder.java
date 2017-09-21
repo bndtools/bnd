@@ -17,20 +17,16 @@ import org.bndtools.api.Logger;
 import org.bndtools.builder.classpath.BndContainerInitializer;
 import org.bndtools.builder.decorator.ui.PackageDecorator;
 import org.bndtools.utils.workspace.WorkspaceUtils;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IJavaProject;
@@ -80,8 +76,8 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     private boolean postponed;
 
     /**
-     * Called from Eclipse when it thinks this project should be build. We're proposed to figure out if we've changed
-     * and then build as quickly as possible.
+     * Called from Eclipse when it thinks this project should be build. We're proposed to figure out if we've changed and
+     * then build as quickly as possible.
      * <p>
      * We ensure we're called in proper order defined by bnd, if not we will make it be called in proper order.
      *
@@ -93,12 +89,12 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     @Override
     protected IProject[] build(final int kind, Map<String,String> args, final IProgressMonitor monitor) throws CoreException {
 
+        final IProject myProject = getProject();
         BndPreferences prefs = new BndPreferences();
-        buildLog = new BuildLogger(prefs.getBuildLogging());
+        buildLog = new BuildLogger(prefs.getBuildLogging(), myProject.getName(), kind);
 
         final BuildListeners listeners = new BuildListeners();
 
-        final IProject myProject = getProject();
         try {
 
             listeners.fireBuildStarting(myProject);
@@ -183,6 +179,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                             String changed = ""; // if empty, no change
                             String del = "";
                             if (requestClasspathContainerUpdate()) {
+                                needRebuild();
                                 changed += "Classpath container updated";
                                 del = " & ";
                             }
@@ -290,7 +287,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Build Error!", e));
         } finally {
             if (buildLog.isActive())
-                logger.logInfo(buildLog.toString(myProject.getName()), null);
+                logger.logInfo(buildLog.format(), null);
             listeners.release(myProject);
         }
     }
@@ -344,8 +341,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             }
 
             // Tell Eclipse what we did...
-            IFolder targetFolder = myProject.getFolder(calculateTargetDirPath(model));
-            targetFolder.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+            Central.refreshFile(model.getTarget(), monitor, true);
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Build Error!", e));
         }
@@ -380,8 +376,8 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
      * Check if the classpath container this project needs to be updated.
      *
      * @return {@code true} if this project has a bnd classpath container and a classpath update should be requested.
-     *         {@code false} if this project does not have a bnd classpath container or a classpath update does not need
-     *         to be requested.
+     *         {@code false} if this project does not have a bnd classpath container or a classpath update does not need to
+     *         be requested.
      */
     private boolean suggestClasspathContainerUpdate() throws Exception {
         IJavaProject javaProject = JavaCore.create(getProject());
@@ -397,8 +393,8 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
      * <p>
      * The classpath container may have added errors to the model which the caller must check for.
      *
-     * @return {@code true} if this project has a bnd classpath container and the classpath was changed. {@code false}
-     *         if this project does not have a bnd classpath container or the classpath was not changed.
+     * @return {@code true} if this project has a bnd classpath container and the classpath was changed. {@code false} if
+     *         this project does not have a bnd classpath container or the classpath was not changed.
      */
     private boolean requestClasspathContainerUpdate() throws CoreException {
         IJavaProject javaProject = JavaCore.create(getProject());
@@ -442,12 +438,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                     IO.delete(f);
             }
         IO.delete(new File(model.getTarget(), Project.BUILDFILES));
-    }
-
-    private static IPath calculateTargetDirPath(Project model) throws Exception {
-        IPath basePath = Path.fromOSString(model.getBase().getAbsolutePath());
-        final IPath targetDirPath = Path.fromOSString(model.getTarget().getAbsolutePath()).makeRelativeTo(basePath);
-        return targetDirPath;
     }
 
     private IProject[] calculateDependsOn(Project model) throws Exception {

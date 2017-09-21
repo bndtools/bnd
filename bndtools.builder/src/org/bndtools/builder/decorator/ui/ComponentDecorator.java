@@ -131,7 +131,7 @@ public class ComponentDecorator extends LabelProvider implements ILightweightLab
     private static boolean isComponentInImports(ICompilationUnit unit) throws CoreException {
         boolean annotationInImports = false;
 
-        if (unit != null) {
+        if ((unit != null) && unit.exists()) {
             for (IImportDeclaration importDecl : unit.getImports()) {
                 annotationInImports = importDecl.getElementName().equals(ComponentMarker.ANNOTATION_COMPONENT_FQN) || importDecl.getElementName().equals(ComponentMarker.ANNOTATION_COMPONENT_PACKAGE + ".*");
                 if (annotationInImports) {

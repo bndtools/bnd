@@ -422,7 +422,7 @@ public class Central implements IStartupParticipant {
                 p = p.removeLastSegments(1);
                 IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(p);
                 if (resource != null) {
-                    resource.refreshLocal(2, null);
+                    resource.refreshLocal(IResource.DEPTH_INFINITE, null);
                     return;
                 }
             }
@@ -493,10 +493,18 @@ public class Central implements IStartupParticipant {
     }
 
     public static void refreshFile(File f) throws Exception {
-        String path = toLocal(f);
-        IResource r = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
-        if (r != null) {
-            r.refreshLocal(IResource.DEPTH_INFINITE, null);
+        refreshFile(f, null, false);
+    }
+
+    public static void refreshFile(File file, IProgressMonitor monitor, boolean derived) throws Exception {
+        IResource target = toResource(file);
+        if (target == null) {
+            return;
+        }
+        int depth = target.getType() == IResource.FILE ? IResource.DEPTH_ZERO : IResource.DEPTH_INFINITE;
+        if (!target.isSynchronized(depth)) {
+            target.refreshLocal(depth, monitor);
+            target.setDerived(derived, monitor);
         }
     }
 
@@ -504,15 +512,6 @@ public class Central implements IStartupParticipant {
         IJavaProject jp = getJavaProject(p);
         if (jp != null)
             jp.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
-    }
-
-    private static String toLocal(File f) throws Exception {
-        String root = getWorkspace().getBase().getAbsolutePath();
-        String path = f.getAbsolutePath();
-        if (path.startsWith(root))
-            return f.getAbsolutePath().substring(root.length());
-
-        return path;
     }
 
     public void close() {
@@ -544,11 +543,13 @@ public class Central implements IStartupParticipant {
 
     public static IResource toResource(File file) {
         IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-        IFile[] ifiles = root.findFilesForLocationURI(file.toURI());
-        if (ifiles == null || ifiles.length == 0)
+        IFile[] ifiles = root.findFilesForLocationURI(file.getAbsoluteFile().toURI());
+        if ((ifiles == null) || (ifiles.length == 0)) {
             return null;
-
-        return ifiles[0];
+        }
+        IPath path = ifiles[0].getFullPath();
+        IResource resource = file.isDirectory() ? root.getFolder(path) : root.getFile(path);
+        return resource;
     }
 
     /**
