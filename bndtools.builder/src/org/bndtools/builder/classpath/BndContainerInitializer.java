@@ -311,6 +311,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                     }
                     break;
                 case IClasspathEntry.CPE_PROJECT :
+                    if (resource == null) {
+                        break;
+                    }
                     if (!isVersionProject(cpe)) {
                         break; // only proceed if project's library not in container
                     }
