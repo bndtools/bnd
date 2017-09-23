@@ -504,7 +504,9 @@ public class Central implements IStartupParticipant {
         int depth = target.getType() == IResource.FILE ? IResource.DEPTH_ZERO : IResource.DEPTH_INFINITE;
         if (!target.isSynchronized(depth)) {
             target.refreshLocal(depth, monitor);
-            target.setDerived(derived, monitor);
+            if (target.exists() && (target.isDerived() != derived)) {
+                target.setDerived(derived, monitor);
+            }
         }
     }
 

@@ -31,7 +31,7 @@ public class RefreshFileJob extends WorkspaceJob {
     }
 
     public boolean needsToSchedule() {
-        return true;
+        return !files.isEmpty();
     }
 
     @Override
@@ -43,15 +43,14 @@ public class RefreshFileJob extends WorkspaceJob {
                 // This call is taking a long time. Thus it was moved out of the constructor into runInWorkspace()
                 wsPath = Central.toPathMustBeInEclipseWorkspace(file);
             } catch (Exception e) {
-                // If we had a reference to something not in a project, this would cause a LOT of extra dialogs to pop up. Yes, I tried it.
-                //ret = new Status(Status.ERROR, "RefreshFileJob", "Unable to find file=" + file);
                 continue;
             }
-            int depth = 0;
-            IResource target;
             if (wsPath == null) {
-                target = null;
-            } else if (file.isFile()) {
+                continue;
+            }
+            int depth = IResource.DEPTH_ZERO;
+            IResource target;
+            if (file.isFile()) {
                 target = ResourcesPlugin.getWorkspace().getRoot().getFile(wsPath);
             } else if (file.isDirectory()) {
                 target = ResourcesPlugin.getWorkspace().getRoot().getFolder(wsPath);
@@ -63,7 +62,9 @@ public class RefreshFileJob extends WorkspaceJob {
 
             if (target != null && !target.isSynchronized(depth)) {
                 target.refreshLocal(depth, monitor);
-                target.setDerived(derived, null);
+                if (target.exists() && (target.isDerived() != derived)) {
+                    target.setDerived(derived, monitor);
+                }
             }
         }
 
