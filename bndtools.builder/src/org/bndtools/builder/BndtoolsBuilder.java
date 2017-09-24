@@ -316,12 +316,13 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
         BndPreferences prefs = new BndPreferences();
         buildLog = new BuildLogger(prefs.getBuildLogging(), myProject.getName(), CLEAN_BUILD);
         try {
+            MarkerSupport markers = new MarkerSupport(myProject);
+            markers.deleteMarkers("*");
+
             final Project model;
             try {
                 model = Central.getProject(myProject);
             } catch (Exception e) {
-                MarkerSupport markers = new MarkerSupport(myProject);
-                markers.deleteMarkers("*");
                 markers.createMarker(null, IMarker.SEVERITY_ERROR, "Cannot find bnd project", BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
                 return;
             }
