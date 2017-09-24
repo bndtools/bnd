@@ -123,7 +123,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                 return Central.bndCall(new Callable<IProject[]>() {
                     @Override
                     public IProject[] call() throws Exception {
-                        boolean force = kind == FULL_BUILD || kind == CLEAN_BUILD;
+                        boolean force = kind == FULL_BUILD;
                         model.clear();
 
                         DeltaWrapper delta = new DeltaWrapper(model, getDelta(myProject), buildLog);
@@ -312,9 +312,10 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
      */
     @Override
     protected void clean(IProgressMonitor monitor) throws CoreException {
+        IProject myProject = getProject();
+        BndPreferences prefs = new BndPreferences();
+        buildLog = new BuildLogger(prefs.getBuildLogging(), myProject.getName(), CLEAN_BUILD);
         try {
-            IProject myProject = getProject();
-
             final Project model;
             try {
                 model = Central.getProject(myProject);
@@ -344,6 +345,9 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             Central.refreshFile(model.getTarget(), monitor, true);
         } catch (Exception e) {
             throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Build Error!", e));
+        } finally {
+            if (buildLog.isActive())
+                logger.logInfo(buildLog.format(), null);
         }
     }
 
