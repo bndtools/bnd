@@ -10,7 +10,7 @@ public class BuildLogger {
     public static final int LOG_NONE = 0;
     private final int level;
     private final String name;
-    private final String kind;
+    private final int kind;
     private final long start = System.currentTimeMillis();
     private final StringBuilder sb = new StringBuilder();
     private final Formatter formatter = new Formatter(sb);
@@ -20,24 +20,7 @@ public class BuildLogger {
     public BuildLogger(int level, String name, int kind) {
         this.level = level;
         this.name = name;
-        switch (kind) {
-        case IncrementalProjectBuilder.FULL_BUILD :
-            this.kind = "FULL";
-            break;
-        case IncrementalProjectBuilder.AUTO_BUILD :
-            this.kind = "AUTO";
-            break;
-        case IncrementalProjectBuilder.CLEAN_BUILD :
-            this.kind = "CLEAN";
-            break;
-        case IncrementalProjectBuilder.INCREMENTAL_BUILD :
-            this.kind = "INCREMENTAL";
-            break;
-        default :
-            this.kind = String.valueOf(kind);
-            break;
-        }
-
+        this.kind = kind;
     }
 
     public void basic(String string) {
@@ -84,13 +67,31 @@ public class BuildLogger {
     public String format() {
         long end = System.currentTimeMillis();
         full("Duration %.2f sec", (end - start) / 1000f);
+        String kindString;
+        switch (kind) {
+        case IncrementalProjectBuilder.FULL_BUILD :
+            kindString = "FULL";
+            break;
+        case IncrementalProjectBuilder.AUTO_BUILD :
+            kindString = "AUTO";
+            break;
+        case IncrementalProjectBuilder.CLEAN_BUILD :
+            kindString = "CLEAN";
+            break;
+        case IncrementalProjectBuilder.INCREMENTAL_BUILD :
+            kindString = "INCREMENTAL";
+            break;
+        default :
+            kindString = String.valueOf(kind);
+            break;
+        }
 
         StringBuilder top = new StringBuilder();
         try (Formatter topper = new Formatter(top)) {
             if (files > 0)
-                topper.format("BUILD %s %s %d file%s built", kind, name, files, files > 1 ? "s were" : " was");
+                topper.format("BUILD %s %s %d file%s built", kindString, name, files, files > 1 ? "s were" : " was");
             else
-                topper.format("BUILD %s %s no build", kind, name);
+                topper.format("BUILD %s %s no build", kindString, name);
         }
 
         return top.append('\n').append(sb).toString();
