@@ -199,11 +199,11 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                         //
                         // We did not postpone, so reset the flag
                         //
-                        if (postponed)
+                        if (postponed) {
                             buildLog.full("Was postponed");
-
-                        force |= postponed;
-                        postponed = false;
+                            force = true;
+                            postponed = false;
+                        }
 
                         if (!force && delta.hasProjectChanged()) {
                             buildLog.basic("project had changed files");
