@@ -14,7 +14,6 @@ import java.util.concurrent.TimeoutException;
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
-import org.bndtools.builder.classpath.BndContainerInitializer;
 import org.bndtools.builder.decorator.ui.PackageDecorator;
 import org.bndtools.utils.workspace.WorkspaceUtils;
 import org.eclipse.core.resources.IMarker;
@@ -28,9 +27,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.core.IClasspathContainer;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import aQute.bnd.build.Project;
@@ -146,11 +142,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                             setupChanged = true;
                         }
 
-                        if (!force && !setupChanged && suggestClasspathContainerUpdate()) {
-                            buildLog.basic("Project classpath may need to be updated");
-                            setupChanged = true;
-                        }
-
                         //
                         // If we already know we are going to build, we
                         // must handle the path errors. We make sure
@@ -168,28 +159,8 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
 
                             dependsOn = calculateDependsOn(model);
 
-                            //
-                            // We have a setup change so we MUST check both class path
-                            // changes and build order changes. Careful not to use an OR
-                            // operation (as I did) because they are shortcutted. Since it
-                            // is also nice to see why we had a change, we just collect the
-                            // reason of the change so we can report it to the log.
-                            //
-
-                            String changed = ""; // if empty, no change
-                            String del = "";
-                            if (requestClasspathContainerUpdate()) {
-                                needRebuild();
-                                changed += "Classpath container updated";
-                                del = " & ";
-                            }
-
                             if (setBuildOrder(monitor)) {
-                                changed += del + "Build order changed";
-                            }
-
-                            if (!changed.equals("")) {
-                                buildLog.basic("Setup changed: " + changed);
+                                buildLog.basic("Build order changed");
                                 return postpone();
                             }
 
@@ -375,46 +346,6 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
         }
 
         return false;
-    }
-
-    /**
-     * Check if the classpath container this project needs to be updated.
-     *
-     * @return {@code true} if this project has a bnd classpath container and a classpath update should be requested.
-     *         {@code false} if this project does not have a bnd classpath container or a classpath update does not need to
-     *         be requested.
-     */
-    private boolean suggestClasspathContainerUpdate() throws Exception {
-        IJavaProject javaProject = JavaCore.create(getProject());
-        if (javaProject == null) {
-            return false; // project is not a java project
-        }
-
-        return BndContainerInitializer.suggestClasspathContainerUpdate(javaProject);
-    }
-
-    /**
-     * Request the classpath container be updated for this project.
-     * <p>
-     * The classpath container may have added errors to the model which the caller must check for.
-     *
-     * @return {@code true} if this project has a bnd classpath container and the classpath was changed. {@code false} if
-     *         this project does not have a bnd classpath container or the classpath was not changed.
-     */
-    private boolean requestClasspathContainerUpdate() throws CoreException {
-        IJavaProject javaProject = JavaCore.create(getProject());
-        if (javaProject == null) {
-            return false; // project is not a java project
-        }
-
-        IClasspathContainer oldContainer = BndContainerInitializer.getClasspathContainer(javaProject);
-        if (oldContainer == null) {
-            return false; // project does not have a BndContainer
-        }
-
-        BndContainerInitializer.requestClasspathContainerUpdate(javaProject);
-
-        return oldContainer != BndContainerInitializer.getClasspathContainer(javaProject);
     }
 
     /*

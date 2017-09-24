@@ -145,7 +145,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
      *            The java project of interest. Must not be null.
      * @return The BndContainer for the java project.
      */
-    public static IClasspathContainer getClasspathContainer(IJavaProject javaProject) {
+    static IClasspathContainer getClasspathContainer(IJavaProject javaProject) {
         return JavaModelManager.getJavaModelManager().containerGet(javaProject, BndtoolsConstants.BND_CLASSPATH_ID);
     }
 
@@ -165,26 +165,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         if (initializer != null) {
             initializer.requestClasspathContainerUpdate(BndtoolsConstants.BND_CLASSPATH_ID, javaProject, null);
         }
-    }
-
-    /**
-     * Suggests whether an update request on the classpath container, if there is one, should be made.
-     *
-     * @param javaProject
-     *            The java project of interest. Must not be null.
-     * @throws CoreException
-     */
-    public static boolean suggestClasspathContainerUpdate(IJavaProject javaProject) throws Exception {
-        if (getClasspathContainer(javaProject) == null) {
-            return false; // project does not have a BndContainer
-        }
-        ClasspathContainerInitializer initializer = JavaCore.getClasspathContainerInitializer(BndtoolsConstants.BND_CLASSPATH_ID.segment(0));
-        if (initializer == null) {
-            return false;
-        }
-        IProject project = javaProject.getProject();
-        Updater updater = new Updater(project, javaProject);
-        return updater.suggestClasspathContainerUpdate();
     }
 
     private static BndContainer loadClasspathContainer(IProject project) {
@@ -292,45 +272,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                     target.refreshLocal(depth, null);
                 }
             }
-        }
-
-        boolean suggestClasspathContainerUpdate() throws Exception {
-            if (model == null) {
-                return false;
-            }
-            BndContainer container = (BndContainer) JavaCore.getClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, javaProject);
-            long containerLastModified = container.lastModified();
-            for (IClasspathEntry cpe : container.getClasspathEntries()) {
-                IPath path = cpe.getPath();
-                IResource resource = root.findMember(path);
-                switch (cpe.getEntryKind()) {
-                case IClasspathEntry.CPE_LIBRARY :
-                    File library = resource != null ? resource.getLocation().toFile() : path.toFile();
-                    if (library.lastModified() > containerLastModified) {
-                        return true;
-                    }
-                    break;
-                case IClasspathEntry.CPE_PROJECT :
-                    if (resource == null) {
-                        break;
-                    }
-                    if (!isVersionProject(cpe)) {
-                        break; // only proceed if project's library not in container
-                    }
-                    Project p = Central.getProject((IProject) resource);
-                    if (p == null) {
-                        break;
-                    }
-                    File accessPatternsFile = getAccessPatternsFile(p);
-                    if (accessPatternsFile.lastModified() > containerLastModified) {
-                        return true;
-                    }
-                    break;
-                default :
-                    break;
-                }
-            }
-            return false;
         }
 
         static void setClasspathContainer(IJavaProject javaProject, BndContainer container) throws JavaModelException {
@@ -651,15 +592,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
         private boolean isVersionProject(Container c) {
             return Constants.VERSION_ATTR_PROJECT.equals(c.getAttributes().get(Constants.VERSION_ATTRIBUTE));
-        }
-
-        private boolean isVersionProject(IClasspathEntry cpe) {
-            for (IClasspathAttribute extraAttr : cpe.getExtraAttributes()) {
-                if (Constants.VERSION_ATTRIBUTE.equals(extraAttr.getName())) {
-                    return Constants.VERSION_ATTR_PROJECT.equals(extraAttr.getValue());
-                }
-            }
-            return false;
         }
 
         private SetLocation error(String message, Throwable t, Object... args) {
