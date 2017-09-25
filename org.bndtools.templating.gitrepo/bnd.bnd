@@ -4,7 +4,7 @@
 	${bndlib},\
 	bndtools.api; version=latest,\
 	org.bndtools.templating; version=latest,\
-	bndtools.utils; version=latest; packages=*,\
+	bndtools.utils; version=project; packages=*,\
 	org.eclipse.jgit; version=3.4.2,\
 	javaewah; version=0.7.9,\
 	com.jcraft.jsch; version=0.1.51,\
