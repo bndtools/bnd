@@ -16,7 +16,7 @@
 	slf4j.api,\
 	slf4j.simple,\
 	${junit},\
-	bndtools.utils; packages=*
+	bndtools.utils;version=project;packages=*
 
 
 -privatepackage: org.bndtools.templating.*
