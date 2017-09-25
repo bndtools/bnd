@@ -170,12 +170,12 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     private static BndContainer loadClasspathContainer(IProject project) {
         File containerFile = getContainerFile(project);
         if (!containerFile.isFile()) {
-            return new BndContainer(Updater.EMPTY_ENTRIES, 0L);
+            return new BndContainer();
         }
         try {
             return serializationHelper.readClasspathContainer(containerFile);
         } catch (IOException | ClassNotFoundException e) {
-            return new BndContainer(Updater.EMPTY_ENTRIES, 0L);
+            return new BndContainer();
         }
     }
 
@@ -194,7 +194,6 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
     }
 
     private static class Updater {
-        static final IClasspathEntry[] EMPTY_ENTRIES = new IClasspathEntry[0];
         private static final IAccessRule DISCOURAGED = JavaCore.newAccessRule(new Path("**"), IAccessRule.K_DISCOURAGED | IAccessRule.IGNORE_IF_BETTER);
         private static final IClasspathAttribute EMPTY_INDEX = JavaCore.newClasspathAttribute(IClasspathAttribute.INDEX_LOCATION_ATTRIBUTE_NAME,
                 "platform:/plugin/" + BndtoolsBuilder.PLUGIN_ID + "/org/bndtools/builder/classpath/empty.index");
@@ -226,7 +225,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
         void updateClasspathContainer(boolean init) throws CoreException {
             if (model == null) { // this can happen during new project creation
-                setClasspathContainer(javaProject, new BndContainer(EMPTY_ENTRIES, 0L));
+                setClasspathContainer(javaProject, new BndContainer());
                 return;
             }
 
@@ -252,35 +251,19 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                     BndContainer bndContainer = (BndContainer) container;
                     List<IClasspathEntry> currentClasspath = Arrays.asList(bndContainer.getClasspathEntries());
                     if (newClasspath.equals(currentClasspath) && (lastModified <= bndContainer.lastModified())) {
+                        bndContainer.refresh();
                         return; // no change; so no need for new container
                     }
                 }
             }
 
-            BndContainer bndContainer = new BndContainer(newClasspath.toArray(new IClasspathEntry[0]), lastModified);
+            BndContainer bndContainer = new BndContainer(newClasspath, lastModified, filesToRefresh);
+            bndContainer.refresh();
             setClasspathContainer(javaProject, bndContainer);
             storeClasspathContainer(project, bndContainer);
-            if (!init) {
-                refreshFiles(filesToRefresh);
-            }
-        }
-
-        private void refreshFiles(List<IResource> filesToRefresh) throws CoreException {
-            for (IResource target : filesToRefresh) {
-                int depth = target.getType() == IResource.FILE ? IResource.DEPTH_ZERO : IResource.DEPTH_INFINITE;
-                if (!target.isSynchronized(depth)) {
-                    target.refreshLocal(depth, null);
-                }
-            }
         }
 
         static void setClasspathContainer(IJavaProject javaProject, BndContainer container) throws JavaModelException {
-            JavaCore.setClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, new IJavaProject[] {
-                    javaProject
-            }, new IClasspathContainer[] {
-                    container
-            }, null);
-
             BndPreferences prefs = new BndPreferences();
             if (prefs.getBuildLogging() == BuildLogger.LOG_FULL) {
                 StringBuilder sb = new StringBuilder();
@@ -290,6 +273,12 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 }
                 logger.logInfo(sb.append("\n").toString(), null);
             }
+
+            JavaCore.setClasspathContainer(BndtoolsConstants.BND_CLASSPATH_ID, new IJavaProject[] {
+                    javaProject
+            }, new IClasspathContainer[] {
+                    container
+            }, null);
         }
 
         private List<IClasspathEntry> calculateProjectClasspath(List<IResource> filesToRefresh) {

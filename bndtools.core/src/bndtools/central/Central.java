@@ -549,8 +549,7 @@ public class Central implements IStartupParticipant {
         if ((ifiles == null) || (ifiles.length == 0)) {
             return null;
         }
-        IPath path = ifiles[0].getFullPath();
-        IResource resource = file.isDirectory() ? root.getFolder(path) : root.getFile(path);
+        IResource resource = file.isDirectory() ? root.getFolder(ifiles[0].getFullPath()) : ifiles[0];
         return resource;
     }
 
