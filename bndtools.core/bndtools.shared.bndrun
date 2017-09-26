@@ -11,6 +11,7 @@ workspace.bundles: \
 	bndtools.jareditor;version=snapshot,\
 	bndtools.m2e;version=snapshot,\
 	bndtools.m2e.debug.fragment;version=snapshot,\
+	bndtools.pde;version=snapshot,\
 	bndtools.release;version=snapshot,\
 	org.bndtools.embeddedrepo;version=snapshot,\
 	org.bndtools.headless.build.manager;version=snapshot,\
@@ -113,6 +114,46 @@ m2e.debug.bundles:\
 	org.eclipse.xsd,\
 	org.slf4j.api
 
+pde.bundles: \
+	org.apache.ant,\
+	org.eclipse.ant.launching,\
+	org.eclipse.ant.ui,\
+	org.eclipse.core.externaltools,\
+	org.eclipse.equinox.p2.director,\
+	org.eclipse.equinox.p2.director.app,\
+	org.eclipse.equinox.p2.touchpoint.eclipse,\
+	org.eclipse.equinox.p2.garbagecollector,\
+	org.eclipse.equinox.p2.operations,\
+	org.eclipse.equinox.p2.publisher,\
+	org.eclipse.equinox.p2.publisher.eclipse,\
+	org.eclipse.equinox.p2.repository.tools,\
+	org.eclipse.equinox.p2.ui,\
+	org.eclipse.equinox.security.ui,\
+	org.eclipse.osgi.compatibility.state,\
+	org.eclipse.pde,\
+	org.eclipse.pde.api.tools,\
+	org.eclipse.pde.api.tools.annotations,\
+	org.eclipse.pde.api.tools.ui,\
+	org.eclipse.pde.build,\
+	org.eclipse.pde.core,\
+	org.eclipse.pde.doc.user,\
+	org.eclipse.pde.ds.core,\
+	org.eclipse.pde.ds.ui,\
+	org.eclipse.pde.junit.runtime,\
+	org.eclipse.pde.launching,\
+	org.eclipse.pde.runtime,\
+	org.eclipse.pde.ua.core,\
+	org.eclipse.pde.ua.ui,\
+	org.eclipse.pde.ui,\
+	org.eclipse.pde.ui.templates,\
+	org.eclipse.ui.externaltools,\
+	org.eclipse.ui.intro,\
+	org.eclipse.ui.trace,\
+	org.objectweb.asm,\
+	org.objectweb.asm.tree,\
+	org.sat4j.core,\
+	org.sat4j.pb
+
 # TODO: separate this morass into more coherent libs!
 crossplatform.bundles: \
 	${aQute-repository},\
@@ -121,6 +162,7 @@ crossplatform.bundles: \
 	org.osgi.impl.bundle.repoindex.lib,\
 	${help.bundles},\
 	${p2.bundles},\
+	${pde.bundles},\
 	${m2e.bundles},\
 	${workspace.bundles},\
 	${gogo.bundles},\

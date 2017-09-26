@@ -175,13 +175,21 @@ task p2FeatureM2e(type: Zip) {
   include          'feature.xml'
 }
 
+task p2FeaturePde(type: Zip) {
+  dependsOn p2FeatureTree
+  destinationDir = file("${buildDir}/features")
+  archiveName    = 'bndtools.pde.feature.jar'
+  from             "${buildDir}/features/bndtools-pde"
+  include          'feature.xml'
+}
+
 /*
  * Setup tasks (p2 repositories)
  */
 task p2 {
   description 'Generate the p2 repositories.'
   group       'release'
-  dependsOn p2Plugins, p2FeatureMain, p2FeatureM2e
+  dependsOn p2Plugins, p2FeatureMain, p2FeatureM2e, p2FeaturePde
 
   inputs.files file('p2.xml'),
                fileTree(buildDir)
