@@ -210,7 +210,7 @@ public class RunSessionImpl implements RunSession {
 		if (isCancelled.call())
 			return false;
 
-		if (!in.isReachable(5000)) {
+		if (dto.reachable && !in.isReachable(5000)) {
 			launcher.error("Host not reachable %s", getHost());
 			return false;
 		}
