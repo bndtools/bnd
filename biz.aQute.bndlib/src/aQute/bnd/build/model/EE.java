@@ -38,15 +38,24 @@ public enum EE {
 
 	JavaSE_1_8("JavaSE-1.8", "JavaSE", new Version("1.8"), JavaSE_1_7, JavaSE_compact3_1_8),
 
-	JavaSE_compact1_1_9("JavaSE/compact1-1.9", "JavaSE/compact1", new Version("1.9"), JavaSE_compact1_1_8),
+	JavaSE_compact1_9_0("JavaSE/compact1-9", "JavaSE/compact1", new Version("9.0"), JavaSE_compact1_1_8),
+	@Deprecated
+	JavaSE_compact1_1_9("JavaSE/compact1-9", "JavaSE/compact1", new Version("9.0"), JavaSE_compact1_9_0),
 
-	JavaSE_compact2_1_9("JavaSE/compact2-1.9", "JavaSE/compact2", new Version("1.9"), JavaSE_compact2_1_8,
-			JavaSE_compact1_1_9),
+	JavaSE_compact2_9_0("JavaSE/compact2-9", "JavaSE/compact2", new Version("9.0"), JavaSE_compact2_1_8,
+			JavaSE_compact1_9_0),
+	@Deprecated
+	JavaSE_compact2_1_9("JavaSE/compact2-9", "JavaSE/compact2", new Version("9.0"), JavaSE_compact2_9_0),
 
-	JavaSE_compact3_1_9("JavaSE/compact3-1.9", "JavaSE/compact3", new Version("1.9"), JavaSE_compact3_1_8,
-			JavaSE_compact2_1_9),
+	JavaSE_compact3_9_0("JavaSE/compact3-9", "JavaSE/compact3", new Version("9.0"), JavaSE_compact3_1_8,
+			JavaSE_compact2_9_0),
+	@Deprecated
+	JavaSE_compact3_1_9("JavaSE/compact3-9", "JavaSE/compact3", new Version("9.0"), JavaSE_compact3_9_0),
 
-	JavaSE_1_9("JavaSE-1.9", "JavaSE", new Version("1.9"), JavaSE_1_8, JavaSE_compact3_1_9),
+	JavaSE_9_0("JavaSE-9", "JavaSE", new Version("9.0"), JavaSE_1_8, JavaSE_compact3_9_0),
+	
+	@Deprecated
+	JavaSE_1_9("JavaSE-9", "JavaSE", new Version("9.0"), JavaSE_9_0),
 
 	UNKNOWN("Unknown", "unknown", new Version(0));
 
