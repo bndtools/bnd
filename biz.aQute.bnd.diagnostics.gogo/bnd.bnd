@@ -1,0 +1,22 @@
+Private-Package: \
+	biz.aQute.bnd.diagnostics.gogo.impl,\
+	biz.aQute.bnd.diagnostics.gogo.osgi
+Bundle-Activator: biz.aQute.bnd.diagnostics.gogo.osgi.Activator
+
+-buildpath: \
+	biz.aQute.bndlib;version=latest;packages=*,\
+	osgi.core;version=5.0,\
+	org.apache.felix.gogo.runtime;version=0.12,\
+	org.apache.felix.gogo.command
+
+-testpath: \
+	biz.aQute.bnd;version=latest,\
+	org.apache.felix.framework;version=5,  \
+	${junit}, \
+	osgi.enroute.hamcrest.wrapper
+
+-conditionalpackage: aQute.lib*, aQute.bnd.*, aQute.service.*, org.osgi.service.repository.*
+
+
+Import-Package: \
+	*
