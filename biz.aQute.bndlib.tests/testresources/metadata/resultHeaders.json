@@ -1,0 +1,890 @@
+
+extractor: ActivatorExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		
+	}
+}
+---
+
+extractor: ActivatorExtractor
+header: class.Name
+result: 
+{
+	"manifestHeaders":{
+		"activator":"class.Name"
+	}
+}
+---
+
+extractor: CategoryExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		"categories":[],"localizations":{}
+	}
+}
+---
+
+extractor: CategoryExtractor
+header: one
+result: 
+{
+	"manifestHeaders":{
+		"categories":["one"],"localizations":{}
+	}
+}
+---
+
+extractor: CategoryExtractor
+header: one, two, one, two
+result: 
+{
+	"manifestHeaders":{
+		"categories":["one","two","one","two"],"localizations":{}
+	}
+}
+---
+
+extractor: ClassPathExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		"classPaths":["."]
+	}
+}
+---
+
+extractor: ClassPathExtractor
+header: class.Name
+result: 
+{
+	"manifestHeaders":{
+		"classPaths":["class.Name"]
+	}
+}
+---
+
+extractor: ClassPathExtractor
+header: class.Name;class.Name1,class.Name2
+result: 
+{
+	"manifestHeaders":{
+		"classPaths":["class.Name","class.Name1","class.Name2"]
+	}
+}
+---
+
+extractor: ContactAddressExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		"localizations":{}
+	}
+}
+---
+
+extractor: ContactAddressExtractor
+header: 25 Argile Street Ottawa
+result: 
+{
+	"manifestHeaders":{
+		"contactAddress":{
+			"address":"25 Argile Street Ottawa","type":"postal"
+		},"localizations":{}
+	}
+}
+---
+
+extractor: ContactAddressExtractor
+header: http://google.com
+result: 
+{
+	"manifestHeaders":{
+		"contactAddress":{
+			"address":"http://google.com","type":"url"
+		},"localizations":{}
+	}
+}
+---
+
+extractor: ContactAddressExtractor
+header: cde@cde.cde
+result: 
+{
+	"manifestHeaders":{
+		"contactAddress":{
+			"address":"cde@cde.cde","type":"email"
+		},"localizations":{}
+	}
+}
+---
+
+extractor: CopyrightExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		
+	}
+}
+---
+
+extractor: CopyrightExtractor
+header: My Copyright
+result: 
+{
+	"manifestHeaders":{
+		"copyright":"My Copyright"
+	}
+}
+---
+
+extractor: DescriptionExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		
+	}
+}
+---
+
+extractor: DescriptionExtractor
+header: My Description
+result: 
+{
+	"manifestHeaders":{
+		"description":"My Description"
+	}
+}
+---
+
+extractor: DeveloperExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		"developers":[],"localizations":{}
+	}
+}
+---
+
+extractor: DeveloperExtractor
+header: cde@cde.cde
+result: 
+{
+	"manifestHeaders":{
+		"developers":[{
+			"email":"cde@cde.cde","roles":[]
+		}],"localizations":{}
+	}
+}
+---
+
+extractor: DeveloperExtractor
+header: cde;email='cde@cde.cde';name='Clement Delgrange';organization='cdecode';organizationUrl='cdecode.org';timezone=1;roles='one'
+result: 
+{
+	"manifestHeaders":{
+		"developers":[{
+			"email":"cde@cde.cde","name":"Clement Delgrange","organization":"cdecode","organizationUrl":"cdecode.org","roles":["one"],"timezone":1
+		}],"localizations":{}
+	}
+}
+---
+
+extractor: DeveloperExtractor
+header: cde;email='cde@cde.cde';name='Clement Delgrange';organization='cdecode';organizationUrl='cdecode.org';timezone=1;roles='one, tow',cde@two.com;name='Clement Delgrange';organization='cdecode';organizationUrl='cdecode.org';timezone=1;roles='one'
+result: 
+{
+	"manifestHeaders":{
+		"developers":[{
+			"email":"cde@cde.cde","name":"Clement Delgrange","organization":"cdecode","organizationUrl":"cdecode.org","roles":["one","tow"],"timezone":1
+		},{
+			"email":"cde@two.com","name":"Clement Delgrange","organization":"cdecode","organizationUrl":"cdecode.org","roles":["one"],"timezone":1
+		}],"localizations":{}
+	}
+}
+---
+
+extractor: DocUrlExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		
+	}
+}
+---
+
+extractor: DocUrlExtractor
+header: www.google.com
+result: 
+{
+	"manifestHeaders":{
+		"docUrl":"www.google.com"
+	}
+}
+---
+
+extractor: DynamicImportExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		"dynamicImportPackages":[]
+	}
+}
+---
+
+extractor: DynamicImportExtractor
+header: com.test.*
+result: 
+{
+	"manifestHeaders":{
+		"dynamicImportPackages":[{
+			"arbitraryAttributes":{},"bundleVersion":{
+				"floor":{
+					"major":0,"micro":0,"minor":0
+				},"includeCeiling":false,"includeFloor":true
+			},"packageName":"com.test.*","version":{
+				"floor":{
+					"major":0,"micro":0,"minor":0
+				},"includeCeiling":false,"includeFloor":true
+			}
+		}]
+	}
+}
+---
+
+extractor: DynamicImportExtractor
+header: com.test.*;com.test2;version='1.2.0';bundle-symbolic-name='symbolic.test';condi1=test;directivetoignor:=test;bundle-version='1',com.test3;condi2=test2
+result: 
+{
+	"manifestHeaders":{
+		"dynamicImportPackages":[{
+			"arbitraryAttributes":{"condi1":"test"},"bsn":"symbolic.test","bundleVersion":{
+				"floor":{
+					"major":1,"micro":0,"minor":0
+				},"includeCeiling":false,"includeFloor":true
+			},"packageName":"com.test.*","version":{
+				"floor":{
+					"major":1,"micro":0,"minor":2
+				},"includeCeiling":false,"includeFloor":true
+			}
+		},{
+			"arbitraryAttributes":{"condi1":"test"},"bsn":"symbolic.test","bundleVersion":{
+				"floor":{
+					"major":1,"micro":0,"minor":0
+				},"includeCeiling":false,"includeFloor":true
+			},"packageName":"com.test2","version":{
+				"floor":{
+					"major":1,"micro":0,"minor":2
+				},"includeCeiling":false,"includeFloor":true
+			}
+		},{
+			"arbitraryAttributes":{"condi2":"test2"},"bundleVersion":{
+				"floor":{
+					"major":0,"micro":0,"minor":0
+				},"includeCeiling":false,"includeFloor":true
+			},"packageName":"com.test3","version":{
+				"floor":{
+					"major":0,"micro":0,"minor":0
+				},"includeCeiling":false,"includeFloor":true
+			}
+		}]
+	}
+}
+---
+
+extractor: ExportExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		"exportPackages":[]
+	}
+}
+---
+
+extractor: ExportExtractor
+header: com.test
+result: 
+{
+	"manifestHeaders":{
+		"exportPackages":[{
+			"arbitraryAttributes":{},"exclude":[],"include":[],"mandatory":[],"packageName":"com.test","uses":[],"version":{
+				"major":0,"micro":0,"minor":0
+			}
+		}]
+	}
+}
+---
+
+extractor: ExportExtractor
+header: com.test;com.test2;version='1.2.0';mandatory:='condi1, condi2';include:='com.t, org.t';exclude:='com.tt, org.tt';uses:='com.test, org.test';condi1=test;directivetoignor:=test,com.test3;condi2=test2
+result: 
+{
+	"manifestHeaders":{
+		"exportPackages":[{
+			"arbitraryAttributes":{"condi1":"test"},"exclude":["com.tt","org.tt"],"include":["com.t","org.t"],"mandatory":["condi1","condi2"],"packageName":"com.test","uses":["com.test","org.test"],"version":{
+				"major":1,"micro":0,"minor":2
+			}
+		},{
+			"arbitraryAttributes":{"condi1":"test"},"exclude":["com.tt","org.tt"],"include":["com.t","org.t"],"mandatory":["condi1","condi2"],"packageName":"com.test2","uses":["com.test","org.test"],"version":{
+				"major":1,"micro":0,"minor":2
+			}
+		},{
+			"arbitraryAttributes":{"condi2":"test2"},"exclude":[],"include":[],"mandatory":[],"packageName":"com.test3","uses":[],"version":{
+				"major":0,"micro":0,"minor":0
+			}
+		}]
+	}
+}
+---
+
+extractor: FragmentHostExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		
+	}
+}
+---
+
+extractor: FragmentHostExtractor
+header: symbolic.name
+result: 
+{
+	"manifestHeaders":{
+		"fragmentHost":{
+			"arbitraryAttributes":{},"bsn":"symbolic.name","bundleVersion":{
+				"floor":{
+					"major":0,"micro":0,"minor":0
+				},"includeCeiling":false,"includeFloor":true
+			},"extension":"framework"
+		}
+	}
+}
+---
+
+extractor: FragmentHostExtractor
+header: symbolic.name;extension:='bootclasspath';bundle-version='[1.2,2.0)'
+result: 
+{
+	"manifestHeaders":{
+		"fragmentHost":{
+			"arbitraryAttributes":{},"bsn":"symbolic.name","bundleVersion":{
+				"ceiling":{
+					"major":2,"micro":0,"minor":0
+				},"floor":{
+					"major":1,"micro":0,"minor":2
+				},"includeCeiling":false,"includeFloor":true
+			},"extension":"bootclasspath"
+		}
+	}
+}
+---
+
+extractor: IconExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		"icons":[],"localizations":{}
+	}
+}
+---
+
+extractor: IconExtractor
+header: ./path
+result: 
+{
+	"manifestHeaders":{
+		"icons":[{
+			"url":"./path"
+		}],"localizations":{}
+	}
+}
+---
+
+extractor: IconExtractor
+header: ./path, ./path2;size=34
+result: 
+{
+	"manifestHeaders":{
+		"icons":[{
+			"url":"./path"
+		},{
+			"size":34,"url":"./path2"
+		}],"localizations":{}
+	}
+}
+---
+
+extractor: ImportExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		"importPackages":[]
+	}
+}
+---
+
+extractor: ImportExtractor
+header: com.test
+result: 
+{
+	"manifestHeaders":{
+		"importPackages":[{
+			"arbitraryAttributes":{},"bundleVersion":{
+				"floor":{
+					"major":0,"micro":0,"minor":0
+				},"includeCeiling":false,"includeFloor":true
+			},"packageName":"com.test","resolution":"mandatory","version":{
+				"floor":{
+					"major":0,"micro":0,"minor":0
+				},"includeCeiling":false,"includeFloor":true
+			}
+		}]
+	}
+}
+---
+
+extractor: ImportExtractor
+header: com.test.*;com.test2;version='[1.2.0,2.0)';resolution:='optional';bundle-symbolic-name='symbolic.test';condi1=test;directivetoignor:=test;bundle-version='1',com.test3;condi2=test2
+result: 
+{
+	"manifestHeaders":{
+		"importPackages":[{
+			"arbitraryAttributes":{"condi1":"test"},"bsn":"symbolic.test","bundleVersion":{
+				"floor":{
+					"major":1,"micro":0,"minor":0
+				},"includeCeiling":false,"includeFloor":true
+			},"packageName":"com.test.*","resolution":"optional","version":{
+				"ceiling":{
+					"major":2,"micro":0,"minor":0
+				},"floor":{
+					"major":1,"micro":0,"minor":2
+				},"includeCeiling":false,"includeFloor":true
+			}
+		},{
+			"arbitraryAttributes":{"condi1":"test"},"bsn":"symbolic.test","bundleVersion":{
+				"floor":{
+					"major":1,"micro":0,"minor":0
+				},"includeCeiling":false,"includeFloor":true
+			},"packageName":"com.test2","resolution":"optional","version":{
+				"ceiling":{
+					"major":2,"micro":0,"minor":0
+				},"floor":{
+					"major":1,"micro":0,"minor":2
+				},"includeCeiling":false,"includeFloor":true
+			}
+		},{
+			"arbitraryAttributes":{"condi2":"test2"},"bundleVersion":{
+				"floor":{
+					"major":0,"micro":0,"minor":0
+				},"includeCeiling":false,"includeFloor":true
+			},"packageName":"com.test3","resolution":"mandatory","version":{
+				"floor":{
+					"major":0,"micro":0,"minor":0
+				},"includeCeiling":false,"includeFloor":true
+			}
+		}]
+	}
+}
+---
+
+extractor: LazyActivationExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		
+	}
+}
+---
+
+extractor: LazyActivationExtractor
+header: lazy
+result: 
+{
+	"manifestHeaders":{
+		"lazyActivation":{
+			"exclude":[],"include":[]
+		}
+	}
+}
+---
+
+extractor: LazyActivationExtractor
+header: lazy;include:='test,test1';exclude:='test2, test3'
+result: 
+{
+	"manifestHeaders":{
+		"lazyActivation":{
+			"exclude":["test2","test3"],"include":["test","test1"]
+		}
+	}
+}
+---
+
+extractor: LicenseExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		"licenses":[],"localizations":{}
+	}
+}
+---
+
+extractor: LicenseExtractor
+header: Apache
+result: 
+{
+	"manifestHeaders":{
+		"licenses":[{
+			"name":"Apache"
+		}],"localizations":{}
+	}
+}
+---
+
+extractor: LicenseExtractor
+header: Apache;description='description';link='www.google.com',Apache2
+result: 
+{
+	"manifestHeaders":{
+		"licenses":[{
+			"description":"description","link":"www.google.com","name":"Apache"
+		},{
+			"name":"Apache2"
+		}],"localizations":{}
+	}
+}
+---
+
+extractor: ManifestVersionExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		"manifestVersion":1
+	}
+}
+---
+
+extractor: ManifestVersionExtractor
+header: 1.2.0.45689-SNAPSHOT
+result: 
+{
+	"manifestHeaders":{
+		"manifestVersion":1
+	}
+}
+---
+
+extractor: NameExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		
+	}
+}
+---
+
+extractor: NameExtractor
+header: Test
+result: 
+{
+	"manifestHeaders":{
+		"name":"Test"
+	}
+}
+---
+
+extractor: NativeCodeExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		
+	}
+}
+---
+
+extractor: NativeCodeExtractor
+header: lib/http.dll; lib/zlib.dll;osname=Windows95;osname=Windows98;osname=WindowsNT;processor=x86;selection-filter = '(com.acme.windowing=win32)';language=en;language=se,lib/solaris/libhttp.so;osname=Solaris;osname=SunOS;processor=sparc,lib/linux/libhttp.so;osname=Linux;osversion='2';osversion='[1.0,3.0)';processor=mips;selection-filter='(com.acme.windowing=gtk)',*
+result: 
+{
+	"manifestHeaders":{
+		"nativeCode":{
+			"entries":[{
+				"languages":["en","se"],"osnames":["Windows95","Windows98","WindowsNT"],"osversions":[],"paths":["lib/http.dll","lib/zlib.dll"],"processors":["x86"],"selectionFilters":["(com.acme.windowing=win32)"]
+			},{
+				"languages":[],"osnames":["Solaris","SunOS"],"osversions":[],"paths":["lib/solaris/libhttp.so"],"processors":["sparc"],"selectionFilters":[]
+			},{
+				"languages":[],"osnames":["Linux"],"osversions":[{
+					"floor":{
+						"major":2,"micro":0,"minor":0
+					},"includeCeiling":false,"includeFloor":true
+				},{
+					"ceiling":{
+						"major":3,"micro":0,"minor":0
+					},"floor":{
+						"major":1,"micro":0,"minor":0
+					},"includeCeiling":false,"includeFloor":true
+				}],"paths":["lib/linux/libhttp.so"],"processors":["mips"],"selectionFilters":["(com.acme.windowing=gtk)"]
+			}],"optional":true
+		}
+	}
+}
+---
+
+extractor: ProvideCapabilityExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		"provideCapabilities":[]
+	}
+}
+---
+
+extractor: ProvideCapabilityExtractor
+header: com.namespace
+result: 
+{
+	"manifestHeaders":{
+		"provideCapabilities":[{
+			"arbitraryDirectives":{},"effective":"resolve","nameSpace":"com.namespace","typedAttributes":[],"uses":[]
+		}]
+	}
+}
+---
+
+extractor: ProvideCapabilityExtractor
+header: com.namespace;custom:=test;effective:='other';uses:='one,two';t=dde;tt:Double=5;ttt:Long=6;tttt:String=6;ttttt:Version=6;l:List='dd,e';ll:List<Double>='5,4';lll:List<Long>='6,7';llll:List<String>='6,dede';lllll:List<Version>='6,1.2'
+result: 
+{
+	"manifestHeaders":{
+		"provideCapabilities":[{
+			"arbitraryDirectives":{"custom":"test"},"effective":"other","nameSpace":"com.namespace","typedAttributes":[{
+				"multipleValues":false,"name":"t","type":"String","values":["dde"]
+			},{
+				"multipleValues":false,"name":"tt","type":"Double","values":["5.0"]
+			},{
+				"multipleValues":false,"name":"ttt","type":"Long","values":["6"]
+			},{
+				"multipleValues":false,"name":"tttt","type":"String","values":["6"]
+			},{
+				"multipleValues":false,"name":"ttttt","type":"Version","values":["6.0.0"]
+			},{
+				"multipleValues":false,"name":"l:List","type":"String","values":["dd,e"]
+			},{
+				"multipleValues":true,"name":"ll","type":"Double","values":["5.0","4.0"]
+			},{
+				"multipleValues":true,"name":"lll","type":"Long","values":["6","7"]
+			},{
+				"multipleValues":true,"name":"llll","type":"String","values":["6","dede"]
+			},{
+				"multipleValues":true,"name":"lllll","type":"Version","values":["6.0.0","1.2.0"]
+			}],"uses":["one","two"]
+		}]
+	}
+}
+---
+
+extractor: RequireBundleExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		"requireBundles":[]
+	}
+}
+---
+
+extractor: RequireBundleExtractor
+header: bundle.symbolicName
+result: 
+{
+	"manifestHeaders":{
+		"requireBundles":[{
+			"arbitraryAttributes":{},"bsn":"bundle.symbolicName","bundleVersion":{
+				"floor":{
+					"major":0,"micro":0,"minor":0
+				},"includeCeiling":false,"includeFloor":true
+			},"resolution":"mandatory","visibility":"private"
+		}]
+	}
+}
+---
+
+extractor: RequireBundleExtractor
+header: bundle.symbolicName;visibility:='reexport';resolution:=optional;bundle-version=1,com.test
+result: 
+{
+	"manifestHeaders":{
+		"requireBundles":[{
+			"arbitraryAttributes":{},"bsn":"bundle.symbolicName","bundleVersion":{
+				"floor":{
+					"major":1,"micro":0,"minor":0
+				},"includeCeiling":false,"includeFloor":true
+			},"resolution":"optional","visibility":"reexport"
+		},{
+			"arbitraryAttributes":{},"bsn":"com.test","bundleVersion":{
+				"floor":{
+					"major":0,"micro":0,"minor":0
+				},"includeCeiling":false,"includeFloor":true
+			},"resolution":"mandatory","visibility":"private"
+		}]
+	}
+}
+---
+
+extractor: RequiredCapabilityExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		"requireCapabilities":[]
+	}
+}
+---
+
+extractor: RequiredCapabilityExtractor
+header: bundle.symbolicName
+result: 
+{
+	"manifestHeaders":{
+		"requireCapabilities":[{
+			"cardinality":"single","effective":"resolve","nameSpace":"bundle.symbolicName","resolution":"mandatory","typedAttributes":[]
+		}]
+	}
+}
+---
+
+extractor: RequiredCapabilityExtractor
+header: bundle.symbolicName;filter:=cool;cardinality:=multiple;effective:='other';resolution:=optional;att:Double=5,com.test
+result: 
+{
+	"manifestHeaders":{
+		"requireCapabilities":[{
+			"cardinality":"multiple","effective":"other","filter":"cool","nameSpace":"bundle.symbolicName","resolution":"optional","typedAttributes":[{
+				"multipleValues":false,"name":"att","type":"Double","values":["5.0"]
+			}]
+		},{
+			"cardinality":"single","effective":"resolve","nameSpace":"com.test","resolution":"mandatory","typedAttributes":[]
+		}]
+	}
+}
+---
+
+extractor: RequiredExecutionEnvironmentExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		"requiredExecutionEnvironments":[]
+	}
+}
+---
+
+extractor: RequiredExecutionEnvironmentExtractor
+header: one
+result: 
+{
+	"manifestHeaders":{
+		"requiredExecutionEnvironments":["one"]
+	}
+}
+---
+
+extractor: RequiredExecutionEnvironmentExtractor
+header: one,two
+result: 
+{
+	"manifestHeaders":{
+		"requiredExecutionEnvironments":["one","two"]
+	}
+}
+---
+
+extractor: SymbolicNameExtractor
+header: com.symbolic.name
+result: 
+{
+	"manifestHeaders":{
+		"symbolicName":{
+			"arbitraryAttributes":{},"fragmentAttachment":"always","mandatory":[],"singleton":false,"symbolicName":"com.symbolic.name"
+		}
+	}
+}
+---
+
+extractor: SymbolicNameExtractor
+header: com.symbolic.name;singleton:=true;fragment-attachment:=never;mandatory:='test, test2';condi=test;toignore:=test
+result: 
+{
+	"manifestHeaders":{
+		"symbolicName":{
+			"arbitraryAttributes":{"condi":"test"},"fragmentAttachment":"never","mandatory":["test","test2"],"singleton":true,"symbolicName":"com.symbolic.name"
+		}
+	}
+}
+---
+
+extractor: VendorExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		
+	}
+}
+---
+
+extractor: VendorExtractor
+header: My vendor
+result: 
+{
+	"manifestHeaders":{
+		"vendor":"My vendor"
+	}
+}
+---
+
+extractor: VersionExtractor
+header: 
+result: 
+{
+	"manifestHeaders":{
+		"version":{
+			"major":0,"micro":0,"minor":0
+		}
+	}
+}
+---
+
+extractor: VersionExtractor
+header: 1.2
+result: 
+{
+	"manifestHeaders":{
+		"version":{
+			"major":1,"micro":0,"minor":2
+		}
+	}
+}
+---
