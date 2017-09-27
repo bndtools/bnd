@@ -41,12 +41,6 @@ public class Verifier extends Processor {
 	private boolean			r3;
 	private boolean			usesRequire;
 
-	final static Pattern	EENAME	= Pattern.compile("CDC-1\\.0/Foundation-1\\.0" + "|CDC-1\\.1/Foundation-1\\.1"
-											+ "|OSGi/Minimum-1\\.[0-9]" + "|JRE-1\\.1" + "|J2SE-1\\.2" + "|J2SE-1\\.3"
-											+ "|J2SE-1\\.4" + "|J2SE-1\\.5" + "|JavaSE-1\\.6" + "|JavaSE-1\\.7"
-											+ "|JavaSE-1\\.8" + "|PersonalJava-1\\.1" + "|PersonalJava-1\\.2"
-											+ "|CDC-1\\.0/PersonalBasis-1\\.0" + "|CDC-1\\.0/PersonalJava-1\\.0");
-
 	final static int		V1_1	= 45;
 	final static int		V1_2	= 46;
 	final static int		V1_3	= 47;
@@ -55,6 +49,7 @@ public class Verifier extends Processor {
 	final static int		V1_6	= 50;
 	final static int		V1_7	= 51;
 	final static int		V1_8	= 52;
+	final static int		V9_0	= 53;
 
 	static class EE {
 		String	name;
@@ -72,25 +67,63 @@ public class Verifier extends Processor {
 	}
 
 	final static EE[]			ees								= {
-			new EE("CDC-1.0/Foundation-1.0", V1_3, V1_1),
-			new EE("CDC-1.1/Foundation-1.1", V1_3, V1_2),
-			new EE("OSGi/Minimum-1.0", V1_3, V1_1),
-			new EE("OSGi/Minimum-1.1", V1_3, V1_2),
-			new EE("JRE-1.1", V1_1, V1_1), //
-			new EE("J2SE-1.2", V1_2, V1_1), //
-			new EE("J2SE-1.3", V1_3, V1_1), //
-			new EE("J2SE-1.4", V1_3, V1_2), //
-			new EE("J2SE-1.5", V1_5, V1_5), //
-			new EE("JavaSE-1.6", V1_6, V1_6), //
-			new EE("PersonalJava-1.1", V1_1, V1_1), //
-			new EE("JavaSE-1.7", V1_7, V1_7), //
-			new EE("JavaSE-1.8", V1_8, V1_8), //
-			new EE("PersonalJava-1.1", V1_1, V1_1), //
-			new EE("PersonalJava-1.2", V1_1, V1_1), new EE("CDC-1.0/PersonalBasis-1.0", V1_3, V1_1),
-			new EE("CDC-1.0/PersonalJava-1.0", V1_3, V1_1), new EE("CDC-1.1/PersonalBasis-1.1", V1_3, V1_2),
+			new EE("CDC-1.0/Foundation-1.0", V1_3, V1_1),																					//
+			new EE("CDC-1.1/Foundation-1.1", V1_3, V1_2),																					//
+			new EE("OSGi/Minimum-1.0", V1_3, V1_1),																							//
+			new EE("OSGi/Minimum-1.1", V1_3, V1_2),																							//
+			new EE("OSGi/Minimum-1.2", V1_3, V1_2),																							//
+			new EE("JRE-1.1", V1_1, V1_1),																									//
+			new EE("J2SE-1.2", V1_2, V1_1),																									//
+			new EE("J2SE-1.3", V1_3, V1_1),																									//
+			new EE("J2SE-1.4", V1_3, V1_2),																									//
+			new EE("J2SE-1.5", V1_5, V1_5),																									//
+			new EE("JavaSE-1.6", V1_6, V1_6),																								//
+			new EE("JavaSE-1.7", V1_7, V1_7),																								//
+			new EE("JavaSE-1.8", V1_8, V1_8),																								//
+			new EE("JavaSE-9", V9_0, V9_0),																									//
+			new EE("PersonalJava-1.1", V1_1, V1_1),																							//
+			new EE("PersonalJava-1.2", V1_1, V1_1),																							//
+			new EE("CDC-1.0/PersonalBasis-1.0", V1_3, V1_1),																				//
+			new EE("CDC-1.0/PersonalJava-1.0", V1_3, V1_1),																					//
+			new EE("CDC-1.1/PersonalBasis-1.1", V1_3, V1_2),																				//
 			new EE("CDC-1.1/PersonalJava-1.1", V1_3, V1_2)
 																};
 
+	final static Pattern		EENAME							= Pattern.compile(															//
+			"CDC-1\\.0/Foundation-1\\.0"																									//
+					+ "|CDC-1\\.1/Foundation-1\\.1"																							//
+					+ "|OSGi/Minimum-1\\.[0-2]"																								//
+					+ "|JRE-1\\.1"																											//
+					+ "|J2SE-1\\.[2-5]"																										//
+					+ "|JavaSE-1\\.[6-8]"																									//
+					+ "|JavaSE-9"																											//
+					+ "|PersonalJava-1\\.[12]"																								//
+					+ "|CDC-1\\.0/PersonalBasis-1\\.0"																						//
+					+ "|CDC-1\\.0/PersonalJava-1\\.0"																						//
+					+ "|CDC-1\\.1/PersonalBasis-1\\.1"																						//
+					+ "|CDC-1\\.1/PersonalJava-1\\.1");
+	public final static String	EES[]							= {																			//
+			"CDC-1.0/Foundation-1.0",																										//
+			"CDC-1.1/Foundation-1.1",																										//
+			"OSGi/Minimum-1.0",																												//
+			"OSGi/Minimum-1.1",																												//
+			"OSGi/Minimum-1.2",																												//
+			"JRE-1.1",																														//
+			"J2SE-1.2",																														//
+			"J2SE-1.3",																														//
+			"J2SE-1.4",																														//
+			"J2SE-1.5",																														//
+			"JavaSE-1.6",																													//
+			"JavaSE-1.7",																													//
+			"JavaSE-1.8",																													//
+			"JavaSE-9",																														//
+			"PersonalJava-1.1",																												//
+			"PersonalJava-1.2",																												//
+			"CDC-1.0/PersonalBasis-1.0",																									//
+			"CDC-1.0/PersonalJava-1.0",																										//
+			"CDC-1.1/PersonalBasis-1.1",																									//
+			"CDC-1.1/PersonalJava-1.1"
+														};
 	public final static Pattern	ReservedFileNames				= Pattern
 																		.compile(
 																				"CON(\\..+)?|PRN(\\..+)?|AUX(\\..+)?|CLOCK\\$|NUL(\\..+)?|COM[1-9](\\..+)?|LPT[1-9](\\..+)?|"
@@ -145,12 +178,6 @@ public class Verifier extends Processor {
 	public static Pattern		QUOTEDSTRING_P					= Pattern.compile(QUOTEDSTRING);
 	public static String		ARGUMENT_S						= "(:?" + EXTENDED_S + ")|(?:" + QUOTEDSTRING + ")";
 	public static Pattern		ARGUMENT_P						= Pattern.compile(ARGUMENT_S);
-
-	public final static String	EES[]							= {
-			"CDC-1.0/Foundation-1.0", "CDC-1.1/Foundation-1.1", "OSGi/Minimum-1.0", "OSGi/Minimum-1.1",
-			"OSGi/Minimum-1.2", "JRE-1.1", "J2SE-1.2", "J2SE-1.3", "J2SE-1.4", "J2SE-1.5", "JavaSE-1.6", "JavaSE-1.7",
-			"PersonalJava-1.1", "PersonalJava-1.2", "CDC-1.0/PersonalBasis-1.0", "CDC-1.0/PersonalJava-1.0"
-																};
 
 	public final static String	OSNAMES[]						= {
 			"AIX", // IBM
