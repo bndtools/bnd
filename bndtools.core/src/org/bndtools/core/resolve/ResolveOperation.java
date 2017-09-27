@@ -56,43 +56,44 @@ public class ResolveOperation implements IRunnableWithProgress {
         Coordination coordination = coordinator != null ? coordinator.begin(ResolveOperation.class.getName(), 0) : null;
 
         // Begin resolve
-        ResolveProcess resolve = new ResolveProcess();
-        ResolverLogger logger = new ResolverLogger();
-        try {
-            BndResolver bndResolver = new BndResolver(logger);
+        try (ResolverLogger logger = new ResolverLogger()) {
+            try {
+                ResolveProcess resolve = new ResolveProcess();
+                BndResolver bndResolver = new BndResolver(logger);
 
-            ReporterLogService log = new ReporterLogService(model.getWorkspace());
-            Map<Resource,List<Wire>> wirings = resolve.resolveRequired(model, model.getWorkspace(), bndResolver, callbacks, log);
+                ReporterLogService log = new ReporterLogService(model.getWorkspace());
+                Map<Resource,List<Wire>> wirings = resolve.resolveRequired(model, model.getWorkspace(), bndResolver, callbacks, log);
 
-            Map<Resource,List<Wire>> optionalResources = new HashMap<Resource,List<Wire>>(resolve.getOptionalResources().size());
+                Map<Resource,List<Wire>> optionalResources = new HashMap<Resource,List<Wire>>(resolve.getOptionalResources().size());
 
-            for (Resource optional : resolve.getOptionalResources()) {
-                optionalResources.put(optional, new ArrayList<Wire>(resolve.getOptionalReasons(optional)));
+                for (Resource optional : resolve.getOptionalResources()) {
+                    optionalResources.put(optional, new ArrayList<Wire>(resolve.getOptionalReasons(optional)));
+                }
+
+                result = new ResolutionResult(Outcome.Resolved, wirings, optionalResources, null, status, logger.getLog());
+                if (coordination != null)
+                    coordination.end();
+            } catch (ResolveCancelledException e) {
+                result = new ResolutionResult(Outcome.Cancelled, null, null, null, status, logger.getLog());
+
+                if (coordination != null)
+                    coordination.fail(e);
+            } catch (ResolutionException e) {
+                status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, e.getLocalizedMessage(), e));
+                result = new ResolutionResult(Outcome.Unresolved, null, null, e, status, logger.getLog());
+
+                if (coordination != null)
+                    coordination.fail(e);
+            } catch (Exception e) {
+                status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Exception during resolution.", e));
+                result = new ResolutionResult(Outcome.Error, null, null, null, status, logger.getLog());
+
+                if (coordination != null)
+                    coordination.fail(e);
+            } finally {
+                if (coordinator != null)
+                    bc.ungetService(coordSvcRef);
             }
-
-            result = new ResolutionResult(Outcome.Resolved, wirings, optionalResources, null, status, logger.getLog());
-            if (coordination != null)
-                coordination.end();
-        } catch (ResolveCancelledException e) {
-            result = new ResolutionResult(Outcome.Cancelled, null, null, null, status, logger.getLog());
-
-            if (coordination != null)
-                coordination.fail(e);
-        } catch (ResolutionException e) {
-            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, e.getLocalizedMessage(), e));
-            result = new ResolutionResult(Outcome.Unresolved, null, null, e, status, logger.getLog());
-
-            if (coordination != null)
-                coordination.fail(e);
-        } catch (Exception e) {
-            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Exception during resolution.", e));
-            result = new ResolutionResult(Outcome.Error, null, null, null, status, logger.getLog());
-
-            if (coordination != null)
-                coordination.fail(e);
-        } finally {
-            if (coordinator != null)
-                bc.ungetService(coordSvcRef);
         }
     }
 
