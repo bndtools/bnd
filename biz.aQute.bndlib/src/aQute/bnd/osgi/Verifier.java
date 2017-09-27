@@ -44,7 +44,7 @@ public class Verifier extends Processor {
 	final static Pattern	EENAME	= Pattern.compile("CDC-1\\.0/Foundation-1\\.0" + "|CDC-1\\.1/Foundation-1\\.1"
 											+ "|OSGi/Minimum-1\\.[0-9]" + "|JRE-1\\.1" + "|J2SE-1\\.2" + "|J2SE-1\\.3"
 											+ "|J2SE-1\\.4" + "|J2SE-1\\.5" + "|JavaSE-1\\.6" + "|JavaSE-1\\.7"
-											+ "|JavaSE-1\\.8" + "|PersonalJava-1\\.1" + "|PersonalJava-1\\.2"
+			+ "|JavaSE-1\\.8" + "|JavaSE-9" + "|PersonalJava-1\\.1" + "|PersonalJava-1\\.2"
 											+ "|CDC-1\\.0/PersonalBasis-1\\.0" + "|CDC-1\\.0/PersonalJava-1\\.0");
 
 	final static int		V1_1	= 45;
@@ -55,6 +55,7 @@ public class Verifier extends Processor {
 	final static int		V1_6	= 50;
 	final static int		V1_7	= 51;
 	final static int		V1_8	= 52;
+	final static int		V9_0	= 53;
 
 	static class EE {
 		String	name;
@@ -85,6 +86,7 @@ public class Verifier extends Processor {
 			new EE("PersonalJava-1.1", V1_1, V1_1), //
 			new EE("JavaSE-1.7", V1_7, V1_7), //
 			new EE("JavaSE-1.8", V1_8, V1_8), //
+			new EE("JavaSE-9", V9_0, V9_0),																									//
 			new EE("PersonalJava-1.1", V1_1, V1_1), //
 			new EE("PersonalJava-1.2", V1_1, V1_1), new EE("CDC-1.0/PersonalBasis-1.0", V1_3, V1_1),
 			new EE("CDC-1.0/PersonalJava-1.0", V1_3, V1_1), new EE("CDC-1.1/PersonalBasis-1.1", V1_3, V1_2),
@@ -149,7 +151,8 @@ public class Verifier extends Processor {
 	public final static String	EES[]							= {
 			"CDC-1.0/Foundation-1.0", "CDC-1.1/Foundation-1.1", "OSGi/Minimum-1.0", "OSGi/Minimum-1.1",
 			"OSGi/Minimum-1.2", "JRE-1.1", "J2SE-1.2", "J2SE-1.3", "J2SE-1.4", "J2SE-1.5", "JavaSE-1.6", "JavaSE-1.7",
-			"PersonalJava-1.1", "PersonalJava-1.2", "CDC-1.0/PersonalBasis-1.0", "CDC-1.0/PersonalJava-1.0"
+			"JavaSE-1.8", "JavaSE-9", "PersonalJava-1.1", "PersonalJava-1.2", "CDC-1.0/PersonalBasis-1.0",
+			"CDC-1.0/PersonalJava-1.0"
 																};
 
 	public final static String	OSNAMES[]						= {

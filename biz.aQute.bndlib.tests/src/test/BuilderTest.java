@@ -825,10 +825,10 @@ public class BuilderTest extends BndTestCase {
 
 		String[] ees = {
 				"JRE-1.1", "J2SE-1.2", "J2SE-1.3", "J2SE-1.4", "J2SE-1.5", "JavaSE-1.6", "JavaSE-1.7", "J2SE-1.4",
-				"JavaSE-1.8"
+				"JavaSE-1.8", "JavaSE-9"
 		};
 		String[] versions = {
-				"1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.4", "1.8"
+				"1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.4", "1.8", "9.0"
 		};
 		Pattern p = Pattern.compile("\\(&\\(osgi.ee=JavaSE\\)\\(version=(" + Version.VERSION_STRING + ")\\)\\)");
 		for (int i = 0; i < packages.length; i++) {
