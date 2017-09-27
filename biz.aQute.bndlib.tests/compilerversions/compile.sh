@@ -23,6 +23,8 @@
 # javac -target 1.6 -source 1.6 -cp src src/sun_1_6/*.java
 # javac -target jsr14 -source 1.5 -cp src src/sun_jsr14/*.java
 # javac -target 1.7 -source 1.7 -cp src src/sun_1_7/*.java
+# javac -target 1.8 -source 1.8 -cp src src/sun_1_8/*.java
+# javac -target 9 -source 9 -cp src src/jdk_9_0/*.java
 
 # java -jar ../jar/ecj_3.2.2.jar -target 1.1 -source 1.3 -cp src src/eclipse_1_1/*.java
 # java -jar ../jar/ecj_3.2.2.jar -target 1.2 -source 1.3 -cp src src/eclipse_1_2/*.java
@@ -32,8 +34,7 @@
 # java -jar ../jar/ecj_3.2.2.jar -target 1.6 -source 1.6 -cp src src/eclipse_1_6/*.java
 # java -jar ../jar/ecj_3.2.2.jar -target jsr14 -source 1.5 -cp src src/eclipse_jsr14/*.java
 # java -jar ../jar/ecj_4.2.2.jar -target 1.7 -source 1.7 -cp src src/eclipse_1_7/*.java
+# java -jar ../jar/ecj-4.7.1.jar -target 1.8 -source 1.8 -cp src src/eclipse_1_8/*.java
+# java -jar ../jar/ecj-4.7.1.50.jar -9 -cp src src/eclipse_9_0/*.java
 
-# not yet
-#java -jar ../jar/ecj_4.2.2.jar -target 1.8 -source 1.8 -cp src src/eclipse_1_8/*.java
-#javac -target 1.8 -source 1.8 -cp src src/sun_1_8/*.java
 
