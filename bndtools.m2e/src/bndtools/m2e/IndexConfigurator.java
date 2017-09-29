@@ -53,7 +53,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
      * We use this to replace the standard workspace repository because that feeds target/classes into the indexer and
      * causes it to blow up. Instead this repository feeds in target/finalName.jar which does not!
      */
-    private final class IndexerWorkspaceRepository extends LocalArtifactRepository implements WorkspaceReader {
+    private static final class IndexerWorkspaceRepository extends LocalArtifactRepository implements WorkspaceReader {
 
         private final SubMonitor progress = SubMonitor.convert(null);
 
@@ -108,6 +108,91 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
         }
     }
 
+    private static final class RebuildIndexCheck extends WorkspaceJob {
+
+        private final List<IResourceChangeEvent> events = new ArrayList<>();
+        private final IMavenProjectFacade facade;
+
+        private boolean noMoreEvents;
+
+        public RebuildIndexCheck(String name, IResourceChangeEvent event, IMavenProjectFacade facade) {
+            super(name);
+            this.events.add(event);
+            this.facade = facade;
+        }
+
+        void addEvent(IResourceChangeEvent event) {
+            synchronized (pendingJobs) {
+                if (!noMoreEvents) {
+                    events.add(event);
+                } else {
+                    throw new IllegalStateException("This job is underway, no new events can be added");
+                }
+            }
+        }
+
+        @Override
+        public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+
+            // Do a longer check to see if we need to rebuild
+
+            final SubMonitor progress = SubMonitor.convert(monitor);
+            MavenProject project = getMavenProject(facade, progress.newChild(1));
+
+            Map<ArtifactKey,String> keysToTypes = new HashMap<>();
+            for (Artifact a : project.getArtifacts()) {
+                keysToTypes.put(new ArtifactKey(a), a.getType());
+            }
+
+            // Prevent further deltas from accumulating
+            synchronized (pendingJobs) {
+                pendingJobs.remove(facade.getProject());
+                noMoreEvents = true;
+            }
+
+            boolean needsBuild = false;
+            for (IResourceChangeEvent event : events) {
+                IResourceDelta delta = event.getDelta();
+
+                needsBuild = needsBuild(delta, keysToTypes, facade, progress.newChild(1));
+
+                IProject[] refs = facade.getProject().getReferencedProjects();
+                for (int i = 0; !needsBuild && i < refs.length; i++) {
+                    IMavenProjectFacade pf = MavenPlugin.getMavenProjectRegistry().getProject(refs[i]);
+                    needsBuild = needsBuild(delta, keysToTypes, pf, progress.newChild(1));
+                }
+
+                if (needsBuild) {
+                    SubMonitor buildMonitor = SubMonitor.convert(monitor, "Rebuilding index for project " + facade.getProject().getName(), 1);
+                    facade.getProject().build(FULL_BUILD, buildMonitor);
+                    break;
+                }
+            }
+
+            return Status.OK_STATUS;
+        }
+
+        private boolean needsBuild(IResourceDelta delta, Map<ArtifactKey,String> keysToTypes, IMavenProjectFacade facade, IProgressMonitor monitor) {
+            String type = keysToTypes.get(facade.getArtifactKey());
+            if (type != null) {
+                File dep = getMavenOutputFile(type, facade, monitor);
+                if (dep != null) {
+                    IPath depPath = Path.fromOSString(dep.getAbsolutePath());
+                    IProject p = facade.getProject();
+                    IPath projectRelativePath = p.getFile(depPath.makeRelativeTo(p.getLocation())).getFullPath();
+                    return delta.findMember(projectRelativePath) != null;
+                }
+            }
+            return false;
+        }
+    }
+
+    /**
+     * This must be static as this extension is instantiated multiple times and we are using it to avoid repeatedly
+     * re-indexing the same projects
+     */
+    private static final Map<IProject,RebuildIndexCheck> pendingJobs = new HashMap<>();
+
     /**
      * This method finds the relevant file in the workspace if it exists
      *
@@ -116,7 +201,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
      * @param monitor
      * @return
      */
-    private File getMavenOutputFile(String extension, IMavenProjectFacade found, IProgressMonitor monitor) {
+    private static File getMavenOutputFile(String extension, IMavenProjectFacade found, IProgressMonitor monitor) {
         File f = null;
 
         if ("pom".equals(extension)) {
@@ -191,7 +276,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
         };
     }
 
-    private MavenProject getMavenProject(final IMavenProjectFacade projectFacade, IProgressMonitor monitor) throws CoreException {
+    private static MavenProject getMavenProject(final IMavenProjectFacade projectFacade, IProgressMonitor monitor) throws CoreException {
         MavenProject mavenProject = projectFacade.getMavenProject();
 
         if (mavenProject == null) {
@@ -214,66 +299,47 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
     @Override
     public void resourceChanged(final IResourceChangeEvent event) {
         projects: for (IMavenProjectFacade facade : MavenPlugin.getMavenProjectRegistry().getProjects()) {
+            IProject currentProject = facade.getProject();
+            synchronized (pendingJobs) {
+                RebuildIndexCheck existing = pendingJobs.get(currentProject);
+                if (existing != null) {
+                    // We already have a pending job - just add onto it
+                    existing.addEvent(event);
+                    continue projects;
+                }
+            }
+
             for (MojoExecutionKey key : facade.getMojoExecutionMapping().keySet()) {
                 if ("biz.aQute.bnd".equals(key.getGroupId()) && "bnd-indexer-maven-plugin".equals(key.getArtifactId())) {
 
                     // This is an indexer project - if any referenced projects, or this project, were part
                     // of the change then we *may* need to trigger a rebuild of the index
                     try {
-                        IProject[] projects = facade.getProject().getReferencedProjects();
+                        IProject[] projects = currentProject.getReferencedProjects();
                         boolean doFullCheck = event.getDelta().findMember(facade.getFullPath()) != null;
                         for (int i = 0; !doFullCheck && i < projects.length; i++) {
                             doFullCheck = event.getDelta().findMember(projects[i].getFullPath()) != null;
                         }
                         if (doFullCheck) {
-                            final IMavenProjectFacade indexerFacade = facade;
-                            Job job = new WorkspaceJob("Checking index project " + facade.getProject().getName() + " for rebuild") {
-                                @Override
-                                public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+                            RebuildIndexCheck job = new RebuildIndexCheck("Checking index project " + currentProject.getName() + " for rebuild", event, facade);
 
-                                    // Do a longer check to see if we need to rebuild
-
-                                    final SubMonitor progress = SubMonitor.convert(monitor);
-                                    MavenProject project = getMavenProject(indexerFacade, progress.newChild(1));
-
-                                    Map<ArtifactKey,String> keysToTypes = new HashMap<>();
-                                    for (Artifact a : project.getArtifacts()) {
-                                        keysToTypes.put(new ArtifactKey(a), a.getType());
-                                    }
-
-                                    IResourceDelta delta = event.getDelta();
-
-                                    boolean needsBuild = needsBuild(delta, keysToTypes, indexerFacade, progress.newChild(1));
-
-                                    IProject[] refs = indexerFacade.getProject().getReferencedProjects();
-                                    for (int i = 0; !needsBuild && i < refs.length; i++) {
-                                        IMavenProjectFacade pf = MavenPlugin.getMavenProjectRegistry().getProject(refs[i]);
-                                        needsBuild = needsBuild(delta, keysToTypes, pf, progress.newChild(1));
-                                    }
-
-                                    if (needsBuild) {
-                                        SubMonitor buildMonitor = SubMonitor.convert(monitor, "Rebuilding index for project " + indexerFacade.getProject().getName(), 1);
-                                        indexerFacade.getProject().build(FULL_BUILD, buildMonitor);
-                                    }
-                                    return Status.OK_STATUS;
+                            // If someone else beat us to the punch then don't do a rebuild
+                            synchronized (pendingJobs) {
+                                RebuildIndexCheck existing = pendingJobs.get(currentProject);
+                                if (existing == null) {
+                                    pendingJobs.put(currentProject, job);
+                                } else {
+                                    existing.addEvent(event);
+                                    continue projects;
                                 }
+                            }
 
-                                private boolean needsBuild(IResourceDelta delta, Map<ArtifactKey,String> keysToTypes, IMavenProjectFacade facade, IProgressMonitor monitor) {
-                                    String type = keysToTypes.get(facade.getArtifactKey());
-                                    if (type != null) {
-                                        File dep = getMavenOutputFile(type, facade, monitor);
-                                        if (dep != null) {
-                                            IPath depPath = Path.fromOSString(dep.getAbsolutePath());
-                                            IProject p = facade.getProject();
-                                            IPath projectRelativePath = p.getFile(depPath.makeRelativeTo(p.getLocation())).getFullPath();
-                                            return delta.findMember(projectRelativePath) != null;
-                                        }
-                                    }
-                                    return false;
-                                }
-                            };
+                            // Use a workspace lock, and give 100 millis to allow other
+                            // build actions some time to accumulate events. This reduces
+                            // the churn in the re-indexing when project changes ripple.
                             job.setRule(facade.getProject().getWorkspace().getRoot());
-                            job.schedule();
+                            job.setPriority(Job.BUILD);
+                            job.schedule(100);
                             continue projects;
                         }
                     } catch (CoreException e) {
