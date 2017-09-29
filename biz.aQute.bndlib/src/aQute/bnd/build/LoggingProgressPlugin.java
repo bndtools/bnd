@@ -19,6 +19,8 @@ public class LoggingProgressPlugin implements ProgressPlugin {
 			public void done(String message, Throwable e) {
 				if (e != null) {
 					logger.error(message, e);
+				} else {
+					logger.debug(message);
 				}
 			}
 
