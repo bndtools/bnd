@@ -53,7 +53,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
      * We use this to replace the standard workspace repository because that feeds target/classes into the indexer and
      * causes it to blow up. Instead this repository feeds in target/finalName.jar which does not!
      */
-    private final class IndexerWorkspaceRepository extends LocalArtifactRepository implements WorkspaceReader {
+    private static final class IndexerWorkspaceRepository extends LocalArtifactRepository implements WorkspaceReader {
 
         private final SubMonitor progress = SubMonitor.convert(null);
 
@@ -108,7 +108,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
         }
     }
 
-    private final class RebuildIndexCheck extends WorkspaceJob {
+    private static final class RebuildIndexCheck extends WorkspaceJob {
 
         private final List<IResourceChangeEvent> events = new ArrayList<>();
         private final IMavenProjectFacade facade;
@@ -121,7 +121,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
             this.facade = facade;
         }
 
-        public void addEvent(IResourceChangeEvent event) {
+        void addEvent(IResourceChangeEvent event) {
             synchronized (pendingJobs) {
                 if (!noMoreEvents) {
                     events.add(event);
@@ -201,7 +201,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
      * @param monitor
      * @return
      */
-    private File getMavenOutputFile(String extension, IMavenProjectFacade found, IProgressMonitor monitor) {
+    private static File getMavenOutputFile(String extension, IMavenProjectFacade found, IProgressMonitor monitor) {
         File f = null;
 
         if ("pom".equals(extension)) {
@@ -276,7 +276,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
         };
     }
 
-    private MavenProject getMavenProject(final IMavenProjectFacade projectFacade, IProgressMonitor monitor) throws CoreException {
+    private static MavenProject getMavenProject(final IMavenProjectFacade projectFacade, IProgressMonitor monitor) throws CoreException {
         MavenProject mavenProject = projectFacade.getMavenProject();
 
         if (mavenProject == null) {
