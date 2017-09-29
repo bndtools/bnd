@@ -487,8 +487,9 @@ public class HttpClient implements Closeable, URLConnector {
 					InputStream in = con.getInputStream();
 					return new TaggedData(con, in, request.useCacheFile);
 				} catch (FileNotFoundException e) {
-					task.done("file not found", e);
-					return new TaggedData(con.getURL().toURI(), 404, request.useCacheFile);
+					URI uri = con.getURL().toURI();
+					task.done("File not found " + uri, e);
+					return new TaggedData(uri, 404, request.useCacheFile);
 				}
 			}
 
@@ -506,7 +507,7 @@ public class HttpClient implements Closeable, URLConnector {
 				if (request.redirects-- > 0) {
 					String location = hcon.getHeaderField("Location");
 					request.url = new URL(location);
-					task.done("redirected " + location, null);
+					task.done("Redirected " + code + " " + location, null);
 					return send0(request);
 				}
 			}
@@ -520,7 +521,7 @@ public class HttpClient implements Closeable, URLConnector {
 			}
 
 			if ((code / 100) != 2) {
-				task.done("finished", null);
+				task.done("Finished " + code + " " + con.getURL().toURI(), null);
 				return new TaggedData(con, null, request.useCacheFile);
 			}
 
