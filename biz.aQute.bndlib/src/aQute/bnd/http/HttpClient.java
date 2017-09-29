@@ -1,5 +1,12 @@
 package aQute.bnd.http;
 
+import static java.net.HttpURLConnection.HTTP_CREATED;
+import static java.net.HttpURLConnection.HTTP_GATEWAY_TIMEOUT;
+import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
+import static java.net.HttpURLConnection.HTTP_MOVED_TEMP;
+import static java.net.HttpURLConnection.HTTP_NOT_MODIFIED;
+import static java.net.HttpURLConnection.HTTP_SEE_OTHER;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -66,6 +73,9 @@ public class HttpClient implements Closeable, URLConnector {
 	static {
 		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 	}
+	// These are not in HttpURLConnection
+	private static final int					HTTP_TEMPORARY_REDIRECT	= 307;											// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307
+	private static final int					HTTP_PERMANENT_REDIRECT	= 308;											// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308
 
 	private final List<ProxyHandler>			proxyHandlers			= new ArrayList<>();
 	private final List<URLConnectionHandler>	connectionHandlers		= new ArrayList<>();
@@ -243,7 +253,7 @@ public class HttpClient implements Closeable, URLConnector {
 					return in;
 
 				} else {
-					return new TaggedData(request.url.toURI(), HttpURLConnection.HTTP_NOT_MODIFIED, info.file);
+					return new TaggedData(request.url.toURI(), HTTP_NOT_MODIFIED, info.file);
 				}
 			} else {
 
@@ -477,8 +487,9 @@ public class HttpClient implements Closeable, URLConnector {
 					InputStream in = con.getInputStream();
 					return new TaggedData(con, in, request.useCacheFile);
 				} catch (FileNotFoundException e) {
-					task.done("file not found", e);
-					return new TaggedData(con.getURL().toURI(), 404, request.useCacheFile);
+					URI uri = con.getURL().toURI();
+					task.done("File not found " + uri, e);
+					return new TaggedData(uri, 404, request.useCacheFile);
 				}
 			}
 
@@ -491,19 +502,14 @@ public class HttpClient implements Closeable, URLConnector {
 			// Though we ask Java to handle the redirects
 			// it does not do it for https <-> http :-(
 			//
-
-			if (code == HttpURLConnection.HTTP_MOVED_TEMP || code == HttpURLConnection.HTTP_MOVED_PERM
-					|| code == HttpURLConnection.HTTP_SEE_OTHER) {
-
+			if (code == HTTP_MOVED_TEMP || code == HTTP_MOVED_PERM || code == HTTP_SEE_OTHER
+					|| code == HTTP_TEMPORARY_REDIRECT || code == HTTP_PERMANENT_REDIRECT) {
 				if (request.redirects-- > 0) {
-
 					String location = hcon.getHeaderField("Location");
 					request.url = new URL(location);
-					task.done("redirected", null);
+					task.done("Redirected " + code + " " + location, null);
 					return send0(request);
-
 				}
-
 			}
 
 			if (isUpdateInfo(con, request, code)) {
@@ -515,7 +521,7 @@ public class HttpClient implements Closeable, URLConnector {
 			}
 
 			if ((code / 100) != 2) {
-				task.done("finished", null);
+				task.done("Finished " + code + " " + con.getURL().toURI(), null);
 				return new TaggedData(con, null, request.useCacheFile);
 			}
 
@@ -530,12 +536,12 @@ public class HttpClient implements Closeable, URLConnector {
 
 		} catch (SocketTimeoutException ste) {
 			task.done(ste.toString(), null);
-			return new TaggedData(request.url.toURI(), HttpURLConnection.HTTP_GATEWAY_TIMEOUT, request.useCacheFile);
+			return new TaggedData(request.url.toURI(), HTTP_GATEWAY_TIMEOUT, request.useCacheFile);
 		}
 	}
 
 	boolean isUpdateInfo(final URLConnection con, HttpRequest< ? > request, int code) {
-		return request.upload instanceof File && request.updateTag && code == HttpURLConnection.HTTP_CREATED
+		return request.upload instanceof File && request.updateTag && code == HTTP_CREATED
 				&& con.getHeaderField("ETag") != null;
 	}
 
