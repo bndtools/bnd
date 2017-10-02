@@ -188,7 +188,7 @@ public class Printer extends Processor {
         out.println(msg);
         for (Entry< ? , ? extends Map< ? , ? >> entry : ports.entrySet()) {
             Object key = entry.getKey();
-            Map< ? , ? > clause = Create.copy(entry.getValue());
+            Map< ? , ? > clause = Create.copy((Map< ? , ? >) entry.getValue());
             clause.remove("uses:");
             format(out, "  %-38s %s%s", key.toString().trim(), clause.isEmpty() ? "" : clause.toString(), EOL);
         }

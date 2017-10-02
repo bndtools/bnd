@@ -6,9 +6,9 @@
 # Customised Settings
 #
 
-javac.source:               1.7
-javac.target:               1.7
-javac.compliance:           1.7
+javac.source:               1.8
+javac.target:               1.8
+javac.compliance:           1.8
 
 # Include the gradle.properties to get the value of bnd_repourl which is used
 # for the bnd build repository.

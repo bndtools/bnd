@@ -3,7 +3,7 @@ liferay=liferay;shell=11311;jmx=attach
 -runremote: ${liferay}
 
 -runfw: org.apache.felix.framework;version='[4,5)'
--runee: JavaSE-1.7
+-runee: JavaSE-1.8
 -runprovidedcapabilities: ${native_capability}
 -resolve.effective: active;skip:="osgi.service"
 

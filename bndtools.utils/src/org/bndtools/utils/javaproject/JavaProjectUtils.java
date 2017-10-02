@@ -15,8 +15,8 @@ public class JavaProjectUtils {
      *
      * @param project
      *            the project
-     * @return a map of source directories and their output directories, all relative to the project directory. empty
-     *         map when project is null or when an error occurred.
+     * @return a map of source directories and their output directories, all relative to the project directory. empty map
+     *         when project is null or when an error occurred.
      */
     static public Map<String,String> getSourceOutputLocations(IJavaProject project) {
         if (project == null) {
@@ -63,7 +63,7 @@ public class JavaProjectUtils {
 
     private static enum JavaLevel {
         J2SE_1_2("J2SE-1.2", "1.2"), J2SE_1_3("J2SE-1.3", "1.3"), J2SE_1_4("J2SE-1.4", "1.4"), J2SE_1_5("J2SE-1.5", "1.5"), JAVASE_1_6("JavaSE-1.6", "1.6"), JAVASE_1_7("JavaSE-1.7", "1.7"), JAVASE_1_8("JavaSE-1.8",
-                "1.8"), JAVASE_1_9("JavaSE-1.9", "1.9");
+                "1.8"), JAVASE_9("JavaSE-9", "9");
 
         private final String label;
         private final String level;

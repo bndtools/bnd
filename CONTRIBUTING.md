@@ -23,10 +23,9 @@ The `bndtools.core` project has run descriptors (`.bndrun` files) for all suppor
 
 ## Build Environment
 
-The only thing you need to build bndtools is Java. We use Java 7 but most
-projects only require Java 6. We use Gradle to build and The repo 
+The only thing you need to build bndtools is Java. We use Java 8. We use Gradle to build and The repo 
 includes `gradlew`. You can use your system `gradle` but we require 
-at least version 2.3.
+at least version 4.0.
 
 `./gradlew`              - Assembles, tests and releases the projects into `build/generated`
 

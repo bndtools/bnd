@@ -4,7 +4,7 @@
 	test.debug.dep
 -runfw: org.apache.felix.framework;version='[4.4.0,4.4.0]'
 -runrequires: osgi.identity;filter:='(osgi.identity=test.bottom)'
--runee: JavaSE-1.7
+-runee: JavaSE-1.8
 Import-Package: test.debug.dep
 Private-Package: \
 	test.debug.dep,\

@@ -119,9 +119,9 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
                         } else {
                             String segment = path.segment(1);
                             if ("org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType".equals(segment) && path.segmentCount() == 3) {
-                                // check javac version <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+                                // check javac version <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 
-                                String javac = model.getProperty(Constants.JAVAC_SOURCE, "1.5");
+                                String javac = model.getProperty(Constants.JAVAC_SOURCE, "1.8");
                                 if (!path.segment(2).endsWith(javac)) {
                                     warning(model, null, path.toString(), cpe, "Bndtools: The .JRE container is set to %s but bnd is compiling against %s", path.segment(2), javac)
                                             .file(new File(model.getBase(), ".classpath").getAbsolutePath());
