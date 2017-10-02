@@ -38,23 +38,26 @@ import aQute.bnd.version.Version;
  * that are found in the code. @version $Revision: 1.2 $
  */
 public class About {
-	public static Version				_2_3		= new Version(2, 3, 0);
-	public static Version				_2_4		= new Version(2, 4, 0);
-	public static Version				_3_0		= new Version(3, 0, 0);
-	public static Version				_3_1		= new Version(3, 1, 0);
-	public static Version				_3_2		= new Version(3, 2, 0);
-	public static Version				_3_3		= new Version(3, 3, 0);
-	public static Version				_3_4		= new Version(3, 4, 0);
-	public static Version				_3_5		= new Version(3, 5, 0);
-	public static Version				CURRENT		= _3_5;
+	public static final Version	_2_3	= new Version(2, 3, 0);
+	public static final Version	_2_4	= new Version(2, 4, 0);
+	public static final Version	_3_0	= new Version(3, 0, 0);
+	public static final Version	_3_1	= new Version(3, 1, 0);
+	public static final Version	_3_2	= new Version(3, 2, 0);
+	public static final Version	_3_3	= new Version(3, 3, 0);
+	public static final Version	_3_4	= new Version(3, 4, 0);
+	public static final Version	_3_5	= new Version(3, 5, 0);
+	public static final Version	_4_0	= new Version(4, 0, 0);
+	public static final Version					CURRENT		= _4_0;
 
-	public static String[]				CHANGES_3_5	= {};
+	public static final String[]				CHANGES_4_0	= {};
 
-	public static String[]				CHANGES_3_4	= {};
+	public static final String[]				CHANGES_3_5	= {};
 
-	public static String[]				CHANGES_3_3	= {};
+	public static final String[]				CHANGES_3_4	= {};
 
-	public static String[]				CHANGES_3_2	= {
+	public static final String[]				CHANGES_3_3	= {};
+
+	public static final String[]				CHANGES_3_2	= {
 			"Default content for bundle", "bndlib: Remove synchronization which causes deadlocks",
 			"packages macro: Fix negation processing", "pom: Update -pom processing of Bundle-License header",
 			"junit: Write xml declaration to junit xml output", "test: Do not clear test-results folder",
@@ -76,7 +79,7 @@ public class About {
 			"Added a ${fileuri;file} macro which converts a file path into a file: URI",
 			"Processor.trace calls now log the trace information via SLF4J"
 	};
-	public static String[]				CHANGES_3_1	= {
+	public static final String[]				CHANGES_3_1	= {
 															"The embedded repo is expanded into cnf/cache/<bnd-version> folder to avoid potential conflicts.",
 															"${uri;<uri>[;<base>]}: Add new uri macro that uses the Processor base as base URI",
 															"New properties parser that reports common errors and is faster",
@@ -92,7 +95,7 @@ public class About {
 															"New macros: base64 and digest for files",
 															"Updated Java 8 compact profiles"
 														};
-	public static String[]				CHANGES_3_0	= {
+	public static final String[]				CHANGES_3_0	= {
 															"No longer analyzes the packages on the classpath, only information in manifest is used to find out package information",
 															"Added bnd command bnd resolve validate <index.xml> to validate that a repository file is complete",
 															"Extended the resource package with many functions to work easily with resources, capabilities and requirements",
@@ -141,7 +144,7 @@ public class About {
 															"Added a ${thisfile} macro that returns the name of the properties file of the current processor if it exists."
 														};
 
-	public static String[]				CHANGES_2_4	= {
+	public static final String[]				CHANGES_2_4	= {
 															"Added checks for imports from private packages and exports of empty packages. These checks are enabled by -check ALL | (EXPORTS|IMPORTS)*. All is recommended but might break builds",
 															"Added -runkeep instruction. It turned out that it was impossible to keep the framework directory between restarts",
 															"Added ${versionmask} macro that is identical to ${version} but can be used when you want to use the version macro for yourself",
@@ -166,7 +169,7 @@ public class About {
 																	+ "enables a project to depend on a version that starts as a project but "
 																	+ "later becomes a repository entry."
 														};
-	public static String[]				CHANGES_2_3	= {
+	public static final String[]				CHANGES_2_3	= {
 															"More aggressive upgrade to a later DS release, current analyzer was missing cases that required a higher version",
 															"Allow bnd -version",
 															"Added bnd sync command that forces the cache to be the current version",
@@ -226,9 +229,10 @@ public class About {
 															"It is now possible to specify a URL on a plugin path so that if the resource is not on the file system it will get downloaded."
 														};
 
-	public static Map<Version,String[]>	CHANGES		= new TreeMap<Version,String[]>(Collections.reverseOrder());
+	public static final Map<Version,String[]>	CHANGES		= new TreeMap<Version,String[]>(Collections.reverseOrder());
 
 	static {
+		CHANGES.put(_4_0, CHANGES_4_0);
 		CHANGES.put(_3_5, CHANGES_3_5);
 		CHANGES.put(_3_4, CHANGES_3_4);
 		CHANGES.put(_3_3, CHANGES_3_3);
