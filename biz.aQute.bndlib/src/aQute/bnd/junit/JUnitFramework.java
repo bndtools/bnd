@@ -243,10 +243,12 @@ public class JUnitFramework implements AutoCloseable {
 
 		public Bundle install() throws Exception {
 			try {
-				Jar jar = build();
+				Jar jar = new Jar("x");
 				for (Entry<String,Resource> e : additionalResources.entrySet()) {
 					jar.putResource(e.getKey(), e.getValue());
 				}
+				setJar(jar);
+				jar = build();
 
 				try (JarResource j = new JarResource(jar);) {
 					return context.installBundle("generated " + jar.getBsn(), j.openInputStream());
@@ -260,6 +262,13 @@ public class JUnitFramework implements AutoCloseable {
 		public void close() throws IOException {
 			getClasspath().remove(bin_test);
 			super.close();
+		}
+
+		public BundleBuilder addResource(Class< ? > class1) {
+			String name = class1.getName();
+			name = name.replace('.', '/') + ".class";
+			addResource(name, class1.getResource("/" + name));
+			return this;
 		}
 
 	}
@@ -316,7 +325,9 @@ public class JUnitFramework implements AutoCloseable {
 		for (Map.Entry<String,Attrs> e : p.entrySet()) {
 			Container c = getProject().getBundle(e.getKey(), e.getValue().get("version"), Strategy.HIGHEST,
 					e.getValue());
-			assert c.getError() == null;
+			if (c.getError() != null) {
+				throw new RuntimeException(c.getError());
+			}
 			Bundle bundle = context.installBundle(c.getFile().toURI().toString());
 			bundles.add(bundle);
 		}
