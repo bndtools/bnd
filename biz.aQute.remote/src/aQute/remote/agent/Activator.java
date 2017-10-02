@@ -13,6 +13,7 @@ import java.util.regex.Matcher;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
+import aQute.lib.io.IO;
 import aQute.remote.api.Agent;
 import aQute.remote.api.Supervisor;
 import aQute.remote.util.Link;
@@ -80,37 +81,47 @@ public class Activator extends Thread implements BundleActivator {
 	 */
 	public void run() {
 
-		while (!isInterrupted())
-			try {
-				Socket socket = server.accept();
+		try {
+			while (!isInterrupted())
+				try {
+					Socket socket = server.accept();
 
-				//
-				// Use a time out so we get interrupts
-				// and can do some checks
-				//
+					//
+					// Use a time out so we get interrupts
+					// and can do some checks
+					//
 
-				socket.setSoTimeout(1000);
+					socket.setSoTimeout(1000);
 
-				//
-				// Create a new agent, and link it up.
-				//
+					//
+					// Create a new agent, and link it up.
+					//
 
-				final AgentServer sa = new AgentServer("<>", context, cache);
-				agents.add(sa);
-				Link<Agent,Supervisor> link = new Link<Agent,Supervisor>(Supervisor.class, sa, socket) {
-					public void close() throws IOException {
-						agents.remove(sa);
-						super.close();
-					}
-				};
-				sa.setLink(link);
-				link.run();
-			} catch (SocketException e) {
-				if (!isInterrupted())
+					final AgentServer sa = new AgentServer("<>", context, cache);
+					agents.add(sa);
+					Link<Agent,Supervisor> link = new Link<Agent,Supervisor>(Supervisor.class, sa, socket) {
+						public void close() throws IOException {
+							agents.remove(sa);
+							super.close();
+						}
+					};
+					sa.setLink(link);
+					link.run();
+				} catch (SocketException e) {
+					if (!isInterrupted())
+						About.log.warning("accepting agent requests " + e);
+				} catch (Exception e) {
 					About.log.warning("accepting agent requests " + e);
-			} catch (Exception e) {
-				About.log.warning("accepting agent requests " + e);
-			}
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+		} catch (Throwable t) {
+			t.printStackTrace(System.err);
+			throw t;
+		} finally {
+			IO.close(server);
+			System.err.println("Quit agent loop");
+		}
 	}
 
 	/**
@@ -119,10 +130,10 @@ public class Activator extends Thread implements BundleActivator {
 	@Override
 	public void stop(BundleContext context) throws Exception {
 		interrupt();
-		server.close();
+		IO.close(server);
 
 		for (AgentServer sa : agents) {
-			sa.close();
+			IO.close(sa);
 		}
 	}
 

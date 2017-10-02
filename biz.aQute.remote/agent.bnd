@@ -16,38 +16,24 @@ Bundle-Description: \
 #
 
 Bundle-Activator: 		aQute.remote.agent.Activator
-Embedded-Activator: 	aQute.remote.agent.Activator
+Embedded-Activator: 		aQute.remote.agent.Activator
 
 Private-Package: \
 	aQute.remote.api,\
 	aQute.remote.agent,\
 	org.apache.felix.service.command,\
-	org.osgi.dto;-split-package:=first,\
-	org.osgi.resource.dto;-split-package:=first,\
-	org.osgi.framework.dto;-split-package:=first,\
-	org.osgi.framework.wiring.dto;-split-package:=first,\
-	org.osgi.resource;-split-package:=first,\
-	org.osgi.framework.wiring;-split-package:=first,\
 	aQute.remote.util
 
-#
-# The following import package override is necessary because
-# we use the Framework DTOs in our protocol but do want to support
-# lower versioned frameworks as well. The DTO packages are therefore
-# included in this bundle.
-#
-# Another problem that is addressed here is Gogo. Since the agent
-# can be placed on the -runpath, we might not be able to import
-# the gogo API. We therefore also carry a local copy
-#
+
+# Need to adjust the versions
+# to accept older frameworks. (4.2)
+# the code is adjusted to handle errors
+# when calling later methods.
  
 Import-Package: \
-	org.osgi.dto;resolution:=optional,\
-	org.osgi.resource.dto;resolution:=optional,\
-	org.osgi.framework.dto;resolution:=optional,\
-	org.osgi.framework.wiring.dto;version='[1.0,2)';resolution:=optional,\
 	org.osgi.framework;version='[1.5,2)',\
 	org.osgi.framework.launch;version='[1.0,2)',\
-	org.osgi.resource;version='[1.0,2)';resolution:=optional,\
-	org.osgi.framework.wiring;version='[1.0,2)';resolution:=optional,\
+	org.apache.felix.service.command;resolution:=optional,\
 	*
+
+	

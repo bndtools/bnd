@@ -38,6 +38,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.dto.CapabilityDTO;
 import org.osgi.resource.dto.RequirementDTO;
+import org.osgi.service.packageadmin.PackageAdmin;
 
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.TypeReference;
@@ -53,6 +54,7 @@ import aQute.remote.util.Link;
  * Implementation of the Agent. This implementation implements the Agent
  * interfaces and communicates with a Supervisor interfaces.
  */
+@SuppressWarnings("deprecation")
 public class AgentServer implements Agent, Closeable, FrameworkListener {
 	AtomicInteger											sequence			= new AtomicInteger(1000);
 
@@ -627,9 +629,10 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 				refresh.await();
 				return;
 			}
-		} catch (Exception e) {
-			ServiceReference<org.osgi.service.packageadmin.PackageAdmin> ref = context
-					.getServiceReference(org.osgi.service.packageadmin.PackageAdmin.class);
+		} catch (Exception | NoSuchMethodError e) {
+			@SuppressWarnings("unchecked")
+			ServiceReference<org.osgi.service.packageadmin.PackageAdmin> ref = (ServiceReference<PackageAdmin>) context
+					.getServiceReference(org.osgi.service.packageadmin.PackageAdmin.class.getName());
 			if ( ref != null) {
 				org.osgi.service.packageadmin.PackageAdmin padmin = context.getService(ref);
 				padmin.refreshPackages(null);
