@@ -157,15 +157,13 @@ public class ReportGenerator extends Processor {
 						} catch (final Exception e) {
 							throw new Exception("unable to include the file " + includePath, e);
 						}
-					} else {
-						throw new FileNotFoundException("unable to find the included file " + includePath);
-					}
+					} 
 				} else {
 					try (InputStream is = new FileInputStream(getFile(includePath))) {
 						r.addAll(convertFile(is, includePath, config.getIncludeType(includePath),
 								config.getIncludeParent(includePath)));
-					} catch (final Exception e) {
-						throw new Exception("unable to include the file " + includePath, e);
+					} catch (final FileNotFoundException expected) {
+						// included files are optional
 					}
 				}
 
