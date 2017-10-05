@@ -5,40 +5,12 @@ title: -runrepos REPO-NAME ( ',' REPO-NAME )*
 summary:  Order and select the repository for resolving against. The default order is all repositories in their plugin creation order.
 ---
 
-	private void loadRepositories() throws IOException {
-		// Get all of the repositories from the plugin registry
-		List<Repository> allRepos = registry.getPlugins(Repository.class);
+The `-runrepos` instruction is used to restrict or order the available repositories. A `bndrun` file can be based on a workspace or can be standalone. In the workspace case the, the repositories are defined in `build.bnd` or in a `*.bnd` file in the `cnf/ext` directory as bnd plugins. In the standalone case the repositories are either OSGi XML repositories listed in the `-standalone` instruction or they are also defined as plugins but now in the `bndrun` file.
 
-		// Workspace ws = registry.getPlugin(Workspace.class);
-		// if (ws != null) {
-		// for (InfoRepository ir : registry.getPlugins(InfoRepository.class)) {
-		// allRepos.add(new InfoRepositoryWrapper(ir, ws.getCache("ir-" +
-		// ir.getName())));
-		// }
-		// }
+In both cases there is an _ordered_ list of repositories. In the `-standalone` it is easy to change this order or exclude repositories. However, in the workspace case this is harder because the set of repositories is shared with many other projects. The `-runrepos` can then be used to exclude and reorder the list repositories. It simply lists the names of the repositories in the desired order. Each repository has its own name.
 
+**Note** The name of a repository is not well defined. It is either the name of the repository or the `toString()` result. In the later case the name is sometimes a bit messy.
 
-		// Reorder/filter if specified by the run model
+For example:
 
-		String rn = properties.mergeProperties(Constants.RUNREPOS);
-		if (rn == null) {
-			// No filter, use all
-			for (Repository repo : allRepos) {
-				super.addRepository(repo);
-			}
-		} else {
-			Parameters repoNames = new Parameters(rn);
-
-			// Map the repository names...
-			Map<String,Repository> repoNameMap = new HashMap<String,Repository>(allRepos.size());
-			for (Repository repo : allRepos)
-				repoNameMap.put(repo.toString(), repo);
-
-			// Create the result list
-			for (String repoName : repoNames.keySet()) {
-				Repository repo = repoNameMap.get(repoName);
-				if (repo != null)
-					super.addRepository(repo);
-			}
-		}
-	}
+	-runrepos: Maven Central, Main, Distro
