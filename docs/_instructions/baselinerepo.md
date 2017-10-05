@@ -1,7 +1,7 @@
 ---
 layout: default
 class: Workspace
-title: -baselinerep qname
+title: -baselinerepo qname
 summary: Define the repository to calculate baselining against
 ---
 
