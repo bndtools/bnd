@@ -2,7 +2,7 @@
 layout: default
 class: Workspace
 title: -resolve.effective qname (',' qname )
-summary: Override default ordered list of repositories
+summary: Set the use effectives for the resolver
 ---
 
 Each requirement and capability has an `effective` or is `effective=resolve`. An effective of `resolve` is always processed by the resolver. In OSGi enRoute, also any effective of `active` is processed since this is the mode that is compatible with bnd. However, in (very) special cases it is necessary to provide more rules. 
