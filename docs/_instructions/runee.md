@@ -4,66 +4,24 @@ class: Builder
 title: -runee EE   
 summary:  Define the  runtime Execution Environment capabilities, default Java 6.
 ---
+The `-runee` instruction adds the capabilities of an _execution environment_ to the system capabilities. Every Java edition has a set of standard packages and OSGi has also defined a number of execution environments that define which packages can be found. The `-runee` allows these capabilities to be defined by using the name of the execution environment. Additionally, this instruction also adds an `osgi.ee` requirement with the given name and version. You can use the following execution environment names:
 
-	private void loadEE() {
-		EE tmp = EE.parse(properties.getProperty(Constants.RUNEE));
-		ee = (tmp != null) ? tmp : EE.JavaSE_1_6;
-	}
+	OSGi/Minimum-1.0
+	OSGi/Minimum-1.1 
+	OSGi/Minimum-1.2
+	JRE-1.1
+	J2SE-1.2
+	J2SE-1.3
+	J2SE-1.4
+	J2SE-1.5
+	JavaSE-1.6
+	JavaSE-1.7
+	JavaSE/compact1-1.8
+	JavaSE/compact2-1.8
+	JavaSE/compact3-1.8
+	JavaSE-1.8
+	JavaSE-9
 
-		public enum EE {
-		
-		    OSGI_Minimum_1_0("OSGi/Minimum-1.0", "OSGi/Minimum", new Version("1.0")),
-		    OSGI_Minimum_1_1("OSGi/Minimum-1.1", "OSGi/Minimum", new Version("1.1"), OSGI_Minimum_1_0),
-		    OSGI_Minimum_1_2("OSGi/Minimum-1.2", "OSGi/Minimum", new Version("1.2"), OSGI_Minimum_1_0, OSGI_Minimum_1_1),
-		
-		    JRE_1_1("JRE-1.1", "JRE", new Version("1.1")),
-		
-		    J2SE_1_2("J2SE-1.2", "JavaSE", new Version("1.2"), JRE_1_1),
-		    J2SE_1_3("J2SE-1.3", "JavaSE", new Version("1.3"), JRE_1_1, J2SE_1_2, OSGI_Minimum_1_0, OSGI_Minimum_1_1),
-		    J2SE_1_4("J2SE-1.4", "JavaSE", new Version("1.4"), JRE_1_1, J2SE_1_2, J2SE_1_3, OSGI_Minimum_1_0, OSGI_Minimum_1_1, OSGI_Minimum_1_2),
-		    J2SE_1_5("J2SE-1.5", "JavaSE", new Version("1.5"), JRE_1_1, J2SE_1_2, J2SE_1_3, J2SE_1_4, OSGI_Minimum_1_0, OSGI_Minimum_1_1, OSGI_Minimum_1_2),
-		
-		    JavaSE_1_6("JavaSE-1.6", "JavaSE", new Version("1.6"), JRE_1_1, J2SE_1_2, J2SE_1_3, J2SE_1_4, J2SE_1_5, OSGI_Minimum_1_0, OSGI_Minimum_1_1, OSGI_Minimum_1_2),
-		    JavaSE_1_7("JavaSE-1.7", "JavaSE", new Version("1.7"), JRE_1_1, J2SE_1_2, J2SE_1_3, J2SE_1_4, J2SE_1_5, JavaSE_1_6, OSGI_Minimum_1_0, OSGI_Minimum_1_1, OSGI_Minimum_1_2),
-		    JavaSE_1_8("JavaSE-1.8", "JavaSE", new Version("1.8"), JRE_1_1, J2SE_1_2, J2SE_1_3, J2SE_1_4, J2SE_1_5, JavaSE_1_6, JavaSE_1_7, OSGI_Minimum_1_0, OSGI_Minimum_1_1, OSGI_Minimum_1_2),
-		    JavaSE_1_9("JavaSE-1.9", "JavaSE", new Version("1.9"), JRE_1_1, J2SE_1_2, J2SE_1_3, J2SE_1_4, J2SE_1_5, JavaSE_1_6, JavaSE_1_7, JavaSE_1_8, OSGI_Minimum_1_0, OSGI_Minimum_1_1, OSGI_Minimum_1_2);
-		
-		    private final String eeName;
-		    private final String capabilityName;
-		    private final Version capabilityVersion;
-		    private final EE[] compatible;
-		
-		    EE(String name, String capabilityName, Version capabilityVersion, EE... compatible) {
-		        this.eeName = name;
-		        this.capabilityName = capabilityName;
-		        this.capabilityVersion = capabilityVersion;
-		        this.compatible = compatible;
-		    }
-		
-		    public String getEEName() {
-		        return eeName;
-		    }
-		
-		    /**
-		     * @return An array of EEs that this EE implicitly offers, through backwards compatibility.
-		     */
-		    public EE[] getCompatible() {
-		        return compatible != null ? compatible : new EE[0];
-		    }
-		    
-			public String getCapabilityName() {
-				return capabilityName;
-			}
-		
-			public Version getCapabilityVersion() {
-				return capabilityVersion;
-			}
-		
-		    public static EE parse(String str) {
-		        for (EE ee : values()) {
-		            if (ee.eeName.equals(str))
-		                return ee;
-		        }
-		        return null;
-		    }
-		}
+An example:
+
+	-runee: JavaSE-1.7
