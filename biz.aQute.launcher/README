@@ -1,3 +1,3 @@
 The launcher project is a launcher plugin that extends the ProjectLauncher.java.
 
-The launcher project is compiled to target Java 7 but can run on Java 8 compact1 profile.
+The launcher project is compiled to target Java 8 but can run on Java 8 compact1 profile.
