@@ -26,6 +26,7 @@ import biz.aQute.resolve.Bndrun
 import biz.aQute.resolve.ResolveProcess
 
 import org.gradle.api.GradleException
+import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
@@ -155,14 +156,19 @@ public class BndPlugin implements Plugin<Project> {
           if (!javacProfile.empty) {
             compilerArgs.addAll(['-profile', javacProfile])
           }
+          if (JavaVersion.current().isJava9Compatible()) {
+            if ((sourceCompatibility == targetCompatibility) && !bootClasspath && javacProfile.empty) {
+              compilerArgs.addAll(['--release', JavaVersion.toVersion(sourceCompatibility).majorVersion])
+            }
+          }
         }
         if (logger.isInfoEnabled()) {
           doFirst {
             logger.info 'Compile to {}', destinationDir
-            if (javacProfile.empty) {
-              logger.info '-source {} -target {}', sourceCompatibility, targetCompatibility
+            if (options.compilerArgs.contains('--release')) {
+              logger.info '{}', options.compilerArgs.join(' ')
             } else {
-              logger.info '-source {} -target {} -profile {}', sourceCompatibility, targetCompatibility, javacProfile
+              logger.info '-source {} -target {} {}', sourceCompatibility, targetCompatibility, options.compilerArgs.join(' ')
             }
             logger.info '-classpath {}', classpath.asPath
             if (options.bootClasspath != null) {

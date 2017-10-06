@@ -1,5 +1,6 @@
 package aQute.bnd.gradle
 
+import org.gradle.api.JavaVersion
 import org.gradle.testkit.runner.GradleRunner
 
 class TestHelper {
@@ -8,6 +9,6 @@ class TestHelper {
 
   public static GradleRunner getGradleRunner() {
     return GradleRunner.create()
-            .withGradleVersion("4.0")
+            .withGradleVersion(JavaVersion.current().isJava9Compatible() ? "4.2.1" : "4.0")
   }
 }
