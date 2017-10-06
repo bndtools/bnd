@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.SortedSet;
+import java.util.Spliterator;
 
 /**
  * An immutable list that sorts objects by their natural order or through a
@@ -465,4 +466,8 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		return (SortedSet<T>) EMPTY;
 	}
 
+	@Override
+	public Spliterator<T> spliterator() {
+		return SortedSet.super.spliterator();
+	}
 }

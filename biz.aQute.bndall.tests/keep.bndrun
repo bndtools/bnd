@@ -1,6 +1,6 @@
 -runrequires: osgi.identity;filter:='(osgi.identity=demo)'
 -runfw: org.apache.felix.framework;version='[4.2.1,4.2.1]'
--runee: JavaSE-1.7
+-runee: JavaSE-1.8
 -runbundles: \
 	demo;version=snapshot,\
 	org.apache.servicemix.bundles.junit;version='[4.11.0,4.11.1)'

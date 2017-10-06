@@ -2253,7 +2253,7 @@ public class bnd extends Processor {
 		out.println(msg);
 		for (Entry< ? , ? extends Map< ? , ? >> entry : ports.entrySet()) {
 			Object key = entry.getKey();
-			Map< ? , ? > clause = Create.copy(entry.getValue());
+			Map< ? , ? > clause = Create.copy((Map< ? , ? >) entry.getValue());
 			clause.remove("uses:");
 			out.printf("  %-38s %s\n", key.toString().trim(), clause.isEmpty() ? "" : clause.toString());
 		}

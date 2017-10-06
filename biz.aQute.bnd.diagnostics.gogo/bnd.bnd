@@ -1,3 +1,6 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 Private-Package: \
 	biz.aQute.bnd.diagnostics.gogo.impl,\
 	biz.aQute.bnd.diagnostics.gogo.osgi

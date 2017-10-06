@@ -24,4 +24,5 @@ The `-runee` instruction adds the capabilities of an _execution environment_ to 
 
 An example:
 
-	-runee: JavaSE-1.7
+	-runee: JavaSE-1.8
+

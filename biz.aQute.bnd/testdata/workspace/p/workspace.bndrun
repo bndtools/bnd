@@ -1,5 +1,5 @@
 -runfw: org.apache.felix.framework
--runee: JavaSE-1.7
+-runee: JavaSE-1.8
 -runbundles: printAndExit
 
 Bundle-Version: 1.0.0

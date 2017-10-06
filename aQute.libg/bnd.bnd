@@ -15,5 +15,3 @@ Bundle-Description: A library to be statically linked. Contains many small utili
 
 -baseline: *
 -sources= true
-
--fixupmessages.baseline: The bundle version * is too low

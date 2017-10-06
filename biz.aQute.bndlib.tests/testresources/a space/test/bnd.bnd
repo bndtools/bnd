@@ -2,7 +2,7 @@ Private-Package: test
 -buildpath: biz.aQute.bnd.annotation
 Service-Component: *
 -runfw: org.apache.felix.framework;version='[2.0.5,2.0.5]'
--runee: JavaSE-1.7
+-runee: JavaSE-1.8
 -runrequires: osgi.identity;filter:='(osgi.identity=test)'
 
 Bundle-Activator: test.TestActivator

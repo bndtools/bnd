@@ -1,5 +1,5 @@
 -runfw: org.eclipse.osgi;version='[3.11.0,3.11.0]'
--runee: JavaSE-1.7
+-runee: JavaSE-1.8
 -runrequires: osgi.identity;filter:='(osgi.identity=test.simple)'
 
 -runbundles: osgi.enroute.junit.wrapper;version='[4.12.0,4.12.1)',\

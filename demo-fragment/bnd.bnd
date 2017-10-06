@@ -1,3 +1,6 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
 Bundle-Version: 1.0.0
 Fragment-Host: demo;bundle-version='[1.0.0,1.0.1)'
 Provide-Capability: some.namespace;somenamespace=hello;version:Version=1.0.0

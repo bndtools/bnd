@@ -17,16 +17,6 @@ subprojects {
       'ThreadSafe:t:',
       'NotThreadSafe:t:',
       'GuardedBy:mf:"Guarded By:"']
-    if (JavaVersion.current().isJava8Compatible()) {
-      /* Turn off javadoc 8 overly pedantic lint checking */
-      javadoc.options.addStringOption('Xdoclint:none', '-quiet')
-      /* Turn off javac bootstrap warning */
-      if (!sourceCompatibility.isJava8Compatible()) {
-        tasks.withType(JavaCompile) {
-          options.compilerArgs.add('-Xlint:-options')
-        }
-      }
-    }
     /* test folders are not part of jar but used by unit tests  */
     def testfolders = ['testresources/', 'testdata/']
     jar {
