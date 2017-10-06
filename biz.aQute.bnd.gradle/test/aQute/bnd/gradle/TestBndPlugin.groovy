@@ -22,7 +22,7 @@ class TestBndPlugin extends Specification {
           assert testProjectDir.isDirectory()
 
         when:
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', 'build', 'release')
             .forwardOutput()
@@ -68,7 +68,7 @@ class TestBndPlugin extends Specification {
           assert testProjectDir.isDirectory()
 
         when:
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', 'echo', 'bndproperties', ':tasks')
             .forwardOutput()
@@ -87,7 +87,7 @@ class TestBndPlugin extends Specification {
           assert testProjectDir.isDirectory()
 
         when:
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--continue', ':test.simple:resolve')
             .forwardOutput()
@@ -141,7 +141,7 @@ class TestBndPlugin extends Specification {
           assert testProjectDir.isDirectory()
 
         when:
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--continue', ':test.simple:export', ':test.simple:runbundles')
             .forwardOutput()
@@ -181,7 +181,7 @@ class TestBndPlugin extends Specification {
           assert testProjectDir.isDirectory()
 
         when:
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', ':tasks')
             .forwardOutput()
@@ -198,7 +198,7 @@ class TestBndPlugin extends Specification {
           assert testProjectDir.isDirectory()
 
         when:
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', 'build', 'release')
             .forwardOutput()
@@ -240,7 +240,7 @@ class TestBndPlugin extends Specification {
           assert testProjectDir.isDirectory()
 
         when:
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', 'build', 'release')
             .forwardOutput()

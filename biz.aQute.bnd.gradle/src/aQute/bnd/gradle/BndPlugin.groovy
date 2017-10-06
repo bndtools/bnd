@@ -94,19 +94,11 @@ public class BndPlugin implements Plugin<Project> {
         /* bnd uses the same directory for java and resources. */
         main {
           java.srcDirs = resources.srcDirs = files(bndProject.getSourcePath())
-          if (java.hasProperty('outputDir')) { // gradle 4.0
-            java.outputDir = output.resourcesDir = bndProject.getSrcOutput()
-          } else {
-            output.classesDir = output.resourcesDir = bndProject.getSrcOutput()
-          }
+          java.outputDir = output.resourcesDir = bndProject.getSrcOutput()
         }
         test {
           java.srcDirs = resources.srcDirs = files(bndProject.getTestSrc())
-          if (java.hasProperty('outputDir')) { // gradle 4.0
-            java.outputDir = output.resourcesDir = bndProject.getTestOutput()
-          } else {
-            output.classesDir = output.resourcesDir = bndProject.getTestOutput()
-          }
+          java.outputDir = output.resourcesDir = bndProject.getTestOutput()
         }
       }
       /* Configure srcDirs for any additional languages */
@@ -114,10 +106,8 @@ public class BndPlugin implements Plugin<Project> {
         sourceSets {
           main.convention?.plugins.each { lang, object ->
             main[lang]?.srcDirs = main.java.srcDirs
+            main[lang]?.outputDir = main.java.outputDir
             test[lang]?.srcDirs = test.java.srcDirs
-            if (main.java.hasProperty('outputDir') && main[lang]?.hasProperty('outputDir')) { // gradle 4.0
-              main[lang]?.outputDir = main.java.outputDir
-            }
           }
         }
       }
@@ -187,7 +177,7 @@ public class BndPlugin implements Plugin<Project> {
 
       processResources {
         outputs.files {
-          Set<File> sourceDirectories = sourceSets.main.resources.srcDirs
+          FileCollection sourceDirectories = sourceSets.main.resources.sourceDirectories
           source*.absolutePath.collect { String file ->
             sourceDirectories.each {
               file -= it
@@ -199,7 +189,7 @@ public class BndPlugin implements Plugin<Project> {
 
       processTestResources {
         outputs.files {
-          Set<File> sourceDirectories = sourceSets.test.resources.srcDirs
+          FileCollection sourceDirectories = sourceSets.test.resources.sourceDirectories
           source*.absolutePath.collect { String file ->
             sourceDirectories.each {
               file -= it
@@ -218,7 +208,7 @@ public class BndPlugin implements Plugin<Project> {
         inputs.files {
           fileTree(projectDir) { tree ->
             sourceSets.each { sourceSet -> /* exclude sourceSet dirs */
-              tree.exclude sourceSet.allSource.srcDirs.collect {
+              tree.exclude sourceSet.allSource.sourceDirectories.collect {
                 project.relativePath(it)
               }
               tree.exclude sourceSet.output.collect {
@@ -513,11 +503,11 @@ project.name:           ${project.name}
 project.dir:            ${projectDir}
 target:                 ${buildDir}
 project.dependson:      ${projectDependencies}
-project.sourcepath:     ${files(sourceSets.main.java.srcDirs).asPath}
+project.sourcepath:     ${sourceSets.main.java.sourceDirectories.asPath}
 project.output:         ${compileJava.destinationDir}
 project.buildpath:      ${compileJava.classpath.asPath}
 project.allsourcepath:  ${bnd.allSrcDirs.asPath}
-project.testsrc:        ${files(sourceSets.test.java.srcDirs).asPath}
+project.testsrc:        ${sourceSets.test.java.sourceDirectories.asPath}
 project.testoutput:     ${compileTestJava.destinationDir}
 project.testpath:       ${compileTestJava.classpath.asPath}
 project.bootclasspath:  ${compileJava.options.bootClasspath}

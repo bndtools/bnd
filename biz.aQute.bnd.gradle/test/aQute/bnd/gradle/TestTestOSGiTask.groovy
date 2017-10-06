@@ -28,7 +28,7 @@ class TestTestOSGiTask extends Specification {
           String taskname = 'testosgi'
 
         when:
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', 'build')
             .withPluginClasspath(pluginClasspath)
@@ -89,7 +89,7 @@ class TestTestOSGiTask extends Specification {
           String taskname = 'testosgi'
 
         when:
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', 'build')
             .withPluginClasspath(pluginClasspath)
@@ -126,7 +126,7 @@ class TestTestOSGiTask extends Specification {
           String taskname = 'testosgi'
 
         when:
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', 'build')
             .withPluginClasspath(pluginClasspath)
@@ -161,7 +161,7 @@ class TestTestOSGiTask extends Specification {
           File testProjectBuildDir = new File(testProjectDir, 'build').canonicalFile
 
         when:
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', '--continue', 'build')
             .withPluginClasspath(pluginClasspath)

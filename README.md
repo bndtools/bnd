@@ -12,14 +12,13 @@ The git repository contains all code. It contains the following projects:
 * biz.aQute.bnd - A command line utility and ant plugin
 * biz.aQute.bndlib - The core library
 * biz.aQute.bndlib.tests - Tests for the core library
-* biz.aQute.jpm - Just another package manager for Java
 * biz.aQute.junit - Junit tester
 * biz.aQute.launcher - Launcher
 * biz.aQute.repository - Different repos with OBR
 * biz.aQute.resolve - OBR Resolver
 * cnf - Configuration directory
 * demo - Used in testing
-* dist - Contains the distribution after 'gradle'
+* dist - Contains the distribution after building
 * docs - GitHub Pages manual for Bnd
 
 ## License

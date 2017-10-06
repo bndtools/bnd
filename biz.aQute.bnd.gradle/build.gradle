@@ -8,20 +8,12 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.gradle:gradle-core:2.0'
-    compileOnly 'org.gradle:gradle-base-services:2.0'
-    compileOnly 'org.gradle:gradle-base-services-groovy:2.0'
-    compileOnly 'org.gradle:gradle-plugins:2.0'
-    compileOnly 'org.gradle:gradle-native:2.0'
-    compileOnly 'org.codehaus.groovy:groovy-all:2.3.3'
-    compileOnly 'org.slf4j:slf4j-api:1.7.5'
-
+    compile localGroovy()
+    compile gradleApi()
     testCompile gradleTestKit()
-    testCompile('org.spockframework:spock-core:1.0-groovy-2.4')  {
+    testCompile('org.spockframework:spock-core:1.1-groovy-2.4')  {
         exclude module: 'groovy-all'
     }
-    testCompile localGroovy()
-    testCompile gradleApi()
 }
 
 test {
