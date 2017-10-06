@@ -1,5 +1,5 @@
 -runbundles: biz.aQute.remote.agent;version=latest
 
--runee: JavaSE-1.7
+-runee: JavaSE-1.8
 -runpath: biz.aQute.remote.launcher
 -exporttype: subsystem

@@ -4,7 +4,7 @@
 	osgi.identity;filter:='(osgi.identity=biz.aQute.bnd.diagnostics.gogo)',\
 	osgi.identity;filter:='(osgi.identity=slf4j.simple)'
 -runfw: org.apache.felix.framework;version='[4.2.1,4.2.1]'
--runee: JavaSE-1.7
+-runee: JavaSE-1.8
 -runbundles: \
 	biz.aQute.bnd.diagnostics.gogo;version=snapshot,\
 	org.apache.felix.gogo.command;version='[0.8.0,0.8.1)',\

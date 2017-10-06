@@ -187,7 +187,7 @@ An example remote bndrun file:
 	
 	-runremote:     ${local}	
 	-runfw:         org.apache.felix.framework;version='[4,5)'
-	-runee:         JavaSE-1.7
+	-runee:         JavaSE-1.8
 	-runproperties: gosh.args=--noshutdown, osgi.shell.telnet.port=4003
 	
 	-runpath:       biz.aQute.remote.launcher;version=latest
