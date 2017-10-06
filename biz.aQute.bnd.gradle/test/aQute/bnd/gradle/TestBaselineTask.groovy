@@ -27,7 +27,7 @@ class TestBaselineTask extends Specification {
           File testProjectReportsDir = new File(testProjectDir, 'build/reports').canonicalFile
 
         when:
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', 'baseline', 'baselineSelf')
             .withPluginClasspath(pluginClasspath)
@@ -55,7 +55,7 @@ class TestBaselineTask extends Specification {
           assert testProjectDir.isDirectory()
 
         when:
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', 'echo')
             .withPluginClasspath(pluginClasspath)
@@ -77,7 +77,7 @@ class TestBaselineTask extends Specification {
           File testProjectReportsDir = new File(testProjectDir, 'build/reports').canonicalFile
 
         when:
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', 'tasks', 'baseline')
             .withPluginClasspath(pluginClasspath)
@@ -101,7 +101,7 @@ class TestBaselineTask extends Specification {
           File testProjectReportsDir = new File(testProjectDir, 'build/reports').canonicalFile
 
         when:
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', 'baseline')
             .withPluginClasspath(pluginClasspath)

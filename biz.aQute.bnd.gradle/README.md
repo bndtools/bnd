@@ -4,7 +4,8 @@ Bnd includes Gradle plugins for [Gradle][1] users to build
 Bnd projects in [Workspace builds][20] as well as in
 [non-Workspace builds][21].
 The [`biz.aQute.bnd.gradle`][2] jar contains the Bnd Gradle Plugins.
-These plugins requires at least Gradle 2.0.
+These plugins requires at least Gradle 4.0 for Java 8 and at least
+Gradle 4.2.1 for Java 9.
 
 # Gradle Plugins for Workspace Builds
 
@@ -56,7 +57,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.4.0'
+    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.0.0'
   }
 }
 apply plugin: 'biz.aQute.bnd.workspace'
@@ -90,7 +91,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.4.0'
+    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.0.0'
   }
 }
 apply plugin: 'biz.aQute.bnd.workspace'
@@ -211,7 +212,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.4.0'
+    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.0.0'
   }
 }
 ```

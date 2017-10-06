@@ -26,6 +26,7 @@ import biz.aQute.resolve.Bndrun
 import biz.aQute.resolve.ResolveProcess
 
 import org.gradle.api.GradleException
+import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
@@ -94,19 +95,11 @@ public class BndPlugin implements Plugin<Project> {
         /* bnd uses the same directory for java and resources. */
         main {
           java.srcDirs = resources.srcDirs = files(bndProject.getSourcePath())
-          if (java.hasProperty('outputDir')) { // gradle 4.0
-            java.outputDir = output.resourcesDir = bndProject.getSrcOutput()
-          } else {
-            output.classesDir = output.resourcesDir = bndProject.getSrcOutput()
-          }
+          java.outputDir = output.resourcesDir = bndProject.getSrcOutput()
         }
         test {
           java.srcDirs = resources.srcDirs = files(bndProject.getTestSrc())
-          if (java.hasProperty('outputDir')) { // gradle 4.0
-            java.outputDir = output.resourcesDir = bndProject.getTestOutput()
-          } else {
-            output.classesDir = output.resourcesDir = bndProject.getTestOutput()
-          }
+          java.outputDir = output.resourcesDir = bndProject.getTestOutput()
         }
       }
       /* Configure srcDirs for any additional languages */
@@ -114,10 +107,8 @@ public class BndPlugin implements Plugin<Project> {
         sourceSets {
           main.convention?.plugins.each { lang, object ->
             main[lang]?.srcDirs = main.java.srcDirs
+            main[lang]?.outputDir = main.java.outputDir
             test[lang]?.srcDirs = test.java.srcDirs
-            if (main.java.hasProperty('outputDir') && main[lang]?.hasProperty('outputDir')) { // gradle 4.0
-              main[lang]?.outputDir = main.java.outputDir
-            }
           }
         }
       }
@@ -165,14 +156,19 @@ public class BndPlugin implements Plugin<Project> {
           if (!javacProfile.empty) {
             compilerArgs.addAll(['-profile', javacProfile])
           }
+          if (JavaVersion.current().isJava9Compatible()) {
+            if ((sourceCompatibility == targetCompatibility) && !bootClasspath && javacProfile.empty) {
+              compilerArgs.addAll(['--release', JavaVersion.toVersion(sourceCompatibility).majorVersion])
+            }
+          }
         }
         if (logger.isInfoEnabled()) {
           doFirst {
             logger.info 'Compile to {}', destinationDir
-            if (javacProfile.empty) {
-              logger.info '-source {} -target {}', sourceCompatibility, targetCompatibility
+            if (options.compilerArgs.contains('--release')) {
+              logger.info '{}', options.compilerArgs.join(' ')
             } else {
-              logger.info '-source {} -target {} -profile {}', sourceCompatibility, targetCompatibility, javacProfile
+              logger.info '-source {} -target {} {}', sourceCompatibility, targetCompatibility, options.compilerArgs.join(' ')
             }
             logger.info '-classpath {}', classpath.asPath
             if (options.bootClasspath != null) {
@@ -187,7 +183,7 @@ public class BndPlugin implements Plugin<Project> {
 
       processResources {
         outputs.files {
-          Set<File> sourceDirectories = sourceSets.main.resources.srcDirs
+          FileCollection sourceDirectories = sourceSets.main.resources.sourceDirectories
           source*.absolutePath.collect { String file ->
             sourceDirectories.each {
               file -= it
@@ -199,7 +195,7 @@ public class BndPlugin implements Plugin<Project> {
 
       processTestResources {
         outputs.files {
-          Set<File> sourceDirectories = sourceSets.test.resources.srcDirs
+          FileCollection sourceDirectories = sourceSets.test.resources.sourceDirectories
           source*.absolutePath.collect { String file ->
             sourceDirectories.each {
               file -= it
@@ -218,7 +214,7 @@ public class BndPlugin implements Plugin<Project> {
         inputs.files {
           fileTree(projectDir) { tree ->
             sourceSets.each { sourceSet -> /* exclude sourceSet dirs */
-              tree.exclude sourceSet.allSource.srcDirs.collect {
+              tree.exclude sourceSet.allSource.sourceDirectories.collect {
                 project.relativePath(it)
               }
               tree.exclude sourceSet.output.collect {
@@ -513,11 +509,11 @@ project.name:           ${project.name}
 project.dir:            ${projectDir}
 target:                 ${buildDir}
 project.dependson:      ${projectDependencies}
-project.sourcepath:     ${files(sourceSets.main.java.srcDirs).asPath}
+project.sourcepath:     ${sourceSets.main.java.sourceDirectories.asPath}
 project.output:         ${compileJava.destinationDir}
 project.buildpath:      ${compileJava.classpath.asPath}
 project.allsourcepath:  ${bnd.allSrcDirs.asPath}
-project.testsrc:        ${files(sourceSets.test.java.srcDirs).asPath}
+project.testsrc:        ${sourceSets.test.java.sourceDirectories.asPath}
 project.testoutput:     ${compileTestJava.destinationDir}
 project.testpath:       ${compileTestJava.classpath.asPath}
 project.bootclasspath:  ${compileJava.options.bootClasspath}

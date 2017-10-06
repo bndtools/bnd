@@ -41,7 +41,7 @@ class TestResolveTask extends Specification {
 
         when:
           props = new UTF8Properties()
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', taskname)
             .withPluginClasspath(pluginClasspath)
@@ -74,7 +74,7 @@ class TestResolveTask extends Specification {
 
         when:
           props = new UTF8Properties()
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', taskname)
             .withPluginClasspath(pluginClasspath)
@@ -107,7 +107,7 @@ class TestResolveTask extends Specification {
 
         when:
           props = new UTF8Properties()
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', taskname)
             .withPluginClasspath(pluginClasspath)
@@ -141,7 +141,7 @@ class TestResolveTask extends Specification {
 
         when:
           props = new UTF8Properties()
-          def result = GradleRunner.create()
+          def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', taskname)
             .withPluginClasspath(pluginClasspath)
