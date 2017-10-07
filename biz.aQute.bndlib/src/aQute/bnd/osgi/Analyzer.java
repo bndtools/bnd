@@ -712,7 +712,7 @@ public class Analyzer extends Processor {
 			if (exportHeader.length() > 0)
 				main.putValue(EXPORT_PACKAGE, exportHeader);
 			else
-				main.remove(EXPORT_PACKAGE);
+				main.remove(new Name(EXPORT_PACKAGE));
 
 			// Divide imports with resolution:=dynamic to DynamicImport-Package
 			// and add them to the existing DynamicImport-Package instruction
@@ -722,14 +722,14 @@ public class Analyzer extends Processor {
 			if (!regularImports.isEmpty()) {
 				main.putValue(IMPORT_PACKAGE, printClauses(regularImports));
 			} else {
-				main.remove(IMPORT_PACKAGE);
+				main.remove(new Name(IMPORT_PACKAGE));
 			}
 
 			Parameters dynamicImports = regularAndDynamicImports.getSecond();
 			if (!dynamicImports.isEmpty()) {
 				main.putValue(DYNAMICIMPORT_PACKAGE, printClauses(dynamicImports));
 			} else {
-				main.remove(DYNAMICIMPORT_PACKAGE);
+				main.remove(new Name(DYNAMICIMPORT_PACKAGE));
 			}
 
 			Packages temp = new Packages(contained);
@@ -751,11 +751,11 @@ public class Analyzer extends Processor {
 			if (!temp.isEmpty())
 				main.putValue(PRIVATE_PACKAGE, printClauses(temp));
 			else
-				main.remove(PRIVATE_PACKAGE);
+				main.remove(new Name(PRIVATE_PACKAGE));
 
 			Parameters bcp = getBundleClasspath();
 			if (bcp.isEmpty() || (bcp.containsKey(".") && bcp.size() == 1))
-				main.remove(BUNDLE_CLASSPATH);
+				main.remove(new Name(BUNDLE_CLASSPATH));
 			else
 				main.putValue(BUNDLE_CLASSPATH, printClauses(bcp));
 
@@ -976,14 +976,18 @@ public class Analyzer extends Processor {
 
 	private void doHeader(Attributes main, String header) {
 		String value = annotationHeaders.getHeader(header);
-		if (value != null && main.getValue(header) == null) {
-			if (value.trim().length() == 0)
-				main.remove(header);
-			else if (value.trim().equals(EMPTY_HEADER))
-				main.putValue(header, "");
-			else
-				main.putValue(header, value);
-		}
+		if (value == null)
+			return;
+		Name name = new Name(header);
+		if (main.getValue(name) != null)
+			return;
+		String trimmed = value.trim();
+		if (trimmed.isEmpty())
+			main.remove(name);
+		else if (EMPTY_HEADER.equals(trimmed))
+			main.put(name, "");
+		else
+			main.put(name, value);
 	}
 
 	/**
