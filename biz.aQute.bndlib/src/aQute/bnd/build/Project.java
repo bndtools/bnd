@@ -37,6 +37,7 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Attributes;
+import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
@@ -2777,7 +2778,17 @@ public class Project extends Processor {
 				Attributes main = m.getMainAttributes();
 				for (String key : getPropertyKeys(true)) {
 					if (Character.isUpperCase(key.charAt(0)) && !ignore.contains(key)) {
-						main.putValue(key, getProperty(key));
+						String value = getProperty(key);
+						if (value == null)
+							continue;
+						Name name = new Name(key);
+						String trimmed = value.trim();
+						if (trimmed.isEmpty())
+							main.remove(name);
+						else if (EMPTY_HEADER.equals(trimmed))
+							main.put(name, "");
+						else
+							main.put(name, value);
 					}
 				}
 
