@@ -30,6 +30,7 @@ Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
 -groupid:               biz.aQute.bnd
 -pom:                   version=${versionmask;===s;${@version}}
 
+Automatic-Module-Name:  ${def;bsn}
 Bundle-Vendor:          Bndtools http://bndtools.org/
 Bundle-Copyright:       ${copyright}
 Bundle-License:         Apache-2.0; \
