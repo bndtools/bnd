@@ -12,6 +12,10 @@ import java.nio.file.attribute.BasicFileAttributes;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 
+/**
+ * Resource for a file. This class implementation assumes the file does not
+ * change underneath this object.
+ */
 public class FileResource implements Resource {
 	private static final int		THRESHOLD	= IOConstants.PAGE_SIZE * 16;
 	private static final ByteBuffer	CLOSED	= ByteBuffer.allocate(0);
@@ -58,8 +62,7 @@ public class FileResource implements Resource {
 	@Override
 	public ByteBuffer buffer() throws Exception {
 		if (buffer != null) {
-			if (buffer.limit() > 0 || file.toFile().length() == 0)
-				return buffer.duplicate();
+			return buffer.duplicate();
 		}
 		if (IO.isWindows() && (size > THRESHOLD)) {
 			return null;
