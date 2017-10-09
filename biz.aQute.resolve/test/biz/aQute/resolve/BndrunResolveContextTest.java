@@ -789,10 +789,11 @@ public class BndrunResolveContextTest extends TestCase {
 		BndrunResolveContext context = new BndrunResolveContext(model, registry, log);
 		context.setLevel(0);
 		context.init();
+		try (ResolverLogger logger = new ResolverLogger(4)) {
+			Resolver resolver = new BndResolver(logger);
 
-		Resolver resolver = new BndResolver(new ResolverLogger(4));
-
-		resolver.resolve(context);
+			resolver.resolve(context);
+		}
 	}
 
 }

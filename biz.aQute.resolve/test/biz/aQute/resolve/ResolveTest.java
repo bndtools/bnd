@@ -130,9 +130,9 @@ public class ResolveTest extends TestCase {
 				"osgi.identity;filter:='(osgi.identity=osgi.enroute.base.api)',osgi.identity;filter:='(osgi.identity=osgi.cmpn)',osgi.identity;filter:='(osgi.identity=osgi.core)");
 		model.setRunRequires("osgi.identity;filter:='(osgi.identity=osgi.enroute.base.guard)'");
 		model.setRunee("JavaSE-1.8");
-		try {
+		try (ResolverLogger logger = new ResolverLogger(4)) {
 			BndrunResolveContext context = new BndrunResolveContext(model, null, registry, log);
-			Resolver resolver = new BndResolver(new ResolverLogger(4));
+			Resolver resolver = new BndResolver(logger);
 
 			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
 			Set<Resource> resources = resolved.keySet();
@@ -201,13 +201,14 @@ public class ResolveTest extends TestCase {
 			model.setProperty("-resolve.effective", effective);
 
 		BndrunResolveContext context = new BndrunResolveContext(model, null, registry, log);
+		try (ResolverLogger logger = new ResolverLogger(4)) {
+			Resolver resolver = new BndResolver(logger);
 
-		Resolver resolver = new BndResolver(new ResolverLogger(4));
-
-		Map<Resource,List<Wire>> resolved = resolver.resolve(context);
-		Set<Resource> resources = resolved.keySet();
-		Resource resource = getResource(resources, "org.apache.felix.gogo.runtime", "0.10");
-		assertNotNull(resource);
+			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+			Set<Resource> resources = resolved.keySet();
+			Resource resource = getResource(resources, "org.apache.felix.gogo.runtime", "0.10");
+			assertNotNull(resource);
+		}
 	}
 
 	/**
@@ -229,10 +230,8 @@ public class ResolveTest extends TestCase {
 		context.setLevel(0);
 		context.addRepository(fir);
 		context.init();
-
-		Resolver resolver = new BndResolver(new ResolverLogger(4));
-
-		try {
+		try (ResolverLogger logger = new ResolverLogger(4)) {
+			Resolver resolver = new BndResolver(logger);
 			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
 			Set<Resource> resources = resolved.keySet();
 			Resource shell = getResource(resources, "org.apache.felix.gogo.shell", "0.10.0");
@@ -263,13 +262,14 @@ public class ResolveTest extends TestCase {
 		BndrunResolveContext context = new BndrunResolveContext(model, registry, log);
 		context.setLevel(0);
 		context.init();
+		try (ResolverLogger logger = new ResolverLogger(4)) {
+			Resolver resolver = new BndResolver(logger);
 
-		Resolver resolver = new BndResolver(new ResolverLogger(4));
-
-		Map<Resource,List<Wire>> resolved = resolver.resolve(context);
-		Set<Resource> resources = resolved.keySet();
-		Resource shell = getResource(resources, "org.apache.felix.gogo.shell", "0.10.0");
-		assertNotNull(shell);
+			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+			Set<Resource> resources = resolved.keySet();
+			Resource shell = getResource(resources, "org.apache.felix.gogo.shell", "0.10.0");
+			assertNotNull(shell);
+		}
 	}
 
 	/**
@@ -294,9 +294,8 @@ public class ResolveTest extends TestCase {
 		model.setRunRequires(requires);
 		BndrunResolveContext context = new BndrunResolveContext(model, registry, log);
 
-		Resolver resolver = new BndResolver(new ResolverLogger(4));
-
-		try {
+		try (ResolverLogger logger = new ResolverLogger()) {
+			Resolver resolver = new BndResolver(logger);
 			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
 			Set<Resource> resources = resolved.keySet();
 			Resource resource = getResource(resources, "org.apache.felix.gogo.runtime", "0.10");

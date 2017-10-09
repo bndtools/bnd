@@ -49,96 +49,96 @@ public class ResolveProcessTest extends TestCase {
 
 	public void testResolveRequired() throws ResolutionException, MalformedURLException, URISyntaxException {
 		ResolveProcess process = new ResolveProcess();
-		ResolverLogger logger = new ResolverLogger();
+		try (ResolverLogger logger = new ResolverLogger()) {
+			MockRegistry registry = new MockRegistry();
 
-		MockRegistry registry = new MockRegistry();
+			registry.addPlugin(getIndex("testdata/repo7/index.xml"));
 
-		registry.addPlugin(getIndex("testdata/repo7/index.xml"));
+			Processor model = new Processor();
 
-		Processor model = new Processor();
+			model.setProperty("-runfw", "org.apache.felix.framework");
+			model.setProperty("-runrequires",
+					"osgi.extender;filter:='(&(osgi.extender=osgi.component)(version>=1.3)(!(version>=2)))'");
 
-		model.setProperty("-runfw", "org.apache.felix.framework");
-		model.setProperty("-runrequires",
-				"osgi.extender;filter:='(&(osgi.extender=osgi.component)(version>=1.3)(!(version>=2)))'");
+			Map<Resource,List<Wire>> requiredResources = process.resolveRequired(model, null, registry,
+					new BndResolver(logger), Collections.<ResolutionCallback> emptyList(), logger);
 
-		Map<Resource,List<Wire>> requiredResources = process.resolveRequired(model, null, registry,
-				new BndResolver(logger), Collections.<ResolutionCallback> emptyList(), logger);
+			Collection<Resource> optionalResources = process.getOptionalResources();
 
-		Collection<Resource> optionalResources = process.getOptionalResources();
+			assertEquals(1, requiredResources.size());
+			assertEquals(3, optionalResources.size());
 
-		assertEquals(1, requiredResources.size());
-		assertEquals(3, optionalResources.size());
+			SortedSet<Resource> set = new TreeSet<Resource>(new ResourceComparator());
 
-		SortedSet<Resource> set = new TreeSet<Resource>(new ResourceComparator());
+			set.addAll(optionalResources);
 
-		set.addAll(optionalResources);
+			Iterator<Resource> it = set.iterator();
 
-		Iterator<Resource> it = set.iterator();
-
-		checkOptionalResource(process, it.next(), "org.apache.felix.configadmin", parseVersion("1.8.8"),
-				"org.osgi.service.cm");
-		checkOptionalResource(process, it.next(), "org.apache.felix.log", parseVersion("1.0.1"),
-				"org.osgi.service.log");
-		checkOptionalResource(process, it.next(), "org.apache.felix.metatype", parseVersion("1.1.0"),
-				"org.osgi.service.metatype");
+			checkOptionalResource(process, it.next(), "org.apache.felix.configadmin", parseVersion("1.8.8"),
+					"org.osgi.service.cm");
+			checkOptionalResource(process, it.next(), "org.apache.felix.log", parseVersion("1.0.1"),
+					"org.osgi.service.log");
+			checkOptionalResource(process, it.next(), "org.apache.felix.metatype", parseVersion("1.1.0"),
+					"org.osgi.service.metatype");
+		}
 	}
 
 	public void testBigNastyResolveRequired() throws ResolutionException, MalformedURLException, URISyntaxException {
 		ResolveProcess process = new ResolveProcess();
-		ResolverLogger logger = new ResolverLogger();
+		try (ResolverLogger logger = new ResolverLogger()) {
+			MockRegistry registry = new MockRegistry();
 
-		MockRegistry registry = new MockRegistry();
+			registry.addPlugin(getIndex("testdata/repo7/index.xml"));
+			registry.addPlugin(getIndex("testdata/repo7/index-aries.xml"));
+			registry.addPlugin(getIndex("testdata/repo7/index-gemini.xml"));
+			registry.addPlugin(getIndex("testdata/repo7/index-local.xml"));
 
-		registry.addPlugin(getIndex("testdata/repo7/index.xml"));
-		registry.addPlugin(getIndex("testdata/repo7/index-aries.xml"));
-		registry.addPlugin(getIndex("testdata/repo7/index-gemini.xml"));
-		registry.addPlugin(getIndex("testdata/repo7/index-local.xml"));
+			Processor model = new Processor();
 
-		Processor model = new Processor();
+			model.setProperty("-runfw", "org.apache.felix.framework");
+			model.setProperty("-runrequires", "osgi.extender;filter:='(osgi.extender=osgi.component)'");
 
-		model.setProperty("-runfw", "org.apache.felix.framework");
-		model.setProperty("-runrequires", "osgi.extender;filter:='(osgi.extender=osgi.component)'");
+			Map<Resource,List<Wire>> requiredResources = process.resolveRequired(model, null, registry,
+					new BndResolver(logger), Collections.<ResolutionCallback> emptyList(), logger);
 
-		Map<Resource,List<Wire>> requiredResources = process.resolveRequired(model, null, registry,
-				new BndResolver(logger), Collections.<ResolutionCallback> emptyList(), logger);
+			Collection<Resource> optionalResources = process.getOptionalResources();
 
-		Collection<Resource> optionalResources = process.getOptionalResources();
+			assertEquals(1, requiredResources.size());
+			assertEquals(13, optionalResources.size());
 
-		assertEquals(1, requiredResources.size());
-		assertEquals(13, optionalResources.size());
+			SortedSet<Resource> set = new TreeSet<Resource>(new ResourceComparator());
 
-		SortedSet<Resource> set = new TreeSet<Resource>(new ResourceComparator());
+			set.addAll(optionalResources);
 
-		set.addAll(optionalResources);
+			Iterator<Resource> it = set.iterator();
 
-		Iterator<Resource> it = set.iterator();
-
-		checkOptionalResource(process, it.next(), "org.apache.felix.configadmin", parseVersion("1.8.2"),
-				"org.osgi.service.cm");
-		checkOptionalResource(process, it.next(), "org.apache.felix.configadmin", parseVersion("1.8.8"),
-				"org.osgi.service.cm");
-		checkOptionalResource(process, it.next(), "org.apache.felix.gogo.command", parseVersion("0.12.0"),
-				"org.osgi.service.log");
-		checkOptionalResource(process, it.next(), "org.apache.felix.gogo.runtime", parseVersion("0.10.0"),
-				"org.apache.felix.service.command");
-		checkOptionalResource(process, it.next(), "org.apache.felix.log", parseVersion("1.0.1"),
-				"org.osgi.service.log");
-		checkOptionalResource(process, it.next(), "org.apache.felix.metatype", parseVersion("1.0.4"),
-				"org.osgi.service.metatype");
-		checkOptionalResource(process, it.next(), "org.apache.felix.metatype", parseVersion("1.1.0"),
-				"org.osgi.service.metatype");
-		checkOptionalResource(process, it.next(), "org.apache.felix.shell", parseVersion("1.4.2"),
-				"org.osgi.service.log", "org.apache.felix.shell");
-		checkOptionalResource(process, it.next(), "org.eclipse.osgi.services", parseVersion("3.1.200.v20070605"),
-				"org.osgi.service.cm", "org.osgi.service.log", "org.osgi.service.metatype");
-		checkOptionalResource(process, it.next(), "org.ops4j.pax.logging.pax-logging-api", parseVersion("1.4.0"),
-				"org.osgi.service.log");
-		checkOptionalResource(process, it.next(), "osgi.cmpn", parseVersion("4.3.1.201210102024"),
-				"org.osgi.service.cm", "org.osgi.service.log", "org.osgi.service.metatype");
-		checkOptionalResource(process, it.next(), "osgi.cmpn", parseVersion("5.0.0.201305092017"),
-				"org.osgi.service.cm", "org.osgi.service.log", "org.osgi.service.metatype");
-		checkOptionalResource(process, it.next(), "osgi.enterprise", parseVersion("4.2.0.201003190513"),
-				"org.osgi.service.cm", "org.osgi.service.log", "org.osgi.service.metatype");
+			checkOptionalResource(process, it.next(), "org.apache.felix.configadmin", parseVersion("1.8.2"),
+					"org.osgi.service.cm");
+			checkOptionalResource(process, it.next(), "org.apache.felix.configadmin", parseVersion("1.8.8"),
+					"org.osgi.service.cm");
+			checkOptionalResource(process, it.next(), "org.apache.felix.gogo.command", parseVersion("0.12.0"),
+					"org.osgi.service.log");
+			checkOptionalResource(process, it.next(), "org.apache.felix.gogo.runtime", parseVersion("0.10.0"),
+					"org.apache.felix.service.command");
+			checkOptionalResource(process, it.next(), "org.apache.felix.log", parseVersion("1.0.1"),
+					"org.osgi.service.log");
+			checkOptionalResource(process, it.next(), "org.apache.felix.metatype", parseVersion("1.0.4"),
+					"org.osgi.service.metatype");
+			checkOptionalResource(process, it.next(), "org.apache.felix.metatype", parseVersion("1.1.0"),
+					"org.osgi.service.metatype");
+			checkOptionalResource(process, it.next(), "org.apache.felix.shell", parseVersion("1.4.2"),
+					"org.osgi.service.log", "org.apache.felix.shell");
+			checkOptionalResource(process, it.next(), "org.eclipse.osgi.services", parseVersion("3.1.200.v20070605"),
+					"org.osgi.service.cm", "org.osgi.service.log", "org.osgi.service.metatype");
+			checkOptionalResource(process, it.next(), "org.ops4j.pax.logging.pax-logging-api", parseVersion("1.4.0"),
+					"org.osgi.service.log");
+			checkOptionalResource(process, it.next(), "osgi.cmpn", parseVersion("4.3.1.201210102024"),
+					"org.osgi.service.cm", "org.osgi.service.log", "org.osgi.service.metatype");
+			checkOptionalResource(process, it.next(), "osgi.cmpn", parseVersion("5.0.0.201305092017"),
+					"org.osgi.service.cm", "org.osgi.service.log", "org.osgi.service.metatype");
+			checkOptionalResource(process, it.next(), "osgi.enterprise", parseVersion("4.2.0.201003190513"),
+					"org.osgi.service.cm", "org.osgi.service.log", "org.osgi.service.metatype");
+		}
 	}
 
 	protected FixedIndexedRepo getIndex(String location) throws MalformedURLException, URISyntaxException {

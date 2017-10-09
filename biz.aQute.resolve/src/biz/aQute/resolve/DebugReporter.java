@@ -95,8 +95,10 @@ public class DebugReporter {
 						.buildSyntheticRequirement();
 
 				context.setInputRequirements(req);
-				Resolver resolver = new BndResolver(new ResolverLogger(4));
-				Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+				try (ResolverLogger logger = new ResolverLogger(4)) {
+					Resolver resolver = new BndResolver(logger);
+					Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+				}
 			} catch (Exception e) {
 				resolveError = e.toString();
 			}

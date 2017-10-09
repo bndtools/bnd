@@ -25,6 +25,6 @@ Private-Package: \
 
 Conditional-Package: aQute.lib*
 
--fixupmessages: private references
+-fixupmessages.private: private references
 
 -baseline: *

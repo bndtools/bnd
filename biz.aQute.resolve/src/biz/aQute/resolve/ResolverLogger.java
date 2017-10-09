@@ -13,7 +13,7 @@ import org.osgi.service.log.LogService;
 
 import aQute.lib.io.IO;
 
-public class ResolverLogger implements LogService {
+public class ResolverLogger implements LogService, AutoCloseable {
 
 	public static final int		DEFAULT_LEVEL	= 4;
 
@@ -45,48 +45,66 @@ public class ResolverLogger implements LogService {
 	}
 
 	public ResolverLogger(int level, PrintStream out) {
-		this.level = level;
-		file = null;
-		printer = new PrintWriter(out);
+		try {
+			this.level = level;
+			file = null;
+			printer = IO.writer(out, UTF_8);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public void log(int level, String msg, Throwable throwable) {
-		String s = "";
-		s = s + msg;
-		if (throwable != null)
-			s = s + " (" + throwable + ")";
 		switch (level) {
 			case LOG_DEBUG :
-				printer.println("DEBUG: " + s);
+				printer.print("DEBUG: ");
+				printLog(msg, throwable);
 				break;
 			case LOG_ERROR :
-				printer.println("ERROR: " + s);
+				printer.print("ERROR: ");
+				printLog(msg, throwable);
 				if (throwable != null) {
 					throwable.printStackTrace(printer);
 				}
 				break;
 			case LOG_INFO :
-				printer.println("INFO: " + s);
+				printer.print("INFO: ");
+				printLog(msg, throwable);
 				break;
 			case LOG_WARNING :
-				printer.println("WARNING: " + s);
+				printer.print("WARNING: ");
+				printLog(msg, throwable);
 				break;
 			default :
-				printer.println("UNKNOWN[" + level + "]: " + s);
+				printer.print("UNKNOWN[");
+				printer.print(level);
+				printer.print("]: ");
+				printLog(msg, throwable);
+				break;
 		}
 		printer.flush();
 		log = null;
 	}
 
-	public String getLog() {
-		if (log == null) {
+	private void printLog(String msg, Throwable throwable) {
+		printer.print(msg);
+		if (throwable != null) {
+			printer.print(" (");
+			printer.print(throwable);
+			printer.print(")");
+		}
+		printer.println();
+	}
 
+	public String getLog() {
+		if (file == null) {
+			return "Log was written to supplied PrintStream";
+		}
+		if (log == null) {
 			try {
-				printer.flush();
 				if (file.length() <= 8001) {
 					log = IO.collect(file);
 				} else {
-
 					StringBuilder sb = new StringBuilder(10000);
 
 					sb.append("Log too large. Split from ")
@@ -96,18 +114,16 @@ public class ResolverLogger implements LogService {
 							.append(" Kb\n===================\n");
 
 					byte[] buffer = new byte[4000];
-					RandomAccessFile raf = new RandomAccessFile(file, "r");
+					try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+						raf.readFully(buffer);
+						sb.append(new String(buffer, UTF_8));
+						sb.append("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n");
 
-					raf.readFully(buffer);
-					sb.append(new String(buffer, UTF_8));
-					sb.append("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n");
-
-					raf.seek(raf.length() - buffer.length);
-					raf.readFully(buffer);
-					String s = new String(buffer, UTF_8);
-					sb.append(s);
-
-					raf.close();
+						raf.seek(raf.length() - buffer.length);
+						raf.readFully(buffer);
+						String s = new String(buffer, UTF_8);
+						sb.append(s);
+					}
 					log = sb.toString();
 				}
 			} catch (Exception e) {
@@ -118,7 +134,8 @@ public class ResolverLogger implements LogService {
 	}
 
 	@Override
-	public void finalize() {
+	public void close() {
+		IO.close(printer);
 		IO.delete(file);
 	}
 

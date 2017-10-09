@@ -171,21 +171,21 @@ public class DistroCommandTest extends TestCase {
 		assertTrue(distro.exists());
 
 		ResolveProcess process = new ResolveProcess();
-		ResolverLogger logger = new ResolverLogger();
+		try (ResolverLogger logger = new ResolverLogger()) {
+			MockRegistry registry = new MockRegistry();
 
-		MockRegistry registry = new MockRegistry();
+			Processor model = new Processor();
 
-		Processor model = new Processor();
+			model.setProperty("-distro", distro.getAbsolutePath() + ";version=file");
+			model.setProperty("-runfw", "org.eclipse.osgi");
+			model.setProperty("-runrequires",
+					"osgi.wiring.package;filter:='(osgi.wiring.package=com.liferay.dynamic.data.mapping.taglib.servlet.taglib)'");
 
-		model.setProperty("-distro", distro.getAbsolutePath() + ";version=file");
-		model.setProperty("-runfw", "org.eclipse.osgi");
-		model.setProperty("-runrequires",
-				"osgi.wiring.package;filter:='(osgi.wiring.package=com.liferay.dynamic.data.mapping.taglib.servlet.taglib)'");
+			Map<Resource,List<Wire>> requiredResources = process.resolveRequired(model, null, registry,
+					new BndResolver(logger), Collections.<ResolutionCallback> emptyList(), logger);
 
-		Map<Resource,List<Wire>> requiredResources = process.resolveRequired(model, null, registry,
-				new BndResolver(logger), Collections.<ResolutionCallback> emptyList(), logger);
-
-		assertEquals(1, requiredResources.size());
+			assertEquals(1, requiredResources.size());
+		}
 	}
 
 	public void testDistroJarLastModified() throws Exception {

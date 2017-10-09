@@ -41,11 +41,12 @@ public class GenericResolveContextResolveTest extends TestCase {
 		grc.addEE(EE.JavaSE_1_7);
 		grc.addRequireBundle("org.apache.felix.gogo.shell", new VersionRange("[0,1]"));
 		grc.done();
+		try (ResolverLogger logger = new ResolverLogger(4)) {
+			Resolver resolver = new BndResolver(new ResolverLogger(4));
 
-		Resolver resolver = new BndResolver(new ResolverLogger(4));
-
-		Set<Resource> resources = resolver.resolve(grc).keySet();
-		assertNotNull(getResource(resources, "org.apache.felix.gogo.runtime", "0.10"));
+			Set<Resource> resources = resolver.resolve(grc).keySet();
+			assertNotNull(getResource(resources, "org.apache.felix.gogo.runtime", "0.10"));
+		}
 	}
 
 	/**
