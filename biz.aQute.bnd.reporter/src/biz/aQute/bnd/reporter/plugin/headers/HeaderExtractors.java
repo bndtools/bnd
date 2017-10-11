@@ -23,6 +23,7 @@ public class HeaderExtractors {
 		EXTRACTORS.add(new CopyrightExtractor());
 		EXTRACTORS.add(new DescriptionExtractor());
 		EXTRACTORS.add(new DeveloperExtractor());
+		EXTRACTORS.add(new SCMExtractor());
 		EXTRACTORS.add(new DocUrlExtractor());
 		EXTRACTORS.add(new DynamicImportExtractor());
 		EXTRACTORS.add(new ExportExtractor());
@@ -47,7 +48,7 @@ public class HeaderExtractors {
 		final List<Tag> result = new LinkedList<>();
 
 		for (final HeaderExtractor h : EXTRACTORS) {
-			result.addAll(h.extract(manifest, jar,reporter));
+			result.addAll(h.extract(manifest, jar, reporter));
 		}
 		return result;
 	}

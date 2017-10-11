@@ -17,6 +17,7 @@ public class DeveloperExtractor extends HeaderExtractor {
 	final private static String HEADER_TAG = "bundle-developer";
 	final private static String EMAIL_TAG = "email";
 	final private static String NAME_TAG = "name";
+	final private static String INDENTIFIER_TAG = "identifier";
 	final private static String ORGANIZATION_TAG = "organization";
 	final private static String ORGANIZATION_URL_TAG = "organization-url";
 	final private static String TIMEZONE_TAG = "timezone";
@@ -29,9 +30,9 @@ public class DeveloperExtractor extends HeaderExtractor {
 		for (final Entry<String, Attrs> entry : header.entrySet()) {
 			final Tag tag = new Tag(HEADER_TAG);
 
-			if (entry.getValue().get("email") == null) {
-				tag.addContent(new Tag(EMAIL_TAG, cleanKey(entry.getKey())));
-			} else {
+			tag.addContent(new Tag(INDENTIFIER_TAG, cleanKey(entry.getKey())));
+
+			if (entry.getValue().containsKey("email")) {
 				tag.addContent(new Tag(EMAIL_TAG, entry.getValue().get("email")));
 			}
 
