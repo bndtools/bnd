@@ -9,7 +9,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -31,7 +30,6 @@ import biz.aQute.bnd.diagnostics.gogo.impl.Diagnostics;
 import biz.aQute.bnd.diagnostics.gogo.impl.Search;
 
 
-@SuppressWarnings("restriction")
 public class DiagnosticsTest {
 	static JUnitFramework	fw;
 	static ConsoleLogger	log;
