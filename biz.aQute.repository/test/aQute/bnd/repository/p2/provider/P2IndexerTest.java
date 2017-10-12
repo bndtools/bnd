@@ -1,14 +1,23 @@
 package aQute.bnd.repository.p2.provider;
 
 import java.io.File;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.bouncycastle.util.Arrays;
+import org.junit.Assert;
+import org.junit.Test;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -145,5 +154,38 @@ public class P2IndexerTest extends TestCase {
 
 			assertEquals(1, p2.versions("name.njbartlett.eclipse.macbadge").size());
 		}
+	}
+
+	@SuppressWarnings("restriction")
+	@Test
+	public void recreateP2IndexCacheIfResourceURLsNotFitsRepoURL() throws Exception {
+		Path testdateDir = Paths.get(System.getProperty("user.dir"), "testdata");
+
+		Path invalidIndex = testdateDir.resolve("index-p2-starts-not-with-host.xml");
+		Assert.assertTrue(invalidIndex.toFile().exists());
+		Assert.assertTrue(new String(Files.readAllBytes(invalidIndex))
+				.contains("http://starts-not-with-host/plugins/dummy_1.0.0.jar"));
+
+		Path invalidCache = Files.createTempDirectory("valid-");
+		Files.copy(invalidIndex, invalidCache.resolve("index.xml.gz"));
+
+		// check that copied index files contains expected bundle-resource URL.
+		Assert.assertTrue(new String(Files.readAllBytes(invalidCache.resolve("index.xml.gz")))
+				.contains("http://starts-not-with-host/plugins/dummy_1.0.0.jar"));
+		byte[] md5 = md5(invalidCache.resolve("index.xml.gz"));
+
+		// new P2Indexer force a (re)creation of the index.xml.gz if URL check fails.
+		try (P2Indexer indexer = new P2Indexer(new Slf4jReporter(), invalidCache.toFile(), new HttpClient(),
+				Paths.get("http://starts-not-with-host/plugins/").toUri(), "invalid")) {}
+		byte[] md5AfterP2IndexerInit = md5(invalidCache.resolve("index.xml.gz"));
+
+		Assert.assertFalse(!Arrays.areEqual(md5, md5AfterP2IndexerInit));
+	}
+
+	private static byte[] md5(Path file) throws Exception {
+		MessageDigest md = MessageDigest.getInstance("MD5");
+		try (InputStream is = Files.newInputStream(file); DigestInputStream dis = new DigestInputStream(is, md)) {}
+		byte[] digest = md.digest();
+		return digest;
 	}
 }
