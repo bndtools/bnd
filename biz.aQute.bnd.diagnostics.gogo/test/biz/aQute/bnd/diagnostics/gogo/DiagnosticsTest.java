@@ -30,7 +30,6 @@ import biz.aQute.bnd.diagnostics.gogo.impl.Diagnostics;
 import biz.aQute.bnd.diagnostics.gogo.impl.Search;
 
 
-@SuppressWarnings("restriction")
 public class DiagnosticsTest {
 	static JUnitFramework	fw;
 	static ConsoleLogger	log;

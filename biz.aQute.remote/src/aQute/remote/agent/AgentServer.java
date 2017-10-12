@@ -627,9 +627,10 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 				refresh.await();
 				return;
 			}
-		} catch (Exception e) {
-			ServiceReference<org.osgi.service.packageadmin.PackageAdmin> ref = context
-					.getServiceReference(org.osgi.service.packageadmin.PackageAdmin.class);
+		} catch (Exception | NoSuchMethodError e) {
+			@SuppressWarnings("unchecked")
+			ServiceReference<org.osgi.service.packageadmin.PackageAdmin> ref = (ServiceReference<org.osgi.service.packageadmin.PackageAdmin>) context
+					.getServiceReference(org.osgi.service.packageadmin.PackageAdmin.class.getName());
 			if ( ref != null) {
 				org.osgi.service.packageadmin.PackageAdmin padmin = context.getService(ref);
 				padmin.refreshPackages(null);
