@@ -30,3 +30,6 @@ Conditional-Package: aQute.lib*, aQute.configurable.*,aQute.service.reporter, aQ
 -nojunit: true
 
 -baseline: *
+
+-fixupmessages: \
+	'biz.aQute.remote.fixup: There is no baseline for biz.aQute.remote.fixup'

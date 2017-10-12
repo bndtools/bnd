@@ -7,19 +7,19 @@ Bundle-Description: \
 	present in older frameworks.
 
 Export-Package: \
-	org.osgi.dto, \
-	org.osgi.framework.dto, \
-	org.osgi.framework.hooks.bundle, \
-	org.osgi.framework.hooks.resolver, \
-	org.osgi.framework.hooks.service, \
-	org.osgi.framework.hooks.weaving, \
-	org.osgi.framework.namespace, \
-	org.osgi.framework.startlevel.dto, \
-	org.osgi.framework.wiring, \
-	org.osgi.framework.wiring.dto, \
-	org.osgi.resource, \
-	org.osgi.resource.dto, \
-	org.osgi.util.tracker
+	org.osgi.dto;-split-package:=first, \
+	org.osgi.framework.dto;-split-package:=first, \
+	org.osgi.framework.hooks.bundle;-split-package:=first, \
+	org.osgi.framework.hooks.resolver;-split-package:=first, \
+	org.osgi.framework.hooks.service;-split-package:=first, \
+	org.osgi.framework.hooks.weaving;-split-package:=first, \
+	org.osgi.framework.namespace;-split-package:=first, \
+	org.osgi.framework.startlevel.dto;-split-package:=first, \
+	org.osgi.framework.wiring;-split-package:=first, \
+	org.osgi.framework.wiring.dto;-split-package:=first, \
+	org.osgi.resource;-split-package:=first, \
+	org.osgi.resource.dto;-split-package:=first, \
+	org.osgi.util.tracker;-split-package:=first
 
 Import-Package: \
 	org.osgi.framework; version='[1.5,2)', \
