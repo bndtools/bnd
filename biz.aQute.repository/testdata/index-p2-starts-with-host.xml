@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+  <repository xmlns="http://www.osgi.org/xmlns/repository/v1.0.0" name="P2IndexerTest-starts-with-host" increment="1507802175530">
+    <resource>
+      <capability namespace="osgi.content">
+        <attribute name="url" value="http://starts-with-host/plugins/dummy_1.0.0.jar"/>
+      </capability>
+    </resource>
+  </repository>

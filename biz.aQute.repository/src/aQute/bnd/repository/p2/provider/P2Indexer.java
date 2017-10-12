@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -77,14 +78,47 @@ class P2Indexer implements Closeable {
 		validate();
 
 		Repository r;
-		if (this.indexFile.isFile())
-			r = readFile();
-		else {
+		if (!this.indexFile.isFile()) {
 			r = readRepository();
 			save(r);
+		} else if (!startsAnyResourceUrlWithPrefix(url)) {
+			r = readRepository();
+			save(r);
+		} else {
+			r = readFile();
 		}
 
 		bridge = new BridgeRepository(r);
+	}
+
+	private boolean startsAnyResourceUrlWithPrefix(URI prefix) throws Exception {
+		Repository tmp = readFile();
+
+		final String URL_ATTRIBUTE = "url";
+		final String OSGI_CONTENT_NAMESPACE = "osgi.content";
+
+		final Requirement urlRequirement = new RequirementBuilder(OSGI_CONTENT_NAMESPACE)//
+				.addFilter(new FilterBuilder().isPresent(URL_ATTRIBUTE))
+				.buildSyntheticRequirement();
+
+		Map<Requirement,Collection<Capability>> findProviders = tmp
+				.findProviders(Collections.singleton(urlRequirement));
+		Collection<Capability> collection = findProviders.get(urlRequirement);
+
+		boolean startsWith = true;
+		for (Capability capability : collection) {
+			List<Capability> capabilities = capability.getResource().getCapabilities(OSGI_CONTENT_NAMESPACE);
+			for (Capability capability2 : capabilities) {
+				Object object = capability2.getAttributes().get(URL_ATTRIBUTE);
+				if (object == null) {
+					return false;
+				}
+				startsWith = startsWith && object.toString().startsWith(prefix.toString());
+				if (!startsWith)
+					return false;
+			}
+		}
+		return true;
 	}
 
 	private void validate() {
