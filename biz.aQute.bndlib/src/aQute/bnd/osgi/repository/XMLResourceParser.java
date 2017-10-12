@@ -50,6 +50,8 @@ public class XMLResourceParser extends Processor {
 
 	private static final String		ATTR_NAMESPACE		= "namespace";
 
+	private static final String		ATTR_REPOSITORY_NAME		= "name";
+	private static final String		ATTR_REPOSITORY_INCREMENT	= "increment";
 	private static final String		ATTR_NAME			= "name";
 	private static final String		ATTR_VALUE			= "value";
 	private static final String		ATTR_TYPE			= "type";
@@ -58,10 +60,11 @@ public class XMLResourceParser extends Processor {
 	final private XMLStreamReader	reader;
 	final private Set<URI>			traversed;
 	final private String			what;
-	@SuppressWarnings("unused")
 	final private URI				url;
 
 	private int						depth;
+	private String					name;
+	private long					increment;
 
 	public static List<Resource> getResources(URI uri) throws Exception {
 		try (XMLResourceParser parser = new XMLResourceParser(uri)) {
@@ -106,6 +109,14 @@ public class XMLResourceParser extends Processor {
 		}
 	}
 
+	public String name() {
+		return name;
+	}
+
+	public long increment() {
+		return increment;
+	}
+
 	List<Resource> getResources() {
 		if (!isOk())
 			return null;
@@ -122,9 +133,9 @@ public class XMLResourceParser extends Processor {
 		if (!check(reader.isStartElement(), "Expected a start element at the root, is %s", reader.getEventType()))
 			return null;
 
-		String name = reader.getLocalName();
-		if (!check(TAG_REPOSITORY.equals(name), "Invalid tag name of top element, expected %s, got %s", TAG_REPOSITORY,
-				name))
+		String localName = reader.getLocalName();
+		if (!check(TAG_REPOSITORY.equals(localName), "Invalid tag name of top element, expected %s, got %s",
+				TAG_REPOSITORY, localName))
 			return null;
 
 		String nsUri = reader.getNamespaceURI();
@@ -132,10 +143,16 @@ public class XMLResourceParser extends Processor {
 			check(NS_URI.equals(nsUri), "Incorrect namespace. Expected %s, got %s", NS_URI, nsUri);
 		}
 
+		name = reader.getAttributeValue(null, ATTR_REPOSITORY_NAME);
+		String incrementString = reader.getAttributeValue(null, ATTR_REPOSITORY_INCREMENT);
+		if (incrementString != null) {
+			increment = Long.parseLong(incrementString);
+		}
+
 		next(); // either start resource/referral or end
 
 		while (reader.isStartElement()) {
-			String localName = reader.getLocalName();
+			localName = reader.getLocalName();
 			if (localName.equals(TAG_REFERRAL))
 				parseReferral();
 			else if (localName.equals(TAG_RESOURCE))
