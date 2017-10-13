@@ -21,8 +21,8 @@ public class ContactAddressExtractor extends HeaderExtractor {
 	public List<Tag> extract(final ManifestHelper manifest, final Jar jar, final Reporter reporter) {
 		final List<Tag> result = new LinkedList<>();
 		final Parameters header = manifest.getHeader(Constants.BUNDLE_CONTACTADDRESS, false);
-		if (!header.isEmpty()) {
-			final String contact = cleanKey(header.keySet().iterator().next());
+		String contact = mergeKey(header);
+		if (!contact.isEmpty()) {
 			final Tag adress = new Tag(HEADER_TAG, contact);
 			if (isUrl(contact)) {
 				adress.addAttribute(TYPE_ATTR, "url");

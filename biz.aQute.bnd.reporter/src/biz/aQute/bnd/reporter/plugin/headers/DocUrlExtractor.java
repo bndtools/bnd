@@ -18,8 +18,9 @@ public class DocUrlExtractor extends HeaderExtractor {
 	public List<Tag> extract(final ManifestHelper manifest, final Jar jar, final Reporter reporter) {
 		final List<Tag> result = new LinkedList<>();
 		final Parameters header = manifest.getHeader(Constants.BUNDLE_DOCURL, false);
-		if (!header.isEmpty()) {
-			result.add(new Tag(HEADER_TAG, cleanKey(header.keySet().iterator().next())));
+		String docUrl = mergeKey(header);
+		if (!docUrl.isEmpty()) {
+			result.add(new Tag(HEADER_TAG, docUrl));
 		}
 		return result;
 	}

@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
@@ -127,5 +128,17 @@ abstract class HeaderExtractor {
 			}
 		}
 		return result;
+	}
+	
+	protected String mergeKey(final Parameters header) {
+		StringBuilder result = new StringBuilder();
+		for (final String part : header.keySet()) {
+			result.append(cleanKey(part)+", ");
+		}
+		if(!header.keySet().isEmpty()){
+			result.deleteCharAt(result.length()-1);
+			result.deleteCharAt(result.length()-1);
+		}
+		return result.toString();
 	}
 }

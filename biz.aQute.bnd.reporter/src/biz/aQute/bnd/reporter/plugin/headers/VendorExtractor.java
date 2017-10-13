@@ -18,8 +18,9 @@ public class VendorExtractor extends HeaderExtractor {
 	public List<Tag> extract(final ManifestHelper manifest, final Jar jar, final Reporter reporter) {
 		final List<Tag> result = new LinkedList<>();
 		final Parameters header = manifest.getHeader(Constants.BUNDLE_VENDOR, false);
-		if (!header.isEmpty()) {
-			result.add(new Tag(HEADER_TAG, cleanKey(header.keySet().iterator().next())));
+		String vendor = mergeKey(header);
+		if (!vendor.isEmpty()) {
+			result.add(new Tag(HEADER_TAG, vendor));
 		}
 		return result;
 	}
