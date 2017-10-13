@@ -120,7 +120,6 @@ public class Activator extends Thread implements BundleActivator {
 			throw t;
 		} finally {
 			IO.close(server);
-			System.err.println("Quit agent loop");
 		}
 	}
 
