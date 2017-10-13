@@ -56,6 +56,7 @@ class P2Indexer implements Closeable {
 	private final HttpClient				client;
 	private final URI						url;
 	private final String					name;
+	private final String				urlHash;
 	private final File						indexFile;
 	private volatile BridgeRepository		bridge;
 	private static final Resource		RECOVERY	= new ResourceBuilder().build();
@@ -72,19 +73,12 @@ class P2Indexer implements Closeable {
 		this.client = client;
 		this.url = url;
 		this.name = name;
+		this.urlHash = client.toName(url);
 		IO.mkdirs(this.location);
 
 		validate();
 
-		Repository r;
-		if (this.indexFile.isFile())
-			r = readFile();
-		else {
-			r = readRepository();
-			save(r);
-		}
-
-		bridge = new BridgeRepository(r);
+		bridge = new BridgeRepository(readRepository(indexFile));
 	}
 
 	private void validate() {
@@ -132,11 +126,16 @@ class P2Indexer implements Closeable {
 		return getBridge().versions(bsn);
 	}
 
-	private Repository readFile() throws Exception {
-		try (XMLResourceParser xp = new XMLResourceParser(this.indexFile.toURI())) {
-			List<Resource> resources = xp.parse();
-			return new ResourcesRepository(resources);
+	private Repository readRepository(File index) throws Exception {
+		if (index.isFile()) {
+			try (XMLResourceParser xp = new XMLResourceParser(index.toURI())) {
+				List<Resource> resources = xp.parse();
+				if (urlHash.equals(xp.name())) {
+					return new ResourcesRepository(resources);
+				}
+			}
 		}
+		return save(readRepository());
 	}
 
 	private Repository readRepository() throws Exception {
@@ -222,9 +221,10 @@ class P2Indexer implements Closeable {
 		}).getValue();
 	}
 
-	private void save(Repository repository) throws IOException, Exception {
+	private Repository save(Repository repository) throws IOException, Exception {
 		XMLResourceGenerator xrg = new XMLResourceGenerator();
-		xrg.repository(repository).name(name).save(indexFile);
+		xrg.repository(repository).name(urlHash).save(indexFile);
+		return repository;
 	}
 
 	Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
@@ -232,9 +232,7 @@ class P2Indexer implements Closeable {
 	}
 
 	public void refresh() throws Exception {
-		Repository repository = readRepository();
-		save(repository);
-		this.bridge = new BridgeRepository(repository);
+		bridge = new BridgeRepository(save(readRepository()));
 	}
 
 	@Override
