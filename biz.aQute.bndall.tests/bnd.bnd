@@ -10,16 +10,14 @@
 -nobundles: true
 
 -testpath: \
-	org.osgi.service.component.annotations;version=latest,\
-	org.osgi.service.metatype.annotations;version=latest,\
+  aQute.libg;version=latest, \
+  biz.aQute.bndlib;version=latest, \
+  biz.aQute.resolve;version=latest, \
+  biz.aQute.repository;version=latest, \
 	osgi.core;version=6.0,\
 	osgi.cmpn;version=6.0,\
-    aQute.libg;version=project,\
     biz.aQute.bnd.annotation;version=project,\
-	biz.aQute.bndlib;version=project,\
 	org.osgi.impl.bundle.bindex;version=latest,\
-	biz.aQute.repository;version=latest,\
-	biz.aQute.resolve;version=latest,\
 	biz.aQute.remote.api;version=latest,\
 	${junit},\
 	biz.aQute.bnd.embedded-repo; version=snapshot,\

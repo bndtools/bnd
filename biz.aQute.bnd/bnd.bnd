@@ -36,17 +36,15 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 -dependson: biz.aQute.bnd.embedded-repo
 
 -buildpath: \
-	aQute.libg;version=latest,\
+  aQute.libg;version=latest, \
+  biz.aQute.bndlib;version=latest, \
+  biz.aQute.resolve;version=latest, \
+  biz.aQute.repository;version=latest, \
 	biz.aQute.bnd.annotation;version=project,\
-	biz.aQute.bndlib;version=project,\
 	org.apache.ant:ant;version=latest,\
-	org.osgi.service.component.annotations;version=latest,\
-	org.osgi.service.metatype.annotations;version=latest,\
 	osgi.core;version=6.0,\
 	osgi.cmpn;version=6.0,\
 	org.osgi.impl.bundle.bindex;version=latest,\
-	biz.aQute.repository;version=latest,\
-	biz.aQute.resolve;version=latest,\
 	biz.aQute.remote.api;version=latest,\
 	org.yaml.snakeyaml;version=latest,\
 	slf4j.api;version=latest
