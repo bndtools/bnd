@@ -70,4 +70,4 @@ Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huberts@pelagic
 
 -baseline: *
 
--fixupmessages: "Export aQute.bnd.http"
+-fixupmessages: "Export aQute.bnd.http*aQute.lib.converter"
