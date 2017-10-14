@@ -14,14 +14,12 @@ import java.util.Properties;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 import org.osgi.util.function.Function;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Promises;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,25 +118,23 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		return get(archive, true);
 	}
 
-	private Promise<File> get(final Archive archive, final boolean thrw) throws Exception {
+	private Promise<File> get(Archive archive, boolean thrw) throws Exception {
 		final File file = toLocalFile(archive);
 
 		if (file.isFile() && !archive.isSnapshot()) {
-			return Promises.resolved(file);
+			return executor.resolved(file);
 		}
 
 		if (localOnly || isFresh(file)) {
-			return Promises.resolved(file.isFile() ? file : null);
+			return executor.resolved(file.isFile() ? file : null);
 		}
-		return executor.submit(new Callable<File>() {
-			@Override
-			public File call() throws Exception {
-				File f = getFile(archive, file);
-				if (thrw && f == null) {
-					throw new FileNotFoundException("For Maven artifact " + archive);
-				}
-				return f;
-			}});
+		return executor.submit(() -> {
+			File f = getFile(archive, file);
+			if (thrw && f == null) {
+				throw new FileNotFoundException("For Maven artifact " + archive);
+			}
+			return f;
+		});
 	}
 
 	private boolean isFresh(File file) {
@@ -316,7 +312,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 			if (promise != null) {
 				return promise;
 			}
-			deferred = new Deferred<>();
+			deferred = executor.deferred();
 			poms.put(revision, deferred.getPromise());
 		}
 		Archive pomArchive = revision.getPomArchive();

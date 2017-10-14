@@ -15,7 +15,6 @@ import org.osgi.util.function.Function;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Promises;
 import org.osgi.util.promise.Success;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,11 +30,13 @@ import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.version.Version;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
+import aQute.lib.promise.PromiseExecutor;
 
 class OSGiIndex {
 	private final static Logger				logger	= LoggerFactory.getLogger(OSGiIndex.class);
 	private final Promise<BridgeRepository>	repository;
 	private final HttpClient				client;
+	private final PromiseExecutor			executor;
 	private final long						staleTime;
 	private final File						cache;
 	private final String					name;
@@ -46,6 +47,7 @@ class OSGiIndex {
 		this.name = name;
 		this.uris = uris;
 		this.client = client;
+		this.executor = new PromiseExecutor(client.executor());
 		this.cache = checkCache(cache);
 		this.staleTime = staleTime * 1000L;
 		this.repository = readIndexes(refresh);
@@ -58,7 +60,7 @@ class OSGiIndex {
 			promises.add(download(uri, refresh));
 		}
 
-		Promise<List<List<Resource>>> all = Promises.all(promises);
+		Promise<List<List<Resource>>> all = executor.all(promises);
 		return all.map(new Function<List<List<Resource>>,BridgeRepository>() {
 			@Override
 			public BridgeRepository apply(List<List<Resource>> resources) {
@@ -138,7 +140,7 @@ class OSGiIndex {
 	 * @throws Exception
 	 */
 	boolean isStale() throws Exception {
-		final Deferred<List<Void>> freshness = new Deferred<>();
+		final Deferred<List<Void>> freshness = executor.deferred();
 		List<Promise<Void>> promises = new ArrayList<>(getURIs().size());
 		for (final URI uri : getURIs()) {
 			if (freshness.getPromise().isDone()) {
@@ -180,7 +182,7 @@ class OSGiIndex {
 		}
 
 		// Resolve when all uris checked
-		Promise<List<Void>> all = Promises.all(promises);
+		Promise<List<Void>> all = executor.all(promises);
 		freshness.resolveWith(all);
 
 		// Block until freshness is resolved

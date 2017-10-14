@@ -17,7 +17,6 @@ import org.osgi.service.repository.ContentNamespace;
 import org.osgi.util.function.Function;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Promises;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +34,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.lib.exceptions.Exceptions;
+import aQute.lib.promise.PromiseExecutor;
 import aQute.lib.strings.Strings;
 import aQute.libg.cryptography.SHA256;
 import aQute.service.reporter.Reporter;
@@ -45,11 +45,13 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 	private final Collection<File>				files;
 	private final Deferred<BridgeRepository>	repository;
 	private Reporter							reporter;
+	private final PromiseExecutor				executor;
 
 	public FileSetRepository(String name, Collection<File> files) throws Exception {
 		this.name = name;
 		this.files = files;
-		this.repository = new Deferred<>();
+		executor = new PromiseExecutor();
+		repository = executor.deferred();
 	}
 
 	private Collection<File> getFiles() {
@@ -67,9 +69,9 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 	private Promise<BridgeRepository> readFiles() {
 		List<Promise<Resource>> promises = new ArrayList<>(getFiles().size());
 		for (File file : getFiles()) {
-			promises.add(parse(Promises.resolved(file)));
+			promises.add(parse(executor.resolved(file)));
 		}
-		Promise<List<Resource>> all = Promises.all(promises);
+		Promise<List<Resource>> all = executor.all(promises);
 		return all.map(new Function<List<Resource>,BridgeRepository>() {
 			@Override
 			public BridgeRepository apply(List<Resource> resources) {
@@ -154,7 +156,7 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 			return null;
 		}
 		logger.debug("{}: get returning {}", getName(), uri);
-		return Promises.resolved(new File(uri));
+		return executor.resolved(new File(uri));
 	}
 
 	@Override
