@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.http.HttpClient;
-import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.BridgeRepository;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
@@ -139,7 +138,7 @@ class P2Indexer implements Closeable {
 	}
 
 	private Repository readRepository() throws Exception {
-		P2Impl p2 = new P2Impl(client, this.url, Processor.getExecutor());
+		P2Impl p2 = new P2Impl(client, this.url, client.executor());
 		List<Artifact> artifacts = p2.getArtifacts();
 		List<Promise<Resource>> fetched = new ArrayList<>(artifacts.size());
 		Set<URI> visitedURIs = new HashSet<>(artifacts.size());

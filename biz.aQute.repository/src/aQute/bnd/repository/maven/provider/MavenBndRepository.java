@@ -490,7 +490,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					localRepo, client);
 			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(configuration.snapshotUrl(), reporter,
 					localRepo, client);
-			storage = new MavenRepository(localRepo, getName(), release, snapshot, Processor.getExecutor(), reporter,
+			storage = new MavenRepository(localRepo, getName(), release, snapshot, client.executor(), reporter,
 					getRefreshCallback());
 
 			File base = IO.work;

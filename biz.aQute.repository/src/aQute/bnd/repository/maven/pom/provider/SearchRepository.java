@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.http.HttpClient;
-import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
 import aQute.bnd.osgi.repository.XMLResourceParser;
 import aQute.maven.api.Archive;
@@ -49,7 +48,7 @@ class SearchRepository extends InnerRepository {
 
 	void refresh() throws Exception {
 		SearchResult result = query();
-		Traverser traverser = new Traverser(getMavenRepository(), null, Processor.getExecutor(), transitive)
+		Traverser traverser = new Traverser(getMavenRepository(), client, client.executor(), transitive)
 				.revisions(result.response.docsToRevisions());
 		Promise<Map<Archive,Resource>> p = traverser.getResources();
 		Collection<Resource> resources = p.getValue().values();

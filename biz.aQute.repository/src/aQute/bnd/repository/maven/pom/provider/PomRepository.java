@@ -12,7 +12,6 @@ import org.osgi.resource.Resource;
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.http.HttpClient;
-import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
 import aQute.bnd.osgi.repository.XMLResourceParser;
 import aQute.maven.api.Archive;
@@ -61,11 +60,11 @@ class PomRepository extends InnerRepository {
 	}
 
 	void readUris() throws Exception {
-		save(new Traverser(getMavenRepository(), client, Processor.getExecutor(), transitive).uris(uris));
+		save(new Traverser(getMavenRepository(), client, client.executor(), transitive).uris(uris));
 	}
 
 	void readRevisons() throws Exception {
-		save(new Traverser(getMavenRepository(), client, Processor.getExecutor(), transitive).revisions(revisions));
+		save(new Traverser(getMavenRepository(), client, client.executor(), transitive).revisions(revisions));
 	}
 
 	void save(Traverser traverser) throws Exception {

@@ -16,7 +16,6 @@ import org.osgi.util.promise.Promise;
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
-import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.repository.BridgeRepository;
 import aQute.bnd.osgi.repository.BridgeRepository.ResourceInfo;
@@ -74,7 +73,7 @@ public class BndPomRepository extends BaseRepository
 					reporter, localRepo, client);
 
 			MavenRepository repository = new MavenRepository(localRepo, name, release, snapshot,
-					Processor.getExecutor(), reporter, null);
+					client.executor(), reporter, null);
 
 			boolean transitive = configuration.transitive(true);
 

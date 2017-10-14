@@ -56,7 +56,8 @@ public class PomRepositoryTest extends TestCase {
 		Revision revision = Program.valueOf("org.apache.aries.blueprint", "org.apache.aries.blueprint.cm")
 				.version("1.0.8");
 
-		Traverser t = new Traverser(mr, new HttpClient(), Processor.getExecutor(), true).revision(revision);
+		HttpClient client = new HttpClient();
+		Traverser t = new Traverser(mr, client, client.executor(), true).revision(revision);
 		Map<Archive,Resource> value = t.getResources().getValue();
 		assertEquals(8, value.size());
 		assertAllBndCap(value);
@@ -68,7 +69,8 @@ public class PomRepositoryTest extends TestCase {
 		Revision revision = Program.valueOf("org.apache.aries.blueprint", "org.apache.aries.blueprint.cm")
 				.version("1.0.8");
 
-		Traverser t = new Traverser(mr, new HttpClient(), Processor.getExecutor(), false).revision(revision);
+		HttpClient client = new HttpClient();
+		Traverser t = new Traverser(mr, client, client.executor(), false).revision(revision);
 		Map<Archive,Resource> value = t.getResources().getValue();
 		assertEquals(1, value.size());
 		assertAllBndCap(value);
@@ -538,7 +540,7 @@ public class PomRepositoryTest extends TestCase {
 		List<MavenBackingRepository> apache = MavenBackingRepository
 				.create("https://repository.apache.org/content/groups/snapshots/", reporter, localRepo, client);
 
-		MavenRepository mr = new MavenRepository(localRepo, "test", central, apache, Processor.getExecutor(), reporter,
+		MavenRepository mr = new MavenRepository(localRepo, "test", central, apache, client.executor(), reporter,
 				null);
 		return mr;
 	}
