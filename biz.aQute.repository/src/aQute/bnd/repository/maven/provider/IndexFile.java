@@ -28,7 +28,6 @@ import org.osgi.resource.Resource;
 import org.osgi.util.function.Function;
 import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Promises;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Domain;
@@ -40,6 +39,7 @@ import aQute.bnd.version.Version;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
+import aQute.lib.promise.PromiseExecutor;
 import aQute.lib.strings.Strings;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.cryptography.SHA256;
@@ -90,12 +90,14 @@ class IndexFile {
 	private long									lastModified;
 	private AtomicBoolean							refresh		= new AtomicBoolean();
 	private final ReadWriteLock							lock		= new ReentrantReadWriteLock();
+	private final PromiseExecutor						executor;
 
 	IndexFile(Reporter reporter, File file, IMavenRepo repo) throws Exception {
 		this.reporter = reporter;
 		this.indexFile = file;
 		this.repo = repo;
 		this.cacheDir = new File(indexFile.getParentFile(), indexFile.getName() + ".info");
+		this.executor = new PromiseExecutor();
 	}
 
 	void open() throws Exception {
@@ -117,7 +119,7 @@ class IndexFile {
 				}
 			}));
 		}
-		Promises.all(sync).getFailure(); // block until all promises resolved
+		executor.all(sync).getFailure(); // block until all promises resolved
 	}
 
 	BundleDescriptor add(Archive archive) throws Exception {
@@ -292,7 +294,7 @@ class IndexFile {
 					refresh.set(true);
 				}
 				if (descriptor.promise == null && file != null)
-					descriptor.promise = Promises.resolved(file);
+					descriptor.promise = executor.resolved(file);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -322,7 +324,7 @@ class IndexFile {
 			if (descriptorFile.isFile()) {
 				try {
 					BundleDescriptor descriptor = CODEC.dec().from(descriptorFile).get(BundleDescriptor.class);
-					descriptor.promise = Promises.resolved(archiveFile);
+					descriptor.promise = executor.resolved(archiveFile);
 					descriptor.resource = null;
 					descriptors.put(archive, descriptor);
 					return true;

@@ -42,8 +42,9 @@ public class MavenRepoTest extends TestCase {
 		IO.copy(IO.getFile("testresources/mavenrepo"), remote);
 		remote.mkdirs();
 		local.mkdirs();
-		repo = MavenBackingRepository.create(fnx.getBaseURI() + "/repo/", reporter, local, new HttpClient());
-		storage = new MavenRepository(local, "fnexus", this.repo, this.repo, null, null,
+		HttpClient client = new HttpClient();
+		repo = MavenBackingRepository.create(fnx.getBaseURI() + "/repo/", reporter, local, client);
+		storage = new MavenRepository(local, "fnexus", this.repo, this.repo, client.executor(), null,
 				null);
 	}
 

@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.lib.promise.PromiseExecutor;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom.Dependency;
 import aQute.maven.api.MavenScope;
@@ -43,11 +44,11 @@ class Traverser {
 	static final Resource					DUMMY		= new ResourceBuilder().build();
 	static final String						ROOT		= "<>";
 	final ConcurrentMap<Archive,Resource>	resources	= new ConcurrentHashMap<>();
-	final Executor							executor;
+	private final PromiseExecutor			executor;
 	final List<Revision>					revisions;
 	final List<URI>							uris;
 	final AtomicInteger						count		= new AtomicInteger(-1);
-	final Deferred<Map<Archive,Resource>>	deferred	= new Deferred<>();
+	final Deferred<Map<Archive,Resource>>	deferred;
 	final MavenRepository					repo;
 	final HttpClient						client;
 	final boolean							transitive;
@@ -55,7 +56,8 @@ class Traverser {
 	Traverser(MavenRepository repo, HttpClient client, Executor executor, boolean transitive) {
 		this.repo = repo;
 		this.client = client;
-		this.executor = executor;
+		this.executor = new PromiseExecutor(executor);
+		this.deferred = this.executor.deferred();
 		this.transitive = transitive;
 		this.revisions = new ArrayList<>();
 		this.uris = new ArrayList<>();
@@ -122,23 +124,20 @@ class Traverser {
 			//
 
 			count.incrementAndGet();
-			executor.execute(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						logger.debug("parse archive {}", archive);
-						parseArchive(archive);
-					} catch (Throwable throwable) {
-						logger.debug(" failed to parse archive {}: {}", archive, throwable);
-						ResourceBuilder rb = new ResourceBuilder();
-						String bsn = archive.revision.program.toString();
-						Version version = toFrameworkVersion(archive.revision.version.getOSGiVersion());
-						addReserveIdentity(rb, bsn, version);
-						addInformationCapability(rb, archive.toString(), parent, throwable);
-						resources.put(archive, rb.build());
-					} finally {
-						finish();
-					}
+			executor.execute(() -> {
+				try {
+					logger.debug("parse archive {}", archive);
+					parseArchive(archive);
+				} catch (Throwable throwable) {
+					logger.debug(" failed to parse archive {}: {}", archive, throwable);
+					ResourceBuilder rb = new ResourceBuilder();
+					String bsn = archive.revision.program.toString();
+					Version version = toFrameworkVersion(archive.revision.version.getOSGiVersion());
+					addReserveIdentity(rb, bsn, version);
+					addInformationCapability(rb, archive.toString(), parent, throwable);
+					resources.put(archive, rb.build());
+				} finally {
+					finish();
 				}
 			});
 		}

@@ -53,7 +53,9 @@ public class OSGiIndexTest extends TestCase {
 	}
 
 	public OSGiIndex getIndex(HttpClient client) throws Exception, URISyntaxException {
-		return new OSGiIndex("name", client, cache, Collections.singleton(
-				new URI("https://raw.githubusercontent.com/osgi/osgi.enroute/v1.0.0/cnf/distro/index.xml")), 0, false);
+		return new OSGiIndex("name", client, cache,
+				Collections.singletonList(
+						new URI("https://raw.githubusercontent.com/osgi/osgi.enroute/v1.0.0/cnf/distro/index.xml")),
+				0, false);
 	}
 }

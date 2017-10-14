@@ -22,9 +22,9 @@ import org.osgi.service.repository.Repository;
 import org.osgi.service.repository.RequirementBuilder;
 import org.osgi.service.repository.RequirementExpression;
 import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Promises;
 
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.lib.promise.PromiseExecutor;
 
 /**
  * WARNING ! Not tested
@@ -32,6 +32,7 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 public abstract class BaseRepository implements Repository {
 	private static final RequirementExpression[]	EMPTY	= new RequirementExpression[0];
 	static IdentityExpression						all;
+	private final PromiseExecutor					executor	= new PromiseExecutor();
 
 	static {
 		aQute.bnd.osgi.resource.RequirementBuilder rb = new aQute.bnd.osgi.resource.RequirementBuilder(
@@ -53,7 +54,7 @@ public abstract class BaseRepository implements Repository {
 
 		dispatch(expression, providers);
 
-		return Promises.<Collection<Resource>> resolved(providers);
+		return executor.resolved(providers);
 	}
 
 	private void dispatch(RequirementExpression expression, Set<Resource> providers) {
