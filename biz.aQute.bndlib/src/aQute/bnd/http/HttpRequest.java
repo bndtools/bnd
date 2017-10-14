@@ -7,12 +7,10 @@ import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.osgi.util.promise.Promise;
 
-import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.url.TaggedData;
 import aQute.lib.converter.TypeReference;
 import aQute.lib.promise.PromiseExecutor;
@@ -42,9 +40,11 @@ public class HttpRequest<T> {
 	Reporter			reporter;
 	File				useCacheFile;
 	boolean				updateTag;
+	private final PromiseExecutor	executor;
 
 	HttpRequest(HttpClient client) {
 		this.client = client;
+		executor = new PromiseExecutor(client.executor());
 	}
 
 	/**
@@ -188,8 +188,7 @@ public class HttpRequest<T> {
 	}
 
 	public T go(URI url) throws Exception {
-		this.url = url.toURL();
-		return (T) client.send(this);
+		return go(url.toURL());
 	}
 
 	public HttpRequest<T> age(int n, TimeUnit tu) {
@@ -197,19 +196,17 @@ public class HttpRequest<T> {
 		return this;
 	}
 
-	public Promise<T> async(final URL url) throws InterruptedException {
+	public Promise<T> async(URL url) {
 		this.url = url;
-		PromiseExecutor executor = new PromiseExecutor(Processor.getExecutor());
-		return executor.submit(new Callable<T>() {
-			@Override
-			public T call() throws Exception {
-				return (T) client.send(HttpRequest.this);
-			}
-		});
+		return executor.submit(() -> (T) client.send(this));
 	}
 
-	public Promise<T> async(URI uri) throws MalformedURLException, InterruptedException {
-		return async(uri.toURL());
+	public Promise<T> async(URI uri) {
+		try {
+			return async(uri.toURL());
+		} catch (MalformedURLException e) {
+			return executor.failed(e);
+		}
 	}
 	@Override
 	public String toString() {

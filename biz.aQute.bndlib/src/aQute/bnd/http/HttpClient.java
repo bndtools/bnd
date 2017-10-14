@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
@@ -86,8 +87,15 @@ public class HttpClient implements Closeable, URLConnector {
 	private Registry							registry				= null;
 	private Reporter							reporter;
 	private volatile AtomicBoolean				offline;
+	private final Executor						executor;
 
-	public HttpClient() {}
+	public HttpClient() {
+		this(Processor.getExecutor());
+	}
+
+	public HttpClient(Executor executor) {
+		this.executor = executor;
+	}
 
 	synchronized void init() {
 		if (inited)
@@ -698,5 +706,9 @@ public class HttpClient implements Closeable, URLConnector {
 
 	public void setOffline(AtomicBoolean offline) {
 		this.offline = offline;
+	}
+
+	public Executor executor() {
+		return executor;
 	}
 }
