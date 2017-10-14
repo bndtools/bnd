@@ -185,6 +185,7 @@ public interface Constants {
 	String							SOURCEPATH									= "-sourcepath";
 	String							STRICT										= "-strict";
 	String							SUB											= "-sub";
+	String							REPORT										= "-report";
 	String							RUNNOREFERENCES								= "-runnoreferences";
 	String							RUNPROPERTIES								= "-runproperties";
 	String							RUNSYSTEMPACKAGES							= "-runsystempackages";
@@ -263,7 +264,7 @@ public interface Constants {
 			CHECK, DISTRO, METATYPE_ANNOTATIONS, METATYPE_ANNOTATIONS_OPTIONS, PACKAGEINFOTYPE, JAVAC_SOURCE,
 			JAVAC_TARGET, JAVAC_PROFILE, JAVAC, JAVA, JAVA_DEBUG, EXPORTTYPE, RUNREMOTE, TESTER, AUGMENT, REQUIRE_BND,
 			GROUPID, STANDALONE, IGNORE_STANDALONE, RUNREPOS, INIT, MAVEN_RELEASE, BUILDREPO, CONNECTION_SETTINGS,
-			RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE
+			RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE, REPORT
 
 	};
 

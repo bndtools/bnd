@@ -141,6 +141,7 @@ import aQute.libg.reporter.ReporterAdapter;
 import aQute.libg.reporter.ReporterMessages;
 import aQute.libg.sed.Sed;
 import aQute.service.reporter.Reporter;
+import biz.aQute.bnd.reporter.command.ReporterCommand;
 
 /**
  * Utility to make bundles. @version $Revision: 1.14 $
@@ -4278,5 +4279,13 @@ public class bnd extends Processor {
 		if (!noExit.get()) {
 			System.exit(code);
 		}
+	}
+
+	@Description("Reporting")
+	public void _report(ReporterCommand.ReporterOptions options) throws Exception {
+		ReporterCommand mc = new ReporterCommand(this);
+		mc.use(this);
+		mc.run(options);
+		getInfo(mc);
 	}
 }
