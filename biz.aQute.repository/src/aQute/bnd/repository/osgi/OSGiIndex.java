@@ -39,9 +39,9 @@ class OSGiIndex {
 	private final long						staleTime;
 	private final File						cache;
 	private final String					name;
-	private final Collection<URI>			uris;
+	private final List<URI>					uris;
 
-	OSGiIndex(String name, HttpClient client, File cache, Collection<URI> uris, int staleTime, boolean refresh)
+	OSGiIndex(String name, HttpClient client, File cache, List<URI> uris, int staleTime, boolean refresh)
 			throws Exception {
 		this.name = name;
 		this.uris = uris;
