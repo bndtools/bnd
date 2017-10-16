@@ -1,5 +1,7 @@
 package aQute.bnd.component;
 
+import static aQute.bnd.osgi.Clazz.QUERY.ANNOTATED;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +15,7 @@ import java.util.regex.Pattern;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ComponentPropertyType;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.FieldOption;
@@ -36,6 +39,7 @@ import aQute.bnd.osgi.Clazz.FieldDef;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.Version;
 import aQute.bnd.xmlattribute.XMLAttributeFinder;
@@ -83,6 +87,9 @@ public class AnnotationReader extends ClassDataCollector {
 	static final Pattern				DEACTIVATEDESCRIPTORDS13	= Pattern
 			.compile("\\(((L([^;]+);)|(I))*\\)(V|(Ljava/util/Map;))");
 
+	static final Instruction			COMPONENT_INSTR;
+	static final Instruction			COMPONENT_PROPERTY_INSTR;
+
 	final static Map<String,Class< ? >>	wrappers;
 
 	static {
@@ -96,6 +103,12 @@ public class AnnotationReader extends ClassDataCollector {
 		map.put("float", Float.class);
 		map.put("double", Double.class);
 		wrappers = Collections.unmodifiableMap(map);
+
+		// We avoid using the XXX.class.getName() because it breaks the launcher
+		// tests when run in gradle. This is because gradle uses the bin/
+		// folder, not the bndlib jar which packages the ds annotations
+		COMPONENT_INSTR = new Instruction("org.osgi.service.component.annotations.Component");
+		COMPONENT_PROPERTY_INSTR = new Instruction("org.osgi.service.component.annotations.ComponentPropertyType");
 	}
 
 	ComponentDef											component;
@@ -131,6 +144,18 @@ public class AnnotationReader extends ClassDataCollector {
 	}
 
 	private ComponentDef getDef() throws Exception {
+		if (clazz.isEnum() || clazz.isInterface() || clazz.isAnnotation()) {
+			// These types cannot be components so don't bother scanning them
+
+			if (clazz.is(ANNOTATED, COMPONENT_INSTR, analyzer)) {
+				analyzer.error("The type %s is not a class and therfore not suitable for the @Component annotation",
+						clazz.getFQN())
+						.details(new DeclarativeServicesAnnotationError(clazz.getFQN(), null,
+								ErrorType.INVALID_COMPONENT_TYPE));
+			}
+				return null;
+		}
+
 		clazz.parseClassFileWithCollector(this);
 		if (component.implementation == null)
 			return null;
@@ -238,6 +263,8 @@ public class AnnotationReader extends ClassDataCollector {
 			else if (annotation.getName().getFQN().startsWith("aQute.bnd.annotation.component"))
 				handleMixedUsageError(annotation);
 			else {
+				handlePossibleComponentPropertyAnnotation(annotation);
+
 				XMLAttribute xmlAttr = finder.getXMLAttribute(annotation);
 				if (xmlAttr != null) {
 					doXmlAttribute(annotation, xmlAttr);
@@ -272,6 +299,28 @@ public class AnnotationReader extends ClassDataCollector {
 			mismatchedAnnotations.put(fqn, errors);
 		}
 		errors.add(errorDetails);
+	}
+
+	private void handlePossibleComponentPropertyAnnotation(Annotation annotation) throws Exception {
+		DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(), null,
+				null, ErrorType.COMPONENT_PROPERTY_ANNOTATION_PROBLEM);
+
+		try {
+			Clazz clazz = analyzer.findClass(annotation.getName());
+
+			if (clazz == null) {
+				analyzer.warning("Unable to process the annotation %s as it is not on the project build path",
+						annotation.getName().getFQN()).details(details);
+				return;
+			}
+
+			if (clazz.is(ANNOTATED, COMPONENT_PROPERTY_INSTR, analyzer)) {
+				clazz.parseClassFileWithCollector(new ComponentPropertyTypeDataCollector(annotation, details));
+			}
+		} catch (Exception e) {
+			analyzer.exception(e, "An error occurred when attempting to process annotation %s, applied to component %s",
+					annotation.getName().getFQN(), className.getFQN()).details(details);
+		}
 	}
 
 	private void doXmlAttribute(Annotation annotation, XMLAttribute xmlAttr) {
@@ -452,16 +501,39 @@ public class AnnotationReader extends ClassDataCollector {
 		private boolean										hasValue		= false;
 		private FieldDef									prefixField		= null;
 		private TypeRef										typeRef			= null;
+		private boolean										cpAnnotated		= false;
 	
 		private ComponentPropertyTypeDataCollector(String methodDescriptor,
 				DeclarativeServicesAnnotationError details) {
 			this.methodDescriptor = methodDescriptor;
 			this.details = details;
 		}
+
+		private ComponentPropertyTypeDataCollector(Annotation componentPropertyAnnotation,
+				DeclarativeServicesAnnotationError details) {
+			// Component Property annotations added in 1.4
+			component.updateVersion(V1_4);
+
+			this.methodDescriptor = null;
+			this.details = details;
+
+			// Add in the defined attributes
+			for (String key : componentPropertyAnnotation.keySet()) {
+				Object value = componentPropertyAnnotation.get(key);
+				handleValue(key, value, value instanceof TypeRef, null);
+			}
+		}
 	
 		@Override
 		public void classBegin(int access, TypeRef name) {
 			typeRef = name;
+		}
+
+		@Override
+		public void annotation(Annotation annotation) {
+			if (ComponentPropertyType.class.getName().equals(annotation.getName().getFQN())) {
+				cpAnnotated = true;
+			}
 		}
 
 		@Override
@@ -505,9 +577,14 @@ public class AnnotationReader extends ClassDataCollector {
 							return;
 						}
 					} catch (Exception e) {
-						analyzer.exception(e,
-								"Exception looking at annotation type to lifecycle method with descriptor %s,  type %s",
-								methodDescriptor, type).details(details);
+						if (methodDescriptor != null) {
+							analyzer.exception(e,
+									"Exception looking at annotation type to lifecycle method with descriptor %s,  type %s",
+									methodDescriptor, type).details(details);
+						} else {
+							analyzer.exception(e, "Exception looking at annotation %s applied to type %s",
+									typeRef.getFQN(), className.getFQN()).details(details);
+						}
 					}
 				}
 			} else {
@@ -515,26 +592,37 @@ public class AnnotationReader extends ClassDataCollector {
 			}
 			if (value != null) {
 				String name = defined.getName();
-				if (value.getClass().isArray()) {
-					// add element individually
-					int len = Array.getLength(value);
-					for (int i = 0; i < len; i++) {
-						Object element = Array.get(value, i);
-						valueToProperty(name, element, isClass, typeClass);
-					}
-					if (len == 1) {
-						// To make sure the output is an array, we must make
-						// sure there is more than one entry
-						props.add(name, ComponentDef.MARKER);
-					}
-				} else {
-					valueToProperty(name, value, isClass, typeClass);
+				handleValue(name, value, isClass, typeClass);
+			}
+		}
+
+		private void handleValue(String name, Object value, boolean isClass, Class< ? > typeClass) {
+			if (value.getClass().isArray()) {
+				// add element individually
+				int len = Array.getLength(value);
+				for (int i = 0; i < len; i++) {
+					Object element = Array.get(value, i);
+					valueToProperty(name, element, isClass, typeClass);
 				}
+				if (len == 1) {
+					// To make sure the output is an array, we must make
+					// sure there is more than one entry
+					props.add(name, ComponentDef.MARKER);
+				}
+			} else {
+				valueToProperty(name, value, isClass, typeClass);
 			}
 		}
 	
 		@Override
 		public void classEnd() throws Exception {
+			if (methodDescriptor == null && !cpAnnotated) {
+				analyzer.getLogger().debug(
+						"The annoation {} on type {} will be ignored as the annotation is not annotated with @ComponentPropertyType",
+						typeRef.getFQN(), className.getFQN());
+				return;
+			}
+
 			String prefix = null;
 			if (prefixField != null) {
 				Object c = prefixField.getConstant();
