@@ -63,21 +63,21 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			.compile("\\$\\{(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\}");
 
 	final Analyzer					analyzer;
-	final Set<TypeRef>				interesting				= new HashSet<TypeRef>();
-	final MultiMap<String,String>	headers					= new MultiMap<String,String>();
+	final Set<String>				interesting				= new HashSet<>();
+	final MultiMap<String,String>	headers					= new MultiMap<>();
 
 	//
-	// fixed names for faster comparison
+	// Constant Strings for a fast switch statement
 	//
 
-	final TypeRef					bundleLicenseRef;
-	final TypeRef					requireCapabilityRef;
-	final TypeRef					provideCapabilityRef;
-	final TypeRef					bundleCategoryRef;
-	final TypeRef					bundleDocURLRef;
-	final TypeRef					bundleDeveloperRef;
-	final TypeRef					bundleContributorRef;
-	final TypeRef					bundleCopyrightRef;
+	static final String				BUNDLE_LICENSE			= "aQute.bnd.annotation.headers.BundleLicense";
+	static final String				REQUIRE_CAPABILITY		= "aQute.bnd.annotation.headers.RequireCapability";
+	static final String				PROVIDE_CAPABILITY		= "aQute.bnd.annotation.headers.ProvideCapability";
+	static final String				BUNDLE_CATEGORY			= "aQute.bnd.annotation.headers.BundleCategory";
+	static final String				BUNDLE_DOC_URL			= "aQute.bnd.annotation.headers.BundleDocURL";
+	static final String				BUNDLE_DEVELOPERS		= "aQute.bnd.annotation.headers.BundleDevelopers";
+	static final String				BUNDLE_CONTRIBUTORS		= "aQute.bnd.annotation.headers.BundleContributors";
+	static final String				BUNDLE_COPYRIGHT		= "aQute.bnd.annotation.headers.BundleCopyright";
 
 	// Class we're currently processing
 	Clazz							current;
@@ -96,14 +96,14 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		// standard set to do fast comparisons
 		//
 
-		interesting.add(bundleLicenseRef = analyzer.getTypeRefFromFQN(BundleLicense.class.getName()));
-		interesting.add(requireCapabilityRef = analyzer.getTypeRefFromFQN(RequireCapability.class.getName()));
-		interesting.add(provideCapabilityRef = analyzer.getTypeRefFromFQN(ProvideCapability.class.getName()));
-		interesting.add(bundleCategoryRef = analyzer.getTypeRefFromFQN(BundleCategory.class.getName()));
-		interesting.add(bundleDocURLRef = analyzer.getTypeRefFromFQN(BundleDocURL.class.getName()));
-		interesting.add(bundleDeveloperRef = analyzer.getTypeRefFromFQN(BundleDevelopers.class.getName()));
-		interesting.add(bundleContributorRef = analyzer.getTypeRefFromFQN(BundleContributors.class.getName()));
-		interesting.add(bundleCopyrightRef = analyzer.getTypeRefFromFQN(BundleCopyright.class.getName()));
+		interesting.add(BUNDLE_LICENSE);
+		interesting.add(REQUIRE_CAPABILITY);
+		interesting.add(PROVIDE_CAPABILITY);
+		interesting.add(BUNDLE_CATEGORY);
+		interesting.add(BUNDLE_DOC_URL);
+		interesting.add(BUNDLE_DEVELOPERS);
+		interesting.add(BUNDLE_CONTRIBUTORS);
+		interesting.add(BUNDLE_COPYRIGHT);
 	}
 
 	@Override
@@ -129,24 +129,34 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		if (name.isJava())
 			return;
 
-		if (name == bundleLicenseRef)
-			doLicense(annotation);
-		else if (name == requireCapabilityRef)
-			doRequireCapability(annotation);
-		else if (name == provideCapabilityRef)
-			doProvideCapability(annotation);
-		else if (name == bundleCategoryRef)
-			doBundleCategory(annotation.getAnnotation(BundleCategory.class));
-		else if (name == bundleDocURLRef)
-			doBundleDocURL(annotation.getAnnotation(BundleDocURL.class));
-		else if (name == bundleDeveloperRef)
-			doBundleDevelopers(annotation.getAnnotation(BundleDevelopers.class));
-		else if (name == bundleContributorRef)
-			doBundleContributors(annotation.getAnnotation(BundleContributors.class));
-		else if (name == bundleCopyrightRef)
-			doBundeCopyright(annotation.getAnnotation(BundleCopyright.class));
-		else {
-			doAnnotatedAnnotation(annotation, name);
+		switch (name.getFQN()) {
+			case BUNDLE_LICENSE :
+				doLicense(annotation);
+				break;
+			case REQUIRE_CAPABILITY :
+				doRequireCapability(annotation);
+				break;
+			case PROVIDE_CAPABILITY :
+				doProvideCapability(annotation);
+				break;
+			case BUNDLE_CATEGORY :
+				doBundleCategory(annotation.getAnnotation(BundleCategory.class));
+				break;
+			case BUNDLE_DOC_URL :
+				doBundleDocURL(annotation.getAnnotation(BundleDocURL.class));
+				break;
+			case BUNDLE_DEVELOPERS :
+				doBundleDevelopers(annotation.getAnnotation(BundleDevelopers.class));
+				break;
+			case BUNDLE_CONTRIBUTORS :
+				doBundleContributors(annotation.getAnnotation(BundleContributors.class));
+				break;
+			case BUNDLE_COPYRIGHT :
+				doBundeCopyright(annotation.getAnnotation(BundleCopyright.class));
+				break;
+			default :
+				doAnnotatedAnnotation(annotation, name);
+				break;
 		}
 	}
 
@@ -161,11 +171,11 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	void doAnnotatedAnnotation(final Annotation annotation, TypeRef name) throws Exception {
 		final Clazz c = analyzer.findClass(annotation.getName());
 		if (c != null && c.annotations != null) {
-			if (containsAny(interesting, c.annotations)) {
+			if (c.annotations.stream().map(TypeRef::getFQN).anyMatch(interesting::contains)) {
 				c.parseClassFileWithCollector(new ClassDataCollector() {
 					@Override
 					public void annotation(Annotation a) throws Exception {
-						if (interesting.contains(a.getName())) {
+						if (interesting.contains(a.getName().getFQN())) {
 							a.merge(annotation);
 							a.addDefaults(c);
 							AnnotationHeaders.this.annotation(a);
@@ -444,18 +454,6 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				return value + "," + header;
 		}
 		return value;
-	}
-
-	/*
-	 * Helper to find out if there is an overlap. Always wonder why Java does
-	 * not have methods for this.
-	 */
-	private <T> boolean containsAny(Set<T> a, Set<T> b) {
-		for (T aa : a)
-			if (b.contains(aa))
-				return true;
-
-		return false;
 	}
 
 	private void escape(StringBuilder app, String s[]) throws IOException {
