@@ -2,12 +2,20 @@ package aQute.bnd.osgi;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.osgi.annotation.bundle.Capabilities;
+import org.osgi.annotation.bundle.Capability;
+import org.osgi.annotation.bundle.Header;
+import org.osgi.annotation.bundle.Headers;
+import org.osgi.annotation.bundle.Requirement;
+import org.osgi.annotation.bundle.Requirements;
 
 import aQute.bnd.annotation.headers.BundleCategory;
 import aQute.bnd.annotation.headers.BundleContributors;
@@ -78,6 +86,12 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	static final String				BUNDLE_DEVELOPERS		= "aQute.bnd.annotation.headers.BundleDevelopers";
 	static final String				BUNDLE_CONTRIBUTORS		= "aQute.bnd.annotation.headers.BundleContributors";
 	static final String				BUNDLE_COPYRIGHT		= "aQute.bnd.annotation.headers.BundleCopyright";
+	static final String				STD_REQUIREMENT			= "org.osgi.annotation.bundle.Requirement";
+	static final String				STD_REQUIREMENTS		= "org.osgi.annotation.bundle.Requirements";
+	static final String				STD_CAPABILITY			= "org.osgi.annotation.bundle.Capability";
+	static final String				STD_CAPABILITIES		= "org.osgi.annotation.bundle.Capabilities";
+	static final String				STD_HEADER				= "org.osgi.annotation.bundle.Header";
+	static final String				STD_HEADERS				= "org.osgi.annotation.bundle.Headers";
 
 	// Class we're currently processing
 	Clazz							current;
@@ -104,6 +118,12 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		interesting.add(BUNDLE_DEVELOPERS);
 		interesting.add(BUNDLE_CONTRIBUTORS);
 		interesting.add(BUNDLE_COPYRIGHT);
+		interesting.add(STD_REQUIREMENT);
+		interesting.add(STD_REQUIREMENTS);
+		interesting.add(STD_CAPABILITY);
+		interesting.add(STD_CAPABILITIES);
+		interesting.add(STD_HEADER);
+		interesting.add(STD_HEADERS);
 	}
 
 	@Override
@@ -153,6 +173,36 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				break;
 			case BUNDLE_COPYRIGHT :
 				doBundeCopyright(annotation.getAnnotation(BundleCopyright.class));
+				break;
+			case STD_REQUIREMENT :
+				doRequirement(annotation, annotation.getAnnotation(Requirement.class));
+				break;
+			case STD_REQUIREMENTS :
+				Requirement[] requirements = annotation.getAnnotation(Requirements.class).value();
+				Object[] reqAnnotations = annotation.get("value");
+				for (int i = 0; i < requirements.length; i++) {
+					doRequirement((Annotation) reqAnnotations[i], requirements[i]);
+				}
+				break;
+			case STD_CAPABILITY :
+				doCapability(annotation,
+						annotation.getAnnotation(Capability.class));
+				break;
+			case STD_CAPABILITIES :
+				Capability[] capabilities = annotation.getAnnotation(Capabilities.class).value();
+				Object[] capAnnotations = annotation.get("value");
+				for (int i = 0; i < capabilities.length; i++) {
+					doCapability((Annotation) capAnnotations[i], capabilities[i]);
+				}
+				break;
+			case STD_HEADER :
+				Header header = annotation.getAnnotation(Header.class);
+				add(header.name(), header.value());
+				break;
+			case STD_HEADERS :
+				for (Header h : annotation.getAnnotation(Headers.class).value()) {
+					add(h.name(), h.value());
+				}
 				break;
 			default :
 				doAnnotatedAnnotation(annotation, name);
@@ -368,6 +418,124 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		Parameters p = new Parameters();
 		p.put(annotation.name(), getAttributes(a, "name"));
 		add(Constants.BUNDLE_LICENSE, p.toString());
+	}
+
+	/*
+	 * Require-Capability header
+	 */
+	private void doRequirement(Annotation a, Requirement annotation) throws Exception {
+
+		StringBuilder req = new StringBuilder();
+
+		req.append(annotation.namespace());
+
+		String filter = getFilter(a, annotation);
+
+		if (filter.isEmpty()) {
+			analyzer.error(
+					"The Requirement annotation with namespace %s applied to class %s did not define any filter information.",
+					annotation.namespace(), current.getFQN());
+			return;
+		} else {
+			req.append(";filter:='").append(filter).append('\'');
+		}
+
+		if (a.keySet().contains("resolution")) {
+			req.append(";resolution:=").append(annotation.resolution());
+		}
+
+		if (a.keySet().contains("cardinality")) {
+			req.append(";cardinality:=").append(annotation.cardinality());
+		}
+
+		if (a.keySet().contains("effective")) {
+			req.append(";effective:=");
+			escape(req, annotation.effective());
+		}
+
+		for (String attr : annotation.attribute()) {
+			req.append(';').append(attr);
+		}
+
+		add(Constants.REQUIRE_CAPABILITY, req.toString());
+	}
+
+	private String getFilter(Annotation a, Requirement annotation) {
+		StringBuilder filter = new StringBuilder();
+
+		boolean addAnd = false;
+		if (a.keySet().contains("filter")) {
+			filter.append(annotation.filter());
+			addAnd = true;
+		}
+
+		boolean andAdded = false;
+		if (a.keySet().contains("name")) {
+			filter.append('(').append(annotation.namespace()).append('=').append(annotation.name()).append(')');
+			if (addAnd) {
+				filter.insert(0, "(&").append(')');
+				andAdded = true;
+			}
+			addAnd = true;
+		}
+
+		if (a.keySet().contains("version")) {
+			Version floor = Version.parseVersion(annotation.version());
+			Version max = new Version(floor.getMajor() + 1);
+
+			int current = filter.lastIndexOf(")");
+
+			filter.append("(&(version>=").append(floor).append(")(!(version>=").append(max).append(")))");
+
+			if (andAdded) {
+				filter.deleteCharAt(current).append(')');
+			} else if (addAnd) {
+				filter.insert(0, "(&").append(')');
+			}
+		}
+		return filter.toString();
+	}
+
+	/*
+	 * Provide-Capability header
+	 */
+	private void doCapability(Annotation a, Capability annotation) throws Exception {
+
+		StringBuilder cap = new StringBuilder();
+
+		cap.append(annotation.namespace());
+
+		if (a.keySet().contains("name")) {
+			cap.append(';').append(annotation.namespace()).append('=').append(annotation.name());
+		}
+
+		if (a.keySet().contains("version")) {
+			try {
+				Version.parseVersion(annotation.version());
+				cap.append(";version=").append(annotation.version());
+			} catch (Exception e) {
+				analyzer.error("The version declared by the Capability annotation attached to type %s is invalid",
+						current.getFQN());
+			}
+		}
+
+		for (String attr : annotation.attribute()) {
+			cap.append(';').append(attr);
+		}
+
+		Arrays.stream(annotation.uses())
+				.map(Class::getPackage)
+				.map(Package::getName)
+				.distinct()
+				.reduce((x, y) -> x + "," + y)
+				.ifPresent(s -> cap.append(";uses:=").append(s));
+
+		if (a.keySet().contains("effective")) {
+			cap.append(";effective:=");
+			escape(cap, annotation.effective());
+		}
+
+		add(Constants.PROVIDE_CAPABILITY, cap.toString());
 	}
 
 	private void directivesAndVersion(Attrs attrs, String... directives) {

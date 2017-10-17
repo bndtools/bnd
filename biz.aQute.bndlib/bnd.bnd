@@ -50,6 +50,7 @@ Conditional-Package:	        aQute.service.*, aQute.configurable
 -buildpath:  \
 	org.osgi.service.component.annotations;version=latest,\
 	org.osgi.service.metatype.annotations;version=latest,\
+	org.osgi.annotation.bundle;version=latest,\
     osgi.annotation;version=6.0.1,\
 	osgi.core;version=@6,\
     org.osgi.util.function;version=latest,\
