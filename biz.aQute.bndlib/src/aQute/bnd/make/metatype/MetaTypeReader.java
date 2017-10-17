@@ -5,7 +5,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +50,7 @@ public class MetaTypeReader extends WriteResource {
 	boolean					factory;
 
 	// AD
-	Map<MethodDef,Meta.AD>	methods		= new LinkedHashMap<MethodDef,Meta.AD>();
+	Map<MethodDef,Annotation>	methods		= new LinkedHashMap<>();
 
 	// OCD
 	Annotation				ocdAnnotation;
@@ -66,7 +65,7 @@ public class MetaTypeReader extends WriteResource {
 
 	static Pattern COLLECTION = Pattern.compile("(.*(Collection|Set|List|Queue|Stack|Deque))<(L.+;)>");
 
-	private void addMethod(MethodDef method, Meta.AD ad) throws Exception {
+	private void addMethod(MethodDef method, Annotation a) throws Exception {
 
 		if (method.isStatic())
 			return;
@@ -96,8 +95,12 @@ public class MetaTypeReader extends WriteResource {
 		}
 
 		Meta.Type type = getType(rtype);
+		Meta.AD ad = a == null ? null : a.getAnnotation(Meta.AD.class);
 
-		boolean required = ad == null || ad.required();
+		boolean required = true;
+		if (a != null && ad != null) {
+			required = a.get("required") != null ? ad.required() : a.get("deflt") == null;
+		}
 		String deflt = null;
 		String max = null;
 		String min = null;
@@ -113,35 +116,31 @@ public class MetaTypeReader extends WriteResource {
 
 		// Now parse the annotation for any overrides
 
-		if (ad != null) {
-			if (ad.id() != null)
+		if (a != null && ad != null) {
+			if (a.get("id") != null)
 				id = ad.id();
-			if (ad.name() != null)
+			if (a.get("name") != null)
 				name = ad.name();
-			if (ad.cardinality() != 0)
-				cardinality = ad.cardinality();
-			if (ad.type() != null)
+			if (a.get("cardinality") != null)
+				cardinality = ad.cardinality() == 0 ? cardinality : ad.cardinality();
+			if (a.get("type") != null)
 				type = ad.type();
-			// if (ad.required() || ad.deflt() == null)
-			// required = true;
-
-			if (ad.description() != null)
+			if (a.get("description") != null)
 				description = ad.description();
 
-			if (ad.optionLabels() != null)
+			if (a.get("optionLabels") != null)
 				optionLabels = ad.optionLabels();
-			if (ad.optionValues() != null)
+			if (a.get("optionValues") != null)
 				optionValues = ad.optionValues();
 
-			if (ad.min() != null)
+			if (a.get("min") != null)
 				min = ad.min();
-			if (ad.max() != null)
+			if (a.get("max") != null)
 				max = ad.max();
 
-			if (ad.deflt() != null)
+			if (a.get("deflt") != null)
 				deflt = ad.deflt();
 		}
-
 		if (optionValues != null) {
 			if (optionLabels == null || optionLabels.length == 0) {
 				optionLabels = new String[optionValues.length];
@@ -227,25 +226,11 @@ public class MetaTypeReader extends WriteResource {
 		@Override
 		public void annotation(Annotation annotation) {
 			try {
-				Meta.OCD ocd = annotation.getAnnotation(Meta.OCD.class);
-				Meta.AD ad = annotation.getAnnotation(Meta.AD.class);
-				if (ocd != null) {
+				if (Meta.OCD.class.getName().equals(annotation.getName().getFQN())) {
 					MetaTypeReader.this.ocdAnnotation = annotation;
-				}
-				if (ad != null) {
+				} else if (Meta.AD.class.getName().equals(annotation.getName().getFQN())) {
 					assert method != null;
-					// Fixup required since it is default true
-					// but we have no access to these defaults.
-					// i.e. the defaults are implemented in the code
-					// thus here
-					try {
-						if (annotation.get("required") == null)
-							annotation.put("required", true);
-					} catch (Exception e) {
-						// can fail ... see #514
-					}
-
-					methods.put(method, ad);
+					methods.put(method, annotation);
 				}
 			} catch (Exception e) {
 				reporter.error("Error during annotation parsing %s : %s", clazz, e);
@@ -272,11 +257,6 @@ public class MetaTypeReader extends WriteResource {
 		if (!finished) {
 			finished = true;
 			clazz.parseClassFileWithCollector(new Find());
-			Meta.OCD ocd = null;
-			if (this.ocdAnnotation != null)
-				ocd = this.ocdAnnotation.getAnnotation(Meta.OCD.class);
-			else
-				ocd = Configurable.createConfigurable(Meta.OCD.class, new HashMap<String,Object>());
 
 			// defaults
 			String id = clazz.getClassName().getFQN();
@@ -285,17 +265,20 @@ public class MetaTypeReader extends WriteResource {
 			String localization = id;
 			boolean factory = this.factory;
 
-			if (ocd.id() != null)
-				id = ocd.id();
+			if (this.ocdAnnotation != null) {
+				Meta.OCD ocd = this.ocdAnnotation.getAnnotation(Meta.OCD.class);
+				if (this.ocdAnnotation.get("id") != null)
+					id = ocd.id();
+				
+				if (this.ocdAnnotation.get("name") != null)
+					name = ocd.name();
 
-			if (ocd.name() != null)
-				name = ocd.name();
+				if (this.ocdAnnotation.get("localization") != null)
+					localization = ocd.localization();
 
-			if (ocd.localization() != null)
-				localization = ocd.localization();
-
-			if (ocd.description() != null)
-				description = ocd.description();
+				if (this.ocdAnnotation.get("description") != null)
+					description = ocd.description();
+			}
 
 			String pid = id;
 			if (override) {
@@ -314,7 +297,7 @@ public class MetaTypeReader extends WriteResource {
 			this.metadata.addAttribute("localization", localization);
 
 			// do ADs
-			for (Map.Entry<MethodDef,Meta.AD> entry : methods.entrySet())
+			for (Map.Entry<MethodDef,Annotation> entry : methods.entrySet())
 				addMethod(entry.getKey(), entry.getValue());
 
 			this.designate.addAttribute("pid", pid);
@@ -354,7 +337,7 @@ public class MetaTypeReader extends WriteResource {
 			MetaTypeReader mtr = new MetaTypeReader(ec, reporter);
 			mtr.setDesignate(designatePid, factory);
 			mtr.finish();
-			for (Map.Entry<MethodDef,Meta.AD> entry : mtr.methods.entrySet())
+			for (Map.Entry<MethodDef,Annotation> entry : mtr.methods.entrySet())
 				addMethod(entry.getKey(), entry.getValue());
 
 			handleInheritedClasses(ec);

@@ -15,7 +15,6 @@ import java.util.regex.Pattern;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ComponentPropertyType;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.FieldOption;
@@ -323,6 +322,11 @@ public class AnnotationReader extends ClassDataCollector {
 
 			if (clazz.is(ANNOTATED, COMPONENT_PROPERTY_INSTR, analyzer)) {
 				clazz.parseClassFileWithCollector(new ComponentPropertyTypeDataCollector(annotation, details));
+			} else {
+				analyzer.getLogger().debug(
+						"The annotation {} on component type {} will not be used for properties as the annotation is not annotated with @ComponentPropertyType",
+						clazz.getFQN(), className.getFQN());
+				return;
 			}
 		} catch (Exception e) {
 			analyzer.exception(e, "An error occurred when attempting to process annotation %s, applied to component %s",
@@ -508,7 +512,6 @@ public class AnnotationReader extends ClassDataCollector {
 		private boolean										hasValue		= false;
 		private FieldDef									prefixField		= null;
 		private TypeRef										typeRef			= null;
-		private boolean										cpAnnotated		= false;
 	
 		private ComponentPropertyTypeDataCollector(String methodDescriptor,
 				DeclarativeServicesAnnotationError details) {
@@ -534,13 +537,6 @@ public class AnnotationReader extends ClassDataCollector {
 		@Override
 		public void classBegin(int access, TypeRef name) {
 			typeRef = name;
-		}
-
-		@Override
-		public void annotation(Annotation annotation) {
-			if (ComponentPropertyType.class.getName().equals(annotation.getName().getFQN())) {
-				cpAnnotated = true;
-			}
 		}
 
 		@Override
@@ -623,13 +619,6 @@ public class AnnotationReader extends ClassDataCollector {
 	
 		@Override
 		public void classEnd() throws Exception {
-			if (methodDescriptor == null && !cpAnnotated) {
-				analyzer.getLogger().debug(
-						"The annoation {} on type {} will be ignored as the annotation is not annotated with @ComponentPropertyType",
-						typeRef.getFQN(), className.getFQN());
-				return;
-			}
-
 			String prefix = null;
 			if (prefixField != null) {
 				Object c = prefixField.getConstant();
@@ -733,19 +722,30 @@ public class AnnotationReader extends ClassDataCollector {
 			referencesByMember.put(member, def);
 		}
 		def.className = className.getFQN();
-		def.name = reference.name();
-		def.bind = reference.bind();
-		def.unbind = reference.unbind();
-		def.updated = reference.updated();
-		def.field = reference.field();
-		def.fieldOption = reference.fieldOption();
-		def.cardinality = reference.cardinality();
-		def.policy = reference.policy();
-		def.policyOption = reference.policyOption();
-		def.scope = reference.scope();
+		if (raw.get("name") != null)
+			def.name = reference.name();
+		if (raw.get("bind") != null)
+			def.bind = reference.bind();
+		if (raw.get("unbind") != null)
+			def.unbind = reference.unbind();
+		if (raw.get("updated") != null)
+			def.updated = reference.updated();
+		if (raw.get("field") != null)
+			def.field = reference.field();
+		if (raw.get("fieldOption") != null)
+			def.fieldOption = reference.fieldOption();
+		if (raw.get("cardinality") != null)
+			def.cardinality = reference.cardinality();
+		if (raw.get("policy") != null)
+			def.policy = reference.policy();
+		if (raw.get("policyOption") != null)
+			def.policyOption = reference.policyOption();
+		if (raw.get("scope") != null)
+			def.scope = reference.scope();
 
 		// Check if we have a target, this must be a filter
-		def.target = reference.target();
+		if (raw.get("target") != null)
+			def.target = reference.target();
 
 		DeclarativeServicesAnnotationError details = getDetails(def, ErrorType.REFERENCE);
 
@@ -1024,9 +1024,9 @@ public class AnnotationReader extends ClassDataCollector {
 	@SuppressWarnings("deprecation")
 	protected void doComponent(Component comp, Annotation annotation) throws Exception {
 
+		String componentName = (annotation.keySet().contains("name")) ? comp.name() : className.getFQN();
+
 		if (!mismatchedAnnotations.isEmpty()) {
-			String componentName = comp.name();
-			componentName = (componentName == null) ? className.getFQN() : componentName;
 			for (Entry<String,List<DeclarativeServicesAnnotationError>> e : mismatchedAnnotations.entrySet()) {
 				for (DeclarativeServicesAnnotationError errorDetails : e.getValue()) {
 					if (errorDetails.fieldName != null) {
@@ -1053,9 +1053,11 @@ public class AnnotationReader extends ClassDataCollector {
 			return;
 
 		component.implementation = clazz.getClassName();
-		component.name = comp.name();
-		component.factory = comp.factory();
-		component.configurationPolicy = comp.configurationPolicy();
+		component.name = componentName;
+		if (annotation.get("factory") != null)
+			component.factory = comp.factory();
+		if (annotation.get("configurationPolicy") != null)
+			component.configurationPolicy = comp.configurationPolicy();
 		if (annotation.get("enabled") != null)
 			component.enabled = comp.enabled();
 		if (annotation.get("factory") != null)
@@ -1083,20 +1085,18 @@ public class AnnotationReader extends ClassDataCollector {
 		if (annotation.get("xmlns") != null)
 			component.xmlns = comp.xmlns();
 
-		String properties[] = comp.properties();
-		if (properties != null)
-			for (String entry : properties) {
-				if (entry.contains("=")) {
-					analyzer.error(
-							"Found an = sign in an OSGi DS Component annotation on %s. In the bnd annotation "
-									+ "this is an actual property but in the OSGi, this element must refer to a path with Java properties. "
-									+ "However, found a path with an '=' sign which looks like a mixup (%s) with the 'property' element.",
-							clazz, entry)
-							.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
-									ErrorType.COMPONENT_PROPERTIES_ERROR));
-				}
-				component.properties.add(entry);
+		for (String entry : comp.properties()) {
+			if (entry.contains("=")) {
+				analyzer.error(
+						"Found an = sign in an OSGi DS Component annotation on %s. In the bnd annotation "
+								+ "this is an actual property but in the OSGi, this element must refer to a path with Java properties. "
+								+ "However, found a path with an '=' sign which looks like a mixup (%s) with the 'property' element.",
+						clazz, entry)
+						.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
+								ErrorType.COMPONENT_PROPERTIES_ERROR));
 			}
+			component.properties.add(entry);
+		}
 
 		doProperty(comp.property());
 		Object[] x = annotation.get("service");
