@@ -323,10 +323,11 @@ class OCDReader {
 		private void doOCD(ObjectClassDefinition o, Annotation annotation) {
 			if (ocd.id == null) {
 				if (clazz.isInterface()) {
-					ocd.id = o.id() == null ? name.getFQN() : o.id();
-					ocd.name = o.name() == null ? space(ocd.id) : o.name();
-					ocd.description = o.description() == null ? "" : o.description();
-					ocd.localization = o.localization() == null ? "OSGI-INF/l10n/" + name.getFQN() : o.localization();
+					ocd.id = annotation.get("id") == null ? name.getFQN() : o.id();
+					ocd.name = annotation.get("name") == null ? space(ocd.id) : o.name();
+					ocd.description = annotation.get("description") == null ? "" : o.description();
+					ocd.localization = annotation.get("localization") == null ? "OSGI-INF/l10n/" + name.getFQN()
+							: o.localization();
 					if (annotation.get("pid") != null) {
 						String[] pids = o.pid();
 						designates(name.getFQN(), pids, false);
@@ -351,7 +352,7 @@ class OCDReader {
 			AttributeDefinition ad = adDef.ad;
 			Annotation a = adDef.a;
 
-			if (ad.name() != null) {
+			if (a.get("name") != null) {
 				adDef.name = ad.name();
 			}
 			adDef.description = a.get("description");
@@ -361,8 +362,12 @@ class OCDReader {
 			if (a.get("cardinality") != null) {
 				adDef.cardinality = ad.cardinality();
 			}
-			adDef.max = ad.max();
-			adDef.min = ad.min();
+			if (a.get("max") != null) {
+				adDef.max = ad.max();
+			}
+			if (a.get("min") != null) {
+				adDef.min = ad.min();
+			}
 			if (a.get("defaultValue") != null) {
 				adDef.defaults = ad.defaultValue();
 			}

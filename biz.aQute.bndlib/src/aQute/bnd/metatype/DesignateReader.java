@@ -76,7 +76,7 @@ public class DesignateReader extends ClassDataCollector {
 			if (a instanceof Designate)
 				designate = annotation;
 			else if (a instanceof Component) {
-				doComponent(a);
+				doComponent(annotation, (Component) a);
 			} else {
 				XMLAttribute xmlAttr = finder.getXMLAttribute(annotation);
 				if (xmlAttr != null) {
@@ -89,16 +89,13 @@ public class DesignateReader extends ClassDataCollector {
 		}
 	}
 
-	void doComponent(java.lang.annotation.Annotation a) {
-		Component component = (Component) a;
-		pids = component.configurationPid();
+	void doComponent(Annotation a, Component c) {
+		pids = a.keySet().contains("configurationPid") ? c.configurationPid() : null;
 		if (pids != null) {
 			pid = pids[0];
 		}
 		if (pids == null || "$".equals(pid)) {
-			pid = component.name();
-			if (pid == null)
-				pid = clazz.getClassName().getFQN();
+			pid = a.keySet().contains("name") ? c.name() : clazz.getClassName().getFQN();
 		}
 	}
 

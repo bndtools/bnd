@@ -7,14 +7,32 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import aQute.bnd.annotation.metatype.Configurable;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.lib.converter.Converter;
 
 /*
  * This class is referenced in aQute.bnd.annotation.metatype.Configurable in constant
  * BND_ANNOTATION_CLASS_NAME
  */
 public class Annotation {
+
+	private static final Converter CONVERTER;
+
+	static {
+		CONVERTER = new Converter();
+		CONVERTER.hook(null, (t, o) -> {
+			if (t instanceof Class< ? > && ((Class< ? >) t).isAnnotation()) {
+				// Suitable target
+				if (o instanceof Annotation) {
+					Annotation a = (Annotation) o;
+					return a.getName().getFQN().equals(((Class< ? >) t).getName()) ? a.getAnnotation() : null;
+				}
+			}
+
+			return null;
+		});
+	}
+
 	private TypeRef				name;
 	private Map<String,Object>	elements;
 	private ElementType			member;
@@ -87,7 +105,7 @@ public class Annotation {
 		String cname = name.getFQN();
 		if (!c.getName().equals(cname))
 			return null;
-		return Configurable.createConfigurable(c,
+		return CONVERTER.convert(c,
 				elements == null ? elements = new LinkedHashMap<String,Object>() : elements);
 	}
 
