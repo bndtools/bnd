@@ -156,6 +156,12 @@ public class AnnotationReader extends ClassDataCollector {
 				return null;
 		}
 
+		if (!clazz.is(ANNOTATED, COMPONENT_INSTR, analyzer)) {
+			// This class is not annotated with @Component and so not suitable
+			// for processing
+			return null;
+		}
+
 		clazz.parseClassFileWithCollector(this);
 		if (component.implementation == null)
 			return null;
@@ -309,8 +315,9 @@ public class AnnotationReader extends ClassDataCollector {
 			Clazz clazz = analyzer.findClass(annotation.getName());
 
 			if (clazz == null) {
-				analyzer.warning("Unable to process the annotation %s as it is not on the project build path",
-						annotation.getName().getFQN()).details(details);
+				analyzer.warning(
+						"Unable to determine whether the annotation %s applied to type %s is a component property type as it is not on the project build path. If this annotation is a component property type then it must be present on the build path in order to be processed",
+						annotation.getName().getFQN(), className.getFQN()).details(details);
 				return;
 			}
 
