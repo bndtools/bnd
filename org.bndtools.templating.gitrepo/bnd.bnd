@@ -1,6 +1,8 @@
 # This bundle separated from core as it has a dependency on JGit.
 
 -buildpath: \
+	osgi.core;version=${osgi.core.version},\
+	osgi.cmpn;version=${osgi.cmpn.version},\
 	${bndlib},\
 	bndtools.api; version=latest,\
 	org.bndtools.templating; version=latest,\
@@ -8,8 +10,6 @@
 	org.eclipse.jgit; version=3.4.2,\
 	javaewah; version=0.7.9,\
 	com.jcraft.jsch; version=0.1.51,\
-	osgi.core;version=${osgi.core.version},\
-	osgi.cmpn;version=${osgi.cmpn.version},\
 	org.eclipse.jface,\
 	org.eclipse.ui.workbench,\
 	org.eclipse.swt.cocoa.macosx.x86_64; packages=*,\

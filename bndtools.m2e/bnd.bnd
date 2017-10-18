@@ -1,6 +1,8 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
+	osgi.core;version=${osgi.core.version},\
+	osgi.cmpn;version=${osgi.core.version},\
 	${bndlib},\
 	bndtools.api;version=latest,\
 	bndtools.core;version=latest,\
@@ -20,9 +22,7 @@
 	org.eclipse.m2e.core,\
 	org.eclipse.m2e.jdt,\
 	org.eclipse.osgi,\
-	org.sonatype.plexus:plexus-build-api,\
-	osgi.core;version=${osgi.core.version},\
-	osgi.cmpn;version=${osgi.core.version}
+	org.sonatype.plexus:plexus-build-api
 
 Bundle-SymbolicName: bndtools.m2e; singleton:=true
 Bundle-ActivationPolicy: lazy

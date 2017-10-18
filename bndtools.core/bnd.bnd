@@ -87,11 +87,11 @@ eclipse.deps: \
 
 -buildpath: \
 	osgi.annotation;version=${osgi.annotation.version},\
+	osgi.core;version=${osgi.core.version},\
+	osgi.cmpn;version=${osgi.cmpn.version},\
 	${bndlib},\
 	${aQute-repository};packages=*,\
 	${aQute-resolve},\
-	osgi.core;version=${osgi.core.version},\
-	osgi.cmpn;version=${osgi.cmpn.version},\
 	${eclipse.deps},\
 	javax.xml,\
 	javax.xml.stream,\
