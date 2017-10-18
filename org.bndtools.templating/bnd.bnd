@@ -3,10 +3,10 @@
 
 -buildpath:\
 	osgi.annotation;version=${osgi.annotation.version},\
-	${bndlib},\
-	${aQute-repository},\
 	osgi.core; version=${osgi.core.version},\
 	osgi.cmpn; version=${osgi.cmpn.version},\
+	${bndlib},\
+	${aQute-repository},\
 	org.eclipse.equinox.common,\
 	org.antlr:ST4:jar:complete,\
 	com.github.spullara.mustache.java:compiler,\

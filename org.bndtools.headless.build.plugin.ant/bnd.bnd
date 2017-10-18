@@ -2,12 +2,12 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
+	osgi.core;version=${osgi.core.version},\
+	osgi.cmpn;version=${osgi.cmpn.version},\
 	${bndlib},\
 	bndtools.api;version=latest,\
 	org.bndtools.headless.build.manager;version=latest,\
-	bndtools.utils;version=project;packages=*,\
-	osgi.core;version=${osgi.core.version},\
-	osgi.cmpn;version=${osgi.cmpn.version}
+	bndtools.utils;version=project;packages=*
 
 -testpath: \
 	${junit}
