@@ -8,6 +8,7 @@ Private-Package: 				\
 	aQute.bnd.*, \
 	aQute.lib.*;-split-package:=first, \
 	aQute.libg.*;-split-package:=first,\
+    org.osgi.annotation.bundle;-split-package:=first,\
     org.osgi.service.*.annotations.*;-split-package:=first
 
 Export-Package: \
