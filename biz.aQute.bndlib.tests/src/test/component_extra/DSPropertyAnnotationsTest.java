@@ -29,7 +29,7 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 		super.setUp();
 
 		Builder b = new Builder();
-		b.setProperty("Private-Package", SimpleDSPropertyAnnotated.class.getPackage().getName());
+		b.setProperty("Private-Package", DSPropertyAnnotationsTest.class.getPackage().getName());
 		b.addClasspath(new File("bin"));
 
 		jar = b.build();
@@ -54,7 +54,7 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 		// Test the defaults
 		xt.assertAttribute(SimpleDSPropertyAnnotated.class.getName(), "scr:component/implementation/@class");
 		xt.assertCount(1, "scr:component/property");
@@ -80,7 +80,7 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 		// Test the defaults
 		xt.assertAttribute(DefaultDSPropertyAnnotated.class.getName(), "scr:component/implementation/@class");
 		xt.assertCount(1, "scr:component/property");
@@ -106,7 +106,7 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 		// Test the defaults
 		xt.assertAttribute(IntDSPropertyAnnotated.class.getName(), "scr:component/implementation/@class");
 		xt.assertCount(1, "scr:component/property");
@@ -134,7 +134,7 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 		// Test the defaults
 		xt.assertAttribute(MultiDSPropertyAnnotated.class.getName(), "scr:component/implementation/@class");
 		xt.assertCount(2, "scr:component/property");
@@ -164,7 +164,7 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 		// Test the defaults
 		xt.assertAttribute(PrefixPropertyAnnotated.class.getName(), "scr:component/implementation/@class");
 		xt.assertCount(1, "scr:component/property");
@@ -192,7 +192,7 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 		// Test the defaults
 		xt.assertAttribute(ArrayPropertyAnnotated.class.getName(), "scr:component/implementation/@class");
 		xt.assertCount(1, "scr:component/property");

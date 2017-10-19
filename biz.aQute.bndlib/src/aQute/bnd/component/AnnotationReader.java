@@ -521,8 +521,9 @@ public class AnnotationReader extends ClassDataCollector {
 
 		private ComponentPropertyTypeDataCollector(Annotation componentPropertyAnnotation,
 				DeclarativeServicesAnnotationError details) {
-			// Component Property annotations added in 1.4
-			component.updateVersion(V1_4);
+			// Component Property annotations added in 1.4, but they just map to
+			// normal DS properties, so there's not really a need to require DS
+			// 1.4. Therefore we just leave the required version as is
 
 			this.methodDescriptor = null;
 			this.details = details;
@@ -625,7 +626,15 @@ public class AnnotationReader extends ClassDataCollector {
 				if (prefixField.isFinal() && (prefixField.getType() == analyzer.getTypeRef("java/lang/String"))
 						&& (c instanceof String)) {
 					prefix = (String) c;
-					component.updateVersion(V1_4);
+
+					// If we have a method descriptor then this is an injected
+					// component property type and the prefix must be processed
+					// and understood by DS 1.4. Otherwise bnd handles the
+					// property prefix mapping transparently here and DS doesn't
+					// need to care
+					if (methodDescriptor != null) {
+						component.updateVersion(V1_4);
+					}
 				} else {
 					analyzer.warning(
 							"Field PREFIX_ in %s is not a static final String field with a compile-time constant value: %s",
@@ -650,7 +659,14 @@ public class AnnotationReader extends ClassDataCollector {
 					}
 				}
 				singleElementAnnotation = sb.toString();
-				component.updateVersion(V1_4);
+				// If we have a method descriptor then this is an injected
+				// component property type and the single elementness must
+				// be processed and understood by DS 1.4. Otherwise bnd handles
+				// the property mapping transparently here and DS doesn't
+				// need to care
+				if (methodDescriptor != null) {
+					component.updateVersion(V1_4);
+				}
 			}
 			for (Entry<String,List<String>> entry : props.entrySet()) {
 				String key = entry.getKey();
