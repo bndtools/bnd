@@ -512,7 +512,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		if (a.keySet().contains("version")) {
 			try {
 				Version.parseVersion(annotation.version());
-				cap.append(";version=").append(annotation.version());
+				cap.append(";version:Version=").append(annotation.version());
 			} catch (Exception e) {
 				analyzer.error("The version declared by the Capability annotation attached to type %s is invalid",
 						current.getFQN());

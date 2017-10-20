@@ -55,6 +55,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertNotNull(p);
 			assertTrue(p.containsKey("provide"));
 			assertEquals("Provided2", p.get("provide"));
+			assertEquals("2", p.get("version:Version"));
 
 			// TODO for some reason these headers aren't included
 			// assertEquals("bar", mainAttributes.getValue("Foo"));
@@ -103,6 +104,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertNotNull(p);
 			assertTrue(p.containsKey("provide"));
 			assertEquals("Provided2", p.get("provide"));
+			assertEquals("2", p.get("version:Version"));
 
 			// TODO for some reason these headers aren't included
 			// assertEquals("bar", mainAttributes.getValue("Foo"));
