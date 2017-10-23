@@ -1,9 +1,12 @@
 package aQute.lib.io;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import junit.framework.TestCase;
 
@@ -257,6 +260,38 @@ public class IOTest extends TestCase {
 			assertTrue(IO.isSymbolicLink(link));
 			assertTrue(Files.readSymbolicLink(link.toPath()).equals(newSource.toPath()));
 		}
+	}
+
+	public void testCreateDirectory_Symlink() throws Exception {
+		Path rootDirectory = Paths.get("generated/tmp/test/" + getName());
+		IO.delete(rootDirectory);
+		rootDirectory = Files.createDirectories(rootDirectory);
+
+		Path target = Files.createDirectories(rootDirectory.resolve("target").toAbsolutePath());
+		assertTrue(target.toFile().exists());
+
+		Path link = Paths.get(rootDirectory.toAbsolutePath().toString(), "link");
+		Path symbolicLink = Files.createSymbolicLink(link, target);
+		assertTrue(IO.isSymbolicLink(symbolicLink));
+
+		IO.mkdirs(symbolicLink);
+		assertTrue(symbolicLink.toFile().exists());
+	}
+
+	public void testCreateDirectory_SymlinkMissingTarget() throws Exception {
+		Path rootDirectory = Paths.get("generated/tmp/test/" + getName());
+		IO.delete(rootDirectory);
+		rootDirectory = Files.createDirectories(rootDirectory);
+
+		Path target = rootDirectory.resolve("target").toAbsolutePath();
+		assertFalse(target.toFile().exists());
+
+		Path link = Paths.get(rootDirectory.toAbsolutePath().toString(), "link");
+		Path symbolicLink = Files.createSymbolicLink(link, target);
+		assertTrue(IO.isSymbolicLink(symbolicLink));
+
+		IO.mkdirs(symbolicLink);
+		assertTrue(symbolicLink.toFile().exists());
 	}
 
 	public void testCollectEncoded() throws Exception {
