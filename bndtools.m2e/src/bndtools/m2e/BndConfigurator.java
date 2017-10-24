@@ -55,17 +55,23 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 
         private final MavenProject project;
 
-        private final Analyzer analyzer;
+        private final Packages exports;
+        private final Packages imports;
+        private final Packages contained;
 
         public MavenProjectInfo(MavenProject project) throws Exception {
-            super();
             this.project = project;
             File file = project.getArtifact().getFile();
             if (file == null) {
                 throw new IllegalStateException("The output file for project " + project.getName() + " does not exist");
             }
-            analyzer = new Analyzer(new Jar(file));
-            analyzer.analyze();
+
+            try (Analyzer analyzer = new Analyzer(new Jar(file))) {
+                analyzer.analyze();
+                exports = analyzer.getExports();
+                imports = analyzer.getImports();
+                contained = analyzer.getContained();
+            }
         }
 
         @Override
@@ -79,17 +85,17 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 
         @Override
         public Packages getExports() {
-            return analyzer.getExports();
+            return exports;
         }
 
         @Override
         public Packages getImports() {
-            return analyzer.getImports();
+            return imports;
         }
 
         @Override
         public Packages getContained() {
-            return analyzer.getContained();
+            return contained;
         }
 
     }
