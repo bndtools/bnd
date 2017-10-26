@@ -19,7 +19,7 @@ import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.URLResource;
+import aQute.bnd.osgi.Resource;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.strings.Strings;
@@ -257,7 +257,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 
 		Jar jar = new Jar(bsn);
 		String path = "aQute/remote/embedded/activator/EmbeddedActivator.class";
-		URLResource resource = new URLResource(getClass().getClassLoader().getResource(path));
+		Resource resource = Resource.fromURL(getClass().getClassLoader().getResource(path));
 		jar.putResource("aQute/remote/embedded/activator/EmbeddedActivator.class", resource);
 
 		Collection<Container> rb = getProject().getRunbundles();

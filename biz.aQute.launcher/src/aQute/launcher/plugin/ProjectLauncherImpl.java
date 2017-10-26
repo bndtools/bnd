@@ -39,7 +39,7 @@ import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
-import aQute.bnd.osgi.URLResource;
+import aQute.bnd.osgi.Resource;
 import aQute.launcher.constants.LauncherConstants;
 import aQute.launcher.pre.EmbeddedLauncher;
 import aQute.lib.strings.Strings;
@@ -313,14 +313,14 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			m.getMainAttributes().putValue("Main-Class", JPM_LAUNCHER_FQN);
 			m.getMainAttributes().putValue("JPM-Classpath", Processor.join(runpathShas));
 			m.getMainAttributes().putValue("JPM-Runbundles", Processor.join(runbundleShas));
-			URLResource jpmLauncher = new URLResource(this.getClass().getResource("/" + JPM_LAUNCHER));
+			Resource jpmLauncher = Resource.fromURL(this.getClass().getResource("/" + JPM_LAUNCHER));
 			jar.putResource(JPM_LAUNCHER, jpmLauncher);
 			doStart(jar, JPM_LAUNCHER_FQN);
 		} else {
 			logger.debug("Use Embedded launcher");
 			m.getMainAttributes().putValue("Main-Class", EMBEDDED_LAUNCHER_FQN);
 			m.getMainAttributes().putValue(EmbeddedLauncher.EMBEDDED_RUNPATH, Processor.join(classpath));
-			URLResource embeddedLauncher = new URLResource(this.getClass().getResource("/" + EMBEDDED_LAUNCHER));
+			Resource embeddedLauncher = Resource.fromURL(this.getClass().getResource("/" + EMBEDDED_LAUNCHER));
 			jar.putResource(EMBEDDED_LAUNCHER, embeddedLauncher);
 			doStart(jar, EMBEDDED_LAUNCHER_FQN);
 		}

@@ -39,7 +39,6 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Resource;
-import aQute.bnd.osgi.URLResource;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.exceptions.Exceptions;
@@ -232,8 +231,8 @@ public class JUnitFramework implements AutoCloseable {
 			setBundleSymbolicName("test-" + n.incrementAndGet());
 		}
 
-		public BundleBuilder addResource(String path, URL url) {
-			return addResource(path, new URLResource(url));
+		public BundleBuilder addResource(String path, URL url) throws IOException {
+			return addResource(path, Resource.fromURL(url));
 		}
 
 		public BundleBuilder addResource(String path, Resource resource) {
@@ -264,7 +263,7 @@ public class JUnitFramework implements AutoCloseable {
 			super.close();
 		}
 
-		public BundleBuilder addResource(Class< ? > class1) {
+		public BundleBuilder addResource(Class< ? > class1) throws IOException {
 			String name = class1.getName();
 			name = name.replace('.', '/') + ".class";
 			addResource(name, class1.getResource("/" + name));

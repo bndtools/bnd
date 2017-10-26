@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 
 import aQute.lib.io.IO;
 
-public class URLResource implements Resource {
+class URLResource implements Resource {
 	private static final ByteBuffer	CLOSED			= ByteBuffer.allocate(0);
 	private ByteBuffer		buffer;
 	private final URL		url;
@@ -18,7 +18,12 @@ public class URLResource implements Resource {
 	private long			lastModified	= -1L;
 	private int						size			= -1;
 
-	public URLResource(URL url) {
+	/**
+	 * This constructor is not for use other than by {@link Resource#fromURL(URL)}.
+	 * 
+	 * @see Resource#fromURL(URL)
+	 */
+	URLResource(URL url) {
 		this.url = url;
 	}
 

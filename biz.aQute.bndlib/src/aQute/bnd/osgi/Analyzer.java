@@ -2739,7 +2739,7 @@ public class Analyzer extends Processor {
 			getClass().getClassLoader();
 			URL url = ClassLoader.getSystemResource(typeRef.getPath());
 			if (url != null)
-				r = new URLResource(url);
+				r = Resource.fromURL(url);
 		}
 		if (r != null) {
 			c = new Clazz(this, typeRef.getPath(), r);
