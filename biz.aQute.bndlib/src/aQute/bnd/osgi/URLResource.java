@@ -1,12 +1,14 @@
 package aQute.bnd.osgi;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.JarURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
+import java.util.jar.JarFile;
 
 import aQute.lib.io.IO;
 
@@ -35,11 +37,6 @@ class URLResource implements Resource {
 	private ByteBuffer getBuffer() throws Exception {
 		if (buffer != null) {
 			return buffer;
-		}
-		if (url.getProtocol().equals("file")) {
-			File file = new File(url.getPath());
-			lastModified = file.lastModified();
-			return buffer = IO.read(file.toPath());
 		}
 		URLConnection conn = openConnection();
 		if (size == -1) {
@@ -112,5 +109,22 @@ class URLResource implements Resource {
 		 * remapped for this URLResouce.
 		 */
 		buffer = CLOSED;
+	}
+
+	/**
+	 * Use JarURLConnection to parse jar: URL into URL to jar URL and entry.
+	 */
+	static class JarURLUtil extends JarURLConnection {
+		JarURLUtil(URL url) throws MalformedURLException {
+			super(url);
+		}
+
+		@Override
+		public JarFile getJarFile() throws IOException {
+			return null;
+		}
+
+		@Override
+		public void connect() throws IOException {}
 	}
 }
