@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
@@ -32,9 +33,18 @@ public class URLResource implements Resource {
 			return buffer;
 		}
 		if (url.getProtocol().equals("file")) {
-			File file = new File(url.getPath());
+			File file = new File(url.toURI());
 			lastModified = file.lastModified();
 			return buffer = IO.read(file.toPath());
+		} else if (url.getProtocol().equals("jar")) {
+			String subUrl = url.toString();
+			int entryStart = subUrl.indexOf("!/");
+			String entry = subUrl.substring(entryStart + 2);
+			subUrl = subUrl.substring(4, entryStart);
+
+			try (Jar jar = Jar.fromResource("tmp", new URLResource(new URL(subUrl)))) {
+				return buffer = jar.getResource(entry).buffer();
+			}
 		}
 		URLConnection conn = openConnection();
 		if (size == -1) {
@@ -47,6 +57,10 @@ public class URLResource implements Resource {
 
 	private URLConnection openConnection() throws Exception {
 		URLConnection conn = url.openConnection();
+		if (conn instanceof JarURLConnection) {
+			// We disable caches for JAR URLs as they lock files
+			conn.setUseCaches(false);
+		}
 		conn.connect();
 		lastModified = conn.getLastModified();
 		int length = conn.getContentLength();

@@ -1,8 +1,11 @@
 package test;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
@@ -13,6 +16,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.osgi.URLResource;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 import junit.framework.TestCase;
@@ -478,6 +482,25 @@ public class ResourcesTest extends TestCase {
 		assertTrue(hasDir);
 		assertFalse(hasContent);
 		IO.delete(tstDir);
+	}
+
+	public void testURLResourceJarLocking() throws Exception {
+		Builder b = new Builder();
+		b.setProperty("Include-Resource", "TargetFolder=testresources/ws/p2/Resources");
+		b.setProperty("-resourceonly", "true");
+		Jar jar = b.build();
+
+		File f = new File("generated/tests/locking.jar");
+		f.getParentFile().mkdirs();
+		jar.write(f);
+
+		URL url = new URL("jar:" + f.toURI() + "!/TargetFolder/resource3.txt");
+
+		try (URLResource resource = new URLResource(url)) {
+			assertEquals("Resource3", IO.reader(resource.buffer(), US_ASCII).readLine());
+		}
+
+		assertTrue(f.delete());
 	}
 
 	static void report(Processor processor) {
