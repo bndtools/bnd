@@ -1,8 +1,12 @@
 package test;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.net.URL;
+import java.nio.file.Files;
 import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
@@ -478,6 +482,25 @@ public class ResourcesTest extends TestCase {
 		assertTrue(hasDir);
 		assertFalse(hasContent);
 		IO.delete(tstDir);
+	}
+
+	public void testURLResourceJarLocking() throws Exception {
+		File f = new File("generated/tmp/test/" + getName() + "/locking.jar");
+		try (Builder b = new Builder()) {
+			b.setProperty("-includeresource", "TargetFolder=testresources/ws/p2/Resources");
+			b.setProperty("-resourceonly", "true");
+			Jar jar = b.build();
+
+			f.getParentFile().mkdirs();
+			jar.write(f);
+		}
+		URL url = new URL("jar:" + f.toURI() + "!/TargetFolder/resource3.txt");
+
+		try (Resource resource = Resource.fromURL(url)) {
+			assertEquals("Resource3", IO.collect(resource.buffer(), UTF_8));
+		}
+
+		Files.delete(f.toPath());
 	}
 
 	static void report(Processor processor) {

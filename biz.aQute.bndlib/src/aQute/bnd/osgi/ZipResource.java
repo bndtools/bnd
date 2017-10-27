@@ -2,6 +2,8 @@ package aQute.bnd.osgi;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,13 +18,31 @@ public class ZipResource implements Resource {
 	private ByteBuffer	buffer;
 	private final ZipFile	zip;
 	private final ZipEntry	entry;
+	private final boolean	closeZipFile;
 	private long			lastModified;
 	private long			size;
 	private String			extra;
 
+	ZipResource(File file, String entryName) throws IOException {
+		this(new ZipFile(file), entryName);
+	}
+
+	private ZipResource(ZipFile zip, String entryName) throws IOException {
+		this(zip, zip.getEntry(entryName), true);
+		if (entry == null) {
+			close();
+			throw new FileNotFoundException("Entry " + entryName + " not found in " + zip.getName());
+		}
+	}
+
 	ZipResource(ZipFile zip, ZipEntry entry) {
+		this(zip, entry, false);
+	}
+
+	private ZipResource(ZipFile zip, ZipEntry entry, boolean closeZipFile) {
 		this.zip = zip;
 		this.entry = entry;
+		this.closeZipFile = closeZipFile;
 		lastModified = -11L;
 		size = entry.getSize();
 		byte[] data = entry.getExtra();
@@ -87,5 +107,9 @@ public class ZipResource implements Resource {
 		return size = getBuffer().limit();
 	}
 
-	public void close() throws IOException {}
+	public void close() throws IOException {
+		if (closeZipFile) {
+			zip.close();
+		}
+	}
 }

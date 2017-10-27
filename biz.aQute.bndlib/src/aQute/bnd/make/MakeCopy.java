@@ -11,7 +11,6 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Resource;
-import aQute.bnd.osgi.URLResource;
 import aQute.bnd.service.MakePlugin;
 public class MakeCopy implements MakePlugin {
 
@@ -32,7 +31,7 @@ public class MakeCopy implements MakePlugin {
 			return new FileResource(f);
 		try {
 			URL url = new URL(from);
-			return new URLResource(url);
+			return Resource.fromURL(url);
 		} catch (MalformedURLException mfue) {
 			// We ignore this
 		}

@@ -20,7 +20,6 @@ import aQute.bnd.make.component.ComponentAnnotationReader;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Resource;
-import aQute.bnd.osgi.URLResource;
 import aQute.lib.collections.MultiMap;
 
 /**
@@ -174,7 +173,7 @@ public class DSTestWiring {
 			// Get the component definition
 			//
 
-			try (Analyzer a = new Analyzer(); Resource resource = new URLResource(url)) {
+			try (Analyzer a = new Analyzer(); Resource resource = Resource.fromURL(url)) {
 				Clazz clazz = new Clazz(a, "", resource);
 				Map<String,String> d = ComponentAnnotationReader.getDefinition(clazz);
 

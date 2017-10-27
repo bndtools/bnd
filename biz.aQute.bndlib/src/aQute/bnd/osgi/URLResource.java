@@ -1,16 +1,18 @@
 package aQute.bnd.osgi;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.JarURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
+import java.util.jar.JarFile;
 
 import aQute.lib.io.IO;
 
-public class URLResource implements Resource {
+class URLResource implements Resource {
 	private static final ByteBuffer	CLOSED			= ByteBuffer.allocate(0);
 	private ByteBuffer		buffer;
 	private final URL		url;
@@ -18,7 +20,12 @@ public class URLResource implements Resource {
 	private long			lastModified	= -1L;
 	private int						size			= -1;
 
-	public URLResource(URL url) {
+	/**
+	 * This constructor is not for use other than by {@link Resource#fromURL(URL)}.
+	 * 
+	 * @see Resource#fromURL(URL)
+	 */
+	URLResource(URL url) {
 		this.url = url;
 	}
 
@@ -30,11 +37,6 @@ public class URLResource implements Resource {
 	private ByteBuffer getBuffer() throws Exception {
 		if (buffer != null) {
 			return buffer;
-		}
-		if (url.getProtocol().equals("file")) {
-			File file = new File(url.getPath());
-			lastModified = file.lastModified();
-			return buffer = IO.read(file.toPath());
 		}
 		URLConnection conn = openConnection();
 		if (size == -1) {
@@ -107,5 +109,22 @@ public class URLResource implements Resource {
 		 * remapped for this URLResouce.
 		 */
 		buffer = CLOSED;
+	}
+
+	/**
+	 * Use JarURLConnection to parse jar: URL into URL to jar URL and entry.
+	 */
+	static class JarURLUtil extends JarURLConnection {
+		JarURLUtil(URL url) throws MalformedURLException {
+			super(url);
+		}
+
+		@Override
+		public JarFile getJarFile() throws IOException {
+			return null;
+		}
+
+		@Override
+		public void connect() throws IOException {}
 	}
 }
