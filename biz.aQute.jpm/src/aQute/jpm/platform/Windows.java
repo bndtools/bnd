@@ -146,6 +146,10 @@ public class Windows extends Platform {
 				for (int i = 0; i < parts.length; i++)
 					pw.printf("vmarg.%d=%s%n", i + 1, parts[i]);
 			}
+
+			if (data.jvmLocation != null && data.jvmLocation.length() != 0) {
+				pw.printf("vm.location=%s%n", data.jvmLocation);
+			}
 		}
 		logger.debug("Ini content {}", IO.collect(ini));
 		return null;
