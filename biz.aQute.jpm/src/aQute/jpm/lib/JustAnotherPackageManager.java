@@ -128,6 +128,7 @@ public class JustAnotherPackageManager {
 	final List<Service>			startedByDaemon		= new ArrayList<Service>();
 	boolean						localInstall		= false;
 	private URLClient			host;
+	private String				jvmLocation			= null;
 	private boolean				underTest			= System.getProperty("jpm.intest") != null;
 	Settings					settings;
 
@@ -1391,4 +1392,13 @@ public class JustAnotherPackageManager {
 		settings.save();
 		return jvm;
 	}
+
+	public void setJvmLocation(String jvmLocation) {
+		this.jvmLocation = jvmLocation;
+	}
+
+	public String getJvmLocation() {
+		return jvmLocation;
+	}
+
 }

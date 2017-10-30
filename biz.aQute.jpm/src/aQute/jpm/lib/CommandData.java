@@ -19,6 +19,8 @@ public class CommandData extends struct {
 	public String		description;
 	@Define(optional = true)
 	public String		jvmArgs;
+	@Define(optional = true)
+	public String		jvmLocation;
 
 	public List<byte[]>	dependencies	= list();
 	public List<byte[]>	runbundles		= list();

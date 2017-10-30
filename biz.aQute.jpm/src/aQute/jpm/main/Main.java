@@ -158,6 +158,9 @@ public class Main extends ReporterAdapter {
 		@Description("Provide or override the JVM arguments")
 		String jvmargs();
 
+		@Description("Provide or override the JVM location(for windows only)")
+		String jvmlocation();
+
 		@Description("Provide the name of the main class used to launch this command or service in fully qualified form, e.g. aQute.main.Main")
 		String main();
 
@@ -257,6 +260,9 @@ public class Main extends ReporterAdapter {
 		@Description("Specify the home directory of jpm. (can also be permanently set with 'jpm settings jpm.home=...'")
 		String home();
 
+		@Description("Provide or override the JVM location when installing jpm(for windows only)")
+		String jvmlocation();
+
 		@Description("Wait for a key press, might be useful when you want to see the result before it is overwritten by a next command")
 		boolean key();
 
@@ -350,6 +356,11 @@ public class Main extends ReporterAdapter {
 				url = settings.get("library.url");
 
 			jpm = new JustAnotherPackageManager(this, platform, homeDir, binDir);
+
+			if (opts.jvmlocation() != null) {
+				jpm.setJvmLocation(opts.jvmlocation());
+			}
+
 			platform.setJpm(jpm);
 			jpm.setLibrary(url == null ? null : new URI(url));
 
@@ -669,6 +680,10 @@ public class Main extends ReporterAdapter {
 			data.jvmArgs = opts.jvmargs();
 			update = true;
 		}
+		if (opts.jvmlocation() != null) {
+			data.jvmLocation = opts.jvmlocation();
+			update = true;
+		}
 		if (opts.name() != null) {
 			data.name = opts.name();
 			update = true;
@@ -834,7 +849,15 @@ public class Main extends ReporterAdapter {
 				File f = new File(s).getAbsoluteFile();
 				if (f.exists()) {
 					CommandLine cl = new CommandLine(this);
-					String help = cl.execute(this, "install", Arrays.asList("-fl", f.getAbsolutePath()));
+					String help = null;
+
+					if (jpm.getJvmLocation() != null) {
+						help = cl.execute(this, "install",
+								Arrays.asList("-fl", "-J", jpm.getJvmLocation(), f.getAbsolutePath()));
+					} else {
+						help = cl.execute(this, "install", Arrays.asList("-fl", f.getAbsolutePath()));
+					}
+
 					if (help != null) {
 						error(help);
 						return;
