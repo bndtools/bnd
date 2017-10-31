@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -17,6 +18,10 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,6 +37,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -62,7 +68,6 @@ import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
-import aQute.lib.collections.ExtList;
 import aQute.lib.collections.SortedList;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.hex.Hex;
@@ -149,7 +154,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private boolean					fixup			= true;
 	long							modified;
 	Processor						parent;
-	List<File>						included;
+	private final CopyOnWriteArrayList<File>	included		= new CopyOnWriteArrayList<>();
 
 	CL								pluginLoader;
 	Collection<String>				filter;
@@ -986,10 +991,16 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 	}
 
-	public synchronized void addIncluded(File file) {
-		if (included == null)
-			included = new ArrayList<File>();
-		included.add(file);
+	public void addIncluded(File file) {
+		addIncludedIfAbsent(file);
+	}
+
+	private boolean addIncludedIfAbsent(File file) {
+		return included.addIfAbsent(file);
+	}
+
+	private boolean removeIncluded(File file) {
+		return included.remove(file);
 	}
 
 	/**
@@ -1035,11 +1046,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 							if (n >= 0)
 								ext = value.substring(n);
 
-							File tmp = File.createTempFile("url", ext);
-							try {
-								IO.copy(url.openStream(), tmp);
-								doIncludeFile(tmp, overwrite, p);
+							Path tmp = Files.createTempFile("url", ext);
+							try (Resource resource = Resource.fromURL(url)) {
+								try (OutputStream out = IO.outputStream(tmp)) {
+									resource.write(out);
+								}
+								Files.setLastModifiedTime(tmp, FileTime.fromMillis(resource.lastModified()));
+								doIncludeFile(tmp.toFile(), overwrite, p);
 							} finally {
+								removeIncluded(tmp.toFile());
 								IO.delete(tmp);
 							}
 						} catch (MalformedURLException mue) {
@@ -1078,32 +1093,30 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @throws IOException
 	 */
 	public void doIncludeFile(File file, boolean overwrite, Properties target, String extensionName) throws Exception {
-		if (included != null && included.contains(file)) {
+		if (!addIncludedIfAbsent(file)) {
 			error("Cyclic or multiple include of %s", file);
-		} else {
-			addIncluded(file);
-			updateModified(file.lastModified(), file.toString());
-			Properties sub;
-			if (file.getName().toLowerCase().endsWith(".mf")) {
-				try (InputStream in = IO.stream(file)) {
-					sub = getManifestAsProperties(in);
-				}
-			} else
-				sub = loadProperties(file);
+		}
+		updateModified(file.lastModified(), file.toString());
+		Properties sub;
+		if (file.getName().toLowerCase().endsWith(".mf")) {
+			try (InputStream in = IO.stream(file)) {
+				sub = getManifestAsProperties(in);
+			}
+		} else
+			sub = loadProperties(file);
 
-			doIncludes(file.getParentFile(), sub);
-			// make sure we do not override properties
-			for (Map.Entry< ? , ? > entry : sub.entrySet()) {
-				String key = (String) entry.getKey();
-				String value = (String) entry.getValue();
+		doIncludes(file.getParentFile(), sub);
+		// make sure we do not override properties
+		for (Map.Entry< ? , ? > entry : sub.entrySet()) {
+			String key = (String) entry.getKey();
+			String value = (String) entry.getValue();
 
-				if (overwrite || !target.containsKey(key)) {
-					target.setProperty(key, value);
-				} else if (extensionName != null) {
-					String extensionKey = extensionName + "." + key;
-					if (!target.containsKey(extensionKey))
-						target.setProperty(extensionKey, value);
-				}
+			if (overwrite || !target.containsKey(key)) {
+				target.setProperty(key, value);
+			} else if (extensionName != null) {
+				String extensionKey = extensionName + "." + key;
+				if (!target.containsKey(extensionKey))
+					target.setProperty(extensionKey, value);
 			}
 		}
 	}
@@ -1122,13 +1135,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return false;
 
 		boolean changed = updateModified(propertiesFile.lastModified(), "properties file");
-		if (included != null) {
-			for (File file : included) {
-				if (changed)
-					break;
+		for (File file : getIncluded()) {
+			if (changed)
+				break;
 
-				changed |= !file.exists() || updateModified(file.lastModified(), "include file: " + file);
-			}
+			changed |= !file.exists() || updateModified(file.lastModified(), "include file: " + file);
 		}
 
 		profile = getProperty(PROFILE); // Used in property access
@@ -1153,7 +1164,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 *
 	 */
 	public void forceRefresh() {
-		included = null;
+		included.clear();
 		Processor p = getParent();
 		properties = (p != null) ? new UTF8Properties(p.getProperties0()) : new UTF8Properties();
 
@@ -1190,7 +1201,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				} else
 					this.modified = modified;
 
-				included = null;
+				included.clear();
 				Properties p = loadProperties(propertiesFile);
 				setProperties(p);
 			} else {
@@ -2367,16 +2378,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			// Get the includes (actually should parse the header
 			// to see if they override or only provide defaults?
 
-			List<File> result = getIncluded();
-			if (result != null) {
-				ExtList<File> reversed = new ExtList<File>(result);
-				Collections.reverse(reversed);
-
-				for (File included : reversed) {
-					fl = findHeader(included, header);
-					if (fl != null)
-
-						return fl;
+			for (Iterator<File> iter = new ArrayDeque<>(getIncluded()).descendingIterator(); iter.hasNext();) {
+				File file = iter.next();
+				fl = findHeader(file, header);
+				if (fl != null) {
+					return fl;
 				}
 			}
 		}

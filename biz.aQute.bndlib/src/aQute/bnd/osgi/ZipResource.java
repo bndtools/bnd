@@ -2,12 +2,12 @@ package aQute.bnd.osgi;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -23,8 +23,8 @@ public class ZipResource implements Resource {
 	private long			size;
 	private String			extra;
 
-	ZipResource(File file, String entryName) throws IOException {
-		this(new ZipFile(file), entryName);
+	ZipResource(Path path, String entryName) throws IOException {
+		this(new ZipFile(path.toFile()), entryName);
 	}
 
 	private ZipResource(ZipFile zip, String entryName) throws IOException {
