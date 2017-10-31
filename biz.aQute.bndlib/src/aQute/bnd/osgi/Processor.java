@@ -999,6 +999,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return included.addIfAbsent(file);
 	}
 
+	private boolean removeIncluded(File file) {
+		return included.remove(file);
+	}
+
 	/**
 	 * Inspect the properties and if you find -includes parse the line included
 	 * manifest files or properties files. The files are relative from the given
@@ -1050,6 +1054,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 								Files.setLastModifiedTime(tmp, FileTime.fromMillis(resource.lastModified()));
 								doIncludeFile(tmp.toFile(), overwrite, p);
 							} finally {
+								removeIncluded(tmp.toFile());
 								IO.delete(tmp);
 							}
 						} catch (MalformedURLException mue) {
