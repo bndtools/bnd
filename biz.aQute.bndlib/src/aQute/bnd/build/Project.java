@@ -13,6 +13,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -2318,16 +2319,11 @@ public class Project extends Processor {
 
 			// Try the included filed in reverse order (last has highest
 			// priority)
-			List<File> included = getIncluded();
-			if (included != null) {
-				List<File> copy = new ArrayList<File>(included);
-				Collections.reverse(copy);
-
-				for (File file : copy) {
-					if (replace(file, pattern, replace)) {
-						logger.debug("replaced version in file {}", file);
-						return;
-					}
+			for (Iterator<File> iter = new ArrayDeque<>(getIncluded()).descendingIterator(); iter.hasNext();) {
+				File file = iter.next();
+				if (replace(file, pattern, replace)) {
+					logger.debug("replaced version in file {}", file);
+					return;
 				}
 			}
 			logger.debug("no version in included files");
