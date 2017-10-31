@@ -2256,8 +2256,8 @@ public class Project extends Processor {
 	}
 
 	public Jar getValidJar(URL url) throws Exception {
-		try (InputStream in = url.openStream()) {
-			Jar jar = new Jar(url.getFile().replace('/', '.'), in, System.currentTimeMillis());
+		try (Resource resource = Resource.fromURL(url)) {
+			Jar jar = Jar.fromResource(url.getFile().replace('/', '.'), resource);
 			return getValidJar(jar, url.toString());
 		}
 	}

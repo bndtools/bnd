@@ -1042,10 +1042,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 							if (n >= 0)
 								ext = value.substring(n);
 
-							File tmp = File.createTempFile("url", ext);
-							try {
-								IO.copy(url.openStream(), tmp);
-								doIncludeFile(tmp, overwrite, p);
+							Path tmp = Files.createTempFile("url", ext);
+							try (Resource resource = Resource.fromURL(url)) {
+								try (OutputStream out = IO.outputStream(tmp)) {
+									resource.write(out);
+								}
+								Files.setLastModifiedTime(tmp, FileTime.fromMillis(resource.lastModified()));
+								doIncludeFile(tmp.toFile(), overwrite, p);
 							} finally {
 								IO.delete(tmp);
 							}
