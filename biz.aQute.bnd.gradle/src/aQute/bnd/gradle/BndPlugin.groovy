@@ -209,6 +209,9 @@ public class BndPlugin implements Plugin<Project> {
         description 'Assemble the project bundles.'
         deleteAllActions() /* Replace the standard task actions */
         enabled !bndProject.isNoBundles()
+        configurations.archives.artifacts.files.find {
+          archiveName = it.name /* use first artifact as archiveName */
+        }
         ext.projectDirInputsExcludes = [] /* Additional excludes for projectDir inputs */
         /* all other files in the project like bnd and resources */
         inputs.files {
