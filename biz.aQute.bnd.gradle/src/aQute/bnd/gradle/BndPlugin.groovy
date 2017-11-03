@@ -115,7 +115,6 @@ public class BndPlugin implements Plugin<Project> {
 
       bnd.ext.allSrcDirs = files(bndProject.getAllsourcepath())
       /* Set up dependencies */
-      Collection<String> projectDependencies = bndProject.getDependson()*.getName()
       dependencies {
         compile pathFiles(bndProject.getBuildpath())
         runtime files(bndProject.getSrcOutput())
@@ -233,11 +232,7 @@ public class BndPlugin implements Plugin<Project> {
           compileJava.classpath
         }
         /* bnd can include from -dependson */
-        inputs.files { 
-          projectDependencies.collect { String dependency ->
-            tasks.getByPath(":${dependency}:jar")
-          }
-        }
+        inputs.files buildDependencies(name, { tasks.getByPath(it) })
         /* Workspace and project configuration changes should trigger jar task */
         inputs.files bndProject.getWorkspace().getPropertiesFile(),
           bndProject.getWorkspace().getIncluded() ?: [],
@@ -261,6 +256,14 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
+      buildNeeded {
+        dependsOn testDependencies(name)
+      }
+
+      buildDependents {
+        dependsOn dependents(name)
+      }
+
       task('release') {
         description 'Release the project to the release repository.'
         group 'release'
@@ -278,9 +281,7 @@ public class BndPlugin implements Plugin<Project> {
 
       task('releaseNeeded') {
         description 'Release the project and all projects it depends on.'
-        dependsOn projectDependencies.collect { String dependency ->
-          ":${dependency}:releaseNeeded"
-        }, release
+        dependsOn buildDependencies(name), release
         group 'release'
       }
 
@@ -316,9 +317,7 @@ public class BndPlugin implements Plugin<Project> {
 
       task('checkNeeded') {
         description 'Runs all checks on the project and all projects it depends on.'
-        dependsOn projectDependencies.collect { String dependency ->
-          ":${dependency}:checkNeeded"
-        }, check
+        dependsOn testDependencies(name), check
         group 'verification'
       }
 
@@ -332,9 +331,7 @@ public class BndPlugin implements Plugin<Project> {
 
       task('cleanNeeded') {
         description 'Cleans the project and all projects it depends on.'
-        dependsOn projectDependencies.collect { String dependency ->
-          ":${dependency}:cleanNeeded"
-        }, clean
+        dependsOn testDependencies(name), clean
         group 'build'
       }
 
@@ -511,7 +508,7 @@ project.workspace:      ${rootDir}
 project.name:           ${project.name}
 project.dir:            ${projectDir}
 target:                 ${buildDir}
-project.dependson:      ${projectDependencies}
+project.dependson:      ${bndProject.getDependson()*.getName()}
 project.sourcepath:     ${sourceSets.main.java.sourceDirectories.asPath}
 project.output:         ${compileJava.destinationDir}
 project.buildpath:      ${compileJava.classpath.asPath}
@@ -555,6 +552,30 @@ Project ${project.name}
         c.getType() == TYPE.PROJECT
       }.collect { Container c ->
         ":${c.getProject().getName()}:jar"
+      }
+    }
+  }
+
+  private Closure buildDependencies(String taskName, Closure transformer = { it }) {
+    return {
+      bndProject.getBuildDependencies()*.getName().collect { String dependency ->
+        transformer(":${dependency}:${taskName}")
+      }
+    }
+  }
+
+  private Closure testDependencies(String taskName, Closure transformer = { it }) {
+    return {
+      bndProject.getTestDependencies()*.getName().collect { String dependency ->
+        transformer(":${dependency}:${taskName}")
+      }
+    }
+  }
+
+  private Closure dependents(String taskName, Closure transformer = { it }) {
+    return {
+      bndProject.getDependents()*.getName().collect { String dependency ->
+        transformer(":${dependency}:${taskName}")
       }
     }
   }
