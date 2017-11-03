@@ -117,7 +117,10 @@ public class Project extends Processor {
 	public final static String		SHA_256							= "SHA-256";
 	final Workspace					workspace;
 	private final AtomicBoolean		preparedPaths					= new AtomicBoolean();
-	final Collection<Project>		dependson						= new LinkedHashSet<Project>();
+	private final Set<Project>		dependenciesFull				= new LinkedHashSet<Project>();
+	private final Set<Project>		dependenciesBuild				= new LinkedHashSet<Project>();
+	private final Set<Project>		dependenciesTest				= new LinkedHashSet<Project>();
+	private final Set<Project>		dependents						= new LinkedHashSet<Project>();
 	final Collection<Container>		classpath						= new LinkedHashSet<Container>();
 	final Collection<Container>		buildpath						= new LinkedHashSet<Container>();
 	final Collection<Container>		testpath						= new LinkedHashSet<Container>();
@@ -263,23 +266,27 @@ public class Project extends Processor {
 				throw new CircularDependencyException(workspace.trail.toString() + "," + this);
 			}
 			try {
-				String prefix = getBase().getAbsolutePath();
+				String basePath = getBase().getAbsolutePath();
 
-				dependson.clear();
+				dependenciesFull.clear();
+				dependenciesBuild.clear();
+				dependenciesTest.clear();
+				dependents.clear();
+
 				buildpath.clear();
+				testpath.clear();
 				sourcepath.clear();
 				allsourcepath.clear();
 				bootclasspath.clear();
 
 				// JIT
-				testpath.clear();
 				runpath.clear();
 				runbundles.clear();
 				runfw.clear();
 
 				// We use a builder to construct all the properties for
 				// use.
-				setProperty("basedir", getBase().getAbsolutePath());
+				setProperty("basedir", basePath);
 
 				// If a bnd.bnd file exists, we read it.
 				// Otherwise, we just do the build properties.
@@ -300,7 +307,7 @@ public class Project extends Processor {
 
 					File dir = getFile(removeDuplicateMarker(e.getKey()));
 
-					if (!dir.getAbsolutePath().startsWith(prefix)) {
+					if (!dir.getAbsolutePath().startsWith(basePath)) {
 						error("The source directory lies outside the project %s directory: %s", this, dir)
 								.header(Constants.DEFAULT_PROP_SRC_DIR).context(e.getKey());
 						continue;
@@ -337,9 +344,7 @@ public class Project extends Processor {
 				// our path. The -dependson allows you to build them before.
 				// The values are possibly negated globbing patterns.
 
-				// dependencies.add( getWorkspace().getProject("cnf"));
-
-				Set<String> requiredProjectNames = new LinkedHashSet<String>(
+				Set<String> requiredProjectNames = new LinkedHashSet<>(
 						getMergedParameters(Constants.DEPENDSON).keySet());
 
 				// Allow DependencyConstributors to modify requiredProjectNames
@@ -348,10 +353,10 @@ public class Project extends Processor {
 					dc.addDependencies(this, requiredProjectNames);
 
 				Instructions is = new Instructions(requiredProjectNames);
-
-				Set<Instruction> unused = new HashSet<Instruction>();
 				Collection<Project> projects = getWorkspace().getAllProjects();
-				Collection<Project> dependencies = is.select(projects, unused, false);
+				projects.remove(this); // since -dependson could use a wildcard
+				Set<Instruction> unused = new HashSet<>();
+				Set<Project> buildDeps = new LinkedHashSet<>(is.select(projects, unused, false));
 
 				for (Instruction u : unused)
 					msgs.MissingDependson_(u.getInput());
@@ -361,12 +366,15 @@ public class Project extends Processor {
 				// path and extracts the projects so we can build them
 				// before.
 
-				doPath(buildpath, dependencies, parseBuildpath(), bootclasspath, false, BUILDPATH);
-				doPath(testpath, dependencies, parseTestpath(), bootclasspath, false, TESTPATH);
+				doPath(buildpath, buildDeps, parseBuildpath(), bootclasspath, false, BUILDPATH);
+
+				Set<Project> testDeps = new LinkedHashSet<>(buildDeps);
+				doPath(testpath, testDeps, parseTestpath(), bootclasspath, false, TESTPATH);
+
 				if (!delayRunDependencies) {
-					doPath(runfw, dependencies, parseRunFw(), null, false, RUNFW);
-					doPath(runpath, dependencies, parseRunpath(), null, false, RUNPATH);
-					doPath(runbundles, dependencies, parseRunbundles(), null, true, RUNBUNDLES);
+					doPath(runfw, testDeps, parseRunFw(), null, false, RUNFW);
+					doPath(runpath, testDeps, parseRunpath(), null, false, RUNPATH);
+					doPath(runbundles, testDeps, parseRunbundles(), null, true, RUNBUNDLES);
 				}
 
 				// We now know all dependent projects. But we also depend
@@ -376,20 +384,21 @@ public class Project extends Processor {
 				// by the inPrepare flag, will throw an exception if we
 				// are circular.
 
-				Set<Project> done = new HashSet<Project>();
-				done.add(this);
+				Set<Project> visited = new HashSet<>();
+				visited.add(this);
+				for (Project project : testDeps) {
+					project.traverse(dependenciesFull, this, visited);
+				}
 
-				for (Project project : dependencies)
-					project.traverse(dependson, done);
+				dependenciesBuild.addAll(dependenciesFull);
+				dependenciesBuild.retainAll(buildDeps);
+				dependenciesTest.addAll(dependenciesFull);
+				dependenciesTest.retainAll(testDeps);
 
-				for (Project project : dependson) {
+				for (Project project : dependenciesFull) {
 					allsourcepath.addAll(project.getSourcePath());
 				}
-				// [cs] Testing this commented out. If bad issues, never
-				// setting this to true means that
-				// TONS of extra preparing is done over and over again on
-				// the same projects.
-				// if (isOk())
+
 				preparedPaths.set(true);
 			} finally {
 				workspace.trail.remove(this);
@@ -450,16 +459,16 @@ public class Project extends Processor {
 		return getFile(getProperty(Constants.DEFAULT_PROP_TARGET_DIR));
 	}
 
-	private void traverse(Collection<Project> dependencies, Set<Project> visited) throws Exception {
-		if (visited.contains(this))
-			return;
+	private void traverse(Set<Project> dependencies, Project dependent, Set<Project> visited)
+			throws Exception {
+		if (visited.add(this)) {
+			for (Project project : getTestDependencies()) {
+				project.traverse(dependencies, this, visited);
+			}
+			dependencies.add(this);
+		}
 
-		visited.add(this);
-
-		for (Project project : getDependson())
-			project.traverse(dependencies, visited);
-
-		dependencies.add(this);
+		dependents.add(dependent);
 	}
 
 	/**
@@ -792,9 +801,58 @@ public class Project extends Processor {
 		}
 	}
 
+	/**
+	 * Return the full transitive dependencies of this project.
+	 * 
+	 * @return A set of the full transitive dependencies of this project.
+	 * @throws Exception
+	 */
 	public Collection<Project> getDependson() throws Exception {
 		prepare();
-		return dependson;
+		return dependenciesFull;
+	}
+
+	/**
+	 * Return the direct build dependencies of this project.
+	 * 
+	 * @return A set of the direct build dependencies of this project.
+	 * @throws Exception
+	 */
+	public Set<Project> getBuildDependencies() throws Exception {
+		prepare();
+		return dependenciesBuild;
+	}
+
+	/**
+	 * Return the direct test dependencies of this project.
+	 * <p>
+	 * The result includes the direct build dependencies of this project as well, so
+	 * the result is a super set of {@link #getBuildDependencies()}.
+	 * 
+	 * @return A set of the test build dependencies of this project.
+	 * @throws Exception
+	 */
+	public Set<Project> getTestDependencies() throws Exception {
+		prepare();
+		return dependenciesTest;
+	}
+
+	/**
+	 * Return the full transitive dependents of this project.
+	 * <p>
+	 * The result includes projects which have build and test dependencies on this
+	 * project.
+	 * <p>
+	 * Since the full transitive dependents of this project is updated during the
+	 * computation of other project dependencies, until all projects are prepared,
+	 * the dependents result may be partial.
+	 * 
+	 * @return A set of the transitive set of projects which depend on this project.
+	 * @throws Exception
+	 */
+	public Set<Project> getDependents() throws Exception {
+		prepare();
+		return dependents;
 	}
 
 	public Collection<Container> getBuildpath() throws Exception {
@@ -815,7 +873,7 @@ public class Project extends Processor {
 	 */
 	private void justInTime(Collection<Container> path, List<Container> entries, boolean noproject, String name) {
 		if (delayRunDependencies && path.isEmpty())
-			doPath(path, dependson, entries, null, noproject, name);
+			doPath(path, dependenciesFull, entries, null, noproject, name);
 	}
 
 	public Collection<Container> getRunpath() throws Exception {
@@ -884,7 +942,7 @@ public class Project extends Processor {
 		// to tell ant that the project names
 		for (File dependent : eclipse.getDependents()) {
 			Project required = workspace.getProject(dependent.getName());
-			dependson.add(required);
+			dependenciesFull.add(required);
 		}
 		for (File f : eclipse.getClasspath()) {
 			buildpath.add(new Container(f, null));
