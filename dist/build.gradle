@@ -11,7 +11,7 @@ configure(rootProject) {
 
   task build {
     dependsOn ":${buildProject.name}:build"
-    dependsOn ":${buildProject.name}:checkNeeded"
+    dependsOn ":${buildProject.name}:buildNeeded"
     dependsOn ":${buildProject.name}:releaseNeeded"
     dependsOn ":${buildProject.name}:index"
     description "Assembles, tests and releases the ${buildProject.name} project."
