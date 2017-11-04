@@ -97,13 +97,37 @@ public class BndWorkspacePlugin implements Plugin<Object> {
         gradle.bndWorkspaceConfigure(workspace)
       }
 
-      /* Add each project and its dependencies to the graph */
-      projectNames.each { String projectName ->
-        include projectName
-        workspace.getProject(projectName)?.getDependson()*.getName().each {
-          include it
+      /* Prepare each project in the workspace to establish complete 
+       * dependencies and dependents information.
+       */
+      workspace.getAllProjects().each { it.prepare() }
+
+      /* Add each project and its dependents to the graph */
+      Set<String> projectGraph = new LinkedHashSet<>()
+      while (!projectNames.empty) {
+        String projectName = projectNames.head()
+        projectGraph.add(projectName)
+        def p = workspace.getProject(projectName)
+        if (p) {
+          projectNames.addAll(p.getDependents()*.getName())
         }
+        projectNames.removeAll(projectGraph)
       }
+
+      /* Add each project and its dependencies to the graph */
+      projectNames = projectGraph
+      projectGraph = new LinkedHashSet<>()
+      while (!projectNames.empty) {
+        String projectName = projectNames.head()
+        projectGraph.add(projectName)
+        def p = workspace.getProject(projectName)
+        if (p) {
+          projectNames.addAll(p.getTestDependencies()*.getName())
+        }
+        projectNames.removeAll(projectGraph)
+      }
+
+      include projectGraph as String[]
 
       /* Apply workspace plugin to root project */
       gradle.projectsLoaded { gradle ->
