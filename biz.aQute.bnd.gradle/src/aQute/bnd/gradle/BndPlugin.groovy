@@ -150,7 +150,11 @@ public class BndPlugin implements Plugin<Project> {
           }
           if (!javacBootclasspath.empty) {
             fork = true
-            bootClasspath = javacBootclasspath.asPath
+            if (hasProperty('bootstrapClasspath')) { // gradle 4.3
+              bootstrapClasspath = javacBootclasspath
+            } else {
+              bootClasspath = javacBootclasspath.asPath
+            }
           }
           if (!javacProfile.empty) {
             compilerArgs.addAll(['-profile', javacProfile])
