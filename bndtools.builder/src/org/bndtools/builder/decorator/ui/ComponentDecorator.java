@@ -118,7 +118,7 @@ public class ComponentDecorator extends LabelProvider implements ILightweightLab
         boolean found = false;
 
         try {
-            if (resource.findMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_INFINITE).length > 0) {
+            if (resource.findMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE).length > 0) {
                 found = true;
             }
 
