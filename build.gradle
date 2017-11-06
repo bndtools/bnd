@@ -20,14 +20,14 @@ subprojects {
     /* test folders are not part of jar but used by unit tests  */
     def testfolders = ['testresources/', 'testdata/']
     jar {
-      projectDirInputsExcludes << '.*'
-      projectDirInputsExcludes += testfolders
+      projectDirInputsExcludes.add('.*')
+      projectDirInputsExcludes.addAll(testfolders)
     }
     test {
       testLogging {
         exceptionFormat 'full'
       }
-      inputs.files fileTree(projectDir) {
+      inputs.files(fileTree(projectDir) {
         include testfolders
         exclude {
           def f = it.file
@@ -40,7 +40,7 @@ subprojects {
             return false
           }
         }
-      }
+      }).withPropertyName('testFolders')
       if (System.properties['maven.repo.local']) {
         systemProperty 'maven.repo.local', IO.getFile(rootProject.rootDir, System.properties['maven.repo.local'])
       }

@@ -35,7 +35,7 @@ class FileSetRepositoryConvention {
     bundleCollection = project.files()
     bundles(project.sourceSets.main.runtimeClasspath, project.configurations.archives.artifacts.files)
     // need to programmatically add to inputs since @InputFiles in a convention is not processed
-    task.inputs.files bundleCollection
+    task.inputs.files(bundleCollection).withPropertyName('bundles')
   }
 
   /**

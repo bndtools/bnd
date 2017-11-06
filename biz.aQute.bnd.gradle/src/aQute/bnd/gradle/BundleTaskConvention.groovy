@@ -38,7 +38,6 @@ import aQute.bnd.osgi.Processor
 import aQute.bnd.version.MavenVersion
 import aQute.lib.utf8properties.UTF8Properties
 import org.gradle.api.GradleException
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.Project
@@ -54,7 +53,6 @@ class BundleTaskConvention {
   private final Project project
   private File bndfile
   private final StringBuilder instructions
-  private Configuration configuration
   private final ConfigurableFileCollection classpathCollection
   private boolean classpathModified
   private SourceSet sourceSet
@@ -72,11 +70,11 @@ class BundleTaskConvention {
     instructions = new StringBuilder()
     classpathCollection = project.files()
     setSourceSet(project.sourceSets.main)
-    configuration = project.configurations.findByName('compileClasspath') ?: project.configurations.compile
     classpathModified = false
     // need to programmatically add to inputs since @InputFiles in a convention is not processed
-    task.inputs.files classpathCollection, { getBndfile() }
-    task.inputs.property 'bnd', { getBnd() }
+    task.inputs.files(classpathCollection).withPropertyName('classpath')
+    task.inputs.file({ getBndfile() }).withPropertyName('bndfile')
+    task.inputs.property('bnd', { getBnd() })
   }
 
   /**
@@ -143,27 +141,6 @@ class BundleTaskConvention {
   public void bnd(Map<String, ?> map) {
     map.each { key, value ->
       instructions.append(key).append('=').append(value).append('\n')
-    }
-  }
-
-  /**
-   * Get the configuration property.
-   */
-  @Deprecated
-  public Configuration getConfiguration() {
-    task.logger.warn 'The configuration property is deprecated and replaced by the classpath property.'
-    return configuration
-  }
-  /**
-   * Set the configuration property.
-   */
-  @Deprecated
-  public void setConfiguration(Configuration configuration) {
-    task.logger.warn 'The configuration property is deprecated and replaced by the classpath property.'
-    this.configuration = configuration
-    if (!classpathModified) {
-      setClasspath(configuration)
-      classpathModified = false
     }
   }
 

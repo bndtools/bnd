@@ -150,7 +150,11 @@ public class BndPlugin implements Plugin<Project> {
           }
           if (!javacBootclasspath.empty) {
             fork = true
-            bootClasspath = javacBootclasspath.asPath
+            if (hasProperty('bootstrapClasspath')) { // gradle 4.3
+              bootstrapClasspath = javacBootclasspath
+            } else {
+              bootClasspath = javacBootclasspath.asPath
+            }
           }
           if (!javacProfile.empty) {
             compilerArgs.addAll(['-profile', javacProfile])
@@ -181,7 +185,7 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       processResources {
-        outputs.files {
+        outputs.files({
           FileCollection sourceDirectories = sourceSets.main.resources.sourceDirectories
           source*.absolutePath.collect { String file ->
             sourceDirectories.each {
@@ -189,11 +193,11 @@ public class BndPlugin implements Plugin<Project> {
             }
             new File(destinationDir, file)
           }
-        }
+        }).withPropertyName('resources')
       }
 
       processTestResources {
-        outputs.files {
+        outputs.files({
           FileCollection sourceDirectories = sourceSets.test.resources.sourceDirectories
           source*.absolutePath.collect { String file ->
             sourceDirectories.each {
@@ -201,7 +205,7 @@ public class BndPlugin implements Plugin<Project> {
             }
             new File(destinationDir, file)
           }
-        }
+        }).withPropertyName('testResources')
       }
 
       jar {
@@ -213,7 +217,7 @@ public class BndPlugin implements Plugin<Project> {
         }
         ext.projectDirInputsExcludes = [] /* Additional excludes for projectDir inputs */
         /* all other files in the project like bnd and resources */
-        inputs.files {
+        inputs.files({
           fileTree(projectDir) { tree ->
             sourceSets.each { sourceSet -> /* exclude sourceSet dirs */
               tree.exclude sourceSet.allSource.sourceDirectories.collect {
@@ -226,22 +230,20 @@ public class BndPlugin implements Plugin<Project> {
             tree.exclude project.relativePath(buildDir) /* exclude buildDir */
             tree.exclude projectDirInputsExcludes /* user specified excludes */
           }
-        }
+        }).withPropertyName('projectFolder')
         /* bnd can include from -buildpath */
-        inputs.files {
+        inputs.files({
           compileJava.classpath
-        }
+        }).withPropertyName('buildpath')
         /* bnd can include from -dependson */
-        inputs.files buildDependencies(name, { tasks.getByPath(it) })
+        inputs.files(buildDependencies(name, { tasks.getByPath(it) })).withPropertyName('buildDependencies')
         /* Workspace and project configuration changes should trigger jar task */
-        inputs.files bndProject.getWorkspace().getPropertiesFile(),
-          bndProject.getWorkspace().getIncluded() ?: [],
+        inputs.files(bndProject.getWorkspace().getPropertiesFile(),
+          bndProject.getWorkspace().getIncluded(),
           bndProject.getPropertiesFile(),
-          bndProject.getIncluded() ?: []
-        outputs.files {
-          configurations.archives.artifacts.files
-        }
-        outputs.file new File(buildDir, Constants.BUILDFILES)
+          bndProject.getIncluded()).withPropertyName('bndFiles')
+        outputs.files({ configurations.archives.artifacts.files }).withPropertyName('artifacts')
+        outputs.file(new File(buildDir, Constants.BUILDFILES)).withPropertyName('buildfiles')
         doLast {
           File[] built
           try {
@@ -298,9 +300,7 @@ public class BndPlugin implements Plugin<Project> {
         enabled !bndis(Constants.NOJUNITOSGI) && !bndUnprocessed(Constants.TESTCASES, '').empty
         ext.ignoreFailures = false
         inputs.files jar
-        outputs.dir {
-          new File(testResultsDir, name)
-        }
+        outputs.dir({ new File(testResultsDir, name) }).withPropertyName('testResults')
         doLast {
           try {
             bndProject.test(new File(testResultsDir, name), null)
@@ -345,9 +345,7 @@ public class BndPlugin implements Plugin<Project> {
               dependsOn assemble
               group 'export'
               ext.destinationDir = new File(distsDir, 'executable')
-              outputs.file {
-                new File(destinationDir, "${bndrun}.jar")
-              }
+              outputs.file({ new File(destinationDir, "${bndrun}.jar") }).withPropertyName('bndrunJar')
               doFirst {
                 project.mkdir(destinationDir)
               }
@@ -391,9 +389,7 @@ public class BndPlugin implements Plugin<Project> {
               dependsOn assemble
               group 'export'
               ext.destinationDir = new File(distsDir, "runbundles/${bndrun}")
-              outputs.dir {
-                destinationDir
-              }
+              outputs.dir({ destinationDir }).withPropertyName('destinationDir')
               doFirst {
                 project.delete(destinationDir)
                 project.mkdir(destinationDir)
@@ -437,7 +433,7 @@ public class BndPlugin implements Plugin<Project> {
               dependsOn assemble
               group 'export'
               ext.failOnChanges = false
-              outputs.file runFile
+              outputs.file(runFile).withPropertyName('runFile')
               doLast {
                 Bndrun.createBndrun(bndProject.getWorkspace(), runFile).withCloseable { run ->
                   logger.info 'Resolving runbundles required for {}', run.getPropertiesFile()
