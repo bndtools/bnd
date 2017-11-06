@@ -1,9 +1,6 @@
 apply plugin: 'groovy'
 
 repositories {
-  maven { 
-    url 'https://dl.bintray.com/bnd/gradle'
-  }
   mavenCentral()
 }
 
@@ -20,7 +17,6 @@ test {
     dependsOn jar
     def source = file('testresources')
     def target = file("${buildDir}/testresources")
-    inputs.dir source
     doFirst { // copy test resources into build dir
         project.delete(target)
         copy {

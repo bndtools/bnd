@@ -35,13 +35,14 @@ task('index') {
     exclude '**/*-javadoc.jar'
   }
 
-  inputs.files { bundles.files }
+  inputs.files({ bundles.files }).withPropertyName('bundles')
 
   /* Index files */
   def index_uncompressed = new File(releaserepo, 'index.xml')
   def index_compressed = new File(releaserepo, 'index.xml.gz')
 
-  outputs.files index_uncompressed, index_compressed
+  outputs.file(index_uncompressed).withPropertyName('index_uncompressed')
+  outputs.file(index_compressed).withPropertyName('index_compressed')
 
   doLast {
     /* indexer */
