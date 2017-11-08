@@ -35,7 +35,6 @@ import aQute.bnd.make.Make;
 import aQute.bnd.make.MakeBnd;
 import aQute.bnd.make.MakeCopy;
 import aQute.bnd.make.component.ServiceComponent;
-import aQute.bnd.make.metatype.MetatypePlugin;
 import aQute.bnd.maven.PomPropertiesResource;
 import aQute.bnd.maven.PomResource;
 import aQute.bnd.metatype.MetatypeAnnotations;
@@ -1573,7 +1572,6 @@ public class Builder extends Analyzer {
 	static MakeCopy				makeCopy			= new MakeCopy();
 	static ServiceComponent		serviceComponent	= new ServiceComponent();
 	static DSAnnotations		dsAnnotations		= new DSAnnotations();
-	static MetatypePlugin		metatypePlugin		= new MetatypePlugin();
 	static MetatypeAnnotations	metatypeAnnotations	= new MetatypeAnnotations();
 
 	@Override
@@ -1582,7 +1580,6 @@ public class Builder extends Analyzer {
 		list.add(makeCopy);
 		list.add(serviceComponent);
 		list.add(dsAnnotations);
-		list.add(metatypePlugin);
 		list.add(metatypeAnnotations);
 		super.setTypeSpecificPlugins(list);
 	}

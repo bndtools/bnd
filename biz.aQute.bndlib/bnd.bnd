@@ -33,7 +33,6 @@ Export-Package: \
 	aQute.bnd.build.model.clauses;-noimport:=true,\
 	aQute.bnd.build.model.conversions;-noimport:=true,\
 	aQute.service.reporter;-noimport:=true,\
-	aQute.bnd.testing;-noimport:=true,\
 	aQute.bnd.osgi.repository;-noimport:=true,\
 	aQute.bnd.maven.support;-noimport:=true,\
 	aQute.bnd.url;-noimport:=true,\

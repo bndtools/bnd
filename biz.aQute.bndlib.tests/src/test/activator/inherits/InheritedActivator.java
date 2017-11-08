@@ -1,11 +1,11 @@
 package test.activator.inherits;
 
 import org.osgi.framework.BundleActivator;
+import org.osgi.service.component.annotations.Component;
 
-import aQute.bnd.annotation.component.Component;
 import test.activator.Activator;
 
-@Component(name = "inheritedactivator", provide = BundleActivator.class)
+@Component(name = "inheritedactivator", service = BundleActivator.class)
 public class InheritedActivator extends Activator {
 
 }

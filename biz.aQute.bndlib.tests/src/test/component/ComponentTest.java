@@ -121,7 +121,7 @@ public class ComponentTest extends TestCase {
 	public void testScalaObject() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("jar/com.test.scala.jar"));
-		b.setProperty("Service-Component", "*");
+		b.setProperty("Service-Component", "com.test.scala.Service");
 		b.setProperty("Export-Package", "com.test.scala.*");
 		Jar jar = b.build();
 		Manifest m = jar.getManifest();
@@ -145,9 +145,7 @@ public class ComponentTest extends TestCase {
 		b.setClasspath(new File[] {
 				IO.getFile("bin")
 		});
-		b.setProperty("Service-Component", "*InheritedActivator");
 		b.setProperty("Private-Package", "test.activator.inherits");
-		b.setProperty("-fixupmessages.bndannodeprecated", "Bnd DS annotations are deprecated");
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.build();
 		System.err.println(b.getErrors());

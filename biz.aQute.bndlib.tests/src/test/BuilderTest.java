@@ -261,6 +261,7 @@ public class BuilderTest extends BndTestCase {
 
 	public void testWarnAboutPrivateImports() throws Exception {
 		Builder p3 = setupP3();
+		p3.addClasspath(new File("jar/osgi.jar"));
 		p3.setExportPackage("test.activator.inherits;version=0.0.0");
 		p3.build();
 		assertTrue(p3.check("Import package test.activator not found in any bundle on the -buildpath."));
@@ -279,7 +280,7 @@ public class BuilderTest extends BndTestCase {
 		assertTrue(p1.check());
 
 		Builder p2 = new Builder();
-		p1.setProperty("Bundle-SymbolicName", "p2");
+		p2.setProperty("Bundle-SymbolicName", "p2");
 		p2.setExportPackage("test.activator.inherits");
 		p2.addClasspath(new File("bin"));
 		p2.build();
@@ -685,6 +686,11 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
+	public @interface TestAnnotation {}
+
+	@TestAnnotation
+	public static class Target {}
+
 	/**
 	 * Dave Smith <dave.smith@candata.com> I have pulled the latest from git and
 	 * am testing out 2.0 with our current application. I am getting the
@@ -699,15 +705,15 @@ public class BuilderTest extends BndTestCase {
 	public static void testClasses() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.setProperty("x", "${classes;CONCRETE;ANNOTATION;aQute.bnd.annotation.component.Component}");
-			b.setProperty("y", "${classes;CONCRETE;ANNOTATED;aQute.bnd.annotation.component.Component}");
+			b.setProperty("x", "${classes;CONCRETE;ANNOTATION;test.BuilderTest$TestAnnotation}");
+			b.setProperty("y", "${classes;CONCRETE;ANNOTATED;test.BuilderTest$TestAnnotation}");
 			b.setProperty("z", "${classes;CONCRETE;ANNOTATEDX;x.y.Z}");
 			b.setPrivatePackage("test");
 			b.addClasspath(IO.getFile("bin"));
 			b.build();
 			String s = b.getProperty("x");
 			assertEquals(s, b.getProperty("y"));
-			assertTrue(s.contains("test.Target"));
+			assertTrue(s.contains("test.BuilderTest$Target"));
 			assertEquals("${classes;CONCRETE;ANNOTATEDX;x.y.Z}", b.getProperty("z"));
 			assertTrue(b.check("ANNOTATEDX"));
 		} finally {
