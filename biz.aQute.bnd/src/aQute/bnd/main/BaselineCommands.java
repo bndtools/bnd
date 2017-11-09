@@ -91,7 +91,10 @@ public class BaselineCommands {
 		@Description("Show all, also unchanged")
 		boolean all();
 
-		@Description("Packages to baseline")
+		@Description("On changed, list API changes")
+		boolean verbose();
+
+		@Description("Packages to baseline (comma delimited)")
 		String packages();
 	}
 
@@ -195,6 +198,10 @@ public class BaselineCommands {
 							info.suggestedVersion != null && info.suggestedVersion.compareTo(info.newerVersion) <= 0
 									? "ok" : info.suggestedVersion, //
 							info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
+
+					if (info.packageDiff.getDelta() != Delta.UNCHANGED && opts.verbose()) {
+						doPackageDiff(info.packageDiff);
+					}
 				}
 			}
 		}
@@ -221,6 +228,61 @@ public class BaselineCommands {
 			doExportPackage(sorted, out);
 			out.close();
 		}
+	}
+
+	protected void doPackageDiff(Diff diff) {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("\t");
+
+		for (Diff curDiff : diff.getChildren()) {
+			if (curDiff.getDelta() == Delta.UNCHANGED) {
+				continue;
+			}
+
+			doDiff(curDiff, sb);
+		}
+	}
+
+	protected void doDiff(Diff diff, StringBuilder sb) {
+		String type = String.valueOf(diff.getType());
+
+		String output = String.format("%s%-5s %-10s %s", sb, getShortDelta(diff.getDelta()), type.toLowerCase(),
+				diff.getName());
+
+		bnd.out.println(output);
+
+		sb.append("\t");
+
+		for (Diff curDiff : diff.getChildren()) {
+			if (curDiff.getDelta() == Delta.UNCHANGED) {
+				continue;
+			}
+
+			doDiff(curDiff, sb);
+		}
+
+		sb.deleteCharAt(sb.length() - 1);
+	}
+
+	protected String getShortDelta(Delta delta) {
+		if (delta == Delta.ADDED) {
+			return "+";
+		} else if (delta == Delta.CHANGED) {
+			return "~";
+		} else if (delta == Delta.MAJOR) {
+			return "MAJ";
+		} else if (delta == Delta.MICRO) {
+			return "MIC";
+		} else if (delta == Delta.MINOR) {
+			return "MIN";
+		} else if (delta == Delta.REMOVED) {
+			return "-";
+		}
+
+		String deltaString = delta.toString();
+
+		return String.valueOf(deltaString.charAt(0));
 	}
 
 	/**

@@ -113,7 +113,20 @@ Work is in progress to simplify this.
 ||-failok ||Same as the property -failok. The current run will create a JAR file even if there were errors. ||
 ||-exceptions ||Will print the exception when the software has ran into a bad exception and bails out. Normally only a message is printed. For debugging or diagnostic reasons, the exception stack trace can be very helpful. ||
 
-### print ( -verify | -manifest | -list | - all ) * <file>.jar +
+### baseline ( --all | --diff | --fixup STRING | --packages STRING | --quiet | --verbose ) * <newer jar> <older jar>
+
+Perform a baseline operation between the supplied jars. The set of differences will be listed per package. The following arguments may be supplied.
+
+* --all - Show all, also unchanged
+* --diff - Show any differences
+* --fixup - Output file with fixup info
+* --packages - Packages to baseline (comma delimited)
+* --quiet - Be quiet, only report errors
+* --verbose - On changed, list API changes
+
+ bnd baseline --diff newer.jar older.jar
+
+### print ( -verify | -manifest | -list | -all ) * <file>.jar +
 
 The print function will take a list of JAR file and print one or more aspect of the JAR files. The following aspects can be added.
 
