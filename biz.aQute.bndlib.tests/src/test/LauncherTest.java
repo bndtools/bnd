@@ -502,12 +502,6 @@ public class LauncherTest extends TestCase {
 		return project;
 	}
 
-	static Project getProjectFromWorkspaceWithSpace() throws Exception {
-		Workspace workspace = Workspace.getWorkspace(IO.getFile("testresources/a space"));
-		Project project = workspace.getProject("test");
-		return project;
-	}
-
 	public static void testTester() throws Exception {
 		Project project = getProject();
 		project.clear();

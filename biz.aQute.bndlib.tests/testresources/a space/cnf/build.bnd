@@ -1,7 +1,0 @@
-dir: ${workspace}/../../../
-
--pluginpath: ${dir}/biz.aQute.repository/generated/biz.aQute.repository.jar
-
--plugin:\
-	aQute.lib.deployer.FileRepo; name=Bndtools Local; location=${workspace}/cnf/local,\
-	aQute.lib.deployer.FileRepo; name=Build;          location=${dir}/cnf/repo
