@@ -28,7 +28,6 @@ import org.xml.sax.InputSource;
 
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
@@ -159,15 +158,14 @@ public class ComponentTest extends TestCase {
 	}
 
 	/**
-	 * A non-FQN entry but we demand no annotations, should generate an error
-	 * and no component
+	 * A non-FQN entry, should generate an error and no component
 	 */
 
-	public void testNonFQNAndNoAnnotations() throws Exception {
+	public void testNonFQN() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource",
 				"org/osgi/impl/service/coordinator/AnnotationWithJSR14.class=jar/AnnotationWithJSR14.jclass");
-		b.setProperty("Service-Component", "*;" + Constants.NOANNOTATIONS + "=true");
+		b.setProperty("Service-Component", "*");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 		System.err.println(b.getErrors());
