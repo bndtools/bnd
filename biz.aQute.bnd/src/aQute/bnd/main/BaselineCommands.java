@@ -90,6 +90,9 @@ public class BaselineCommands {
 
 		@Description("Show all, also unchanged")
 		boolean all();
+
+		@Description("Packages to baseline")
+		String packages();
 	}
 
 	/**
@@ -121,7 +124,8 @@ public class BaselineCommands {
 
 							try (Jar newer = pb.build()) {
 								differ.setIgnore(pb.getProperty(Constants.DIFFIGNORE));
-								baseline(opts, newer, older);
+								baseline(opts, newer, older,
+										opts.packages() != null ? new Instructions(opts.packages()) : null);
 								bnd.getInfo(b);
 							}
 						}
@@ -145,10 +149,10 @@ public class BaselineCommands {
 
 		Jar nj = new Jar(newer);
 		Jar oj = new Jar(older);
-		baseline(opts, nj, oj);
+		baseline(opts, nj, oj, opts.packages() != null ? new Instructions(opts.packages()) : null);
 	}
 
-	private void baseline(baseLineOptions opts, Jar newer, Jar older)
+	private void baseline(baseLineOptions opts, Jar newer, Jar older, Instructions packages)
 			throws FileNotFoundException, UnsupportedEncodingException, IOException, Exception {
 		PrintStream out = null;
 
@@ -156,7 +160,7 @@ public class BaselineCommands {
 			out = new PrintStream(bnd.getFile(opts.fixup()), "UTF-8");
 		}
 
-		Set<Info> infos = baseline.baseline(newer, older, null);
+		Set<Info> infos = baseline.baseline(newer, older, packages);
 		BundleInfo bundleInfo = baseline.getBundleInfo();
 
 		Info[] sorted = infos.toArray(new Info[0]);
