@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import aQute.bnd.annotation.metatype.Configurable;
 import aQute.bnd.annotation.metatype.Meta;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Annotation;
@@ -73,7 +72,7 @@ public class MetaTypeReader extends WriteResource {
 		// Set all the defaults.
 
 		String rtype = method.getGenericReturnType();
-		String id = Configurable.mangleMethodName(method.getName());
+		String id = mangleMethodName(method.getName());
 		String name = Clazz.unCamel(id);
 
 		int cardinality = 0;
@@ -353,5 +352,22 @@ public class MetaTypeReader extends WriteResource {
 	@Override
 	public long lastModified() {
 		return 0;
+	}
+
+	private static String mangleMethodName(String id) {
+		StringBuilder sb = new StringBuilder(id);
+		for (int i = 0; i < sb.length(); i++) {
+			char c = sb.charAt(i);
+			boolean twice = i < sb.length() - 1 && sb.charAt(i + 1) == c;
+			if (c == '$' || c == '_') {
+				if (twice)
+					sb.deleteCharAt(i + 1);
+				else if (c == '$')
+					sb.deleteCharAt(i--); // Remove dollars
+				else
+					sb.setCharAt(i, '.'); // Make _ into .
+			}
+		}
+		return sb.toString();
 	}
 }
