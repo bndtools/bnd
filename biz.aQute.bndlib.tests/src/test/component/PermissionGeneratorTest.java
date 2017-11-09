@@ -81,8 +81,7 @@ public class PermissionGeneratorTest extends BndTestCase {
 
 		/* @formatter:off */
 		assertEquals("Imported packages",
-			     new TreeSet<>(Arrays.asList("aQute.bnd.annotation.metatype",
-			                                 "aQute.bnd.differ",
+			     new TreeSet<>(Arrays.asList("aQute.bnd.differ",
 			                                 "aQute.bnd.header",
 			                                 "aQute.bnd.osgi", 
 			                                 "aQute.bnd.service.diff", 
@@ -95,7 +94,6 @@ public class PermissionGeneratorTest extends BndTestCase {
 			                                 "junit.framework", 
 			                                 "org.osgi.framework", 
 			                                 "org.osgi.service.component", 
-			                                 "org.osgi.service.event", 
 			                                 "org.osgi.service.log", 
 			                                 "org.w3c.dom",
 			                                 "org.xml.sax")),

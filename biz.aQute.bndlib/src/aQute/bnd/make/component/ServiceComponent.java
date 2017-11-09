@@ -2,7 +2,6 @@ package aQute.bnd.make.component;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -13,7 +12,6 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.make.metatype.MetaTypeReader;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Clazz;
-import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Processor;
@@ -117,105 +115,14 @@ public class ServiceComponent implements AnalyzerPlugin {
 		private void componentEntry(Map<String,Map<String,String>> serviceComponents, String name,
 				Map<String,String> info) throws Exception, IOException {
 
-			boolean annotations = !Processor.isTrue(info.get(NOANNOTATIONS));
 			boolean fqn = Verifier.isFQN(name);
-
-			if (annotations) {
-
-				// Annotations possible!
-
-				Collection<Clazz> annotatedComponents = analyzer.getClasses("", QUERY.ANNOTATED.toString(),
-						"aQute.bnd.annotation.component.Component", //
-						QUERY.NAMED.toString(), name //
-				);
-
-				if (fqn) {
-					if (annotatedComponents.isEmpty()) {
-
-						// No annotations, fully specified in header
-
-						createComponentResource(serviceComponents, name, info);
-					} else {
-
-						// We had a FQN so expect only one
-
-						for (Clazz c : annotatedComponents) {
-							annotated(serviceComponents, c, info);
-						}
-					}
-				} else {
-
-					// We did not have an FQN, so expect the use of wildcards
-
-					if (annotatedComponents.isEmpty())
-						checkAnnotationsFeasible(name);
-					else
-						for (Clazz c : annotatedComponents) {
-							annotated(serviceComponents, c, info);
-						}
-				}
-			} else {
-				// No annotations
-				if (fqn)
-					createComponentResource(serviceComponents, name, info);
-				else
-					error("Set to %s but entry %s is not an FQN ", NOANNOTATIONS, name);
-
-			}
+			if (fqn)
+				createComponentResource(serviceComponents, name, info);
+			else
+				error("Entry %s is not an FQN ", name);
 		}
 
-		/**
-		 * Check if annotations are actually feasible looking at the class
-		 * format. If the class format does not provide annotations then it is
-		 * no use specifying annotated components.
-		 * 
-		 * @param name
-		 * @throws Exception
-		 */
-		private Collection<Clazz> checkAnnotationsFeasible(String name) throws Exception {
-			Collection<Clazz> not = analyzer.getClasses("", QUERY.NAMED.toString(), name //
-			);
 
-			if (not.isEmpty()) {
-				if ("*".equals(name))
-					return not;
-				error("Specified %s but could not find any class matching this pattern", name);
-			}
-
-			for (Clazz c : not) {
-				if (c.getFormat().hasAnnotations())
-					return not;
-			}
-
-			warning("Wildcards are used (%s) requiring annotations to decide what is a component. Wildcard maps to classes that are compiled with java.target < 1.5. Annotations were introduced in Java 1.5",
-					name);
-
-			return not;
-		}
-
-		void annotated(Map<String,Map<String,String>> components, Clazz c, Map<String,String> info) throws Exception {
-			analyzer.warning(
-					"%s annotation used in class %s. Bnd DS annotations are deprecated as of Bnd 3.2 and support will be removed in Bnd 4.0. Please change to use OSGi DS annotations.",
-					"aQute.bnd.annotation.component.Component", c);
-			// Get the component definition
-			// from the annotations
-			Map<String,String> map = ComponentAnnotationReader.getDefinition(c, this);
-
-			// Pick the name, the annotation can override
-			// the name.
-			String localname = map.get(COMPONENT_NAME);
-			if (localname == null)
-				localname = c.getFQN();
-
-			// Override the component info without manifest
-			// entries. We merge the properties though.
-
-			String merged = Processor.merge(info.remove(COMPONENT_PROPERTIES), map.remove(COMPONENT_PROPERTIES));
-			if (merged != null && merged.length() > 0)
-				map.put(COMPONENT_PROPERTIES, merged);
-			map.putAll(info);
-			createComponentResource(components, localname, map);
-		}
 
 		private void createComponentResource(Map<String,Map<String,String>> components, String name,
 				Map<String,String> info) throws Exception {

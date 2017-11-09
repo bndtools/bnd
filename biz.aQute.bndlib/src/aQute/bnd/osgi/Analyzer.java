@@ -535,9 +535,6 @@ public class Analyzer extends Processor {
 			public void annotation(Annotation a) {
 				String name = a.getName().getFQN();
 				switch (name) {
-					case "aQute.bnd.annotation.Version" :
-						warning("%s annotation used in class %s. Bnd versioning annotations are deprecated as of Bnd 3.2 and support will be removed in Bnd 4.0. Please change to use OSGi versioning annotations.",
-								name, clazz);
 					case "org.osgi.annotation.versioning.Version" :
 						// Check version
 						String version = a.get("value");
@@ -1837,12 +1834,6 @@ public class Analyzer extends Processor {
 
 		TypeRef r6pt = getTypeRefFromFQN("org.osgi.annotation.versioning.ProviderType");
 		if (c.annotations.contains(r6pt)) {
-			return true;
-		}
-		TypeRef pt = getTypeRefFromFQN("aQute.bnd.annotation.ProviderType");
-		if (c.annotations.contains(pt)) {
-			warning("%s annotation used in class %s. Bnd versioning annotations are deprecated as of Bnd 3.2 and support will be removed in Bnd 4.0. Please change to use OSGi versioning annotations.",
-					"aQute.bnd.annotation.ProviderType", c);
 			return true;
 		}
 		return false;
