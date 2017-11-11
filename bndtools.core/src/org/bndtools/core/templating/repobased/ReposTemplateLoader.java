@@ -1,11 +1,9 @@
 package org.bndtools.core.templating.repobased;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -37,10 +35,13 @@ import org.osgi.util.promise.Promises;
 import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.Workspace;
-import aQute.bnd.deployer.repository.FixedIndexedRepo;
+import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
+import aQute.bnd.repository.osgi.OSGiRepository;
+import aQute.lib.strings.Strings;
 import aQute.service.reporter.Reporter;
 import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
@@ -161,7 +162,7 @@ public class ReposTemplateLoader implements TemplateLoader {
         return accumulator;
     }
 
-    private static void addPreferenceConfiguredRepos(List<Repository> repos, Reporter reporter) {
+    private void addPreferenceConfiguredRepos(List<Repository> repos, Reporter reporter) {
         BndPreferences bndPrefs = null;
         try {
             bndPrefs = new BndPreferences();
@@ -172,24 +173,27 @@ public class ReposTemplateLoader implements TemplateLoader {
         if (bndPrefs != null && bndPrefs.getEnableTemplateRepo()) {
             List<String> repoUris = bndPrefs.getTemplateRepoUriList();
             try {
-                FixedIndexedRepo prefsRepo = loadRepo(repoUris);
+                OSGiRepository prefsRepo = loadRepo(repoUris, reporter);
                 repos.add(prefsRepo);
-            } catch (IOException | URISyntaxException ex) {
+            } catch (Exception ex) {
                 reporter.exception(ex, "Error loading preference repository: %s", repoUris);
             }
         }
     }
 
-    private static FixedIndexedRepo loadRepo(List<String> uris) throws IOException, URISyntaxException {
-        FixedIndexedRepo repo = new FixedIndexedRepo();
-        StringBuilder sb = new StringBuilder();
-        for (Iterator<String> iter = uris.iterator(); iter.hasNext();) {
-            sb.append(iter.next());
-            if (iter.hasNext())
-                sb.append(',');
+    private OSGiRepository loadRepo(List<String> uris, Reporter reporter) throws Exception {
+        OSGiRepository repo = new OSGiRepository();
+        repo.setReporter(reporter);
+        if (workspace != null) {
+            repo.setRegistry(workspace);
+        } else {
+            Processor p = new Processor();
+            p.addBasicPlugin(new HttpClient(executor));
+            repo.setRegistry(p);
         }
-        repo.setLocations(sb.toString());
+        Map<String,String> map = new HashMap<>();
+        map.put("locations", Strings.join(uris));
+        repo.setProperties(map);
         return repo;
     }
-
 }

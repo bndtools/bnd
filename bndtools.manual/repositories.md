@@ -168,9 +168,9 @@ Name        Description                                   Required?
 `root`      The location of the Maven repository.         No. Default: `$HOME/.m2/repository`
 ------------------------------------------------------------------------------------------------------
 
-Note that if you use the [Bundle Plugin for Maven](http://felix.apache.org/site/apache-felix-maven-bundle-plugin-bnd.html) then you can also use the [OBR](#obr-repository) repository type, since the Bundle Plugin generates an OBR index file whenever `maven install` is executed. For example:
+Note that if you use the [Bundle Plugin for Maven](http://felix.apache.org/site/apache-felix-maven-bundle-plugin-bnd.html) then you can also use the OBR repository type, since the Bundle Plugin generates an OBR index file whenever `maven install` is executed. For example:
 
-    aQute.bnd.deployer.repository.FixedIndexedRepo;\
+    aQute.bnd.repository.osgi.OSGiRepository;\
             locations='file:${user.home}/.m2/repository/repository.xml';\
             name='Maven Repo'
 

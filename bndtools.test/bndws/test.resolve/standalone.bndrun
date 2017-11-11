@@ -11,7 +11,7 @@
 	        index               =       ${build}/central.json
 
 -plugin.enroute.distro = \
-	aQute.bnd.deployer.repository.FixedIndexedRepo; \
+	aQute.bnd.repository.osgi.OSGiRepository; \
 	        name		=       Distro; \
 	        locations	=       https://raw.githubusercontent.com/osgi/osgi.enroute/master/cnf/distro/index.xml
 
