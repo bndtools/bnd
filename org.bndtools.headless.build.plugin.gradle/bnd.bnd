@@ -23,4 +23,3 @@ Conditional-Package: \
 	aQute.libg.*;-split-package:=merge-first
 Private-Package: \
 	org.bndtools.headless.build.plugin.gradle
-Service-Component: *

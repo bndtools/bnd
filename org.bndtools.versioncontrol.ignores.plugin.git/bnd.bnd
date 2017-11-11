@@ -14,4 +14,3 @@ Bundle-ActivationPolicy: lazy
 
 Private-Package: \
 	org.bndtools.versioncontrol.ignores.plugin.git
-Service-Component: *

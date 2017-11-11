@@ -14,6 +14,5 @@ Bundle-ActivationPolicy: lazy
 
 Private-Package:  \
 	org.bndtools.headless.build.manager
-Service-Component: *
 Export-Package:  \
 	org.bndtools.headless.build.manager.api;provide:=true
