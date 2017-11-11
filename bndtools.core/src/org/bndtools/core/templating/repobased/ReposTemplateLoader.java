@@ -11,11 +11,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+import java.util.stream.Collectors;
 import org.bndtools.templating.Template;
 import org.bndtools.templating.TemplateEngine;
 import org.bndtools.templating.TemplateLoader;
-import org.bndtools.utils.collections.CollectionUtils;
 import org.osgi.framework.Constants;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -28,11 +27,9 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.osgi.service.repository.Repository;
-import org.osgi.util.function.Function;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.Promises;
-import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
@@ -108,58 +105,35 @@ public class ReposTemplateLoader implements TemplateLoader {
         repos.addAll(workspaceRepos);
         addPreferenceConfiguredRepos(repos, reporter);
 
-        // Generate a Promise<List<Template>> for each repository and add to an accumulator
-        Promise<List<Template>> accumulator = Promises.resolved((List<Template>) new LinkedList<Template>());
-        for (final Repository repo : repos) {
-            final Deferred<List<Template>> deferred = new Deferred<>();
-
-            final Promise<List<Template>> current = deferred.getPromise();
-            accumulator = accumulator.then(new Success<List<Template>,List<Template>>() {
-                @Override
-                public Promise<List<Template>> call(Promise<List<Template>> resolved) throws Exception {
-                    final List<Template> prefix = resolved.getValue();
-                    return current.map(new Function<List<Template>,List<Template>>() {
-                        @Override
-                        public List<Template> apply(List<Template> t) {
-                            return CollectionUtils.append(prefix, t);
-                        }
-                    });
-                }
-            });
-
-            executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    List<Template> templates = new LinkedList<>();
-                    Map<Requirement,Collection<Capability>> providerMap = repo.findProviders(Collections.singleton(requirement));
-                    if (providerMap != null) {
-                        Collection<Capability> candidates = providerMap.get(requirement);
-                        if (candidates != null) {
-                            for (Capability cap : candidates) {
-                                IdentityCapability idcap = ResourceUtils.getIdentityCapability(cap.getResource());
-                                Object id = idcap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
-                                Object ver = idcap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-                                try {
-                                    String engineName = (String) cap.getAttributes().get("engine");
-                                    if (engineName == null)
-                                        engineName = "stringtemplate";
-                                    TemplateEngine engine = engines.get(engineName);
-                                    if (engine != null)
-                                        templates.add(new CapabilityBasedTemplate(cap, locator, engine));
-                                    else
-                                        reporter.error("Error loading template from resource '%s' version %s: no Template Engine available matching '%s'", id, ver, engineName);
-                                } catch (Exception e) {
-                                    reporter.error("Error loading template from resource '%s' version %s: %s", id, ver, e.getMessage());
-                                }
-                            }
-                        }
+        Promise<List<Template>> promise = repos.stream().map(repo -> {
+            Deferred<List<Template>> deferred = new Deferred<>();
+            executor.submit(() -> {
+                List<Template> templates = new LinkedList<>();
+                Map<Requirement,Collection<Capability>> providerMap = repo.findProviders(Collections.singleton(requirement));
+                Collection<Capability> candidates = providerMap.get(requirement);
+                for (Capability cap : candidates) {
+                    IdentityCapability idcap = ResourceUtils.getIdentityCapability(cap.getResource());
+                    Object id = idcap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+                    Object ver = idcap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+                    try {
+                        String engineName = (String) cap.getAttributes().get("engine");
+                        if (engineName == null)
+                            engineName = "stringtemplate";
+                        TemplateEngine engine = engines.get(engineName);
+                        if (engine != null)
+                            templates.add(new CapabilityBasedTemplate(cap, locator, engine));
+                        else
+                            reporter.error("Error loading template from resource '%s' version %s: no Template Engine available matching '%s'", id, ver, engineName);
+                    } catch (Exception e) {
+                        reporter.error("Error loading template from resource '%s' version %s: %s", id, ver, e.getMessage());
                     }
-                    deferred.resolve(templates);
                 }
+                deferred.resolve(templates);
             });
-        }
+            return deferred.getPromise();
+        }).collect(Collectors.collectingAndThen(Collectors.toList(), p -> Promises.all(p).map(ll -> ll.stream().flatMap(List::stream).collect(Collectors.toList()))));
 
-        return accumulator;
+        return promise;
     }
 
     private void addPreferenceConfiguredRepos(List<Repository> repos, Reporter reporter) {
