@@ -8,10 +8,18 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 
 import aQute.bnd.header.Parameters;
+import aQute.lib.io.IO;
 
 public class GitRepoPreferences {
 
-    public static final String INITIAL_GITHUB_REPOS = "osgi/enroute.workspace;branch=origin/bnd-4.0, bndtools/workspace;branch=origin/4.0";
+    public static final String INITIAL_GITHUB_REPOS;
+    static {
+        try {
+            INITIAL_GITHUB_REPOS = IO.collect(GitRepoPreferences.class.getResourceAsStream("initialrepos.txt"));
+        } catch (IOException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
 
     private static final String PREF_GITHUB_REPOS = "githubRepos";
     private static final String PREF_GIT_REPOS = "gitRepos";
