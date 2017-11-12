@@ -119,7 +119,8 @@ public class ServiceComponent implements AnalyzerPlugin {
 			if (fqn)
 				createComponentResource(serviceComponents, name, info);
 			else
-				error("Entry %s is not an FQN ", name);
+				error(Constants.SERVICE_COMPONENT
+						+ " entry '%s' is not a FQN. Bnd no longer supports the deprecated Bnd DS annotations.", name);
 		}
 
 
