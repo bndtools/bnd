@@ -40,7 +40,11 @@ public class PromiseExecutor implements Executor {
 
 	@Override
 	public void execute(Runnable runnable) {
-		executor.execute(runnable);
+		executor().execute(runnable);
+	}
+
+	public Executor executor() {
+		return executor;
 	}
 
 	public <V> Deferred<V> deferred() {
@@ -48,15 +52,11 @@ public class PromiseExecutor implements Executor {
 	}
 
 	public <V> Promise<V> resolved(V value) {
-		Deferred<V> deferred = deferred();
-		deferred.resolve(value);
-		return deferred.getPromise();
+		return Promises.resolved(value);
 	}
 
 	public <V> Promise<V> failed(Throwable failure) {
-		Deferred<V> deferred = deferred();
-		deferred.fail(failure);
-		return deferred.getPromise();
+		return Promises.failed(failure);
 	}
 
 	public <V, S extends V> Promise<List<V>> all(Collection<Promise<S>> promises) {
