@@ -63,9 +63,9 @@ public interface PomConfiguration {
 	boolean transitive(boolean deflt);
 
 	/**
-	 * Sets the time in milliseconds when to check for changes in the pom-files
+	 * Sets the time in seconds when to check for changes in the pom-files
 	 */
-	// default: 5000ms
-	int pollTime(int pollTimeInSecs);
+	// default: 5 Minutes
+	int poll_time(int pollTimeInSecs);
 
 }

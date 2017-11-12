@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -18,7 +18,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
+import org.osgi.util.promise.Deferred;
+import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.Success;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Workspace;
@@ -35,6 +40,7 @@ import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
@@ -54,27 +60,31 @@ import aQute.service.reporter.Reporter;
 @BndPlugin(name = "PomRepository")
 public class BndPomRepository extends BaseRepository
 		implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Actionable, Closeable {
-	static final String			MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
+	private final static Logger		logger				= LoggerFactory.getLogger(BndPomRepository.class);
+	static final String				MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
+	static int						DEFAULT_POLL_TIME	= (int) TimeUnit.MINUTES.toSeconds(5);
 
-	private boolean				inited;
-	private PomConfiguration	configuration;
-	private Registry			registry;
-	private String				name;
-	private Reporter			reporter			= new Slf4jReporter(BndPomRepository.class);
-	private InnerRepository	repoImpl;
-	private List<Revision>		revisions;
-	private BridgeRepository	bridge;
+	private HttpClient				client;
+	private boolean					inited;
+	private PomConfiguration		configuration;
+	private Registry				registry;
+	private String					name;
+	private Reporter				reporter			= new Slf4jReporter(BndPomRepository.class);
+	private InnerRepository			repoImpl;
+	private List<Revision>			revisions;
+	private BridgeRepository		bridge;
 	private Map<URI,Long>			pomFiles;
-	private String				query;
-	private String				queryUrl;
+	private String					query;
+	private String					queryUrl;
 	private ScheduledFuture< ? >	pomPoller;
+
 
 	public synchronized void init() {
 		try {
 			if (inited)
 				return;
 			Workspace workspace = registry.getPlugin(Workspace.class);
-			HttpClient client = registry.getPlugin(HttpClient.class);
+			this.client = registry.getPlugin(HttpClient.class);
 			File localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
 			File location = workspace.getFile(getLocation());
 
@@ -99,6 +109,7 @@ public class BndPomRepository extends BaseRepository
 				repository.close();
 				throw new IllegalStateException("We have neither a pom, revision, or query set!");
 			}
+
 			bridge = new BridgeRepository(repoImpl);
 			inited = true;
 		} catch (Exception e) {
@@ -114,39 +125,100 @@ public class BndPomRepository extends BaseRepository
 			return;
 		}
 		final AtomicBoolean busy = new AtomicBoolean();
-		pomPoller = Processor.getScheduledExecutor().scheduleAtFixedRate(new Runnable() {
+		int polltime = configuration.poll_time(DEFAULT_POLL_TIME);
+		if (polltime > 0) {
+			pomPoller = Processor.getScheduledExecutor().scheduleAtFixedRate(new Runnable() {
 
-	@Override
-			public void run() {
-				if (busy.getAndSet(true))
-					return;
-				try {
-					boolean needsUpdate = false;
-					for (Entry<URI,Long> pomFilesEntry : pomFiles.entrySet()) {
-						if (pomFilesEntry.getValue() == null) {
-							// not interested
-							continue;
+				@Override
+				public void run() {
+					if (busy.getAndSet(true))
+						return;
+					try {
+						boolean needsUpdate = false;
+						for (Entry<URI,Long> pomFilesEntry : pomFiles.entrySet()) {
+							final URI pomURI = pomFilesEntry.getKey();
+							if ("file".equalsIgnoreCase(pomURI.getScheme())) {
+								if (pomFilesEntry.getValue() == null) {
+									// not interested
+									continue;
+								}
+								File f = new File(pomURI);
+								if (f.isFile() && f.lastModified() > pomFilesEntry.getValue()) {
+									needsUpdate = true;
+									pomFilesEntry.setValue(f.lastModified());
+								}
+							} else {
+								// check for staleness of non-file-URI
+								if (isStale(pomURI))
+									needsUpdate = true;
+							}
 						}
-						File f = new File(pomFilesEntry.getKey());
-						if (f != null && f.isFile() && f.lastModified() > pomFilesEntry.getValue()) {
-							needsUpdate = true;
-							pomFilesEntry.setValue(f.lastModified());
+						if (needsUpdate) {
+							refresh();
+							for (RepositoryListenerPlugin listener : registry
+									.getPlugins(RepositoryListenerPlugin.class))
+								listener.repositoryRefreshed(BndPomRepository.this);
 						}
-					}
-					if (needsUpdate) {
-						refresh();
-						for (RepositoryListenerPlugin listener : registry.getPlugins(RepositoryListenerPlugin.class))
-							listener.repositoryRefreshed(BndPomRepository.this);
-					}
 
-				} catch (Exception e) {
-					reporter.error("Error when polling for %s for change", this);
-				} finally {
-					busy.set(false);
+					} catch (Exception e) {
+						reporter.exception(e, "Error when polling for %s for change", this);
+					} finally {
+						busy.set(false);
+					}
 				}
-			}
 
-		}, 5000, 5000, TimeUnit.MILLISECONDS);
+			}, 1, polltime, TimeUnit.SECONDS);
+		}
+	}
+
+	/**
+	 * Check any of the URL POMs are stale.
+	 * 
+	 * @param uri remote-URI, must not be "file"
+	 * @return true, when URI resolved to be stale
+	 * @throws Exception InterruptedException if the tread was canceled during
+	 *             waiting
+	 */
+	boolean isStale(final URI uri) throws Exception {
+		final Deferred<Void> freshness = new Deferred<>();
+		Promise<Void> promise;
+		try {
+			Promise<TaggedData> async = client.build().useCache().asTag().async(uri);
+			promise = async.then(new Success<TaggedData,Void>() {
+				@Override
+				public Promise<Void> call(Promise<TaggedData> resolved) throws Exception {
+					switch (resolved.getValue().getState()) {
+						case OTHER :
+							// in the offline case
+							// ignore might be best here
+							logger.debug("Could not verify {}", uri);
+							break;
+
+						case UNMODIFIED :
+							break;
+
+						case NOT_FOUND :
+						case UPDATED :
+						default :
+							logger.debug("Found {} to be stale", uri);
+							freshness.fail(new Exception("stale"));
+					}
+					freshness.resolve(null);
+					return null;
+				}
+			}, new Failure() {
+				@Override
+				public void fail(Promise< ? > resolved) throws Exception {
+					logger.debug("Could not verify {}: {}", uri, resolved.getFailure());
+					freshness.fail(resolved.getFailure());
+				}
+			});
+		} catch (Exception e) {
+			logger.debug("Checking stale status: {}: {}", uri, e);
+		}
+
+		// Block until freshness is resolved
+		return freshness.getPromise().getFailure() != null;
 	}
 
 	@Override
@@ -169,7 +241,7 @@ public class BndPomRepository extends BaseRepository
 
 		if (configuration.pom() != null) {
 			List<String> parts = Strings.split(configuration.pom());
-			pomFiles = new HashMap<>();
+			pomFiles = new LinkedHashMap<>();
 			for (String part : parts) {
 				File f = IO.getFile(part);
 				if (f.isFile()) {

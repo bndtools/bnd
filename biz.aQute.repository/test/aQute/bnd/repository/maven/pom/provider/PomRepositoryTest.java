@@ -1,5 +1,9 @@
 package aQute.bnd.repository.maven.pom.provider;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
+
 import java.io.File;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -14,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -23,8 +28,11 @@ import org.osgi.util.promise.Promise;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.XMLResourceParser;
+import aQute.bnd.service.RepositoryListenerPlugin;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -35,7 +43,6 @@ import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenBackingRepository;
 import aQute.maven.provider.MavenRepository;
 import aQute.service.reporter.Reporter;
-import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 public class PomRepositoryTest extends TestCase {
@@ -276,52 +283,72 @@ public class PomRepositoryTest extends TestCase {
 	 * stale-check
 	 */
 	public void testBndPomRepoFilePolling() throws Exception {
-		Path path = Paths.get("testdata/pomrepo/simple-nodeps-copy.xml");
+		Path path = Paths.get("generated/test-pomrepo/simple-nodeps-copy.xml");
+		path.toFile().mkdirs();
 		Files.copy(Paths.get("testdata/pomrepo/simple-nodeps.xml"), path, StandardCopyOption.REPLACE_EXISTING);
 
-		BndPomRepository bpr = new BndPomRepository();
+		final BndPomRepository bpr = new BndPomRepository();
 		Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
 		w.setBase(tmp);
+		final AtomicReference<RepositoryPlugin> refreshed = new AtomicReference<>();
+		w.addBasicPlugin(new RepositoryListenerPlugin() {
+
+			@Override
+			public void repositoryRefreshed(RepositoryPlugin repository) {
+				refreshed.set(repository);
+			}
+
+			@Override
+			public void repositoriesRefreshed() {
+			}
+
+			@Override
+			public void bundleRemoved(RepositoryPlugin repository, Jar jar, File file) {
+			}
+
+			@Override
+			public void bundleAdded(RepositoryPlugin repository, Jar jar, File file) {
+			}
+		});
 		bpr.setRegistry(w);
 
 		Map<String,String> config = new HashMap<>();
 		config.put("pom",
 				path.toString()
-						+ ",https://repo1.maven.org/maven2/org/apache/felix/org.apache.felix.gogo.shell/0.12.0/org.apache.felix.gogo.shell-0.12.0.pom");
+						+ ",http://central.maven.org/maven2/org/ops4j/pax/logging/pax-logging-api/1.10.1/pax-logging-api-1.10.1.pom");
 		config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
 		config.put("releaseUrls", "https://repo1.maven.org/maven2/");
 		config.put("name", "test");
-		config.put("pollTime", "300");
+		config.put("poll.time", "1");
 		bpr.setProperties(config);
 
 		try {
 			List<String> list = bpr.list(null);
-			assertNotNull(list);
-			assertEquals(1, list.size()); // this seems to be a bit flaky (the dependencies change from time to time)
+			assertThat(refreshed.get(), nullValue());
+			assertThat(bpr.list(null).size(), equalTo(5));
 
 			List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
 
 			StringBuilder sb = new StringBuilder();
-			for (String line : lines) {
-				if (line.contains("</project>")) {
+			 for (String line : lines) {
+			 if (line.contains("</project>")) {
 					sb.append(
 							"<dependencies><dependency><groupId>org.slf4j</groupId><artifactId>slf4j-api</artifactId><version>1.7.25</version></dependency></dependencies>");
-				}
-				sb.append(line);
-			}
+			 }
+			 sb.append(line);
+			 }
 			Files.write(path, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE,
 					StandardOpenOption.TRUNCATE_EXISTING);
 			// retry-loop for slow machines (or busy CI)
-			final int maxretry = 3;
+			final int maxretry = 10;
 			for (int i = 1; i <= maxretry; i++) {
-				Thread.sleep(500);
-				List<String> updatedList = bpr.list(null);
+				Thread.sleep(1000);
 				try {
-					assertNotNull(updatedList);
-					assertEquals(2, updatedList.size()); // including the added dependency
+					assertThat(refreshed.get(), equalTo(bpr));
+					assertThat(bpr.list(null).size(), equalTo(6));
 					// if ok, leave the loop
 					break;
-				} catch (AssertionFailedError e) {
+				} catch (AssertionError e) {
 					if (i == maxretry) {
 						throw e;
 					}
@@ -329,6 +356,7 @@ public class PomRepositoryTest extends TestCase {
 			}
 		} finally {
 			Files.delete(path);
+			Files.delete(path.getParent());
 			bpr.close();
 		}
 	}
