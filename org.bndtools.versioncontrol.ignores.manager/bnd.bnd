@@ -14,6 +14,5 @@ Bundle-ActivationPolicy: lazy
 
 Private-Package:  \
 	org.bndtools.versioncontrol.ignores.manager
-Service-Component: *
 Export-Package:  \
 	org.bndtools.versioncontrol.ignores.manager.api;provide:=true

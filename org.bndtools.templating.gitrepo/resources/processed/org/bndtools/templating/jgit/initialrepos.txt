@@ -1,0 +1,1 @@
+osgi/enroute.workspace;branch=origin/bnd-${version;==;${base-version}}, bndtools/workspace;branch=origin/${version;==;${base-version}}

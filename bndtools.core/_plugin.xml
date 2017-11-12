@@ -237,7 +237,7 @@
             class="org.bndtools.core.views.jpm.JPMBrowserView"
             icon="icons/jpm.gif"
             id="org.bndtools.core.views.jpm.JPMBrowserView"
-            name="JPM"
+            name="Searchable Repositories"
             restorable="true">
       </view>
    </extension>
@@ -727,7 +727,7 @@
              class="bndtools.preferences.ui.JpmPreferencePage"
              id="bndtools.prefPages.jpm"
              category="bndtools.prefPages.basic"
-             name="JPM">
+             name="Searchable Repositories">
              <keywordReference id="bndtools.core"/>
        </page>
     </extension>
@@ -838,13 +838,12 @@
       </plugin>
 
       <plugin
-         class="aQute.bnd.deployer.repository.FixedIndexedRepo"
+         class="aQute.bnd.repository.osgi.OSGiRepository"
          icon="icons/database.png"
          name="Indexed Repository (read-only)">
          <property name="name" type="string" description="Name of the repository"/>
          <property name="locations" type="string" description="Index locations (comma-separated list of URLs)"/>
-         <property name="cache" type="string" description="Local cache for downloaded remote resources" deprecated="true"/>
-         <property name="phase" type="string" description="Resolution phase (build, runtime or any)"/>
+         <property name="cache" type="string" description="Local cache for downloaded remote resources"/>
       </plugin>
 
       <plugin

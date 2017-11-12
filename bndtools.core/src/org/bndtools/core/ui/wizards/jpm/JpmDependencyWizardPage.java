@@ -43,7 +43,7 @@ import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 
 public class JpmDependencyWizardPage extends WizardPage {
 
-    private static final String DEFAULT_MESSAGE = "Review the following dependencies supplied by JPM4J before adding them.";
+    private static final String DEFAULT_MESSAGE = "Review the following supplied dependencies supplied before adding them.";
 
     private final URI originUri;
 
@@ -64,7 +64,7 @@ public class JpmDependencyWizardPage extends WizardPage {
         super("jpmDependencies");
         this.originUri = originUri;
 
-        setTitle("Add Dependencies from JPM4J");
+        setTitle("Add Dependencies from Searchable Repository");
     }
 
     @Override
@@ -83,7 +83,7 @@ public class JpmDependencyWizardPage extends WizardPage {
         viewerDirect.setContentProvider(ArrayContentProvider.getInstance());
         viewerDirect.setLabelProvider(new ResourceDescriptorLabelProvider());
 
-        createHelpLabel(container, "The above dependencies will be added to the project and, if necessary, to the JPM4J local index.");
+        createHelpLabel(container, "The above dependencies will be added to the project and, if necessary, to the Searchable Repository local index.");
 
         Label separator = new Label(container, SWT.SEPARATOR | SWT.HORIZONTAL);
 
@@ -105,7 +105,7 @@ public class JpmDependencyWizardPage extends WizardPage {
 
         new Label(cmpIndirect, SWT.NONE);
 
-        createHelpLabel(container, "The above dependencies will be added to the JPM4J local index. Checked dependencies will also be added directly to the project.");
+        createHelpLabel(container, "The above dependencies will be added to the Searchable Repository local index. Checked dependencies will also be added directly to the project.");
 
         // LISTENERS
 
@@ -226,7 +226,7 @@ public class JpmDependencyWizardPage extends WizardPage {
                 Workspace workspace = Central.getWorkspace();
                 repository = workspace.getPlugin(SearchableRepository.class);
                 if (repository == null)
-                    throw new Exception("No searchable repository is configured in the workspace. Try adding the JPM4J plugin.");
+                    throw new Exception("No searchable repository is configured in the workspace.");
 
                 QueryJpmDependenciesRunnable query = new QueryJpmDependenciesRunnable(originUri, repository);
                 getContainer().run(true, true, query);

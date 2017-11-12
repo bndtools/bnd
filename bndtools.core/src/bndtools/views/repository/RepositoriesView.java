@@ -300,14 +300,6 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                 if (URLTransfer.getInstance().isSupportedType(getCurrentEvent().currentDataType)) {
                     try {
                         URL url = new URL((String) URLTransfer.getInstance().nativeToJava(getCurrentEvent().currentDataType));
-                        if (!url.getPath().endsWith(".jar")) {
-                            String uris = url.toString();
-                            if (uris.contains("#!/p/sha/")) {
-                                MessageDialog.openWarning(null, "Dropped URL is a JPM Revision Identifier, not a JAR",
-                                        "The dropped URL is a JPM identifier, can only be dropped on a JPM repository. You can also select the revision on JPM and drag the 'jar' link of the revision to any of the other repositories.");
-                                return false;
-                            }
-                        }
 
                         File tmp = File.createTempFile("dwnl", ".jar");
                         try (HttpClient client = new HttpClient()) {

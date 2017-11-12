@@ -119,7 +119,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
             cell.setStyleRanges(label.getStyleRanges());
             cell.setImage(matchImg);
         } else if (element instanceof ContinueSearchElement) {
-            StyledString label = new StyledString("Continue Search on JPM4J.org...", new HyperlinkStyler());
+            StyledString label = new StyledString("Continue Search on repository...", new HyperlinkStyler());
             cell.setText(label.getString());
             cell.setStyleRanges(label.getStyleRanges());
         } else if (element instanceof LoadingContentElement) {

@@ -1,17 +1,5 @@
--plugin.4.Central:  \
-\
-        aQute.bnd.deployer.repository.wrapper.Plugin; \
-            location            =	"${build}/cache/wrapper"; \
-            reindex				=	true, \
-\
-        aQute.bnd.jpm.Repository; \
-	        includeStaged   	=       true; \
-	        name                =       Central; \
-	        location            =       ~/.bnd/shacache; \
-	        index               =       ${build}/central.json
-
 -plugin.enroute.distro = \
-	aQute.bnd.deployer.repository.FixedIndexedRepo; \
+	aQute.bnd.repository.osgi.OSGiRepository; \
 	        name		=       Distro; \
 	        locations	=       https://raw.githubusercontent.com/osgi/osgi.enroute/master/cnf/distro/index.xml
 

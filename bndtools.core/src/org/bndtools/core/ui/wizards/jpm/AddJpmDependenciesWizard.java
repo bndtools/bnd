@@ -49,8 +49,9 @@ public class AddJpmDependenciesWizard extends Wizard {
         } else {
             indirectResources = Collections.<ResourceDescriptor> emptySet();
         }
-        final MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Errors occurred while processing JPM4J dependencies.", null);
+        final MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Errors occurred while processing dependencies.", null);
         IRunnableWithProgress runnable = new IRunnableWithProgress() {
+            @Override
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 SubMonitor progress = SubMonitor.convert(monitor, result.size() + indirectResources.size());
                 progress.setTaskName("Processing dependencies...");
@@ -89,7 +90,7 @@ public class AddJpmDependenciesWizard extends Wizard {
             if (!resource.included)
                 repo.addResource(resource);
         } catch (Exception e) {
-            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error adding resource to local JPM4J index: " + resource.bsn + " [" + resource.version + "]", e));
+            status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error adding resource to local Searchable Repository: " + resource.bsn + " [" + resource.version + "]", e));
         }
     }
 

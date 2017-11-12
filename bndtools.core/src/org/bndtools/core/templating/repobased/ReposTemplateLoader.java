@@ -1,11 +1,9 @@
 package org.bndtools.core.templating.repobased;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -13,11 +11,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+import java.util.stream.Collectors;
 import org.bndtools.templating.Template;
 import org.bndtools.templating.TemplateEngine;
 import org.bndtools.templating.TemplateLoader;
-import org.bndtools.utils.collections.CollectionUtils;
 import org.osgi.framework.Constants;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -30,17 +27,18 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.osgi.service.repository.Repository;
-import org.osgi.util.function.Function;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.Promises;
-import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.Workspace;
-import aQute.bnd.deployer.repository.FixedIndexedRepo;
+import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
+import aQute.bnd.repository.osgi.OSGiRepository;
+import aQute.lib.strings.Strings;
 import aQute.service.reporter.Reporter;
 import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
@@ -107,61 +105,38 @@ public class ReposTemplateLoader implements TemplateLoader {
         repos.addAll(workspaceRepos);
         addPreferenceConfiguredRepos(repos, reporter);
 
-        // Generate a Promise<List<Template>> for each repository and add to an accumulator
-        Promise<List<Template>> accumulator = Promises.resolved((List<Template>) new LinkedList<Template>());
-        for (final Repository repo : repos) {
-            final Deferred<List<Template>> deferred = new Deferred<>();
-
-            final Promise<List<Template>> current = deferred.getPromise();
-            accumulator = accumulator.then(new Success<List<Template>,List<Template>>() {
-                @Override
-                public Promise<List<Template>> call(Promise<List<Template>> resolved) throws Exception {
-                    final List<Template> prefix = resolved.getValue();
-                    return current.map(new Function<List<Template>,List<Template>>() {
-                        @Override
-                        public List<Template> apply(List<Template> t) {
-                            return CollectionUtils.append(prefix, t);
-                        }
-                    });
-                }
-            });
-
-            executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    List<Template> templates = new LinkedList<>();
-                    Map<Requirement,Collection<Capability>> providerMap = repo.findProviders(Collections.singleton(requirement));
-                    if (providerMap != null) {
-                        Collection<Capability> candidates = providerMap.get(requirement);
-                        if (candidates != null) {
-                            for (Capability cap : candidates) {
-                                IdentityCapability idcap = ResourceUtils.getIdentityCapability(cap.getResource());
-                                Object id = idcap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
-                                Object ver = idcap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-                                try {
-                                    String engineName = (String) cap.getAttributes().get("engine");
-                                    if (engineName == null)
-                                        engineName = "stringtemplate";
-                                    TemplateEngine engine = engines.get(engineName);
-                                    if (engine != null)
-                                        templates.add(new CapabilityBasedTemplate(cap, locator, engine));
-                                    else
-                                        reporter.error("Error loading template from resource '%s' version %s: no Template Engine available matching '%s'", id, ver, engineName);
-                                } catch (Exception e) {
-                                    reporter.error("Error loading template from resource '%s' version %s: %s", id, ver, e.getMessage());
-                                }
-                            }
-                        }
+        Promise<List<Template>> promise = repos.stream().map(repo -> {
+            Deferred<List<Template>> deferred = new Deferred<>();
+            executor.submit(() -> {
+                List<Template> templates = new LinkedList<>();
+                Map<Requirement,Collection<Capability>> providerMap = repo.findProviders(Collections.singleton(requirement));
+                Collection<Capability> candidates = providerMap.get(requirement);
+                for (Capability cap : candidates) {
+                    IdentityCapability idcap = ResourceUtils.getIdentityCapability(cap.getResource());
+                    Object id = idcap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+                    Object ver = idcap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+                    try {
+                        String engineName = (String) cap.getAttributes().get("engine");
+                        if (engineName == null)
+                            engineName = "stringtemplate";
+                        TemplateEngine engine = engines.get(engineName);
+                        if (engine != null)
+                            templates.add(new CapabilityBasedTemplate(cap, locator, engine));
+                        else
+                            reporter.error("Error loading template from resource '%s' version %s: no Template Engine available matching '%s'", id, ver, engineName);
+                    } catch (Exception e) {
+                        reporter.error("Error loading template from resource '%s' version %s: %s", id, ver, e.getMessage());
                     }
-                    deferred.resolve(templates);
                 }
+                deferred.resolve(templates);
             });
-        }
+            return deferred.getPromise();
+        }).collect(Collectors.collectingAndThen(Collectors.toList(), p -> Promises.all(p).map(ll -> ll.stream().flatMap(List::stream).collect(Collectors.toList()))));
 
-        return accumulator;
+        return promise;
     }
 
-    private static void addPreferenceConfiguredRepos(List<Repository> repos, Reporter reporter) {
+    private void addPreferenceConfiguredRepos(List<Repository> repos, Reporter reporter) {
         BndPreferences bndPrefs = null;
         try {
             bndPrefs = new BndPreferences();
@@ -172,24 +147,27 @@ public class ReposTemplateLoader implements TemplateLoader {
         if (bndPrefs != null && bndPrefs.getEnableTemplateRepo()) {
             List<String> repoUris = bndPrefs.getTemplateRepoUriList();
             try {
-                FixedIndexedRepo prefsRepo = loadRepo(repoUris);
+                OSGiRepository prefsRepo = loadRepo(repoUris, reporter);
                 repos.add(prefsRepo);
-            } catch (IOException | URISyntaxException ex) {
+            } catch (Exception ex) {
                 reporter.exception(ex, "Error loading preference repository: %s", repoUris);
             }
         }
     }
 
-    private static FixedIndexedRepo loadRepo(List<String> uris) throws IOException, URISyntaxException {
-        FixedIndexedRepo repo = new FixedIndexedRepo();
-        StringBuilder sb = new StringBuilder();
-        for (Iterator<String> iter = uris.iterator(); iter.hasNext();) {
-            sb.append(iter.next());
-            if (iter.hasNext())
-                sb.append(',');
+    private OSGiRepository loadRepo(List<String> uris, Reporter reporter) throws Exception {
+        OSGiRepository repo = new OSGiRepository();
+        repo.setReporter(reporter);
+        if (workspace != null) {
+            repo.setRegistry(workspace);
+        } else {
+            Processor p = new Processor();
+            p.addBasicPlugin(new HttpClient(executor));
+            repo.setRegistry(p);
         }
-        repo.setLocations(sb.toString());
+        Map<String,String> map = new HashMap<>();
+        map.put("locations", Strings.join(uris));
+        repo.setProperties(map);
         return repo;
     }
-
 }

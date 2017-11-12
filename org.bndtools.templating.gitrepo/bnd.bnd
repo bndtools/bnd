@@ -18,7 +18,8 @@
 	org.eclipse.core.commands
 
 -privatepackage: org.bndtools.templating.jgit.*
--includeresource: resources
+-includeresource: /=resources/unprocessed,\
+    {/=resources/processed}
 -conditionalpackage: aQute.lib.*, aQute.libg.*, org.bndtools.utils.*, org.eclipse.jgit.*, com.googlecode.javaewah
 
 Bundle-ActivationPolicy: lazy
