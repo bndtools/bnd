@@ -83,7 +83,7 @@ public class JpmPreferencePage extends PreferencePage implements IWorkbenchPrefe
     private void updateMessages() {
         String warning = null;
         if (browserSelection != prefs.getBrowserSelection())
-            warning = "JPM view must be closed and reopened";
+            warning = "Searchable Repository view must be closed and reopened";
         setMessage(warning, IMessageProvider.WARNING);
     }
 

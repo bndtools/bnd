@@ -68,15 +68,6 @@ launch-template-enroute-debug:\
 		icon="${enroute-icon}";\
 		help=templates/launch/enroute/debug.xml
 
-launch-template-enroute-jpm:\
-	org.bndtools.template; org.bndtools.template=bndrun;\
-		name=OSGi enRoute JPM Launcher;\
-		category=${category-enroute};\
-		ranking:Double=998;\
-		dir=templates/launch/enroute/jpm;\
-		icon="${enroute-icon}";\
-		help=templates/launch/enroute/jpm.xml
-
 Provide-Capability: \
 	${project-template-component},\
 	${project-template-api},\
@@ -84,8 +75,7 @@ Provide-Capability: \
 	${workspace-template-minimal},\
 	${launch-template-felix},\
 	${launch-template-enroute-base},\
-	${launch-template-enroute-debug},\
-	${launch-template-enroute-jpm}
+	${launch-template-enroute-debug}
 
 dataurl: data:image/gif;base64
 

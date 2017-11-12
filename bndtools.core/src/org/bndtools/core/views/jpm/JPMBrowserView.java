@@ -58,7 +58,7 @@ public class JPMBrowserView extends ViewPart implements ISelectionListener {
             external = true;
             Composite composite = new Composite(parent, SWT.NONE);
             composite.setLayout(new GridLayout(2, false));
-            new Label(composite, SWT.NONE).setText("JPM is configured to open in an external browser.");
+            new Label(composite, SWT.NONE).setText("Searchable Repository is configured to open in an external browser.");
             Hyperlink linkToPrefs = new Hyperlink(composite, SWT.NONE);
             linkToPrefs.setText("Open Preference Page");
             linkToPrefs.setUnderlined(true);

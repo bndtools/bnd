@@ -237,7 +237,7 @@
             class="org.bndtools.core.views.jpm.JPMBrowserView"
             icon="icons/jpm.gif"
             id="org.bndtools.core.views.jpm.JPMBrowserView"
-            name="JPM"
+            name="Searchable Repositories"
             restorable="true">
       </view>
    </extension>
@@ -727,7 +727,7 @@
              class="bndtools.preferences.ui.JpmPreferencePage"
              id="bndtools.prefPages.jpm"
              category="bndtools.prefPages.basic"
-             name="JPM">
+             name="Searchable Repositories">
              <keywordReference id="bndtools.core"/>
        </page>
     </extension>
