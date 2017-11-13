@@ -3,10 +3,10 @@ package aQute.bnd.repository.fileset;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.jar.JarFile;
 
@@ -14,7 +14,6 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.ContentNamespace;
-import org.osgi.util.function.Function;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 import org.slf4j.Logger;
@@ -67,61 +66,44 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 	}
 
 	private Promise<BridgeRepository> readFiles() {
-		List<Promise<Resource>> promises = new ArrayList<>(getFiles().size());
-		for (File file : getFiles()) {
-			promises.add(parse(executor.resolved(file)));
+		Promise<List<Resource>> resources = getFiles().stream()
+				.map(this::parseFile)
+				.collect(executor.toAll());
+		if (logger.isDebugEnabled()) {
+			resources.onSuccess(l -> l.stream().filter(Objects::nonNull).forEachOrdered(
+					r -> logger.debug("{}: adding resource {}", getName(), r)));
 		}
-		Promise<List<Resource>> all = executor.all(promises);
-		return all.map(new Function<List<Resource>,BridgeRepository>() {
-			@Override
-			public BridgeRepository apply(List<Resource> resources) {
-				try {
-					ResourcesRepository rr = new ResourcesRepository();
-					for (Resource r : resources) {
-						if (r != null) {
-							logger.debug("{}: adding resource {}", getName(), r);
-							rr.add(r);
-						}
-					}
-					return new BridgeRepository(rr);
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
-				}
-			}
-		});
+		Promise<BridgeRepository> bridge = resources.map(ResourcesRepository::new).map(BridgeRepository::new);
+		return bridge;
 	}
 
-	private Promise<Resource> parse(Promise<File> file) {
-		return file.map(new Function<File,Resource>() {
-			@Override
-			public Resource apply(File file) {
-				try {
-					if (!file.isFile()) {
-						return null;
-					}
-					ResourceBuilder rb = new ResourceBuilder();
-					try (JarFile jar = new JarFile(file)) {
-						Domain manifest = Domain.domain(jar.getManifest());
-						boolean hasIdentity = rb.addManifest(manifest);
-						if (!hasIdentity) {
-							return null;
-						}
-					} catch (Exception f) {
-						return null;
-					}
-					logger.debug("{}: parsing {}", getName(), file);
-					Attrs attrs = new Attrs();
-					attrs.put(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, file.toURI().toString());
-					attrs.putTyped(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, file.length());
-					attrs.put(ContentNamespace.CONTENT_NAMESPACE, SHA256.digest(file).asHex());
-					rb.addCapability(CapabilityBuilder.createCapReqBuilder(ContentNamespace.CONTENT_NAMESPACE, attrs));
-					return rb.build();
-				} catch (Exception e) {
-					logger.debug("{}: failed to parse {}", getName(), file, e);
-					throw Exceptions.duck(e);
-				}
+	private Promise<Resource> parseFile(File file) {
+		Promise<Resource> resource = executor.submit(() -> {
+			if (!file.isFile()) {
+				return null;
 			}
+			ResourceBuilder rb = new ResourceBuilder();
+			try (JarFile jar = new JarFile(file)) {
+				Domain manifest = Domain.domain(jar.getManifest());
+				boolean hasIdentity = rb.addManifest(manifest);
+				if (!hasIdentity) {
+					return null;
+				}
+			} catch (Exception f) {
+				return null;
+			}
+			logger.debug("{}: parsing {}", getName(), file);
+			Attrs attrs = new Attrs();
+			attrs.put(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, file.toURI().toString());
+			attrs.putTyped(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, file.length());
+			attrs.put(ContentNamespace.CONTENT_NAMESPACE, SHA256.digest(file).asHex());
+			rb.addCapability(CapabilityBuilder.createCapReqBuilder(ContentNamespace.CONTENT_NAMESPACE, attrs));
+			return rb.build();
 		});
+		if (logger.isDebugEnabled()) {
+			resource.onFailure(failure -> logger.debug("{}: failed to parse {}", getName(), file, failure));
+		}
+		return resource;
 	}
 
 	@Override

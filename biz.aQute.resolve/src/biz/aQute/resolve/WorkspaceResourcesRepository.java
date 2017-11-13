@@ -1,10 +1,7 @@
 package biz.aQute.resolve;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.osgi.resource.Resource;
 import org.osgi.service.repository.ContentNamespace;
 
 import aQute.bnd.build.Project;
@@ -21,8 +18,6 @@ public class WorkspaceResourcesRepository extends ResourcesRepository {
 	public static final String WORKSPACE_NAMESPACE = ResourceUtils.WORKSPACE_NAMESPACE;
 
 	public WorkspaceResourcesRepository(Workspace workspace) throws Exception {
-		List<Resource> resources = new ArrayList<>();
-
 		for (Project p : workspace.getAllProjects()) {
 			File[] files = p.getBuildFiles(false);
 			if (files != null) {
@@ -45,14 +40,10 @@ public class WorkspaceResourcesRepository extends ResourcesRepository {
 
 					rb.addCapability(CapabilityBuilder.createCapReqBuilder(WORKSPACE_NAMESPACE, attrs));
 
-					Resource resource = rb.build();
-
-					resources.add(resource);
+					add(rb.build());
 				}
 			}
 		}
-
-		addAll(resources);
 	}
 
 	public String toString() {
