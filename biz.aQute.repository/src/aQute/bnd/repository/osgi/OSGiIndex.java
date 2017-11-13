@@ -1,5 +1,7 @@
 package aQute.bnd.repository.osgi;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
@@ -11,11 +13,8 @@ import java.util.Map;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
-import org.osgi.util.function.Function;
 import org.osgi.util.promise.Deferred;
-import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Success;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +27,6 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.promise.PromiseExecutor;
 
@@ -54,27 +52,12 @@ class OSGiIndex {
 	}
 
 	private Promise<BridgeRepository> readIndexes(boolean refresh) throws Exception {
-		List<Promise<List<Resource>>> promises = new ArrayList<>(getURIs().size());
-
-		for (URI uri : getURIs()) {
-			promises.add(download(uri, refresh));
-		}
-
-		Promise<List<List<Resource>>> all = executor.all(promises);
-		return all.map(new Function<List<List<Resource>>,BridgeRepository>() {
-			@Override
-			public BridgeRepository apply(List<List<Resource>> resources) {
-				try {
-					ResourcesRepository rr = new ResourcesRepository();
-					for (List<Resource> p : resources) {
-						rr.addAll(p);
-					}
-					return new BridgeRepository(rr);
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
-				}
-			}
-		});
+		Promise<List<Resource>> resources = getURIs().stream()
+				.map(uri -> download(uri, refresh))
+				.collect(executor.toAll())
+				.map(ll -> ll.stream().flatMap(List::stream).collect(toList()));
+		Promise<BridgeRepository> bridge = resources.map(ResourcesRepository::new).map(BridgeRepository::new);
+		return bridge;
 	}
 
 	private static File checkCache(File cache) throws Exception {
@@ -84,23 +67,16 @@ class OSGiIndex {
 		return cache;
 	}
 
-	private Promise<List<Resource>> download(final URI uri, boolean refresh) throws Exception {
+	private Promise<List<Resource>> download(URI uri, boolean refresh) {
 		HttpRequest<File> req = client.build().useCache(refresh ? -1 : staleTime);
 
-		return req.async(uri).map(new Function<File,List<Resource>>() {
-			@Override
-			public List<Resource> apply(File file) {
-				try {
-					if (file == null) {
-						logger.debug("{}: No file downloaded for {}", name, uri);
-						return Collections.emptyList();
-					}
-					try (XMLResourceParser xmlp = new XMLResourceParser(IO.stream(file), name, uri)) {
-						return xmlp.parse();
-					}
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
-				}
+		return req.async(uri).map(file -> {
+			if (file == null) {
+				logger.debug("{}: No file downloaded for {}", name, uri);
+				return Collections.emptyList();
+			}
+			try (XMLResourceParser xmlp = new XMLResourceParser(IO.stream(file), name, uri)) {
+				return xmlp.parse();
 			}
 		});
 	}
@@ -148,33 +124,27 @@ class OSGiIndex {
 			}
 			try {
 				Promise<TaggedData> async = client.build().useCache().asTag().async(uri);
-				promises.add(async.then(new Success<TaggedData,Void>() {
-					@Override
-					public Promise<Void> call(Promise<TaggedData> resolved) throws Exception {
-						switch (resolved.getValue().getState()) {
-							case OTHER :
-								// in the offline case
-								// ignore might be best here
-								logger.debug("Could not verify {}", uri);
-								break;
+				promises.add(async.then(resolved -> {
+					switch (resolved.getValue().getState()) {
+						case OTHER :
+							// in the offline case
+							// ignore might be best here
+							logger.debug("Could not verify {}", uri);
+							break;
 
-							case UNMODIFIED :
-								break;
+						case UNMODIFIED :
+							break;
 
-							case NOT_FOUND :
-							case UPDATED :
-							default :
-								logger.debug("Found {} to be stale", uri);
-								freshness.fail(new Exception("stale"));
-						}
-						return null;
+						case NOT_FOUND :
+						case UPDATED :
+						default :
+							logger.debug("Found {} to be stale", uri);
+							freshness.fail(new Exception("stale"));
 					}
-				}, new Failure() {
-					@Override
-					public void fail(Promise< ? > resolved) throws Exception {
-						logger.debug("Could not verify {}: {}", uri, resolved.getFailure());
-						freshness.fail(resolved.getFailure());
-					}
+					return null;
+				}, resolved -> {
+					logger.debug("Could not verify {}: {}", uri, resolved.getFailure());
+					freshness.fail(resolved.getFailure());
 				}));
 			} catch (Exception e) {
 				logger.debug("Checking stale status: {}: {}", uri, e);
@@ -189,7 +159,7 @@ class OSGiIndex {
 		return freshness.getPromise().getFailure() != null;
 	}
 
-	Collection<URI> getURIs() {
+	List<URI> getURIs() {
 		return uris;
 	}
 

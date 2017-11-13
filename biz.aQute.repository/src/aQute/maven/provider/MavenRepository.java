@@ -17,7 +17,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
-import org.osgi.util.function.Function;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 import org.slf4j.Logger;
@@ -316,18 +315,15 @@ public class MavenRepository implements IMavenRepo, Closeable {
 			poms.put(revision, deferred.getPromise());
 		}
 		Archive pomArchive = revision.getPomArchive();
-		deferred.resolveWith(get(pomArchive, false).map(new Function<File,POM>() {
-			@Override
-			public POM apply(File pomFile) {
-				if (pomFile == null) {
-					return null;
-				}
-				try (InputStream fin = IO.stream(pomFile)) {
-					return getPom(fin);
-				} catch (Exception e) {
-					logger.error("Failed to parse pom {} from file {}", revision, pomFile, e);
-					return null;
-				}
+		deferred.resolveWith(get(pomArchive, false).map(pomFile -> {
+			if (pomFile == null) {
+				return null;
+			}
+			try (InputStream fin = IO.stream(pomFile)) {
+				return getPom(fin);
+			} catch (Exception e) {
+				logger.error("Failed to parse pom {} from file {}", revision, pomFile, e);
+				return null;
 			}
 		}));
 		return deferred.getPromise();
