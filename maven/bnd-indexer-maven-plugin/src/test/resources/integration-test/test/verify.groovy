@@ -66,6 +66,19 @@ public Capability check(Repository repo, String namespace, String filter, String
 	return content;
 }
 
+
+public Capability checkAbsent(Repository repo, String namespace, String filter) {
+	
+	Requirement requirement = new RequirementBuilder(namespace)
+						.addDirective("filter", filter)
+						.buildSyntheticRequirement();
+	
+	Map<Requirement,Collection<Capability>> caps = repo
+						.findProviders(Collections.singleton(requirement));
+	
+	assert caps.get(requirement).isEmpty();
+}
+
 println "TODO: Need to write some test code for the generated index!"
 println "basedir ${basedir}"
 println "localRepositoryPath ${localRepositoryPath}"
@@ -75,7 +88,9 @@ System.setProperty('jsse.enableSNIExtension', 'false')
 
 check("${basedir}/transitive/target/index.xml", "${basedir}/transitive/target/index.xml.gz", 19, false, true);
 check("${basedir}/non-transitive/target/index.xml", "${basedir}/non-transitive/target/index.xml.gz", 3, false, true);
-check("${basedir}/scoped/target/index.xml", "${basedir}/scoped/target/index.xml.gz", 22, false, true);
+repo = check("${basedir}/scoped/target/index.xml", "${basedir}/scoped/target/index.xml.gz", 18, false, true);
+checkAbsent(repo, "osgi.identity", "(osgi.identity=org.apache.felix.log)");
+
 check("${basedir}/require-local/target/index.xml", "${basedir}/require-local/target/index.xml.gz", 19, true, true);
 
 // The in-build needs to check that the snapshot points at the real repo
