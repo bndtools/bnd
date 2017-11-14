@@ -80,7 +80,12 @@
 					<settingsFile>src/test/resources/integration-test/settings.xml</settingsFile>
 					<streamLogs>true</streamLogs>
 					<localRepositoryPath>${project.build.directory}/integration-test/repo</localRepositoryPath>
+					<preBuildHookScript>setup.groovy</preBuildHookScript>
 					<postBuildHookScript>verify.groovy</postBuildHookScript>
+					<scriptVariables>
+					  <pluginBasedir>${project.basedir}</pluginBasedir>
+					  <pluginBuildDirectory>${project.build.directory}</pluginBuildDirectory>
+					</scriptVariables>
                     <properties>
                       <jsse.enableSNIExtension>false</jsse.enableSNIExtension>
                       <!-- Used in the "no-dist-mgmt" deploy test -->

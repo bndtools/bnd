@@ -137,4 +137,7 @@ content = check(repo, "osgi.identity", "(osgi.identity=test-deploy-no-dist-mgmt)
 
 assert content.getAttributes().get("url").toString().contains("localsnapshotdeployrepo");
 
+repo = check("${basedir}/bad-remote-metadata/target/index.xml", "${basedir}/bad-remote-metadata/target/index.xml.gz", 1, false, false);
+content = check(repo, "osgi.identity", "(osgi.identity=org.objenesis)", "org.objenesis", false);
+
 return;

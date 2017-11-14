@@ -23,6 +23,7 @@
 		<module>index-deployment-repo</module>
 		<module>test-deploy-no-dist-mgmt</module>
 		<module>index-deployment-repo-no-dist-mgmt</module>
+		<module>bad-remote-metadata</module>
 	</modules>
 
 	<dependencyManagement>
