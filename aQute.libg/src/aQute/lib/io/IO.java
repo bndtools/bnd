@@ -750,7 +750,11 @@ public class IO {
 	}
 
 	public static void mkdirs(Path dir) throws IOException {
-		Files.createDirectories(dir);
+		if (Files.isSymbolicLink(dir)) {
+			mkdirs(Files.readSymbolicLink(dir));
+		} else {
+			Files.createDirectories(dir);
+		}
 	}
 
 	public static long drain(InputStream in) throws IOException {
