@@ -172,6 +172,7 @@ public class RemotePostProcessor implements PostProcessor {
 									logger.debug("Located snapshot file {} for artifact {}", toUse, artifact);
 								}
 								result.getArtifact().setFile(toUse);
+								result.setRepository(repository);
 								return result;
 							}
 						}
