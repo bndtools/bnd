@@ -68,7 +68,7 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 	private Promise<BridgeRepository> readFiles() {
 		Promise<List<Resource>> resources = getFiles().stream()
 				.map(this::parseFile)
-				.collect(executor.toAll());
+				.collect(executor.toPromise());
 		if (logger.isDebugEnabled()) {
 			resources.onSuccess(l -> l.stream().filter(Objects::nonNull).forEachOrdered(
 					r -> logger.debug("{}: adding resource {}", getName(), r)));
