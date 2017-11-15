@@ -9,9 +9,9 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collector;
 
 import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.PromiseExecutors;
+import org.osgi.util.promise.PromiseFactory;
 
-public class PromiseExecutor extends PromiseExecutors implements Executor {
+public class PromiseExecutor extends PromiseFactory implements Executor {
 
 	public PromiseExecutor() {
 		this((runnable) -> runnable.run());
