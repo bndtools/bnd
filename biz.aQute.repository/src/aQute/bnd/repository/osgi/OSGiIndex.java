@@ -54,7 +54,7 @@ class OSGiIndex {
 	private Promise<BridgeRepository> readIndexes(boolean refresh) throws Exception {
 		Promise<List<Resource>> resources = getURIs().stream()
 				.map(uri -> download(uri, refresh))
-				.collect(executor.toAll())
+				.collect(executor.toPromise())
 				.map(ll -> ll.stream().flatMap(List::stream).collect(toList()));
 		Promise<BridgeRepository> bridge = resources.map(ResourcesRepository::new).map(BridgeRepository::new);
 		return bridge;

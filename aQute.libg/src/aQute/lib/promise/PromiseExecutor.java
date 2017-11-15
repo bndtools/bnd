@@ -10,7 +10,6 @@ import java.util.stream.Collector;
 
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseExecutors;
-import org.osgi.util.promise.Promises;
 
 public class PromiseExecutor extends PromiseExecutors implements Executor {
 
@@ -37,14 +36,12 @@ public class PromiseExecutor extends PromiseExecutors implements Executor {
 		return super.executor();
 	}
 
-	public <V, S extends V> Promise<List<V>> all(Collection<Promise<S>> promises) {
-		return Promises.all(deferred(), promises);
+	public <V> Collector<Promise<V>,List<Promise<V>>,Promise<List<V>>> toPromise() {
+		return Collector.of(ArrayList::new, List::add, PromiseExecutor::combiner, this::all);
 	}
 
-	public <V> Collector<Promise<V>,List<Promise<V>>,Promise<List<V>>> toAll() {
-		return Collector.of(ArrayList::new, List::add, (l, r) -> {
-			l.addAll(r);
-			return l;
-		}, this::all);
+	private static <E, C extends Collection<E>> C combiner(C t, C u) {
+		t.addAll(u);
+		return t;
 	}
 }
