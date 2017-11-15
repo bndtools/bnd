@@ -19,7 +19,6 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
-import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
@@ -102,16 +101,6 @@ public class DependencyResolver {
 
 		DependencyResolutionRequest request = new DefaultDependencyResolutionRequest(project, session);
 
-		request.setResolutionFilter(new DependencyFilter() {
-			@Override
-			public boolean accept(DependencyNode node, List<DependencyNode> parents) {
-				if (node.getDependency() != null) {
-					return scopes.contains(node.getDependency().getScope());
-				}
-				return false;
-			}
-		});
-
 		DependencyResolutionResult result;
 		try {
 			result = resolver.resolve(request);
@@ -159,6 +148,9 @@ public class DependencyResolver {
 			throws MojoExecutionException {
 
 		for (DependencyNode node : nodes) {
+			if (!scopes.contains(node.getDependency().getScope())) {
+				continue;
+			}
 			// Ensure that the file is downloaded so we can index it
 			try {
 				ArtifactResult resolvedArtifact = postProcessor.postProcessResult(system.resolveArtifact(
