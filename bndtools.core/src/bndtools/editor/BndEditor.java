@@ -24,11 +24,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ResolveMode;
+import org.bndtools.core.jobs.JobUtil;
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.core.resolve.ResolveJob;
 import org.bndtools.core.resolve.ui.ResolutionWizard;
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -41,15 +43,20 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.commands.ActionHandler;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Control;
@@ -60,8 +67,12 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.forms.IFormPart;
+import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
+import org.eclipse.ui.handlers.IHandlerActivation;
+import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -69,6 +80,8 @@ import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.IElementStateListener;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
+import org.osgi.util.promise.Deferred;
+import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.Promises;
 import org.osgi.util.promise.Success;
@@ -119,6 +132,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     private final Image buildFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bndtools-logo-16x16.png").createImage();
 
     private BndSourceEditorPage sourcePage;
+    private Promise<Void> modelReady;
 
     private File inputFile;
 
@@ -225,6 +239,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     }
 
     private final AtomicBoolean saving = new AtomicBoolean(false);
+    private IHandlerActivation resolveHandlerActivation;
 
     @Override
     public void doSave(IProgressMonitor monitor) {
@@ -240,7 +255,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
         // If auto resolve, then resolve and save in background thread.
         if (resolveMode == ResolveMode.auto && !PlatformUI.getWorkbench().isClosing()) {
-            doAutoResolveOnSave(monitor);
+            resolveRunBundles(monitor, true);
         } else {
             // Not auto-resolving, just save
             reallySave(monitor);
@@ -265,58 +280,113 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         }
     }
 
-    private void doAutoResolveOnSave(IProgressMonitor monitor) {
+    public Promise<IStatus> resolveRunBundles(IProgressMonitor monitor, boolean onSave) {
         final Shell shell = getEditorSite().getShell();
         final IFile file = ResourceUtil.getFile(getEditorInput());
         if (file == null) {
-            MessageDialog.openError(shell, "Resolution Error", "Unable to run resolution because the file is not in the workspace. NB.: the file will still be saved.");
+            MessageDialog.openError(shell, "Resolution Error", "Unable to run resolution because the file is not in the workspace.");
             reallySave(monitor);
-            return;
+            return Promises.resolved(Status.CANCEL_STATUS);
         }
 
-        // Create resolver job and pre-validate
-        final ResolveJob job = new ResolveJob(model);
-        IStatus validation = job.validateBeforeRun();
-        if (!validation.isOK()) {
-            String message = "Unable to run the resolver. NB.: the file will still be saved.";
-            ErrorDialog.openError(shell, "Resolution Validation Problem", message, validation, IStatus.ERROR | IStatus.WARNING);
-            reallySave(monitor);
-            return;
-        }
-
-        // Add operation to perform at the end of resolution (i.e. display
-        // results and actually save the file)
-        final UIJob completionJob = new UIJob(shell.getDisplay(), "Display Resolution Results") {
+        Job loadWorkspaceJob = new Job("Loading workspace...") {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                if (monitor == null)
+                    monitor = new NullProgressMonitor();
+                monitor.beginTask("Loading workspace", 2);
+                try {
+                    Central.getWorkspace();
+                    monitor.worked(1);
+                    modelReady.getValue();
+                    return Status.OK_STATUS;
+                } catch (Exception e) {
+                    return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to initialize workspace.", e);
+                } finally {
+                    monitor.done();
+                }
+            }
+        };
+        final UIJob runResolveInUIJob = new UIJob("Resolve") {
             @Override
             public IStatus runInUIThread(IProgressMonitor monitor) {
-                ResolutionResult result = job.getResolutionResult();
-                ResolutionWizard wizard = new ResolutionWizard(model, file, result);
-                if (result.getOutcome() != ResolutionResult.Outcome.Resolved /*|| !result.getResolve().getOptionalResources().isEmpty() */) {
-                    WizardDialog dialog = new WizardDialog(shell, wizard);
-                    if (dialog.open() != Window.OK) {
-                        if (!wizard.performFinish()) {
-                            MessageDialog.openError(shell, "Error", "Unable to store resolution results into Run Bundles list.");
+                // Make sure all the parts of this editor page have committed their
+                // dirty state to the model
+                for (Object pageObj : pages) {
+                    if (pageObj instanceof IFormPage) {
+                        IFormPage formPage = (IFormPage) pageObj;
+                        IManagedForm form = formPage.getManagedForm();
+                        if (form != null) {
+                            IFormPart[] formParts = form.getParts();
+                            for (IFormPart formPart : formParts) {
+                                if (formPart.isDirty())
+                                    formPart.commit(false);
+                            }
                         }
                     }
-                } else {
-                    if (!wizard.performFinish()) {
-                        MessageDialog.openError(shell, "Error", "Unable to store resolution results into Run Bundles list.");
-                    }
                 }
-                reallySave(monitor);
+                if (sourcePage.isActive() && sourcePage.isDirty()) {
+                    sourcePage.commit(false);
+                }
+
+                // Create resolver job and pre-validate
+                final ResolveJob job = new ResolveJob(model);
+                IStatus validation = job.validateBeforeRun();
+                if (!validation.isOK()) {
+                    String message = "Unable to run the resolver.";
+                    ErrorDialog.openError(shell, "Resolution Validation Problem", message, validation, IStatus.ERROR | IStatus.WARNING);
+                    if (onSave)
+                        reallySave(monitor);
+                }
+
+                // Add operation to perform at the end of resolution (i.e. display
+                // results and actually save the file)
+                final UIJob completionJob = new UIJob(shell.getDisplay(), "Display Resolution Results") {
+                    @Override
+                    public IStatus runInUIThread(IProgressMonitor monitor) {
+                        ResolutionResult result = job.getResolutionResult();
+                        ResolutionWizard wizard = new ResolutionWizard(model, file, result);
+
+                        if (onSave) {
+                            // We are in auto-resolve-on-save, only show the dialog if there is a problem
+                            wizard.setAllowFinishUnresolved(true);
+                            wizard.setPreserveRunBundlesUnresolved(true);
+                            if (result.getOutcome() != ResolutionResult.Outcome.Resolved) {
+                                WizardDialog dialog = new DuringSaveWizardDialog(shell, wizard);
+                                dialog.create();
+                                dialog.setErrorMessage("Resolve Failed! Saving now will not update the Run Bundles.");
+                                if (dialog.open() == Dialog.OK)
+                                    reallySave(monitor);
+                            } else {
+                                wizard.performFinish();
+                                reallySave(monitor);
+                            }
+                        } else {
+                            // This is an interactive resolve, always show the dialog
+                            boolean dirtyBeforeResolve = isDirty();
+                            WizardDialog dialog = new WizardDialog(shell, wizard);
+                            if (dialog.open() == Dialog.OK && !dirtyBeforeResolve) {
+                                // save changes immediately if there were no unsaved changes before the resolve
+                                reallySave(monitor);
+                            }
+                        }
+                        return Status.OK_STATUS;
+                    }
+                };
+                job.addJobChangeListener(new JobChangeAdapter() {
+                    @Override
+                    public void done(IJobChangeEvent event) {
+                        completionJob.schedule();
+                    }
+                });
+
+                // Start job
+                job.setUser(true);
+                job.schedule();
                 return Status.OK_STATUS;
             }
         };
-        job.addJobChangeListener(new JobChangeAdapter() {
-            @Override
-            public void done(IJobChangeEvent event) {
-                completionJob.schedule();
-            }
-        });
-
-        // Start job
-        job.setUser(true);
-        job.schedule();
+        return JobUtil.chainJobs(loadWorkspaceJob, runResolveInUIJob);
     }
 
     private ResolveMode getResolveMode() {
@@ -468,30 +538,51 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             if (docProvider != null) {
                 docProvider.addElementStateListener(new ElementStateListener());
                 if (!Central.hasWorkspaceDirectory()) { // default ws will be created we can load immediately
-                    loadEditModel();
+                    modelReady = loadEditModel();
                 } else { // a real ws will be resolved so we need to load async
-                    Central.onWorkspaceInit(new Success<Workspace,Void>() {
+                    modelReady = Central.getWorkspacePromise().then(new Success<Workspace,Void>() {
                         @Override
                         public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
-                            try {
-                                loadEditModel();
-                                return Promises.resolved(null);
-                            } catch (Exception e) {
-                                logger.logError("Failed to load edit model", e);
-                                return Promises.failed(e);
-                            }
+                            return loadEditModel();
+                        }
+                    }, new Failure() {
+                        @Override
+                        public void fail(Promise< ? > resolved) throws Exception {
+                            logger.logError("Failed to load edit model", resolved.getFailure());
                         }
                     });
                 }
-
+            } else {
+                modelReady = Promises.failed(new Exception("Model unavailable"));
             }
+
+            setupActions();
 
         } catch (Exception e1) {
             throw Exceptions.duck(e1);
         }
     }
 
-    private void loadEditModel() throws Exception {
+    private void setupActions() {
+        String fileName = getFileAndProject(getEditorInput()).getFirst();
+        if (fileName.endsWith(LaunchConstants.EXT_BNDRUN)) {
+            final Action resolveAction = new Action("Resolve Run Bundles") {
+                @Override
+                public void run() {
+                    resolveRunBundles(new NullProgressMonitor(), false);
+                }
+            };
+            resolveAction.setImageDescriptor(Icons.desc("resolve"));
+            resolveAction.setActionDefinitionId("bndtools.runEditor.resolve");
+            IToolBarManager toolBarMgr = getEditorSite().getActionBars().getToolBarManager();
+            toolBarMgr.add(resolveAction);
+
+            IHandlerService handlerSvc = (IHandlerService) getEditorSite().getService(IHandlerService.class);
+            handlerSvc.activateHandler("bndtools.runEditor.resolve", new ActionHandler(resolveAction));
+        }
+    }
+
+    private Promise<Void> loadEditModel() throws Exception {
         // Create the bnd edit model and workspace
         Workspace ws = Central.getWorkspaceIfPresent();
         Project bndProject = Run.createRun(ws, inputFile);
@@ -499,6 +590,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         model.setProject(bndProject);
 
         // Load content into the edit model
+        Deferred<Void> modelReady = new Deferred<>();
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
@@ -509,8 +601,10 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                     try {
                         model.loadFrom(new IDocumentWrapper(document));
                         model.setBndResource(inputFile);
+                        modelReady.resolve(null);
                     } catch (IOException e) {
                         logger.logError("Unable to load edit model", e);
+                        modelReady.fail(e);
                     }
 
                     for (int i = 0; i < getPageCount(); i++) {
@@ -527,7 +621,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                 }
             }
         });
-
+        return modelReady.getPromise();
     }
 
     private void initPages(IEditorSite site, IEditorInput input) throws PartInitException {
@@ -590,6 +684,9 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         }
 
         buildFileImg.dispose();
+        if (resolveHandlerActivation != null) {
+            resolveHandlerActivation.getHandlerService().deactivateHandler(resolveHandlerActivation);
+        }
     }
 
     public BndEditModel getEditModel() {
@@ -645,6 +742,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                 if (docProvider != null) {
                     final IDocument document = docProvider.getDocument(getEditorInput());
                     SWTConcurrencyUtil.execForControl(getEditorSite().getShell(), true, new Runnable() {
+
                         @Override
                         public void run() {
                             try {
@@ -654,6 +752,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                                 logger.logError("Failed to reload document", e);
                             }
                         }
+
                     });
                 }
             }

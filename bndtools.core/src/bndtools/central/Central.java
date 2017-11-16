@@ -260,6 +260,10 @@ public class Central implements IStartupParticipant {
         return ws;
     }
 
+    public static Promise<Workspace> getWorkspacePromise() {
+        return workspaceQueue.getPromise();
+    }
+
     public static void onWorkspaceInit(final Success<Workspace,Void> callback) {
         Promise<Workspace> p = workspaceQueue.getPromise();
         p.then(callback, null).then(null, callbackFailure);
