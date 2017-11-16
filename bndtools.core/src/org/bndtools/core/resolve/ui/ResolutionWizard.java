@@ -50,6 +50,7 @@ public class ResolutionWizard extends Wizard {
 
     private final BndEditModel model;
     private final IFile file;
+    private boolean preserveRunBundleUnresolved;
 
     public ResolutionWizard(BndEditModel model, IFile file, ResolutionResult result) {
         this.model = model;
@@ -69,10 +70,13 @@ public class ResolutionWizard extends Wizard {
         Collection<Resource> resources;
 
         ResolutionResult result = resultsPage.getResult();
-        if (result != null && result.getOutcome() == ResolutionResult.Outcome.Resolved)
+        if (result != null && result.getOutcome() == ResolutionResult.Outcome.Resolved) {
             resources = result.getResourceWirings().keySet();
-        else
+        } else if (preserveRunBundleUnresolved) {
+            return true;
+        } else {
             resources = Collections.emptyList();
+        }
 
         // Open stream for physical paths list in target dir
         PrintStream pathsStream = null;
@@ -187,6 +191,14 @@ public class ResolutionWizard extends Wizard {
         Version next = new Version(version.getMajor(), version.getMinor(), version.getMicro() + 1);
 
         return new VersionRange(String.format("[%s,%s)", base, next));
+    }
+
+    public void setAllowFinishUnresolved(boolean allowFinishUnresolved) {
+        resultsPage.setAllowCompleteUnresolved(allowFinishUnresolved);
+    }
+
+    public void setPreserveRunBundlesUnresolved(boolean preserve) {
+        this.preserveRunBundleUnresolved = preserve;
     }
 
 }

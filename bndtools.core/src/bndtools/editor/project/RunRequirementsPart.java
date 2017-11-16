@@ -14,20 +14,14 @@ import java.util.Set;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ResolveMode;
-import org.bndtools.core.resolve.ResolutionResult.Outcome;
-import org.bndtools.core.resolve.ResolveJob;
-import org.bndtools.core.resolve.ui.ResolutionWizard;
+import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.core.ui.resource.RequirementLabelProvider;
 import org.bndtools.utils.dnd.AbstractViewerDropAdapter;
 import org.bndtools.utils.dnd.SupportedTransfer;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -46,20 +40,14 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.forms.IFormPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
-import org.eclipse.ui.ide.ResourceUtil;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
@@ -77,6 +65,7 @@ import aQute.libg.filters.SimpleFilter;
 import aQute.libg.qtokens.QuotedTokenizer;
 import bndtools.BndConstants;
 import bndtools.Plugin;
+import bndtools.editor.BndEditor;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.model.repo.DependencyPhase;
 import bndtools.model.repo.ProjectBundle;
@@ -101,7 +90,7 @@ public class RunRequirementsPart extends BndEditorPart implements PropertyChange
     private List<Requirement> requires;
     private ResolveMode resolveMode;
 
-    private final Image resolveIcon = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/wand.png").createImage();
+    private final Image resolveIcon = Icons.desc("resolve").createImage();
 
     private ToolItem addBundleTool;
     private ToolItem removeTool;
@@ -175,7 +164,6 @@ public class RunRequirementsPart extends BndEditorPart implements PropertyChange
         btnResolveNow.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                btnResolveNow.setEnabled(false);
                 doResolve();
             }
         });
@@ -297,68 +285,9 @@ public class RunRequirementsPart extends BndEditorPart implements PropertyChange
     }
 
     private void doResolve() {
-        // Make sure all the parts of this editor page have committed their
-        // dirty state to the model
-        IFormPart[] parts = getManagedForm().getParts();
-        for (IFormPart part : parts) {
-            if (part.isDirty())
-                part.commit(false);
-
-        }
-
-        final IFormPage page = (IFormPage) getManagedForm().getContainer();
-        final IEditorInput input = page.getEditorInput();
-        final IEditorPart editor = page.getEditor();
-        final IFile file = ResourceUtil.getFile(input);
-        final Shell parentShell = page.getEditor().getSite().getShell();
-
-        // Create the wizard and pre-validate
-        final ResolveJob job = new ResolveJob(model);
-        IStatus validation = job.validateBeforeRun();
-        if (!validation.isOK()) {
-            ErrorDialog errorDialog = new ErrorDialog(parentShell, "Validation Problem", null, validation, IStatus.ERROR | IStatus.WARNING) {
-                @Override
-                protected void createButtonsForButtonBar(Composite parent) {
-                    // create OK, Cancel and Details buttons
-                    createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);
-                    createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
-                    createDetailsButton(parent);
-                }
-            };
-            int response = errorDialog.open();
-            if (Window.CANCEL == response || validation.getSeverity() >= IStatus.ERROR) {
-                btnResolveNow.setEnabled(true);
-                return;
-            }
-        }
-
-        // Add the operation to perform at the end of the resolution job (i.e.,
-        // showing the result)
-        final Runnable showResult = new Runnable() {
-            @Override
-            public void run() {
-                ResolutionWizard wizard = new ResolutionWizard(model, file, job.getResolutionResult());
-                WizardDialog dialog = new WizardDialog(parentShell, wizard);
-                boolean dirtyBeforeResolve = editor.isDirty();
-                if (dialog.open() == Dialog.OK && !dirtyBeforeResolve) {
-                    // only save the editor, when no unsaved changes happened before resolution
-                    editor.getEditorSite().getPage().saveEditor(editor, false);
-                }
-
-                btnResolveNow.setEnabled(true);
-            }
-        };
-        job.addJobChangeListener(new JobChangeAdapter() {
-            @Override
-            public void done(IJobChangeEvent event) {
-                Outcome outcome = job.getResolutionResult().getOutcome();
-                if (outcome != Outcome.Cancelled)
-                    parentShell.getDisplay().asyncExec(showResult);
-            }
-        });
-
-        job.setUser(true);
-        job.schedule();
+        IFormPage formPage = (IFormPage) getManagedForm().getContainer();
+        BndEditor editor = (BndEditor) formPage.getEditor();
+        editor.resolveRunBundles(new NullProgressMonitor(), false);
     }
 
     @Override
@@ -454,8 +383,8 @@ public class RunRequirementsPart extends BndEditorPart implements PropertyChange
     }
 
     /**
-     * Update the requirements already available with new ones. Already existing requirements will be removed from the
-     * given set.
+     * Update the requirements already available with new ones. Already existing requirements will be removed from the given
+     * set.
      *
      * @param adding
      *            Set with {@link Requirement}s to add

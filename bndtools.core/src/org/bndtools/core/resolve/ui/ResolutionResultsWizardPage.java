@@ -30,6 +30,7 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
     private StackLayout stack;
 
     private ResolutionResult result;
+    private boolean allowCompleteUnresolved = false;
 
     /**
      * Create the wizard.
@@ -116,7 +117,12 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
 
     @Override
     public boolean isPageComplete() {
-        return result != null && result.getOutcome().equals(ResolutionResult.Outcome.Resolved) && resolutionSuccessPanel.isComplete();
+        boolean complete;
+        if (allowCompleteUnresolved)
+            complete = true;
+        else
+            complete = result != null && result.getOutcome().equals(ResolutionResult.Outcome.Resolved) && resolutionSuccessPanel.isComplete();
+        return complete;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -142,6 +148,10 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
         resolutionFailurePanel.dispose();
         resolutionSuccessPanel.dispose();
 
+    }
+
+    public void setAllowCompleteUnresolved(boolean allowFinishUnresolved) {
+        this.allowCompleteUnresolved = allowFinishUnresolved;
     }
 
 }

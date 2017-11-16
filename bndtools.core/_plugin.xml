@@ -59,7 +59,7 @@
 			class="bndtools.central.Central" />
 	</extension>
 
-   <!-- Popup Menus -->
+   <!-- EDITORS -->
    <extension
          point="org.eclipse.ui.editors">
       <editor
@@ -103,6 +103,7 @@
             icon="icons/information.gif"
       />
    </extension>
+
    <extension
          point="org.eclipse.ui.newWizards">
       <category
@@ -279,6 +280,10 @@
          commandId="bnd.wizard.generateIndex"
          icon="icons/repoindex.png"
       />
+      <image
+         commandId="bndtools.runEditor.resolve"
+         icon="${icons.resolve}"
+      />
    </extension>
    <extension point="org.eclipse.ui.handlers">
       <handler
@@ -358,6 +363,7 @@
        <!-- M1 == Shift -->
        <!-- M2 == Ctrl on Win, Cmd on Mac -->
        <!-- M3 == Alt -->
+       <!-- Ctrl == Ctrl on both Win and Mac -->
        <key
             commandId="bndtools.workspace.openMainConfig"
             contextId="org.eclipse.ui.contexts.window"
@@ -369,6 +375,12 @@
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M2+F"
+      />
+      <key
+            commandId="bndtools.runEditor.resolve"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="Ctrl+R"
       />
    </extension>
 
@@ -995,6 +1007,15 @@
          name="Debug Bnd Native Launcher"
          description="Debug Bnd Native Launcher"
          categoryId="org.eclipse.debug.ui.category.run"/>
+
+      <category
+         id="bndtools.runEditor"
+         name="Run Editor Commands"/>
+      <command
+         id="bndtools.runEditor.resolve"
+         name="Resolve Run Bundles"
+         description="Resolve Run Bundles"
+         categoryId="bndtools.runEditor"/>
    </extension>
 
    <extension point="org.eclipse.ui.bindings">
