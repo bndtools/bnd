@@ -327,7 +327,14 @@ public class CapReqBuilder {
 		return builder;
 	}
 
-	private static Requirement unalias(Requirement requirement) throws Exception {
+	/**
+	 * Convert an alias requirement to its canonical form. For example:
+	 * "<code>bnd.identity; id=org.example; version='[1.0,2.0)'</code>" will be
+	 * converted to
+	 * "<code>osgi.identity; filter:='(&(osgi.identity=org.example)(version>=1.0)(!(version>=2.0)))'</code>"
+	 * Requirements that are not recognized as aliases will be returned unchanged.
+	 */
+	public static Requirement unalias(Requirement requirement) throws Exception {
 		if (requirement == null)
 			return null;
 

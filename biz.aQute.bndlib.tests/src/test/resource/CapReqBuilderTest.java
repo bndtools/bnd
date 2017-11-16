@@ -88,4 +88,11 @@ public class CapReqBuilderTest extends TestCase {
 		assertEquals("optional", req.getDirectives().get("resolution"));
 	}
 
+	public void testNonAliasedRequirementUnchanged() throws Exception {
+		Parameters params = OSGiHeader.parseHeader("osgi.identity; filter:='(a=b)'; resolution:=optional");
+		Requirement original = CapReqBuilder.getRequirementsFrom(params, false).get(0);
+		Requirement unaliased = CapReqBuilder.unalias(original);
+		assertTrue("unaliasing a normal requirement should return the original object", original == unaliased);
+	}
+
 }
