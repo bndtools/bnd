@@ -5,8 +5,9 @@ import org.eclipse.osgi.util.NLS;
 public class Messages extends NLS {
     private static final String BUNDLE_NAME = "bndtools.preferences.ui.messages"; //$NON-NLS-1$
     public static String BndPreferencePage_btnBuildBeforeLaunch;
-    public static String BndPreferencePage_exportsGroup;
+    public static String BndPreferencePage_miscGroup;
     public static String BndPreferencePage_btnNoAskPackageInfo;
+    public static String BndPreferencePage_btnAliasRequirements;
     public static String BndPreferencePage_cmbBuildLogging_None;
     public static String BndPreferencePage_cmbBuildLogging_Basic;
     public static String BndPreferencePage_cmbBuildLogging_Full;

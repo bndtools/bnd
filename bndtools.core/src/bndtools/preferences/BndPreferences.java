@@ -26,6 +26,7 @@ public class BndPreferences {
 
     private static final String PREF_ENABLE_SUB_BUNDLES = "enableSubBundles";
     private static final String PREF_NOASK_PACKAGEINFO = "noAskPackageInfo";
+    private static final String PREF_USE_ALIAS_REQUIREMENTS = "useAliasRequirements";
     private static final String PREF_HIDE_INITIALISE_CNF_WIZARD = "hideInitialiseCnfWizard";
     private static final String PREF_HIDE_INITIALISE_CNF_ADVICE = "hideInitialiseCnfAdvice";
     private static final String PREF_WARN_EXISTING_LAUNCH = "warnExistingLaunch";
@@ -57,6 +58,7 @@ public class BndPreferences {
         store.setDefault(PREF_ENABLE_TEMPLATE_REPO, false);
         store.setDefault(PREF_TEMPLATE_REPO_URI_LIST, "https://raw.githubusercontent.com/bndtools/bundle-hub/master/index.xml.gz");
         store.setDefault(PREF_WORKSPACE_OFFLINE, false);
+        store.setDefault(PREF_USE_ALIAS_REQUIREMENTS, true);
     }
 
     private String mapToPreference(Map<String,Boolean> names) {
@@ -112,8 +114,16 @@ public class BndPreferences {
         store.setValue(PREF_NOASK_PACKAGEINFO, noAskPackageInfo);
     }
 
+    public void setUseAliasRequirements(boolean useAliases) {
+        store.setValue(PREF_USE_ALIAS_REQUIREMENTS, useAliases);
+    }
+
     public boolean getNoAskPackageInfo() {
         return store.getBoolean(PREF_NOASK_PACKAGEINFO);
+    }
+
+    public boolean getUseAliasRequirements() {
+        return store.getBoolean(PREF_USE_ALIAS_REQUIREMENTS);
     }
 
     public void setHideInitCnfWizard(boolean hide) {
@@ -264,8 +274,8 @@ public class BndPreferences {
      * Return the enabled version control ignores plugins.
      * <ul>
      * <li>When plugins is not null and not empty then plugins itself is returned</li>
-     * <li>Otherwise, when the files in the project are already managed by a version control system, this method tries
-     * to detect which plugins can apply ignores for the version control system</li>
+     * <li>Otherwise, when the files in the project are already managed by a version control system, this method tries to
+     * detect which plugins can apply ignores for the version control system</li>
      * <li>Otherwise this method determines from the preferences which plugins are enabled</li>
      * </ul>
      *

@@ -10,6 +10,8 @@ import org.bndtools.api.NamedPlugin;
 import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
 import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -20,22 +22,21 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import bndtools.Plugin;
 import bndtools.preferences.BndPreferences;
-import bndtools.utils.ModificationLock;
 
 public class GeneratedResourcesPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
-
-    private final ModificationLock lock = new ModificationLock();
 
     private final HeadlessBuildManager headlessBuildManager = Plugin.getDefault().getHeadlessBuildManager();
     private final VersionControlIgnoresManager versionControlIgnoresManager = Plugin.getDefault().getVersionControlIgnoresManager();
 
     private String enableSubs;
     private boolean noAskPackageInfo = false;
+    private boolean useAliasRequirements = true;
     private boolean headlessBuildCreate = true;
     private final Map<String,Boolean> headlessBuildPlugins = new HashMap<String,Boolean>();
     private boolean versionControlIgnoresCreate = true;
@@ -47,6 +48,7 @@ public class GeneratedResourcesPreferencePage extends PreferencePage implements 
 
         enableSubs = prefs.getEnableSubBundles();
         noAskPackageInfo = prefs.getNoAskPackageInfo();
+        useAliasRequirements = prefs.getUseAliasRequirements();
         headlessBuildCreate = prefs.getHeadlessBuildCreate();
 
         Collection<NamedPlugin> pluginsInformation = headlessBuildManager.getAllPluginsInformation();
@@ -103,6 +105,7 @@ public class GeneratedResourcesPreferencePage extends PreferencePage implements 
         BndPreferences prefs = new BndPreferences();
         prefs.setEnableSubBundles(enableSubs);
         prefs.setNoAskPackageInfo(noAskPackageInfo);
+        prefs.setUseAliasRequirements(useAliasRequirements);
         prefs.setHeadlessBuildCreate(headlessBuildCreate);
         Collection<NamedPlugin> pluginsInformation = headlessBuildManager.getAllPluginsInformation();
         if (pluginsInformation.size() > 0) {
@@ -125,198 +128,213 @@ public class GeneratedResourcesPreferencePage extends PreferencePage implements 
         layout = new GridLayout(1, false);
         composite.setLayout(layout);
 
-        // Create controls
-        Group enableSubBundlesGroup = new Group(composite, SWT.NONE);
-        enableSubBundlesGroup.setText(Messages.BndPreferencePage_titleSubBundles);
-
-        final Button btnAlways = new Button(enableSubBundlesGroup, SWT.RADIO);
-        btnAlways.setText(Messages.BndPreferencePage_optionAlwaysEnable);
-        final Button btnNever = new Button(enableSubBundlesGroup, SWT.RADIO);
-        btnNever.setText(Messages.BndPreferencePage_optionNeverEnable);
-        Button btnPrompt = new Button(enableSubBundlesGroup, SWT.RADIO);
-        btnPrompt.setText(Messages.BndPreferencePage_optionPrompt);
-
+        Control enableSubBundlesGroup = createSubBundlesGroup(composite);
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         enableSubBundlesGroup.setLayoutData(gd);
 
-        layout = new GridLayout(1, false);
-        enableSubBundlesGroup.setLayout(layout);
-
-        Group exportsGroup = new Group(composite, SWT.NONE);
-        exportsGroup.setText(Messages.BndPreferencePage_exportsGroup);
-
+        Control headlessBuildGroup = createHeadlessBuildSystemsGroup(composite);
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        exportsGroup.setLayoutData(gd);
-        layout = new GridLayout(1, false);
-        layout.verticalSpacing = 10;
-        exportsGroup.setLayout(layout);
+        headlessBuildGroup.setLayoutData(gd);
 
-        final Button btnNoAskPackageInfo = new Button(exportsGroup, SWT.CHECK);
+        Control versionControlGroup = createVersionControlGroup(composite);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        versionControlGroup.setLayoutData(gd);
+
+        Control othersGroup = createMiscGroup(composite);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        othersGroup.setLayoutData(gd);
+
+        return composite;
+    }
+
+    private Control createSubBundlesGroup(Composite parent) {
+        Group group = new Group(parent, SWT.NONE);
+        group.setText(Messages.BndPreferencePage_titleSubBundles);
+
+        final Button btnAlways = new Button(group, SWT.RADIO);
+        btnAlways.setText(Messages.BndPreferencePage_optionAlwaysEnable);
+        final Button btnNever = new Button(group, SWT.RADIO);
+        btnNever.setText(Messages.BndPreferencePage_optionNeverEnable);
+        Button btnPrompt = new Button(group, SWT.RADIO);
+        btnPrompt.setText(Messages.BndPreferencePage_optionPrompt);
+
+        GridLayout layout = new GridLayout(1, false);
+        group.setLayout(layout);
+
+        // Load Data
+        if (MessageDialogWithToggle.ALWAYS.equals(enableSubs)) {
+            btnAlways.setSelection(true);
+            btnNever.setSelection(false);
+            btnPrompt.setSelection(false);
+        } else if (MessageDialogWithToggle.NEVER.equals(enableSubs)) {
+            btnAlways.setSelection(false);
+            btnNever.setSelection(true);
+            btnPrompt.setSelection(false);
+        } else {
+            btnAlways.setSelection(false);
+            btnNever.setSelection(false);
+            btnPrompt.setSelection(true);
+        }
+
+        return group;
+    }
+
+    private Control createMiscGroup(Composite parent) {
+        Group group = new Group(parent, SWT.NONE);
+        group.setText(Messages.BndPreferencePage_miscGroup);
+
+        GridLayout layout = new GridLayout(1, false);
+        layout.verticalSpacing = 10;
+        group.setLayout(layout);
+
+        final Button btnNoAskPackageInfo = new Button(group, SWT.CHECK);
         btnNoAskPackageInfo.setText(Messages.BndPreferencePage_btnNoAskPackageInfo);
 
+        final Button btnAliasRequirements = new Button(group, SWT.CHECK);
+        btnAliasRequirements.setText(Messages.BndPreferencePage_btnAliasRequirements);
+        ControlDecoration decorAlias = new ControlDecoration(btnAliasRequirements, SWT.RIGHT | SWT.CENTER);
+        decorAlias.setShowHover(true);
+        decorAlias.setDescriptionText(
+                "When adding a requirement to the editor, use a simplified alias such as \nbnd.identity; bsn=example\n.\nDisable to use the canonical requirement syntax e.g. \"osgi.identity; filter:='(osgi.identity=example)'\"");
+        decorAlias.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
+
+        // Load Initial Data
+        btnNoAskPackageInfo.setSelection(noAskPackageInfo);
+        btnAliasRequirements.setSelection(useAliasRequirements);
+
+        // Listeners
+        btnNoAskPackageInfo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                noAskPackageInfo = btnNoAskPackageInfo.getSelection();
+            }
+        });
+        btnAliasRequirements.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                useAliasRequirements = btnAliasRequirements.getSelection();
+            }
+        });
+
+        return group;
+    }
+
+    private Control createHeadlessBuildSystemsGroup(Composite parent) {
         Collection<NamedPlugin> allPluginsInformation = headlessBuildManager.getAllPluginsInformation();
-        if (allPluginsInformation.size() > 0) {
-            Group headlessMainGroup = new Group(composite, SWT.NONE);
-            headlessMainGroup.setText(Messages.BndPreferencePage_headlessGroup);
+        if (allPluginsInformation == null || allPluginsInformation.isEmpty()) {
+            Label lbl = new Label(parent, SWT.None);
+            lbl.setText("No headless build system support detected");
+            return lbl;
+        }
 
-            final Button btnHeadlessCreate = new Button(headlessMainGroup, SWT.CHECK);
-            btnHeadlessCreate.setText(Messages.BndPreferencePage_headlessCreate_text);
-            btnHeadlessCreate.setSelection(headlessBuildCreate);
+        Group headlessMainGroup = new Group(parent, SWT.NONE);
+        headlessMainGroup.setText(Messages.BndPreferencePage_headlessGroup);
 
-            final Group headlessGroup = new Group(headlessMainGroup, SWT.NONE);
-            final Set<Button> headlessGroupButtons = new HashSet<Button>();
+        final Button btnHeadlessCreate = new Button(headlessMainGroup, SWT.CHECK);
+        btnHeadlessCreate.setText(Messages.BndPreferencePage_headlessCreate_text);
+        btnHeadlessCreate.setSelection(headlessBuildCreate);
 
-            for (NamedPlugin info : allPluginsInformation) {
-                final String pluginName = info.getName();
-                final Button btnHeadlessPlugin = new Button(headlessGroup, SWT.CHECK);
-                headlessGroupButtons.add(btnHeadlessPlugin);
-                if (info.isDeprecated()) {
-                    btnHeadlessPlugin.setText(pluginName + Messages.BndPreferencePage_namedPluginDeprecated_text);
-                } else {
-                    btnHeadlessPlugin.setText(pluginName);
-                }
-                Boolean checked = headlessBuildPlugins.get(pluginName);
-                if (checked == null) {
-                    checked = Boolean.FALSE;
-                    headlessBuildPlugins.put(pluginName, checked);
-                }
-                btnHeadlessPlugin.setSelection(checked.booleanValue());
-                btnHeadlessPlugin.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        headlessBuildPlugins.put(pluginName, Boolean.valueOf(btnHeadlessPlugin.getSelection()));
-                        checkValid();
-                    }
-                });
-            }
+        final Group headlessGroup = new Group(headlessMainGroup, SWT.NONE);
+        final Set<Button> headlessGroupButtons = new HashSet<Button>();
 
-            gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-            headlessGroup.setLayoutData(gd);
-
-            layout = new GridLayout(Math.max(4, allPluginsInformation.size()), true);
-            headlessGroup.setLayout(layout);
-
-            gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-            headlessMainGroup.setLayoutData(gd);
-
-            layout = new GridLayout(1, true);
-            headlessMainGroup.setLayout(layout);
-
-            // Load Data
-            if (MessageDialogWithToggle.ALWAYS.equals(enableSubs)) {
-                btnAlways.setSelection(true);
-                btnNever.setSelection(false);
-                btnPrompt.setSelection(false);
-            } else if (MessageDialogWithToggle.NEVER.equals(enableSubs)) {
-                btnAlways.setSelection(false);
-                btnNever.setSelection(true);
-                btnPrompt.setSelection(false);
+        for (NamedPlugin info : allPluginsInformation) {
+            final String pluginName = info.getName();
+            final Button btnHeadlessPlugin = new Button(headlessGroup, SWT.CHECK);
+            headlessGroupButtons.add(btnHeadlessPlugin);
+            if (info.isDeprecated()) {
+                btnHeadlessPlugin.setText(pluginName + Messages.BndPreferencePage_namedPluginDeprecated_text);
             } else {
-                btnAlways.setSelection(false);
-                btnNever.setSelection(false);
-                btnPrompt.setSelection(true);
+                btnHeadlessPlugin.setText(pluginName);
             }
-            btnNoAskPackageInfo.setSelection(noAskPackageInfo);
-
-            // Listeners
-            SelectionAdapter adapter = new SelectionAdapter() {
+            Boolean checked = headlessBuildPlugins.get(pluginName);
+            if (checked == null) {
+                checked = Boolean.FALSE;
+                headlessBuildPlugins.put(pluginName, checked);
+            }
+            btnHeadlessPlugin.setSelection(checked.booleanValue());
+            btnHeadlessPlugin.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    lock.ifNotModifying(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (btnAlways.getSelection()) {
-                                enableSubs = MessageDialogWithToggle.ALWAYS;
-                            } else if (btnNever.getSelection()) {
-                                enableSubs = MessageDialogWithToggle.NEVER;
-                            } else {
-                                enableSubs = MessageDialogWithToggle.PROMPT;
-                            }
-                        }
-                    });
-                }
-            };
-            btnAlways.addSelectionListener(adapter);
-            btnNever.addSelectionListener(adapter);
-            btnPrompt.addSelectionListener(adapter);
-            btnNoAskPackageInfo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    noAskPackageInfo = btnNoAskPackageInfo.getSelection();
-                }
-            });
-            btnHeadlessCreate.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    headlessBuildCreate = btnHeadlessCreate.getSelection();
-                    for (Button button : headlessGroupButtons) {
-                        button.setEnabled(headlessBuildCreate);
-                    }
+                    headlessBuildPlugins.put(pluginName, Boolean.valueOf(btnHeadlessPlugin.getSelection()));
                     checkValid();
                 }
             });
         }
 
-        allPluginsInformation = versionControlIgnoresManager.getAllPluginsInformation();
-        if (allPluginsInformation.size() > 0) {
-            Group versionControlIgnoresMainGroup = new Group(composite, SWT.NONE);
-            versionControlIgnoresMainGroup.setText(Messages.BndPreferencePage_versionControlIgnoresGroup_text);
+        headlessGroup.setLayout(new GridLayout(Math.max(4, allPluginsInformation.size()), true));
+        headlessMainGroup.setLayout(new GridLayout(1, true));
 
-            final Button btnVersionControlIgnoresCreate = new Button(versionControlIgnoresMainGroup, SWT.CHECK);
-            btnVersionControlIgnoresCreate.setText(Messages.BndPreferencePage_versionControlIgnoresCreate_text);
-            btnVersionControlIgnoresCreate.setSelection(versionControlIgnoresCreate);
-
-            Group versionControlIgnoresGroup = new Group(versionControlIgnoresMainGroup, SWT.NONE);
-            final Set<Button> versionControlIgnoresGroupButtons = new HashSet<Button>();
-
-            for (NamedPlugin info : allPluginsInformation) {
-                final String pluginName = info.getName();
-                final Button btnVersionControlIgnoresPlugin = new Button(versionControlIgnoresGroup, SWT.CHECK);
-                versionControlIgnoresGroupButtons.add(btnVersionControlIgnoresPlugin);
-                if (info.isDeprecated()) {
-                    btnVersionControlIgnoresPlugin.setText(pluginName + Messages.BndPreferencePage_namedPluginDeprecated_text);
-                } else {
-                    btnVersionControlIgnoresPlugin.setText(pluginName);
+        btnHeadlessCreate.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                headlessBuildCreate = btnHeadlessCreate.getSelection();
+                for (Button button : headlessGroupButtons) {
+                    button.setEnabled(headlessBuildCreate);
                 }
-                Boolean checked = versionControlIgnoresPlugins.get(pluginName);
-                if (checked == null) {
-                    checked = Boolean.FALSE;
-                    versionControlIgnoresPlugins.put(pluginName, checked);
-                }
-                btnVersionControlIgnoresPlugin.setSelection(checked.booleanValue());
-                btnVersionControlIgnoresPlugin.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        versionControlIgnoresPlugins.put(pluginName, btnVersionControlIgnoresPlugin.getSelection());
-                        checkValid();
-                    }
-                });
+                checkValid();
             }
+        });
 
-            gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-            versionControlIgnoresGroup.setLayoutData(gd);
+        return headlessMainGroup;
+    }
 
-            layout = new GridLayout(Math.max(4, allPluginsInformation.size()), true);
-            versionControlIgnoresGroup.setLayout(layout);
+    private Control createVersionControlGroup(Composite composite) {
+        Collection<NamedPlugin> allPluginsInformation = versionControlIgnoresManager.getAllPluginsInformation();
+        if (allPluginsInformation == null || allPluginsInformation.isEmpty()) {
+            Label lbl = new Label(composite, SWT.None);
+            lbl.setText("No version control system support detected");
+            return lbl;
+        }
 
-            gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-            versionControlIgnoresMainGroup.setLayoutData(gd);
+        Group versionControlIgnoresMainGroup = new Group(composite, SWT.NONE);
+        versionControlIgnoresMainGroup.setText(Messages.BndPreferencePage_versionControlIgnoresGroup_text);
 
-            layout = new GridLayout(1, true);
-            versionControlIgnoresMainGroup.setLayout(layout);
+        final Button btnVersionControlIgnoresCreate = new Button(versionControlIgnoresMainGroup, SWT.CHECK);
+        btnVersionControlIgnoresCreate.setText(Messages.BndPreferencePage_versionControlIgnoresCreate_text);
+        btnVersionControlIgnoresCreate.setSelection(versionControlIgnoresCreate);
 
-            btnVersionControlIgnoresCreate.addSelectionListener(new SelectionAdapter() {
+        Group versionControlIgnoresGroup = new Group(versionControlIgnoresMainGroup, SWT.NONE);
+        final Set<Button> versionControlIgnoresGroupButtons = new HashSet<Button>();
+
+        for (NamedPlugin info : allPluginsInformation) {
+            final String pluginName = info.getName();
+            final Button btnVersionControlIgnoresPlugin = new Button(versionControlIgnoresGroup, SWT.CHECK);
+            versionControlIgnoresGroupButtons.add(btnVersionControlIgnoresPlugin);
+            if (info.isDeprecated()) {
+                btnVersionControlIgnoresPlugin.setText(pluginName + Messages.BndPreferencePage_namedPluginDeprecated_text);
+            } else {
+                btnVersionControlIgnoresPlugin.setText(pluginName);
+            }
+            Boolean checked = versionControlIgnoresPlugins.get(pluginName);
+            if (checked == null) {
+                checked = Boolean.FALSE;
+                versionControlIgnoresPlugins.put(pluginName, checked);
+            }
+            btnVersionControlIgnoresPlugin.setSelection(checked.booleanValue());
+            btnVersionControlIgnoresPlugin.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    versionControlIgnoresCreate = btnVersionControlIgnoresCreate.getSelection();
-                    for (Button button : versionControlIgnoresGroupButtons) {
-                        button.setEnabled(versionControlIgnoresCreate);
-                    }
+                    versionControlIgnoresPlugins.put(pluginName, btnVersionControlIgnoresPlugin.getSelection());
                     checkValid();
                 }
             });
         }
-        return composite;
+
+        versionControlIgnoresGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        versionControlIgnoresGroup.setLayout(new GridLayout(Math.max(4, allPluginsInformation.size()), true));
+        versionControlIgnoresMainGroup.setLayout(new GridLayout(1, true));
+
+        btnVersionControlIgnoresCreate.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                versionControlIgnoresCreate = btnVersionControlIgnoresCreate.getSelection();
+                for (Button button : versionControlIgnoresGroupButtons) {
+                    button.setEnabled(versionControlIgnoresCreate);
+                }
+                checkValid();
+            }
+        });
+        return versionControlIgnoresMainGroup;
     }
 
 }
