@@ -21,11 +21,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.log.LogService;
-import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Success;
-
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 import aQute.bnd.deployer.repository.CapabilityIndex;
 import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
 import aQute.bnd.deployer.repository.api.IRepositoryIndexProcessor;
@@ -50,13 +46,7 @@ public class WorkspaceR5Repository extends BaseRepository {
     WorkspaceR5Repository() {}
 
     void init() throws Exception {
-        Central.onWorkspaceInit(new Success<Workspace,Void>() {
-            @Override
-            public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
-                setupProjects();
-                return null;
-            }
-        });
+        Central.onWorkspace(workspace -> setupProjects());
     }
 
     void setupProjects() throws Exception {

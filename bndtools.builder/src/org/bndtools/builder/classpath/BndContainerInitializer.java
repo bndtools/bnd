@@ -38,13 +38,9 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JavaModelManager;
-import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Success;
-
 import aQute.bnd.build.CircularDependencyException;
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
@@ -65,13 +61,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
 
     public BndContainerInitializer() {
         super();
-        Central.onWorkspaceInit(new Success<Workspace,Void>() {
-            @Override
-            public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
-                Central.getInstance().addModelListener(BndContainerInitializer.this);
-                return null;
-            }
-        });
+        Central.onWorkspace(workspace -> Central.getInstance().addModelListener(BndContainerInitializer.this));
     }
 
     @Override
@@ -96,13 +86,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
          */
         BndContainer container = loadClasspathContainer(project);
         Updater.setClasspathContainer(javaProject, container);
-        Central.onWorkspaceInit(new Success<Workspace,Void>() {
-            @Override
-            public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
-                requestClasspathContainerUpdate(BndtoolsConstants.BND_CLASSPATH_ID, javaProject, null);
-                return null;
-            }
-        });
+        Central.onWorkspace(workspace -> requestClasspathContainerUpdate(BndtoolsConstants.BND_CLASSPATH_ID, javaProject, null));
     }
 
     @Override

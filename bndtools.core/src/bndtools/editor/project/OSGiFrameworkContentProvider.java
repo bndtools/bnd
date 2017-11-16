@@ -22,22 +22,26 @@ import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Display;
 import org.osgi.framework.Bundle;
+import org.osgi.util.function.Consumer;
 import org.osgi.util.promise.Deferred;
-import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Success;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import bndtools.Plugin;
+import bndtools.central.Central;
 import bndtools.model.repo.LoadingContentElement;
 
 public class OSGiFrameworkContentProvider implements IStructuredContentProvider {
     private static final ILogger logger = Logger.getLogger(OSGiFrameworkContentProvider.class);
 
     List<OSGiFramework> frameworks = new ArrayList<OSGiFramework>();
-    private final Deferred<List<OSGiFramework>> contentReadyQueue = new Deferred<>();
+    private final Deferred<List<OSGiFramework>> contentReadyQueue;
+
+    public OSGiFrameworkContentProvider() {
+        contentReadyQueue = Central.promiseFactory().deferred();
+    }
 
     private StructuredViewer structuredViewer;
     private Workspace workspace;
@@ -138,17 +142,10 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
         return frameworks.toArray();
     }
 
-    public void onContentReady(final Success<List<OSGiFramework>,Void> callback) {
+    public void onContentReady(Consumer<List<OSGiFramework>> callback) {
         Promise<List<OSGiFramework>> p = contentReadyQueue.getPromise();
-        p.then(callback, null).then(null, callbackFailure);
+        p.thenAccept(callback).onFailure(fail -> logger.logError("onContentReady callback failed", fail));
     }
-
-    private static final Failure callbackFailure = new Failure() {
-        @Override
-        public void fail(Promise< ? > resolved) throws Exception {
-            logger.logError("onContentReady callback failed", resolved.getFailure());
-        }
-    };
 
     private static abstract class LoadingContentJob extends Job {
 

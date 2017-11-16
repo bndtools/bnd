@@ -5,9 +5,6 @@ import java.io.File;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Success;
-
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.BndListener;
 
@@ -24,13 +21,7 @@ public final class WorkspaceListener extends BndListener {
                 // so we use a job to refresh the file
                 final RefreshFileJob job = new RefreshFileJob(file, true);
                 if (job.needsToSchedule()) {
-                    Central.onWorkspaceInit(new Success<Workspace,Void>() {
-                        @Override
-                        public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
-                            job.schedule();
-                            return null;
-                        }
-                    });
+                    Central.onWorkspace(workspace -> job.schedule());
                 }
             } else {
                 Central.refreshFile(file, null, true);

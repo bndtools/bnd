@@ -2,8 +2,6 @@ package bndtools.editor.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.List;
-
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -27,9 +25,6 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
-import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Success;
-
 import aQute.bnd.build.model.EE;
 import bndtools.BndConstants;
 import bndtools.utils.ModificationLock;
@@ -63,18 +58,7 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
     public void initialize(IManagedForm form) {
         super.initialize(form);
 
-        fwkContentProvider.onContentReady(new Success<List<OSGiFramework>,Void>() {
-            @Override
-            public Promise<Void> call(Promise<List<OSGiFramework>> resolved) throws Exception {
-                Display.getDefault().asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        refreshFromModel();
-                    }
-                });
-                return null;
-            }
-        });
+        fwkContentProvider.onContentReady(list -> Display.getDefault().asyncExec(() -> refreshFromModel()));
 
         frameworkViewer.setInput(model.getWorkspace());
     }

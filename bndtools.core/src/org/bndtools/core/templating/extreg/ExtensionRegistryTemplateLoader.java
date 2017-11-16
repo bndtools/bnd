@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.bndtools.templating.Template;
 import org.bndtools.templating.TemplateLoader;
@@ -17,8 +20,12 @@ import org.eclipse.core.runtime.Status;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Promises;
+import org.osgi.util.promise.PromiseFactory;
 
 import aQute.service.reporter.Reporter;
 import bndtools.Plugin;
@@ -30,10 +37,29 @@ public class ExtensionRegistryTemplateLoader implements TemplateLoader {
 
     private final Map<String,String> typeToExtPoint = new HashMap<>();
 
+    private PromiseFactory promiseFactory;
+    private ExecutorService localExecutor = null;
+
+    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policyOption = ReferencePolicyOption.GREEDY)
+    void setExecutorService(ExecutorService executor) {
+        this.promiseFactory = new PromiseFactory(Objects.requireNonNull(executor));
+    }
+
     @Activate
     void activate() {
         typeToExtPoint.put("project", "projectTemplates");
         typeToExtPoint.put("workspace", "workspaceTemplates");
+        if (promiseFactory == null) {
+            localExecutor = Executors.newCachedThreadPool();
+            promiseFactory = new PromiseFactory(localExecutor);
+        }
+    }
+
+    @Deactivate
+    void dectivate() {
+        if (localExecutor != null) {
+            localExecutor.shutdown();
+        }
     }
 
     @SuppressWarnings("deprecation")
@@ -66,7 +92,6 @@ public class ExtensionRegistryTemplateLoader implements TemplateLoader {
         } else {
             templates = Collections.emptyList();
         }
-        return Promises.resolved(templates);
+        return promiseFactory.resolved(templates);
     }
-
 }
