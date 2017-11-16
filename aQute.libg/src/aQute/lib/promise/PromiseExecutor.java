@@ -1,24 +1,29 @@
 package aQute.lib.promise;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collector;
 
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
 
 public class PromiseExecutor extends PromiseFactory implements Executor {
-
 	public PromiseExecutor() {
-		this((runnable) -> runnable.run());
+		super(inlineExecutor());
 	}
 
 	public PromiseExecutor(Executor executor) {
-		super(Objects.requireNonNull(executor), null);
+		super(requireNonNull(executor));
+	}
+
+	public PromiseExecutor(Executor executor, ScheduledExecutorService scheduled) {
+		super(requireNonNull(executor), requireNonNull(scheduled));
 	}
 
 	@Override
@@ -34,6 +39,11 @@ public class PromiseExecutor extends PromiseFactory implements Executor {
 	@Override
 	public Executor executor() {
 		return super.executor();
+	}
+
+	@Override
+	public ScheduledExecutorService scheduledExecutor() {
+		return super.scheduledExecutor();
 	}
 
 	public <V> Collector<Promise<V>,List<Promise<V>>,Promise<List<V>>> toPromise() {
