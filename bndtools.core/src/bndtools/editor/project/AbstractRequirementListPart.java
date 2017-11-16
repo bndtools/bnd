@@ -56,6 +56,7 @@ import bndtools.model.repo.DependencyPhase;
 import bndtools.model.repo.ProjectBundle;
 import bndtools.model.repo.RepositoryBundle;
 import bndtools.model.repo.RepositoryBundleVersion;
+import bndtools.preferences.BndPreferences;
 import bndtools.wizards.repo.RepoBundleSelectionWizard;
 
 public abstract class AbstractRequirementListPart extends BndEditorPart implements PropertyChangeListener {
@@ -64,6 +65,7 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
         super(parent, toolkit, style);
     }
 
+    private final BndPreferences preferences = new BndPreferences();
     private final List<Requirement> requires = new ArrayList<>();
 
     private TableViewer viewer;
@@ -275,10 +277,18 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
             throw new IllegalArgumentException("Unable to derive identity from an object of type " + elem.getClass().getSimpleName());
         }
 
-        Filter filter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, bsn);
-        if (versionRange != null)
-            filter = new AndFilter().addChild(filter).addChild(new SimpleFilter("version", Operator.GreaterThanOrEqual, versionRange));
-        return new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
+        final CapReqBuilder reqBuilder;
+        if (preferences.getUseAliasRequirements()) {
+            reqBuilder = new CapReqBuilder("bnd.identity").addAttribute("id", bsn);
+            if (versionRange != null)
+                reqBuilder.addAttribute("version", versionRange);
+        } else {
+            Filter filter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, bsn);
+            if (versionRange != null)
+                filter = new AndFilter().addChild(filter).addChild(new SimpleFilter("version", Operator.GreaterThanOrEqual, versionRange));
+            reqBuilder = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
+        }
+        return reqBuilder.buildSyntheticRequirement();
     }
 
 }

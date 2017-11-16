@@ -10,6 +10,8 @@ import org.bndtools.api.NamedPlugin;
 import org.bndtools.headless.build.manager.api.HeadlessBuildManager;
 import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresManager;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -34,6 +36,7 @@ public class GeneratedResourcesPreferencePage extends PreferencePage implements 
 
     private String enableSubs;
     private boolean noAskPackageInfo = false;
+    private boolean useAliasRequirements = true;
     private boolean headlessBuildCreate = true;
     private final Map<String,Boolean> headlessBuildPlugins = new HashMap<String,Boolean>();
     private boolean versionControlIgnoresCreate = true;
@@ -45,6 +48,7 @@ public class GeneratedResourcesPreferencePage extends PreferencePage implements 
 
         enableSubs = prefs.getEnableSubBundles();
         noAskPackageInfo = prefs.getNoAskPackageInfo();
+        useAliasRequirements = prefs.getUseAliasRequirements();
         headlessBuildCreate = prefs.getHeadlessBuildCreate();
 
         Collection<NamedPlugin> pluginsInformation = headlessBuildManager.getAllPluginsInformation();
@@ -101,6 +105,7 @@ public class GeneratedResourcesPreferencePage extends PreferencePage implements 
         BndPreferences prefs = new BndPreferences();
         prefs.setEnableSubBundles(enableSubs);
         prefs.setNoAskPackageInfo(noAskPackageInfo);
+        prefs.setUseAliasRequirements(useAliasRequirements);
         prefs.setHeadlessBuildCreate(headlessBuildCreate);
         Collection<NamedPlugin> pluginsInformation = headlessBuildManager.getAllPluginsInformation();
         if (pluginsInformation.size() > 0) {
@@ -127,10 +132,6 @@ public class GeneratedResourcesPreferencePage extends PreferencePage implements 
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         enableSubBundlesGroup.setLayoutData(gd);
 
-        Control exportsGroup = createExportsGroup(composite);
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        exportsGroup.setLayoutData(gd);
-
         Control headlessBuildGroup = createHeadlessBuildSystemsGroup(composite);
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         headlessBuildGroup.setLayoutData(gd);
@@ -138,6 +139,10 @@ public class GeneratedResourcesPreferencePage extends PreferencePage implements 
         Control versionControlGroup = createVersionControlGroup(composite);
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         versionControlGroup.setLayoutData(gd);
+
+        Control othersGroup = createMiscGroup(composite);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        othersGroup.setLayoutData(gd);
 
         return composite;
     }
@@ -174,27 +179,44 @@ public class GeneratedResourcesPreferencePage extends PreferencePage implements 
         return group;
     }
 
-    private Control createExportsGroup(Composite parent) {
-        Group exportsGroup = new Group(parent, SWT.NONE);
-        exportsGroup.setText(Messages.BndPreferencePage_exportsGroup);
+    private Control createMiscGroup(Composite parent) {
+        Group group = new Group(parent, SWT.NONE);
+        group.setText(Messages.BndPreferencePage_miscGroup);
 
         GridLayout layout = new GridLayout(1, false);
         layout.verticalSpacing = 10;
-        exportsGroup.setLayout(layout);
+        group.setLayout(layout);
 
-        final Button btnNoAskPackageInfo = new Button(exportsGroup, SWT.CHECK);
+        final Button btnNoAskPackageInfo = new Button(group, SWT.CHECK);
         btnNoAskPackageInfo.setText(Messages.BndPreferencePage_btnNoAskPackageInfo);
 
-        btnNoAskPackageInfo.setSelection(noAskPackageInfo);
+        final Button btnAliasRequirements = new Button(group, SWT.CHECK);
+        btnAliasRequirements.setText(Messages.BndPreferencePage_btnAliasRequirements);
+        ControlDecoration decorAlias = new ControlDecoration(btnAliasRequirements, SWT.RIGHT | SWT.CENTER);
+        decorAlias.setShowHover(true);
+        decorAlias.setDescriptionText(
+                "When adding a requirement to the editor, use a simplified alias such as \nbnd.identity; bsn=example\n.\nDisable to use the canonical requirement syntax e.g. \"osgi.identity; filter:='(osgi.identity=example)'\"");
+        decorAlias.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
 
+        // Load Initial Data
+        btnNoAskPackageInfo.setSelection(noAskPackageInfo);
+        btnAliasRequirements.setSelection(useAliasRequirements);
+
+        // Listeners
         btnNoAskPackageInfo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 noAskPackageInfo = btnNoAskPackageInfo.getSelection();
             }
         });
+        btnAliasRequirements.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                useAliasRequirements = btnAliasRequirements.getSelection();
+            }
+        });
 
-        return exportsGroup;
+        return group;
     }
 
     private Control createHeadlessBuildSystemsGroup(Composite parent) {

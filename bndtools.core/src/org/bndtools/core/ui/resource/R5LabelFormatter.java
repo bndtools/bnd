@@ -10,6 +10,8 @@ import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.jface.BoldStyler;
 import org.bndtools.utils.jface.ItalicStyler;
 import org.bndtools.utils.resources.ResourceUtils;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.StyledString;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.BundleNamespace;
@@ -26,12 +28,14 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.ContentNamespace;
 
+import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
 import aQute.bnd.osgi.resource.FilterParser.Op;
 import aQute.bnd.osgi.resource.FilterParser.RangeExpression;
 import aQute.bnd.osgi.resource.FilterParser.SimpleExpression;
 import aQute.bnd.osgi.resource.FilterParser.WithRangeExpression;
+import bndtools.Plugin;
 
 public class R5LabelFormatter {
 
@@ -213,6 +217,12 @@ public class R5LabelFormatter {
     }
 
     public static void appendRequirementLabel(StyledString label, Requirement requirement, boolean shorten) {
+        try {
+            requirement = CapReqBuilder.unalias(requirement);
+        } catch (Exception e) {
+            Plugin.getDefault().getLog().log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "Error parsing aliased requirement, using original", e));
+        }
+
         String namespace = requirement.getNamespace();
         String filter = requirement.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
 
