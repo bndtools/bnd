@@ -81,11 +81,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.IElementStateListener;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.util.promise.Deferred;
-import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Promises;
-import org.osgi.util.promise.Success;
-
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
@@ -132,7 +128,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     private final Image buildFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bndtools-logo-16x16.png").createImage();
 
     private BndSourceEditorPage sourcePage;
-    private Promise<Void> modelReady;
+    private Promise<Workspace> modelReady;
 
     private File inputFile;
 
@@ -286,7 +282,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         if (file == null) {
             MessageDialog.openError(shell, "Resolution Error", "Unable to run resolution because the file is not in the workspace.");
             reallySave(monitor);
-            return Promises.resolved(Status.CANCEL_STATUS);
+            return Central.promiseFactory().resolved(Status.CANCEL_STATUS);
         }
 
         Job loadWorkspaceJob = new Job("Loading workspace...") {
@@ -540,20 +536,10 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                 if (!Central.hasWorkspaceDirectory()) { // default ws will be created we can load immediately
                     modelReady = loadEditModel();
                 } else { // a real ws will be resolved so we need to load async
-                    modelReady = Central.getWorkspacePromise().then(new Success<Workspace,Void>() {
-                        @Override
-                        public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
-                            return loadEditModel();
-                        }
-                    }, new Failure() {
-                        @Override
-                        public void fail(Promise< ? > resolved) throws Exception {
-                            logger.logError("Failed to load edit model", resolved.getFailure());
-                        }
-                    });
+                    modelReady = Central.onWorkspace(workspace -> loadEditModel());
                 }
             } else {
-                modelReady = Promises.failed(new Exception("Model unavailable"));
+                modelReady = Central.promiseFactory().failed(new Exception("Model unavailable"));
             }
 
             setupActions();
@@ -582,7 +568,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         }
     }
 
-    private Promise<Void> loadEditModel() throws Exception {
+    private Promise<Workspace> loadEditModel() throws Exception {
         // Create the bnd edit model and workspace
         Workspace ws = Central.getWorkspaceIfPresent();
         Project bndProject = Run.createRun(ws, inputFile);
@@ -590,38 +576,37 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         model.setProject(bndProject);
 
         // Load content into the edit model
-        Deferred<Void> modelReady = new Deferred<>();
-        Display.getDefault().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                final IDocumentProvider docProvider = sourcePage.getDocumentProvider();
-                // #1625: Ensure the IDocumentProvider is not null.
-                if (docProvider != null) {
+        Deferred<Workspace> completed = Central.promiseFactory().deferred();
+        Display.getDefault().asyncExec(() -> {
+            final IDocumentProvider docProvider = sourcePage.getDocumentProvider();
+            // #1625: Ensure the IDocumentProvider is not null.
+            if (docProvider != null) {
+                try {
                     IDocument document = docProvider.getDocument(getEditorInput());
-                    try {
-                        model.loadFrom(new IDocumentWrapper(document));
-                        model.setBndResource(inputFile);
-                        modelReady.resolve(null);
-                    } catch (IOException e) {
-                        logger.logError("Unable to load edit model", e);
-                        modelReady.fail(e);
-                    }
+                    model.loadFrom(new IDocumentWrapper(document));
+                    model.setBndResource(inputFile);
+                    completed.resolve(ws);
+                } catch (IOException e) {
+                    logger.logError("Unable to load edit model", e);
+                    completed.fail(e);
+                }
 
-                    for (int i = 0; i < getPageCount(); i++) {
-                        Control control = getControl(i);
+                for (int i = 0; i < getPageCount(); i++) {
+                    Control control = getControl(i);
 
-                        if (control instanceof ScrolledForm) {
-                            ScrolledForm form = (ScrolledForm) control;
+                    if (control instanceof ScrolledForm) {
+                        ScrolledForm form = (ScrolledForm) control;
 
-                            if (SYNC_MESSAGE.equals(form.getMessage())) {
-                                form.setMessage(null, IMessageProvider.NONE);
-                            }
+                        if (SYNC_MESSAGE.equals(form.getMessage())) {
+                            form.setMessage(null, IMessageProvider.NONE);
                         }
                     }
                 }
+            } else {
+                completed.fail(new Exception("Model unavailable"));
             }
         });
-        return modelReady.getPromise();
+        return completed.getPromise();
     }
 
     private void initPages(IEditorSite site, IEditorInput input) throws PartInitException {

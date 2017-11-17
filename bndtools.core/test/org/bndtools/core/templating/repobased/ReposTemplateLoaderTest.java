@@ -38,6 +38,11 @@ public class ReposTemplateLoaderTest extends TestCase {
         loader.addTemplateEngine(new StringTemplateEngine(), engineProps);
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        loader.dectivate();
+    }
+
     public void testLoad() throws Exception {
         List<Template> templates = loader.findTemplates("test1", new ProgressMonitorReporter(new NullProgressMonitor(), "")).getValue();
         assertEquals(1, templates.size());

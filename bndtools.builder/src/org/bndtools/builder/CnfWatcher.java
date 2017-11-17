@@ -16,10 +16,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Promises;
-import org.osgi.util.promise.Success;
-
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import bndtools.central.Central;
@@ -40,17 +36,7 @@ public class CnfWatcher implements IResourceChangeListener {
         if (Central.isWorkspaceInited()) {
             processEvent(event);
         } else {
-            Central.onWorkspaceInit(new Success<Workspace,Void>() {
-                @Override
-                public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
-                    try {
-                        processEvent(event);
-                        return Promises.resolved(null);
-                    } catch (Exception e) {
-                        return Promises.failed(e);
-                    }
-                }
-            });
+            Central.onWorkspace(workspace -> processEvent(event));
         }
     }
 

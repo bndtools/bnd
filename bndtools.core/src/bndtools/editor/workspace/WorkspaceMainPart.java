@@ -18,7 +18,6 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
@@ -32,11 +31,6 @@ import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.osgi.util.promise.Deferred;
-import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Success;
-
-import aQute.bnd.build.Workspace;
 import bndtools.Plugin;
 import bndtools.central.Central;
 
@@ -120,61 +114,45 @@ public class WorkspaceMainPart extends SectionPart {
         stackLayout.topControl = labelParent;
         container.layout();
 
-        Central.onWorkspaceInit(new Success<Workspace,Void>() {
-            @Override
-            public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
-                final Deferred<Void> completion = new Deferred<>();
-                Display.getDefault().asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            IFile buildFile = Central.getWorkspaceBuildFile();
-                            if (buildFile == null)
-                                return;
+        Central.onWorkspaceAsync(workspace -> {
+            IFile buildFile = Central.getWorkspaceBuildFile();
+            if (buildFile == null)
+                return;
 
-                            Composite contents = new Composite(container, SWT.NONE);
+            Composite contents = new Composite(container, SWT.NONE);
 
-                            if (!mainFile) {
-                                ImageHyperlink link = form.getToolkit().createImageHyperlink(contents, SWT.CENTER);
-                                link.setText("Open main build.bnd file.");
-                                link.setImage(bndFileImg);
-                                link.addHyperlinkListener(new FileOpenLinkListener(buildFile.getFullPath()));
-                            } else {
-                                IResource[] extFiles;
+            if (!mainFile) {
+                ImageHyperlink link = form.getToolkit().createImageHyperlink(contents, SWT.CENTER);
+                link.setText("Open main build.bnd file.");
+                link.setImage(bndFileImg);
+                link.addHyperlinkListener(new FileOpenLinkListener(buildFile.getFullPath()));
+            } else {
+                IResource[] extFiles;
 
-                                IContainer cnfDir = buildFile.getParent();
-                                IFolder extDir = cnfDir.getFolder(new Path("ext"));
-                                if (extDir.exists())
-                                    extFiles = extDir.members();
-                                else
-                                    extFiles = new IResource[0];
+                IContainer cnfDir = buildFile.getParent();
+                IFolder extDir = cnfDir.getFolder(new Path("ext"));
+                if (extDir.exists())
+                    extFiles = extDir.members();
+                else
+                    extFiles = new IResource[0];
 
-                                if (extFiles.length > 0) {
-                                    for (IResource extFile : extFiles) {
-                                        if (extFile.getType() == IResource.FILE && "bnd".equalsIgnoreCase(extFile.getFileExtension())) {
-                                            ImageHyperlink link = form.getToolkit().createImageHyperlink(contents, SWT.CENTER);
-                                            link.setText("Open " + extFile.getName());
-                                            link.setImage(extFileImg);
-                                            link.addHyperlinkListener(new FileOpenLinkListener(extFile.getFullPath()));
-                                        }
-                                    }
-                                } else {
-                                    createMissingExtsWarningPanel(contents, form.getToolkit(), extDir.getFullPath());
-                                }
-                            }
-
-                            stackLayout.topControl = contents;
-                            container.layout();
-                            completion.resolve(null);
-                        } catch (Exception e) {
-                            Plugin.error(Collections.singletonList(e.getMessage()));
-                            completion.fail(e);
+                if (extFiles.length > 0) {
+                    for (IResource extFile : extFiles) {
+                        if (extFile.getType() == IResource.FILE && "bnd".equalsIgnoreCase(extFile.getFileExtension())) {
+                            ImageHyperlink link = form.getToolkit().createImageHyperlink(contents, SWT.CENTER);
+                            link.setText("Open " + extFile.getName());
+                            link.setImage(extFileImg);
+                            link.addHyperlinkListener(new FileOpenLinkListener(extFile.getFullPath()));
                         }
                     }
-                });
-                return completion.getPromise();
+                } else {
+                    createMissingExtsWarningPanel(contents, form.getToolkit(), extDir.getFullPath());
+                }
             }
-        });
+
+            stackLayout.topControl = contents;
+            container.layout();
+        }).onFailure(e -> Plugin.error(Collections.singletonList(e.getMessage())));
     }
 
     private void createMissingExtsWarningPanel(Composite parent, FormToolkit tk, IPath extPath) {

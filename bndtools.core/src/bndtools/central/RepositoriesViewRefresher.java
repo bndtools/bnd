@@ -27,10 +27,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Success;
-
-import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
@@ -170,27 +166,16 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
         return Status.OK_STATUS;
     }
 
-    public void addViewer(final TreeViewer viewer, final RefreshModel model) {
+    public void addViewer(TreeViewer viewer, RefreshModel model) {
         this.viewers.put(viewer, model);
-        Central.onWorkspaceInit(new Success<Workspace,Void>() {
+        Central.onWorkspace(workspace -> new Job("Updating repositories") {
             @Override
-            public Promise<Void> call(Promise<Workspace> resolved) throws Exception {
-                new Job("Updating repositories") {
-                    @Override
-                    protected IStatus run(IProgressMonitor monitor) {
-                        final List<RepositoryPlugin> repositories = model.getRepositories();
-                        Display.getDefault().asyncExec(new Runnable() {
-                            @Override
-                            public void run() {
-                                viewer.setInput(repositories);
-                            }
-                        });
-                        return Status.OK_STATUS;
-                    }
-                }.schedule();
-                return null;
+            protected IStatus run(IProgressMonitor monitor) {
+                List<RepositoryPlugin> repositories = model.getRepositories();
+                Display.getDefault().asyncExec(() -> viewer.setInput(repositories));
+                return Status.OK_STATUS;
             }
-        });
+        }.schedule());
     }
 
     public void removeViewer(TreeViewer viewer) {

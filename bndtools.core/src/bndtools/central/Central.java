@@ -38,13 +38,14 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.swt.widgets.Display;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.util.function.Consumer;
 import org.osgi.util.promise.Deferred;
-import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Success;
+import org.osgi.util.promise.PromiseFactory;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -63,7 +64,8 @@ public class Central implements IStartupParticipant {
     private static volatile Central instance = null;
 
     private static volatile Workspace workspace = null;
-    private static final Deferred<Workspace> workspaceQueue = new Deferred<>();
+    private static final PromiseFactory promiseFactory = new PromiseFactory(Processor.getExecutor(), Processor.getScheduledExecutor());
+    private static final Deferred<Workspace> workspaceQueue = promiseFactory.deferred();
 
     static WorkspaceR5Repository r5Repository = null;
 
@@ -260,25 +262,35 @@ public class Central implements IStartupParticipant {
         return ws;
     }
 
-    public static Promise<Workspace> getWorkspacePromise() {
-        return workspaceQueue.getPromise();
+    public static Promise<Workspace> onWorkspace(Consumer<Workspace> callback) {
+        Promise<Workspace> p = workspaceQueue.getPromise();
+        return p.thenAccept(workspace -> callback.accept(workspace)).onFailure(failure -> logger.logError("onWorkspaceInit callback failed", failure));
     }
 
-    public static void onWorkspaceInit(final Success<Workspace,Void> callback) {
+    public static Promise<Workspace> onWorkspaceAsync(Consumer<Workspace> callback) {
         Promise<Workspace> p = workspaceQueue.getPromise();
-        p.then(callback, null).then(null, callbackFailure);
+        return p.then(resolved -> {
+            Workspace workspace = resolved.getValue();
+            Deferred<Workspace> completion = promiseFactory.deferred();
+            Display.getDefault().asyncExec(() -> {
+                try {
+                    callback.accept(workspace);
+                    completion.resolve(workspace);
+                } catch (Throwable e) {
+                    completion.fail(e);
+                }
+            });
+            return completion.getPromise();
+        }).onFailure(failure -> logger.logError("onWorkspaceInitAsync callback failed", failure));
+    }
+
+    public static PromiseFactory promiseFactory() {
+        return promiseFactory;
     }
 
     public static boolean isWorkspaceInited() {
         return workspace != null;
     }
-
-    private static final Failure callbackFailure = new Failure() {
-        @Override
-        public void fail(Promise< ? > resolved) throws Exception {
-            logger.logError("onWorkspaceInit callback failed", resolved.getFailure());
-        }
-    };
 
     private static File getWorkspaceDirectory() throws CoreException {
         IWorkspaceRoot eclipseWorkspace = ResourcesPlugin.getWorkspace().getRoot();
