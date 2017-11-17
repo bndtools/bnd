@@ -1169,17 +1169,7 @@ public class Workspace extends Processor {
 	public static Workspace createStandaloneWorkspace(Processor run, URI base) throws Exception {
 		Workspace ws = new Workspace(WorkspaceLayout.STANDALONE);
 
-		//
-		// Copy all properties except the type we will add
-		//
-		for (Entry<Object,Object> entry : run.getProperties().entrySet()) {
-			String key = (String) entry.getKey();
-			if (!key.startsWith(PLUGIN_STANDALONE)) {
-				ws.getProperties().put(key, entry.getValue());
-			}
-		}
-
-		Parameters standalone = new Parameters(ws.getProperty(STANDALONE), ws);
+		Parameters standalone = new Parameters(run.getProperty(STANDALONE), ws);
 		StringBuilder sb = new StringBuilder();
 		try (Formatter f = new Formatter(sb, Locale.US)) {
 			int counter = 1;
