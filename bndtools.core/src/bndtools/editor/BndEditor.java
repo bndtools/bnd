@@ -30,8 +30,10 @@ import org.bndtools.core.resolve.ResolveJob;
 import org.bndtools.core.resolve.ui.ResolutionWizard;
 import org.bndtools.core.ui.ExtendedFormEditor;
 import org.bndtools.core.ui.IFormPageFactory;
-import org.bndtools.core.ui.icons.Icons;
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -49,9 +51,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -329,10 +328,9 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                 final ResolveJob job = new ResolveJob(model);
                 IStatus validation = job.validateBeforeRun();
                 if (!validation.isOK()) {
-                    String message = "Unable to run the resolver.";
-                    ErrorDialog.openError(shell, "Resolution Validation Problem", message, validation, IStatus.ERROR | IStatus.WARNING);
                     if (onSave)
                         reallySave(monitor);
+                    return validation;
                 }
 
                 // Add operation to perform at the end of resolution (i.e. display
@@ -382,6 +380,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                 return Status.OK_STATUS;
             }
         };
+        runResolveInUIJob.setUser(true);
         return JobUtil.chainJobs(loadWorkspaceJob, runResolveInUIJob);
     }
 
@@ -552,19 +551,14 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     private void setupActions() {
         String fileName = getFileAndProject(getEditorInput()).getFirst();
         if (fileName.endsWith(LaunchConstants.EXT_BNDRUN)) {
-            final Action resolveAction = new Action("Resolve Run Bundles") {
-                @Override
-                public void run() {
-                    resolveRunBundles(new NullProgressMonitor(), false);
-                }
-            };
-            resolveAction.setImageDescriptor(Icons.desc("resolve"));
-            resolveAction.setActionDefinitionId("bndtools.runEditor.resolve");
-            IToolBarManager toolBarMgr = getEditorSite().getActionBars().getToolBarManager();
-            toolBarMgr.add(resolveAction);
-
             IHandlerService handlerSvc = (IHandlerService) getEditorSite().getService(IHandlerService.class);
-            handlerSvc.activateHandler("bndtools.runEditor.resolve", new ActionHandler(resolveAction));
+            handlerSvc.activateHandler("bndtools.runEditor.resolve", new AbstractHandler() {
+                @Override
+                public Object execute(ExecutionEvent event) throws ExecutionException {
+                    resolveRunBundles(new NullProgressMonitor(), false);
+                    return null;
+                }
+            });
         }
     }
 

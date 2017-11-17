@@ -357,6 +357,17 @@
                <visibleWhen checkEnabled="true"/>
           </command>
       </menuContribution>
+      
+      <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+          <toolbar id="bndtools.runEditor.toolbar">
+              <command commandId="bndtools.runEditor.resolve">
+                  <visibleWhen>
+                      <with variable="activeEditorId"><equals value="bndtools.bndRunEditor"/></with>
+                  </visibleWhen>
+              </command>
+              <separator name="additions"/>
+          </toolbar>
+      </menuContribution>
    </extension>
 
    <extension point="org.eclipse.ui.bindings">
